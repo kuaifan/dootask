@@ -1,22 +1,27 @@
 export default [
     {
-        path: '/',
         name: 'index',
+        path: '/',
         component: resolve => require(['./pages/index.vue'], resolve)
     },
     {
-        path: '*',
-        name: '404',
-        component: resolve => require(['./pages/404.vue'], resolve),
-    },
-    {
-        path: '/login',
         name: 'login',
+        path: '/login',
         component: resolve => require(['./pages/login/index.vue'], resolve),
     },
     {
-        path: '/dashboard',
         name: 'dashboard',
+        path: '/dashboard',
         component: resolve => require(['./pages/dashboard/index.vue'], resolve),
+    },
+    {
+        name: 'project-detail',
+        path: '/project/:id',
+        component: resolve => require(['./pages/project/detail.vue'], resolve),
+    },
+    {
+        name: '404',
+        path: '*',
+        component: resolve => require(['./pages/404.vue'], resolve),
     },
 ]
