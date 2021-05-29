@@ -11,7 +11,7 @@ export default {
         if (this.usrLogin) {
             this.goForward({path: '/dashboard'}, true);
         } else {
-            this.goForward({path: '/login'}, true);
+            this.goForward({path: '/users/login'}, true);
         }
     },
     deactivated() {

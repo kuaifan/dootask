@@ -5,11 +5,6 @@ export default [
         component: resolve => require(['./pages/index.vue'], resolve)
     },
     {
-        name: 'login',
-        path: '/login',
-        component: resolve => require(['./pages/login/index.vue'], resolve),
-    },
-    {
         name: 'dashboard',
         path: '/dashboard',
         component: resolve => require(['./pages/dashboard/index.vue'], resolve),
@@ -18,6 +13,11 @@ export default [
         name: 'project-detail',
         path: '/project/:id',
         component: resolve => require(['./pages/project/detail.vue'], resolve),
+    },
+    {
+        name: 'users-login',
+        path: '/users/login',
+        component: resolve => require(['./pages/users/login.vue'], resolve),
     },
     {
         name: '404',

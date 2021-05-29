@@ -411,9 +411,9 @@
             $A.triggerUserInfoListener({});
             let from = window.location.pathname == '/' ? '' : encodeURIComponent(window.location.href);
             if (typeof $A.app === "object") {
-                $A.app.goForward({path: '/login', query: from ? {from: from} : {}}, true);
+                $A.app.goForward({path: '/users/login', query: from ? {from: from} : {}}, true);
             } else {
-                window.location.replace($A.webUrl('login') + (from ? ('?from=' + from) : ''));
+                window.location.replace($A.webUrl('users/login') + (from ? ('?from=' + from) : ''));
             }
         },
 
