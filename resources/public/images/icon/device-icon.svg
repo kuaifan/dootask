@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 25.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="图层_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 1024 1024" style="enable-background:new 0 0 1024 1024;" xml:space="preserve">
+<style type="text/css">
+	.st0{opacity:0.1;fill:#1F8EEC;}
+	.st1{fill:#FFFFFF;stroke:#1F8EEC;stroke-width:32;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}
+	.st2{opacity:0.5;fill:none;stroke:#1F8EEC;stroke-width:32;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}
+	.st3{opacity:0.5;fill:#FFFFFF;stroke:#1F8EEC;stroke-width:32;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}
+	.st4{fill:none;stroke:#1F8EEC;stroke-width:32;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}
+</style>
+<circle class="st0" cx="512" cy="512" r="448"/>
+<g>
+	<g>
+		<path class="st1" d="M801.36,400H158.64c-16.85,0-30.64-13.79-30.64-30.64V238.64c0-16.85,13.79-30.64,30.64-30.64h642.72
+			c16.85,0,30.64,13.79,30.64,30.64v130.72C832,386.21,818.21,400,801.36,400z"/>
+		<line class="st2" x1="240" y1="304" x2="464" y2="304"/>
+		<line class="st2" x1="560" y1="304" x2="592" y2="304"/>
+		<line class="st2" x1="656" y1="304" x2="688" y2="304"/>
+	</g>
+	<g>
+		<path class="st1" d="M801.36,592H158.64c-16.85,0-30.64-13.79-30.64-30.64V430.64c0-16.85,13.79-30.64,30.64-30.64h642.72
+			c16.85,0,30.64,13.79,30.64,30.64v130.72C832,578.21,818.21,592,801.36,592z"/>
+		<line class="st2" x1="240" y1="496" x2="464" y2="496"/>
+		<line class="st2" x1="560" y1="496" x2="592" y2="496"/>
+		<line class="st2" x1="656" y1="496" x2="688" y2="496"/>
+	</g>
+	<g>
+		<path class="st1" d="M801.36,784H158.64c-16.85,0-30.64-13.79-30.64-30.64V622.64c0-16.85,13.79-30.64,30.64-30.64h642.72
+			c16.85,0,30.64,13.79,30.64,30.64v130.72C832,770.21,818.21,784,801.36,784z"/>
+		<line class="st3" x1="240" y1="688" x2="464" y2="688"/>
+		<line class="st3" x1="560" y1="688" x2="592" y2="688"/>
+		<line class="st3" x1="656" y1="688" x2="688" y2="688"/>
+	</g>
+	<circle class="st1" cx="736" cy="688" r="160"/>
+	<line class="st4" x1="816" y1="688" x2="656" y2="688"/>
+	<line class="st4" x1="736" y1="768" x2="736" y2="608"/>
+</g>
+</svg>
