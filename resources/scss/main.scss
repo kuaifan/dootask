@@ -1,0 +1,285 @@
+*[hidden="hidden"] {
+    display: none !important;
+}
+
+.icon-loading {
+    animation: icon-loading-load 0.6s infinite linear;
+}
+
+@keyframes icon-loading-load {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.ivu-modal-wrap {
+    &.simple-modal {
+        .ivu-modal {
+            top: 100px;
+            padding-bottom: 100px;
+            @media (max-height: 900px) {
+                top: 35px;
+                padding-bottom: 35px;
+            }
+        }
+        .ivu-modal-header,
+        .ivu-modal-footer {
+            border-color: transparent;
+        }
+
+        .form-network-add-tabs {
+            .ivu-tabs-tabpane {
+                padding: 10px 6px 0;
+            }
+        }
+        .form-network-add-in-out {
+            padding: 0 6px;
+            .select-in-type {
+                span.ivu-radio {
+                    display: none;
+                }
+                .select-in-type-item-checked {
+                    color: #2d8cf0;
+                    border: 1px solid #2d8cf0 !important;
+                }
+                .select-in-type-item {
+                    display: flex;
+                    align-items: center;
+                    min-width: 90px;
+                    border: 1px solid #E8EBEE;
+                    border-radius: 4px;
+                    padding: 0 12px;
+                    margin: 0 8px 0 0;
+                    > span {
+                        flex: 1;
+                    }
+                    &:hover {
+                        cursor: pointer;
+                    }
+                    .select-in-type-icon {
+                        margin-left: 12px;
+                    }
+                }
+            }
+            .select-in-node {
+                margin-top: 18px;
+            }
+        }
+    }
+}
+
+.modal-info-show {
+    display: flex;
+    .column {
+        color: #6D6D6D;
+        margin: 5px 0;
+        min-width: 70px;
+        max-width: 100px;
+        text-align: right;
+    }
+    .value {
+        flex: 1;
+        width: 0;
+        color: #414141;
+        margin: 5px 0 5px 5px;
+        word-break: break-all;
+    }
+}
+
+.ivu-select-dropdown {
+    max-height: 360px;
+    &.select-node {
+        .ivu-select-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            .option-title {
+                flex: 1;
+            }
+            .ivu-tag {
+                margin-left: 18px;
+                margin-right: 0;
+                transform: scale(0.9);
+                transform-origin: right center;
+            }
+        }
+    }
+}
+
+.ivu-tooltip-popper {
+    .ivu-tooltip-inner {
+        white-space: normal;
+    }
+}
+
+.ivu-table {
+    table {
+        width: 100% !important;
+        .ivu-table-cell {
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+        thead {
+            .ivu-table-cell {
+                display: block;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
+        }
+        tbody {
+            .tree-icon-loading {
+                .ivu-table-cell {
+                    display: flex;
+                    align-items: center;
+                    .ivu-table-cell-tree {
+                        margin-right: 6px;
+                    }
+                }
+            }
+        }
+    }
+    .td-ellipsis {
+        display: flex;
+        align-items: center;
+        max-width: 100%;
+        .remark-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            align-items: center;
+            white-space: nowrap;
+            height: 20px;
+            line-height: 20px;
+            margin-right: 6px;
+        }
+        .remark-icon {
+            display: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .remark-tag {
+            display: inline-block;
+            height: 22px;
+            line-height: 22px;
+            margin: 2px 4px 2px 0;
+            border: 1px solid #e8eaec;
+            border-radius: 3px;
+            background: #f7f7f7;
+            font-size: 12px;
+            vertical-align: middle;
+            opacity: 1;
+            color: #515a6e;
+            padding: 0 4px;
+            white-space: nowrap;
+            overflow: visible;
+            &.pointer-tag {
+                cursor: pointer;
+                color: #1890ff;
+                background: #e6f7ff;
+                border-color: #91d5ff;
+            }
+        }
+        .icon-tooltip {
+            .ivu-tooltip-rel {
+                display: flex;
+                align-items: center;
+            }
+        }
+    }
+    .td-action {
+        max-width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+        .td-action-container {
+            display: inline-block;
+            a {
+                font-size: 12px;
+                padding: 0 5px;
+            }
+        }
+    }
+    .ivu-table-row-hover {
+        &:hover {
+            .td-ellipsis {
+                .remark-icon {
+                    display: inline-block;
+                }
+            }
+        }
+    }
+    &:before {
+        background-color: #efefef;
+    }
+}
+.auto-height-top {
+    .ivu-table {
+        .ivu-table-body {
+            table {
+                td {
+                    height: auto;
+                    vertical-align: top;
+                    .ivu-table-cell {
+                        display: flex;
+                        align-items: center;
+                        min-height: 48px;
+                        padding: 8px 12px;
+                        .node-line {
+                            max-width: 100%;
+                            .td-ellipsis {
+                                .remark-line {
+                                    margin: 2px 6px 2px 0;
+                                    &:hover {
+                                        border-color: #888;
+                                    }
+                                }
+                                .remark-tag {
+                                    margin: 0;
+                                    transform: scale(0.8);
+                                }
+                                .remark-icon {
+                                    cursor: pointer;
+                                    &:hover {
+                                        color: #2d8cf0;
+                                    }
+                                    .ivu-icon {
+                                        vertical-align: unset;
+                                        transform: scale(1.2);
+                                        &.ivu-icon-md-remove-circle {
+                                            background-image: url("data:image/svg+xml;base64,PHN2ZyB0PSIxNjIxMDAxMDg0MzAxIiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9IjE4NjUiIHdpZHRoPSIyNTYiIGhlaWdodD0iMjU2Ij48cGF0aCBkPSJNNTEyIDUxMm0tNTEyIDBhNTEyIDUxMiAwIDEgMCAxMDI0IDAgNTEyIDUxMiAwIDEgMC0xMDI0IDBaIiBmaWxsPSIjRkZGRkZGIiBwLWlkPSIxODY2Ij48L3BhdGg+PHBhdGggZD0iTTUxMiAwYTUxMiA1MTIgMCAxIDAgMCAxMDI0QTUxMiA1MTIgMCAwIDAgNTEyIDB6IG0zODQgNTEyYzAgODIuNzM5Mi0yNi40MTkyIDE1OS4zMzQ0LTcxLjA2NTYgMjIyLjEwNTZMMjg5Ljg5NDQgMTk5LjA2NTZBMzgxLjc0NzIgMzgxLjc0NzIgMCAwIDEgNTEyIDEyOCAzODQuNDA5NiAzODQuNDA5NiAwIDAgMSA4OTYgNTEyeiBtLTc2OCAwYzAtODMuMzUzNiAyNi43MjY0LTE2MC40NjA4IDcxLjk4NzItMjIzLjQzNjhsNTM1LjU1MiA1MzUuMzQ3MkEzODEuNzQ3MiAzODEuNzQ3MiAwIDAgMSA1MTIgODk2IDM4NC40MDk2IDM4NC40MDk2IDAgMCAxIDEyOCA1MTJ6IiBmaWxsPSIjZmYwMDAwIiBwLWlkPSIxODY3IiBkYXRhLXNwbS1hbmNob3ItaWQ9ImEzMTN4Ljc3ODEwNjkuMC5pMCIgY2xhc3M9InNlbGVjdGVkIj48L3BhdGg+PC9zdmc+");
+                                            background-repeat: no-repeat;
+                                            width: 12px;
+                                            height: 12px;
+                                            background-size: 94%;
+                                            background-position: center;
+                                            vertical-align: text-top;
+                                            &:before {
+                                                display: none;
+                                            }
+                                        }
+                                    }
+                                }
+                                .node-signal-box {
+                                    margin-left: 1px;
+                                    .node-ping-value {
+                                        margin-left: 2px;
+                                    }
+                                }
+                                .ivu-table-cell-tooltip {
+                                    width: auto;
+                                    .ivu-tooltip-rel {
+                                        max-width: 100%;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

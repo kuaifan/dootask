@@ -11,8 +11,21 @@ const mix = require('laravel-mix');
  |
  */
 
+function getFileName(str) {
+    if (/resources_js_pages_(.*?)_vue/.test(str)) {
+        return /resources_js_pages_(.*?)_vue/.exec(str)[1];
+    }
+    return str;
+}
 
-mix.js('resources/js/app.js', 'public/js')
-    .postCss('resources/css/app.css', 'public/css', [
-        //
-    ]).copy('resources/public',     'public');
+mix.vue({ version: 2 })
+    .copy('resources/public',           'public')
+    .js('resources/js/app.js',      'public/js')
+    .sass('resources/scss/app.scss','public/css')
+    .webpackConfig({
+        output: {
+            chunkFilename: function ({chunk}) {
+                return `js/build/${ getFileName(chunk.id) }.${ mix.inProduction() ? '[hash:8].' : '' }js`
+            }
+        },
+    });
