@@ -24,3 +24,4 @@ laravels-timer-process.pid
 .DS_Store
 vars.yaml
 laravels.conf
+laravels.pid

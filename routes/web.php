@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\IndexController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,6 +14,23 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+
+
+/**
+ * 接口
+ */
+Route::prefix('api')->middleware(['webapi'])->group(function () {
+
+});
+
+/**
+ * 页面
+ */
+Route::middleware(['webapi'])->group(function () {
+    Route::any('/',                                     IndexController::class);
+    Route::any('/{method}',                             IndexController::class);
+    Route::any('/{method}/{action}',                    IndexController::class);
+    Route::any('/{method}/{action}/{child}',            IndexController::class);
+    Route::any('/{method}/{action}/{child}/{n}',        IndexController::class);
+    Route::any('/{method}/{action}/{child}/{n}/{c}',    IndexController::class);
 });

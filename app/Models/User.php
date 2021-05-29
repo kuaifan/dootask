@@ -8,7 +8,49 @@ use Cache;
 
 /**
  * Class User
+ *
  * @package App\Models
+ * @property int $userid
+ * @property array $identity 身份
+ * @property string|null $az A-Z
+ * @property string|null $username 用户名
+ * @property string $nickname 昵称
+ * @property string|null $userimg 头像
+ * @property string|null $encrypt
+ * @property string|null $userpass 登录密码
+ * @property int|null $loginnum 累计登录次数
+ * @property int|null $changepass 登录需要修改密码
+ * @property string|null $lastip 最后登录IP
+ * @property int|null $lastdate 最后登录时间
+ * @property string|null $lineip 最后在线IP（接口）
+ * @property int|null $linedate 最后在线时间（接口）
+ * @property string|null $regip 注册IP
+ * @property int|null $regdate 注册时间
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read string $usering
+ * @method static \Illuminate\Database\Eloquent\Builder|User newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|User newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|User query()
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereAz($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereChangepass($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereEncrypt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereIdentity($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereLastdate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereLastip($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereLinedate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereLineip($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereLoginnum($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereNickname($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereRegdate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereRegip($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereUserid($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereUserimg($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereUsername($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereUserpass($value)
+ * @mixin \Eloquent
  */
 class User extends AbstractModel
 {
