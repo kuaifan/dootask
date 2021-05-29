@@ -1,0 +1,92 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * Class runLoader
+ */
+class runLoader
+{
+    public function randString($length = 16)
+    {
+        $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        $passwordstr = '';
+        $max = strlen($chars) - 1;
+        for ($i = 0; $i < $length; $i++) {
+            $passwordstr .= $chars[mt_rand(0, $max)];
+        }
+        return $passwordstr;
+    }
+
+    function getEnv(string $key)
+    {
+        if (empty($key) || !is_string($key)) {
+            return '';
+        }
+        $envPath = realpath(__DIR__ . '/../') . DIRECTORY_SEPARATOR . '.env';
+        if (!file_exists($envPath)) {
+            return false;
+        }
+        $envContent = file_get_contents($envPath);
+        preg_match_all("/^" . $key . "\s*=\s*(.*?)$/m", $envContent, $matchs);
+        return $matchs[1] ?: '';
+    }
+
+    function modifyEnv(array $data)
+    {
+        if (empty($data) || !is_array($data)) {
+            return false;
+        }
+        $envPath = realpath(__DIR__ . '/../') . DIRECTORY_SEPARATOR . '.env';
+        if (!file_exists($envPath)) {
+            return false;
+        }
+        $envContent = file_get_contents($envPath);
+        foreach ($data as $key => $val) {
+            $envContent = preg_replace("/^" . $key . "\s*=\s*(.*?)$/m", $key . "=" . $val, $envContent);
+        }
+        file_put_contents($envPath, $envContent);
+        return true;
+    }
+
+    function modifyMode($type)
+    {
+        $filePath = realpath(__DIR__ . '/../') . DIRECTORY_SEPARATOR . '/docker/php/php.conf';
+        if (!file_exists($filePath)) {
+            return false;
+        }
+        $envContent = file_get_contents($filePath);
+        $envContent = str_replace("#command=php bin/laravels start -i", "command=php bin/laravels start -i", $envContent);
+        $envContent = str_replace("#command=./bin/inotify ./app", "command=./bin/inotify ./app", $envContent);
+        if ($type == "dev") {
+            $envContent = str_replace("command=php bin/laravels start -i", "#command=php bin/laravels start -i", $envContent);
+            $this->modifyEnv([
+                'APP_DEBUG' => 'true'
+            ]);
+        } else {
+            $envContent = str_replace("command=./bin/inotify ./app", "#command=./bin/inotify ./app", $envContent);
+            $this->modifyEnv([
+                'APP_DEBUG' => 'false'
+            ]);
+        }
+        file_put_contents($filePath, $envContent);
+        return true;
+    }
+}
+
+$array = getopt('', ['port:', 'ssl:', 'mode:']);
+$loader = new runLoader();
+
+if (isset($array['mode'])) {
+    $loader->modifyMode($array['mode']);
+}
+
+$data = [];
+if (isset($array['port'])) {
+    $data['APP_PORT'] = $array['port'];
+}
+if (isset($array['ssl'])) {
+    $data['APP_PORT_SSL'] = $array['ssl'];
+}
+if ($data) {
+    $loader->modifyEnv($data);
+}

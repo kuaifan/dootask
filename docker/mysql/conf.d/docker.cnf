@@ -1,0 +1,62 @@
+[mysqld]
+skip-host-cache
+skip-name-resolve
+skip-external-locking
+
+binlog_cache_size = 256K
+thread_stack = 512K
+join_buffer_size = 8192K
+query_cache_type = 1
+max_heap_table_size = 2048M
+default_storage_engine = InnoDB
+performance_schema_max_table_instances = 400
+table_definition_cache = 400
+key_buffer_size = 1024M
+max_allowed_packet = 10G
+table_open_cache = 2048
+sort_buffer_size = 4096K
+net_buffer_length = 4K
+read_buffer_size = 4096K
+read_rnd_buffer_size = 2048K
+myisam_sort_buffer_size = 8M
+thread_cache_size = 256
+query_cache_size = 384M
+tmp_table_size = 2048M
+sql-mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES
+
+max_connections = 500
+max_connect_errors = 100
+open_files_limit = 65535
+
+log-bin=mysql-bin
+binlog_format=mixed
+server-id = 1
+expire_logs_days = 10
+slow_query_log=1
+slow-query-log-file=/var/lib/mysql/mysql-slow.log
+long_query_time=3
+
+innodb_buffer_pool_size = 4096M
+innodb_log_file_size = 64M
+innodb_log_buffer_size = 16M
+innodb_flush_log_at_trx_commit = 1
+innodb_lock_wait_timeout = 50
+innodb_max_dirty_pages_pct = 90
+innodb_read_io_threads = 2
+innodb_write_io_threads = 2
+
+[mysqldump]
+quick
+max_allowed_packet = 500M
+
+[mysql]
+no-auto-rehash
+
+[myisamchk]
+key_buffer_size = 32M
+sort_buffer_size = 768K
+read_buffer = 2M
+write_buffer = 2M
+
+[mysqlhotcopy]
+interactive-timeout

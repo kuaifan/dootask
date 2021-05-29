@@ -1,0 +1,85 @@
+version: '3'
+
+services:
+  php:
+    container_name: "dooteak-php-${DOCKER_ID}"
+    image: "kuaifan/phpdootask"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./docker/crontab/crontab.conf:/etc/supervisor/conf.d/crontab.conf
+      - ./docker/dns/dns.conf:/etc/supervisor/conf.d/dns.conf
+      - ./docker/php/php.conf:/etc/supervisor/conf.d/php.conf
+      - ./docker/php/php.ini:/usr/local/etc/php/php.ini
+      - ./docker/log/supervisor:/var/log/supervisor
+      - ./:/var/www
+    environment:
+      TZ: "Asia/Shanghai"
+      LANG: "C.UTF-8"
+      MODE: "production"
+      MYSQL_HOST: "${DB_HOST}"
+      MYSQL_PORT: "${DB_PORT}"
+      MYSQL_DB_NAME: "${DB_DATABASE}"
+      MYSQL_USERNAME: "${DB_USERNAME}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+    networks:
+      extnetwork:
+        ipv4_address: 10.22.22.2
+    depends_on:
+      - redis
+      - mariadb
+    restart: unless-stopped
+
+  nginx:
+    container_name: "dooteak-nginx-${DOCKER_ID}"
+    image: "nginx:alpine"
+    ports:
+      - "${APP_PORT}:80"
+      - "${APP_PORT_SSL}:443"
+    volumes:
+      - ./docker/nginx:/etc/nginx/conf.d
+      - ./public:/var/www/public
+    environment:
+      TZ: "Asia/Shanghai"
+    networks:
+      extnetwork:
+        ipv4_address: 10.22.22.3
+    depends_on:
+      - php
+    restart: unless-stopped
+
+  redis:
+    container_name: "dooteak-redis-${DOCKER_ID}"
+    image: "redis:alpine"
+    environment:
+      TZ: "Asia/Shanghai"
+    networks:
+      extnetwork:
+        ipv4_address: 10.22.22.4
+    restart: unless-stopped
+
+  mariadb:
+    container_name: "dooteak-mariadb-${DOCKER_ID}"
+    image: "mariadb"
+    ports: # mysql ports item
+      - "33062:3306" # mysql ports value
+    volumes:
+      - ./docker/mysql/conf.d:/etc/mysql/conf.d
+      - ./docker/mysql/data:/var/lib/mysql
+    environment:
+      TZ: "Asia/Shanghai"
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
+      MYSQL_DATABASE: "${DB_DATABASE}"
+      MYSQL_USER: "${DB_USERNAME}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+    networks:
+      extnetwork:
+        ipv4_address: 10.22.22.5
+    restart: unless-stopped
+
+networks:
+  extnetwork:
+    name: "dooteak-networks-${DOCKER_ID}"
+    ipam:
+      config:
+        - subnet: 10.22.22.0/24
+          gateway: 10.22.22.1
