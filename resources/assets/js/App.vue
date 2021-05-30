@@ -10,7 +10,7 @@
 </template>
 
 <script>
-    import Spinner from "./common/components/Spinner";
+    import Spinner from "./components/Spinner";
     export default {
         components: {Spinner},
         data () {

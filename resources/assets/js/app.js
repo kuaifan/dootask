@@ -3,21 +3,21 @@ import App from './App.vue'
 import routes from './routes'
 import VueRouter from 'vue-router'
 import ViewUI from 'view-design-hi';
-import Language from './common/language/index'
-import Mixins from './common/mixins/index'
+import Language from './language/index'
+import Mixins from './mixins/index'
 
-import './common/functions/index'
-import './main'
+import './functions/common'
+import './functions/app'
 
 Vue.use(VueRouter);
 Vue.use(ViewUI);
 Vue.use(Language);
 Vue.use(Mixins);
 
-import PageTitle from './common/components/PageTitle.vue'
-import Loading from './common/components/Loading.vue'
-import AutoTip from './common/components/AutoTip.vue'
-import TableAction from './common/components/TableAction.vue'
+import PageTitle from './components/PageTitle.vue'
+import Loading from './components/Loading.vue'
+import AutoTip from './components/AutoTip.vue'
+import TableAction from './components/TableAction.vue'
 
 Vue.component('PageTitle', PageTitle);
 Vue.component('Loading', Loading);
