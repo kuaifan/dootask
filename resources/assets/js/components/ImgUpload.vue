@@ -75,18 +75,22 @@
 </template>
 
 <style lang="scss">
+:global {
     .img-upload-modal {
         .ivu-modal-mask {
             z-index: 1001;
         }
+
         .ivu-modal-no-mask {
-            background-color: rgba(55,55,55,.2);
+            background-color: rgba(55, 55, 55, .2);
         }
+
         .ivu-modal-wrap {
             z-index: 1001;
         }
     }
-    .imgcomp-upload-list{
+
+    .imgcomp-upload-list {
         display: inline-block;
         width: 60px;
         height: 60px;
@@ -97,9 +101,10 @@
         overflow: hidden;
         background: #fff;
         position: relative;
-        box-shadow: 0 1px 1px rgba(0,0,0,.2);
+        box-shadow: 0 1px 1px rgba(0, 0, 0, .2);
         margin-right: 4px;
         vertical-align: top;
+
         .imgcomp-upload-img {
             position: absolute;
             top: 0;
@@ -109,16 +114,18 @@
             background-position: center;
             background-size: cover;
         }
-        .imgcomp-upload-list-cover{
+
+        .imgcomp-upload-list-cover {
             display: none;
             position: absolute;
             top: 0;
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(0,0,0,.6);
+            background: rgba(0, 0, 0, .6);
         }
-        .imgcomp-upload-list-cover i{
+
+        .imgcomp-upload-list-cover i {
             color: #fff;
             font-size: 24px;
             cursor: pointer;
@@ -126,29 +133,36 @@
             margin: 0;
             transition: all .2s;
         }
-        .imgcomp-upload-list-cover i:hover{
+
+        .imgcomp-upload-list-cover i:hover {
             font-size: 28px;
         }
+
         .ivu-progress-outer {
             background-color: rgba(0, 0, 0, 0.68);
-            .ivu-progress-inner{
+
+            .ivu-progress-inner {
                 width: 88%;
             }
         }
     }
-    .imgcomp-upload-list:hover .imgcomp-upload-list-cover{
+
+    .imgcomp-upload-list:hover .imgcomp-upload-list-cover {
         display: block;
     }
+
     .img-upload-foot {
         display: flex;
         align-items: center;
         justify-content: flex-end;
+
         .img-upload-foot-input {
             flex: 1;
             text-align: left;
             display: flex;
             align-items: center;
             justify-content: flex-end;
+
             .img-upload-foot-httptitle {
                 cursor: pointer;
                 padding-left: 3px;
@@ -156,6 +170,7 @@
             }
         }
     }
+
     .add-box {
         width: 60px;
         height: 60px;
@@ -168,12 +183,14 @@
         position: relative;
         overflow: hidden;
         vertical-align: top;
+
         .add-box-icon {
             i {
-                vertical-align:middle;
+                vertical-align: middle;
                 padding-bottom: 2px;
             }
         }
+
         .add-box-upload {
             display: none;
             position: absolute;
@@ -184,36 +201,44 @@
             color: #ffffff;
             padding-top: 9px;
             background: rgba(0, 0, 0, 0.6);
+
             .add-box-item {
                 height: 22px;
                 line-height: 22px;
                 cursor: pointer;
-                .ivu-upload-drag,.ivu-upload-drag:hover {
-                    background:transparent;
-                    border:0;
-                    border-radius:0;
+
+                .ivu-upload-drag, .ivu-upload-drag:hover {
+                    background: transparent;
+                    border: 0;
+                    border-radius: 0;
                 }
+
                 span {
                     transition: all .2s;
                     font-size: 12px;
                 }
             }
+
             .add-box-item:hover {
                 span {
                     font-size: 14px;
                 }
             }
         }
+
         em {
             font-style: normal;
         }
     }
+
     .add-box:hover {
-        border-color: rgba(0,0,0,.6);
+        border-color: rgba(0, 0, 0, .6);
+
         .add-box-upload {
             display: block;
         }
     }
+
     .callback-add-box {
         display: block;
         width: auto;
@@ -221,34 +246,41 @@
         line-height: 25px;
         border: 0;
         background: transparent;
+
         .add-box-icon {
             display: none;
         }
+
         .add-box-upload {
             display: block;
             width: auto;
             background: transparent;
             color: #333;
             padding: 0;
+
             > div {
                 display: inline-block;
                 padding-right: 10px;
             }
         }
     }
+
     .browse-load {
         margin: 20px;
         text-align: center;
     }
+
     .browse-list {
         max-height: 540px;
         overflow: auto;
+
         .browse-item {
             margin: 10px 15px;
             display: inline-block;
             text-align: center;
             cursor: pointer;
             position: relative;
+
             .browse-img {
                 width: 64px;
                 height: 64px;
@@ -257,6 +289,7 @@
                 background-repeat: no-repeat;
                 background-size: cover;
             }
+
             .browse-title {
                 display: block;
                 width: 64px;
@@ -265,6 +298,7 @@
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
+
             .browse-icon {
                 position: absolute;
                 top: 0;
@@ -278,9 +312,11 @@
             }
         }
     }
+
     .browse-list-disabled {
         position: relative;
     }
+
     .browse-list-disabled:after {
         position: absolute;
         content: '';
@@ -291,6 +327,7 @@
         background-color: rgba(255, 255, 255, 0.9);
         z-index: 1;
     }
+}
 </style>
 <script>
     export default {

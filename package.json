@@ -13,6 +13,7 @@
         "axios": "^0.21",
         "cross-env": "^7.0.2",
         "css-loader": "^0.28.7",
+        "file-loader": "^2.0.0",
         "jquery": "^3.5.1",
         "laravel-mix": "^6.0.6",
         "lodash": "^4.17.19",

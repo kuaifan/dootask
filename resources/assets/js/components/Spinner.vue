@@ -5,6 +5,7 @@
 </template>
 
 <style lang="scss" scoped>
+:global {
     .common-spinner {
         display: none;
         position: fixed;
@@ -14,6 +15,7 @@
         margin: 0 auto;
         width: 30px;
         height: 30px;
+
         .common-circular {
             position: absolute;
             top: 0;
@@ -24,6 +26,7 @@
             height: 100%;
         }
     }
+}
 </style>
 <script>
     export default {

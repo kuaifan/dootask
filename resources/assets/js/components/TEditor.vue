@@ -50,16 +50,19 @@
 </template>
 
 <style lang="scss">
+:global {
     .teditor-box {
         textarea {
             opacity: 0;
         }
+
         .tox-tinymce {
             box-shadow: none;
             box-sizing: border-box;
             border-color: #dddee1;
             border-radius: 4px;
             overflow: hidden;
+
             .tox-statusbar {
                 span.tox-statusbar__branding {
                     a {
@@ -69,8 +72,10 @@
             }
         }
     }
+
     .teditor-transfer {
         background-color: #ffffff;
+
         .tox-toolbar {
             > div:last-child {
                 > button:last-child {
@@ -78,13 +83,16 @@
                 }
             }
         }
+
         .ivu-modal-header {
             display: none;
         }
+
         .ivu-modal-close {
             top: 7px;
             z-index: 2;
         }
+
         .teditor-transfer-body {
             position: absolute;
             top: 0;
@@ -93,11 +101,14 @@
             height: 100%;
             padding: 0;
             margin: 0;
+
             textarea {
                 opacity: 0;
             }
+
             .tox-tinymce {
                 border: 0;
+
                 .tox-statusbar {
                     span.tox-statusbar__branding {
                         a {
@@ -108,31 +119,37 @@
             }
         }
     }
+
     .tox {
         &.tox-silver-sink {
             z-index: 13000;
         }
     }
+}
 </style>
 <style lang="scss" scoped>
+:global {
     .teditor-loadstyle {
         width: 100%;
         height: 180px;
         overflow: hidden;
         position: relative;
     }
+
     .teditor-loadedstyle {
         width: 100%;
         max-height: inherit;
         overflow: inherit;
         position: relative;
     }
+
     .upload-control {
         display: none;
         width: 0;
         height: 0;
         overflow: hidden;
     }
+}
 </style>
 
 <script>

@@ -29,6 +29,9 @@ mix
             }
         },
     })
+    .options({
+        processCssUrls: false
+    })
     .vue({
         version: 2,
     });

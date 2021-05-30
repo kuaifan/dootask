@@ -11,6 +11,7 @@
 </template>
 
 <style lang="scss">
+:global {
     .tags-wrap {
         display: inline-block;
         width: 100%;
@@ -26,6 +27,7 @@
         line-height: normal;
         -webkit-transition: border .2s ease-in-out, background .2s ease-in-out, -webkit-box-shadow .2s ease-in-out;
         transition: border .2s ease-in-out, background .2s ease-in-out, -webkit-box-shadow .2s ease-in-out;
+
         .tags-item, .tags-input {
             position: relative;
             float: left;
@@ -35,9 +37,11 @@
             line-height: 22px;
             margin: 2px 6px 2px 0;
             padding: 0 20px 0 6px;
+
             .tags-content {
                 line-height: 22px;
             }
+
             .tags-del {
                 width: 20px;
                 height: 22px;
@@ -48,6 +52,7 @@
                 right: 0;
             }
         }
+
         .tags-input {
             max-width: 80%;
             padding: 0;
@@ -61,9 +66,11 @@
             resize: none;
             overflow: hidden;
         }
+
         .tags-input::placeholder {
             color: #bbbbbb;
         }
+
         .tags-placeholder {
             position: absolute;
             left: 0;
@@ -79,6 +86,7 @@
         height: 0;
         clear: both;
     }
+}
 </style>
 <script>
     export default {
