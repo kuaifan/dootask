@@ -9,9 +9,9 @@ export default {
     },
     mounted() {
         if (this.usrLogin) {
-            this.goForward({path: '/dashboard'}, true);
+            this.goForward({path: '/manage/dashboard'}, true);
         } else {
-            this.goForward({path: '/users/login'}, true);
+            this.goForward({path: '/login'}, true);
         }
     },
     deactivated() {

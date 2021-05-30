@@ -5,19 +5,29 @@ export default [
         component: () => import('./pages/index.vue')
     },
     {
-        name: 'dashboard',
-        path: '/dashboard',
-        component: () => import('./pages/dashboard/index.vue'),
+        name: 'manage',
+        path: '/manage',
+        meta: {
+            slide: false
+        },
+        component: () => import('./pages/manage.vue'),
+        children: [
+            {
+                name: 'manage-dashboard',
+                path: 'dashboard',
+                component: () => import('./pages/manage/dashboard.vue'),
+            },
+            {
+                name: 'manage-project-detail',
+                path: 'project/:id',
+                component: () => import('./pages/manage/project-detail.vue'),
+            },
+        ]
     },
     {
-        name: 'project-detail',
-        path: '/project/:id',
-        component: () => import('./pages/project/detail.vue'),
-    },
-    {
-        name: 'users-login',
-        path: '/users/login',
-        component: () => import('./pages/users/login.vue'),
+        name: 'login',
+        path: '/login',
+        component: () => import('./pages/login.vue'),
     },
     {
         name: '404',

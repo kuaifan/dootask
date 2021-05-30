@@ -70,7 +70,7 @@ export default {
                     if (this.languageInit === false) {
                         this.languageInit = true;
                         //
-                        this.addLanguageData(require("../../../lang/language.js").default);
+                        this.addLanguageData(require("./language.js").default);
                         //
                         languageListenerObjects.push((lang) => {
                             this.languageType = lang;
