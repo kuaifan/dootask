@@ -23,6 +23,24 @@ const state = {
         return typeof value === "boolean" ? value : def;
     },
 
+    getStorageArray(key, def = {}) {
+        let value = this._storage(key);
+        return this._isArray(value) ? value : def;
+    },
+
+    getStorageJson(key, def = {}) {
+        let value = this._storage(key);
+        return this._isJson(value) ? value : def;
+    },
+
+    _isArray(obj) {
+        return typeof (obj) == "object" && Object.prototype.toString.call(obj).toLowerCase() == '[object array]' && typeof obj.length == "number";
+    },
+
+    _isJson(obj) {
+        return typeof (obj) == "object" && Object.prototype.toString.call(obj).toLowerCase() == "[object object]" && typeof obj.length == "undefined";
+    },
+
     _storage(key, value) {
         let keyName = 'state';
         if (typeof value === 'undefined') {
@@ -71,4 +89,6 @@ const state = {
 
 export default Object.assign(state, {
     projectChatShow: state.getStorageBoolean('projectChatShow', true),
+    userInfo: state.getStorageJson('userInfo'),
+    token: state.getStorageString('token'),
 })

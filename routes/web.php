@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\UsersController;
 use App\Http\Controllers\IndexController;
 use Illuminate\Support\Facades\Route;
 
@@ -20,7 +21,9 @@ use Illuminate\Support\Facades\Route;
  * 接口
  */
 Route::prefix('api')->middleware(['webapi'])->group(function () {
-
+    // 会员
+    Route::any('users/{method}',                    UsersController::class);
+    Route::any('users/{method}/{action}',           UsersController::class);
 });
 
 /**

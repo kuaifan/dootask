@@ -2024,6 +2024,18 @@ class Base
     }
 
     /**
+     * 获取每页数量
+     * @param $max
+     * @param $default
+     * @param string $inputName
+     * @return mixed
+     */
+    public static function getPaginate($max, $default, $inputName = 'pagesize')
+    {
+        return Min(Max(Base::nullShow(Request::input($inputName), $default), 1), $max);
+    }
+
+    /**
      * image64图片保存
      * @param array $param [ image64=带前缀的base64, path=>文件路径, fileName=>文件名称, scale=>[压缩原图宽,高, 压缩方式] ]
      * @return array [name=>文件名, size=>文件大小(单位KB),file=>绝对地址, path=>相对地址, url=>全路径地址, ext=>文件后缀名]
