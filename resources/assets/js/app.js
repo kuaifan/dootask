@@ -5,17 +5,15 @@ import routes from './routes'
 import VueRouter from 'vue-router'
 import ViewUI from 'view-design-hi';
 import Language from './language/index'
-import Mixins from './mixins/index'
 import store from './store/index'
 
 import './functions/common'
-import './functions/app'
+import './functions/web'
 
 Vue.use(Vuex);
 Vue.use(ViewUI);
 Vue.use(VueRouter);
 Vue.use(Language);
-Vue.use(Mixins);
 
 import PageTitle from './components/PageTitle.vue'
 import Loading from './components/Loading.vue'

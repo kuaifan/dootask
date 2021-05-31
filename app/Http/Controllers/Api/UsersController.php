@@ -153,40 +153,21 @@ class UsersController extends AbstractController
      * @apiSuccess {Object} data    返回数据
      * @apiSuccessExample {json} data:
     {
-        "userid":1,
-        "agentid":0,
-        "identity":[
-            "admin"
-        ],
-        "token":"MUBhZG1pbkAwRWFGSFhAMTYwODY5MjM0MUBXcVJpQ1Q=",
-        "az":"G",
-        "username":"admin",
-        "nickname":"管理员",
-        "userimg":"http://127.0.0.1:6006/images/other/avatar.png",
-        "loginnum":10,
-        "changepass":0,
-        "lastip":"172.18.0.1",
-        "lastdate":1608692341,
-        "lineip":"172.18.0.1",
-        "linedate":1608704450,
-        "regip":"127.0.0.1",
-        "regdate":1600856611,
-        "setting":null,
-        "time":1608704450,
-        "setpass":1,
-
-        "service":{
-            "id":1,
-            "type":1,
-            "create_id":1,
-            "created_at":"2020-12-23 14:39:51",
-            "expire_at":"2021-01-23 14:39:51",
-            "type_name":"商业版",
-            "member":10,
-            "network":3
-        },
-        "num_member":3,
-        "num_network":2
+        "userid": 1,
+        "identity": [ ],
+        "az": "",
+        "email": "admin@admin.com",
+        "username": "admin@admin.com",
+        "nickname": "admin",
+        "userimg": "",
+        "loginnum": 10,
+        "changepass": 0,
+        "lastip": "10.22.22.1",
+        "lastdate": 1622468661,
+        "lineip": "10.22.22.1",
+        "linedate": 1622468661,
+        "regip": "",
+        "regdate": 0,
     }
      */
     public function info()

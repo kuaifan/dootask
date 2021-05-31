@@ -173,7 +173,7 @@ export default {
                 },
                 success: (res) => {
                     if (res.ret === 1) {
-                        this.$store.commit('userInfo', res.data);
+                        this.$store.commit('setUserInfo', res.data);
                         //
                         this.goNext();
                     } else {

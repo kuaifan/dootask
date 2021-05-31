@@ -362,7 +362,7 @@
             return {
                 actionUrl: $A.apiUrl('system/imgupload'),
                 params: {
-                    token: $A.getToken(),
+                    token: this.$store.state.userToken,
                     width: this.width,
                     height: this.height
                 },
@@ -518,7 +518,7 @@
                     $A.noticeWarning(this.$L('最多只能上传 ' + this.maxNum + ' 张图片。'));
                 }
                 this.params = {
-                    token: $A.getToken(),
+                    token: this.$store.state.userToken,
                     width: this.width,
                     height: this.height
                 };

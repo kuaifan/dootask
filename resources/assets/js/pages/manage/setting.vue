@@ -1,6 +1,6 @@
 <template>
-    <div class="dashboard">
-        <PageTitle>{{$L('Dashboard')}}</PageTitle>
+    <div class="setting">
+        <PageTitle>{{$L('Setting')}}</PageTitle>
 
     </div>
 </template>

@@ -1,4 +1,4 @@
-const state = {
+const stateCommon = {
     setStorage(key, value) {
         return this._storage(key, value);
     },
@@ -85,10 +85,86 @@ const state = {
             return def;
         }
     },
+
+    _count(obj) {
+        try {
+            if (typeof obj === "undefined") {
+                return 0;
+            }
+            if (typeof obj === "number") {
+                obj += "";
+            }
+            if (typeof obj.length === 'number') {
+                return obj.length;
+            } else {
+                let i = 0, key;
+                for (key in obj) {
+                    i++;
+                }
+                return i;
+            }
+        } catch (e) {
+            return 0;
+        }
+    },
+
+    _runNum(str, fixed) {
+        let _s = Number(str);
+        if (_s + "" === "NaN") {
+            _s = 0;
+        }
+        if (/^[0-9]*[1-9][0-9]*$/.test(fixed)) {
+            _s = _s.toFixed(fixed);
+            let rs = _s.indexOf('.');
+            if (rs < 0) {
+                _s += ".";
+                for (let i = 0; i < fixed; i++) {
+                    _s += "0";
+                }
+            }
+        }
+        return _s;
+    },
+
+    _cloneJSON(myObj) {
+        if(typeof(myObj) !== 'object') return myObj;
+        if(myObj === null) return myObj;
+        return this._jsonParse(this._jsonStringify(myObj))
+    },
+
+    _jsonParse(str, defaultVal) {
+        if (str === null) {
+            return defaultVal ? defaultVal : {};
+        }
+        if (typeof str === "object") {
+            return str;
+        }
+        try {
+            return JSON.parse(str.replace(/\n/g,"\\n").replace(/\r/g,"\\r"));
+        } catch (e) {
+            return defaultVal ? defaultVal : {};
+        }
+    },
+
+    _jsonStringify(json, defaultVal) {
+        if (typeof json !== 'object') {
+            return json;
+        }
+        try{
+            return JSON.stringify(json);
+        }catch (e) {
+            return defaultVal ? defaultVal : "";
+        }
+    }
 };
 
-export default Object.assign(state, {
-    projectChatShow: state.getStorageBoolean('projectChatShow', true),
-    userInfo: state.getStorageJson('userInfo'),
-    token: state.getStorageString('token'),
+const projectChatShow = stateCommon.getStorageBoolean('projectChatShow', true);
+const userInfo = stateCommon.getStorageJson('userInfo');
+const userToken = userInfo.token;
+userInfo.userid = stateCommon._runNum(userInfo.userid);
+
+export default Object.assign(stateCommon, {
+    projectChatShow,
+    userInfo,
+    userToken,
 })

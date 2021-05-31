@@ -19,12 +19,6 @@
             }
         },
         mounted() {
-            this.checkToken();
-            //
-            if ($A.getToken() !== false) {
-                $A.getUserInfo(true);
-            }
-            //
             let hash = window.location.hash;
             if (hash.indexOf("#") === 0) {
                 hash = hash.substr(1);
@@ -56,23 +50,6 @@
             }
         },
         methods: {
-            checkToken() {
-                let token = $A.urlParameter("token");
-                if ($A.count(token) > 10) {
-                    $.setToken(decodeURIComponent(token));
-                    $A.getUserInfo(true);
-                    let path = $A.removeURLParameter(window.location.href, 'token');
-                    let uri = document.createElement('a');
-                    uri.href = path;
-                    if (uri.pathname) {
-                        let query = $A.urlParameterAll();
-                        if (typeof query['token'] !== "undefined") delete query['token'];
-                        this.$nextTick(() => {
-                            this.goForward({path: uri.pathname, query}, true);
-                        });
-                    }
-                }
-            },
             slideType(To, From) {
                 let isBack = this.$router.isBack;
                 this.$router.isBack = false;

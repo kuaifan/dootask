@@ -12,7 +12,7 @@
                 </li>
                 <li>
                     <Icon type="md-cog" />
-                    <div class="menu-title">Settings</div>
+                    <div class="menu-title">Setting</div>
                 </li>
                 <li>
                     <Icon type="md-calendar" />
@@ -195,7 +195,7 @@ export default {
         }
     },
     mounted() {
-
+        $A.getUserInfo(true);
     },
 }
 </script>

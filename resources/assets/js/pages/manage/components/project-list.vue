@@ -10,7 +10,7 @@
                     <li class="project-icon">
                         <Icon type="ios-search-outline" />
                     </li>
-                    <li class="project-icon" @click="$store.commit('projectChatShowToggle');">
+                    <li class="project-icon" @click="$store.commit('toggleProjectChatShow');">
                         <Icon type="ios-chatbubbles-outline" />
                         <Badge :count="999"></Badge>
                     </li>

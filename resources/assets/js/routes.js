@@ -18,6 +18,16 @@ export default [
                 component: () => import('./pages/manage/dashboard.vue'),
             },
             {
+                name: 'manage-calendar',
+                path: 'calendar',
+                component: () => import('./pages/manage/calendar.vue'),
+            },
+            {
+                name: 'manage-setting',
+                path: 'setting',
+                component: () => import('./pages/manage/setting.vue'),
+            },
+            {
                 name: 'manage-project-detail',
                 path: 'project/:id',
                 component: () => import('./pages/manage/project-detail.vue'),

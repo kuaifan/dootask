@@ -39,6 +39,7 @@
             if (typeof params.success === 'undefined') params.success = () => { };
             if (typeof params.header !== 'object') params.header = {};
             params.url = this.apiUrl(params.url);
+            params.header['token'] = $A.app.$store.state.userToken;
             //
             let beforeCall = params.beforeSend;
             params.beforeSend = () => {
@@ -166,60 +167,6 @@
         },
 
         /**
-         * 获取token
-         * @returns {boolean}
-         */
-        getToken() {
-            let token = $A.token();
-            return $A.count(token) < 10 ? false : token;
-        },
-
-        /**
-         * 设置token
-         * @param token
-         */
-        setToken(token) {
-            $A.token(token);
-        },
-
-        /**
-         * 获取会员ID
-         * @returns string
-         */
-        getUserId() {
-            if ($A.getToken() === false) {
-                return "";
-            }
-            let userInfo = $A.getUserInfo();
-            return $A.runNum(userInfo.userid);
-        },
-
-        /**
-         * 获取会员账号
-         * @returns string
-         */
-        getUserName() {
-            if ($A.getToken() === false) {
-                return "";
-            }
-            let userInfo = $A.getUserInfo();
-            return $A.ishave(userInfo.username) ? userInfo.username : '';
-        },
-
-        /**
-         * 获取会员昵称
-         * @param nullName
-         * @returns {string|*}
-         */
-        getNickName(nullName = true) {
-            if ($A.getToken() === false) {
-                return "";
-            }
-            let userInfo = $A.getUserInfo();
-            return $A.ishave(userInfo.nickname) ? userInfo.nickname : '';
-        },
-
-        /**
          * 获取用户信息（并保存）
          * @param callback                  网络请求获取到用户信息回调（监听用户信息发生变化）
          * @returns Object
@@ -233,20 +180,18 @@
                     },
                     success: (res) => {
                         if (res.ret === 1) {
-                            $A.storage("userInfo", res.data);
-                            $A.setToken(res.data.token);
-                            $A.triggerUserInfoListener(res.data);
+                            $A.app.$store.commit('setUserInfo', res.data);
                             $A.updateUserBasic({
                                 username: res.data.username,
                                 nickname: res.data.nickname,
                                 userimg: res.data.userimg,
                             });
-                            typeof callback === "function" && callback(res.data, $A.getToken() !== false);
+                            typeof callback === "function" && callback(res.data, $A.app.$store.state.userToken);
                         }
                     },
                 });
             }
-            return $A.jsonParse($A.storage("userInfo"));
+            return $A.app.$store.state.userInfo;
         },
 
         /**
@@ -406,15 +351,9 @@
          * 打开登录页面
          */
         userLogout() {
-            $A.token("");
-            $A.storage("userInfo", {});
-            $A.triggerUserInfoListener({});
-            let from = window.location.pathname == '/' ? '' : encodeURIComponent(window.location.href);
-            if (typeof $A.app === "object") {
-                $A.app.goForward({path: '/users/login', query: from ? {from: from} : {}}, true);
-            } else {
-                window.location.replace($A.webUrl('users/login') + (from ? ('?from=' + from) : ''));
-            }
+            const from = window.location.pathname == '/' ? '' : encodeURIComponent(window.location.href);
+            $A.app.$store.commit('setUserInfo', {});
+            $A.app.goForward({path: '/login', query: from ? {from: from} : {}}, true);
         },
 
         /**
@@ -423,7 +362,7 @@
          * @returns {boolean}
          */
         identityCheck(role) {
-            let userInfo = $A.getUserInfo();
+            const userInfo = $A.app.$store.state.userInfo;
             return $A.identityRaw(role, userInfo.identity);
         },
 
@@ -442,41 +381,6 @@
             });
             return isRole;
         },
-
-        /**
-         * 监听用户信息发生变化
-         * @param listenerName      监听标识
-         * @param callback          监听回调
-         */
-        setOnUserInfoListener(listenerName, callback) {
-            if (typeof listenerName != "string") {
-                return;
-            }
-            if (typeof callback === "function") {
-                $A.__userInfoListenerObject[listenerName] = {
-                    callback: callback,
-                }
-            }
-        },
-        removeUserInfoListener(listenerName) {
-            if (typeof listenerName != "string") {
-                return;
-            }
-            if (typeof $A.__userInfoListenerObject[listenerName] != "undefined") {
-                delete $A.__userInfoListenerObject[listenerName];
-            }
-        },
-        triggerUserInfoListener(userInfo) {
-            let key, item;
-            for (key in $A.__userInfoListenerObject) {
-                if (!$A.__userInfoListenerObject.hasOwnProperty(key)) continue;
-                item = $A.__userInfoListenerObject[key];
-                if (typeof item.callback === "function") {
-                    item.callback(userInfo, $A.getToken() !== false);
-                }
-            }
-        },
-        __userInfoListenerObject: {},
     });
 
     /**
@@ -829,9 +733,9 @@
                     url+= "/ws";
                 }
                 let config = {
-                    userid: $A.getUserId(),
+                    userid: $A.app.$store.state.userInfo.userid,
                     url: url,
-                    token: $A.getToken(),
+                    token: $A.app.$store.state.userToken,
                 };
                 if (window.webSocketConfig.DEBUG) {
                     config.logCallback = function (msg) {

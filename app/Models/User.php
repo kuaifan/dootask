@@ -61,7 +61,19 @@ class User extends AbstractModel
     protected $hidden = [
         'encrypt',
         'userpass',
+        'created_at',
+        'updated_at',
     ];
+
+    /**
+     * 用户名
+     * @param $value
+     * @return string
+     */
+    public function getUsernameAttribute($value)
+    {
+        return $value ?: $this->email;
+    }
 
     /**
      * 昵称
@@ -84,7 +96,7 @@ class User extends AbstractModel
      * @param $value
      * @return string
      */
-    public function getUseringAttribute($value)
+    public function getUserimgAttribute($value)
     {
         return self::userimg($value);
     }
@@ -96,7 +108,10 @@ class User extends AbstractModel
      */
     public function getIdentityAttribute($value)
     {
-        return is_array($value) ? $value : explode(",", trim($value, ","));
+        if (empty($value)) {
+            return [];
+        }
+        return array_filter(is_array($value) ? $value : explode(",", trim($value, ",")));
     }
 
 
@@ -256,23 +271,18 @@ class User extends AbstractModel
                 if ($authInfo['timestamp'] + $loginValid > time()) {
                     $row = self::whereUserid($authInfo['userid'])->whereUsername($authInfo['username'])->whereEncrypt($authInfo['encrypt'])->first();
                     if ($row) {
-                        if ($row->token) {
-                            $timestamp = self::authFind('timestamp', $row->token);
-                            if ($timestamp + $loginValid > time()) {
-                                $upArray = [];
-                                if (Base::getIp() && $row->lineip != Base::getIp()) {
-                                    $upArray['lineip'] = Base::getIp();
-                                }
-                                if ($row->linedate + 30 < time()) {
-                                    $upArray['linedate'] = time();
-                                }
-                                if ($upArray) {
-                                    $row->updateInstance($upArray);
-                                    $row->save();
-                                }
-                                return $_A["__static_auth"] = $row;
-                            }
+                        $upArray = [];
+                        if (Base::getIp() && $row->lineip != Base::getIp()) {
+                            $upArray['lineip'] = Base::getIp();
                         }
+                        if ($row->linedate + 30 < time()) {
+                            $upArray['linedate'] = time();
+                        }
+                        if ($upArray) {
+                            $row->updateInstance($upArray);
+                            $row->save();
+                        }
+                        return $_A["__static_auth"] = $row;
                     }
                 }
             }

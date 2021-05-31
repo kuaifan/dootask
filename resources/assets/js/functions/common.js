@@ -30,20 +30,6 @@
         },
 
         /**
-         * 身份识别码
-         * @param text
-         * @returns {*|string}
-         */
-        token: function (text) {
-            let token = this.storage('token') || '';
-            if (typeof text === 'string') {
-                this.storage('token', text);
-                token = text;
-            }
-            return token;
-        },
-
-        /**
          * 随机获取范围
          * @param Min
          * @param Max
@@ -1334,7 +1320,6 @@
             if (typeof params.header !== 'object') params.header = {};
             params.header['Content-Type'] = 'application/json';
             params.header['language'] = language;
-            params.header['token'] = $A.token();
             //
             params.data['__Access-Control-Allow-Origin'] = true;
             params.beforeSend();

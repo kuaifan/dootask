@@ -1,6 +1,6 @@
 <template>
-    <div class="dashboard">
-        <PageTitle>{{$L('Dashboard')}}</PageTitle>
+    <div class="calendar">
+        <PageTitle>{{$L('Calendar')}}</PageTitle>
 
     </div>
 </template>

@@ -217,7 +217,7 @@
                 uploadIng: 0,
                 uploadFormat: ['jpg', 'jpeg', 'png', 'gif', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'esp', 'pdf', 'rar', 'zip', 'gz'],
                 actionUrl: $A.apiUrl('system/fileupload'),
-                params: { token: $A.getToken() },
+                params: { token: this.$store.state.userToken },
                 maxSize: 10240
             };
         },
@@ -553,7 +553,7 @@
             handleBeforeUpload() {
                 //上传前判断
                 this.params = {
-                    token: $A.getToken(),
+                    token: this.$store.state.userToken,
                 };
                 return true;
             },
