@@ -5,18 +5,30 @@
                 <div class="project-title">✔️ Daily Task</div>
                 <div class="project-subtitle">Click + New To create new list and wait for project manager card Don't Create a card by yourself to manage a good colaboration.</div>
             </div>
-            <ul class="project-icons">
-                <li class="project-icon">
-                    <Icon type="ios-search-outline" />
-                </li>
-                <li class="project-icon">
-                    <Icon type="ios-chatbubbles-outline" />
-                    <Badge :count="999"></Badge>
-                </li>
-                <li class="project-avatar online">
-                    <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                </li>
-            </ul>
+            <div class="project-icobox">
+                <ul class="project-icons">
+                    <li class="project-icon">
+                        <Icon type="ios-search-outline" />
+                    </li>
+                    <li class="project-icon">
+                        <Icon type="ios-chatbubbles-outline" />
+                        <Badge :count="999"></Badge>
+                    </li>
+                    <li class="project-avatar online">
+                        <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
+                    </li>
+                </ul>
+                <div class="project-switch">
+                    <div class="project-switch-button">
+                        <div class="project-switch-img active">
+                            <img src="../../../../statics/images/project-panel-blue.svg">
+                        </div>
+                        <div class="project-switch-img">
+                            <img src="../../../../statics/images/project-menu-gray.svg">
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="project-column">
             <ul>
@@ -245,8 +257,9 @@
         .project-head {
             display: flex;
             align-items: flex-start;
-            margin: 32px;
+            margin: 32px 32px 16px;
             .project-titbox {
+                margin-bottom: 16px;
                 .project-title {
                     flex: 1;
                     color: #333333;
@@ -259,54 +272,86 @@
                     line-height: 24px;
                 }
             }
-            .project-icons {
+            .project-icobox {
                 display: flex;
-                align-items: center;
+                flex-direction: column;
+                justify-content: space-between;
+                height: 100%;
                 margin-top: 2px;
                 margin-left: 80px;
-                flex-shrink: 0;
-                > li {
-                    list-style: none;
+                .project-icons {
                     display: flex;
                     align-items: center;
-                    justify-content: center;
-                    width: 36px;
-                    height: 36px;
-                    position: relative;
-                    margin-left: 16px;
-                    &.project-icon {
-                        border-radius: 50%;
-                        background-color: #F2F3F5;
-                        .ivu-icon {
-                            font-size: 20px;
+                    flex-shrink: 0;
+                    > li {
+                        list-style: none;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 36px;
+                        height: 36px;
+                        position: relative;
+                        margin-left: 16px;
+                        &.project-icon {
+                            border-radius: 50%;
+                            background-color: #F2F3F5;
+                            .ivu-icon {
+                                font-size: 20px;
+                            }
+                            .ivu-badge {
+                                position: absolute;
+                                top: -6px;
+                                left: 20px;
+                                transform: scale(0.8);
+                            }
                         }
-                        .ivu-badge {
-                            position: absolute;
-                            top: -6px;
-                            left: 20px;
-                            transform: scale(0.8);
+                        &.project-avatar {
+                            .ivu-avatar {
+                                width: 36px;
+                                height: 36px;
+                            }
+                            &:before {
+                                content: "";
+                                position: absolute;
+                                right: 0;
+                                bottom: 0;
+                                width: 9px;
+                                height: 9px;
+                                border-radius: 50%;
+                                background-color: #ff0000;
+                                border: 1px solid #ffffff;
+                                z-index: 1;
+                            }
+                            &.online {
+                                &:before {
+                                    background-color: #509E76;
+                                }
+                            }
                         }
                     }
-                    &.project-avatar {
-                        .ivu-avatar {
-                            width: 36px;
-                            height: 36px;
-                        }
-                        &:before {
-                            content: "";
-                            position: absolute;
-                            right: 0;
-                            bottom: 0;
-                            width: 9px;
-                            height: 9px;
-                            border-radius: 50%;
-                            background-color: #ff0000;
-                            border: 1px solid #ffffff;
-                            z-index: 1;
-                        }
-                        &.online {
-                            &:before {
-                                background-color: #509E76;
+                }
+                .project-switch {
+                    display: flex;
+                    justify-content: flex-end;
+                    .project-switch-button {
+                        display: flex;
+                        align-items: center;
+                        background-color: #ffffff;
+                        border-radius: 6px;
+                        .project-switch-img {
+                            width: 32px;
+                            height: 30px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            border-radius: 6px;
+                            > img {
+                                width: 16px;
+                                height: 16px;
+                            }
+                            &.active {
+                                border: 1px solid #2d8cf0;
+                                background-color: #e6f7ff;
                             }
                         }
                     }
