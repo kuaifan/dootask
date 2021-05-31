@@ -111,6 +111,8 @@
     .project-message {
         display: flex;
         flex-direction: column;
+        background-color: #ffffff;
+        z-index: 1;
         .group-member {
             margin-top: 36px;
             padding: 0 32px;

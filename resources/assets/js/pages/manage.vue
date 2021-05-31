@@ -6,25 +6,25 @@
                 <span>Doo Task</span>
             </div>
             <ul>
-                <li>
+                <li @click="toggleRoute('dashboard')" :class="classNameRoute('dashboard')">
                     <Icon type="md-speedometer" />
                     <div class="menu-title">Dashboard</div>
                 </li>
-                <li>
+                <li @click="toggleRoute('setting')" :class="classNameRoute('setting')">
                     <Icon type="md-cog" />
                     <div class="menu-title">Setting</div>
                 </li>
-                <li>
+                <li @click="toggleRoute('calendar')" :class="classNameRoute('calendar')">
                     <Icon type="md-calendar" />
                     <div class="menu-title">Calendar</div>
                 </li>
                 <li class="menu-project">
                     <ul>
-                        <li class="action">✔️ Daily Task</li>
-                        <li>✈️ Meetings Summary</li>
-                        <li>🛰 Resources</li>
-                        <li>💺 Availibity</li>
-                        <li>🍒 Brainstroaming</li>
+                        <li @click="toggleRoute('project/1')" :class="classNameRoute('project/1')">✔️ Daily Task</li>
+                        <li @click="toggleRoute('project/2')" :class="classNameRoute('project/2')">✈️ Meetings Summary</li>
+                        <li @click="toggleRoute('project/3')" :class="classNameRoute('project/3')">🛰 Resources</li>
+                        <li @click="toggleRoute('project/4')" :class="classNameRoute('project/4')">💺 Availibity</li>
+                        <li @click="toggleRoute('project/5')" :class="classNameRoute('project/5')">🍒 Brainstroaming</li>
                     </ul>
                 </li>
             </ul>
@@ -139,13 +139,13 @@
                                     background: url("data:image/svg+xml;base64,PHN2ZyB0PSIxNjIyMzkwODExNTQxIiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9IjI0OTk3IiB3aWR0aD0iNDgiIGhlaWdodD0iNDgiPjxwYXRoIGQ9Ik0zNjYuMTgyNCAxMDguMjM2OEw4MTIuMDMyIDQyOC4wMzJhMTAyLjQgMTAyLjQgMCAwIDEgMCAxNjYuNTAyNEwzNjYuMTgyNCA5MTQuMzI5NmExMDIuNCAxMDIuNCAwIDAgMS0xNjIuMDk5Mi04My4yNTEyVjE5MS40ODhhMTAyLjQgMTAyLjQgMCAwIDEgMTYyLjA5OTItODMuMjUxMnoiIHAtaWQ9IjI0OTk4IiBmaWxsPSIjOTk5OTk5Ij48L3BhdGg+PC9zdmc+") no-repeat center center;
                                     background-size: contain;
                                 }
-                                &.action {
+                                &.active {
                                     background-color: #ffffff;
                                 }
                             }
                         }
                     }
-                    &.action {
+                    &.active {
                         background-color: #ffffff;
                     }
                 }
@@ -192,10 +192,29 @@
 export default {
     data() {
         return {
+            curPath: this.$route.path
         }
     },
     mounted() {
         $A.getUserInfo(true);
     },
+    watch: {
+        '$route' (To) {
+            this.curPath = To.path;
+        }
+    },
+    computed: {
+
+    },
+    methods: {
+        toggleRoute(path) {
+            this.goForward({path: '/manage/' + path});
+        },
+        classNameRoute(path) {
+            return {
+                "active": this.curPath == '/manage/' + path
+            };
+        }
+    }
 }
 </script>
