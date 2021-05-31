@@ -1,5 +1,5 @@
 <template>
-    <div class="project-message">
+    <div v-if="$store.state.projectChatShow" class="project-message">
         <div class="group-member">
             <div class="member-head">
                 <div class="member-title">Member<span>(25)</span></div>
@@ -257,6 +257,7 @@
 <script>
 import DragInput from "../../../components/DragInput";
 import ScrollerY from "../../../components/ScrollerY";
+
 export default {
     name: "ProjectMessage",
     components: {ScrollerY, DragInput},

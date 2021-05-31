@@ -10,7 +10,7 @@
                     <li class="project-icon">
                         <Icon type="ios-search-outline" />
                     </li>
-                    <li class="project-icon">
+                    <li class="project-icon" @click="$store.commit('projectChatShowToggle');">
                         <Icon type="ios-chatbubbles-outline" />
                         <Badge :count="999"></Badge>
                     </li>
@@ -259,9 +259,9 @@
             align-items: flex-start;
             margin: 32px 32px 16px;
             .project-titbox {
+                flex: 1;
                 margin-bottom: 16px;
                 .project-title {
-                    flex: 1;
                     color: #333333;
                     font-size: 28px;
                     font-weight: 600;

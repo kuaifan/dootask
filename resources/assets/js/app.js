@@ -1,16 +1,19 @@
 import Vue from 'vue'
+import Vuex from 'vuex'
 import App from './App.vue'
 import routes from './routes'
 import VueRouter from 'vue-router'
 import ViewUI from 'view-design-hi';
 import Language from './language/index'
 import Mixins from './mixins/index'
+import store from './store/index'
 
 import './functions/common'
 import './functions/app'
 
-Vue.use(VueRouter);
+Vue.use(Vuex);
 Vue.use(ViewUI);
+Vue.use(VueRouter);
 Vue.use(Language);
 Vue.use(Mixins);
 
@@ -74,6 +77,7 @@ Vue.config.productionTip = false;
 const app = new Vue({
     el: '#app',
     router,
+    store,
     template: '<App/>',
     components: { App }
 });
