@@ -152,6 +152,7 @@
             }
             .manage-box-new {
                 width: 80%;
+                height: 38px;
                 margin-top: 16px;
                 margin-bottom: 20px;
             }

@@ -13,13 +13,16 @@
         align-items: flex-start;
         .project-list {
             flex: 1;
+            width: 0;
             height: 100%;
+            background-color: #fafafa;
         }
         .project-message {
             position: relative;
             height: 100%;
             width: 40%;
             max-width: 410px;
+            flex-shrink: 0;
             &:before {
                 content: "";
                 position: absolute;
