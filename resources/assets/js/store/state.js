@@ -162,13 +162,14 @@ const projectChatShow = stateCommon.getStorageBoolean('projectChatShow', true);
 const projectListPanel = stateCommon.getStorageBoolean('projectListPanel', true);
 
 const userInfo = stateCommon.getStorageJson('userInfo');
+const userId = userInfo.userid = stateCommon._runNum(userInfo.userid);
 const userToken = userInfo.token;
-userInfo.userid = stateCommon._runNum(userInfo.userid);
 
 export default Object.assign(stateCommon, {
     projectChatShow,
     projectListPanel,
 
+    userId,
     userInfo,
     userToken,
 })

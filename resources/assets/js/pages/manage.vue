@@ -20,15 +20,17 @@
                 </li>
                 <li class="menu-project">
                     <ul>
+                        <li v-for="(item, key) in projectLists" :key="key" @click="toggleRoute('project/' + item.id)" :class="classNameRoute('project/' + item.id)">{{item.name}}</li>
                         <li @click="toggleRoute('project/1')" :class="classNameRoute('project/1')">✔️ Daily Task</li>
                         <li @click="toggleRoute('project/2')" :class="classNameRoute('project/2')">✈️ Meetings Summary</li>
                         <li @click="toggleRoute('project/3')" :class="classNameRoute('project/3')">🛰 Resources</li>
                         <li @click="toggleRoute('project/4')" :class="classNameRoute('project/4')">💺 Availibity</li>
                         <li @click="toggleRoute('project/5')" :class="classNameRoute('project/5')">🍒 Brainstroaming</li>
                     </ul>
+                    <Loading v-if="projectLoad > 0"/>
                 </li>
             </ul>
-            <Button class="manage-box-new" type="primary" icon="md-add">New Project</Button>
+            <Button class="manage-box-new" type="primary" icon="md-add" @click="addShow=true">New Project</Button>
         </div>
         <div class="manage-box-main">
             <div class="manage-box-body">
@@ -39,6 +41,40 @@
                 </div>
             </div>
         </div>
+
+        <!--新建项目-->
+        <Modal
+            v-model="addShow"
+            :title="$L('新建项目')"
+            :closable="false"
+            :mask-closable="false"
+            class-name="simple-modal">
+            <Form ref="addProject" :model="addData" :rules="addRule" label-width="auto" @submit.native.prevent>
+                <FormItem prop="title" :label="$L('项目名称')">
+                    <Input type="text" v-model="addData.title"></Input>
+                </FormItem>
+                <FormItem prop="columns" :label="$L('项目模板')">
+                    <Select v-model="addData.template" @on-change="(res) => {$set(addData, 'columns', columns[res].value)}" :placeholder="$L('请选择模板')">
+                        <Option v-for="(item, index) in columns" :value="index" :key="index">{{ item.label }}</Option>
+                    </Select>
+                </FormItem>
+                <FormItem v-if="addData.columns.length > 0" :label="$L('任务分类')">
+                    <div style="line-height:38px">
+                        <span v-for="(item, index) in addData.columns">
+                            <Tag @on-close="() => { addData.columns.splice(index, 1)}" closable size="large" color="primary">{{item}}</Tag>
+                        </span>
+                    </div>
+                    <div style="margin-top:4px;"></div>
+                    <div style="margin-bottom:-16px">
+                        <Button icon="ios-add" type="dashed" @click="addColumns">{{$L('添加分类')}}</Button>
+                    </div>
+                </FormItem>
+            </Form>
+            <div slot="footer">
+                <Button type="default" @click="addShow=false">{{$L('取消')}}</Button>
+                <Button type="primary" :loading="projectLoad > 0" @click="onAddProject">{{$L('添加')}}</Button>
+            </div>
+        </Modal>
     </div>
 </template>
 
@@ -112,6 +148,9 @@
                         text-overflow: ellipsis;
                     }
                     &.menu-project {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
                         height: auto;
                         padding: 14px 0 0;
                         > ul {
@@ -143,6 +182,11 @@
                                     background-color: #ffffff;
                                 }
                             }
+                        }
+                        .common-loading {
+                            margin: 6px;
+                            width: 22px;
+                            height: 22px;
                         }
                     }
                     &.active {
@@ -189,24 +233,69 @@
 </style>
 
 <script>
+import { mapState } from 'vuex'
+
 export default {
     data() {
         return {
-            curPath: this.$route.path
+            loadIng: 0,
+
+            curPath: this.$route.path,
+
+            addShow: false,
+            addData: {
+                title: '',
+                columns: [],
+                template: 0,
+            },
+            addRule: {},
+
+            columns: [],
+
+            projectLoad: 0,
+            projectLists: [],
+            projectListTotal: 0,
         }
     },
     mounted() {
-        $A.getUserInfo(true);
+        $A.getUserInfo(this.getProjectLists);
+    },
+    deactivated() {
+        this.addShow = false;
+    },
+    computed: {
+        ...mapState(['userId']),
     },
     watch: {
         '$route' (To) {
             this.curPath = To.path;
+        },
+        userId(userid) {
+            if (userid > 0) {
+                this.getProjectLists()
+            }
         }
     },
-    computed: {
-
-    },
     methods: {
+        initLanguage() {
+            this.columns = [{
+                label: this.$L('空白模板'),
+                value: [],
+            }, {
+                label: this.$L('软件开发'),
+                value: [this.$L('产品规划'),this.$L('前端开发'),this.$L('后端开发'),this.$L('测试'),this.$L('发布'),this.$L('其它')],
+            }, {
+                label: this.$L('产品开发'),
+                value: [this.$L('产品计划'), this.$L('正在设计'), this.$L('正在研发'), this.$L('测试'), this.$L('准备发布'), this.$L('发布成功')],
+            }];
+            this.addRule = {
+                title: [
+                    { required: true, message: this.$L('请填写项目名称！'), trigger: 'change' },
+                    { type: 'string', min: 2, message: this.$L('项目名称至少2个字！'), trigger: 'change' }
+                ]
+            };
+        },
+
         toggleRoute(path) {
             this.goForward({path: '/manage/' + path});
         },
@@ -214,6 +303,91 @@ export default {
             return {
                 "active": this.curPath == '/manage/' + path
             };
+        },
+
+        addColumns() {
+            this.columnsValue = "";
+            $A.modalConfirm({
+                render: (h) => {
+                    return h('div', [
+                        h('div', {
+                            style: {
+                                fontSize: '16px',
+                                fontWeight: '500',
+                                marginBottom: '20px',
+                            }
+                        }, this.$L('添加流程')),
+                        h('TagInput', {
+                            props: {
+                                value: this.columnsValue,
+                                autofocus: true,
+                                placeholder: this.$L('请输入流程名称，多个可用英文逗号分隔。')
+                            },
+                            on: {
+                                input: (val) => {
+                                    this.columnsValue = val;
+                                }
+                            }
+                        })
+                    ])
+                },
+                onOk: () => {
+                    if (this.columnsValue) {
+                        let array = $A.trim(this.columnsValue).split(",");
+                        array.forEach((name) => {
+                            if ($A.trim(name)) {
+                                this.addData.columns.push($A.trim(name));
+                            }
+                        });
+                    }
+                },
+            })
+        },
+
+        onAddProject() {
+            this.$refs.addProject.validate((valid) => {
+                if (valid) {
+                    this.projectLoad++;
+                    $A.apiAjax({
+                        url: 'project/add',
+                        data: this.addData,
+                        complete: () => {
+                            this.projectLoad--;
+                        },
+                        success: ({ret, data, msg}) => {
+                            if (ret === 1) {
+                                $A.messageSuccess(msg);
+                                this.addShow = false;
+                                this.$refs.addProject.resetFields();
+                                this.$set(this.addData, 'template', 0);
+                                //
+                                this.getProjectLists(true);
+                            } else {
+                                $A.modalError(msg);
+                            }
+                        }
+                    });
+                }
+            });
+        },
+
+        getProjectLists() {
+            this.projectLoad++;
+            $A.apiAjax({
+                url: 'project/lists',
+                complete: () => {
+                    this.projectLoad--;
+                },
+                success: ({ret, data, msg}) => {
+                    if (ret === 1) {
+                        this.projectLists = data.data;
+                        this.projectListTotal = data.total;
+                    } else {
+                        this.projectLists = [];
+                        this.projectListTotal = 0;
+                    }
+                }
+            });
         }
     }
 }

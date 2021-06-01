@@ -14,6 +14,7 @@ export default {
         userInfo.userid = state._runNum(userInfo.userid);
         userInfo.token = userInfo.userid > 0 ? (userInfo.token || state.userToken) : '';
         state.userInfo = userInfo;
+        state.userId = userInfo.userid;
         state.userToken = userInfo.token;
         state.setStorage('userInfo', state.userInfo);
     }

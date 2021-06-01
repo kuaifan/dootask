@@ -146,9 +146,9 @@ export default {
                 complete: () => {
                     this.loadIng--;
                 },
-                success: (res) => {
+                success: ({ret}) => {
                     this.reCode();
-                    this.codeNeed = res.ret === 1;
+                    this.codeNeed = ret === 1;
                 }
             })
         },
@@ -171,14 +171,14 @@ export default {
                 complete: () => {
                     this.loadIng--;
                 },
-                success: (res) => {
-                    if (res.ret === 1) {
-                        this.$store.commit('setUserInfo', res.data);
+                success: ({ret, data, msg}) => {
+                    if (ret === 1) {
+                        this.$store.commit('setUserInfo', data);
                         //
                         this.goNext();
                     } else {
-                        $A.noticeError(res.msg);
-                        if (res.data.code === 'need') {
+                        $A.noticeError(msg);
+                        if (data.code === 'need') {
                             this.reCode();
                             this.codeNeed = true;
                         }
