@@ -1921,7 +1921,12 @@ class Base
 
     public static function getPostValue($key, $default = null)
     {
-        return self::getContentValue($key, $default);
+        return self::newTrim(self::getContentValue($key, $default));
+    }
+
+    public static function getPostInt($key, $default = null)
+    {
+        return intval(self::getContentValue($key, $default));
     }
 
     /**

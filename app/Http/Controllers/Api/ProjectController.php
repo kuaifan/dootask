@@ -6,9 +6,11 @@ use App\Models\AbstractModel;
 use App\Models\Project;
 use App\Models\ProjectColumn;
 use App\Models\ProjectLog;
+use App\Models\ProjectTask;
 use App\Models\ProjectUser;
 use App\Models\User;
 use App\Module\Base;
+use Carbon\Carbon;
 use Request;
 
 /**
@@ -68,7 +70,7 @@ class ProjectController extends AbstractController
         //
         $project = Project::with(['projectColumn' => function($query) {
             $query->with(['projectTask' => function($taskQuery) {
-                $taskQuery->where('parent_id', 0);
+                $taskQuery->with(['taskUser', 'taskTag'])->where('parent_id', 0);
             }]);
         }, 'projectUser'])
             ->select($this->projectSelect)
@@ -154,5 +156,74 @@ class ProjectController extends AbstractController
             }
             return Base::retSuccess('添加成功！');
         });
+    }
+
+    /**
+     * {post}【任务】添加任务
+     *
+     * @apiParam {Number} project_id        项目ID
+     * @apiParam {Number} [column_id]       列表ID，留空取第一个
+     * @apiParam {String} name              任务名称
+     * @apiParam {String} [content]         任务描述
+     * @apiParam {Array} [times]            计划时间（格式：开始时间,结束时间；如：2020-01-01 00:00,2020-01-01 23:59）
+     * @apiParam {Number} [owner]           负责人，留空为自己
+     * @apiParam {Array} [subtasks]         子任务（格式：[{name,owner,times}]）
+     */
+    public function task__add()
+    {
+        $user = User::authE();
+        if (Base::isError($user)) {
+            return $user;
+        } else {
+            $user = User::IDE($user['data']);
+        }
+        $project_id = Base::getPostInt('project_id');
+        $column_id = Base::getPostValue('column_id');
+        $name = Base::getPostValue('name');
+        $content = Base::getPostValue('content');
+        $times = Base::getPostValue('times');
+        $owner = Base::getPostValue('owner');
+        $subtasks = Base::getPostValue('subtasks');
+        // 项目
+        $project = Project::select($this->projectSelect)
+            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->where('projects.id', $project_id)
+            ->where('project_users.userid', $user->userid)
+            ->first();
+        if (empty($project)) {
+            return Base::retError('项目不存在或已被删除！');
+        }
+        // 列表
+        if (is_array($column_id)) {
+            $column_id = Base::arrayFirst($column_id);
+        }
+        if (empty($column_id)) {
+            $column = $project->projectColumn->first();
+        } elseif (intval($column_id) > 0) {
+            $column = $project->projectColumn->where('id', $column_id)->first();
+        } else {
+            $column = ProjectColumn::whereProjectId($project->id)->whereName($column_id)->first();
+            if (empty($column)) {
+                $column = ProjectColumn::createInstance([
+                    'project_id' => $project->id,
+                    'name' => $column_id,
+                ]);
+                $column->save();
+            }
+        }
+        if (empty($column)) {
+            return Base::retError('任务列表不存在或已被删除！');
+        }
+        //
+        return ProjectTask::addTask([
+            'parent_id' => 0,
+            'project_id' => $project->id,
+            'column_id' => $column->id,
+            'name' => $name,
+            'content' => $content,
+            'times' => $times,
+            'owner' => $owner,
+            'subtasks' => $subtasks,
+        ]);
     }
 }

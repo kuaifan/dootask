@@ -13,7 +13,7 @@
                     <li>
                         <UserAvatar :userid="projectDetail.owner_userid" :size="36"/>
                     </li>
-                    <li class="project-icon" @click="addShow=true">
+                    <li class="project-icon" @click="addOpen(0)">
                         <Icon type="md-add" />
                     </li>
                     <li class="project-icon">
@@ -24,241 +24,57 @@
                             </div>
                         </Tooltip>
                     </li>
-                    <li class="project-icon" :class="{'active':$store.state.projectChatShow}" @click="$store.commit('toggleProjectChatShow')">
+                    <li :class="['project-icon', $store.state.projectChatShow ? 'active' : '']" @click="$store.commit('toggleProjectChatShow')">
                         <Icon type="ios-chatbubbles" />
-                        <Badge :count="999"></Badge>
+                        <Badge :count="projectMsgUnread"></Badge>
                     </li>
                     <li class="project-icon">
                         <Icon type="ios-more" />
                     </li>
                 </ul>
                 <div class="project-switch">
-                    <div class="project-switch-button" @click="$store.commit('toggleProjectListPanel')">
-                        <template v-if="$store.state.projectListPanel">
-                            <div class="project-switch-img active"><img src="../../../../statics/images/project-panel-blue.svg"></div>
-                            <div class="project-switch-img"><img src="../../../../statics/images/project-menu-gray.svg"></div>
-                        </template>
-                        <template v-else>
-                            <div class="project-switch-img"><img src="../../../../statics/images/project-panel-gray.svg"></div>
-                            <div class="project-switch-img active"><img src="../../../../statics/images/project-menu-blue.svg"></div>
-                        </template>
+                    <div :class="['project-switch-button', $store.state.projectListPanel ? 'menu' : '']" @click="$store.commit('toggleProjectListPanel')">
+                        <div><i class="iconfont">&#xe60c;</i></div>
+                        <div><i class="iconfont">&#xe66a;</i></div>
                     </div>
                 </div>
             </div>
         </div>
         <div v-if="$store.state.projectListPanel" class="project-column">
             <ul>
-                <li>
+                <li v-for="column in projectDetail.project_column">
                     <div class="column-head">
-                        <div class="column-head-title">Next Up</div>
-                        <div class="column-head-num">3</div>
+                        <div class="column-head-title">{{column.name}}</div>
+                        <div :class="['column-head-num', column.project_task.length > 0 ? 'have' : '']">{{column.project_task.length}}</div>
                     </div>
                     <ul>
-                        <li>
+                        <li v-for="item in column.project_task">
                             <div class="task-head">
-                                <div class="task-title">Maxxis Tyres</div>
+                                <div class="task-title">{{item.name}}</div>
                                 <Icon type="ios-more" />
                             </div>
-                            <div class="task-desc">These project will need a new brand Identity where they will get recognise.</div>
-                            <div class="task-tags">
-                                <Tag color="red">red</Tag>
-                                <Tag color="volcano">volcano</Tag>
+                            <div v-if="item.desc" class="task-desc">{{item.desc}}</div>
+                            <div v-if="item.task_tag.length > 0" class="task-tags">
+                                <Tag v-for="(tag, keyt) in item.task_tag" :key="keyt" :color="tag.color">{{tag.name}}</Tag>
                             </div>
-                            <div class="task-member">
+                            <div class="task-users">
                                 <ul>
-                                    <li class="online">
-                                        <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                                    </li>
-                                    <li class="online">
-                                        <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                                    </li>
-                                    <li>
-                                        <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
+                                    <li v-for="(user, keyu) in item.task_user" :key="keyu">
+                                        <UserAvatar :userid="user.userid" size="28"/>
                                     </li>
                                 </ul>
-                                <div class="task-icon">5<Icon type="ios-link-outline" /></div>
-                                <div class="task-icon">5<Icon type="ios-chatbubbles-outline" /></div>
+                                <div v-if="item.file_num > 0" class="task-icon">{{item.file_num}}<Icon type="ios-link-outline" /></div>
+                                <div v-if="item.msg_num > 0" class="task-icon">{{item.msg_num}}<Icon type="ios-chatbubbles-outline" /></div>
                             </div>
                             <div class="task-progress">
-                                <Progress :percent="25" :stroke-width="6" />
-                                <div class="task-time today"><Icon type="ios-time-outline" />Mar 30</div>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="task-head">
-                                <div class="task-title">Maxxis Tyres</div>
-                                <Icon type="ios-more" />
-                            </div>
-                            <div class="task-desc">These project will need a new brand Identity where they will get recognise.</div>
-                            <div class="task-member">
-                                <ul>
-                                    <li class="online">
-                                        <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                                    </li>
-                                    <li class="online">
-                                        <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                                    </li>
-                                    <li>
-                                        <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                                    </li>
-                                </ul>
-                                <div class="task-icon">5<Icon type="ios-link-outline" /></div>
-                                <div class="task-icon">5<Icon type="ios-chatbubbles-outline" /></div>
-                            </div>
-                            <div class="task-progress">
-                                <Progress :percent="25" :stroke-width="6" />
-                                <div class="task-time"><Icon type="ios-time-outline" />Mar 30</div>
+                                <Progress :percent="item.percent" :stroke-width="6" />
+                                <div v-if="item.end_at" :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']">
+                                    <Icon type="ios-time-outline" />{{item.end_at}}
+                                </div>
                             </div>
                         </li>
                     </ul>
-                    <div class="column-add">
-                        <Icon type="md-add" />
-                    </div>
-                </li>
-                <li>
-                    <div class="column-head">
-                        <div class="column-head-title">Hi Progress</div>
-                        <div class="column-head-num">3</div>
-                    </div>
-                    <ul>
-                        <li>
-                            <div class="task-head">
-                                <div class="task-title">Maxxis Tyres</div>
-                                <Icon type="ios-more" />
-                            </div>
-                            <div class="task-desc">These project will need a new brand Identity where they will get recognise.</div>
-                            <div class="task-tags">
-                                <Tag color="magenta">magenta</Tag>
-                                <Tag color="red">red</Tag>
-                                <Tag color="volcano">volcano</Tag>
-                            </div>
-                            <div class="task-member">
-                                <ul>
-                                    <li class="online">
-                                        <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                                    </li>
-                                    <li class="online">
-                                        <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                                    </li>
-                                    <li>
-                                        <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                                    </li>
-                                </ul>
-                                <div class="task-icon">5<Icon type="ios-link-outline" /></div>
-                                <div class="task-icon">5<Icon type="ios-chatbubbles-outline" /></div>
-                            </div>
-                            <div class="task-progress">
-                                <Progress :percent="25" :stroke-width="6" />
-                                <div class="task-time"><Icon type="ios-time-outline" />Mar 30</div>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="task-head">
-                                <div class="task-title">Maxxis Tyres</div>
-                                <Icon type="ios-more" />
-                            </div>
-                            <div class="task-desc">These project will need a new brand Identity where they will get recognise.</div>
-                            <div class="task-tags">
-                                <Tag color="magenta">magenta</Tag>
-                                <Tag color="red">red</Tag>
-                                <Tag color="volcano">volcano</Tag>
-                            </div>
-                            <div class="task-member">
-                                <ul>
-                                    <li class="online">
-                                        <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                                    </li>
-                                    <li class="online">
-                                        <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                                    </li>
-                                    <li>
-                                        <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                                    </li>
-                                </ul>
-                                <div class="task-icon">5<Icon type="ios-link-outline" /></div>
-                                <div class="task-icon">5<Icon type="ios-chatbubbles-outline" /></div>
-                            </div>
-                            <div class="task-progress">
-                                <Progress :percent="25" :stroke-width="6" />
-                                <div class="task-time tomorrow"><Icon type="ios-time-outline" />Mar 30</div>
-                            </div>
-                        </li>
-                    </ul>
-                    <div class="column-add">
-                        <Icon type="md-add" />
-                    </div>
-                </li>
-                <li>
-                    <div class="column-head">
-                        <div class="column-head-title">Complete</div>
-                        <div class="column-head-num">3</div>
-                    </div>
-                    <ul>
-                        <li>
-                            <div class="task-head">
-                                <div class="task-title">Maxxis Tyres</div>
-                                <Icon type="ios-more" />
-                            </div>
-                            <div class="task-desc">These project will need a new brand Identity where they will get recognise.</div>
-                            <div class="task-member">
-                                <ul>
-                                    <li class="online">
-                                        <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                                    </li>
-                                    <li class="online">
-                                        <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                                    </li>
-                                    <li>
-                                        <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                                    </li>
-                                </ul>
-                                <div class="task-icon">5<Icon type="ios-link-outline" /></div>
-                                <div class="task-icon">5<Icon type="ios-chatbubbles-outline" /></div>
-                            </div>
-                            <div class="task-progress">
-                                <Progress :percent="25" :stroke-width="6" />
-                                <div class="task-time"><Icon type="ios-time-outline" />Mar 30</div>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="task-head">
-                                <div class="task-title">Maxxis Tyres</div>
-                                <Icon type="ios-more" />
-                            </div>
-                            <div class="task-desc">These project will need a new brand Identity where they will get recognise.</div>
-                            <div class="task-tags">
-                                <Tag color="primary">primary</Tag>
-                                <Tag color="success">success</Tag>
-                                <Tag color="error">error</Tag>
-                                <Tag color="warning">warning</Tag>
-                                <Tag color="magenta">magenta</Tag>
-                                <Tag color="red">red</Tag>
-                                <Tag color="volcano">volcano</Tag>
-                            </div>
-                            <div class="task-member">
-                                <ul>
-                                    <li class="online">
-                                        <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                                    </li>
-                                    <li class="online">
-                                        <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                                    </li>
-                                    <li>
-                                        <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                                    </li>
-                                </ul>
-                                <div class="task-icon">5<Icon type="ios-link-outline" /></div>
-                                <div class="task-icon">5<Icon type="ios-chatbubbles-outline" /></div>
-                            </div>
-                            <div class="task-progress">
-                                <Progress :percent="25" :stroke-width="6" />
-                                <div class="task-time"><Icon type="ios-time-outline" />Mar 30</div>
-                            </div>
-                        </li>
-                    </ul>
-                    <div class="column-add">
-                        <Icon type="md-add" />
-                    </div>
+                    <div class="column-add" @click="addOpen(column.id)"><Icon type="md-add" /></div>
                 </li>
             </ul>
         </div>
@@ -602,7 +418,7 @@
             </div>
         </div>
 
-        <!--新建项目-->
+        <!--添加任务-->
         <Modal
             v-model="addShow"
             :title="$L('添加任务')"
@@ -615,7 +431,7 @@
             <TaskAdd v-model="addData"/>
             <div slot="footer">
                 <Button type="default" @click="addShow=false">{{$L('取消')}}</Button>
-                <Button type="primary" :loading="taskLoad > 0" @click="">{{$L('添加')}}</Button>
+                <Button type="primary" :loading="taskLoad > 0" @click="onAddTask">{{$L('添加')}}</Button>
             </div>
         </Modal>
     </div>
@@ -713,20 +529,47 @@
                         align-items: center;
                         background-color: #ffffff;
                         border-radius: 6px;
-                        .project-switch-img {
+                        position: relative;
+                        &:before {
+                            content: "";
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            width: 50%;
+                            height: 100%;
+                            z-index: 0;
+                            color: #2d8cf0;
+                            border-radius: 6px;
+                            border: 1px solid #2d8cf0;
+                            background-color: #e6f7ff;
+                            transition: left 0.2s;
+                        }
+                        > div {
+                            z-index: 1;
                             width: 32px;
                             height: 30px;
                             display: flex;
                             align-items: center;
                             justify-content: center;
                             border-radius: 6px;
-                            > img {
-                                width: 16px;
-                                height: 16px;
+                            cursor: pointer;
+                            color: #515a6e;
+                            > i {
+                                font-size: 17px;
                             }
-                            &.active {
-                                border: 1px solid #2d8cf0;
-                                background-color: #e6f7ff;
+                            &:first-child {
+                                color: #2d8cf0;
+                            }
+                        }
+                        &.menu {
+                            &:before {
+                                left: 50%;
+                            }
+                            > div:first-child {
+                                color: #515a6e;
+                            }
+                            > div:last-child {
+                                color: #2d8cf0;
                             }
                         }
                     }
@@ -772,7 +615,10 @@
                             line-height: 16px;
                             border-radius: 3px;
                             color: #ffffff;
-                            background-color: #1C1D1E;
+                            background-color: #cccccc;
+                            &.have {
+                                background-color: #1C1D1E;
+                            }
                         }
                     }
                     > ul {
@@ -815,7 +661,7 @@
 
                                 }
                             }
-                            .task-member {
+                            .task-users {
                                 margin-top: 10px;
                                 display: flex;
                                 align-items: center;
@@ -832,9 +678,7 @@
                                         &:first-child {
                                             margin-left: 0;
                                         }
-                                        .ivu-avatar {
-                                            width: 28px;
-                                            height: 28px;
+                                        .common-avatar {
                                             border: 2px solid #ffffff;
                                         }
                                     }
@@ -861,11 +705,12 @@
                                     border-radius: 3px;
                                     display: flex;
                                     align-items: center;
-                                    &.today {
+                                    &.overdue {
+                                        font-weight: 600;
                                         color: #ffffff;
                                         background-color: #ed4014;
                                     }
-                                    &.tomorrow {
+                                    &.today {
                                         color: #ffffff;
                                         background-color: #ff9900;
                                     }
@@ -878,14 +723,24 @@
                         }
                     }
                     .column-add {
+                        cursor: pointer;
                         border-radius: 6px;
                         border: 2px dashed #F1f1f1;
                         padding: 5px 12px;
                         text-align: center;
                         margin: 0 10px 18px;
+                        transition: all 0.2s;
                         .ivu-icon {
                             color: #cccccc;
                             font-size: 22px;
+                            transition: all 0.2s;
+                        }
+                        &:hover {
+                            border-color: #e1e1e1;
+                            .ivu-icon {
+                                color: #aaaaaa;
+                                transform: scale(1.1);
+                            }
                         }
                     }
                 }
@@ -1018,19 +873,48 @@ export default {
 
             addShow: false,
             addData: {
-                type: 'task',
-                owner: 1,
-                column_id: 5,
+                owner: 0,
+                column_id: 0,
                 times: [],
+                subtasks: [],
             },
-            taskLoad: false,
+            taskLoad: 0,
         }
     },
     mounted() {
 
     },
     computed: {
-        ...mapState(['projectDetail', 'projectLoad']),
+        ...mapState(['userId', 'projectDetail', 'projectLoad', 'projectMsgUnread']),
     },
+    methods: {
+        addOpen(column_id) {
+            this.$set(this.addData, 'owner', this.userId);
+            this.$set(this.addData, 'column_id', column_id);
+            this.$set(this.addData, 'project_id', this.projectDetail.id);
+            this.addShow = true;
+        },
+
+        onAddTask() {
+            this.taskLoad++;
+            $A.apiAjax({
+                url: 'project/task/add',
+                data: this.addData,
+                method: 'post',
+                complete: () => {
+                    this.taskLoad--;
+                },
+                success: ({ret, data, msg}) => {
+                    if (ret === 1) {
+                        $A.messageSuccess(msg);
+                        this.$store.commit('getProjectDetail', this.addData.project_id);
+                        this.addShow = false;
+                    } else {
+                        $A.modalError(msg);
+                    }
+                }
+            });
+        }
+    }
 }
 </script>

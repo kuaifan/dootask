@@ -33,13 +33,38 @@
                     :placeholder="$L('选择计划范围')"
                     format="yyyy-MM-dd HH:mm"
                     type="datetimerange"
-                    @on-change="taskTimeChange"/>
+                    @on-change="taskTimeChange(value.times)"/>
             </FormItem>
-            <FormItem :label="$L('项目负责人')">
-                <UserInput v-model="value.owner" :multiple-max="1" :placeholder="$L('选择项目负责人')"/>
+            <FormItem :label="$L('任务负责人')">
+                <UserInput v-model="value.owner" :multiple-max="1" :placeholder="$L('选择任务负责人')"/>
             </FormItem>
             <div class="subtasks">
-                <Input type="text" :placeholder="$L('+ 输入子任务，回车添加子任务')"></Input>
+                <div v-if="value.subtasks.length > 0" class="sublist">
+                    <Row>
+                        <Col span="12">{{$L('任务名称')}}</Col>
+                        <Col span="6">{{$L('计划时间')}}</Col>
+                        <Col span="6">{{$L('负责人')}}</Col>
+                    </Row>
+                    <Row v-for="(item, key) in value.subtasks" :key="key">
+                        <Col span="12">
+                            <Input v-model="item.name" @on-clear="value.subtasks.splice(key, 1)" clearable/>
+                        </Col>
+                        <Col span="6">
+                            <DatePicker
+                                v-model="item.times"
+                                :options="timeOptions"
+                                :editable="false"
+                                :placeholder="$L('选择时间')"
+                                format="yyyy-MM-dd HH:mm"
+                                type="datetimerange"
+                                @on-change="taskTimeChange(item.times)"/>
+                        </Col>
+                        <Col span="6">
+                            <UserInput v-model="item.owner" :multiple-max="1" :placeholder="$L('选择负责人')"/>
+                        </Col>
+                    </Row>
+                </div>
+                <Input type="text" v-model="subName" class="enter-input" @on-enter="addSubTask" :placeholder="$L('+ 输入子任务，回车添加子任务')"></Input>
             </div>
         </Form>
     </div>
@@ -65,6 +90,7 @@ export default {
         return {
             advanced: false,
             columns: [],
+            subName: '',
 
             taskPlugins: [
                 'advlist autolink lists link image charmap print preview hr anchor pagebreak imagetools',
@@ -101,11 +127,11 @@ export default {
 
     },
     computed: {
-        ...mapState(['projectDetail']),
+        ...mapState(['userId', 'projectDetail']),
     },
     watch: {
         projectDetail(detail) {
-            this.columns = detail.project_column;
+            this.columns = $A.cloneJSON(detail.project_column);
         }
     },
     methods: {
@@ -168,14 +194,24 @@ export default {
                 });
             }
         },
-        taskTimeChange() {
-            let tempc = $A.date2string(this.value.times, "Y-m-d H:i");
+        taskTimeChange(times) {
+            let tempc = $A.date2string(times, "Y-m-d H:i");
             if (tempc[0] && tempc[1]) {
                 if ($A.rightExists(tempc[0], '00:00') && $A.rightExists(tempc[1], '00:00')) {
-                    this.$set(this.value.times, 1, tempc[1].replace("00:00", "23:59"));
+                    this.$set(times, 1, tempc[1].replace("00:00", "23:59"));
                 }
             }
         },
+        addSubTask() {
+            if (this.subName.trim() !== '') {
+                this.value.subtasks.push({
+                    name: this.subName.trim(),
+                    times: [],
+                    owner: this.userId
+                });
+                this.subName = '';
+            }
+        }
     }
 }
 </script>

@@ -1,5 +1,5 @@
 <template>
-    <div v-if="ready" class="common-user">
+    <div v-if="ready" :class="['common-user', maxHiddenClass]">
         <Select
             v-model="values"
             :transfer="transfer"
@@ -40,13 +40,15 @@
             },
             transfer: {
                 type: Boolean,
-                default () {
-                    return true;
-                }
+                default: true
             },
             multipleMax: {
                 type: Number,
-            }
+            },
+            maxHiddenInput: {
+                type: Boolean,
+                default: true
+            },
         },
         data() {
             return {
@@ -66,6 +68,17 @@
             this.$nextTick(() => {
                 this.ready = true;
             });
+        },
+        computed: {
+            maxHiddenClass() {
+                const {multipleMax, maxHiddenInput, values} = this;
+                if (multipleMax && maxHiddenInput) {
+                    if (values.length >= multipleMax) {
+                        return 'hidden-input'
+                    }
+                }
+                return '';
+            }
         },
         watch: {
             value(val) {

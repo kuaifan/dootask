@@ -371,12 +371,25 @@
             padding: 12px 16px;
             border-radius: 6px;
             background-color: #f8f8f8;
-            .ivu-input {
-                background: transparent;
-                border-color: transparent;
-                &:hover,
-                &:focus {
-                    box-shadow: none;
+            .enter-input {
+                .ivu-input {
+                    background: transparent;
+                    border-color: transparent;
+                    &:hover,
+                    &:focus {
+                        box-shadow: none;
+                    }
+                }
+            }
+            .sublist {
+                .ivu-row {
+                    margin-bottom: 12px;
+                    > div {
+                        padding-right: 7px;
+                        &:last-child {
+                            padding-right: 0;
+                        }
+                    }
                 }
             }
         }
@@ -409,6 +422,14 @@
         .common-loading {
             width: 14px;
             height: 14px;
+        }
+    }
+    &.hidden-input {
+        .ivu-select-selection {
+            padding: 0 4px;
+            .ivu-select-input {
+                display: none;
+            }
         }
     }
 }
