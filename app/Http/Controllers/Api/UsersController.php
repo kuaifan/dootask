@@ -157,7 +157,6 @@ class UsersController extends AbstractController
         "identity": [ ],
         "az": "",
         "email": "admin@admin.com",
-        "username": "admin@admin.com",
         "nickname": "admin",
         "userimg": "",
         "loginnum": 10,
@@ -328,14 +327,13 @@ class UsersController extends AbstractController
      */
     public function search()
     {
-        $builder = User::select(['userid', 'email', 'username', 'nickname', 'userimg']);
+        $builder = User::select(['userid', 'email', 'nickname', 'userimg']);
         //
         $keys = Request::input('where');
         if (is_array($keys)) {
             if ($keys['key']) {
                 $builder->where(function($query) use ($keys) {
                     $query->where('email', 'like', '%,' . $keys['key'] . ',%')
-                        ->orWhere('username', 'like', '%,' . $keys['key'] . ',%')
                         ->orWhere('nickname', 'like', '%,' . $keys['key'] . ',%');
                 });
             }

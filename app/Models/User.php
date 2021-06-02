@@ -14,7 +14,6 @@ use Cache;
  * @property array $identity 身份
  * @property string|null $az A-Z
  * @property string|null $email 邮箱
- * @property string|null $username 用户名
  * @property string $nickname 昵称
  * @property string|null $userimg 头像
  * @property string|null $encrypt
@@ -50,7 +49,6 @@ use Cache;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUserid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUserimg($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereUsername($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUserpass($value)
  * @mixin \Eloquent
  */
@@ -72,13 +70,7 @@ class User extends AbstractModel
      */
     public function getNicknameAttribute($value)
     {
-        if ($value) {
-            return $value;
-        }
-        if ($this->username) {
-            return $this->username;
-        }
-        return Base::cardFormat($this->email);
+        return $value ?: Base::cardFormat($this->email);
     }
 
     /**
@@ -150,19 +142,6 @@ class User extends AbstractModel
     }
 
     /**
-     * userid获取用户名
-     * @param $userid
-     * @return mixed
-     */
-    public static function userid2username($userid)
-    {
-        if (empty($userid)) {
-            return '';
-        }
-        return self::whereUserid(intval($userid))->value('username');
-    }
-
-    /**
      * 邮箱获取userid
      * @param $email
      * @return int
@@ -172,20 +151,7 @@ class User extends AbstractModel
         if (empty($email)) {
             return 0;
         }
-        return intval(self::whereUsername($email)->value('userid'));
-    }
-
-    /**
-     * 用户名获取userid
-     * @param $username
-     * @return int
-     */
-    public static function username2userid($username)
-    {
-        if (empty($username)) {
-            return 0;
-        }
-        return intval(self::whereUsername($username)->value('userid'));
+        return intval(self::whereEmail($email)->value('userid'));
     }
 
     /**
@@ -198,12 +164,12 @@ class User extends AbstractModel
     }
 
     /**
-     * token获取会员账号
+     * token获取会员邮箱
      * @return int
      */
-    public static function token2username()
+    public static function token2email()
     {
-        return self::authFind('username', Base::getToken());
+        return self::authFind('email', Base::getToken());
     }
 
     /**
@@ -226,10 +192,10 @@ class User extends AbstractModel
         if ($token === null) {
             $token = Base::getToken();
         }
-        list($userid, $username, $encrypt, $timestamp) = explode("@", base64_decode($token) . "@@@@");
+        list($userid, $email, $encrypt, $timestamp) = explode("#$", base64_decode($token) . "#$#$#$#$");
         $array = [
             'userid' => intval($userid),
-            'username' => $username ?: '',
+            'email' => $email ?: '',
             'encrypt' => $encrypt ?: '',
             'timestamp' => intval($timestamp),
         ];
@@ -259,7 +225,7 @@ class User extends AbstractModel
                 $loginValid = floatval(Base::settingFind('system', 'loginValid')) ?: 720;
                 $loginValid *= 3600;
                 if ($authInfo['timestamp'] + $loginValid > time()) {
-                    $row = self::whereUserid($authInfo['userid'])->whereUsername($authInfo['username'])->whereEncrypt($authInfo['encrypt'])->first();
+                    $row = self::whereUserid($authInfo['userid'])->whereEmail($authInfo['email'])->whereEncrypt($authInfo['encrypt'])->first();
                     if ($row) {
                         $upArray = [];
                         if (Base::getIp() && $row->lineip != Base::getIp()) {
@@ -305,7 +271,7 @@ class User extends AbstractModel
      */
     public static function token($userinfo)
     {
-        return base64_encode($userinfo->userid . '@' . $userinfo->username . '@' . $userinfo->encrypt . '@' . time() . '@' . Base::generatePassword(6));
+        return base64_encode($userinfo->userid . '#$' . $userinfo->email . '#$' . $userinfo->encrypt . '#$' . time() . '#$' . Base::generatePassword(6));
     }
 
     /**
@@ -367,28 +333,9 @@ class User extends AbstractModel
         if (isset($_A["__static_userid2basic_" . $userid])) {
             return $_A["__static_userid2basic_" . $userid];
         }
-        $fields = ['userid', 'email', 'username', 'nickname', 'userimg'];
+        $fields = ['userid', 'email', 'nickname', 'userimg'];
         $userInfo = self::whereUserid($userid)->select($fields)->first();
         return $_A["__static_userid2basic_" . $userid] = ($userInfo ?: []);
-    }
-
-    /**
-     * username 获取 基本信息
-     * @param string $username 用户名
-     * @return self
-     */
-    public static function username2basic(string $username)
-    {
-        global $_A;
-        if (empty($username)) {
-            return null;
-        }
-        if (isset($_A["__static_username2basic_" . $username])) {
-            return $_A["__static_username2basic_" . $username];
-        }
-        $fields = ['userid', 'email', 'username', 'nickname', 'userimg'];
-        $userInfo = self::whereUsername($username)->select($fields)->first();
-        return $_A["__static_username2basic_" . $username] = ($userInfo ?: []);
     }
 
     /**
@@ -405,14 +352,14 @@ class User extends AbstractModel
         if (isset($_A["__static_email2basic_" . $email])) {
             return $_A["__static_email2basic_" . $email];
         }
-        $fields = ['userid', 'email', 'username', 'nickname', 'userimg'];
+        $fields = ['userid', 'email', 'nickname', 'userimg'];
         $userInfo = self::whereEmail($email)->select($fields)->first();
         return $_A["__static_email2basic_" . $email] = ($userInfo ?: []);
     }
 
     /**
      * 用户头像，不存在时返回默认
-     * @param string $var 头像地址 或 会员用户名
+     * @param string $var 头像地址 或 会员邮箱
      * @return string
      */
     public static function userimg(string $var)
@@ -421,7 +368,7 @@ class User extends AbstractModel
             if (empty($var)) {
                 $var = "";
             } else {
-                $userInfo = self::username2basic($var);
+                $userInfo = self::email2basic($var);
                 if ($userInfo) {
                     $var = $userInfo->userimg;
                 }
@@ -436,7 +383,7 @@ class User extends AbstractModel
      */
     public static function AZUpdate($userid)
     {
-        $row = self::whereUserid($userid)->select(['email', 'username', 'nickname'])->first();
+        $row = self::whereUserid($userid)->select(['email', 'nickname'])->first();
         if ($row) {
             $row->az = Base::getFirstCharter($row->nickname);
             $row->save();
@@ -445,10 +392,10 @@ class User extends AbstractModel
 
     /**
      * 是否需要验证码
-     * @param $username
+     * @param $email
      * @return array
      */
-    public static function needCode($username)
+    public static function needCode($email)
     {
         $loginCode = Base::settingFind('system', 'loginCode');
         switch ($loginCode) {
@@ -459,7 +406,7 @@ class User extends AbstractModel
                 return Base::retError('no');
 
             default:
-                if (Cache::get("code::" . $username) == 'need') {
+                if (Cache::get("code::" . $email) == 'need') {
                     return Base::retSuccess('need');
                 } else {
                     return Base::retError('no');
