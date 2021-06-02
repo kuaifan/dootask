@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+
 /**
- * Class WebSocket
+ * App\Models\WebSocket
  *
- * @package App\Model
  * @property string $key
  * @property string|null $fd
  * @property int|null $userid

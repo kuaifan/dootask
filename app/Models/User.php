@@ -16,26 +16,26 @@ use Carbon\Carbon;
  * @property string|null $az A-Z
  * @property string|null $email 邮箱
  * @property string $nickname 昵称
- * @property string|null $userimg 头像
+ * @property string $userimg 头像
  * @property string|null $encrypt
  * @property string|null $userpass 登录密码
- * @property int|null $login_num 累计登录次数
  * @property int|null $changepass 登录需要修改密码
+ * @property int|null $login_num 累计登录次数
  * @property string|null $last_ip 最后登录IP
- * @property \Illuminate\Support\Carbon|null $last_at 最后登录时间
+ * @property string|null $last_at 最后登录时间
  * @property string|null $line_ip 最后在线IP（接口）
- * @property \Illuminate\Support\Carbon|null $line_at 最后在线时间（接口）
+ * @property string|null $line_at 最后在线时间（接口）
  * @property string|null $created_ip 注册IP
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read string $usering
  * @method static \Illuminate\Database\Eloquent\Builder|User newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|User newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|User query()
  * @method static \Illuminate\Database\Eloquent\Builder|User whereAz($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereEmail($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereChangepass($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereCreatedIp($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereEmail($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereEncrypt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereIdentity($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereLastAt($value)
@@ -44,7 +44,6 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereLineIp($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereLoginNum($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereNickname($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereCreatedIp($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUserid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUserimg($value)
