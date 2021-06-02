@@ -44,11 +44,19 @@ export default {
     components: {ProjectMessage, ProjectList},
     data() {
         return {
-
+            project_id: 0,
         }
     },
     mounted() {
-
+        this.project_id = this.$route.params.id;
+    },
+    watch: {
+        '$route' (route) {
+            this.project_id = route.params.id;
+        },
+        project_id(id) {
+            this.$store.commit('getProjectDetail', id);
+        }
     },
 }
 </script>

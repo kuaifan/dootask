@@ -66,16 +66,6 @@ class User extends AbstractModel
     ];
 
     /**
-     * 用户名
-     * @param $value
-     * @return string
-     */
-    public function getUsernameAttribute($value)
-    {
-        return $value ?: $this->email;
-    }
-
-    /**
      * 昵称
      * @param $value
      * @return string
@@ -88,7 +78,7 @@ class User extends AbstractModel
         if ($this->username) {
             return $this->username;
         }
-        return Base::getMiddle($this->email, null, "@");
+        return Base::cardFormat($this->email);
     }
 
     /**
@@ -367,12 +357,13 @@ class User extends AbstractModel
      * @param int $userid 会员ID
      * @return self
      */
-    public static function userid2basic(int $userid)
+    public static function userid2basic($userid)
     {
         global $_A;
         if (empty($userid)) {
             return null;
         }
+        $userid = intval($userid);
         if (isset($_A["__static_userid2basic_" . $userid])) {
             return $_A["__static_userid2basic_" . $userid];
         }

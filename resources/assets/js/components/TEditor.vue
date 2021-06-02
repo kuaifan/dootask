@@ -191,7 +191,13 @@
                 type: String,
                 default: ' undo redo | styleselect | uploadImages | uploadFiles | bold italic underline forecolor backcolor | alignleft aligncenter alignright | bullist numlist outdent indent | link image emoticons media codesample | preview screenload',
             },
-            other_options: {
+            options: {
+                type: Object,
+                default: () => {
+                    return {};
+                }
+            },
+            optionFull: {
                 type: Object,
                 default: () => {
                     return {};
@@ -262,23 +268,31 @@
         methods: {
             init() {
                 this.$nextTick(() => {
-                    tinymce.init(this.concatAssciativeArrays(this.options(false), this.other_options));
+                    tinymce.init(this.concatAssciativeArrays(this.option(false), this.options));
                 });
             },
 
             initTransfer() {
                 this.$nextTick(() => {
-                    tinymce.init(this.concatAssciativeArrays(this.options(true), this.other_options));
+                    tinymce.init(this.concatAssciativeArrays(this.option(true), this.optionFull));
                 });
             },
 
-            options(isFull) {
+            plugin(isFull) {
+                if (isFull) {
+                    return this.plugins.filter((val) => val != 'autoresize');
+                } else {
+                    return this.plugins;
+                }
+            },
+
+            option(isFull) {
                 return {
                     selector: (isFull ? '#T_' : '#') + this.id,
-                    base_url: $A.serverUrl('js/build'),
+                    base_url: $A.serverUrl('js/tinymce'),
                     language: "zh_CN",
                     toolbar: this.toolbar,
-                    plugins: this.plugins,
+                    plugins: this.plugin(isFull),
                     save_onsavecallback: (e) => {
                         this.$emit('editorSave', e);
                     },

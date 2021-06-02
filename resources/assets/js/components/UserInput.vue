@@ -1,0 +1,138 @@
+<template>
+    <div v-if="ready" class="common-user">
+        <Select
+            v-model="values"
+            :transfer="transfer"
+            :remote-method="searchUser"
+            :placeholder="placeholder"
+            :loading="loading"
+            :loading-text="$L('加载中...')"
+            :default-label="value"
+            :default-event-object="true"
+            :multipleMax="multipleMax"
+            multiple
+            filterable
+            transfer-class-name="common-user-transfer"
+            @on-set-default-options="setDefaultOptions">
+            <div v-if="multipleMax" slot="drop-prepend" class="user-drop-prepend">{{$L('最多只能选择' + multipleMax + '个')}}</div>
+            <Option v-for="(item, key) in lists" :value="item.userid" :key="key" :label="item.nickname" :avatar="item.userimg">
+                <div class="user-input-option">
+                    <div class="user-input-avatar"><Avatar :src="item.userimg"/></div>
+                    <div class="user-input-nickname">{{ item.nickname }}</div>
+                    <div class="user-input-userid">ID: {{ item.userid }}</div>
+                </div>
+            </Option>
+        </Select>
+        <div v-if="!initialized" class="common-user-loading"><Loading/></div>
+    </div>
+</template>
+
+<script>
+    export default {
+        name: 'UserInput',
+        props: {
+            value: {
+                type: [String, Number, Array],
+                default: ''
+            },
+            placeholder: {
+                default: ''
+            },
+            transfer: {
+                type: Boolean,
+                default () {
+                    return true;
+                }
+            },
+            multipleMax: {
+                type: Number,
+            }
+        },
+        data() {
+            return {
+                ready: false,
+                initialized: false,
+                loading: false,
+                values: [],
+                lists: []
+            }
+        },
+        mounted() {
+            if (!$A.isArray(this.value)) {
+                this.$emit('input', [this.value]);
+            } else {
+                this.values = $A.cloneJSON(this.value);
+            }
+            this.$nextTick(() => {
+                this.ready = true;
+            });
+        },
+        watch: {
+            value(val) {
+                this.values = val;
+            },
+            values(val) {
+                this.$emit('input', val);
+            }
+        },
+        methods: {
+            setDefaultOptions(options) {
+                const userids = [];
+                options.forEach(({value, label}) => {
+                    this.lists.push({
+                        userid: value,
+                        nickname: label,
+                    });
+                    userids.push(value);
+                });
+                //
+                this.$store.commit('getUserBasic', {
+                    userid: userids,
+                    complete: () => {
+                        this.initialized = true;
+                    },
+                    success: (user) => {
+                        let option = options.find(({value}) => value == user.userid);
+                        if (option) {
+                            this.$set(option, 'label', user.nickname)
+                            this.$set(option, 'avatar', user.userimg)
+                        }
+                        this.lists.some((item, index) => {
+                            if (item.userid == user.userid) {
+                                this.$set(this.lists, index, Object.assign(item, user));
+                            }
+                        });
+                    }
+                });
+            },
+
+            searchUser(query) {
+                if (query !== '') {
+                    this.loading = true;
+                    $A.apiAjax({
+                        url: 'users/search',
+                        data: {
+                            keys: {
+                                key: query
+                            },
+                            take: 30
+                        },
+                        complete: () => {
+                            this.loading = false;
+                        },
+                        success: ({ret, data, msg}) => {
+                            if (ret === 1) {
+                                this.lists = data;
+                            } else {
+                                this.lists = [];
+                                $A.messageWarning(msg);
+                            }
+                        }
+                    });
+                } else {
+                    this.lists = [];
+                }
+            }
+        }
+    };
+</script>

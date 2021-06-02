@@ -7,7 +7,7 @@ namespace App\Models;
  *
  * @package App\Models
  * @property int $id
- * @property string|null $title
+ * @property string|null $name
  * @property string|null $value
  * @property string|null $content
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -18,7 +18,7 @@ namespace App\Models;
  * @method static \Illuminate\Database\Eloquent\Builder|Tmp whereContent($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Tmp whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Tmp whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Tmp whereTitle($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Tmp whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Tmp whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Tmp whereValue($value)
  * @mixin \Eloquent

@@ -311,7 +311,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/searchinfo          08. 搜索会员列表
+     * @api {get} api/users/search          08. 搜索会员列表
      *
      * @apiDescription 搜索会员列表
      * @apiVersion 1.0.0
@@ -319,65 +319,29 @@ class UsersController extends AbstractController
      * @apiName searchinfo
      *
      * @apiParam {Object} where            搜索条件
-     * - where.email
-     * - where.noemail
-     * - where.username
-     * - where.nousername
-     * - where.usernameequal
-     * - where.noidentity
-     * - where.identity
+     * - where.key  昵称、邮箱、用户名
      * @apiParam {Number} [take]           获取数量，10-100
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
      */
-    public function searchinfo()
+    public function search()
     {
+        $builder = User::select(['userid', 'email', 'username', 'nickname', 'userimg']);
+        //
         $keys = Request::input('where');
-        $whereArr = [];
-        $whereRaw = null;
-        if ($keys['email'])             $whereArr[] = ['email', '=', $keys['email']];
-        if ($keys['usernameequal'])     $whereArr[] = ['username', '=', $keys['usernameequal']];
-        if ($keys['identity'])          $whereArr[] = ['identity', 'like', '%,' . $keys['identity'] . ',%'];
-        if ($keys['noidentity'])        $whereArr[] = ['identity', 'not like', '%,' . $keys['noidentity'] . ',%'];
-        if ($keys['username']) {
-            $whereRaw.= $whereRaw ? ' AND ' : '';
-            $whereRaw.= "(`username` LIKE '%" . $keys['username'] . "%' OR `nickname` LIKE '%" . $keys['username'] . "%')";
-        }
-        if ($keys['nousername']) {
-            $nousername = [];
-            foreach (explode(",", $keys['nousername']) AS $name) {
-                $name = trim($name);
-                if ($name && !in_array($name, $nousername)) {
-                    $nousername[] = $name;
-                }
-            }
-            if ($nousername) {
-                $whereRaw.= $whereRaw ? ' AND ' : '';
-                $whereRaw.= "(`username` NOT IN ('" . implode("','", $nousername) . "'))";
-            }
-        }
-        if ($keys['noemail']) {
-            $noemail = [];
-            foreach (explode(",", $keys['noemail']) AS $email) {
-                $email = trim($email);
-                if ($email && !in_array($email, $noemail)) {
-                    $noemail[] = $email;
-                }
-            }
-            if ($noemail) {
-                $whereRaw.= $whereRaw ? ' AND ' : '';
-                $whereRaw.= "(`email` NOT IN ('" . implode("','", $noemail) . "'))";
+        if (is_array($keys)) {
+            if ($keys['key']) {
+                $builder->where(function($query) use ($keys) {
+                    $query->where('email', 'like', '%,' . $keys['key'] . ',%')
+                        ->orWhere('username', 'like', '%,' . $keys['key'] . ',%')
+                        ->orWhere('nickname', 'like', '%,' . $keys['key'] . ',%');
+                });
             }
         }
         //
-        $list = User::select(['userid', 'email', 'username', 'nickname', 'userimg'])
-            ->where($whereArr)
-            ->whereRaw($whereRaw)
-            ->orderBy('userid')
-            ->take(Base::getPaginate(100, 10, 'take'))
-            ->get();
+        $list = $builder->orderBy('userid')->take(Base::getPaginate(100, 10, 'take'))->get();
         return Base::retSuccess('success', $list);
     }
 
@@ -389,7 +353,7 @@ class UsersController extends AbstractController
      * @apiGroup users
      * @apiName basic
      *
-     * @apiParam {String} email          会员用户名(多个格式：jsonArray，一次最多30个)
+     * @apiParam {Number} userid          会员ID(多个格式：jsonArray，一次最多30个)
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -397,17 +361,17 @@ class UsersController extends AbstractController
      */
     public function basic()
     {
-        $email = trim(Request::input('email'));
-        $array = Base::json2array($email);
+        $userid = Request::input('userid');
+        $array = Base::json2array($userid);
         if (empty($array)) {
-            $array[] = $email;
+            $array[] = $userid;
         }
         if (count($array) > 50) {
             return Base::retError(['一次最多只能获取%条数据！', 50]);
         }
         $retArray = [];
-        foreach ($array AS $name) {
-            $basic = User::email2basic($name);
+        foreach ($array AS $id) {
+            $basic = User::userid2basic($id);
             if ($basic) {
                 $retArray[] = $basic;
             }

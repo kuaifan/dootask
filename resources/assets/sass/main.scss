@@ -24,10 +24,47 @@
                 top: 35px;
                 padding-bottom: 35px;
             }
-        }
-        .ivu-modal-header,
-        .ivu-modal-footer {
-            border-color: transparent;
+            &.ivu-modal-fullscreen {
+                top: 0;
+            }
+            .ivu-modal-header,
+            .ivu-modal-footer {
+                border-color: transparent;
+            }
+
+            .ivu-modal-header {
+                padding: 22px 24px 20px;
+                .ivu-modal-header-inner {
+                    font-size: 18px;
+                }
+            }
+            .ivu-modal-body {
+                padding: 16px 32px 2px;
+            }
+            .ivu-modal-footer {
+                padding: 20px 30px 22px;
+                .ivu-btn {
+                    height: 34px;
+                    line-height: 32px;
+                    padding: 0 32px;
+                }
+            }
+            .ivu-modal-content {
+                border-radius: 18px;
+                .ivu-modal-close {
+                    .ivu-icon-ios-close {
+                        font-size: 38px;
+                        top: 3px;
+                        right: 2px;
+                        transition: all 0.2s;
+                    }
+                    &:hover {
+                        .ivu-icon-ios-close {
+                            transform: rotate(-90deg);
+                        }
+                    }
+                }
+            }
         }
 
         .form-network-add-tabs {
@@ -281,5 +318,140 @@
                 }
             }
         }
+    }
+}
+
+.task-add {
+    .task-add-form,
+    .task-add-advanced {
+        margin: 0 0 -18px;
+        .ivu-form-item-label {
+            font-weight: 600;
+        }
+        .ivu-input,
+        .ivu-select-selection {
+            border-color: #e8e8e8;
+        }
+        .teditor-box {
+            .tox-tinymce {
+                border-color: #e8e8e8;
+            }
+            .tox .tox-statusbar,
+            .tox .tox-menubar+.tox-toolbar,
+            .tox .tox-menubar+.tox-toolbar-overlord .tox-toolbar__primary,
+            .tox:not([dir=rtl]) .tox-toolbar__group:not(:last-of-type) {
+                border-color: #e8e8e8;
+            }
+            .tox .tox-toolbar,
+            .tox .tox-toolbar__overflow,
+            .tox .tox-toolbar__primary {
+                background-image: none;
+                border-bottom: 1px solid #e8e8e8;
+            }
+        }
+        .advanced-option {
+            margin-top: -6px;
+            transition: margin 0.2s;
+            z-index: 1;
+            &.advanced {
+                margin-left: 22px;
+            }
+            &:focus {
+                box-shadow: none;
+            }
+        }
+    }
+    .task-add-advanced {
+        margin: 0;
+        padding: 34px 32px 6px;
+        border-radius: 8px;
+        border: 1px solid #e8e8e8;
+        .subtasks {
+            margin-bottom: 24px;
+            padding: 12px 16px;
+            border-radius: 6px;
+            background-color: #f8f8f8;
+            .ivu-input {
+                background: transparent;
+                border-color: transparent;
+                &:hover,
+                &:focus {
+                    box-shadow: none;
+                }
+            }
+        }
+        .ivu-date-picker {
+            width: 100%;
+        }
+    }
+}
+.task-add-advanced-transfer {
+    .task-drop-prepend {
+        text-align: center;
+        color: #c5c8ce;
+        line-height: 20px;
+        padding-bottom: 5px;
+        font-size: 12px;
+        border-bottom: 1px solid #f1f1f1;
+        margin-bottom: 5px;
+    }
+}
+
+.common-user {
+    position: relative;
+    .common-user-loading {
+        position: absolute;
+        top: 2px;
+        bottom: 0;
+        right: 10px;
+        display: flex;
+        align-items: center;
+        .common-loading {
+            width: 14px;
+            height: 14px;
+        }
+    }
+}
+.common-user-transfer {
+    .user-input-option {
+        display: flex;
+        align-items: center;
+        .user-input-avatar {
+            .ivu-avatar {
+                width: 26px;
+                height: 26px;
+            }
+        }
+        .user-input-nickname {
+            margin-left: 10px;
+            flex: 1;
+        }
+        .user-input-userid {
+            margin-left: 10px;
+            font-size: 12px;
+            color: #cccccc;
+            transition: margin 0.1s;
+        }
+    }
+    .ivu-select-item {
+        &.ivu-select-item-selected {
+            &:after {
+                top: 8px;
+            }
+            .user-input-option {
+                .user-input-userid {
+                    margin-right: 16px;
+                }
+            }
+        }
+    }
+    .user-drop-prepend {
+        text-align: center;
+        color: #c5c8ce;
+        line-height: 20px;
+        padding-bottom: 5px;
+        font-size: 12px;
+        border-bottom: 1px solid #f1f1f1;
+        margin-bottom: 5px;
     }
 }

@@ -7,23 +7,26 @@
             </div>
             <div class="project-icobox">
                 <ul class="project-icons">
-                    <li class="project-icon">
-                        <Icon type="ios-add" />
+                    <li class="project-avatar online">
+                        <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
+                    </li>
+                    <li class="project-icon" @click="addShow=true">
+                        <Icon type="md-add" />
                     </li>
                     <li class="project-icon">
                         <Tooltip theme="light" :always="searchText!=''" transfer>
-                            <Icon type="ios-search-outline" />
+                            <Icon type="ios-search" />
                             <div slot="content">
                                 <Input v-model="searchText" placeholder="Search task..." clearable autofocus/>
                             </div>
                         </Tooltip>
                     </li>
                     <li class="project-icon" :class="{'active':$store.state.projectChatShow}" @click="$store.commit('toggleProjectChatShow')">
-                        <Icon type="ios-chatbubbles-outline" />
+                        <Icon type="ios-chatbubbles" />
                         <Badge :count="999"></Badge>
                     </li>
-                    <li class="project-avatar online">
-                        <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
+                    <li class="project-icon">
+                        <Icon type="ios-more" />
                     </li>
                 </ul>
                 <div class="project-switch">
@@ -595,6 +598,23 @@
                 </Row>
             </div>
         </div>
+
+        <!--新建项目-->
+        <Modal
+            v-model="addShow"
+            :title="$L('添加任务')"
+            :styles="{
+                width: '90%',
+                maxWidth: '640px'
+            }"
+            :mask-closable="false"
+            class-name="simple-modal">
+            <TaskAdd v-model="addData"/>
+            <div slot="footer">
+                <Button type="default" @click="addShow=false">{{$L('取消')}}</Button>
+                <Button type="primary" :loading="taskLoad > 0" @click="">{{$L('添加')}}</Button>
+            </div>
+        </Modal>
     </div>
 </template>
 
@@ -639,8 +659,14 @@
                         justify-content: center;
                         width: 36px;
                         height: 36px;
+                        border-radius: 50%;
                         position: relative;
                         margin-left: 16px;
+                        cursor: pointer;
+                        transition: all 0.3s;
+                        &:hover {
+                            box-shadow: 0 0 6px #cccccc;
+                        }
                         &.project-icon {
                             border-radius: 50%;
                             background-color: #F2F3F5;
@@ -945,7 +971,7 @@
                             }
                             .item-icon {
                                 font-size: 12px;
-                                margin-right: 6px;
+                                margin-right: 8px;
                                 color: #777777;
                                 .ivu-icon,
                                 .iconfont {
@@ -988,12 +1014,22 @@
 
 <script>
 import TaskPriority from "./task-priority";
+import TaskAdd from "./task-add";
 export default {
     name: "ProjectList",
-    components: {TaskPriority},
+    components: {TaskAdd, TaskPriority},
     data() {
         return {
             searchText: '',
+
+            addShow: false,
+            addData: {
+                type: 'task',
+                owner: 1,
+                column_id: 5,
+                times: [],
+            },
+            taskLoad: false,
         }
     },
     mounted() {

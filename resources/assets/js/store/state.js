@@ -172,4 +172,10 @@ export default Object.assign(stateCommon, {
     userId,
     userInfo,
     userToken,
+
+    projectLoad: 0,
+    projectDetail: {},
+
+    cacheProject: {},
+    cacheUserBasic: {},
 })

@@ -53,7 +53,7 @@ class Base
             $log = self::array2json($log, JSON_UNESCAPED_UNICODE);
         }
         Tmp::createInstance([
-            'title' => 'log_' . ($title ?: date("Y-m-d H:i:s", time())),
+            'name' => 'log_' . ($title ?: date("Y-m-d H:i:s", time())),
             'value' => date("Y-m-d H:i:s", time()),
             'content' => $log,
         ])->save();
@@ -1139,11 +1139,11 @@ class Base
             return $_A["__static_setting_" . $setname];
         }
         $setting = [];
-        $row = Setting::whereTitle($setname)->first();
+        $row = Setting::whereName($setname)->first();
         if (!empty($row)) {
             $setting = Base::string2array($row->setting);
         } else {
-            $row = Setting::createInstance(['title' => $setname]);
+            $row = Setting::createInstance(['name' => $setname]);
             $row->save();
         }
         if ($array !== false) {
@@ -2629,19 +2629,19 @@ class Base
 
     /**
      * 缓存数据
-     * @param $title
+     * @param $name
      * @param null $value
      * @return mixed|null
      */
-    public static function cacheData($title, $value = null)
+    public static function cacheData($name, $value = null)
     {
-        $title = "cacheData::" . $title;
-        $tmp = Tmp::where('title', $title)->select('value')->first();
+        $name = "cacheData::" . $name;
+        $tmp = Tmp::whereName($name)->select('value')->first();
         if ($value !== null) {
             if (empty($tmp)) {
-                Tmp::insert(['title' => $title, 'value' => $value]);
+                Tmp::createInstance(['name' => $name, 'value' => $value])->save();
             } else {
-                Tmp::where('title', $title)->update(['value' => $value]);
+                Tmp::whereName($name)->update(['value' => $value]);
             }
             return $value;
         } else {

@@ -21,17 +21,13 @@
                 <li class="menu-project">
                     <ul>
                         <li v-for="(item, key) in projectLists" :key="key" @click="toggleRoute('project/' + item.id)" :class="classNameRoute('project/' + item.id)">{{item.name}}</li>
-                        <li @click="toggleRoute('project/1')" :class="classNameRoute('project/1')">✔️ Daily Task</li>
-                        <li @click="toggleRoute('project/2')" :class="classNameRoute('project/2')">✈️ Meetings Summary</li>
-                        <li @click="toggleRoute('project/3')" :class="classNameRoute('project/3')">🛰 Resources</li>
-                        <li @click="toggleRoute('project/4')" :class="classNameRoute('project/4')">💺 Availibity</li>
-                        <li @click="toggleRoute('project/5')" :class="classNameRoute('project/5')">🍒 Brainstroaming</li>
                     </ul>
                     <Loading v-if="projectLoad > 0"/>
                 </li>
             </ul>
             <Button class="manage-box-new" type="primary" icon="md-add" @click="addShow=true">New Project</Button>
         </div>
+
         <div class="manage-box-main">
             <div class="manage-box-body">
                 <div class="manage-box-body-content">
@@ -46,12 +42,11 @@
         <Modal
             v-model="addShow"
             :title="$L('新建项目')"
-            :closable="false"
             :mask-closable="false"
             class-name="simple-modal">
             <Form ref="addProject" :model="addData" :rules="addRule" label-width="auto" @submit.native.prevent>
-                <FormItem prop="title" :label="$L('项目名称')">
-                    <Input type="text" v-model="addData.title"></Input>
+                <FormItem prop="name" :label="$L('项目名称')">
+                    <Input type="text" v-model="addData.name"></Input>
                 </FormItem>
                 <FormItem prop="columns" :label="$L('项目模板')">
                     <Select v-model="addData.template" @on-change="(res) => {$set(addData, 'columns', columns[res].value)}" :placeholder="$L('请选择模板')">
@@ -77,7 +72,6 @@
         </Modal>
     </div>
 </template>
-
 
 <style lang="scss" scoped>
 :global {
@@ -244,7 +238,7 @@ export default {
 
             addShow: false,
             addData: {
-                title: '',
+                name: '',
                 columns: [],
                 template: 0,
             },
@@ -267,8 +261,8 @@ export default {
         ...mapState(['userId']),
     },
     watch: {
-        '$route' (To) {
-            this.curPath = To.path;
+        '$route' (route) {
+            this.curPath = route.path;
         },
         userId(userid) {
             if (userid > 0) {
@@ -289,7 +283,7 @@ export default {
                 value: [this.$L('产品计划'), this.$L('正在设计'), this.$L('正在研发'), this.$L('测试'), this.$L('准备发布'), this.$L('发布成功')],
             }];
             this.addRule = {
-                title: [
+                name: [
                     { required: true, message: this.$L('请填写项目名称！'), trigger: 'change' },
                     { type: 'string', min: 2, message: this.$L('项目名称至少2个字！'), trigger: 'change' }
                 ]
