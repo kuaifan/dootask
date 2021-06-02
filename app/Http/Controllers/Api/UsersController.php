@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Module\Base;
 use Cache;
 use Captcha;
+use Carbon\Carbon;
 use Request;
 
 /**
@@ -87,11 +88,11 @@ class UsersController extends AbstractController
         }
         //
         $array = [
-            'loginnum' => $user['loginnum'] + 1,
-            'lastip' => Base::getIp(),
-            'lastdate' => time(),
-            'lineip' => Base::getIp(),
-            'linedate' => time(),
+            'login_num' => $user->login_num + 1,
+            'last_ip' => Base::getIp(),
+            'last_at' => Carbon::now(),
+            'line_ip' => Base::getIp(),
+            'line_at' => Carbon::now(),
         ];
         foreach ($array as $key => $value) {
             $user->$key = $value;
@@ -159,14 +160,13 @@ class UsersController extends AbstractController
         "email": "admin@admin.com",
         "nickname": "admin",
         "userimg": "",
-        "loginnum": 10,
+        "login_num": 10,
         "changepass": 0,
-        "lastip": "10.22.22.1",
-        "lastdate": 1622468661,
-        "lineip": "10.22.22.1",
-        "linedate": 1622468661,
-        "regip": "",
-        "regdate": 0,
+        "last_ip": "10.22.22.1",
+        "last_at": "2021-06-01 12:00:00",
+        "line_ip": "10.22.22.1",
+        "line_at": "2021-06-01 12:00:00",
+        "created_ip": "",
     }
      */
     public function info()

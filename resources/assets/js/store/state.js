@@ -174,7 +174,11 @@ export default Object.assign(stateCommon, {
     userToken,
 
     projectLoad: 0,
-    projectDetail: {},
+    projectDetail: {
+        id: 0,
+        project_column: [],
+        project_user: []
+    },
 
     cacheProject: {},
     cacheUserBasic: {},

@@ -2,13 +2,16 @@
     <div class="project-list">
         <div class="project-head">
             <div class="project-titbox">
-                <div class="project-title">✔️ Daily Task</div>
-                <div class="project-subtitle">Click + New To create new list and wait for project manager card Don't Create a card by yourself to manage a good colaboration.</div>
+                <div class="project-title">
+                    <h1>{{projectDetail.name}}</h1>
+                    <div v-if="projectLoad > 0" class="project-load"><Loading/></div>
+                </div>
+                <div v-if="projectDetail.desc" class="project-subtitle">{{projectDetail.desc}}</div>
             </div>
             <div class="project-icobox">
                 <ul class="project-icons">
-                    <li class="project-avatar online">
-                        <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
+                    <li>
+                        <UserAvatar :userid="projectDetail.owner_userid" :size="36"/>
                     </li>
                     <li class="project-icon" @click="addShow=true">
                         <Icon type="md-add" />
@@ -631,9 +634,22 @@
                 flex: 1;
                 margin-bottom: 16px;
                 .project-title {
-                    color: #333333;
-                    font-size: 28px;
-                    font-weight: 600;
+                    display: flex;
+                    align-items: center;
+                    > h1 {
+                        color: #333333;
+                        font-size: 28px;
+                        font-weight: 600;
+                    }
+                    .project-load {
+                        display: flex;
+                        align-items: center;
+                        margin-left: 18px;
+                        .common-loading {
+                            width: 22px;
+                            height: 22px;
+                        }
+                    }
                 }
                 .project-subtitle {
                     color: #999999;
@@ -685,29 +701,6 @@
                             &.active {
                                 color: #ffffff;
                                 background-color: #2d8cf0;
-                            }
-                        }
-                        &.project-avatar {
-                            .ivu-avatar {
-                                width: 36px;
-                                height: 36px;
-                            }
-                            &:before {
-                                content: "";
-                                position: absolute;
-                                right: 0;
-                                bottom: 0;
-                                width: 9px;
-                                height: 9px;
-                                border-radius: 50%;
-                                background-color: #ff0000;
-                                border: 1px solid #ffffff;
-                                z-index: 1;
-                            }
-                            &.online {
-                                &:before {
-                                    background-color: #509E76;
-                                }
                             }
                         }
                     }
@@ -1015,6 +1008,7 @@
 <script>
 import TaskPriority from "./task-priority";
 import TaskAdd from "./task-add";
+import {mapState} from "vuex";
 export default {
     name: "ProjectList",
     components: {TaskAdd, TaskPriority},
@@ -1034,6 +1028,9 @@ export default {
     },
     mounted() {
 
-    }
+    },
+    computed: {
+        ...mapState(['projectDetail', 'projectLoad']),
+    },
 }
 </script>

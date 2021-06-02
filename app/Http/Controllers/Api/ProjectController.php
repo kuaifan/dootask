@@ -18,6 +18,14 @@ use Request;
  */
 class ProjectController extends AbstractController
 {
+    private $projectSelect = [
+        '*',
+        'projects.id AS id',
+        'projects.userid AS userid',
+        'projects.created_at AS created_at',
+        'projects.updated_at AS updated_at',
+    ];
+
     /**
      * 项目列表
      *
@@ -33,7 +41,8 @@ class ProjectController extends AbstractController
             $user = User::IDE($user['data']);
         }
         //
-        $list = Project::join('project_users', 'projects.id', '=', 'project_users.project_id')
+        $list = Project::select($this->projectSelect)
+            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
             ->where('project_users.userid', $user->userid)
             ->orderByDesc('projects.id')
             ->paginate(Base::getPaginate(200, 100));
@@ -62,10 +71,15 @@ class ProjectController extends AbstractController
                 $taskQuery->where('parent_id', 0);
             }]);
         }, 'projectUser'])
+            ->select($this->projectSelect)
             ->join('project_users', 'projects.id', '=', 'project_users.project_id')
             ->where('projects.id', $project_id)
             ->where('project_users.userid', $user->userid)
             ->first();
+        if ($project) {
+            $owner_user = $project->projectUser->where('owner', 1)->first();
+            $project->owner_userid = $owner_user ? $owner_user->userid : 0;
+        }
         //
         return Base::retSuccess('success', $project);
     }

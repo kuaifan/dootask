@@ -5,6 +5,7 @@ namespace App\Models;
 
 use App\Module\Base;
 use Cache;
+use Carbon\Carbon;
 
 /**
  * Class User
@@ -18,14 +19,13 @@ use Cache;
  * @property string|null $userimg 头像
  * @property string|null $encrypt
  * @property string|null $userpass 登录密码
- * @property int|null $loginnum 累计登录次数
+ * @property int|null $login_num 累计登录次数
  * @property int|null $changepass 登录需要修改密码
- * @property string|null $lastip 最后登录IP
- * @property int|null $lastdate 最后登录时间
- * @property string|null $lineip 最后在线IP（接口）
- * @property int|null $linedate 最后在线时间（接口）
- * @property string|null $regip 注册IP
- * @property int|null $regdate 注册时间
+ * @property string|null $last_ip 最后登录IP
+ * @property \Illuminate\Support\Carbon|null $last_at 最后登录时间
+ * @property string|null $line_ip 最后在线IP（接口）
+ * @property \Illuminate\Support\Carbon|null $line_at 最后在线时间（接口）
+ * @property string|null $created_ip 注册IP
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read string $usering
@@ -38,14 +38,13 @@ use Cache;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereEncrypt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereIdentity($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereLastdate($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereLastip($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereLinedate($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereLineip($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereLoginnum($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereLastAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereLastIp($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereLineAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereLineIp($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereLoginNum($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereNickname($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereRegdate($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereRegip($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereCreatedIp($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUserid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUserimg($value)
@@ -59,7 +58,6 @@ class User extends AbstractModel
     protected $hidden = [
         'encrypt',
         'userpass',
-        'created_at',
         'updated_at',
     ];
 
@@ -80,7 +78,7 @@ class User extends AbstractModel
      */
     public function getUserimgAttribute($value)
     {
-        return self::userimg($value);
+        return $value ? Base::fillUrl($value) : url('images/other/avatar.png');
     }
 
     /**
@@ -129,8 +127,7 @@ class User extends AbstractModel
             'encrypt' => $encrypt,
             'email' => $email,
             'userpass' => Base::md52($userpass, $encrypt),
-            'regip' => Base::getIp(),
-            'regdate' => time()
+            'created_ip' => Base::getIp(),
         ];
         if ($other) {
             $inArray = array_merge($inArray, $other);
@@ -228,11 +225,11 @@ class User extends AbstractModel
                     $row = self::whereUserid($authInfo['userid'])->whereEmail($authInfo['email'])->whereEncrypt($authInfo['encrypt'])->first();
                     if ($row) {
                         $upArray = [];
-                        if (Base::getIp() && $row->lineip != Base::getIp()) {
-                            $upArray['lineip'] = Base::getIp();
+                        if (Base::getIp() && $row->line_ip != Base::getIp()) {
+                            $upArray['line_ip'] = Base::getIp();
                         }
-                        if ($row->linedate + 30 < time()) {
-                            $upArray['linedate'] = time();
+                        if (Carbon::parse($row->line_at)->addSeconds(30)->lt(Carbon::now())) {
+                            $upArray['line_at'] = Carbon::now();
                         }
                         if ($upArray) {
                             $row->updateInstance($upArray);
@@ -333,48 +330,12 @@ class User extends AbstractModel
         if (isset($_A["__static_userid2basic_" . $userid])) {
             return $_A["__static_userid2basic_" . $userid];
         }
-        $fields = ['userid', 'email', 'nickname', 'userimg'];
+        $fields = ['userid', 'email', 'nickname', 'userimg', 'line_at'];
         $userInfo = self::whereUserid($userid)->select($fields)->first();
+        if ($userInfo) {
+            $userInfo->line_at;
+        }
         return $_A["__static_userid2basic_" . $userid] = ($userInfo ?: []);
-    }
-
-    /**
-     * email 获取 基本信息
-     * @param string $email 邮箱地址
-     * @return self
-     */
-    public static function email2basic(string $email)
-    {
-        global $_A;
-        if (empty($email)) {
-            return null;
-        }
-        if (isset($_A["__static_email2basic_" . $email])) {
-            return $_A["__static_email2basic_" . $email];
-        }
-        $fields = ['userid', 'email', 'nickname', 'userimg'];
-        $userInfo = self::whereEmail($email)->select($fields)->first();
-        return $_A["__static_email2basic_" . $email] = ($userInfo ?: []);
-    }
-
-    /**
-     * 用户头像，不存在时返回默认
-     * @param string $var 头像地址 或 会员邮箱
-     * @return string
-     */
-    public static function userimg(string $var)
-    {
-        if (!Base::strExists($var, '.')) {
-            if (empty($var)) {
-                $var = "";
-            } else {
-                $userInfo = self::email2basic($var);
-                if ($userInfo) {
-                    $var = $userInfo->userimg;
-                }
-            }
-        }
-        return $var ? Base::fillUrl($var) : url('images/other/avatar.png');
     }
 
     /**

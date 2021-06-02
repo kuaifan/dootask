@@ -412,6 +412,30 @@
         }
     }
 }
+
+.common-avatar {
+    .common-avatar-text {
+        background-color: #87d068;
+    }
+    &:before {
+        content: "";
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background-color: #ff0000;
+        border: 1px solid #ffffff;
+        z-index: 1;
+    }
+    &.online {
+        &:before {
+            background-color: #509E76;
+        }
+    }
+}
+
 .common-user-transfer {
     .user-input-option {
         display: flex;

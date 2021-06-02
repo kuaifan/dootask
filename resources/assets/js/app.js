@@ -20,13 +20,14 @@ import Loading from './components/Loading.vue'
 import AutoTip from './components/AutoTip.vue'
 import TagInput from './components/TagInput.vue'
 import TableAction from './components/TableAction.vue'
+import UserAvatar from './components/UserAvatar.vue'
 
 Vue.component('PageTitle', PageTitle);
 Vue.component('Loading', Loading);
 Vue.component('AutoTip', AutoTip);
 Vue.component('TagInput', TagInput)
 Vue.component('TableAction', TableAction);
-
+Vue.component('UserAvatar', UserAvatar);
 
 const originalPush = VueRouter.prototype.push
 VueRouter.prototype.push = function push(location) {

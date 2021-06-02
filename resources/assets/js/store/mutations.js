@@ -41,6 +41,13 @@ export default {
         if (state._isJson(state.cacheProject[project_id])) {
             state.projectDetail = state.cacheProject[project_id];
         }
+        state.projectDetail.id = project_id;
+        //
+        if (state.cacheProject[project_id + "::load"]) {
+            return;
+        }
+        state.cacheProject[project_id + "::load"] = true;
+        //
         state.projectLoad++;
         $A.apiAjax({
             url: 'project/detail',
@@ -49,10 +56,14 @@ export default {
             },
             complete: () => {
                 state.projectLoad--;
+                state.cacheProject[project_id + "::load"] = false;
             },
             success: ({ret, data, msg}) => {
                 if (ret === 1) {
-                    state.projectDetail = state.cacheProject[project_id] = data;
+                    state.cacheProject[project_id] = data;
+                    if (state.projectDetail.id == project_id) {
+                        state.projectDetail = data;
+                    }
                 } else {
                     $A.modalError(msg);
                 }
