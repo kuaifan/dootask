@@ -94,9 +94,7 @@ class UsersController extends AbstractController
             'line_ip' => Base::getIp(),
             'line_at' => Carbon::now(),
         ];
-        foreach ($array as $key => $value) {
-            $user->$key = $value;
-        }
+        $user->updateInstance($array);
         $user->save();
         //
         $user->token = User::token($user);

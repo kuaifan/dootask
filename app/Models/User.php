@@ -61,6 +61,19 @@ class User extends AbstractModel
     ];
 
     /**
+     * 更新数据校验
+     * @param array $param
+     */
+    public function updateInstance(array $param)
+    {
+        parent::updateInstance($param);
+        //
+        if (isset($param['line_at']) && $this->userid) {
+            Cache::put("User::online:" . $this->userid, time(), Carbon::now()->addSeconds(30));
+        }
+    }
+
+    /**
      * 昵称
      * @param $value
      * @return string
@@ -91,6 +104,19 @@ class User extends AbstractModel
             return [];
         }
         return array_filter(is_array($value) ? $value : explode(",", trim($value, ",")));
+    }
+
+    /**
+     * 是否在线
+     * @return int
+     */
+    public function getOnlineStatus()
+    {
+        $online = intval(Cache::get("User::online:" . $this->userid, 0));
+        if ($online) {
+            return true;
+        }
+        return WebSocket::whereUserid($this->userid)->exists();
     }
 
 
@@ -329,10 +355,10 @@ class User extends AbstractModel
         if (isset($_A["__static_userid2basic_" . $userid])) {
             return $_A["__static_userid2basic_" . $userid];
         }
-        $fields = ['userid', 'email', 'nickname', 'userimg', 'line_at'];
+        $fields = ['userid', 'email', 'nickname', 'userimg'];
         $userInfo = self::whereUserid($userid)->select($fields)->first();
         if ($userInfo) {
-            $userInfo->line_at;
+            $userInfo->online = $userInfo->getOnlineStatus();
         }
         return $_A["__static_userid2basic_" . $userid] = ($userInfo ?: []);
     }
