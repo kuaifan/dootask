@@ -18,6 +18,29 @@ export default {
     },
 
     /**
+     * 获取/更新会员信息
+     * @param state
+     * @param callback
+     */
+    getUserInfo(state, callback) {
+        if (typeof callback === 'function' || callback === true) {
+            $A.apiAjax({
+                url: 'users/info',
+                error: () => {
+                    $A.userLogout();
+                },
+                success: ({ret, data, msg}) => {
+                    if (ret === 1) {
+                        this.commit('setUserInfo', data);
+                        typeof callback === "function" && callback(data);
+                    }
+                },
+            });
+        }
+        return state.userInfo;
+    },
+
+    /**
      * 更新会员信息
      * @param state
      * @param info
@@ -38,6 +61,9 @@ export default {
      * @param project_id
      */
     getProjectDetail(state, project_id) {
+        if (state._runNum(project_id) == 0) {
+            return;
+        }
         if (state._isJson(state.cacheProject[project_id])) {
             state.projectDetail = state.cacheProject[project_id];
         }

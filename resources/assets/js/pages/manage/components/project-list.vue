@@ -49,11 +49,11 @@
                     </div>
                     <ul>
                         <li v-for="item in column.project_task">
-                            <div class="task-head">
-                                <div class="task-title">{{item.name}}</div>
+                            <div :class="['task-head', item.desc ? 'has-desc' : '']">
+                                <div class="task-title"><pre>{{item.name}}</pre></div>
                                 <Icon type="ios-more" />
                             </div>
-                            <div v-if="item.desc" class="task-desc">{{item.desc}}</div>
+                            <div v-if="item.desc" class="task-desc" v-html="item.desc"></div>
                             <div v-if="item.task_tag.length > 0" class="task-tags">
                                 <Tag v-for="(tag, keyt) in item.task_tag" :key="keyt" :color="tag.color">{{tag.name}}</Tag>
                             </div>
@@ -68,9 +68,14 @@
                             </div>
                             <div class="task-progress">
                                 <Progress :percent="item.percent" :stroke-width="6" />
-                                <div v-if="item.end_at" :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']">
-                                    <Icon type="ios-time-outline" />{{item.end_at}}
-                                </div>
+                                <Tooltip
+                                    v-if="item.end_at"
+                                    :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
+                                    :delay="600"
+                                    :content="item.end_at"
+                                    transfer>
+                                    <Icon type="ios-time-outline"/>{{ formatTime(item.end_at) }}
+                                </Tooltip>
                             </div>
                         </li>
                     </ul>
@@ -640,14 +645,24 @@
                             }
                             .task-head {
                                 display: flex;
-                                align-items: center;
+                                align-items: flex-start;
                                 .task-title {
                                     flex: 1;
-                                    font-weight: 600;
+                                    padding-top: 1px;
+                                    > pre {
+                                        margin: 0;
+                                        padding: 0;
+                                    }
                                 }
                                 .ivu-icon {
                                     font-size: 22px;
                                     color: #666666;
+                                    padding-left: 4px;
+                                }
+                                &.has-desc {
+                                    .task-title {
+                                        font-weight: 600;
+                                    }
                                 }
                             }
                             .task-desc {
@@ -696,8 +711,10 @@
                                 margin-top: 10px;
                                 display: flex;
                                 align-items: center;
+                                justify-content: flex-end;
                                 .task-time {
                                     flex-shrink: 0;
+                                    color: #777777;
                                     background-color: #EAEDF2;
                                     padding: 1px 4px;
                                     font-size: 12px;
@@ -715,7 +732,7 @@
                                         background-color: #ff9900;
                                     }
                                     .ivu-icon {
-                                        margin-right: 2px;
+                                        margin-right: 3px;
                                         font-size: 14px;
                                     }
                                 }
@@ -914,7 +931,20 @@ export default {
                     }
                 }
             });
-        }
+        },
+
+        formatTime(date) {
+            let time = Math.round(new Date(date).getTime() / 1000),
+                string = '';
+            if ($A.formatDate('Ymd') === $A.formatDate('Ymd', time)) {
+                string = $A.formatDate('H:i', time)
+            } else if ($A.formatDate('Y') === $A.formatDate('Y', time)) {
+                string = $A.formatDate('m-d', time)
+            } else {
+                string = $A.formatDate('Y-m-d', time)
+            }
+            return string || '';
+        },
     }
 }
 </script>

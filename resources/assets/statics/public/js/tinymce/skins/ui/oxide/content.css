@@ -693,3 +693,10 @@ body {
 table {
   border-collapse: collapse;
 }
+.mce-content-body {
+    color: #515a6e;
+}
+.mce-content-body[data-mce-placeholder]:not(.mce-visualblocks)::before {
+    font-size: 15px;
+    color: rgba(34, 47, 62, 0.3);
+}

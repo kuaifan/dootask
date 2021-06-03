@@ -252,7 +252,7 @@ export default {
         }
     },
     mounted() {
-        $A.getUserInfo(this.getProjectLists);
+        this.$store.commit('getUserInfo', this.getProjectLists);
     },
     deactivated() {
         this.addShow = false;

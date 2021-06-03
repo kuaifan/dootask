@@ -25,6 +25,7 @@ use Carbon\Carbon;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read int $file_num
  * @property-read int $msg_num
+ * @property-read int $sub_num
  * @property-read bool $overdue
  * @property-read int $percent
  * @property-read bool $today
@@ -55,6 +56,7 @@ class ProjectTask extends AbstractModel
     protected $appends = [
         'file_num',
         'msg_num',
+        'sub_num',
         'percent',
         'today',
         'overdue',
@@ -85,13 +87,34 @@ class ProjectTask extends AbstractModel
     }
 
     /**
+     * 子任务数量
+     * @return int
+     */
+    public function getSubNumAttribute()
+    {
+        if ($this->parent_id > 0) {
+            return 0;
+        }
+        if (!isset($this->attributes['sub_num'])) {
+            $this->attributes['sub_num'] = self::whereParentId($this->id)->count();
+        }
+        return $this->attributes['sub_num'];
+    }
+
+    /**
      * 进度（0-100）
      * @return int
      */
     public function getPercentAttribute()
     {
+        if ($this->parent_id > 0) {
+            return 0;
+        }
         $builder = self::whereParentId($this->id);
-        $subTaskTotal = $builder->count();
+        if (!isset($this->attributes['sub_num'])) {
+            $this->attributes['sub_num'] = $builder->count();
+        }
+        $subTaskTotal = $this->attributes['sub_num'];
         if ($subTaskTotal == 0) {
             return $this->complete_at ? 1 : 0;
         }

@@ -49,84 +49,6 @@
     </div>
 </template>
 
-<style lang="scss">
-:global {
-    .teditor-box {
-        textarea {
-            opacity: 0;
-        }
-
-        .tox-tinymce {
-            box-shadow: none;
-            box-sizing: border-box;
-            border-color: #dddee1;
-            border-radius: 4px;
-            overflow: hidden;
-
-            .tox-statusbar {
-                span.tox-statusbar__branding {
-                    a {
-                        display: none;
-                    }
-                }
-            }
-        }
-    }
-
-    .teditor-transfer {
-        background-color: #ffffff;
-
-        .tox-toolbar {
-            > div:last-child {
-                > button:last-child {
-                    margin-right: 64px;
-                }
-            }
-        }
-
-        .ivu-modal-header {
-            display: none;
-        }
-
-        .ivu-modal-close {
-            top: 7px;
-            z-index: 2;
-        }
-
-        .teditor-transfer-body {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            padding: 0;
-            margin: 0;
-
-            textarea {
-                opacity: 0;
-            }
-
-            .tox-tinymce {
-                border: 0;
-
-                .tox-statusbar {
-                    span.tox-statusbar__branding {
-                        a {
-                            display: none;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    .tox {
-        &.tox-silver-sink {
-            z-index: 13000;
-        }
-    }
-}
-</style>
 <style lang="scss" scoped>
 :global {
     .teditor-loadstyle {
@@ -206,7 +128,11 @@
             readonly: {
                 type: Boolean,
                 default: false
-            }
+            },
+            placeholder: {
+                type: String,
+                default: ''
+            },
         },
         data() {
             return {
@@ -293,6 +219,7 @@
                     language: "zh_CN",
                     toolbar: this.toolbar,
                     plugins: this.plugin(isFull),
+                    placeholder: this.placeholder,
                     save_onsavecallback: (e) => {
                         this.$emit('editorSave', e);
                     },

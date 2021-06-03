@@ -148,48 +148,6 @@
         aAjaxWsListener: [],
 
         /**
-         * 编辑器参数配置
-         * @returns {{modules: {toolbar: *[]}}}
-         */
-        editorOption() {
-            return {
-                modules: {
-                    toolbar: [
-                        ['bold', 'italic'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        [{ 'size': ['small', false, 'large', 'huge'] }],
-                        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-                        [{ 'color': [] }, { 'background': [] }],
-                        [{ 'align': [] }]
-                    ]
-                }
-            };
-        },
-
-        /**
-         * 获取用户信息（并保存）
-         * @param callback                  网络请求获取到用户信息回调（监听用户信息发生变化）
-         * @returns Object
-         */
-        getUserInfo(callback) {
-            if (typeof callback === 'function' || callback === true) {
-                $A.apiAjax({
-                    url: 'users/info',
-                    error: () => {
-                        $A.userLogout();
-                    },
-                    success: (res) => {
-                        if (res.ret === 1) {
-                            $A.app.$store.commit('setUserInfo', res.data);
-                            typeof callback === "function" && callback(res.data, $A.app.$store.state.userToken);
-                        }
-                    },
-                });
-            }
-            return $A.app.$store.state.userInfo;
-        },
-
-        /**
          * 打开登录页面
          */
         userLogout() {

@@ -1,11 +1,22 @@
 <template>
     <div class="task-add">
         <Form class="task-add-form" label-position="top" @submit.native.prevent>
-            <FormItem :label="$L('任务名称')">
-                <Input type="text" v-model="value.name"></Input>
+            <FormItem :label="$L('任务描述')">
+                <Input
+                    v-model="value.name"
+                    type="textarea"
+                    :rows="1"
+                    :autosize="{ minRows: 1, maxRows: 3 }"
+                    :maxlength="255"
+                    :placeholder="$L('必填')"></Input>
             </FormItem>
             <FormItem :label="$L('任务详情')">
-                <TEditor v-model="value.content" :plugins="taskPlugins" :options="taskOptions" :option-full="taskOptionFull"></TEditor>
+                <TEditor
+                    v-model="value.content"
+                    :plugins="taskPlugins"
+                    :options="taskOptions"
+                    :option-full="taskOptionFull"
+                    :placeholder="$L('选填...')"></TEditor>
             </FormItem>
             <Button class="advanced-option" :class="{advanced: advanced}" @click="advanced=!advanced">{{$L('高级选项')}}</Button>
         </Form>
@@ -41,13 +52,17 @@
             <div class="subtasks">
                 <div v-if="value.subtasks.length > 0" class="sublist">
                     <Row>
-                        <Col span="12">{{$L('任务名称')}}</Col>
+                        <Col span="12">{{$L('任务描述')}}</Col>
                         <Col span="6">{{$L('计划时间')}}</Col>
                         <Col span="6">{{$L('负责人')}}</Col>
                     </Row>
                     <Row v-for="(item, key) in value.subtasks" :key="key">
                         <Col span="12">
-                            <Input v-model="item.name" @on-clear="value.subtasks.splice(key, 1)" clearable/>
+                            <Input
+                                v-model="item.name"
+                                :maxlength="255"
+                                clearable
+                                @on-clear="value.subtasks.splice(key, 1)"/>
                         </Col>
                         <Col span="6">
                             <DatePicker
@@ -60,7 +75,10 @@
                                 @on-change="taskTimeChange(item.times)"/>
                         </Col>
                         <Col span="6">
-                            <UserInput v-model="item.owner" :multiple-max="1" :placeholder="$L('选择负责人')"/>
+                            <UserInput
+                                v-model="item.owner"
+                                :multiple-max="1"
+                                :placeholder="$L('选择负责人')"/>
                         </Col>
                     </Row>
                 </div>

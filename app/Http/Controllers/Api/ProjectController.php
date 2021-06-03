@@ -163,8 +163,8 @@ class ProjectController extends AbstractController
      *
      * @apiParam {Number} project_id        项目ID
      * @apiParam {Number} [column_id]       列表ID，留空取第一个
-     * @apiParam {String} name              任务名称
-     * @apiParam {String} [content]         任务描述
+     * @apiParam {String} name              任务描述
+     * @apiParam {String} [content]         任务详情
      * @apiParam {Array} [times]            计划时间（格式：开始时间,结束时间；如：2020-01-01 00:00,2020-01-01 23:59）
      * @apiParam {Number} [owner]           负责人，留空为自己
      * @apiParam {Array} [subtasks]         子任务（格式：[{name,owner,times}]）
