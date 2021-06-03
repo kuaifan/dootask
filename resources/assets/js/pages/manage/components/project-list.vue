@@ -34,7 +34,7 @@
                             <DropdownMenu slot="list">
                                 <DropdownItem name="setting">{{$L('项目设置')}}</DropdownItem>
                                 <DropdownItem name="transfer">{{$L('移交项目')}}</DropdownItem>
-                                <DropdownItem name="delete" divided>{{$L('删除项目')}}</DropdownItem>
+                                <DropdownItem name="delete" style="color:#f40" divided>{{$L('删除项目')}}</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
 
@@ -399,6 +399,7 @@
                 .project-switch {
                     display: flex;
                     justify-content: flex-end;
+                    margin-top: 24px;
                     .project-switch-button {
                         display: flex;
                         align-items: center;
@@ -1016,6 +1017,7 @@ export default {
                             this.$Modal.remove();
                             if (ret === 1) {
                                 $A.messageSuccess(msg);
+                                this.$store.commit('getProjectList');
                                 this.goForward({path: '/manage/dashboard'}, true);
                             }else{
                                 $A.modalError(msg, 301);

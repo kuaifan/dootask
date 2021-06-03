@@ -96,6 +96,33 @@ export default {
         state.userId = userInfo.userid;
         state.userToken = userInfo.token;
         state.setStorage('userInfo', state.userInfo);
+        this.commit('getProjectList');
+    },
+
+    /**
+     * 获取项目列表
+     * @param state
+     * @param completeCallback
+     */
+    getProjectList(state, completeCallback) {
+        if (state.userId === 0) {
+            state.projectList = [];
+            typeof completeCallback === "function" && completeCallback();
+            return;
+        }
+        $A.apiAjax({
+            url: 'project/lists',
+            complete: () => {
+                typeof completeCallback === "function" && completeCallback();
+            },
+            success: ({ret, data, msg}) => {
+                if (ret === 1) {
+                    state.projectList = data.data;
+                } else {
+                    $A.modalError(msg);
+                }
+            }
+        });
     },
 
     /**

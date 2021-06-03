@@ -20,9 +20,9 @@
                 </li>
                 <li class="menu-project">
                     <ul>
-                        <li v-for="(item, key) in projectLists" :key="key" @click="toggleRoute('project/' + item.id)" :class="classNameRoute('project/' + item.id)">{{item.name}}</li>
+                        <li v-for="(item, key) in projectList" :key="key" @click="toggleRoute('project/' + item.id)" :class="classNameRoute('project/' + item.id)">{{item.name}}</li>
                     </ul>
-                    <Loading v-if="projectLoad > 0"/>
+                    <Loading v-if="loadIng > 0"/>
                 </li>
             </ul>
             <Button class="manage-box-new" type="primary" icon="md-add" @click="addShow=true">New Project</Button>
@@ -67,7 +67,7 @@
             </Form>
             <div slot="footer">
                 <Button type="default" @click="addShow=false">{{$L('取消')}}</Button>
-                <Button type="primary" :loading="projectLoad > 0" @click="onAddProject">{{$L('添加')}}</Button>
+                <Button type="primary" :loading="loadIng > 0" @click="onAddProject">{{$L('添加')}}</Button>
             </div>
         </Modal>
     </div>
@@ -245,29 +245,20 @@ export default {
             addRule: {},
 
             columns: [],
-
-            projectLoad: 0,
-            projectLists: [],
-            projectListTotal: 0,
         }
     },
     mounted() {
-        this.$store.commit('getUserInfo', this.getProjectLists);
+        this.$store.commit('getUserInfo');
     },
     deactivated() {
         this.addShow = false;
     },
     computed: {
-        ...mapState(['userId']),
+        ...mapState(['projectList']),
     },
     watch: {
         '$route' (route) {
             this.curPath = route.path;
-        },
-        userId(userid) {
-            if (userid > 0) {
-                this.getProjectLists()
-            }
         }
     },
     methods: {
@@ -342,12 +333,12 @@ export default {
         onAddProject() {
             this.$refs.addProject.validate((valid) => {
                 if (valid) {
-                    this.projectLoad++;
+                    this.loadIng++;
                     $A.apiAjax({
                         url: 'project/add',
                         data: this.addData,
                         complete: () => {
-                            this.projectLoad--;
+                            this.loadIng--;
                         },
                         success: ({ret, data, msg}) => {
                             if (ret === 1) {
@@ -356,7 +347,10 @@ export default {
                                 this.$refs.addProject.resetFields();
                                 this.$set(this.addData, 'template', 0);
                                 //
-                                this.getProjectLists(true);
+                                this.loadIng++;
+                                this.$store.commit('getProjectList', () => {
+                                    this.loadIng--;
+                                });
                             } else {
                                 $A.modalError(msg);
                             }
@@ -365,25 +359,6 @@ export default {
                 }
             });
         },
-
-        getProjectLists() {
-            this.projectLoad++;
-            $A.apiAjax({
-                url: 'project/lists',
-                complete: () => {
-                    this.projectLoad--;
-                },
-                success: ({ret, data, msg}) => {
-                    if (ret === 1) {
-                        this.projectLists = data.data;
-                        this.projectListTotal = data.total;
-                    } else {
-                        this.projectLists = [];
-                        this.projectListTotal = 0;
-                    }
-                }
-            });
-        }
     }
 }
 </script>
