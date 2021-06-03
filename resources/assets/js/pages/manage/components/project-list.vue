@@ -300,8 +300,8 @@
             :mask-closable="false"
             class-name="simple-modal">
             <Form ref="addProject" :model="transferData" label-width="auto" @submit.native.prevent>
-                <FormItem v-if="transferShow" prop="owner_userid" :label="$L('项目负责人')">
-                    <UserInput v-model="transferData.owner_userid" :multiple-max="1" :placeholder="$L('选择项目负责人')"/>
+                <FormItem prop="owner_userid" :label="$L('项目负责人')">
+                    <UserInput v-if="transferShow" v-model="transferData.owner_userid" :multiple-max="1" :placeholder="$L('选择项目负责人')"/>
                 </FormItem>
             </Form>
             <div slot="footer">
