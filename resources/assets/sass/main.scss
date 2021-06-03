@@ -15,6 +15,13 @@
     }
 }
 
+body {
+    .ivu-input,
+    .ivu-select-selection {
+        border-color: #e8e8e8;
+    }
+}
+
 .ivu-modal-wrap {
     &.simple-modal {
         .ivu-modal {
@@ -328,10 +335,6 @@
         .ivu-form-item-label {
             font-weight: 600;
         }
-        .ivu-input,
-        .ivu-select-selection {
-            border-color: #e8e8e8;
-        }
         .teditor-box {
             .tox-tinymce {
                 border-color: #e8e8e8;
@@ -580,5 +583,36 @@
     }
 }
 
-
+.setting-item {
+    .ivu-input,
+    .ivu-select-selection {
+        max-width: 460px;
+    }
+    .form-tip {
+        color: #999999;
+    }
+    .setting-footer {
+        > button {
+            height: 34px;
+            line-height: 32px;
+            padding: 0 32px;
+        }
+    }
+    &.submit {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        .setting-footer {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1;
+            padding: 16px 24px 0;
+            border-top: 1px solid #F4F4F5;
+        }
+    }
+}
 

@@ -16,9 +16,10 @@ use Carbon\Carbon;
  * @property string|null $az A-Z
  * @property string|null $email 邮箱
  * @property string $nickname 昵称
+ * @property string|null $profession 职位/职称
  * @property string $userimg 头像
  * @property string|null $encrypt
- * @property string|null $userpass 登录密码
+ * @property string|null $password 登录密码
  * @property int|null $changepass 登录需要修改密码
  * @property int|null $login_num 累计登录次数
  * @property string|null $last_ip 最后登录IP
@@ -44,10 +45,11 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereLineIp($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereLoginNum($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereNickname($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereProfession($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUserid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUserimg($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereUserpass($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User wherePassword($value)
  * @mixin \Eloquent
  */
 class User extends AbstractModel
@@ -55,8 +57,6 @@ class User extends AbstractModel
     protected $primaryKey = 'userid';
 
     protected $hidden = [
-        'encrypt',
-        'userpass',
         'updated_at',
     ];
 
@@ -119,6 +119,15 @@ class User extends AbstractModel
         return WebSocket::whereUserid($this->userid)->exists();
     }
 
+    /**
+     * 判断是否管理员
+     * @return bool
+     */
+    public function isAdmin()
+    {
+        return in_array('admin', $this->identity);
+    }
+
 
     /** ***************************************************************************************** */
     /** ***************************************************************************************** */
@@ -127,11 +136,11 @@ class User extends AbstractModel
     /**
      * 注册会员
      * @param $email
-     * @param $userpass
+     * @param $password
      * @param array $other
      * @return array
      */
-    public static function reg($email, $userpass, $other = [])
+    public static function reg($email, $password, $other = [])
     {
         //邮箱
         if (!Base::isMail($email)) {
@@ -141,9 +150,9 @@ class User extends AbstractModel
             return Base::retError('邮箱地址已存在！');
         }
         //密码
-        if (strlen($userpass) < 6) {
+        if (strlen($password) < 6) {
             return Base::retError(['密码设置不能小于%位数！', 6]);
-        } elseif (strlen($userpass) > 32) {
+        } elseif (strlen($password) > 32) {
             return Base::retError(['密码最多只能设置%位数！', 32]);
         }
         //开始注册
@@ -151,7 +160,7 @@ class User extends AbstractModel
         $inArray = [
             'encrypt' => $encrypt,
             'email' => $email,
-            'userpass' => Base::md52($userpass, $encrypt),
+            'password' => Base::md52($password, $encrypt),
             'created_ip' => Base::getIp(),
         ];
         if ($other) {
@@ -293,7 +302,10 @@ class User extends AbstractModel
      */
     public static function token($userinfo)
     {
-        return base64_encode($userinfo->userid . '#$' . $userinfo->email . '#$' . $userinfo->encrypt . '#$' . time() . '#$' . Base::generatePassword(6));
+        $userinfo->token = base64_encode($userinfo->userid . '#$' . $userinfo->email . '#$' . $userinfo->encrypt . '#$' . time() . '#$' . Base::generatePassword(6));
+        unset($userinfo->encrypt);
+        unset($userinfo->password);
+        return $userinfo->token;
     }
 
     /**
@@ -355,7 +367,7 @@ class User extends AbstractModel
         if (isset($_A["__static_userid2basic_" . $userid])) {
             return $_A["__static_userid2basic_" . $userid];
         }
-        $fields = ['userid', 'email', 'nickname', 'userimg'];
+        $fields = ['userid', 'email', 'nickname', 'profession', 'userimg'];
         $userInfo = self::whereUserid($userid)->select($fields)->first();
         if ($userInfo) {
             $userInfo->online = $userInfo->getOnlineStatus();
@@ -383,8 +395,8 @@ class User extends AbstractModel
      */
     public static function needCode($email)
     {
-        $loginCode = Base::settingFind('system', 'loginCode');
-        switch ($loginCode) {
+        $login_code = Base::settingFind('system', 'login_code');
+        switch ($login_code) {
             case 'open':
                 return Base::retSuccess('need');
 

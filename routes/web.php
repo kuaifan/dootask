@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\ProjectController;
+use App\Http\Controllers\Api\SystemController;
 use App\Http\Controllers\Api\UsersController;
 use App\Http\Controllers\IndexController;
 use Illuminate\Support\Facades\Route;
@@ -24,9 +25,12 @@ Route::prefix('api')->middleware(['webapi'])->group(function () {
     // 会员
     Route::any('users/{method}',                    UsersController::class);
     Route::any('users/{method}/{action}',           UsersController::class);
-    //项目
+    // 项目
     Route::any('project/{method}',                  ProjectController::class);
     Route::any('project/{method}/{action}',         ProjectController::class);
+    // 系统
+    Route::any('system/{method}',                   SystemController::class);
+    Route::any('system/{method}/{action}',          SystemController::class);
 });
 
 /**

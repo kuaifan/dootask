@@ -49,6 +49,8 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereUserid($value)
  * @mixin \Eloquent
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectTaskTag[] $taskTag
+ * @property-read int|null $task_tag_count
  */
 class ProjectTask extends AbstractModel
 {

@@ -652,12 +652,13 @@
                                     > pre {
                                         margin: 0;
                                         padding: 0;
+                                        line-height: 1.5;
                                     }
                                 }
                                 .ivu-icon {
                                     font-size: 22px;
                                     color: #666666;
-                                    padding-left: 4px;
+                                    margin-left: 8px;
                                 }
                                 &.has-desc {
                                     .task-title {
@@ -668,7 +669,7 @@
                             .task-desc {
                                 color: #999999;
                                 margin-top: 10px;
-                                line-height: 18px;
+                                line-height: 20px;
                             }
                             .task-tags {
                                 margin-top: 10px;

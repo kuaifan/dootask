@@ -10,7 +10,7 @@
                     <Icon type="md-speedometer" />
                     <div class="menu-title">Dashboard</div>
                 </li>
-                <li @click="toggleRoute('setting')" :class="classNameRoute('setting')">
+                <li @click="toggleRoute('setting/personal')" :class="classNameRoute('setting')">
                     <Icon type="md-cog" />
                     <div class="menu-title">Setting</div>
                 </li>
@@ -293,9 +293,10 @@ export default {
         toggleRoute(path) {
             this.goForward({path: '/manage/' + path});
         },
+
         classNameRoute(path) {
             return {
-                "active": this.curPath == '/manage/' + path
+                "active": $A.leftExists(this.curPath, '/manage/' + path)
             };
         },
 

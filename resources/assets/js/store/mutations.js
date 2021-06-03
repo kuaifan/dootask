@@ -23,20 +23,18 @@ export default {
      * @param callback
      */
     getUserInfo(state, callback) {
-        if (typeof callback === 'function' || callback === true) {
-            $A.apiAjax({
-                url: 'users/info',
-                error: () => {
-                    $A.userLogout();
-                },
-                success: ({ret, data, msg}) => {
-                    if (ret === 1) {
-                        this.commit('setUserInfo', data);
-                        typeof callback === "function" && callback(data);
-                    }
-                },
-            });
-        }
+        $A.apiAjax({
+            url: 'users/info',
+            error: () => {
+                $A.userLogout();
+            },
+            success: ({ret, data, msg}) => {
+                if (ret === 1) {
+                    this.commit('setUserInfo', data);
+                    typeof callback === "function" && callback(data);
+                }
+            },
+        });
         return state.userInfo;
     },
 
@@ -107,27 +105,45 @@ export default {
             return;
         }
         const {userid, success, complete} = params;
-        if (typeof success === "function") {
-            if (state._isArray(userid)) {
-                userid.forEach((uid) => {
-                    state.cacheUserBasic[uid] && success(state.cacheUserBasic[uid], false)
-                });
-            } else {
-                state.cacheUserBasic[userid] && success(state.cacheUserBasic[userid], false)
+        const time = Math.round(new Date().getTime() / 1000);
+        const array = [];
+        (state._isArray(userid) ? userid : [userid]).some((uid) => {
+            if (state.cacheUserBasic[uid]) {
+                typeof success === "function" && success(state.cacheUserBasic[uid].data, false);
+                if (time - state.cacheUserBasic[uid].time <= 10) {
+                    return false;
+                }
             }
+            array.push(uid);
+        });
+        if (array.length === 0) {
+            typeof complete === "function" && complete()
+            return;
         }
+        //
+        if (state.cacheUserBasic["::loading"] === true) {
+            setTimeout(() => {
+                this.commit('getUserBasic', params);
+            }, 20);
+            return;
+        }
+        state.cacheUserBasic["::loading"] = true;
         $A.apiAjax({
             url: 'users/basic',
             data: {
-                userid: userid
+                userid: array
             },
             complete: () => {
+                state.cacheUserBasic["::loading"] = false;
                 typeof complete === "function" && complete()
             },
             success: ({ret, data, msg}) => {
                 if (ret === 1) {
                     data.forEach((item) => {
-                        state.cacheUserBasic[item.userid] = item;
+                        state.cacheUserBasic[item.userid] = {
+                            time,
+                            data: item
+                        };
                         typeof success === "function" && success(item, true)
                     });
                 } else {

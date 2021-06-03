@@ -1149,6 +1149,7 @@ class Base
         if ($array !== false) {
             $setting = $array;
             $row->updateInstance(['setting' => $array]);
+            $row->save();
         }
         $_A["__static_setting_" . $setname] = $setting;
         return $setting;

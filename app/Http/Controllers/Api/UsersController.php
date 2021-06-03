@@ -28,7 +28,7 @@ class UsersController extends AbstractController
      * - login:登录（默认）
      * - reg:注册
      * @apiParam {String} email          邮箱
-     * @apiParam {String} userpass       密码
+     * @apiParam {String} password       密码
      * @apiParam {String} [code]         登录验证码
      * @apiParam {String} [key]          登陆验证码key
      *
@@ -40,13 +40,13 @@ class UsersController extends AbstractController
     {
         $type = trim(Request::input('type'));
         $email = trim(Request::input('email'));
-        $userpass = trim(Request::input('userpass'));
+        $password = trim(Request::input('password'));
         if ($type == 'reg') {
             $setting = Base::setting('system');
             if ($setting['reg'] == 'close') {
                 return Base::retError('未开放注册！');
             }
-            $user = User::reg($email, $userpass);
+            $user = User::reg($email, $password);
             if (Base::isError($user)) {
                 return $user;
             } else {
@@ -81,7 +81,7 @@ class UsersController extends AbstractController
             if (empty($user)) {
                 return $retError('账号或密码错误！');
             }
-            if ($user->userpass != Base::md52($userpass, $user->encrypt)) {
+            if ($user->password != Base::md52($password, $user->encrypt)) {
                 return $retError('账号或密码错误！');
             }
             Cache::forget("code::" . $email);
@@ -96,8 +96,7 @@ class UsersController extends AbstractController
         ];
         $user->updateInstance($array);
         $user->save();
-        //
-        $user->token = User::token($user);
+        User::token($user);
         return Base::retSuccess($type == 'reg' ? "注册成功" : "登录成功", $user);
     }
 
@@ -181,6 +180,8 @@ class UsersController extends AbstractController
             $user = User::IDE($user['data']);
         }
         //
+        User::token($user);
+        //
         if (strlen($callback) > 3) {
             return $callback . '(' . json_encode(Base::retSuccess('success', $user)) . ')';
         }
@@ -197,6 +198,7 @@ class UsersController extends AbstractController
      *
      * @apiParam {Object} [userimg]             会员头像（地址）
      * @apiParam {String} [nickname]            昵称
+     * @apiParam {String} [profession]          职位/职称
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -222,14 +224,26 @@ class UsersController extends AbstractController
         if ($nickname) {
             if (mb_strlen($nickname) < 2) {
                 return Base::retError('昵称不可以少于2个字！');
-            } elseif (mb_strlen($nickname) > 8) {
-                return Base::retError('昵称最多只能设置8个字！');
+            } elseif (mb_strlen($nickname) > 20) {
+                return Base::retError('昵称最多只能设置20个字！');
             } else {
                 $user->nickname = $nickname;
             }
         }
+        //职位/职称
+        $profession = trim(Request::input('profession'));
+        if ($profession) {
+            if (mb_strlen($profession) < 2) {
+                return Base::retError('职位/职称不可以少于2个字！');
+            } elseif (mb_strlen($profession) > 20) {
+                return Base::retError('职位/职称最多只能设置20个字！');
+            } else {
+                $user->profession = $profession;
+            }
+        }
         //
         $user->save();
+        User::token($user);
         return Base::retSuccess('修改成功！', $user);
     }
 
@@ -277,15 +291,16 @@ class UsersController extends AbstractController
             return Base::retError('当前环境禁止修改密码！');
         }
         //
-        $verify = User::whereUserid($user->userid)->whereUserpass(Base::md52($oldpass, User::token2encrypt()))->count();
+        $verify = User::whereUserid($user->userid)->wherePassword(Base::md52($oldpass, User::token2encrypt()))->count();
         if (empty($verify)) {
             return Base::retError('请填写正确的旧密码！');
         }
         //
         $user->encrypt = Base::generatePassword(6);
-        $user->userpass = Base::md52($newpass, $user->encrypt);
+        $user->password = Base::md52($newpass, $user->encrypt);
         $user->changepass = 0;
         $user->save();
+        User::token($user);
         return Base::retSuccess('修改成功！', $user);
     }
 
