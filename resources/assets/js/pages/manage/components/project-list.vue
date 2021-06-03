@@ -29,7 +29,15 @@
                         <Badge :count="projectMsgUnread"></Badge>
                     </li>
                     <li class="project-icon">
-                        <Icon type="ios-more" />
+                        <Dropdown @on-click="projectDropdown" transfer>
+                            <Icon type="ios-more" />
+                            <DropdownMenu slot="list">
+                                <DropdownItem name="setting">{{$L('项目设置')}}</DropdownItem>
+                                <DropdownItem name="transfer">{{$L('移交项目')}}</DropdownItem>
+                                <DropdownItem name="delete" divided>{{$L('删除项目')}}</DropdownItem>
+                            </DropdownMenu>
+                        </Dropdown>
+
                     </li>
                 </ul>
                 <div class="project-switch">
@@ -48,7 +56,7 @@
                         <div :class="['column-head-num', column.project_task.length > 0 ? 'have' : '']">{{column.project_task.length}}</div>
                     </div>
                     <ul>
-                        <li v-for="item in column.project_task">
+                        <li v-for="item in panelTask(column.project_task)">
                             <div :class="['task-head', item.desc ? 'has-desc' : '']">
                                 <div class="task-title"><pre>{{item.name}}</pre></div>
                                 <Icon type="ios-more" />
@@ -74,9 +82,10 @@
                                     :delay="600"
                                     :content="item.end_at"
                                     transfer>
-                                    <Icon type="ios-time-outline"/>{{ formatTime(item.end_at) }}
+                                    <Icon type="ios-time-outline"/>{{ expiresFormat(item.end_at) }}
                                 </Tooltip>
                             </div>
+                            <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
                         </li>
                     </ul>
                     <div class="column-add" @click="addOpen(column.id)"><Icon type="md-add" /></div>
@@ -93,333 +102,157 @@
                     <Col span="3">Expiration</Col>
                 </Row>
             </div>
-            <div class="project-table-body">
-                <Row class="project-row">
-                    <Col span="12" class="row-title">
-                        <i class="iconfont">&#xe689;</i>
-                        <div class="row-h1">My task</div>
-                        <div class="row-num">(5)</div>
-                    </Col>
-                    <Col span="3"></Col>
-                    <Col span="3"></Col>
-                    <Col span="3"></Col>
-                    <Col span="3"></Col>
-                </Row>
-                <Row class="project-row">
-                    <Col span="12" class="row-item">
-                        <Icon type="md-radio-button-off" />
-                        <div class="item-title">Maxxis Tyres</div>
-                        <div class="item-icon">5<Icon type="ios-link-outline" /></div>
-                        <div class="item-icon">5<Icon type="ios-chatbubbles-outline" /></div>
-                    </Col>
-                    <Col span="3">Next Up</Col>
-                    <Col span="3"><TaskPriority>Important</TaskPriority></Col>
-                    <Col span="3" class="row-member">
-                        <ul>
-                            <li class="online">
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                            <li class="online">
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                            <li>
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                        </ul>
-                    </Col>
-                    <Col span="3">6 June, 2021</Col>
-                </Row>
-                <Row class="project-row">
-                    <Col span="12" class="row-item">
-                        <Icon type="md-radio-button-off" />
-                        <div class="item-title">Maxxis Tyres</div>
-                        <div class="item-icon">5<Icon type="ios-link-outline" /></div>
-                        <div class="item-icon">5<Icon type="ios-chatbubbles-outline" /></div>
-                    </Col>
-                    <Col span="3">Next Up</Col>
-                    <Col span="3"><TaskPriority>Unimportance</TaskPriority></Col>
-                    <Col span="3" class="row-member">
-                        <ul>
-                            <li class="online">
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                            <li class="online">
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                            <li>
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                        </ul>
-                    </Col>
-                    <Col span="3">6 June, 2021</Col>
-                </Row>
-                <Row class="project-row">
-                    <Col span="12" class="row-item">
-                        <Icon type="md-radio-button-off" />
-                        <div class="item-title">Maxxis Tyres</div>
-                        <div class="item-icon">5<Icon type="ios-link-outline" /></div>
-                        <div class="item-icon">5<Icon type="ios-chatbubbles-outline" /></div>
-                    </Col>
-                    <Col span="3">Next Up</Col>
-                    <Col span="3"><TaskPriority>Important</TaskPriority></Col>
-                    <Col span="3" class="row-member">
-                        <ul>
-                            <li class="online">
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                            <li class="online">
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                            <li>
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                        </ul>
-                    </Col>
-                    <Col span="3">6 June, 2021</Col>
-                </Row>
-                <Row class="project-row">
-                    <Col span="12" class="row-item">
-                        <Icon type="md-radio-button-off" />
-                        <div class="item-title">Maxxis Tyres</div>
-                        <div class="item-icon">5<Icon type="ios-link-outline" /></div>
-                        <div class="item-icon">5<Icon type="ios-chatbubbles-outline" /></div>
-                        <div class="item-icon">6<i class="iconfont">&#xe648;</i></div>
-                    </Col>
-                    <Col span="3">Next Up</Col>
-                    <Col span="3"><TaskPriority>Important</TaskPriority></Col>
-                    <Col span="3" class="row-member">
-                        <ul>
-                            <li class="online">
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                            <li class="online">
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                            <li>
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                        </ul>
-                    </Col>
-                    <Col span="3">6 June, 2021</Col>
-                </Row>
+            <!--我的任务-->
+            <div :class="['project-table-body', !$store.state.taskMyShow ? 'project-table-hide' : '']">
+                <div @click="$store.commit('toggleTaskMyShow')">
+                    <Row class="project-row">
+                        <Col span="12" class="row-title">
+                            <i class="iconfont">&#xe689;</i>
+                            <div class="row-h1">My task</div>
+                            <div class="row-num">({{myList.length}})</div>
+                        </Col>
+                        <Col span="3"></Col>
+                        <Col span="3"></Col>
+                        <Col span="3"></Col>
+                        <Col span="3"></Col>
+                    </Row>
+                </div>
+                <div class="project-rows">
+                    <Row v-for="(item, key) in myList" :key="key" class="project-row">
+                        <Col span="12" class="row-item">
+                            <Icon v-if="item.complete_at" class="completed" type="md-checkmark-circle" />
+                            <Icon v-else type="md-radio-button-off" />
+                            <div class="item-title">{{item.name}}</div>
+                            <div v-if="item.file_num > 0" class="item-icon">{{item.file_num}}<Icon type="ios-link-outline" /></div>
+                            <div v-if="item.msg_num > 0" class="item-icon">{{item.msg_num}}<Icon type="ios-chatbubbles-outline" /></div>
+                        </Col>
+                        <Col span="3">{{item.column_name}}</Col>
+                        <Col span="3"><TaskPriority v-if="item.p_name" :backgroundColor="item.p_color">{{item.p_name}}</TaskPriority></Col>
+                        <Col span="3" class="row-member">
+                            <ul>
+                                <li v-for="(user, keyu) in item.task_user" :key="keyu">
+                                    <UserAvatar :userid="user.userid" size="28"/>
+                                </li>
+                            </ul>
+                        </Col>
+                        <Col span="3">
+                            <Tooltip
+                                v-if="item.end_at"
+                                :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
+                                :delay="600"
+                                :content="item.end_at"
+                                transfer>
+                                {{item.end_at ? expiresFormat(item.end_at) : ''}}
+                            </Tooltip>
+                        </Col>
+                        <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
+                    </Row>
+                </div>
+                <div @click="addOpen(0)">
+                    <Row class="project-row">
+                        <Col span="12" class="row-add">
+                            <Icon type="ios-add" /> {{$L('添加任务')}}
+                        </Col>
+                        <Col span="3"></Col>
+                        <Col span="3"></Col>
+                        <Col span="3"></Col>
+                        <Col span="3"></Col>
+                    </Row>
+                </div>
             </div>
-            <div class="project-table-body">
-                <Row class="project-row">
-                    <Col span="12" class="row-title">
-                        <i class="iconfont">&#xe689;</i>
-                        <div class="row-h1">Undone</div>
-                        <div class="row-num">(5)</div>
-                    </Col>
-                    <Col span="3"></Col>
-                    <Col span="3"></Col>
-                    <Col span="3"></Col>
-                    <Col span="3"></Col>
-                </Row>
-                <Row class="project-row">
-                    <Col span="12" class="row-item">
-                        <Icon type="md-radio-button-off" />
-                        <div class="item-title">Maxxis Tyres</div>
-                        <div class="item-icon">5<Icon type="ios-link-outline" /></div>
-                        <div class="item-icon">5<Icon type="ios-chatbubbles-outline" /></div>
-                    </Col>
-                    <Col span="3">Next Up</Col>
-                    <Col span="3"><TaskPriority>Unimportance</TaskPriority></Col>
-                    <Col span="3" class="row-member">
-                        <ul>
-                            <li class="online">
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                            <li class="online">
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                            <li>
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                        </ul>
-                    </Col>
-                    <Col span="3">6 June, 2021</Col>
-                </Row>
-                <Row class="project-row">
-                    <Col span="12" class="row-item">
-                        <Icon type="md-radio-button-off" />
-                        <div class="item-title">Maxxis Tyres</div>
-                        <div class="item-icon">5<Icon type="ios-link-outline" /></div>
-                        <div class="item-icon">5<Icon type="ios-chatbubbles-outline" /></div>
-                    </Col>
-                    <Col span="3">Next Up</Col>
-                    <Col span="3"><TaskPriority>Unimportance</TaskPriority></Col>
-                    <Col span="3" class="row-member">
-                        <ul>
-                            <li class="online">
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                            <li class="online">
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                            <li>
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                        </ul>
-                    </Col>
-                    <Col span="3">6 June, 2021</Col>
-                </Row>
-                <Row class="project-row">
-                    <Col span="12" class="row-item">
-                        <Icon type="md-radio-button-off" />
-                        <div class="item-title">Maxxis Tyres</div>
-                        <div class="item-icon">5<Icon type="ios-link-outline" /></div>
-                        <div class="item-icon">5<Icon type="ios-chatbubbles-outline" /></div>
-                    </Col>
-                    <Col span="3">Next Up</Col>
-                    <Col span="3"><TaskPriority>Important</TaskPriority></Col>
-                    <Col span="3" class="row-member">
-                        <ul>
-                            <li class="online">
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                            <li class="online">
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                            <li>
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                        </ul>
-                    </Col>
-                    <Col span="3">6 June, 2021</Col>
-                </Row>
-                <Row class="project-row">
-                    <Col span="12" class="row-item">
-                        <Icon type="md-radio-button-off" />
-                        <div class="item-title">Maxxis Tyres</div>
-                        <div class="item-icon">5<Icon type="ios-link-outline" /></div>
-                        <div class="item-icon">5<Icon type="ios-chatbubbles-outline" /></div>
-                    </Col>
-                    <Col span="3">Next Up</Col>
-                    <Col span="3"><TaskPriority>Important</TaskPriority></Col>
-                    <Col span="3" class="row-member">
-                        <ul>
-                            <li class="online">
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                            <li class="online">
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                            <li>
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                        </ul>
-                    </Col>
-                    <Col span="3">6 June, 2021</Col>
-                </Row>
+            <!--未完成任务-->
+            <div :class="['project-table-body', !$store.state.taskUndoneShow ? 'project-table-hide' : '']">
+                <div @click="$store.commit('toggleTaskUndoneShow')">
+                    <Row class="project-row">
+                        <Col span="12" class="row-title">
+                            <i class="iconfont">&#xe689;</i>
+                            <div class="row-h1">Undone</div>
+                            <div class="row-num">({{undoneList.length}})</div>
+                        </Col>
+                        <Col span="3"></Col>
+                        <Col span="3"></Col>
+                        <Col span="3"></Col>
+                        <Col span="3"></Col>
+                    </Row>
+                </div>
+                <div class="project-rows">
+                    <Row v-for="(item, key) in undoneList" :key="key" class="project-row">
+                        <Col span="12" class="row-item">
+                            <Icon v-if="item.complete_at" class="completed" type="md-checkmark-circle" />
+                            <Icon v-else type="md-radio-button-off" />
+                            <div class="item-title">{{item.name}}</div>
+                            <div v-if="item.file_num > 0" class="item-icon">{{item.file_num}}<Icon type="ios-link-outline" /></div>
+                            <div v-if="item.msg_num > 0" class="item-icon">{{item.msg_num}}<Icon type="ios-chatbubbles-outline" /></div>
+                        </Col>
+                        <Col span="3">{{item.column_name}}</Col>
+                        <Col span="3"><TaskPriority v-if="item.p_name" :backgroundColor="item.p_color">{{item.p_name}}</TaskPriority></Col>
+                        <Col span="3" class="row-member">
+                            <ul>
+                                <li v-for="(user, keyu) in item.task_user" :key="keyu">
+                                    <UserAvatar :userid="user.userid" size="28"/>
+                                </li>
+                            </ul>
+                        </Col>
+                        <Col span="3">
+                            <Tooltip
+                                v-if="item.end_at"
+                                :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
+                                :delay="600"
+                                :content="item.end_at"
+                                transfer>
+                                {{item.end_at ? expiresFormat(item.end_at) : ''}}
+                            </Tooltip>
+                        </Col>
+                        <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
+                    </Row>
+                </div>
             </div>
-            <div class="project-table-body">
-                <Row class="project-row">
-                    <Col span="12" class="row-title">
-                        <i class="iconfont">&#xe689;</i>
-                        <div class="row-h1">Completed</div>
-                        <div class="row-num">(5)</div>
-                    </Col>
-                    <Col span="3"></Col>
-                    <Col span="3"></Col>
-                    <Col span="3"></Col>
-                    <Col span="3"></Col>
-                </Row>
-                <Row class="project-row">
-                    <Col span="12" class="row-item">
-                        <Icon class="completed" type="md-checkmark-circle" />
-                        <div class="item-title">Maxxis Tyres</div>
-                        <div class="item-icon">5<Icon type="ios-link-outline" /></div>
-                        <div class="item-icon">5<Icon type="ios-chatbubbles-outline" /></div>
-                    </Col>
-                    <Col span="3">Hi Progress</Col>
-                    <Col span="3"><TaskPriority>Important</TaskPriority></Col>
-                    <Col span="3" class="row-member">
-                        <ul>
-                            <li class="online">
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                            <li class="online">
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                            <li>
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                        </ul>
-                    </Col>
-                    <Col span="3">6 June, 2021</Col>
-                </Row>
-                <Row class="project-row">
-                    <Col span="12" class="row-item">
-                        <Icon class="completed" type="md-checkmark-circle" />
-                        <div class="item-title">Maxxis Tyres</div>
-                        <div class="item-icon">5<Icon type="ios-link-outline" /></div>
-                        <div class="item-icon">5<Icon type="ios-chatbubbles-outline" /></div>
-                    </Col>
-                    <Col span="3">Hi Progress</Col>
-                    <Col span="3"><TaskPriority>Unimportance</TaskPriority></Col>
-                    <Col span="3" class="row-member">
-                        <ul>
-                            <li class="online">
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                            <li class="online">
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                            <li>
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                        </ul>
-                    </Col>
-                    <Col span="3">6 June, 2021</Col>
-                </Row>
-                <Row class="project-row">
-                    <Col span="12" class="row-item">
-                        <Icon class="completed" type="md-checkmark-circle" />
-                        <div class="item-title">Maxxis Tyres</div>
-                        <div class="item-icon">5<Icon type="ios-link-outline" /></div>
-                        <div class="item-icon">5<Icon type="ios-chatbubbles-outline" /></div>
-                    </Col>
-                    <Col span="3">Hi Progress</Col>
-                    <Col span="3"><TaskPriority>Important</TaskPriority></Col>
-                    <Col span="3" class="row-member">
-                        <ul>
-                            <li class="online">
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                            <li class="online">
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                            <li>
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                        </ul>
-                    </Col>
-                    <Col span="3">6 June, 2021</Col>
-                </Row>
-                <Row class="project-row">
-                    <Col span="12" class="row-item">
-                        <Icon class="completed" type="md-checkmark-circle" />
-                        <div class="item-title">Maxxis Tyres</div>
-                        <div class="item-icon">5<Icon type="ios-link-outline" /></div>
-                        <div class="item-icon">5<Icon type="ios-chatbubbles-outline" /></div>
-                    </Col>
-                    <Col span="3">Next Up</Col>
-                    <Col span="3"><TaskPriority>Unimportance</TaskPriority></Col>
-                    <Col span="3" class="row-member">
-                        <ul>
-                            <li class="online">
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                            <li class="online">
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                            <li>
-                                <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                            </li>
-                        </ul>
-                    </Col>
-                    <Col span="3">6 June, 2021</Col>
-                </Row>
+            <!--已完成任务-->
+            <div :class="['project-table-body', !$store.state.taskCompletedShow ? 'project-table-hide' : '']">
+                <div @click="$store.commit('toggleTaskCompletedShow')">
+                    <Row class="project-row">
+                        <Col span="12" class="row-title">
+                            <i class="iconfont">&#xe689;</i>
+                            <div class="row-h1">Completed</div>
+                            <div class="row-num">({{completedList.length}})</div>
+                        </Col>
+                        <Col span="3"></Col>
+                        <Col span="3"></Col>
+                        <Col span="3"></Col>
+                        <Col span="3"></Col>
+                    </Row>
+                </div>
+                <div class="project-rows">
+                    <Row v-for="(item, key) in completedList" :key="key" class="project-row">
+                        <Col span="12" class="row-item">
+                            <Icon v-if="item.complete_at" class="completed" type="md-checkmark-circle" />
+                            <Icon v-else type="md-radio-button-off" />
+                            <div class="item-title">{{item.name}}</div>
+                            <div v-if="item.file_num > 0" class="item-icon">{{item.file_num}}<Icon type="ios-link-outline" /></div>
+                            <div v-if="item.msg_num > 0" class="item-icon">{{item.msg_num}}<Icon type="ios-chatbubbles-outline" /></div>
+                        </Col>
+                        <Col span="3">{{item.column_name}}</Col>
+                        <Col span="3"><TaskPriority v-if="item.p_name" :backgroundColor="item.p_color">{{item.p_name}}</TaskPriority></Col>
+                        <Col span="3" class="row-member">
+                            <ul>
+                                <li v-for="(user, keyu) in item.task_user" :key="keyu">
+                                    <UserAvatar :userid="user.userid" size="28"/>
+                                </li>
+                            </ul>
+                        </Col>
+                        <Col span="3">
+                            <Tooltip
+                                v-if="item.end_at"
+                                :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
+                                :delay="600"
+                                :content="item.end_at"
+                                transfer>
+                                {{item.end_at ? expiresFormat(item.end_at) : ''}}
+                            </Tooltip>
+                        </Col>
+                        <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
+                    </Row>
+                </div>
             </div>
         </div>
 
@@ -437,6 +270,43 @@
             <div slot="footer">
                 <Button type="default" @click="addShow=false">{{$L('取消')}}</Button>
                 <Button type="primary" :loading="taskLoad > 0" @click="onAddTask">{{$L('添加')}}</Button>
+            </div>
+        </Modal>
+
+        <!--项目设置-->
+        <Modal
+            v-model="settingShow"
+            :title="$L('项目设置')"
+            :mask-closable="false"
+            class-name="simple-modal">
+            <Form ref="addProject" :model="settingData" label-width="auto" @submit.native.prevent>
+                <FormItem prop="name" :label="$L('项目名称')">
+                    <Input type="text" v-model="settingData.name" :maxlength="32" :placeholder="$L('必填')"></Input>
+                </FormItem>
+                <FormItem prop="desc" :label="$L('项目描述')">
+                    <Input type="textarea" :autosize="{ minRows: 3, maxRows: 5 }" v-model="settingData.desc" :maxlength="255" :placeholder="$L('选填')"></Input>
+                </FormItem>
+            </Form>
+            <div slot="footer">
+                <Button type="default" @click="settingShow=false">{{$L('取消')}}</Button>
+                <Button type="primary" :loading="settingLoad > 0" @click="onSetting">{{$L('修改')}}</Button>
+            </div>
+        </Modal>
+
+        <!--移交项目-->
+        <Modal
+            v-model="transferShow"
+            :title="$L('移交项目')"
+            :mask-closable="false"
+            class-name="simple-modal">
+            <Form ref="addProject" :model="transferData" label-width="auto" @submit.native.prevent>
+                <FormItem v-if="transferShow" prop="owner_userid" :label="$L('项目负责人')">
+                    <UserInput v-model="transferData.owner_userid" :multiple-max="1" :placeholder="$L('选择项目负责人')"/>
+                </FormItem>
+            </Form>
+            <div slot="footer">
+                <Button type="default" @click="transferShow=false">{{$L('取消')}}</Button>
+                <Button type="primary" :loading="transferLoad > 0" @click="onTransfer">{{$L('移交')}}</Button>
             </div>
         </Modal>
     </div>
@@ -637,11 +507,20 @@
                             border-radius: 12px;
                             padding: 12px;
                             transition: box-shadow 0.3s;
+                            position: relative;
                             &:hover {
                                 box-shadow: 0 0 10px #e6ecfa;
                             }
                             &:first-child {
                                 margin-top: 16px;
+                            }
+                            .priority-color {
+                                position: absolute;
+                                top: 12px;
+                                left: 0;
+                                width: 3px;
+                                height: 42px;
+                                border-radius: 2px;
                             }
                             .task-head {
                                 display: flex;
@@ -770,6 +649,7 @@
             .project-row {
                 background-color: #ffffff;
                 border-bottom: 1px solid #F4F4F5;
+                position: relative;
                 > div {
                     display: flex;
                     align-items: center;
@@ -782,6 +662,13 @@
                         border-right: 0;
                     }
                 }
+                .priority-color {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    bottom: -1px;
+                    width: 3px;
+                }
             }
             .project-table-head,
             .project-table-body {
@@ -790,6 +677,16 @@
                 border: 1px solid #F4F4F5;
                 border-bottom: 0;
                 overflow: hidden;
+                &.project-table-hide {
+                    .project-rows {
+                        display: none;
+                    }
+                    .row-title {
+                        .iconfont {
+                            transform: rotate(-90deg);
+                        }
+                    }
+                }
             }
             .project-table-head {
                 .project-row {
@@ -801,18 +698,38 @@
                 }
             }
             .project-table-body {
+                transition: box-shadow 0.3s;
                 &:hover {
                     box-shadow: 0 0 10px #e6ecfa;
                 }
                 .project-row {
                     > div {
                         padding: 10px 12px;
+                        .task-time {
+                            &.overdue,
+                            &.today {
+                                color: #ffffff;
+                                padding: 1px 5px;
+                                font-size: 13px;
+                                border-radius: 3px;
+                            }
+                            &.overdue {
+                                font-weight: 600;
+                                background-color: #ed4014;
+                            }
+                            &.today {
+                                font-weight: 500;
+                                background-color: #ff9900;
+                            }
+                        }
                         &.row-title {
                             font-size: 14px;
                             font-weight: 500;
                             color: #333333;
                             padding-left: 14px;
                             .iconfont {
+                                cursor: pointer;
+                                transition: transform 0.3s;
                                 font-size: 12px;
                             }
                             .row-h1 {
@@ -824,7 +741,7 @@
                             }
                         }
                         &.row-item {
-                            padding-left: 20px;
+                            padding-left: 24px;
                             .ivu-icon {
                                 font-size: 16px;
                                 color: #dddddd;
@@ -862,12 +779,19 @@
                                     &:first-child {
                                         margin-left: 0;
                                     }
-                                    .ivu-avatar {
-                                        width: 28px;
-                                        height: 28px;
-                                        border: 2px solid #ffffff;
-                                    }
                                 }
+                            }
+                        }
+                        &.row-add {
+                            display: flex;
+                            align-items: center;
+                            height: 48px;
+                            cursor: pointer;
+                            > i {
+                                font-size: 24px;
+                                color: #777777;
+                                margin-left: 32px;
+                                margin-right: 4px;
                             }
                         }
                     }
@@ -882,11 +806,13 @@
 import TaskPriority from "./task-priority";
 import TaskAdd from "./task-add";
 import {mapState} from "vuex";
+import UserInput from "../../../components/UserInput";
 export default {
     name: "ProjectList",
-    components: {TaskAdd, TaskPriority},
+    components: {UserInput, TaskAdd, TaskPriority},
     data() {
         return {
+            nowTime: Math.round(new Date().getTime() / 1000),
             searchText: '',
 
             addShow: false,
@@ -895,15 +821,108 @@ export default {
                 column_id: 0,
                 times: [],
                 subtasks: [],
+                p_level: 0,
+                p_name: '',
+                p_color: '',
             },
             taskLoad: 0,
+
+            settingShow: false,
+            settingData: {},
+            settingLoad: 0,
+
+            transferShow: false,
+            transferData: {},
+            transferLoad: 0,
         }
     },
     mounted() {
-
+        setInterval(() => {
+            this.nowTime = Math.round(new Date().getTime() / 1000);
+        }, 1000)
     },
     computed: {
         ...mapState(['userId', 'projectDetail', 'projectLoad', 'projectMsgUnread']),
+
+        panelTask() {
+            const {searchText} = this;
+            return function (project_task) {
+                if (searchText) {
+                    return project_task.filter((task) => {
+                        return $A.strExists(task.name, searchText) || $A.strExists(task.desc, searchText);
+                    });
+                }
+                return project_task;
+            }
+        },
+
+        myList() {
+            const {searchText, userId, projectDetail} = this;
+            const array = [];
+            projectDetail.project_column.forEach(({project_task, name}) => {
+                project_task.some((task) => {
+                    if (searchText) {
+                        if (!$A.strExists(task.name, searchText) && !$A.strExists(task.desc, searchText)) {
+                            return false;
+                        }
+                    }
+                    if (task.task_user.find(({userid}) => userid == userId)) {
+                        task.column_name = name;
+                        array.push(task);
+                    }
+                });
+            });
+            return array;
+        },
+
+        undoneList() {
+            const {searchText, projectDetail} = this;
+            const array = [];
+            projectDetail.project_column.forEach(({project_task, name}) => {
+                project_task.some((task) => {
+                    if (searchText) {
+                        if (!$A.strExists(task.name, searchText) && !$A.strExists(task.desc, searchText)) {
+                            return false;
+                        }
+                    }
+                    if (!task.complete_at) {
+                        task.column_name = name;
+                        array.push(task);
+                    }
+                });
+            });
+            return array;
+        },
+
+        completedList() {
+            const {searchText, projectDetail} = this;
+            const array = [];
+            projectDetail.project_column.forEach(({project_task, name}) => {
+                project_task.some((task) => {
+                    if (searchText) {
+                        if (!$A.strExists(task.name, searchText) && !$A.strExists(task.desc, searchText)) {
+                            return false;
+                        }
+                    }
+                    if (task.complete_at) {
+                        task.column_name = name;
+                        array.push(task);
+                    }
+                });
+            });
+            return array;
+        },
+
+        expiresFormat() {
+            const {nowTime} = this;
+            return function (date) {
+                let time = Math.round(new Date(date).getTime() / 1000) - nowTime;
+                if (time > 0 && time < 86400 * 4) {
+                    return this.formatSeconds(time);
+                }
+                return this.formatTime(date)
+            }
+        },
     },
     methods: {
         addOpen(column_id) {
@@ -934,6 +953,100 @@ export default {
             });
         },
 
+        onSetting() {
+            this.settingLoad++;
+            $A.apiAjax({
+                url: 'project/edit',
+                data: this.settingData,
+                complete: () => {
+                    this.settingLoad--;
+                },
+                success: ({ret, data, msg}) => {
+                    if (ret === 1) {
+                        $A.messageSuccess(msg);
+                        this.$set(this.projectDetail, 'name', this.settingData.name);
+                        this.$set(this.projectDetail, 'desc', this.settingData.desc);
+                        this.settingShow = false;
+                    } else {
+                        $A.modalError(msg);
+                    }
+                }
+            });
+        },
+
+        onTransfer() {
+            this.transferLoad++;
+            $A.apiAjax({
+                url: 'project/transfer',
+                data: {
+                    project_id: this.transferData.project_id,
+                    owner_userid: this.transferData.owner_userid[0],
+                },
+                complete: () => {
+                    this.transferLoad--;
+                },
+                success: ({ret, data, msg}) => {
+                    if (ret === 1) {
+                        $A.messageSuccess(msg);
+                        this.$store.commit('getProjectDetail', this.transferData.project_id);
+                        this.transferShow = false;
+                    } else {
+                        $A.modalError(msg);
+                    }
+                }
+            });
+        },
+
+        onDelete() {
+            $A.modalConfirm({
+                title: '删除项目',
+                content: '你确定要删除此项目吗？',
+                loading: true,
+                onOk: () => {
+                    $A.apiAjax({
+                        url: 'project/delete',
+                        data: {
+                            project_id: this.projectDetail.id,
+                        },
+                        error: () => {
+                            this.$Modal.remove();
+                            $A.modalAlert('网络繁忙，请稍后再试！');
+                        },
+                        success: ({ret, data, msg}) => {
+                            this.$Modal.remove();
+                            if (ret === 1) {
+                                $A.messageSuccess(msg);
+                                this.goForward({path: '/manage/dashboard'}, true);
+                            }else{
+                                $A.modalError(msg, 301);
+                            }
+                        }
+                    });
+                }
+            });
+        },
+
+        projectDropdown(name) {
+            switch (name) {
+                case "setting":
+                    this.$set(this.settingData, 'project_id', this.projectDetail.id);
+                    this.$set(this.settingData, 'name', this.projectDetail.name);
+                    this.$set(this.settingData, 'desc', this.projectDetail.desc);
+                    this.settingShow = true;
+                    break;
+
+                case "transfer":
+                    this.$set(this.transferData, 'project_id', this.projectDetail.id);
+                    this.$set(this.transferData, 'owner_userid', [this.projectDetail.owner_userid]);
+                    this.transferShow = true;
+                    break;
+
+                case "delete":
+                    this.onDelete();
+                    break;
+            }
+        },
+
         formatTime(date) {
             let time = Math.round(new Date(date).getTime() / 1000),
                 string = '';
@@ -945,6 +1058,26 @@ export default {
                 string = $A.formatDate('Y-m-d', time)
             }
             return string || '';
+        },
+
+        formatBit: function formatBit(val) {
+            val = +val
+            return val > 9 ? val : '0' + val
+        },
+
+        formatSeconds: function formatSeconds(second) {
+            let duration
+            let days = Math.floor(second / 86400);
+            let hours = Math.floor((second % 86400) / 3600);
+            let minutes = Math.floor(((second % 86400) % 3600) / 60);
+            let seconds = Math.floor(((second % 86400) % 3600) % 60);
+            if (days > 0) {
+                return days + "d," + this.formatBit(hours) + "h";
+            }
+            else if (hours > 0) duration = this.formatBit(hours) + ":" + this.formatBit(minutes) + ":" + this.formatBit(seconds);
+            else if (minutes > 0) duration = this.formatBit(minutes) + ":" + this.formatBit(seconds);
+            else if (seconds > 0) duration = this.formatBit(seconds) + "s";
+            return duration;
         },
     }
 }

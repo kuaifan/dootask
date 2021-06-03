@@ -159,7 +159,7 @@
                     }
                     &.online {
                         &:before {
-                            background-color: #509E76;
+                            background-color: #87d068;
                         }
                     }
                 }
@@ -210,7 +210,7 @@
                             }
                             &.online {
                                 &:before {
-                                    background-color: #509E76;
+                                    background-color: #87d068;
                                 }
                             }
                         }

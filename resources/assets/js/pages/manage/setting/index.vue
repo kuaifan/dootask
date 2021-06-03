@@ -15,7 +15,7 @@
                 </ul>
             </div>
             <div class="setting-content">
-                <div class="setting-content-title">{{$L('密码设置')}}</div>
+                <div class="setting-content-title">{{$L(titleNameRoute)}}</div>
                 <div class="setting-content-view"><router-view class="setting-router-view"></router-view></div>
             </div>
         </div>
@@ -129,6 +129,18 @@ export default {
     },
     computed: {
         ...mapState(['userInfo']),
+
+        titleNameRoute() {
+            const {curPath, menu} = this;
+            let name = '';
+            menu.some((item) => {
+                if ($A.leftExists(curPath, '/manage/setting/' + item.path)) {
+                    name = item.name;
+                    return true;
+                }
+            })
+            return name;
+        }
     },
     watch: {
         '$route' (route) {

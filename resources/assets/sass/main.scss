@@ -53,7 +53,7 @@ body {
                 .ivu-btn {
                     height: 34px;
                     line-height: 32px;
-                    padding: 0 32px;
+                    min-width: 94px;
                 }
             }
             .ivu-modal-content {
@@ -354,18 +354,43 @@ body {
         }
         .advanced-option {
             margin-top: -6px;
-            transition: margin 0.2s;
             z-index: 1;
-            &.advanced {
-                margin-left: 22px;
+            display: flex;
+            align-items: center;
+            > button {
+                transition: margin 0.2s;
+                &.advanced {
+                    margin-left: 22px;
+                }
+                &:focus {
+                    box-shadow: none;
+                }
             }
-            &:focus {
-                box-shadow: none;
+            .advanced-priority {
+                display: flex;
+                align-items: center;
+                margin-left: 24px;
+                > li {
+                    list-style: none;
+                    margin-left: 3px;
+                    .ivu-tooltip {
+                        display: flex;
+                        align-items: center;
+                        .ivu-tooltip-rel {
+                            height: 34px;
+                            line-height: 1;
+                            .iconfont {
+                                font-size: 34px;
+                                cursor: pointer;
+                            }
+                        }
+                    }
+                }
             }
         }
     }
     .task-add-advanced {
-        margin: 0;
+        margin: 1px 0 0;
         padding: 34px 32px 6px;
         border-radius: 8px;
         border: 1px solid #e8e8e8;
@@ -438,6 +463,7 @@ body {
 }
 
 .common-avatar {
+    position: relative;
     .common-avatar-text {
         background-color: #87d068;
     }
@@ -455,7 +481,7 @@ body {
     }
     &.online {
         &:before {
-            background-color: #509E76;
+            background-color: #87d068;
         }
     }
 }
@@ -591,11 +617,35 @@ body {
     .form-tip {
         color: #999999;
     }
+    .setting-color {
+        max-width: 600px;
+        margin-bottom: 12px;
+        > div {
+            text-align: center;
+            padding-right: 12px;
+            &:first-child {
+                text-align: left;
+            }
+            &:last-child {
+                padding-right: 0;
+                width: 60px;
+                flex: auto;
+                flex-shrink: 0;
+                max-width: 60px;
+            }
+            .ivu-color-picker {
+                width: 100%;
+            }
+        }
+        .information {
+            color: #999999;
+        }
+    }
     .setting-footer {
         > button {
             height: 34px;
             line-height: 32px;
-            padding: 0 32px;
+            min-width: 94px;
         }
     }
     &.submit {

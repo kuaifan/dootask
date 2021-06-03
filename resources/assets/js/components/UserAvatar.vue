@@ -2,8 +2,11 @@
     <Tooltip v-if="user"
              :class="['common-avatar', user.online ? 'online' : '']"
              :delay="600"
-             :transfer="transfer"
-             :content="user.nickname">
+             :transfer="transfer">
+        <div slot="content">
+            <p>{{$L('昵称')}}: {{user.nickname}}</p>
+            <p>{{$L('职位/职称')}}: {{user.profession || '-'}}</p>
+        </div>
         <Avatar v-if="showImg" :src="user.userimg" :size="size"/>
         <Avatar v-else :size="size" class="common-avatar-text">{{nickname}}</Avatar>
     </Tooltip>

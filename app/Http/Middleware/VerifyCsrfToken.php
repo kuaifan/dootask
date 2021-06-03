@@ -12,11 +12,14 @@ class VerifyCsrfToken extends Middleware
      * @var array
      */
     protected $except = [
-        //上传图片
+        // 上传图片
         'api/system/imgupload/',
 
-        //上传文件
+        // 上传文件
         'api/system/fileupload/',
+
+        // 保存任务优先级
+        'api/system/priority/',
 
         // 添加任务
         'api/project/task/add/',

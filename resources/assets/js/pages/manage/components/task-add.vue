@@ -18,7 +18,20 @@
                     :option-full="taskOptionFull"
                     :placeholder="$L('选填...')"></TEditor>
             </FormItem>
-            <Button class="advanced-option" :class="{advanced: advanced}" @click="advanced=!advanced">{{$L('高级选项')}}</Button>
+            <div class="advanced-option">
+                <Button :class="{advanced: advanced}" @click="advanced=!advanced">{{$L('高级选项')}}</Button>
+                <ul class="advanced-priority">
+                    <li v-for="(item, key) in taskPriority" :key="key">
+                        <Tooltip :content="item.name + ' (' + item.days + $L('天') + ')'">
+                            <i
+                                class="iconfont"
+                                :style="{color:item.color}"
+                                v-html="value.p_name == item.name ? '&#xe61d;' : '&#xe61c;'"
+                                @click="choosePriority(item)"></i>
+                        </Tooltip>
+                    </li>
+                </ul>
+            </div>
         </Form>
         <Form v-if="advanced" class="task-add-advanced" label-width="auto" @submit.native.prevent>
             <FormItem :label="$L('任务列表')">
@@ -142,10 +155,10 @@ export default {
         }
     },
     mounted() {
-
+        this.$store.commit('getTaskPriority')
     },
     computed: {
-        ...mapState(['userId', 'projectDetail']),
+        ...mapState(['userId', 'projectDetail', 'taskPriority']),
     },
     watch: {
         projectDetail(detail) {
@@ -229,6 +242,14 @@ export default {
                 });
                 this.subName = '';
             }
+        },
+        choosePriority(item) {
+            let start = new Date();
+            let end = new Date(new Date().setDate(start.getDate() + $A.runNum(item.days)));
+            this.$set(this.value, 'times', [start, end])
+            this.$set(this.value, 'p_level', item.priority)
+            this.$set(this.value, 'p_name', item.name)
+            this.$set(this.value, 'p_color', item.color)
         }
     }
 }

@@ -57,16 +57,16 @@ export default {
                 complete: () => {
                     this.loadIng--;
                 },
-                success: (res) => {
-                    if (res.ret === 1) {
-                        this.formDatum = res.data;
+                success: ({ret, data, msg}) => {
+                    if (ret === 1) {
+                        this.formDatum = data;
                         this.formDatum_bak = $A.cloneJSON(this.formDatum);
                         if (save) {
                             $A.messageSuccess('修改成功');
                         }
                     } else {
                         if (save) {
-                            $A.modalError(res.msg);
+                            $A.modalError(msg);
                         }
                     }
                 }

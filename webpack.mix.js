@@ -1,4 +1,5 @@
 const mix = require('laravel-mix');
+const ipv4 = require('internal-ip').v4.sync();
 
 const mixBuildName = function (str) {
     if (/resources_assets_js_pages_(.*?)_vue/.test(str)) {
@@ -30,7 +31,11 @@ mix
         },
     })
     .options({
-        processCssUrls: false
+        processCssUrls: false,
+        hmrOptions: {
+            host: ipv4 || 'localhost',
+            port: '22222'
+        },
     })
     .vue({
         version: 2,

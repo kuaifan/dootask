@@ -18,6 +18,51 @@ export default {
     },
 
     /**
+     * 切换项目面板显示显示我的任务
+     * @param state
+     */
+    toggleTaskMyShow(state) {
+        state.taskMyShow = !state.taskMyShow
+        state.setStorage('taskMyShow', state.taskMyShow);
+    },
+
+    /**
+     * 切换项目面板显示显示未完成任务
+     * @param state
+     */
+    toggleTaskUndoneShow(state) {
+        state.taskUndoneShow = !state.taskUndoneShow
+        state.setStorage('taskUndoneShow', state.taskUndoneShow);
+    },
+
+    /**
+     * 切换项目面板显示显示已完成任务
+     * @param state
+     */
+    toggleTaskCompletedShow(state) {
+        state.taskCompletedShow = !state.taskCompletedShow
+        state.setStorage('taskCompletedShow', state.taskCompletedShow);
+    },
+
+    /**
+     * 获取任务优先级预设数据
+     * @param state
+     * @param callback
+     */
+    getTaskPriority(state, callback) {
+        $A.apiAjax({
+            url: 'system/priority',
+            success: ({ret, data, msg}) => {
+                if (ret === 1) {
+                    state.taskPriority = data;
+                    typeof callback === "function" && callback(data);
+                }
+            },
+        });
+        return state.userInfo;
+    },
+
+    /**
      * 获取/更新会员信息
      * @param state
      * @param callback
@@ -59,7 +104,7 @@ export default {
      * @param project_id
      */
     getProjectDetail(state, project_id) {
-        if (state._runNum(project_id) == 0) {
+        if (state._runNum(project_id) === 0) {
             return;
         }
         if (state._isJson(state.cacheProject[project_id])) {
@@ -85,7 +130,7 @@ export default {
             success: ({ret, data, msg}) => {
                 if (ret === 1) {
                     state.cacheProject[project_id] = data;
-                    if (state.projectDetail.id == project_id) {
+                    if (state.projectDetail.id === project_id) {
                         state.projectDetail = data;
                     }
                 } else {

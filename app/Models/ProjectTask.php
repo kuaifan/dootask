@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Module\Base;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Class ProjectTask
@@ -20,15 +21,20 @@ use Carbon\Carbon;
  * @property string|null $archived_at 归档时间
  * @property string|null $complete_at 完成时间
  * @property int|null $userid 创建人
+ * @property int|null $p_level 优先级
+ * @property string|null $p_name 优先级名称
+ * @property string|null $p_color 优先级颜色
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read int $file_num
  * @property-read int $msg_num
- * @property-read int $sub_num
  * @property-read bool $overdue
  * @property-read int $percent
+ * @property-read int $sub_num
  * @property-read bool $today
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectTaskTag[] $taskTag
+ * @property-read int|null $task_tag_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectTaskUser[] $taskUser
  * @property-read int|null $task_user_count
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask newModelQuery()
@@ -43,17 +49,19 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereEndAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask wherePColor($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask wherePLevel($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask wherePName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereParentId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereProjectId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereStartAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereUserid($value)
  * @mixin \Eloquent
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectTaskTag[] $taskTag
- * @property-read int|null $task_tag_count
  */
 class ProjectTask extends AbstractModel
 {
+    use SoftDeletes;
 
     protected $appends = [
         'file_num',
@@ -187,20 +195,26 @@ class ProjectTask extends AbstractModel
         $times      = $params['times'];
         $owner      = $params['owner'];
         $subtasks   = $params['subtasks'];
+        $p_level    = intval($params['p_level']);
+        $p_name     = $params['p_name'];
+        $p_color    = $params['p_color'];
         //
         $retPre = $parent_id ? '子任务' : '任务';
         $task = self::createInstance();
         $task->parent_id = $parent_id;
         $task->project_id = $project_id;
         $task->column_id = $column_id;
+        $task->p_level = $p_level;
+        $task->p_name = $p_name;
+        $task->p_color = $p_color;
         if ($content) {
             $task->desc = Base::getHtml($content);
         }
         // 标题
         if (empty($name)) {
-            return Base::retError($retPre . '名称不能为空！');
+            return Base::retError($retPre . '描述不能为空！');
         } elseif (mb_strlen($name) > 255) {
-            return Base::retError($retPre . '名称最多只能设置255个字！');
+            return Base::retError($retPre . '描述最多只能设置255个字！');
         }
         $task->name = $name;
         // 时间
@@ -246,6 +260,9 @@ class ProjectTask extends AbstractModel
                     $subtask['parent_id'] = $task->id;
                     $subtask['project_id'] = $task->project_id;
                     $subtask['column_id'] = $task->column_id;
+                    $subtask['p_level'] = $task->p_level;
+                    $subtask['p_name'] = $task->p_name;
+                    $subtask['p_color'] = $task->p_color;
                     $res = self::addTask($subtask);
                     if (Base::isError($res)) {
                         return $res;

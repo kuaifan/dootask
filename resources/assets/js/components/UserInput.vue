@@ -60,10 +60,10 @@
             }
         },
         mounted() {
-            if (!$A.isArray(this.value)) {
-                this.$emit('input', [this.value]);
-            } else {
+            if ($A.isArray(this.value)) {
                 this.values = $A.cloneJSON(this.value);
+            } else {
+                this.$emit('input', this.value ? [this.value] : []);
             }
             this.$nextTick(() => {
                 this.ready = true;

@@ -109,6 +109,9 @@ class ProjectController extends AbstractController
         } elseif (mb_strlen($name) > 32) {
             return Base::retError('项目名称最多只能设置32个字！');
         }
+        if (mb_strlen($desc) > 255) {
+            return Base::retError('项目描述最多只能设置255个字！');
+        }
         //流程
         $columns = Request::input('columns');
         if (!is_array($columns)) $columns = [];
@@ -159,6 +162,136 @@ class ProjectController extends AbstractController
     }
 
     /**
+     * 修改项目
+     *
+     * @apiParam {Number} project_id        项目ID
+     * @apiParam {String} name              项目名称
+     * @apiParam {String} [desc]            项目描述
+     */
+    public function edit()
+    {
+        $user = User::authE();
+        if (Base::isError($user)) {
+            return $user;
+        } else {
+            $user = User::IDE($user['data']);
+        }
+        //
+        $project_id = intval(Request::input('project_id'));
+        $name = trim(Request::input('name', ''));
+        $desc = trim(Request::input('desc', ''));
+        if (mb_strlen($name) < 2) {
+            return Base::retError('项目名称不可以少于2个字！');
+        } elseif (mb_strlen($name) > 32) {
+            return Base::retError('项目名称最多只能设置32个字！');
+        }
+        if (mb_strlen($desc) > 255) {
+            return Base::retError('项目描述最多只能设置255个字！');
+        }
+        //
+        $project = Project::select($this->projectSelect)
+            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->where('projects.id', $project_id)
+            ->where('project_users.userid', $user->userid)
+            ->first();
+        if (empty($project)) {
+            return Base::retError('项目不存在或不在成员列表内！');
+        }
+        if (!$project->owner) {
+            return Base::retError('你不是项目负责人！');
+        }
+        //
+        $project->name = $name;
+        $project->desc = $desc;
+        $project->save();
+        //
+        return Base::retSuccess('修改成功');
+    }
+
+    /**
+     * 移交项目
+     *
+     * @apiParam {Number} project_id        项目ID
+     * @apiParam {Number} owner_userid      新的项目负责人ID
+     */
+    public function transfer()
+    {
+        $user = User::authE();
+        if (Base::isError($user)) {
+            return $user;
+        } else {
+            $user = User::IDE($user['data']);
+        }
+        //
+        $project_id = intval(Request::input('project_id'));
+        $owner_userid = intval(Request::input('owner_userid'));
+        //
+        $project = Project::select($this->projectSelect)
+            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->where('projects.id', $project_id)
+            ->where('project_users.userid', $user->userid)
+            ->first();
+        if (empty($project)) {
+            return Base::retError('项目不存在或不在成员列表内！');
+        }
+        if (!$project->owner) {
+            return Base::retError('你不是项目负责人！');
+        }
+        //
+        if (!User::whereUserid($owner_userid)->exists()) {
+            return Base::retError('会员不存在！');
+        }
+        //
+        return AbstractModel::transaction(function() use ($owner_userid, $project) {
+            ProjectUser::whereProjectId($project->id)->update(['owner' => 0]);
+            ProjectUser::updateInsert([
+                'project_id' => $project->id,
+                'userid' => $owner_userid,
+            ], [
+                'owner' => 1,
+            ]);
+            //
+            return Base::retSuccess('移交成功');
+        });
+    }
+
+    /**
+     * 删除项目
+     *
+     * @apiParam {Number} project_id        项目ID
+     */
+    public function delete()
+    {
+        $user = User::authE();
+        if (Base::isError($user)) {
+            return $user;
+        } else {
+            $user = User::IDE($user['data']);
+        }
+        //
+        $project_id = intval(Request::input('project_id'));
+        //
+        $project = Project::select($this->projectSelect)
+            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->where('projects.id', $project_id)
+            ->where('project_users.userid', $user->userid)
+            ->first();
+        if (empty($project)) {
+            return Base::retError('项目不存在或不在成员列表内！');
+        }
+        if (!$project->owner) {
+            return Base::retError('你不是项目负责人！');
+        }
+        //
+        return AbstractModel::transaction(function() use ($project) {
+            ProjectTask::whereProjectId($project->id)->delete();
+            $project->delete();
+            //
+            return Base::retSuccess('删除成功');
+        });
+    }
+
+    /**
      * {post}【任务】添加任务
      *
      * @apiParam {Number} project_id        项目ID
@@ -184,6 +317,9 @@ class ProjectController extends AbstractController
         $times = Base::getPostValue('times');
         $owner = Base::getPostValue('owner');
         $subtasks = Base::getPostValue('subtasks');
+        $p_level = Base::getPostValue('p_level');
+        $p_name = Base::getPostValue('p_name');
+        $p_color = Base::getPostValue('p_color');
         // 项目
         $project = Project::select($this->projectSelect)
             ->join('project_users', 'projects.id', '=', 'project_users.project_id')
@@ -191,7 +327,7 @@ class ProjectController extends AbstractController
             ->where('project_users.userid', $user->userid)
             ->first();
         if (empty($project)) {
-            return Base::retError('项目不存在或已被删除！');
+            return Base::retError('项目不存在或不在成员列表内！');
         }
         // 列表
         if (is_array($column_id)) {
@@ -224,6 +360,9 @@ class ProjectController extends AbstractController
             'times' => $times,
             'owner' => $owner,
             'subtasks' => $subtasks,
+            'p_level' => $p_level,
+            'p_name' => $p_name,
+            'p_color' => $p_color,
         ]);
     }
 }

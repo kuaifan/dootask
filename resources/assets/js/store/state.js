@@ -161,6 +161,10 @@ const stateCommon = {
 const projectChatShow = stateCommon.getStorageBoolean('projectChatShow', true);
 const projectListPanel = stateCommon.getStorageBoolean('projectListPanel', true);
 
+const taskMyShow = stateCommon.getStorageBoolean('taskMyShow', true);
+const taskUndoneShow = stateCommon.getStorageBoolean('taskUndoneShow', true);
+const taskCompletedShow = stateCommon.getStorageBoolean('taskCompletedShow', true);
+
 const userInfo = stateCommon.getStorageJson('userInfo');
 const userId = userInfo.userid = stateCommon._runNum(userInfo.userid);
 const userToken = userInfo.token;
@@ -169,9 +173,16 @@ export default Object.assign(stateCommon, {
     projectChatShow,
     projectListPanel,
 
+    taskMyShow,
+    taskUndoneShow,
+    taskCompletedShow,
+
     userId,
     userInfo,
     userToken,
+
+    cacheProject: {},
+    cacheUserBasic: {},
 
     projectLoad: 0,
     projectDetail: {
@@ -181,6 +192,5 @@ export default Object.assign(stateCommon, {
     },
     projectMsgUnread: 0,
 
-    cacheProject: {},
-    cacheUserBasic: {},
+    taskPriority: [],
 })

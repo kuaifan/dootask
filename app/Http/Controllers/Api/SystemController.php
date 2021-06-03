@@ -63,6 +63,59 @@ class SystemController extends AbstractController
     }
 
     /**
+     * @api {post} api/system/priority          01. 获取优先级、保存优先级
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName priority
+     *
+     * @apiParam {Array} list   优先级数据，格式：[{name,color,days,priority}]
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function priority()
+    {
+        $type = trim(Request::input('type'));
+        if ($type == 'save') {
+            $user = User::authE();
+            if (Base::isError($user)) {
+                return $user;
+            } else {
+                $user = User::IDE($user['data']);
+            }
+            if (!$user->isAdmin()) {
+                return Base::retError('权限不足！');
+            }
+            $list = Base::getPostValue('list');
+            $array = [];
+            if (empty($list) || !is_array($list)) {
+                return Base::retError('参数错误！');
+            }
+            foreach ($list AS $item) {
+                if (empty($item['name']) || empty($item['color']) || empty($item['days']) || empty($item['priority'])) {
+                    continue;
+                }
+                $array[] = [
+                    'name' => $item['name'],
+                    'color' => $item['color'],
+                    'days' => intval($item['days']),
+                    'priority' => intval($item['priority']),
+                ];
+            }
+            if (empty($array)) {
+                return Base::retError('参数为空！');
+            }
+            $setting = Base::setting('priority', $array);
+        } else {
+            $setting = Base::setting('priority');
+        }
+        //
+        return Base::retSuccess('success', $setting);
+    }
+
+    /**
      * @api {get} api/system/get/info          02. 获取终端详细信息
      *
      * @apiVersion 1.0.0
