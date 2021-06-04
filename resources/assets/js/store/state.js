@@ -172,18 +172,27 @@ state.wsCall = {};
 state.wsTimeout = null;
 state.wsListener = {};
 
-export default Object.assign(state, {
-    cacheProject: {},
-    cacheUserBasic: {},
+// 项目信息
+state.projectLoad = 0;
+state.projectList = [];
+state.projectDetail = {
+    id: 0,
+    project_column: [],
+    project_user: []
+};
+state.projectMsgUnread = 0;
 
-    projectLoad: 0,
-    projectList: [],
-    projectDetail: {
-        id: 0,
-        project_column: [],
-        project_user: []
-    },
-    projectMsgUnread: 0,
+// 会话消息
+state.dialogId = 0;
+state.dialogLoad = 0;
+state.dialogList = [];
 
-    taskPriority: [],
-})
+// 任务优先级
+state.taskPriority = [];
+
+// 其他
+state.cacheProject = {};
+state.cacheUserBasic = {};
+state.cacheDialog = {};
+
+export default state

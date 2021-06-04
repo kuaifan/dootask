@@ -260,7 +260,22 @@ export default {
                                 console.log("[WS] Callerr", err);
                             }
                         }
-                    })
+                    });
+                    if (type === "dialog") {
+                        const msgData = msgDetail.data;
+                        const dialog_id = msgData.dialog_id;
+                        if (dialog_id == state.dialogId) {
+                            let index = state.dialogList.findIndex(({id}) => id === msgData.id);
+                            if (index === -1) {
+                                if (state.dialogList.length >= 200) {
+                                    state.dialogList.splice(0, 1);
+                                }
+                                state.dialogList.push(msgData);
+                            } else {
+                                state.dialogList.splice(index, 1, msgData);
+                            }
+                        }
+                    }
                     break
             }
         }
@@ -315,5 +330,54 @@ export default {
      */
     wsClose(state) {
         state.ws && state.ws.close();
+    },
+
+    /**
+     * 获取对话消息
+     * @param state
+     * @param dialog_id
+     */
+    getDialogMsg(state, dialog_id) {
+        if (state.method.runNum(dialog_id) === 0) {
+            return;
+        }
+        if (state.method.isArray(state.cacheDialog[dialog_id])) {
+            state.dialogList = state.cacheDialog[dialog_id]
+        } else {
+            state.dialogList = [];
+        }
+        state.dialogId = dialog_id;
+        //
+        if (state.cacheDialog[dialog_id + "::load"]) {
+            return;
+        }
+        state.cacheDialog[dialog_id + "::load"] = true;
+        //
+        state.dialogLoad++;
+        $A.apiAjax({
+            url: 'dialog/msg/lists',
+            data: {
+                dialog_id: dialog_id,
+            },
+            complete: () => {
+                state.dialogLoad--;
+                state.cacheDialog[dialog_id + "::load"] = false;
+            },
+            success: ({ret, data, msg}) => {
+                if (ret === 1) {
+                    state.cacheDialog[dialog_id] = data.data.reverse();
+                    if (state.dialogId === dialog_id) {
+                        state.cacheDialog[dialog_id].forEach((item) => {
+                            let index = state.dialogList.findIndex(({id}) => id === item.id);
+                            if (index === -1) {
+                                state.dialogList.push(item);
+                            } else {
+                                state.dialogList.splice(index, 1, item);
+                            }
+                        })
+                    }
+                }
+            }
+        });
     }
 }

@@ -26,6 +26,8 @@ use App\Module\Base;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereUpdatedAt($value)
  * @mixin \Eloquent
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereDeletedAt($value)
  */
 class WebSocketDialog extends AbstractModel
 {
@@ -89,7 +91,7 @@ class WebSocketDialog extends AbstractModel
      * @param int|array $userid     加入的会员ID或会员ID组
      * @return bool
      */
-    public static function quitGroup($dialog_id, $userid)
+    public static function exitGroup($dialog_id, $userid)
     {
         if (is_array($userid)) {
             WebSocketDialogUser::whereDialogId($dialog_id)->whereIn('userid', $userid)->delete();

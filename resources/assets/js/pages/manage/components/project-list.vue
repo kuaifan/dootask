@@ -31,10 +31,14 @@
                     <li class="project-icon">
                         <Dropdown @on-click="projectDropdown" transfer>
                             <Icon type="ios-more" />
-                            <DropdownMenu slot="list">
+                            <DropdownMenu v-if="projectDetail.owner_userid === userId" slot="list">
                                 <DropdownItem name="setting">{{$L('项目设置')}}</DropdownItem>
-                                <DropdownItem name="transfer">{{$L('移交项目')}}</DropdownItem>
-                                <DropdownItem name="delete" style="color:#f40" divided>{{$L('删除项目')}}</DropdownItem>
+                                <DropdownItem name="user">{{$L('成员管理')}}</DropdownItem>
+                                <DropdownItem name="transfer" divided>{{$L('移交项目')}}</DropdownItem>
+                                <DropdownItem name="delete" style="color:#f40">{{$L('删除项目')}}</DropdownItem>
+                            </DropdownMenu>
+                            <DropdownMenu v-else slot="list">
+                                <DropdownItem name="exit">{{$L('退出项目')}}</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
 
@@ -290,6 +294,23 @@
             <div slot="footer">
                 <Button type="default" @click="settingShow=false">{{$L('取消')}}</Button>
                 <Button type="primary" :loading="settingLoad > 0" @click="onSetting">{{$L('修改')}}</Button>
+            </div>
+        </Modal>
+
+        <!--成员管理-->
+        <Modal
+            v-model="userShow"
+            :title="$L('成员管理')"
+            :mask-closable="false"
+            class-name="simple-modal">
+            <Form ref="addProject" :model="userData" label-width="auto" @submit.native.prevent>
+                <FormItem prop="userids" :label="$L('项目成员')">
+                    <UserInput v-if="userShow" v-model="userData.userids" :uncancelable="userData.uncancelable" :multiple-max="100" :placeholder="$L('选择项目成员')"/>
+                </FormItem>
+            </Form>
+            <div slot="footer">
+                <Button type="default" @click="userShow=false">{{$L('取消')}}</Button>
+                <Button type="primary" :loading="userLoad > 0" @click="onUser">{{$L('保存')}}</Button>
             </div>
         </Modal>
 
@@ -833,6 +854,10 @@ export default {
             settingData: {},
             settingLoad: 0,
 
+            userShow: false,
+            userData: {},
+            userLoad: 0,
+
             transferShow: false,
             transferData: {},
             transferLoad: 0,
@@ -978,6 +1003,29 @@ export default {
             });
         },
 
+        onUser() {
+            this.userLoad++;
+            $A.apiAjax({
+                url: 'project/user',
+                data: {
+                    project_id: this.userData.project_id,
+                    userid: this.userData.userids,
+                },
+                complete: () => {
+                    this.userLoad--;
+                },
+                success: ({ret, data, msg}) => {
+                    if (ret === 1) {
+                        $A.messageSuccess(msg);
+                        this.$store.commit('getProjectDetail', this.userData.project_id);
+                        this.userShow = false;
+                    } else {
+                        $A.modalError(msg);
+                    }
+                }
+            });
+        },
+
         onTransfer() {
             this.transferLoad++;
             $A.apiAjax({
@@ -1004,11 +1052,41 @@ export default {
         onDelete() {
             $A.modalConfirm({
                 title: '删除项目',
-                content: '你确定要删除此项目吗？',
+                content: '你确定要删除项目【' + this.projectDetail.name + '】吗？',
                 loading: true,
                 onOk: () => {
                     $A.apiAjax({
                         url: 'project/delete',
+                        data: {
+                            project_id: this.projectDetail.id,
+                        },
+                        error: () => {
+                            this.$Modal.remove();
+                            $A.modalAlert('网络繁忙，请稍后再试！');
+                        },
+                        success: ({ret, data, msg}) => {
+                            this.$Modal.remove();
+                            if (ret === 1) {
+                                $A.messageSuccess(msg);
+                                this.$store.commit('getProjectList');
+                                this.goForward({path: '/manage/dashboard'}, true);
+                            }else{
+                                $A.modalError(msg, 301);
+                            }
+                        }
+                    });
+                }
+            });
+        },
+
+        onExit() {
+            $A.modalConfirm({
+                title: '退出项目',
+                content: '你确定要退出项目【' + this.projectDetail.name + '】吗？',
+                loading: true,
+                onOk: () => {
+                    $A.apiAjax({
+                        url: 'project/exit',
                         data: {
                             project_id: this.projectDetail.id,
                         },
@@ -1040,6 +1118,13 @@ export default {
                     this.settingShow = true;
                     break;
 
+                case "user":
+                    this.$set(this.userData, 'project_id', this.projectDetail.id);
+                    this.$set(this.userData, 'userids', this.projectDetail.project_user.map(({userid}) => userid));
+                    this.$set(this.userData, 'uncancelable', [this.projectDetail.owner_userid]);
+                    this.userShow = true;
+                    break;
+
                 case "transfer":
                     this.$set(this.transferData, 'project_id', this.projectDetail.id);
                     this.$set(this.transferData, 'owner_userid', [this.projectDetail.owner_userid]);
@@ -1048,6 +1133,10 @@ export default {
 
                 case "delete":
                     this.onDelete();
+                    break;
+
+                case "exit":
+                    this.onExit();
                     break;
             }
         },

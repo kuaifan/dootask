@@ -10,9 +10,11 @@
             :default-label="value"
             :default-event-object="true"
             :multipleMax="multipleMax"
+            :multipleUncancelable="uncancelable"
             multiple
             filterable
             transfer-class-name="common-user-transfer"
+            @on-open-change="openChange"
             @on-set-default-options="setDefaultOptions">
             <div v-if="multipleMax" slot="drop-prepend" class="user-drop-prepend">{{$L('最多只能选择' + multipleMax + '个')}}</div>
             <Option v-for="(item, key) in lists" :value="item.userid" :key="key" :label="item.nickname" :avatar="item.userimg">
@@ -35,6 +37,12 @@
                 type: [String, Number, Array],
                 default: ''
             },
+            uncancelable: {
+                type: Array,
+                default: () => {
+                    return [];
+                }
+            },
             placeholder: {
                 default: ''
             },
@@ -55,6 +63,7 @@
                 ready: false,
                 initialized: false,
                 loading: false,
+                openLoad: false,
                 values: [],
                 lists: []
             }
@@ -89,6 +98,15 @@
             }
         },
         methods: {
+            openChange(show) {
+                if (show && !this.openLoad) {
+                    this.openLoad = true;
+                    if (this.lists.length == this.values.length) {
+                        this.$nextTick(this.searchUser);
+                    }
+                }
+            },
+
             setDefaultOptions(options) {
                 const userids = [];
                 options.forEach(({value, label}) => {
@@ -126,7 +144,7 @@
                         url: 'users/search',
                         data: {
                             keys: {
-                                key: query
+                                key: query || ''
                             },
                             take: 30
                         },

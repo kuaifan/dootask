@@ -9,9 +9,8 @@ use App\Models\ProjectLog;
 use App\Models\ProjectTask;
 use App\Models\ProjectUser;
 use App\Models\User;
-use App\Models\WebSocketDialog;
+use App\Models\WebSocketDialogMsg;
 use App\Module\Base;
-use Carbon\Carbon;
 use Request;
 
 /**
@@ -210,6 +209,54 @@ class ProjectController extends AbstractController
     }
 
     /**
+     * 修改项目成员
+     *
+     * @apiParam {Number} project_id        项目ID
+     * @apiParam {Number} userid            成员ID或成员ID组
+     */
+    public function user()
+    {
+        $user = User::authE();
+        if (Base::isError($user)) {
+            return $user;
+        } else {
+            $user = User::IDE($user['data']);
+        }
+        //
+        $project_id = intval(Request::input('project_id'));
+        $userid = Request::input('userid');
+        $userid = is_array($userid) ? $userid : [$userid];
+        //
+        $project = Project::select($this->projectSelect)
+            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->where('projects.id', $project_id)
+            ->where('project_users.userid', $user->userid)
+            ->first();
+        if (empty($project)) {
+            return Base::retError('项目不存在或不在成员列表内');
+        }
+        if (!$project->owner) {
+            return Base::retError('你不是项目负责人');
+        }
+        //
+        return AbstractModel::transaction(function() use ($project, $userid) {
+            $array = [];
+            foreach ($userid as $value) {
+                if ($value > 0 && $project->joinProject($value)) {
+                    $array[] = $value;
+                }
+            }
+            $delUser = ProjectUser::whereProjectId($project->id)->whereNotIn('userid', $array)->get();
+            if ($delUser->isNotEmpty()) {
+                foreach ($delUser as $value) {
+                    $value->exitProject();
+                }
+            }
+            return Base::retSuccess('修改成功');
+        });
+    }
+
+    /**
      * 移交项目
      *
      * @apiParam {Number} project_id        项目ID
@@ -257,6 +304,42 @@ class ProjectController extends AbstractController
     }
 
     /**
+     * 退出项目
+     *
+     * @apiParam {Number} project_id        项目ID
+     */
+    public function exit()
+    {
+        $user = User::authE();
+        if (Base::isError($user)) {
+            return $user;
+        } else {
+            $user = User::IDE($user['data']);
+        }
+        //
+        $project_id = intval(Request::input('project_id'));
+        //
+        $project = Project::select($this->projectSelect)
+            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->where('projects.id', $project_id)
+            ->where('project_users.userid', $user->userid)
+            ->first();
+        if (empty($project)) {
+            return Base::retError('项目不存在或不在成员列表内');
+        }
+        //
+        if ($project->owner) {
+            return Base::retError('项目负责人无法退出项目');
+        }
+        //
+        $projectUser = ProjectUser::whereProjectId($project->id)->whereUserid($user->userid)->first();
+        if ($projectUser->exitProject()) {
+            return Base::retSuccess('退出成功');
+        }
+        return Base::retError('退出失败');
+    }
+
+    /**
      * 删除项目
      *
      * @apiParam {Number} project_id        项目ID
@@ -284,12 +367,91 @@ class ProjectController extends AbstractController
             return Base::retError('你不是项目负责人');
         }
         //
-        return AbstractModel::transaction(function() use ($project) {
-            ProjectTask::whereProjectId($project->id)->delete();
-            $project->delete();
-            //
+        if ($project->deleteProject()) {
             return Base::retSuccess('删除成功');
-        });
+        }
+        return Base::retError('删除失败');
+    }
+
+    /**
+     * 【消息】消息列表
+     *
+     * @apiParam {Number} project_id        项目ID
+     * @apiParam {Number} [task_id]         任务ID
+     *
+     * @apiParam {Number} [page]            当前页，默认:1
+     * @apiParam {Number} [pagesize]        每页显示数量，默认:30，最大:100
+     */
+    public function msg__lists()
+    {
+        $user = User::authE();
+        if (Base::isError($user)) {
+            return $user;
+        } else {
+            $user = User::IDE($user['data']);
+        }
+        //
+        $project_id = intval(Request::input('project_id'));
+        $task_id = intval(Request::input('task_id'));
+        //
+        $project = Project::select($this->projectSelect)
+            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->where('projects.id', $project_id)
+            ->where('project_users.userid', $user->userid)
+            ->first();
+        if (empty($project)) {
+            return Base::retError('项目不存在或不在成员列表内');
+        }
+        //
+        $builder = WebSocketDialogMsg::whereDialogId($project->dialog_id);
+        if ($task_id > 0) {
+            $builder->whereExtraInt($task_id);
+        }
+        $list = $builder->orderByDesc('id')->paginate(Base::getPaginate(100, 30));
+        //
+        return Base::retSuccess('success', $list);
+    }
+
+    /**
+     * 【消息】发送消息
+     *
+     * @apiParam {Number} project_id        项目ID
+     * @apiParam {Number} [task_id]         任务ID
+     * @apiParam {String} text              消息内容
+     */
+    public function msg__sendtext()
+    {
+        $user = User::authE();
+        if (Base::isError($user)) {
+            return $user;
+        } else {
+            $user = User::IDE($user['data']);
+        }
+        //
+        $project_id = intval(Request::input('project_id'));
+        $task_id = intval(Request::input('task_id'));
+        $text = trim(Request::input('text'));
+        //
+        if (mb_strlen($text) < 1) {
+            return Base::retError('消息内容不能为空');
+        } elseif (mb_strlen($text) > 20000) {
+            return Base::retError('消息内容最大不能超过20000字');
+        }
+        //
+        $project = Project::select($this->projectSelect)
+            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->where('projects.id', $project_id)
+            ->where('project_users.userid', $user->userid)
+            ->first();
+        if (empty($project)) {
+            return Base::retError('项目不存在或不在成员列表内');
+        }
+        //
+        $msg = [
+            'text' => $text
+        ];
+        //
+        return WebSocketDialogMsg::addGroupMsg($project->dialog_id, 'text', $msg, $user->userid, $task_id);
     }
 
     /**

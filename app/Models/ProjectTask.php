@@ -27,12 +27,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read int $dialog_id
  * @property-read int $file_num
  * @property-read int $msg_num
  * @property-read bool $overdue
  * @property-read int $percent
  * @property-read int $sub_num
  * @property-read bool $today
+ * @property-read \App\Models\Project|null $project
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectTaskTag[] $taskTag
  * @property-read int|null $task_tag_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectTaskUser[] $taskUser
@@ -70,6 +72,7 @@ class ProjectTask extends AbstractModel
         'file_num',
         'msg_num',
         'sub_num',
+        'dialog_id',
         'percent',
         'today',
         'overdue',
@@ -94,7 +97,7 @@ class ProjectTask extends AbstractModel
     public function getMsgNumAttribute()
     {
         if (!isset($this->attributes['msg_num'])) {
-            $this->attributes['msg_num'] = ProjectTaskMsg::whereTaskId($this->id)->count();
+            $this->attributes['msg_num'] = WebSocketDialogMsg::whereDialogId($this->dialog_id)->whereExtraInt($this->id)->count();
         }
         return $this->attributes['msg_num'];
     }
@@ -112,6 +115,18 @@ class ProjectTask extends AbstractModel
             $this->attributes['sub_num'] = self::whereParentId($this->id)->count();
         }
         return $this->attributes['sub_num'];
+    }
+
+    /**
+     * 对话ID
+     * @return int
+     */
+    public function getDialogIdAttribute()
+    {
+        if (!isset($this->attributes['dialog_id'])) {
+            $this->attributes['dialog_id'] = intval(Project::whereId($this->project_id)->value('dialog_id'));
+        }
+        return $this->attributes['dialog_id'];
     }
 
     /**
@@ -165,6 +180,14 @@ class ProjectTask extends AbstractModel
             }
         }
         return false;
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function project(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Project::class, 'id', 'project_id');
     }
 
     /**

@@ -91,6 +91,18 @@ export default {
         },
         scrollToBottom(animate) {
             this.scrollTo(this.$refs.scrollerView.scrollHeight, animate);
+        },
+        getScrollInfo() {
+            let scrollerView = $A(this.$refs.scrollerView);
+            let wInnerH = Math.round(scrollerView.innerHeight());
+            let wScrollY = scrollerView.scrollTop();
+            let bScrollH = this.$refs.scrollerView.scrollHeight;
+            this.scrollY = wScrollY;
+            return {
+                scale: wScrollY / (bScrollH - wInnerH),     //已滚动比例
+                scrollY: wScrollY,                          //滚动的距离
+                scrollE: bScrollH - wInnerH - wScrollY,     //与底部距离
+            }
         }
     }
 }

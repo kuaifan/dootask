@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Module\Base;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -81,5 +82,42 @@ class Project extends AbstractModel
     public function projectUser(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(projectUser::class, 'project_id', 'id')->orderBy('id');
+    }
+
+    /**
+     * 加入项目
+     * @param int $userid   加入的会员ID
+     * @return bool
+     */
+    public function joinProject($userid) {
+        $result = AbstractModel::transaction(function () use ($userid) {
+            ProjectUser::updateInsert([
+                'project_id' => $this->id,
+                'userid' => $userid,
+            ]);
+            WebSocketDialogUser::updateInsert([
+                'dialog_id' => $this->dialog_id,
+                'userid' => $userid,
+            ]);
+        });
+        return Base::isSuccess($result);
+    }
+
+    /**
+     * 删除项目
+     * @return bool
+     */
+    public function deleteProject()
+    {
+        $result = AbstractModel::transaction(function () {
+            ProjectTask::whereProjectId($this->id)->delete();
+            WebSocketDialog::whereId($this->dialog_id)->delete();
+            if ($this->delete()) {
+                return Base::retSuccess('success');
+            } else {
+                return Base::retError('error');
+            }
+        });
+        return Base::isSuccess($result);
     }
 }
