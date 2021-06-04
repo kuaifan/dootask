@@ -34,7 +34,7 @@ class SystemController extends AbstractController
         $type = trim(Request::input('type'));
         if ($type == 'save') {
             if (env("SYSTEM_SETTING") == 'disabled') {
-                return Base::retError('当前环境禁止修改！');
+                return Base::retError('当前环境禁止修改');
             }
             $user = User::authE();
             if (Base::isError($user)) {
@@ -43,7 +43,7 @@ class SystemController extends AbstractController
                 $user = User::IDE($user['data']);
             }
             if (!$user->isAdmin()) {
-                return Base::retError('权限不足！');
+                return Base::retError('权限不足');
             }
             $all = Request::input();
             foreach ($all AS $key => $value) {
@@ -86,12 +86,12 @@ class SystemController extends AbstractController
                 $user = User::IDE($user['data']);
             }
             if (!$user->isAdmin()) {
-                return Base::retError('权限不足！');
+                return Base::retError('权限不足');
             }
             $list = Base::getPostValue('list');
             $array = [];
             if (empty($list) || !is_array($list)) {
-                return Base::retError('参数错误！');
+                return Base::retError('参数错误');
             }
             foreach ($list AS $item) {
                 if (empty($item['name']) || empty($item['color']) || empty($item['days']) || empty($item['priority'])) {
@@ -105,7 +105,7 @@ class SystemController extends AbstractController
                 ];
             }
             if (empty($array)) {
-                return Base::retError('参数为空！');
+                return Base::retError('参数为空');
             }
             $setting = Base::setting('priority', $array);
         } else {
@@ -228,7 +228,7 @@ class SystemController extends AbstractController
     public function imgupload()
     {
         if (User::token2userid() === 0) {
-            return Base::retError('身份失效，等重新登录！');
+            return Base::retError('身份失效，等重新登录');
         }
         $scale = [intval(Request::input('width')), intval(Request::input('height'))];
         if (!$scale[0] && !$scale[1]) {
@@ -277,7 +277,7 @@ class SystemController extends AbstractController
     public function imgview()
     {
         if (User::token2userid() === 0) {
-            return Base::retError('身份失效，等重新登录！');
+            return Base::retError('身份失效，等重新登录');
         }
         $publicPath = "uploads/picture/" . User::token2userid() . "/";
         $dirPath = public_path($publicPath);
@@ -375,7 +375,7 @@ class SystemController extends AbstractController
     public function fileupload()
     {
         if (User::token2userid() === 0) {
-            return Base::retError('身份失效，等重新登录！');
+            return Base::retError('身份失效，等重新登录');
         }
         $path = "uploads/files/" . User::token2userid() . "/" . date("Ym") . "/";
         $image64 = trim(Base::getPostValue('image64'));

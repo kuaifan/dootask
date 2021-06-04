@@ -44,7 +44,7 @@ class UsersController extends AbstractController
         if ($type == 'reg') {
             $setting = Base::setting('system');
             if ($setting['reg'] == 'close') {
-                return Base::retError('未开放注册！');
+                return Base::retError('未开放注册');
             }
             $user = User::reg($email, $password);
             if (Base::isError($user)) {
@@ -58,15 +58,15 @@ class UsersController extends AbstractController
                 $code = trim(Request::input('code'));
                 $key = trim(Request::input('key'));
                 if (empty($code)) {
-                    return Base::retError('请输入验证码！', ['code' => 'need']);
+                    return Base::retError('请输入验证码', ['code' => 'need']);
                 }
                 if (empty($key)) {
                     if (!Captcha::check($code)) {
-                        return Base::retError('请输入正确的验证码！', ['code' => 'need']);
+                        return Base::retError('请输入正确的验证码', ['code' => 'need']);
                     }
                 } else {
                     if (!Captcha::check_api($code, $key)) {
-                        return Base::retError('请输入正确的验证码！', ['code' => 'need']);
+                        return Base::retError('请输入正确的验证码', ['code' => 'need']);
                     }
                 }
             }
@@ -79,10 +79,10 @@ class UsersController extends AbstractController
             };
             $user = User::whereEmail($email)->first();
             if (empty($user)) {
-                return $retError('账号或密码错误！');
+                return $retError('账号或密码错误');
             }
             if ($user->password != Base::md52($password, $user->encrypt)) {
-                return $retError('账号或密码错误！');
+                return $retError('账号或密码错误');
             }
             Cache::forget("code::" . $email);
         }
@@ -223,9 +223,9 @@ class UsersController extends AbstractController
         $nickname = trim(Request::input('nickname'));
         if ($nickname) {
             if (mb_strlen($nickname) < 2) {
-                return Base::retError('昵称不可以少于2个字！');
+                return Base::retError('昵称不可以少于2个字');
             } elseif (mb_strlen($nickname) > 20) {
-                return Base::retError('昵称最多只能设置20个字！');
+                return Base::retError('昵称最多只能设置20个字');
             } else {
                 $user->nickname = $nickname;
             }
@@ -234,9 +234,9 @@ class UsersController extends AbstractController
         $profession = trim(Request::input('profession'));
         if ($profession) {
             if (mb_strlen($profession) < 2) {
-                return Base::retError('职位/职称不可以少于2个字！');
+                return Base::retError('职位/职称不可以少于2个字');
             } elseif (mb_strlen($profession) > 20) {
-                return Base::retError('职位/职称最多只能设置20个字！');
+                return Base::retError('职位/职称最多只能设置20个字');
             } else {
                 $user->profession = $profession;
             }
@@ -244,7 +244,7 @@ class UsersController extends AbstractController
         //
         $user->save();
         User::token($user);
-        return Base::retSuccess('修改成功！', $user);
+        return Base::retSuccess('修改成功', $user);
     }
 
     /**
@@ -274,26 +274,26 @@ class UsersController extends AbstractController
         $oldpass = trim(Request::input('oldpass'));
         $newpass = trim(Request::input('newpass'));
         if (strlen($newpass) < 6) {
-            return Base::retError('密码设置不能小于6位数！');
+            return Base::retError('密码设置不能小于6位数');
         } elseif (strlen($newpass) > 32) {
-            return Base::retError('密码最多只能设置32位数！');
+            return Base::retError('密码最多只能设置32位数');
         }
         if ($oldpass == $newpass) {
-            return Base::retError('新旧密码一致！');
+            return Base::retError('新旧密码一致');
         }
         //
         if (env("PASSWORD_ADMIN") == 'disabled') {
             if ($user->userid == 1) {
-                return Base::retError('当前环境禁止修改密码！');
+                return Base::retError('当前环境禁止修改密码');
             }
         }
         if (env("PASSWORD_OWNER") == 'disabled') {
-            return Base::retError('当前环境禁止修改密码！');
+            return Base::retError('当前环境禁止修改密码');
         }
         //
         $verify = User::whereUserid($user->userid)->wherePassword(Base::md52($oldpass, User::token2encrypt()))->count();
         if (empty($verify)) {
-            return Base::retError('请填写正确的旧密码！');
+            return Base::retError('请填写正确的旧密码');
         }
         //
         $user->encrypt = Base::generatePassword(6);
@@ -301,7 +301,7 @@ class UsersController extends AbstractController
         $user->changepass = 0;
         $user->save();
         User::token($user);
-        return Base::retSuccess('修改成功！', $user);
+        return Base::retSuccess('修改成功', $user);
     }
 
     /**
@@ -378,7 +378,7 @@ class UsersController extends AbstractController
             $array[] = $userid;
         }
         if (count($array) > 50) {
-            return Base::retError(['一次最多只能获取%条数据！', 50]);
+            return Base::retError(['一次最多只能获取%条数据', 50]);
         }
         $retArray = [];
         foreach ($array AS $id) {

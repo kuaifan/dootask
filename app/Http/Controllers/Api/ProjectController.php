@@ -9,6 +9,7 @@ use App\Models\ProjectLog;
 use App\Models\ProjectTask;
 use App\Models\ProjectUser;
 use App\Models\User;
+use App\Models\WebSocketDialog;
 use App\Module\Base;
 use Carbon\Carbon;
 use Request;
@@ -105,12 +106,12 @@ class ProjectController extends AbstractController
         $name = trim(Request::input('name', ''));
         $desc = trim(Request::input('desc', ''));
         if (mb_strlen($name) < 2) {
-            return Base::retError('项目名称不可以少于2个字！');
+            return Base::retError('项目名称不可以少于2个字');
         } elseif (mb_strlen($name) > 32) {
-            return Base::retError('项目名称最多只能设置32个字！');
+            return Base::retError('项目名称最多只能设置32个字');
         }
         if (mb_strlen($desc) > 255) {
-            return Base::retError('项目描述最多只能设置255个字！');
+            return Base::retError('项目描述最多只能设置255个字');
         }
         //流程
         $columns = Request::input('columns');
@@ -133,7 +134,7 @@ class ProjectController extends AbstractController
             ];
         }
         if (count($insertColumns) > 30) {
-            return Base::retError('项目流程最多不能超过30个！');
+            return Base::retError('项目流程最多不能超过30个');
         }
         //开始创建
         $project = Project::createInstance([
@@ -141,23 +142,28 @@ class ProjectController extends AbstractController
             'desc' => $desc,
             'userid' => $user->userid,
         ]);
-        return AbstractModel::transaction(function() use ($user, $insertColumns, $project) {
+        return AbstractModel::transaction(function() use ($insertColumns, $project) {
+            $dialog = WebSocketDialog::createGroup($project->name, $project->userid, 'project');
+            if (empty($dialog)) {
+                return Base::retError('创建失败');
+            }
+            $project->dialog_id = $dialog->id;
             $project->save();
             ProjectUser::createInstance([
                 'project_id' => $project->id,
-                'userid' => $user->userid,
+                'userid' => $project->userid,
                 'owner' => 1,
             ])->save();
             ProjectLog::createInstance([
                 'project_id' => $project->id,
-                'userid' => $user->userid,
+                'userid' => $project->userid,
                 'detail' => '创建项目',
             ])->save();
             foreach ($insertColumns AS $column) {
                 $column['project_id'] = $project->id;
                 ProjectColumn::createInstance($column)->save();
             }
-            return Base::retSuccess('添加成功！');
+            return Base::retSuccess('添加成功');
         });
     }
 
@@ -181,12 +187,12 @@ class ProjectController extends AbstractController
         $name = trim(Request::input('name', ''));
         $desc = trim(Request::input('desc', ''));
         if (mb_strlen($name) < 2) {
-            return Base::retError('项目名称不可以少于2个字！');
+            return Base::retError('项目名称不可以少于2个字');
         } elseif (mb_strlen($name) > 32) {
-            return Base::retError('项目名称最多只能设置32个字！');
+            return Base::retError('项目名称最多只能设置32个字');
         }
         if (mb_strlen($desc) > 255) {
-            return Base::retError('项目描述最多只能设置255个字！');
+            return Base::retError('项目描述最多只能设置255个字');
         }
         //
         $project = Project::select($this->projectSelect)
@@ -195,10 +201,10 @@ class ProjectController extends AbstractController
             ->where('project_users.userid', $user->userid)
             ->first();
         if (empty($project)) {
-            return Base::retError('项目不存在或不在成员列表内！');
+            return Base::retError('项目不存在或不在成员列表内');
         }
         if (!$project->owner) {
-            return Base::retError('你不是项目负责人！');
+            return Base::retError('你不是项目负责人');
         }
         //
         $project->name = $name;
@@ -232,14 +238,14 @@ class ProjectController extends AbstractController
             ->where('project_users.userid', $user->userid)
             ->first();
         if (empty($project)) {
-            return Base::retError('项目不存在或不在成员列表内！');
+            return Base::retError('项目不存在或不在成员列表内');
         }
         if (!$project->owner) {
-            return Base::retError('你不是项目负责人！');
+            return Base::retError('你不是项目负责人');
         }
         //
         if (!User::whereUserid($owner_userid)->exists()) {
-            return Base::retError('会员不存在！');
+            return Base::retError('会员不存在');
         }
         //
         return AbstractModel::transaction(function() use ($owner_userid, $project) {
@@ -277,10 +283,10 @@ class ProjectController extends AbstractController
             ->where('project_users.userid', $user->userid)
             ->first();
         if (empty($project)) {
-            return Base::retError('项目不存在或不在成员列表内！');
+            return Base::retError('项目不存在或不在成员列表内');
         }
         if (!$project->owner) {
-            return Base::retError('你不是项目负责人！');
+            return Base::retError('你不是项目负责人');
         }
         //
         return AbstractModel::transaction(function() use ($project) {
@@ -327,7 +333,7 @@ class ProjectController extends AbstractController
             ->where('project_users.userid', $user->userid)
             ->first();
         if (empty($project)) {
-            return Base::retError('项目不存在或不在成员列表内！');
+            return Base::retError('项目不存在或不在成员列表内');
         }
         // 列表
         if (is_array($column_id)) {
@@ -348,7 +354,7 @@ class ProjectController extends AbstractController
             }
         }
         if (empty($column)) {
-            return Base::retError('任务列表不存在或已被删除！');
+            return Base::retError('任务列表不存在或已被删除');
         }
         //
         return ProjectTask::addTask([

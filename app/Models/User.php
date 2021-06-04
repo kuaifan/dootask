@@ -144,16 +144,16 @@ class User extends AbstractModel
     {
         //邮箱
         if (!Base::isMail($email)) {
-            return Base::retError('请输入正确的邮箱地址！');
+            return Base::retError('请输入正确的邮箱地址');
         }
         if (User::email2userid($email) > 0) {
-            return Base::retError('邮箱地址已存在！');
+            return Base::retError('邮箱地址已存在');
         }
         //密码
         if (strlen($password) < 6) {
-            return Base::retError(['密码设置不能小于%位数！', 6]);
+            return Base::retError(['密码设置不能小于%位数', 6]);
         } elseif (strlen($password) > 32) {
-            return Base::retError(['密码最多只能设置%位数！', 32]);
+            return Base::retError(['密码最多只能设置%位数', 32]);
         }
         //开始注册
         $encrypt = Base::generatePassword(6);
@@ -287,7 +287,7 @@ class User extends AbstractModel
         if (!$user) {
             $authorization = Base::getToken();
             if ($authorization) {
-                return Base::retError('身份已失效,请重新登录！', $user, -1);
+                return Base::retError('身份已失效,请重新登录', $user, -1);
             } else {
                 return Base::retError('请登录后继续...', [], -1);
             }
@@ -320,7 +320,7 @@ class User extends AbstractModel
             && in_array($identity, $user->identity)) {
             return Base::retSuccess("success");
         }
-        return Base::retError("权限不足！");
+        return Base::retError("权限不足");
     }
 
     /**

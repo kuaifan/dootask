@@ -51,7 +51,7 @@ class Handler extends ExceptionHandler
     public function render($request, Throwable $e)
     {
         if ($e instanceof ModelNotFoundException) {
-            return response()->json(Base::retError('数据不存在！'));
+            return response()->json(Base::retError('数据不存在'));
         }
         return parent::render($request, $e);
     }

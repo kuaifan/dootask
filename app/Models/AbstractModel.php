@@ -117,7 +117,7 @@ class AbstractModel extends Model
      * @param $where
      * @param array $update 存在时更新的内容
      * @param array $insert 不存在时插入的内容，如果没有则插入更新内容
-     * @return bool
+     * @return AbstractModel|\Illuminate\Database\Eloquent\Builder|Model|object|static|null
      */
     public static function updateInsert($where, $update = [], $insert = [])
     {
@@ -128,7 +128,10 @@ class AbstractModel extends Model
         } elseif ($update) {
             $row->updateInstance($update);
         }
-        return $row->save();
+        if (!$row->save()) {
+            return null;
+        }
+        return $row;
     }
 
     /**
@@ -154,7 +157,7 @@ class AbstractModel extends Model
             $result = $closure();
             if (is_bool($result)) {
                 if ($result === false) {
-                    throw new \Exception('处理失败！');  // 错误：① 返回faske
+                    throw new \Exception('处理失败');  // 错误：① 返回faske
                 }
             } elseif ($result) {
                 if (is_string($result)) {
@@ -174,7 +177,7 @@ class AbstractModel extends Model
             } catch (\Throwable $eb) {
                 info($eb);
             }
-            return Base::retError($e->getMessage() ?: '处理错误！');
+            return Base::retError($e->getMessage() ?: '处理错误');
         }
     }
 }

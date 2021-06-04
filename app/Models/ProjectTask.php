@@ -39,6 +39,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read int|null $task_user_count
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask newQuery()
+ * @method static \Illuminate\Database\Query\Builder|ProjectTask onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask query()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereArchivedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereColumnId($value)
@@ -57,6 +58,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereStartAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereUserid($value)
+ * @method static \Illuminate\Database\Query\Builder|ProjectTask withTrashed()
+ * @method static \Illuminate\Database\Query\Builder|ProjectTask withoutTrashed()
  * @mixin \Eloquent
  */
 class ProjectTask extends AbstractModel
@@ -212,9 +215,9 @@ class ProjectTask extends AbstractModel
         }
         // 标题
         if (empty($name)) {
-            return Base::retError($retPre . '描述不能为空！');
+            return Base::retError($retPre . '描述不能为空');
         } elseif (mb_strlen($name) > 255) {
-            return Base::retError($retPre . '描述最多只能设置255个字！');
+            return Base::retError($retPre . '描述最多只能设置255个字');
         }
         $task->name = $name;
         // 时间
@@ -233,7 +236,7 @@ class ProjectTask extends AbstractModel
         }
         $owner = $owner ?: User::token2userid();
         if (!ProjectUser::whereProjectId($project_id)->whereUserid($owner)->exists()) {
-            return Base::retError($retPre . '负责人填写错误！');
+            return Base::retError($retPre . '负责人填写错误');
         }
         // 创建人
         $task->userid = User::token2userid();

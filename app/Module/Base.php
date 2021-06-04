@@ -2052,7 +2052,7 @@ class Base
         if (preg_match('/^(data:\s*image\/(\w+);base64,)/', $imgBase64, $res)) {
             $extension = $res[2];
             if (!in_array($extension, ['png', 'jpg', 'jpeg', 'gif'])) {
-                return Base::retError('图片格式错误！');
+                return Base::retError('图片格式错误');
             }
             $scaleName = "";
             if ($param['fileName']) {
@@ -2133,7 +2133,7 @@ class Base
                 return Base::retSuccess('success', $array);
             }
         }
-        return Base::retError('图片保存失败！');
+        return Base::retError('图片保存失败');
     }
 
     /**
@@ -2145,7 +2145,7 @@ class Base
     {
         $file = $param['file'];
         if (empty($file)) {
-            return Base::retError("您没有选择要上传的文件！");
+            return Base::retError("您没有选择要上传的文件");
         }
         if ($file->isValid()) {
             Base::makeDir(public_path($param['path']));
@@ -2192,12 +2192,12 @@ class Base
             }
             $extension = strtolower($file->getClientOriginalExtension());
             if ($type && is_array($type) && !in_array($extension, $type)) {
-                return Base::retError(['文件格式错误，限制类型：%！', implode(",", $type)]);
+                return Base::retError(['文件格式错误，限制类型：%', implode(",", $type)]);
             }
             try {
                 $fileSize = $file->getSize();
                 if ($param['size'] > 0 && $fileSize > $param['size'] * 1024) {
-                    return Base::retError(['文件大小超限，最大限制：%KB！', $param['size']]);
+                    return Base::retError(['文件大小超限，最大限制：%KB', $param['size']]);
                 }
             } catch (Exception $e) {
                 $fileSize = 0;
@@ -2233,7 +2233,7 @@ class Base
                 "ext" => $extension,                                    //文件后缀名
             ];
             if (!is_file($array['file'])) {
-                return Base::retError('上传失败！');
+                return Base::retError('上传失败');
             }
             //iOS照片颠倒处理
             if (in_array($extension, ['jpg', 'jpeg']) && function_exists('exif_read_data')) {

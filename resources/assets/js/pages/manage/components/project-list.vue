@@ -41,7 +41,7 @@
                     </li>
                 </ul>
                 <div class="project-switch">
-                    <div :class="['project-switch-button', $store.state.projectListPanel ? 'menu' : '']" @click="$store.commit('toggleBoolean', 'projectListPanel')">
+                    <div :class="['project-switch-button', !$store.state.projectListPanel ? 'menu' : '']" @click="$store.commit('toggleBoolean', 'projectListPanel')">
                         <div><i class="iconfont">&#xe60c;</i></div>
                         <div><i class="iconfont">&#xe66a;</i></div>
                     </div>
@@ -55,7 +55,7 @@
                         <div class="column-head-title">{{column.name}}</div>
                         <div :class="['column-head-num', column.project_task.length > 0 ? 'have' : '']">{{column.project_task.length}}</div>
                     </div>
-                    <ul>
+                    <ul class="overlay-y">
                         <li v-for="item in panelTask(column.project_task)">
                             <div :class="['task-head', item.desc ? 'has-desc' : '']">
                                 <div class="task-title"><pre>{{item.name}}</pre></div>
@@ -500,7 +500,8 @@
                     > ul {
                         flex: 1;
                         height: 0;
-                        overflow: auto;
+                        overflow-x: hidden;
+                        overflow-y: auto;
                         > li {
                             list-style: none;
                             margin: 0 10px 16px;
@@ -918,8 +919,10 @@ export default {
             const {nowTime} = this;
             return function (date) {
                 let time = Math.round(new Date(date).getTime() / 1000) - nowTime;
-                if (time > 0 && time < 86400 * 4) {
+                if (time < 86400 * 4 && time > 0 ) {
                     return this.formatSeconds(time);
+                } else if (time <= 0) {
+                    return '-' + this.formatSeconds(time * -1);
                 }
                 return this.formatTime(date)
             }
