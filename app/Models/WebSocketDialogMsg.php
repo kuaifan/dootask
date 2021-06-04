@@ -90,6 +90,7 @@ class WebSocketDialogMsg extends AbstractModel
             'userid' => $sender ?: User::token2userid(),
             'type' => $type,
             'msg' => $msg,
+            'read' => 0,
             'extra_int' => $extra_int,
             'extra_str' => $extra_str,
         ]);
@@ -109,7 +110,6 @@ class WebSocketDialogMsg extends AbstractModel
                     'userid' => $userids,
                     'msg' => [
                         'type' => 'dialog',
-                        'msgId' => $dialogMsg->id,
                         'data' => $dialogMsg->toArray(),
                     ]
                 ]);
@@ -135,6 +135,7 @@ class WebSocketDialogMsg extends AbstractModel
             'userid' => $sender ?: User::token2userid(),
             'type' => $type,
             'msg' => $msg,
+            'read' => 0,
             'extra_int' => $extra_int,
             'extra_str' => $extra_str,
         ]);
@@ -152,7 +153,6 @@ class WebSocketDialogMsg extends AbstractModel
                 'userid' => $userid,
                 'msg' => [
                     'type' => 'dialog',
-                    'msgId' => $dialogMsg->id,
                     'data' => $dialogMsg->toArray(),
                 ]
             ]);

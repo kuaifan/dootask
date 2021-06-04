@@ -11,7 +11,7 @@
                 </li>
             </ul>
         </div>
-        <div class="group-title">Group Chat</div>
+        <div class="group-title">{{$L('群聊')}}</div>
         <ScrollerY ref="groupChat" class="group-chat message-scroller" @on-scroll="groupChatScroll">
             <div ref="manageList" class="message-list">
                 <ul>
@@ -185,11 +185,13 @@ export default {
                 },
                 success: ({ret, data, msg}) => {
                     if (ret === 1) {
-                        let index = this.dialogList.findIndex(({id}) => id == mid);
-                        if (index > -1) this.dialogList.splice(index, 1, data);
-                    } else {
-                        this.dialogList = this.dialogList.filter(({id}) => id != mid);
+                        if (!this.dialogList.find(({id}) => id == data.id)) {
+                            let index = this.dialogList.findIndex(({id}) => id == mid);
+                            if (index > -1) this.dialogList.splice(index, 1, data);
+                            return;
+                        }
                     }
+                    this.dialogList = this.dialogList.filter(({id}) => id != mid);
                 }
             });
             //

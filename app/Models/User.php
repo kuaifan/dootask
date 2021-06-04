@@ -69,7 +69,7 @@ class User extends AbstractModel
         parent::updateInstance($param);
         //
         if (isset($param['line_at']) && $this->userid) {
-            Cache::put("User::online:" . $this->userid, time(), Carbon::now()->addSeconds(60));
+            Cache::put("User::online:" . $this->userid, time(), Carbon::now()->addSeconds(30));
         }
     }
 

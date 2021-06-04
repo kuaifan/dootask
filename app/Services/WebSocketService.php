@@ -10,6 +10,7 @@ use App\Models\WebSocketDialogMsg;
 use App\Module\Base;
 use App\Tasks\PushTask;
 use Cache;
+use Carbon\Carbon;
 use Hhxsv5\LaravelS\Swoole\WebSocketHandlerInterface;
 use Swoole\Http\Request;
 use Swoole\WebSocket\Frame;
@@ -166,6 +167,7 @@ class WebSocketService implements WebSocketHandlerInterface
             'fd' => $fd,
             'userid' => $userid,
         ]);
+        Cache::put("User::online:" . $userid, time(), Carbon::now()->addSeconds(30));
     }
 
     /**

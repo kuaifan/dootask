@@ -1154,19 +1154,22 @@ export default {
             return string || '';
         },
 
-        formatBit: function formatBit(val) {
+        formatBit(val) {
             val = +val
             return val > 9 ? val : '0' + val
         },
 
-        formatSeconds: function formatSeconds(second) {
+        formatSeconds(second) {
             let duration
             let days = Math.floor(second / 86400);
             let hours = Math.floor((second % 86400) / 3600);
             let minutes = Math.floor(((second % 86400) % 3600) / 60);
             let seconds = Math.floor(((second % 86400) % 3600) % 60);
             if (days > 0) {
-                return days + "d," + this.formatBit(hours) + "h";
+                if (hours > 0) duration = days + "d," + this.formatBit(hours) + "h.";
+                else if (minutes > 0) duration = days + "d," + this.formatBit(minutes) + "min";
+                else if (seconds > 0) duration = days + "d," + this.formatBit(seconds) + "s";
+                else duration = days + "d";
             }
             else if (hours > 0) duration = this.formatBit(hours) + ":" + this.formatBit(minutes) + ":" + this.formatBit(seconds);
             else if (minutes > 0) duration = this.formatBit(minutes) + ":" + this.formatBit(seconds);
