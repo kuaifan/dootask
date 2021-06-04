@@ -697,9 +697,9 @@ body {
                     .message-unknown {
                         text-decoration: underline;
                     }
-                    .message-time {
-                        color: #bbbbbb;
-                        font-size: 12px;
+                    .message-foot {
+                        display: flex;
+                        align-items: center;
                         padding-top: 3px;
                         height: 21px;
                         line-height: 21px;
@@ -707,6 +707,18 @@ body {
                             margin: 0 2px;
                             width: 10px;
                             height: 10px;
+                        }
+                        .time {
+                            color: #bbbbbb;
+                            font-size: 12px;
+                        }
+                        .done,
+                        .done-all {
+                            display: none;
+                            margin-left: 4px;
+                            transform: scale(0.9);
+                            font-size: 12px;
+                            color: #87d068;
                         }
                     }
                 }
@@ -735,6 +747,12 @@ body {
                             color: #ffffff;
                             background-color: #2d8cf0;
                             border-radius: 6px 6px 0 6px;
+                        }
+                        .message-foot {
+                            .done,
+                            .done-all {
+                                display: inline-block;
+                            }
                         }
                     }
                 }

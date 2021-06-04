@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Models\WebSocket;
+use App\Models\WebSocketDialogMsg;
 use App\Module\Base;
 use App\Tasks\PushTask;
 use Cache;
@@ -104,7 +105,6 @@ class WebSocketService implements WebSocketHandlerInterface
         //
         $msg = Base::json2array($frame->data);
         $type = $msg['type'];       // 消息类型
-        $to = $msg['to'];           // 发给谁
         $msgId = $msg['msgId'];     // 消息ID（用于回调）
         $data = $msg['data'];       // 消息详情
         //
@@ -114,7 +114,8 @@ class WebSocketService implements WebSocketHandlerInterface
              * 收到回执
              */
             case 'receipt':
-
+                $dialogMsg = WebSocketDialogMsg::whereId(intval($msgId))->first();
+                $dialogMsg && $dialogMsg->sendSuccess();
                 return;
         }
         //

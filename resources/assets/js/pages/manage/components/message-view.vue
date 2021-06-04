@@ -4,8 +4,12 @@
         <div v-if="msgData.type == 'text'" class="message-content" v-html="textMsg(msgData.msg.text)"></div>
         <div v-else class="message-content message-unknown">{{$L("未知的消息类型")}}</div>
 
-        <div v-if="msgData.created_at" class="message-time">{{formatTime(msgData.created_at)}}</div>
-        <div v-else class="message-time"><Loading/></div>
+        <div v-if="msgData.created_at" class="message-foot">
+            <div class="time">{{formatTime(msgData.created_at)}}</div>
+            <Icon v-if="msgData.send" class="done-all" type="md-done-all" />
+            <Icon v-else class="done" type="md-checkmark" />
+        </div>
+        <div v-else class="message-foot"><Loading/></div>
 
     </div>
 </template>

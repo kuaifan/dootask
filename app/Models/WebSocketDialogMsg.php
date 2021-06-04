@@ -55,6 +55,26 @@ class WebSocketDialogMsg extends AbstractModel
     }
 
     /**
+     * 标记已送达 同时 告诉发送人已送达
+     * @return $this
+     */
+    public function sendSuccess()
+    {
+        if (empty($this->send)) {
+            $this->send = 1;
+            $this->save();
+            PushTask::push([
+                'userid' => $this->userid,
+                'msg' => [
+                    'type' => 'dialog',
+                    'data' => $this->toArray(),
+                ]
+            ]);
+        }
+        return $this;
+    }
+
+    /**
      * 给会员添加并发送消息
      * @param int $dialog_id    会话ID（即 聊天室ID）
      * @param string $type      消息类型
@@ -89,6 +109,7 @@ class WebSocketDialogMsg extends AbstractModel
                     'userid' => $userids,
                     'msg' => [
                         'type' => 'dialog',
+                        'msgId' => $dialogMsg->id,
                         'data' => $dialogMsg->toArray(),
                     ]
                 ]);
@@ -131,6 +152,7 @@ class WebSocketDialogMsg extends AbstractModel
                 'userid' => $userid,
                 'msg' => [
                     'type' => 'dialog',
+                    'msgId' => $dialogMsg->id,
                     'data' => $dialogMsg->toArray(),
                 ]
             ]);

@@ -44,6 +44,9 @@ class DialogController extends AbstractController
         }
         //
         $list = WebSocketDialogMsg::whereDialogId($dialog_id)->orderByDesc('id')->paginate(Base::getPaginate(100, 50));
+        $list->transform(function (WebSocketDialogMsg $item) {
+            return $item->sendSuccess();
+        });
         //
         return Base::retSuccess('success', $list);
     }

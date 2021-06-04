@@ -284,25 +284,26 @@ export default {
     /**
      * 发送 websocket 消息
      * @param state
-     * @param params {type, to, data, callback}
+     * @param params {type, data, callback, msgId}
      */
     wsSend(state, params) {
         if (!state.method.isJson(params)) {
             return;
         }
-        const {type, to, data, callback} = params;
+        const {type, data, callback} = params;
+        let msgId = params.msgId || 0;
         if (!state.ws) {
             typeof callback === "function" && callback(null, false)
             return;
         }
         if (typeof callback === "function") {
-            params.msgId = state.method.randomString(16)
-            state.wsCall[params.msgId] = callback;
+            msgId = state.method.randomString(16)
+            state.wsCall[msgId] = callback;
         }
         try {
             state.ws.send(JSON.stringify({
                 type,
-                to,
+                msgId,
                 data
             }));
         } catch (e) {
