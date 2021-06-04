@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Module\Base;
+
 /**
  * Class WebSocketDialog
  *
@@ -32,25 +34,28 @@ class WebSocketDialog extends AbstractModel
      * @param string $name          聊天室名称
      * @param int|array $userid     加入的会员ID或会员ID组
      * @param string $group_type    聊天室类型
-     * @return self
+     * @return self|null
      */
     public static function createGroup($name, $userid, $group_type = '')
     {
-        $dialog = self::createInstance([
-            'type' => 'group',
-            'name' => $name,
-            'group_type' => $group_type,
-        ]);
-        $dialog->save();
-        foreach (is_array($userid) ? $userid : [$userid] as $value) {
-            if ($value > 0) {
-                WebSocketDialogUser::createInstance([
-                    'dialog_id' => $dialog->id,
-                    'userid' => $value,
-                ])->save();
+        $result = AbstractModel::transaction(function () use ($userid, $group_type, $name) {
+            $dialog = self::createInstance([
+                'type' => 'group',
+                'name' => $name,
+                'group_type' => $group_type,
+            ]);
+            $dialog->save();
+            foreach (is_array($userid) ? $userid : [$userid] as $value) {
+                if ($value > 0) {
+                    WebSocketDialogUser::createInstance([
+                        'dialog_id' => $dialog->id,
+                        'userid' => $value,
+                    ])->save();
+                }
             }
-        }
-        return $dialog;
+            return Base::retSuccess('success', $dialog);
+        });
+        return Base::isSuccess($result) ? $result['data'] : null;
     }
 
     /**
@@ -65,15 +70,17 @@ class WebSocketDialog extends AbstractModel
         if (empty($dialog)) {
             return false;
         }
-        foreach (is_array($userid) ? $userid : [$userid] as $value) {
-            if ($value > 0) {
-                WebSocketDialogUser::createInstance([
-                    'dialog_id' => $dialog->id,
-                    'userid' => $value,
-                ])->save();
+        $result = AbstractModel::transaction(function () use ($dialog, $userid) {
+            foreach (is_array($userid) ? $userid : [$userid] as $value) {
+                if ($value > 0) {
+                    WebSocketDialogUser::createInstance([
+                        'dialog_id' => $dialog->id,
+                        'userid' => $value,
+                    ])->save();
+                }
             }
-        }
-        return true;
+        });
+        return Base::isSuccess($result);
     }
 
     /**
@@ -116,7 +123,7 @@ class WebSocketDialog extends AbstractModel
      * 获取会员对话（没有自动创建）
      * @param int $userid   会员ID
      * @param int $userid2  另一个会员ID
-     * @return self
+     * @return self|null
      */
     public static function checkUserDialog($userid, $userid2)
     {
@@ -128,19 +135,22 @@ class WebSocketDialog extends AbstractModel
         if ($dialogUser->count() >= 2) {
             return $dialogUser[0];
         }
-        $dialog = self::createInstance([
-            'type' => 'user',
-        ]);
-        $dialog->save();
-        WebSocketDialogUser::createInstance([
-            'dialog_id' => $dialog->id,
-            'userid' => $userid,
-        ])->save();
-        WebSocketDialogUser::createInstance([
-            'dialog_id' => $dialog->id,
-            'userid' => $userid2,
-        ])->save();
-        return $dialog;
+        $result = AbstractModel::transaction(function () use ($userid2, $userid) {
+            $dialog = self::createInstance([
+                'type' => 'user',
+            ]);
+            $dialog->save();
+            WebSocketDialogUser::createInstance([
+                'dialog_id' => $dialog->id,
+                'userid' => $userid,
+            ])->save();
+            WebSocketDialogUser::createInstance([
+                'dialog_id' => $dialog->id,
+                'userid' => $userid2,
+            ])->save();
+            return Base::retSuccess('success', $dialog);
+        });
+        return Base::isSuccess($result) ? $result['data'] : null;
     }
 
 }

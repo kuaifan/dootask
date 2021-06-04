@@ -43,6 +43,23 @@ class Project extends AbstractModel
     use SoftDeletes;
 
     /**
+     * @param $value
+     * @return int|mixed
+     */
+    public function getDialogIdAttribute($value)
+    {
+        if ($value === 0) {
+            $userid = $this->projectUser->pluck('userid')->toArray();
+            $dialog = WebSocketDialog::createGroup($this->name, $userid, 'project');
+            if ($dialog) {
+                $this->dialog_id = $value = $dialog->id;
+                $this->save();
+            }
+        }
+        return $value;
+    }
+
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function projectColumn(): \Illuminate\Database\Eloquent\Relations\HasMany

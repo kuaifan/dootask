@@ -36,7 +36,7 @@ class WebSocketDialogMsg extends AbstractModel
      * @param int $dialog_id    会话ID（即 聊天室ID）
      * @param array $msg        发送的消息
      * @param int $sender       发送的会员ID（默认自己，0为系统）
-     * @return array|bool
+     * @return array
      */
     public static function addGroupMsg($dialog_id, $msg, $sender = 0)
     {
@@ -54,7 +54,7 @@ class WebSocketDialogMsg extends AbstractModel
             $dialogMsg->dialog_id = $dialog->id;
             $dialogMsg->save();
             //
-            $userids = WebSocketDialogUser::whereDialogId($dialog->id)->where('userid', '!=', $dialogMsg->userid)->pluck('userid');
+            $userids = WebSocketDialogUser::whereDialogId($dialog->id)->where('userid', '!=', $dialogMsg->userid)->pluck('userid')->toArray();
             if ($userids) {
                 PushTask::push([
                     'userid' => $userids,
@@ -74,7 +74,7 @@ class WebSocketDialogMsg extends AbstractModel
      * @param int $userid       接收的会员ID
      * @param array $msg        发送的消息
      * @param int $sender       发送的会员ID（默认自己，0为系统）
-     * @return array|bool
+     * @return array
      */
     public static function addUserMsg($userid, $msg, $sender = 0)
     {

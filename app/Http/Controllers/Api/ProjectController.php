@@ -143,11 +143,6 @@ class ProjectController extends AbstractController
             'userid' => $user->userid,
         ]);
         return AbstractModel::transaction(function() use ($insertColumns, $project) {
-            $dialog = WebSocketDialog::createGroup($project->name, $project->userid, 'project');
-            if (empty($dialog)) {
-                return Base::retError('创建失败');
-            }
-            $project->dialog_id = $dialog->id;
             $project->save();
             ProjectUser::createInstance([
                 'project_id' => $project->id,
