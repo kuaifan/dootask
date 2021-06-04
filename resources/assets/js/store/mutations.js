@@ -1,47 +1,12 @@
 export default {
     /**
-     * 切换项目聊天显隐
+     * 切换Boolean变量
      * @param state
+     * @param key
      */
-    toggleProjectChatShow(state) {
-        state.projectChatShow = !state.projectChatShow
-        state.setStorage('projectChatShow', state.projectChatShow);
-    },
-
-    /**
-     * 切换项目面板显示类型
-     * @param state
-     */
-    toggleProjectListPanel(state) {
-        state.projectListPanel = !state.projectListPanel
-        state.setStorage('projectListPanel', state.projectListPanel);
-    },
-
-    /**
-     * 切换项目面板显示显示我的任务
-     * @param state
-     */
-    toggleTaskMyShow(state) {
-        state.taskMyShow = !state.taskMyShow
-        state.setStorage('taskMyShow', state.taskMyShow);
-    },
-
-    /**
-     * 切换项目面板显示显示未完成任务
-     * @param state
-     */
-    toggleTaskUndoneShow(state) {
-        state.taskUndoneShow = !state.taskUndoneShow
-        state.setStorage('taskUndoneShow', state.taskUndoneShow);
-    },
-
-    /**
-     * 切换项目面板显示显示已完成任务
-     * @param state
-     */
-    toggleTaskCompletedShow(state) {
-        state.taskCompletedShow = !state.taskCompletedShow
-        state.setStorage('taskCompletedShow', state.taskCompletedShow);
+    toggleBoolean(state, key) {
+        state[key] = !state[key]
+        state.method.setStorage('boolean:' + key, state[key]);
     },
 
     /**
@@ -71,7 +36,7 @@ export default {
         $A.apiAjax({
             url: 'users/info',
             error: () => {
-                $A.userLogout();
+                $A.logout();
             },
             success: ({ret, data, msg}) => {
                 if (ret === 1) {
@@ -89,14 +54,16 @@ export default {
      * @param info
      */
     setUserInfo(state, info) {
-        const userInfo = state._cloneJSON(info);
-        userInfo.userid = state._runNum(userInfo.userid);
+        const userInfo = state.method.cloneJSON(info);
+        userInfo.userid = state.method.runNum(userInfo.userid);
         userInfo.token = userInfo.userid > 0 ? (userInfo.token || state.userToken) : '';
         state.userInfo = userInfo;
         state.userId = userInfo.userid;
         state.userToken = userInfo.token;
-        state.setStorage('userInfo', state.userInfo);
+        state.userIsAdmin = state.method.inArray('admin', userInfo.identity);
+        state.method.setStorage('userInfo', state.userInfo);
         this.commit('getProjectList');
+        this.commit('wsConnection');
     },
 
     /**
@@ -131,10 +98,10 @@ export default {
      * @param project_id
      */
     getProjectDetail(state, project_id) {
-        if (state._runNum(project_id) === 0) {
+        if (state.method.runNum(project_id) === 0) {
             return;
         }
-        if (state._isJson(state.cacheProject[project_id])) {
+        if (state.method.isJson(state.cacheProject[project_id])) {
             state.projectDetail = state.cacheProject[project_id];
         }
         state.projectDetail.id = project_id;
@@ -173,13 +140,13 @@ export default {
      * @param params {userid, success, complete}
      */
     getUserBasic(state, params) {
-        if (!state._isJson(params)) {
+        if (!state.method.isJson(params)) {
             return;
         }
         const {userid, success, complete} = params;
         const time = Math.round(new Date().getTime() / 1000);
         const array = [];
-        (state._isArray(userid) ? userid : [userid]).some((uid) => {
+        (state.method.isArray(userid) ? userid : [userid]).some((uid) => {
             if (state.cacheUserBasic[uid]) {
                 typeof success === "function" && success(state.cacheUserBasic[uid].data, false);
                 if (time - state.cacheUserBasic[uid].time <= 10) {
@@ -223,5 +190,130 @@ export default {
                 }
             }
         });
+    },
+
+    /**
+     * 初始化 websocket
+     * @param state
+     */
+    wsConnection(state) {
+        clearTimeout(state.wsTimeout);
+        if (state.userId === 0) {
+            if (state.ws) {
+                state.ws.close();
+                state.ws = null;
+            }
+            return;
+        }
+        let url = window.webSocketConfig.URL;
+        if (!url) {
+            url = window.location.origin;
+            url = url.replace("https://", "wss://");
+            url = url.replace("http://", "ws://");
+            url += "/ws";
+        }
+        url += "?action=web&token=" + state.userToken;
+        //
+        state.ws = new WebSocket(url);
+        state.ws.onopen = (e) => {
+            console.log("[WS] Open", e)
+        };
+        state.ws.onclose = (e) => {
+            console.log("[WS] Close", e);
+            state.ws = null;
+            //
+            clearTimeout(state.wsTimeout);
+            state.wsTimeout = setTimeout(() => {
+                this.commit('wsConnection');
+            }, 3000);
+        };
+        state.ws.onerror = (e) => {
+            console.log("[WS] Error", e);
+            state.ws = null;
+            //
+            clearTimeout(state.wsTimeout);
+            state.wsTimeout = setTimeout(() => {
+                this.commit('wsConnection');
+            }, 3000);
+        };
+        state.ws.onmessage = (e) => {
+            console.log("[WS] Message", e);
+            const msgDetail = state.method.jsonParse(event.data);
+            const {type, msgId} = msgDetail;
+            switch (type) {
+                case "open":
+                    break
+
+                case "receipt":
+                    typeof state.wsCall[msgId] === "function" && state.wsCall[msgId](msgDetail.body, true);
+                    delete state.wsCall[msgId];
+                    break
+
+                default:
+                    msgId && this.commit('wsSend', {type: 'receipt', msgId});
+                    state.wsMsg = msgDetail;
+                    Object.values(state.wsListener).forEach((call) => {
+                        if (typeof call === "function") {
+                            try {
+                                call(msgDetail);
+                            } catch (err) {
+                                console.log("[WS] Callerr", err);
+                            }
+                        }
+                    })
+                    break
+            }
+        }
+    },
+
+    /**
+     * 发送 websocket 消息
+     * @param state
+     * @param params {type, to, data, callback}
+     */
+    wsSend(state, params) {
+        if (!state.method.isJson(params)) {
+            return;
+        }
+        const {type, to, data, callback} = params;
+        if (!state.ws) {
+            typeof callback === "function" && callback(null, false)
+            return;
+        }
+        if (typeof callback === "function") {
+            params.msgId = state.method.randomString(16)
+            state.wsCall[params.msgId] = callback;
+        }
+        try {
+            state.ws.send(JSON.stringify({
+                type,
+                to,
+                data
+            }));
+        } catch (e) {
+            typeof callback === "function" && callback(null, false)
+        }
+    },
+
+    /**
+     * 监听消息
+     * @param state
+     * @param params {name, callback}
+     */
+    wsMsgListener(state, params) {
+        const {name, callback} = params;
+        if (typeof callback === "function") {
+            state.wsListener[name] = callback;
+        } else {
+            state.wsListener[name] && delete state.wsListener[name];
+        }
+    },
+
+    /**
+     * 关闭 websocket
+     * @param state
+     */
+    wsClose(state) {
+        state.ws && state.ws.close();
     }
 }

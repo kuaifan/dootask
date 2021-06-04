@@ -112,8 +112,8 @@ class PushTask extends AbstractTask
             if (!is_array($msg)) {
                 continue;
             }
-            $messageType = $msg['messageType'];
-            if (empty($messageType)) {
+            $type = $msg['type'];
+            if (empty($type)) {
                 continue;
             }
             // 发送对象
@@ -149,7 +149,7 @@ class PushTask extends AbstractTask
                         $userFail[] = WebSocket::whereFd($fid)->value('userid');
                     }
                 } else {
-                    $key =  "PUSH::" . $fid . ":" . $messageType . ":" . $key;
+                    $key =  "PUSH::" . $fid . ":" . $type . ":" . $key;
                     Cache::put($key, [
                         'fd' => $fid,
                         'msg' => $msg,

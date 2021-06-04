@@ -1,56 +1,63 @@
-const stateCommon = {
+const method = {
     setStorage(key, value) {
-        return this._storage(key, value);
+        return this.storage(key, value);
     },
 
     getStorage(key, def = null) {
-        let value = this._storage(key);
+        let value = this.storage(key);
         return value || def;
     },
 
     getStorageString(key, def = '') {
-        let value = this._storage(key);
+        let value = this.storage(key);
         return typeof value === "string" || typeof value === "number" ? value : def;
     },
 
     getStorageNumber(key, def = 0) {
-        let value = this._storage(key);
+        let value = this.storage(key);
         return typeof value === "number" ? value : def;
     },
 
     getStorageBoolean(key, def = false) {
-        let value = this._storage(key);
+        let value = this.storage(key);
         return typeof value === "boolean" ? value : def;
     },
 
     getStorageArray(key, def = {}) {
-        let value = this._storage(key);
-        return this._isArray(value) ? value : def;
+        let value = this.storage(key);
+        return this.isArray(value) ? value : def;
     },
 
     getStorageJson(key, def = {}) {
-        let value = this._storage(key);
-        return this._isJson(value) ? value : def;
+        let value = this.storage(key);
+        return this.isJson(value) ? value : def;
     },
 
-    _isArray(obj) {
+    isArray(obj) {
         return typeof (obj) == "object" && Object.prototype.toString.call(obj).toLowerCase() == '[object array]' && typeof obj.length == "number";
     },
 
-    _isJson(obj) {
+    isJson(obj) {
         return typeof (obj) == "object" && Object.prototype.toString.call(obj).toLowerCase() == "[object object]" && typeof obj.length == "undefined";
     },
 
-    _storage(key, value) {
+    inArray(key, array) {
+        if (!this.isArray(array)) {
+            return false;
+        }
+        return array.includes(key);
+    },
+
+    storage(key, value) {
         let keyName = 'state';
         if (typeof value === 'undefined') {
-            return this._loadFromlLocal('__::', key, '', '__' + keyName + '__');
+            return this.loadFromlLocal('__::', key, '', '__' + keyName + '__');
         } else {
-            this._savaToLocal('__::', key, value, '__' + keyName + '__');
+            this.savaToLocal('__::', key, value, '__' + keyName + '__');
         }
     },
 
-    _savaToLocal(id, key, value, keyName) {
+    savaToLocal(id, key, value, keyName) {
         try {
             if (typeof keyName === 'undefined') keyName = '__seller__';
             let seller = window.localStorage[keyName];
@@ -69,7 +76,7 @@ const stateCommon = {
         }
     },
 
-    _loadFromlLocal(id, key, def, keyName) {
+    loadFromlLocal(id, key, def, keyName) {
         try {
             if (typeof keyName === 'undefined') keyName = '__seller__';
             let seller = window.localStorage[keyName];
@@ -86,29 +93,7 @@ const stateCommon = {
         }
     },
 
-    _count(obj) {
-        try {
-            if (typeof obj === "undefined") {
-                return 0;
-            }
-            if (typeof obj === "number") {
-                obj += "";
-            }
-            if (typeof obj.length === 'number') {
-                return obj.length;
-            } else {
-                let i = 0, key;
-                for (key in obj) {
-                    i++;
-                }
-                return i;
-            }
-        } catch (e) {
-            return 0;
-        }
-    },
-
-    _runNum(str, fixed) {
+    runNum(str, fixed) {
         let _s = Number(str);
         if (_s + "" === "NaN") {
             _s = 0;
@@ -126,13 +111,13 @@ const stateCommon = {
         return _s;
     },
 
-    _cloneJSON(myObj) {
-        if(typeof(myObj) !== 'object') return myObj;
-        if(myObj === null) return myObj;
-        return this._jsonParse(this._jsonStringify(myObj))
+    cloneJSON(myObj) {
+        if (typeof (myObj) !== 'object') return myObj;
+        if (myObj === null) return myObj;
+        return this.jsonParse(this.jsonStringify(myObj))
     },
 
-    _jsonParse(str, defaultVal) {
+    jsonParse(str, defaultVal) {
         if (str === null) {
             return defaultVal ? defaultVal : {};
         }
@@ -140,47 +125,54 @@ const stateCommon = {
             return str;
         }
         try {
-            return JSON.parse(str.replace(/\n/g,"\\n").replace(/\r/g,"\\r"));
+            return JSON.parse(str.replace(/\n/g, "\\n").replace(/\r/g, "\\r"));
         } catch (e) {
             return defaultVal ? defaultVal : {};
         }
     },
 
-    _jsonStringify(json, defaultVal) {
+    jsonStringify(json, defaultVal) {
         if (typeof json !== 'object') {
             return json;
         }
-        try{
+        try {
             return JSON.stringify(json);
-        }catch (e) {
+        } catch (e) {
             return defaultVal ? defaultVal : "";
         }
-    }
+    },
 };
 
-const projectChatShow = stateCommon.getStorageBoolean('projectChatShow', true);
-const projectListPanel = stateCommon.getStorageBoolean('projectListPanel', true);
+// 方法类
+const state = {
+    method
+};
 
-const taskMyShow = stateCommon.getStorageBoolean('taskMyShow', true);
-const taskUndoneShow = stateCommon.getStorageBoolean('taskUndoneShow', true);
-const taskCompletedShow = stateCommon.getStorageBoolean('taskCompletedShow', true);
+// Boolean变量
+[
+    'projectChatShow',      // 项目聊天显示
+    'projectListPanel',     // 项目面板显示类型
+    'taskMyShow',           // 项目面板显示我的任务
+    'taskUndoneShow',       // 项目面板显示未完成任务
+    'taskCompletedShow'     // 项目面板显示已完成任务
+].forEach((key) => {
+    state[key] = state.method.getStorageBoolean('boolean:' + key, true)
+})
 
-const userInfo = stateCommon.getStorageJson('userInfo');
-const userId = userInfo.userid = stateCommon._runNum(userInfo.userid);
-const userToken = userInfo.token;
+// 会员信息
+state.userInfo = state.method.getStorageJson('userInfo');
+state.userId = state.userInfo.userid = state.method.runNum(state.userInfo.userid);
+state.userToken = state.userInfo.token;
+state.userIsAdmin = state.method.inArray('admin', state.userInfo.identity);
 
-export default Object.assign(stateCommon, {
-    projectChatShow,
-    projectListPanel,
+// Websocket
+state.ws = null;
+state.wsMsg = {};
+state.wsCall = {};
+state.wsTimeout = null;
+state.wsListener = {};
 
-    taskMyShow,
-    taskUndoneShow,
-    taskCompletedShow,
-
-    userId,
-    userInfo,
-    userToken,
-
+export default Object.assign(state, {
     cacheProject: {},
     cacheUserBasic: {},
 

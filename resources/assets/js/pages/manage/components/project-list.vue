@@ -24,7 +24,7 @@
                             </div>
                         </Tooltip>
                     </li>
-                    <li :class="['project-icon', $store.state.projectChatShow ? 'active' : '']" @click="$store.commit('toggleProjectChatShow')">
+                    <li :class="['project-icon', $store.state.projectChatShow ? 'active' : '']" @click="$store.commit('toggleBoolean', 'projectChatShow')">
                         <Icon type="ios-chatbubbles" />
                         <Badge :count="projectMsgUnread"></Badge>
                     </li>
@@ -41,7 +41,7 @@
                     </li>
                 </ul>
                 <div class="project-switch">
-                    <div :class="['project-switch-button', $store.state.projectListPanel ? 'menu' : '']" @click="$store.commit('toggleProjectListPanel')">
+                    <div :class="['project-switch-button', $store.state.projectListPanel ? 'menu' : '']" @click="$store.commit('toggleBoolean', 'projectListPanel')">
                         <div><i class="iconfont">&#xe60c;</i></div>
                         <div><i class="iconfont">&#xe66a;</i></div>
                     </div>
@@ -104,7 +104,7 @@
             </div>
             <!--我的任务-->
             <div :class="['project-table-body', !$store.state.taskMyShow ? 'project-table-hide' : '']">
-                <div @click="$store.commit('toggleTaskMyShow')">
+                <div @click="$store.commit('toggleBoolean', 'taskMyShow')">
                     <Row class="project-row">
                         <Col span="12" class="row-title">
                             <i class="iconfont">&#xe689;</i>
@@ -162,7 +162,7 @@
             </div>
             <!--未完成任务-->
             <div :class="['project-table-body', !$store.state.taskUndoneShow ? 'project-table-hide' : '']">
-                <div @click="$store.commit('toggleTaskUndoneShow')">
+                <div @click="$store.commit('toggleBoolean', 'taskUndoneShow')">
                     <Row class="project-row">
                         <Col span="12" class="row-title">
                             <i class="iconfont">&#xe689;</i>
@@ -209,7 +209,7 @@
             </div>
             <!--已完成任务-->
             <div :class="['project-table-body', !$store.state.taskCompletedShow ? 'project-table-hide' : '']">
-                <div @click="$store.commit('toggleTaskCompletedShow')">
+                <div @click="$store.commit('toggleBoolean', 'taskCompletedShow')">
                     <Row class="project-row">
                         <Col span="12" class="row-title">
                             <i class="iconfont">&#xe689;</i>

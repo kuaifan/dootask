@@ -52,14 +52,14 @@ class IhttpTask extends AbstractTask
     {
         $res = Ihttp::ihttp_request($this->url, $this->post, $this->extra);
         if ($this->apiWebsocket && $this->apiUserid) {
-            $body = Base::isSuccess($res) ? Base::json2array($res['data']) : $res;
+            $data = Base::isSuccess($res) ? Base::json2array($res['data']) : $res;
             PushTask::push([
                 'userid' => $this->apiUserid,
                 'msg' => [
-                    'messageType' => 'apiWebsocket',
+                    'type' => 'apiWebsocket',
                     'apiWebsocket' => $this->apiWebsocket,
                     'apiSuccess' => Base::isSuccess($res),
-                    'body' => $body,
+                    'data' => $data,
                 ]
             ]);
         }

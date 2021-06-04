@@ -1264,65 +1264,14 @@
             if (typeof params.method === 'undefined') params.method = 'GET';
             if (typeof params.timeout === 'undefined') params.timeout = 30000;
             if (typeof params.dataType === 'undefined') params.dataType = 'json';
-            if (typeof params.beforeSend === 'undefined') params.beforeSend = () => { };
+            if (typeof params.before === 'undefined') params.before = () => { };
             if (typeof params.complete === 'undefined') params.complete = () => { };
-            if (typeof params.afterComplete === 'undefined') params.afterComplete = () => { };
+            if (typeof params.after === 'undefined') params.after = () => { };
             if (typeof params.success === 'undefined') params.success = () => { };
             if (typeof params.error === 'undefined') params.error = () => { };
+            if (typeof params.header == 'undefined') params.header = {};
             //
-            let loadText = "数据加载中.....";
-            let busyNetwork = "网络繁忙，请稍后再试！";
-            if (typeof $A.app === 'object' && typeof $A.app.$L === 'function') {
-                loadText = $A.app.$L(loadText);
-                busyNetwork = $A.app.$L(busyNetwork);
-            }
-            //
-            let toastID = null, beforeTitle = '', errorTitle = '';
-            if (typeof $A.app === 'object' && typeof $A.app.$Message === 'object') {
-                if (typeof params.beforeSend === 'string')  {
-                    beforeTitle = params.beforeSend;
-                    params.beforeSend = () => { toastID = $A.app.$Message.loading({content:beforeTitle, duration: 0}); };
-                }else if (params.beforeSend === true) {
-                    params.beforeSend = () => { toastID = $A.app.$Message.loading({content:loadText, duration: 0}); };
-                }
-                if (typeof params.error === 'string')  {
-                    errorTitle = params.error;
-                    params.error = () => { $A.app.$Message.error({content:errorTitle, duration: 5}); };
-                }else if (params.error === true) {
-                    params.error = () => { $A.app.$Message.error({content:busyNetwork, duration: 5}); };
-                }
-                if (params.complete === true) {
-                    params.complete = () => { toastID?toastID():'' };
-                }
-            }else{
-                if (typeof params.beforeSend === 'string')  {
-                    beforeTitle = params.beforeSend;
-                    params.beforeSend = () => { toastID = $A.toast({title:beforeTitle, fixed: true, timeout: false}); };
-                }else if (params.beforeSend === true) {
-                    params.beforeSend = () => { toastID = $A.toast({title:loadText, fixed: true, timeout: false}); };
-                }
-                if (typeof params.error === 'string')  {
-                    errorTitle = params.error;
-                    params.error = () => { $A.toast(errorTitle, "danger"); };
-                }else if (params.error === true) {
-                    params.error = () => { $A.toast(busyNetwork, "danger"); };
-                }
-                if (params.complete === true) {
-                    params.complete = () => { toastID?$A.toast(toastID):'' };
-                }
-            }
-            //
-            let language = window.localStorage['__language:type__'] || 'en';
-            if (typeof $A.app === 'object') {
-                language = $A.app.languageType || language;
-            }
-            //
-            if (typeof params.header !== 'object') params.header = {};
-            params.header['Content-Type'] = 'application/json';
-            params.header['language'] = language;
-            //
-            params.data['__Access-Control-Allow-Origin'] = true;
-            params.beforeSend();
+            params.before();
             $A.ihttp({
                 url: params.url,
                 data: params.data,
@@ -1333,15 +1282,15 @@
                 crossDomain: true,
                 dataType: params.dataType,
                 timeout: params.timeout,
-                success: function(data, status, xhr) {
+                success: function (data, status, xhr) {
                     params.complete();
                     params.success(data, status, xhr);
-                    params.afterComplete(true);
+                    params.after(true);
                 },
-                error: function(xhr, status) {
+                error: function (xhr, status) {
                     params.complete();
                     params.error(xhr, status);
-                    params.afterComplete(false);
+                    params.after(false);
                 }
             });
         }

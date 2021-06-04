@@ -38,7 +38,7 @@ const router = new VueRouter({
     routes
 });
 
-//进度条配置
+// 进度条配置
 ViewUI.LoadingBar.config({
     color: '#3fcc25',
     failedColor: '#ff0000'
@@ -51,28 +51,27 @@ router.afterEach((to, from, next) => {
     ViewUI.LoadingBar.finish();
 });
 
-//加载函数
+// 加载函数
 Vue.prototype.goForward = function(location, isReplace) {
     if (typeof location === 'string') location = {name: location};
     if (isReplace === true) {
-        this.$router.replace(location);
+        app.$router.replace(location).then(() => {});
     }else{
-        this.$router.push(location);
+        app.$router.push(location).then(() => {});
     }
 };
 
-//返回函数
+// 返回函数
 Vue.prototype.goBack = function (number) {
     let history = $A.jsonParse(window.sessionStorage['__history__'] || '{}');
     if ($A.runNum(history['::count']) > 2) {
-        this.$router.go(typeof number === 'number' ? number : -1);
+        app.$router.go(typeof number === 'number' ? number : -1);
     } else {
-        this.$router.replace(typeof number === "object" ? number : {path: '/'});
+        app.$router.replace(typeof number === "object" ? number : {path: '/'}).then(() => {});
     }
 };
 
 Vue.prototype.$A = $A;
-
 Vue.config.productionTip = false;
 
 const app = new Vue({
@@ -83,4 +82,12 @@ const app = new Vue({
     components: { App }
 });
 
-$A.app = app;
+
+$A.goForward = app.goForward;
+$A.goBack = app.goBack;
+$A.getLanguage = app.getLanguage;
+$A.Message = app.$Message;
+$A.Notice = app.$Notice;
+$A.Modal = app.$Modal;
+$A.store = app.$store;
+$A.L = app.$L;
