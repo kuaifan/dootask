@@ -114,8 +114,14 @@ class WebSocketService implements WebSocketHandlerInterface
              * 收到回执
              */
             case 'receipt':
-                $dialogMsg = WebSocketDialogMsg::whereId(intval($msgId))->first();
-                $dialogMsg && $dialogMsg->sendSuccess();
+                return;
+
+            /**
+             * 已阅消息
+             */
+            case 'readMsg':
+                $dialogMsg = WebSocketDialogMsg::whereId(intval($data['id']))->first();
+                $dialogMsg && $dialogMsg->readSuccess();
                 return;
         }
         //

@@ -15,7 +15,7 @@ use Carbon\Carbon;
  * @property int|null $userid 发送会员ID
  * @property string|null $type 消息类型
  * @property array|mixed $msg 详细消息
- * @property int|null $send 是否已送达
+ * @property int|null $read 是否已读
  * @property int|null $extra_int 额外数字参数
  * @property string|null $extra_str 额外字符参数
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -29,7 +29,7 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereExtraStr($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereMsg($value)
- * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereSend($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereRead($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereUserid($value)
@@ -58,10 +58,10 @@ class WebSocketDialogMsg extends AbstractModel
      * 标记已送达 同时 告诉发送人已送达
      * @return $this
      */
-    public function sendSuccess()
+    public function readSuccess()
     {
-        if (empty($this->send)) {
-            $this->send = 1;
+        if (empty($this->read)) {
+            $this->read = 1;
             $this->save();
             PushTask::push([
                 'userid' => $this->userid,

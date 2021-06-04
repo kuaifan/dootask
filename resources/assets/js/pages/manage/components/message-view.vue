@@ -6,7 +6,7 @@
 
         <div v-if="msgData.created_at" class="message-foot">
             <div class="time">{{formatTime(msgData.created_at)}}</div>
-            <Icon v-if="msgData.send" class="done-all" type="md-done-all" />
+            <Icon v-if="msgData.read" class="done-all" type="md-done-all" />
             <Icon v-else class="done" type="md-checkmark" />
         </div>
         <div v-else class="message-foot"><Loading/></div>
@@ -15,6 +15,8 @@
 </template>
 
 <script>
+import {mapState} from "vuex";
+
 export default {
     name: "MessageView",
     props: {
@@ -26,7 +28,32 @@ export default {
         },
     },
 
+    mounted() {
+        this.readMarking()
+    },
+
+    computed: {
+        ...mapState(['userId']),
+    },
+
+    watch: {
+        msgData() {
+            this.readMarking()
+        }
+    },
+
     methods: {
+        readMarking() {
+            if (this.msgData.read === 0 && this.msgData.userid != this.userId) {
+                this.$store.commit('wsSend', {
+                    type: 'readMsg',
+                    data: {
+                        id: this.msgData.id
+                    }
+                });
+            }
+        },
+
         formatTime(date) {
             let time = Math.round(new Date(date).getTime() / 1000),
                 string = '';
