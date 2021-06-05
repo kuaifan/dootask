@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\User;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
+use App\Models\WebSocketDialogMsgRead;
 use App\Models\WebSocketDialogUser;
 use App\Module\Base;
 use Request;
@@ -44,6 +45,10 @@ class DialogController extends AbstractController
         }
         //
         $list = WebSocketDialogMsg::whereDialogId($dialog_id)->orderByDesc('id')->paginate(Base::getPaginate(100, 50));
+        $list->transform(function (WebSocketDialogMsg $item) use ($user) {
+            $item->r = $item->userid === $user->userid ? null : WebSocketDialogMsgRead::whereMsgId($item->id)->whereUserid($user->userid)->first();
+            return $item;
+        });
         //
         return Base::retSuccess('success', $list);
     }
@@ -93,5 +98,129 @@ class DialogController extends AbstractController
         } else {
             return WebSocketDialogMsg::addUserMsg($dialog_id, 'text', $msg, $user->userid, $extra_int, $extra_str);
         }
+    }
+
+    /**
+     * {post}文件上传
+     *
+     * @apiParam {Number} dialog_id         对话ID
+     * @apiParam {Number} [extra_int]       额外参数（数字）
+     * @apiParam {String} [extra_str]       额外参数（字符）
+     * @apiParam {String} [filename]        post-文件名称
+     * @apiParam {String} [image64]         post-base64图片（二选一）
+     * @apiParam {File} [files]             post-文件对象（二选一）
+     */
+    public function msg__sendfile()
+    {
+        $user = User::authE();
+        if (Base::isError($user)) {
+            return $user;
+        } else {
+            $user = User::IDE($user['data']);
+        }
+        //
+        $dialog_id = Base::getPostInt('dialog_id');
+        $extra_int = Base::getPostInt('extra_int');
+        $extra_str = Base::getPostValue('extra_str');
+        //
+        if (!WebSocketDialogUser::whereDialogId($dialog_id)->whereUserid($user->userid)->exists()) {
+            return Base::retError('不在成员列表内');
+        }
+        $dialog = WebSocketDialog::whereId($dialog_id)->first();
+        if (empty($dialog)) {
+            return Base::retError('对话不存在或已被删除');
+        }
+        //
+        $path = "uploads/chat/" . $user->userid . "/";
+        $image64 = Base::getPostValue('image64');
+        $fileName = Base::getPostValue('filename');
+        if ($image64) {
+            $data = Base::image64save([
+                "image64" => $image64,
+                "path" => $path,
+                "fileName" => $fileName,
+            ]);
+        } else {
+            $data = Base::upload([
+                "file" => Request::file('files'),
+                "type" => 'file',
+                "path" => $path,
+                "fileName" => $fileName,
+            ]);
+        }
+        //
+        if (Base::isError($data)) {
+            return Base::retError($data['msg']);
+        } else {
+            $fileData = $data['data'];
+            $fileData['thumb'] = $fileData['thumb'] ?: 'images/ext/file.png';
+            switch ($fileData['ext']) {
+                case "docx":
+                    $fileData['thumb'] = 'images/ext/doc.png';
+                    break;
+                case "xlsx":
+                    $fileData['thumb'] = 'images/ext/xls.png';
+                    break;
+                case "pptx":
+                    $fileData['thumb'] = 'images/ext/ppt.png';
+                    break;
+                case "ai":
+                case "avi":
+                case "bmp":
+                case "cdr":
+                case "doc":
+                case "eps":
+                case "gif":
+                case "mov":
+                case "mp3":
+                case "mp4":
+                case "pdf":
+                case "ppt":
+                case "pr":
+                case "psd":
+                case "rar":
+                case "svg":
+                case "tif":
+                case "txt":
+                case "xls":
+                case "zip":
+                    $fileData['thumb'] = 'images/ext/' . $fileData['ext'] . '.png';
+                    break;
+            }
+            //
+            $msg = $fileData;
+            $msg['size'] *= 1024;
+            //
+            if ($dialog->type == 'group') {
+                return WebSocketDialogMsg::addGroupMsg($dialog_id, 'file', $msg, $user->userid, $extra_int, $extra_str);
+            } else {
+                return WebSocketDialogMsg::addUserMsg($dialog_id, 'file', $msg, $user->userid, $extra_int, $extra_str);
+            }
+        }
+    }
+
+    /**
+     * 获取消息阅读情况
+     *
+     * @apiParam {Number} msg_id            消息ID（需要是消息的发送人）
+     */
+    public function msg__readlist()
+    {
+        $user = User::authE();
+        if (Base::isError($user)) {
+            return $user;
+        } else {
+            $user = User::IDE($user['data']);
+        }
+        //
+        $msg_id = intval(Request::input('msg_id'));
+        //
+        $msg = WebSocketDialogMsg::whereId($msg_id)->whereUserid($user->userid)->first();
+        if (empty($msg)) {
+            return Base::retError('不是发送人');
+        }
+        //
+        $read = WebSocketDialogMsgRead::whereMsgId($msg_id)->get();
+        return Base::retSuccess('success', $read ?: []);
     }
 }

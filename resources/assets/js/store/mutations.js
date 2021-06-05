@@ -193,6 +193,80 @@ export default {
     },
 
     /**
+     * 获取对话消息
+     * @param state
+     * @param dialog_id
+     */
+    getDialogMsg(state, dialog_id) {
+        if (state.method.runNum(dialog_id) === 0) {
+            return;
+        }
+        if (state.method.isArray(state.cacheDialog[dialog_id])) {
+            state.dialogList = state.cacheDialog[dialog_id]
+        } else {
+            state.dialogList = [];
+        }
+        state.dialogId = dialog_id;
+        //
+        if (state.cacheDialog[dialog_id + "::load"]) {
+            return;
+        }
+        state.cacheDialog[dialog_id + "::load"] = true;
+        //
+        state.dialogLoad++;
+        $A.apiAjax({
+            url: 'dialog/msg/lists',
+            data: {
+                dialog_id: dialog_id,
+            },
+            complete: () => {
+                state.dialogLoad--;
+                state.cacheDialog[dialog_id + "::load"] = false;
+            },
+            success: ({ret, data, msg}) => {
+                if (ret === 1) {
+                    state.cacheDialog[dialog_id] = data.data.reverse();
+                    if (state.dialogId === dialog_id) {
+                        state.cacheDialog[dialog_id].forEach((item) => {
+                            let index = state.dialogList.findIndex(({id}) => id === item.id);
+                            if (index === -1) {
+                                state.dialogList.push(item);
+                            } else {
+                                state.dialogList.splice(index, 1, item);
+                            }
+                        })
+                    }
+                }
+            }
+        });
+    },
+
+    /**
+     * 根据消息ID 删除 或 替换 对话数据
+     * @param state
+     * @param params {id, data}
+     */
+    spliceDialogMsg(state, params) {
+        let {id, data} = params;
+        if (!id) {
+            return;
+        }
+        if (state.method.isJson(data)) {
+            if (data.id && state.dialogList.find(m => m.id == data.id)) {
+                data = null;
+            }
+        }
+        let index = state.dialogList.findIndex(m => m.id == id);
+        if (index > -1) {
+            if (data) {
+                state.dialogList.splice(index, 1, state.method.cloneJSON(data));
+            } else {
+                state.dialogList.splice(index, 1);
+            }
+        }
+    },
+
+    /**
      * 初始化 websocket
      * @param state
      */
@@ -291,7 +365,7 @@ export default {
             return;
         }
         const {type, data, callback} = params;
-        let msgId = params.msgId || 0;
+        let msgId = params.msgId;
         if (!state.ws) {
             typeof callback === "function" && callback(null, false)
             return;
@@ -332,53 +406,4 @@ export default {
     wsClose(state) {
         state.ws && state.ws.close();
     },
-
-    /**
-     * 获取对话消息
-     * @param state
-     * @param dialog_id
-     */
-    getDialogMsg(state, dialog_id) {
-        if (state.method.runNum(dialog_id) === 0) {
-            return;
-        }
-        if (state.method.isArray(state.cacheDialog[dialog_id])) {
-            state.dialogList = state.cacheDialog[dialog_id]
-        } else {
-            state.dialogList = [];
-        }
-        state.dialogId = dialog_id;
-        //
-        if (state.cacheDialog[dialog_id + "::load"]) {
-            return;
-        }
-        state.cacheDialog[dialog_id + "::load"] = true;
-        //
-        state.dialogLoad++;
-        $A.apiAjax({
-            url: 'dialog/msg/lists',
-            data: {
-                dialog_id: dialog_id,
-            },
-            complete: () => {
-                state.dialogLoad--;
-                state.cacheDialog[dialog_id + "::load"] = false;
-            },
-            success: ({ret, data, msg}) => {
-                if (ret === 1) {
-                    state.cacheDialog[dialog_id] = data.data.reverse();
-                    if (state.dialogId === dialog_id) {
-                        state.cacheDialog[dialog_id].forEach((item) => {
-                            let index = state.dialogList.findIndex(({id}) => id === item.id);
-                            if (index === -1) {
-                                state.dialogList.push(item);
-                            } else {
-                                state.dialogList.splice(index, 1, item);
-                            }
-                        })
-                    }
-                }
-            }
-        });
-    }
 }

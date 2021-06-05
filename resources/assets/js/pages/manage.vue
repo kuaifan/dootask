@@ -8,15 +8,15 @@
             <ul>
                 <li @click="toggleRoute('dashboard')" :class="classNameRoute('dashboard')">
                     <Icon type="md-speedometer" />
-                    <div class="menu-title">Dashboard</div>
+                    <div class="menu-title">{{$L('仪表板')}}</div>
                 </li>
                 <li @click="toggleRoute('setting/personal')" :class="classNameRoute('setting')">
                     <Icon type="md-cog" />
-                    <div class="menu-title">Setting</div>
+                    <div class="menu-title">{{$L('设置')}}</div>
                 </li>
                 <li @click="toggleRoute('calendar')" :class="classNameRoute('calendar')">
                     <Icon type="md-calendar" />
-                    <div class="menu-title">Calendar</div>
+                    <div class="menu-title">{{$L('日历')}}</div>
                 </li>
                 <li class="menu-project">
                     <ul>
@@ -25,7 +25,7 @@
                     <Loading v-if="loadIng > 0"/>
                 </li>
             </ul>
-            <Button class="manage-box-new" type="primary" icon="md-add" @click="addShow=true">New Project</Button>
+            <Button class="manage-box-new" type="primary" icon="md-add" @click="addShow=true">{{$L('新建项目')}}</Button>
         </div>
 
         <div class="manage-box-main">

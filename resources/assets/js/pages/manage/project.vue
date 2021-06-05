@@ -20,7 +20,7 @@
         .project-message {
             position: relative;
             height: 100%;
-            width: 30%;
+            width: 35%;
             min-width: 320px;
             max-width: 520px;
             flex-shrink: 0;

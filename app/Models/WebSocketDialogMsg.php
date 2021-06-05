@@ -4,7 +4,9 @@ namespace App\Models;
 
 use App\Module\Base;
 use App\Tasks\PushTask;
+use App\Tasks\WebSocketDialogMsgTask;
 use Carbon\Carbon;
+use Hhxsv5\LaravelS\Swoole\Task\Task;
 
 /**
  * Class WebSocketDialogMsg
@@ -15,11 +17,13 @@ use Carbon\Carbon;
  * @property int|null $userid 发送会员ID
  * @property string|null $type 消息类型
  * @property array|mixed $msg 详细消息
- * @property int|null $read 是否已读
+ * @property int|null $read 已阅数量
+ * @property int|null $send 发送数量
  * @property int|null $extra_int 额外数字参数
  * @property string|null $extra_str 额外字符参数
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read int|mixed $percentage
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg query()
@@ -30,6 +34,7 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereMsg($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereRead($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereSend($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereUserid($value)
@@ -37,12 +42,32 @@ use Carbon\Carbon;
  */
 class WebSocketDialogMsg extends AbstractModel
 {
+    protected $appends = [
+        'percentage',
+    ];
+
     protected $hidden = [
         'updated_at',
     ];
 
     /**
-     * 消息
+     * 阅读占比
+     * @return int|mixed
+     */
+    public function getPercentageAttribute()
+    {
+        if (!isset($this->attributes['percentage'])) {
+            if ($this->read > $this->send || empty($this->send)) {
+                $this->attributes['percentage'] = 100;
+            } else {
+                $this->attributes['percentage'] = intval($this->read / $this->send * 100);
+            }
+        }
+        return $this->attributes['percentage'];
+    }
+
+    /**
+     * 消息格式化
      * @param $value
      * @return array|mixed
      */
@@ -51,27 +76,54 @@ class WebSocketDialogMsg extends AbstractModel
         if (is_array($value)) {
             return $value;
         }
-        return Base::json2array($value);
+        $value = Base::json2array($value);
+        if ($this->type === 'file') {
+            $value['type'] = in_array($value['ext'], ['jpg', 'jpeg', 'png', 'gif']) ? 'img' : 'file';
+            $value['url'] = Base::fillUrl($value['path']);
+            $value['thumb'] = Base::fillUrl($value['thumb']);
+        }
+        return $value;
     }
 
     /**
      * 标记已送达 同时 告诉发送人已送达
-     * @return $this
+     * @param $userid
+     * @return bool
      */
-    public function readSuccess()
+    public function readSuccess($userid)
     {
-        if (empty($this->read)) {
-            $this->read = 1;
-            $this->save();
-            PushTask::push([
-                'userid' => $this->userid,
-                'msg' => [
-                    'type' => 'dialog',
-                    'data' => $this->toArray(),
-                ]
-            ]);
+        if (empty($userid)) {
+            return false;
         }
-        return $this;
+        $result = self::transaction(function() use ($userid) {
+            $msgRead = WebSocketDialogMsgRead::whereMsgId($this->id)->whereUserid($userid)->lockForUpdate()->first();
+            if (empty($msgRead)) {
+                $msgRead = WebSocketDialogMsgRead::createInstance([
+                    'msg_id' => $this->id,
+                    'userid' => $userid,
+                ]);
+                try {
+                    $msgRead->saveOrFail();
+                    $this->send = WebSocketDialogMsgRead::whereMsgId($this->id)->count();
+                    $this->save();
+                } catch (\Throwable $e) {
+                    $msgRead = $msgRead->first();
+                }
+            }
+            if ($msgRead && !$msgRead->read_at) {
+                $msgRead->read_at = Carbon::now();
+                $msgRead->save();
+                $this->increment('read');
+                PushTask::push([
+                    'userid' => $this->userid,
+                    'msg' => [
+                        'type' => 'dialog',
+                        'data' => $this->toArray(),
+                    ]
+                ]);
+            }
+        });
+        return Base::isSuccess($result);
     }
 
     /**
@@ -101,19 +153,14 @@ class WebSocketDialogMsg extends AbstractModel
             }
             $dialog->last_at = Carbon::now();
             $dialog->save();
+            $userids = WebSocketDialogUser::whereDialogId($dialog->id)->where('userid', '!=', $dialogMsg->userid)->pluck('userid')->toArray();
+            $dialogMsg->send = count($userids);
             $dialogMsg->dialog_id = $dialog->id;
             $dialogMsg->save();
             //
-            $userids = WebSocketDialogUser::whereDialogId($dialog->id)->where('userid', '!=', $dialogMsg->userid)->pluck('userid')->toArray();
-            if ($userids) {
-                PushTask::push([
-                    'userid' => $userids,
-                    'msg' => [
-                        'type' => 'dialog',
-                        'data' => $dialogMsg->toArray(),
-                    ]
-                ]);
-            }
+            $task = new WebSocketDialogMsgTask($userids, $dialogMsg->toArray());
+            Task::deliver($task);
+            //
             return Base::retSuccess('发送成功', $dialogMsg);
         });
     }
@@ -146,16 +193,13 @@ class WebSocketDialogMsg extends AbstractModel
             }
             $dialog->last_at = Carbon::now();
             $dialog->save();
+            $dialogMsg->send = 1;
             $dialogMsg->dialog_id = $dialog->id;
             $dialogMsg->save();
             //
-            PushTask::push([
-                'userid' => $userid,
-                'msg' => [
-                    'type' => 'dialog',
-                    'data' => $dialogMsg->toArray(),
-                ]
-            ]);
+            $task = new WebSocketDialogMsgTask($userid, $dialogMsg->toArray());
+            Task::deliver($task);
+            //
             return Base::retSuccess('发送成功', $dialogMsg);
         });
     }

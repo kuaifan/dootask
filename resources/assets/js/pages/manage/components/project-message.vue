@@ -1,5 +1,10 @@
 <template>
-    <div v-if="$store.state.projectChatShow" class="project-message">
+    <div
+        v-if="$store.state.projectChatShow"
+        class="project-message"
+        @drop.prevent="chatPasteDrag($event, 'drag')"
+        @dragover.prevent="chatDragOver(true)"
+        @dragleave.prevent="chatDragOver(false)">
         <div class="group-member">
             <div class="member-head">
                 <div class="member-title">{{$L('项目成员')}}<span>({{projectDetail.project_user.length}})</span></div>
@@ -12,7 +17,7 @@
             </ul>
         </div>
         <div class="group-title">{{$L('群聊')}}</div>
-        <ScrollerY ref="groupChat" class="group-chat message-scroller" @on-scroll="groupChatScroll">
+        <ScrollerY ref="groupChat" class="group-chat message-scroller" @on-scroll="chatScroll">
             <div ref="manageList" class="message-list">
                 <ul>
                     <li v-if="dialogLoad > 0" class="loading"><Loading/></li>
@@ -21,13 +26,24 @@
                         <div class="message-avatar">
                             <UserAvatar :userid="item.userid" :size="30"/>
                         </div>
-                        <MessageView :msg-data="item"/>
+                        <MessageView :msg-data="item" dialog-type="group"/>
                     </li>
+                    <li ref="bottom" class="bottom"></li>
                 </ul>
             </div>
         </ScrollerY>
-        <div class="group-footer">
-            <DragInput class="group-input" v-model="msgText" type="textarea" :rows="1" :autosize="{ minRows: 1, maxRows: 3 }" :maxlength="255" @on-keydown="groupKeydown" @on-input-paste="groupPasteDrag" :placeholder="$L('输入消息...')" />
+        <div :class="['group-footer', msgNew > 0 ? 'newmsg' : '']">
+            <div class="group-newmsg" @click="goNewBottom">{{$L('有' + msgNew + '条新消息')}}</div>
+            <DragInput class="group-input" v-model="msgText" type="textarea" :rows="1" :autosize="{ minRows: 1, maxRows: 3 }" :maxlength="255" @on-keydown="chatKeydown" @on-input-paste="pasteDrag" :placeholder="$L('输入消息...')" />
+            <MessageUpload
+                ref="chatUpload"
+                class="chat-upload"
+                @on-progress="chatFile('progress', $event)"
+                @on-success="chatFile('success', $event)"
+                @on-error="chatFile('error', $event)"/>
+        </div>
+        <div v-if="dialogDrag" class="drag-over" @click="dialogDrag=false">
+            <div class="drag-text">{{$L('拖动到这里发送')}}</div>
         </div>
     </div>
 </template>
@@ -115,8 +131,64 @@
             margin-top: 18px;
         }
         .group-footer {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
             padding: 0 28px;
             margin-bottom: 20px;
+            .group-newmsg {
+                display: none;
+                height: 30px;
+                line-height: 30px;
+                color: #ffffff;
+                font-size: 12px;
+                background-color: rgba(0, 0, 0, 0.6);
+                padding: 0 12px;
+                margin-bottom: 20px;
+                margin-right: 10px;
+                border-radius: 16px;
+                cursor: pointer;
+                z-index: 2;;
+            }
+            .chat-upload {
+                display: none;
+                width: 0;
+                height: 0;
+                overflow: hidden;
+            }
+            &.newmsg {
+                margin-top: -50px;
+                .group-newmsg {
+                    display: block;
+                }
+            }
+        }
+        .drag-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 3;
+            background-color: rgba(255, 255, 255, 0.78);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            &:before {
+                content: "";
+                position: absolute;
+                top: 16px;
+                left: 16px;
+                right: 16px;
+                bottom: 16px;
+                border: 2px dashed #7b7b7b;
+                border-radius: 12px;
+            }
+            .drag-text {
+                padding: 12px;
+                font-size: 18px;
+                color: #666666;
+            }
         }
     }
 }
@@ -127,24 +199,34 @@ import DragInput from "../../../components/DragInput";
 import ScrollerY from "../../../components/ScrollerY";
 import {mapState} from "vuex";
 import MessageView from "./message-view";
+import MessageUpload from "./message-upload";
 
 export default {
     name: "ProjectMessage",
-    components: {MessageView, ScrollerY, DragInput},
+    components: {MessageUpload, MessageView, ScrollerY, DragInput},
     data() {
         return {
             autoBottom: true,
+            autoInterval: null,
+
             memberShowAll: false,
 
             dialogId: 0,
+            dialogDrag: false,
 
             msgText: '',
+            msgLength: 0,
+            msgNew: 0,
         }
     },
 
     mounted() {
-        this.groupChatGoAuto();
-        this.groupChatGoBottom();
+        this.goBottom();
+        this.autoInterval = setInterval(this.goBottom, 200)
+    },
+
+    beforeDestroy() {
+        clearInterval(this.autoInterval)
     },
 
     computed: {
@@ -158,21 +240,31 @@ export default {
 
         dialogId(id) {
             this.$store.commit('getDialogMsg', id);
+        },
+
+        dialogList(list) {
+            if (!this.autoBottom) {
+                let length = list.length - this.msgLength;
+                if (length > 0) {
+                    this.msgNew+= length;
+                }
+            }
+            this.msgLength = list.length;
         }
     },
 
     methods: {
         sendMsg() {
-            let mid = $A.randomString(16);
+            let tempId = $A.randomString(16);
             this.dialogList.push({
-                id: mid,
-                userid: this.userId,
+                id: tempId,
                 type: 'text',
+                userid: this.userId,
                 msg: {
                     text: this.msgText,
                 },
             });
-            this.groupChatGoBottom(true);
+            this.goBottom();
             //
             $A.apiAjax({
                 url: 'dialog/msg/sendtext',
@@ -181,24 +273,26 @@ export default {
                     text: this.msgText,
                 },
                 error:() => {
-                    this.dialogList = this.dialogList.filter(({id}) => id != mid);
+                    this.$store.commit('spliceDialogMsg', {id: tempId});
                 },
                 success: ({ret, data, msg}) => {
-                    if (ret === 1) {
-                        if (!this.dialogList.find(({id}) => id == data.id)) {
-                            let index = this.dialogList.findIndex(({id}) => id == mid);
-                            if (index > -1) this.dialogList.splice(index, 1, data);
-                            return;
-                        }
+                    if (ret !== 1) {
+                        $A.modalWarning({
+                            title: '发送失败',
+                            content: msg
+                        });
                     }
-                    this.dialogList = this.dialogList.filter(({id}) => id != mid);
+                    this.$store.commit('spliceDialogMsg', {
+                        id: tempId,
+                        data: ret === 1 ? data : null
+                    });
                 }
             });
             //
             this.msgText = '';
         },
 
-        groupKeydown(e) {
+        chatKeydown(e) {
             if (e.keyCode === 13) {
                 if (e.shiftKey) {
                     return;
@@ -208,46 +302,86 @@ export default {
             }
         },
 
-        groupPasteDrag(e, type) {
+        pasteDrag(e, type) {
             const files = type === 'drag' ? e.dataTransfer.files : e.clipboardData.files;
             const postFiles = Array.prototype.slice.call(files);
             if (postFiles.length > 0) {
                 e.preventDefault();
                 postFiles.forEach((file) => {
-                    // 上传文件
+                    this.$refs.chatUpload.upload(file);
                 });
             }
         },
 
-        groupChatScroll(res) {
-            if (res.directionreal === 'up') {
-                if (res.scrollE < 10) {
-                    this.autoBottom = true;
-                }
-            } else if (res.directionreal === 'down') {
-                this.autoBottom = false;
+        chatDragOver(show) {
+            let random = (this.__dialogDrag = $A.randomString(8));
+            if (!show) {
+                setTimeout(() => {
+                    if (random === this.__dialogDrag) {
+                        this.dialogDrag = show;
+                    }
+                }, 150);
+            } else {
+                this.dialogDrag = show;
             }
         },
 
-        groupChatGoAuto() {
-            clearTimeout(this.groupChatGoTimeout);
-            this.groupChatGoTimeout = setTimeout(() => {
-                if (this.autoBottom) {
-                    this.groupChatGoBottom(true);
-                }
-                this.groupChatGoAuto();
-            }, 1000);
+        chatPasteDrag(e, type) {
+            this.dialogDrag = false;
+            const files = type === 'drag' ? e.dataTransfer.files : e.clipboardData.files;
+            const postFiles = Array.prototype.slice.call(files);
+            if (postFiles.length > 0) {
+                e.preventDefault();
+                postFiles.forEach((file) => {
+                    this.$refs.chatUpload.upload(file);
+                });
+            }
         },
 
-        groupChatGoBottom(animation = false) {
-            this.$nextTick(() => {
-                if (typeof this.$refs.groupChat !== "undefined") {
-                    if (this.$refs.groupChat.getScrollInfo().scrollE > 0) {
-                        this.$refs.groupChat.scrollTo(this.$refs.manageList.clientHeight, animation);
+        chatFile(type, file) {
+            switch (type) {
+                case 'progress':
+                    this.dialogList.push({
+                        id: file.tempId,
+                        type: 'loading',
+                        userid: this.userId,
+                        msg: { },
+                    });
+                    break;
+
+                case 'error':
+                    this.$store.commit('spliceDialogMsg', {id: file.tempId});
+                    break;
+
+                case 'success':
+                    this.$store.commit('spliceDialogMsg', {id: file.tempId, data: file.data});
+                    break;
+            }
+        },
+
+        chatScroll(res) {
+            switch (res.directionreal) {
+                case 'up':
+                    if (res.scrollE < 10) {
+                        this.autoBottom = true;
                     }
-                    this.autoBottom = true;
-                }
-            });
+                    break;
+                case 'down':
+                    this.autoBottom = false;
+                    break;
+            }
+        },
+
+        goBottom() {
+            if (this.autoBottom && this.$refs.bottom) {
+                this.$refs.bottom.scrollIntoView(false);
+            }
+        },
+
+        goNewBottom() {
+            this.msgNew = 0;
+            this.autoBottom = true;
+            this.goBottom();
         },
 
         formatTime(date) {

@@ -1,14 +1,19 @@
 <template>
     <Tooltip v-if="user"
-             :class="['common-avatar', user.online ? 'online' : '']"
+             class="common-avatar"
              :delay="600"
              :transfer="transfer">
         <div slot="content">
             <p>{{$L('昵称')}}: {{user.nickname}}</p>
             <p>{{$L('职位/职称')}}: {{user.profession || '-'}}</p>
         </div>
-        <Avatar v-if="showImg" :src="user.userimg" :size="size"/>
-        <Avatar v-else :size="size" class="common-avatar-text">{{nickname}}</Avatar>
+        <div class="avatar-wrapper">
+            <div :class="['avatar-box', user.online ? 'online' : '']">
+                <Avatar v-if="showImg" :src="user.userimg" :size="size"/>
+                <Avatar v-else :size="size" class="avatar-text">{{nickname}}</Avatar>
+            </div>
+            <div v-if="showName" class="avatar-name">{{user.nickname}}</div>
+        </div>
     </Tooltip>
 </template>
 
@@ -23,6 +28,10 @@
             size: {
                 type: [String, Number],
                 default: 'default'
+            },
+            showName: {
+                type: Boolean,
+                default: false
             },
             transfer: {
                 type: Boolean,

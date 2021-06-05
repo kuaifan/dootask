@@ -54,9 +54,9 @@ export default [
                 ]
             },
             {
-                name: 'manage-project-detail',
+                name: 'manage-project',
                 path: 'project/:id',
-                component: () => import('./pages/manage/project-detail.vue'),
+                component: () => import('./pages/manage/project.vue'),
             },
         ]
     },

@@ -20,7 +20,7 @@
                         <Tooltip theme="light" :always="searchText!=''" transfer>
                             <Icon type="ios-search" />
                             <div slot="content">
-                                <Input v-model="searchText" placeholder="Search task..." clearable autofocus/>
+                                <Input v-model="searchText" :placeholder="$L('名称、描述...')" clearable autofocus/>
                             </div>
                         </Tooltip>
                     </li>
@@ -99,11 +99,11 @@
         <div v-else class="project-table">
             <div class="project-table-head">
                 <Row class="project-row">
-                    <Col span="12"># Task name</Col>
-                    <Col span="3">Task Column</Col>
-                    <Col span="3">Priority</Col>
-                    <Col span="3">Member</Col>
-                    <Col span="3">Expiration</Col>
+                    <Col span="12"># {{$L('任务名称')}}</Col>
+                    <Col span="3">{{$L('列表')}}</Col>
+                    <Col span="3">{{$L('优先级')}}</Col>
+                    <Col span="3">{{$L('负责人')}}</Col>
+                    <Col span="3">{{$L('到期时间')}}</Col>
                 </Row>
             </div>
             <!--我的任务-->
@@ -112,7 +112,7 @@
                     <Row class="project-row">
                         <Col span="12" class="row-title">
                             <i class="iconfont">&#xe689;</i>
-                            <div class="row-h1">My task</div>
+                            <div class="row-h1">{{$L('我的任务')}}</div>
                             <div class="row-num">({{myList.length}})</div>
                         </Col>
                         <Col span="3"></Col>
@@ -170,7 +170,7 @@
                     <Row class="project-row">
                         <Col span="12" class="row-title">
                             <i class="iconfont">&#xe689;</i>
-                            <div class="row-h1">Undone</div>
+                            <div class="row-h1">{{$L('未完成任务')}}</div>
                             <div class="row-num">({{undoneList.length}})</div>
                         </Col>
                         <Col span="3"></Col>
@@ -217,7 +217,7 @@
                     <Row class="project-row">
                         <Col span="12" class="row-title">
                             <i class="iconfont">&#xe689;</i>
-                            <div class="row-h1">Completed</div>
+                            <div class="row-h1">{{$L('已完成任务')}}</div>
                             <div class="row-num">({{completedList.length}})</div>
                         </Col>
                         <Col span="3"></Col>
@@ -975,6 +975,15 @@ export default {
                         $A.messageSuccess(msg);
                         this.$store.commit('getProjectDetail', this.addData.project_id);
                         this.addShow = false;
+                        this.addData = {
+                            owner: 0,
+                            column_id: 0,
+                            times: [],
+                            subtasks: [],
+                            p_level: 0,
+                            p_name: '',
+                            p_color: '',
+                        };
                     } else {
                         $A.modalError(msg);
                     }
@@ -1166,7 +1175,7 @@ export default {
             let minutes = Math.floor(((second % 86400) % 3600) / 60);
             let seconds = Math.floor(((second % 86400) % 3600) % 60);
             if (days > 0) {
-                if (hours > 0) duration = days + "d," + this.formatBit(hours) + "h.";
+                if (hours > 0) duration = days + "d," + this.formatBit(hours) + "h";
                 else if (minutes > 0) duration = days + "d," + this.formatBit(minutes) + "min";
                 else if (seconds > 0) duration = days + "d," + this.formatBit(seconds) + "s";
                 else duration = days + "d";

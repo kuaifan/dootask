@@ -122,7 +122,7 @@ class WebSocketService implements WebSocketHandlerInterface
              */
             case 'readMsg':
                 $dialogMsg = WebSocketDialogMsg::whereId(intval($data['id']))->first();
-                $dialogMsg && $dialogMsg->readSuccess();
+                $dialogMsg && $dialogMsg->readSuccess($this->getUserid($frame->fd));
                 return;
         }
         //
@@ -177,5 +177,15 @@ class WebSocketService implements WebSocketHandlerInterface
     private function deleteUser($fd)
     {
         WebSocket::whereFd($fd)->delete();
+    }
+
+    /**
+     * 根据fd获取会员ID
+     * @param $fd
+     * @return int
+     */
+    private function getUserid($fd)
+    {
+        return intval(WebSocket::whereFd($fd)->value('userid'));
     }
 }

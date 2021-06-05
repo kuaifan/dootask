@@ -744,7 +744,11 @@ class Base
         ) {
             return $str;
         } else {
-            return url($str);
+            try {
+                return url($str);
+            } catch (\Throwable $e) {
+                return self::getSchemeAndHost() . "/" . $str;
+            }
         }
     }
 
@@ -761,7 +765,22 @@ class Base
             }
             return $str;
         }
-        return Base::leftDelete($str, url('') . '/');
+        try {
+            $find = url('');
+        } catch (\Throwable $e) {
+            $find = self::getSchemeAndHost();
+        }
+        return Base::leftDelete($str, $find . '/');
+    }
+
+    /**
+     * 获取主地址
+     * @return string   如：http://127.0.0.1:8080
+     */
+    public static function getSchemeAndHost()
+    {
+        $scheme = isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == '443' ? 'https://' : 'http://';
+        return $scheme.($_SERVER['HTTP_HOST'] ?? '');
     }
 
     /**
@@ -1922,12 +1941,16 @@ class Base
 
     public static function getPostValue($key, $default = null)
     {
-        return self::newTrim(self::getContentValue($key, $default));
+        $value = self::newTrim(self::getContentValue($key, $default));
+        if (empty($value)) {
+            $value = self::newTrim(Request::post($key, $default));
+        }
+        return $value;
     }
 
     public static function getPostInt($key, $default = null)
     {
-        return intval(self::getContentValue($key, $default));
+        return intval(self::getPostValue($key, $default));
     }
 
     /**
@@ -2301,7 +2324,7 @@ class Base
                 $array['thumb'] = $array['path'];
                 if ($param['autoThumb'] === "false") $param['autoThumb'] = false;
                 if ($param['autoThumb'] !== false) {
-                    if (Base::imgThumb($array['file'], $array['file'] . "_thumb.jpg", 180, 0)) {
+                    if (Base::imgThumb($array['file'], $array['file'] . "_thumb.jpg", 320, 0)) {
                         $array['thumb'] .= "_thumb.jpg";
                     }
                 }

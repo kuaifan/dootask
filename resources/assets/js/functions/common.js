@@ -1306,27 +1306,30 @@
 
         /**
          *  对象中有Date格式的转成指定格式
-         * @param myObj
-         * @param format  默认格式：Y-m-d
+         * @param params
+         * @param format  默认格式：Y-m-d H:i:s
          * @returns {*}
          */
-        date2string(myObj, format) {
-            if (myObj === null) {
-                return myObj;
+        date2string(params, format) {
+            if (params === null) {
+                return params;
             }
             if (typeof format === "undefined") {
-                format = "Y-m-d";
+                format = "Y-m-d H:i:s";
             }
-            if (typeof myObj === "object") {
-                if (myObj instanceof Date) {
-                    return $A.formatDate(format, myObj);
+            if (params instanceof Date) {
+                params = $A.formatDate(format, params);
+            } else if ($A.isJson(params)) {
+                for (let key in params) {
+                    if (!params.hasOwnProperty(key)) continue;
+                    params[key] = $A.date2string(params[key], format);
                 }
-                $A.each(myObj, (key, val)=>{
-                    myObj[key] = $A.date2string(val, format);
+            } else if ($A.isArray(params)) {
+                params.forEach((val, index) => {
+                    params[index] = $A.date2string(val, format);
                 });
-                return myObj;
             }
-            return myObj;
+            return params;
         },
 
         /**

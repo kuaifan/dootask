@@ -39,6 +39,7 @@
             if (typeof params.success === 'undefined') params.success = () => { };
             if (typeof params.header === 'undefined') params.header = {};
             params.url = this.apiUrl(params.url);
+            params.data = this.date2string(params.data);
             params.header['Content-Type'] = 'application/json';
             params.header['language'] = $A.getLanguage();
             params.header['token'] = $A.store.state.userToken;
