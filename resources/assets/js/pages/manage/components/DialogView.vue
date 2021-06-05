@@ -1,12 +1,12 @@
 <template>
-    <div class="message-view" :data-id="msgData.id">
+    <div class="dialog-view" :data-id="msgData.id">
 
         <!--文本-->
-        <div v-if="msgData.type === 'text'" class="message-content" v-html="textMsg(msgInfo.text)"></div>
+        <div v-if="msgData.type === 'text'" class="dialog-content" v-html="textMsg(msgInfo.text)"></div>
         <!--等待-->
-        <div v-else-if="msgData.type === 'loading'" class="message-content loading"><Loading/></div>
+        <div v-else-if="msgData.type === 'loading'" class="dialog-content loading"><Loading/></div>
         <!--文件-->
-        <div v-else-if="msgData.type === 'file'" :class="['message-content', msgInfo.type]">
+        <div v-else-if="msgData.type === 'file'" :class="['dialog-content', msgInfo.type]">
             <a :href="msgInfo.url" target="_blank">
                 <img v-if="msgInfo.type === 'img'" class="file-img" :style="imageStyle(msgInfo)" :src="msgInfo.thumb"/>
                 <div v-else class="file-box">
@@ -19,10 +19,10 @@
             </a>
         </div>
         <!--未知-->
-        <div v-else class="message-content unknown">{{$L("未知的消息类型")}}</div>
+        <div v-else class="dialog-content unknown">{{$L("未知的消息类型")}}</div>
 
         <!--时间/阅读-->
-        <div v-if="msgData.created_at" class="message-foot">
+        <div v-if="msgData.created_at" class="dialog-foot">
             <div class="time">{{formatTime(msgData.created_at)}}</div>
             <Poptip
                 v-if="msgData.send > 1 || dialogType == 'group'"
@@ -32,7 +32,7 @@
                 :width="360"
                 :offset="8"
                 @on-popper-show="popperShow">
-                <div slot="content" class="message-readbox">
+                <div slot="content" class="dialog-readbox">
                     <ul class="read">
                         <li class="read-title"><em>{{readList.length}}</em>{{$L('已读')}}</li>
                         <li v-for="item in readList"><UserAvatar :userid="item.userid" :size="26" show-name/></li>
@@ -47,7 +47,7 @@
             <Icon v-else-if="msgData.percentage === 100" class="done" type="md-done-all"/>
             <Icon v-else class="done" type="md-checkmark"/>
         </div>
-        <div v-else class="message-foot"><Loading/></div>
+        <div v-else class="dialog-foot"><Loading/></div>
 
     </div>
 </template>
@@ -57,7 +57,7 @@ import {mapState} from "vuex";
 import WCircle from "../../../components/WCircle";
 
 export default {
-    name: "MessageView",
+    name: "DialogView",
     components: {WCircle},
     props: {
         msgData: {

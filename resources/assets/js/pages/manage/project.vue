@@ -2,7 +2,7 @@
     <div class="project-detail">
         <PageTitle>{{ $L('项目面板') }}</PageTitle>
         <ProjectList/>
-        <ProjectMessage/>
+        <ProjectDialog/>
     </div>
 </template>
 
@@ -17,7 +17,7 @@
             height: 100%;
             background-color: #fafafa;
         }
-        .project-message {
+        .project-dialog {
             position: relative;
             height: 100%;
             width: 35%;
@@ -39,10 +39,10 @@
 </style>
 
 <script>
-import ProjectList from "./components/project-list";
-import ProjectMessage from "./components/project-message";
+import ProjectList from "./components/ProjectList";
+import ProjectDialog from "./components/ProjectDialog";
 export default {
-    components: {ProjectMessage, ProjectList},
+    components: {ProjectDialog, ProjectList},
     data() {
         return {
             project_id: 0,

@@ -686,10 +686,10 @@ body {
     }
 }
 
-.message-scroller {
+.dialog-scroller {
     position: relative;
     overflow: auto;
-    .message-list {
+    .dialog-list {
         > ul {
             > li {
                 display: flex;
@@ -697,18 +697,18 @@ body {
                 align-items: flex-end;
                 list-style: none;
                 margin-bottom: 16px;
-                .message-avatar {
+                .dialog-avatar {
                     position: relative;
                     margin-bottom: 20px;
                     flex-shrink: 0;
                 }
-                .message-view {
+                .dialog-view {
                     max-width: 70%;
                     display: flex;
                     flex-direction: column;
                     align-items: flex-start;
                     margin: 0 0 0 8px;
-                    .message-content {
+                    .dialog-content {
                         color: #333333;
                         background-color: #F4F5F7;
                         padding: 8px;
@@ -773,7 +773,7 @@ body {
                             text-decoration: underline;
                         }
                     }
-                    .message-foot {
+                    .dialog-foot {
                         display: flex;
                         align-items: center;
                         padding-top: 4px;
@@ -825,10 +825,10 @@ body {
                 }
                 &.self {
                     flex-direction: row-reverse;
-                    .message-view {
+                    .dialog-view {
                         align-items: flex-end;
                         margin: 0 8px 0 0;
-                        .message-content {
+                        .dialog-content {
                             color: #ffffff;
                             background-color: #2d8cf0;
                             border-radius: 6px 6px 0 6px;
@@ -840,7 +840,7 @@ body {
                                 background-color: transparent;
                             }
                         }
-                        .message-foot {
+                        .dialog-foot {
                             .done {
                                 display: inline-block;
                             }
@@ -855,7 +855,7 @@ body {
     }
 }
 
-.message-readbox {
+.dialog-readbox {
     display: flex;
     position: relative;
     .read,

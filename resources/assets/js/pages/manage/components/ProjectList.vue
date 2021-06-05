@@ -826,8 +826,8 @@
 </style>
 
 <script>
-import TaskPriority from "./task-priority";
-import TaskAdd from "./task-add";
+import TaskPriority from "./TaskPriority";
+import TaskAdd from "./TaskAdd";
 import {mapState} from "vuex";
 import UserInput from "../../../components/UserInput";
 export default {

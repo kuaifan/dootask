@@ -1,11 +1,11 @@
 <template>
     <div
         v-if="$store.state.projectChatShow"
-        class="project-message"
+        class="project-dialog"
         @drop.prevent="chatPasteDrag($event, 'drag')"
         @dragover.prevent="chatDragOver(true)"
         @dragleave.prevent="chatDragOver(false)">
-        <div class="group-member">
+        <div class="dialog-user">
             <div class="member-head">
                 <div class="member-title">{{$L('项目成员')}}<span>({{projectDetail.project_user.length}})</span></div>
                 <div class="member-view-all" @click="memberShowAll=!memberShowAll">{{$L('查看所有')}}</div>
@@ -16,26 +16,26 @@
                 </li>
             </ul>
         </div>
-        <div class="group-title">{{$L('群聊')}}</div>
-        <ScrollerY ref="groupChat" class="group-chat message-scroller" @on-scroll="chatScroll">
-            <div ref="manageList" class="message-list">
+        <div class="dialog-title">{{$L('群聊')}}</div>
+        <ScrollerY class="dialog-chat dialog-scroller" @on-scroll="chatScroll">
+            <div ref="manageList" class="dialog-list">
                 <ul>
                     <li v-if="dialogLoad > 0" class="loading"><Loading/></li>
                     <li v-else-if="dialogList.length === 0" class="nothing">{{$L('暂无消息')}}</li>
                     <li v-for="(item, key) in dialogList" :key="key" :class="{self:item.userid == userId}">
-                        <div class="message-avatar">
+                        <div class="dialog-avatar">
                             <UserAvatar :userid="item.userid" :size="30"/>
                         </div>
-                        <MessageView :msg-data="item" dialog-type="group"/>
+                        <DialogView :msg-data="item" dialog-type="group"/>
                     </li>
                     <li ref="bottom" class="bottom"></li>
                 </ul>
             </div>
         </ScrollerY>
-        <div :class="['group-footer', msgNew > 0 ? 'newmsg' : '']">
-            <div class="group-newmsg" @click="goNewBottom">{{$L('有' + msgNew + '条新消息')}}</div>
-            <DragInput class="group-input" v-model="msgText" type="textarea" :rows="1" :autosize="{ minRows: 1, maxRows: 3 }" :maxlength="255" @on-keydown="chatKeydown" @on-input-paste="pasteDrag" :placeholder="$L('输入消息...')" />
-            <MessageUpload
+        <div :class="['dialog-footer', msgNew > 0 ? 'newmsg' : '']">
+            <div class="dialog-newmsg" @click="goNewBottom">{{$L('有' + msgNew + '条新消息')}}</div>
+            <DragInput class="dialog-input" v-model="msgText" type="textarea" :rows="1" :autosize="{ minRows: 1, maxRows: 3 }" :maxlength="255" @on-keydown="chatKeydown" @on-input-paste="pasteDrag" :placeholder="$L('输入消息...')" />
+            <DialogUpload
                 ref="chatUpload"
                 class="chat-upload"
                 @on-progress="chatFile('progress', $event)"
@@ -50,9 +50,9 @@
 
 <style lang="scss">
 :global {
-    .project-message {
-        .group-footer {
-            .group-input {
+    .project-dialog {
+        .dialog-footer {
+            .dialog-input {
                 background-color: #F4F5F7;
                 padding: 10px 12px;
                 border-radius: 10px;
@@ -71,12 +71,12 @@
 </style>
 <style lang="scss" scoped>
 :global {
-    .project-message {
+    .project-dialog {
         display: flex;
         flex-direction: column;
         background-color: #ffffff;
         z-index: 1;
-        .group-member {
+        .dialog-user {
             margin-top: 36px;
             padding: 0 32px;
             .member-head {
@@ -119,24 +119,24 @@
                 }
             }
         }
-        .group-title {
+        .dialog-title {
             padding: 0 32px;
             margin-top: 20px;
             font-size: 18px;
             font-weight: 600;
         }
-        .group-chat {
+        .dialog-chat {
             flex: 1;
             padding: 0 32px;
             margin-top: 18px;
         }
-        .group-footer {
+        .dialog-footer {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
             padding: 0 28px;
             margin-bottom: 20px;
-            .group-newmsg {
+            .dialog-newmsg {
                 display: none;
                 height: 30px;
                 line-height: 30px;
@@ -158,7 +158,7 @@
             }
             &.newmsg {
                 margin-top: -50px;
-                .group-newmsg {
+                .dialog-newmsg {
                     display: block;
                 }
             }
@@ -198,12 +198,12 @@
 import DragInput from "../../../components/DragInput";
 import ScrollerY from "../../../components/ScrollerY";
 import {mapState} from "vuex";
-import MessageView from "./message-view";
-import MessageUpload from "./message-upload";
+import DialogView from "./DialogView";
+import DialogUpload from "./DialogUpload";
 
 export default {
-    name: "ProjectMessage",
-    components: {MessageUpload, MessageView, ScrollerY, DragInput},
+    name: "ProjectDialog",
+    components: {DialogUpload, DialogView, ScrollerY, DragInput},
     data() {
         return {
             autoBottom: true,

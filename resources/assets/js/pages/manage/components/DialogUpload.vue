@@ -19,7 +19,7 @@
 import {mapState} from "vuex";
 
 export default {
-    name: 'MessageUpload',
+    name: 'DialogUpload',
     props: {
         maxSize: {
             type: Number,
