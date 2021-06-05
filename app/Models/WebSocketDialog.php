@@ -32,6 +32,29 @@ use App\Module\Base;
 class WebSocketDialog extends AbstractModel
 {
     /**
+     * 格式化对话
+     * @param WebSocketDialog $dialog
+     * @param int $userid   会员ID
+     * @return WebSocketDialog
+     */
+    public static function formatData(WebSocketDialog $dialog, $userid)
+    {
+        // 最后消息
+        $last_msg = WebSocketDialogMsg::whereDialogId($dialog->id)->orderByDesc('id')->first();
+        $dialog->last_msg = $last_msg;
+        // 未读信息
+        $dialog->unread = WebSocketDialogMsgRead::whereDialogId($dialog->id)->whereUserid($userid)->whereReadAt(null)->count();
+        // 对方信息
+        $dialog->dialog_user = null;
+        if ($dialog->type === 'user') {
+            $dialog_user = WebSocketDialogUser::whereDialogId($dialog->id)->where('userid', '!=', $userid)->first();
+            $dialog->name = User::userid2nickname($dialog_user->userid);
+            $dialog->dialog_user = $dialog_user;
+        }
+        return $dialog;
+    }
+
+    /**
      * 创建聊天室
      * @param string $name          聊天室名称
      * @param int|array $userid     加入的会员ID或会员ID组

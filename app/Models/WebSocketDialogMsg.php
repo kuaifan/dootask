@@ -99,6 +99,7 @@ class WebSocketDialogMsg extends AbstractModel
             $msgRead = WebSocketDialogMsgRead::whereMsgId($this->id)->whereUserid($userid)->lockForUpdate()->first();
             if (empty($msgRead)) {
                 $msgRead = WebSocketDialogMsgRead::createInstance([
+                    'dialog_id' => $this->dialog_id,
                     'msg_id' => $this->id,
                     'userid' => $userid,
                 ]);

@@ -897,3 +897,155 @@ body {
         background-color: #F4F4F5;
     }
 }
+
+.dialog-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    .dialog-select {
+        position: relative;
+        height: 100%;
+        width: 30%;
+        min-width: 240px;
+        max-width: 320px;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        &:after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: 1px;
+            background-color: #f2f2f2;
+        }
+        .dialog-search {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 54px;
+            padding: 0 12px;
+            flex-shrink: 0;
+            .ivu-input {
+                border-color: transparent;
+                &:hover,
+                &:focus {
+                    box-shadow: none;
+                }
+            }
+        }
+        .dialog-list {
+            flex: 1;
+            height: 0;
+            width: 100%;
+            overflow-x: hidden;
+            overflow-y: auto;
+            > ul {
+                > li {
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+                    height: 86px;
+                    padding: 0 12px;
+                    position: relative;
+                    cursor: pointer;
+                    &.active {
+                        background-color: #F4F5F7;
+                    }
+                    .common-avatar {
+                        flex-grow: 0;
+                        flex-shrink: 0;
+                    }
+                    .group-avatar {
+                        width: 46px;
+                        height: 46px;
+                        line-height: 46px;
+                        border-radius: 50%;
+                        font-size: 26px;
+                        background-color: #61B2F9;
+                        color: #ffffff;
+                        flex-grow: 0;
+                        flex-shrink: 0;
+                    }
+                    .user-msg-box {
+                        flex: 1;
+                        display: flex;
+                        flex-direction: column;
+                        padding-left: 12px;
+                        .user-msg-title {
+                            display: flex;
+                            flex-direction: row;
+                            align-items: center;
+                            justify-content: space-between;
+                            line-height: 24px;
+                            > span {
+                                flex: 1;
+                                max-width: 130px;
+                                color: #333333;
+                                font-size: 14px;
+                                white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                            }
+                            > em {
+                                font-style: normal;
+                                color: #999999;
+                                font-size: 12px;
+                                padding-left: 10px;
+                            }
+                        }
+                        .user-msg-text {
+                            max-width: 170px;
+                            color: #999999;
+                            font-size: 12px;
+                            line-height: 24px;
+                            white-space: nowrap;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                        }
+                    }
+                    .user-msg-num {
+                        position: absolute;
+                        top: 12px;
+                        left: 38px;
+                        font-size: 12px;
+                        .ivu-badge-count {
+                            height: 18px;
+                            min-width: 18px;
+                            line-height: 16px;
+                            padding: 0 4px;
+                        }
+                    }
+                }
+            }
+        }
+        .dialog-menu {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 54px;
+            flex-shrink: 0;
+            border-top: 1px solid #f2f2f2;
+            > i {
+                cursor: pointer;
+                font-size: 28px;
+                margin: 0 24px;
+                color: #aaaaaa;
+                opacity: 0.9;
+                &.active {
+                    opacity: 1;
+                    color: #2d8cf0;
+                }
+                &:hover {
+                    opacity: 1;
+                }
+            }
+        }
+    }
+    .dialog-msg {
+        flex: 1;
+        width: 0;
+        height: 100%;
+    }
+}

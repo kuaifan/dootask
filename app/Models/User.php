@@ -375,6 +375,18 @@ class User extends AbstractModel
         return $_A["__static_userid2basic_" . $userid] = ($userInfo ?: []);
     }
 
+
+    /**
+     * userid 获取 昵称
+     * @param $userid
+     * @return string
+     */
+    public static function userid2nickname($userid)
+    {
+        $basic = self::userid2basic($userid);
+        return $basic ? $basic->nickname : '';
+    }
+
     /**
      * 更新首字母
      * @param $userid

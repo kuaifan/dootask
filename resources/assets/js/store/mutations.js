@@ -202,9 +202,9 @@ export default {
             return;
         }
         if (state.method.isArray(state.cacheDialog[dialog_id])) {
-            state.dialogList = state.cacheDialog[dialog_id]
+            state.dialogMsgList = state.cacheDialog[dialog_id]
         } else {
-            state.dialogList = [];
+            state.dialogMsgList = [];
         }
         state.dialogId = dialog_id;
         //
@@ -213,14 +213,14 @@ export default {
         }
         state.cacheDialog[dialog_id + "::load"] = true;
         //
-        state.dialogLoad++;
+        state.dialogMsgLoad++;
         $A.apiAjax({
             url: 'dialog/msg/lists',
             data: {
                 dialog_id: dialog_id,
             },
             complete: () => {
-                state.dialogLoad--;
+                state.dialogMsgLoad--;
                 state.cacheDialog[dialog_id + "::load"] = false;
             },
             success: ({ret, data, msg}) => {
@@ -228,11 +228,11 @@ export default {
                     state.cacheDialog[dialog_id] = data.data.reverse();
                     if (state.dialogId === dialog_id) {
                         state.cacheDialog[dialog_id].forEach((item) => {
-                            let index = state.dialogList.findIndex(({id}) => id === item.id);
+                            let index = state.dialogMsgList.findIndex(({id}) => id === item.id);
                             if (index === -1) {
-                                state.dialogList.push(item);
+                                state.dialogMsgList.push(item);
                             } else {
-                                state.dialogList.splice(index, 1, item);
+                                state.dialogMsgList.splice(index, 1, item);
                             }
                         })
                     }
@@ -252,16 +252,16 @@ export default {
             return;
         }
         if (state.method.isJson(data)) {
-            if (data.id && state.dialogList.find(m => m.id == data.id)) {
+            if (data.id && state.dialogMsgList.find(m => m.id == data.id)) {
                 data = null;
             }
         }
-        let index = state.dialogList.findIndex(m => m.id == id);
+        let index = state.dialogMsgList.findIndex(m => m.id == id);
         if (index > -1) {
             if (data) {
-                state.dialogList.splice(index, 1, state.method.cloneJSON(data));
+                state.dialogMsgList.splice(index, 1, state.method.cloneJSON(data));
             } else {
-                state.dialogList.splice(index, 1);
+                state.dialogMsgList.splice(index, 1);
             }
         }
     },
@@ -339,14 +339,14 @@ export default {
                         const msgData = msgDetail.data;
                         const dialog_id = msgData.dialog_id;
                         if (dialog_id == state.dialogId) {
-                            let index = state.dialogList.findIndex(({id}) => id === msgData.id);
+                            let index = state.dialogMsgList.findIndex(({id}) => id === msgData.id);
                             if (index === -1) {
-                                if (state.dialogList.length >= 200) {
-                                    state.dialogList.splice(0, 1);
+                                if (state.dialogMsgList.length >= 200) {
+                                    state.dialogMsgList.splice(0, 1);
                                 }
-                                state.dialogList.push(msgData);
+                                state.dialogMsgList.push(msgData);
                             } else {
-                                state.dialogList.splice(index, 1, msgData);
+                                state.dialogMsgList.splice(index, 1, msgData);
                             }
                         }
                     }

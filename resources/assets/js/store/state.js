@@ -184,8 +184,8 @@ state.projectMsgUnread = 0;
 
 // 会话消息
 state.dialogId = 0;
-state.dialogLoad = 0;
-state.dialogList = [];
+state.dialogMsgLoad = 0;
+state.dialogMsgList = [];
 
 // 任务优先级
 state.taskPriority = [];

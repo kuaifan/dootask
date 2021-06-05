@@ -18,6 +18,61 @@ use Request;
 class DialogController extends AbstractController
 {
     /**
+     * 对话列表
+     *
+     * @apiParam {Number} [page]            当前页，默认:1
+     * @apiParam {Number} [pagesize]        每页显示数量，默认:100，最大:200
+     */
+    public function lists()
+    {
+        $user = User::authE();
+        if (Base::isError($user)) {
+            return $user;
+        } else {
+            $user = User::IDE($user['data']);
+        }
+        //
+        $list = WebSocketDialog::select(['web_socket_dialogs.*'])
+            ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
+            ->where('u.userid', $user->userid)
+            ->orderByDesc('web_socket_dialogs.last_at')
+            ->paginate(Base::getPaginate(200, 100));
+        $list->transform(function (WebSocketDialog $item) use ($user) {
+            return WebSocketDialog::formatData($item, $user->userid);
+        });
+        //
+        return Base::retSuccess('success', $list);
+    }
+
+    /**
+     * 单个对话信息
+     *
+     * @apiParam {Number} dialog_id         对话ID
+     */
+    public function one()
+    {
+        $user = User::authE();
+        if (Base::isError($user)) {
+            return $user;
+        } else {
+            $user = User::IDE($user['data']);
+        }
+        //
+        $dialog_id = intval(Request::input('dialog_id'));
+        //
+        $item = WebSocketDialog::select(['web_socket_dialogs.*'])
+            ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
+            ->where('web_socket_dialogs.id', $dialog_id)
+            ->where('u.userid', $user->userid)
+            ->first();
+        if ($item) {
+            $item = WebSocketDialog::formatData($item, $user->userid);
+        }
+        //
+        return Base::retSuccess('success', $item);
+    }
+
+    /**
      * 消息列表
      *
      * @apiParam {Number} dialog_id         对话ID

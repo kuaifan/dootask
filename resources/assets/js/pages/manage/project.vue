@@ -1,5 +1,5 @@
 <template>
-    <div class="project-detail">
+    <div class="project">
         <PageTitle>{{ $L('项目面板') }}</PageTitle>
         <ProjectList/>
         <ProjectDialog/>
@@ -8,7 +8,7 @@
 
 <style lang="scss" scoped>
 :global {
-    .project-detail {
+    .project {
         display: flex;
         align-items: flex-start;
         .project-list {

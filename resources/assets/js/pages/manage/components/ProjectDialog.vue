@@ -20,9 +20,9 @@
         <ScrollerY class="dialog-chat dialog-scroller" @on-scroll="chatScroll">
             <div ref="manageList" class="dialog-list">
                 <ul>
-                    <li v-if="dialogLoad > 0" class="loading"><Loading/></li>
-                    <li v-else-if="dialogList.length === 0" class="nothing">{{$L('暂无消息')}}</li>
-                    <li v-for="(item, key) in dialogList" :key="key" :class="{self:item.userid == userId}">
+                    <li v-if="dialogMsgLoad > 0" class="loading"><Loading/></li>
+                    <li v-else-if="dialogMsgList.length === 0" class="nothing">{{$L('暂无消息')}}</li>
+                    <li v-for="(item, key) in dialogMsgList" :key="key" :class="{self:item.userid == userId}">
                         <div class="dialog-avatar">
                             <UserAvatar :userid="item.userid" :size="30"/>
                         </div>
@@ -230,7 +230,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'projectDetail', 'projectMsgUnread', 'dialogLoad', 'dialogList']),
+        ...mapState(['userId', 'projectDetail', 'projectMsgUnread', 'dialogMsgLoad', 'dialogMsgList']),
     },
 
     watch: {
@@ -242,7 +242,7 @@ export default {
             this.$store.commit('getDialogMsg', id);
         },
 
-        dialogList(list) {
+        dialogMsgList(list) {
             if (!this.autoBottom) {
                 let length = list.length - this.msgLength;
                 if (length > 0) {
@@ -256,7 +256,7 @@ export default {
     methods: {
         sendMsg() {
             let tempId = $A.randomString(16);
-            this.dialogList.push({
+            this.dialogMsgList.push({
                 id: tempId,
                 type: 'text',
                 userid: this.userId,
@@ -341,7 +341,7 @@ export default {
         chatFile(type, file) {
             switch (type) {
                 case 'progress':
-                    this.dialogList.push({
+                    this.dialogMsgList.push({
                         id: file.tempId,
                         type: 'loading',
                         userid: this.userId,

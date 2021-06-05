@@ -23,6 +23,11 @@ export default [
                 component: () => import('./pages/manage/calendar.vue'),
             },
             {
+                name: 'manage-dialog',
+                path: 'dialog',
+                component: () => import('./pages/manage/dialog.vue'),
+            },
+            {
                 name: 'manage-setting',
                 path: 'setting',
                 component: () => import('./pages/manage/setting/index.vue'),

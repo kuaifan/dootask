@@ -7,16 +7,20 @@
             </div>
             <ul>
                 <li @click="toggleRoute('dashboard')" :class="classNameRoute('dashboard')">
-                    <Icon type="md-speedometer" />
+                    <Icon type="ios-speedometer-outline" />
                     <div class="menu-title">{{$L('仪表板')}}</div>
                 </li>
-                <li @click="toggleRoute('setting/personal')" :class="classNameRoute('setting')">
-                    <Icon type="md-cog" />
-                    <div class="menu-title">{{$L('设置')}}</div>
-                </li>
                 <li @click="toggleRoute('calendar')" :class="classNameRoute('calendar')">
-                    <Icon type="md-calendar" />
+                    <Icon type="ios-calendar-outline" />
                     <div class="menu-title">{{$L('日历')}}</div>
+                </li>
+                <li @click="toggleRoute('dialog')" :class="classNameRoute('dialog')">
+                    <Icon type="ios-chatbubbles-outline" />
+                    <div class="menu-title">{{$L('消息')}}</div>
+                </li>
+                <li @click="toggleRoute('setting/personal')" :class="classNameRoute('setting')">
+                    <Icon type="ios-cog-outline" />
+                    <div class="menu-title">{{$L('设置')}}</div>
                 </li>
                 <li class="menu-project">
                     <ul>
@@ -131,7 +135,7 @@
                     padding: 0 4%;
                     border-radius: 4px;
                     > i {
-                        opacity: 0.3;
+                        opacity: 0.5;
                         font-size: 22px;
                         margin-right: 10px;
                         margin-top: -1px;

@@ -35,12 +35,14 @@ class WebSocketDialogMsgTask extends AbstractTask
         $userids = is_array($this->userid) ? $this->userid : [$this->userid];
         $msgId = intval($this->dialogMsgArray['id']);
         $send = intval($this->dialogMsgArray['send']);
+        $dialogId = intval($this->dialogMsgArray['dialog_id']);
         if (empty($userids) || empty($msgId)) {
             return;
         }
         $pushIds = [];
         foreach ($userids AS $userid) {
             $msgRead = WebSocketDialogMsgRead::createInstance([
+                'dialog_id' => $dialogId,
                 'msg_id' => $msgId,
                 'userid' => $userid,
             ]);
