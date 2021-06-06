@@ -65,6 +65,22 @@ export default {
         }
     },
 
+    mounted() {
+        this.$store.state.dialogShow = true;
+    },
+
+    destroyed() {
+        this.$store.state.dialogShow = false;
+    },
+
+    activated() {
+        this.$store.state.dialogShow = true;
+    },
+
+    deactivated() {
+        this.$store.state.dialogShow = false;
+    },
+
     computed: {
         ...mapState(['userId', 'dialogId', 'dialogDetail', 'dialogMsgLoad', 'dialogMsgList']),
 

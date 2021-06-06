@@ -1122,12 +1122,7 @@ body {
                         top: 10px;
                         left: 42px;
                         font-size: 12px;
-                        .ivu-badge-count {
-                            height: 18px;
-                            min-width: 18px;
-                            line-height: 16px;
-                            padding: 0 4px;
-                        }
+                        transform: scale(0.8);
                     }
                 }
             }

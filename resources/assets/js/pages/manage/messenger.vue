@@ -74,7 +74,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['dialogId', 'wsMsg']),
+        ...mapState(['dialogId', 'dialogShow', 'wsMsg']),
 
         dialogLists() {
             const {dialogKey} = this;
@@ -99,9 +99,9 @@ export default {
          * @param msg
          */
         wsMsg(msg) {
-            const {type, data} = msg;
-            if (type === "dialog") {
-                if (this.dialogId == data.dialog_id) {
+            const {type, mode, data} = msg;
+            if (type === "dialog" && mode === "add") {
+                if (this.dialogShow && this.dialogId == data.dialog_id) {
                     return;
                 }
                 let dialog = this.dialogList.find(({id}) => id == data.dialog_id);
@@ -120,7 +120,8 @@ export default {
          */
         dialogId(dialog_id) {
             let dialog = this.dialogList.find(({id}) => id == dialog_id);
-            if (dialog) {
+            if (dialog && dialog.unread > 0) {
+                this.$store.state.dialogMsgUnread-= dialog.unread;
                 this.$set(dialog, 'unread', 0);
             }
         }
@@ -128,7 +129,7 @@ export default {
 
     methods: {
         openDialog(dialog) {
-            this.$store.commit('getDialogMsg', dialog.id);
+            this.$store.commit('getDialogMsgList', dialog.id);
         },
 
         getDialogLists() {

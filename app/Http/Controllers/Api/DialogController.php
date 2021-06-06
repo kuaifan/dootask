@@ -112,6 +112,17 @@ class DialogController extends AbstractController
     }
 
     /**
+     * 未读消息
+     */
+    public function msg__unread()
+    {
+        $unread = WebSocketDialogMsgRead::whereUserid(User::token2userid())->whereReadAt(null)->count();
+        return Base::retSuccess('success', [
+            'unread' => $unread,
+        ]);
+    }
+
+    /**
      * 发送消息
      *
      * @apiParam {Number} dialog_id         对话ID

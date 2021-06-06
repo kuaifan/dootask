@@ -64,6 +64,7 @@ export default {
         state.userToken = userInfo.token;
         state.userIsAdmin = state.method.inArray('admin', userInfo.identity);
         state.method.setStorage('userInfo', state.userInfo);
+        this.commit('getDialogMsgUnread');
         this.commit('getProjectList');
         this.commit('wsConnection');
     },
@@ -215,7 +216,7 @@ export default {
      * @param state
      * @param dialog_id
      */
-    getDialogMsg(state, dialog_id) {
+    getDialogMsgList(state, dialog_id) {
         if (state.method.runNum(dialog_id) === 0) {
             return;
         }
@@ -267,6 +268,28 @@ export default {
                                 state.dialogMsgList.splice(index, 1, item);
                             }
                         })
+                    }
+                }
+            }
+        });
+    },
+
+    /**
+     * 获取未读信息
+     * @param state
+     */
+    getDialogMsgUnread(state) {
+        const unread = state.dialogMsgUnread;
+        $A.apiAjax({
+            url: 'dialog/msg/unread',
+            success: ({ret, data, msg}) => {
+                if (ret === 1) {
+                    if (unread === state.dialogMsgUnread) {
+                        state.dialogMsgUnread = data.unread;
+                    } else {
+                        setTimeout(() => {
+                            this.commit('getDialogMsgUnread');
+                        }, 200);
                     }
                 }
             }

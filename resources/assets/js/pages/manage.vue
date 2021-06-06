@@ -17,6 +17,7 @@
                 <li @click="toggleRoute('messenger')" :class="classNameRoute('messenger')">
                     <Icon type="ios-chatbubbles-outline" />
                     <div class="menu-title">{{$L('消息')}}</div>
+                    <Badge class="menu-badge" :count="dialogMsgUnread"></Badge>
                 </li>
                 <li @click="toggleRoute('setting/personal')" :class="classNameRoute('setting')">
                     <Icon type="ios-cog-outline" />
@@ -141,9 +142,14 @@
                         margin-top: -1px;
                     }
                     .menu-title {
+                        flex: 1;
                         white-space: nowrap;
                         overflow: hidden;
                         text-overflow: ellipsis;
+                    }
+                    .menu-badge {
+                        margin-left: 12px;
+                        transform: scale(0.9);
                     }
                     &.menu-project {
                         display: flex;
@@ -251,20 +257,39 @@ export default {
             columns: [],
         }
     },
+
     mounted() {
         this.$store.commit('getUserInfo');
     },
+
     deactivated() {
         this.addShow = false;
     },
+
     computed: {
-        ...mapState(['projectList']),
+        ...mapState(['wsMsg', 'dialogShow', 'dialogMsgUnread', 'projectList']),
     },
+
     watch: {
         '$route' (route) {
             this.curPath = route.path;
-        }
+        },
+
+        /**
+         * 收到新消息
+         * @param msg
+         */
+        wsMsg(msg) {
+            const {type, mode} = msg;
+            if (type === "dialog" && mode === "add") {
+                if (this.dialogShow) {
+                    return;
+                }
+                this.$store.state.dialogMsgUnread++;
+            }
+        },
     },
+
     methods: {
         initLanguage() {
             this.columns = [{

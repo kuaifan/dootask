@@ -144,9 +144,7 @@ const method = {
 };
 
 // 方法类
-const state = {
-    method
-};
+const state = { method };
 
 // Boolean变量
 [
@@ -188,9 +186,11 @@ state.projectMsgUnread = 0;
 
 // 会话消息
 state.dialogId = 0;
+state.dialogShow = false;
 state.dialogDetail = {};
 state.dialogMsgLoad = 0;
 state.dialogMsgList = [];
+state.dialogMsgUnread = 0;
 
 // 任务优先级
 state.taskPriority = [];

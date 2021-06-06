@@ -119,6 +119,7 @@ class WebSocketDialogMsg extends AbstractModel
                     'userid' => $this->userid,
                     'msg' => [
                         'type' => 'dialog',
+                        'mode' => 'up',
                         'data' => $this->toArray(),
                     ]
                 ]);

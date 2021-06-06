@@ -64,6 +64,7 @@ class WebSocketDialogMsgTask extends AbstractTask
                 'userid' => $pushIds,
                 'msg' => [
                     'type' => 'dialog',
+                    'mode' => 'add',
                     'data' => $this->dialogMsgArray,
                 ]
             ]);
