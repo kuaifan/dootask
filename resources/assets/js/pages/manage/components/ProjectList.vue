@@ -26,7 +26,7 @@
                     </li>
                     <li :class="['project-icon', projectChatShow ? 'active' : '']" @click="toggleBoolean('projectChatShow')">
                         <Icon type="ios-chatbubbles" />
-                        <Badge :count="projectMsgUnread"></Badge>
+                        <Badge :count="msgUnread"></Badge>
                     </li>
                     <li class="project-icon">
                         <Dropdown @on-click="projectDropdown" transfer>
@@ -836,6 +836,8 @@ export default {
     data() {
         return {
             nowTime: Math.round(new Date().getTime() / 1000),
+            nowInterval: null,
+
             searchText: '',
 
             addShow: false,
@@ -863,23 +865,37 @@ export default {
             transferLoad: 0,
         }
     },
+
     mounted() {
-        setInterval(() => {
+        this.nowInterval = setInterval(() => {
             this.nowTime = Math.round(new Date().getTime() / 1000);
         }, 1000)
     },
+
+    destroyed() {
+        clearInterval(this.nowInterval)
+    },
+
     computed: {
         ...mapState([
             'userId',
+            'dialogList',
+
             'projectDetail',
             'projectLoad',
-            'projectMsgUnread',
+
             'projectChatShow',
             'projectListPanel',
             'taskMyShow',
             'taskUndoneShow',
             'taskCompletedShow'
         ]),
+
+        msgUnread() {
+            const {dialogList, projectDetail} = this;
+            const dialog = dialogList.find(({id}) => id === projectDetail.dialog_id);
+            return dialog ? dialog.unread : 0;
+        },
 
         panelTask() {
             const {searchText} = this;
@@ -963,6 +979,7 @@ export default {
             }
         },
     },
+
     methods: {
         addOpen(column_id) {
             this.$set(this.addData, 'owner', this.userId);

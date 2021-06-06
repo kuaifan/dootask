@@ -13,7 +13,7 @@ const method = {
         return typeof value === "string" || typeof value === "number" ? value : def;
     },
 
-    getStorageNumber(key, def = 0) {
+    getStorageInt(key, def = 0) {
         let value = this.storage(key);
         return typeof value === "number" ? value : def;
     },
@@ -182,11 +182,9 @@ state.projectDetail = {
     project_column: [],
     project_user: []
 };
-state.projectMsgUnread = 0;
 
 // 会话消息
 state.dialogId = 0;
-state.dialogShow = false;
 state.dialogList = [];
 state.dialogDetail = {};
 state.dialogMsgLoad = 0;

@@ -72,7 +72,12 @@ export default {
         this.dialogLoad++;
         this.$store.commit("getDialogList", () => {
             this.dialogLoad--;
-        })
+            this.openDialogStorage();
+        });
+    },
+
+    activated() {
+        this.openDialogStorage();
     },
 
     computed: {
@@ -97,7 +102,16 @@ export default {
 
     methods: {
         openDialog(dialog) {
+            this.$store.state.method.setStorage('messengerDialogId', dialog.id)
             this.$store.commit('getDialogMsgList', dialog.id);
+        },
+
+        openDialogStorage() {
+            let tmpId = this.$store.state.method.getStorageInt('messengerDialogId')
+            if (tmpId > 0) {
+                const dialog = this.dialogList.find(({id}) => id === tmpId);
+                dialog && this.openDialog(dialog);
+            }
         },
 
         formatTime(date) {

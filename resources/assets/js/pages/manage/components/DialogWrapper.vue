@@ -65,20 +65,12 @@ export default {
         }
     },
 
-    mounted() {
-        this.$store.state.dialogShow = true;
-    },
-
     destroyed() {
-        this.$store.state.dialogShow = false;
-    },
-
-    activated() {
-        this.$store.state.dialogShow = true;
+        this.$store.state.dialogId = 0;
     },
 
     deactivated() {
-        this.$store.state.dialogShow = false;
+        this.$store.state.dialogId = 0;
     },
 
     computed: {
@@ -132,10 +124,7 @@ export default {
                             content: msg
                         });
                     }
-                    this.$store.commit('spliceDialogMsg', {
-                        id: tempId,
-                        data: ret === 1 ? data : null
-                    });
+                    this.$store.commit('spliceDialogMsg', {id: tempId, data: ret === 1 ? data : null});
                 }
             });
             //

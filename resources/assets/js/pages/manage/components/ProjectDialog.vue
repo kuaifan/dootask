@@ -92,6 +92,10 @@ export default {
         }
     },
 
+    mounted() {
+        this.getMsg();
+    },
+
     computed: {
         ...mapState(['projectDetail', 'projectChatShow']),
     },

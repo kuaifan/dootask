@@ -82,18 +82,18 @@ export default {
     /**
      * 获取项目列表
      * @param state
-     * @param completeCallback
+     * @param afterCallback
      */
-    getProjectList(state, completeCallback) {
+    getProjectList(state, afterCallback) {
         if (state.userId === 0) {
             state.projectList = [];
-            typeof completeCallback === "function" && completeCallback();
+            typeof afterCallback === "function" && afterCallback();
             return;
         }
         $A.apiAjax({
             url: 'project/lists',
-            complete: () => {
-                typeof completeCallback === "function" && completeCallback();
+            after: () => {
+                typeof afterCallback === "function" && afterCallback();
             },
             success: ({ret, data, msg}) => {
                 if (ret === 1) {
@@ -212,13 +212,13 @@ export default {
     /**
      * 获取对话列表
      * @param state
-     * @param completeCallback
+     * @param afterCallback
      */
-    getDialogList(state, completeCallback) {
+    getDialogList(state, afterCallback) {
         $A.apiAjax({
             url: 'dialog/lists',
-            complete: () => {
-                typeof completeCallback === "function" && completeCallback();
+            after: () => {
+                typeof afterCallback === "function" && afterCallback();
             },
             success: ({ret, data, msg}) => {
                 if (ret === 1) {
@@ -241,24 +241,13 @@ export default {
             },
             success: ({ret, data, msg}) => {
                 if (ret === 1) {
+                    if (state.dialogId === data.id) data.unread = 0;
                     let index = state.dialogList.findIndex(({id}) => id == data.id);
                     if (index > -1) {
                         state.dialogList.splice(index, 1, data);
                     } else {
                         state.dialogList.unshift(data)
                     }
-                }
-            }
-        });
-
-        $A.apiAjax({
-            url: 'dialog/lists',
-            complete: () => {
-                typeof completeCallback === "function" && completeCallback();
-            },
-            success: ({ret, data, msg}) => {
-                if (ret === 1) {
-                    state.dialogList = data.data;
                 }
             }
         });
@@ -374,6 +363,12 @@ export default {
         if (index > -1) {
             if (data) {
                 state.dialogMsgList.splice(index, 1, state.method.cloneJSON(data));
+                // 是最后一条消息时更新对话 last_msg
+                console.log(data);
+                if (state.dialogMsgList.length - 1 == index) {
+                    const dialog = state.dialogList.find(({id}) => id == data.dialog_id);
+                    if (dialog) dialog.last_msg = data;
+                }
             } else {
                 state.dialogMsgList.splice(index, 1);
             }
@@ -489,7 +484,7 @@ export default {
                                 } else {
                                     that.commit('getDialogOne', dialog_id);
                                 }
-                                if (!state.dialogShow || state.dialogId !== dialog_id) state.dialogMsgUnread++;
+                                if (state.dialogId !== dialog_id) state.dialogMsgUnread++;
                             }
                         })(msgDetail, this);
                     }
