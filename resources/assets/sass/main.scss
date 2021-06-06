@@ -701,6 +701,8 @@ body {
                     position: relative;
                     margin-bottom: 20px;
                     flex-shrink: 0;
+                    width: 30px;
+                    height: 30px;
                 }
                 .dialog-view {
                     max-width: 70%;
@@ -899,10 +901,111 @@ body {
 }
 
 .dialog-wrapper {
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+    z-index: 1;
+    .dialog-title {
+        display: flex;
+        align-items: center;
+        padding: 0 32px;
+        margin-top: 20px;
+        > h2 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        > em {
+            font-style: normal;
+            font-size: 17px;
+            font-weight: 500;
+            padding-left: 6px;
+        }
+    }
+    .dialog-chat {
+        flex: 1;
+        padding: 0 32px;
+        margin-top: 18px;
+    }
+    .dialog-footer {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        padding: 0 28px;
+        margin-bottom: 20px;
+        .dialog-newmsg {
+            display: none;
+            height: 30px;
+            line-height: 30px;
+            color: #ffffff;
+            font-size: 12px;
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 0 12px;
+            margin-bottom: 20px;
+            margin-right: 10px;
+            border-radius: 16px;
+            cursor: pointer;
+            z-index: 2;;
+        }
+        .dialog-input {
+            background-color: #F4F5F7;
+            padding: 10px 12px;
+            border-radius: 10px;
+            .ivu-input {
+                border: 0;
+                resize: none;
+                background-color: transparent;
+                &:focus {
+                    box-shadow: none;
+                }
+            }
+        }
+        .chat-upload {
+            display: none;
+            width: 0;
+            height: 0;
+            overflow: hidden;
+        }
+        &.newmsg {
+            margin-top: -50px;
+            .dialog-newmsg {
+                display: block;
+            }
+        }
+    }
+    .drag-over {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 3;
+        background-color: rgba(255, 255, 255, 0.78);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        &:before {
+            content: "";
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            right: 16px;
+            bottom: 16px;
+            border: 2px dashed #7b7b7b;
+            border-radius: 12px;
+        }
+        .drag-text {
+            padding: 12px;
+            font-size: 18px;
+            color: #666666;
+        }
+    }
+}
+
+.messenger-wrapper {
     flex: 1;
     display: flex;
     align-items: flex-start;
-    .dialog-select {
+    .messenger-select {
         position: relative;
         height: 100%;
         width: 30%;
@@ -920,22 +1023,31 @@ body {
             width: 1px;
             background-color: #f2f2f2;
         }
-        .dialog-search {
+        .messenger-search {
             display: flex;
             align-items: center;
             justify-content: center;
             height: 54px;
             padding: 0 12px;
             flex-shrink: 0;
-            .ivu-input {
-                border-color: transparent;
-                &:hover,
-                &:focus {
-                    box-shadow: none;
+            .search-wrapper {
+                flex: 1;
+                background-color: #F7F7F7;
+                padding: 0 8px;
+                margin: 0 4px;
+                border-radius: 12px;
+                overflow: hidden;
+                .ivu-input {
+                    border-color: transparent;
+                    background-color: transparent;
+                    &:hover,
+                    &:focus {
+                        box-shadow: none;
+                    }
                 }
             }
         }
-        .dialog-list {
+        .messenger-list {
             flex: 1;
             height: 0;
             width: 100%;
@@ -946,7 +1058,7 @@ body {
                     display: flex;
                     flex-direction: row;
                     align-items: center;
-                    height: 86px;
+                    height: 80px;
                     padding: 0 12px;
                     position: relative;
                     cursor: pointer;
@@ -968,12 +1080,12 @@ body {
                         flex-grow: 0;
                         flex-shrink: 0;
                     }
-                    .user-msg-box {
+                    .dialog-box {
                         flex: 1;
                         display: flex;
                         flex-direction: column;
                         padding-left: 12px;
-                        .user-msg-title {
+                        .dialog-title {
                             display: flex;
                             flex-direction: row;
                             align-items: center;
@@ -995,7 +1107,7 @@ body {
                                 padding-left: 10px;
                             }
                         }
-                        .user-msg-text {
+                        .dialog-text {
                             max-width: 170px;
                             color: #999999;
                             font-size: 12px;
@@ -1005,7 +1117,7 @@ body {
                             text-overflow: ellipsis;
                         }
                     }
-                    .user-msg-num {
+                    .dialog-num {
                         position: absolute;
                         top: 12px;
                         left: 38px;
@@ -1020,7 +1132,7 @@ body {
                 }
             }
         }
-        .dialog-menu {
+        .messenger-menu {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1043,9 +1155,13 @@ body {
             }
         }
     }
-    .dialog-msg {
+    .messenger-msg {
         flex: 1;
         width: 0;
         height: 100%;
+        display: flex;
+        .dialog-wrapper {
+            flex: 1;
+        }
     }
 }

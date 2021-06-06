@@ -1,35 +1,43 @@
 <template>
-    <div class="dialog">
+    <div class="messenger">
         <PageTitle>{{ $L('消息') }}</PageTitle>
-        <div class="dialog-wrapper">
+        <div class="messenger-wrapper">
 
-            <div class="dialog-select">
-                <div class="dialog-search">
-                    <Input prefix="ios-search" v-model="dialogKey" :placeholder="$L('搜索...')" clearable />
+            <div class="messenger-select">
+                <div class="messenger-search">
+                    <div class="search-wrapper">
+                        <Input prefix="ios-search" v-model="dialogKey" :placeholder="$L('搜索...')" clearable />
+                    </div>
                 </div>
-                <div class="dialog-list overlay-y">
+                <div class="messenger-list overlay-y">
                     <ul>
-                        <li v-for="(dialog, key) in dialogLists" :key="key" :class="{active: dialog.id == dialogId}">
+                        <li
+                            v-for="(dialog, key) in dialogLists"
+                            :key="key"
+                            :class="{active: dialog.id == dialogId}"
+                            @click="openDialog(dialog)">
                             <Icon v-if="dialog.type=='group'" class="group-avatar" type="ios-people" />
                             <UserAvatar v-else-if="dialog.dialog_user" :userid="dialog.dialog_user.userid" :size="46"/>
-                            <div class="user-msg-box">
-                                <div class="user-msg-title">
+                            <div class="dialog-box">
+                                <div class="dialog-title">
                                     <span>{{dialog.name}}</span>
                                     <em v-if="dialog.last_at">{{formatTime(dialog.last_at)}}</em>
                                 </div>
-                                <div class="user-msg-text">{{formatLastMsg(dialog.last_msg)}}</div>
+                                <div class="dialog-text">{{formatLastMsg(dialog.last_msg)}}</div>
                             </div>
-                            <Badge class="user-msg-num" :count="dialog.unread"/>
+                            <Badge class="dialog-num" :count="dialog.unread"/>
                         </li>
                     </ul>
                 </div>
-                <div class="dialog-menu">
+                <div class="messenger-menu">
                     <Icon class="active" type="ios-chatbubbles" />
                     <Icon type="md-person" />
                 </div>
             </div>
 
-            <div class="dialog-msg"></div>
+            <div class="messenger-msg">
+                <DialogWrapper v-if="dialogId > 0"/>
+            </div>
 
         </div>
     </div>
@@ -37,7 +45,7 @@
 
 <style lang="scss" scoped>
 :global {
-    .dialog {
+    .messenger {
         display: flex;
     }
 }
@@ -45,8 +53,10 @@
 
 <script>
 import {mapState} from "vuex";
+import DialogWrapper from "./components/DialogWrapper";
 
 export default {
+    components: {DialogWrapper},
     data() {
         return {
             dialogLoad: 0,
@@ -67,8 +77,14 @@ export default {
             if (dialogKey == '') {
                 return this.dialogList;
             }
-            return this.dialogList.filter(({name}) => {
-                return $A.strExists(name, dialogKey);
+            return this.dialogList.filter(({name, last_msg}) => {
+                if ($A.strExists(name, dialogKey)) {
+                    return true;
+                }
+                if (last_msg && last_msg.type === 'text' && $A.strExists(last_msg.msg.text, dialogKey)) {
+                    return true;
+                }
+                return false;
             })
         },
     },
@@ -107,6 +123,10 @@ export default {
     },
 
     methods: {
+        openDialog(dialog) {
+            this.$store.commit('getDialogMsg', dialog.id);
+        },
+
         getDialogLists() {
             this.dialogLoad++;
             $A.apiAjax({

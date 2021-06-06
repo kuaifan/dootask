@@ -1,6 +1,7 @@
 <template>
     <div ref="scrollerView" class="app-scroller" :class="[static ? 'app-scroller-static' : '']">
         <slot/>
+        <div ref="bottom" class="app-scroller-bottom"></div>
     </div>
 </template>
 
@@ -14,6 +15,11 @@
     overflow-x: hidden;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    .app-scroller-bottom {
+        height: 0;
+        margin: 0;
+        padding: 0;
+    }
 }
 
 .app-scroller-static {
@@ -29,16 +35,49 @@ export default {
             type: Boolean,
             default: false
         },
+        autoBottom: {
+            type: Boolean,
+            default: false
+        },
+        autoRecovery: {
+            type: Boolean,
+            default: true
+        },
+        autoRecoveryAnimate: {
+            type: Boolean,
+            default: false
+        },
     },
+
     data() {
         return {
             scrollY: 0,
             scrollDiff: 0,
-            scrollInfo: {},
+            autoInterval: null,
         }
     },
+
     mounted() {
-        this.$nextTick(() => {
+        this.openInterval()
+        this.$nextTick(this.initScroll);
+    },
+
+    activated() {
+        this.openInterval()
+        this.recoveryScroll()
+    },
+
+    destroyed() {
+        this.closeInterval()
+    },
+
+    deactivated() {
+        this.closeInterval()
+    },
+
+    methods: {
+        initScroll() {
+            this.autoToBottom();
             let scrollListener = typeof this.$listeners['on-scroll'] === "function";
             let scrollerView = $A(this.$refs.scrollerView);
             scrollerView.scroll(() => {
@@ -72,16 +111,31 @@ export default {
                     });
                 }
             });
-        });
-    },
-    activated() {
-        if (this.scrollY > 0) {
-            this.$nextTick(() => {
-                this.scrollTo(this.scrollY);
-            });
-        }
-    },
-    methods: {
+        },
+
+        recoveryScroll() {
+            if (this.autoRecovery && (this.scrollY > 0 || this.autoBottom)) {
+                this.$nextTick(() => {
+                    if (this.autoBottom) {
+                        this.autoToBottom();
+                    } else {
+                        this.scrollTo(this.scrollY, this.autoRecoveryAnimate);
+                    }
+                });
+            }
+        },
+
+        openInterval() {
+            this.autoToBottom();
+            this.autoInterval && clearInterval(this.autoInterval);
+            this.autoInterval = setInterval(this.autoToBottom, 300)
+        },
+
+        closeInterval() {
+            clearInterval(this.autoInterval);
+            this.autoInterval = null;
+        },
+
         scrollTo(top, animate) {
             if (animate === false) {
                 $A(this.$refs.scrollerView).stop().scrollTop(top);
@@ -89,10 +143,16 @@ export default {
                 $A(this.$refs.scrollerView).stop().animate({"scrollTop": top});
             }
         },
+
         scrollToBottom(animate) {
             this.scrollTo(this.$refs.scrollerView.scrollHeight, animate);
         },
-        getScrollInfo() {
+
+        autoToBottom() {
+            this.autoBottom && this.$refs.bottom.scrollIntoView(false);
+        },
+
+        scrollInfo() {
             let scrollerView = $A(this.$refs.scrollerView);
             let wInnerH = Math.round(scrollerView.innerHeight());
             let wScrollY = scrollerView.scrollTop();

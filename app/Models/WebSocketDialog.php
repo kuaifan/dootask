@@ -44,10 +44,13 @@ class WebSocketDialog extends AbstractModel
         $dialog->last_msg = $last_msg;
         // 未读信息
         $dialog->unread = WebSocketDialogMsgRead::whereDialogId($dialog->id)->whereUserid($userid)->whereReadAt(null)->count();
+        // 对话人数
+        $builder = WebSocketDialogUser::whereDialogId($dialog->id);
+        $dialog->people = $builder->count();
         // 对方信息
         $dialog->dialog_user = null;
         if ($dialog->type === 'user') {
-            $dialog_user = WebSocketDialogUser::whereDialogId($dialog->id)->where('userid', '!=', $userid)->first();
+            $dialog_user = $builder->where('userid', '!=', $userid)->first();
             $dialog->name = User::userid2nickname($dialog_user->userid);
             $dialog->dialog_user = $dialog_user;
         }

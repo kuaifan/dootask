@@ -19,7 +19,7 @@
             <div v-if="multipleMax" slot="drop-prepend" class="user-drop-prepend">{{$L('最多只能选择' + multipleMax + '个')}}</div>
             <Option v-for="(item, key) in lists" :value="item.userid" :key="key" :label="item.nickname" :avatar="item.userimg">
                 <div class="user-input-option">
-                    <div class="user-input-avatar"><Avatar :src="item.userimg"/></div>
+                    <div class="user-input-avatar"><WAvatar :src="item.userimg"/></div>
                     <div class="user-input-nickname">{{ item.nickname }}</div>
                     <div class="user-input-userid">ID: {{ item.userid }}</div>
                 </div>
@@ -30,8 +30,10 @@
 </template>
 
 <script>
+    import WAvatar from "./WAvatar";
     export default {
         name: 'UserInput',
+        components: {WAvatar},
         props: {
             value: {
                 type: [String, Number, Array],

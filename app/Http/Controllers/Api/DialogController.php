@@ -105,7 +105,10 @@ class DialogController extends AbstractController
             return $item;
         });
         //
-        return Base::retSuccess('success', $list);
+        $data = $list->toArray();
+        $data['dialog'] = WebSocketDialog::formatData($dialog, $user->userid);
+        //
+        return Base::retSuccess('success', $data);
     }
 
     /**

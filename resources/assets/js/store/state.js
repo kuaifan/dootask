@@ -164,6 +164,7 @@ state.userInfo = state.method.getStorageJson('userInfo');
 state.userId = state.userInfo.userid = state.method.runNum(state.userInfo.userid);
 state.userToken = state.userInfo.token;
 state.userIsAdmin = state.method.inArray('admin', state.userInfo.identity);
+state.userOnline = {};
 
 // Websocket
 state.ws = null;
@@ -177,6 +178,7 @@ state.projectLoad = 0;
 state.projectList = [];
 state.projectDetail = {
     id: 0,
+    dialog_id: 0,
     project_column: [],
     project_user: []
 };
@@ -184,6 +186,7 @@ state.projectMsgUnread = 0;
 
 // 会话消息
 state.dialogId = 0;
+state.dialogDetail = {};
 state.dialogMsgLoad = 0;
 state.dialogMsgList = [];
 

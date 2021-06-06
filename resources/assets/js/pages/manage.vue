@@ -14,7 +14,7 @@
                     <Icon type="ios-calendar-outline" />
                     <div class="menu-title">{{$L('日历')}}</div>
                 </li>
-                <li @click="toggleRoute('dialog')" :class="classNameRoute('dialog')">
+                <li @click="toggleRoute('messenger')" :class="classNameRoute('messenger')">
                     <Icon type="ios-chatbubbles-outline" />
                     <div class="menu-title">{{$L('消息')}}</div>
                 </li>

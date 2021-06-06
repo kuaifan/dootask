@@ -9,8 +9,8 @@
         </div>
         <div class="avatar-wrapper">
             <div :class="['avatar-box', user.online ? 'online' : '']">
-                <Avatar v-if="showImg" :src="user.userimg" :size="size"/>
-                <Avatar v-else :size="size" class="avatar-text">{{nickname}}</Avatar>
+                <WAvatar v-if="showImg" :src="user.userimg" :size="size"/>
+                <WAvatar v-else :size="size" class="avatar-text">{{nickname}}</WAvatar>
             </div>
             <div v-if="showName" class="avatar-name">{{user.nickname}}</div>
         </div>
@@ -18,8 +18,11 @@
 </template>
 
 <script>
+    import WAvatar from "./WAvatar";
+    import {mapState} from "vuex";
     export default {
         name: 'UserAvatar',
+        components: {WAvatar},
         props: {
             userid: {
                 type: [String, Number],
@@ -47,6 +50,8 @@
             this.getData()
         },
         computed: {
+            ...mapState(["userOnline"]),
+
             showImg() {
                 const {userimg} = this.user
                 if (!userimg) {
@@ -54,6 +59,7 @@
                 }
                 return !$A.rightExists(userimg, '/avatar.png');
             },
+
             nickname() {
                 const {nickname} = this.user;
                 if (!nickname) {
@@ -69,6 +75,12 @@
         watch: {
             userid() {
                 this.getData()
+            },
+
+            userOnline(data) {
+                if (this.user && data[this.user.userid]) {
+                    this.$set(this.user, 'online', data[this.user.userid]);
+                }
             }
         },
         methods: {

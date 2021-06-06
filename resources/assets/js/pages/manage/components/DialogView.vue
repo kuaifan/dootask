@@ -2,18 +2,18 @@
     <div class="dialog-view" :data-id="msgData.id">
 
         <!--文本-->
-        <div v-if="msgData.type === 'text'" class="dialog-content" v-html="textMsg(msgInfo.text)"></div>
+        <div v-if="msgData.type === 'text'" class="dialog-content" v-html="textMsg(msgData.msg.text)"></div>
         <!--等待-->
         <div v-else-if="msgData.type === 'loading'" class="dialog-content loading"><Loading/></div>
         <!--文件-->
-        <div v-else-if="msgData.type === 'file'" :class="['dialog-content', msgInfo.type]">
-            <a :href="msgInfo.url" target="_blank">
-                <img v-if="msgInfo.type === 'img'" class="file-img" :style="imageStyle(msgInfo)" :src="msgInfo.thumb"/>
+        <div v-else-if="msgData.type === 'file'" :class="['dialog-content', msgData.msg.type]">
+            <a :href="msgData.msg.url" target="_blank">
+                <img v-if="msgData.msg.type === 'img'" class="file-img" :style="imageStyle(msgData.msg)" :src="msgData.msg.thumb"/>
                 <div v-else class="file-box">
-                    <img class="file-thumb" :src="msgInfo.thumb"/>
+                    <img class="file-thumb" :src="msgData.msg.thumb"/>
                     <div class="file-info">
-                        <div class="file-name">{{msgInfo.name}}</div>
-                        <div class="file-size">{{$A.bytesToSize(msgInfo.size)}}</div>
+                        <div class="file-name">{{msgData.msg.name}}</div>
+                        <div class="file-size">{{$A.bytesToSize(msgData.msg.size)}}</div>
                     </div>
                 </div>
             </a>
@@ -74,7 +74,6 @@ export default {
 
     data() {
         return {
-            msgInfo: {},
             read_list: []
         }
     },
@@ -117,8 +116,6 @@ export default {
         },
 
         parsingData() {
-            this.msgInfo = this.msgData.msg;
-            //
             const {userid, r, id} = this.msgData;
             if (userid == this.userId) return;
             if ($A.isJson(r) && r.read_at) return;
@@ -153,22 +150,22 @@ export default {
         imageStyle(info) {
             const {width, height} = info;
             if (width && height) {
-                let maxWidth = 220,
-                    maxHeight = 220,
-                    tempWidth = width,
-                    tempHeight = height;
-                if (width > maxWidth || height > maxHeight) {
+                let maxW = 220,
+                    maxH = 220,
+                    tempW = width,
+                    tempH = height;
+                if (width > maxW || height > maxH) {
                     if (width > height) {
-                        tempWidth = maxWidth;
-                        tempHeight = height * (maxWidth / width);
+                        tempW = maxW;
+                        tempH = height * (maxW / width);
                     } else {
-                        tempWidth = width * (maxHeight / height);
-                        tempHeight = maxHeight;
+                        tempW = width * (maxH / height);
+                        tempH = maxH;
                     }
                 }
                 return {
-                    width: tempWidth + 'px',
-                    height: tempHeight + 'px',
+                    width: tempW + 'px',
+                    height: tempH + 'px',
                 };
             }
             return {};

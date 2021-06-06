@@ -67,6 +67,18 @@ export default {
     },
 
     /**
+     * 更新会员在线
+     * @param state
+     * @param info
+     */
+    setUserOnlineStatus(state, info) {
+        const {userid, online} = info;
+        if (state.userOnline[userid] !== online) {
+            state.userOnline = Object.assign({}, state.userOnline, {[userid]: online});
+        }
+    },
+
+    /**
      * 获取项目列表
      * @param state
      * @param completeCallback
@@ -99,6 +111,9 @@ export default {
      */
     getProjectDetail(state, project_id) {
         if (state.method.runNum(project_id) === 0) {
+            return;
+        }
+        if (state.projectDetail.id === project_id) {
             return;
         }
         if (state.method.isJson(state.cacheProject[project_id])) {
@@ -183,6 +198,7 @@ export default {
                             time,
                             data: item
                         };
+                        this.commit('setUserOnlineStatus', item);
                         typeof success === "function" && success(item, true)
                     });
                 } else {
@@ -201,10 +217,20 @@ export default {
         if (state.method.runNum(dialog_id) === 0) {
             return;
         }
-        if (state.method.isArray(state.cacheDialog[dialog_id])) {
-            state.dialogMsgList = state.cacheDialog[dialog_id]
-        } else {
-            state.dialogMsgList = [];
+        if (state.dialogId === dialog_id) {
+            return;
+        }
+        //
+        state.dialogMsgList = [];
+        if (state.method.isJson(state.cacheDialog[dialog_id])) {
+            setTimeout(() => {
+                let length = state.cacheDialog[dialog_id].data.length;
+                if (length > 50) {
+                    state.cacheDialog[dialog_id].data.splice(0, length - 50);
+                }
+                state.dialogDetail = state.cacheDialog[dialog_id].dialog
+                state.dialogMsgList = state.cacheDialog[dialog_id].data
+            });
         }
         state.dialogId = dialog_id;
         //
@@ -225,9 +251,13 @@ export default {
             },
             success: ({ret, data, msg}) => {
                 if (ret === 1) {
-                    state.cacheDialog[dialog_id] = data.data.reverse();
+                    state.cacheDialog[dialog_id] = {
+                        dialog: data.dialog,
+                        data: data.data.reverse(),
+                    };
                     if (state.dialogId === dialog_id) {
-                        state.cacheDialog[dialog_id].forEach((item) => {
+                        state.dialogDetail = state.cacheDialog[dialog_id].dialog;
+                        state.cacheDialog[dialog_id].data.forEach((item) => {
                             let index = state.dialogMsgList.findIndex(({id}) => id === item.id);
                             if (index === -1) {
                                 state.dialogMsgList.push(item);

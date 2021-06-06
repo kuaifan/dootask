@@ -19,10 +19,6 @@
             return window.location.origin + '/' + str;
         },
 
-        webUrl(str) {
-            return $A.fillUrl(str || '');
-        },
-
         apiUrl(str) {
             if (str.substring(0, 2) === "//" ||
                 str.substring(0, 7) === "http://" ||
@@ -34,6 +30,10 @@
             return apiUrl + str;
         },
 
+        /**
+         * @param params {url,data,method,timeout,header,spinner,websocket,timeout, before,complete,success,error,after}
+         * @returns {boolean}
+         */
         apiAjax(params) {
             if (!$A.isJson(params)) return false;
             if (typeof params.success === 'undefined') params.success = () => { };
@@ -44,21 +44,23 @@
             params.header['language'] = $A.getLanguage();
             params.header['token'] = $A.store.state.userToken;
             //
-            let beforeCall = params.before;
-            params.before = () => {
-                $A.aAjaxLoadNum++;
-                $A(".common-spinner").show();
-                typeof beforeCall == "function" && beforeCall();
-            };
-            //
-            let completeCall = params.complete;
-            params.complete = () => {
-                $A.aAjaxLoadNum--;
-                if ($A.aAjaxLoadNum <= 0) {
-                    $A(".common-spinner").hide();
-                }
-                typeof completeCall == "function" && completeCall();
-            };
+            if (params.spinner === true) {
+                let beforeCall = params.before;
+                params.before = () => {
+                    $A.aAjaxLoadNum++;
+                    $A(".common-spinner").show();
+                    typeof beforeCall == "function" && beforeCall();
+                };
+                //
+                let completeCall = params.complete;
+                params.complete = () => {
+                    $A.aAjaxLoadNum--;
+                    if ($A.aAjaxLoadNum <= 0) {
+                        $A(".common-spinner").hide();
+                    }
+                    typeof completeCall == "function" && completeCall();
+                };
+            }
             //
             let callback = params.success;
             params.success = (data, status, xhr) => {
@@ -105,9 +107,9 @@
                 });
                 //
                 params.complete = () => { };
-                params.after = () => { };
                 params.success = () => { };
                 params.error = () => { };
+                params.after = () => { };
                 params.header['Api-Websocket'] = apiWebsocket;
                 //
                 if ($A.aAjaxWsReady === false) {
@@ -140,6 +142,7 @@
             }
             //
             $A.ajaxc(params);
+            return true;
         },
         aAjaxLoadNum: 0,
         aAjaxWsReady: false,

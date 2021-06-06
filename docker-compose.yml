@@ -12,6 +12,7 @@ services:
       - ./docker/php/php.ini:/usr/local/etc/php/php.ini
       - ./docker/log/supervisor:/var/log/supervisor
       - ./:/var/www
+      - /etc/localtime:/etc/localtime:ro
     environment:
       TZ: "Asia/Shanghai"
       LANG: "C.UTF-8"
@@ -38,6 +39,7 @@ services:
     volumes:
       - ./docker/nginx:/etc/nginx/conf.d
       - ./public:/var/www/public
+      - /etc/localtime:/etc/localtime:ro
     environment:
       TZ: "Asia/Shanghai"
     networks:
@@ -65,6 +67,7 @@ services:
     volumes:
       - ./docker/mysql/conf.d:/etc/mysql/conf.d
       - ./docker/mysql/data:/var/lib/mysql
+      - /etc/localtime:/etc/localtime:ro
     environment:
       TZ: "Asia/Shanghai"
       MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
