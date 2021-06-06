@@ -555,6 +555,8 @@
                                         margin: 0;
                                         padding: 0;
                                         line-height: 1.5;
+                                        white-space: pre-wrap;
+                                        word-wrap: break-word;
                                     }
                                 }
                                 .ivu-icon {

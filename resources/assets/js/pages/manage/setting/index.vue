@@ -11,7 +11,11 @@
         <div class="setting-box">
             <div class="setting-menu">
                 <ul>
-                    <li v-for="(item, key) in menu" :key="key" @click="toggleRoute(item.path)" :class="classNameRoute(item.path)">{{$L(item.name)}}</li>
+                    <li
+                        v-for="(item, key) in menu"
+                        :key="key"
+                        :class="classNameRoute(item.path)"
+                        @click="toggleRoute(item.path)">{{$L(item.name)}}</li>
                 </ul>
             </div>
             <div class="setting-content">
@@ -119,7 +123,11 @@ export default {
                 },
                 {
                     path: 'priority',
-                    name: '任务优先级'
+                    name: '任务等级'
+                },
+                {
+                    path: 'signout',
+                    name: '退出登录'
                 }
             ]
         }
@@ -149,6 +157,16 @@ export default {
     },
     methods: {
         toggleRoute(path) {
+            if (path === 'signout') {
+                $A.modalConfirm({
+                    title: '退出登录',
+                    content: '你确定要登出系统？',
+                    onOk: () => {
+                        $A.logout()
+                    }
+                });
+                return;
+            }
             this.goForward({path: '/manage/setting/' + path});
         },
 

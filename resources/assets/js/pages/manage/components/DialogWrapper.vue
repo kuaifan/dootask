@@ -17,7 +17,7 @@
                     <li v-else-if="dialogMsgList.length === 0" class="nothing">{{$L('暂无消息')}}</li>
                     <li v-for="(item, key) in dialogMsgList" :key="key" :class="{self:item.userid == userId}">
                         <div class="dialog-avatar">
-                            <UserAvatar :userid="item.userid" :size="30"/>
+                            <UserAvatar :userid="item.userid" :tooltip-disabled="item.userid == userId" :size="30"/>
                         </div>
                         <DialogView :msg-data="item" dialog-type="group"/>
                     </li>

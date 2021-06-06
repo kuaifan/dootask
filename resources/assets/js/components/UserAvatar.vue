@@ -2,6 +2,7 @@
     <Tooltip v-if="user"
              class="common-avatar"
              :delay="600"
+             :disabled="tooltipDisabled"
              :transfer="transfer">
         <div slot="content">
             <p>{{$L('昵称')}}: {{user.nickname}}</p>
@@ -39,6 +40,10 @@
             transfer: {
                 type: Boolean,
                 default: true
+            },
+            tooltipDisabled: {
+                type: Boolean,
+                default: false
             },
         },
         data() {
