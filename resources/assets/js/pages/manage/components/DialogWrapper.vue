@@ -43,7 +43,7 @@
 <script>
 import DragInput from "../../../components/DragInput";
 import ScrollerY from "../../../components/ScrollerY";
-import {mapMutations, mapState} from "vuex";
+import {mapState} from "vuex";
 import DialogView from "./DialogView";
 import DialogUpload from "./DialogUpload";
 
@@ -67,7 +67,6 @@ export default {
 
     computed: {
         ...mapState(['userId', 'dialogId', 'dialogDetail', 'dialogMsgLoad', 'dialogMsgList']),
-        ...mapMutations(["spliceDialogMsg"]),
 
         peopleNum() {
             return this.dialogDetail.type === 'group' ? $A.runNum(this.dialogDetail.people) : 0;
@@ -108,7 +107,7 @@ export default {
                     text: this.msgText,
                 },
                 error:() => {
-                    this.spliceDialogMsg({id: tempId});
+                    this.$store.commit('spliceDialogMsg', {id: tempId});
                 },
                 success: ({ret, data, msg}) => {
                     if (ret !== 1) {
@@ -117,7 +116,7 @@ export default {
                             content: msg
                         });
                     }
-                    this.spliceDialogMsg({
+                    this.$store.commit('spliceDialogMsg', {
                         id: tempId,
                         data: ret === 1 ? data : null
                     });
@@ -185,11 +184,11 @@ export default {
                     break;
 
                 case 'error':
-                    this.spliceDialogMsg({id: file.tempId});
+                    this.$store.commit('spliceDialogMsg', {id: file.tempId});
                     break;
 
                 case 'success':
-                    this.spliceDialogMsg({id: file.tempId, data: file.data});
+                    this.$store.commit('spliceDialogMsg', {id: file.tempId, data: file.data});
                     break;
             }
         },

@@ -19,8 +19,6 @@
 </template>
 
 <script>
-import {mapMutations} from "vuex";
-
 export default {
     data() {
         return {
@@ -34,9 +32,6 @@ export default {
 
             ruleDatum: { },
         }
-    },
-    computed: {
-        ...mapMutations(['setUserInfo']),
     },
     methods: {
         initLanguage() {
@@ -93,7 +88,7 @@ export default {
                         success: ({ret, data, msg}) => {
                             if (ret === 1) {
                                 $A.messageSuccess('修改成功！');
-                                this.setUserInfo(data);
+                                this.$store.commit('setUserInfo', data);
                                 this.$refs.formDatum.resetFields();
                             } else {
                                 $A.modalError(msg);

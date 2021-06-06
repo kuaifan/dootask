@@ -113,8 +113,6 @@
 </style>
 
 <script>
-import {mapMutations} from "vuex";
-
 export default {
     data() {
         return {
@@ -128,9 +126,6 @@ export default {
             password: '',
             code: '',
         }
-    },
-    computed: {
-        ...mapMutations(['setUserInfo']),
     },
     methods: {
         reCode() {
@@ -167,8 +162,9 @@ export default {
             }
             this.loadIng++;
             $A.ajaxc({
-                url: $A.apiUrl('users/login?type=' + this.loginType),
+                url: $A.apiUrl('users/login'),
                 data: {
+                    type: this.loginType,
                     email: this.email,
                     password: this.password,
                     code: this.code,
@@ -178,7 +174,7 @@ export default {
                 },
                 success: ({ret, data, msg}) => {
                     if (ret === 1) {
-                        this.setUserInfo(data);
+                        this.$store.commit('setUserInfo', data);
                         //
                         this.goNext();
                     } else {

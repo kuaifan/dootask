@@ -828,7 +828,7 @@
 <script>
 import TaskPriority from "./TaskPriority";
 import TaskAdd from "./TaskAdd";
-import {mapState, mapMutations} from "vuex";
+import {mapState} from "vuex";
 import UserInput from "../../../components/UserInput";
 export default {
     name: "ProjectList",
@@ -880,7 +880,6 @@ export default {
             'taskUndoneShow',
             'taskCompletedShow'
         ]),
-        ...mapMutations(['toggleBoolean', 'getProjectList', 'getProjectDetail']),
 
         panelTask() {
             const {searchText} = this;
@@ -984,7 +983,7 @@ export default {
                 success: ({ret, data, msg}) => {
                     if (ret === 1) {
                         $A.messageSuccess(msg);
-                        this.getProjectDetail(this.addData.project_id);
+                        this.$store.commit('getProjectDetail', this.addData.project_id);
                         this.addShow = false;
                         this.addData = {
                             owner: 0,
@@ -1037,7 +1036,7 @@ export default {
                 success: ({ret, data, msg}) => {
                     if (ret === 1) {
                         $A.messageSuccess(msg);
-                        this.getProjectDetail(this.userData.project_id);
+                        this.$store.commit('getProjectDetail', this.userData.project_id);
                         this.userShow = false;
                     } else {
                         $A.modalError(msg);
@@ -1060,7 +1059,7 @@ export default {
                 success: ({ret, data, msg}) => {
                     if (ret === 1) {
                         $A.messageSuccess(msg);
-                        this.getProjectDetail(this.transferData.project_id);
+                        this.$store.commit('getProjectDetail', this.transferData.project_id);
                         this.transferShow = false;
                     } else {
                         $A.modalError(msg);
@@ -1088,7 +1087,7 @@ export default {
                             this.$Modal.remove();
                             if (ret === 1) {
                                 $A.messageSuccess(msg);
-                                this.getProjectList();
+                                this.$store.commit('getProjectList');
                                 this.goForward({path: '/manage/dashboard'}, true);
                             }else{
                                 $A.modalError(msg, 301);
@@ -1118,7 +1117,7 @@ export default {
                             this.$Modal.remove();
                             if (ret === 1) {
                                 $A.messageSuccess(msg);
-                                this.getProjectList();
+                                this.$store.commit('getProjectList');
                                 this.goForward({path: '/manage/dashboard'}, true);
                             }else{
                                 $A.modalError(msg, 301);
@@ -1159,6 +1158,10 @@ export default {
                     this.onExit();
                     break;
             }
+        },
+
+        toggleBoolean(type) {
+            this.$store.commit('toggleBoolean', type);
         },
 
         formatTime(date) {

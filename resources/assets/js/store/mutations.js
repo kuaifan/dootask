@@ -152,7 +152,7 @@ export default {
     /**
      * 获取用户基本信息
      * @param state
-     * @param params // {userid, success, complete}
+     * @param params {userid, success, complete}
      */
     getUserBasic(state, params) {
         if (!state.method.isJson(params)) {
@@ -274,7 +274,7 @@ export default {
     /**
      * 根据消息ID 删除 或 替换 对话数据
      * @param state
-     * @param params // {id, data}
+     * @param params {id, data}
      */
     spliceDialogMsg(state, params) {
         let {id, data} = params;
@@ -388,7 +388,7 @@ export default {
     /**
      * 发送 websocket 消息
      * @param state
-     * @param params // {type, data, callback, msgId}
+     * @param params {type, data, callback, msgId}
      */
     wsSend(state, params) {
         if (!state.method.isJson(params)) {
@@ -418,7 +418,7 @@ export default {
     /**
      * 监听消息
      * @param state
-     * @param params // {name, callback}
+     * @param params {name, callback}
      */
     wsMsgListener(state, params) {
         const {name, callback} = params;

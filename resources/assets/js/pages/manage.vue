@@ -231,7 +231,7 @@
 </style>
 
 <script>
-import {mapMutations, mapState} from 'vuex'
+import { mapState } from 'vuex'
 
 export default {
     data() {
@@ -252,14 +252,13 @@ export default {
         }
     },
     mounted() {
-        this.$store.commit("getUserInfo");
+        this.$store.commit('getUserInfo');
     },
     deactivated() {
         this.addShow = false;
     },
     computed: {
         ...mapState(['projectList']),
-        ...mapMutations(['getProjectList']),
     },
     watch: {
         '$route' (route) {
@@ -353,7 +352,7 @@ export default {
                                 this.$set(this.addData, 'template', 0);
                                 //
                                 this.loadIng++;
-                                this.getProjectList(() => {
+                                this.$store.commit('getProjectList', () => {
                                     this.loadIng--;
                                 });
                             } else {
