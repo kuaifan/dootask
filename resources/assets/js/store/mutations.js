@@ -69,7 +69,7 @@ export default {
     /**
      * 更新会员在线
      * @param state
-     * @param info
+     * @param info {userid,online}
      */
     setUserOnlineStatus(state, info) {
         const {userid, online} = info;
@@ -351,6 +351,10 @@ export default {
                 case "receipt":
                     typeof state.wsCall[msgId] === "function" && state.wsCall[msgId](msgDetail.body, true);
                     delete state.wsCall[msgId];
+                    break
+
+                case "line":
+                    this.commit('setUserOnlineStatus', msgDetail.data);
                     break
 
                 default:

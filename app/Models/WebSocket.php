@@ -4,8 +4,10 @@ namespace App\Models;
 
 
 /**
- * App\Models\WebSocket
+ * Class WebSocket
  *
+ * @package App\Models
+ * @property int $id
  * @property string $key
  * @property string|null $fd
  * @property int|null $userid
@@ -16,6 +18,7 @@ namespace App\Models;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocket query()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocket whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocket whereFd($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocket whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocket whereKey($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocket whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocket whereUserid($value)

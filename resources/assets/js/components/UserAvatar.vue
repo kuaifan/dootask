@@ -78,7 +78,7 @@
             },
 
             userOnline(data) {
-                if (this.user && data[this.user.userid]) {
+                if (this.user && typeof data[this.user.userid] !== "undefined") {
                     this.$set(this.user, 'online', data[this.user.userid]);
                 }
             }
