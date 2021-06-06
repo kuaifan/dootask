@@ -391,7 +391,6 @@ export default {
             if (data) {
                 state.dialogMsgList.splice(index, 1, state.method.cloneJSON(data));
                 // 是最后一条消息时更新对话 last_msg
-                console.log(data);
                 if (state.dialogMsgList.length - 1 == index) {
                     const dialog = state.dialogList.find(({id}) => id == data.dialog_id);
                     if (dialog) dialog.last_msg = data;
@@ -496,10 +495,16 @@ export default {
                         (function (msg, that) {
                             const {mode, data} = msg;
                             const {dialog_id} = data;
+                            // 更新最后消息
+                            let dialog = state.dialogList.find(({id}) => id == dialog_id);
+                            if (dialog) {
+                                dialog.last_msg = data;
+                            } else {
+                                that.commit('getDialogOne', dialog_id);
+                            }
                             if (mode === "add") {
-                                let dialog = state.dialogList.find(({id}) => id == dialog_id);
                                 if (dialog) {
-                                    dialog.last_msg = data;
+                                    // 新增未读数
                                     if (state.dialogId !== dialog_id) dialog.unread++;
                                     // 移动到首位
                                     const index = state.dialogList.findIndex(({id}) => id == dialog_id);
@@ -508,9 +513,8 @@ export default {
                                         state.dialogList.splice(index, 1);
                                         state.dialogList.unshift(tmp);
                                     }
-                                } else {
-                                    that.commit('getDialogOne', dialog_id);
                                 }
+                                // 新增总未读数
                                 if (state.dialogId !== dialog_id) state.dialogMsgUnread++;
                             }
                         })(msgDetail, this);

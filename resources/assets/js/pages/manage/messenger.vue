@@ -22,6 +22,7 @@
                             <div class="dialog-box">
                                 <div class="dialog-title">
                                     <span>{{dialog.name}}</span>
+                                    <Icon v-if="dialog.type == 'user' && lastMsgReadDone(dialog.last_msg)" :type="lastMsgReadDone(dialog.last_msg)"/>
                                     <em v-if="dialog.last_at">{{formatTime(dialog.last_at)}}</em>
                                 </div>
                                 <div class="dialog-text">{{formatLastMsg(dialog.last_msg)}}</div>
@@ -82,7 +83,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['dialogId', 'dialogList']),
+        ...mapState(['userId', 'dialogId', 'dialogList']),
 
         dialogLists() {
             const {dialogKey} = this;
@@ -144,6 +145,16 @@ export default {
             }
             return '';
         },
+
+        lastMsgReadDone(data) {
+            if ($A.isJson(data)) {
+                const {userid, percentage} = data;
+                if (userid === this.userId) {
+                    return percentage === 100 ? 'md-done-all' : 'md-checkmark';
+                }
+            }
+            return null;
+        }
     }
 }
 </script>
