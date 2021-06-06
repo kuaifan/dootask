@@ -254,6 +254,33 @@ export default {
     },
 
     /**
+     * 打开个人对话
+     * @param state
+     * @param userid
+     */
+    openDialogUser(state, userid) {
+        $A.apiAjax({
+            url: 'dialog/open/user',
+            data: {
+                userid,
+            },
+            success: ({ret, data, msg}) => {
+                if (ret === 1) {
+                    let index = state.dialogList.findIndex(({id}) => id == data.id);
+                    if (index > -1) {
+                        state.dialogList.splice(index, 1, data);
+                    } else {
+                        state.dialogList.unshift(data)
+                    }
+                    this.commit('getDialogMsgList', data.id);
+                } else {
+                    $A.modalError(msg);
+                }
+            }
+        });
+    },
+
+    /**
      * 获取对话消息
      * @param state
      * @param dialog_id

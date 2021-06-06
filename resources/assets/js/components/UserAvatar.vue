@@ -4,9 +4,12 @@
              :delay="600"
              :disabled="tooltipDisabled"
              :transfer="transfer">
-        <div slot="content">
+        <div slot="content" class="common-avatar-transfer">
             <p>{{$L('昵称')}}: {{user.nickname}}</p>
             <p>{{$L('职位/职称')}}: {{user.profession || '-'}}</p>
+            <div v-if="userId != userid" class="avatar-icons">
+                <Icon type="ios-chatbubbles" @click="openDialog"/>
+            </div>
         </div>
         <div class="avatar-wrapper">
             <div :class="['avatar-box', user.online ? 'online' : '']">
@@ -55,7 +58,7 @@
             this.getData()
         },
         computed: {
-            ...mapState(["userOnline"]),
+            ...mapState(["userId", "userOnline"]),
 
             showImg() {
                 const {userimg} = this.user
@@ -99,6 +102,12 @@
                         this.user = user;
                     }
                 });
+            },
+
+            openDialog() {
+                this.$store.state.method.setStorage('messengerDialogId', 0)
+                this.$store.commit("openDialogUser", this.userid);
+                this.goForward({path: '/manage/messenger'});
             }
         }
     };

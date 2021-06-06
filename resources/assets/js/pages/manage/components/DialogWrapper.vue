@@ -19,7 +19,7 @@
                         <div class="dialog-avatar">
                             <UserAvatar :userid="item.userid" :tooltip-disabled="item.userid == userId" :size="30"/>
                         </div>
-                        <DialogView :msg-data="item" dialog-type="group"/>
+                        <DialogView :msg-data="item" :dialog-type="dialogDetail.type"/>
                     </li>
                 </ul>
             </div>

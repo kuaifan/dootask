@@ -16,8 +16,9 @@
                             :key="key"
                             :class="{active: dialog.id == dialogId}"
                             @click="openDialog(dialog)">
-                            <Icon v-if="dialog.type=='group'" class="group-avatar" type="ios-people" />
-                            <UserAvatar v-else-if="dialog.dialog_user" :userid="dialog.dialog_user.userid" :size="46"/>
+                            <Icon v-if="dialog.type=='group'" class="icon-avatar" type="ios-people" />
+                            <div v-else-if="dialog.dialog_user" class="user-avatar"><UserAvatar :userid="dialog.dialog_user.userid" :size="46"/></div>
+                            <Icon v-else class="icon-avatar" type="md-person" />
                             <div class="dialog-box">
                                 <div class="dialog-title">
                                     <span>{{dialog.name}}</span>

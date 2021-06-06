@@ -129,7 +129,7 @@ class WebSocketDialogMsg extends AbstractModel
     }
 
     /**
-     * 给会员添加并发送消息
+     * 发送消息
      * @param int $dialog_id    会话ID（即 聊天室ID）
      * @param string $type      消息类型
      * @param array $msg        发送的消息
@@ -138,7 +138,7 @@ class WebSocketDialogMsg extends AbstractModel
      * @param string $extra_str
      * @return array
      */
-    public static function addGroupMsg($dialog_id, $type, $msg, $sender = 0, $extra_int = 0, $extra_str = '')
+    public static function sendMsg($dialog_id, $type, $msg, $sender = 0, $extra_int = 0, $extra_str = '')
     {
         $dialogMsg = self::createInstance([
             'userid' => $sender ?: User::token2userid(),
@@ -149,9 +149,9 @@ class WebSocketDialogMsg extends AbstractModel
             'extra_str' => $extra_str,
         ]);
         return AbstractModel::transaction(function () use ($dialog_id, $msg, $dialogMsg) {
-            $dialog = WebSocketDialog::checkGroupDialog($dialogMsg->userid, $dialog_id);
+            $dialog = WebSocketDialog::checkDialog($dialogMsg->userid, $dialog_id);
             if (empty($dialog)) {
-                return Base::retError('不是聊天室成员');
+                return Base::retError('获取会话失败');
             }
             $dialog->last_at = Carbon::now();
             $dialog->save();
@@ -161,45 +161,6 @@ class WebSocketDialogMsg extends AbstractModel
             $dialogMsg->save();
             //
             $task = new WebSocketDialogMsgTask($userids, $dialogMsg->toArray());
-            Task::deliver($task);
-            //
-            return Base::retSuccess('发送成功', $dialogMsg);
-        });
-    }
-
-
-    /**
-     * 给会员添加并发送消息
-     * @param int $userid       接收的会员ID
-     * @param string $type      消息类型
-     * @param array $msg        发送的消息
-     * @param int $sender       发送的会员ID（默认自己，0为系统）
-     * @param int $extra_int
-     * @param string $extra_str
-     * @return array
-     */
-    public static function addUserMsg($userid, $type, $msg, $sender = 0, $extra_int = 0, $extra_str = '')
-    {
-        $dialogMsg = self::createInstance([
-            'userid' => $sender ?: User::token2userid(),
-            'type' => $type,
-            'msg' => $msg,
-            'read' => 0,
-            'extra_int' => $extra_int,
-            'extra_str' => $extra_str,
-        ]);
-        return AbstractModel::transaction(function () use ($userid, $msg, $dialogMsg) {
-            $dialog = WebSocketDialog::checkUserDialog($dialogMsg->userid, $userid);
-            if (empty($dialog)) {
-                return Base::retError('创建对话失败');
-            }
-            $dialog->last_at = Carbon::now();
-            $dialog->save();
-            $dialogMsg->send = 1;
-            $dialogMsg->dialog_id = $dialog->id;
-            $dialogMsg->save();
-            //
-            $task = new WebSocketDialogMsgTask($userid, $dialogMsg->toArray());
             Task::deliver($task);
             //
             return Base::retSuccess('发送成功', $dialogMsg);

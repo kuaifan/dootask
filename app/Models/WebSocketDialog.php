@@ -35,10 +35,13 @@ class WebSocketDialog extends AbstractModel
      * 格式化对话
      * @param WebSocketDialog $dialog
      * @param int $userid   会员ID
-     * @return WebSocketDialog
+     * @return self|null
      */
     public static function formatData(WebSocketDialog $dialog, $userid)
     {
+        if (empty($dialog)) {
+            return null;
+        }
         // 最后消息
         $last_msg = WebSocketDialogMsg::whereDialogId($dialog->id)->orderByDesc('id')->first();
         $dialog->last_msg = $last_msg;
@@ -128,12 +131,12 @@ class WebSocketDialog extends AbstractModel
     }
 
     /**
-     * 获取聊天室对话
+     * 获取对话
      * @param int $userid       会员ID
-     * @param int $dialog_id    会话ID（即 聊天室ID）
+     * @param int $dialog_id    会话ID
      * @return self
      */
-    public static function checkGroupDialog($userid, $dialog_id)
+    public static function checkDialog($userid, $dialog_id)
     {
         if ($userid == 0) {
             return self::whereId($dialog_id)->first();
@@ -141,7 +144,6 @@ class WebSocketDialog extends AbstractModel
             return self::select(['web_socket_dialogs.*'])
                 ->join('web_socket_dialog_users', 'web_socket_dialog_users.dialog_id', '=', 'web_socket_dialogs.id')
                 ->where('web_socket_dialogs.id', $dialog_id)
-                ->where('web_socket_dialogs.type', 'group')
                 ->where('web_socket_dialog_users.userid', $userid)
                 ->first();
         }

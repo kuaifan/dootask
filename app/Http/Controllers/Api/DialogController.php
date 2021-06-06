@@ -73,6 +73,33 @@ class DialogController extends AbstractController
     }
 
     /**
+     * 打开会话
+     *
+     * @apiParam {Number} userid         对话会员ID
+     */
+    public function open__user()
+    {
+        $user = User::authE();
+        if (Base::isError($user)) {
+            return $user;
+        } else {
+            $user = User::IDE($user['data']);
+        }
+        //
+        $userid = intval(Request::input('userid'));
+        //
+        $dialog = WebSocketDialog::checkUserDialog($user->userid, $userid);
+        if (empty($dialog)) {
+            return Base::retError('打开会话失败');
+        }
+        $data = WebSocketDialog::formatData(WebSocketDialog::find($dialog->id), $user->userid);
+        if (empty($data)) {
+            return Base::retError('打开会话错误');
+        }
+        return Base::retSuccess('success', $data);
+    }
+
+    /**
      * 消息列表
      *
      * @apiParam {Number} dialog_id         对话ID
@@ -162,11 +189,7 @@ class DialogController extends AbstractController
             'text' => $text
         ];
         //
-        if ($dialog->type == 'group') {
-            return WebSocketDialogMsg::addGroupMsg($dialog_id, 'text', $msg, $user->userid, $extra_int, $extra_str);
-        } else {
-            return WebSocketDialogMsg::addUserMsg($dialog_id, 'text', $msg, $user->userid, $extra_int, $extra_str);
-        }
+        return WebSocketDialogMsg::sendMsg($dialog_id, 'text', $msg, $user->userid, $extra_int, $extra_str);
     }
 
     /**
@@ -260,11 +283,7 @@ class DialogController extends AbstractController
             $msg = $fileData;
             $msg['size'] *= 1024;
             //
-            if ($dialog->type == 'group') {
-                return WebSocketDialogMsg::addGroupMsg($dialog_id, 'file', $msg, $user->userid, $extra_int, $extra_str);
-            } else {
-                return WebSocketDialogMsg::addUserMsg($dialog_id, 'file', $msg, $user->userid, $extra_int, $extra_str);
-            }
+            return WebSocketDialogMsg::sendMsg($dialog_id, 'file', $msg, $user->userid, $extra_int, $extra_str);
         }
     }
 

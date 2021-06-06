@@ -505,6 +505,31 @@ body {
         }
     }
 }
+.common-avatar-transfer {
+    padding: 4px 2px;
+    > p {
+        padding: 1px 2px;
+    }
+    .avatar-icons {
+        margin-top: 12px;
+        border-top: 1px solid #F4F4F5;
+        padding: 8px 0 2px;
+        display: flex;
+        align-items: center;
+        > i {
+            cursor: pointer;
+            font-size: 22px;
+            margin-right: 12px;
+            color: #F4F4F5;
+            &:last-child {
+                margin-right: 0;
+            }
+            &:hover {
+                color: #ffffff;
+            }
+        }
+    }
+}
 
 .common-user-transfer {
     .user-input-option {
@@ -1065,20 +1090,19 @@ body {
                     &.active {
                         background-color: #F4F5F7;
                     }
-                    .common-avatar {
+                    .user-avatar,
+                    .icon-avatar {
+                        width: 46px;
+                        height: 46px;
                         flex-grow: 0;
                         flex-shrink: 0;
                     }
-                    .group-avatar {
-                        width: 46px;
-                        height: 46px;
+                    .icon-avatar {
                         line-height: 46px;
                         border-radius: 50%;
                         font-size: 26px;
                         background-color: #61B2F9;
                         color: #ffffff;
-                        flex-grow: 0;
-                        flex-shrink: 0;
                     }
                     .dialog-box {
                         flex: 1;
