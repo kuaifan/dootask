@@ -125,8 +125,14 @@ class WebSocketService implements WebSocketHandlerInterface
              * 已阅消息
              */
             case 'readMsg':
-                $dialogMsg = WebSocketDialogMsg::whereId(intval($data['id']))->first();
-                $dialogMsg && $dialogMsg->readSuccess($this->getUserid($frame->fd));
+                $ids = is_array($data['id']) ? $data['id'] : [$data['id']];
+                $userid = $this->getUserid($frame->fd);
+                $list = WebSocketDialogMsg::whereIn('id', $ids)->get();
+                if ($list->isNotEmpty()) {
+                    foreach ($list as $item) {
+                        $item->readSuccess($userid);
+                    }
+                }
                 return;
         }
         //

@@ -1,3 +1,5 @@
+import state from "./state";
+
 export default {
     /**
      * 切换Boolean变量
@@ -417,6 +419,25 @@ export default {
         } catch (e) {
             typeof callback === "function" && callback(null, false)
         }
+    },
+
+    /**
+     * 发送已阅消息
+     * @param state
+     * @param msgId
+     */
+    wsMsgRead(state, msgId) {
+        state.wsReadWaitList.push(msgId);
+        clearTimeout(state.wsReadTimeout);
+        state.wsReadTimeout = setTimeout(() => {
+            this.commit('wsSend', {
+                type: 'readMsg',
+                data: {
+                    id: $A.cloneJSON(state.wsReadWaitList)
+                }
+            });
+            state.wsReadWaitList = [];
+        }, 10);
     },
 
     /**

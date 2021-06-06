@@ -36,7 +36,7 @@ class LineTask extends AbstractTask
                 $fd[] = $ws->fd;
             }
             if ($fd) {
-                PushTask::pushIgnoreFail([
+                PushTask::push([
                     'fd' => $fd,
                     'msg' => [
                         'type' => 'line',

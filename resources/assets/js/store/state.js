@@ -172,6 +172,8 @@ state.wsMsg = {};
 state.wsCall = {};
 state.wsTimeout = null;
 state.wsListener = {};
+state.wsReadTimeout = null;
+state.wsReadWaitList = [];
 
 // 项目信息
 state.projectLoad = 0;

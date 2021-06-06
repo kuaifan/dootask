@@ -79,7 +79,7 @@ export default {
     },
 
     mounted() {
-        this.parsingData()
+        this.parsingRead()
     },
 
     computed: {
@@ -96,7 +96,7 @@ export default {
 
     watch: {
         msgData() {
-            this.parsingData()
+            this.parsingRead()
         }
     },
 
@@ -115,14 +115,11 @@ export default {
             });
         },
 
-        parsingData() {
+        parsingRead() {
             const {userid, r, id} = this.msgData;
             if (userid == this.userId) return;
             if ($A.isJson(r) && r.read_at) return;
-            this.$store.commit('wsSend', {
-                type: 'readMsg',
-                data: {id}
-            });
+            this.$store.commit('wsMsgRead', id);
         },
 
         formatTime(date) {

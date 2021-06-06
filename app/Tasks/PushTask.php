@@ -69,21 +69,19 @@ class PushTask extends AbstractTask
      */
     public static function resendTmpMsgForUserid($userid)
     {
-
-        $lists = WebSocketTmpMsg::whereCreateId($userid)
+        WebSocketTmpMsg::whereCreateId($userid)
             ->whereSend(0)
             ->where('created_at', '>', Carbon::now()->subMinute())  // 1分钟内添加的数据
             ->orderBy('id')
-            ->get();
-        if ($lists->isNotEmpty()) {
-            foreach ($lists as $item) {
-                self::push([
-                    'tmp_msg_id' => $item->id,
-                    'userid' => $userid,
-                    'msg' => Base::json2array($item->msg),
-                ]);
-            }
-        }
+            ->chunk(100, function($list) use ($userid) {
+                foreach ($list as $item) {
+                    self::push([
+                        'tmp_msg_id' => $item->id,
+                        'userid' => $userid,
+                        'msg' => Base::json2array($item->msg),
+                    ]);
+                }
+            });
     }
 
     /**
@@ -93,7 +91,7 @@ class PushTask extends AbstractTask
      * @param int $delay 延迟推送时间，默认：1秒（$key填写时有效）
      * @param bool $addFail 失败后是否保存到临时表，等上线后继续发送
      */
-    public static function push(array $lists, $key = '', $delay = 1, $addFail = true)
+    public static function push(array $lists, $key = '', $delay = 1, $addFail = false)
     {
         if (!is_array($lists) || empty($lists)) {
             return;
@@ -169,11 +167,11 @@ class PushTask extends AbstractTask
     }
 
     /**
-     * 推送消息（忽略错误）
+     * 推送消息（出错后保存临时表，上线后尝试重新发送）
      * @param array $lists 消息列表
      */
-    public static function pushIgnoreFail(array $lists)
+    public static function pushR(array $lists)
     {
-        self::push($lists, '', 1, false);
+        self::push($lists, '', 1, true);
     }
 }
