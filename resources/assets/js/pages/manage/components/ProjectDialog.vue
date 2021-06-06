@@ -1,5 +1,5 @@
 <template>
-    <div v-if="$store.state.projectChatShow" class="project-dialog">
+    <div class="project-dialog">
         <DialogWrapper class="project-dialog-wrapper">
             <div slot="head">
                 <div class="dialog-user">
@@ -98,15 +98,15 @@ export default {
 
     watch: {
         projectDetail() {
-            this.getDialogMsg()
+            this.getMsg()
         },
         projectChatShow() {
-            this.getDialogMsg()
+            this.getMsg()
         }
     },
 
     methods: {
-        getDialogMsg() {
+        getMsg() {
             if (this.projectChatShow && this.projectDetail.dialog_id) {
                 this.$store.commit('getDialogMsg', this.projectDetail.dialog_id);
             }

@@ -21,7 +21,7 @@ class PushTask extends AbstractTask
 
     /**
      * PushTask constructor.
-     * @param string|array $params
+     * @param array $params
      */
     public function __construct($params = [])
     {
@@ -91,8 +91,9 @@ class PushTask extends AbstractTask
      * @param array $lists 消息列表
      * @param string|int $key 延迟推送key依据，留空立即推送（延迟推送时发给同一人同一种消息类型只发送最新的一条）
      * @param int $delay 延迟推送时间，默认：1秒（$key填写时有效）
+     * @param bool $addFail 失败后是否保存到临时表，等上线后继续发送
      */
-    public static function push(array $lists, $key = '', $delay = 1)
+    public static function push(array $lists, $key = '', $delay = 1, $addFail = true)
     {
         if (!is_array($lists) || empty($lists)) {
             return;
@@ -160,8 +161,19 @@ class PushTask extends AbstractTask
                 }
             }
             // 记录发送失败的
-            $userFail = array_values(array_unique($userFail));
-            $tmp_msg_id == 0 && self::addTmpMsg($userFail, $msg);
+            if ($addFail) {
+                $userFail = array_values(array_unique($userFail));
+                $tmp_msg_id == 0 && self::addTmpMsg($userFail, $msg);
+            }
         }
+    }
+
+    /**
+     * 推送消息（忽略错误）
+     * @param array $lists 消息列表
+     */
+    public static function pushIgnoreFail(array $lists)
+    {
+        self::push($lists, '', 1, false);
     }
 }

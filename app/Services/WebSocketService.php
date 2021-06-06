@@ -8,9 +8,11 @@ use App\Models\User;
 use App\Models\WebSocket;
 use App\Models\WebSocketDialogMsg;
 use App\Module\Base;
+use App\Tasks\LineTask;
 use App\Tasks\PushTask;
 use Cache;
 use Carbon\Carbon;
+use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Hhxsv5\LaravelS\Swoole\WebSocketHandlerInterface;
 use Swoole\Http\Request;
 use Swoole\WebSocket\Frame;
@@ -82,6 +84,8 @@ class WebSocketService implements WebSocketHandlerInterface
                             'fd' => $fd,
                         ],
                     ]));
+                    // 通知上线
+                    Task::deliver(new LineTask($userid, true));
                     // 重试发送失败的消息
                     PushTask::resendTmpMsgForUserid($userid);
                 }
@@ -148,6 +152,8 @@ class WebSocketService implements WebSocketHandlerInterface
     public function onClose(Server $server, $fd, $reactorId)
     {
         $this->deleteUser($fd);
+        // 通知离线
+        Task::deliver(new LineTask($this->getUserid($fd), false));
     }
 
     /** ****************************************************************************** */

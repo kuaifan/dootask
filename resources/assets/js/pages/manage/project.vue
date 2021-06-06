@@ -2,7 +2,7 @@
     <div class="project">
         <PageTitle>{{ $L('项目面板') }}</PageTitle>
         <ProjectList/>
-        <ProjectDialog/>
+        <ProjectDialog v-show="$store.state.projectChatShow"/>
     </div>
 </template>
 

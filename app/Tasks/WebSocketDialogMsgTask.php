@@ -19,7 +19,9 @@ class WebSocketDialogMsgTask extends AbstractTask
     protected $dialogMsgArray;
 
     /**
-     * NoticeTask constructor.
+     * WebSocketDialogMsgTask constructor.
+     * @param $userid
+     * @param array $dialogMsgArray
      */
     public function __construct($userid, array $dialogMsgArray)
     {
@@ -27,9 +29,6 @@ class WebSocketDialogMsgTask extends AbstractTask
         $this->dialogMsgArray = $dialogMsgArray;
     }
 
-    /**
-     * @throws \Throwable
-     */
     public function start()
     {
         $userids = is_array($this->userid) ? $this->userid : [$this->userid];

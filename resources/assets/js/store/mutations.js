@@ -368,7 +368,7 @@ export default {
                     if (type === "dialog") {
                         const msgData = msgDetail.data;
                         const dialog_id = msgData.dialog_id;
-                        if (dialog_id == state.dialogId) {
+                        if (dialog_id === state.dialogId) {
                             let index = state.dialogMsgList.findIndex(({id}) => id === msgData.id);
                             if (index === -1) {
                                 if (state.dialogMsgList.length >= 200) {
