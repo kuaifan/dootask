@@ -24,7 +24,7 @@
 
 <script>
 import ImgUpload from "../../../components/ImgUpload";
-import {mapState} from "vuex";
+import {mapMutations, mapState} from "vuex";
 export default {
     components: {ImgUpload},
     data() {
@@ -45,6 +45,7 @@ export default {
     },
     computed: {
         ...mapState(['userInfo']),
+        ...mapMutations(['getUserInfo']),
     },
     watch: {
         userInfo() {
@@ -81,7 +82,7 @@ export default {
                         success: ({ret, data, msg}) => {
                             if (ret === 1) {
                                 $A.messageSuccess('修改成功');
-                                this.$store.commit('getUserInfo');
+                                this.getUserInfo();
                             } else {
                                 $A.modalError(msg);
                             }

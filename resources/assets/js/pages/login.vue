@@ -113,6 +113,8 @@
 </style>
 
 <script>
+import {mapMutations} from "vuex";
+
 export default {
     data() {
         return {
@@ -126,6 +128,9 @@ export default {
             password: '',
             code: '',
         }
+    },
+    computed: {
+        ...mapMutations(['setUserInfo']),
     },
     methods: {
         reCode() {
@@ -173,7 +178,7 @@ export default {
                 },
                 success: ({ret, data, msg}) => {
                     if (ret === 1) {
-                        this.$store.commit('setUserInfo', data);
+                        this.setUserInfo(data);
                         //
                         this.goNext();
                     } else {

@@ -24,7 +24,7 @@
                             </div>
                         </Tooltip>
                     </li>
-                    <li :class="['project-icon', $store.state.projectChatShow ? 'active' : '']" @click="$store.commit('toggleBoolean', 'projectChatShow')">
+                    <li :class="['project-icon', projectChatShow ? 'active' : '']" @click="toggleBoolean('projectChatShow')">
                         <Icon type="ios-chatbubbles" />
                         <Badge :count="projectMsgUnread"></Badge>
                     </li>
@@ -45,14 +45,14 @@
                     </li>
                 </ul>
                 <div class="project-switch">
-                    <div :class="['project-switch-button', !$store.state.projectListPanel ? 'menu' : '']" @click="$store.commit('toggleBoolean', 'projectListPanel')">
+                    <div :class="['project-switch-button', !projectListPanel ? 'menu' : '']" @click="toggleBoolean('projectListPanel')">
                         <div><i class="iconfont">&#xe60c;</i></div>
                         <div><i class="iconfont">&#xe66a;</i></div>
                     </div>
                 </div>
             </div>
         </div>
-        <div v-if="$store.state.projectListPanel" class="project-column">
+        <div v-if="projectListPanel" class="project-column">
             <ul>
                 <li v-for="column in projectDetail.project_column">
                     <div class="column-head">
@@ -107,8 +107,8 @@
                 </Row>
             </div>
             <!--我的任务-->
-            <div :class="['project-table-body', !$store.state.taskMyShow ? 'project-table-hide' : '']">
-                <div @click="$store.commit('toggleBoolean', 'taskMyShow')">
+            <div :class="['project-table-body', !taskMyShow ? 'project-table-hide' : '']">
+                <div @click="toggleBoolean('taskMyShow')">
                     <Row class="project-row">
                         <Col span="12" class="row-title">
                             <i class="iconfont">&#xe689;</i>
@@ -165,8 +165,8 @@
                 </div>
             </div>
             <!--未完成任务-->
-            <div :class="['project-table-body', !$store.state.taskUndoneShow ? 'project-table-hide' : '']">
-                <div @click="$store.commit('toggleBoolean', 'taskUndoneShow')">
+            <div :class="['project-table-body', !taskUndoneShow ? 'project-table-hide' : '']">
+                <div @click="toggleBoolean('taskUndoneShow')">
                     <Row class="project-row">
                         <Col span="12" class="row-title">
                             <i class="iconfont">&#xe689;</i>
@@ -212,8 +212,8 @@
                 </div>
             </div>
             <!--已完成任务-->
-            <div :class="['project-table-body', !$store.state.taskCompletedShow ? 'project-table-hide' : '']">
-                <div @click="$store.commit('toggleBoolean', 'taskCompletedShow')">
+            <div :class="['project-table-body', !taskCompletedShow ? 'project-table-hide' : '']">
+                <div @click="toggleBoolean('taskCompletedShow')">
                     <Row class="project-row">
                         <Col span="12" class="row-title">
                             <i class="iconfont">&#xe689;</i>
@@ -828,7 +828,7 @@
 <script>
 import TaskPriority from "./TaskPriority";
 import TaskAdd from "./TaskAdd";
-import {mapState} from "vuex";
+import {mapState, mapMutations} from "vuex";
 import UserInput from "../../../components/UserInput";
 export default {
     name: "ProjectList",
@@ -869,7 +869,18 @@ export default {
         }, 1000)
     },
     computed: {
-        ...mapState(['userId', 'projectDetail', 'projectLoad', 'projectMsgUnread']),
+        ...mapState([
+            'userId',
+            'projectDetail',
+            'projectLoad',
+            'projectMsgUnread',
+            'projectChatShow',
+            'projectListPanel',
+            'taskMyShow',
+            'taskUndoneShow',
+            'taskCompletedShow'
+        ]),
+        ...mapMutations(['toggleBoolean', 'getProjectList', 'getProjectDetail']),
 
         panelTask() {
             const {searchText} = this;
@@ -973,7 +984,7 @@ export default {
                 success: ({ret, data, msg}) => {
                     if (ret === 1) {
                         $A.messageSuccess(msg);
-                        this.$store.commit('getProjectDetail', this.addData.project_id);
+                        this.getProjectDetail(this.addData.project_id);
                         this.addShow = false;
                         this.addData = {
                             owner: 0,
@@ -1026,7 +1037,7 @@ export default {
                 success: ({ret, data, msg}) => {
                     if (ret === 1) {
                         $A.messageSuccess(msg);
-                        this.$store.commit('getProjectDetail', this.userData.project_id);
+                        this.getProjectDetail(this.userData.project_id);
                         this.userShow = false;
                     } else {
                         $A.modalError(msg);
@@ -1049,7 +1060,7 @@ export default {
                 success: ({ret, data, msg}) => {
                     if (ret === 1) {
                         $A.messageSuccess(msg);
-                        this.$store.commit('getProjectDetail', this.transferData.project_id);
+                        this.getProjectDetail(this.transferData.project_id);
                         this.transferShow = false;
                     } else {
                         $A.modalError(msg);
@@ -1077,7 +1088,7 @@ export default {
                             this.$Modal.remove();
                             if (ret === 1) {
                                 $A.messageSuccess(msg);
-                                this.$store.commit('getProjectList');
+                                this.getProjectList();
                                 this.goForward({path: '/manage/dashboard'}, true);
                             }else{
                                 $A.modalError(msg, 301);
@@ -1107,7 +1118,7 @@ export default {
                             this.$Modal.remove();
                             if (ret === 1) {
                                 $A.messageSuccess(msg);
-                                this.$store.commit('getProjectList');
+                                this.getProjectList();
                                 this.goForward({path: '/manage/dashboard'}, true);
                             }else{
                                 $A.modalError(msg, 301);
