@@ -267,26 +267,12 @@ export default {
     },
 
     computed: {
-        ...mapState(['wsMsg', 'dialogShow', 'dialogMsgUnread', 'projectList']),
+        ...mapState(['dialogMsgUnread', 'projectList']),
     },
 
     watch: {
         '$route' (route) {
             this.curPath = route.path;
-        },
-
-        /**
-         * 收到新消息
-         * @param msg
-         */
-        wsMsg(msg) {
-            const {type, mode} = msg;
-            if (type === "dialog" && mode === "add") {
-                if (this.dialogShow) {
-                    return;
-                }
-                this.$store.state.dialogMsgUnread++;
-            }
         },
     },
 
@@ -297,7 +283,7 @@ export default {
                 value: [],
             }, {
                 label: this.$L('软件开发'),
-                value: [this.$L('产品规划'),this.$L('前端开发'),this.$L('后端开发'),this.$L('测试'),this.$L('发布'),this.$L('其它')],
+                value: [this.$L('产品规划'), this.$L('前端开发'), this.$L('后端开发'), this.$L('测试'), this.$L('发布'), this.$L('其它')],
             }, {
                 label: this.$L('产品开发'),
                 value: [this.$L('产品计划'), this.$L('正在设计'), this.$L('正在研发'), this.$L('测试'), this.$L('准备发布'), this.$L('发布成功')],

@@ -1,5 +1,3 @@
-import state from "./state";
-
 export default {
     /**
      * 切换Boolean变量
@@ -212,6 +210,61 @@ export default {
     },
 
     /**
+     * 获取对话列表
+     * @param state
+     * @param completeCallback
+     */
+    getDialogList(state, completeCallback) {
+        $A.apiAjax({
+            url: 'dialog/lists',
+            complete: () => {
+                typeof completeCallback === "function" && completeCallback();
+            },
+            success: ({ret, data, msg}) => {
+                if (ret === 1) {
+                    state.dialogList = data.data;
+                }
+            }
+        });
+    },
+
+    /**
+     * 获取单个对话
+     * @param state
+     * @param dialog_id
+     */
+    getDialogOne(state, dialog_id) {
+        $A.apiAjax({
+            url: 'dialog/one',
+            data: {
+                dialog_id,
+            },
+            success: ({ret, data, msg}) => {
+                if (ret === 1) {
+                    let index = state.dialogList.findIndex(({id}) => id == data.id);
+                    if (index > -1) {
+                        state.dialogList.splice(index, 1, data);
+                    } else {
+                        state.dialogList.unshift(data)
+                    }
+                }
+            }
+        });
+
+        $A.apiAjax({
+            url: 'dialog/lists',
+            complete: () => {
+                typeof completeCallback === "function" && completeCallback();
+            },
+            success: ({ret, data, msg}) => {
+                if (ret === 1) {
+                    state.dialogList = data.data;
+                }
+            }
+        });
+    },
+
+    /**
      * 获取对话消息
      * @param state
      * @param dialog_id
@@ -236,6 +289,12 @@ export default {
             });
         }
         state.dialogId = dialog_id;
+        //
+        let dialog = state.dialogList.find(({id}) => id == dialog_id);
+        if (dialog && dialog.unread > 0) {
+            state.dialogMsgUnread-= dialog.unread;
+            dialog.unread = 0;
+        }
         //
         if (state.cacheDialog[dialog_id + "::load"]) {
             return;
@@ -395,19 +454,44 @@ export default {
                         }
                     });
                     if (type === "dialog") {
-                        const msgData = msgDetail.data;
-                        const dialog_id = msgData.dialog_id;
-                        if (dialog_id === state.dialogId) {
-                            let index = state.dialogMsgList.findIndex(({id}) => id === msgData.id);
-                            if (index === -1) {
-                                if (state.dialogMsgList.length >= 200) {
-                                    state.dialogMsgList.splice(0, 1);
+                        // 更新消息
+                        (function (msg) {
+                            const {data} = msg;
+                            const {dialog_id} = data;
+                            if (dialog_id === state.dialogId) {
+                                let index = state.dialogMsgList.findIndex(({id}) => id === data.id);
+                                if (index === -1) {
+                                    if (state.dialogMsgList.length >= 200) {
+                                        state.dialogMsgList.splice(0, 1);
+                                    }
+                                    state.dialogMsgList.push(data);
+                                } else {
+                                    state.dialogMsgList.splice(index, 1, data);
                                 }
-                                state.dialogMsgList.push(msgData);
-                            } else {
-                                state.dialogMsgList.splice(index, 1, msgData);
                             }
-                        }
+                        })(msgDetail);
+                        // 更新对话
+                        (function (msg, that) {
+                            const {mode, data} = msg;
+                            const {dialog_id} = data;
+                            if (mode === "add") {
+                                let dialog = state.dialogList.find(({id}) => id == dialog_id);
+                                if (dialog) {
+                                    dialog.last_msg = data;
+                                    if (state.dialogId !== dialog_id) dialog.unread++;
+                                    // 移动到首位
+                                    const index = state.dialogList.findIndex(({id}) => id == dialog_id);
+                                    if (index > -1) {
+                                        const tmp = state.dialogList[index];
+                                        state.dialogList.splice(index, 1);
+                                        state.dialogList.unshift(tmp);
+                                    }
+                                } else {
+                                    that.commit('getDialogOne', dialog_id);
+                                }
+                                if (!state.dialogShow || state.dialogId !== dialog_id) state.dialogMsgUnread++;
+                            }
+                        })(msgDetail, this);
                     }
                     break
             }

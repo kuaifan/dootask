@@ -187,6 +187,7 @@ state.projectMsgUnread = 0;
 // 会话消息
 state.dialogId = 0;
 state.dialogShow = false;
+state.dialogList = [];
 state.dialogDetail = {};
 state.dialogMsgLoad = 0;
 state.dialogMsgList = [];

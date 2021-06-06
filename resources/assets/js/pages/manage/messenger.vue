@@ -63,18 +63,20 @@ export default {
     components: {DialogWrapper},
     data() {
         return {
-            dialogLoad: 0,
             dialogKey: '',
-            dialogList: [],
+            dialogLoad: 0,
         }
     },
 
     mounted() {
-        this.getDialogLists();
+        this.dialogLoad++;
+        this.$store.commit("getDialogList", () => {
+            this.dialogLoad--;
+        })
     },
 
     computed: {
-        ...mapState(['dialogId', 'dialogShow', 'wsMsg']),
+        ...mapState(['dialogId', 'dialogList']),
 
         dialogLists() {
             const {dialogKey} = this;
@@ -93,77 +95,9 @@ export default {
         },
     },
 
-    watch: {
-        /**
-         * 收到新消息
-         * @param msg
-         */
-        wsMsg(msg) {
-            const {type, mode, data} = msg;
-            if (type === "dialog" && mode === "add") {
-                if (this.dialogShow && this.dialogId == data.dialog_id) {
-                    return;
-                }
-                let dialog = this.dialogList.find(({id}) => id == data.dialog_id);
-                if (dialog) {
-                    this.$set(dialog, 'unread', dialog.unread + 1);
-                    this.$set(dialog, 'last_msg', data);
-                } else {
-                    this.getDialogOne(data.dialog_id)
-                }
-            }
-        },
-
-        /**
-         * 打开对话，标记已读
-         * @param dialog_id
-         */
-        dialogId(dialog_id) {
-            let dialog = this.dialogList.find(({id}) => id == dialog_id);
-            if (dialog && dialog.unread > 0) {
-                this.$store.state.dialogMsgUnread-= dialog.unread;
-                this.$set(dialog, 'unread', 0);
-            }
-        }
-    },
-
     methods: {
         openDialog(dialog) {
             this.$store.commit('getDialogMsgList', dialog.id);
-        },
-
-        getDialogLists() {
-            this.dialogLoad++;
-            $A.apiAjax({
-                url: 'dialog/lists',
-                complete: () => {
-                    this.dialogLoad--;
-                },
-                success: ({ret, data, msg}) => {
-                    if (ret === 1) {
-                        this.dialogList = data.data;
-                    }
-                }
-            });
-        },
-
-        getDialogOne(dialog_id) {
-            $A.apiAjax({
-                url: 'dialog/one',
-                data: {
-                    dialog_id,
-                },
-                success: ({ret, data, msg}) => {
-                    if (ret === 1) {
-                        let index = this.dialogList.findIndex(({id}) => id == data.id);
-                        if (index > -1) {
-                            this.dialogList.splice(index, 1, data);
-                        } else {
-                            this.dialogList.unshift(data)
-                        }
-                    }
-                }
-            });
         },
 
         formatTime(date) {
