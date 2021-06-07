@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Module\Base;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 /**
  * Class ProjectColumn
  *
@@ -27,11 +30,30 @@ namespace App\Models;
  */
 class ProjectColumn extends AbstractModel
 {
+    use SoftDeletes;
+
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function projectTask(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(projectTask::class, 'column_id', 'id')->orderByDesc('id');
+    }
+
+    /**
+     * 删除列表
+     * @return bool
+     */
+    public function deleteColumn()
+    {
+        $result = AbstractModel::transaction(function () {
+            ProjectTask::whereColumnId($this->id)->delete();
+            if ($this->delete()) {
+                return Base::retSuccess('success');
+            } else {
+                return Base::retError('error');
+            }
+        });
+        return Base::isSuccess($result);
     }
 }

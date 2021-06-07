@@ -111,6 +111,7 @@ class Project extends AbstractModel
     {
         $result = AbstractModel::transaction(function () {
             ProjectTask::whereProjectId($this->id)->delete();
+            ProjectColumn::whereProjectId($this->id)->delete();
             WebSocketDialog::whereId($this->dialog_id)->delete();
             if ($this->delete()) {
                 return Base::retSuccess('success');

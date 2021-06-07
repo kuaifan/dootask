@@ -4,7 +4,7 @@
     .project-head {
         display: flex;
         align-items: flex-start;
-        margin: 32px 32px 16px;
+        margin: 32px 32px 18px;
         .project-titbox {
             flex: 1;
             margin-bottom: 16px;
@@ -213,6 +213,66 @@
                             transition: color 0.3s;
                             &:hover {
                                 color: #888888;
+                            }
+                        }
+                        .ivu-poptip-popper {
+                            color: #515a6e;
+                            min-width: 150px;
+                            .ivu-poptip-body {
+                                padding: 0;
+                            }
+                            .more-content {
+                                ul {
+                                    margin: 10px 0;
+                                    > li {
+                                        display: flex;
+                                        align-items: center;
+                                        cursor: pointer;
+                                        list-style: none;
+                                        line-height: 30px;
+                                        padding: 0 20px;
+                                        > i {
+                                            font-size: 18px;
+                                            margin-right: 8px;
+                                            padding: 0;
+                                            color: #bbbbbb;
+                                            &.ivu-icon {
+                                                font-size: 16px;
+                                            }
+                                        }
+                                        &.title,
+                                        &.divided {
+                                            font-size: 13px;
+                                            color: #888888;
+                                            cursor: default;
+                                            &:hover {
+                                                background-color: transparent;
+                                            }
+                                        }
+                                        &.divided {
+                                            margin-top: 5px;
+                                            height: 6px;
+                                            border-top: 1px solid #F4F4F5;
+                                        }
+                                        &:hover {
+                                            background-color: #f1f1f1;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    &.custom-color {
+                        color: #ffffff;
+                        .column-head-title {
+                            > em {
+                                color: rgba(255, 255, 255, 0.6);
+                            }
+                        }
+                        .ivu-icon {
+                            color: rgba(255, 255, 255, 0.5);
+                            &:hover {
+                                color: rgba(255, 255, 255, 0.9);
                             }
                         }
                     }

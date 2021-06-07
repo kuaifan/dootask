@@ -458,7 +458,9 @@ class ProjectController extends AbstractController
      * 添加、修改 任务列表
      *
      * @apiParam {Number} project_id        项目ID
+     * @apiParam {Number} [column_id]       列表ID（留空为添加列表）
      * @apiParam {String} name              列表名称
+     * @apiParam {String} color             颜色
      */
     public function column__add()
     {
@@ -472,6 +474,7 @@ class ProjectController extends AbstractController
         $project_id = intval(Request::input('project_id'));
         $column_id = intval(Request::input('column_id'));
         $name = trim(Request::input('name'));
+        $color = trim(Request::input('color'));
         if (empty($name)) {
             return Base::retError('列表名称不能为空');
         }
@@ -486,19 +489,60 @@ class ProjectController extends AbstractController
         }
         //
         if ($column_id > 0) {
-            $column = ProjectColumn::find($column_id);
+            $column = ProjectColumn::whereId($column_id)->whereProjectId($project_id)->first();
+            if (empty($column)) {
+                return Base::retError('列表不存在');
+            }
+            $column->name = $name;
+            $column->color = $color;
+            $column->save();
+            return Base::retSuccess('修改成功', $column);
         } else {
             $column = ProjectColumn::createInstance([
                 'project_id' => $project->id,
+                'name' => $name,
+                'color' => $color,
             ]);
-        }
-        if ($column) {
-            $column->name = $name;
             $column->save();
             return Base::retSuccess('添加成功', $column);
+        }
+    }
+
+    /**
+     * 删除任务列表
+     *
+     * @apiParam {Number} project_id        项目ID
+     * @apiParam {Number} column_id         列表ID（留空为添加列表）
+     */
+    public function column__delete()
+    {
+        $user = User::authE();
+        if (Base::isError($user)) {
+            return $user;
         } else {
+            $user = User::IDE($user['data']);
+        }
+        //
+        $project_id = intval(Request::input('project_id'));
+        $column_id = intval(Request::input('column_id'));
+        // 项目
+        $project = Project::select($this->projectSelect)
+            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->where('projects.id', $project_id)
+            ->where('project_users.userid', $user->userid)
+            ->first();
+        if (empty($project)) {
+            return Base::retError('项目不存在或不在成员列表内');
+        }
+        //
+        $column = ProjectColumn::whereId($column_id)->whereProjectId($project_id)->first();
+        if (empty($column)) {
             return Base::retError('列表不存在');
         }
+        if ($column->deleteColumn()) {
+            return Base::retSuccess('删除成功');
+        }
+        return Base::retError('删除失败');
     }
 
     /**

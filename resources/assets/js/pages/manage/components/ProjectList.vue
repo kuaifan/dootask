@@ -55,13 +55,28 @@
         <div v-if="projectListPanel" class="project-column">
             <ul>
                 <li v-for="column in projectDetail.project_column">
-                    <div class="column-head">
+                    <div
+                        :class="['column-head', column.color ? 'custom-color' : '']"
+                        :style="column.color ? {backgroundColor: column.color}:null">
                         <div class="column-head-title">
                             <span><AutoTip>{{column.name}}</AutoTip></span>
                             <em>({{column.project_task.length}})</em>
                         </div>
                         <div class="column-head-icon">
-                            <Icon type="ios-more" />
+                            <Poptip>
+                                <Icon type="ios-more" />
+                                <div class="more-content" slot="content">
+                                    <ul>
+                                        <li @click="modifyColumn(column)"><Icon type="md-create" />{{$L('修改')}}</li>
+                                        <li @click="removeColumn(column)"><Icon type="md-trash" />{{$L('删除')}}</li>
+                                        <li class="divided"></li>
+                                        <li class="title">{{$L('颜色')}}</li>
+                                        <li v-for="(c, k) in colorList" :key="k" @click="saveColumn(column, column.name, c.color)">
+                                            <i class="iconfont" :style="{color:c.color}" v-html="c.color == column.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
+                                        </li>
+                                    </ul>
+                                </div>
+                            </Poptip>
                             <Icon type="md-add" @click="addBefore(column)" />
                         </div>
                     </div>
@@ -393,6 +408,19 @@ export default {
             transferShow: false,
             transferData: {},
             transferLoad: 0,
+
+            colorList: [
+                {name: '默认', color: ''},
+                {name: '灰色', color: '#6C6F71'},
+                {name: '棕色', color: '#695C56'},
+                {name: '橘色', color: '#9E7549'},
+                {name: '黄色', color: '#A0904F'},
+                {name: '绿色', color: '#4D7771'},
+                {name: '蓝色', color: '#4C7088'},
+                {name: '紫色', color: '#6B5C8D'},
+                {name: '粉色', color: '#8E5373'},
+                {name: '红色', color: '#9D6058'},
+            ]
         }
     },
 
@@ -556,6 +584,77 @@ export default {
                     });
                 }
             })
+        },
+
+        modifyColumn(column) {
+            $A.modalInput({
+                value: column.name,
+                title: "修改列表",
+                placeholder: "输入列表名称",
+                onOk: (value) => {
+                    if (value) {
+                        this.saveColumn(column, value, column.color);
+                    }
+                    return true;
+                }
+            })
+        },
+
+        removeColumn(column) {
+            $A.modalConfirm({
+                title: '删除列表',
+                content: '你确定要删除列表【' + column.name + '】及列表内的任务吗？',
+                loading: true,
+                onOk: () => {
+                    $A.apiAjax({
+                        url: 'project/column/delete',
+                        data: {
+                            project_id: this.projectDetail.id,
+                            column_id: column.id,
+                        },
+                        error: () => {
+                            this.$Modal.remove();
+                            $A.modalAlert('网络繁忙，请稍后再试！');
+                        },
+                        success: ({ret, data, msg}) => {
+                            this.$Modal.remove();
+                            if (ret === 1) {
+                                $A.messageSuccess(msg);
+                                this.$store.commit('getProjectDetail', this.projectDetail.id);
+                            }else{
+                                $A.modalError(msg, 301);
+                            }
+                        }
+                    });
+                }
+            });
+        },
+
+        saveColumn(column, name, color) {
+            let bakName = column.name;
+            let bakColor = column.color;
+            this.$set(column, 'name', name);
+            this.$set(column, 'color', color);
+            //
+            $A.apiAjax({
+                url: 'project/column/add',
+                data: {
+                    project_id: this.projectDetail.id,
+                    column_id: column.id,
+                    name: name,
+                    color: color,
+                },
+                error: () => {
+                    this.$set(column, 'name', bakName);
+                    this.$set(column, 'color', bakColor);
+                },
+                success: ({ret, data, msg}) => {
+                    if (ret !== 1) {
+                        this.$set(column, 'name', bakName);
+                        this.$set(column, 'color', bakColor);
+                    }
+                }
+            });
         },
 
         onAddTask() {
