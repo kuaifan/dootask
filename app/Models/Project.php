@@ -65,7 +65,7 @@ class Project extends AbstractModel
      */
     public function projectColumn(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(projectColumn::class, 'project_id', 'id')->orderBy('id');
+        return $this->hasMany(projectColumn::class, 'project_id', 'id')->orderBy('sort')->orderBy('id');
     }
 
     /**

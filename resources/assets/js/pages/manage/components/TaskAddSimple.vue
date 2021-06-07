@@ -43,7 +43,7 @@ export default {
         columnId: {
             default: ''
         },
-        addBefore: {
+        addTop: {
             type: Boolean,
             default: false
         },
@@ -99,9 +99,7 @@ export default {
             this.addData.project_id = this.projectId;
             this.addData.column_id = this.columnId;
             this.addData.owner = [this.userId];
-            if (this.addBefore) {
-                this.addData.add_before = true;
-            }
+            this.addData.top = this.addTop ? 1 : 0;
             return $A.cloneJSON(this.addData);
         },
 

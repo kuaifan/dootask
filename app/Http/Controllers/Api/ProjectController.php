@@ -503,6 +503,7 @@ class ProjectController extends AbstractController
                 'name' => $name,
                 'color' => $color,
             ]);
+            $column->sort = intval(ProjectColumn::whereProjectId($project->id)->orderByDesc('sort')->value('sort')) + 1;
             $column->save();
             return Base::retSuccess('添加成功', $column);
         }
@@ -546,7 +547,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * {post}添加任务
+     * {post} 添加任务
      *
      * @apiParam {Number} project_id        项目ID
      * @apiParam {Number} [column_id]       列表ID，留空取第一个
@@ -555,6 +556,7 @@ class ProjectController extends AbstractController
      * @apiParam {Array} [times]            计划时间（格式：开始时间,结束时间；如：2020-01-01 00:00,2020-01-01 23:59）
      * @apiParam {Number} [owner]           负责人，留空为自己
      * @apiParam {Array} [subtasks]         子任务（格式：[{name,owner,times}]）
+     * @apiParam {Number} [top]             添加的任务排到列表最前面
      */
     public function task__add()
     {
@@ -574,6 +576,7 @@ class ProjectController extends AbstractController
         $p_level = Base::getPostValue('p_level');
         $p_name = Base::getPostValue('p_name');
         $p_color = Base::getPostValue('p_color');
+        $top = Base::getPostInt('top');
         // 项目
         $project = Project::select($this->projectSelect)
             ->join('project_users', 'projects.id', '=', 'project_users.project_id')
@@ -617,6 +620,7 @@ class ProjectController extends AbstractController
             'p_level' => $p_level,
             'p_name' => $p_name,
             'p_color' => $p_color,
+            'top' => $top,
         ]);
     }
 }

@@ -77,16 +77,16 @@
                                     </ul>
                                 </div>
                             </Poptip>
-                            <Icon type="md-add" @click="addBefore(column)" />
+                            <Icon type="md-add" @click="addTop(column)" />
                         </div>
                     </div>
                     <ul class="overlay-y" :ref="'column_' + column.id">
-                        <li v-if="column.addBefore===true" class="task-add">
+                        <li v-if="column.addTop===true" class="task-add">
                             <TaskAddSimple
                                 :column-id="column.id"
                                 :project-id="projectDetail.id"
-                                :add-before="true"
-                                @on-close="column.addBefore=false"
+                                :add-top="true"
+                                @on-close="column.addTop=false"
                                 @on-priority="addOpen"
                                 auto-active/>
                         </li>
@@ -550,8 +550,8 @@ export default {
             this.addShow = true;
         },
 
-        addBefore(column) {
-            this.$set(column, 'addBefore', true);
+        addTop(column) {
+            this.$set(column, 'addTop', true);
             this.$refs['column_' + column.id][0].scrollTop = 0;
         },
 

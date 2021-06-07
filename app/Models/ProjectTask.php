@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int|null $p_level 优先级
  * @property string|null $p_name 优先级名称
  * @property string|null $p_color 优先级颜色
+ * @property int|null $sort 排序(ASC)
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
@@ -57,6 +58,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask wherePName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereParentId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereProjectId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereSort($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereStartAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereUserid($value)
@@ -224,6 +226,7 @@ class ProjectTask extends AbstractModel
         $p_level    = intval($params['p_level']);
         $p_name     = $params['p_name'];
         $p_color    = $params['p_color'];
+        $top        = intval($params['top']);
         //
         $retPre = $parent_id ? '子任务' : '任务';
         $task = self::createInstance();
@@ -263,6 +266,12 @@ class ProjectTask extends AbstractModel
         }
         // 创建人
         $task->userid = User::token2userid();
+        // 排序位置
+        if ($top) {
+            $task->sort = intval(self::whereColumnId($task->column_id)->orderBy('sort')->value('sort')) - 1;
+        } else {
+            $task->sort = intval(self::whereColumnId($task->column_id)->orderByDesc('sort')->value('sort')) + 1;
+        }
         //
         return AbstractModel::transaction(function() use ($subtasks, $content, $owner, $task) {
             $task->save();
