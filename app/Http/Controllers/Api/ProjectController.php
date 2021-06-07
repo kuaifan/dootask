@@ -374,7 +374,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 【消息】消息列表
+     * 消息列表
      *
      * @apiParam {Number} project_id        项目ID
      * @apiParam {Number} [task_id]         任务ID
@@ -413,7 +413,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 【消息】发送消息
+     * 发送消息
      *
      * @apiParam {Number} project_id        项目ID
      * @apiParam {Number} [task_id]         任务ID
@@ -455,7 +455,54 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * {post}【任务】添加任务
+     * 添加、修改 任务列表
+     *
+     * @apiParam {Number} project_id        项目ID
+     * @apiParam {String} name              列表名称
+     */
+    public function column__add()
+    {
+        $user = User::authE();
+        if (Base::isError($user)) {
+            return $user;
+        } else {
+            $user = User::IDE($user['data']);
+        }
+        //
+        $project_id = intval(Request::input('project_id'));
+        $column_id = intval(Request::input('column_id'));
+        $name = trim(Request::input('name'));
+        if (empty($name)) {
+            return Base::retError('列表名称不能为空');
+        }
+        // 项目
+        $project = Project::select($this->projectSelect)
+            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->where('projects.id', $project_id)
+            ->where('project_users.userid', $user->userid)
+            ->first();
+        if (empty($project)) {
+            return Base::retError('项目不存在或不在成员列表内');
+        }
+        //
+        if ($column_id > 0) {
+            $column = ProjectColumn::find($column_id);
+        } else {
+            $column = ProjectColumn::createInstance([
+                'project_id' => $project->id,
+            ]);
+        }
+        if ($column) {
+            $column->name = $name;
+            $column->save();
+            return Base::retSuccess('添加成功', $column);
+        } else {
+            return Base::retError('列表不存在');
+        }
+    }
+
+    /**
+     * {post}添加任务
      *
      * @apiParam {Number} project_id        项目ID
      * @apiParam {Number} [column_id]       列表ID，留空取第一个

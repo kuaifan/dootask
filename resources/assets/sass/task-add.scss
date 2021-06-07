@@ -1,0 +1,167 @@
+.task-add {
+    .task-add-form,
+    .task-add-advanced {
+        margin: 0 0 -18px;
+        .ivu-form-item-label {
+            font-weight: 600;
+        }
+        .teditor-box {
+            .tox-tinymce {
+                border-color: #e8e8e8;
+            }
+            .tox .tox-statusbar,
+            .tox .tox-menubar+.tox-toolbar,
+            .tox .tox-menubar+.tox-toolbar-overlord .tox-toolbar__primary,
+            .tox:not([dir=rtl]) .tox-toolbar__group:not(:last-of-type) {
+                border-color: #e8e8e8;
+            }
+            .tox .tox-toolbar,
+            .tox .tox-toolbar__overflow,
+            .tox .tox-toolbar__primary {
+                background-image: none;
+                border-bottom: 1px solid #e8e8e8;
+            }
+        }
+        .advanced-option {
+            margin-top: -6px;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            > button {
+                transition: margin 0.2s;
+                &.advanced {
+                    margin-left: 22px;
+                }
+                &:focus {
+                    box-shadow: none;
+                }
+            }
+            .advanced-priority {
+                display: flex;
+                align-items: center;
+                margin-left: 24px;
+                > li {
+                    list-style: none;
+                    margin-left: 3px;
+                    .ivu-tooltip {
+                        display: flex;
+                        align-items: center;
+                        .ivu-tooltip-rel {
+                            height: 34px;
+                            line-height: 1;
+                            .iconfont {
+                                font-size: 34px;
+                                cursor: pointer;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    .task-add-advanced {
+        margin: 1px 0 0;
+        padding: 34px 32px 6px;
+        border-radius: 8px;
+        border: 1px solid #e8e8e8;
+        .subtasks {
+            margin-bottom: 24px;
+            padding: 12px 16px;
+            border-radius: 6px;
+            background-color: #f8f8f8;
+            .enter-input {
+                .ivu-input {
+                    background: transparent;
+                    border-color: transparent;
+                    &:hover,
+                    &:focus {
+                        box-shadow: none;
+                    }
+                }
+            }
+            .sublist {
+                .ivu-row {
+                    margin-bottom: 12px;
+                    > div {
+                        padding-right: 7px;
+                        &:last-child {
+                            padding-right: 0;
+                        }
+                    }
+                }
+            }
+        }
+        .ivu-date-picker {
+            width: 100%;
+        }
+    }
+}
+.task-add-advanced-transfer {
+    .task-drop-prepend {
+        text-align: center;
+        color: #c5c8ce;
+        line-height: 20px;
+        padding-bottom: 5px;
+        font-size: 12px;
+        border-bottom: 1px solid #f1f1f1;
+        margin-bottom: 5px;
+    }
+}
+.task-add-simple {
+    .ivu-input-wrapper {
+        display: none;
+    }
+    .add-placeholder {
+        cursor: pointer;
+        color: #888888;
+        .ivu-icon {
+            margin-right: 4px;
+        }
+        &:hover {
+            color: #666666;
+        }
+    }
+    .priority {
+        display: none;
+        align-items: center;
+        min-height: 22px;
+        margin-top: 10px;
+        margin-bottom: -3px;
+        > ul {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            > li {
+                list-style: none;
+                margin-right: 3px;
+                .ivu-tooltip {
+                    display: flex;
+                    align-items: center;
+                    .ivu-tooltip-rel {
+                        height: 22px;
+                        line-height: 1;
+                        .iconfont {
+                            font-size: 22px;
+                            cursor: pointer;
+                        }
+                    }
+                }
+            }
+        }
+        .ivu-icon {
+            cursor: pointer;
+            font-size: 16px;
+        }
+    }
+    &.active {
+        .ivu-input-wrapper {
+            display: block;
+        }
+        .add-placeholder {
+            display: none;
+        }
+        .priority {
+            display: flex;
+        }
+    }
+}

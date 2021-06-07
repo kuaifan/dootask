@@ -24,7 +24,6 @@ export default {
                 }
             },
         });
-        return state.userInfo;
     },
 
     /**
@@ -112,9 +111,6 @@ export default {
      */
     getProjectDetail(state, project_id) {
         if (state.method.runNum(project_id) === 0) {
-            return;
-        }
-        if (state.projectDetail.id === project_id) {
             return;
         }
         if (state.method.isJson(state.cacheProject[project_id])) {

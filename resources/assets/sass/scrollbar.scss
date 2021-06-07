@@ -1,7 +1,7 @@
 /* 滚动条美化 */
 ::-webkit-scrollbar {
-    width: 6px;
-    height: 0;
+    width: 10px;
+    height: 10px;
 }
 
 /*滚动条滑块隐藏*/
@@ -18,7 +18,15 @@
 
 /*鼠标浮到容器上，让该容器的滚动条滑块显示*/
 :hover::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
     background: rgba(0, 0, 0, .2);
+    background-clip: content-box;
+}
+
+/*鼠标浮到容器上，让该容器的滚动条滑块显示*/
+:hover::-webkit-scrollbar-thumb:hover {
+    border-top-width: 0;
+    border-bottom-width: 0;
 }
 
 /*滚动条轨道*/

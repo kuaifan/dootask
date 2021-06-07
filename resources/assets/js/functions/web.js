@@ -178,6 +178,50 @@
             return config;
         },
 
+        modalInput(config, millisecond = 0) {
+            if (millisecond > 0) {
+                setTimeout(() => { $A.modalInput(config) }, millisecond);
+                return;
+            }
+            if (typeof config === "string") config = {title:config};
+            $A.Modal.confirm({
+                render: (h) => {
+                    return h('div', [
+                        h('div', {
+                            style: {
+                                fontSize: '16px',
+                                fontWeight: '500',
+                                marginBottom: '20px',
+                            }
+                        }, $A.L(config.title)),
+                        h('Input', {
+                            props: {
+                                value: config.value,
+                                placeholder: $A.L(config.placeholder)
+                            },
+                            on: {
+                                input: (val) => {
+                                    config.value = val;
+                                }
+                            }
+                        })
+                    ])
+                },
+                loading: true,
+                onOk: () => {
+                    if (typeof config.onOk === "function") {
+                        if (config.onOk(config.value, () => {
+                            $A.Modal.remove();
+                        }) === true) {
+                            $A.Modal.remove();
+                        }
+                    } else {
+                        $A.Modal.remove();
+                    }
+                },
+            });
+        },
+
         modalConfirm(config, millisecond = 0) {
             if (millisecond > 0) {
                 setTimeout(() => { $A.modalConfirm(config) }, millisecond);
