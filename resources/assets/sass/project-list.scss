@@ -4,7 +4,7 @@
     .project-head {
         display: flex;
         align-items: flex-start;
-        margin: 32px 32px 18px;
+        margin: 32px 32px 0;
         .project-titbox {
             flex: 1;
             margin-bottom: 16px;
@@ -139,7 +139,9 @@
     .project-column {
         display: flex;
         height: 100%;
+        padding-top: 18px;
         overflow-x: auto;
+        overflow-y: hidden;
         > ul {
             display: inline-flex;
             justify-content: space-between;
@@ -158,21 +160,40 @@
                     margin-right: 22px;
                 }
                 &.add-column {
-                    display: flex;
-                    flex-direction: row;
-                    align-items: center;
                     height: 36px;
-                    padding: 0 12px;
                     color: #888888;
                     cursor: pointer;
                     background-color: #F2F3F5;
                     border-radius: 4px;
-                    &:hover {
-                        color: #777777;
+                    .add-column-text {
+                        display: flex;
+                        flex-direction: row;
+                        align-items: center;
+                        line-height: 36px;
+                        padding: 0 12px;
+                        > i {
+                            font-size: 16px;
+                            padding-right: 8px;
+                        }
+                        &:hover {
+                            color: #777777;
+                        }
                     }
-                    > i {
-                        font-size: 16px;
-                        padding-right: 8px;
+                    .add-column-input {
+                        display: none;
+                        align-items: center;
+                        height: 36px;
+                        .ivu-input {
+                            height: 36px;
+                        }
+                    }
+                    &.show-input {
+                        .add-column-text {
+                            display: none;
+                        }
+                        .add-column-input {
+                            display: flex;
+                        }
                     }
                 }
                 .column-head {
@@ -278,18 +299,25 @@
                         }
                     }
                 }
-                > ul {
+                .column-task {
                     flex: 1;
-                    height: 0;
+                    display: flex;
+                    flex-direction: column;
                     overflow-x: hidden;
                     overflow-y: auto;
-                    > li {
+                    .task-list {
+                        flex: 1;
+                        height: 0;
+                        display: flex;
+                        flex-direction: column;
+                    }
+                    .task-item {
                         list-style: none;
                         margin: 0 10px 16px;
                         background-color: #ffffff;
                         border-radius: 12px;
                         padding: 12px;
-                        transition: all 0.3s;
+                        transition: box-shadow 0.3s;
                         position: relative;
                         &:hover {
                             box-shadow: 0 0 10px #e6ecfa;

@@ -13,7 +13,7 @@
                     <li>
                         <UserAvatar :userid="projectDetail.owner_userid" :size="36"/>
                     </li>
-                    <li class="project-icon" @click="addOpen(0)">
+                    <li class="project-icon" @click="addTaskOpen(0)">
                         <Icon type="md-add" />
                     </li>
                     <li class="project-icon">
@@ -53,8 +53,15 @@
             </div>
         </div>
         <div v-if="projectListPanel" class="project-column">
-            <ul>
-                <li v-for="column in projectDetail.project_column">
+            <Draggable
+                :list="projectDetail.project_column"
+                :animation="150"
+                :disabled="sortDisabled"
+                class="column-list"
+                tag="ul"
+                draggable=".column-item"
+                @sort="sortUpdate(true)">
+                <li v-for="column in projectDetail.project_column" class="column-item">
                     <div
                         :class="['column-head', column.color ? 'custom-color' : '']"
                         :style="column.color ? {backgroundColor: column.color}:null">
@@ -77,20 +84,30 @@
                                     </ul>
                                 </div>
                             </Poptip>
-                            <Icon type="md-add" @click="addTop(column)" />
+                            <Icon type="md-add" @click="addTopShow(column)" />
                         </div>
                     </div>
-                    <ul class="overlay-y" :ref="'column_' + column.id">
-                        <li v-if="column.addTop===true" class="task-add">
+                    <div :ref="'column_' + column.id" class="column-task overlay-y">
+                        <div v-if="column.addTopShow===true" class="task-item">
                             <TaskAddSimple
                                 :column-id="column.id"
                                 :project-id="projectDetail.id"
                                 :add-top="true"
-                                @on-close="column.addTop=false"
-                                @on-priority="addOpen"
+                                @on-close="column.addTopShow=false"
+                                @on-priority="addTaskOpen"
+                                @on-success="addTaskSuccess"
                                 auto-active/>
-                        </li>
-                        <li v-for="item in panelTask(column.project_task)">
+                        </div>
+                        <Draggable
+                            :list="column.project_task"
+                            :animation="150"
+                            :disabled="sortDisabled"
+                            class="task-list"
+                            draggable=".task-draggable"
+                            group="task"
+                            @sort="sortUpdate"
+                            @remove="sortUpdate">
+                            <div v-for="item in panelTask(column.project_task)" class="task-item task-draggable">
                             <div :class="['task-head', item.desc ? 'has-desc' : '']">
                                 <div class="task-title"><pre>{{item.name}}</pre></div>
                                 <Icon type="ios-more" />
@@ -120,17 +137,33 @@
                                 </Tooltip>
                             </div>
                             <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
-                        </li>
-                        <li class="task-add">
-                            <TaskAddSimple
-                                :column-id="column.id"
-                                :project-id="projectDetail.id"
-                                @on-priority="addOpen"/>
-                        </li>
-                    </ul>
+                        </div>
+                            <div class="task-item">
+                                <TaskAddSimple
+                                    :column-id="column.id"
+                                    :project-id="projectDetail.id"
+                                    @on-priority="addTaskOpen"
+                                    @on-success="addTaskSuccess"/>
+                            </div>
+                        </Draggable>
+                    </div>
                 </li>
-                <li class="add-column" @click="addColumn"><Icon type="md-add" />{{$L('添加列表')}}</li>
-            </ul>
+                <li :class="['add-column', addColumnShow ? 'show-input' : '']">
+                    <div class="add-column-text" @click="addColumnOpen">
+                        <Icon type="md-add" />{{$L('添加列表')}}
+                    </div>
+                    <div class="add-column-input">
+                        <Input
+                            ref="addColumnName"
+                            v-model="addColumnName"
+                            @on-blur="addColumnShow=false"
+                            @on-clear="addColumnShow=false"
+                            @on-enter="addColumnSubmit"
+                            :placeholder="$L('列表名称，回车创建')"
+                            clearable/>
+                    </div>
+                </li>
+            </Draggable>
         </div>
         <div v-else class="project-table">
             <div class="project-table-head">
@@ -188,7 +221,7 @@
                         <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
                     </Row>
                 </div>
-                <div @click="addOpen(0)">
+                <div @click="addTaskOpen(0)">
                     <Row class="project-row">
                         <Col span="12" class="row-add">
                             <Icon type="ios-add" /> {{$L('添加任务')}}
@@ -370,6 +403,7 @@
 </template>
 
 <script>
+import Draggable from 'vuedraggable'
 import TaskPriority from "./TaskPriority";
 import TaskAdd from "./TaskAdd";
 import {mapState} from "vuex";
@@ -377,7 +411,7 @@ import UserInput from "../../../components/UserInput";
 import TaskAddSimple from "./TaskAddSimple";
 export default {
     name: "ProjectList",
-    components: {TaskAddSimple, UserInput, TaskAdd, TaskPriority},
+    components: {Draggable, TaskAddSimple, UserInput, TaskAdd, TaskPriority},
     data() {
         return {
             nowTime: Math.round(new Date().getTime() / 1000),
@@ -396,6 +430,12 @@ export default {
                 p_color: '',
             },
             taskLoad: 0,
+
+            addColumnShow: false,
+            addColumnName: '',
+
+            sortData: [],
+            sortDisabled: false,
 
             settingShow: false,
             settingData: {},
@@ -538,8 +578,94 @@ export default {
         },
     },
 
+    watch: {
+        projectDetail() {
+            this.sortData = this.getSort();
+        }
+    },
+
     methods: {
-        addOpen(column_id) {
+        getSort() {
+            const sortData = [];
+            this.projectDetail.project_column.forEach((column) => {
+                sortData.push({
+                    id: column.id,
+                    task: column.project_task.map(({id}) => id)
+                });
+            });
+            return sortData;
+        },
+
+        sortUpdate(only_column) {
+            const oldSort = this.sortData;
+            const newSort = this.getSort();
+            if (JSON.stringify(oldSort) === JSON.stringify(newSort)) {
+                return;
+            }
+            this.sortData = newSort;
+            //
+            this.sortDisabled = true;
+            $A.apiAjax({
+                url: 'project/sort',
+                data: {
+                    project_id: this.projectDetail.id,
+                    sort: this.sortData,
+                    only_column: only_column === true ? 1 : 0
+                },
+                complete: () => {
+                    this.sortDisabled = false;
+                },
+                error: () => {
+                    $A.modalAlert('网络繁忙，请稍后再试！');
+                    this.$store.commit('getProjectDetail', this.projectDetail.id);
+                },
+                success: ({ret, data, msg}) => {
+                    if (ret === 1) {
+                        $A.messageSuccess(msg);
+                    } else {
+                        $A.modalError(msg);
+                        this.$store.commit('getProjectDetail', this.projectDetail.id);
+                    }
+                }
+            });
+        },
+
+        onAddTask() {
+            this.taskLoad++;
+            $A.apiAjax({
+                url: 'project/task/add',
+                data: this.addData,
+                method: 'post',
+                complete: () => {
+                    this.taskLoad--;
+                },
+                success: ({ret, data, msg}) => {
+                    if (ret === 1) {
+                        $A.messageSuccess(msg);
+                        this.addTaskSuccess(data)
+                        this.addShow = false;
+                        this.addData = {
+                            owner: 0,
+                            column_id: 0,
+                            times: [],
+                            subtasks: [],
+                            p_level: 0,
+                            p_name: '',
+                            p_color: '',
+                        };
+                    } else {
+                        $A.modalError(msg);
+                    }
+                }
+            });
+        },
+
+        addTopShow(column) {
+            this.$set(column, 'addTopShow', true);
+            this.$refs['column_' + column.id][0].scrollTop = 0;
+        },
+
+        addTaskOpen(column_id) {
             if ($A.isJson(column_id)) {
                 this.addData = Object.assign(this.addData, column_id);
             } else {
@@ -550,40 +676,48 @@ export default {
             this.addShow = true;
         },
 
-        addTop(column) {
-            this.$set(column, 'addTop', true);
-            this.$refs['column_' + column.id][0].scrollTop = 0;
+        addTaskSuccess(data) {
+            this.projectDetail.project_column.some((item) => {
+                if (item.id === data.column_id) {
+                    if (data.top) {
+                        item.project_task.unshift(data);
+                    } else {
+                        item.project_task.push(data);
+                    }
+                }
+            });
         },
 
-        addColumn() {
-            $A.modalInput({
-                title: "添加列表",
-                placeholder: "输入列表名称",
-                onOk: (value, callback) => {
-                    if (!value) return true;
-                    $A.apiAjax({
-                        url: 'project/column/add',
-                        data: {
-                            project_id: this.projectDetail.id,
-                            name: value,
-                        },
-                        complete: () => {
-                            callback();
-                        },
-                        error: () => {
-                            $A.modalAlert('网络繁忙，请稍后再试！');
-                        },
-                        success: ({ret, data, msg}) => {
-                            if (ret === 1) {
-                                $A.messageSuccess(msg);
-                                this.$store.commit('getProjectDetail', this.projectDetail.id);
-                            } else {
-                                $A.modalError(msg, 301);
-                            }
-                        }
-                    });
-                }
+        addColumnOpen() {
+            this.addColumnShow = true;
+            this.$nextTick(() => {
+                this.$refs.addColumnName.focus();
             })
+        },
+
+        addColumnSubmit() {
+            let name = this.addColumnName.trim();
+            if (name === '') {
+                return;
+            }
+            $A.apiAjax({
+                url: 'project/column/add',
+                data: {
+                    project_id: this.projectDetail.id,
+                    name: name,
+                },
+                error: () => {
+                    $A.modalAlert('网络繁忙，请稍后再试！');
+                },
+                success: ({ret, data, msg}) => {
+                    if (ret === 1) {
+                        $A.messageSuccess(msg);
+                        this.projectDetail.project_column.push(data)
+                    } else {
+                        $A.modalError(msg, 301);
+                    }
+                }
+            });
         },
 
         modifyColumn(column) {
@@ -650,38 +784,8 @@ export default {
                 },
                 success: ({ret, data, msg}) => {
                     if (ret !== 1) {
-                        this.$set(column, 'name', bakName);
-                        this.$set(column, 'color', bakColor);
-                    }
-                }
-            });
-        },
-
-        onAddTask() {
-            this.taskLoad++;
-            $A.apiAjax({
-                url: 'project/task/add',
-                data: this.addData,
-                method: 'post',
-                complete: () => {
-                    this.taskLoad--;
-                },
-                success: ({ret, data, msg}) => {
-                    if (ret === 1) {
-                        $A.messageSuccess(msg);
-                        this.$store.commit('getProjectDetail', this.addData.project_id);
-                        this.addShow = false;
-                        this.addData = {
-                            owner: 0,
-                            column_id: 0,
-                            times: [],
-                            subtasks: [],
-                            p_level: 0,
-                            p_name: '',
-                            p_color: '',
-                        };
-                    } else {
-                        $A.modalError(msg);
+                        this.$set(column, 'name', data.name);
+                        this.$set(column, 'color', data.color);
                     }
                 }
             });

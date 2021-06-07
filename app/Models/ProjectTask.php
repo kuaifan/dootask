@@ -298,13 +298,15 @@ class ProjectTask extends AbstractModel
                     $subtask['p_level'] = $task->p_level;
                     $subtask['p_name'] = $task->p_name;
                     $subtask['p_color'] = $task->p_color;
-                    $res = self::addTask($subtask);
-                    if (Base::isError($res)) {
-                        return $res;
+                    $result = self::addTask($subtask);
+                    if (Base::isError($result)) {
+                        return $result;
                     }
                 }
             }
-            return Base::retSuccess('添加成功');
+            return Base::retSuccess('添加成功', [
+                'id' => $task->id
+            ]);
         });
     }
 }

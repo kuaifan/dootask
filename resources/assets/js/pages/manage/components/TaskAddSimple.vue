@@ -161,7 +161,8 @@ export default {
                 success: ({ret, data, msg}) => {
                     if (ret === 1) {
                         $A.messageSuccess(msg);
-                        this.$store.commit('getProjectDetail', this.projectId);
+                        data.top = this.addTop ? 1 : 0;
+                        this.$emit("on-success", data)
                         this.active = false;
                     } else {
                         $A.modalError(msg);

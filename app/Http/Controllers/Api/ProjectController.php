@@ -209,10 +209,70 @@ class ProjectController extends AbstractController
     }
 
     /**
+     * 排序任务
+     *
+     * @apiParam {Number} project_id        项目ID
+     * @apiParam {Object} sort              排序数据
+     * @apiParam {Number} [only_column]     仅更新列表
+     */
+    public function sort()
+    {
+        $user = User::authE();
+        if (Base::isError($user)) {
+            return $user;
+        } else {
+            $user = User::IDE($user['data']);
+        }
+        //
+        $project_id = intval(Request::input('project_id'));
+        $sort = Base::json2array(Request::input('sort'));
+        $only_column = intval(Request::input('only_column'));
+        //
+        $project = Project::select($this->projectSelect)
+            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->where('projects.id', $project_id)
+            ->where('project_users.userid', $user->userid)
+            ->first();
+        if (empty($project)) {
+            return Base::retError('项目不存在或不在成员列表内');
+        }
+        //
+        if ($only_column) {
+            // 排序列表
+            $index = 0;
+            foreach ($sort as $item) {
+                if (!is_array($item)) continue;
+                if (!intval($item['id'])) continue;
+                if (!is_array($item['task'])) continue;
+                ProjectColumn::whereId($item['id'])->whereProjectId($project->id)->update([
+                    'sort' => $index
+                ]);
+                $index++;
+            }
+        } else {
+            // 排序任务
+            foreach ($sort as $item) {
+                if (!is_array($item)) continue;
+                if (!intval($item['id'])) continue;
+                if (!is_array($item['task'])) continue;
+                $index = 0;
+                foreach ($item['task'] as $task_id) {
+                    ProjectTask::whereId($task_id)->whereProjectId($project->id)->update([
+                        'column_id' => $item['id'],
+                        'sort' => $index
+                    ]);
+                    $index++;
+                }
+            }
+        }
+        return Base::retSuccess('调整成功');
+    }
+
+    /**
      * 修改项目成员
      *
      * @apiParam {Number} project_id        项目ID
-     * @apiParam {Number} userid            成员ID或成员ID组
+     * @apiParam {Number} userid            成员ID 或 成员ID组
      */
     public function user()
     {
@@ -505,7 +565,10 @@ class ProjectController extends AbstractController
             ]);
             $column->sort = intval(ProjectColumn::whereProjectId($project->id)->orderByDesc('sort')->value('sort')) + 1;
             $column->save();
-            return Base::retSuccess('添加成功', $column);
+            //
+            $data = $column->toArray();
+            $data['project_task'] = [];
+            return Base::retSuccess('添加成功', $data);
         }
     }
 
@@ -608,7 +671,7 @@ class ProjectController extends AbstractController
             return Base::retError('任务列表不存在或已被删除');
         }
         //
-        return ProjectTask::addTask([
+        $result = ProjectTask::addTask([
             'parent_id' => 0,
             'project_id' => $project->id,
             'column_id' => $column->id,
@@ -622,5 +685,9 @@ class ProjectController extends AbstractController
             'p_color' => $p_color,
             'top' => $top,
         ]);
+        if (Base::isSuccess($result)) {
+            $result['data'] = ProjectTask::with(['taskUser', 'taskTag'])->whereId($result['data']['id'])->first();
+        }
+        return $result;
     }
 }

@@ -184,6 +184,7 @@
                 return;
             }
             if (typeof config === "string") config = {title:config};
+            let inputId = "modalInput_" + $A.randomString(6);
             $A.Modal.confirm({
                 render: (h) => {
                     return h('div', [
@@ -197,7 +198,8 @@
                         h('Input', {
                             props: {
                                 value: config.value,
-                                placeholder: $A.L(config.placeholder)
+                                placeholder: $A.L(config.placeholder),
+                                elementId: inputId,
                             },
                             on: {
                                 input: (val) => {
@@ -219,6 +221,9 @@
                         $A.Modal.remove();
                     }
                 },
+            });
+            setTimeout(() => {
+                document.getElementById(inputId) && document.getElementById(inputId).focus();
             });
         },
 
