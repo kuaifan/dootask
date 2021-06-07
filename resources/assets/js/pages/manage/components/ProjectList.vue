@@ -29,7 +29,7 @@
                         <Badge :count="msgUnread"></Badge>
                     </li>
                     <li class="project-icon">
-                        <Dropdown @on-click="projectDropdown" transfer>
+                        <Dropdown @on-click="projectDropdown" trigger="click" transfer>
                             <Icon type="ios-more" />
                             <DropdownMenu v-if="projectDetail.owner_userid === userId" slot="list">
                                 <DropdownItem name="setting">{{$L('项目设置')}}</DropdownItem>

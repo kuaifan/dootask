@@ -12,7 +12,7 @@
             </div>
         </div>
         <div class="avatar-wrapper">
-            <div :class="['avatar-box', user.online ? 'online' : '']">
+            <div :class="['avatar-box', userId === userid || user.online ? 'online' : '']">
                 <WAvatar v-if="showImg" :src="user.userimg" :size="size"/>
                 <WAvatar v-else :size="size" class="avatar-text">{{nickname}}</WAvatar>
             </div>

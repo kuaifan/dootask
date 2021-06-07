@@ -3,6 +3,8 @@
 namespace App\Models;
 
 
+use Request;
+
 /**
  * Class WebSocket
  *
@@ -27,4 +29,23 @@ namespace App\Models;
 class WebSocket extends AbstractModel
 {
 
+    /**
+     * 获取我自己当前以外的所有连接fd
+     * @return array
+     */
+    public static function getMyFd()
+    {
+        $fd = 0;
+        $userid = 0;
+        try {
+            $fd = Request::header('fd');
+            $userid = User::token2userid();
+        } catch (\Throwable $e) {
+
+        }
+        if ($userid && $fd) {
+            return self::whereUserid($userid)->where('fd', '!=', $fd)->pluck('fd')->toArray();
+        }
+        return [];
+    }
 }

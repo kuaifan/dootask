@@ -445,6 +445,8 @@
     }
     .project-table {
         height: 100%;
+        padding-top: 18px;
+        overflow-x: hidden;
         overflow-y: auto;
         .project-row {
             background-color: #ffffff;

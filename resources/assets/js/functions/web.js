@@ -43,6 +43,7 @@
             params.header['Content-Type'] = 'application/json';
             params.header['language'] = $A.getLanguage();
             params.header['token'] = $A.store.state.userToken;
+            params.header['fd'] = $A.store.state.method.getStorageString("userWsFd");
             //
             if (params.spinner === true) {
                 let beforeCall = params.before;

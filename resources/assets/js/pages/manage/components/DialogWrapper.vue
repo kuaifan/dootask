@@ -92,6 +92,10 @@ export default {
                 this.$nextTick(this.goBottom);
             }
             this.msgLength = list.length;
+        },
+
+        dialogId() {
+            this.msgNew = 0;
         }
     },
 

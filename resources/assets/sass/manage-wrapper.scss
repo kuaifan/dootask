@@ -1,0 +1,184 @@
+.manage-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    .manage-box-menu {
+        position: relative;
+        flex-grow: 0;
+        flex-shrink: 0;
+        width: 255px;
+        height: 100%;
+        background: #F4F5F7;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transition: all 0.2s;
+        .manage-box-dropdown {
+            flex-shrink: 0;
+            width: 86%;
+            .ivu-select-dropdown {
+                padding: 7px 0;
+                .ivu-dropdown-item {
+                    padding: 9px 16px;
+                }
+                .ivu-dropdown-item-divided {
+                    margin-top: 7px;
+                    &:before {
+                        top: -9px;
+                    }
+                }
+            }
+            .manage-box-title {
+                display: flex;
+                align-items: center;
+                flex-shrink: 0;
+                padding: 6px 10px;
+                margin-top: 27px;
+                border-radius: 8px;
+                background-color: #ffffff;
+                cursor: pointer;
+                .manage-box-avatar {
+                    width: 36px;
+                    height: 36px;
+                }
+                > span {
+                    flex: 1;
+                    padding-left: 12px;
+                    font-size: 16px;
+                    font-weight: 600;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
+                .manage-box-arrow {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    padding-left: 16px;
+                    padding-right: 2px;
+                    > i {
+                        font-size: 12px;
+                        margin: -1px;
+                    }
+                }
+            }
+        }
+        > ul {
+            flex: 1;
+            width: 100%;
+            margin-top: 16px;
+            overflow: auto;
+            > li {
+                display: flex;
+                align-items: center;
+                height: 38px;
+                color: #6C7D8C;
+                cursor: pointer;
+                position: relative;
+                width: 80%;
+                max-width: 100%;
+                margin: 8px auto;
+                padding: 0 4%;
+                border-radius: 4px;
+                > i {
+                    opacity: 0.5;
+                    font-size: 22px;
+                    margin-right: 10px;
+                    margin-top: -1px;
+                }
+                .menu-title {
+                    flex: 1;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+                .menu-badge {
+                    margin-left: 12px;
+                    transform: scale(0.9);
+                }
+                &.menu-project {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    height: auto;
+                    padding: 14px 0 0;
+                    > ul {
+                        width: 100%;
+                        > li {
+                            position: relative;
+                            list-style: none;
+                            padding: 0 8px 0 30px;
+                            height: 38px;
+                            line-height: 38px;
+                            margin: 4px auto;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                            border-radius: 4px;
+                            color: #333333;
+                            &:before {
+                                content: "";
+                                position: absolute;
+                                top: 50%;
+                                left: 8px;
+                                transform: translateY(-50%);
+                                width: 12px;
+                                height: 12px;
+                                background: url("data:image/svg+xml;base64,PHN2ZyB0PSIxNjIyMzkwODExNTQxIiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9IjI0OTk3IiB3aWR0aD0iNDgiIGhlaWdodD0iNDgiPjxwYXRoIGQ9Ik0zNjYuMTgyNCAxMDguMjM2OEw4MTIuMDMyIDQyOC4wMzJhMTAyLjQgMTAyLjQgMCAwIDEgMCAxNjYuNTAyNEwzNjYuMTgyNCA5MTQuMzI5NmExMDIuNCAxMDIuNCAwIDAgMS0xNjIuMDk5Mi04My4yNTEyVjE5MS40ODhhMTAyLjQgMTAyLjQgMCAwIDEgMTYyLjA5OTItODMuMjUxMnoiIHAtaWQ9IjI0OTk4IiBmaWxsPSIjOTk5OTk5Ij48L3BhdGg+PC9zdmc+") no-repeat center center;
+                                background-size: contain;
+                            }
+                            &.active {
+                                background-color: #ffffff;
+                            }
+                        }
+                    }
+                    .common-loading {
+                        margin: 6px;
+                        width: 22px;
+                        height: 22px;
+                    }
+                }
+                &.active {
+                    background-color: #ffffff;
+                }
+            }
+        }
+        .manage-box-new {
+            width: 80%;
+            height: 38px;
+            margin-top: 16px;
+            margin-bottom: 20px;
+        }
+    }
+    .manage-box-main {
+        flex: 1;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        background: white;
+        .manage-box-body {
+            width: 100%;
+            flex: 1;
+            position: relative;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            .manage-box-body-content {
+                flex: 1;
+                position: relative;
+                .manage-box-view {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    overflow: auto;
+                }
+            }
+        }
+    }
+}

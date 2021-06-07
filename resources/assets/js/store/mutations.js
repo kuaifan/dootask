@@ -450,6 +450,7 @@ export default {
             const {type, msgId} = msgDetail;
             switch (type) {
                 case "open":
+                    state.method.setStorage("userWsFd", msgDetail.data.fd)
                     break
 
                 case "receipt":

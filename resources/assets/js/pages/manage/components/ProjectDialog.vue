@@ -27,6 +27,7 @@
         display: flex;
         flex-direction: column;
         background-color: #ffffff;
+        border-left: 1px solid #f4f5f5;
         z-index: 1;
         .project-dialog-wrapper {
             flex: 1;

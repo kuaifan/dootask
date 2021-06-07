@@ -124,10 +124,6 @@ export default {
                 {
                     path: 'priority',
                     name: '任务等级'
-                },
-                {
-                    path: 'signout',
-                    name: '退出登录'
                 }
             ]
         }
@@ -157,16 +153,6 @@ export default {
     },
     methods: {
         toggleRoute(path) {
-            if (path === 'signout') {
-                $A.modalConfirm({
-                    title: '退出登录',
-                    content: '你确定要登出系统？',
-                    onOk: () => {
-                        $A.logout()
-                    }
-                });
-                return;
-            }
             this.goForward({path: '/manage/setting/' + path});
         },
 
