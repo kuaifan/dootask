@@ -155,7 +155,11 @@ export default {
         }
     },
     mounted() {
-        this.$store.commit('getTaskPriority')
+        this.$store.commit('getTaskPriority', () => {
+            if (!this.value.p_name && this.taskPriority.length > 0) {
+                this.choosePriority(this.taskPriority[0])
+            }
+        })
     },
     computed: {
         ...mapState(['userId', 'projectDetail', 'taskPriority']),
@@ -246,7 +250,7 @@ export default {
         choosePriority(item) {
             let start = new Date();
             let end = new Date(new Date().setDate(start.getDate() + $A.runNum(item.days)));
-            this.$set(this.value, 'times', [start, end])
+            this.$set(this.value, 'times', $A.date2string([start, end]))
             this.$set(this.value, 'p_level', item.priority)
             this.$set(this.value, 'p_name', item.name)
             this.$set(this.value, 'p_color', item.color)

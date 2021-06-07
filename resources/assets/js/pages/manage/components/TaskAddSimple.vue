@@ -174,7 +174,7 @@ export default {
         choosePriority(item) {
             let start = new Date();
             let end = new Date(new Date().setDate(start.getDate() + $A.runNum(item.days)));
-            this.$set(this.addData, 'times', [start, end])
+            this.$set(this.addData, 'times', $A.date2string([start, end]))
             this.$set(this.addData, 'p_level', item.priority)
             this.$set(this.addData, 'p_name', item.name)
             this.$set(this.addData, 'p_color', item.color)
