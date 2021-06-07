@@ -17,7 +17,7 @@
         <div class="priority">
             <ul>
                 <li v-for="(item, key) in taskPriority" :key="key">
-                    <Tooltip :content="item.name + ' (' + item.days + $L('天') + ')'" transfer>
+                    <Tooltip v-if="active" :content="item.name + ' (' + item.days + $L('天') + ')'" transfer>
                         <i
                             class="iconfont"
                             :style="{color:item.color}"

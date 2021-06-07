@@ -49,41 +49,43 @@ const method = {
     },
 
     storage(key, value) {
-        let keyName = 'state';
+        if (!key) {
+            return;
+        }
+        let keyName = '__state__';
+        if (key.substring(0, 5) === 'cache') {
+            keyName = '__state:Cache__';
+        }
         if (typeof value === 'undefined') {
-            return this.loadFromlLocal('__::', key, '', '__' + keyName + '__');
+            return this.loadFromlLocal(key, '', keyName);
         } else {
-            this.savaToLocal('__::', key, value, '__' + keyName + '__');
+            this.savaToLocal(key, value, keyName);
         }
     },
 
-    savaToLocal(id, key, value, keyName) {
+    savaToLocal(key, value, keyName) {
         try {
             if (typeof keyName === 'undefined') keyName = '__seller__';
             let seller = window.localStorage[keyName];
             if (!seller) {
                 seller = {};
-                seller[id] = {};
             } else {
                 seller = JSON.parse(seller);
-                if (!seller[id]) {
-                    seller[id] = {};
-                }
             }
-            seller[id][key] = value;
+            seller[key] = value;
             window.localStorage[keyName] = JSON.stringify(seller);
         } catch (e) {
         }
     },
 
-    loadFromlLocal(id, key, def, keyName) {
+    loadFromlLocal(key, def, keyName) {
         try {
             if (typeof keyName === 'undefined') keyName = '__seller__';
             let seller = window.localStorage[keyName];
             if (!seller) {
                 return def;
             }
-            seller = JSON.parse(seller)[id];
+            seller = JSON.parse(seller);
             if (!seller || typeof seller[key] === 'undefined') {
                 return def;
             }
@@ -195,8 +197,8 @@ state.dialogMsgUnread = 0;
 state.taskPriority = [];
 
 // 其他
-state.cacheProject = {};
-state.cacheUserBasic = {};
-state.cacheDialog = {};
+state.cacheProject = state.method.getStorageJson("cacheProject");
+state.cacheUserBasic = state.method.getStorageJson("cacheUserBasic");
+state.cacheDialog = state.method.getStorageJson("cacheDialog");
 
 export default state

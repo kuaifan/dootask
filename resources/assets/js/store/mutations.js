@@ -139,6 +139,7 @@ export default {
                     if (state.projectDetail.id === project_id) {
                         state.projectDetail = data;
                     }
+                    state.method.setStorage("cacheProject", state.cacheProject);
                 } else {
                     $A.modalError(msg);
                 }
@@ -172,20 +173,20 @@ export default {
             return;
         }
         //
-        if (state.cacheUserBasic["::loading"] === true) {
+        if (state.cacheUserBasic["::load"] === true) {
             setTimeout(() => {
                 this.commit('getUserBasic', params);
             }, 20);
             return;
         }
-        state.cacheUserBasic["::loading"] = true;
+        state.cacheUserBasic["::load"] = true;
         $A.apiAjax({
             url: 'users/basic',
             data: {
                 userid: array
             },
             complete: () => {
-                state.cacheUserBasic["::loading"] = false;
+                state.cacheUserBasic["::load"] = false;
                 typeof complete === "function" && complete()
             },
             success: ({ret, data, msg}) => {
@@ -195,6 +196,7 @@ export default {
                             time,
                             data: item
                         };
+                        state.method.setStorage("cacheUserBasic", state.cacheUserBasic);
                         this.commit('setUserOnlineStatus', item);
                         typeof success === "function" && success(item, true)
                     });
@@ -329,6 +331,7 @@ export default {
                         dialog: data.dialog,
                         data: data.data.reverse(),
                     };
+                    state.method.setStorage("cacheDialog", state.cacheDialog);
                     if (state.dialogId === dialog_id) {
                         state.dialogDetail = state.cacheDialog[dialog_id].dialog;
                         state.cacheDialog[dialog_id].data.forEach((item) => {

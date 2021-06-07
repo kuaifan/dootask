@@ -156,9 +156,9 @@
                         <Input
                             ref="addColumnName"
                             v-model="addColumnName"
-                            @on-blur="addColumnShow=false"
-                            @on-clear="addColumnShow=false"
+                            @on-blur="addColumnBlur"
                             @on-enter="addColumnSubmit"
+                            @on-clear="addColumnShow=false"
                             :placeholder="$L('列表名称，回车创建')"
                             clearable/>
                     </div>
@@ -695,6 +695,12 @@ export default {
             })
         },
 
+        addColumnBlur() {
+            if (this.addColumnName === '') {
+                this.addColumnShow = false
+            }
+        },
+
         addColumnSubmit() {
             let name = this.addColumnName.trim();
             if (name === '') {
@@ -712,6 +718,7 @@ export default {
                 success: ({ret, data, msg}) => {
                     if (ret === 1) {
                         $A.messageSuccess(msg);
+                        this.addColumnName = '';
                         this.projectDetail.project_column.push(data)
                     } else {
                         $A.modalError(msg, 301);
