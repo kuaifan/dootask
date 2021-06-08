@@ -110,7 +110,7 @@ export default {
                     text: this.msgText,
                 },
             });
-            this.goBottom();
+            this.autoBottom = true;
             //
             $A.apiAjax({
                 url: 'dialog/msg/sendtext',
@@ -217,12 +217,12 @@ export default {
 
         goBottom() {
             if (this.autoBottom) {
+                this.msgNew = 0;
                 this.$refs.scroller.autoToBottom();
             }
         },
 
         goNewBottom() {
-            this.msgNew = 0;
             this.autoBottom = true;
             this.goBottom();
         },

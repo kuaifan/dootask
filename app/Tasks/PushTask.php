@@ -21,7 +21,7 @@ class PushTask extends AbstractTask
 
     /**
      * PushTask constructor.
-     * @param array $params
+     * @param array|string $params
      */
     public function __construct($params = [])
     {
@@ -31,17 +31,23 @@ class PushTask extends AbstractTask
     public function start()
     {
         if (is_string($this->params)) {
-            $key = $this->params;
-            $params = Cache::pull($key);
-            if (is_array($params) && $params['fd']) {
-                $this->params = [$params];
+            // 推送缓存
+            if (Base::leftExists($this->params, "PUSH::")) {
+                $params = Cache::pull($this->params);
+                if (is_array($params) && $params['fd']) {
+                    $this->params = [$params];
+                }
+            }
+            // 根据会员ID推送离线时收到的消息
+            elseif (Base::leftExists($this->params, "RETRY::")) {
+                self::sendTmpMsgForUserid(intval(Base::leftDelete($this->params, "RETRY::")));
             }
         }
         is_array($this->params) && self::push($this->params);
     }
 
     /**
-     * 记录发送失败的消息，等上线后重新发送
+     * 记录离线消息，等上线后重新发送
      * @param array $userFail
      * @param array $msg
      */
@@ -64,11 +70,14 @@ class PushTask extends AbstractTask
     }
 
     /**
-     * 根据会员ID重试发送失败的消息
+     * 根据会员ID推送离线时收到的消息
      * @param $userid
      */
-    public static function resendTmpMsgForUserid($userid)
+    private static function sendTmpMsgForUserid($userid)
     {
+        if (empty($userid)) {
+            return;
+        }
         WebSocketTmpMsg::whereCreateId($userid)
             ->whereSend(0)
             ->where('created_at', '>', Carbon::now()->subMinute())  // 1分钟内添加的数据
@@ -89,9 +98,10 @@ class PushTask extends AbstractTask
      * @param array $lists 消息列表
      * @param string|int $key 延迟推送key依据，留空立即推送（延迟推送时发给同一人同一种消息类型只发送最新的一条）
      * @param int $delay 延迟推送时间，默认：1秒（$key填写时有效）
-     * @param bool $addFail 失败后是否保存到临时表，等上线后继续发送
+     * @param bool $retryOffline 如果会员不在线，等上线后继续发送
+     * @param bool $andMyself 同时发送给自己其他设备
      */
-    public static function push(array $lists, $key = '', $delay = 1, $addFail = false)
+    public static function push(array $lists, $key = '', $delay = 1, $retryOffline = true, $andMyself = false)
     {
         if (!is_array($lists) || empty($lists)) {
             return;
@@ -116,8 +126,8 @@ class PushTask extends AbstractTask
                 continue;
             }
             // 发送对象
-            $userFail = [];
-            $array = [];
+            $offline_user = [];
+            $array = $andMyself ? WebSocket::getMyFd() : [];
             if ($fd) {
                 if (is_array($fd)) {
                     $array = array_merge($array, $fd);
@@ -134,7 +144,7 @@ class PushTask extends AbstractTask
                     if ($row->isNotEmpty()) {
                         $array = array_merge($array, $row->toArray());
                     } else {
-                        $userFail[] = $uid;
+                        $offline_user[] = $uid;
                     }
                 }
             }
@@ -145,7 +155,7 @@ class PushTask extends AbstractTask
                         $swoole->push($fid, Base::array2json($msg));
                         $tmp_msg_id > 0 && WebSocketTmpMsg::whereId($tmp_msg_id)->update(['send' => 1]);
                     } catch (\Exception $e) {
-                        $userFail[] = WebSocket::whereFd($fid)->value('userid');
+
                     }
                 } else {
                     $key =  "PUSH::" . $fid . ":" . $type . ":" . $key;
@@ -158,20 +168,29 @@ class PushTask extends AbstractTask
                     Task::deliver($task);
                 }
             }
-            // 记录发送失败的
-            if ($addFail) {
-                $userFail = array_values(array_unique($userFail));
-                $tmp_msg_id == 0 && self::addTmpMsg($userFail, $msg);
+            // 记录不在线的
+            if ($retryOffline && $tmp_msg_id == 0) {
+                $offline_user = array_values(array_unique($offline_user));
+                self::addTmpMsg($offline_user, $msg);
             }
         }
     }
 
     /**
-     * 推送消息（出错后保存临时表，上线后尝试重新发送）
+     * 推送消息（仅推送当前在线的）
      * @param array $lists 消息列表
      */
-    public static function pushR(array $lists)
+    public static function pushO(array $lists, $key = '', $delay = 1)
     {
-        self::push($lists, '', 1, true);
+        self::push($lists, $key, $delay, false);
+    }
+
+    /**
+     * 推送消息（同时发送给自己其他设备）
+     * @param array $lists 消息列表
+     */
+    public static function pushM(array $lists, $key = '', $delay = 1)
+    {
+        self::push($lists, $key, $delay, false, true);
     }
 }

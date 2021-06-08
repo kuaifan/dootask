@@ -86,8 +86,8 @@ class WebSocketService implements WebSocketHandlerInterface
                     ]));
                     // 通知上线
                     Task::deliver(new LineTask($userid, true));
-                    // 重试发送失败的消息
-                    PushTask::resendTmpMsgForUserid($userid);
+                    // 推送离线时收到的消息
+                    Task::deliver(new PushTask("RETRY::" . $userid));
                 }
                 break;
 

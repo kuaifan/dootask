@@ -9,7 +9,7 @@ use App\Models\WebSocketDialogMsgRead;
 
 
 /**
- * 消息通知任务
+ * 推送回话消息
  * Class WebSocketDialogMsgTask
  * @package App\Tasks
  */
@@ -60,7 +60,7 @@ class WebSocketDialogMsgTask extends AbstractTask
         }
         // 开始推送消息
         if ($pushIds) {
-            PushTask::push([
+            PushTask::pushM([
                 'userid' => $pushIds,
                 'msg' => [
                     'type' => 'dialog',

@@ -114,7 +114,9 @@ export default {
             return;
         }
         if (state.method.isJson(state.cacheProject[project_id])) {
-            state.projectDetail = state.cacheProject[project_id];
+            setTimeout(() => {
+                state.projectDetail = state.cacheProject[project_id];
+            });
         }
         state.projectDetail.id = project_id;
         //
