@@ -1,13 +1,13 @@
 <template>
-    <Tooltip v-if="user"
+    <ETooltip v-if="user"
              class="common-avatar"
-             :delay="600"
-             :disabled="tooltipDisabled"
-             :transfer="transfer">
+             :open-delay="600"
+             :disabled="tooltipDisabled">
         <div slot="content" class="common-avatar-transfer">
+            <slot/>
             <p>{{$L('昵称')}}: {{user.nickname}}</p>
             <p>{{$L('职位/职称')}}: {{user.profession || '-'}}</p>
-            <div v-if="userId != userid" class="avatar-icons">
+            <div v-if="userId != userid && !hideIconMenu" class="avatar-icons">
                 <Icon type="ios-chatbubbles" @click="openDialog"/>
             </div>
         </div>
@@ -18,7 +18,7 @@
             </div>
             <div v-if="showName" class="avatar-name">{{user.nickname}}</div>
         </div>
-    </Tooltip>
+    </ETooltip>
 </template>
 
 <script>
@@ -40,11 +40,11 @@
                 type: Boolean,
                 default: false
             },
-            transfer: {
-                type: Boolean,
-                default: true
-            },
             tooltipDisabled: {
+                type: Boolean,
+                default: false
+            },
+            hideIconMenu: {
                 type: Boolean,
                 default: false
             },
@@ -105,9 +105,8 @@
             },
 
             openDialog() {
-                this.$store.state.method.setStorage('messengerDialogId', 0)
-                this.$store.commit("openDialogUser", this.userid);
                 this.goForward({path: '/manage/messenger'});
+                this.$store.commit("openDialogUser", this.userid);
             }
         }
     };

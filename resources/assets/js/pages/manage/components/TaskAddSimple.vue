@@ -17,13 +17,13 @@
         <div class="priority">
             <ul>
                 <li v-for="(item, key) in taskPriority" :key="key">
-                    <Tooltip v-if="active" :content="item.name + ' (' + item.days + $L('天') + ')'" transfer>
+                    <ETooltip v-if="active" :content="item.name + ' (' + item.days + $L('天') + ')'">
                         <i
                             class="iconfont"
                             :style="{color:item.color}"
                             v-html="addData.p_name == item.name ? '&#xe61d;' : '&#xe61c;'"
                             @click="choosePriority(item)"></i>
-                    </Tooltip>
+                    </ETooltip>
                 </li>
             </ul>
             <Icon type="md-settings" @click="onPriority"/>

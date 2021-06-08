@@ -17,7 +17,7 @@
                             :class="{active: dialog.id == dialogId}"
                             @click="openDialog(dialog)">
                             <Icon v-if="dialog.type=='group'" class="icon-avatar" type="ios-people" />
-                            <div v-else-if="dialog.dialog_user" class="user-avatar"><UserAvatar :userid="dialog.dialog_user.userid" :size="46"/></div>
+                            <div v-else-if="dialog.dialog_user" class="user-avatar"><UserAvatar :userid="dialog.dialog_user.userid" :size="46" hide-icon-menu/></div>
                             <Icon v-else class="icon-avatar" type="md-person" />
                             <div class="dialog-box">
                                 <div class="dialog-title">

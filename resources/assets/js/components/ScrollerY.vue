@@ -144,12 +144,10 @@ export default {
             }
         },
 
-        scrollToBottom(animate) {
-            this.scrollTo(this.$refs.scrollerView.scrollHeight, animate);
-        },
-
         autoToBottom() {
-            this.autoBottom && this.$refs.bottom.scrollIntoView(false);
+            if (this.autoBottom && this.$refs.bottom) {
+                this.$refs.bottom.scrollIntoView(false);
+            }
         },
 
         scrollInfo() {

@@ -29,6 +29,9 @@ Vue.component('TagInput', TagInput)
 Vue.component('TableAction', TableAction);
 Vue.component('UserAvatar', UserAvatar);
 
+import { Tooltip } from 'element-ui';
+Vue.component('ETooltip', Tooltip);
+
 const originalPush = VueRouter.prototype.push
 VueRouter.prototype.push = function push(location) {
     return originalPush.call(this, location).catch(err => err)

@@ -43,17 +43,9 @@
                 > li {
                     list-style: none;
                     margin-left: 3px;
-                    .ivu-tooltip {
-                        display: flex;
-                        align-items: center;
-                        .ivu-tooltip-rel {
-                            height: 34px;
-                            line-height: 1;
-                            .iconfont {
-                                font-size: 34px;
-                                cursor: pointer;
-                            }
-                        }
+                    .iconfont {
+                        font-size: 34px;
+                        cursor: pointer;
                     }
                 }
             }
@@ -134,17 +126,9 @@
             > li {
                 list-style: none;
                 margin-right: 3px;
-                .ivu-tooltip {
-                    display: flex;
-                    align-items: center;
-                    .ivu-tooltip-rel {
-                        height: 22px;
-                        line-height: 1;
-                        .iconfont {
-                            font-size: 22px;
-                            cursor: pointer;
-                        }
-                    }
+                .iconfont {
+                    font-size: 22px;
+                    cursor: pointer;
                 }
             }
         }

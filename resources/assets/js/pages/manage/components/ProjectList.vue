@@ -11,18 +11,20 @@
             <div class="project-icobox">
                 <ul class="project-icons">
                     <li>
-                        <UserAvatar :userid="projectDetail.owner_userid" :size="36"/>
+                        <UserAvatar :userid="projectDetail.owner_userid" :size="36">
+                            <p>{{$L('项目负责人')}}</p>
+                        </UserAvatar>
                     </li>
                     <li class="project-icon" @click="addTaskOpen(0)">
                         <Icon type="md-add" />
                     </li>
-                    <li class="project-icon">
-                        <Tooltip theme="light" :always="searchText!=''" transfer>
+                    <li :class="['project-icon', searchText!='' ? 'active' : '']">
+                        <ETooltip :value="searchText!=''" :manual="searchText!=''" transfer>
                             <Icon type="ios-search" />
                             <div slot="content">
                                 <Input v-model="searchText" :placeholder="$L('名称、描述...')" clearable autofocus/>
                             </div>
-                        </Tooltip>
+                        </ETooltip>
                     </li>
                     <li :class="['project-icon', projectChatShow ? 'active' : '']" @click="toggleBoolean('projectChatShow')">
                         <Icon type="ios-chatbubbles" />
@@ -66,7 +68,7 @@
                         :class="['column-head', column.color ? 'custom-color' : '']"
                         :style="column.color ? {backgroundColor: column.color}:null">
                         <div class="column-head-title">
-                            <span><AutoTip>{{column.name}}</AutoTip></span>
+                            <span><AutoTip>{{column.name}}{{column.name}}{{column.name}}{{column.name}}{{column.name}}{{column.name}}</AutoTip></span>
                             <em>({{column.project_task.length}})</em>
                         </div>
                         <div class="column-head-icon">
@@ -127,14 +129,13 @@
                             </div>
                             <div class="task-progress">
                                 <Progress :percent="item.percent" :stroke-width="6" />
-                                <Tooltip
+                                <ETooltip
                                     v-if="item.end_at"
                                     :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
-                                    :delay="600"
-                                    :content="item.end_at"
-                                    transfer>
-                                    <Icon type="ios-time-outline"/>{{ expiresFormat(item.end_at) }}
-                                </Tooltip>
+                                    :open-delay="600"
+                                    :content="item.end_at">
+                                    <div><Icon type="ios-time-outline"/>{{ expiresFormat(item.end_at) }}</div>
+                                </ETooltip>
                             </div>
                             <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
                         </div>
@@ -209,14 +210,13 @@
                             </ul>
                         </Col>
                         <Col span="3">
-                            <Tooltip
+                            <ETooltip
                                 v-if="item.end_at"
                                 :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
-                                :delay="600"
-                                :content="item.end_at"
-                                transfer>
-                                {{item.end_at ? expiresFormat(item.end_at) : ''}}
-                            </Tooltip>
+                                :open-delay="600"
+                                :content="item.end_at">
+                                <div>{{item.end_at ? expiresFormat(item.end_at) : ''}}</div>
+                            </ETooltip>
                         </Col>
                         <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
                     </Row>
@@ -267,14 +267,13 @@
                             </ul>
                         </Col>
                         <Col span="3">
-                            <Tooltip
+                            <ETooltip
                                 v-if="item.end_at"
                                 :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
-                                :delay="600"
-                                :content="item.end_at"
-                                transfer>
-                                {{item.end_at ? expiresFormat(item.end_at) : ''}}
-                            </Tooltip>
+                                :open-delay="600"
+                                :content="item.end_at">
+                                <div>{{item.end_at ? expiresFormat(item.end_at) : ''}}</div>
+                            </ETooltip>
                         </Col>
                         <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
                     </Row>
@@ -314,14 +313,13 @@
                             </ul>
                         </Col>
                         <Col span="3">
-                            <Tooltip
+                            <ETooltip
                                 v-if="item.end_at"
                                 :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
-                                :delay="600"
-                                :content="item.end_at"
-                                transfer>
-                                {{item.end_at ? expiresFormat(item.end_at) : ''}}
-                            </Tooltip>
+                                :open-delay="600"
+                                :content="item.end_at">
+                                <div>{{item.end_at ? expiresFormat(item.end_at) : ''}}</div>
+                            </ETooltip>
                         </Col>
                         <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
                     </Row>

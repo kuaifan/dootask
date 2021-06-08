@@ -1,10 +1,14 @@
-@import "scrollbar";
-@import "iconfont";
-@import "loading";
 @import "main";
+@import "loading";
+@import "iconfont";
+@import "scrollbar";
+@import "element";
 
+@import "auto-tip";
+@import "common-avatar";
 @import "manage-wrapper";
 @import "dialog-wrapper";
 @import "messenger-wrapper";
 @import "project-list";
 @import "task-add";
+

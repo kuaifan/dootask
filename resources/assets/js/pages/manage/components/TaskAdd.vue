@@ -22,13 +22,13 @@
                 <Button :class="{advanced: advanced}" @click="advanced=!advanced">{{$L('高级选项')}}</Button>
                 <ul class="advanced-priority">
                     <li v-for="(item, key) in taskPriority" :key="key">
-                        <Tooltip :content="item.name + ' (' + item.days + $L('天') + ')'">
+                        <ETooltip :content="item.name + ' (' + item.days + $L('天') + ')'">
                             <i
                                 class="iconfont"
                                 :style="{color:item.color}"
                                 v-html="value.p_name == item.name ? '&#xe61d;' : '&#xe61c;'"
                                 @click="choosePriority(item)"></i>
-                        </Tooltip>
+                        </ETooltip>
                     </li>
                 </ul>
             </div>

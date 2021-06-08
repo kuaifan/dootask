@@ -34,6 +34,7 @@
     },
     "dependencies": {
         "echarts": "^5.1.1",
+        "element-ui": "^2.15.2",
         "tinymce": "^5.8.1",
         "view-design-hi": "^4.5.0-11",
         "vue-clipboard2": "^0.3.1",

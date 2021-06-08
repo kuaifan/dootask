@@ -281,8 +281,9 @@ export default {
             },
             success: ({ret, data, msg}) => {
                 if (ret === 1) {
-                    this.commit('getDialogUpdate', data);
+                    state.method.setStorage('messengerDialogId', data.id)
                     this.commit('getDialogMsgList', data.id);
+                    this.commit('getDialogUpdate', data);
                 } else {
                     $A.modalError(msg);
                 }

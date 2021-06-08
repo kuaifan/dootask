@@ -4,14 +4,14 @@
             <Row class="setting-color">
                 <Col span="12">{{$L('名称')}}</Col>
                 <Col span="4">
-                    <Tooltip :content="$L('数值越大级别越高')" max-width="auto" placement="top" transfer>
-                        <Icon class="information" type="ios-information-circle-outline" /> {{$L('级别')}}
-                    </Tooltip>
+                    <ETooltip :content="$L('数值越大级别越高')" max-width="auto" placement="top" transfer>
+                        <div><Icon class="information" type="ios-information-circle-outline" /> {{$L('级别')}}</div>
+                    </ETooltip>
                 </Col>
                 <Col span="4">
-                    <Tooltip :content="$L('任务完成时间')" max-width="auto" placement="top" transfer>
-                        <Icon class="information" type="ios-information-circle-outline" /> {{$L('天数')}}
-                    </Tooltip>
+                    <ETooltip :content="$L('任务完成时间')" max-width="auto" placement="top" transfer>
+                        <div><Icon class="information" type="ios-information-circle-outline" /> {{$L('天数')}}</div>
+                    </ETooltip>
                 </Col>
                 <Col span="4">{{$L('颜色')}}</Col>
             </Row>

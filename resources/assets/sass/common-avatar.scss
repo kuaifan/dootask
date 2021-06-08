@@ -1,0 +1,62 @@
+.common-avatar {
+    position: relative;
+    &.avatar-wrapper {
+        display: flex;
+        align-items: center;
+        .avatar-box {
+            position: relative;
+            .avatar-text {
+                background-color: #87d068;
+            }
+            &:before {
+                content: "";
+                position: absolute;
+                right: 0;
+                bottom: 0;
+                width: 9px;
+                height: 9px;
+                border-radius: 50%;
+                background-color: #ff0000;
+                border: 1px solid #ffffff;
+                z-index: 1;
+            }
+            &.online {
+                &:before {
+                    background-color: #87d068;
+                }
+            }
+        }
+        .avatar-name {
+            padding-left: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
+}
+.common-avatar-transfer {
+    padding: 4px 2px;
+    line-height: 1.5;
+    > p {
+        padding: 1px 2px;
+    }
+    .avatar-icons {
+        margin-top: 12px;
+        border-top: 1px solid rgba(244, 244, 245, 0.5);
+        padding: 8px 0 2px;
+        display: flex;
+        align-items: center;
+        > i {
+            cursor: pointer;
+            font-size: 22px;
+            margin-right: 12px;
+            color: #F4F4F5;
+            &:last-child {
+                margin-right: 0;
+            }
+            &:hover {
+                color: #ffffff;
+            }
+        }
+    }
+}

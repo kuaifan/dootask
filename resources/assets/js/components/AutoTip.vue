@@ -1,10 +1,17 @@
 <template>
-    <Tooltip transfer :content="text" :placement="placement" :theme="tooltipTheme" :delay="delay" :disabled="!showTooltip" :max-width="tooltipMaxWidth" class="ivu-table-cell-tooltip">
-        <span ref="content" @mouseenter="handleTooltipIn" class="ivu-table-cell-tooltip-content">
+    <ETooltip
+        :content="text"
+        :placement="placement"
+        :theme="tooltipTheme"
+        :delay="delay"
+        :disabled="!showTooltip"
+        :max-width="tooltipMaxWidth"
+        transfer>
+        <span ref="content" @mouseenter="handleTooltipIn" class="auto-tip-content">
             <template v-if="existSlot"><slot/></template>
             <template v-else>{{text}}</template>
         </span>
-    </Tooltip>
+    </ETooltip>
 </template>
 
 <script>
