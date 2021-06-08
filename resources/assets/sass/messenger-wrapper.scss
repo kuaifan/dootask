@@ -51,80 +51,145 @@
             overflow-x: hidden;
             overflow-y: auto;
             > ul {
-                > li {
-                    display: flex;
-                    flex-direction: row;
-                    align-items: center;
-                    height: 80px;
-                    padding: 0 12px;
-                    position: relative;
-                    cursor: pointer;
-                    &.active {
-                        background-color: #F4F5F7;
-                    }
-                    .user-avatar,
-                    .icon-avatar {
-                        width: 46px;
-                        height: 46px;
-                        flex-grow: 0;
-                        flex-shrink: 0;
-                    }
-                    .icon-avatar {
-                        line-height: 46px;
-                        border-radius: 50%;
-                        font-size: 26px;
-                        background-color: #61B2F9;
-                        color: #ffffff;
-                    }
-                    .dialog-box {
-                        flex: 1;
+                &.dialog {
+                    > li {
                         display: flex;
-                        flex-direction: column;
-                        padding-left: 12px;
-                        .dialog-title {
+                        flex-direction: row;
+                        align-items: center;
+                        height: 80px;
+                        padding: 0 12px;
+                        position: relative;
+                        cursor: pointer;
+                        list-style: none;
+                        &.active {
+                            background-color: #F4F5F7;
+                        }
+                        &.loading {
+                            margin: 0;
+                            height: 52px;
                             display: flex;
-                            flex-direction: row;
                             align-items: center;
-                            justify-content: space-between;
-                            line-height: 24px;
-                            > span {
-                                flex: 1;
-                                max-width: 130px;
-                                color: #333333;
-                                font-size: 14px;
+                            justify-content: center;
+                            .common-loading {
+                                width: 20px;
+                                height: 20px;
+                                margin: 0;
+                            }
+                        }
+                        .user-avatar,
+                        .icon-avatar {
+                            width: 46px;
+                            height: 46px;
+                            flex-grow: 0;
+                            flex-shrink: 0;
+                        }
+                        .icon-avatar {
+                            line-height: 46px;
+                            border-radius: 50%;
+                            font-size: 26px;
+                            background-color: #61B2F9;
+                            color: #ffffff;
+                        }
+                        .dialog-box {
+                            flex: 1;
+                            display: flex;
+                            flex-direction: column;
+                            padding-left: 12px;
+                            .dialog-title {
+                                display: flex;
+                                flex-direction: row;
+                                align-items: center;
+                                justify-content: space-between;
+                                line-height: 24px;
+                                > span {
+                                    flex: 1;
+                                    max-width: 130px;
+                                    color: #333333;
+                                    font-size: 14px;
+                                    white-space: nowrap;
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                }
+                                > i {
+                                    margin-left: 8px;
+                                    transform: scale(0.9);
+                                    font-size: 12px;
+                                    color: #87d068;
+                                }
+                                > em {
+                                    margin-left: 8px;
+                                    font-style: normal;
+                                    color: #999999;
+                                    font-size: 12px;
+                                }
+                            }
+                            .dialog-text {
+                                max-width: 170px;
+                                color: #999999;
+                                font-size: 12px;
+                                line-height: 24px;
                                 white-space: nowrap;
                                 overflow: hidden;
                                 text-overflow: ellipsis;
                             }
-                            > i {
-                                margin-left: 8px;
-                                transform: scale(0.9);
-                                font-size: 12px;
-                                color: #87d068;
-                            }
-                            > em {
-                                margin-left: 8px;
-                                font-style: normal;
-                                color: #999999;
-                                font-size: 12px;
-                            }
                         }
-                        .dialog-text {
-                            max-width: 170px;
-                            color: #999999;
+                        .dialog-num {
+                            position: absolute;
+                            top: 10px;
+                            left: 42px;
                             font-size: 12px;
-                            line-height: 24px;
-                            white-space: nowrap;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
+                            transform: scale(0.8);
                         }
                     }
-                    .dialog-num {
-                        position: absolute;
-                        top: 10px;
-                        left: 42px;
-                        font-size: 12px;
-                        transform: scale(0.8);
+                }
+                &.contacts {
+                    > li {
+                        list-style: none;
+                        margin-left: 24px;
+                        position: relative;
+                        .label {
+                            padding-left: 4px;
+                            margin-top: 6px;
+                            margin-bottom: 6px;
+                            height: 34px;
+                            line-height: 34px;
+                            border-bottom: 1px solid #efefef;
+                        }
+                        &.loading {
+                            margin: 0;
+                            height: 52px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            .common-loading {
+                                width: 20px;
+                                height: 20px;
+                                margin: 0;
+                            }
+                        }
+                        > ul {
+                            > li {
+                                list-style: none;
+                                display: flex;
+                                flex-direction: row;
+                                align-items: center;
+                                height: 52px;
+                                cursor: pointer;
+                                .avatar {
+                                    flex-grow: 0;
+                                    flex-shrink: 0;
+                                    width: 30px;
+                                    height: 30px;
+                                }
+                                .nickname {
+                                    padding: 0 12px;
+                                    font-size: 14px;
+                                    white-space: nowrap;
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                }
+                            }
+                        }
                     }
                 }
             }

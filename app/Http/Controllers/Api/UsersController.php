@@ -244,6 +244,7 @@ class UsersController extends AbstractController
         //
         $user->save();
         User::token($user);
+        User::AZUpdate($user->userid);
         return Base::retSuccess('修改成功', $user);
     }
 
@@ -340,7 +341,7 @@ class UsersController extends AbstractController
      */
     public function search()
     {
-        $builder = User::select(['userid', 'email', 'nickname', 'userimg']);
+        $builder = User::select(['userid', 'email', 'nickname', 'profession', 'userimg', 'az']);
         //
         $keys = Request::input('where');
         if (is_array($keys)) {

@@ -274,6 +274,9 @@ export default {
      * @param userid
      */
     openDialogUser(state, userid) {
+        if (userid === state.userId) {
+            return;
+        }
         $A.apiAjax({
             url: 'dialog/open/user',
             data: {

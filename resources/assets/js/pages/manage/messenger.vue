@@ -10,7 +10,7 @@
                     </div>
                 </div>
                 <div class="messenger-list overlay-y">
-                    <ul>
+                    <ul v-if="tabActive==='dialog'" class="dialog">
                         <li
                             v-for="(dialog, key) in dialogLists"
                             :key="key"
@@ -29,11 +29,24 @@
                             </div>
                             <Badge class="dialog-num" :count="dialog.unread"/>
                         </li>
+                        <li v-if="dialogLoad > 0" class="loading"><Loading/></li>
+                    </ul>
+                    <ul v-else class="contacts">
+                        <li v-for="(users, label) in contactsLists">
+                            <div class="label">{{label}}</div>
+                            <ul>
+                                <li v-for="(user, index) in users" :key="index" @click="openContacts(user)">
+                                    <div class="avatar"><UserAvatar :userid="user.userid" :size="30" hide-icon-menu/></div>
+                                    <div class="nickname">{{user.nickname}}</div>
+                                </li>
+                            </ul>
+                        </li>
+                        <li v-if="contactsLoad > 0" class="loading"><Loading/></li>
                     </ul>
                 </div>
                 <div class="messenger-menu">
-                    <Icon class="active" type="ios-chatbubbles" />
-                    <Icon type="md-person" />
+                    <Icon @click="tabActive='dialog'" :class="{active:tabActive==='dialog'}" type="ios-chatbubbles" />
+                    <Icon @click="tabActive='contacts'" :class="{active:tabActive==='contacts'}" type="md-person" />
                 </div>
             </div>
 
@@ -65,8 +78,13 @@ export default {
     components: {DialogWrapper},
     data() {
         return {
-            dialogKey: '',
+            tabActive: 'dialog',
+
             dialogLoad: 0,
+            dialogKey: '',
+
+            contactsLoad: 0,
+            contactsLists: null,
         }
     },
 
@@ -102,6 +120,14 @@ export default {
         },
     },
 
+    watch: {
+        tabActive(val) {
+            if (val && this.contactsLists === null) {
+                this.getContactsList();
+            }
+        }
+    },
+
     methods: {
         openDialog(dialog) {
             this.$store.state.method.setStorage('messengerDialogId', dialog.id)
@@ -114,6 +140,45 @@ export default {
                 const dialog = this.dialogList.find(({id}) => id === tmpId);
                 dialog && this.openDialog(dialog);
             }
+        },
+
+        openContacts(user) {
+            this.$store.commit("openDialogUser", user.userid);
+            this.tabActive = 'dialog';
+        },
+
+        getContactsList() {
+            if (this.contactsLists === null) {
+                this.contactsLists = {};
+            }
+            this.contactsLoad++;
+            $A.apiAjax({
+                url: 'users/search',
+                data: {
+                    take: 50
+                },
+                complete: () => {
+                    this.contactsLoad--;
+                },
+                success: ({ret, data, msg}) => {
+                    if (ret === 1) {
+                        data.some((user) => {
+                            if (user.userid === this.userId) {
+                                return false;
+                            }
+                            let az = user.az ? user.az.toUpperCase() : "#";
+                            if (typeof this.contactsLists[az] === "undefined") this.contactsLists[az] = [];
+                            //
+                            let index = this.contactsLists[az].findIndex(({userid}) => userid === user.userid);
+                            if (index > -1) {
+                                this.contactsLists[az].splice(index, 1, user);
+                            } else {
+                                this.contactsLists[az].push(user);
+                            }
+                        });
+                    }
+                }
+            });
         },
 
         formatTime(date) {
@@ -154,7 +219,7 @@ export default {
                 }
             }
             return null;
-        }
+        },
     }
 }
 </script>
