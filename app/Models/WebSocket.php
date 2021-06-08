@@ -30,21 +30,17 @@ class WebSocket extends AbstractModel
 {
 
     /**
-     * 获取我自己当前以外的所有连接fd
+     * 获取其他fd（获取其他设备）
      * @return array
      */
-    public static function getMyFd()
+    public static function getOtherFd($fd)
     {
-        $fd = 0;
-        $userid = 0;
-        try {
-            $fd = Request::header('fd');
-            $userid = User::token2userid();
-        } catch (\Throwable $e) {
-
+        if (empty($fd)) {
+            return [];
         }
-        if ($userid && $fd) {
-            return self::whereUserid($userid)->where('fd', '!=', $fd)->pluck('fd')->toArray();
+        $row = self::whereFd($fd)->first();
+        if ($row) {
+            return self::whereUserid($row->userid)->where('id', '!=', $row->id)->pluck('fd')->toArray();
         }
         return [];
     }

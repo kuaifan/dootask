@@ -6,7 +6,6 @@ use App\Models\Setting;
 use App\Models\Tmp;
 use Cache;
 use Exception;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Config;
 use Redirect;
@@ -110,8 +109,11 @@ class Base
      * @param string $ip
      * @return bool
      */
-    public static function is_ipv4($ip)
+    public static function is_ipv4($ip = '')
     {
+        if (empty($ip)) {
+            $ip = Base::getIp();
+        }
         return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false;
     }
 
@@ -120,8 +122,11 @@ class Base
      * @param string $ip
      * @return bool
      */
-    public static function is_extranet_ip($ip)
+    public static function is_extranet_ip($ip = '')
     {
+        if (empty($ip)) {
+            $ip = Base::getIp();
+        }
         if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
             return false;
         }
@@ -133,8 +138,11 @@ class Base
      * @param string $ip
      * @return bool
      */
-    public static function is_internal_ip($ip)
+    public static function is_internal_ip($ip = '')
     {
+        if (empty($ip)) {
+            $ip = Base::getIp();
+        }
         if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
             return false;
         }

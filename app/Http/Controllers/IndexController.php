@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Module\Base;
+use App\Tasks\DeleteTmpTask;
+use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Redirect;
 
 
@@ -41,5 +43,22 @@ class IndexController extends InvokeController
     public function api()
     {
         return Redirect::to(Base::fillUrl('docs/index.html'), 301);
+    }
+
+    /**
+     * 系统定时任务，限制内网访问（1分钟/次）
+     * @return string
+     */
+    public function crontab()
+    {
+        if (!Base::is_internal_ip()) {
+            // 限制内网访问
+            return "Forbidden Access";
+        }
+        // 删除过期的临时表数据
+        Task::deliver(new DeleteTmpTask('wg_tmp_msgs', 1));
+        Task::deliver(new DeleteTmpTask('tmp', 24));
+
+        return "success";
     }
 }

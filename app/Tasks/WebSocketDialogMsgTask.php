@@ -2,8 +2,10 @@
 
 namespace App\Tasks;
 
+use App\Models\WebSocket;
 use App\Models\WebSocketDialogMsg;
 use App\Models\WebSocketDialogMsgRead;
+use Request;
 
 @error_reporting(E_ALL & ~E_NOTICE);
 
@@ -17,16 +19,19 @@ class WebSocketDialogMsgTask extends AbstractTask
 {
     protected $userid;
     protected $dialogMsgArray;
+    protected $currentFd;
 
     /**
      * WebSocketDialogMsgTask constructor.
-     * @param $userid
-     * @param array $dialogMsgArray
+     * @param int|array $userid         发送对象ID 或 ID组
+     * @param array $dialogMsgArray     发送的内容
+     * @param null $currentFd           当前发送会员的 websocket fd （用于给其他设备发送消息，留空通过header获取）
      */
-    public function __construct($userid, array $dialogMsgArray)
+    public function __construct($userid, array $dialogMsgArray, $currentFd = null)
     {
         $this->userid = $userid;
         $this->dialogMsgArray = $dialogMsgArray;
+        $this->currentFd = $currentFd ?: Request::header('fd');
     }
 
     public function start()
@@ -38,6 +43,7 @@ class WebSocketDialogMsgTask extends AbstractTask
         if (empty($userids) || empty($msgId)) {
             return;
         }
+        // 推送目标
         $pushIds = [];
         foreach ($userids AS $userid) {
             $msgRead = WebSocketDialogMsgRead::createInstance([
@@ -52,6 +58,7 @@ class WebSocketDialogMsgTask extends AbstractTask
                 //
             }
         }
+        $fd = WebSocket::getOtherFd($this->currentFd);
         // 更新已发送数量
         if ($send != count($pushIds)) {
             $send = WebSocketDialogMsgRead::whereMsgId($msgId)->count();
@@ -59,9 +66,10 @@ class WebSocketDialogMsgTask extends AbstractTask
             $this->dialogMsgArray['send'] = $send;
         }
         // 开始推送消息
-        if ($pushIds) {
-            PushTask::pushM([
+        if ($pushIds || $fd) {
+            PushTask::push([
                 'userid' => $pushIds,
+                'fd' => $fd,
                 'msg' => [
                     'type' => 'dialog',
                     'mode' => 'add',

@@ -99,9 +99,8 @@ class PushTask extends AbstractTask
      * @param string|int $key 延迟推送key依据，留空立即推送（延迟推送时发给同一人同一种消息类型只发送最新的一条）
      * @param int $delay 延迟推送时间，默认：1秒（$key填写时有效）
      * @param bool $retryOffline 如果会员不在线，等上线后继续发送
-     * @param bool $andMyself 同时发送给自己其他设备
      */
-    public static function push(array $lists, $key = '', $delay = 1, $retryOffline = true, $andMyself = false)
+    public static function push(array $lists, $key = '', $delay = 1, $retryOffline = true)
     {
         if (!is_array($lists) || empty($lists)) {
             return;
@@ -127,7 +126,7 @@ class PushTask extends AbstractTask
             }
             // 发送对象
             $offline_user = [];
-            $array = $andMyself ? WebSocket::getMyFd() : [];
+            $array = [];
             if ($fd) {
                 if (is_array($fd)) {
                     $array = array_merge($array, $fd);
@@ -183,14 +182,5 @@ class PushTask extends AbstractTask
     public static function pushO(array $lists, $key = '', $delay = 1)
     {
         self::push($lists, $key, $delay, false);
-    }
-
-    /**
-     * 推送消息（同时发送给自己其他设备）
-     * @param array $lists 消息列表
-     */
-    public static function pushM(array $lists, $key = '', $delay = 1)
-    {
-        self::push($lists, $key, $delay, false, true);
     }
 }
