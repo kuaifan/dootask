@@ -199,6 +199,6 @@ state.taskPriority = [];
 // 其他
 state.cacheProject = state.method.getStorageJson("cacheProject");
 state.cacheUserBasic = state.method.getStorageJson("cacheUserBasic");
-state.cacheDialog = state.method.getStorageJson("cacheDialog");
+state.cacheDialogMsg = state.method.getStorageJson("cacheDialogMsg");
 
 export default state

@@ -159,12 +159,16 @@ export default {
             return;
         }
         const {userid, success, complete} = params;
+        if (userid === state.userId) {
+            typeof success === "function" && success(state.userInfo, true);
+            return;
+        }
         const time = Math.round(new Date().getTime() / 1000);
         const array = [];
         (state.method.isArray(userid) ? userid : [userid]).some((uid) => {
             if (state.cacheUserBasic[uid]) {
                 typeof success === "function" && success(state.cacheUserBasic[uid].data, false);
-                if (time - state.cacheUserBasic[uid].time <= 10) {
+                if (time - state.cacheUserBasic[uid].time <= 30) {
                     return false;
                 }
             }
@@ -210,7 +214,7 @@ export default {
     },
 
     /**
-     * 获取对话列表
+     * 获取会话列表
      * @param state
      * @param afterCallback
      */
@@ -229,7 +233,24 @@ export default {
     },
 
     /**
-     * 获取单个对话
+     * 更新会话数据
+     * @param state
+     * @param data
+     */
+    getDialogUpdate(state, data) {
+        let splice = false;
+        state.dialogList.some(({id, unread}, index) => {
+            if (id === data.id) {
+                unread !== data.unread && this.commit('getDialogMsgUnread');
+                state.dialogList.splice(index, 1, data);
+                return splice = true;
+            }
+        });
+        !splice && state.dialogList.unshift(data)
+    },
+
+    /**
+     * 获取单个会话
      * @param state
      * @param dialog_id
      */
@@ -241,20 +262,14 @@ export default {
             },
             success: ({ret, data, msg}) => {
                 if (ret === 1) {
-                    if (state.dialogId === data.id) data.unread = 0;
-                    let index = state.dialogList.findIndex(({id}) => id == data.id);
-                    if (index > -1) {
-                        state.dialogList.splice(index, 1, data);
-                    } else {
-                        state.dialogList.unshift(data)
-                    }
+                    this.commit('getDialogUpdate', data);
                 }
             }
         });
     },
 
     /**
-     * 打开个人对话
+     * 打开个人会话
      * @param state
      * @param userid
      */
@@ -266,12 +281,7 @@ export default {
             },
             success: ({ret, data, msg}) => {
                 if (ret === 1) {
-                    let index = state.dialogList.findIndex(({id}) => id == data.id);
-                    if (index > -1) {
-                        state.dialogList.splice(index, 1, data);
-                    } else {
-                        state.dialogList.unshift(data)
-                    }
+                    this.commit('getDialogUpdate', data);
                     this.commit('getDialogMsgList', data.id);
                 } else {
                     $A.modalError(msg);
@@ -281,7 +291,7 @@ export default {
     },
 
     /**
-     * 获取对话消息
+     * 获取会话消息
      * @param state
      * @param dialog_id
      */
@@ -294,22 +304,22 @@ export default {
         }
         //
         state.dialogMsgList = [];
-        if (state.method.isJson(state.cacheDialog[dialog_id])) {
+        if (state.method.isJson(state.cacheDialogMsg[dialog_id])) {
             setTimeout(() => {
-                let length = state.cacheDialog[dialog_id].data.length;
+                let length = state.cacheDialogMsg[dialog_id].data.length;
                 if (length > 50) {
-                    state.cacheDialog[dialog_id].data.splice(0, length - 50);
+                    state.cacheDialogMsg[dialog_id].data.splice(0, length - 50);
                 }
-                state.dialogDetail = state.cacheDialog[dialog_id].dialog
-                state.dialogMsgList = state.cacheDialog[dialog_id].data
+                state.dialogDetail = state.cacheDialogMsg[dialog_id].dialog
+                state.dialogMsgList = state.cacheDialogMsg[dialog_id].data
             });
         }
         state.dialogId = dialog_id;
         //
-        if (state.cacheDialog[dialog_id + "::load"]) {
+        if (state.cacheDialogMsg[dialog_id + "::load"]) {
             return;
         }
-        state.cacheDialog[dialog_id + "::load"] = true;
+        state.cacheDialogMsg[dialog_id + "::load"] = true;
         //
         state.dialogMsgLoad++;
         $A.apiAjax({
@@ -319,18 +329,22 @@ export default {
             },
             complete: () => {
                 state.dialogMsgLoad--;
-                state.cacheDialog[dialog_id + "::load"] = false;
+                state.cacheDialogMsg[dialog_id + "::load"] = false;
             },
             success: ({ret, data, msg}) => {
                 if (ret === 1) {
-                    state.cacheDialog[dialog_id] = {
-                        dialog: data.dialog,
-                        data: data.data.reverse(),
+                    const dialog = data.dialog;
+                    const reverse = data.data.reverse();
+                    // 更新缓存
+                    state.cacheDialogMsg[dialog_id] = {
+                        dialog,
+                        data: reverse,
                     };
-                    state.method.setStorage("cacheDialog", state.cacheDialog);
+                    state.method.setStorage("cacheDialogMsg", state.cacheDialogMsg);
+                    // 更新当前会话消息
                     if (state.dialogId === dialog_id) {
-                        state.dialogDetail = state.cacheDialog[dialog_id].dialog;
-                        state.cacheDialog[dialog_id].data.forEach((item) => {
+                        state.dialogDetail = dialog;
+                        reverse.forEach((item) => {
                             let index = state.dialogMsgList.findIndex(({id}) => id === item.id);
                             if (index === -1) {
                                 state.dialogMsgList.push(item);
@@ -339,6 +353,8 @@ export default {
                             }
                         })
                     }
+                    // 更新会话数据
+                    this.commit('getDialogUpdate', dialog);
                 }
             }
         });
@@ -367,7 +383,7 @@ export default {
     },
 
     /**
-     * 根据消息ID 删除 或 替换 对话数据
+     * 根据消息ID 删除 或 替换 会话数据
      * @param state
      * @param params {id, data}
      */
@@ -385,7 +401,7 @@ export default {
         if (index > -1) {
             if (data) {
                 state.dialogMsgList.splice(index, 1, state.method.cloneJSON(data));
-                // 是最后一条消息时更新对话 last_msg
+                // 是最后一条消息时更新会话 last_msg
                 if (state.dialogMsgList.length - 1 == index) {
                     const dialog = state.dialogList.find(({id}) => id == data.dialog_id);
                     if (dialog) dialog.last_msg = data;
@@ -484,7 +500,7 @@ export default {
                                 }
                             }
                         })(msgDetail);
-                        // 更新对话
+                        // 更新会话
                         (function (msg, that) {
                             const {mode, data} = msg;
                             const {dialog_id} = data;
