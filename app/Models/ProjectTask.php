@@ -311,9 +311,34 @@ class ProjectTask extends AbstractModel
     }
 
     /**
+     * 标记已完成、未完成
+     * @param Carbon|null $complete_at 完成时间
+     * @return array|bool
+     */
+    public function completeTask($complete_at)
+    {
+        return AbstractModel::transaction(function () use ($complete_at) {
+            if ($complete_at === null) {
+                // 标记未完成
+                $this->complete_at = null;
+            } else {
+                // 标记已完成
+                if ($this->parent_id == 0) {
+                    if (self::whereParentId($this->id)->whereCompleteAt(null)->exists()) {
+                        return Base::retError('子任务未完成');
+                    }
+                }
+                $this->complete_at = $complete_at;
+            }
+            $this->save();
+            return Base::retSuccess('修改成功');
+        });
+    }
+
+    /**
      * 修改任务
      * @param $params
-     * @return array|bool
+     * @return array
      */
     public function updateTask($params)
     {

@@ -599,6 +599,12 @@
                     font-size: 16px;
                 }
             }
+            &.red {
+                color: #f00;
+                > i {
+                    color: #f00;
+                }
+            }
         }
     }
     &.column-more {

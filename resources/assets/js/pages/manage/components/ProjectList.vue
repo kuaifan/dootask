@@ -133,9 +133,14 @@
                                     @command="dropTask(item, $event)">
                                     <Icon type="ios-more" />
                                     <EDropdownMenu slot="dropdown" class="project-list-more-dropdown-menu">
-                                        <EDropdownItem command="complete">
+                                        <EDropdownItem v-if="item.complete_at" command="uncomplete">
+                                            <div class="item red">
+                                                <Icon type="md-checkmark-circle-outline" />{{$L('标记未完成')}}
+                                            </div>
+                                        </EDropdownItem>
+                                        <EDropdownItem v-else command="complete">
                                             <div class="item">
-                                                <Icon type="md-create" />{{$L('完成')}}
+                                                <Icon type="md-radio-button-off" />{{$L('完成')}}
                                             </div>
                                         </EDropdownItem>
                                         <EDropdownItem command="delete">
@@ -143,7 +148,7 @@
                                                 <Icon type="md-trash" />{{$L('删除')}}
                                             </div>
                                         </EDropdownItem>
-                                        <EDropdownItem divided disabled>{{$L('颜色')}}</EDropdownItem>
+                                        <EDropdownItem divided disabled>{{$L('背景色')}}</EDropdownItem>
                                         <EDropdownItem v-for="(c, k) in taskList" :key="k" :command="c">
                                             <div class="item">
                                                 <i class="iconfont" :style="{color:c.color||'#f9f9f9'}" v-html="c.color == column.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
@@ -669,8 +674,8 @@ export default {
                     if (ret === 1) {
                         $A.messageSuccess(msg);
                     } else {
-                        $A.modalError(msg);
                         this.$store.commit('getProjectDetail', this.projectDetail.id);
+                        $A.modalError(msg);
                     }
                 }
             });
@@ -828,10 +833,15 @@ export default {
                     });
                 },
                 success: ({ret, data, msg}) => {
-                    if (ret !== 1) {
+                    if (ret === 1) {
+                        Object.keys(data).forEach(key => {
+                            this.$set(column, key, data[key]);
+                        });
+                    } else {
                         Object.keys(updata).forEach(key => {
                             this.$set(column, key, backup[key]);
                         });
+                        $A.modalError(msg);
                     }
                 }
             });
@@ -881,10 +891,19 @@ export default {
 
         dropTask(task, command) {
             if (command === 'complete') {
-                // 完成
+                if (task.complete_at) return;
+                this.updateTask(task, {
+                    complete_at: $A.formatDate("Y-m-d H:i:s")
+                })
+            }
+            else if (command === 'uncomplete') {
+                if (!task.complete_at) return;
+                this.updateTask(task, {
+                    complete_at: false
+                })
             }
             else if (command === 'delete') {
-                // 删除
+                this.removeTask(task);
             }
             else if (command.name) {
                 this.updateTask(task, {
@@ -918,11 +937,60 @@ export default {
                     });
                 },
                 success: ({ret, data, msg}) => {
-                    if (ret !== 1) {
+                    if (ret === 1) {
+                        Object.keys(data).forEach(key => {
+                            this.$set(task, key, data[key]);
+                        });
+                    } else {
                         Object.keys(updata).forEach(key => {
                             this.$set(task, key, backup[key]);
                         });
+                        $A.modalError(msg);
                     }
+                }
+            });
+        },
+
+        removeTask(task) {
+            $A.modalConfirm({
+                title: '删除任务',
+                content: '你确定要删除任务【' + task.name + '】吗？',
+                loading: true,
+                onOk: () => {
+                    if (task.loading === true) {
+                        return;
+                    }
+                    this.$set(task, 'loading', true);
+                    //
+                    $A.apiAjax({
+                        url: 'project/task/delete',
+                        data: {
+                            task_id: task.id,
+                        },
+                        complete: () => {
+                            this.$set(task, 'loading', false);
+                        },
+                        error: () => {
+                            this.$Modal.remove();
+                            $A.modalAlert('网络繁忙，请稍后再试！');
+                        },
+                        success: ({ret, data, msg}) => {
+                            this.$Modal.remove();
+                            if (ret === 1) {
+                                $A.messageSuccess(msg);
+                                let column = this.projectDetail.project_column.find(({id}) => id === column.id);
+                                if (column) {
+                                    let index = column.project_task.findIndex(({id}) => id === task.id);
+                                    if (index > -1) {
+                                        column.project_task.splice(index, 1);
+                                    }
+                                }
+                                this.$store.commit('getProjectDetail', this.projectDetail.id);
+                            }else{
+                                $A.modalError(msg, 301);
+                            }
+                        }
+                    });
                 }
             });
         },

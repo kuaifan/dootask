@@ -642,14 +642,14 @@ class ProjectController extends AbstractController
     /**
      * {post} 添加任务
      *
-     * @apiParam {Number} project_id        项目ID
-     * @apiParam {Number} [column_id]       列表ID，留空取第一个
-     * @apiParam {String} name              任务描述
-     * @apiParam {String} [content]         任务详情
-     * @apiParam {Array} [times]            计划时间（格式：开始时间,结束时间；如：2020-01-01 00:00,2020-01-01 23:59）
-     * @apiParam {Number} [owner]           负责人，留空为自己
-     * @apiParam {Array} [subtasks]         子任务（格式：[{name,owner,times}]）
-     * @apiParam {Number} [top]             添加的任务排到列表最前面
+     * @apiParam {Number} project_id            项目ID
+     * @apiParam {mixed} [column_id]            列表ID，任意值自动创建，留空取第一个
+     * @apiParam {String} name                  任务描述
+     * @apiParam {String} [content]             任务详情
+     * @apiParam {Array} [times]                计划时间（格式：开始时间,结束时间；如：2020-01-01 00:00,2020-01-01 23:59）
+     * @apiParam {mixed} [owner]                负责人，留空为自己
+     * @apiParam {Array} [subtasks]             子任务（格式：[{name,owner,times}]）
+     * @apiParam {Number} [top]                 添加的任务排到列表最前面
      */
     public function task__add()
     {
@@ -724,12 +724,14 @@ class ProjectController extends AbstractController
     /**
      * {post} 修改任务、子任务
      *
-     * @apiParam {Number} task_id           任务ID
-     * @apiParam {String} [name]            任务描述
-     * @apiParam {String} [color]           任务描述（子任务不支持）
-     * @apiParam {String} [content]         任务详情（子任务不支持）
-     * @apiParam {Array} [times]            计划时间（格式：开始时间,结束时间；如：2020-01-01 00:00,2020-01-01 23:59）
-     * @apiParam {Number} [owner]           修改负责人
+     * @apiParam {Number} task_id               任务ID
+     * @apiParam {String} [name]                任务描述
+     * @apiParam {String} [color]               任务描述（子任务不支持）
+     * @apiParam {String} [content]             任务详情（子任务不支持）
+     * @apiParam {Array} [times]                计划时间（格式：开始时间,结束时间；如：2020-01-01 00:00,2020-01-01 23:59）
+     * @apiParam {mixed} [owner]                修改负责人
+     *
+     * @apiParam {String|false} [complete_at]   完成时间（如：2020-01-01 00:00，false表示未完成）
      */
     public function task__update()
     {
@@ -746,6 +748,7 @@ class ProjectController extends AbstractController
         $content = Base::getPostValue('content');
         $times = Base::getPostValue('times');
         $owner = Base::getPostValue('owner');
+        $complete_at = Base::getPostValue('complete_at');
         // 任务
         $task = ProjectTask::whereId($task_id)->first();
         if (empty($task)) {
@@ -761,15 +764,30 @@ class ProjectController extends AbstractController
             return Base::retError('项目不存在或不在成员列表内');
         }
         //
-        $result = $task->updateTask([
-            'name' => $name,
-            'color' => $color,
-            'content' => $content,
-            'times' => $times,
-            'owner' => $owner,
-        ]);
+        if ($complete_at === false || $complete_at === "false") {
+            // 标记未完成
+            if (!$task->complete_at) {
+                return Base::retError('未完成任务');
+            }
+            $result = $task->completeTask(null);
+        } elseif (Base::isDate($complete_at)) {
+            // 标记已完成
+            if ($task->complete_at) {
+                return Base::retError('任务已完成');
+            }
+            $result = $task->completeTask(Carbon::now());
+        } else {
+            // 更新任务
+            $result = $task->updateTask([
+                'name' => $name,
+                'color' => $color,
+                'content' => $content,
+                'times' => $times,
+                'owner' => $owner,
+            ]);
+        }
         if (Base::isSuccess($result)) {
-            $result['data'] = ProjectTask::with(['taskUser', 'taskTag'])->whereId($task->id)->first();
+            $result['data'] = $task->toArray();
         }
         return $result;
     }

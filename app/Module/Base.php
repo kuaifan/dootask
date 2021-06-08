@@ -1947,15 +1947,25 @@ class Base
         return $_A["__static_input_content"][$key] ?? $default;
     }
 
+    /**
+     * @param $key
+     * @param null $default
+     * @return array|mixed|string|null
+     */
     public static function getPostValue($key, $default = null)
     {
-        $value = self::newTrim(self::getContentValue($key, $default));
+        $value = self::getContentValue($key, $default);
         if (empty($value)) {
-            $value = self::newTrim(Request::post($key, $default));
+            $value = Request::post($key, $default);
         }
         return $value;
     }
 
+    /**
+     * @param $key
+     * @param null $default
+     * @return int
+     */
     public static function getPostInt($key, $default = null)
     {
         return intval(self::getPostValue($key, $default));
