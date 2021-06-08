@@ -2,4 +2,14 @@ $--tooltip-fill: #585E6A;
 $--tooltip-border-color: #585E6A;
 $--tooltip-font-size: 14px;
 
+@import "~element-ui/packages/theme-chalk/src/common/transition";
 @import "~element-ui/packages/theme-chalk/src/tooltip";
+@import "~element-ui/packages/theme-chalk/src/dropdown";
+@import "~element-ui/packages/theme-chalk/src/dropdown-menu";
+@import "~element-ui/packages/theme-chalk/src/dropdown-item";
+
+
+.el-dropdown-menu__item {
+    min-width: 100px;
+    line-height: 34px;
+}

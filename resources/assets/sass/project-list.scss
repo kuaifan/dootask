@@ -228,9 +228,9 @@
                     .column-head-icon {
                         display: flex;
                         align-items: center;
-                        margin-left: 12px;
+                        margin-left: 16px;
                         .ivu-icon {
-                            padding-left: 8px;
+                            padding-right: 8px;
                             font-size: 16px;
                             color: #aaaaaa;
                             cursor: pointer;
@@ -240,51 +240,8 @@
                                 color: #888888;
                             }
                         }
-                        .ivu-poptip-popper {
-                            color: #515a6e;
-                            min-width: 130px;
-                            .ivu-poptip-body {
-                                padding: 0;
-                            }
-                            .more-content {
-                                ul {
-                                    margin: 10px 0;
-                                    > li {
-                                        display: flex;
-                                        align-items: center;
-                                        cursor: pointer;
-                                        list-style: none;
-                                        line-height: 30px;
-                                        padding: 0 20px;
-                                        > i {
-                                            font-size: 18px;
-                                            margin-right: 8px;
-                                            padding: 0;
-                                            color: #bbbbbb;
-                                            &.ivu-icon {
-                                                font-size: 16px;
-                                            }
-                                        }
-                                        &.title,
-                                        &.divided {
-                                            font-size: 13px;
-                                            color: #888888;
-                                            cursor: default;
-                                            &:hover {
-                                                background-color: transparent;
-                                            }
-                                        }
-                                        &.divided {
-                                            margin-top: 5px;
-                                            height: 6px;
-                                            border-top: 1px solid #F4F4F5;
-                                        }
-                                        &:hover {
-                                            background-color: #f1f1f1;
-                                        }
-                                    }
-                                }
-                            }
+                        .last {
+                            padding-right: 0;
                         }
                     }
                     &.custom-color {
@@ -339,6 +296,14 @@
                         .task-head {
                             display: flex;
                             align-items: flex-start;
+                            .task-choose {
+                                margin-right: 5px;
+                                font-size: 22px;
+                                color: #aaaaaa;
+                                height: 22px;
+                                line-height: 22px;
+                                cursor: pointer;
+                            }
                             .task-title {
                                 flex: 1;
                                 padding-top: 1px;
@@ -354,6 +319,10 @@
                                 font-size: 22px;
                                 color: #666666;
                                 margin-left: 8px;
+                                cursor: pointer;
+                                &:hover {
+                                    color: #555555;
+                                }
                             }
                             &.has-desc {
                                 .task-title {
@@ -593,6 +562,24 @@
                             margin-right: 4px;
                         }
                     }
+                }
+            }
+        }
+    }
+}
+.project-list-column-more-content {
+    > li {
+        min-width: 130px;
+        .item {
+            display: flex;
+            align-items: center;
+            > i {
+                font-size: 18px;
+                margin-right: 8px;
+                padding: 0;
+                color: #bbbbbb;
+                &.ivu-icon {
+                    font-size: 16px;
                 }
             }
         }

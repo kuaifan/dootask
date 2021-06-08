@@ -72,21 +72,28 @@
                             <em>({{column.project_task.length}})</em>
                         </div>
                         <div class="column-head-icon">
-                            <Poptip :ref="'poptip_' + column.id">
+                            <EDropdown trigger="click" @command="dropColumn(column, $event)">
                                 <Icon type="ios-more" />
-                                <div class="more-content" slot="content">
-                                    <ul>
-                                        <li @click="modifyColumn(column)"><Icon type="md-create" />{{$L('修改')}}</li>
-                                        <li @click="removeColumn(column)"><Icon type="md-trash" />{{$L('删除')}}</li>
-                                        <li class="divided"></li>
-                                        <li class="title">{{$L('颜色')}}</li>
-                                        <li v-for="(c, k) in colorList" :key="k" @click="saveColumn(column, column.name, c.color)">
+                                <EDropdownMenu slot="dropdown" class="project-list-column-more-content">
+                                    <EDropdownItem command="modify">
+                                        <div class="item">
+                                            <Icon type="md-create" />{{$L('修改')}}
+                                        </div>
+                                    </EDropdownItem>
+                                    <EDropdownItem command="delete">
+                                        <div class="item">
+                                            <Icon type="md-trash" />{{$L('删除')}}
+                                        </div>
+                                    </EDropdownItem>
+                                    <EDropdownItem divided disabled>{{$L('颜色')}}</EDropdownItem>
+                                    <EDropdownItem v-for="(c, k) in colorList" :key="k" :command="c">
+                                        <div class="item">
                                             <i class="iconfont" :style="{color:c.color}" v-html="c.color == column.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
-                                        </li>
-                                    </ul>
-                                </div>
-                            </Poptip>
-                            <Icon type="md-add" @click="addTopShow(column)" />
+                                        </div>
+                                    </EDropdownItem>
+                                </EDropdownMenu>
+                            </EDropdown>
+                            <Icon class="last" type="md-add" @click="addTopShow(column)" />
                         </div>
                     </div>
                     <div :ref="'column_' + column.id" class="column-task overlay-y">
@@ -111,8 +118,15 @@
                             @remove="sortUpdate">
                             <div v-for="item in panelTask(column.project_task)" class="task-item task-draggable">
                             <div :class="['task-head', item.desc ? 'has-desc' : '']">
+                                <i class="task-choose iconfont">&#xe625;</i>
                                 <div class="task-title"><pre>{{item.name}}</pre></div>
-                                <Icon type="ios-more" />
+                                <EDropdown trigger="click" @command="dropTask(item, $event)">
+                                    <Icon type="ios-more" />
+                                    <EDropdownMenu slot="dropdown">
+                                        <EDropdownItem command="complete">{{$L('完成')}}</EDropdownItem>
+                                        <EDropdownItem command="delete" divided>{{$L('删除')}}</EDropdownItem>
+                                    </EDropdownMenu>
+                                </EDropdown>
                             </div>
                             <div v-if="item.desc" class="task-desc" v-html="item.desc"></div>
                             <div v-if="item.task_tag.length > 0" class="task-tags">
@@ -725,6 +739,18 @@ export default {
             });
         },
 
+        dropColumn(column, command) {
+            if (command === 'modify') {
+                this.modifyColumn(column);
+            }
+            else if (command === 'delete') {
+                this.removeColumn(column);
+            }
+            else if (command.name) {
+                this.saveColumn(column, column.name, command.color)
+            }
+        },
+
         modifyColumn(column) {
             $A.modalInput({
                 value: column.name,
@@ -737,7 +763,6 @@ export default {
                     return true;
                 }
             });
-            this.$refs['poptip_' + column.id][0].handleClose();
         },
 
         removeColumn(column) {
@@ -768,7 +793,6 @@ export default {
                     });
                 }
             });
-            this.$refs['poptip_' + column.id][0].handleClose();
         },
 
         saveColumn(column, name, color) {
@@ -796,7 +820,16 @@ export default {
                     }
                 }
             });
-            this.$refs['poptip_' + column.id][0].handleClose();
+        },
+
+        dropTask(task, command) {
+            switch (command) {
+                case 'complete':
+                    break;
+
+                case 'delete':
+                    break;
+            }
         },
 
         onSetting() {
