@@ -24,6 +24,9 @@ class VerifyCsrfToken extends Middleware
         // 添加任务
         'api/project/task/add/',
 
+        // 修改任务
+        'api/project/task/update/',
+
         // 聊天发文件
         'api/dialog/msg/sendfile/',
     ];

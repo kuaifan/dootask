@@ -114,9 +114,7 @@ export default {
             return;
         }
         if (state.method.isJson(state.cacheProject[project_id])) {
-            setTimeout(() => {
-                state.projectDetail = state.cacheProject[project_id];
-            });
+            state.projectDetail = state.cacheProject[project_id];
         }
         state.projectDetail.id = project_id;
         //
@@ -309,14 +307,12 @@ export default {
         //
         state.dialogMsgList = [];
         if (state.method.isJson(state.cacheDialogMsg[dialog_id])) {
-            setTimeout(() => {
-                let length = state.cacheDialogMsg[dialog_id].data.length;
-                if (length > 50) {
-                    state.cacheDialogMsg[dialog_id].data.splice(0, length - 50);
-                }
-                state.dialogDetail = state.cacheDialogMsg[dialog_id].dialog
-                state.dialogMsgList = state.cacheDialogMsg[dialog_id].data
-            });
+            let length = state.cacheDialogMsg[dialog_id].data.length;
+            if (length > 50) {
+                state.cacheDialogMsg[dialog_id].data.splice(0, length - 50);
+            }
+            state.dialogDetail = state.cacheDialogMsg[dialog_id].dialog
+            state.dialogMsgList = state.cacheDialogMsg[dialog_id].data
         }
         state.dialogId = dialog_id;
         //

@@ -13,3 +13,6 @@ $--tooltip-font-size: 14px;
     min-width: 100px;
     line-height: 34px;
 }
+.el-dropdown-menu__item--divided:before {
+    height: 5px;
+}

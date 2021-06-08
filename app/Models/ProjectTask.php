@@ -309,4 +309,66 @@ class ProjectTask extends AbstractModel
             ]);
         });
     }
+
+    /**
+     * 修改任务
+     * @param $params
+     * @return array|bool
+     */
+    public function updateTask($params)
+    {
+        return AbstractModel::transaction(function () use ($params) {
+            $name       = $params['name'];
+            $color       = $params['color'];
+            $content    = $params['content'];
+            $times      = $params['times'];
+            $owner      = $params['owner'];
+            // 子任务禁止修改项
+            if ($this->parent_id > 0) {
+                $color = null;
+                $content = null;
+            }
+            // 名称、背景色
+            if ($name) $this->name = $name;
+            if ($color) $this->color = $color;
+            if ($content) {
+                ProjectTaskContent::updateInsert([
+                    'project_id' => $this->parent_id,
+                    'task_id' => $this->id,
+                ], [
+                    'content' => $content,
+                ]);
+            }
+            // 计划时间
+            if ($times) {
+                list($start, $end) = is_string($times) ? explode(",", $times) : (is_array($times) ? $times : []);
+                if (Base::isDate($start) && Base::isDate($end)) {
+                    if ($start != $end) {
+                        $this->start_at = Carbon::parse($start);
+                        $this->end_at = Carbon::parse($end);
+                    }
+                }
+            }
+            // 负责人
+            if ($owner) {
+                if (is_array($owner)) {
+                    $owner = Base::arrayFirst($owner);
+                }
+                $ownerUser = ProjectTaskUser::whereTaskId($this->id)->whereOwner(1)->first();
+                if ($ownerUser->userid != $owner) {
+                    $ownerUser->owner = 0;
+                    $ownerUser->save();
+                    ProjectTaskUser::updateInsert([
+                        'project_id' => $this->parent_id,
+                        'task_id' => $this->id,
+                        'userid' => $owner,
+                    ], [
+                        'owner' => 1,
+                    ]);
+                }
+            }
+            $this->save();
+            return Base::retSuccess('修改成功');
+        });
+    }
 }

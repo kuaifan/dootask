@@ -31,18 +31,18 @@
                         <Badge :count="msgUnread"></Badge>
                     </li>
                     <li class="project-icon">
-                        <Dropdown @on-click="projectDropdown" trigger="click" transfer>
+                        <EDropdown @command="projectDropdown" trigger="click" transfer>
                             <Icon type="ios-more" />
-                            <DropdownMenu v-if="projectDetail.owner_userid === userId" slot="list">
-                                <DropdownItem name="setting">{{$L('项目设置')}}</DropdownItem>
-                                <DropdownItem name="user">{{$L('成员管理')}}</DropdownItem>
-                                <DropdownItem name="transfer" divided>{{$L('移交项目')}}</DropdownItem>
-                                <DropdownItem name="delete" style="color:#f40">{{$L('删除项目')}}</DropdownItem>
-                            </DropdownMenu>
-                            <DropdownMenu v-else slot="list">
-                                <DropdownItem name="exit">{{$L('退出项目')}}</DropdownItem>
-                            </DropdownMenu>
-                        </Dropdown>
+                            <EDropdownMenu v-if="projectDetail.owner_userid === userId" slot="dropdown">
+                                <EDropdownItem command="setting">{{$L('项目设置')}}</EDropdownItem>
+                                <EDropdownItem command="user">{{$L('成员管理')}}</EDropdownItem>
+                                <EDropdownItem command="transfer" divided>{{$L('移交项目')}}</EDropdownItem>
+                                <EDropdownItem command="delete" style="color:#f40">{{$L('删除项目')}}</EDropdownItem>
+                            </EDropdownMenu>
+                            <EDropdownMenu v-else slot="dropdown">
+                                <EDropdownItem command="exit">{{$L('退出项目')}}</EDropdownItem>
+                            </EDropdownMenu>
+                        </EDropdown>
 
                     </li>
                 </ul>
@@ -66,16 +66,20 @@
                 <li v-for="column in projectDetail.project_column" class="column-item">
                     <div
                         :class="['column-head', column.color ? 'custom-color' : '']"
-                        :style="column.color ? {backgroundColor: column.color}:null">
+                        :style="column.color ? {backgroundColor: column.color} : null">
                         <div class="column-head-title">
                             <AutoTip>{{column.name}}</AutoTip>
                             <em>({{column.project_task.length}})</em>
                         </div>
                         <div class="column-head-icon">
-                            <EDropdown trigger="click" @command="dropColumn(column, $event)">
+                            <div v-if="column.loading === true" class="loading"><Loading /></div>
+                            <EDropdown
+                                v-else
+                                trigger="click"
+                                @command="dropColumn(column, $event)">
                                 <Icon type="ios-more" />
-                                <EDropdownMenu slot="dropdown" class="project-list-column-more-content">
-                                    <EDropdownItem command="modify">
+                                <EDropdownMenu slot="dropdown" class="project-list-more-dropdown-menu column-more">
+                                    <EDropdownItem command="title">
                                         <div class="item">
                                             <Icon type="md-create" />{{$L('修改')}}
                                         </div>
@@ -86,7 +90,7 @@
                                         </div>
                                     </EDropdownItem>
                                     <EDropdownItem divided disabled>{{$L('颜色')}}</EDropdownItem>
-                                    <EDropdownItem v-for="(c, k) in colorList" :key="k" :command="c">
+                                    <EDropdownItem v-for="(c, k) in columnList" :key="k" :command="c">
                                         <div class="item">
                                             <i class="iconfont" :style="{color:c.color}" v-html="c.color == column.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
                                         </div>
@@ -116,15 +120,35 @@
                             group="task"
                             @sort="sortUpdate"
                             @remove="sortUpdate">
-                            <div v-for="item in panelTask(column.project_task)" class="task-item task-draggable">
+                            <div
+                                v-for="item in panelTask(column.project_task)"
+                                class="task-item task-draggable"
+                                :style="item.color ? {backgroundColor: item.color} : null">
                             <div :class="['task-head', item.desc ? 'has-desc' : '']">
-                                <i class="task-choose iconfont">&#xe625;</i>
                                 <div class="task-title"><pre>{{item.name}}</pre></div>
-                                <EDropdown trigger="click" @command="dropTask(item, $event)">
+                                <div v-if="item.loading === true" class="loading"><Loading /></div>
+                                <EDropdown
+                                    v-else
+                                    trigger="click"
+                                    @command="dropTask(item, $event)">
                                     <Icon type="ios-more" />
-                                    <EDropdownMenu slot="dropdown">
-                                        <EDropdownItem command="complete">{{$L('完成')}}</EDropdownItem>
-                                        <EDropdownItem command="delete" divided>{{$L('删除')}}</EDropdownItem>
+                                    <EDropdownMenu slot="dropdown" class="project-list-more-dropdown-menu">
+                                        <EDropdownItem command="complete">
+                                            <div class="item">
+                                                <Icon type="md-create" />{{$L('完成')}}
+                                            </div>
+                                        </EDropdownItem>
+                                        <EDropdownItem command="delete">
+                                            <div class="item">
+                                                <Icon type="md-trash" />{{$L('删除')}}
+                                            </div>
+                                        </EDropdownItem>
+                                        <EDropdownItem divided disabled>{{$L('颜色')}}</EDropdownItem>
+                                        <EDropdownItem v-for="(c, k) in taskList" :key="k" :command="c">
+                                            <div class="item">
+                                                <i class="iconfont" :style="{color:c.color||'#f9f9f9'}" v-html="c.color == column.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
+                                            </div>
+                                        </EDropdownItem>
                                     </EDropdownMenu>
                                 </EDropdown>
                             </div>
@@ -461,7 +485,7 @@ export default {
             transferData: {},
             transferLoad: 0,
 
-            colorList: [
+            columnList: [
                 {name: '默认', color: ''},
                 {name: '灰色', color: '#6C6F71'},
                 {name: '棕色', color: '#695C56'},
@@ -472,6 +496,16 @@ export default {
                 {name: '紫色', color: '#6B5C8D'},
                 {name: '粉色', color: '#8E5373'},
                 {name: '红色', color: '#9D6058'},
+            ],
+
+            taskList: [
+                {name: '默认', color: ''},
+                {name: '黄色', color: '#FCF4A7'},
+                {name: '蓝色', color: '#BCF2FD'},
+                {name: '绿色', color: '#C3FDAA'},
+                {name: '粉色', color: '#F6C9C8'},
+                {name: '紫色', color: '#BAC9FB'},
+                {name: '灰色', color: '#EEEEEE'},
             ]
         }
     },
@@ -740,27 +774,65 @@ export default {
         },
 
         dropColumn(column, command) {
-            if (command === 'modify') {
-                this.modifyColumn(column);
+            if (command === 'title') {
+                this.titleColumn(column);
             }
             else if (command === 'delete') {
                 this.removeColumn(column);
             }
             else if (command.name) {
-                this.saveColumn(column, column.name, command.color)
+                this.updateColumn(column, {
+                    color: command.color
+                });
             }
         },
 
-        modifyColumn(column) {
+        titleColumn(column) {
             $A.modalInput({
                 value: column.name,
                 title: "修改列表",
                 placeholder: "输入列表名称",
                 onOk: (value) => {
                     if (value) {
-                        this.saveColumn(column, value, column.color);
+                        this.updateColumn(column, {
+                            name: value
+                        });
                     }
                     return true;
+                }
+            });
+        },
+
+        updateColumn(column, updata) {
+            if (column.loading === true) {
+                return;
+            }
+            this.$set(column, 'loading', true);
+            //
+            const backup = $A.cloneJSON(column);
+            Object.keys(updata).forEach(key => {
+                this.$set(column, key, updata[key]);
+            });
+            //
+            $A.apiAjax({
+                url: 'project/column/update',
+                data: Object.assign(updata, {
+                    column_id: column.id,
+                }),
+                complete: () => {
+                    this.$set(column, 'loading', false);
+                },
+                error: () => {
+                    Object.keys(updata).forEach(key => {
+                        this.$set(column, key, backup[key]);
+                    });
+                },
+                success: ({ret, data, msg}) => {
+                    if (ret !== 1) {
+                        Object.keys(updata).forEach(key => {
+                            this.$set(column, key, backup[key]);
+                        });
+                    }
                 }
             });
         },
@@ -771,11 +843,19 @@ export default {
                 content: '你确定要删除列表【' + column.name + '】及列表内的任务吗？',
                 loading: true,
                 onOk: () => {
+                    if (column.loading === true) {
+                        return;
+                    }
+                    this.$set(column, 'loading', true);
+                    //
                     $A.apiAjax({
                         url: 'project/column/delete',
                         data: {
                             project_id: this.projectDetail.id,
                             column_id: column.id,
+                        },
+                        complete: () => {
+                            this.$set(column, 'loading', false);
                         },
                         error: () => {
                             this.$Modal.remove();
@@ -785,6 +865,10 @@ export default {
                             this.$Modal.remove();
                             if (ret === 1) {
                                 $A.messageSuccess(msg);
+                                let index = this.projectDetail.project_column.findIndex(({id}) => id === column.id);
+                                if (index > -1) {
+                                    this.projectDetail.project_column.splice(index, 1);
+                                }
                                 this.$store.commit('getProjectDetail', this.projectDetail.id);
                             }else{
                                 $A.modalError(msg, 301);
@@ -795,41 +879,52 @@ export default {
             });
         },
 
-        saveColumn(column, name, color) {
-            let bakName = column.name;
-            let bakColor = column.color;
-            this.$set(column, 'name', name);
-            this.$set(column, 'color', color);
+        dropTask(task, command) {
+            if (command === 'complete') {
+                // 完成
+            }
+            else if (command === 'delete') {
+                // 删除
+            }
+            else if (command.name) {
+                this.updateTask(task, {
+                    color: command.color
+                })
+            }
+        },
+
+        updateTask(task, updata) {
+            if (task.loading === true) {
+                return;
+            }
+            this.$set(task, 'loading', true);
             //
+            const backup = $A.cloneJSON(task);
+            Object.keys(updata).forEach(key => {
+                this.$set(task, key, updata[key]);
+            });
             $A.apiAjax({
-                url: 'project/column/add',
-                data: {
-                    project_id: this.projectDetail.id,
-                    column_id: column.id,
-                    name: name,
-                    color: color,
+                url: 'project/task/update',
+                data: Object.assign(updata, {
+                    task_id: task.id,
+                }),
+                method: 'post',
+                complete: () => {
+                    this.$set(task, 'loading', false);
                 },
                 error: () => {
-                    this.$set(column, 'name', bakName);
-                    this.$set(column, 'color', bakColor);
+                    Object.keys(updata).forEach(key => {
+                        this.$set(task, key, backup[key]);
+                    });
                 },
                 success: ({ret, data, msg}) => {
                     if (ret !== 1) {
-                        this.$set(column, 'name', data.name);
-                        this.$set(column, 'color', data.color);
+                        Object.keys(updata).forEach(key => {
+                            this.$set(task, key, backup[key]);
+                        });
                     }
                 }
             });
-        },
-
-        dropTask(task, command) {
-            switch (command) {
-                case 'complete':
-                    break;
-
-                case 'delete':
-                    break;
-            }
         },
 
         onSetting() {

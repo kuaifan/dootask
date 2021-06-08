@@ -229,11 +229,24 @@
                         display: flex;
                         align-items: center;
                         margin-left: 16px;
+                        .loading,
                         .ivu-icon {
+                            width: 24px;
+                            height: 24px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
                             padding-right: 8px;
+                            .common-loading {
+                                width: 16px;
+                                height: 16px;
+                                margin: 0;
+                            }
+                        }
+                        .ivu-icon {
+                            cursor: pointer;
                             font-size: 16px;
                             color: #aaaaaa;
-                            cursor: pointer;
                             font-weight: 600;
                             transition: color 0.3s;
                             &:hover {
@@ -296,14 +309,6 @@
                         .task-head {
                             display: flex;
                             align-items: flex-start;
-                            .task-choose {
-                                margin-right: 5px;
-                                font-size: 22px;
-                                color: #aaaaaa;
-                                height: 22px;
-                                line-height: 22px;
-                                cursor: pointer;
-                            }
                             .task-title {
                                 flex: 1;
                                 padding-top: 1px;
@@ -315,10 +320,23 @@
                                     word-wrap: break-word;
                                 }
                             }
+                            .loading,
+                            .ivu-icon {
+                                width: 22px;
+                                height: 22px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                margin-left: 8px;
+                                .common-loading {
+                                    width: 16px;
+                                    height: 16px;
+                                    margin: 0;
+                                }
+                            }
                             .ivu-icon {
                                 font-size: 22px;
                                 color: #666666;
-                                margin-left: 8px;
                                 cursor: pointer;
                                 &:hover {
                                     color: #555555;
@@ -361,7 +379,7 @@
                                         margin-left: 0;
                                     }
                                     .common-avatar {
-                                        border: 2px solid #ffffff;
+                                        padding: 2px;
                                     }
                                 }
                             }
@@ -567,9 +585,8 @@
         }
     }
 }
-.project-list-column-more-content {
+.project-list-more-dropdown-menu {
     > li {
-        min-width: 130px;
         .item {
             display: flex;
             align-items: center;
@@ -582,6 +599,11 @@
                     font-size: 16px;
                 }
             }
+        }
+    }
+    &.column-more {
+        > li {
+            min-width: 130px;
         }
     }
 }
