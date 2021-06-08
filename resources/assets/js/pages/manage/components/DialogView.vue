@@ -79,7 +79,7 @@ export default {
     },
 
     mounted() {
-        this.parsingRead()
+        this.msgRead()
     },
 
     computed: {
@@ -94,13 +94,11 @@ export default {
         }
     },
 
-    watch: {
-        msgData() {
-            this.parsingRead()
-        }
-    },
-
     methods: {
+        msgRead() {
+            this.$store.commit('wsMsgRead', this.msgData);
+        },
+
         popperShow() {
             $A.apiAjax({
                 url: 'dialog/msg/readlist',
@@ -113,13 +111,6 @@ export default {
                     }
                 }
             });
-        },
-
-        parsingRead() {
-            const {userid, r, id} = this.msgData;
-            if (userid == this.userId) return;
-            if ($A.isJson(r) && r.read_at) return;
-            this.$store.commit('wsMsgRead', id);
         },
 
         formatTime(date) {

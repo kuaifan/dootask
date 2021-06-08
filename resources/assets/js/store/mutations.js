@@ -306,12 +306,6 @@ export default {
         }
         state.dialogId = dialog_id;
         //
-        let dialog = state.dialogList.find(({id}) => id == dialog_id);
-        if (dialog && dialog.unread > 0) {
-            state.dialogMsgUnread-= dialog.unread;
-            dialog.unread = 0;
-        }
-        //
         if (state.cacheDialog[dialog_id + "::load"]) {
             return;
         }
@@ -484,9 +478,6 @@ export default {
                             if (dialog_id === state.dialogId) {
                                 let index = state.dialogMsgList.findIndex(({id}) => id === data.id);
                                 if (index === -1) {
-                                    if (state.dialogMsgList.length >= 200) {
-                                        state.dialogMsgList.splice(0, 1);
-                                    }
                                     state.dialogMsgList.push(data);
                                 } else {
                                     state.dialogMsgList.splice(index, 1, data);
@@ -507,7 +498,7 @@ export default {
                             if (mode === "add") {
                                 if (dialog) {
                                     // 新增未读数
-                                    if (state.dialogId !== dialog_id) dialog.unread++;
+                                    if (data.userid !== state.userId) dialog.unread++;
                                     // 移动到首位
                                     const index = state.dialogList.findIndex(({id}) => id == dialog_id);
                                     if (index > -1) {
@@ -517,7 +508,7 @@ export default {
                                     }
                                 }
                                 // 新增总未读数
-                                if (state.dialogId !== dialog_id) state.dialogMsgUnread++;
+                                if (data.userid !== state.userId) state.dialogMsgUnread++;
                             }
                         })(msgDetail, this);
                     }
@@ -559,10 +550,23 @@ export default {
     /**
      * 发送已阅消息
      * @param state
-     * @param msgId
+     * @param msgData
      */
-    wsMsgRead(state, msgId) {
-        state.wsReadWaitList.push(msgId);
+    wsMsgRead(state, msgData) {
+        if (msgData.userid == state.userId) return;
+        if (typeof msgData.r === "undefined") msgData.r = {};
+        //
+        const {id, dialog_id, r} = msgData;
+        if (!r.read_at) {
+            r.read_at = $A.formatDate('Y-m-d H:i:s');
+            let dialog = state.dialogList.find(({id}) => id == dialog_id);
+            if (dialog && dialog.unread > 0) {
+                dialog.unread--
+                state.dialogMsgUnread--;
+            }
+        }
+        //
+        state.wsReadWaitList.push(id);
         clearTimeout(state.wsReadTimeout);
         state.wsReadTimeout = setTimeout(() => {
             this.commit('wsSend', {
