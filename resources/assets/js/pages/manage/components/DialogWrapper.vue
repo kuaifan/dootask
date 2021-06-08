@@ -2,8 +2,8 @@
     <div
         class="dialog-wrapper"
         @drop.prevent="chatPasteDrag($event, 'drag')"
-        @dragover.prevent="chatDragOver(true)"
-        @dragleave.prevent="chatDragOver(false)">
+        @dragover.prevent="chatDragOver(true, $event)"
+        @dragleave.prevent="chatDragOver(false, $event)">
         <slot name="head">
             <div class="dialog-title">
                 <h2>{{dialogDetail.name}}</h2>
@@ -156,7 +156,7 @@ export default {
             }
         },
 
-        chatDragOver(show) {
+        chatDragOver(show, e) {
             let random = (this.__dialogDrag = $A.randomString(8));
             if (!show) {
                 setTimeout(() => {
@@ -165,7 +165,10 @@ export default {
                     }
                 }, 150);
             } else {
-                this.dialogDrag = show;
+                if (e.dataTransfer.effectAllowed === 'move') {
+                    return;
+                }
+                this.dialogDrag = true;
             }
         },
 

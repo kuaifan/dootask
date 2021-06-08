@@ -68,11 +68,11 @@
                         :class="['column-head', column.color ? 'custom-color' : '']"
                         :style="column.color ? {backgroundColor: column.color}:null">
                         <div class="column-head-title">
-                            <span><AutoTip>{{column.name}}{{column.name}}{{column.name}}{{column.name}}{{column.name}}{{column.name}}</AutoTip></span>
+                            <AutoTip>{{column.name}}</AutoTip>
                             <em>({{column.project_task.length}})</em>
                         </div>
                         <div class="column-head-icon">
-                            <Poptip>
+                            <Poptip :ref="'poptip_' + column.id">
                                 <Icon type="ios-more" />
                                 <div class="more-content" slot="content">
                                     <ul>
@@ -736,7 +736,8 @@ export default {
                     }
                     return true;
                 }
-            })
+            });
+            this.$refs['poptip_' + column.id][0].handleClose();
         },
 
         removeColumn(column) {
@@ -767,6 +768,7 @@ export default {
                     });
                 }
             });
+            this.$refs['poptip_' + column.id][0].handleClose();
         },
 
         saveColumn(column, name, color) {
@@ -794,6 +796,7 @@ export default {
                     }
                 }
             });
+            this.$refs['poptip_' + column.id][0].handleClose();
         },
 
         onSetting() {
