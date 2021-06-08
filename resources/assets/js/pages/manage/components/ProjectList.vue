@@ -122,7 +122,7 @@
                             @remove="sortUpdate">
                             <div
                                 v-for="item in panelTask(column.project_task)"
-                                class="task-item task-draggable"
+                                :class="['task-item task-draggable', item.complete_at ? 'complete' : '']"
                                 :style="item.color ? {backgroundColor: item.color} : null">
                             <div :class="['task-head', item.desc ? 'has-desc' : '']">
                                 <div class="task-title"><pre>{{item.name}}</pre></div>
@@ -177,7 +177,7 @@
                                     :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
                                     :open-delay="600"
                                     :content="item.end_at">
-                                    <div><Icon type="ios-time-outline"/>{{ expiresFormat(item.end_at) }}</div>
+                                    <div v-if="!item.complete_at"><Icon type="ios-time-outline"/>{{ expiresFormat(item.end_at) }}</div>
                                 </ETooltip>
                             </div>
                             <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>

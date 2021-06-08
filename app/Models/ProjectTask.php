@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Module\Base;
+use Arr;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -210,32 +211,33 @@ class ProjectTask extends AbstractModel
 
     /**
      * 添加任务
-     * @param $params
+     * @param $data
      * @return array|bool
      */
-    public static function addTask($params)
+    public static function addTask($data)
     {
-        $parent_id  = intval($params['parent_id']);
-        $project_id = intval($params['project_id']);
-        $column_id  = intval($params['column_id']);
-        $name       = $params['name'];
-        $content    = $params['content'];
-        $times      = $params['times'];
-        $owner      = $params['owner'];
-        $subtasks   = $params['subtasks'];
-        $p_level    = intval($params['p_level']);
-        $p_name     = $params['p_name'];
-        $p_color    = $params['p_color'];
-        $top        = intval($params['top']);
+        $parent_id  = intval($data['parent_id']);
+        $project_id = intval($data['project_id']);
+        $column_id  = intval($data['column_id']);
+        $name       = $data['name'];
+        $content    = $data['content'];
+        $times      = $data['times'];
+        $owner      = $data['owner'];
+        $subtasks   = $data['subtasks'];
+        $p_level    = intval($data['p_level']);
+        $p_name     = $data['p_name'];
+        $p_color    = $data['p_color'];
+        $top        = intval($data['top']);
         //
         $retPre = $parent_id ? '子任务' : '任务';
-        $task = self::createInstance();
-        $task->parent_id = $parent_id;
-        $task->project_id = $project_id;
-        $task->column_id = $column_id;
-        $task->p_level = $p_level;
-        $task->p_name = $p_name;
-        $task->p_color = $p_color;
+        $task = self::createInstance([
+            'parent_id' => $parent_id,
+            'project_id' => $project_id,
+            'column_id' => $column_id,
+            'p_level' => $p_level,
+            'p_name' => $p_name,
+            'p_color' => $p_color,
+        ]);
         if ($content) {
             $task->desc = Base::getHtml($content);
         }
@@ -311,52 +313,30 @@ class ProjectTask extends AbstractModel
     }
 
     /**
-     * 标记已完成、未完成
-     * @param Carbon|null $complete_at 完成时间
-     * @return array|bool
-     */
-    public function completeTask($complete_at)
-    {
-        return AbstractModel::transaction(function () use ($complete_at) {
-            if ($complete_at === null) {
-                // 标记未完成
-                $this->complete_at = null;
-            } else {
-                // 标记已完成
-                if ($this->parent_id == 0) {
-                    if (self::whereParentId($this->id)->whereCompleteAt(null)->exists()) {
-                        return Base::retError('子任务未完成');
-                    }
-                }
-                $this->complete_at = $complete_at;
-            }
-            $this->save();
-            return Base::retSuccess('修改成功');
-        });
-    }
-
-    /**
      * 修改任务
-     * @param $params
+     * @param $data
      * @return array
      */
-    public function updateTask($params)
+    public function updateTask($data)
     {
-        return AbstractModel::transaction(function () use ($params) {
-            $name       = $params['name'];
-            $color       = $params['color'];
-            $content    = $params['content'];
-            $times      = $params['times'];
-            $owner      = $params['owner'];
-            // 子任务禁止修改项
-            if ($this->parent_id > 0) {
-                $color = null;
-                $content = null;
+        return AbstractModel::transaction(function () use ($data) {
+            $content    = $data['content'];
+            $times      = $data['times'];
+            $owner      = $data['owner'];
+            // 标题
+            if (Arr::exists($data, 'name')) {
+                if (empty($data['name'])) {
+                    return Base::retError('任务描述不能为空');
+                } elseif (mb_strlen($data['name']) > 255) {
+                    return Base::retError('任务描述最多只能设置255个字');
+                }
+                $this->name = $data['name'];
             }
-            // 名称、背景色
-            if ($name) $this->name = $name;
-            if ($color) $this->color = $color;
-            if ($content) {
+            // 背景色
+            if (Arr::exists($data, 'color')) {
+                $this->color = $data['color'];
+            }
+            if ($content && $this->parent_id === 0) {
                 ProjectTaskContent::updateInsert([
                     'project_id' => $this->parent_id,
                     'task_id' => $this->id,
@@ -391,6 +371,31 @@ class ProjectTask extends AbstractModel
                         'owner' => 1,
                     ]);
                 }
+            }
+            $this->save();
+            return Base::retSuccess('修改成功');
+        });
+    }
+
+    /**
+     * 标记已完成、未完成
+     * @param Carbon|null $complete_at 完成时间
+     * @return array|bool
+     */
+    public function completeTask($complete_at)
+    {
+        return AbstractModel::transaction(function () use ($complete_at) {
+            if ($complete_at === null) {
+                // 标记未完成
+                $this->complete_at = null;
+            } else {
+                // 标记已完成
+                if ($this->parent_id == 0) {
+                    if (self::whereParentId($this->id)->whereCompleteAt(null)->exists()) {
+                        return Base::retError('子任务未完成');
+                    }
+                }
+                $this->complete_at = $complete_at;
             }
             $this->save();
             return Base::retSuccess('修改成功');

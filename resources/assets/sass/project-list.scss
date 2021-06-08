@@ -290,21 +290,13 @@
                         background-color: #ffffff;
                         border-radius: 12px;
                         padding: 12px;
-                        transition: box-shadow 0.3s;
+                        transition: box-shadow 0.3s, opacity 0.3s;
                         position: relative;
                         &:hover {
                             box-shadow: 0 0 10px #e6ecfa;
                         }
                         &:first-child {
                             margin-top: 16px;
-                        }
-                        .priority-color {
-                            position: absolute;
-                            top: 12px;
-                            left: 0;
-                            width: 3px;
-                            height: 42px;
-                            border-radius: 2px;
                         }
                         .task-head {
                             display: flex;
@@ -420,6 +412,33 @@
                                     margin-right: 3px;
                                     font-size: 14px;
                                 }
+                            }
+                        }
+                        .priority-color {
+                            position: absolute;
+                            top: 12px;
+                            left: 0;
+                            width: 3px;
+                            height: 42px;
+                            max-height: 50%;
+                            border-radius: 2px;
+                        }
+                        &.complete {
+                            opacity: 0.5;
+                            &:hover {
+                                opacity: 0.8;
+                            }
+                            .task-head {
+                                .task-title {
+                                    text-decoration: line-through;
+                                }
+                            }
+                            .task-desc,
+                            .task-tags,
+                            .task-users,
+                            .task-progress,
+                            .priority-color {
+                                display: none;
                             }
                         }
                     }

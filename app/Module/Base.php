@@ -1955,7 +1955,7 @@ class Base
     public static function getPostValue($key, $default = null)
     {
         $value = self::getContentValue($key, $default);
-        if (empty($value)) {
+        if (!isset($value)) {
             $value = Request::post($key, $default);
         }
         return $value;

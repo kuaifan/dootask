@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Models\WebSocketDialogMsg;
 use App\Module\Base;
 use Carbon\Carbon;
+use Illuminate\Support\Arr;
 use Request;
 
 /**
@@ -578,9 +579,8 @@ class ProjectController extends AbstractController
             $user = User::IDE($user['data']);
         }
         //
-        $column_id = intval(Request::input('column_id'));
-        $name = trim(Request::input('name'));
-        $color = trim(Request::input('color'));
+        $data = Request::all();
+        $column_id = intval($data['column_id']);
         // 列表
         $column = ProjectColumn::whereId($column_id)->first();
         if (empty($column)) {
@@ -596,8 +596,8 @@ class ProjectController extends AbstractController
             return Base::retError('项目不存在或不在成员列表内');
         }
         //
-        if ($name) $column->name = $name;
-        if ($color) $column->color = $color;
+        if (Arr::exists($data, 'name')) $column->name = $data['name'];
+        if (Arr::exists($data, 'color')) $column->color = $data['color'];
         $column->save();
         return Base::retSuccess('修改成功', $column);
     }
@@ -659,17 +659,9 @@ class ProjectController extends AbstractController
         } else {
             $user = User::IDE($user['data']);
         }
-        $project_id = Base::getPostInt('project_id');
-        $column_id = Base::getPostValue('column_id');
-        $name = Base::getPostValue('name');
-        $content = Base::getPostValue('content');
-        $times = Base::getPostValue('times');
-        $owner = Base::getPostValue('owner');
-        $subtasks = Base::getPostValue('subtasks');
-        $p_level = Base::getPostValue('p_level');
-        $p_name = Base::getPostValue('p_name');
-        $p_color = Base::getPostValue('p_color');
-        $top = Base::getPostInt('top');
+        parse_str(Request::getContent(), $data);
+        $project_id = intval($data['project_id']);
+        $column_id = $data['column_id'];
         // 项目
         $project = Project::select($this->projectSelect)
             ->join('project_users', 'projects.id', '=', 'project_users.project_id')
@@ -701,20 +693,11 @@ class ProjectController extends AbstractController
             return Base::retError('任务列表不存在或已被删除');
         }
         //
-        $result = ProjectTask::addTask([
+        $result = ProjectTask::addTask(array_merge($data, [
             'parent_id' => 0,
             'project_id' => $project->id,
             'column_id' => $column->id,
-            'name' => $name,
-            'content' => $content,
-            'times' => $times,
-            'owner' => $owner,
-            'subtasks' => $subtasks,
-            'p_level' => $p_level,
-            'p_name' => $p_name,
-            'p_color' => $p_color,
-            'top' => $top,
-        ]);
+        ]));
         if (Base::isSuccess($result)) {
             $result['data'] = ProjectTask::with(['taskUser', 'taskTag'])->whereId($result['data']['id'])->first();
         }
@@ -742,13 +725,8 @@ class ProjectController extends AbstractController
             $user = User::IDE($user['data']);
         }
         //
-        $task_id = Base::getPostInt('task_id');
-        $name = Base::getPostValue('name');
-        $color = Base::getPostValue('color');
-        $content = Base::getPostValue('content');
-        $times = Base::getPostValue('times');
-        $owner = Base::getPostValue('owner');
-        $complete_at = Base::getPostValue('complete_at');
+        parse_str(Request::getContent(), $data);
+        $task_id = intval($data['task_id']);
         // 任务
         $task = ProjectTask::whereId($task_id)->first();
         if (empty($task)) {
@@ -764,27 +742,21 @@ class ProjectController extends AbstractController
             return Base::retError('项目不存在或不在成员列表内');
         }
         //
-        if ($complete_at === false || $complete_at === "false") {
-            // 标记未完成
-            if (!$task->complete_at) {
-                return Base::retError('未完成任务');
-            }
-            $result = $task->completeTask(null);
-        } elseif (Base::isDate($complete_at)) {
+        if (Base::isDate($data['complete_at'])) {
             // 标记已完成
             if ($task->complete_at) {
                 return Base::retError('任务已完成');
             }
             $result = $task->completeTask(Carbon::now());
+        } elseif (Arr::exists($data, 'complete_at')) {
+            // 标记未完成
+            if (!$task->complete_at) {
+                return Base::retError('未完成任务');
+            }
+            $result = $task->completeTask(null);
         } else {
             // 更新任务
-            $result = $task->updateTask([
-                'name' => $name,
-                'color' => $color,
-                'content' => $content,
-                'times' => $times,
-                'owner' => $owner,
-            ]);
+            $result = $task->updateTask($data);
         }
         if (Base::isSuccess($result)) {
             $result['data'] = $task->toArray();
