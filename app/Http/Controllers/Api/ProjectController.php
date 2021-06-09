@@ -621,7 +621,7 @@ class ProjectController extends AbstractController
             return Base::retError('项目不存在或不在成员列表内');
         }
         //
-        $data = ProjectTask::with(['taskUser', 'taskTag'])->where('parent_id', $task->id)->get();
+        $data = ProjectTask::with(['taskUser', 'taskTag'])->where('parent_id', $task->id)->whereNull('archived_at')->get();
         return Base::retSuccess('success', $data);
     }
 

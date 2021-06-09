@@ -117,11 +117,11 @@ class ProjectTask extends AbstractModel
         if ($this->parent_id > 0) {
             $this->attributes['sub_num'] = 0;
             $this->attributes['sub_complete'] = 0;
-            $this->attributes['percent'] = 0;
+            $this->attributes['percent'] = $this->complete_at ? 100 : 0;
             return;
         }
         if (!isset($this->attributes['sub_num'])) {
-            $builder = self::whereParentId($this->id);
+            $builder = self::whereParentId($this->id)->whereNull('archived_at');
             $this->attributes['sub_num'] = $builder->count();
             $this->attributes['sub_complete'] = $builder->whereNotNull('complete_at')->count();
             //
