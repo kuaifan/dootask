@@ -13,10 +13,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $name 名称
  * @property string|null $desc 描述、备注
  * @property int|null $userid 创建人
- * @property int|null $dialog_id 聊天会话ID
+ * @property int|mixed $dialog_id 聊天会话ID
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read int $task_complete
+ * @property-read int $task_my_complete
+ * @property-read int $task_my_num
+ * @property-read int $task_my_percent
+ * @property-read int $task_num
+ * @property-read int $task_percent
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectColumn[] $projectColumn
  * @property-read int|null $project_column_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectLog[] $projectLog
@@ -42,6 +48,93 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Project extends AbstractModel
 {
     use SoftDeletes;
+
+    protected $appends = [
+        'task_num',
+        'task_complete',
+        'task_percent',
+        'task_my_num',
+        'task_my_complete',
+        'task_my_percent',
+    ];
+
+    /**
+     * 生成子任务数据
+     */
+    private function generateTaskData()
+    {
+        if (!isset($this->attributes['task_num'])) {
+            $builder = ProjectTask::whereProjectId($this->id)->whereParentId(0)->whereNull('archived_at');
+            $this->attributes['task_num'] = $builder->count();
+            $this->attributes['task_complete'] = $builder->whereNotNull('complete_at')->count();
+            $this->attributes['task_percent'] = $this->attributes['task_num'] ? intval($this->attributes['task_complete'] / $this->attributes['task_num'] * 100) : 0;
+            //
+            $builder = ProjectTask::whereProjectId($this->id)->whereParentId(0)->whereNull('archived_at');
+            $this->attributes['task_my_num'] = $builder->whereUserid(User::token2userid())->count();
+            $this->attributes['task_my_complete'] = $builder->whereUserid(User::token2userid())->whereNotNull('complete_at')->count();
+            $this->attributes['task_my_percent'] = $this->attributes['task_my_num'] ? intval($this->attributes['task_my_complete'] / $this->attributes['task_my_num'] * 100) : 0;
+        }
+    }
+
+    /**
+     * 任务数量
+     * @return int
+     */
+    public function getTaskNumAttribute()
+    {
+        $this->generateTaskData();
+        return $this->attributes['task_num'];
+    }
+
+    /**
+     * 任务完成数量
+     * @return int
+     */
+    public function getTaskCompleteAttribute()
+    {
+        $this->generateTaskData();
+        return $this->attributes['task_complete'];
+    }
+
+    /**
+     * 任务完成率
+     * @return int
+     */
+    public function getTaskPercentAttribute()
+    {
+        $this->generateTaskData();
+        return $this->attributes['task_percent'];
+    }
+
+    /**
+     * 任务数量（我的）
+     * @return int
+     */
+    public function getTaskMyNumAttribute()
+    {
+        $this->generateTaskData();
+        return $this->attributes['task_my_num'];
+    }
+
+    /**
+     * 任务完成数量（我的）
+     * @return int
+     */
+    public function getTaskMyCompleteAttribute()
+    {
+        $this->generateTaskData();
+        return $this->attributes['task_my_complete'];
+    }
+
+    /**
+     * 任务完成率（我的）
+     * @return int
+     */
+    public function getTaskMyPercentAttribute()
+    {
+        $this->generateTaskData();
+        return $this->attributes['task_my_percent'];
+    }
 
     /**
      * @param $value

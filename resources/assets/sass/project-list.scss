@@ -515,52 +515,9 @@
             &:hover {
                 box-shadow: 0 0 10px #e6ecfa;
             }
-            .task-rows {
-                .task-rows {
-                    position: relative;
-                    overflow: hidden;
-                    &:before {
-                        content: "";
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        right: 0;
-                        box-shadow: rgb(0 0 0 / 8%) 0 0 8px 1px;
-                        z-index: 1;
-                    }
-                    .task-row {
-                        background-color: #fcfcfd;
-                        > div {
-                            &.row-item {
-                                padding-left: 56px;
-                                .item-title {
-                                    color: #6C7D8C;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
             .task-row {
                 > div {
                     padding: 10px 12px;
-                    .task-time {
-                        &.overdue,
-                        &.today {
-                            color: #ffffff;
-                            padding: 1px 5px;
-                            font-size: 13px;
-                            border-radius: 3px;
-                        }
-                        &.overdue {
-                            font-weight: 600;
-                            background-color: #ed4014;
-                        }
-                        &.today {
-                            font-weight: 500;
-                            background-color: #ff9900;
-                        }
-                    }
                     &.row-title {
                         font-size: 14px;
                         font-weight: 500;
@@ -579,7 +536,7 @@
                             padding-left: 6px;
                         }
                     }
-                    &.row-item {
+                    &.row-name {
                         padding-left: 34px;
                         .loading {
                             width: 24px;
@@ -659,7 +616,14 @@
                             }
                         }
                     }
-                    &.row-member {
+                    &.row-column {
+                        .task-column {
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                        }
+                    }
+                    &.row-user {
                         padding: 8px;
                         > ul {
                             height: 32px;
@@ -676,6 +640,28 @@
                             }
                         }
                     }
+                    &.row-time {
+                        .task-time {
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                            &.overdue,
+                            &.today {
+                                color: #ffffff;
+                                padding: 1px 5px;
+                                font-size: 13px;
+                                border-radius: 3px;
+                            }
+                            &.overdue {
+                                font-weight: 600;
+                                background-color: #ed4014;
+                            }
+                            &.today {
+                                font-weight: 500;
+                                background-color: #ff9900;
+                            }
+                        }
+                    }
                     &.row-add {
                         display: flex;
                         align-items: center;
@@ -689,7 +675,32 @@
                         }
                     }
                 }
-
+            }
+            .task-rows {
+                .task-rows {
+                    position: relative;
+                    overflow: hidden;
+                    &:before {
+                        content: "";
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        box-shadow: rgba(0, 0, 0, 0.08) 0 0 8px 1px;
+                        z-index: 1;
+                    }
+                    .task-row {
+                        background-color: #fcfcfd;
+                        > div {
+                            &.row-name {
+                                padding-left: 56px;
+                                .item-title {
+                                    color: #6C7D8C;
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }

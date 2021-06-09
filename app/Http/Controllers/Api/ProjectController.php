@@ -26,11 +26,8 @@ use function Swoole\Coroutine\Http\get;
 class ProjectController extends AbstractController
 {
     private $projectSelect = [
-        '*',
-        'projects.id AS id',
-        'projects.userid AS userid',
-        'projects.created_at AS created_at',
-        'projects.updated_at AS updated_at',
+        'projects.*',
+        'project_users.owner',
     ];
 
     /**
@@ -121,20 +118,20 @@ class ProjectController extends AbstractController
         $columns = Request::input('columns');
         if (!is_array($columns)) $columns = [];
         $insertColumns = [];
-        $inorder = 0;
+        $sort = 0;
         foreach ($columns AS $column) {
             $column = trim($column);
             if ($column) {
                 $insertColumns[] = [
                     'name' => $column,
-                    'inorder' => $inorder++,
+                    'sort' => $sort++,
                 ];
             }
         }
         if (empty($insertColumns)) {
             $insertColumns[] = [
                 'name' => 'Default',
-                'inorder' => 0,
+                'sort' => 0,
             ];
         }
         if (count($insertColumns) > 30) {

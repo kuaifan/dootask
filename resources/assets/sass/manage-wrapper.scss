@@ -112,14 +112,11 @@
                             position: relative;
                             list-style: none;
                             padding: 0 8px 0 30px;
-                            height: 38px;
-                            line-height: 38px;
                             margin: 4px auto;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                            white-space: nowrap;
                             border-radius: 4px;
-                            color: #333333;
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
                             &:before {
                                 content: "";
                                 position: absolute;
@@ -130,6 +127,19 @@
                                 height: 12px;
                                 background: url("data:image/svg+xml;base64,PHN2ZyB0PSIxNjIyMzkwODExNTQxIiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9IjI0OTk3IiB3aWR0aD0iNDgiIGhlaWdodD0iNDgiPjxwYXRoIGQ9Ik0zNjYuMTgyNCAxMDguMjM2OEw4MTIuMDMyIDQyOC4wMzJhMTAyLjQgMTAyLjQgMCAwIDEgMCAxNjYuNTAyNEwzNjYuMTgyNCA5MTQuMzI5NmExMDIuNCAxMDIuNCAwIDAgMS0xNjIuMDk5Mi04My4yNTEyVjE5MS40ODhhMTAyLjQgMTAyLjQgMCAwIDEgMTYyLjA5OTItODMuMjUxMnoiIHAtaWQ9IjI0OTk4IiBmaWxsPSIjOTk5OTk5Ij48L3BhdGg+PC9zdmc+") no-repeat center center;
                                 background-size: contain;
+                            }
+                            .title {
+                                flex: 1;
+                                color: #333333;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                                white-space: nowrap;
+                                height: 38px;
+                                line-height: 38px;
+                            }
+                            .num {
+                                font-size: 12px;
+                                padding-left: 16px;
                             }
                             &.active {
                                 background-color: #ffffff;

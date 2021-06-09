@@ -3,7 +3,7 @@
         <div v-for="(item, key) in list" :key="key">
             <Row class="task-row" :style="item.color ? {backgroundColor: item.color, borderBottomColor: item.color} : {}">
                 <em v-if="item.p_name && item.parent_id === 0" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
-                <Col span="12" :class="['row-item', item.complete_at ? 'complete' : '']">
+                <Col span="12" :class="['row-name', item.complete_at ? 'complete' : '']">
                     <Icon
                         v-if="item.sub_num > 0"
                         :class="['sub-icon', item.sub_open ? 'active' : '']"
@@ -60,20 +60,20 @@
                         <div v-if="item.msg_num > 0" class="item-icon">{{item.msg_num}}<Icon type="ios-chatbubbles-outline" /></div>
                     </div>
                 </Col>
-                <Col span="3">
-                    <div v-if="item.parent_id === 0">{{item.column_name}}</div>
+                <Col span="3" class="row-column">
+                    <div v-if="item.parent_id === 0" class="task-column">{{item.column_name}}</div>
                 </Col>
-                <Col span="3">
+                <Col span="3" class="row-priority">
                     <TaskPriority v-if="item.p_name && item.parent_id === 0" :backgroundColor="item.p_color">{{item.p_name}}</TaskPriority>
                 </Col>
-                <Col span="3" class="row-member">
+                <Col span="3" class="row-user">
                     <ul>
                         <li v-for="(user, keyu) in item.task_user" :key="keyu" v-if="keyu < 3">
                             <UserAvatar :userid="user.userid" size="32" :borderWitdh="2" :borderColor="item.color"/>
                         </li>
                     </ul>
                 </Col>
-                <Col span="3">
+                <Col span="3" class="row-time">
                     <ETooltip
                         v-if="!item.complete_at && item.end_at"
                         :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"

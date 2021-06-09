@@ -33,7 +33,10 @@
                 </li>
                 <li class="menu-project">
                     <ul>
-                        <li v-for="(item, key) in projectList" :key="key" @click="toggleRoute('project/' + item.id)" :class="classNameRoute('project/' + item.id)">{{item.name}}</li>
+                        <li v-for="(item, key) in projectList" :key="key" @click="toggleRoute('project/' + item.id)" :class="classNameRoute('project/' + item.id)">
+                            <div class="title">{{item.name}}</div>
+                            <div v-if="item.task_my_num > 0" class="num">{{item.task_my_num}}</div>
+                        </li>
                     </ul>
                     <Loading v-if="loadIng > 0"/>
                 </li>
@@ -62,7 +65,7 @@
                         <Option v-for="(item, index) in columns" :value="index" :key="index">{{ item.label }}</Option>
                     </Select>
                 </FormItem>
-                <FormItem v-if="addData.columns.length > 0" :label="$L('任务分类')">
+                <FormItem v-if="addData.columns.length > 0" :label="$L('任务列表')">
                     <div style="line-height:38px">
                         <span v-for="(item, index) in addData.columns">
                             <Tag @on-close="() => { addData.columns.splice(index, 1)}" closable size="large" color="primary">{{item}}</Tag>
@@ -70,7 +73,7 @@
                     </div>
                     <div style="margin-top:4px;"></div>
                     <div style="margin-bottom:-16px">
-                        <Button icon="ios-add" type="dashed" @click="addColumns">{{$L('添加分类')}}</Button>
+                        <Button icon="ios-add" type="dashed" @click="addColumns">{{$L('添加列表')}}</Button>
                     </div>
                 </FormItem>
             </Form>
