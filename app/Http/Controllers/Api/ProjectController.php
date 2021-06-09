@@ -16,6 +16,7 @@ use App\Module\Base;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Request;
+use function Swoole\Coroutine\Http\get;
 
 /**
  * @apiDefine project
@@ -441,87 +442,6 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 消息列表
-     *
-     * @apiParam {Number} project_id        项目ID
-     * @apiParam {Number} [task_id]         任务ID
-     *
-     * @apiParam {Number} [page]            当前页，默认:1
-     * @apiParam {Number} [pagesize]        每页显示数量，默认:30，最大:100
-     */
-    public function msg__lists()
-    {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
-        //
-        $project_id = intval(Request::input('project_id'));
-        $task_id = intval(Request::input('task_id'));
-        //
-        $project = Project::select($this->projectSelect)
-            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
-            ->where('projects.id', $project_id)
-            ->where('project_users.userid', $user->userid)
-            ->first();
-        if (empty($project)) {
-            return Base::retError('项目不存在或不在成员列表内');
-        }
-        //
-        $builder = WebSocketDialogMsg::whereDialogId($project->dialog_id);
-        if ($task_id > 0) {
-            $builder->whereExtraInt($task_id);
-        }
-        $list = $builder->orderByDesc('id')->paginate(Base::getPaginate(100, 30));
-        //
-        return Base::retSuccess('success', $list);
-    }
-
-    /**
-     * 发送消息
-     *
-     * @apiParam {Number} project_id        项目ID
-     * @apiParam {Number} [task_id]         任务ID
-     * @apiParam {String} text              消息内容
-     */
-    public function msg__sendtext()
-    {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
-        //
-        $project_id = intval(Request::input('project_id'));
-        $task_id = intval(Request::input('task_id'));
-        $text = trim(Request::input('text'));
-        //
-        if (mb_strlen($text) < 1) {
-            return Base::retError('消息内容不能为空');
-        } elseif (mb_strlen($text) > 20000) {
-            return Base::retError('消息内容最大不能超过20000字');
-        }
-        //
-        $project = Project::select($this->projectSelect)
-            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
-            ->where('projects.id', $project_id)
-            ->where('project_users.userid', $user->userid)
-            ->first();
-        if (empty($project)) {
-            return Base::retError('项目不存在或不在成员列表内');
-        }
-        //
-        $msg = [
-            'text' => $text
-        ];
-        //
-        return WebSocketDialogMsg::addGroupMsg($project->dialog_id, 'text', $msg, $user->userid, $task_id);
-    }
-
-    /**
      * 添加任务列表
      *
      * @apiParam {Number} project_id        项目ID
@@ -636,6 +556,73 @@ class ProjectController extends AbstractController
             return Base::retSuccess('删除成功');
         }
         return Base::retError('删除失败');
+    }
+
+    /**
+     * 获取任务
+     *
+     * @apiParam {Number} task_id            任务ID
+     */
+    public function task__one()
+    {
+        $user = User::authE();
+        if (Base::isError($user)) {
+            return $user;
+        } else {
+            $user = User::IDE($user['data']);
+        }
+        //
+        $task_id = intval(Request::input('task_id'));
+        // 任务
+        $task = ProjectTask::with(['taskUser', 'taskTag'])->whereId($task_id)->first();
+        if (empty($task)) {
+            return Base::retError('任务不存在');
+        }
+        // 项目
+        $project = Project::select($this->projectSelect)
+            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->where('projects.id', $task->project_id)
+            ->where('project_users.userid', $user->userid)
+            ->first();
+        if (empty($project)) {
+            return Base::retError('项目不存在或不在成员列表内');
+        }
+        //
+        return Base::retSuccess('success', $task);
+    }
+
+    /**
+     * 获取子任务
+     *
+     * @apiParam {Number} task_id            任务ID
+     */
+    public function task__sublist()
+    {
+        $user = User::authE();
+        if (Base::isError($user)) {
+            return $user;
+        } else {
+            $user = User::IDE($user['data']);
+        }
+        //
+        $task_id = intval(Request::input('task_id'));
+        // 任务
+        $task = ProjectTask::whereId($task_id)->first();
+        if (empty($task)) {
+            return Base::retError('任务不存在');
+        }
+        // 项目
+        $project = Project::select($this->projectSelect)
+            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->where('projects.id', $task->project_id)
+            ->where('project_users.userid', $user->userid)
+            ->first();
+        if (empty($project)) {
+            return Base::retError('项目不存在或不在成员列表内');
+        }
+        //
+        $data = ProjectTask::with(['taskUser', 'taskTag'])->where('parent_id', $task->id)->get();
+        return Base::retSuccess('success', $data);
     }
 
     /**

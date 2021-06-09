@@ -43,7 +43,6 @@
                                 <EDropdownItem command="exit">{{$L('退出项目')}}</EDropdownItem>
                             </EDropdownMenu>
                         </EDropdown>
-
                     </li>
                 </ul>
                 <div class="project-switch">
@@ -66,7 +65,7 @@
                 <li v-for="column in projectDetail.project_column" class="column-item">
                     <div
                         :class="['column-head', column.color ? 'custom-color' : '']"
-                        :style="column.color ? {backgroundColor: column.color} : null">
+                        :style="column.color ? {backgroundColor: column.color} : {}">
                         <div class="column-head-title">
                             <AutoTip>{{column.name}}</AutoTip>
                             <em>({{column.project_task.length}})</em>
@@ -90,7 +89,7 @@
                                         </div>
                                     </EDropdownItem>
                                     <EDropdownItem divided disabled>{{$L('颜色')}}</EDropdownItem>
-                                    <EDropdownItem v-for="(c, k) in columnList" :key="k" :command="c">
+                                    <EDropdownItem v-for="(c, k) in columnColorList" :key="k" :command="c">
                                         <div class="item">
                                             <i class="iconfont" :style="{color:c.color}" v-html="c.color == column.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
                                         </div>
@@ -123,13 +122,14 @@
                             <div
                                 v-for="item in panelTask(column.project_task)"
                                 :class="['task-item task-draggable', item.complete_at ? 'complete' : '']"
-                                :style="item.color ? {backgroundColor: item.color} : null">
+                                :style="item.color ? {backgroundColor: item.color} : {}">
                             <div :class="['task-head', item.desc ? 'has-desc' : '']">
                                 <div class="task-title"><pre>{{item.name}}</pre></div>
                                 <div v-if="item.loading === true" class="loading"><Loading /></div>
                                 <EDropdown
                                     v-else
                                     trigger="click"
+                                    size="small"
                                     @command="dropTask(item, $event)">
                                     <Icon type="ios-more" />
                                     <EDropdownMenu slot="dropdown" class="project-list-more-dropdown-menu">
@@ -154,9 +154,9 @@
                                             </div>
                                         </EDropdownItem>
                                         <EDropdownItem divided disabled>{{$L('背景色')}}</EDropdownItem>
-                                        <EDropdownItem v-for="(c, k) in taskList" :key="k" :command="c">
+                                        <EDropdownItem v-for="(c, k) in taskColorList" :key="k" :command="c">
                                             <div class="item">
-                                                <i class="iconfont" :style="{color:c.color||'#f9f9f9'}" v-html="c.color == column.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
+                                                <i class="iconfont" :style="{color:c.color||'#f9f9f9'}" v-html="c.color == item.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
                                             </div>
                                         </EDropdownItem>
                                     </EDropdownMenu>
@@ -176,6 +176,7 @@
                                 <div v-if="item.msg_num > 0" class="task-icon">{{item.msg_num}}<Icon type="ios-chatbubbles-outline" /></div>
                             </div>
                             <div class="task-progress">
+                                <div v-if="item.sub_num > 0" class="task-sub-num">{{item.sub_complete}}/{{item.sub_num}}</div>
                                 <Progress :percent="item.percent" :stroke-width="6" />
                                 <ETooltip
                                     v-if="item.end_at"
@@ -216,7 +217,7 @@
         </div>
         <div v-else class="project-table">
             <div class="project-table-head">
-                <Row class="project-row">
+                <Row class="task-row">
                     <Col span="12"># {{$L('任务名称')}}</Col>
                     <Col span="3">{{$L('列表')}}</Col>
                     <Col span="3">{{$L('优先级')}}</Col>
@@ -226,51 +227,20 @@
             </div>
             <!--我的任务-->
             <div :class="['project-table-body', !taskMyShow ? 'project-table-hide' : '']">
-                <div @click="toggleBoolean('taskMyShow')">
-                    <Row class="project-row">
-                        <Col span="12" class="row-title">
-                            <i class="iconfont">&#xe689;</i>
-                            <div class="row-h1">{{$L('我的任务')}}</div>
-                            <div class="row-num">({{myList.length}})</div>
-                        </Col>
-                        <Col span="3"></Col>
-                        <Col span="3"></Col>
-                        <Col span="3"></Col>
-                        <Col span="3"></Col>
-                    </Row>
-                </div>
-                <div class="project-rows">
-                    <Row v-for="(item, key) in myList" :key="key" class="project-row">
-                        <Col span="12" class="row-item">
-                            <Icon v-if="item.complete_at" class="completed" type="md-checkmark-circle" />
-                            <Icon v-else type="md-radio-button-off" />
-                            <div class="item-title">{{item.name}}</div>
-                            <div v-if="item.file_num > 0" class="item-icon">{{item.file_num}}<Icon type="ios-link-outline" /></div>
-                            <div v-if="item.msg_num > 0" class="item-icon">{{item.msg_num}}<Icon type="ios-chatbubbles-outline" /></div>
-                        </Col>
-                        <Col span="3">{{item.column_name}}</Col>
-                        <Col span="3"><TaskPriority v-if="item.p_name" :backgroundColor="item.p_color">{{item.p_name}}</TaskPriority></Col>
-                        <Col span="3" class="row-member">
-                            <ul>
-                                <li v-for="(user, keyu) in item.task_user" :key="keyu">
-                                    <UserAvatar :userid="user.userid" size="28"/>
-                                </li>
-                            </ul>
-                        </Col>
-                        <Col span="3">
-                            <ETooltip
-                                v-if="item.end_at"
-                                :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
-                                :open-delay="600"
-                                :content="item.end_at">
-                                <div>{{item.end_at ? expiresFormat(item.end_at) : ''}}</div>
-                            </ETooltip>
-                        </Col>
-                        <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
-                    </Row>
-                </div>
+                <Row class="task-row">
+                    <Col span="12" class="row-title">
+                        <i class="iconfont" @click="toggleBoolean('taskMyShow')">&#xe689;</i>
+                        <div class="row-h1">{{$L('我的任务')}}</div>
+                        <div class="row-num">({{myList.length}})</div>
+                    </Col>
+                    <Col span="3"></Col>
+                    <Col span="3"></Col>
+                    <Col span="3"></Col>
+                    <Col span="3"></Col>
+                </Row>
+                <TaskRow :list="myList" :color-list="taskColorList" @command="dropTask"/>
                 <div @click="addTaskOpen(0)">
-                    <Row class="project-row">
+                    <Row class="task-row">
                         <Col span="12" class="row-add">
                             <Icon type="ios-add" /> {{$L('添加任务')}}
                         </Col>
@@ -283,95 +253,33 @@
             </div>
             <!--未完成任务-->
             <div :class="['project-table-body', !taskUndoneShow ? 'project-table-hide' : '']">
-                <div @click="toggleBoolean('taskUndoneShow')">
-                    <Row class="project-row">
-                        <Col span="12" class="row-title">
-                            <i class="iconfont">&#xe689;</i>
-                            <div class="row-h1">{{$L('未完成任务')}}</div>
-                            <div class="row-num">({{undoneList.length}})</div>
-                        </Col>
-                        <Col span="3"></Col>
-                        <Col span="3"></Col>
-                        <Col span="3"></Col>
-                        <Col span="3"></Col>
-                    </Row>
-                </div>
-                <div class="project-rows">
-                    <Row v-for="(item, key) in undoneList" :key="key" class="project-row">
-                        <Col span="12" class="row-item">
-                            <Icon v-if="item.complete_at" class="completed" type="md-checkmark-circle" />
-                            <Icon v-else type="md-radio-button-off" />
-                            <div class="item-title">{{item.name}}</div>
-                            <div v-if="item.file_num > 0" class="item-icon">{{item.file_num}}<Icon type="ios-link-outline" /></div>
-                            <div v-if="item.msg_num > 0" class="item-icon">{{item.msg_num}}<Icon type="ios-chatbubbles-outline" /></div>
-                        </Col>
-                        <Col span="3">{{item.column_name}}</Col>
-                        <Col span="3"><TaskPriority v-if="item.p_name" :backgroundColor="item.p_color">{{item.p_name}}</TaskPriority></Col>
-                        <Col span="3" class="row-member">
-                            <ul>
-                                <li v-for="(user, keyu) in item.task_user" :key="keyu">
-                                    <UserAvatar :userid="user.userid" size="28"/>
-                                </li>
-                            </ul>
-                        </Col>
-                        <Col span="3">
-                            <ETooltip
-                                v-if="item.end_at"
-                                :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
-                                :open-delay="600"
-                                :content="item.end_at">
-                                <div>{{item.end_at ? expiresFormat(item.end_at) : ''}}</div>
-                            </ETooltip>
-                        </Col>
-                        <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
-                    </Row>
-                </div>
+                <Row class="task-row">
+                    <Col span="12" class="row-title">
+                        <i class="iconfont" @click="toggleBoolean('taskUndoneShow')">&#xe689;</i>
+                        <div class="row-h1">{{$L('未完成任务')}}</div>
+                        <div class="row-num">({{undoneList.length}})</div>
+                    </Col>
+                    <Col span="3"></Col>
+                    <Col span="3"></Col>
+                    <Col span="3"></Col>
+                    <Col span="3"></Col>
+                </Row>
+                <TaskRow :list="undoneList" :color-list="taskColorList" @command="dropTask"/>
             </div>
             <!--已完成任务-->
             <div :class="['project-table-body', !taskCompletedShow ? 'project-table-hide' : '']">
-                <div @click="toggleBoolean('taskCompletedShow')">
-                    <Row class="project-row">
-                        <Col span="12" class="row-title">
-                            <i class="iconfont">&#xe689;</i>
-                            <div class="row-h1">{{$L('已完成任务')}}</div>
-                            <div class="row-num">({{completedList.length}})</div>
-                        </Col>
-                        <Col span="3"></Col>
-                        <Col span="3"></Col>
-                        <Col span="3"></Col>
-                        <Col span="3"></Col>
-                    </Row>
-                </div>
-                <div class="project-rows">
-                    <Row v-for="(item, key) in completedList" :key="key" class="project-row">
-                        <Col span="12" class="row-item">
-                            <Icon v-if="item.complete_at" class="completed" type="md-checkmark-circle" />
-                            <Icon v-else type="md-radio-button-off" />
-                            <div class="item-title">{{item.name}}</div>
-                            <div v-if="item.file_num > 0" class="item-icon">{{item.file_num}}<Icon type="ios-link-outline" /></div>
-                            <div v-if="item.msg_num > 0" class="item-icon">{{item.msg_num}}<Icon type="ios-chatbubbles-outline" /></div>
-                        </Col>
-                        <Col span="3">{{item.column_name}}</Col>
-                        <Col span="3"><TaskPriority v-if="item.p_name" :backgroundColor="item.p_color">{{item.p_name}}</TaskPriority></Col>
-                        <Col span="3" class="row-member">
-                            <ul>
-                                <li v-for="(user, keyu) in item.task_user" :key="keyu">
-                                    <UserAvatar :userid="user.userid" size="28"/>
-                                </li>
-                            </ul>
-                        </Col>
-                        <Col span="3">
-                            <ETooltip
-                                v-if="item.end_at"
-                                :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
-                                :open-delay="600"
-                                :content="item.end_at">
-                                <div>{{item.end_at ? expiresFormat(item.end_at) : ''}}</div>
-                            </ETooltip>
-                        </Col>
-                        <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
-                    </Row>
-                </div>
+                <Row class="task-row">
+                    <Col span="12" class="row-title">
+                        <i class="iconfont" @click="toggleBoolean('taskCompletedShow')">&#xe689;</i>
+                        <div class="row-h1">{{$L('已完成任务')}}</div>
+                        <div class="row-num">({{completedList.length}})</div>
+                    </Col>
+                    <Col span="3"></Col>
+                    <Col span="3"></Col>
+                    <Col span="3"></Col>
+                    <Col span="3"></Col>
+                </Row>
+                <TaskRow :list="completedList" :color-list="taskColorList" @command="dropTask"/>
             </div>
         </div>
 
@@ -455,9 +363,10 @@ import TaskAdd from "./TaskAdd";
 import {mapState} from "vuex";
 import UserInput from "../../../components/UserInput";
 import TaskAddSimple from "./TaskAddSimple";
+import TaskRow from "./TaskRow";
 export default {
     name: "ProjectList",
-    components: {Draggable, TaskAddSimple, UserInput, TaskAdd, TaskPriority},
+    components: {TaskRow, Draggable, TaskAddSimple, UserInput, TaskAdd, TaskPriority},
     data() {
         return {
             nowTime: Math.round(new Date().getTime() / 1000),
@@ -495,7 +404,7 @@ export default {
             transferData: {},
             transferLoad: 0,
 
-            columnList: [
+            columnColorList: [
                 {name: '默认', color: ''},
                 {name: '灰色', color: '#6C6F71'},
                 {name: '棕色', color: '#695C56'},
@@ -508,7 +417,7 @@ export default {
                 {name: '红色', color: '#9D6058'},
             ],
 
-            taskList: [
+            taskColorList: [
                 {name: '默认', color: ''},
                 {name: '黄色', color: '#FCF4A7'},
                 {name: '蓝色', color: '#BCF2FD'},
@@ -698,7 +607,9 @@ export default {
                 success: ({ret, data, msg}) => {
                     if (ret === 1) {
                         $A.messageSuccess(msg);
-                        this.addTaskSuccess(data)
+                        this.addTaskSuccess(Object.assign(data, {
+                            top: !!this.addData.top
+                        }))
                         this.addShow = false;
                         this.addData = {
                             owner: 0,
@@ -723,7 +634,7 @@ export default {
 
         addTaskOpen(column_id) {
             if ($A.isJson(column_id)) {
-                this.addData = Object.assign(this.addData, column_id);
+                this.addData = Object.assign({}, this.addData, column_id);
             } else {
                 this.$set(this.addData, 'owner', this.userId);
                 this.$set(this.addData, 'column_id', column_id);
@@ -962,11 +873,35 @@ export default {
                         Object.keys(data).forEach(key => {
                             this.$set(task, key, data[key]);
                         });
+                        if (data.parent_id) this.getTaskOne(data.parent_id);
                     } else {
                         Object.keys(updata).forEach(key => {
                             this.$set(task, key, backup[key]);
                         });
                         $A.modalError(msg);
+                    }
+                }
+            });
+        },
+
+        getTaskOne(task_id) {
+            let task = null;
+            this.projectDetail.project_column.some(({project_task}) => {
+                task = project_task.find(({id}) => id === task_id);
+                if (task) return true;
+            });
+            if (!task) return;
+            //
+            $A.apiAjax({
+                url: 'project/task/one',
+                data: {
+                    task_id: task.id
+                },
+                success: ({ret, data, msg}) => {
+                    if (ret === 1) {
+                        Object.keys(data).forEach(key => {
+                            this.$set(task, key, data[key]);
+                        });
                     }
                 }
             });

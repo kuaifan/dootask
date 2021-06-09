@@ -35,6 +35,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read int $msg_num
  * @property-read bool $overdue
  * @property-read int $percent
+ * @property-read int $sub_complete
  * @property-read int $sub_num
  * @property-read bool $today
  * @property-read \App\Models\Project|null $project
@@ -77,10 +78,11 @@ class ProjectTask extends AbstractModel
         'file_num',
         'msg_num',
         'sub_num',
-        'dialog_id',
+        'sub_complete',
         'percent',
         'today',
         'overdue',
+        'dialog_id',
     ];
 
     /**
@@ -108,30 +110,49 @@ class ProjectTask extends AbstractModel
     }
 
     /**
+     * 生成子任务数据
+     */
+    private function generateSubTaskData()
+    {
+        if ($this->parent_id > 0) {
+            $this->attributes['sub_num'] = 0;
+            $this->attributes['sub_complete'] = 0;
+            $this->attributes['percent'] = 0;
+            return;
+        }
+        if (!isset($this->attributes['sub_num'])) {
+            $builder = self::whereParentId($this->id);
+            $this->attributes['sub_num'] = $builder->count();
+            $this->attributes['sub_complete'] = $builder->whereNotNull('complete_at')->count();
+            //
+            if ($this->complete_at) {
+                $this->attributes['percent'] = 100;
+            } elseif ($this->attributes['sub_complete'] == 0) {
+                $this->attributes['percent'] = 0;
+            } else {
+                $this->attributes['percent'] = intval($this->attributes['sub_complete'] / $this->attributes['sub_num'] * 100);
+            }
+        }
+    }
+
+    /**
      * 子任务数量
      * @return int
      */
     public function getSubNumAttribute()
     {
-        if ($this->parent_id > 0) {
-            return 0;
-        }
-        if (!isset($this->attributes['sub_num'])) {
-            $this->attributes['sub_num'] = self::whereParentId($this->id)->count();
-        }
+        $this->generateSubTaskData();
         return $this->attributes['sub_num'];
     }
 
     /**
-     * 对话ID
+     * 子任务已完成数量
      * @return int
      */
-    public function getDialogIdAttribute()
+    public function getSubCompleteAttribute()
     {
-        if (!isset($this->attributes['dialog_id'])) {
-            $this->attributes['dialog_id'] = intval(Project::whereId($this->project_id)->value('dialog_id'));
-        }
-        return $this->attributes['dialog_id'];
+        $this->generateSubTaskData();
+        return $this->attributes['sub_complete'];
     }
 
     /**
@@ -140,22 +161,8 @@ class ProjectTask extends AbstractModel
      */
     public function getPercentAttribute()
     {
-        if ($this->parent_id > 0) {
-            return 0;
-        }
-        $builder = self::whereParentId($this->id);
-        if (!isset($this->attributes['sub_num'])) {
-            $this->attributes['sub_num'] = $builder->count();
-        }
-        $subTaskTotal = $this->attributes['sub_num'];
-        if ($subTaskTotal == 0) {
-            return $this->complete_at ? 100 : 0;
-        }
-        $subTaskComplete = $builder->whereNotNull('complete_at')->count();
-        if ($subTaskComplete == 0) {
-            return 0;
-        }
-        return intval($subTaskComplete / $subTaskTotal * 100);
+        $this->generateSubTaskData();
+        return $this->attributes['percent'];
     }
 
     /**
@@ -185,6 +192,18 @@ class ProjectTask extends AbstractModel
             }
         }
         return false;
+    }
+
+    /**
+     * 对话ID
+     * @return int
+     */
+    public function getDialogIdAttribute()
+    {
+        if (!isset($this->attributes['dialog_id'])) {
+            $this->attributes['dialog_id'] = intval(Project::whereId($this->project_id)->value('dialog_id'));
+        }
+        return $this->attributes['dialog_id'];
     }
 
     /**
