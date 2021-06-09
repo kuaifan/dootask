@@ -42,13 +42,9 @@
         </div>
 
         <div class="manage-box-main">
-            <div class="manage-box-body">
-                <div class="manage-box-body-content">
-                    <keep-alive>
-                        <router-view class="manage-box-view"></router-view>
-                    </keep-alive>
-                </div>
-            </div>
+            <keep-alive>
+                <router-view class="manage-box-view overlay"></router-view>
+            </keep-alive>
         </div>
 
         <!--新建项目-->

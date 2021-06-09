@@ -370,9 +370,6 @@
                                     &:first-child {
                                         margin-left: 0;
                                     }
-                                    .common-avatar {
-                                        padding: 2px;
-                                    }
                                 }
                             }
                             .task-icon {
@@ -663,19 +660,16 @@
                         }
                     }
                     &.row-member {
+                        padding: 8px;
                         > ul {
-                            display: flex;
-                            align-items: center;
-                            margin-left: -4px;
+                            height: 32px;
                             overflow: hidden;
                             text-overflow:ellipsis;
                             white-space: nowrap;
                             > li {
                                 list-style: none;
+                                display: inline-block;
                                 margin-left: -6px;
-                                overflow: hidden;
-                                text-overflow:ellipsis;
-                                white-space: nowrap;
                                 &:first-child {
                                     margin-left: 0;
                                 }

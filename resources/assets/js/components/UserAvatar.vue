@@ -12,9 +12,9 @@
             </div>
         </div>
         <div class="avatar-wrapper">
-            <div :class="['avatar-box', userId === userid || user.online ? 'online' : '']">
-                <WAvatar v-if="showImg" :src="user.userimg" :size="size"/>
-                <WAvatar v-else :size="size" class="avatar-text">{{nickname}}</WAvatar>
+            <div :class="['avatar-box', userId === userid || user.online ? 'online' : '']" :style="boxStyle">
+                <WAvatar v-if="showImg" :src="user.userimg" :size="avatarSize"/>
+                <WAvatar v-else :size="avatarSize" class="avatar-text">{{nickname}}</WAvatar>
             </div>
             <div v-if="showName" class="avatar-name">{{user.nickname}}</div>
         </div>
@@ -48,6 +48,14 @@
                 type: Boolean,
                 default: false
             },
+            borderWitdh: {
+                type: Number,
+                default: 0
+            },
+            borderColor: {
+                type: String,
+                default: ''
+            },
         },
         data() {
             return {
@@ -59,6 +67,24 @@
         },
         computed: {
             ...mapState(["userId", "userOnline"]),
+
+            boxStyle() {
+                const style = {};
+                const {borderWitdh, borderColor} = this
+                if (borderWitdh > 0) {
+                    style.border = borderWitdh + "px solid " + (borderColor || "#ffffff");
+                }
+                return style;
+            },
+
+            avatarSize() {
+                const {borderWitdh, size} = this
+                if (borderWitdh > 0) {
+                    return size - borderWitdh * 2;
+                } else {
+                    return size;
+                }
+            },
 
             showImg() {
                 const {userimg} = this.user

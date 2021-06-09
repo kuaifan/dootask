@@ -169,7 +169,7 @@
                             <div class="task-users">
                                 <ul>
                                     <li v-for="(user, keyu) in item.task_user" :key="keyu">
-                                        <UserAvatar :userid="user.userid" size="28"/>
+                                        <UserAvatar :userid="user.userid" size="32" :borderWitdh="2" :borderColor="item.color"/>
                                     </li>
                                 </ul>
                                 <div v-if="item.file_num > 0" class="task-icon">{{item.file_num}}<Icon type="ios-link-outline" /></div>

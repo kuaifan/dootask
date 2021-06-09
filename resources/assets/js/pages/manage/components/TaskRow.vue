@@ -69,7 +69,7 @@
                 <Col span="3" class="row-member">
                     <ul>
                         <li v-for="(user, keyu) in item.task_user" :key="keyu" v-if="keyu < 3">
-                            <UserAvatar :userid="user.userid" size="28"/>
+                            <UserAvatar :userid="user.userid" size="32" :borderWitdh="2" :borderColor="item.color"/>
                         </li>
                     </ul>
                 </Col>

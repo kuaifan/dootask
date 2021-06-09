@@ -1,3 +1,11 @@
+body {
+    overflow: hidden;
+    .ivu-input,
+    .ivu-select-selection {
+        border-color: #e8e8e8;
+    }
+}
+
 *[hidden="hidden"] {
     display: none !important;
 }
@@ -12,13 +20,6 @@
     }
     to {
         transform: rotate(360deg);
-    }
-}
-
-body {
-    .ivu-input,
-    .ivu-select-selection {
-        border-color: #e8e8e8;
     }
 }
 
