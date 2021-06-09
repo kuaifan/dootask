@@ -605,7 +605,6 @@ class ProjectController extends AbstractController
     /**
      * 删除任务列表
      *
-     * @apiParam {Number} project_id        项目ID
      * @apiParam {Number} column_id         列表ID（留空为添加列表）
      */
     public function column__delete()
@@ -617,22 +616,22 @@ class ProjectController extends AbstractController
             $user = User::IDE($user['data']);
         }
         //
-        $project_id = intval(Request::input('project_id'));
         $column_id = intval(Request::input('column_id'));
+        // 列表
+        $column = ProjectColumn::whereId($column_id)->first();
+        if (empty($column)) {
+            return Base::retError('列表不存在');
+        }
         // 项目
         $project = Project::select($this->projectSelect)
             ->join('project_users', 'projects.id', '=', 'project_users.project_id')
-            ->where('projects.id', $project_id)
+            ->where('projects.id', $column->project_id)
             ->where('project_users.userid', $user->userid)
             ->first();
         if (empty($project)) {
             return Base::retError('项目不存在或不在成员列表内');
         }
         //
-        $column = ProjectColumn::whereId($column_id)->whereProjectId($project_id)->first();
-        if (empty($column)) {
-            return Base::retError('列表不存在');
-        }
         if ($column->deleteColumn()) {
             return Base::retSuccess('删除成功');
         }
@@ -762,5 +761,71 @@ class ProjectController extends AbstractController
             $result['data'] = $task->toArray();
         }
         return $result;
+    }
+
+    /**
+     * 归档任务
+     *
+     * @apiParam {Number} task_id               任务ID
+     */
+    public function task__archived()
+    {
+        $user = User::authE();
+        if (Base::isError($user)) {
+            return $user;
+        } else {
+            $user = User::IDE($user['data']);
+        }
+        //
+        $task_id = intval(Request::input('task_id'));
+        // 任务
+        $task = ProjectTask::whereId($task_id)->first();
+        if (empty($task)) {
+            return Base::retError('任务不存在');
+        }
+        // 项目
+        $project = Project::select($this->projectSelect)
+            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->where('projects.id', $task->project_id)
+            ->where('project_users.userid', $user->userid)
+            ->first();
+        if (empty($project)) {
+            return Base::retError('项目不存在或不在成员列表内');
+        }
+        //
+        return $task->archivedTask(Carbon::now());
+    }
+
+    /**
+     * 删除任务
+     *
+     * @apiParam {Number} task_id               任务ID
+     */
+    public function task__delete()
+    {
+        $user = User::authE();
+        if (Base::isError($user)) {
+            return $user;
+        } else {
+            $user = User::IDE($user['data']);
+        }
+        //
+        $task_id = intval(Request::input('task_id'));
+        // 任务
+        $task = ProjectTask::whereId($task_id)->first();
+        if (empty($task)) {
+            return Base::retError('任务不存在');
+        }
+        // 项目
+        $project = Project::select($this->projectSelect)
+            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->where('projects.id', $task->project_id)
+            ->where('project_users.userid', $user->userid)
+            ->first();
+        if (empty($project)) {
+            return Base::retError('项目不存在或不在成员列表内');
+        }
+        //
+        return $task->deleteTask();
     }
 }

@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int|null $project_id 项目ID
  * @property int|null $column_id 列表ID
  * @property string|null $name 标题
+ * @property string|null $color 颜色
  * @property string|null $desc 描述
  * @property string|null $start_at 计划开始时间
  * @property string|null $end_at 计划结束时间
@@ -46,6 +47,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Query\Builder|ProjectTask onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask query()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereArchivedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereColor($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereColumnId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereCompleteAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereCreatedAt($value)
@@ -147,7 +149,7 @@ class ProjectTask extends AbstractModel
         }
         $subTaskTotal = $this->attributes['sub_num'];
         if ($subTaskTotal == 0) {
-            return $this->complete_at ? 1 : 0;
+            return $this->complete_at ? 100 : 0;
         }
         $subTaskComplete = $builder->whereNotNull('complete_at')->count();
         if ($subTaskComplete == 0) {
@@ -336,6 +338,7 @@ class ProjectTask extends AbstractModel
             if (Arr::exists($data, 'color')) {
                 $this->color = $data['color'];
             }
+            // 内容
             if ($content && $this->parent_id === 0) {
                 ProjectTaskContent::updateInsert([
                     'project_id' => $this->parent_id,
@@ -343,6 +346,7 @@ class ProjectTask extends AbstractModel
                 ], [
                     'content' => $content,
                 ]);
+                $this->desc = Base::getHtml($content);
             }
             // 计划时间
             if ($times) {
@@ -399,6 +403,38 @@ class ProjectTask extends AbstractModel
             }
             $this->save();
             return Base::retSuccess('修改成功');
+        });
+    }
+
+    /**
+     * 归档任务、取消归档
+     * @param Carbon|null $archived_at 归档时间
+     * @return array|bool
+     */
+    public function archivedTask($archived_at)
+    {
+        return AbstractModel::transaction(function () use ($archived_at) {
+            if ($archived_at === null) {
+                // 标记未完成
+                $this->archived_at = null;
+            } else {
+                // 标记已完成
+                $this->archived_at = $archived_at;
+            }
+            $this->save();
+            return Base::retSuccess('修改成功');
+        });
+    }
+
+    /**
+     * 删除任务
+     * @return array|bool
+     */
+    public function deleteTask()
+    {
+        return AbstractModel::transaction(function () {
+            $this->delete();
+            return Base::retSuccess('删除成功');
         });
     }
 }

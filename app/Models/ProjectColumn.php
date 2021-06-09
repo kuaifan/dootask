@@ -44,7 +44,7 @@ class ProjectColumn extends AbstractModel
      */
     public function projectTask(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(projectTask::class, 'column_id', 'id')->orderBy('sort')->orderBy('id');
+        return $this->hasMany(projectTask::class, 'column_id', 'id')->whereNull('archived_at')->orderBy('sort')->orderBy('id');
     }
 
     /**

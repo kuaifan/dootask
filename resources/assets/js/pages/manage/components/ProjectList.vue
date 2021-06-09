@@ -54,7 +54,7 @@
                 </div>
             </div>
         </div>
-        <div v-if="projectListPanel" class="project-column">
+        <div v-if="projectListPanel" class="project-column overlay-x">
             <Draggable
                 :list="projectDetail.project_column"
                 :animation="150"
@@ -141,6 +141,11 @@
                                         <EDropdownItem v-else command="complete">
                                             <div class="item">
                                                 <Icon type="md-radio-button-off" />{{$L('完成')}}
+                                            </div>
+                                        </EDropdownItem>
+                                        <EDropdownItem command="archived">
+                                            <div class="item">
+                                                <Icon type="ios-filing" />{{$L('归档')}}
                                             </div>
                                         </EDropdownItem>
                                         <EDropdownItem command="delete">
@@ -861,7 +866,6 @@ export default {
                     $A.apiAjax({
                         url: 'project/column/delete',
                         data: {
-                            project_id: this.projectDetail.id,
                             column_id: column.id,
                         },
                         complete: () => {
@@ -902,8 +906,25 @@ export default {
                     complete_at: false
                 })
             }
+            else if (command === 'archived') {
+                $A.modalConfirm({
+                    title: '归档任务',
+                    content: '你确定要归档任务【' + task.name + '】吗？',
+                    loading: true,
+                    onOk: () => {
+                        this.archivedOrRemoveTask(task, 'archived');
+                    }
+                });
+            }
             else if (command === 'delete') {
-                this.removeTask(task);
+                $A.modalConfirm({
+                    title: '删除任务',
+                    content: '你确定要删除任务【' + task.name + '】吗？',
+                    loading: true,
+                    onOk: () => {
+                        this.archivedOrRemoveTask(task, 'delete');
+                    }
+                });
             }
             else if (command.name) {
                 this.updateTask(task, {
@@ -951,46 +972,38 @@ export default {
             });
         },
 
-        removeTask(task) {
-            $A.modalConfirm({
-                title: '删除任务',
-                content: '你确定要删除任务【' + task.name + '】吗？',
-                loading: true,
-                onOk: () => {
-                    if (task.loading === true) {
-                        return;
-                    }
-                    this.$set(task, 'loading', true);
-                    //
-                    $A.apiAjax({
-                        url: 'project/task/delete',
-                        data: {
-                            task_id: task.id,
-                        },
-                        complete: () => {
-                            this.$set(task, 'loading', false);
-                        },
-                        error: () => {
-                            this.$Modal.remove();
-                            $A.modalAlert('网络繁忙，请稍后再试！');
-                        },
-                        success: ({ret, data, msg}) => {
-                            this.$Modal.remove();
-                            if (ret === 1) {
-                                $A.messageSuccess(msg);
-                                let column = this.projectDetail.project_column.find(({id}) => id === column.id);
-                                if (column) {
-                                    let index = column.project_task.findIndex(({id}) => id === task.id);
-                                    if (index > -1) {
-                                        column.project_task.splice(index, 1);
-                                    }
-                                }
-                                this.$store.commit('getProjectDetail', this.projectDetail.id);
-                            }else{
-                                $A.modalError(msg, 301);
+        archivedOrRemoveTask(task, type) {
+            if (task.loading === true) {
+                return;
+            }
+            this.$set(task, 'loading', true);
+            $A.apiAjax({
+                url: 'project/task/' + type,
+                data: {
+                    task_id: task.id,
+                },
+                complete: () => {
+                    this.$set(task, 'loading', false);
+                },
+                error: () => {
+                    this.$Modal.remove();
+                    $A.modalAlert('网络繁忙，请稍后再试！');
+                },
+                success: ({ret, data, msg}) => {
+                    this.$Modal.remove();
+                    if (ret === 1) {
+                        $A.messageSuccess(msg);
+                        let column = this.projectDetail.project_column.find(({id}) => id === task.column_id);
+                        if (column) {
+                            let index = column.project_task.findIndex(({id}) => id === task.id);
+                            if (index > -1) {
+                                column.project_task.splice(index, 1);
                             }
                         }
-                    });
+                        this.$store.commit('getProjectDetail', this.projectDetail.id);
+                    }else{
+                        $A.modalError(msg, 301);
+                    }
                 }
             });
         },

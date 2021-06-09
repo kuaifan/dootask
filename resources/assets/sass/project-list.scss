@@ -610,6 +610,9 @@
             display: flex;
             align-items: center;
             > i {
+                width: 18px;
+                height: 18px;
+                line-height: 18px;
                 font-size: 18px;
                 margin-right: 8px;
                 padding: 0;
@@ -622,6 +625,18 @@
                 color: #f00;
                 > i {
                     color: #f00;
+                }
+            }
+            &:hover {
+                > i {
+                    &.ivu-icon {
+                        color: #66b1ff;
+                    }
+                }
+                &.red {
+                    > i {
+                        color: #f00;
+                    }
                 }
             }
         }
