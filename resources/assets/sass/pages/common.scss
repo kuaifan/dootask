@@ -6,6 +6,37 @@ body {
     }
 }
 
+.child-view {
+    position: absolute;
+    width: 100%;
+    min-height: 100%;
+    transition: all .3s cubic-bezier(.55, 0, .1, 1);
+}
+.app-slide-no-leave-to {display: none;}
+/**
+ * 左右模式
+ */
+.app-slide-left-leave-active{z-index:1;transform:translate(0,0)}
+.app-slide-left-leave-to{z-index:1;transform:translate(0,0)}
+.app-slide-left-enter-active{opacity:0;z-index:2;transform:translate(30%,0)}
+.app-slide-left-enter-to{opacity:1;z-index:2;transform:translate(0,0)}
+.app-slide-right-leave-active{opacity:1;z-index:2;transform:translate(0,0)}
+.app-slide-right-leave-to{opacity:0;z-index:2;transform:translate(30%,0)}
+.app-slide-right-enter-active{z-index:1;transform:translate(0,0)}
+.app-slide-right-enter{z-index:1;transform:translate(0,0)}
+
+/**
+ * 上下模式
+ */
+.app-slide-up-leave-active{z-index:1;transform:translate(0,0)}
+.app-slide-up-leave-to{z-index:1;transform:translate(0,0)}
+.app-slide-up-enter-active{opacity:0;z-index:2;transform:translate(0,20%)}
+.app-slide-up-enter-to{opacity:1;z-index:2;transform:translate(0,0)}
+.app-slide-down-leave-active{opacity:1;z-index:2;transform:translate(0,0)}
+.app-slide-down-leave-to{opacity:0;z-index:2;transform:translate(0,20%)}
+.app-slide-down-enter-active{z-index:1;transform:translate(0,0)}
+.app-slide-down-enter{z-index:1;transform:translate(0,0)}
+
 *[hidden="hidden"] {
     display: none !important;
 }

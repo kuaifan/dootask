@@ -151,11 +151,7 @@
     }
 </script>
 
-<style>
-    body { overflow-x: hidden; }
-</style>
-<!--suppress CssUnusedSymbol -->
-<style scoped>
+<style lang="scss" scoped>
     .child-view {
         position: absolute;
         width: 100%;

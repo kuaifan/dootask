@@ -21,62 +21,6 @@
     </div>
 </template>
 
-<style lang="scss" scoped>
-.project-dialog {
-    display: flex;
-    flex-direction: column;
-    background-color: #ffffff;
-    border-left: 1px solid #f4f5f5;
-    z-index: 1;
-    position: relative;
-    .project-dialog-wrapper {
-        .dialog-user {
-            margin-top: 36px;
-            padding: 0 32px;
-            .member-head {
-                display: flex;
-                align-items: center;
-                .member-title {
-                    flex: 1;
-                    font-size: 18px;
-                    font-weight: 600;
-                    > span {
-                        padding-left: 6px;
-                        color: #2d8cf0;
-                    }
-                }
-                .member-view-all {
-                    color: #999;
-                    font-size: 13px;
-                    cursor: pointer;
-                    &:hover {
-                        color: #777;
-                    }
-                }
-            }
-            .member-list {
-                display: flex;
-                align-items: center;
-                margin-top: 14px;
-                overflow: auto;
-                > li {
-                    position: relative;
-                    list-style: none;
-                    margin-right: 14px;
-                    margin-bottom: 8px;
-                }
-                &.member-all {
-                    display: block;
-                    > li {
-                        display: inline-block;
-                    }
-                }
-            }
-        }
-    }
-}
-</style>
-
 <script>
 import {mapState} from "vuex";
 import DialogWrapper from "./DialogWrapper";
