@@ -23,7 +23,7 @@ const method = {
         return typeof value === "boolean" ? value : def;
     },
 
-    getStorageArray(key, def = {}) {
+    getStorageArray(key, def = []) {
         let value = this.storage(key);
         return this.isArray(value) ? value : def;
     },
@@ -161,9 +161,8 @@ const state = { method };
 
 // 数据缓存
 state.cacheUserBasic = state.method.getStorageJson("cacheUserBasic");
-state.cacheDialogMsg = state.method.getStorageJson("cacheDialogMsg");
+state.cacheDialogList = state.method.getStorageJson("cacheDialogList");
 state.cacheProjectList = state.method.getStorageArray("cacheProjectList");
-state.cacheProjectDetail = state.method.getStorageJson("cacheProjectDetail");
 
 // 会员信息
 state.userInfo = state.method.getStorageJson('userInfo');
@@ -184,7 +183,7 @@ state.wsReadWaitList = [];
 // 项目信息
 state.projectLoad = 0;
 state.projectList = state.cacheProjectList;
-state.projectDetail = {id: 0, dialog_id: 0, project_column: [], project_user: []};
+state.projectDetail = {id: 0, project_column: [], project_user: []};
 
 // 会话消息
 state.dialogId = 0;

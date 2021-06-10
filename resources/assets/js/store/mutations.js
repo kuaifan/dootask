@@ -87,15 +87,14 @@ export default {
             state.projectList = [];
             return;
         }
-        if (state.method.isArray(state.cacheProjectList)) {
+        if (state.cacheProjectList.length > 0) {
             state.projectList = state.cacheProjectList;
         }
         $A.apiAjax({
             url: 'project/lists',
             success: ({ret, data, msg}) => {
                 if (ret === 1) {
-                    state.projectList = data.data;
-                    state.method.setStorage("cacheProjectList", state.projectList);
+                    this.commit('saveProjectData', data.data);
                 } else {
                     $A.modalError(msg);
                 }
@@ -119,48 +118,10 @@ export default {
             },
             success: ({ret, data, msg}) => {
                 if (ret === 1) {
-                    this.commit('storageProjectData', data);
+                    this.commit('saveProjectData', data);
                 }
             }
         });
-    },
-
-    /**
-     * 保存项目信息
-     * @param state
-     * @param data
-     */
-    storageProjectData(state, data) {
-        if (data.id == state.projectDetail.id) {
-            state.projectDetail = Object.assign({}, state.projectDetail, data)
-        }
-        //
-        if (typeof data.project_column !== "undefined") delete data.project_column;
-        if (typeof data.project_user !== "undefined") delete data.project_user;
-        let index = state.projectList.findIndex(({id}) => id == data.id);
-        if (index > -1) {
-            state.projectList.splice(index, 1, Object.assign({}, state.projectList[index], data));
-        } else {
-            state.projectList.unshift(data);
-        }
-        state.method.setStorage("cacheProjectList", state.projectList);
-    },
-
-    /**
-     * 删除项目信息
-     * @param state
-     * @param project_id
-     */
-    forgetProjectData(state, project_id) {
-        let index = state.projectList.findIndex(({id}) => id == project_id);
-        if (index > -1) {
-            state.projectList.splice(index, 1);
-            state.method.setStorage("cacheProjectList", state.projectList);
-        }
-        if (typeof state.cacheProjectDetail[project_id] !== "undefined") {
-            delete state.cacheProjectDetail[project_id];
-            state.method.setStorage("cacheProjectDetail", state.cacheProjectDetail);
-        }
     },
 
     /**
@@ -172,15 +133,11 @@ export default {
         if (state.method.runNum(project_id) === 0) {
             return;
         }
-        if (state.method.isJson(state.cacheProjectDetail[project_id])) {
-            state.projectDetail = state.cacheProjectDetail[project_id];
+        const project = state.cacheProjectList.find(({id}) => id == project_id);
+        if (project) {
+            state.projectDetail = Object.assign({project_column: [], project_user: []}, project);
         }
         state.projectDetail.id = project_id;
-        //
-        if (state.cacheProjectDetail[project_id + "::load"]) {
-            return;
-        }
-        state.cacheProjectDetail[project_id + "::load"] = true;
         //
         state.projectLoad++;
         $A.apiAjax({
@@ -190,18 +147,56 @@ export default {
             },
             complete: () => {
                 state.projectLoad--;
-                state.cacheProjectDetail[project_id + "::load"] = false;
             },
             success: ({ret, data, msg}) => {
                 if (ret === 1) {
-                    state.cacheProjectDetail[data.id] = data;
-                    state.method.setStorage("cacheProjectDetail", state.cacheProjectDetail);
-                    this.commit('storageProjectData', $A.cloneJSON(data));
+                    this.commit('saveProjectData', data);
                 } else {
                     $A.modalError(msg);
                 }
             }
         });
+    },
+
+    /**
+     * 保存项目信息
+     * @param state
+     * @param data
+     */
+    saveProjectData(state, data) {
+        if (state.method.isArray(data)) {
+            if (state.projectDetail.id) {
+                const project = data.find(({id}) => id == state.projectDetail.id);
+                if (project) {
+                    state.projectDetail = Object.assign({}, state.projectDetail, project)
+                }
+            }
+            state.projectList = data;
+        } else if (state.method.isJson(data)) {
+            if (data.id == state.projectDetail.id) {
+                state.projectDetail = Object.assign({}, state.projectDetail, data)
+            }
+            let index = state.projectList.findIndex(({id}) => id == data.id);
+            if (index > -1) {
+                state.projectList.splice(index, 1, Object.assign({}, state.projectList[index], data));
+            } else {
+                state.projectList.unshift(data);
+            }
+        }
+        state.method.setStorage("cacheProjectList", state.projectList);
+    },
+
+    /**
+     * 删除项目信息
+     * @param state
+     * @param project_id
+     */
+    removeProjectData(state, project_id) {
+        let index = state.projectList.findIndex(({id}) => id == project_id);
+        if (index > -1) {
+            state.projectList.splice(index, 1);
+            state.method.setStorage("cacheProjectList", state.projectList);
+        }
     },
 
     /**
@@ -363,20 +358,20 @@ export default {
         }
         //
         state.dialogMsgList = [];
-        if (state.method.isJson(state.cacheDialogMsg[dialog_id])) {
-            let length = state.cacheDialogMsg[dialog_id].data.length;
+        if (state.method.isJson(state.cacheDialogList[dialog_id])) {
+            let length = state.cacheDialogList[dialog_id].data.length;
             if (length > 50) {
-                state.cacheDialogMsg[dialog_id].data.splice(0, length - 50);
+                state.cacheDialogList[dialog_id].data.splice(0, length - 50);
             }
-            state.dialogDetail = state.cacheDialogMsg[dialog_id].dialog
-            state.dialogMsgList = state.cacheDialogMsg[dialog_id].data
+            state.dialogDetail = state.cacheDialogList[dialog_id].dialog
+            state.dialogMsgList = state.cacheDialogList[dialog_id].data
         }
         state.dialogId = dialog_id;
         //
-        if (state.cacheDialogMsg[dialog_id + "::load"]) {
+        if (state.cacheDialogList[dialog_id + "::load"]) {
             return;
         }
-        state.cacheDialogMsg[dialog_id + "::load"] = true;
+        state.cacheDialogList[dialog_id + "::load"] = true;
         //
         state.dialogMsgLoad++;
         $A.apiAjax({
@@ -386,18 +381,18 @@ export default {
             },
             complete: () => {
                 state.dialogMsgLoad--;
-                state.cacheDialogMsg[dialog_id + "::load"] = false;
+                state.cacheDialogList[dialog_id + "::load"] = false;
             },
             success: ({ret, data, msg}) => {
                 if (ret === 1) {
                     const dialog = data.dialog;
                     const reverse = data.data.reverse();
                     // 更新缓存
-                    state.cacheDialogMsg[dialog_id] = {
+                    state.cacheDialogList[dialog_id] = {
                         dialog,
                         data: reverse,
                     };
-                    state.method.setStorage("cacheDialogMsg", state.cacheDialogMsg);
+                    state.method.setStorage("cacheDialogList", state.cacheDialogList);
                     // 更新当前会话消息
                     if (state.dialogId == dialog_id) {
                         state.dialogDetail = dialog;

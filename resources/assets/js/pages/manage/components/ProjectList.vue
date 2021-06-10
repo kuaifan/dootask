@@ -963,7 +963,7 @@ export default {
                     if (ret === 1) {
                         $A.messageSuccess(msg);
                         this.settingShow = false;
-                        this.$store.commit("storageProjectData", data)
+                        this.$store.commit("saveProjectData", data)
                     } else {
                         $A.modalError(msg);
                     }
@@ -1036,7 +1036,7 @@ export default {
                             this.$Modal.remove();
                             if (ret === 1) {
                                 $A.messageSuccess(msg);
-                                this.$store.commit('forgetProjectData', this.projectDetail.id);
+                                this.$store.commit('removeProjectData', this.projectDetail.id);
                                 const project = this.projectList.find(({id}) => id);
                                 if (project) {
                                     this.goForward({path: '/manage/project/' + project.id}, true);
@@ -1071,7 +1071,7 @@ export default {
                             this.$Modal.remove();
                             if (ret === 1) {
                                 $A.messageSuccess(msg);
-                                this.$store.commit('forgetProjectData', this.projectDetail.id);
+                                this.$store.commit('removeProjectData', this.projectDetail.id);
                                 const project = this.projectList.find(({id}) => id);
                                 if (project) {
                                     this.goForward({path: '/manage/project/' + project.id}, true);

@@ -269,7 +269,7 @@ export default {
                                 this.addShow = false;
                                 this.$refs.addProject.resetFields();
                                 this.$set(this.addData, 'template', 0);
-                                this.$store.commit('storageProjectData', data);
+                                this.$store.commit('saveProjectData', data);
                                 this.toggleRoute('project/' + data.id)
                             } else {
                                 $A.modalError(msg);
