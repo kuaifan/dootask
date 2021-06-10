@@ -55,7 +55,41 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 项目详情
+     * 单个项目信息
+     *
+     * @apiParam {Number} project_id     项目ID
+     */
+    public function one()
+    {
+        $user = User::authE();
+        if (Base::isError($user)) {
+            return $user;
+        } else {
+            $user = User::IDE($user['data']);
+        }
+        //
+        $project_id = intval(Request::input('project_id'));
+        //
+        $project = Project::with(['projectColumn' => function($query) {
+            $query->with(['projectTask' => function($taskQuery) {
+                $taskQuery->with(['taskUser', 'taskTag'])->where('parent_id', 0);
+            }]);
+        }, 'projectUser'])
+            ->select($this->projectSelect)
+            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->where('projects.id', $project_id)
+            ->where('project_users.userid', $user->userid)
+            ->first();
+        if ($project) {
+            $owner_user = $project->projectUser->where('owner', 1)->first();
+            $project->owner_userid = $owner_user ? $owner_user->userid : 0;
+        }
+        //
+        return Base::retSuccess('success', $project);
+    }
+
+    /**
+     * 单个项目详情（比"单个项目信息"多）
      *
      * @apiParam {Number} project_id     项目ID
      */

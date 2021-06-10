@@ -33,9 +33,28 @@
                 </li>
                 <li class="menu-project">
                     <ul>
-                        <li v-for="(item, key) in projectList" :key="key" @click="toggleRoute('project/' + item.id)" :class="classNameRoute('project/' + item.id)">
-                            <div class="title">{{item.name}}</div>
-                            <div v-if="item.task_my_num > 0" class="num">{{item.task_my_num}}</div>
+                        <li
+                            v-for="(item, key) in projectList"
+                            :key="key"
+                            :class="classNameRoute('project/' + item.id, openMenu[item.id])"
+                            @click="toggleRoute('project/' + item.id)">
+                            <div class="project-h1">
+                                <em @click.stop="toggleOpenMenu(item.id)"></em>
+                                <div class="title">{{item.name}}</div>
+                                <div v-if="item.task_my_num > 0" class="num">{{item.task_my_num}}</div>
+                            </div>
+                            <div class="project-h2">
+                                <p>
+                                    <em>{{$L('我的')}}:</em>
+                                    <span>{{item.task_my_complete}}/{{item.task_my_num}}</span>
+                                    <Progress :percent="item.task_my_percent" :stroke-width="6" />
+                                </p>
+                                <p>
+                                    <em>{{$L('全部')}}:</em>
+                                    <span>{{item.task_complete}}/{{item.task_num}}</span>
+                                    <Progress :percent="item.task_percent" :stroke-width="6" />
+                                </p>
+                            </div>
                         </li>
                     </ul>
                     <Loading v-if="loadIng > 0"/>
@@ -122,7 +141,9 @@ export default {
                     path: 'priority',
                     name: '任务等级'
                 }
-            ]
+            ],
+
+            openMenu: {}
         }
     },
 
@@ -168,6 +189,10 @@ export default {
             this.goForward({path: '/manage/' + path});
         },
 
+        toggleOpenMenu(id) {
+            this.$set(this.openMenu, id, !this.openMenu[id])
+        },
+
         settingRoute(path) {
             if (path === 'signout') {
                 $A.modalConfirm({
@@ -182,9 +207,10 @@ export default {
             this.toggleRoute('setting/' + path);
         },
 
-        classNameRoute(path) {
+        classNameRoute(path, openMenu) {
             return {
-                "active": $A.leftExists(this.curPath, '/manage/' + path)
+                "active": $A.leftExists(this.curPath, '/manage/' + path),
+                "open-menu": openMenu === true,
             };
         },
 

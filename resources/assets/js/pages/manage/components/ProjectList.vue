@@ -607,7 +607,6 @@ export default {
                 success: ({ret, data, msg}) => {
                     if (ret === 1) {
                         $A.messageSuccess(msg);
-                        this.addTaskSuccess(data)
                         this.addShow = false;
                         this.addData = {
                             owner: 0,
@@ -618,6 +617,8 @@ export default {
                             p_name: '',
                             p_color: '',
                         };
+                        this.$store.commit('getProjectOne', data.project_id);
+                        this.addTaskSuccess(data)
                     } else {
                         $A.modalError(msg);
                     }

@@ -161,7 +161,6 @@ export default {
                 success: ({ret, data, msg}) => {
                     if (ret === 1) {
                         $A.messageSuccess(msg);
-                        this.$emit("on-success", data)
                         this.active = false;
                         this.addData = {
                             owner: 0,
@@ -172,6 +171,8 @@ export default {
                             p_name: '',
                             p_color: '',
                         }
+                        this.$store.commit('getProjectOne', data.project_id);
+                        this.$emit("on-success", data)
                     } else {
                         $A.modalError(msg);
                     }

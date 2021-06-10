@@ -109,40 +109,91 @@
                     > ul {
                         width: 100%;
                         > li {
-                            position: relative;
-                            list-style: none;
-                            padding: 0 8px 0 30px;
-                            margin: 4px auto;
-                            border-radius: 4px;
                             display: flex;
-                            align-items: center;
-                            justify-content: space-between;
-                            &:before {
-                                content: "";
-                                position: absolute;
-                                top: 50%;
-                                left: 8px;
-                                transform: translateY(-50%);
-                                width: 12px;
-                                height: 12px;
-                                background: url("data:image/svg+xml;base64,PHN2ZyB0PSIxNjIyMzkwODExNTQxIiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9IjI0OTk3IiB3aWR0aD0iNDgiIGhlaWdodD0iNDgiPjxwYXRoIGQ9Ik0zNjYuMTgyNCAxMDguMjM2OEw4MTIuMDMyIDQyOC4wMzJhMTAyLjQgMTAyLjQgMCAwIDEgMCAxNjYuNTAyNEwzNjYuMTgyNCA5MTQuMzI5NmExMDIuNCAxMDIuNCAwIDAgMS0xNjIuMDk5Mi04My4yNTEyVjE5MS40ODhhMTAyLjQgMTAyLjQgMCAwIDEgMTYyLjA5OTItODMuMjUxMnoiIHAtaWQ9IjI0OTk4IiBmaWxsPSIjOTk5OTk5Ij48L3BhdGg+PC9zdmc+") no-repeat center center;
-                                background-size: contain;
+                            flex-direction: column;
+                            margin: 4px auto;
+                            list-style: none;
+                            .project-h1 {
+                                position: relative;
+                                display: flex;
+                                align-items: center;
+                                justify-content: space-between;
+                                padding: 0 8px 0 30px;
+                                border-radius: 4px;
+                                > em {
+                                    position: absolute;
+                                    top: 50%;
+                                    left: 2px;
+                                    width: 24px;
+                                    height: 24px;
+                                    cursor: pointer;
+                                    transform: translateY(-50%);
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    &:before {
+                                        content: "";
+                                        width: 12px;
+                                        height: 12px;
+                                        background: url("data:image/svg+xml;base64,PHN2ZyB0PSIxNjIyMzkwODExNTQxIiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9IjI0OTk3IiB3aWR0aD0iNDgiIGhlaWdodD0iNDgiPjxwYXRoIGQ9Ik0zNjYuMTgyNCAxMDguMjM2OEw4MTIuMDMyIDQyOC4wMzJhMTAyLjQgMTAyLjQgMCAwIDEgMCAxNjYuNTAyNEwzNjYuMTgyNCA5MTQuMzI5NmExMDIuNCAxMDIuNCAwIDAgMS0xNjIuMDk5Mi04My4yNTEyVjE5MS40ODhhMTAyLjQgMTAyLjQgMCAwIDEgMTYyLjA5OTItODMuMjUxMnoiIHAtaWQ9IjI0OTk4IiBmaWxsPSIjOTk5OTk5Ij48L3BhdGg+PC9zdmc+") no-repeat center center;
+                                        background-size: contain;
+                                        transition: transform 0.2s;
+                                    }
+                                }
+                                .title {
+                                    flex: 1;
+                                    color: #333333;
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                    white-space: nowrap;
+                                    height: 38px;
+                                    line-height: 38px;
+                                }
+                                .num {
+                                    font-size: 12px;
+                                    padding-left: 16px;
+                                }
                             }
-                            .title {
-                                flex: 1;
-                                color: #333333;
-                                overflow: hidden;
-                                text-overflow: ellipsis;
-                                white-space: nowrap;
-                                height: 38px;
-                                line-height: 38px;
-                            }
-                            .num {
-                                font-size: 12px;
-                                padding-left: 16px;
+                            .project-h2 {
+                                display: none;
+                                margin: 16px 4px;
+                                padding: 0 8px 0 26px;
+                                > p {
+                                    display: flex;
+                                    align-items: center;
+                                    padding: 4px 0;
+                                    height: 36px;
+                                    em,
+                                    span {
+                                        font-style: normal;
+                                        font-size: 12px;
+                                        flex-shrink: 0;
+                                        padding-right: 6px;
+                                    }
+                                    .ivu-progress {
+                                        margin-right: -26px;
+                                        .ivu-progress-inner {
+                                            background-color: #e4e4e4;
+                                        }
+                                    }
+                                }
                             }
                             &.active {
-                                background-color: #ffffff;
+                                .project-h1 {
+                                    background-color: #ffffff;
+                                }
+                            }
+                            &.open-menu {
+                                .project-h1 {
+                                    > em {
+                                        &:before {
+                                            transform: rotate(90deg);
+                                        }
+                                    }
+                                }
+                                .project-h2 {
+                                    display: block;
+                                }
                             }
                         }
                     }

@@ -109,6 +109,31 @@ export default {
      * @param state
      * @param project_id
      */
+    getProjectOne(state, project_id) {
+        if (state.method.runNum(project_id) === 0) {
+            return;
+        }
+        $A.apiAjax({
+            url: 'project/one',
+            data: {
+                project_id: project_id,
+            },
+            success: ({ret, data, msg}) => {
+                if (ret === 1) {
+                    let index = state.projectList.findIndex(({id}) => id === data.id);
+                    if (index > -1) {
+                        state.projectList.splice(index, 1, data);
+                    }
+                }
+            }
+        });
+    },
+
+    /**
+     * 获取项目详情
+     * @param state
+     * @param project_id
+     */
     getProjectDetail(state, project_id) {
         if (state.method.runNum(project_id) === 0) {
             return;
@@ -135,11 +160,19 @@ export default {
             },
             success: ({ret, data, msg}) => {
                 if (ret === 1) {
-                    state.cacheProject[project_id] = data;
-                    if (state.projectDetail.id === project_id) {
+                    state.cacheProject[data.id] = data;
+                    if (state.projectDetail.id === data.id) {
                         state.projectDetail = data;
                     }
                     state.method.setStorage("cacheProject", state.cacheProject);
+                    //
+                    let index = state.projectList.findIndex(({id}) => id === data.id);
+                    if (index > -1) {
+                        const project = $A.cloneJSON(data);
+                        delete project.project_column;
+                        delete project.project_user;
+                        state.projectList.splice(index, 1, project);
+                    }
                 } else {
                     $A.modalError(msg);
                 }
