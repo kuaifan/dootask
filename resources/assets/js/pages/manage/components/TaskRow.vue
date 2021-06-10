@@ -50,7 +50,7 @@
                             </template>
                         </EDropdownMenu>
                     </EDropdown>
-                    <div class="item-title">{{item.name}}</div>
+                    <div class="item-title" @click="$store.commit('openTask', item)">{{item.name}}</div>
                     <div v-if="item.sub_num > 0" class="item-sub-num" @click="getSublist(item)">
                         <Icon type="md-git-merge" />
                         {{item.sub_complete}}/{{item.sub_num}}

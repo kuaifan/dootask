@@ -285,7 +285,7 @@
                         flex-direction: column;
                     }
                     .task-item {
-                        list-style: none;
+                        cursor: pointer;
                         margin: 0 10px 16px;
                         background-color: #ffffff;
                         border-radius: 12px;
@@ -312,26 +312,30 @@
                                     word-wrap: break-word;
                                 }
                             }
-                            .loading,
-                            .ivu-icon {
+                            .task-menu {
+                                margin-left: 8px;
                                 width: 22px;
                                 height: 22px;
-                                display: flex;
-                                align-items: center;
-                                justify-content: center;
-                                margin-left: 8px;
-                                .common-loading {
-                                    width: 16px;
-                                    height: 16px;
-                                    margin: 0;
+                                .loading,
+                                .ivu-icon {
+                                    width: 22px;
+                                    height: 22px;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    .common-loading {
+                                        width: 16px;
+                                        height: 16px;
+                                        margin: 0;
+                                    }
                                 }
-                            }
-                            .ivu-icon {
-                                font-size: 22px;
-                                color: #666666;
-                                cursor: pointer;
-                                &:hover {
-                                    color: #555555;
+                                .ivu-icon {
+                                    font-size: 22px;
+                                    color: #777777;
+                                    cursor: pointer;
+                                    &:hover {
+                                        color: #555555;
+                                    }
                                 }
                             }
                             &.has-desc {
@@ -551,6 +555,7 @@
                             }
                         }
                         .ivu-icon {
+                            cursor: pointer;
                             font-size: 16px;
                             color: #cccccc;
                             margin-right: 8px;
@@ -573,6 +578,7 @@
                         .item-title {
                             flex: 1;
                             padding: 0 22px 0 0;
+                            cursor: pointer;
                         }
                         .item-sub-num {
                             flex-shrink: 0;

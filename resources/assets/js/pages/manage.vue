@@ -73,8 +73,7 @@
         <Modal
             v-model="addShow"
             :title="$L('新建项目')"
-            :mask-closable="false"
-            class-name="simple-modal">
+            :mask-closable="false">
             <Form ref="addProject" :model="addData" :rules="addRule" label-width="auto" @submit.native.prevent>
                 <FormItem prop="name" :label="$L('项目名称')">
                     <Input type="text" v-model="addData.name"></Input>
@@ -100,6 +99,14 @@
                 <Button type="default" @click="addShow=false">{{$L('取消')}}</Button>
                 <Button type="primary" :loading="loadIng > 0" @click="onAddProject">{{$L('添加')}}</Button>
             </div>
+        </Modal>
+
+        <!--任务详情-->
+        <Modal
+            v-model="projectTask._show"
+            :title="$L('任务详情')"
+            :mask-closable="false">
+
         </Modal>
     </div>
 </template>
@@ -156,7 +163,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'userInfo', 'dialogMsgUnread', 'projectList']),
+        ...mapState(['userId', 'userInfo', 'dialogMsgUnread', 'projectList', 'projectTask']),
     },
 
     watch: {

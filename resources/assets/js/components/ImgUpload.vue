@@ -43,7 +43,7 @@
                 </div>
             </div>
         </div>
-        <Modal :title="$L('浏览图片空间的图片')" v-model="browseVisible" class="img-upload-modal" class-name="simple-modal" width="710">
+        <Modal :title="$L('浏览图片空间的图片')" v-model="browseVisible" class="img-upload-modal" width="710">
             <div class="browse-load" v-if="isLoading">{{$L('加载中...')}}</div>
             <div class="browse-list" :class="httpType==='input'?'browse-list-disabled':''" ref="browselistbox">
                 <div class="browse-item" v-for="item in browseList" @click="browseItem(item)">
@@ -66,7 +66,7 @@
                 <Button v-if="httpType===''" type="primary" @click="handleCallback(true)">{{$L('完成')}}</Button>
             </div>
         </Modal>
-        <Modal :title="$L('查看图片')" v-model="visible" class="img-upload-modal" class-name="simple-modal" draggable>
+        <Modal :title="$L('查看图片')" v-model="visible" class="img-upload-modal" draggable>
             <div style="max-height:480px;overflow:auto;">
                 <a :href="imgVisible" target="_blank"><img :src="imgVisible" v-if="visible" style="max-width:100%;max-height:900px;display:block;margin:0 auto"></a>
             </div>

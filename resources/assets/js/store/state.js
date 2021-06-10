@@ -184,6 +184,7 @@ state.wsReadWaitList = [];
 state.projectLoad = 0;
 state.projectList = state.cacheProjectList;
 state.projectDetail = {id: 0, project_column: [], project_user: []};
+state.projectTask = {_show: false, id: 0, task_user: [], task_tag: []};
 
 // 会话消息
 state.dialogId = 0;

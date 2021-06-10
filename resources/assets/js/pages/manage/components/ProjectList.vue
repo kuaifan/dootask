@@ -122,72 +122,75 @@
                             <div
                                 v-for="item in panelTask(column.project_task)"
                                 :class="['task-item task-draggable', item.complete_at ? 'complete' : '']"
-                                :style="item.color ? {backgroundColor: item.color} : {}">
-                            <div :class="['task-head', item.desc ? 'has-desc' : '']">
-                                <div class="task-title"><pre>{{item.name}}</pre></div>
-                                <div v-if="item.loading === true" class="loading"><Loading /></div>
-                                <EDropdown
-                                    v-else
-                                    trigger="click"
-                                    size="small"
-                                    @command="dropTask(item, $event)">
-                                    <Icon type="ios-more" />
-                                    <EDropdownMenu slot="dropdown" class="project-list-more-dropdown-menu">
-                                        <EDropdownItem v-if="item.complete_at" command="uncomplete">
-                                            <div class="item red">
-                                                <Icon type="md-checkmark-circle-outline" />{{$L('标记未完成')}}
-                                            </div>
-                                        </EDropdownItem>
-                                        <EDropdownItem v-else command="complete">
-                                            <div class="item">
-                                                <Icon type="md-radio-button-off" />{{$L('完成')}}
-                                            </div>
-                                        </EDropdownItem>
-                                        <EDropdownItem command="archived">
-                                            <div class="item">
-                                                <Icon type="ios-filing" />{{$L('归档')}}
-                                            </div>
-                                        </EDropdownItem>
-                                        <EDropdownItem command="delete">
-                                            <div class="item">
-                                                <Icon type="md-trash" />{{$L('删除')}}
-                                            </div>
-                                        </EDropdownItem>
-                                        <EDropdownItem divided disabled>{{$L('背景色')}}</EDropdownItem>
-                                        <EDropdownItem v-for="(c, k) in taskColorList" :key="k" :command="c">
-                                            <div class="item">
-                                                <i class="iconfont" :style="{color:c.color||'#f9f9f9'}" v-html="c.color == item.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
-                                            </div>
-                                        </EDropdownItem>
-                                    </EDropdownMenu>
-                                </EDropdown>
+                                :style="item.color ? {backgroundColor: item.color} : {}"
+                                @click="$store.commit('openTask', item)">
+                                <div :class="['task-head', item.desc ? 'has-desc' : '']">
+                                    <div class="task-title"><pre>{{item.name}}</pre></div>
+                                    <div class="task-menu" @click.stop="">
+                                        <div v-if="item.loading === true" class="loading"><Loading /></div>
+                                        <EDropdown
+                                            v-else
+                                            trigger="click"
+                                            size="small"
+                                            @command="dropTask(item, $event)">
+                                            <Icon type="ios-more" />
+                                            <EDropdownMenu slot="dropdown" class="project-list-more-dropdown-menu">
+                                                <EDropdownItem v-if="item.complete_at" command="uncomplete">
+                                                    <div class="item red">
+                                                        <Icon type="md-checkmark-circle-outline" />{{$L('标记未完成')}}
+                                                    </div>
+                                                </EDropdownItem>
+                                                <EDropdownItem v-else command="complete">
+                                                    <div class="item">
+                                                        <Icon type="md-radio-button-off" />{{$L('完成')}}
+                                                    </div>
+                                                </EDropdownItem>
+                                                <EDropdownItem command="archived">
+                                                    <div class="item">
+                                                        <Icon type="ios-filing" />{{$L('归档')}}
+                                                    </div>
+                                                </EDropdownItem>
+                                                <EDropdownItem command="delete">
+                                                    <div class="item">
+                                                        <Icon type="md-trash" />{{$L('删除')}}
+                                                    </div>
+                                                </EDropdownItem>
+                                                <EDropdownItem divided disabled>{{$L('背景色')}}</EDropdownItem>
+                                                <EDropdownItem v-for="(c, k) in taskColorList" :key="k" :command="c">
+                                                    <div class="item">
+                                                        <i class="iconfont" :style="{color:c.color||'#f9f9f9'}" v-html="c.color == item.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
+                                                    </div>
+                                                </EDropdownItem>
+                                            </EDropdownMenu>
+                                        </EDropdown>
+                                    </div>
+                                </div>
+                                <div v-if="item.desc" class="task-desc" v-html="item.desc"></div>
+                                <div v-if="item.task_tag.length > 0" class="task-tags">
+                                    <Tag v-for="(tag, keyt) in item.task_tag" :key="keyt" :color="tag.color">{{tag.name}}</Tag>
+                                </div>
+                                <div class="task-users">
+                                    <ul>
+                                        <li v-for="(user, keyu) in item.task_user" :key="keyu">
+                                            <UserAvatar :userid="user.userid" size="32" :borderWitdh="2" :borderColor="item.color"/>
+                                        </li>
+                                    </ul>
+                                    <div v-if="item.file_num > 0" class="task-icon">{{item.file_num}}<Icon type="ios-link-outline" /></div>
+                                    <div v-if="item.msg_num > 0" class="task-icon">{{item.msg_num}}<Icon type="ios-chatbubbles-outline" /></div>
+                                </div>
+                                <div class="task-progress">
+                                    <div v-if="item.sub_num > 0" class="task-sub-num">{{item.sub_complete}}/{{item.sub_num}}</div>
+                                    <Progress :percent="item.percent" :stroke-width="6" />
+                                    <ETooltip
+                                        v-if="item.end_at"
+                                        :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
+                                        :open-delay="600"
+                                        :content="item.end_at">
+                                        <div v-if="!item.complete_at"><Icon type="ios-time-outline"/>{{ expiresFormat(item.end_at) }}</div>
+                                    </ETooltip>
+                                </div>
+                                <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
                             </div>
-                            <div v-if="item.desc" class="task-desc" v-html="item.desc"></div>
-                            <div v-if="item.task_tag.length > 0" class="task-tags">
-                                <Tag v-for="(tag, keyt) in item.task_tag" :key="keyt" :color="tag.color">{{tag.name}}</Tag>
-                            </div>
-                            <div class="task-users">
-                                <ul>
-                                    <li v-for="(user, keyu) in item.task_user" :key="keyu">
-                                        <UserAvatar :userid="user.userid" size="32" :borderWitdh="2" :borderColor="item.color"/>
-                                    </li>
-                                </ul>
-                                <div v-if="item.file_num > 0" class="task-icon">{{item.file_num}}<Icon type="ios-link-outline" /></div>
-                                <div v-if="item.msg_num > 0" class="task-icon">{{item.msg_num}}<Icon type="ios-chatbubbles-outline" /></div>
-                            </div>
-                            <div class="task-progress">
-                                <div v-if="item.sub_num > 0" class="task-sub-num">{{item.sub_complete}}/{{item.sub_num}}</div>
-                                <Progress :percent="item.percent" :stroke-width="6" />
-                                <ETooltip
-                                    v-if="item.end_at"
-                                    :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
-                                    :open-delay="600"
-                                    :content="item.end_at">
-                                    <div v-if="!item.complete_at"><Icon type="ios-time-outline"/>{{ expiresFormat(item.end_at) }}</div>
-                                </ETooltip>
-                            </div>
-                            <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
-                        </div>
                             <div class="task-item">
                                 <TaskAddSimple
                                     :column-id="column.id"
@@ -291,8 +294,7 @@
                 width: '90%',
                 maxWidth: '640px'
             }"
-            :mask-closable="false"
-            class-name="simple-modal">
+            :mask-closable="false">
             <TaskAdd v-model="addData"/>
             <div slot="footer">
                 <Button type="default" @click="addShow=false">{{$L('取消')}}</Button>
@@ -304,8 +306,7 @@
         <Modal
             v-model="settingShow"
             :title="$L('项目设置')"
-            :mask-closable="false"
-            class-name="simple-modal">
+            :mask-closable="false">
             <Form ref="addProject" :model="settingData" label-width="auto" @submit.native.prevent>
                 <FormItem prop="name" :label="$L('项目名称')">
                     <Input type="text" v-model="settingData.name" :maxlength="32" :placeholder="$L('必填')"></Input>
@@ -324,8 +325,7 @@
         <Modal
             v-model="userShow"
             :title="$L('成员管理')"
-            :mask-closable="false"
-            class-name="simple-modal">
+            :mask-closable="false">
             <Form ref="addProject" :model="userData" label-width="auto" @submit.native.prevent>
                 <FormItem prop="userids" :label="$L('项目成员')">
                     <UserInput v-if="userShow" v-model="userData.userids" :uncancelable="userData.uncancelable" :multiple-max="100" :placeholder="$L('选择项目成员')"/>
@@ -341,8 +341,7 @@
         <Modal
             v-model="transferShow"
             :title="$L('移交项目')"
-            :mask-closable="false"
-            class-name="simple-modal">
+            :mask-closable="false">
             <Form ref="addProject" :model="transferData" label-width="auto" @submit.native.prevent>
                 <FormItem prop="owner_userid" :label="$L('项目负责人')">
                     <UserInput v-if="transferShow" v-model="transferData.owner_userid" :multiple-max="1" :placeholder="$L('选择项目负责人')"/>
