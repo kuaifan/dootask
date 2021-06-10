@@ -289,10 +289,7 @@
                 this.isLoading = true;
                 $A.apiAjax({
                     url: 'system/imgview',
-                    data: { path: path?path:'' },
-                    beforeSend: true,
-                    complete: true,
-                    error: true,
+                    data: {path: path ? path : ''},
                     success: (res) => {
                         this.isLoading = false;
                         if (res.ret === 1) {

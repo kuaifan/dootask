@@ -60,11 +60,15 @@
         font-size: 28px;
     }
 
-    .ivu-progress-outer {
-        background-color: rgba(0, 0, 0, 0.68);
-
-        .ivu-progress-inner {
-            width: 88%;
+    .ivu-progress {
+        height: 100%;
+        .ivu-progress-outer {
+            background-color: rgba(0, 0, 0, 0.68);
+            height: 100%;
+            .ivu-progress-inner {
+                width: 88%;
+                margin: 0 auto;
+            }
         }
     }
 }

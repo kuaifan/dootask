@@ -104,17 +104,19 @@
         <!--任务详情-->
         <Modal
             v-model="projectTask._show"
-            :title="$L('任务详情')"
-            :mask-closable="false">
-
+            :mask-closable="false"
+            footer-hide>
+            <TaskDetail/>
         </Modal>
     </div>
 </template>
 
 <script>
 import { mapState } from 'vuex'
+import TaskDetail from "./manage/components/TaskDetail";
 
 export default {
+    components: {TaskDetail},
     data() {
         return {
             loadIng: 0,

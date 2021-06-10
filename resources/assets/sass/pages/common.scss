@@ -229,6 +229,10 @@ body {
     .ivu-progress {
         display: flex;
         align-items: center;
+        .ivu-progress-outer {
+            display: flex;
+            align-items: center;
+        }
         &.ivu-progress-show-info {
             .ivu-progress-outer {
                 margin: 0;
