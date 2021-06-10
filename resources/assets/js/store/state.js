@@ -151,7 +151,7 @@ const state = { method };
 // 变量缓存
 [
     'projectChatShow',      // 项目聊天显示
-    'projectListPanel',     // 项目面板显示类型
+    'projectTablePanel',    // 项目面板显示类型
     'taskMyShow',           // 项目面板显示我的任务
     'taskUndoneShow',       // 项目面板显示未完成任务
     'taskCompletedShow'     // 项目面板显示已完成任务

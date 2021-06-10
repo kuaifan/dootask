@@ -46,14 +46,14 @@
                     </li>
                 </ul>
                 <div class="project-switch">
-                    <div :class="['project-switch-button', !projectListPanel ? 'menu' : '']" @click="toggleBoolean('projectListPanel')">
+                    <div :class="['project-switch-button', !projectTablePanel ? 'menu' : '']" @click="toggleBoolean('projectTablePanel')">
                         <div><i class="iconfont">&#xe60c;</i></div>
                         <div><i class="iconfont">&#xe66a;</i></div>
                     </div>
                 </div>
             </div>
         </div>
-        <div v-if="projectListPanel" class="project-column overlay-x">
+        <div v-if="projectTablePanel" class="project-column overlay-x">
             <Draggable
                 :list="projectDetail.project_column"
                 :animation="150"
@@ -444,11 +444,12 @@ export default {
             'userId',
             'dialogList',
 
+            'projectList',
             'projectDetail',
             'projectLoad',
 
             'projectChatShow',
-            'projectListPanel',
+            'projectTablePanel',
             'taskMyShow',
             'taskUndoneShow',
             'taskCompletedShow'
@@ -961,9 +962,8 @@ export default {
                 success: ({ret, data, msg}) => {
                     if (ret === 1) {
                         $A.messageSuccess(msg);
-                        this.$set(this.projectDetail, 'name', this.settingData.name);
-                        this.$set(this.projectDetail, 'desc', this.settingData.desc);
                         this.settingShow = false;
+                        this.$store.commit("storageProjectData", data)
                     } else {
                         $A.modalError(msg);
                     }
@@ -1036,8 +1036,13 @@ export default {
                             this.$Modal.remove();
                             if (ret === 1) {
                                 $A.messageSuccess(msg);
-                                this.$store.commit('getProjectList');
-                                this.goForward({path: '/manage/dashboard'}, true);
+                                this.$store.commit('forgetProjectData', this.projectDetail.id);
+                                const project = this.projectList.find(({id}) => id);
+                                if (project) {
+                                    this.goForward({path: '/manage/project/' + project.id}, true);
+                                } else {
+                                    this.goForward({path: '/manage/dashboard'}, true);
+                                }
                             }else{
                                 $A.modalError(msg, 301);
                             }
@@ -1066,8 +1071,13 @@ export default {
                             this.$Modal.remove();
                             if (ret === 1) {
                                 $A.messageSuccess(msg);
-                                this.$store.commit('getProjectList');
-                                this.goForward({path: '/manage/dashboard'}, true);
+                                this.$store.commit('forgetProjectData', this.projectDetail.id);
+                                const project = this.projectList.find(({id}) => id);
+                                if (project) {
+                                    this.goForward({path: '/manage/project/' + project.id}, true);
+                                } else {
+                                    this.goForward({path: '/manage/dashboard'}, true);
+                                }
                             }else{
                                 $A.modalError(msg, 301);
                             }

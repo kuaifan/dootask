@@ -188,7 +188,7 @@ class ProjectController extends AbstractController
                 $column['project_id'] = $project->id;
                 ProjectColumn::createInstance($column)->save();
             }
-            return Base::retSuccess('添加成功');
+            return Base::retSuccess('添加成功', $project->find($project->id));
         });
     }
 
@@ -236,7 +236,7 @@ class ProjectController extends AbstractController
         $project->desc = $desc;
         $project->save();
         //
-        return Base::retSuccess('修改成功');
+        return Base::retSuccess('修改成功', $project);
     }
 
     /**

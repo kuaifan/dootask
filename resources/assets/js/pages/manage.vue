@@ -269,11 +269,8 @@ export default {
                                 this.addShow = false;
                                 this.$refs.addProject.resetFields();
                                 this.$set(this.addData, 'template', 0);
-                                //
-                                this.loadIng++;
-                                this.$store.commit('getProjectList', () => {
-                                    this.loadIng--;
-                                });
+                                this.$store.commit('storageProjectData', data);
+                                this.toggleRoute('project/' + data.id)
                             } else {
                                 $A.modalError(msg);
                             }

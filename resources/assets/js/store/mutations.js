@@ -81,12 +81,10 @@ export default {
     /**
      * 获取项目列表
      * @param state
-     * @param afterCallback
      */
-    getProjectList(state, afterCallback) {
+    getProjectList(state) {
         if (state.userId === 0) {
             state.projectList = [];
-            typeof afterCallback === "function" && afterCallback();
             return;
         }
         if (state.method.isArray(state.cacheProjectList)) {
@@ -94,9 +92,6 @@ export default {
         }
         $A.apiAjax({
             url: 'project/lists',
-            after: () => {
-                typeof afterCallback === "function" && afterCallback();
-            },
             success: ({ret, data, msg}) => {
                 if (ret === 1) {
                     state.projectList = data.data;
@@ -124,7 +119,7 @@ export default {
             },
             success: ({ret, data, msg}) => {
                 if (ret === 1) {
-                    this.commit('storageProjectOne', data);
+                    this.commit('storageProjectData', data);
                 }
             }
         });
@@ -133,17 +128,38 @@ export default {
     /**
      * 保存项目信息
      * @param state
-     * @param project
+     * @param data
      */
-    storageProjectOne(state, project) {
-        if (typeof project.project_column !== "undefined") delete project.project_column;
-        if (typeof project.project_user !== "undefined") delete project.project_user;
-        let index = state.projectList.findIndex(({id}) => id === project.id);
+    storageProjectData(state, data) {
+        if (data.id == state.projectDetail.id) {
+            state.projectDetail = Object.assign({}, state.projectDetail, data)
+        }
+        //
+        if (typeof data.project_column !== "undefined") delete data.project_column;
+        if (typeof data.project_user !== "undefined") delete data.project_user;
+        let index = state.projectList.findIndex(({id}) => id == data.id);
         if (index > -1) {
-            state.projectList.splice(index, 1, project);
-            state.method.setStorage("cacheProjectList", state.projectList);
+            state.projectList.splice(index, 1, Object.assign({}, state.projectList[index], data));
         } else {
-            state.projectList.push(project);
+            state.projectList.unshift(data);
+        }
+        state.method.setStorage("cacheProjectList", state.projectList);
+    },
+
+    /**
+     * 删除项目信息
+     * @param state
+     * @param project_id
+     */
+    forgetProjectData(state, project_id) {
+        let index = state.projectList.findIndex(({id}) => id == project_id);
+        if (index > -1) {
+            state.projectList.splice(index, 1);
+            state.method.setStorage("cacheProjectList", state.projectList);
+        }
+        if (typeof state.cacheProjectDetail[project_id] !== "undefined") {
+            delete state.cacheProjectDetail[project_id];
+            state.method.setStorage("cacheProjectDetail", state.cacheProjectDetail);
         }
     },
 
@@ -179,11 +195,8 @@ export default {
             success: ({ret, data, msg}) => {
                 if (ret === 1) {
                     state.cacheProjectDetail[data.id] = data;
-                    if (state.projectDetail.id === data.id) {
-                        state.projectDetail = data;
-                    }
                     state.method.setStorage("cacheProjectDetail", state.cacheProjectDetail);
-                    this.commit('storageProjectOne', $A.cloneJSON(data));
+                    this.commit('storageProjectData', $A.cloneJSON(data));
                 } else {
                     $A.modalError(msg);
                 }
@@ -282,7 +295,7 @@ export default {
     getDialogUpdate(state, data) {
         let splice = false;
         state.dialogList.some(({id, unread}, index) => {
-            if (id === data.id) {
+            if (id == data.id) {
                 unread !== data.unread && this.commit('getDialogMsgUnread');
                 state.dialogList.splice(index, 1, data);
                 return splice = true;
@@ -345,7 +358,7 @@ export default {
         if (state.method.runNum(dialog_id) === 0) {
             return;
         }
-        if (state.dialogId === dialog_id) {
+        if (state.dialogId == dialog_id) {
             return;
         }
         //
@@ -386,10 +399,10 @@ export default {
                     };
                     state.method.setStorage("cacheDialogMsg", state.cacheDialogMsg);
                     // 更新当前会话消息
-                    if (state.dialogId === dialog_id) {
+                    if (state.dialogId == dialog_id) {
                         state.dialogDetail = dialog;
                         reverse.forEach((item) => {
-                            let index = state.dialogMsgList.findIndex(({id}) => id === item.id);
+                            let index = state.dialogMsgList.findIndex(({id}) => id == item.id);
                             if (index === -1) {
                                 state.dialogMsgList.push(item);
                             } else {
@@ -414,7 +427,7 @@ export default {
             url: 'dialog/msg/unread',
             success: ({ret, data, msg}) => {
                 if (ret === 1) {
-                    if (unread === state.dialogMsgUnread) {
+                    if (unread == state.dialogMsgUnread) {
                         state.dialogMsgUnread = data.unread;
                     } else {
                         setTimeout(() => {
@@ -535,8 +548,8 @@ export default {
                         (function (msg) {
                             const {data} = msg;
                             const {dialog_id} = data;
-                            if (dialog_id === state.dialogId) {
-                                let index = state.dialogMsgList.findIndex(({id}) => id === data.id);
+                            if (dialog_id == state.dialogId) {
+                                let index = state.dialogMsgList.findIndex(({id}) => id == data.id);
                                 if (index === -1) {
                                     state.dialogMsgList.push(data);
                                 } else {
