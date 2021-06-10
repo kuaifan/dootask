@@ -1195,6 +1195,7 @@
                             fireAjaxCallback('ajaxSuccess ajax:success', {xhr: xhr}, 'success', responseData, xhr.status, xhr);
                         }
                         catch (err) {
+                            console.error(err);
                             fireAjaxCallback('ajaxError ajax:error', {
                                 xhr: xhr,
                                 parseerror: true

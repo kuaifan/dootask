@@ -245,7 +245,6 @@ class ProjectController extends AbstractController
             foreach ($sort as $item) {
                 if (!is_array($item)) continue;
                 if (!intval($item['id'])) continue;
-                if (!is_array($item['task'])) continue;
                 ProjectColumn::whereId($item['id'])->whereProjectId($project->id)->update([
                     'sort' => $index
                 ]);
@@ -475,8 +474,8 @@ class ProjectController extends AbstractController
         $column->sort = intval(ProjectColumn::whereProjectId($project->id)->orderByDesc('sort')->value('sort')) + 1;
         $column->save();
         //
-        $data = $column->toArray();
-        $data['project_task'] = [];
+        $data = $column->find($column->id);
+        $data->project_task = [];
         return Base::retSuccess('添加成功', $data);
     }
 
@@ -655,22 +654,28 @@ class ProjectController extends AbstractController
             return Base::retError('项目不存在或不在成员列表内');
         }
         // 列表
+        $column = null;
+        $newColumn = null;
         if (is_array($column_id)) {
             $column_id = Base::arrayFirst($column_id);
         }
-        if (empty($column_id)) {
-            $column = $project->projectColumn->first();
-        } elseif (intval($column_id) > 0) {
-            $column = $project->projectColumn->where('id', $column_id)->first();
-        } else {
-            $column = ProjectColumn::whereProjectId($project->id)->whereName($column_id)->first();
-            if (empty($column)) {
-                $column = ProjectColumn::createInstance([
-                    'project_id' => $project->id,
-                    'name' => $column_id,
-                ]);
-                $column->save();
+        if ($column_id) {
+            if (intval($column_id) > 0) {
+                $column = $project->projectColumn->find($column_id);
             }
+            if (empty($column)) {
+                $column = ProjectColumn::whereProjectId($project->id)->whereName($column_id)->first();
+            }
+        }
+        if (empty($column)) {
+            $column = ProjectColumn::createInstance([
+                'project_id' => $project->id,
+                'name' => $column_id ?: 'Default',
+            ]);
+            $column->sort = intval(ProjectColumn::whereProjectId($project->id)->orderByDesc('sort')->value('sort')) + 1;
+            $column->save();
+            $newColumn = $column->find($column->id);
+            $newColumn->project_task = [];
         }
         if (empty($column)) {
             return Base::retError('任务列表不存在或已被删除');
@@ -682,7 +687,11 @@ class ProjectController extends AbstractController
             'column_id' => $column->id,
         ]));
         if (Base::isSuccess($result)) {
-            $result['data'] = ProjectTask::with(['taskUser', 'taskTag'])->whereId($result['data']['id'])->first();
+            $result['data'] = [
+                'new_column' => $newColumn,
+                'in_top' => intval($data['top']),
+                'task' => ProjectTask::with(['taskUser', 'taskTag'])->find($result['data']['id']),
+            ];
         }
         return $result;
     }

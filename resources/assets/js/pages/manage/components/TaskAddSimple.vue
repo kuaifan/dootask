@@ -161,9 +161,17 @@ export default {
                 success: ({ret, data, msg}) => {
                     if (ret === 1) {
                         $A.messageSuccess(msg);
-                        data.top = this.addTop ? 1 : 0;
                         this.$emit("on-success", data)
                         this.active = false;
+                        this.addData = {
+                            owner: 0,
+                            column_id: 0,
+                            times: [],
+                            subtasks: [],
+                            p_level: 0,
+                            p_name: '',
+                            p_color: '',
+                        }
                     } else {
                         $A.modalError(msg);
                     }

@@ -215,7 +215,7 @@
                 </li>
             </Draggable>
         </div>
-        <div v-else class="project-table">
+        <div v-else class="project-table overlay-y">
             <div class="project-table-head">
                 <Row class="task-row">
                     <Col span="12"># {{$L('任务名称')}}</Col>
@@ -607,9 +607,7 @@ export default {
                 success: ({ret, data, msg}) => {
                     if (ret === 1) {
                         $A.messageSuccess(msg);
-                        this.addTaskSuccess(Object.assign(data, {
-                            top: !!this.addData.top
-                        }))
+                        this.addTaskSuccess(data)
                         this.addShow = false;
                         this.addData = {
                             owner: 0,
@@ -644,15 +642,18 @@ export default {
         },
 
         addTaskSuccess(data) {
-            this.projectDetail.project_column.some((item) => {
-                if (item.id === data.column_id) {
-                    if (data.top) {
-                        item.project_task.unshift(data);
-                    } else {
-                        item.project_task.push(data);
-                    }
+            const {task, in_top, new_column} = data;
+            if (new_column) {
+                this.projectDetail.project_column.push(new_column)
+            }
+            const column = this.projectDetail.project_column.find(({id}) => id === task.column_id);
+            if (column) {
+                if (in_top) {
+                    column.project_task.unshift(task);
+                } else {
+                    column.project_task.push(task);
                 }
-            });
+            }
         },
 
         addColumnOpen() {
