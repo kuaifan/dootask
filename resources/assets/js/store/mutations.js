@@ -89,6 +89,9 @@ export default {
             typeof afterCallback === "function" && afterCallback();
             return;
         }
+        if (state.method.isArray(state.cacheProjectList)) {
+            state.projectList = state.cacheProjectList;
+        }
         $A.apiAjax({
             url: 'project/lists',
             after: () => {
@@ -97,6 +100,7 @@ export default {
             success: ({ret, data, msg}) => {
                 if (ret === 1) {
                     state.projectList = data.data;
+                    state.method.setStorage("cacheProjectList", state.projectList);
                 } else {
                     $A.modalError(msg);
                 }
@@ -120,13 +124,27 @@ export default {
             },
             success: ({ret, data, msg}) => {
                 if (ret === 1) {
-                    let index = state.projectList.findIndex(({id}) => id === data.id);
-                    if (index > -1) {
-                        state.projectList.splice(index, 1, data);
-                    }
+                    this.commit('storageProjectOne', data);
                 }
             }
         });
+    },
+
+    /**
+     * 保存项目信息
+     * @param state
+     * @param project
+     */
+    storageProjectOne(state, project) {
+        if (typeof project.project_column !== "undefined") delete project.project_column;
+        if (typeof project.project_user !== "undefined") delete project.project_user;
+        let index = state.projectList.findIndex(({id}) => id === project.id);
+        if (index > -1) {
+            state.projectList.splice(index, 1, project);
+            state.method.setStorage("cacheProjectList", state.projectList);
+        } else {
+            state.projectList.push(project);
+        }
     },
 
     /**
@@ -138,15 +156,15 @@ export default {
         if (state.method.runNum(project_id) === 0) {
             return;
         }
-        if (state.method.isJson(state.cacheProject[project_id])) {
-            state.projectDetail = state.cacheProject[project_id];
+        if (state.method.isJson(state.cacheProjectDetail[project_id])) {
+            state.projectDetail = state.cacheProjectDetail[project_id];
         }
         state.projectDetail.id = project_id;
         //
-        if (state.cacheProject[project_id + "::load"]) {
+        if (state.cacheProjectDetail[project_id + "::load"]) {
             return;
         }
-        state.cacheProject[project_id + "::load"] = true;
+        state.cacheProjectDetail[project_id + "::load"] = true;
         //
         state.projectLoad++;
         $A.apiAjax({
@@ -156,23 +174,16 @@ export default {
             },
             complete: () => {
                 state.projectLoad--;
-                state.cacheProject[project_id + "::load"] = false;
+                state.cacheProjectDetail[project_id + "::load"] = false;
             },
             success: ({ret, data, msg}) => {
                 if (ret === 1) {
-                    state.cacheProject[data.id] = data;
+                    state.cacheProjectDetail[data.id] = data;
                     if (state.projectDetail.id === data.id) {
                         state.projectDetail = data;
                     }
-                    state.method.setStorage("cacheProject", state.cacheProject);
-                    //
-                    let index = state.projectList.findIndex(({id}) => id === data.id);
-                    if (index > -1) {
-                        const project = $A.cloneJSON(data);
-                        delete project.project_column;
-                        delete project.project_user;
-                        state.projectList.splice(index, 1, project);
-                    }
+                    state.method.setStorage("cacheProjectDetail", state.cacheProjectDetail);
+                    this.commit('storageProjectOne', $A.cloneJSON(data));
                 } else {
                     $A.modalError(msg);
                 }

@@ -148,7 +148,7 @@ const method = {
 // 方法类
 const state = { method };
 
-// Boolean变量
+// 变量缓存
 [
     'projectChatShow',      // 项目聊天显示
     'projectListPanel',     // 项目面板显示类型
@@ -158,6 +158,12 @@ const state = { method };
 ].forEach((key) => {
     state[key] = state.method.getStorageBoolean('boolean:' + key, true)
 })
+
+// 数据缓存
+state.cacheUserBasic = state.method.getStorageJson("cacheUserBasic");
+state.cacheDialogMsg = state.method.getStorageJson("cacheDialogMsg");
+state.cacheProjectList = state.method.getStorageArray("cacheProjectList");
+state.cacheProjectDetail = state.method.getStorageJson("cacheProjectDetail");
 
 // 会员信息
 state.userInfo = state.method.getStorageJson('userInfo');
@@ -177,13 +183,8 @@ state.wsReadWaitList = [];
 
 // 项目信息
 state.projectLoad = 0;
-state.projectList = [];
-state.projectDetail = {
-    id: 0,
-    dialog_id: 0,
-    project_column: [],
-    project_user: []
-};
+state.projectList = state.cacheProjectList;
+state.projectDetail = {id: 0, dialog_id: 0, project_column: [], project_user: []};
 
 // 会话消息
 state.dialogId = 0;
@@ -195,10 +196,5 @@ state.dialogMsgUnread = 0;
 
 // 任务优先级
 state.taskPriority = [];
-
-// 其他
-state.cacheProject = state.method.getStorageJson("cacheProject");
-state.cacheUserBasic = state.method.getStorageJson("cacheUserBasic");
-state.cacheDialogMsg = state.method.getStorageJson("cacheDialogMsg");
 
 export default state

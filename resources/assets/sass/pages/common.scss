@@ -226,6 +226,16 @@ body {
             }
         }
     }
+    .ivu-progress {
+        display: flex;
+        align-items: center;
+        &.ivu-progress-show-info {
+            .ivu-progress-outer {
+                margin: 0;
+                padding: 0;
+            }
+        }
+    }
 }
 
 .modal-info-show {

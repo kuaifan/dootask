@@ -70,19 +70,13 @@ class ProjectController extends AbstractController
         //
         $project_id = intval(Request::input('project_id'));
         //
-        $project = Project::with(['projectColumn' => function($query) {
-            $query->with(['projectTask' => function($taskQuery) {
-                $taskQuery->with(['taskUser', 'taskTag'])->where('parent_id', 0);
-            }]);
-        }, 'projectUser'])
-            ->select($this->projectSelect)
+        $project = Project::select($this->projectSelect)
             ->join('project_users', 'projects.id', '=', 'project_users.project_id')
             ->where('projects.id', $project_id)
             ->where('project_users.userid', $user->userid)
             ->first();
-        if ($project) {
-            $owner_user = $project->projectUser->where('owner', 1)->first();
-            $project->owner_userid = $owner_user ? $owner_user->userid : 0;
+        if (empty($project)) {
+            return Base::retError('项目不存在或不在成员列表内');
         }
         //
         return Base::retSuccess('success', $project);
@@ -114,10 +108,11 @@ class ProjectController extends AbstractController
             ->where('projects.id', $project_id)
             ->where('project_users.userid', $user->userid)
             ->first();
-        if ($project) {
-            $owner_user = $project->projectUser->where('owner', 1)->first();
-            $project->owner_userid = $owner_user ? $owner_user->userid : 0;
+        if (empty($project)) {
+            return Base::retError('项目不存在或不在成员列表内');
         }
+        $owner_user = $project->projectUser->where('owner', 1)->first();
+        $project->owner_userid = $owner_user ? $owner_user->userid : 0;
         //
         return Base::retSuccess('success', $project);
     }
