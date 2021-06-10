@@ -12,24 +12,6 @@
     </div>
 </template>
 
-<style lang="scss" scoped>
-:global {
-    .common-circle {
-        border-radius: 50%;
-        .common-circle-path {
-            fill: transparent;
-        }
-        .common-circle-g-path-ring {
-            stroke: #87d068;
-        }
-        .common-circle-g-path-core {
-            fill: #87d068;
-            transform: scale(0.56);
-            transform-origin: 50%;
-        }
-    }
-}
-</style>
 <script>
 export default {
     name: 'WCircle',

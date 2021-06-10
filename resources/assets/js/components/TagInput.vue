@@ -1,5 +1,5 @@
 <template>
-    <div class="tags-wrap" @paste="pasteText($event)" @click="clickWrap">
+    <div class="common-tag-input" @paste="pasteText($event)" @click="clickWrap">
         <div class="tags-item" v-for="(text, index) in disSource">
             <span class="tags-content" @click.stop="">{{text}}</span><span class="tags-del" @click.stop="delTag(index)">&times;</span>
         </div>
@@ -10,84 +10,6 @@
     </div>
 </template>
 
-<style lang="scss">
-:global {
-    .tags-wrap {
-        display: inline-block;
-        width: 100%;
-        min-height: 32px;
-        padding: 2px 7px;
-        border: 1px solid #dddee1;
-        border-radius: 4px;
-        color: #495060;
-        background: #fff;
-        position: relative;
-        cursor: text;
-        vertical-align: middle;
-        line-height: normal;
-        -webkit-transition: border .2s ease-in-out, background .2s ease-in-out, -webkit-box-shadow .2s ease-in-out;
-        transition: border .2s ease-in-out, background .2s ease-in-out, -webkit-box-shadow .2s ease-in-out;
-
-        .tags-item, .tags-input {
-            position: relative;
-            float: left;
-            color: #495060;
-            background-color: #f1f8ff;
-            border-radius: 3px;
-            line-height: 22px;
-            margin: 2px 6px 2px 0;
-            padding: 0 20px 0 6px;
-
-            .tags-content {
-                line-height: 22px;
-            }
-
-            .tags-del {
-                width: 20px;
-                height: 22px;
-                text-align: center;
-                cursor: pointer;
-                position: absolute;
-                top: -1px;
-                right: 0;
-            }
-        }
-
-        .tags-input {
-            max-width: 80%;
-            padding: 0;
-            background-color: inherit;
-            border: none;
-            color: inherit;
-            height: 22px;
-            line-height: 22px;
-            -webkit-appearance: none;
-            outline: none;
-            resize: none;
-            overflow: hidden;
-        }
-
-        .tags-input::placeholder {
-            color: #bbbbbb;
-        }
-
-        .tags-placeholder {
-            position: absolute;
-            left: 0;
-            top: 0;
-            z-index: -1;
-            color: #ffffff00;
-        }
-    }
-
-    .tags-wrap::after {
-        content: "";
-        display: block;
-        height: 0;
-        clear: both;
-    }
-}
-</style>
 <script>
     export default {
         name: 'TagInput',

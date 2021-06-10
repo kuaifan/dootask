@@ -95,7 +95,12 @@
                         </Col>
                     </Row>
                 </div>
-                <Input type="text" v-model="subName" class="enter-input" @on-enter="addSubTask" :placeholder="$L('+ 输入子任务，回车添加子任务')"></Input>
+                <Input
+                    type="text"
+                    v-model="subName"
+                    :class="['enter-input', subName == '' ? 'empty' : '']"
+                    @on-enter="addSubTask"
+                    :placeholder="$L('+ 输入子任务，回车添加子任务')"/>
             </div>
         </Form>
     </div>

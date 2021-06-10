@@ -7,7 +7,7 @@
         :disabled="!showTooltip"
         :max-width="tooltipMaxWidth"
         transfer>
-        <span ref="content" @mouseenter="handleTooltipIn" class="auto-tip-content">
+        <span ref="content" @mouseenter="handleTooltipIn" class="common-auto-tip">
             <template v-if="existSlot"><slot/></template>
             <template v-else>{{text}}</template>
         </span>

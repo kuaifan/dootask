@@ -1,32 +1,10 @@
 <template>
-    <div ref="scrollerView" class="app-scroller" :class="[static ? 'app-scroller-static' : '']">
+    <div ref="scrollerView" class="app-scroller-y" :class="[static ? 'static' : '']">
         <slot/>
         <div ref="bottom" class="app-scroller-bottom"></div>
     </div>
 </template>
 
-<style lang="scss" scoped>
-.app-scroller {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    .app-scroller-bottom {
-        height: 0;
-        margin: 0;
-        padding: 0;
-    }
-}
-
-.app-scroller-static {
-    position: static;
-    flex: 1;
-}
-</style>
 <script>
 export default {
     name: 'ScrollerY',

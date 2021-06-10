@@ -63,12 +63,14 @@
             border-radius: 6px;
             background-color: #f8f8f8;
             .enter-input {
-                .ivu-input {
-                    background: transparent;
-                    border-color: transparent;
-                    &:hover,
-                    &:focus {
-                        box-shadow: none;
+                &.empty {
+                    .ivu-input {
+                        background: transparent;
+                        border-color: transparent;
+                        &:hover,
+                        &:focus {
+                            box-shadow: none;
+                        }
                     }
                 }
             }
@@ -98,55 +100,5 @@
         font-size: 12px;
         border-bottom: 1px solid #f1f1f1;
         margin-bottom: 5px;
-    }
-}
-.task-add-simple {
-    .ivu-input-wrapper {
-        display: none;
-    }
-    .add-placeholder {
-        cursor: pointer;
-        color: #888888;
-        .ivu-icon {
-            margin-right: 4px;
-        }
-        &:hover {
-            color: #666666;
-        }
-    }
-    .priority {
-        display: none;
-        align-items: center;
-        min-height: 22px;
-        margin-top: 10px;
-        margin-bottom: -3px;
-        > ul {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            > li {
-                list-style: none;
-                margin-right: 3px;
-                .iconfont {
-                    font-size: 22px;
-                    cursor: pointer;
-                }
-            }
-        }
-        .ivu-icon {
-            cursor: pointer;
-            font-size: 16px;
-        }
-    }
-    &.active {
-        .ivu-input-wrapper {
-            display: block;
-        }
-        .add-placeholder {
-            display: none;
-        }
-        .priority {
-            display: flex;
-        }
     }
 }

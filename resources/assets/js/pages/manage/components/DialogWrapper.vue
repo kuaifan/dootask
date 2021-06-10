@@ -10,7 +10,12 @@
                 <em v-if="peopleNum > 0">({{peopleNum}})</em>
             </div>
         </slot>
-        <ScrollerY ref="scroller" class="dialog-chat dialog-scroller" :auto-bottom="autoBottom" @on-scroll="chatScroll">
+        <ScrollerY
+            ref="scroller"
+            class="dialog-scroller"
+            :auto-bottom="autoBottom"
+            @on-scroll="chatScroll"
+            static>
             <div ref="manageList" class="dialog-list">
                 <ul>
                     <li v-if="dialogMsgLoad > 0" class="loading"><Loading/></li>

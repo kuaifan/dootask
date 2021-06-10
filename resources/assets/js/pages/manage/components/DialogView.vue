@@ -32,7 +32,7 @@
                 :width="360"
                 :offset="8"
                 @on-popper-show="popperShow">
-                <div slot="content" class="dialog-readbox">
+                <div slot="content" class="dialog-wrapper-read-poptip-content">
                     <ul class="read">
                         <li class="read-title"><em>{{readList.length}}</em>{{$L('已读')}}</li>
                         <li v-for="item in readList"><UserAvatar :userid="item.userid" :size="26" show-name/></li>

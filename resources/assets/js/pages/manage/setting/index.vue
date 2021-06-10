@@ -1,5 +1,5 @@
 <template>
-    <div class="setting">
+    <div class="page-setting">
         <PageTitle>{{$L('设置')}}</PageTitle>
         <div class="setting-head">
             <div class="setting-titbox">
@@ -26,80 +26,6 @@
     </div>
 </template>
 
-<style lang="scss" scoped>
-:global {
-    .setting {
-        display: flex;
-        flex-direction: column;
-        .setting-head {
-            display: flex;
-            align-items: flex-start;
-            margin: 32px 32px 16px;
-            border-bottom: 1px solid #F4F4F5;
-            .setting-titbox {
-                flex: 1;
-                margin-bottom: 16px;
-                .setting-title {
-                    display: flex;
-                    align-items: center;
-                    > h1 {
-                        color: #333333;
-                        font-size: 28px;
-                        font-weight: 600;
-                    }
-                }
-            }
-        }
-    }
-    .setting-box {
-        flex: 1;
-        height: 0;
-        display: flex;
-        margin-bottom: 16px;
-        .setting-menu {
-            width: 200px;
-            flex-shrink: 0;
-            border-right: 1px solid #F4F4F5;
-            overflow: auto;
-            > ul {
-                padding: 12px 0 0 32px;
-                > li {
-                    cursor: pointer;
-                    color: #6C7D8C;
-                    list-style: none;
-                    line-height: 42px;
-                    padding: 0 20px;
-                    margin: 5px 0;
-                    position: relative;
-                    &.active,
-                    &:hover {
-                        background-color: #F4F5F7;
-                    }
-                }
-            }
-        }
-        .setting-content {
-            flex: 1;
-            overflow: auto;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            .setting-content-title {
-                font-size: 20px;
-                font-weight: 500;
-                padding: 12px 32px;
-            }
-            .setting-content-view {
-                flex: 1;
-                position: relative;
-                .setting-router-view {
-                    padding: 24px 40px;
-                }
-            }
-        }
-    }
-}
-</style>
 <script>
 import {mapState} from "vuex";
 

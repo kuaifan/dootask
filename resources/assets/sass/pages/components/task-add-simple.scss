@@ -1,0 +1,50 @@
+.task-add-simple {
+    .ivu-input-wrapper {
+        display: none;
+    }
+    .add-placeholder {
+        cursor: pointer;
+        color: #888888;
+        .ivu-icon {
+            margin-right: 4px;
+        }
+        &:hover {
+            color: #666666;
+        }
+    }
+    .priority {
+        display: none;
+        align-items: center;
+        min-height: 22px;
+        margin-top: 10px;
+        margin-bottom: -3px;
+        > ul {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            > li {
+                list-style: none;
+                margin-right: 3px;
+                .iconfont {
+                    font-size: 22px;
+                    cursor: pointer;
+                }
+            }
+        }
+        .ivu-icon {
+            cursor: pointer;
+            font-size: 16px;
+        }
+    }
+    &.active {
+        .ivu-input-wrapper {
+            display: block;
+        }
+        .add-placeholder {
+            display: none;
+        }
+        .priority {
+            display: flex;
+        }
+    }
+}

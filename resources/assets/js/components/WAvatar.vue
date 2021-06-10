@@ -5,6 +5,7 @@
         <span ref="children" :class="[prefixCls + '-string']" :style="childrenStyle" v-else><slot></slot></span>
     </span>
 </template>
+
 <script>
     import Icon from 'view-design-hi/src/components/icon';
     import { oneOf } from 'view-design-hi/src/utils/assist';

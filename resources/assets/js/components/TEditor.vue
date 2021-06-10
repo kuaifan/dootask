@@ -49,31 +49,6 @@
     </div>
 </template>
 
-<style lang="scss" scoped>
-:global {
-    .teditor-loadstyle {
-        width: 100%;
-        height: 180px;
-        overflow: hidden;
-        position: relative;
-    }
-
-    .teditor-loadedstyle {
-        width: 100%;
-        max-height: inherit;
-        overflow: inherit;
-        position: relative;
-    }
-
-    .upload-control {
-        display: none;
-        width: 0;
-        height: 0;
-        overflow: hidden;
-    }
-}
-</style>
-
 <script>
     import tinymce from 'tinymce/tinymce';
     import ImgUpload from "./ImgUpload";

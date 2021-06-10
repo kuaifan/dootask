@@ -1,14 +1,8 @@
-@import "main";
-@import "loading";
-@import "iconfont";
-@import "scrollbar";
 @import "element";
+@import "iconfont";
+@import "loading";
+@import "scrollbar";
 
-@import "auto-tip";
-@import "common-avatar";
-@import "manage-wrapper";
-@import "dialog-wrapper";
-@import "messenger-wrapper";
-@import "project-list";
-@import "task-add";
+@import "components/_";
+@import "pages/_";
 

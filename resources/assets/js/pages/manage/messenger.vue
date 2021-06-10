@@ -1,8 +1,7 @@
 <template>
-    <div class="messenger">
+    <div class="page-messenger">
         <PageTitle>{{ $L('消息') }}</PageTitle>
         <div class="messenger-wrapper">
-
             <div class="messenger-select">
                 <div class="messenger-search">
                     <div class="search-wrapper">
@@ -61,14 +60,6 @@
         </div>
     </div>
 </template>
-
-<style lang="scss" scoped>
-:global {
-    .messenger {
-        display: flex;
-    }
-}
-</style>
 
 <script>
 import {mapState} from "vuex";

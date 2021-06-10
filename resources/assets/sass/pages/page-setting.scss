@@ -1,0 +1,126 @@
+.page-setting {
+    display: flex;
+    flex-direction: column;
+    .setting-head {
+        display: flex;
+        align-items: flex-start;
+        margin: 32px 32px 16px;
+        border-bottom: 1px solid #F4F4F5;
+        .setting-titbox {
+            flex: 1;
+            margin-bottom: 16px;
+            .setting-title {
+                display: flex;
+                align-items: center;
+                > h1 {
+                    color: #333333;
+                    font-size: 28px;
+                    font-weight: 600;
+                }
+            }
+        }
+    }
+    .setting-box {
+        flex: 1;
+        height: 0;
+        display: flex;
+        margin-bottom: 16px;
+        .setting-menu {
+            width: 200px;
+            flex-shrink: 0;
+            border-right: 1px solid #F4F4F5;
+            overflow: auto;
+            > ul {
+                padding: 12px 0 0 32px;
+                > li {
+                    cursor: pointer;
+                    color: #6C7D8C;
+                    list-style: none;
+                    line-height: 42px;
+                    padding: 0 20px;
+                    margin: 5px 0;
+                    position: relative;
+                    &.active,
+                    &:hover {
+                        background-color: #F4F5F7;
+                    }
+                }
+            }
+        }
+        .setting-content {
+            flex: 1;
+            overflow: auto;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            .setting-content-title {
+                font-size: 20px;
+                font-weight: 500;
+                padding: 12px 32px;
+            }
+            .setting-content-view {
+                flex: 1;
+                position: relative;
+                .setting-router-view {
+                    padding: 24px 40px;
+                }
+            }
+        }
+    }
+    .setting-item {
+        .ivu-input,
+        .ivu-select-selection {
+            max-width: 460px;
+        }
+        .form-tip {
+            color: #999999;
+        }
+        .setting-color {
+            max-width: 600px;
+            margin-bottom: 12px;
+            > div {
+                text-align: center;
+                padding-right: 12px;
+                &:first-child {
+                    text-align: left;
+                }
+                &:last-child {
+                    padding-right: 0;
+                    width: 60px;
+                    flex: auto;
+                    flex-shrink: 0;
+                    max-width: 60px;
+                }
+                .ivu-color-picker {
+                    width: 100%;
+                }
+            }
+            .information {
+                color: #999999;
+            }
+        }
+        .setting-footer {
+            > button {
+                height: 34px;
+                line-height: 32px;
+                min-width: 94px;
+            }
+        }
+        &.submit {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            .setting-footer {
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 1;
+                padding: 16px 24px 0;
+                border-top: 1px solid #F4F4F5;
+            }
+        }
+    }
+}

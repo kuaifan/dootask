@@ -2,20 +2,6 @@
     <div class="task-priority" :style="myStyle"><slot/></div>
 </template>
 
-<style lang="scss" scoped>
-:global {
-    .task-priority {
-        display: inline-block;
-        padding: 0 6px;
-        border-radius: 3px;
-        max-width: 100%;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-}
-</style>
-
 <script>
 export default {
     name: "TaskPriority",

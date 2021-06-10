@@ -1,5 +1,5 @@
 <template>
-    <div class="manage-wrapper">
+    <div class="page-manage">
         <div class="manage-box-menu">
             <Dropdown class="manage-box-dropdown" trigger="click" @on-click="settingRoute">
                 <div class="manage-box-title">
