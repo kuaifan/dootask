@@ -875,7 +875,12 @@ export default {
                         Object.keys(data).forEach(key => {
                             this.$set(task, key, data[key]);
                         });
-                        if (data.parent_id) this.getTaskOne(data.parent_id);
+                        if (data.parent_id) {
+                            this.getTaskOne(data.parent_id);
+                        }
+                        if (typeof updata.complete_at !== "undefined") {
+                            this.$store.commit('getProjectOne', data.project_id);
+                        }
                     } else {
                         Object.keys(updata).forEach(key => {
                             this.$set(task, key, backup[key]);
