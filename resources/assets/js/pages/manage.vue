@@ -105,6 +105,10 @@
         <Modal
             v-model="projectTask._show"
             :mask-closable="false"
+            :styles="{
+                width: '90%',
+                maxWidth: '640px'
+            }"
             footer-hide>
             <TaskDetail/>
         </Modal>

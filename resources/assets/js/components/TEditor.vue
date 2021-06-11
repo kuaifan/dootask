@@ -1,7 +1,8 @@
 <template>
     <div>
         <div class="teditor-box" :class="[spinShow?'teditor-loadstyle':'teditor-loadedstyle']">
-            <textarea ref="myTextarea" :id="id">{{ content }}</textarea>
+            <div v-if="inline" ref="myTextarea" :id="id">{{ content }}</div>
+            <textarea v-else ref="myTextarea" :id="id">{{ content }}</textarea>
             <Spin fix v-if="spinShow">
                 <Icon type="ios-loading" size=18 class="upload-control-spin-icon-load"></Icon>
                 <div>{{$L('加载组件中...')}}</div>
@@ -100,6 +101,10 @@
                     return {};
                 }
             },
+            inline: {
+                type: Boolean,
+                default: false
+            },
             readonly: {
                 type: Boolean,
                 default: false
@@ -189,6 +194,7 @@
 
             option(isFull) {
                 return {
+                    inline: isFull ? false : this.inline,
                     selector: (isFull ? '#T_' : '#') + this.id,
                     base_url: $A.serverUrl('js/tinymce'),
                     language: "zh_CN",

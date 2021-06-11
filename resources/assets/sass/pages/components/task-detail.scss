@@ -1,3 +1,123 @@
 .task-detail {
-    padding-bottom: 22px;
+    display: flex;
+    padding-bottom: 36px;
+    .task-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        .head {
+            display: flex;
+            align-items: center;
+            height: 40px;
+            padding-bottom: 10px;
+            color: #888888;
+            position: relative;
+            &:before {
+                content: "";
+                position: absolute;
+                left: 36px;
+                right: -12px;
+                bottom: 0;
+                height: 1px;
+                background-color: #f4f5f5;
+            }
+            .radio {
+                width: 18px;
+                font-size: 16px;
+            }
+            .nav {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                padding-left: 18px;
+                font-size: 12px;
+                > p {
+                    display: flex;
+                    align-items: center;
+                    padding-right: 5px;
+                    &:after {
+                        content: "/";
+                        padding-left: 5px;
+                    }
+                    &:last-child {
+                        &:after {
+                            display: none;
+                        }
+                    }
+                }
+            }
+            .menu {
+                font-size: 22px;
+                margin: 0 18px;
+            }
+        }
+        .title {
+            margin: 12px 36px 0;
+            .ivu-input {
+                font-weight: 500;
+                font-size: 24px;
+                padding: 4px 0;
+                resize: none;
+                border-color: transparent;
+                &:focus {
+                    box-shadow: none
+                }
+            }
+        }
+        .desc {
+            margin: 12px 36px 0;
+            div[contenteditable="true"] {
+                outline: none
+            }
+        }
+        .items {
+            margin: 12px 36px 0;
+            .ivu-form-item {
+                margin-bottom: 10px;
+            }
+            .item-label {
+                display: flex;
+                align-items: center;
+                color: #aaaaaa;
+                .iconfont {
+                    margin-right: 3px;
+                }
+            }
+            .item-content {
+                margin-top: 5px;
+                margin-left: 12px;
+                > li {
+                    display: flex;
+                    align-items: center;
+                    list-style: none;
+                    line-height: 26px;
+                }
+                &.file {
+
+                }
+                &.subtask {
+
+                }
+            }
+        }
+        .add {
+            margin: 12px 36px 0;
+        }
+        .add-button {
+            cursor: pointer;
+            color: #aaaaaa;
+            display: flex;
+            align-items: center;
+            > i {
+                font-size: 14px;
+                padding-right: 8px;
+            }
+            &:hover {
+                color: #999999;
+            }
+        }
+    }
+    .task-dialog {
+        display: none;
+    }
 }
