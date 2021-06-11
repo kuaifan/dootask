@@ -51,24 +51,20 @@ export default {
 
         systemSetting(save) {
             this.loadIng++;
-            $A.apiAjax({
+            this.$store.dispatch("call", {
                 url: 'system/setting?type=' + (save ? 'save' : 'get'),
                 data: this.formDatum,
-                complete: () => {
-                    this.loadIng--;
-                },
-                success: ({ret, data, msg}) => {
-                    if (ret === 1) {
-                        this.formDatum = data;
-                        this.formDatum_bak = $A.cloneJSON(this.formDatum);
-                        if (save) {
-                            $A.messageSuccess('修改成功');
-                        }
-                    } else {
-                        if (save) {
-                            $A.modalError(msg);
-                        }
-                    }
+            }).then((data, msg) => {
+                this.loadIng--;
+                this.formDatum = data;
+                this.formDatum_bak = $A.cloneJSON(this.formDatum);
+                if (save) {
+                    $A.messageSuccess('修改成功');
+                }
+            }).catch((data, msg) => {
+                this.loadIng--;
+                if (save) {
+                    $A.modalError(msg);
                 }
             });
         }

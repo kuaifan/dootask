@@ -100,16 +100,13 @@ export default {
         },
 
         popperShow() {
-            $A.apiAjax({
+            this.$store.dispatch("call", {
                 url: 'dialog/msg/readlist',
                 data: {
                     msg_id: this.msgData.id,
                 },
-                success: ({ret, data, msg}) => {
-                    if (ret === 1) {
-                        this.read_list = data;
-                    }
-                }
+            }).then((data, msg) => {
+                this.read_list = data;
             });
         },
 

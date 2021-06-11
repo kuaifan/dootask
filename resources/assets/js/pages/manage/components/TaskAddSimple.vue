@@ -151,32 +151,28 @@ export default {
                 return;
             }
             this.loadIng++;
-            $A.apiAjax({
+            this.$store.dispatch("call", {
                 url: 'project/task/add',
                 data: this.getData(),
                 method: 'post',
-                complete: () => {
-                    this.loadIng--;
-                },
-                success: ({ret, data, msg}) => {
-                    if (ret === 1) {
-                        $A.messageSuccess(msg);
-                        this.active = false;
-                        this.addData = {
-                            owner: 0,
-                            column_id: 0,
-                            times: [],
-                            subtasks: [],
-                            p_level: 0,
-                            p_name: '',
-                            p_color: '',
-                        }
-                        this.$store.commit('getProjectOne', data.project_id);
-                        this.$emit("on-success", data)
-                    } else {
-                        $A.modalError(msg);
-                    }
+            }).then((data, msg) => {
+                this.loadIng--;
+                $A.messageSuccess(msg);
+                this.active = false;
+                this.addData = {
+                    owner: 0,
+                    column_id: 0,
+                    times: [],
+                    subtasks: [],
+                    p_level: 0,
+                    p_name: '',
+                    p_color: '',
                 }
+                this.$store.commit('getProjectOne', data.project_id);
+                this.$emit("on-success", data)
+            }).catch((data, msg) => {
+                this.loadIng--;
+                $A.modalError(msg);
             });
         },
 

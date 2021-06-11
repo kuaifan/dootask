@@ -105,7 +105,7 @@
         },
         data () {
             return {
-                actionUrl: $A.apiUrl('system/imgupload'),
+                actionUrl: this.$store.state.method.apiUrl('system/imgupload'),
                 params: {
                     token: this.$store.state.userToken,
                     width: this.width,
@@ -287,22 +287,20 @@
                 this.browseList = [];
                 this.browseListNext = [];
                 this.isLoading = true;
-                $A.apiAjax({
+                this.$store.dispatch("call", {
                     url: 'system/imgview',
                     data: {path: path ? path : ''},
-                    success: (res) => {
-                        this.isLoading = false;
-                        if (res.ret === 1) {
-                            let dirs = res.data['dirs'];
-                            for (let i = 0; i < dirs.length; i++) {
-                                this.browseList.push(dirs[i]);
-                            }
-                            this.browsePictureFor(res.data['files']);
-                        }else if (res.ret === -2) {
-                            this.browseVisible = false;
-                            $A.noticeWarning(res.msg);
-                        }
+                }).then((data, msg) => {
+                    this.isLoading = false;
+                    let dirs = data['dirs'];
+                    for (let i = 0; i < dirs.length; i++) {
+                        this.browseList.push(dirs[i]);
                     }
+                    this.browsePictureFor(data['files']);
+                }).catch((data, msg) => {
+                    this.isLoading = false;
+                    this.browseVisible = false;
+                    $A.noticeWarning(msg);
                 });
             },
 

@@ -208,7 +208,7 @@ export default {
                     title: '退出登录',
                     content: '你确定要登出系统？',
                     onOk: () => {
-                        $A.logout()
+                        this.$store.commit("logout")
                     }
                 });
                 return;
@@ -266,24 +266,20 @@ export default {
             this.$refs.addProject.validate((valid) => {
                 if (valid) {
                     this.loadIng++;
-                    $A.apiAjax({
+                    this.$store.dispatch("call", {
                         url: 'project/add',
                         data: this.addData,
-                        complete: () => {
-                            this.loadIng--;
-                        },
-                        success: ({ret, data, msg}) => {
-                            if (ret === 1) {
-                                $A.messageSuccess(msg);
-                                this.addShow = false;
-                                this.$refs.addProject.resetFields();
-                                this.$set(this.addData, 'template', 0);
-                                this.$store.commit('saveProjectData', data);
-                                this.toggleRoute('project/' + data.id)
-                            } else {
-                                $A.modalError(msg);
-                            }
-                        }
+                    }).then((data, msg) => {
+                        this.loadIng--;
+                        $A.messageSuccess(msg);
+                        this.addShow = false;
+                        this.$refs.addProject.resetFields();
+                        this.$set(this.addData, 'template', 0);
+                        this.$store.commit('saveProjectData', data);
+                        this.toggleRoute('project/' + data.id)
+                    }).catch((data, msg) => {
+                        this.loadIng--;
+                        $A.modalError(msg);
                     });
                 }
             });

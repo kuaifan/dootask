@@ -79,21 +79,17 @@ export default {
             this.$refs.formDatum.validate((valid) => {
                 if (valid) {
                     this.loadIng++;
-                    $A.apiAjax({
+                    this.$store.dispatch("call", {
                         url: 'users/editpass',
                         data: this.formDatum,
-                        complete: () => {
-                            this.loadIng--;
-                        },
-                        success: ({ret, data, msg}) => {
-                            if (ret === 1) {
-                                $A.messageSuccess('修改成功！');
-                                this.$store.commit('setUserInfo', data);
-                                this.$refs.formDatum.resetFields();
-                            } else {
-                                $A.modalError(msg);
-                            }
-                        }
+                    }).then((data, msg) => {
+                        this.loadIng--;
+                        $A.messageSuccess('修改成功');
+                        this.$store.commit('setUserInfo', data);
+                        this.$refs.formDatum.resetFields();
+                    }).catch((data, msg) => {
+                        this.loadIng--;
+                        $A.modalError(msg);
                     });
                 }
             })

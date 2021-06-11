@@ -15,14 +15,11 @@ export default {
      * @param callback
      */
     getTaskPriority(state, callback) {
-        $A.apiAjax({
+        this.dispatch("call", {
             url: 'system/priority',
-            success: ({ret, data, msg}) => {
-                if (ret === 1) {
-                    state.taskPriority = data;
-                    typeof callback === "function" && callback(data);
-                }
-            },
+        }).then((data, msg) => {
+            state.taskPriority = data;
+            typeof callback === "function" && callback(data);
         });
     },
 
@@ -32,19 +29,14 @@ export default {
      * @param callback
      */
     getUserInfo(state, callback) {
-        $A.apiAjax({
+        this.dispatch("call", {
             url: 'users/info',
-            error: () => {
-                $A.logout();
-            },
-            success: ({ret, data, msg}) => {
-                if (ret === 1) {
-                    this.commit('setUserInfo', data);
-                    typeof callback === "function" && callback(data);
-                }
-            },
+        }).then((data, msg) => {
+            this.commit('setUserInfo', data);
+            typeof callback === "function" && callback(data);
+        }).catch((data, msg) => {
+            this.commit("logout");
         });
-        return state.userInfo;
     },
 
     /**
@@ -90,15 +82,12 @@ export default {
         if (state.cacheProjectList.length > 0) {
             state.projectList = state.cacheProjectList;
         }
-        $A.apiAjax({
+        this.dispatch("call", {
             url: 'project/lists',
-            success: ({ret, data, msg}) => {
-                if (ret === 1) {
-                    this.commit('saveProjectData', data.data);
-                } else {
-                    $A.modalError(msg);
-                }
-            }
+        }).then((data, msg) => {
+            this.commit('saveProjectData', data.data);
+        }).catch((data, msg) => {
+            $A.modalError(msg);
         });
     },
 
@@ -111,16 +100,13 @@ export default {
         if (state.method.runNum(project_id) === 0) {
             return;
         }
-        $A.apiAjax({
+        this.dispatch("call", {
             url: 'project/one',
             data: {
                 project_id: project_id,
             },
-            success: ({ret, data, msg}) => {
-                if (ret === 1) {
-                    this.commit('saveProjectData', data);
-                }
-            }
+        }).then((data, msg) => {
+            this.commit('saveProjectData', data);
         });
     },
 
@@ -140,21 +126,17 @@ export default {
         state.projectDetail.id = project_id;
         //
         state.projectLoad++;
-        $A.apiAjax({
+        this.dispatch("call", {
             url: 'project/detail',
             data: {
                 project_id: project_id,
             },
-            complete: () => {
-                state.projectLoad--;
-            },
-            success: ({ret, data, msg}) => {
-                if (ret === 1) {
-                    this.commit('saveProjectData', data);
-                } else {
-                    $A.modalError(msg);
-                }
-            }
+        }).then((data, msg) => {
+            state.projectLoad--;
+            this.commit('saveProjectData', data);
+        }).catch((data, msg) => {
+            state.projectLoad--;
+            $A.modalError(msg);
         });
     },
 
@@ -245,30 +227,27 @@ export default {
             return;
         }
         state.cacheUserBasic["::load"] = true;
-        $A.apiAjax({
+        this.dispatch("call", {
             url: 'users/basic',
             data: {
                 userid: array
             },
-            complete: () => {
-                state.cacheUserBasic["::load"] = false;
-                typeof complete === "function" && complete()
-            },
-            success: ({ret, data, msg}) => {
-                if (ret === 1) {
-                    data.forEach((item) => {
-                        state.cacheUserBasic[item.userid] = {
-                            time,
-                            data: item
-                        };
-                        state.method.setStorage("cacheUserBasic", state.cacheUserBasic);
-                        this.commit('setUserOnlineStatus', item);
-                        typeof success === "function" && success(item, true)
-                    });
-                } else {
-                    $A.modalError(msg);
-                }
-            }
+        }).then((data, msg) => {
+            state.cacheUserBasic["::load"] = false;
+            typeof complete === "function" && complete()
+            data.forEach((item) => {
+                state.cacheUserBasic[item.userid] = {
+                    time,
+                    data: item
+                };
+                state.method.setStorage("cacheUserBasic", state.cacheUserBasic);
+                this.commit('setUserOnlineStatus', item);
+                typeof success === "function" && success(item, true)
+            });
+        }).catch((data, msg) => {
+            state.cacheUserBasic["::load"] = false;
+            typeof complete === "function" && complete()
+            $A.modalError(msg);
         });
     },
 
@@ -278,16 +257,13 @@ export default {
      * @param afterCallback
      */
     getDialogList(state, afterCallback) {
-        $A.apiAjax({
+        this.dispatch("call", {
             url: 'dialog/lists',
-            after: () => {
-                typeof afterCallback === "function" && afterCallback();
-            },
-            success: ({ret, data, msg}) => {
-                if (ret === 1) {
-                    state.dialogList = data.data;
-                }
-            }
+        }).then((data, msg) => {
+            state.dialogList = data.data;
+            typeof afterCallback === "function" && afterCallback();
+        }).catch((data, msg) => {
+            typeof afterCallback === "function" && afterCallback();
         });
     },
 
@@ -314,16 +290,13 @@ export default {
      * @param dialog_id
      */
     getDialogOne(state, dialog_id) {
-        $A.apiAjax({
+        this.dispatch("call", {
             url: 'dialog/one',
             data: {
                 dialog_id,
             },
-            success: ({ret, data, msg}) => {
-                if (ret === 1) {
-                    this.commit('getDialogUpdate', data);
-                }
-            }
+        }).then((data, msg) => {
+            this.commit('getDialogUpdate', data);
         });
     },
 
@@ -336,20 +309,17 @@ export default {
         if (userid === state.userId) {
             return;
         }
-        $A.apiAjax({
+        this.dispatch("call", {
             url: 'dialog/open/user',
             data: {
                 userid,
             },
-            success: ({ret, data, msg}) => {
-                if (ret === 1) {
-                    state.method.setStorage('messengerDialogId', data.id)
-                    this.commit('getDialogMsgList', data.id);
-                    this.commit('getDialogUpdate', data);
-                } else {
-                    $A.modalError(msg);
-                }
-            }
+        }).then((data, msg) => {
+            state.method.setStorage('messengerDialogId', data.id)
+            this.commit('getDialogMsgList', data.id);
+            this.commit('getDialogUpdate', data);
+        }).catch((data, msg) => {
+            $A.modalError(msg);
         });
     },
 
@@ -383,41 +353,39 @@ export default {
         state.cacheDialogList[dialog_id + "::load"] = true;
         //
         state.dialogMsgLoad++;
-        $A.apiAjax({
+        this.dispatch("call", {
             url: 'dialog/msg/lists',
             data: {
                 dialog_id: dialog_id,
             },
-            complete: () => {
-                state.dialogMsgLoad--;
-                state.cacheDialogList[dialog_id + "::load"] = false;
-            },
-            success: ({ret, data, msg}) => {
-                if (ret === 1) {
-                    const dialog = data.dialog;
-                    const reverse = data.data.reverse();
-                    // 更新缓存
-                    state.cacheDialogList[dialog_id] = {
-                        dialog,
-                        data: reverse,
-                    };
-                    state.method.setStorage("cacheDialogList", state.cacheDialogList);
-                    // 更新当前会话消息
-                    if (state.dialogId == dialog_id) {
-                        state.dialogDetail = dialog;
-                        reverse.forEach((item) => {
-                            let index = state.dialogMsgList.findIndex(({id}) => id == item.id);
-                            if (index === -1) {
-                                state.dialogMsgList.push(item);
-                            } else {
-                                state.dialogMsgList.splice(index, 1, item);
-                            }
-                        })
+        }).then((data, msg) => {
+            state.dialogMsgLoad--;
+            state.cacheDialogList[dialog_id + "::load"] = false;
+            const dialog = data.dialog;
+            const reverse = data.data.reverse();
+            // 更新缓存
+            state.cacheDialogList[dialog_id] = {
+                dialog,
+                data: reverse,
+            };
+            state.method.setStorage("cacheDialogList", state.cacheDialogList);
+            // 更新当前会话消息
+            if (state.dialogId == dialog_id) {
+                state.dialogDetail = dialog;
+                reverse.forEach((item) => {
+                    let index = state.dialogMsgList.findIndex(({id}) => id == item.id);
+                    if (index === -1) {
+                        state.dialogMsgList.push(item);
+                    } else {
+                        state.dialogMsgList.splice(index, 1, item);
                     }
-                    // 更新会话数据
-                    this.commit('getDialogUpdate', dialog);
-                }
+                })
             }
+            // 更新会话数据
+            this.commit('getDialogUpdate', dialog);
+        }).catch((data, msg) => {
+            state.dialogMsgLoad--;
+            state.cacheDialogList[dialog_id + "::load"] = false;
         });
     },
 
@@ -427,18 +395,15 @@ export default {
      */
     getDialogMsgUnread(state) {
         const unread = state.dialogMsgUnread;
-        $A.apiAjax({
+        this.dispatch("call", {
             url: 'dialog/msg/unread',
-            success: ({ret, data, msg}) => {
-                if (ret === 1) {
-                    if (unread == state.dialogMsgUnread) {
-                        state.dialogMsgUnread = data.unread;
-                    } else {
-                        setTimeout(() => {
-                            this.commit('getDialogMsgUnread');
-                        }, 200);
-                    }
-                }
+        }).then((data, msg) => {
+            if (unread == state.dialogMsgUnread) {
+                state.dialogMsgUnread = data.unread;
+            } else {
+                setTimeout(() => {
+                    this.commit('getDialogMsgUnread');
+                }, 200);
             }
         });
     },
@@ -635,7 +600,7 @@ export default {
         //
         const {id, dialog_id, r} = msgData;
         if (!r.read_at) {
-            r.read_at = $A.formatDate('Y-m-d H:i:s');
+            r.read_at = state.method.formatDate('Y-m-d H:i:s');
             let dialog = state.dialogList.find(({id}) => id == dialog_id);
             if (dialog && dialog.unread > 0) {
                 dialog.unread--
@@ -649,7 +614,7 @@ export default {
             this.commit('wsSend', {
                 type: 'readMsg',
                 data: {
-                    id: $A.cloneJSON(state.wsReadWaitList)
+                    id: state.method.cloneJSON(state.wsReadWaitList)
                 }
             });
             state.wsReadWaitList = [];
@@ -677,4 +642,13 @@ export default {
     wsClose(state) {
         state.ws && state.ws.close();
     },
+
+    /**
+     * 登出（打开登录页面）
+     */
+    logout() {
+        const from = window.location.pathname == '/' ? '' : encodeURIComponent(window.location.href);
+        this.commit('setUserInfo', {});
+        $A.goForward({path: '/login', query: from ? {from: from} : {}}, true);
+    }
 }

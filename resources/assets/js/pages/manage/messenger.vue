@@ -143,32 +143,29 @@ export default {
                 this.contactsLists = {};
             }
             this.contactsLoad++;
-            $A.apiAjax({
+            this.$store.dispatch("call", {
                 url: 'users/search',
                 data: {
                     take: 50
                 },
-                complete: () => {
-                    this.contactsLoad--;
-                },
-                success: ({ret, data, msg}) => {
-                    if (ret === 1) {
-                        data.some((user) => {
-                            if (user.userid === this.userId) {
-                                return false;
-                            }
-                            let az = user.az ? user.az.toUpperCase() : "#";
-                            if (typeof this.contactsLists[az] === "undefined") this.contactsLists[az] = [];
-                            //
-                            let index = this.contactsLists[az].findIndex(({userid}) => userid === user.userid);
-                            if (index > -1) {
-                                this.contactsLists[az].splice(index, 1, user);
-                            } else {
-                                this.contactsLists[az].push(user);
-                            }
-                        });
+            }).then((data, msg) => {
+                this.contactsLoad--;
+                data.some((user) => {
+                    if (user.userid === this.userId) {
+                        return false;
                     }
-                }
+                    let az = user.az ? user.az.toUpperCase() : "#";
+                    if (typeof this.contactsLists[az] === "undefined") this.contactsLists[az] = [];
+                    //
+                    let index = this.contactsLists[az].findIndex(({userid}) => userid === user.userid);
+                    if (index > -1) {
+                        this.contactsLists[az].splice(index, 1, user);
+                    } else {
+                        this.contactsLists[az].push(user);
+                    }
+                });
+            }).catch((data, msg) => {
+                this.contactsLoad--;
             });
         },
 

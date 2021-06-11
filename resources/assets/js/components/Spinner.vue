@@ -1,5 +1,5 @@
 <template>
-    <div class="common-spinner">
+    <div id="common-spinner" class="common-spinner">
         <Loading class="common-circular"></Loading>
     </div>
 </template>

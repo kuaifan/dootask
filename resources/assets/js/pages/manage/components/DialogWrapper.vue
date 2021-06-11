@@ -117,24 +117,20 @@ export default {
             });
             this.autoBottom = true;
             //
-            $A.apiAjax({
+            this.$store.dispatch("call", {
                 url: 'dialog/msg/sendtext',
                 data: {
                     dialog_id: this.dialogId,
                     text: this.msgText,
                 },
-                error:() => {
-                    this.$store.commit('spliceDialogMsg', {id: tempId});
-                },
-                success: ({ret, data, msg}) => {
-                    if (ret !== 1) {
-                        $A.modalWarning({
-                            title: '发送失败',
-                            content: msg
-                        });
-                    }
-                    this.$store.commit('spliceDialogMsg', {id: tempId, data: ret === 1 ? data : null});
-                }
+            }).then((data, msg) => {
+                this.$store.commit('spliceDialogMsg', {id: tempId, data});
+            }).catch((data, msg) => {
+                $A.modalWarning({
+                    title: '发送失败',
+                    content: msg
+                });
+                this.$store.commit('spliceDialogMsg', {id: tempId});
             });
             //
             this.msgText = '';

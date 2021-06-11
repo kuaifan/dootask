@@ -158,25 +158,18 @@ export default {
                 return;
             }
             this.$set(task, 'loading', true);
-            $A.apiAjax({
+            this.$store.dispatch("call", {
                 url: 'project/task/sublist',
                 data: {
                     task_id: task.id,
                 },
-                complete: () => {
-                    this.$set(task, 'loading', false);
-                },
-                error: () => {
-                    $A.modalAlert('网络繁忙，请稍后再试！');
-                },
-                success: ({ret, data, msg}) => {
-                    if (ret === 1) {
-                        this.$set(task, 'sub_list', data);
-                        this.$set(task, 'sub_open', true);
-                    } else {
-                        $A.modalError(msg);
-                    }
-                }
+            }).then((data, msg) => {
+                this.$set(task, 'loading', false);
+                this.$set(task, 'sub_list', data);
+                this.$set(task, 'sub_open', true);
+            }).catch((data, msg) => {
+                this.$set(task, 'loading', false);
+                $A.modalError(msg);
             });
         },
 

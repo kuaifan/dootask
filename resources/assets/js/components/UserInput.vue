@@ -142,7 +142,7 @@
             searchUser(query) {
                 if (query !== '') {
                     this.loading = true;
-                    $A.apiAjax({
+                    this.$store.dispatch("call", {
                         url: 'users/search',
                         data: {
                             keys: {
@@ -150,17 +150,13 @@
                             },
                             take: 30
                         },
-                        complete: () => {
-                            this.loading = false;
-                        },
-                        success: ({ret, data, msg}) => {
-                            if (ret === 1) {
-                                this.lists = data;
-                            } else {
-                                this.lists = [];
-                                $A.messageWarning(msg);
-                            }
-                        }
+                    }).then((data, msg) => {
+                        this.loading = false;
+                        this.lists = data;
+                    }).catch((data, msg) => {
+                        this.loading = false;
+                        this.lists = [];
+                        $A.messageWarning(msg);
                     });
                 } else {
                     this.lists = [];

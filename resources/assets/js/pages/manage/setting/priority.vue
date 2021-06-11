@@ -90,31 +90,27 @@ export default {
 
         systemSetting(save) {
             this.loadIng++;
-            $A.apiAjax({
+            this.$store.dispatch("call", {
                 url: 'system/priority?type=' + (save ? 'save' : 'get'),
                 method: 'post',
                 data: {
                     list: this.formDatum
                 },
-                complete: () => {
-                    this.loadIng--;
-                },
-                success: ({ret, data, msg}) => {
-                    if (ret === 1) {
-                        this.$store.state.taskPriority = $A.cloneJSON(data);
-                        this.formDatum = data;
-                        if (this.formDatum.length === 0) {
-                            this.addDatum();
-                        }
-                        this.formDatum_bak = $A.cloneJSON(this.formDatum);
-                        if (save) {
-                            $A.messageSuccess('修改成功');
-                        }
-                    } else {
-                        if (save) {
-                            $A.modalError(msg);
-                        }
-                    }
+            }).then((data, msg) => {
+                this.loadIng--;
+                this.$store.state.taskPriority = $A.cloneJSON(data);
+                this.formDatum = data;
+                if (this.formDatum.length === 0) {
+                    this.addDatum();
+                }
+                this.formDatum_bak = $A.cloneJSON(this.formDatum);
+                if (save) {
+                    $A.messageSuccess('修改成功');
+                }
+            }).catch((data, msg) => {
+                this.loadIng--;
+                if (save) {
+                    $A.modalError(msg);
                 }
             });
         }

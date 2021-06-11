@@ -28,7 +28,7 @@ export default {
             loadIng: 0,
 
             codeNeed: false,
-            codeUrl: $A.apiUrl('users/login/codeimg'),
+            codeUrl: this.$store.state.method.apiUrl('users/login/codeimg'),
 
             loginType: 'login',
             email: '',
@@ -38,7 +38,7 @@ export default {
     },
     methods: {
         reCode() {
-            this.codeUrl = $A.apiUrl('users/login/codeimg?_=' + Math.random())
+            this.codeUrl = this.$store.state.method.apiUrl('users/login/codeimg?_=' + Math.random())
         },
 
         onBlur() {
@@ -47,19 +47,19 @@ export default {
                 return;
             }
             this.loadIng++;
-            $A.ajaxc({
-                url: $A.apiUrl('users/login/needcode'),
+            this.$store.dispatch("call", {
+                url: 'users/login/needcode',
                 data: {
                     email: this.email,
                 },
-                complete: () => {
-                    this.loadIng--;
-                },
-                success: ({ret}) => {
-                    this.reCode();
-                    this.codeNeed = ret === 1;
-                }
-            })
+            }).then((data, msg) => {
+                this.loadIng--;
+                this.reCode();
+                this.codeNeed = true;
+            }).catch((data, msg) => {
+                this.loadIng--;
+                this.codeNeed = false;
+            });
         },
 
         onLogin() {
@@ -70,31 +70,26 @@ export default {
                 return;
             }
             this.loadIng++;
-            $A.ajaxc({
-                url: $A.apiUrl('users/login'),
+            this.$store.dispatch("call", {
+                url: 'users/login',
                 data: {
                     type: this.loginType,
                     email: this.email,
                     password: this.password,
                     code: this.code,
                 },
-                complete: () => {
-                    this.loadIng--;
-                },
-                success: ({ret, data, msg}) => {
-                    if (ret === 1) {
-                        this.$store.commit('setUserInfo', data);
-                        //
-                        this.goNext();
-                    } else {
-                        $A.noticeError(msg);
-                        if (data.code === 'need') {
-                            this.reCode();
-                            this.codeNeed = true;
-                        }
-                    }
+            }).then((data, msg) => {
+                this.loadIng--;
+                this.$store.commit('setUserInfo', data);
+                this.goNext();
+            }).catch((data, msg) => {
+                this.loadIng--;
+                $A.noticeError(msg);
+                if (data.code === 'need') {
+                    this.reCode();
+                    this.codeNeed = true;
                 }
-            })
+            });
         },
 
         goNext() {

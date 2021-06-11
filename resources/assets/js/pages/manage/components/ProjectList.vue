@@ -570,59 +570,47 @@ export default {
             this.sortData = newSort;
             //
             this.sortDisabled = true;
-            $A.apiAjax({
+            this.$store.dispatch("call", {
                 url: 'project/sort',
                 data: {
                     project_id: this.projectDetail.id,
                     sort: this.sortData,
                     only_column: only_column === true ? 1 : 0
                 },
-                complete: () => {
-                    this.sortDisabled = false;
-                },
-                error: () => {
-                    $A.modalAlert('网络繁忙，请稍后再试！');
-                    this.$store.commit('getProjectDetail', this.projectDetail.id);
-                },
-                success: ({ret, data, msg}) => {
-                    if (ret === 1) {
-                        $A.messageSuccess(msg);
-                    } else {
-                        this.$store.commit('getProjectDetail', this.projectDetail.id);
-                        $A.modalError(msg);
-                    }
-                }
+            }).then((data, msg) => {
+                this.sortDisabled = false;
+                $A.messageSuccess(msg);
+            }).catch((data, msg) => {
+                this.sortDisabled = false;
+                this.$store.commit('getProjectDetail', this.projectDetail.id);
+                $A.modalError(msg);
             });
         },
 
         onAddTask() {
             this.taskLoad++;
-            $A.apiAjax({
+            this.$store.dispatch("call", {
                 url: 'project/task/add',
                 data: this.addData,
                 method: 'post',
-                complete: () => {
-                    this.taskLoad--;
-                },
-                success: ({ret, data, msg}) => {
-                    if (ret === 1) {
-                        $A.messageSuccess(msg);
-                        this.addShow = false;
-                        this.addData = {
-                            owner: 0,
-                            column_id: 0,
-                            times: [],
-                            subtasks: [],
-                            p_level: 0,
-                            p_name: '',
-                            p_color: '',
-                        };
-                        this.$store.commit('getProjectOne', data.project_id);
-                        this.addTaskSuccess(data)
-                    } else {
-                        $A.modalError(msg);
-                    }
-                }
+            }).then((data, msg) => {
+                this.taskLoad--;
+                $A.messageSuccess(msg);
+                this.addShow = false;
+                this.addData = {
+                    owner: 0,
+                    column_id: 0,
+                    times: [],
+                    subtasks: [],
+                    p_level: 0,
+                    p_name: '',
+                    p_color: '',
+                };
+                this.$store.commit('getProjectOne', data.project_id);
+                this.addTaskSuccess(data)
+            }).catch((data, msg) => {
+                this.taskLoad--;
+                $A.modalError(msg);
             });
         },
 
@@ -675,24 +663,18 @@ export default {
             if (name === '') {
                 return;
             }
-            $A.apiAjax({
+            this.$store.dispatch("call", {
                 url: 'project/column/add',
                 data: {
                     project_id: this.projectDetail.id,
                     name: name,
                 },
-                error: () => {
-                    $A.modalAlert('网络繁忙，请稍后再试！');
-                },
-                success: ({ret, data, msg}) => {
-                    if (ret === 1) {
-                        $A.messageSuccess(msg);
-                        this.addColumnName = '';
-                        this.projectDetail.project_column.push(data)
-                    } else {
-                        $A.modalError(msg, 301);
-                    }
-                }
+            }).then((data, msg) => {
+                $A.messageSuccess(msg);
+                this.addColumnName = '';
+                this.projectDetail.project_column.push(data)
+            }).catch((data, msg) => {
+                $A.modalError(msg, 301);
             });
         },
 
@@ -737,31 +719,22 @@ export default {
                 this.$set(column, key, updata[key]);
             });
             //
-            $A.apiAjax({
+            this.$store.dispatch("call", {
                 url: 'project/column/update',
                 data: Object.assign(updata, {
                     column_id: column.id,
                 }),
-                complete: () => {
-                    this.$set(column, 'loading', false);
-                },
-                error: () => {
-                    Object.keys(updata).forEach(key => {
-                        this.$set(column, key, backup[key]);
-                    });
-                },
-                success: ({ret, data, msg}) => {
-                    if (ret === 1) {
-                        Object.keys(data).forEach(key => {
-                            this.$set(column, key, data[key]);
-                        });
-                    } else {
-                        Object.keys(updata).forEach(key => {
-                            this.$set(column, key, backup[key]);
-                        });
-                        $A.modalError(msg);
-                    }
-                }
+            }).then((data, msg) => {
+                this.$set(column, 'loading', false);
+                Object.keys(data).forEach(key => {
+                    this.$set(column, key, data[key]);
+                });
+            }).catch((data, msg) => {
+                this.$set(column, 'loading', false);
+                Object.keys(updata).forEach(key => {
+                    this.$set(column, key, backup[key]);
+                });
+                $A.modalError(msg);
             });
         },
 
@@ -776,31 +749,24 @@ export default {
                     }
                     this.$set(column, 'loading', true);
                     //
-                    $A.apiAjax({
+                    this.$store.dispatch("call", {
                         url: 'project/column/delete',
                         data: {
                             column_id: column.id,
                         },
-                        complete: () => {
-                            this.$set(column, 'loading', false);
-                        },
-                        error: () => {
-                            this.$Modal.remove();
-                            $A.modalAlert('网络繁忙，请稍后再试！');
-                        },
-                        success: ({ret, data, msg}) => {
-                            this.$Modal.remove();
-                            if (ret === 1) {
-                                $A.messageSuccess(msg);
-                                let index = this.projectDetail.project_column.findIndex(({id}) => id === column.id);
-                                if (index > -1) {
-                                    this.projectDetail.project_column.splice(index, 1);
-                                }
-                                this.$store.commit('getProjectDetail', this.projectDetail.id);
-                            }else{
-                                $A.modalError(msg, 301);
-                            }
+                    }).then((data, msg) => {
+                        this.$set(column, 'loading', false);
+                        this.$Modal.remove();
+                        $A.messageSuccess(msg);
+                        let index = this.projectDetail.project_column.findIndex(({id}) => id === column.id);
+                        if (index > -1) {
+                            this.projectDetail.project_column.splice(index, 1);
                         }
+                        this.$store.commit('getProjectDetail', this.projectDetail.id);
+                    }).catch((data, msg) => {
+                        this.$set(column, 'loading', false);
+                        this.$Modal.remove();
+                        $A.modalError(msg, 301);
                     });
                 }
             });
@@ -856,38 +822,29 @@ export default {
             Object.keys(updata).forEach(key => {
                 this.$set(task, key, updata[key]);
             });
-            $A.apiAjax({
+            this.$store.dispatch("call", {
                 url: 'project/task/update',
                 data: Object.assign(updata, {
                     task_id: task.id,
                 }),
                 method: 'post',
-                complete: () => {
-                    this.$set(task, 'loading', false);
-                },
-                error: () => {
-                    Object.keys(updata).forEach(key => {
-                        this.$set(task, key, backup[key]);
-                    });
-                },
-                success: ({ret, data, msg}) => {
-                    if (ret === 1) {
-                        Object.keys(data).forEach(key => {
-                            this.$set(task, key, data[key]);
-                        });
-                        if (data.parent_id) {
-                            this.getTaskOne(data.parent_id);
-                        }
-                        if (typeof updata.complete_at !== "undefined") {
-                            this.$store.commit('getProjectOne', data.project_id);
-                        }
-                    } else {
-                        Object.keys(updata).forEach(key => {
-                            this.$set(task, key, backup[key]);
-                        });
-                        $A.modalError(msg);
-                    }
+            }).then((data, msg) => {
+                this.$set(task, 'loading', false);
+                Object.keys(data).forEach(key => {
+                    this.$set(task, key, data[key]);
+                });
+                if (data.parent_id) {
+                    this.getTaskOne(data.parent_id);
                 }
+                if (typeof updata.complete_at !== "undefined") {
+                    this.$store.commit('getProjectOne', data.project_id);
+                }
+            }).catch((data, msg) => {
+                this.$set(task, 'loading', false);
+                Object.keys(updata).forEach(key => {
+                    this.$set(task, key, backup[key]);
+                });
+                $A.modalError(msg);
             });
         },
 
@@ -899,18 +856,15 @@ export default {
             });
             if (!task) return;
             //
-            $A.apiAjax({
+            this.$store.dispatch("call", {
                 url: 'project/task/one',
                 data: {
                     task_id: task.id
                 },
-                success: ({ret, data, msg}) => {
-                    if (ret === 1) {
-                        Object.keys(data).forEach(key => {
-                            this.$set(task, key, data[key]);
-                        });
-                    }
-                }
+            }).then((data, msg) => {
+                Object.keys(data).forEach(key => {
+                    this.$set(task, key, data[key]);
+                });
             });
         },
 
@@ -919,100 +873,79 @@ export default {
                 return;
             }
             this.$set(task, 'loading', true);
-            $A.apiAjax({
+            this.$store.dispatch("call", {
                 url: 'project/task/' + type,
                 data: {
                     task_id: task.id,
                 },
-                complete: () => {
-                    this.$set(task, 'loading', false);
-                },
-                error: () => {
-                    this.$Modal.remove();
-                    $A.modalAlert('网络繁忙，请稍后再试！');
-                },
-                success: ({ret, data, msg}) => {
-                    this.$Modal.remove();
-                    if (ret === 1) {
-                        $A.messageSuccess(msg);
-                        let column = this.projectDetail.project_column.find(({id}) => id === task.column_id);
-                        if (column) {
-                            let index = column.project_task.findIndex(({id}) => id === task.id);
-                            if (index > -1) {
-                                column.project_task.splice(index, 1);
-                            }
-                        }
-                        this.$store.commit('getProjectDetail', this.projectDetail.id);
-                    }else{
-                        $A.modalError(msg, 301);
+            }).then((data, msg) => {
+                this.$Modal.remove();
+                $A.messageSuccess(msg);
+                let column = this.projectDetail.project_column.find(({id}) => id === task.column_id);
+                if (column) {
+                    let index = column.project_task.findIndex(({id}) => id === task.id);
+                    if (index > -1) {
+                        column.project_task.splice(index, 1);
                     }
                 }
+                this.$store.commit('getProjectDetail', this.projectDetail.id);
+            }).catch((data, msg) => {
+                this.$Modal.remove();
+                $A.modalError(msg, 301);
             });
         },
 
         onSetting() {
             this.settingLoad++;
-            $A.apiAjax({
+            this.$store.dispatch("call", {
                 url: 'project/edit',
                 data: this.settingData,
-                complete: () => {
-                    this.settingLoad--;
-                },
-                success: ({ret, data, msg}) => {
-                    if (ret === 1) {
-                        $A.messageSuccess(msg);
-                        this.settingShow = false;
-                        this.$store.commit("saveProjectData", data)
-                    } else {
-                        $A.modalError(msg);
-                    }
-                }
+            }).then((data, msg) => {
+                this.settingLoad--;
+                $A.messageSuccess(msg);
+                this.settingShow = false;
+                this.$store.commit("saveProjectData", data)
+            }).catch((data, msg) => {
+                this.settingLoad--;
+                $A.modalError(msg);
             });
         },
 
         onUser() {
             this.userLoad++;
-            $A.apiAjax({
+            this.$store.dispatch("call", {
                 url: 'project/user',
                 data: {
                     project_id: this.userData.project_id,
                     userid: this.userData.userids,
                 },
-                complete: () => {
-                    this.userLoad--;
-                },
-                success: ({ret, data, msg}) => {
-                    if (ret === 1) {
-                        $A.messageSuccess(msg);
-                        this.$store.commit('getProjectDetail', this.userData.project_id);
-                        this.userShow = false;
-                    } else {
-                        $A.modalError(msg);
-                    }
-                }
+            }).then((data, msg) => {
+                this.userLoad--;
+                $A.messageSuccess(msg);
+                this.$store.commit('getProjectDetail', this.userData.project_id);
+                this.userShow = false;
+            }).catch((data, msg) => {
+                this.userLoad--;
+                $A.modalError(msg);
             });
         },
 
         onTransfer() {
             this.transferLoad++;
-            $A.apiAjax({
+            this.$store.dispatch("call", {
                 url: 'project/transfer',
                 data: {
                     project_id: this.transferData.project_id,
                     owner_userid: this.transferData.owner_userid[0],
                 },
-                complete: () => {
-                    this.transferLoad--;
-                },
-                success: ({ret, data, msg}) => {
-                    if (ret === 1) {
-                        $A.messageSuccess(msg);
-                        this.$store.commit('getProjectDetail', this.transferData.project_id);
-                        this.transferShow = false;
-                    } else {
-                        $A.modalError(msg);
-                    }
-                }
+            }).then((data, msg) => {
+                this.transferLoad--;
+                $A.messageSuccess(msg);
+                this.$store.commit('getProjectDetail', this.transferData.project_id);
+                this.transferShow = false;
+            }).catch((data, msg) => {
+                this.transferLoad--;
+                $A.modalError(msg);
             });
         },
 
@@ -1022,30 +955,24 @@ export default {
                 content: '你确定要删除项目【' + this.projectDetail.name + '】吗？',
                 loading: true,
                 onOk: () => {
-                    $A.apiAjax({
+                    this.$store.dispatch("call", {
                         url: 'project/delete',
                         data: {
                             project_id: this.projectDetail.id,
                         },
-                        error: () => {
-                            this.$Modal.remove();
-                            $A.modalAlert('网络繁忙，请稍后再试！');
-                        },
-                        success: ({ret, data, msg}) => {
-                            this.$Modal.remove();
-                            if (ret === 1) {
-                                $A.messageSuccess(msg);
-                                this.$store.commit('removeProjectData', this.projectDetail.id);
-                                const project = this.projectList.find(({id}) => id);
-                                if (project) {
-                                    this.goForward({path: '/manage/project/' + project.id}, true);
-                                } else {
-                                    this.goForward({path: '/manage/dashboard'}, true);
-                                }
-                            }else{
-                                $A.modalError(msg, 301);
-                            }
+                    }).then((data, msg) => {
+                        this.$Modal.remove();
+                        $A.messageSuccess(msg);
+                        this.$store.commit('removeProjectData', this.projectDetail.id);
+                        const project = this.projectList.find(({id}) => id);
+                        if (project) {
+                            this.goForward({path: '/manage/project/' + project.id}, true);
+                        } else {
+                            this.goForward({path: '/manage/dashboard'}, true);
                         }
+                    }).catch((data, msg) => {
+                        this.$Modal.remove();
+                        $A.modalError(msg, 301);
                     });
                 }
             });
@@ -1057,30 +984,24 @@ export default {
                 content: '你确定要退出项目【' + this.projectDetail.name + '】吗？',
                 loading: true,
                 onOk: () => {
-                    $A.apiAjax({
+                    this.$store.dispatch("call", {
                         url: 'project/exit',
                         data: {
                             project_id: this.projectDetail.id,
                         },
-                        error: () => {
-                            this.$Modal.remove();
-                            $A.modalAlert('网络繁忙，请稍后再试！');
-                        },
-                        success: ({ret, data, msg}) => {
-                            this.$Modal.remove();
-                            if (ret === 1) {
-                                $A.messageSuccess(msg);
-                                this.$store.commit('removeProjectData', this.projectDetail.id);
-                                const project = this.projectList.find(({id}) => id);
-                                if (project) {
-                                    this.goForward({path: '/manage/project/' + project.id}, true);
-                                } else {
-                                    this.goForward({path: '/manage/dashboard'}, true);
-                                }
-                            }else{
-                                $A.modalError(msg, 301);
-                            }
+                    }).then((data, msg) => {
+                        this.$Modal.remove();
+                        $A.messageSuccess(msg);
+                        this.$store.commit('removeProjectData', this.projectDetail.id);
+                        const project = this.projectList.find(({id}) => id);
+                        if (project) {
+                            this.goForward({path: '/manage/project/' + project.id}, true);
+                        } else {
+                            this.goForward({path: '/manage/dashboard'}, true);
                         }
+                    }).catch((data, msg) => {
+                        this.$Modal.remove();
+                        $A.modalError(msg, 301);
                     });
                 }
             });

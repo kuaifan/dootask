@@ -1,4 +1,63 @@
 const method = {
+    apiUrl(str) {
+        if (str.substring(0, 2) === "//" ||
+            str.substring(0, 7) === "http://" ||
+            str.substring(0, 8) === "https://" ||
+            str.substring(0, 6) === "ftp://" ||
+            str.substring(0, 1) === "/") {
+            return str;
+        }
+        return window.location.origin + '/api/' + str;
+    },
+
+    date2string(params, format) {
+        if (params === null) {
+            return params;
+        }
+        if (typeof format === "undefined") {
+            format = "Y-m-d H:i:s";
+        }
+        if (params instanceof Date) {
+            params = this.formatDate(format, params);
+        } else if (this.isJson(params)) {
+            for (let key in params) {
+                if (!params.hasOwnProperty(key)) continue;
+                params[key] = this.date2string(params[key], format);
+            }
+        } else if (this.isArray(params)) {
+            params.forEach((val, index) => {
+                params[index] = this.date2string(val, format);
+            });
+        }
+        return params;
+    },
+
+    formatDate: function(format, v) {
+        if (typeof format === 'undefined' || format === '') {
+            format = 'Y-m-d H:i:s';
+        }
+        let dateObj;
+        if (v instanceof Date) {
+            dateObj = v;
+        } else {
+            if (typeof v === 'undefined') {
+                dateObj = new Date();
+            } else if (/^(-)?\d{1,10}$/.test(v)) {
+                dateObj = new Date(v * 1000);
+            } else {
+                dateObj = new Date(v);
+            }
+        }
+        //
+        format = format.replace(/Y/g, dateObj.getFullYear() + "");
+        format = format.replace(/m/g, this.zeroFill(dateObj.getMonth() + 1, 2));
+        format = format.replace(/d/g, this.zeroFill(dateObj.getDate(), 2));
+        format = format.replace(/H/g, this.zeroFill(dateObj.getHours(), 2));
+        format = format.replace(/i/g, this.zeroFill(dateObj.getMinutes(), 2));
+        format = format.replace(/s/g, this.zeroFill(dateObj.getSeconds(), 2));
+        return format;
+    },
+
     setStorage(key, value) {
         return this.storage(key, value);
     },
@@ -158,6 +217,11 @@ const state = { method };
 ].forEach((key) => {
     state[key] = state.method.getStorageBoolean('boolean:' + key, true)
 })
+
+// ajax
+state.ajaxLoadNum = 0;
+state.ajaxWsReady = false;
+state.ajaxWsListener = [];
 
 // 数据缓存
 state.cacheUserBasic = state.method.getStorageJson("cacheUserBasic");

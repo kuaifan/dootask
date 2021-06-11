@@ -72,20 +72,16 @@ export default {
             this.$refs.formDatum.validate((valid) => {
                 if (valid) {
                     this.loadIng++;
-                    $A.apiAjax({
+                    this.$store.dispatch("call", {
                         url: 'users/editdata',
                         data: this.formDatum,
-                        complete: () => {
-                            this.loadIng--;
-                        },
-                        success: ({ret, data, msg}) => {
-                            if (ret === 1) {
-                                $A.messageSuccess('修改成功');
-                                this.$store.commit('getUserInfo');
-                            } else {
-                                $A.modalError(msg);
-                            }
-                        }
+                    }).then((data, msg) => {
+                        this.loadIng--;
+                        $A.messageSuccess('修改成功');
+                        this.$store.commit('getUserInfo');
+                    }).catch((data, msg) => {
+                        this.loadIng--;
+                        $A.modalError(msg);
                     });
                 }
             })

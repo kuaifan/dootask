@@ -123,7 +123,7 @@
 
                 uploadIng: 0,
                 uploadFormat: ['jpg', 'jpeg', 'png', 'gif', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'esp', 'pdf', 'rar', 'zip', 'gz'],
-                actionUrl: $A.apiUrl('system/fileupload'),
+                actionUrl: this.$store.state.method.apiUrl('system/fileupload'),
                 params: { token: this.$store.state.userToken },
                 maxSize: 10240
             };
