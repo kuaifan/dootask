@@ -32,7 +32,7 @@ const method = {
         return params;
     },
 
-    formatDate: function(format, v) {
+    formatDate(format, v) {
         if (typeof format === 'undefined' || format === '') {
             format = 'Y-m-d H:i:s';
         }

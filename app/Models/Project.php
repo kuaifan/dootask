@@ -144,7 +144,7 @@ class Project extends AbstractModel
     {
         if ($value === 0) {
             $userid = $this->projectUser->pluck('userid')->toArray();
-            $dialog = WebSocketDialog::createGroup($this->name, $userid, 'project');
+            $dialog = WebSocketDialog::createGroup('', $userid, 'project');
             if ($dialog) {
                 $this->dialog_id = $value = $dialog->id;
                 $this->save();

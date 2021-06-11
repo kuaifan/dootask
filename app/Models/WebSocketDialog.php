@@ -52,10 +52,17 @@ class WebSocketDialog extends AbstractModel
         $dialog->people = $builder->count();
         // 对方信息
         $dialog->dialog_user = null;
-        if ($dialog->type === 'user') {
-            $dialog_user = $builder->where('userid', '!=', $userid)->first();
-            $dialog->name = User::userid2nickname($dialog_user->userid);
-            $dialog->dialog_user = $dialog_user;
+        switch ($dialog->type) {
+            case "user":
+                $dialog_user = $builder->where('userid', '!=', $userid)->first();
+                $dialog->name = User::userid2nickname($dialog_user->userid);
+                $dialog->dialog_user = $dialog_user;
+                break;
+            case "group":
+                if ($dialog->group_type === 'project') {
+                    $dialog->name = Project::whereDialogId($dialog->id)->value('name');
+                }
+                break;
         }
         return $dialog;
     }
