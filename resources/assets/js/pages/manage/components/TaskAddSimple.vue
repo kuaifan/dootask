@@ -107,7 +107,7 @@ export default {
             this.active = true;
             this.$nextTick(() => {
                 if (this.taskPriority.length === 0) {
-                    this.$store.commit('getTaskPriority', () => {
+                    this.$store.dispatch('taskPriority').then(() => {
                         if (!this.addData.p_name && this.taskPriority.length > 0) {
                             this.choosePriority(this.taskPriority[0])
                         }
@@ -168,7 +168,7 @@ export default {
                     p_name: '',
                     p_color: '',
                 }
-                this.$store.commit('getProjectOne', data.project_id);
+                this.$store.dispatch('projectOne', data.project_id);
                 this.$emit("on-success", data)
             }).catch((data, msg) => {
                 this.loadIng--;

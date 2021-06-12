@@ -124,13 +124,13 @@ export default {
                     text: this.msgText,
                 },
             }).then((data, msg) => {
-                this.$store.commit('spliceDialogMsg', {id: tempId, data});
+                this.$store.dispatch('dialogMsgSplice', {id: tempId, data});
             }).catch((data, msg) => {
                 $A.modalWarning({
                     title: '发送失败',
                     content: msg
                 });
-                this.$store.commit('spliceDialogMsg', {id: tempId});
+                this.$store.dispatch('dialogMsgSplice', {id: tempId});
             });
             //
             this.msgText = '';
@@ -197,11 +197,11 @@ export default {
                     break;
 
                 case 'error':
-                    this.$store.commit('spliceDialogMsg', {id: file.tempId});
+                    this.$store.dispatch('dialogMsgSplice', {id: file.tempId});
                     break;
 
                 case 'success':
-                    this.$store.commit('spliceDialogMsg', {id: file.tempId, data: file.data});
+                    this.$store.dispatch('dialogMsgSplice', {id: file.tempId, data: file.data});
                     break;
             }
         },

@@ -81,7 +81,7 @@ export default {
 
     mounted() {
         this.dialogLoad++;
-        this.$store.commit("getDialogList", () => {
+        this.$store.dispatch("dialogList", () => {
             this.dialogLoad--;
             this.openDialogStorage();
         });
@@ -122,7 +122,7 @@ export default {
     methods: {
         openDialog(dialog) {
             this.$store.state.method.setStorage('messengerDialogId', dialog.id)
-            this.$store.commit('getDialogMsgList', dialog.id);
+            this.$store.dispatch('dialogMsgList', dialog.id);
         },
 
         openDialogStorage() {
@@ -134,7 +134,7 @@ export default {
         },
 
         openContacts(user) {
-            this.$store.commit("openDialogUser", user.userid);
+            this.$store.dispatch("openDialogUserid", user.userid);
             this.tabActive = 'dialog';
         },
 

@@ -80,7 +80,7 @@ export default {
                 },
             }).then((data, msg) => {
                 this.loadIng--;
-                this.$store.commit('setUserInfo', data);
+                this.$store.dispatch('saveUserInfo', data);
                 this.goNext();
             }).catch((data, msg) => {
                 this.loadIng--;

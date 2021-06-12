@@ -160,7 +160,7 @@ export default {
         }
     },
     mounted() {
-        this.$store.commit('getTaskPriority', () => {
+        this.$store.dispatch('taskPriority').then(() => {
             if (!this.value.p_name && this.taskPriority.length > 0) {
                 this.choosePriority(this.taskPriority[0])
             }

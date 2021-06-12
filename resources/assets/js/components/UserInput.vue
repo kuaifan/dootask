@@ -119,7 +119,7 @@
                     userids.push(value);
                 });
                 //
-                this.$store.commit('getUserBasic', {
+                this.$store.dispatch('userBasic', {
                     userid: userids,
                     complete: () => {
                         this.initialized = true;

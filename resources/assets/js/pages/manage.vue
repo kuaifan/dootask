@@ -161,7 +161,7 @@ export default {
     },
 
     mounted() {
-        this.$store.commit('getUserInfo');
+        this.$store.dispatch('userInfo');
     },
 
     deactivated() {
@@ -212,7 +212,7 @@ export default {
                     title: '退出登录',
                     content: '你确定要登出系统？',
                     onOk: () => {
-                        this.$store.commit("logout")
+                        this.$store.dispatch("logout")
                     }
                 });
                 return;
@@ -279,7 +279,7 @@ export default {
                         this.addShow = false;
                         this.$refs.addProject.resetFields();
                         this.$set(this.addData, 'template', 0);
-                        this.$store.commit('saveProjectData', data);
+                        this.$store.dispatch('saveProject', data);
                         this.toggleRoute('project/' + data.id)
                     }).catch((data, msg) => {
                         this.loadIng--;

@@ -122,7 +122,7 @@
                 if (!this.userid) {
                     return;
                 }
-                this.$store.commit('getUserBasic', {
+                this.$store.dispatch('userBasic', {
                     userid: this.userid,
                     success: (user) => {
                         this.user = user;
@@ -132,7 +132,7 @@
 
             openDialog() {
                 this.goForward({path: '/manage/messenger'});
-                this.$store.commit("openDialogUser", this.userid);
+                this.$store.dispatch("openDialogUserid", this.userid);
             }
         }
     };

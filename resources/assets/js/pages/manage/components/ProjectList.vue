@@ -582,7 +582,7 @@ export default {
                 $A.messageSuccess(msg);
             }).catch((data, msg) => {
                 this.sortDisabled = false;
-                this.$store.commit('getProjectDetail', this.projectDetail.id);
+                this.$store.dispatch('projectDetail', this.projectDetail.id);
                 $A.modalError(msg);
             });
         },
@@ -606,7 +606,7 @@ export default {
                     p_name: '',
                     p_color: '',
                 };
-                this.$store.commit('getProjectOne', data.project_id);
+                this.$store.dispatch('projectOne', data.project_id);
                 this.addTaskSuccess(data)
             }).catch((data, msg) => {
                 this.taskLoad--;
@@ -762,7 +762,7 @@ export default {
                         if (index > -1) {
                             this.projectDetail.project_column.splice(index, 1);
                         }
-                        this.$store.commit('getProjectDetail', this.projectDetail.id);
+                        this.$store.dispatch('projectDetail', this.projectDetail.id);
                     }).catch((data, msg) => {
                         this.$set(column, 'loading', false);
                         this.$Modal.remove();
@@ -837,7 +837,7 @@ export default {
                     this.$store.dispatch('taskOne', data.parent_id);
                 }
                 if (typeof updata.complete_at !== "undefined") {
-                    this.$store.commit('getProjectOne', data.project_id);
+                    this.$store.dispatch('projectOne', data.project_id);
                 }
             }).catch((data, msg) => {
                 this.$set(task, 'loading', false);
@@ -868,7 +868,7 @@ export default {
                         column.project_task.splice(index, 1);
                     }
                 }
-                this.$store.commit('getProjectDetail', this.projectDetail.id);
+                this.$store.dispatch('projectDetail', this.projectDetail.id);
             }).catch((data, msg) => {
                 this.$Modal.remove();
                 $A.modalError(msg, 301);
@@ -884,7 +884,7 @@ export default {
                 this.settingLoad--;
                 $A.messageSuccess(msg);
                 this.settingShow = false;
-                this.$store.commit("saveProjectData", data)
+                this.$store.dispatch("saveProject", data)
             }).catch((data, msg) => {
                 this.settingLoad--;
                 $A.modalError(msg);
@@ -902,7 +902,7 @@ export default {
             }).then((data, msg) => {
                 this.userLoad--;
                 $A.messageSuccess(msg);
-                this.$store.commit('getProjectDetail', this.userData.project_id);
+                this.$store.dispatch('projectDetail', this.userData.project_id);
                 this.userShow = false;
             }).catch((data, msg) => {
                 this.userLoad--;
@@ -921,7 +921,7 @@ export default {
             }).then((data, msg) => {
                 this.transferLoad--;
                 $A.messageSuccess(msg);
-                this.$store.commit('getProjectDetail', this.transferData.project_id);
+                this.$store.dispatch('projectDetail', this.transferData.project_id);
                 this.transferShow = false;
             }).catch((data, msg) => {
                 this.transferLoad--;
@@ -943,7 +943,7 @@ export default {
                     }).then((data, msg) => {
                         this.$Modal.remove();
                         $A.messageSuccess(msg);
-                        this.$store.commit('removeProjectData', this.projectDetail.id);
+                        this.$store.dispatch('removeProject', this.projectDetail.id);
                         const project = this.projectList.find(({id}) => id);
                         if (project) {
                             this.goForward({path: '/manage/project/' + project.id}, true);
@@ -972,7 +972,7 @@ export default {
                     }).then((data, msg) => {
                         this.$Modal.remove();
                         $A.messageSuccess(msg);
-                        this.$store.commit('removeProjectData', this.projectDetail.id);
+                        this.$store.dispatch('removeProject', this.projectDetail.id);
                         const project = this.projectList.find(({id}) => id);
                         if (project) {
                             this.goForward({path: '/manage/project/' + project.id}, true);
@@ -1020,7 +1020,7 @@ export default {
         },
 
         toggleBoolean(type) {
-            this.$store.commit('toggleBoolean', type);
+            this.$store.dispatch('toggleBoolean', type);
         },
 
         formatTime(date) {

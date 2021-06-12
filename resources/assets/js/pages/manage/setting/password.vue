@@ -85,7 +85,7 @@ export default {
                     }).then((data, msg) => {
                         this.loadIng--;
                         $A.messageSuccess('修改成功');
-                        this.$store.commit('setUserInfo', data);
+                        this.$store.dispatch('saveUserInfo', data);
                         this.$refs.formDatum.resetFields();
                     }).catch((data, msg) => {
                         this.loadIng--;

@@ -78,7 +78,7 @@ export default {
                     }).then((data, msg) => {
                         this.loadIng--;
                         $A.messageSuccess('修改成功');
-                        this.$store.commit('getUserInfo');
+                        this.$store.dispatch('userInfo');
                     }).catch((data, msg) => {
                         this.loadIng--;
                         $A.modalError(msg);
