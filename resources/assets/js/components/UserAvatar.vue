@@ -13,6 +13,7 @@
         </div>
         <div class="avatar-wrapper">
             <div :class="['avatar-box', userId === userid || user.online ? 'online' : '']" :style="boxStyle">
+                <em :style="spotStyle"></em>
                 <WAvatar v-if="showImg" :src="user.userimg" :size="avatarSize"/>
                 <WAvatar v-else :size="avatarSize" class="avatar-text">{{nickname}}</WAvatar>
             </div>
@@ -77,8 +78,21 @@
                 return style;
             },
 
+            spotStyle() {
+                let {borderWitdh, size} = this
+                if (size === 'default') size = 32;
+                if (borderWitdh > 0) size-= borderWitdh;
+                if (size == 32) {
+                    return {}
+                }
+                return {
+                    'transform': 'scale(' + (size / 32) + ')',
+                }
+            },
+
             avatarSize() {
-                const {borderWitdh, size} = this
+                let {borderWitdh, size} = this
+                if (size === 'default') size = 32;
                 if (borderWitdh > 0) {
                     return size - borderWitdh * 2;
                 } else {

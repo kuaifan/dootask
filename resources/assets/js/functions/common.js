@@ -348,7 +348,7 @@
          * @returns {string}
          */
         formatDate: function(format, v) {
-            if (format === '') {
+            if (typeof format === 'undefined' || format === '') {
                 format = 'Y-m-d H:i:s';
             }
             let dateObj;

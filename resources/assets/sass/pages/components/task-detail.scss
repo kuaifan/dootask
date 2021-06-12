@@ -6,6 +6,7 @@
         flex: 1;
         display: flex;
         flex-direction: column;
+        position: relative;
         .head {
             display: flex;
             align-items: center;
@@ -26,6 +27,9 @@
                 width: 18px;
                 font-size: 18px;
                 cursor: pointer;
+                &.completed {
+                    color: #87d068;
+                }
             }
             .nav {
                 flex: 1;
@@ -103,11 +107,15 @@
                         align-items: center;
                         list-style: none;
                         line-height: 26px;
+                        .el-dropdown {
+                            display: flex;
+                        }
                     }
                     &.user {
-                        margin-top: 4px;
+                        margin-top: 0;
                         > li {
-
+                            display: inline-block;
+                            cursor: pointer;
                         }
                     }
                     &.file {
@@ -191,8 +199,7 @@
                                 height: 26px;
                                 line-height: 1;
                                 .avatar-box {
-                                    &:before {
-                                        transform: scale(0.7);
+                                    > em {
                                         right: -2px;
                                         bottom: -1px;
                                     }
@@ -359,6 +366,23 @@
                 .no-input {
                     margin: 0 0 0 18px;
                 }
+            }
+        }
+    }
+
+    &.completed {
+        .task-info {
+            &:before {
+                content: "\f373";
+                font-family: Ionicons, serif;
+                pointer-events: none;
+                position: absolute;
+                top: 0;
+                right: 13%;
+                font-size: 72px;
+                color: #19be6b;
+                opacity: .2;
+                z-index: 1;
             }
         }
     }

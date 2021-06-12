@@ -347,6 +347,12 @@
                                     this.$emit('editorChange', e);
                                 }
                             });
+                            editor.on('focus', () => {
+                                this.$emit('on-focus');
+                            });
+                            editor.on('blur', () => {
+                                this.$emit('on-blur');
+                            });
                         }
                     },
                 };
@@ -355,6 +361,7 @@
             closeFull() {
                 this.content = this.getContent();
                 this.$emit('input', this.content);
+                this.$emit('on-blur');
                 this.transfer = false;
                 if (this.editorT != null) {
                     this.editorT.destroy();

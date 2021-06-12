@@ -679,7 +679,7 @@ class ProjectController extends AbstractController
             return Base::retError('项目不存在或不在成员列表内');
         }
         //
-        return Base::retSuccess('success', $task->content);
+        return Base::retSuccess('success', $task->content ?: json_decode('{}'));
     }
 
     /**

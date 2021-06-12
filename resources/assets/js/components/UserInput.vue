@@ -17,7 +17,13 @@
             @on-open-change="openChange"
             @on-set-default-options="setDefaultOptions">
             <div v-if="multipleMax" slot="drop-prepend" class="user-drop-prepend">{{$L('最多只能选择' + multipleMax + '个')}}</div>
-            <Option v-for="(item, key) in lists" :value="item.userid" :key="key" :label="item.nickname" :avatar="item.userimg">
+            <Option
+                v-for="(item, key) in lists"
+                :value="item.userid"
+                :key="key"
+                :label="item.nickname"
+                :avatar="item.userimg"
+                :disabled="isDisabled(item.userid)">
                 <div class="user-input-option">
                     <div class="user-input-avatar"><WAvatar :src="item.userimg"/></div>
                     <div class="user-input-nickname">{{ item.nickname }}</div>
@@ -40,6 +46,12 @@
                 default: ''
             },
             uncancelable: {
+                type: Array,
+                default: () => {
+                    return [];
+                }
+            },
+            disabledChoice: {
                 type: Array,
                 default: () => {
                     return [];
@@ -103,7 +115,7 @@
             openChange(show) {
                 if (show && !this.openLoad) {
                     this.openLoad = true;
-                    if (this.lists.length == this.values.length) {
+                    if (this.lists.length == this.values.length || this.lists.length <= 1) {
                         this.$nextTick(this.searchUser);
                     }
                 }
@@ -161,6 +173,13 @@
                 } else {
                     this.lists = [];
                 }
+            },
+
+            isDisabled(userid) {
+                if (this.disabledChoice.length === 0) {
+                    return false;
+                }
+                return this.disabledChoice.includes(userid)
             }
         }
     };

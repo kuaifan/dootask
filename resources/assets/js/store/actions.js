@@ -430,9 +430,10 @@ export default {
                     task_id,
                 },
             }).then(result => {
-                state.projectTaskContent[task_id] = result.data;
+                const {content} = result.data;
+                state.projectTaskContent[task_id] = content;
                 if (task_id == state.projectOpenTask.id) {
-                    state.projectOpenTask = Object.assign({}, state.projectOpenTask, {content: result.data || {}});
+                    state.projectOpenTask = Object.assign({}, state.projectOpenTask, {content: content});
                 }
                 resolve(result)
             }).catch(result => {
@@ -509,7 +510,7 @@ export default {
             }
         });
         //
-        data.content = state.projectTaskContent[task_id] || {}
+        data.content = state.projectTaskContent[task_id] || ""
         data.files = state.projectTaskFiles[task_id] || []
         data.sub_task = state.projectSubTask[task_id] || []
         //
@@ -518,25 +519,6 @@ export default {
         dispatch("taskContent", task_id);
         dispatch("taskFiles", task_id);
         dispatch("subTask", task_id);
-    },
-
-    /**
-     * 获取任务优先级预设数据
-     * @param state
-     * @param dispatch
-     * @returns {Promise<unknown>}
-     */
-    taskPriority({state, dispatch}) {
-        return new Promise(function (resolve, reject) {
-            dispatch("call", {
-                url: 'system/priority',
-            }).then(result => {
-                state.taskPriority = result.data;
-                resolve(result)
-            }).catch(result => {
-                reject(result)
-            });
-        });
     },
 
     /**
@@ -555,13 +537,13 @@ export default {
                 if (result.data.parent_id) {
                     dispatch('taskOne', result.data.parent_id);
                 }
-                if (typeof updata.complete_at !== "undefined") {
+                if (typeof data.complete_at !== "undefined") {
                     dispatch('projectOne', result.data.project_id);
                 }
                 dispatch("taskData", result.data);
                 resolve(result)
             }).catch(result => {
-                dispatch('taskOne', data.id);
+                dispatch('taskOne', data.task_id);
                 reject(result)
             });
         });
@@ -575,12 +557,12 @@ export default {
      * @returns {Promise<unknown>}
      */
     taskArchivedOrRemove({state, dispatch}, data) {
-        let {id, type} = data;
+        let {task_id, type} = data;
         return new Promise(function (resolve, reject) {
             dispatch("call", {
                 url: 'project/task/' + type,
                 data: {
-                    task_id: id,
+                    task_id,
                 },
             }).then(result => {
                 const column = state.projectDetail.project_column.find(({id}) => id === result.data.column_id);
@@ -592,6 +574,25 @@ export default {
                 }
                 dispatch('projectDetail', result.data.project_id);
                 resolve(result);
+            }).catch(result => {
+                reject(result)
+            });
+        });
+    },
+
+    /**
+     * 获取任务优先级预设数据
+     * @param state
+     * @param dispatch
+     * @returns {Promise<unknown>}
+     */
+    taskPriority({state, dispatch}) {
+        return new Promise(function (resolve, reject) {
+            dispatch("call", {
+                url: 'system/priority',
+            }).then(result => {
+                state.taskPriority = result.data;
+                resolve(result)
             }).catch(result => {
                 reject(result)
             });

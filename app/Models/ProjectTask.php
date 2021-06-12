@@ -238,7 +238,7 @@ class ProjectTask extends AbstractModel
      */
     public function taskUser(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(projectTaskUser::class, 'task_id', 'id')->orderByDesc('id');
+        return $this->hasMany(projectTaskUser::class, 'task_id', 'id')->orderByDesc('owner')->orderByDesc('id');
     }
 
     /**
@@ -372,30 +372,6 @@ class ProjectTask extends AbstractModel
                 }
                 $this->name = $data['name'];
             }
-            // 背景色
-            if (Arr::exists($data, 'color')) {
-                $this->color = $data['color'];
-            }
-            // 内容
-            if ($content && $this->parent_id === 0) {
-                ProjectTaskContent::updateInsert([
-                    'project_id' => $this->parent_id,
-                    'task_id' => $this->id,
-                ], [
-                    'content' => $content,
-                ]);
-                $this->desc = Base::getHtml($content);
-            }
-            // 计划时间
-            if ($times) {
-                list($start, $end) = is_string($times) ? explode(",", $times) : (is_array($times) ? $times : []);
-                if (Base::isDate($start) && Base::isDate($end)) {
-                    if ($start != $end) {
-                        $this->start_at = Carbon::parse($start);
-                        $this->end_at = Carbon::parse($end);
-                    }
-                }
-            }
             // 负责人
             if ($owner) {
                 if (is_array($owner)) {
@@ -412,6 +388,43 @@ class ProjectTask extends AbstractModel
                     ], [
                         'owner' => 1,
                     ]);
+                }
+            }
+            // 计划时间
+            if ($times) {
+                list($start, $end) = is_string($times) ? explode(",", $times) : (is_array($times) ? $times : []);
+                if (Base::isDate($start) && Base::isDate($end)) {
+                    if ($start != $end) {
+                        $this->start_at = Carbon::parse($start);
+                        $this->end_at = Carbon::parse($end);
+                    }
+                }
+            }
+            // 以下紧顶级任务可修改
+            if ($this->parent_id === 0) {
+                // 背景色
+                if (Arr::exists($data, 'color')) {
+                    $this->color = $data['color'];
+                }
+                // 内容
+                if ($content && $this->parent_id === 0) {
+                    ProjectTaskContent::updateInsert([
+                        'project_id' => $this->parent_id,
+                        'task_id' => $this->id,
+                    ], [
+                        'content' => $content,
+                    ]);
+                    $this->desc = Base::getHtml($content);
+                }
+                // 优先级
+                if (Arr::exists($data, 'p_level')) {
+                    $this->p_level = intval($data['p_level']);
+                }
+                if (Arr::exists($data, 'p_name')) {
+                    $this->p_name = trim($data['p_name']);
+                }
+                if (Arr::exists($data, 'p_color')) {
+                    $this->p_color = trim($data['p_color']);
                 }
             }
             $this->save();

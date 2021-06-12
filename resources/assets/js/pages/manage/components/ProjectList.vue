@@ -715,9 +715,7 @@ export default {
             this.$set(column, 'loading', true);
             //
             const backup = $A.cloneJSON(column);
-            Object.keys(updata).forEach(key => {
-                this.$set(column, key, updata[key]);
-            });
+            Object.keys(updata).forEach(key => this.$set(column, key, updata[key]));
             //
             this.$store.dispatch("call", {
                 url: 'project/column/update',
@@ -726,14 +724,10 @@ export default {
                 }),
             }).then(({data}) => {
                 this.$set(column, 'loading', false);
-                Object.keys(data).forEach(key => {
-                    this.$set(column, key, data[key]);
-                });
+                Object.keys(data).forEach(key =>  this.$set(column, key, data[key]));
             }).catch(({msg}) => {
                 this.$set(column, 'loading', false);
-                Object.keys(updata).forEach(key => {
-                    this.$set(column, key, backup[key]);
-                });
+                Object.keys(updata).forEach(key => this.$set(column, key, backup[key]));
                 $A.modalError(msg);
             });
         },
@@ -835,7 +829,7 @@ export default {
             }
             this.$set(task, 'loading', true);
             this.$store.dispatch("taskArchivedOrRemove", {
-                id: task.id,
+                task_id: task.id,
                 type: type,
             }).then(({msg}) => {
                 this.$Modal.remove();
