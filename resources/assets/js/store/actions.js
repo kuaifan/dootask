@@ -501,9 +501,9 @@ export default {
         //
         data.content = state.projectTaskContent[task_id] || {}
         data.files = state.projectTaskFiles[task_id] || []
-        data.subtask = state.projectSubTask[task_id] || []
-        state.projectOpenTask = Object.assign({}, data, {_show: true});
+        data.sub_task = state.projectSubTask[task_id] || []
         //
+        state.projectOpenTask = Object.assign({}, data, {_show: true});
         dispatch("taskOne", task_id);
         dispatch("taskContent", task_id);
         dispatch("taskFiles", task_id);

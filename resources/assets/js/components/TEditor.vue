@@ -1,9 +1,9 @@
 <template>
     <div>
-        <div class="teditor-box" :class="[spinShow?'teditor-loadstyle':'teditor-loadedstyle']">
+        <div class="teditor-box" :class="[!inline&&spinShow?'teditor-loadstyle':'teditor-loadedstyle']">
             <div v-if="inline" ref="myTextarea" :id="id">{{ content }}</div>
             <textarea v-else ref="myTextarea" :id="id">{{ content }}</textarea>
-            <Spin fix v-if="spinShow">
+            <Spin fix v-if="!inline&&spinShow">
                 <Icon type="ios-loading" size=18 class="upload-control-spin-icon-load"></Icon>
                 <div>{{$L('加载组件中...')}}</div>
             </Spin>

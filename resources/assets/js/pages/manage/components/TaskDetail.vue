@@ -4,9 +4,9 @@
             <div class="head">
                 <Icon class="icon" type="md-radio-button-off"/>
                 <div class="nav">
-                    <p>项目名称</p>
-                    <p>列表名称</p>
-                    <p>2222</p>
+                    <p v-if="projectOpenTask.project_name">{{projectOpenTask.project_name}}</p>
+                    <p v-if="projectOpenTask.column_name">{{projectOpenTask.column_name}}</p>
+                    <p v-if="projectOpenTask.id">{{projectOpenTask.id}}</p>
                 </div>
                 <Icon class="menu" type="ios-more"/>
             </div>
@@ -19,9 +19,9 @@
                         :autosize="{ minRows: 1, maxRows: 8 }"
                         :maxlength="255"/>
                 </div>
-                <div class="desc">
+                <div v-if="hasContent" class="desc">
                     <TEditor
-                        v-model="content"
+                        v-model="projectOpenTask.content.content"
                         :plugins="taskPlugins"
                         :options="taskOptions"
                         :option-full="taskOptionFull"
@@ -29,49 +29,41 @@
                         inline></TEditor>
                 </div>
                 <Form class="items" label-position="left" label-width="auto" @submit.native.prevent>
-                    <FormItem>
+                    <FormItem v-if="projectOpenTask.p_name">
                         <div class="item-label" slot="label">
                             <i class="iconfont">&#xe6ec;</i>{{$L('优先级')}}
                         </div>
                         <ul class="item-content">
-                            <li>紧急且重要</li>
+                            <li>
+                                <TaskPriority :backgroundColor="projectOpenTask.p_color">{{projectOpenTask.p_name}}</TaskPriority>
+                            </li>
                         </ul>
                     </FormItem>
-                    <FormItem>
+                    <FormItem v-if="getOwner()">
                         <div class="item-label" slot="label">
                             <i class="iconfont">&#xe6e4;</i>{{$L('负责人')}}
                         </div>
                         <ul class="item-content user">
-                            <li><UserAvatar :userid="1"/></li>
+                            <li><UserAvatar :userid="getOwner().userid" :size="28"/></li>
                         </ul>
                     </FormItem>
-                    <FormItem>
+                    <FormItem v-if="projectOpenTask.end_at">
                         <div class="item-label" slot="label">
                             <i class="iconfont">&#xe6e8;</i>{{$L('截止时间')}}
                         </div>
                         <ul class="item-content">
-                            <li>2020/10/11 10:00</li>
+                            <li>{{projectOpenTask.end_at}}</li>
                         </ul>
                     </FormItem>
-                    <FormItem>
+                    <FormItem v-if="hasFile">
                         <div class="item-label" slot="label">
                             <i class="iconfont">&#xe6e6;</i>{{$L('附件')}}
                         </div>
                         <ul class="item-content file">
-                            <li>
-                                <img class="file-ext" :src="'/images/ext/psd.png'"/>
-                                <div class="file-name">附件名称.psd</div>
-                                <div class="file-size">20.5kb</div>
-                            </li>
-                            <li>
-                                <img class="file-ext" :src="'/images/ext/xls.png'"/>
-                                <div class="file-name">附件名称.xls</div>
-                                <div class="file-size">20.5kb</div>
-                            </li>
-                            <li>
-                                <img class="file-ext" :src="'/images/ext/doc.png'"/>
-                                <div class="file-name">附件名称.doc</div>
-                                <div class="file-size">20.5kb</div>
+                            <li v-for="file in projectOpenTask.files">
+                                <img class="file-ext" :src="file.thumb"/>
+                                <div class="file-name">{{file.name}}</div>
+                                <div class="file-size">{{$A.bytesToSize(file.size)}}</div>
                             </li>
                             <li>
                                 <div class="add-button">
@@ -80,49 +72,29 @@
                             </li>
                         </ul>
                     </FormItem>
-                    <FormItem>
+                    <FormItem v-if="hasSubtask">
                         <div class="item-label" slot="label">
                             <i class="iconfont">&#xe6f0;</i>{{$L('子任务')}}
                         </div>
                         <ul class="item-content subtask">
-                            <li>
+                            <li v-for="task in projectOpenTask.sub_task">
                                 <Icon class="subtask-icon" type="md-radio-button-off" />
                                 <div class="subtask-name">
                                     <Input
-                                        v-model="projectOpenTask.name"
+                                        v-model="task.name"
                                         type="textarea"
                                         :rows="1"
                                         :autosize="{ minRows: 1, maxRows: 8 }"
                                         :maxlength="255"/>
                                 </div>
-                                <div class="subtask-time today">{{expiresFormat('2021-06-12')}}</div>
-                                <UserAvatar class="subtask-avatar" :userid="1" :size="20"/>
-                            </li>
-                            <li>
-                                <Icon class="subtask-icon" type="md-radio-button-off" />
-                                <div class="subtask-name">
-                                    <Input
-                                        v-model="projectOpenTask.name"
-                                        type="textarea"
-                                        :rows="1"
-                                        :autosize="{ minRows: 1, maxRows: 8 }"
-                                        :maxlength="255"/>
-                                </div>
-                                <div class="subtask-time overdue">{{expiresFormat('2021-06-11')}}</div>
-                                <UserAvatar class="subtask-avatar" :userid="1" :size="20"/>
-                            </li>
-                            <li>
-                                <Icon class="subtask-icon" type="md-radio-button-off" />
-                                <div class="subtask-name">
-                                    <Input
-                                        v-model="projectOpenTask.name"
-                                        type="textarea"
-                                        :rows="1"
-                                        :autosize="{ minRows: 1, maxRows: 8 }"
-                                        :maxlength="255"/>
-                                </div>
-                                <div class="subtask-time">{{expiresFormat('2021-06-12')}}</div>
-                                <UserAvatar class="subtask-avatar" :userid="1" :size="20"/>
+                                <div
+                                    v-if="task.end_at"
+                                    :class="['subtask-time-avatar', task.today ? 'today' : '', task.overdue ? 'overdue' : '']">{{expiresFormat(task.end_at)}}</div>
+                                <UserAvatar
+                                    v-if="getOwner(task)"
+                                    class="subtask-avatar"
+                                    :userid="getOwner(task).userid"
+                                    :size="20"/>
                             </li>
                             <li>
                                 <div class="add-button">
@@ -138,7 +110,9 @@
                         placement="bottom-start"
                         @command="">
                         <div class="add-button">
-                            <i class="iconfont">&#xe6f2;</i>{{$L('添加模块')}}
+                            <i class="iconfont">&#xe6f2;</i>
+                            {{$L('添加')}}
+                            <em v-for="item in menuList">{{$L(item.name)}}</em>
                         </div>
                         <EDropdownMenu slot="dropdown">
                             <EDropdownItem v-for="(item, key) in menuList" :key="key" :command="item.command">
@@ -151,15 +125,15 @@
                 </div>
             </div>
         </div>
-        <div class="task-dialog">
+        <div class="task-dialog" >
             <div class="head">
                 <Icon class="icon" type="ios-chatbubbles-outline" />
                 <div class="nav">
-                    <p class="active">群聊</p>
-                    <p>动态</p>
+                    <p class="active">{{$L('聊天')}}</p>
+                    <p>{{$L('动态')}}</p>
                 </div>
             </div>
-            <div class="no-dialog">
+            <div class="no-dialog" :style="dialogStyle">
                 <div class="no-tip">{{$L('暂无消息')}}</div>
                 <div class="no-input">
                     <Input class="dialog-input" v-model="projectOpenTask._msgText" type="textarea" :rows="1" :autosize="{ minRows: 1, maxRows: 3 }" :maxlength="255" :placeholder="$L('输入消息...')" />
@@ -172,42 +146,17 @@
 <script>
 import {mapState} from "vuex";
 import TEditor from "../../../components/TEditor";
+import TaskPriority from "./TaskPriority";
 
 export default {
     name: "TaskDetail",
-    components: {TEditor},
+    components: {TaskPriority, TEditor},
     data() {
         return {
             nowTime: Math.round(new Date().getTime() / 1000),
             nowInterval: null,
 
             innerHeight: window.innerHeight,
-
-            content: '随着互联网的发展,生活智能化越来越普及,各类智能产品逐渐出现到人们面前,在体验的过程中,其实里面有 很多细节需要深挖和思考。很多产品细节的背后都是为了提升用户操作效率、兼容用户使用场景、满足用户情感 表达,以最终达到对用户体验的提升。作为智能产品的设计师只有充分了解市面上的智能产品,才能设计出更好',
-
-            menuList: [
-                {
-                    command: 'priority',
-                    icon: '&#xe6ec;',
-                    name: '优先级',
-                }, {
-                    command: 'owner',
-                    icon: '&#xe6e4;',
-                    name: '负责人',
-                }, {
-                    command: 'times',
-                    icon: '&#xe6e8;',
-                    name: '截止时间',
-                }, {
-                    command: 'file',
-                    icon: '&#xe6e6;',
-                    name: '附件',
-                }, {
-                    command: 'subtask',
-                    icon: '&#xe6f0;',
-                    name: '子任务',
-                }
-            ],
 
             taskPlugins: [
                 'advlist autolink lists link image charmap print preview hr anchor pagebreak imagetools',
@@ -254,11 +203,28 @@ export default {
 
         scrollerStyle() {
             const {innerHeight, projectOpenTask} = this;
-            if (!innerHeight || !projectOpenTask._dialog) {
+            if (!innerHeight) {
+                return {};
+            }
+            if (!projectOpenTask._dialog) {
                 return {};
             }
             return {
                 maxHeight: (innerHeight - 70 - 66 - 30) + 'px'
+            }
+        },
+
+        dialogStyle() {
+            const {innerHeight, projectOpenTask} = this;
+            if (!innerHeight) {
+                return {};
+            }
+            if (projectOpenTask._dialog || projectOpenTask._msgText) {
+                return {
+                    minHeight: (innerHeight - 70 - 66 - 30) + 'px'
+                }
+            } else {
+                return {};
             }
         },
 
@@ -273,6 +239,74 @@ export default {
                 }
                 return this.formatTime(date)
             }
+        },
+
+        hasContent() {
+            const {projectOpenTask} = this;
+            return $A.isJson(projectOpenTask.content);
+        },
+
+        hasFile() {
+            const {projectOpenTask} = this;
+            return $A.isArray(projectOpenTask.files) && projectOpenTask.files.length > 0;
+        },
+
+        hasSubtask() {
+            const {projectOpenTask} = this;
+            return $A.isArray(projectOpenTask.sub_task) && projectOpenTask.sub_task.length > 0;
+        },
+
+        getOwner() {
+            return function (task) {
+                if (task === undefined) {
+                    task = this.projectOpenTask;
+                }
+                if (!$A.isArray(task.task_user)) {
+                    return null;
+                }
+                return task.task_user.find(({owner}) => owner === 1);
+            }
+        },
+
+        menuList() {
+            const {projectOpenTask} = this;
+            let list = [];
+            if (!projectOpenTask.p_name) {
+                list.push({
+                    command: 'priority',
+                    icon: '&#xe6ec;',
+                    name: '优先级',
+                });
+            }
+            if (!($A.isArray(projectOpenTask.task_user) && projectOpenTask.task_user.find(({owner}) => owner === 1))) {
+                list.push({
+                    command: 'owner',
+                    icon: '&#xe6e4;',
+                    name: '负责人',
+                });
+            }
+            if (!projectOpenTask.end_at) {
+                list.push({
+                    command: 'times',
+                    icon: '&#xe6e8;',
+                    name: '截止时间',
+                });
+            }
+            if (!($A.isArray(projectOpenTask.files) && projectOpenTask.files.length > 0)) {
+                list.push({
+                    command: 'file',
+                    icon: '&#xe6e6;',
+                    name: '附件',
+                });
+            }
+            if (!($A.isArray(projectOpenTask.sub_task) && projectOpenTask.sub_task.length > 0)) {
+                list.push({
+                    command: 'subtask',
+                    icon: '&#xe6f0;',
+                    name: '子任务',
+                });
+            }
+            return list;
         },
     },
 

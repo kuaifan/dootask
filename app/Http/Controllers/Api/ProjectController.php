@@ -609,6 +609,9 @@ class ProjectController extends AbstractController
             return Base::retError('项目不存在或不在成员列表内');
         }
         //
+        $task->project_name = $project->name;
+        $task->column_name = ProjectColumn::whereId($task->column_id)->value('name');
+        //
         return Base::retSuccess('success', $task);
     }
 
