@@ -118,5 +118,142 @@ export default {
             }
             $A.ajaxc(params);
         })
-    }
+    },
+
+    /**
+     * 获取任务信息
+     * @param state
+     * @param dispatch
+     * @param task_id
+     * @returns {Promise<unknown>}
+     */
+    taskOne({state, dispatch}, task_id) {
+        return new Promise(function (resolve, reject) {
+            dispatch("call", {
+                url: 'project/task/one',
+                data: {
+                    task_id,
+                },
+            }).then((data, msg) => {
+                state.projectDetail.project_column.some(({project_task}) => {
+                    let index = project_task.findIndex(({id}) => id === task_id);
+                    if (index > -1) {
+                        project_task.splice(index, 1, Object.assign(project_task[index], data))
+                        return true;
+                    }
+                });
+                if (task_id == state.projectOpenTask.id) {
+                    state.projectOpenTask = Object.assign({}, state.projectOpenTask, data);
+                }
+                resolve(data, msg)
+            }).catch((data, msg) => {
+                reject(data, msg)
+            });
+        });
+    },
+
+    /**
+     * 获取任务详细描述
+     * @param state
+     * @param dispatch
+     * @param task_id
+     * @returns {Promise<unknown>}
+     */
+    taskContent({state, dispatch}, task_id) {
+        return new Promise(function (resolve, reject) {
+            dispatch("call", {
+                url: 'project/task/content',
+                data: {
+                    task_id,
+                },
+            }).then((data, msg) => {
+                state.projectTaskContent[task_id] = data;
+                if (task_id == state.projectOpenTask.id) {
+                    state.projectOpenTask = Object.assign({}, state.projectOpenTask, {content: data || {}});
+                }
+                resolve(data, msg)
+            }).catch((data, msg) => {
+                reject(data, msg)
+            });
+        });
+    },
+
+    /**
+     * 获取任务文件
+     * @param state
+     * @param dispatch
+     * @param task_id
+     * @returns {Promise<unknown>}
+     */
+    taskFiles({state, dispatch}, task_id) {
+        return new Promise(function (resolve, reject) {
+            dispatch("call", {
+                url: 'project/task/files',
+                data: {
+                    task_id,
+                },
+            }).then((data, msg) => {
+                state.projectTaskFiles[task_id] = data;
+                if (task_id == state.projectOpenTask.id) {
+                    state.projectOpenTask = Object.assign({}, state.projectOpenTask, {files: data});
+                }
+                resolve(data, msg)
+            }).catch((data, msg) => {
+                reject(data, msg)
+            });
+        });
+    },
+
+    /**
+     * 获取子任务
+     * @param state
+     * @param dispatch
+     * @param task_id
+     * @returns {Promise<unknown>}
+     */
+    subTask({state, dispatch}, task_id) {
+        return new Promise(function (resolve, reject) {
+            dispatch("call", {
+                url: 'project/task/sublist',
+                data: {
+                    task_id,
+                },
+            }).then((data, msg) => {
+                state.projectSubTask[task_id] = data;
+                if (task_id == state.projectOpenTask.id) {
+                    state.projectOpenTask = Object.assign({}, state.projectOpenTask, {sub_task: data});
+                }
+                resolve(data, msg)
+            }).catch((data, msg) => {
+                reject(data, msg)
+            });
+        });
+    },
+
+    /**
+     * 打开任务详情页
+     * @param state
+     * @param dispatch
+     * @param task_id
+     */
+    openTask({state, dispatch}, task_id) {
+        let data = {id: task_id};
+        state.projectDetail.project_column.some(({project_task}) => {
+            const task = project_task.find(({id}) => id === task_id);
+            if (task) {
+                data = Object.assign(data, task);
+                return true
+            }
+        });
+        //
+        data.content = state.projectTaskContent[task_id] || {}
+        data.files = state.projectTaskFiles[task_id] || []
+        data.subtask = state.projectSubTask[task_id] || []
+        state.projectOpenTask = Object.assign({}, data, {_show: true});
+        //
+        dispatch("taskOne", task_id);
+        dispatch("taskContent", task_id);
+        dispatch("taskFiles", task_id);
+        dispatch("subTask", task_id);
+    },
 }

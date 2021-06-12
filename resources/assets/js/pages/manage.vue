@@ -103,11 +103,11 @@
 
         <!--任务详情-->
         <Modal
-            v-model="projectTask._show"
+            v-model="projectOpenTask._show"
             :mask-closable="false"
             :styles="{
                 width: '90%',
-                maxWidth: '640px'
+                maxWidth: projectOpenTask._dialog ? '1200px' : '640px'
             }"
             footer-hide>
             <TaskDetail/>
@@ -169,7 +169,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'userInfo', 'dialogMsgUnread', 'projectList', 'projectTask']),
+        ...mapState(['userId', 'userInfo', 'dialogMsgUnread', 'projectList', 'projectOpenTask']),
     },
 
     watch: {

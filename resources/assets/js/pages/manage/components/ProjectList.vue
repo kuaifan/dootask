@@ -123,7 +123,7 @@
                                 v-for="item in panelTask(column.project_task)"
                                 :class="['task-item task-draggable', item.complete_at ? 'complete' : '']"
                                 :style="item.color ? {backgroundColor: item.color} : {}"
-                                @click="$store.commit('openTask', item)">
+                                @click="$store.dispatch('openTask', item.id)">
                                 <div :class="['task-head', item.desc ? 'has-desc' : '']">
                                     <div class="task-title"><pre>{{item.name}}</pre></div>
                                     <div class="task-menu" @click.stop="">
@@ -834,7 +834,7 @@ export default {
                     this.$set(task, key, data[key]);
                 });
                 if (data.parent_id) {
-                    this.getTaskOne(data.parent_id);
+                    this.$store.dispatch('taskOne', data.parent_id);
                 }
                 if (typeof updata.complete_at !== "undefined") {
                     this.$store.commit('getProjectOne', data.project_id);
@@ -845,26 +845,6 @@ export default {
                     this.$set(task, key, backup[key]);
                 });
                 $A.modalError(msg);
-            });
-        },
-
-        getTaskOne(task_id) {
-            let task = null;
-            this.projectDetail.project_column.some(({project_task}) => {
-                task = project_task.find(({id}) => id === task_id);
-                if (task) return true;
-            });
-            if (!task) return;
-            //
-            this.$store.dispatch("call", {
-                url: 'project/task/one',
-                data: {
-                    task_id: task.id
-                },
-            }).then((data, msg) => {
-                Object.keys(data).forEach(key => {
-                    this.$set(task, key, data[key]);
-                });
             });
         },
 

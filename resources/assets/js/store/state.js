@@ -244,13 +244,16 @@ state.wsListener = {};
 state.wsReadTimeout = null;
 state.wsReadWaitList = [];
 
-// 项目信息
+// 项目任务
 state.projectLoad = 0;
 state.projectList = state.cacheProjectList;
 state.projectDetail = {id: 0, project_column: [], project_user: []};
-state.projectTask = {_show: false, id: 0, task_user: [], task_tag: []};
+state.projectOpenTask = {_show: false, id: 0, task_user: [], task_tag: []};
+state.projectTaskContent = {};
+state.projectTaskFiles = {};
+state.projectSubTask = {};
 
-// 会话消息
+// 会话聊天
 state.dialogId = 0;
 state.dialogList = [];
 state.dialogDetail = {};

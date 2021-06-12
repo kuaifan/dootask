@@ -143,14 +143,14 @@ export default {
                 autoresize_bottom_margin: 2,
                 min_height: 200,
                 max_height: 380,
-                valid_elements : 'a[href|target=_blank],em,strong/b,div[align],span[style],a,br,img,pre[class],code',
+                valid_elements : 'a[href|target=_blank],em,strong/b,div[align],span[style],a,br,img[src|alt|witdh|height],pre[class],code',
                 toolbar: 'uploadImages | uploadFiles | bold italic underline forecolor backcolor | codesample | preview screenload'
             },
             taskOptionFull: {
                 menubar: 'file edit view',
                 forced_root_block : false,
                 remove_trailing_brs: false,
-                valid_elements : 'a[href|target=_blank],em,strong/b,div[align],span[style],a,br,img,pre[class],code',
+                valid_elements : 'a[href|target=_blank],em,strong/b,div[align],span[style],a,br,img[src|alt|witdh|height],pre[class],code',
                 toolbar: 'uploadImages | uploadFiles | bold italic underline forecolor backcolor | codesample | preview screenload'
             },
 

@@ -182,15 +182,6 @@ export default {
     },
 
     /**
-     * 打开任务详情页
-     * @param state
-     * @param task
-     */
-    openTask(state, task) {
-        state.projectTask = Object.assign({_show:true}, task);
-    },
-
-    /**
      * 获取用户基本信息
      * @param state
      * @param params {userid, success, complete}

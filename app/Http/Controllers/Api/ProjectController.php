@@ -647,6 +647,72 @@ class ProjectController extends AbstractController
     }
 
     /**
+     * 获取任务详细描述
+     *
+     * @apiParam {Number} task_id            任务ID
+     */
+    public function task__content()
+    {
+        $user = User::authE();
+        if (Base::isError($user)) {
+            return $user;
+        } else {
+            $user = User::IDE($user['data']);
+        }
+        //
+        $task_id = intval(Request::input('task_id'));
+        // 任务
+        $task = ProjectTask::whereId($task_id)->first();
+        if (empty($task)) {
+            return Base::retError('任务不存在');
+        }
+        // 项目
+        $project = Project::select($this->projectSelect)
+            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->where('projects.id', $task->project_id)
+            ->where('project_users.userid', $user->userid)
+            ->first();
+        if (empty($project)) {
+            return Base::retError('项目不存在或不在成员列表内');
+        }
+        //
+        return Base::retSuccess('success', $task->content);
+    }
+
+    /**
+     * 获取任务文件列表
+     *
+     * @apiParam {Number} task_id            任务ID
+     */
+    public function task__files()
+    {
+        $user = User::authE();
+        if (Base::isError($user)) {
+            return $user;
+        } else {
+            $user = User::IDE($user['data']);
+        }
+        //
+        $task_id = intval(Request::input('task_id'));
+        // 任务
+        $task = ProjectTask::whereId($task_id)->first();
+        if (empty($task)) {
+            return Base::retError('任务不存在');
+        }
+        // 项目
+        $project = Project::select($this->projectSelect)
+            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->where('projects.id', $task->project_id)
+            ->where('project_users.userid', $user->userid)
+            ->first();
+        if (empty($project)) {
+            return Base::retError('项目不存在或不在成员列表内');
+        }
+        //
+        return Base::retSuccess('success', $task->taskFile);
+    }
+
+    /**
      * {post} 添加任务
      *
      * @apiParam {Number} project_id            项目ID

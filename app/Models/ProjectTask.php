@@ -30,6 +30,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \App\Models\ProjectTaskContent|null $content
  * @property-read int $dialog_id
  * @property-read int $file_num
  * @property-read int $msg_num
@@ -39,6 +40,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read int $sub_num
  * @property-read bool $today
  * @property-read \App\Models\Project|null $project
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectTaskFile[] $taskFile
+ * @property-read int|null $task_file_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectTaskTag[] $taskTag
  * @property-read int|null $task_tag_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectTaskUser[] $taskUser
@@ -215,6 +218,22 @@ class ProjectTask extends AbstractModel
     }
 
     /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function content(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(ProjectTaskContent::class, 'task_id', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function taskFile(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(projectTaskFile::class, 'task_id', 'id')->orderBy('id');
+    }
+
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function taskUser(): \Illuminate\Database\Eloquent\Relations\HasMany
@@ -227,7 +246,7 @@ class ProjectTask extends AbstractModel
      */
     public function taskTag(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(projectTaskTag::class, 'task_id', 'id')->orderByDesc('id');
+        return $this->hasMany(projectTaskTag::class, 'task_id', 'id')->orderBy('id');
     }
 
     /**

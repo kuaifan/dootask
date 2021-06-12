@@ -50,7 +50,7 @@
                             </template>
                         </EDropdownMenu>
                     </EDropdown>
-                    <div class="item-title" @click="$store.commit('openTask', item)">{{item.name}}</div>
+                    <div class="item-title" @click="$store.dispatch('openTask', item.id)">{{item.name}}</div>
                     <div v-if="item.sub_num > 0" class="item-sub-num" @click="getSublist(item)">
                         <Icon type="md-git-merge" />
                         {{item.sub_complete}}/{{item.sub_num}}
@@ -158,12 +158,7 @@ export default {
                 return;
             }
             this.$set(task, 'loading', true);
-            this.$store.dispatch("call", {
-                url: 'project/task/sublist',
-                data: {
-                    task_id: task.id,
-                },
-            }).then((data, msg) => {
+            this.$store.dispatch("subTask", task.id).then((data, msg) => {
                 this.$set(task, 'loading', false);
                 this.$set(task, 'sub_list', data);
                 this.$set(task, 'sub_open', true);
