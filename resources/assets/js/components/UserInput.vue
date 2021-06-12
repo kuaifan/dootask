@@ -150,10 +150,10 @@
                             },
                             take: 30
                         },
-                    }).then((data, msg) => {
+                    }).then(({data}) => {
                         this.loading = false;
                         this.lists = data;
-                    }).catch((data, msg) => {
+                    }).catch(({msg}) => {
                         this.loading = false;
                         this.lists = [];
                         $A.messageWarning(msg);

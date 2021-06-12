@@ -96,7 +96,7 @@ export default {
                 data: {
                     list: this.formDatum
                 },
-            }).then((data, msg) => {
+            }).then(({data}) => {
                 this.loadIng--;
                 this.$store.state.taskPriority = $A.cloneJSON(data);
                 this.formDatum = data;
@@ -107,7 +107,7 @@ export default {
                 if (save) {
                     $A.messageSuccess('修改成功');
                 }
-            }).catch((data, msg) => {
+            }).catch(({msg}) => {
                 this.loadIng--;
                 if (save) {
                     $A.modalError(msg);

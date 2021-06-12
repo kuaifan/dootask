@@ -273,7 +273,7 @@ export default {
                     this.$store.dispatch("call", {
                         url: 'project/add',
                         data: this.addData,
-                    }).then((data, msg) => {
+                    }).then(({data, msg}) => {
                         this.loadIng--;
                         $A.messageSuccess(msg);
                         this.addShow = false;
@@ -281,7 +281,7 @@ export default {
                         this.$set(this.addData, 'template', 0);
                         this.$store.dispatch('saveProject', data);
                         this.toggleRoute('project/' + data.id)
-                    }).catch((data, msg) => {
+                    }).catch(({msg}) => {
                         this.loadIng--;
                         $A.modalError(msg);
                     });

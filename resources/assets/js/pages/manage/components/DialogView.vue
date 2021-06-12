@@ -105,7 +105,7 @@ export default {
                 data: {
                     msg_id: this.msgData.id,
                 },
-            }).then((data, msg) => {
+            }).then(({data}) => {
                 this.read_list = data;
             });
         },

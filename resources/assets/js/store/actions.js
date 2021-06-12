@@ -40,7 +40,8 @@ export default {
             //
             params.success = (result, status, xhr) => {
                 if (!state.method.isJson(result)) {
-                    resolve(result, status, xhr);
+                    console.log(result, status, xhr);
+                    reject({data: {}, msg: "Return error"})
                     return;
                 }
                 const {ret, data, msg} = result;
@@ -55,13 +56,13 @@ export default {
                     return;
                 }
                 if (ret === 1) {
-                    resolve(data, msg);
+                    resolve({data, msg});
                 } else {
-                    reject(data, msg || "Unknown error")
+                    reject({data, msg: msg || "Unknown error"})
                 }
             };
             params.error = () => {
-                reject({}, "System error")
+                reject({data: {}, msg: "System error"})
             };
             //
             if (params.websocket === true || params.ws === true) {
@@ -140,12 +141,12 @@ export default {
         return new Promise(function (resolve, reject) {
             dispatch("call", {
                 url: 'users/info',
-            }).then((data, msg) => {
-                dispatch('saveUserInfo', data);
-                resolve(data, msg)
-            }).catch((data, msg) => {
+            }).then(result => {
+                dispatch('saveUserInfo', result.data);
+                resolve(result)
+            }).catch(result => {
                 dispatch("logout");
-                reject(data, msg)
+                reject(result)
             });
         });
     },
@@ -229,10 +230,10 @@ export default {
             data: {
                 userid: array
             },
-        }).then((data, msg) => {
+        }).then(result => {
             state.cacheUserBasic["::load"] = false;
             typeof complete === "function" && complete()
-            data.forEach((item) => {
+            result.data.forEach((item) => {
                 state.cacheUserBasic[item.userid] = {
                     time,
                     data: item
@@ -241,10 +242,10 @@ export default {
                 dispatch('saveUserOnlineStatus', item);
                 typeof success === "function" && success(item, true)
             });
-        }).catch((data, msg) => {
+        }).catch(result => {
             state.cacheUserBasic["::load"] = false;
             typeof complete === "function" && complete()
-            $A.modalError(msg);
+            $A.modalError(result.msg);
         });
     },
 
@@ -274,10 +275,10 @@ export default {
         }
         dispatch("call", {
             url: 'project/lists',
-        }).then((data, msg) => {
-            dispatch('saveProject', data.data);
-        }).catch((data, msg) => {
-            $A.modalError(msg);
+        }).then(result => {
+            dispatch('saveProject', result.data);
+        }).catch(result => {
+            $A.modalError(result.msg);
         });
     },
 
@@ -296,8 +297,8 @@ export default {
             data: {
                 project_id: project_id,
             },
-        }).then((data, msg) => {
-            dispatch('saveProject', data);
+        }).then(result => {
+            dispatch('saveProject', result.data);
         });
     },
 
@@ -323,12 +324,12 @@ export default {
             data: {
                 project_id: project_id,
             },
-        }).then((data, msg) => {
+        }).then(result => {
             state.projectLoad--;
-            dispatch('saveProject', data);
-        }).catch((data, msg) => {
+            dispatch('saveProject', result.data);
+        }).catch(result => {
             state.projectLoad--;
-            $A.modalError(msg);
+            $A.modalError(result.msg);
         });
     },
 
@@ -387,20 +388,20 @@ export default {
                 data: {
                     task_id,
                 },
-            }).then((data, msg) => {
+            }).then(result => {
                 state.projectDetail.project_column.some(({project_task}) => {
                     let index = project_task.findIndex(({id}) => id === task_id);
                     if (index > -1) {
-                        project_task.splice(index, 1, Object.assign(project_task[index], data))
+                        project_task.splice(index, 1, Object.assign(project_task[index], result.data))
                         return true;
                     }
                 });
                 if (task_id == state.projectOpenTask.id) {
-                    state.projectOpenTask = Object.assign({}, state.projectOpenTask, data);
+                    state.projectOpenTask = Object.assign({}, state.projectOpenTask, result.data);
                 }
-                resolve(data, msg)
-            }).catch((data, msg) => {
-                reject(data, msg)
+                resolve(result)
+            }).catch(result => {
+                reject(result)
             });
         });
     },
@@ -419,14 +420,14 @@ export default {
                 data: {
                     task_id,
                 },
-            }).then((data, msg) => {
-                state.projectTaskContent[task_id] = data;
+            }).then(result => {
+                state.projectTaskContent[task_id] = result.data;
                 if (task_id == state.projectOpenTask.id) {
-                    state.projectOpenTask = Object.assign({}, state.projectOpenTask, {content: data || {}});
+                    state.projectOpenTask = Object.assign({}, state.projectOpenTask, {content: result.data || {}});
                 }
-                resolve(data, msg)
-            }).catch((data, msg) => {
-                reject(data, msg)
+                resolve(result)
+            }).catch(result => {
+                reject(result)
             });
         });
     },
@@ -445,14 +446,14 @@ export default {
                 data: {
                     task_id,
                 },
-            }).then((data, msg) => {
-                state.projectTaskFiles[task_id] = data;
+            }).then(result => {
+                state.projectTaskFiles[task_id] = result.data;
                 if (task_id == state.projectOpenTask.id) {
-                    state.projectOpenTask = Object.assign({}, state.projectOpenTask, {files: data});
+                    state.projectOpenTask = Object.assign({}, state.projectOpenTask, {files: result.data});
                 }
-                resolve(data, msg)
-            }).catch((data, msg) => {
-                reject(data, msg)
+                resolve(result)
+            }).catch(result => {
+                reject(result)
             });
         });
     },
@@ -471,14 +472,14 @@ export default {
                 data: {
                     task_id,
                 },
-            }).then((data, msg) => {
-                state.projectSubTask[task_id] = data;
+            }).then(result => {
+                state.projectSubTask[task_id] = result.data;
                 if (task_id == state.projectOpenTask.id) {
-                    state.projectOpenTask = Object.assign({}, state.projectOpenTask, {sub_task: data});
+                    state.projectOpenTask = Object.assign({}, state.projectOpenTask, {sub_task: result.data});
                 }
-                resolve(data, msg)
-            }).catch((data, msg) => {
-                reject(data, msg)
+                resolve(result)
+            }).catch(result => {
+                reject(result)
             });
         });
     },
@@ -520,11 +521,69 @@ export default {
         return new Promise(function (resolve, reject) {
             dispatch("call", {
                 url: 'system/priority',
-            }).then((data, msg) => {
-                state.taskPriority = data;
-                resolve(data, msg)
-            }).catch((data, msg) => {
-                reject(data, msg)
+            }).then(result => {
+                state.taskPriority = result.data;
+                resolve(result)
+            }).catch(result => {
+                reject(result)
+            });
+        });
+    },
+
+    /**
+     * 更新任务
+     * @param dispatch
+     * @param data
+     * @returns {Promise<unknown>}
+     */
+    taskUpdate({dispatch}, data) {
+        return new Promise(function (resolve, reject) {
+            dispatch("call", {
+                url: 'project/task/update',
+                data: data,
+                method: 'post',
+            }).then(result => {
+                if (result.data.parent_id) {
+                    dispatch('taskOne', result.data.parent_id);
+                }
+                if (typeof updata.complete_at !== "undefined") {
+                    dispatch('projectOne', result.data.project_id);
+                }
+                resolve(result)
+            }).catch(result => {
+                dispatch('taskOne', data.id);
+                reject(result)
+            });
+        });
+    },
+
+    /**
+     * 删除或归档任务
+     * @param state
+     * @param dispatch
+     * @param data
+     * @returns {Promise<unknown>}
+     */
+    taskArchivedOrRemove({state, dispatch}, data) {
+        let {id, type} = data;
+        return new Promise(function (resolve, reject) {
+            dispatch("call", {
+                url: 'project/task/' + type,
+                data: {
+                    task_id: id,
+                },
+            }).then(result => {
+                const column = state.projectDetail.project_column.find(({id}) => id === result.data.column_id);
+                if (column) {
+                    let index = column.project_task.findIndex(({id}) => id === result.data.id);
+                    if (index > -1) {
+                        column.project_task.splice(index, 1);
+                    }
+                }
+                dispatch('projectDetail', result.data.project_id);
+                resolve(result);
+            }).catch(result => {
+                reject(result)
             });
         });
     },
@@ -538,10 +597,10 @@ export default {
     dialogList({state, dispatch}, afterCallback) {
         dispatch("call", {
             url: 'dialog/lists',
-        }).then((data, msg) => {
-            state.dialogList = data.data;
+        }).then(result => {
+            state.dialogList = result.data.data;
             typeof afterCallback === "function" && afterCallback();
-        }).catch((data, msg) => {
+        }).catch(result => {
             typeof afterCallback === "function" && afterCallback();
         });
     },
@@ -576,8 +635,8 @@ export default {
             data: {
                 dialog_id,
             },
-        }).then((data, msg) => {
-            dispatch('dialogUpdate', data);
+        }).then(result => {
+            dispatch('dialogUpdate', result.data);
         });
     },
 
@@ -596,12 +655,12 @@ export default {
             data: {
                 userid,
             },
-        }).then((data, msg) => {
-            state.method.setStorage('messengerDialogId', data.id)
-            dispatch('dialogMsgList', data.id);
-            dispatch('dialogUpdate', data);
-        }).catch((data, msg) => {
-            $A.modalError(msg);
+        }).then(result => {
+            state.method.setStorage('messengerDialogId', result.data.id)
+            dispatch('dialogMsgList', result.data.id);
+            dispatch('dialogUpdate', result.data);
+        }).catch(result => {
+            $A.modalError(result.msg);
         });
     },
 
@@ -641,11 +700,11 @@ export default {
             data: {
                 dialog_id: dialog_id,
             },
-        }).then((data, msg) => {
+        }).then(result => {
             state.dialogMsgLoad--;
             state.cacheDialogList[dialog_id + "::load"] = false;
-            const dialog = data.dialog;
-            const reverse = data.data.reverse();
+            const dialog = result.data.dialog;
+            const reverse = result.data.data.reverse();
             // 更新缓存
             state.cacheDialogList[dialog_id] = {
                 dialog,
@@ -666,7 +725,7 @@ export default {
             }
             // 更新会话数据
             dispatch('dialogUpdate', dialog);
-        }).catch((data, msg) => {
+        }).catch(result => {
             state.dialogMsgLoad--;
             state.cacheDialogList[dialog_id + "::load"] = false;
         });
@@ -685,9 +744,9 @@ export default {
         const unread = state.dialogMsgUnread;
         dispatch("call", {
             url: 'dialog/msg/unread',
-        }).then((data, msg) => {
+        }).then(result => {
             if (unread == state.dialogMsgUnread) {
-                state.dialogMsgUnread = data.unread;
+                state.dialogMsgUnread = result.data.unread;
             } else {
                 setTimeout(() => {
                     dispatch('dialogMsgUnread');

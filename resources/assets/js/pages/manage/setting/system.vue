@@ -54,14 +54,14 @@ export default {
             this.$store.dispatch("call", {
                 url: 'system/setting?type=' + (save ? 'save' : 'get'),
                 data: this.formDatum,
-            }).then((data, msg) => {
+            }).then(({data}) => {
                 this.loadIng--;
                 this.formDatum = data;
                 this.formDatum_bak = $A.cloneJSON(this.formDatum);
                 if (save) {
                     $A.messageSuccess('修改成功');
                 }
-            }).catch((data, msg) => {
+            }).catch(({msg}) => {
                 this.loadIng--;
                 if (save) {
                     $A.modalError(msg);

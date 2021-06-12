@@ -290,14 +290,14 @@
                 this.$store.dispatch("call", {
                     url: 'system/imgview',
                     data: {path: path ? path : ''},
-                }).then((data, msg) => {
+                }).then(({data}) => {
                     this.isLoading = false;
                     let dirs = data['dirs'];
                     for (let i = 0; i < dirs.length; i++) {
                         this.browseList.push(dirs[i]);
                     }
                     this.browsePictureFor(data['files']);
-                }).catch((data, msg) => {
+                }).catch(({msg}) => {
                     this.isLoading = false;
                     this.browseVisible = false;
                     $A.noticeWarning(msg);

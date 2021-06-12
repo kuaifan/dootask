@@ -123,9 +123,9 @@ export default {
                     dialog_id: this.dialogId,
                     text: this.msgText,
                 },
-            }).then((data, msg) => {
+            }).then(({data}) => {
                 this.$store.dispatch('dialogMsgSplice', {id: tempId, data});
-            }).catch((data, msg) => {
+            }).catch(({msg}) => {
                 $A.modalWarning({
                     title: '发送失败',
                     content: msg

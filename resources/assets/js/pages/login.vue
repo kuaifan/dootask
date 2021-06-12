@@ -52,11 +52,11 @@ export default {
                 data: {
                     email: this.email,
                 },
-            }).then((data, msg) => {
+            }).then(() => {
                 this.loadIng--;
                 this.reCode();
                 this.codeNeed = true;
-            }).catch((data, msg) => {
+            }).catch(() => {
                 this.loadIng--;
                 this.codeNeed = false;
             });
@@ -78,11 +78,11 @@ export default {
                     password: this.password,
                     code: this.code,
                 },
-            }).then((data, msg) => {
+            }).then(({data}) => {
                 this.loadIng--;
                 this.$store.dispatch('saveUserInfo', data);
                 this.goNext();
-            }).catch((data, msg) => {
+            }).catch(({data, msg}) => {
                 this.loadIng--;
                 $A.noticeError(msg);
                 if (data.code === 'need') {

@@ -82,12 +82,12 @@ export default {
                     this.$store.dispatch("call", {
                         url: 'users/editpass',
                         data: this.formDatum,
-                    }).then((data, msg) => {
+                    }).then(({data}) => {
                         this.loadIng--;
                         $A.messageSuccess('修改成功');
                         this.$store.dispatch('saveUserInfo', data);
                         this.$refs.formDatum.resetFields();
-                    }).catch((data, msg) => {
+                    }).catch(({msg}) => {
                         this.loadIng--;
                         $A.modalError(msg);
                     });

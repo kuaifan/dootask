@@ -460,7 +460,7 @@ class ProjectTask extends AbstractModel
                 $this->archived_at = $archived_at;
             }
             $this->save();
-            return Base::retSuccess('修改成功');
+            return Base::retSuccess('修改成功', $this->toArray());
         });
     }
 
@@ -472,7 +472,7 @@ class ProjectTask extends AbstractModel
     {
         return AbstractModel::transaction(function () {
             $this->delete();
-            return Base::retSuccess('删除成功');
+            return Base::retSuccess('删除成功', $this->toArray());
         });
     }
 }

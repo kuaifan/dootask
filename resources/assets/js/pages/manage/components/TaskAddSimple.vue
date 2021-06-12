@@ -155,7 +155,7 @@ export default {
                 url: 'project/task/add',
                 data: this.getData(),
                 method: 'post',
-            }).then((data, msg) => {
+            }).then(({data, msg}) => {
                 this.loadIng--;
                 $A.messageSuccess(msg);
                 this.active = false;
@@ -170,7 +170,7 @@ export default {
                 }
                 this.$store.dispatch('projectOne', data.project_id);
                 this.$emit("on-success", data)
-            }).catch((data, msg) => {
+            }).catch(({msg}) => {
                 this.loadIng--;
                 $A.modalError(msg);
             });

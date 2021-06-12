@@ -75,11 +75,11 @@ export default {
                     this.$store.dispatch("call", {
                         url: 'users/editdata',
                         data: this.formDatum,
-                    }).then((data, msg) => {
+                    }).then(() => {
                         this.loadIng--;
                         $A.messageSuccess('修改成功');
                         this.$store.dispatch('userInfo');
-                    }).catch((data, msg) => {
+                    }).catch(({msg}) => {
                         this.loadIng--;
                         $A.modalError(msg);
                     });

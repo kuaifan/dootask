@@ -577,10 +577,10 @@ export default {
                     sort: this.sortData,
                     only_column: only_column === true ? 1 : 0
                 },
-            }).then((data, msg) => {
+            }).then(({msg}) => {
                 this.sortDisabled = false;
                 $A.messageSuccess(msg);
-            }).catch((data, msg) => {
+            }).catch(({msg}) => {
                 this.sortDisabled = false;
                 this.$store.dispatch('projectDetail', this.projectDetail.id);
                 $A.modalError(msg);
@@ -593,7 +593,7 @@ export default {
                 url: 'project/task/add',
                 data: this.addData,
                 method: 'post',
-            }).then((data, msg) => {
+            }).then(({data, msg}) => {
                 this.taskLoad--;
                 $A.messageSuccess(msg);
                 this.addShow = false;
@@ -608,7 +608,7 @@ export default {
                 };
                 this.$store.dispatch('projectOne', data.project_id);
                 this.addTaskSuccess(data)
-            }).catch((data, msg) => {
+            }).catch(({msg}) => {
                 this.taskLoad--;
                 $A.modalError(msg);
             });
@@ -669,11 +669,11 @@ export default {
                     project_id: this.projectDetail.id,
                     name: name,
                 },
-            }).then((data, msg) => {
+            }).then(({data, msg}) => {
                 $A.messageSuccess(msg);
                 this.addColumnName = '';
                 this.projectDetail.project_column.push(data)
-            }).catch((data, msg) => {
+            }).catch(({msg}) => {
                 $A.modalError(msg, 301);
             });
         },
@@ -724,12 +724,12 @@ export default {
                 data: Object.assign(updata, {
                     column_id: column.id,
                 }),
-            }).then((data, msg) => {
+            }).then(({data}) => {
                 this.$set(column, 'loading', false);
                 Object.keys(data).forEach(key => {
                     this.$set(column, key, data[key]);
                 });
-            }).catch((data, msg) => {
+            }).catch(({msg}) => {
                 this.$set(column, 'loading', false);
                 Object.keys(updata).forEach(key => {
                     this.$set(column, key, backup[key]);
@@ -754,7 +754,7 @@ export default {
                         data: {
                             column_id: column.id,
                         },
-                    }).then((data, msg) => {
+                    }).then(({msg}) => {
                         this.$set(column, 'loading', false);
                         this.$Modal.remove();
                         $A.messageSuccess(msg);
@@ -763,7 +763,7 @@ export default {
                             this.projectDetail.project_column.splice(index, 1);
                         }
                         this.$store.dispatch('projectDetail', this.projectDetail.id);
-                    }).catch((data, msg) => {
+                    }).catch(({msg}) => {
                         this.$set(column, 'loading', false);
                         this.$Modal.remove();
                         $A.modalError(msg, 301);
@@ -818,32 +818,14 @@ export default {
             }
             this.$set(task, 'loading', true);
             //
-            const backup = $A.cloneJSON(task);
-            Object.keys(updata).forEach(key => {
-                this.$set(task, key, updata[key]);
-            });
-            this.$store.dispatch("call", {
-                url: 'project/task/update',
-                data: Object.assign(updata, {
-                    task_id: task.id,
-                }),
-                method: 'post',
-            }).then((data, msg) => {
+            Object.keys(updata).forEach(key => this.$set(task, key, updata[key]));
+            this.$store.dispatch("taskUpdate", Object.assign(updata, {
+                task_id: task.id,
+            })).then(({data}) => {
                 this.$set(task, 'loading', false);
-                Object.keys(data).forEach(key => {
-                    this.$set(task, key, data[key]);
-                });
-                if (data.parent_id) {
-                    this.$store.dispatch('taskOne', data.parent_id);
-                }
-                if (typeof updata.complete_at !== "undefined") {
-                    this.$store.dispatch('projectOne', data.project_id);
-                }
-            }).catch((data, msg) => {
+                Object.keys(data).forEach(key => this.$set(task, key, data[key]));
+            }).catch(({msg}) => {
                 this.$set(task, 'loading', false);
-                Object.keys(updata).forEach(key => {
-                    this.$set(task, key, backup[key]);
-                });
                 $A.modalError(msg);
             });
         },
@@ -853,23 +835,13 @@ export default {
                 return;
             }
             this.$set(task, 'loading', true);
-            this.$store.dispatch("call", {
-                url: 'project/task/' + type,
-                data: {
-                    task_id: task.id,
-                },
-            }).then((data, msg) => {
+            this.$store.dispatch("taskArchivedOrRemove", {
+                id: task.id,
+                type: type,
+            }).then(({msg}) => {
                 this.$Modal.remove();
                 $A.messageSuccess(msg);
-                let column = this.projectDetail.project_column.find(({id}) => id === task.column_id);
-                if (column) {
-                    let index = column.project_task.findIndex(({id}) => id === task.id);
-                    if (index > -1) {
-                        column.project_task.splice(index, 1);
-                    }
-                }
-                this.$store.dispatch('projectDetail', this.projectDetail.id);
-            }).catch((data, msg) => {
+            }).catch(({msg}) => {
                 this.$Modal.remove();
                 $A.modalError(msg, 301);
             });
@@ -880,12 +852,12 @@ export default {
             this.$store.dispatch("call", {
                 url: 'project/edit',
                 data: this.settingData,
-            }).then((data, msg) => {
+            }).then(({data, msg}) => {
                 this.settingLoad--;
                 $A.messageSuccess(msg);
                 this.settingShow = false;
                 this.$store.dispatch("saveProject", data)
-            }).catch((data, msg) => {
+            }).catch(({msg}) => {
                 this.settingLoad--;
                 $A.modalError(msg);
             });
@@ -899,12 +871,12 @@ export default {
                     project_id: this.userData.project_id,
                     userid: this.userData.userids,
                 },
-            }).then((data, msg) => {
+            }).then(({msg}) => {
                 this.userLoad--;
                 $A.messageSuccess(msg);
                 this.$store.dispatch('projectDetail', this.userData.project_id);
                 this.userShow = false;
-            }).catch((data, msg) => {
+            }).catch(({msg}) => {
                 this.userLoad--;
                 $A.modalError(msg);
             });
@@ -918,12 +890,12 @@ export default {
                     project_id: this.transferData.project_id,
                     owner_userid: this.transferData.owner_userid[0],
                 },
-            }).then((data, msg) => {
+            }).then(({msg}) => {
                 this.transferLoad--;
                 $A.messageSuccess(msg);
                 this.$store.dispatch('projectDetail', this.transferData.project_id);
                 this.transferShow = false;
-            }).catch((data, msg) => {
+            }).catch(({msg}) => {
                 this.transferLoad--;
                 $A.modalError(msg);
             });
@@ -940,7 +912,7 @@ export default {
                         data: {
                             project_id: this.projectDetail.id,
                         },
-                    }).then((data, msg) => {
+                    }).then(({msg}) => {
                         this.$Modal.remove();
                         $A.messageSuccess(msg);
                         this.$store.dispatch('removeProject', this.projectDetail.id);
@@ -950,7 +922,7 @@ export default {
                         } else {
                             this.goForward({path: '/manage/dashboard'}, true);
                         }
-                    }).catch((data, msg) => {
+                    }).catch(({msg}) => {
                         this.$Modal.remove();
                         $A.modalError(msg, 301);
                     });
@@ -969,7 +941,7 @@ export default {
                         data: {
                             project_id: this.projectDetail.id,
                         },
-                    }).then((data, msg) => {
+                    }).then(({msg}) => {
                         this.$Modal.remove();
                         $A.messageSuccess(msg);
                         this.$store.dispatch('removeProject', this.projectDetail.id);
@@ -979,7 +951,7 @@ export default {
                         } else {
                             this.goForward({path: '/manage/dashboard'}, true);
                         }
-                    }).catch((data, msg) => {
+                    }).catch(({msg}) => {
                         this.$Modal.remove();
                         $A.modalError(msg, 301);
                     });

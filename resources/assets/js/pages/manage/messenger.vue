@@ -148,7 +148,7 @@ export default {
                 data: {
                     take: 50
                 },
-            }).then((data, msg) => {
+            }).then(({data}) => {
                 this.contactsLoad--;
                 data.some((user) => {
                     if (user.userid === this.userId) {
@@ -164,7 +164,7 @@ export default {
                         this.contactsLists[az].push(user);
                     }
                 });
-            }).catch((data, msg) => {
+            }).catch(() => {
                 this.contactsLoad--;
             });
         },

@@ -158,11 +158,11 @@ export default {
                 return;
             }
             this.$set(task, 'loading', true);
-            this.$store.dispatch("subTask", task.id).then((data, msg) => {
+            this.$store.dispatch("subTask", task.id).then(({data}) => {
                 this.$set(task, 'loading', false);
                 this.$set(task, 'sub_list', data);
                 this.$set(task, 'sub_open', true);
-            }).catch((data, msg) => {
+            }).catch(({msg}) => {
                 this.$set(task, 'loading', false);
                 $A.modalError(msg);
             });
