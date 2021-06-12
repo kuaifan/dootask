@@ -821,9 +821,8 @@ export default {
             Object.keys(updata).forEach(key => this.$set(task, key, updata[key]));
             this.$store.dispatch("taskUpdate", Object.assign(updata, {
                 task_id: task.id,
-            })).then(({data}) => {
+            })).then(() => {
                 this.$set(task, 'loading', false);
-                Object.keys(data).forEach(key => this.$set(task, key, data[key]));
             }).catch(({msg}) => {
                 this.$set(task, 'loading', false);
                 $A.modalError(msg);

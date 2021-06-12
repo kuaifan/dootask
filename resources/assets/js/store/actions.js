@@ -375,6 +375,24 @@ export default {
     },
 
     /**
+     * 更新任务信息
+     * @param state
+     * @param data
+     */
+    taskData({state}, data) {
+        state.projectDetail.project_column.some(({project_task}) => {
+            let index = project_task.findIndex(({id}) => id === data.id);
+            if (index > -1) {
+                project_task.splice(index, 1, Object.assign(project_task[index], data))
+                return true;
+            }
+        });
+        if (data.id == state.projectOpenTask.id) {
+            state.projectOpenTask = Object.assign({}, state.projectOpenTask, data);
+        }
+    },
+
+    /**
      * 获取任务信息
      * @param state
      * @param dispatch
@@ -389,16 +407,7 @@ export default {
                     task_id,
                 },
             }).then(result => {
-                state.projectDetail.project_column.some(({project_task}) => {
-                    let index = project_task.findIndex(({id}) => id === task_id);
-                    if (index > -1) {
-                        project_task.splice(index, 1, Object.assign(project_task[index], result.data))
-                        return true;
-                    }
-                });
-                if (task_id == state.projectOpenTask.id) {
-                    state.projectOpenTask = Object.assign({}, state.projectOpenTask, result.data);
-                }
+                dispatch("taskData", result.data);
                 resolve(result)
             }).catch(result => {
                 reject(result)
@@ -549,6 +558,7 @@ export default {
                 if (typeof updata.complete_at !== "undefined") {
                     dispatch('projectOne', result.data.project_id);
                 }
+                dispatch("taskData", result.data);
                 resolve(result)
             }).catch(result => {
                 dispatch('taskOne', data.id);
