@@ -81,7 +81,10 @@ export default {
 
     mounted() {
         this.dialogLoad++;
-        this.$store.dispatch("dialogList", () => {
+        this.$store.dispatch("dialogList").then(() => {
+            this.dialogLoad--;
+            this.openDialogStorage();
+        }).catch(() => {
             this.dialogLoad--;
             this.openDialogStorage();
         });

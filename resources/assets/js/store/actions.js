@@ -276,7 +276,7 @@ export default {
         dispatch("call", {
             url: 'project/lists',
         }).then(result => {
-            dispatch('saveProject', result.data);
+            dispatch('saveProject', result.data.data);
         }).catch(result => {
             $A.modalError(result.msg);
         });
@@ -592,16 +592,17 @@ export default {
      * 获取会话列表
      * @param state
      * @param dispatch
-     * @param afterCallback
      */
-    dialogList({state, dispatch}, afterCallback) {
-        dispatch("call", {
-            url: 'dialog/lists',
-        }).then(result => {
-            state.dialogList = result.data.data;
-            typeof afterCallback === "function" && afterCallback();
-        }).catch(result => {
-            typeof afterCallback === "function" && afterCallback();
+    dialogList({state, dispatch}) {
+        return new Promise(function (resolve, reject) {
+            dispatch("call", {
+                url: 'dialog/lists',
+            }).then(result => {
+                state.dialogList = result.data.data;
+                resolve(result);
+            }).catch(result => {
+                reject(result);
+            });
         });
     },
 
@@ -725,7 +726,7 @@ export default {
             }
             // 更新会话数据
             dispatch('dialogUpdate', dialog);
-        }).catch(result => {
+        }).catch(() => {
             state.dialogMsgLoad--;
             state.cacheDialogList[dialog_id + "::load"] = false;
         });
