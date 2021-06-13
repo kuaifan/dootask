@@ -107,7 +107,7 @@
             :mask-closable="false"
             :styles="{
                 width: '90%',
-                maxWidth: projectOpenTask._dialog || projectOpenTask._msgText ? '1200px' : '640px'
+                maxWidth: projectOpenTask.dialog_id ? '1200px' : '640px'
             }"
             footer-hide>
             <TaskDetail :open-task="projectOpenTask"/>

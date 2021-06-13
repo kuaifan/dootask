@@ -84,7 +84,7 @@
         </Poptip>
     </li>
     <!--主任务-->
-    <div v-else v-show="taskDetail.id > 0" :class="{'task-detail':true, 'open-dialog': taskDetail._dialog || taskDetail._msgText, 'completed': taskDetail.complete_at}">
+    <div v-else v-show="taskDetail.id > 0" :class="{'task-detail':true, 'open-dialog': taskDetail.dialog_id, 'completed': taskDetail.complete_at}">
         <div class="task-info">
             <div class="head">
                 <Icon v-if="taskDetail.complete_at" class="icon completed" type="md-checkmark-circle" @click="updateData('uncomplete')"/>
@@ -94,7 +94,34 @@
                     <p v-if="taskDetail.column_name">{{taskDetail.column_name}}</p>
                     <p v-if="taskDetail.id">{{taskDetail.id}}</p>
                 </div>
-                <Icon class="menu" type="ios-more"/>
+                <EDropdown
+                    trigger="click"
+                    placement="bottom"
+                    @command="dropTask">
+                    <Icon class="menu" type="ios-more"/>
+                    <EDropdownMenu slot="dropdown">
+                        <EDropdownItem v-if="taskDetail.complete_at" command="uncomplete">
+                            <div class="item red">
+                                <Icon type="md-checkmark-circle-outline" />{{$L('标记未完成')}}
+                            </div>
+                        </EDropdownItem>
+                        <EDropdownItem v-else command="complete">
+                            <div class="item">
+                                <Icon type="md-radio-button-off" />{{$L('完成')}}
+                            </div>
+                        </EDropdownItem>
+                        <EDropdownItem command="archived">
+                            <div class="item">
+                                <Icon type="ios-filing" />{{$L('归档')}}
+                            </div>
+                        </EDropdownItem>
+                        <EDropdownItem command="delete">
+                            <div class="item">
+                                <Icon type="md-trash" />{{$L('删除')}}
+                            </div>
+                        </EDropdownItem>
+                    </EDropdownMenu>
+                </EDropdown>
             </div>
             <div class="scroller overlay-y" :style="scrollerStyle">
                 <div class="title">
@@ -125,6 +152,7 @@
                         <ul class="item-content">
                             <li>
                                 <EDropdown
+                                    ref="priority"
                                     trigger="click"
                                     placement="bottom"
                                     @command="updateData('priority', $event)">
@@ -172,13 +200,13 @@
                             <div v-else>--</div>
                         </Poptip>
                     </FormItem>
-                    <FormItem v-if="getAssist.length > 0">
+                    <FormItem v-if="getAssist.length > 0 || assistForce">
                         <div class="item-label" slot="label">
                             <i class="iconfont">&#xe63f;</i>{{$L('协助人员')}}
                         </div>
                         <Poptip
                             ref="assist"
-                            :title="$L('修改协助人员')"
+                            :title="$L(getAssist.length > 0 ? '修改协助人员' : '添加协助人员')"
                             :width="280"
                             class="item-content user"
                             placement="bottom"
@@ -197,12 +225,13 @@
                                     <Button size="small" type="primary" @click="$refs.assist.ok()">{{$L('确定')}}</Button>
                                 </div>
                             </div>
-                            <div class="user-list">
+                            <div v-if="getAssist.length > 0" class="user-list">
                                 <UserAvatar v-for="item in getAssist" :key="item.userid" :userid="item.userid" :size="28" hide-icon-menu/>
                             </div>
+                            <div v-else>--</div>
                         </Poptip>
                     </FormItem>
-                    <FormItem v-if="taskDetail.end_at">
+                    <FormItem v-if="taskDetail.end_at || timeForce">
                         <div class="item-label" slot="label">
                             <i class="iconfont">&#xe6e8;</i>{{$L('截止时间')}}
                         </div>
@@ -219,7 +248,7 @@
                                     @on-ok="timeOk"
                                     transfer>
                                     <div class="picker-time">
-                                        <div @click="openTime" class="time">{{cutTime}}</div>
+                                        <div ref="time" @click="openTime" class="time">{{taskDetail.end_at ? cutTime : '--'}}</div>
                                         <Tag v-if="!taskDetail.complete_at && taskDetail.today" color="blue"><Icon type="ios-time-outline"/>{{expiresFormat(taskDetail.end_at)}}</Tag>
                                         <Tag v-if="!taskDetail.complete_at && taskDetail.overdue" color="red">{{$L('超期未完成')}}</Tag>
                                     </div>
@@ -245,11 +274,11 @@
                             </li>
                         </ul>
                     </FormItem>
-                    <FormItem v-if="hasSubtask">
+                    <FormItem v-if="hasSubtask || addsubForce">
                         <div class="item-label" slot="label">
                             <i class="iconfont">&#xe6f0;</i>{{$L('子任务')}}
                         </div>
-                        <ul class="item-content subtask">
+                        <ul :class="['item-content subtask', taskDetail.sub_task.length === 0 ? 'nosub' : '']">
                             <TaskDetail v-for="(task, key) in taskDetail.sub_task" :key="key" :open-task="task"/>
                             <li>
                                 <Input
@@ -268,11 +297,11 @@
                         </ul>
                     </FormItem>
                 </Form>
-                <div class="add">
+                <div v-if="menuList.length > 0" class="add">
                     <EDropdown
                         trigger="click"
                         placement="bottom"
-                        @command="">
+                        @command="dropAdd">
                         <div class="add-button">
                             <i class="iconfont">&#xe6f2;</i>
                             {{$L('添加')}}
@@ -342,13 +371,22 @@ export default {
             ownerData: {},
             ownerLoad: 0,
 
+            assistForce: false,
             assistShow: false,
             assistData: {},
             assistLoad: 0,
 
+            addsubForce: false,
             addsubShow: false,
             addsubName: "",
             addsubLoad: 0,
+
+            timeForce: false,
+            timeOpen: false,
+            timeValue: [],
+            timeOptions: {
+                shortcuts: []
+            },
 
             nowTime: Math.round(new Date().getTime() / 1000),
             nowInterval: null,
@@ -380,12 +418,6 @@ export default {
                 valid_elements : 'a[href|target=_blank],em,strong/b,div[align],span[style],a,br,img[src|alt|witdh|height],pre[class],code',
                 toolbar: 'uploadImages | uploadFiles | bold italic underline forecolor backcolor | codesample | preview screenload'
             },
-
-            timeOpen: false,
-            timeValue: [],
-            timeOptions: {
-                shortcuts: []
-            },
         }
     },
 
@@ -410,7 +442,7 @@ export default {
             if (!innerHeight) {
                 return {};
             }
-            if (!taskDetail._dialog) {
+            if (!taskDetail.dialog_id) {
                 return {};
             }
             return {
@@ -423,7 +455,7 @@ export default {
             if (!innerHeight) {
                 return {};
             }
-            if (taskDetail._dialog || taskDetail._msgText) {
+            if (taskDetail.dialog_id) {
                 return {
                     minHeight: (innerHeight - 70 - 66 - 30) + 'px'
                 }
@@ -493,16 +525,9 @@ export default {
                     name: '优先级',
                 });
             }
-            if (!($A.isArray(taskDetail.task_user) && taskDetail.task_user.find(({owner}) => owner === 1))) {
-                list.push({
-                    command: 'owner',
-                    icon: '&#xe6e4;',
-                    name: '负责人',
-                });
-            }
             if (!($A.isArray(taskDetail.task_user) && taskDetail.task_user.find(({owner}) => owner !== 1))) {
                 list.push({
-                    command: 'owner',
+                    command: 'assist',
                     icon: '&#xe63f;',
                     name: '协助人员',
                 });
@@ -542,9 +567,14 @@ export default {
         },
         'openTask._show' (v) {
             if (v) {
-                this.$nextTick(this.$refs.input.focus)
+                this.$nextTick(() => {
+                    this.$refs.input.focus()
+                });
             } else {
                 this.timeOpen = false;
+                this.timeForce = false;
+                this.assistForce = false;
+                this.addsubForce = false;
             }
         }
     },
@@ -653,14 +683,17 @@ export default {
         },
 
         dropTask(command) {
-            if (command === 'complete') {
-                this.updateData('complete')
-            }
-            else if (command === 'uncomplete') {
-                this.updateData('uncomplete')
-            }
-            else if (command === 'delete') {
-                this.archivedOrRemoveTask('delete');
+            switch (command) {
+                case 'complete':
+                    this.updateData('complete')
+                    break;
+                case 'uncomplete':
+                    this.updateData('uncomplete')
+                    break;
+                case 'archived':
+                case 'delete':
+                    this.archivedOrRemoveTask(command);
+                    break;
             }
         },
 
@@ -705,10 +738,11 @@ export default {
         },
 
         archivedOrRemoveTask(type) {
+            let typeName = type == 'delete' ? '删除' : '归档';
             let typeTitle = this.taskDetail.parent_id > 0 ? '子任务' : '任务';
             $A.modalConfirm({
-                title: '删除' + typeTitle,
-                content: '你确定要删除' + typeTitle + '【' + this.taskDetail.name + '】吗？',
+                title: typeName + typeTitle,
+                content: '你确定要' + typeName + typeTitle + '【' + this.taskDetail.name + '】吗？',
                 loading: true,
                 onOk: () => {
                     if (this.taskDetail.loading === true) {
@@ -867,7 +901,44 @@ export default {
                 this.addsubLoad--;
                 $A.modalError(msg);
             });
-        }
+        },
+
+        dropAdd(command) {
+            switch (command) {
+                case 'priority':
+                    this.$set(this.taskDetail, 'p_name', this.$L('未设置'));
+                    this.$nextTick(() => {
+                        this.$refs.priority.show();
+                    })
+                    break;
+
+                case 'assist':
+                    this.assistForce = true;
+                    this.openAssist();
+                    this.$nextTick(() => {
+                        this.$refs.assist.handleClick();
+                    });
+                    break;
+
+                case 'times':
+                    this.timeForce = true;
+                    this.$nextTick(() => {
+                        this.$refs.time.click()
+                    })
+                    break;
+
+                case 'file':
+                    this.$refs.upload.handleClick();
+                    break;
+
+                case 'subtask':
+                    this.addsubForce = true;
+                    this.$nextTick(() => {
+                        this.addsubOpen();
+                    });
+                    break;
+            }
+        },
     }
 }
 </script>

@@ -30,7 +30,7 @@
                                     <Icon type="md-radio-button-off" />{{$L('完成')}}
                                 </div>
                             </EDropdownItem>
-                            <EDropdownItem command="archived">
+                            <EDropdownItem v-if="item.parent_id === 0" command="archived">
                                 <div class="item">
                                     <Icon type="ios-filing" />{{$L('归档')}}
                                 </div>
@@ -51,13 +51,13 @@
                         </EDropdownMenu>
                     </EDropdown>
                     <div class="item-title" @click="openTask(item)">{{item.name}}</div>
-                    <div v-if="item.sub_num > 0" class="item-sub-num" @click="getSublist(item)">
-                        <Icon type="md-git-merge" />
-                        {{item.sub_complete}}/{{item.sub_num}}
-                    </div>
                     <div class="item-icons">
                         <div v-if="item.file_num > 0" class="item-icon">{{item.file_num}}<Icon type="ios-link-outline" /></div>
                         <div v-if="item.msg_num > 0" class="item-icon">{{item.msg_num}}<Icon type="ios-chatbubbles-outline" /></div>
+                    </div>
+                    <div v-if="item.sub_num > 0" class="item-sub-num" @click="getSublist(item)">
+                        <Icon type="md-git-merge" />
+                        {{item.sub_complete}}/{{item.sub_num}}
                     </div>
                 </Col>
                 <Col span="3" class="row-column">

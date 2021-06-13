@@ -242,10 +242,21 @@
                             }
                             .subtask-avatar {
                                 height: 26px;
+                                line-height: 26px;
+                                margin-top: -2px;
                                 cursor: pointer;
                             }
                             .ivu-icon-ios-loading {
                                 animation: icon-loading-load 0.6s infinite linear;
+                            }
+                        }
+                    }
+                    &.nosub {
+                        margin-top: 0;
+                        > li {
+                            .add-input,
+                            .add-button {
+                                margin-top: 3px;
                             }
                         }
                     }
@@ -369,7 +380,7 @@
             overflow: auto;
             .head {
                 .menu {
-                    margin-right: 0;
+                    margin: 0 2px;
                 }
             }
         }
@@ -399,7 +410,9 @@
                     padding-left: 0;
                     > p {
                         margin-right: 28px;
+                        cursor: pointer;
                         &.active {
+                            cursor: default;
                             font-size: 18px;
                         }
                     }
