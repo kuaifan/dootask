@@ -791,15 +791,67 @@ class ProjectController extends AbstractController
     }
 
     /**
+     * 添加子任务
+     *
+     * @apiParam {Number} task_id               任务ID
+     * @apiParam {String} name                  任务描述
+     */
+    public function task__addsub()
+    {
+        $user = User::authE();
+        if (Base::isError($user)) {
+            return $user;
+        } else {
+            $user = User::IDE($user['data']);
+        }
+        //
+        $task_id = intval(Request::input('task_id'));
+        $name = Request::input('name');
+        // 任务
+        $task = ProjectTask::whereId($task_id)->first();
+        if (empty($task)) {
+            return Base::retError('任务不存在');
+        }
+        // 项目
+        $project = Project::select($this->projectSelect)
+            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->where('projects.id', $task->project_id)
+            ->where('project_users.userid', $user->userid)
+            ->first();
+        if (empty($project)) {
+            return Base::retError('项目不存在或不在成员列表内');
+        }
+        //
+        $result = ProjectTask::addTask([
+            'name' => $name,
+            'parent_id' => $task->id,
+            'project_id' => $task->project_id,
+            'column_id' => $task->column_id,
+        ]);
+        if (Base::isSuccess($result)) {
+            $result['data'] = [
+                'new_column' => null,
+                'in_top' => 0,
+                'task' => ProjectTask::with(['taskUser', 'taskTag'])->find($result['data']['id']),
+            ];
+        }
+        return $result;
+    }
+
+    /**
      * {post} 修改任务、子任务
      *
      * @apiParam {Number} task_id               任务ID
      * @apiParam {String} [name]                任务描述
-     * @apiParam {String} [color]               任务描述（子任务不支持）
-     * @apiParam {String} [content]             任务详情（子任务不支持）
      * @apiParam {Array} [times]                计划时间（格式：开始时间,结束时间；如：2020-01-01 00:00,2020-01-01 23:59）
      * @apiParam {Number} [owner]               修改负责人
-     * @apiParam {Array} [assist]               修改协助人员
+     * @apiParam {String} [content]             任务详情（子任务不支持）
+     * @apiParam {String} [color]               背景色（子任务不支持）
+     * @apiParam {Array} [assist]               修改协助人员（子任务不支持）
+     *
+     * @apiParam {Number} [p_level]             优先级相关（子任务不支持）
+     * @apiParam {String} [p_name]              优先级相关（子任务不支持）
+     * @apiParam {String} [p_color]             优先级相关（子任务不支持）
      *
      * @apiParam {String|false} [complete_at]   完成时间（如：2020-01-01 00:00，false表示未完成）
      */

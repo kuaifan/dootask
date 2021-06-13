@@ -122,7 +122,7 @@
                                 v-for="item in panelTask(column.project_task)"
                                 :class="['task-item task-draggable', item.complete_at ? 'complete' : '']"
                                 :style="item.color ? {backgroundColor: item.color} : {}"
-                                @click="$store.dispatch('openTask', item.id)">
+                                @click="openTask(item)">
                                 <div :class="['task-head', item.desc ? 'has-desc' : '']">
                                     <div class="task-title"><pre>{{item.name}}</pre></div>
                                     <div class="task-menu" @click.stop="">
@@ -958,6 +958,14 @@ export default {
                 case "exit":
                     this.onExit();
                     break;
+            }
+        },
+
+        openTask(task) {
+            if (task.parent_id > 0) {
+                this.$store.dispatch('openTask', task.parent_id)
+            } else {
+                this.$store.dispatch('openTask', task.id)
             }
         },
 

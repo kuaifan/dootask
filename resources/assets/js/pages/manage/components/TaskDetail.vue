@@ -252,7 +252,16 @@
                         <ul class="item-content subtask">
                             <TaskDetail v-for="(task, key) in taskDetail.sub_task" :key="key" :open-task="task"/>
                             <li>
-                                <div class="add-button" @click="">
+                                <Input
+                                    v-if="addsubShow"
+                                    v-model="addsubName"
+                                    ref="addsub"
+                                    class="add-input"
+                                    :placeholder="$L('+ 输入子任务，回车添加子任务')"
+                                    :icon="addsubLoad > 0 ? 'ios-loading' : ''"
+                                    @on-blur="addsubChackClose"
+                                    @on-keydown="addsubKeydown"/>
+                                <div v-else class="add-button" @click="addsubOpen">
                                     <i class="iconfont">&#xe6f2;</i>{{$L('添加子任务')}}
                                 </div>
                             </li>
@@ -336,6 +345,10 @@ export default {
             assistShow: false,
             assistData: {},
             assistLoad: 0,
+
+            addsubShow: false,
+            addsubName: "",
+            addsubLoad: 0,
 
             nowTime: Math.round(new Date().getTime() / 1000),
             nowInterval: null,
@@ -812,6 +825,49 @@ export default {
             });
             this.timeOpen = false;
         },
+
+        addsubOpen() {
+            this.addsubShow = true;
+            this.$nextTick(() => {
+                this.$refs.addsub.focus()
+            });
+        },
+
+        addsubChackClose() {
+            if (this.addsubName == '') {
+                this.addsubShow = false;
+            }
+        },
+
+        addsubKeydown(e) {
+            if (e.keyCode === 13) {
+                if (e.shiftKey) {
+                    return;
+                }
+                e.preventDefault();
+                this.onAddsub();
+
+            }
+        },
+
+        onAddsub() {
+            if (this.addsubName == '') {
+                $A.messageSuccess('任务描述不能为空');
+                return;
+            }
+            this.addsubLoad++;
+            this.$store.dispatch("taskAddSub", {
+                task_id: this.taskDetail.id,
+                name: this.addsubName,
+            }).then(({msg}) => {
+                this.addsubLoad--;
+                this.addsubName = "";
+                $A.messageSuccess(msg);
+            }).catch(({msg}) => {
+                this.addsubLoad--;
+                $A.modalError(msg);
+            });
+        }
     }
 }
 </script>

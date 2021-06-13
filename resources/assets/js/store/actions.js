@@ -571,6 +571,30 @@ export default {
     },
 
     /**
+     * 添加子任务
+     * @param state
+     * @param dispatch
+     * @param data {task_id, name}
+     * @returns {Promise<unknown>}
+     */
+    taskAddSub({state, dispatch}, data) {
+        return new Promise(function (resolve, reject) {
+            dispatch("call", {
+                url: 'project/task/addsub',
+                data: data,
+            }).then(result => {
+                if (data.task_id == state.projectOpenTask.id) {
+                    state.projectOpenTask.sub_task.push(result.data.task);
+                }
+                dispatch('taskOne', data.task_id);
+                resolve(result)
+            }).catch(result => {
+                reject(result)
+            });
+        });
+    },
+
+    /**
      * 更新任务
      * @param state
      * @param dispatch

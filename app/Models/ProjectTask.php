@@ -334,9 +334,6 @@ class ProjectTask extends AbstractModel
                     $subtask['parent_id'] = $task->id;
                     $subtask['project_id'] = $task->project_id;
                     $subtask['column_id'] = $task->column_id;
-                    $subtask['p_level'] = $task->p_level;
-                    $subtask['p_name'] = $task->p_name;
-                    $subtask['p_color'] = $task->p_color;
                     $result = self::addTask($subtask);
                     if (Base::isError($result)) {
                         return $result;
@@ -384,26 +381,6 @@ class ProjectTask extends AbstractModel
                     ]);
                 }
             }
-            // 协助人员
-            if (Arr::exists($data, 'assist')) {
-                $array = [];
-                $assist = is_array($data['assist']) ? $data['assist'] : [$data['assist']];
-                foreach ($assist as $uid) {
-                    if (intval($uid) == 0) continue;
-                    if (ProjectTaskUser::whereTaskId($this->id)->whereUserid($uid)->whereOwner(1)->exists()) continue;
-                    //
-                    if (!ProjectTaskUser::whereTaskId($this->id)->whereUserid($uid)->where('owner', '!=', 1)->exists()) {
-                        ProjectTaskUser::createInstance([
-                            'project_id' => $this->parent_id,
-                            'task_id' => $this->id,
-                            'userid' => $uid,
-                            'owner' => 0,
-                        ])->save();
-                    }
-                    $array[] = $uid;
-                }
-                ProjectTaskUser::whereTaskId($this->id)->where('owner', '!=', 1)->whereNotIn('userid', $array)->delete();
-            }
             // 计划时间
             if (Arr::exists($data, 'times')) {
                 $this->start_at = null;
@@ -419,6 +396,26 @@ class ProjectTask extends AbstractModel
             }
             // 以下紧顶级任务可修改
             if ($this->parent_id === 0) {
+                // 协助人员
+                if (Arr::exists($data, 'assist')) {
+                    $array = [];
+                    $assist = is_array($data['assist']) ? $data['assist'] : [$data['assist']];
+                    foreach ($assist as $uid) {
+                        if (intval($uid) == 0) continue;
+                        if (ProjectTaskUser::whereTaskId($this->id)->whereUserid($uid)->whereOwner(1)->exists()) continue;
+                        //
+                        if (!ProjectTaskUser::whereTaskId($this->id)->whereUserid($uid)->where('owner', '!=', 1)->exists()) {
+                            ProjectTaskUser::createInstance([
+                                'project_id' => $this->parent_id,
+                                'task_id' => $this->id,
+                                'userid' => $uid,
+                                'owner' => 0,
+                            ])->save();
+                        }
+                        $array[] = $uid;
+                    }
+                    ProjectTaskUser::whereTaskId($this->id)->where('owner', '!=', 1)->whereNotIn('userid', $array)->delete();
+                }
                 // 背景色
                 if (Arr::exists($data, 'color')) {
                     $this->color = $data['color'];

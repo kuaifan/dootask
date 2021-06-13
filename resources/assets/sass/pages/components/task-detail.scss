@@ -170,6 +170,9 @@
                         > li {
                             align-items: flex-start;
                             margin-bottom: 4px;
+                            &:last-child {
+                                margin-bottom: -6px;
+                            }
                             .subtask-icon {
                                 width: 16px;
                                 height: 26px;
@@ -241,12 +244,19 @@
                                 height: 26px;
                                 cursor: pointer;
                             }
+                            .ivu-icon-ios-loading {
+                                animation: icon-loading-load 0.6s infinite linear;
+                            }
                         }
                     }
                 }
             }
             .add {
                 margin-top: 12px;
+                margin-bottom: 10px;
+            }
+            .add-input {
+                margin-top: 6px;
             }
             .add-button {
                 cursor: pointer;
@@ -254,6 +264,7 @@
                 display: flex;
                 align-items: center;
                 margin-top: 6px;
+                height: 32px;
                 > i {
                     font-size: 14px;
                     padding-right: 8px;
@@ -284,7 +295,7 @@
         flex: 1;
         display: flex;
         flex-direction: column;
-        margin-top: 32px;
+        margin-top: 22px;
         position: relative;
         .head {
             display: flex;

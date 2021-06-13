@@ -50,7 +50,7 @@
                             </template>
                         </EDropdownMenu>
                     </EDropdown>
-                    <div class="item-title" @click="$store.dispatch('openTask', item.id)">{{item.name}}</div>
+                    <div class="item-title" @click="openTask(item)">{{item.name}}</div>
                     <div v-if="item.sub_num > 0" class="item-sub-num" @click="getSublist(item)">
                         <Icon type="md-git-merge" />
                         {{item.sub_complete}}/{{item.sub_num}}
@@ -168,6 +168,14 @@ export default {
             });
         },
 
+        openTask(task) {
+            if (task.parent_id > 0) {
+                this.$store.dispatch('openTask', task.parent_id)
+            } else {
+                this.$store.dispatch('openTask', task.id)
+            }
+        },
+
         formatTime(date) {
             let time = Math.round(new Date(date).getTime() / 1000),
                 string = '';
@@ -202,7 +210,7 @@ export default {
             else if (minutes > 0) duration = this.formatBit(minutes) + ":" + this.formatBit(seconds);
             else if (seconds > 0) duration = this.formatBit(seconds) + "s";
             return duration;
-        },
+        }
     }
 }
 </script>
