@@ -110,7 +110,7 @@
                 maxWidth: projectOpenTask._dialog || projectOpenTask._msgText ? '1200px' : '640px'
             }"
             footer-hide>
-            <TaskDetail/>
+            <TaskDetail :open-task="projectOpenTask"/>
         </Modal>
     </div>
 </template>

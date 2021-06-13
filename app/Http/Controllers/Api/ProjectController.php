@@ -7,6 +7,7 @@ use App\Models\Project;
 use App\Models\ProjectColumn;
 use App\Models\ProjectLog;
 use App\Models\ProjectTask;
+use App\Models\ProjectTaskFile;
 use App\Models\ProjectUser;
 use App\Models\User;
 use App\Module\Base;
@@ -723,7 +724,7 @@ class ProjectController extends AbstractController
      * @apiParam {String} name                  任务描述
      * @apiParam {String} [content]             任务详情
      * @apiParam {Array} [times]                计划时间（格式：开始时间,结束时间；如：2020-01-01 00:00,2020-01-01 23:59）
-     * @apiParam {mixed} [owner]                负责人，留空为自己
+     * @apiParam {Number} [owner]               负责人，留空为自己
      * @apiParam {Array} [subtasks]             子任务（格式：[{name,owner,times}]）
      * @apiParam {Number} [top]                 添加的任务排到列表最前面
      */
@@ -750,9 +751,6 @@ class ProjectController extends AbstractController
         // 列表
         $column = null;
         $newColumn = null;
-        if (is_array($column_id)) {
-            $column_id = Base::arrayFirst($column_id);
-        }
         if ($column_id) {
             if (intval($column_id) > 0) {
                 $column = $project->projectColumn->find($column_id);
@@ -760,6 +758,8 @@ class ProjectController extends AbstractController
             if (empty($column)) {
                 $column = ProjectColumn::whereProjectId($project->id)->whereName($column_id)->first();
             }
+        } else {
+            $column = ProjectColumn::whereProjectId($project->id)->orderBy('id')->first();
         }
         if (empty($column)) {
             $column = ProjectColumn::createInstance([
@@ -798,7 +798,8 @@ class ProjectController extends AbstractController
      * @apiParam {String} [color]               任务描述（子任务不支持）
      * @apiParam {String} [content]             任务详情（子任务不支持）
      * @apiParam {Array} [times]                计划时间（格式：开始时间,结束时间；如：2020-01-01 00:00,2020-01-01 23:59）
-     * @apiParam {mixed} [owner]                修改负责人
+     * @apiParam {Number} [owner]               修改负责人
+     * @apiParam {Array} [assist]               修改协助人员
      *
      * @apiParam {String|false} [complete_at]   完成时间（如：2020-01-01 00:00，false表示未完成）
      */
@@ -848,6 +849,76 @@ class ProjectController extends AbstractController
             $result['data'] = $task->toArray();
         }
         return $result;
+    }
+
+    /**
+     * {post} 上传文件
+     *
+     * @apiParam {Number} task_id               任务ID
+     * @apiParam {String} [filename]            post-文件名称
+     * @apiParam {String} [image64]             post-base64图片（二选一）
+     * @apiParam {File} [files]                 post-文件对象（二选一）
+     */
+    public function task__upload()
+    {
+        $user = User::authE();
+        if (Base::isError($user)) {
+            return $user;
+        } else {
+            $user = User::IDE($user['data']);
+        }
+        //
+        $task_id = Base::getPostInt('task_id');
+        // 任务
+        $task = ProjectTask::whereId($task_id)->first();
+        if (empty($task)) {
+            return Base::retError('任务不存在');
+        }
+        // 项目
+        $project = Project::select($this->projectSelect)
+            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->where('projects.id', $task->project_id)
+            ->where('project_users.userid', $user->userid)
+            ->first();
+        if (empty($project)) {
+            return Base::retError('项目不存在或不在成员列表内');
+        }
+        //
+        $path = "uploads/task/" . $task->id . "/";
+        $image64 = Base::getPostValue('image64');
+        $fileName = Base::getPostValue('filename');
+        if ($image64) {
+            $data = Base::image64save([
+                "image64" => $image64,
+                "path" => $path,
+                "fileName" => $fileName,
+            ]);
+        } else {
+            $data = Base::upload([
+                "file" => Request::file('files'),
+                "type" => 'file',
+                "path" => $path,
+                "fileName" => $fileName,
+            ]);
+        }
+        //
+        if (Base::isError($data)) {
+            return Base::retError($data['msg']);
+        } else {
+            $fileData = $data['data'];
+            $file = ProjectTaskFile::createInstance([
+                'project_id' => $task->project_id,
+                'task_id' => $task->id,
+                'name' => $fileData['name'],
+                'size' => $fileData['size'] * 1024,
+                'ext' => $fileData['ext'],
+                'path' => $fileData['path'],
+                'thumb' => Base::unFillUrl($fileData['thumb']),
+                'userid' => $user->userid,
+            ]);
+            $file->save();
+            return Base::retSuccess("上传成功", $file->find($file->id));
+        }
     }
 
     /**

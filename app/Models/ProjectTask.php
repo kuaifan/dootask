@@ -299,10 +299,7 @@ class ProjectTask extends AbstractModel
             }
         }
         // 负责人
-        if (is_array($owner)) {
-            $owner = Base::arrayFirst($owner);
-        }
-        $owner = $owner ?: User::token2userid();
+        $owner = intval($owner) ?: User::token2userid();
         if (!ProjectUser::whereProjectId($project_id)->whereUserid($owner)->exists()) {
             return Base::retError($retPre . '负责人填写错误');
         }
@@ -360,9 +357,6 @@ class ProjectTask extends AbstractModel
     public function updateTask($data)
     {
         return AbstractModel::transaction(function () use ($data) {
-            $content    = $data['content'];
-            $times      = $data['times'];
-            $owner      = $data['owner'];
             // 标题
             if (Arr::exists($data, 'name')) {
                 if (empty($data['name'])) {
@@ -373,25 +367,48 @@ class ProjectTask extends AbstractModel
                 $this->name = $data['name'];
             }
             // 负责人
-            if ($owner) {
-                if (is_array($owner)) {
-                    $owner = Base::arrayFirst($owner);
-                }
-                $ownerUser = ProjectTaskUser::whereTaskId($this->id)->whereOwner(1)->first();
-                if ($ownerUser->userid != $owner) {
-                    $ownerUser->owner = 0;
-                    $ownerUser->save();
+            if (Arr::exists($data, 'owner')) {
+                $row = ProjectTaskUser::whereTaskId($this->id)->whereOwner(1)->first();
+                if ($row->userid != $data['owner']) {
+                    if (!User::find(intval($data['owner']))) {
+                        return Base::retError('请选择正确的负责人');
+                    }
+                    $row->owner = 0;
+                    $row->save();
                     ProjectTaskUser::updateInsert([
                         'project_id' => $this->parent_id,
                         'task_id' => $this->id,
-                        'userid' => $owner,
+                        'userid' => $data['owner'],
                     ], [
                         'owner' => 1,
                     ]);
                 }
             }
+            // 协助人员
+            if (Arr::exists($data, 'assist')) {
+                $array = [];
+                $assist = is_array($data['assist']) ? $data['assist'] : [$data['assist']];
+                foreach ($assist as $uid) {
+                    if (intval($uid) == 0) continue;
+                    if (ProjectTaskUser::whereTaskId($this->id)->whereUserid($uid)->whereOwner(1)->exists()) continue;
+                    //
+                    if (!ProjectTaskUser::whereTaskId($this->id)->whereUserid($uid)->where('owner', '!=', 1)->exists()) {
+                        ProjectTaskUser::createInstance([
+                            'project_id' => $this->parent_id,
+                            'task_id' => $this->id,
+                            'userid' => $uid,
+                            'owner' => 0,
+                        ])->save();
+                    }
+                    $array[] = $uid;
+                }
+                ProjectTaskUser::whereTaskId($this->id)->where('owner', '!=', 1)->whereNotIn('userid', $array)->delete();
+            }
             // 计划时间
-            if ($times) {
+            if (Arr::exists($data, 'times')) {
+                $this->start_at = null;
+                $this->end_at = null;
+                $times = $data['times'];
                 list($start, $end) = is_string($times) ? explode(",", $times) : (is_array($times) ? $times : []);
                 if (Base::isDate($start) && Base::isDate($end)) {
                     if ($start != $end) {
@@ -407,14 +424,14 @@ class ProjectTask extends AbstractModel
                     $this->color = $data['color'];
                 }
                 // 内容
-                if ($content && $this->parent_id === 0) {
+                if (Arr::exists($data, 'content')) {
                     ProjectTaskContent::updateInsert([
                         'project_id' => $this->parent_id,
                         'task_id' => $this->id,
                     ], [
-                        'content' => $content,
+                        'content' => $data['content'],
                     ]);
-                    $this->desc = Base::getHtml($content);
+                    $this->desc = Base::getHtml($data['content']);
                 }
                 // 优先级
                 if (Arr::exists($data, 'p_level')) {
@@ -428,6 +445,8 @@ class ProjectTask extends AbstractModel
                 }
             }
             $this->save();
+            if ($this->start_at instanceof \DateTimeInterface) $this->start_at = $this->start_at->format('Y-m-d H:i:s');
+            if ($this->end_at instanceof \DateTimeInterface) $this->end_at = $this->end_at->format('Y-m-d H:i:s');
             return Base::retSuccess('修改成功');
         });
     }

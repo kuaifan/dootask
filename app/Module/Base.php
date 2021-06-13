@@ -2487,6 +2487,50 @@ class Base
     }
 
     /**
+     * 获取后缀名图标相对地址
+     * @param $ext
+     * @return string
+     */
+    public static function extIcon($ext)
+    {
+        $value = 'images/ext/file.png';
+        switch ($ext) {
+            case "docx":
+                $value = 'images/ext/doc.png';
+                break;
+            case "xlsx":
+                $value = 'images/ext/xls.png';
+                break;
+            case "pptx":
+                $value = 'images/ext/ppt.png';
+                break;
+            case "ai":
+            case "avi":
+            case "bmp":
+            case "cdr":
+            case "doc":
+            case "eps":
+            case "gif":
+            case "mov":
+            case "mp3":
+            case "mp4":
+            case "pdf":
+            case "ppt":
+            case "pr":
+            case "psd":
+            case "rar":
+            case "svg":
+            case "tif":
+            case "txt":
+            case "xls":
+            case "zip":
+                $value = 'images/ext/' . $ext . '.png';
+                break;
+        }
+        return $value;
+    }
+
+    /**
      * 排列组合（无重复）
      * @param $arr
      * @param $m

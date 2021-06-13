@@ -247,43 +247,8 @@ class DialogController extends AbstractController
         if (Base::isError($data)) {
             return Base::retError($data['msg']);
         } else {
-            $fileData = $data['data'];
-            $fileData['thumb'] = $fileData['thumb'] ?: 'images/ext/file.png';
-            switch ($fileData['ext']) {
-                case "docx":
-                    $fileData['thumb'] = 'images/ext/doc.png';
-                    break;
-                case "xlsx":
-                    $fileData['thumb'] = 'images/ext/xls.png';
-                    break;
-                case "pptx":
-                    $fileData['thumb'] = 'images/ext/ppt.png';
-                    break;
-                case "ai":
-                case "avi":
-                case "bmp":
-                case "cdr":
-                case "doc":
-                case "eps":
-                case "gif":
-                case "mov":
-                case "mp3":
-                case "mp4":
-                case "pdf":
-                case "ppt":
-                case "pr":
-                case "psd":
-                case "rar":
-                case "svg":
-                case "tif":
-                case "txt":
-                case "xls":
-                case "zip":
-                    $fileData['thumb'] = 'images/ext/' . $fileData['ext'] . '.png';
-                    break;
-            }
-            //
-            $msg = $fileData;
+            $msg = $data['data'];
+            $msg['thumb'] = Base::unFillUrl($msg['thumb']);
             $msg['size'] *= 1024;
             //
             return WebSocketDialogMsg::sendMsg($dialog_id, 'file', $msg, $user->userid, $extra_int, $extra_str);

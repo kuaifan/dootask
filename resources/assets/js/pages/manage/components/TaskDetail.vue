@@ -1,5 +1,90 @@
 <template>
-    <div :class="{'task-detail':true, 'open-dialog': taskDetail._dialog || taskDetail._msgText, 'completed': taskDetail.complete_at}">
+    <!--子任务-->
+    <li v-if="taskDetail.parent_id > 0">
+        <div class="subtask-icon">
+            <div v-if="taskDetail.loading === true" class="loading"><Loading /></div>
+            <EDropdown
+                v-else
+                trigger="click"
+                placement="bottom"
+                size="small"
+                @command="dropTask">
+                <div>
+                    <Icon v-if="taskDetail.complete_at" class="completed" type="md-checkmark-circle" />
+                    <Icon v-else type="md-radio-button-off" />
+                </div>
+                <EDropdownMenu slot="dropdown" class="project-list-more-dropdown-menu">
+                    <EDropdownItem v-if="taskDetail.complete_at" command="uncomplete">
+                        <div class="item red">
+                            <Icon type="md-checkmark-circle-outline" />{{$L('标记未完成')}}
+                        </div>
+                    </EDropdownItem>
+                    <EDropdownItem v-else command="complete">
+                        <div class="item">
+                            <Icon type="md-radio-button-off" />{{$L('完成')}}
+                        </div>
+                    </EDropdownItem>
+                    <EDropdownItem command="delete">
+                        <div class="item">
+                            <Icon type="md-trash" />{{$L('删除')}}
+                        </div>
+                    </EDropdownItem>
+                </EDropdownMenu>
+            </EDropdown>
+        </div>
+        <div class="subtask-name">
+            <Input
+                v-model="taskDetail.name"
+                type="textarea"
+                :rows="1"
+                :autosize="{ minRows: 1, maxRows: 8 }"
+                :maxlength="255"
+                @on-blur="updateData('name')"
+                @on-keydown="onNameKeydown"/>
+        </div>
+        <DatePicker
+            v-model="timeValue"
+            :open="timeOpen"
+            :options="timeOptions"
+            format="yyyy-MM-dd HH:mm"
+            type="datetimerange"
+            class="subtask-time"
+            @on-open-change="timeChange"
+            @on-clear="timeClear"
+            @on-ok="timeOk"
+            transfer>
+            <div
+                @click="openTime"
+                :class="['time', taskDetail.today ? 'today' : '', taskDetail.overdue ? 'overdue' : '']">
+                {{taskDetail.end_at ? expiresFormat(taskDetail.end_at) : '--'}}
+            </div>
+        </DatePicker>
+        <Poptip
+            ref="owner"
+            class="subtask-avatar"
+            :title="$L('修改负责人')"
+            :width="240"
+            placement="bottom"
+            @on-popper-show="openOwner"
+            @on-popper-hide="ownerShow=false"
+            @on-ok="onOwner"
+            transfer>
+            <div slot="content">
+                <UserInput
+                    v-if="ownerShow"
+                    v-model="ownerData.owner_userid"
+                    :multiple-max="1"
+                    :placeholder="$L('选择任务负责人')"/>
+                <div class="task-detail-avatar-buttons">
+                    <Button size="small" type="primary" @click="$refs.owner.ok()">{{$L('确定')}}</Button>
+                </div>
+            </div>
+            <UserAvatar v-if="getOwner" :userid="getOwner.userid" :size="20" hide-icon-menu/>
+            <div v-else>--</div>
+        </Poptip>
+    </li>
+    <!--主任务-->
+    <div v-else v-show="taskDetail.id > 0" :class="{'task-detail':true, 'open-dialog': taskDetail._dialog || taskDetail._msgText, 'completed': taskDetail.complete_at}">
         <div class="task-info">
             <div class="head">
                 <Icon v-if="taskDetail.complete_at" class="icon completed" type="md-checkmark-circle" @click="updateData('uncomplete')"/>
@@ -19,7 +104,8 @@
                         :rows="1"
                         :autosize="{ minRows: 1, maxRows: 8 }"
                         :maxlength="255"
-                        @on-blur="updateData('name')"/>
+                        @on-blur="updateData('name')"
+                        @on-keydown="onNameKeydown"/>
                 </div>
                 <div class="desc">
                     <TEditor
@@ -40,7 +126,7 @@
                             <li>
                                 <EDropdown
                                     trigger="click"
-                                    placement="bottom-start"
+                                    placement="bottom"
                                     @command="updateData('priority', $event)">
                                     <TaskPriority :backgroundColor="taskDetail.p_color">{{taskDetail.p_name}}</TaskPriority>
                                     <EDropdownMenu slot="dropdown">
@@ -56,28 +142,89 @@
                             </li>
                         </ul>
                     </FormItem>
-                    <FormItem v-if="getOwner()">
+                    <FormItem>
                         <div class="item-label" slot="label">
                             <i class="iconfont">&#xe6e4;</i>{{$L('负责人')}}
                         </div>
-                        <ul class="item-content user">
-                            <li @click="openTransfer"><UserAvatar :userid="getOwner().userid" :size="28"/></li>
-                        </ul>
+                        <Poptip
+                            ref="owner"
+                            :title="$L('修改负责人')"
+                            :width="240"
+                            class="item-content user"
+                            placement="bottom"
+                            @on-popper-show="openOwner"
+                            @on-popper-hide="ownerShow=false"
+                            @on-ok="onOwner"
+                            transfer>
+                            <div slot="content">
+                                <UserInput
+                                    v-if="ownerShow"
+                                    v-model="ownerData.owner_userid"
+                                    :multiple-max="1"
+                                    :placeholder="$L('选择任务负责人')"/>
+                                <div class="task-detail-avatar-buttons">
+                                    <Button size="small" type="primary" @click="$refs.owner.ok()">{{$L('确定')}}</Button>
+                                </div>
+                            </div>
+                            <div v-if="getOwner" class="user-list">
+                                <UserAvatar :userid="getOwner.userid" :size="28" hide-icon-menu/>
+                            </div>
+                            <div v-else>--</div>
+                        </Poptip>
                     </FormItem>
                     <FormItem v-if="getAssist.length > 0">
                         <div class="item-label" slot="label">
                             <i class="iconfont">&#xe63f;</i>{{$L('协助人员')}}
                         </div>
-                        <ul class="item-content user">
-                            <li v-for="item in getAssist" @click="openAssist"><UserAvatar :userid="item.userid" :size="28"/></li>
-                        </ul>
+                        <Poptip
+                            ref="assist"
+                            :title="$L('修改协助人员')"
+                            :width="280"
+                            class="item-content user"
+                            placement="bottom"
+                            @on-popper-show="openAssist"
+                            @on-popper-hide="assistShow=false"
+                            @on-ok="onAssist"
+                            transfer>
+                            <div slot="content">
+                                <UserInput
+                                    v-if="assistShow"
+                                    v-model="assistData.assist_userid"
+                                    :multiple-max="10"
+                                    :disabled-choice="assistData.disabled"
+                                    :placeholder="$L('选择任务协助人员')"/>
+                                <div class="task-detail-avatar-buttons">
+                                    <Button size="small" type="primary" @click="$refs.assist.ok()">{{$L('确定')}}</Button>
+                                </div>
+                            </div>
+                            <div class="user-list">
+                                <UserAvatar v-for="item in getAssist" :key="item.userid" :userid="item.userid" :size="28" hide-icon-menu/>
+                            </div>
+                        </Poptip>
                     </FormItem>
                     <FormItem v-if="taskDetail.end_at">
                         <div class="item-label" slot="label">
                             <i class="iconfont">&#xe6e8;</i>{{$L('截止时间')}}
                         </div>
                         <ul class="item-content">
-                            <li>{{taskDetail.end_at}}</li>
+                            <li>
+                                <DatePicker
+                                    v-model="timeValue"
+                                    :open="timeOpen"
+                                    :options="timeOptions"
+                                    format="yyyy-MM-dd HH:mm"
+                                    type="datetimerange"
+                                    @on-open-change="timeChange"
+                                    @on-clear="timeClear"
+                                    @on-ok="timeOk"
+                                    transfer>
+                                    <div class="picker-time">
+                                        <div @click="openTime" class="time">{{cutTime}}</div>
+                                        <Tag v-if="!taskDetail.complete_at && taskDetail.today" color="blue"><Icon type="ios-time-outline"/>{{expiresFormat(taskDetail.end_at)}}</Tag>
+                                        <Tag v-if="!taskDetail.complete_at && taskDetail.overdue" color="red">{{$L('超期未完成')}}</Tag>
+                                    </div>
+                                </DatePicker>
+                            </li>
                         </ul>
                     </FormItem>
                     <FormItem v-if="hasFile">
@@ -86,12 +233,13 @@
                         </div>
                         <ul class="item-content file">
                             <li v-for="file in taskDetail.files">
-                                <img class="file-ext" :src="file.thumb"/>
+                                <img v-if="file.id" class="file-ext" :src="file.thumb"/>
+                                <Loading v-else class="file-load"/>
                                 <div class="file-name">{{file.name}}</div>
                                 <div class="file-size">{{$A.bytesToSize(file.size)}}</div>
                             </li>
                             <li>
-                                <div class="add-button">
+                                <div class="add-button" @click="$refs.upload.handleClick()">
                                     <i class="iconfont">&#xe6f2;</i>{{$L('添加附件')}}
                                 </div>
                             </li>
@@ -102,27 +250,9 @@
                             <i class="iconfont">&#xe6f0;</i>{{$L('子任务')}}
                         </div>
                         <ul class="item-content subtask">
-                            <li v-for="task in taskDetail.sub_task">
-                                <Icon class="subtask-icon" type="md-radio-button-off" />
-                                <div class="subtask-name">
-                                    <Input
-                                        v-model="task.name"
-                                        type="textarea"
-                                        :rows="1"
-                                        :autosize="{ minRows: 1, maxRows: 8 }"
-                                        :maxlength="255"/>
-                                </div>
-                                <div
-                                    v-if="task.end_at"
-                                    :class="['subtask-time-avatar', task.today ? 'today' : '', task.overdue ? 'overdue' : '']">{{expiresFormat(task.end_at)}}</div>
-                                <UserAvatar
-                                    v-if="getOwner(task)"
-                                    class="subtask-avatar"
-                                    :userid="getOwner(task).userid"
-                                    :size="20"/>
-                            </li>
+                            <TaskDetail v-for="(task, key) in taskDetail.sub_task" :key="key" :open-task="task"/>
                             <li>
-                                <div class="add-button">
+                                <div class="add-button" @click="">
                                     <i class="iconfont">&#xe6f2;</i>{{$L('添加子任务')}}
                                 </div>
                             </li>
@@ -132,7 +262,7 @@
                 <div class="add">
                     <EDropdown
                         trigger="click"
-                        placement="bottom-start"
+                        placement="bottom"
                         @command="">
                         <div class="add-button">
                             <i class="iconfont">&#xe6f2;</i>
@@ -149,6 +279,7 @@
                     </EDropdown>
                 </div>
             </div>
+            <TaskUpload ref="upload" class="upload"/>
         </div>
         <div class="task-dialog" >
             <div class="head">
@@ -173,47 +304,6 @@
                 </div>
             </div>
         </div>
-
-        <!--修改负责人-->
-        <Modal
-            v-model="transferShow"
-            :title="$L('修改负责人')"
-            :mask-closable="false">
-            <Form ref="addProject" :model="transferData" label-width="auto" @submit.native.prevent>
-                <FormItem prop="owner_userid" :label="$L('任务负责人')">
-                    <UserInput
-                        v-if="transferShow"
-                        v-model="transferData.owner_userid"
-                        :multiple-max="1"
-                        :placeholder="$L('选择任务负责人')"/>
-                </FormItem>
-            </Form>
-            <div slot="footer">
-                <Button type="default" @click="transferShow=false">{{$L('取消')}}</Button>
-                <Button type="primary" :loading="transferLoad > 0" @click="onTransfer">{{$L('提交')}}</Button>
-            </div>
-        </Modal>
-
-        <!--修改协助人员-->
-        <Modal
-            v-model="assistShow"
-            :title="$L('修改协助人员')"
-            :mask-closable="false">
-            <Form ref="addProject" :model="assistData" label-width="auto" @submit.native.prevent>
-                <FormItem prop="owner_userid" :label="$L('协助人员')">
-                    <UserInput
-                        v-if="assistShow"
-                        v-model="assistData.assist_userid"
-                        :multiple-max="1"
-                        :disabled-choice="assistData.disabled"
-                        :placeholder="$L('选择任务协助人员')"/>
-                </FormItem>
-            </Form>
-            <div slot="footer">
-                <Button type="default" @click="assistShow=false">{{$L('取消')}}</Button>
-                <Button type="primary" :loading="assistLoad > 0" @click="onAssist">{{$L('提交')}}</Button>
-            </div>
-        </Modal>
     </div>
 </template>
 
@@ -222,17 +312,26 @@ import {mapState} from "vuex";
 import TEditor from "../../../components/TEditor";
 import TaskPriority from "./TaskPriority";
 import UserInput from "../../../components/UserInput";
+import TaskUpload from "./TaskUpload";
 
 export default {
     name: "TaskDetail",
-    components: {UserInput, TaskPriority, TEditor},
+    components: {TaskUpload, UserInput, TaskPriority, TEditor},
+    props: {
+        openTask: {
+            type: Object,
+            default: () => {
+                return {};
+            }
+        },
+    },
     data() {
         return {
             taskDetail: {},
 
-            transferShow: false,
-            transferData: {},
-            transferLoad: 0,
+            ownerShow: false,
+            ownerData: {},
+            ownerLoad: 0,
 
             assistShow: false,
             assistData: {},
@@ -268,6 +367,12 @@ export default {
                 valid_elements : 'a[href|target=_blank],em,strong/b,div[align],span[style],a,br,img[src|alt|witdh|height],pre[class],code',
                 toolbar: 'uploadImages | uploadFiles | bold italic underline forecolor backcolor | codesample | preview screenload'
             },
+
+            timeOpen: false,
+            timeValue: [],
+            timeOptions: {
+                shortcuts: []
+            },
         }
     },
 
@@ -285,7 +390,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'projectOpenTask', 'taskPriority']),
+        ...mapState(['userId', 'taskPriority']),
 
         scrollerStyle() {
             const {innerHeight, taskDetail} = this;
@@ -327,6 +432,18 @@ export default {
             }
         },
 
+        cutTime() {
+            const {nowTime, taskDetail} = this;
+            let string = "";
+            let start_at = Math.round(new Date(taskDetail.start_at).getTime() / 1000);
+            if (start_at > nowTime) {
+                string = $A.formatDate('Y/m/d H:i', start_at) + " ~ "
+            }
+            let end_at = Math.round(new Date(taskDetail.end_at).getTime() / 1000);
+            string+= $A.formatDate('Y/m/d H:i', end_at);
+            return string;
+        },
+
         hasFile() {
             const {taskDetail} = this;
             return $A.isArray(taskDetail.files) && taskDetail.files.length > 0;
@@ -338,15 +455,11 @@ export default {
         },
 
         getOwner() {
-            return function (task) {
-                if (task === undefined) {
-                    task = this.taskDetail;
-                }
-                if (!$A.isArray(task.task_user)) {
-                    return null;
-                }
-                return task.task_user.find(({owner}) => owner === 1);
+            const {taskDetail} = this;
+            if (!$A.isArray(taskDetail.task_user)) {
+                return null;
             }
+            return taskDetail.task_user.find(({owner}) => owner === 1);
         },
 
         getAssist() {
@@ -407,13 +520,75 @@ export default {
     },
 
     watch: {
-        projectOpenTask(data) {
-            this.taskDetail = $A.cloneJSON(data);
-            if (data._show) this.$nextTick(this.$refs.input.focus)
+        openTask: {
+            handler(data) {
+                this.taskDetail = $A.cloneJSON(data);
+            },
+            immediate: true,
+            deep: true
         },
+        'openTask._show' (v) {
+            if (v) {
+                this.$nextTick(this.$refs.input.focus)
+            } else {
+                this.timeOpen = false;
+            }
+        }
     },
 
     methods: {
+        initLanguage() {
+            const lastSecond = (e) => {
+                return new Date($A.formatDate("Y-m-d 23:59:29", Math.round(e / 1000)))
+            };
+            this.timeOptions = {
+                shortcuts: [{
+                    text: this.$L('今天'),
+                    value() {
+                        return [new Date(), lastSecond(new Date().getTime())];
+                    }
+                }, {
+                    text: this.$L('明天'),
+                    value() {
+                        let e = new Date();
+                        e.setDate(e.getDate() + 1);
+                        return [new Date(), lastSecond(e.getTime())];
+                    }
+                }, {
+                    text: this.$L('本周'),
+                    value() {
+                        return [$A.getData('今天', true), lastSecond($A.getData('本周结束2', true))];
+                    }
+                }, {
+                    text: this.$L('本月'),
+                    value() {
+                        return [$A.getData('今天', true), lastSecond($A.getData('本月结束', true))];
+                    }
+                }, {
+                    text: this.$L('3天'),
+                    value() {
+                        let e = new Date();
+                        e.setDate(e.getDate() + 3);
+                        return [new Date(), lastSecond(e.getTime())];
+                    }
+                }, {
+                    text: this.$L('5天'),
+                    value() {
+                        let e = new Date();
+                        e.setDate(e.getDate() + 5);
+                        return [new Date(), lastSecond(e.getTime())];
+                    }
+                }, {
+                    text: this.$L('7天'),
+                    value() {
+                        let e = new Date();
+                        e.setDate(e.getDate() + 7);
+                        return [new Date(), lastSecond(e.getTime())];
+                    }
+                }]
+            };
+        },
+
         innerHeightListener() {
             this.innerHeight = window.innerHeight;
         },
@@ -454,6 +629,28 @@ export default {
             return duration;
         },
 
+        onNameKeydown(e) {
+            if (e.keyCode === 13) {
+                if (e.shiftKey) {
+                    return;
+                }
+                e.preventDefault();
+                this.updateData('name');
+            }
+        },
+
+        dropTask(command) {
+            if (command === 'complete') {
+                this.updateData('complete')
+            }
+            else if (command === 'uncomplete') {
+                this.updateData('uncomplete')
+            }
+            else if (command === 'delete') {
+                this.archivedOrRemoveTask('delete');
+            }
+        },
+
         updateData(action, params) {
             switch (action) {
                 case 'complete':
@@ -470,46 +667,77 @@ export default {
                     this.$set(this.taskDetail, 'p_color', params.color)
                     action = ['p_level', 'p_name', 'p_color'];
                     break;
+                case 'times':
+                    this.$set(this.taskDetail, 'times', [params.start_at, params.end_at])
+                    break;
             }
             //
             let dataJson = {task_id: this.taskDetail.id};
             ($A.isArray(action) ? action : [action]).forEach(key => {
                 let newData = this.taskDetail[key];
-                let originalData = this.projectOpenTask[key];
+                let originalData = this.openTask[key];
                 if ($A.jsonStringify(newData) != $A.jsonStringify(originalData)) {
                     dataJson[key] = newData;
                 }
             })
             if (Object.keys(dataJson).length <= 1) return;
             //
-            this.$store.dispatch("taskUpdate", dataJson).then(() => {
+            this.$store.dispatch("taskUpdate", dataJson).then(({msg}) => {
                 // 更新成功
-            }).catch(() => {
+                $A.messageSuccess(msg);
+            }).catch(({msg}) => {
                 // 更新失败
+                $A.modalError(msg);
             })
         },
 
-        openTransfer() {
-            this.$set(this.taskDetail, 'owner_userid', [this.getOwner().userid])
-            this.$set(this.transferData, 'owner_userid', [this.getOwner().userid]);
-            this.transferShow = true;
+        archivedOrRemoveTask(type) {
+            let typeTitle = this.taskDetail.parent_id > 0 ? '子任务' : '任务';
+            $A.modalConfirm({
+                title: '删除' + typeTitle,
+                content: '你确定要删除' + typeTitle + '【' + this.taskDetail.name + '】吗？',
+                loading: true,
+                onOk: () => {
+                    if (this.taskDetail.loading === true) {
+                        return;
+                    }
+                    this.$set(this.taskDetail, 'loading', true);
+                    this.$store.dispatch("taskArchivedOrRemove", {
+                        task_id: this.taskDetail.id,
+                        type: type,
+                    }).then(({msg}) => {
+                        this.$Modal.remove();
+                        $A.messageSuccess(msg);
+                    }).catch(({msg}) => {
+                        this.$Modal.remove();
+                        $A.modalError(msg, 301);
+                    });
+                }
+            });
         },
 
-        onTransfer() {
-            if ($A.jsonStringify(this.taskDetail.owner_userid) === $A.jsonStringify(this.transferData.owner_userid)) {
+        openOwner() {
+            this.$set(this.taskDetail, 'owner_userid', [this.getOwner.userid])
+            this.$set(this.ownerData, 'owner_userid', [this.getOwner.userid]);
+            this.ownerShow = true;
+        },
+
+        onOwner() {
+            if ($A.jsonStringify(this.taskDetail.owner_userid) === $A.jsonStringify(this.ownerData.owner_userid)) {
                 return;
             }
-            this.transferLoad++;
+            this.ownerLoad++;
             this.$store.dispatch("taskUpdate", {
                 task_id: this.taskDetail.id,
-                owner: this.transferData.owner_userid
-            }).then(() => {
-                this.transferLoad--;
-                this.transferShow = false;
+                owner: this.ownerData.owner_userid
+            }).then(({msg}) => {
+                this.ownerLoad--;
+                this.ownerShow = false;
                 this.$store.dispatch("taskOne", this.taskDetail.id);
+                $A.messageSuccess(msg);
             }).catch(({msg}) => {
-                this.transferLoad--;
-                this.transferShow = false;
+                this.ownerLoad--;
+                this.ownerShow = false;
                 $A.modalError(msg);
             })
         },
@@ -518,7 +746,7 @@ export default {
             const list = this.getAssist.map(({userid}) => userid)
             this.$set(this.taskDetail, 'assist_userid', list)
             this.$set(this.assistData, 'assist_userid', list);
-            this.$set(this.assistData, 'disabled', [this.getOwner().userid]);
+            this.$set(this.assistData, 'disabled', [this.getOwner.userid]);
             this.assistShow = true;
         },
 
@@ -532,16 +760,58 @@ export default {
             this.$store.dispatch("taskUpdate", {
                 task_id: this.taskDetail.id,
                 assist,
-            }).then(() => {
+            }).then(({msg}) => {
                 this.assistLoad--;
                 this.assistShow = false;
                 this.$store.dispatch("taskOne", this.taskDetail.id);
+                $A.messageSuccess(msg);
             }).catch(({msg}) => {
                 this.assistLoad--;
                 this.assistShow = false;
                 $A.modalError(msg);
             })
-        }
+        },
+
+        openTime() {
+            this.timeOpen = !this.timeOpen;
+            if (this.timeOpen) {
+                this.timeValue = this.taskDetail.end_at ? [this.taskDetail.start_at, this.taskDetail.end_at] : [];
+            }
+        },
+
+        timeChange(open) {
+            if (!open) {
+                this.timeOpen = false;
+            }
+        },
+
+        timeClear() {
+            $A.modalConfirm({
+                content: '你确定要取消任务时间吗？',
+                cancelText: '不是',
+                onOk: () => {
+                    this.updateData('times', {
+                        start_at: false,
+                        end_at: false,
+                    });
+                    this.timeOpen = false;
+                }
+            });
+        },
+
+        timeOk() {
+            let times = $A.date2string(this.timeValue, "Y-m-d H:i");
+            if (times[0] && times[1]) {
+                if ($A.rightExists(times[0], '00:00') && $A.rightExists(times[1], '00:00')) {
+                    times[1] = times[1].replace("00:00", "23:59");
+                }
+            }
+            this.updateData('times', {
+                start_at: times[0],
+                end_at: times[1],
+            });
+            this.timeOpen = false;
+        },
     }
 }
 </script>

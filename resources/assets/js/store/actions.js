@@ -389,6 +389,11 @@ export default {
         });
         if (data.id == state.projectOpenTask.id) {
             state.projectOpenTask = Object.assign({}, state.projectOpenTask, data);
+        } else if (data.parent_id == state.projectOpenTask.id) {
+            let index = state.projectOpenTask.sub_task.findIndex(({id}) => id === data.id);
+            if (index > -1) {
+                state.projectOpenTask.sub_task.splice(index, 1, Object.assign(state.projectOpenTask.sub_task[index], data))
+            }
         }
     },
 
@@ -522,28 +527,77 @@ export default {
     },
 
     /**
-     * 更新任务
+     * 添加任务
+     * @param state
      * @param dispatch
      * @param data
      * @returns {Promise<unknown>}
      */
-    taskUpdate({dispatch}, data) {
+    taskAdd({state, dispatch}, data) {
         return new Promise(function (resolve, reject) {
+            const post = state.method.cloneJSON(data);
+            if (state.method.isArray(post.column_id)) {
+                post.column_id = post.column_id.find((val) => val)
+            }
+            if (state.method.isArray(post.owner)) {
+                post.owner = post.owner.find((val) => val)
+            }
+            //
+            dispatch("call", {
+                url: 'project/task/add',
+                data: post,
+                method: 'post',
+            }).then(result => {
+                const {task, in_top, new_column} = result.data;
+                if (state.projectDetail.id == task.project_id) {
+                    if (new_column) {
+                        state.projectDetail.project_column.push(new_column);
+                    }
+                    const column = state.projectDetail.project_column.find(({id}) => id === task.column_id);
+                    if (column) {
+                        if (in_top) {
+                            column.project_task.unshift(task);
+                        } else {
+                            column.project_task.push(task);
+                        }
+                    }
+                }
+                dispatch('projectOne', task.project_id);
+                resolve(result)
+            }).catch(result => {
+                reject(result)
+            });
+        });
+    },
+
+    /**
+     * 更新任务
+     * @param state
+     * @param dispatch
+     * @param data
+     * @returns {Promise<unknown>}
+     */
+    taskUpdate({state, dispatch}, data) {
+        return new Promise(function (resolve, reject) {
+            const post = state.method.cloneJSON(data);
+            if (state.method.isArray(post.owner)) {
+                post.owner = post.owner.find((id) => id)
+            }
             dispatch("call", {
                 url: 'project/task/update',
-                data: data,
+                data: post,
                 method: 'post',
             }).then(result => {
                 if (result.data.parent_id) {
                     dispatch('taskOne', result.data.parent_id);
                 }
-                if (typeof data.complete_at !== "undefined") {
+                if (typeof post.complete_at !== "undefined") {
                     dispatch('projectOne', result.data.project_id);
                 }
                 dispatch("taskData", result.data);
                 resolve(result)
             }).catch(result => {
-                dispatch('taskOne', data.task_id);
+                dispatch('taskOne', post.task_id);
                 reject(result)
             });
         });
@@ -553,7 +607,7 @@ export default {
      * 删除或归档任务
      * @param state
      * @param dispatch
-     * @param data
+     * @param data {task_id, type}
      * @returns {Promise<unknown>}
      */
     taskArchivedOrRemove({state, dispatch}, data) {
@@ -565,14 +619,23 @@ export default {
                     task_id,
                 },
             }).then(result => {
-                const column = state.projectDetail.project_column.find(({id}) => id === result.data.column_id);
+                const {data} = result;
+                const column = state.projectDetail.project_column.find(({id}) => id === data.column_id);
                 if (column) {
-                    let index = column.project_task.findIndex(({id}) => id === result.data.id);
+                    let index = column.project_task.findIndex(({id}) => id === data.id);
                     if (index > -1) {
                         column.project_task.splice(index, 1);
                     }
                 }
-                dispatch('projectDetail', result.data.project_id);
+                if (data.id == state.projectOpenTask.id) {
+                    state.projectOpenTask = Object.assign({}, state.projectOpenTask, {_show: false});
+                } else if (data.parent_id == state.projectOpenTask.id) {
+                    let index = state.projectOpenTask.sub_task.findIndex(({id}) => id === data.id);
+                    if (index > -1) {
+                        state.projectOpenTask.sub_task.splice(index, 1)
+                    }
+                }
+                dispatch('projectDetail', data.project_id);
                 resolve(result);
             }).catch(result => {
                 reject(result)

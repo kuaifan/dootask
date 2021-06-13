@@ -7,7 +7,7 @@
         <div v-else-if="msgData.type === 'loading'" class="dialog-content loading"><Loading/></div>
         <!--文件-->
         <div v-else-if="msgData.type === 'file'" :class="['dialog-content', msgData.msg.type]">
-            <a :href="msgData.msg.url" target="_blank">
+            <a :href="msgData.msg.path" target="_blank">
                 <img v-if="msgData.msg.type === 'img'" class="file-img" :style="imageStyle(msgData.msg)" :src="msgData.msg.thumb"/>
                 <div v-else class="file-box">
                     <img class="file-thumb" :src="msgData.msg.thumb"/>

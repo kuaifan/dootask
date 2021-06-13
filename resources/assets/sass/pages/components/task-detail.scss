@@ -109,18 +109,49 @@
                         line-height: 26px;
                         .el-dropdown {
                             display: flex;
+                            cursor: pointer;
+                        }
+                        .picker-time {
+                            display: flex;
+                            align-items: center;
+                            line-height: 26px;
+                            .time {
+                                cursor: pointer;
+                            }
+                            .ivu-tag {
+                                margin-left: 10px;
+                                padding: 0 4px;
+                                height: 20px;
+                                line-height: 18px;
+                                .ivu-tag-text {
+                                    display: flex;
+                                    align-items: center;
+                                    > i {
+                                        padding-right: 2px;
+                                    }
+                                }
+                            }
                         }
                     }
                     &.user {
-                        margin-top: 0;
-                        > li {
-                            display: inline-block;
-                            cursor: pointer;
+                        margin-top: 1px;
+                        cursor: pointer;
+                        .user-list {
+                            > div {
+                                display: inline-block;
+                                margin-right: 6px;
+                            }
                         }
                     }
                     &.file {
                         > li {
                             margin-bottom: 2px;
+                            .file-load {
+                                margin: 0;
+                                padding: 2px;
+                                width: 16px;
+                                height: 16px;
+                            }
                             .file-ext {
                                 width: 16px;
                             }
@@ -138,17 +169,25 @@
                     &.subtask {
                         > li {
                             align-items: flex-start;
-                            margin-bottom: 2px;
+                            margin-bottom: 4px;
                             .subtask-icon {
                                 width: 16px;
                                 height: 26px;
                                 line-height: 26px;
-                                font-size: 16px;
-                                color: #cccccc;
-                                margin-right: 8px;
+                                margin-right: 6px;
                                 cursor: pointer;
-                                &.completed {
-                                    color: #87d068;
+                                .loading {
+                                    width: 16px;
+                                    height: 16px;
+                                    margin: 0;
+                                    padding: 2px;
+                                }
+                                .ivu-icon {
+                                    font-size: 16px;
+                                    color: #cccccc;
+                                    &.completed {
+                                        color: #87d068;
+                                    }
                                 }
                                 &.sub-icon {
                                     font-size: 16px;
@@ -168,7 +207,7 @@
                                 margin-right: 16px;
                                 display: flex;
                                 .ivu-input {
-                                    margin: -1px 0;
+                                    margin: -2px 0;
                                     padding: 4px 0;
                                     resize: none;
                                     border-color: transparent;
@@ -179,31 +218,28 @@
                                 }
                             }
                             .subtask-time {
-                                overflow: hidden;
-                                text-overflow: ellipsis;
-                                white-space: nowrap;
-                                margin-right: 6px;
-                                font-size: 13px;
-                                height: 26px;
-                                line-height: 26px;
-                                &.overdue {
-                                    font-weight: 600;
-                                    color: #ed4014;
-                                }
-                                &.today {
-                                    font-weight: 500;
-                                    color: #ff9900;
+                                margin-right: 8px;
+                                .time {
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                    white-space: nowrap;
+                                    font-size: 13px;
+                                    height: 26px;
+                                    line-height: 26px;
+                                    cursor: pointer;
+                                    &.overdue {
+                                        font-weight: 600;
+                                        color: #ed4014;
+                                    }
+                                    &.today {
+                                        font-weight: 500;
+                                        color: #ff9900;
+                                    }
                                 }
                             }
                             .subtask-avatar {
                                 height: 26px;
-                                line-height: 1;
-                                .avatar-box {
-                                    > em {
-                                        right: -2px;
-                                        bottom: -1px;
-                                    }
-                                }
+                                cursor: pointer;
                             }
                         }
                     }
@@ -239,6 +275,9 @@
                     color: #999999;
                 }
             }
+        }
+        .upload {
+            display: none;
         }
     }
     .task-dialog {
@@ -388,4 +427,15 @@
     }
 }
 
-
+.task-detail-avatar-buttons {
+    margin-top: 12px;
+    margin-bottom: 4px;
+    text-align: right;
+    position: absolute;
+    top: 5px;
+    right: 14px;
+    > button {
+        font-size: 12px;
+        transform: scale(0.9);
+    }
+}

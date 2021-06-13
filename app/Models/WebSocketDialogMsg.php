@@ -79,8 +79,8 @@ class WebSocketDialogMsg extends AbstractModel
         $value = Base::json2array($value);
         if ($this->type === 'file') {
             $value['type'] = in_array($value['ext'], ['jpg', 'jpeg', 'png', 'gif']) ? 'img' : 'file';
-            $value['url'] = Base::fillUrl($value['path']);
-            $value['thumb'] = Base::fillUrl($value['thumb']);
+            $value['path'] = Base::fillUrl($value['path']);
+            $value['thumb'] = Base::fillUrl($value['thumb'] ?: Base::extIcon($value['ext']));
         }
         return $value;
     }

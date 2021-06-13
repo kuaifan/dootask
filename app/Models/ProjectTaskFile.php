@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Module\Base;
+
 /**
  * Class ProjectTaskFile
  *
@@ -37,5 +39,23 @@ namespace App\Models;
  */
 class ProjectTaskFile extends AbstractModel
 {
+    /**
+     * 地址
+     * @param $value
+     * @return string
+     */
+    public function getPathAttribute($value)
+    {
+        return Base::fillUrl($value);
+    }
 
+    /**
+     * 缩略图
+     * @param $value
+     * @return string
+     */
+    public function getThumbAttribute($value)
+    {
+        return Base::fillUrl($value ?: Base::extIcon($this->ext));
+    }
 }

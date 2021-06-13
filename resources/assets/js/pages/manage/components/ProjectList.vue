@@ -107,7 +107,6 @@
                                 :add-top="true"
                                 @on-close="column.addTopShow=false"
                                 @on-priority="addTaskOpen"
-                                @on-success="addTaskSuccess"
                                 auto-active/>
                         </div>
                         <Draggable
@@ -195,8 +194,7 @@
                                 <TaskAddSimple
                                     :column-id="column.id"
                                     :project-id="projectDetail.id"
-                                    @on-priority="addTaskOpen"
-                                    @on-success="addTaskSuccess"/>
+                                    @on-priority="addTaskOpen"/>
                             </div>
                         </Draggable>
                     </div>
@@ -589,13 +587,8 @@ export default {
 
         onAddTask() {
             this.taskLoad++;
-            this.$store.dispatch("call", {
-                url: 'project/task/add',
-                data: this.addData,
-                method: 'post',
-            }).then(({data, msg}) => {
+            this.$store.dispatch("taskAdd", this.addData).then(({msg}) => {
                 this.taskLoad--;
-                $A.messageSuccess(msg);
                 this.addShow = false;
                 this.addData = {
                     owner: 0,
@@ -606,8 +599,7 @@ export default {
                     p_name: '',
                     p_color: '',
                 };
-                this.$store.dispatch('projectOne', data.project_id);
-                this.addTaskSuccess(data)
+                $A.messageSuccess(msg);
             }).catch(({msg}) => {
                 this.taskLoad--;
                 $A.modalError(msg);
@@ -628,21 +620,6 @@ export default {
                 this.$set(this.addData, 'project_id', this.projectDetail.id);
             }
             this.addShow = true;
-        },
-
-        addTaskSuccess(data) {
-            const {task, in_top, new_column} = data;
-            if (new_column) {
-                this.projectDetail.project_column.push(new_column)
-            }
-            const column = this.projectDetail.project_column.find(({id}) => id === task.column_id);
-            if (column) {
-                if (in_top) {
-                    column.project_task.unshift(task);
-                } else {
-                    column.project_task.push(task);
-                }
-            }
         },
 
         addColumnOpen() {

@@ -151,13 +151,8 @@ export default {
                 return;
             }
             this.loadIng++;
-            this.$store.dispatch("call", {
-                url: 'project/task/add',
-                data: this.getData(),
-                method: 'post',
-            }).then(({data, msg}) => {
+            this.$store.dispatch("taskAdd", this.getData()).then(({msg}) => {
                 this.loadIng--;
-                $A.messageSuccess(msg);
                 this.active = false;
                 this.addData = {
                     owner: 0,
@@ -168,8 +163,7 @@ export default {
                     p_name: '',
                     p_color: '',
                 }
-                this.$store.dispatch('projectOne', data.project_id);
-                this.$emit("on-success", data)
+                $A.messageSuccess(msg);
             }).catch(({msg}) => {
                 this.loadIng--;
                 $A.modalError(msg);
