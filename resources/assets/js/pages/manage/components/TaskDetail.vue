@@ -444,7 +444,6 @@ export default {
     },
 
     mounted() {
-        this.$store.dispatch('getTaskPriority');
         this.nowInterval = setInterval(() => {
             this.nowTime = Math.round(new Date().getTime() / 1000);
         }, 1000);

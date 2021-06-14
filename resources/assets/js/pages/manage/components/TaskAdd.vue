@@ -159,13 +159,6 @@ export default {
             },
         }
     },
-    mounted() {
-        this.$store.dispatch('getTaskPriority').then(() => {
-            if (!this.value.p_name && this.taskPriority.length > 0) {
-                this.choosePriority(this.taskPriority[0])
-            }
-        })
-    },
     computed: {
         ...mapState(['userId', 'projectDetail', 'taskPriority']),
     },
@@ -259,6 +252,15 @@ export default {
             this.$set(this.value, 'p_level', item.priority)
             this.$set(this.value, 'p_name', item.name)
             this.$set(this.value, 'p_color', item.color)
+        },
+        defaultPriority() {
+            if (this.taskPriority.length === 0) {
+                return;
+            }
+            if (this.value.p_name) {
+                return;
+            }
+            this.choosePriority(this.taskPriority[0]);
         }
     }
 }

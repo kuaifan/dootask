@@ -162,6 +162,7 @@ export default {
 
     mounted() {
         this.$store.dispatch("getUserInfo");
+        this.$store.dispatch("getTaskPriority");
     },
 
     deactivated() {

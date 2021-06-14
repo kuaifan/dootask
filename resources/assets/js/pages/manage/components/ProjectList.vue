@@ -293,7 +293,7 @@
                 maxWidth: '640px'
             }"
             :mask-closable="false">
-            <TaskAdd v-model="addData"/>
+            <TaskAdd ref="add" v-model="addData"/>
             <div slot="footer">
                 <Button type="default" @click="addShow=false">{{$L('取消')}}</Button>
                 <Button type="primary" :loading="taskLoad > 0" @click="onAddTask">{{$L('添加')}}</Button>
@@ -619,6 +619,7 @@ export default {
                 this.$set(this.addData, 'column_id', column_id);
                 this.$set(this.addData, 'project_id', this.projectDetail.id);
             }
+            this.$refs.add.defaultPriority();
             this.addShow = true;
         },
 

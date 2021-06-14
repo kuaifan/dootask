@@ -105,18 +105,8 @@ export default {
 
         openAdd() {
             this.active = true;
+            this.defaultPriority();
             this.$nextTick(() => {
-                if (this.taskPriority.length === 0) {
-                    this.$store.dispatch('getTaskPriority').then(() => {
-                        if (!this.addData.p_name && this.taskPriority.length > 0) {
-                            this.choosePriority(this.taskPriority[0])
-                        }
-                    });
-                } else {
-                    if (!this.addData.p_name && this.taskPriority.length > 0) {
-                        this.choosePriority(this.taskPriority[0])
-                    }
-                }
                 this.$refs.input.focus();
             });
         },
@@ -178,6 +168,16 @@ export default {
             this.$set(this.addData, 'p_name', item.name)
             this.$set(this.addData, 'p_color', item.color)
             this.$refs.input.focus()
+        },
+
+        defaultPriority() {
+            if (this.taskPriority.length === 0) {
+                return;
+            }
+            if (this.addData.p_name) {
+                return;
+            }
+            this.choosePriority(this.taskPriority[0]);
         }
     }
 }
