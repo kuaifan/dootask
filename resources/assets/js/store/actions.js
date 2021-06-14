@@ -510,26 +510,25 @@ export default {
         if (state.projectChatShow) {
             dispatch("toggleBoolean", "projectChatShow");
         }
-        state.dialogId = 0;
         //
-        let data = {id: task_id};
+        let data = state.method.isJson(task_id) ? task_id : {id: task_id};
         state.projectDetail.project_column.some(({project_task}) => {
-            const task = project_task.find(({id}) => id === task_id);
+            const task = project_task.find(({id}) => id === data.id);
             if (task) {
                 data = Object.assign(data, task);
                 return true
             }
         });
         //
-        data.content = state.projectTaskContent[task_id] || ""
-        data.files = state.projectTaskFiles[task_id] || []
-        data.sub_task = state.projectSubTask[task_id] || []
+        data.content = state.projectTaskContent[data.id] || ""
+        data.files = state.projectTaskFiles[data.id] || []
+        data.sub_task = state.projectSubTask[data.id] || []
         //
         state.projectOpenTask = Object.assign({}, data, {_show: true});
-        dispatch("getTaskOne", task_id);
-        dispatch("getTaskContent", task_id);
-        dispatch("getTaskFiles", task_id);
-        dispatch("getSubTask", task_id);
+        dispatch("getTaskOne", data.id);
+        dispatch("getTaskContent", data.id);
+        dispatch("getTaskFiles", data.id);
+        dispatch("getSubTask", data.id);
     },
 
     /**

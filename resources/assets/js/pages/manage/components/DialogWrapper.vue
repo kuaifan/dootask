@@ -6,8 +6,18 @@
         @dragleave.prevent="chatDragOver(false, $event)">
         <slot name="head">
             <div class="dialog-title">
-                <h2>{{dialogDetail.name}}</h2>
-                <em v-if="peopleNum > 0">({{peopleNum}})</em>
+                <div class="main-title">
+                    <h2>{{dialogDetail.name}}</h2>
+                    <em v-if="peopleNum > 0">({{peopleNum}})</em>
+                </div>
+                <template v-if="dialogDetail.type === 'group'">
+                    <div v-if="dialogDetail.group_type === 'project'" class="sub-title pointer" @click="openProject">
+                        {{$L('项目聊天室')}} {{$L('打开项目管理')}}
+                    </div>
+                    <div v-else-if="dialogDetail.group_type === 'task'" class="sub-title pointer" @click="openTask">
+                        {{$L('任务聊天室')}} {{$L('查看任务详情')}}
+                    </div>
+                </template>
             </div>
         </slot>
         <ScrollerY
@@ -266,6 +276,23 @@ export default {
                 string = $A.formatDate('Y-m-d', time)
             }
             return string || '';
+        },
+
+        openProject() {
+            if (!this.dialogDetail.group_info) {
+                return;
+            }
+            this.goForward({path: '/manage/project/' + this.dialogDetail.group_info.id});
+        },
+
+        openTask() {
+            if (!this.dialogDetail.group_info) {
+                return;
+            }
+            this.$store.dispatch("openTask", {
+                id: this.dialogDetail.group_info.id,
+                dialog_id: this.dialogDetail.id
+            });
         },
     }
 }

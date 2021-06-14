@@ -10,25 +10,53 @@
     z-index: 1;
     .dialog-title {
         display: flex;
-        align-items: center;
-        padding: 0 32px;
-        margin-top: 20px;
-        > h2 {
-            font-size: 18px;
-            font-weight: 600;
+        flex-direction: column;
+        justify-content: center;
+        padding: 0 30px;
+        height: 68px;
+        position: relative;
+        &:after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 1px;
+            background-color: #f2f2f2;
         }
-        > em {
-            font-style: normal;
-            font-size: 17px;
-            font-weight: 500;
-            padding-left: 6px;
+        .main-title {
+            display: flex;
+            align-items: center;
+            line-height: 22px;
+            > h2 {
+                font-size: 18px;
+                font-weight: 600;
+            }
+            > em {
+                font-style: normal;
+                font-size: 17px;
+                font-weight: 500;
+                padding-left: 6px;
+            }
+        }
+        .sub-title {
+            flex-shrink: 0;
+            font-size: 12px;
+            line-height: 20px;
+            margin-top: 2px;
+            color: #aaaaaa;
+            &.pointer {
+                cursor: pointer;
+                &:hover {
+                    color: #888888;
+                }
+            }
         }
     }
     .dialog-scroller {
         position: relative;
         flex: 1;
         padding: 0 32px;
-        margin-top: 18px;
         overflow: auto;
         .dialog-list {
             > ul {
@@ -38,6 +66,9 @@
                     align-items: flex-end;
                     list-style: none;
                     margin-bottom: 16px;
+                    &:first-child {
+                        margin-top: 16px;
+                    }
                     .dialog-avatar {
                         position: relative;
                         margin-bottom: 20px;

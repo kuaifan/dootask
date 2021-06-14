@@ -49,14 +49,13 @@
                 </div>
             </div>
 
-            <div class="messenger-msg">
-                <DialogWrapper v-if="dialogId > 0" @on-focus="scrollIntoActive"/>
+            <div class="messenger-msg" @click="scrollIntoActive">
+                <DialogWrapper v-if="dialogId > 0"/>
                 <div v-else class="dialog-no">
                     <div class="dialog-no-icon"><Icon type="ios-chatbubbles" /></div>
                     <div class="dialog-no-text">{{$L('选择一个会话开始聊天')}}</div>
                 </div>
             </div>
-
         </div>
     </div>
 </template>
@@ -140,6 +139,7 @@ export default {
         openContacts(user) {
             this.$store.dispatch("openDialogUserid", user.userid);
             this.tabActive = 'dialog';
+            this.scrollIntoActive();
         },
 
         getContactsList() {
@@ -219,7 +219,7 @@ export default {
                     let active = this.$refs.list.querySelector(".active")
                     if (active) {
                         scrollIntoView(active, {
-                            behavior: 'smooth',
+                            behavior: 'instant',
                             scrollMode: 'if-needed',
                         });
                     }

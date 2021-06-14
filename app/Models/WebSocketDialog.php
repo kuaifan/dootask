@@ -52,6 +52,7 @@ class WebSocketDialog extends AbstractModel
         $dialog->people = $builder->count();
         // 对方信息
         $dialog->dialog_user = null;
+        $dialog->group_info = null;
         switch ($dialog->type) {
             case "user":
                 $dialog_user = $builder->where('userid', '!=', $userid)->first();
@@ -60,9 +61,11 @@ class WebSocketDialog extends AbstractModel
                 break;
             case "group":
                 if ($dialog->group_type === 'project') {
-                    $dialog->name = Project::whereDialogId($dialog->id)->value('name');
+                    $dialog->group_info = Project::select(['id', 'name'])->whereDialogId($dialog->id)->first();
+                    $dialog->name = $dialog->group_info ? $dialog->group_info->name : '';
                 } elseif ($dialog->group_type === 'task') {
-                    $dialog->name = ProjectTask::whereDialogId($dialog->id)->value('name');
+                    $dialog->group_info = ProjectTask::select(['id', 'name'])->whereDialogId($dialog->id)->first();
+                    $dialog->name = $dialog->group_info ? $dialog->group_info->name : '';
                 }
                 break;
         }
