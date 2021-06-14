@@ -54,7 +54,7 @@
                     position: relative;
                     margin-left: 16px;
                     cursor: pointer;
-                    transition: all 0.3s;
+                    transition: box-shadow 0.3s;
                     &:hover {
                         box-shadow: 0 0 6px #cccccc;
                     }

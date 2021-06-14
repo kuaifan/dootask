@@ -51,7 +51,7 @@
                         </EDropdownMenu>
                     </EDropdown>
                     <div class="item-title" @click="openTask(item)">{{item.name}}</div>
-                    <div class="item-icons">
+                    <div class="item-icons" @click="openTask(item)">
                         <div v-if="item.file_num > 0" class="item-icon">{{item.file_num}}<Icon type="ios-link-outline" /></div>
                         <div v-if="item.msg_num > 0" class="item-icon">{{item.msg_num}}<Icon type="ios-chatbubbles-outline" /></div>
                     </div>

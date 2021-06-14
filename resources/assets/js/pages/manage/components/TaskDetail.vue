@@ -267,7 +267,7 @@
                             <li v-for="file in taskDetail.files">
                                 <img v-if="file.id" class="file-ext" :src="file.thumb"/>
                                 <Loading v-else class="file-load"/>
-                                <div class="file-name">{{file.name}}</div>
+                                <a class="file-name" :href="file.path||'javascript:;'" target="_blank">{{file.name}}</a>
                                 <div class="file-size">{{$A.bytesToSize(file.size)}}</div>
                             </li>
                         </ul>
@@ -583,14 +583,14 @@ export default {
         openTask: {
             handler(data) {
                 this.taskDetail = $A.cloneJSON(data);
-                this.$store.dispatch("getDialogMsgList", this.taskDetail.dialog_id);
             },
             immediate: true,
             deep: true
         },
-        'openTask._show' (v) {
-            if (v) {
+        'openTask._show' (show) {
+            if (show) {
                 this.$nextTick(() => {
+                    this.$store.dispatch("getDialogMsgList", this.taskDetail.dialog_id)
                     this.$refs.input.focus()
                 });
             } else {

@@ -507,10 +507,6 @@ export default {
      * @param task_id
      */
     openTask({state, dispatch}, task_id) {
-        if (state.projectChatShow) {
-            dispatch("toggleBoolean", "projectChatShow");
-        }
-        //
         let data = state.method.isJson(task_id) ? task_id : {id: task_id};
         state.projectDetail.project_column.some(({project_task}) => {
             const task = project_task.find(({id}) => id === data.id);

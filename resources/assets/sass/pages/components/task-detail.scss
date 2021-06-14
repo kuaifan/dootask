@@ -157,10 +157,14 @@
                                 width: 16px;
                             }
                             .file-name {
+                                color: #515a6e;
                                 padding-left: 8px;
                                 overflow: hidden;
                                 text-overflow: ellipsis;
                                 white-space: nowrap;
+                                &:hover {
+                                    color: #2d8cf0;
+                                }
                             }
                             .file-size {
                                 flex-shrink: 0;

@@ -8,6 +8,12 @@
                         <Input prefix="ios-search" v-model="dialogKey" :placeholder="$L('搜索...')" clearable />
                     </div>
                 </div>
+                <div v-if="tabActive==='dialog'" class="messenger-nav">
+                    <p :class="{active:dialogType==''}" @click="dialogType=''">{{$L('全部')}}</p>
+                    <p :class="{active:dialogType=='project'}" @click="dialogType='project'">{{$L('项目')}}</p>
+                    <p :class="{active:dialogType=='task'}" @click="dialogType='task'">{{$L('任务')}}</p>
+                    <p :class="{active:dialogType=='user'}" @click="dialogType='user'">{{$L('个人')}}</p>
+                </div>
                 <div ref="list" class="messenger-list overlay-y">
                     <ul v-if="tabActive==='dialog'" class="dialog">
                         <li
@@ -15,7 +21,11 @@
                             :key="key"
                             :class="{active: dialog.id == dialogId}"
                             @click="openDialog(dialog, true)">
-                            <Icon v-if="dialog.type=='group'" class="icon-avatar" type="ios-people" />
+                            <template v-if="dialog.type=='group'">
+                                <Icon v-if="dialog.group_type=='project'" class="icon-avatar project" type="logo-buffer" />
+                                <Icon v-else-if="dialog.group_type=='task'" class="icon-avatar task" type="md-checkbox-outline" />
+                                <Icon v-else class="icon-avatar" type="ios-people" />
+                            </template>
                             <div v-else-if="dialog.dialog_user" class="user-avatar"><UserAvatar :userid="dialog.dialog_user.userid" :size="46" hide-icon-menu/></div>
                             <Icon v-else class="icon-avatar" type="md-person" />
                             <div class="dialog-box">
@@ -72,6 +82,7 @@ export default {
 
             dialogLoad: 0,
             dialogKey: '',
+            dialogType: '',
 
             contactsLoad: 0,
             contactsLists: null,
@@ -97,18 +108,36 @@ export default {
         ...mapState(['userId', 'dialogId', 'dialogList']),
 
         dialogLists() {
-            const {dialogKey} = this;
-            if (dialogKey == '') {
+            const {dialogType, dialogKey} = this;
+            if (dialogType == '' && dialogKey == '') {
                 return this.dialogList;
             }
-            return this.dialogList.filter(({name, last_msg}) => {
-                if ($A.strExists(name, dialogKey)) {
-                    return true;
+            return this.dialogList.filter(({name, type, group_type, last_msg}) => {
+                if (dialogType) {
+                    switch (dialogType) {
+                        case 'project':
+                        case 'task':
+                            if (group_type != dialogType) {
+                                return false;
+                            }
+                            break;
+                        case 'user':
+                            if (type != 'user') {
+                                return false;
+                            }
+                            break;
+                        default:
+                            return false;
+                    }
                 }
-                if (last_msg && last_msg.type === 'text' && $A.strExists(last_msg.msg.text, dialogKey)) {
-                    return true;
+                if (dialogKey) {
+                    let existName = $A.strExists(name, dialogKey);
+                    let existMsg = last_msg && last_msg.type === 'text' && $A.strExists(last_msg.msg.text, dialogKey);
+                    if (!existName && !existMsg) {
+                        return false;
+                    }
                 }
-                return false;
+                return true;
             })
         },
     },
@@ -223,6 +252,20 @@ export default {
                             behavior: smooth === true ? 'smooth' : 'instant',
                             scrollMode: 'if-needed',
                         });
+                    } else {
+                        let dialog = this.dialogList.find(({id}) => id == this.dialogId)
+                        if (dialog && this.dialogType) {
+                            this.dialogType = '';
+                            this.$nextTick(() => {
+                                let active = this.$refs.list.querySelector(".active")
+                                if (active) {
+                                    scrollIntoView(active, {
+                                        behavior: smooth === true ? 'smooth' : 'instant',
+                                        scrollMode: 'if-needed',
+                                    });
+                                }
+                            });
+                        }
                     }
                 }
             })

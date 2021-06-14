@@ -169,13 +169,26 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'userInfo', 'dialogMsgUnread', 'projectList', 'projectOpenTask']),
+        ...mapState(['userId', 'userInfo', 'dialogMsgUnread', 'projectList', 'projectOpenTask', 'projectChatShow']),
     },
 
     watch: {
         '$route' (route) {
             this.curPath = route.path;
         },
+        'projectOpenTask._show' (show) {
+            if (show) {
+                if (this.projectChatShow) {
+                    this._projectChatShow = true;
+                    this.$store.dispatch("toggleBoolean", "projectChatShow");
+                }
+            } else {
+                if (this._projectChatShow) {
+                    this._projectChatShow = false;
+                    this.$store.dispatch("toggleBoolean", "projectChatShow");
+                }
+            }
+        }
     },
 
     methods: {

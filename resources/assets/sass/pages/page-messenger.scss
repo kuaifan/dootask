@@ -46,6 +46,25 @@
                     }
                 }
             }
+            .messenger-nav {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 2px 0 12px;
+                > p {
+                    line-height: 1;
+                    padding: 0 16px;
+                    color: #888888;
+                    cursor: pointer;
+                    &.active {
+                        color: #555555;
+                        font-weight: 500;
+                    }
+                    &:hover {
+                        color: #777777;
+                    }
+                }
+            }
             .messenger-list {
                 flex: 1;
                 height: 0;
@@ -91,6 +110,13 @@
                                 font-size: 26px;
                                 background-color: #61B2F9;
                                 color: #ffffff;
+                                &.project {
+                                    background-color: #7274E3;
+                                }
+                                &.task {
+                                    background-color: #4EA3F4;
+                                    font-size: 24px;
+                                }
                             }
                             .dialog-box {
                                 flex: 1;
