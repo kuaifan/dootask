@@ -24,6 +24,11 @@
                             <Icon type="md-radio-button-off" />{{$L('完成')}}
                         </div>
                     </EDropdownItem>
+                    <EDropdownItem command="times">
+                        <div class="item">
+                            <Icon type="md-time" />{{$L('时间')}}
+                        </div>
+                    </EDropdownItem>
                     <EDropdownItem command="delete">
                         <div class="item">
                             <Icon type="md-trash" />{{$L('删除')}}
@@ -53,10 +58,8 @@
             @on-clear="timeClear"
             @on-ok="timeOk"
             transfer>
-            <div
-                @click="openTime"
-                :class="['time', taskDetail.today ? 'today' : '', taskDetail.overdue ? 'overdue' : '']">
-                {{taskDetail.end_at ? expiresFormat(taskDetail.end_at) : '--'}}
+            <div @click="openTime" :class="['time', taskDetail.today ? 'today' : '', taskDetail.overdue ? 'overdue' : '']">
+                {{taskDetail.end_at ? expiresFormat(taskDetail.end_at) : ' '}}
             </div>
         </DatePicker>
         <Poptip
@@ -248,7 +251,7 @@
                                     @on-ok="timeOk"
                                     transfer>
                                     <div class="picker-time">
-                                        <div ref="time" @click="openTime" class="time">{{taskDetail.end_at ? cutTime : '--'}}</div>
+                                        <div @click="openTime" class="time">{{taskDetail.end_at ? cutTime : '--'}}</div>
                                         <Tag v-if="!taskDetail.complete_at && taskDetail.today" color="blue"><Icon type="ios-time-outline"/>{{expiresFormat(taskDetail.end_at)}}</Tag>
                                         <Tag v-if="!taskDetail.complete_at && taskDetail.overdue" color="red">{{$L('超期未完成')}}</Tag>
                                     </div>
@@ -710,6 +713,9 @@ export default {
                 case 'uncomplete':
                     this.updateData('uncomplete')
                     break;
+                case 'times':
+                    this.openTime()
+                    break;
                 case 'archived':
                 case 'delete':
                     this.archivedOrRemoveTask(command);
@@ -943,7 +949,7 @@ export default {
                 case 'times':
                     this.timeForce = true;
                     this.$nextTick(() => {
-                        this.$refs.time.click()
+                        this.openTime()
                     })
                     break;
 
