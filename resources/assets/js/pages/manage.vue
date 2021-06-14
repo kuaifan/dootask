@@ -161,7 +161,7 @@ export default {
     },
 
     mounted() {
-        this.$store.dispatch('userInfo');
+        this.$store.dispatch("getUserInfo");
     },
 
     deactivated() {
@@ -274,16 +274,16 @@ export default {
                         url: 'project/add',
                         data: this.addData,
                     }).then(({data, msg}) => {
-                        this.loadIng--;
                         $A.messageSuccess(msg);
+                        this.loadIng--;
                         this.addShow = false;
                         this.$refs.addProject.resetFields();
                         this.$set(this.addData, 'template', 0);
-                        this.$store.dispatch('saveProject', data);
+                        this.$store.dispatch("saveProject", data);
                         this.toggleRoute('project/' + data.id)
                     }).catch(({msg}) => {
-                        this.loadIng--;
                         $A.modalError(msg);
+                        this.loadIng--;
                     });
                 }
             });

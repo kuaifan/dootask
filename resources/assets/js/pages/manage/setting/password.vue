@@ -83,13 +83,13 @@ export default {
                         url: 'users/editpass',
                         data: this.formDatum,
                     }).then(({data}) => {
-                        this.loadIng--;
                         $A.messageSuccess('修改成功');
-                        this.$store.dispatch('saveUserInfo', data);
+                        this.loadIng--;
+                        this.$store.dispatch("saveUserInfo", data);
                         this.$refs.formDatum.resetFields();
                     }).catch(({msg}) => {
-                        this.loadIng--;
                         $A.modalError(msg);
+                        this.loadIng--;
                     });
                 }
             })

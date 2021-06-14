@@ -137,12 +137,12 @@ export default {
      * @param dispatch
      * @returns {Promise<unknown>}
      */
-    userInfo({dispatch}) {
+    getUserInfo({dispatch}) {
         return new Promise(function (resolve, reject) {
             dispatch("call", {
                 url: 'users/info',
             }).then(result => {
-                dispatch('saveUserInfo', result.data);
+                dispatch("saveUserInfo", result.data);
                 resolve(result)
             }).catch(result => {
                 dispatch("logout");
@@ -168,8 +168,8 @@ export default {
             state.userToken = userInfo.token;
             state.userIsAdmin = state.method.inArray('admin', userInfo.identity);
             state.method.setStorage('userInfo', state.userInfo);
-            dispatch('projectList');
-            dispatch('dialogMsgUnread');
+            dispatch('getProjectList');
+            dispatch('getDialogMsgUnread');
             dispatch('websocketConnection');
             resolve()
         });
@@ -193,7 +193,7 @@ export default {
      * @param dispatch
      * @param params {userid, success, complete}
      */
-    userBasic({state, dispatch}, params) {
+    getUserBasic({state, dispatch}, params) {
         if (!state.method.isJson(params)) {
             return;
         }
@@ -220,7 +220,7 @@ export default {
         //
         if (state.cacheUserBasic["::load"] === true) {
             setTimeout(() => {
-                dispatch('userBasic', params);
+                dispatch("getUserBasic", params);
             }, 20);
             return;
         }
@@ -239,7 +239,7 @@ export default {
                     data: item
                 };
                 state.method.setStorage("cacheUserBasic", state.cacheUserBasic);
-                dispatch('saveUserOnlineStatus', item);
+                dispatch("saveUserOnlineStatus", item);
                 typeof success === "function" && success(item, true)
             });
         }).catch(result => {
@@ -254,82 +254,9 @@ export default {
      * @param dispatch
      */
     logout({dispatch}) {
-        dispatch('saveUserInfo', {}).then(() => {
+        dispatch("saveUserInfo", {}).then(() => {
             const from = window.location.pathname == '/' ? '' : encodeURIComponent(window.location.href);
             $A.goForward({path: '/login', query: from ? {from: from} : {}}, true);
-        });
-    },
-
-    /**
-     * 获取项目列表
-     * @param state
-     * @param dispatch
-     */
-    projectList({state, dispatch}) {
-        if (state.userId === 0) {
-            state.projectList = [];
-            return;
-        }
-        if (state.cacheProjectList.length > 0) {
-            state.projectList = state.cacheProjectList;
-        }
-        dispatch("call", {
-            url: 'project/lists',
-        }).then(result => {
-            dispatch('saveProject', result.data.data);
-        }).catch(result => {
-            $A.modalError(result.msg);
-        });
-    },
-
-    /**
-     * 获取项目信息
-     * @param state
-     * @param dispatch
-     * @param project_id
-     */
-    projectOne({state, dispatch}, project_id) {
-        if (state.method.runNum(project_id) === 0) {
-            return;
-        }
-        dispatch("call", {
-            url: 'project/one',
-            data: {
-                project_id: project_id,
-            },
-        }).then(result => {
-            dispatch('saveProject', result.data);
-        });
-    },
-
-    /**
-     * 获取项目详情
-     * @param state
-     * @param dispatch
-     * @param project_id
-     */
-    projectDetail({state, dispatch}, project_id) {
-        if (state.method.runNum(project_id) === 0) {
-            return;
-        }
-        const project = state.cacheProjectList.find(({id}) => id == project_id);
-        if (project) {
-            state.projectDetail = Object.assign({project_column: [], project_user: []}, project);
-        }
-        state.projectDetail.id = project_id;
-        //
-        state.projectLoad++;
-        dispatch("call", {
-            url: 'project/detail',
-            data: {
-                project_id: project_id,
-            },
-        }).then(result => {
-            state.projectLoad--;
-            dispatch('saveProject', result.data);
-        }).catch(result => {
-            state.projectLoad--;
-            $A.modalError(result.msg);
         });
     },
 
@@ -362,6 +289,79 @@ export default {
     },
 
     /**
+     * 获取项目列表
+     * @param state
+     * @param dispatch
+     */
+    getProjectList({state, dispatch}) {
+        if (state.userId === 0) {
+            state.projectList = [];
+            return;
+        }
+        if (state.cacheProjectList.length > 0) {
+            state.projectList = state.cacheProjectList;
+        }
+        dispatch("call", {
+            url: 'project/lists',
+        }).then(result => {
+            dispatch("saveProject", result.data.data);
+        }).catch(result => {
+            $A.modalError(result.msg);
+        });
+    },
+
+    /**
+     * 获取项目信息
+     * @param state
+     * @param dispatch
+     * @param project_id
+     */
+    getProjectOne({state, dispatch}, project_id) {
+        if (state.method.runNum(project_id) === 0) {
+            return;
+        }
+        dispatch("call", {
+            url: 'project/one',
+            data: {
+                project_id: project_id,
+            },
+        }).then(result => {
+            dispatch("saveProject", result.data);
+        });
+    },
+
+    /**
+     * 获取项目详情
+     * @param state
+     * @param dispatch
+     * @param project_id
+     */
+    getProjectDetail({state, dispatch}, project_id) {
+        if (state.method.runNum(project_id) === 0) {
+            return;
+        }
+        const project = state.cacheProjectList.find(({id}) => id == project_id);
+        if (project) {
+            state.projectDetail = Object.assign({project_column: [], project_user: []}, project);
+        }
+        state.projectDetail.id = project_id;
+        //
+        state.projectLoad++;
+        dispatch("call", {
+            url: 'project/detail',
+            data: {
+                project_id: project_id,
+            },
+        }).then(result => {
+            state.projectLoad--;
+            dispatch("saveProject", result.data);
+        }).catch(result => {
+            state.projectLoad--;
+            $A.modalError(result.msg);
+        });
+    },
+
+    /**
      * 删除项目信息
      * @param state
      * @param project_id
@@ -375,11 +375,11 @@ export default {
     },
 
     /**
-     * 更新任务信息
+     * 保存任务信息
      * @param state
      * @param data
      */
-    taskData({state}, data) {
+    saveTask({state}, data) {
         state.projectDetail.project_column.some(({project_task}) => {
             let index = project_task.findIndex(({id}) => id === data.id);
             if (index > -1) {
@@ -404,7 +404,7 @@ export default {
      * @param task_id
      * @returns {Promise<unknown>}
      */
-    taskOne({state, dispatch}, task_id) {
+    getTaskOne({state, dispatch}, task_id) {
         return new Promise(function (resolve, reject) {
             dispatch("call", {
                 url: 'project/task/one',
@@ -412,7 +412,7 @@ export default {
                     task_id,
                 },
             }).then(result => {
-                dispatch("taskData", result.data);
+                dispatch("saveTask", result.data);
                 resolve(result)
             }).catch(result => {
                 reject(result)
@@ -427,7 +427,7 @@ export default {
      * @param task_id
      * @returns {Promise<unknown>}
      */
-    taskContent({state, dispatch}, task_id) {
+    getTaskContent({state, dispatch}, task_id) {
         return new Promise(function (resolve, reject) {
             dispatch("call", {
                 url: 'project/task/content',
@@ -454,7 +454,7 @@ export default {
      * @param task_id
      * @returns {Promise<unknown>}
      */
-    taskFiles({state, dispatch}, task_id) {
+    getTaskFiles({state, dispatch}, task_id) {
         return new Promise(function (resolve, reject) {
             dispatch("call", {
                 url: 'project/task/files',
@@ -480,7 +480,7 @@ export default {
      * @param task_id
      * @returns {Promise<unknown>}
      */
-    subTask({state, dispatch}, task_id) {
+    getSubTask({state, dispatch}, task_id) {
         return new Promise(function (resolve, reject) {
             dispatch("call", {
                 url: 'project/task/sublist',
@@ -520,10 +520,10 @@ export default {
         data.sub_task = state.projectSubTask[task_id] || []
         //
         state.projectOpenTask = Object.assign({}, data, {_show: true});
-        dispatch("taskOne", task_id);
-        dispatch("taskContent", task_id);
-        dispatch("taskFiles", task_id);
-        dispatch("subTask", task_id);
+        dispatch("getTaskOne", task_id);
+        dispatch("getTaskContent", task_id);
+        dispatch("getTaskFiles", task_id);
+        dispatch("getSubTask", task_id);
     },
 
     /**
@@ -562,7 +562,7 @@ export default {
                         }
                     }
                 }
-                dispatch('projectOne', task.project_id);
+                dispatch("getProjectOne", task.project_id);
                 resolve(result)
             }).catch(result => {
                 reject(result)
@@ -586,7 +586,7 @@ export default {
                 if (data.task_id == state.projectOpenTask.id) {
                     state.projectOpenTask.sub_task.push(result.data.task);
                 }
-                dispatch('taskOne', data.task_id);
+                dispatch("getTaskOne", data.task_id);
                 resolve(result)
             }).catch(result => {
                 reject(result)
@@ -613,15 +613,15 @@ export default {
                 method: 'post',
             }).then(result => {
                 if (result.data.parent_id) {
-                    dispatch('taskOne', result.data.parent_id);
+                    dispatch("getTaskOne", result.data.parent_id);
                 }
                 if (typeof post.complete_at !== "undefined") {
-                    dispatch('projectOne', result.data.project_id);
+                    dispatch("getProjectOne", result.data.project_id);
                 }
-                dispatch("taskData", result.data);
+                dispatch("saveTask", result.data);
                 resolve(result)
             }).catch(result => {
-                dispatch('taskOne', post.task_id);
+                dispatch("getTaskOne", post.task_id);
                 reject(result)
             });
         });
@@ -659,7 +659,6 @@ export default {
                         state.projectOpenTask.sub_task.splice(index, 1)
                     }
                 }
-                dispatch('projectDetail', data.project_id);
                 resolve(result);
             }).catch(result => {
                 reject(result)
@@ -673,7 +672,7 @@ export default {
      * @param dispatch
      * @returns {Promise<unknown>}
      */
-    taskPriority({state, dispatch}) {
+    getTaskPriority({state, dispatch}) {
         return new Promise(function (resolve, reject) {
             dispatch("call", {
                 url: 'system/priority',
@@ -687,11 +686,29 @@ export default {
     },
 
     /**
+     * 更新会话数据
+     * @param state
+     * @param dispatch
+     * @param data
+     */
+    saveDialog({state, dispatch}, data) {
+        let splice = false;
+        state.dialogList.some(({id, unread}, index) => {
+            if (id == data.id) {
+                unread !== data.unread && dispatch('getDialogMsgUnread');
+                state.dialogList.splice(index, 1, data);
+                return splice = true;
+            }
+        });
+        !splice && state.dialogList.unshift(data)
+    },
+
+    /**
      * 获取会话列表
      * @param state
      * @param dispatch
      */
-    dialogList({state, dispatch}) {
+    getDialogList({state, dispatch}) {
         return new Promise(function (resolve, reject) {
             dispatch("call", {
                 url: 'dialog/lists',
@@ -705,37 +722,19 @@ export default {
     },
 
     /**
-     * 更新会话数据
-     * @param state
-     * @param dispatch
-     * @param data
-     */
-    dialogUpdate({state, dispatch}, data) {
-        let splice = false;
-        state.dialogList.some(({id, unread}, index) => {
-            if (id == data.id) {
-                unread !== data.unread && dispatch('dialogMsgUnread');
-                state.dialogList.splice(index, 1, data);
-                return splice = true;
-            }
-        });
-        !splice && state.dialogList.unshift(data)
-    },
-
-    /**
      * 获取单个会话
      * @param state
      * @param dispatch
      * @param dialog_id
      */
-    dialogOne({state, dispatch}, dialog_id) {
+    getDialogOne({state, dispatch}, dialog_id) {
         dispatch("call", {
             url: 'dialog/one',
             data: {
                 dialog_id,
             },
         }).then(result => {
-            dispatch('dialogUpdate', result.data);
+            dispatch("dialogUpdate", result.data);
         });
     },
 
@@ -756,8 +755,8 @@ export default {
             },
         }).then(result => {
             state.method.setStorage('messengerDialogId', result.data.id)
-            dispatch('dialogMsgList', result.data.id);
-            dispatch('dialogUpdate', result.data);
+            dispatch("getDialogMsgList", result.data.id);
+            dispatch("saveDialog", result.data);
         }).catch(result => {
             $A.modalError(result.msg);
         });
@@ -769,7 +768,7 @@ export default {
      * @param dispatch
      * @param dialog_id
      */
-    dialogMsgList({state, dispatch}, dialog_id) {
+    getDialogMsgList({state, dispatch}, dialog_id) {
         if (state.method.runNum(dialog_id) === 0) {
             return;
         }
@@ -823,7 +822,7 @@ export default {
                 })
             }
             // 更新会话数据
-            dispatch('dialogUpdate', dialog);
+            dispatch("saveDialog", dialog);
         }).catch(() => {
             state.dialogMsgLoad--;
             state.cacheDialogList[dialog_id + "::load"] = false;
@@ -835,7 +834,7 @@ export default {
      * @param state
      * @param dispatch
      */
-    dialogMsgUnread({state, dispatch}) {
+    getDialogMsgUnread({state, dispatch}) {
         if (state.userId === 0) {
             state.dialogMsgUnread = 0;
             return;
@@ -848,7 +847,7 @@ export default {
                 state.dialogMsgUnread = result.data.unread;
             } else {
                 setTimeout(() => {
-                    dispatch('dialogMsgUnread');
+                    dispatch('getDialogMsgUnread');
                 }, 200);
             }
         });
@@ -907,7 +906,7 @@ export default {
         state.wsReadWaitList.push(id);
         clearTimeout(state.wsReadTimeout);
         state.wsReadTimeout = setTimeout(() => {
-            dispatch('websocketSend', {
+            dispatch("websocketSend", {
                 type: 'readMsg',
                 data: {
                     id: state.method.cloneJSON(state.wsReadWaitList)
@@ -977,11 +976,11 @@ export default {
                     break
 
                 case "line":
-                    dispatch('saveUserOnlineStatus', msgDetail.data);
+                    dispatch("saveUserOnlineStatus", msgDetail.data);
                     break
 
                 default:
-                    msgId && dispatch('websocketSend', {type: 'receipt', msgId});
+                    msgId && dispatch("websocketSend", {type: 'receipt', msgId});
                     state.wsMsg = msgDetail;
                     Object.values(state.wsListener).forEach((call) => {
                         if (typeof call === "function") {
@@ -1015,7 +1014,7 @@ export default {
                             if (dialog) {
                                 dialog.last_msg = data;
                             } else {
-                                dispatch('dialogOne', dialog_id);
+                                dispatch("getDialogOne", dialog_id);
                             }
                             if (mode === "add") {
                                 if (dialog) {

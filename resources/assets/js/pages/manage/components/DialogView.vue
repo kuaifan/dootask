@@ -96,7 +96,7 @@ export default {
 
     methods: {
         msgRead() {
-            this.$store.dispatch('dialogMsgRead', this.msgData);
+            this.$store.dispatch("dialogMsgRead", this.msgData);
         },
 
         popperShow() {

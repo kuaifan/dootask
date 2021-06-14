@@ -61,6 +61,8 @@ class WebSocketDialog extends AbstractModel
             case "group":
                 if ($dialog->group_type === 'project') {
                     $dialog->name = Project::whereDialogId($dialog->id)->value('name');
+                } elseif ($dialog->group_type === 'task') {
+                    $dialog->name = ProjectTask::whereDialogId($dialog->id)->value('name');
                 }
                 break;
         }

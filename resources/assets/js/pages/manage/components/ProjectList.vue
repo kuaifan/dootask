@@ -576,18 +576,19 @@ export default {
                     only_column: only_column === true ? 1 : 0
                 },
             }).then(({msg}) => {
-                this.sortDisabled = false;
                 $A.messageSuccess(msg);
-            }).catch(({msg}) => {
                 this.sortDisabled = false;
-                this.$store.dispatch('projectDetail', this.projectDetail.id);
+            }).catch(({msg}) => {
                 $A.modalError(msg);
+                this.sortDisabled = false;
+                this.$store.dispatch("getProjectDetail", this.projectDetail.id);
             });
         },
 
         onAddTask() {
             this.taskLoad++;
             this.$store.dispatch("taskAdd", this.addData).then(({msg}) => {
+                $A.messageSuccess(msg);
                 this.taskLoad--;
                 this.addShow = false;
                 this.addData = {
@@ -599,10 +600,9 @@ export default {
                     p_name: '',
                     p_color: '',
                 };
-                $A.messageSuccess(msg);
             }).catch(({msg}) => {
-                this.taskLoad--;
                 $A.modalError(msg);
+                this.taskLoad--;
             });
         },
 
@@ -651,7 +651,7 @@ export default {
                 this.addColumnName = '';
                 this.projectDetail.project_column.push(data)
             }).catch(({msg}) => {
-                $A.modalError(msg, 301);
+                $A.modalError(msg);
             });
         },
 
@@ -726,18 +726,17 @@ export default {
                             column_id: column.id,
                         },
                     }).then(({msg}) => {
+                        $A.messageSuccess(msg);
                         this.$set(column, 'loading', false);
                         this.$Modal.remove();
-                        $A.messageSuccess(msg);
                         let index = this.projectDetail.project_column.findIndex(({id}) => id === column.id);
                         if (index > -1) {
                             this.projectDetail.project_column.splice(index, 1);
                         }
-                        this.$store.dispatch('projectDetail', this.projectDetail.id);
                     }).catch(({msg}) => {
+                        $A.modalError(msg, 301);
                         this.$set(column, 'loading', false);
                         this.$Modal.remove();
-                        $A.modalError(msg, 301);
                     });
                 }
             });
@@ -809,11 +808,11 @@ export default {
                 task_id: task.id,
                 type: type,
             }).then(({msg}) => {
-                this.$Modal.remove();
                 $A.messageSuccess(msg);
-            }).catch(({msg}) => {
                 this.$Modal.remove();
+            }).catch(({msg}) => {
                 $A.modalError(msg, 301);
+                this.$Modal.remove();
             });
         },
 
@@ -823,13 +822,13 @@ export default {
                 url: 'project/edit',
                 data: this.settingData,
             }).then(({data, msg}) => {
-                this.settingLoad--;
                 $A.messageSuccess(msg);
+                this.settingLoad--;
                 this.settingShow = false;
                 this.$store.dispatch("saveProject", data)
             }).catch(({msg}) => {
-                this.settingLoad--;
                 $A.modalError(msg);
+                this.settingLoad--;
             });
         },
 
@@ -842,13 +841,13 @@ export default {
                     userid: this.userData.userids,
                 },
             }).then(({msg}) => {
-                this.userLoad--;
                 $A.messageSuccess(msg);
-                this.$store.dispatch('projectDetail', this.userData.project_id);
-                this.userShow = false;
-            }).catch(({msg}) => {
                 this.userLoad--;
+                this.userShow = false;
+                this.$store.dispatch("getProjectDetail", this.userData.project_id);
+            }).catch(({msg}) => {
                 $A.modalError(msg);
+                this.userLoad--;
             });
         },
 
@@ -861,13 +860,13 @@ export default {
                     owner_userid: this.transferData.owner_userid[0],
                 },
             }).then(({msg}) => {
-                this.transferLoad--;
                 $A.messageSuccess(msg);
-                this.$store.dispatch('projectDetail', this.transferData.project_id);
-                this.transferShow = false;
-            }).catch(({msg}) => {
                 this.transferLoad--;
+                this.transferShow = false;
+                this.$store.dispatch("getProjectDetail", this.transferData.project_id);
+            }).catch(({msg}) => {
                 $A.modalError(msg);
+                this.transferLoad--;
             });
         },
 
@@ -883,9 +882,9 @@ export default {
                             project_id: this.projectDetail.id,
                         },
                     }).then(({msg}) => {
-                        this.$Modal.remove();
                         $A.messageSuccess(msg);
-                        this.$store.dispatch('removeProject', this.projectDetail.id);
+                        this.$Modal.remove();
+                        this.$store.dispatch("removeProject", this.projectDetail.id);
                         const project = this.projectList.find(({id}) => id);
                         if (project) {
                             this.goForward({path: '/manage/project/' + project.id}, true);
@@ -893,8 +892,8 @@ export default {
                             this.goForward({path: '/manage/dashboard'}, true);
                         }
                     }).catch(({msg}) => {
-                        this.$Modal.remove();
                         $A.modalError(msg, 301);
+                        this.$Modal.remove();
                     });
                 }
             });
@@ -912,9 +911,9 @@ export default {
                             project_id: this.projectDetail.id,
                         },
                     }).then(({msg}) => {
-                        this.$Modal.remove();
                         $A.messageSuccess(msg);
-                        this.$store.dispatch('removeProject', this.projectDetail.id);
+                        this.$Modal.remove();
+                        this.$store.dispatch("removeProject", this.projectDetail.id);
                         const project = this.projectList.find(({id}) => id);
                         if (project) {
                             this.goForward({path: '/manage/project/' + project.id}, true);
@@ -922,8 +921,8 @@ export default {
                             this.goForward({path: '/manage/dashboard'}, true);
                         }
                     }).catch(({msg}) => {
-                        this.$Modal.remove();
                         $A.modalError(msg, 301);
+                        this.$Modal.remove();
                     });
                 }
             });
@@ -963,14 +962,14 @@ export default {
 
         openTask(task) {
             if (task.parent_id > 0) {
-                this.$store.dispatch('openTask', task.parent_id)
+                this.$store.dispatch("openTask", task.parent_id)
             } else {
-                this.$store.dispatch('openTask', task.id)
+                this.$store.dispatch("openTask", task.id)
             }
         },
 
         toggleBoolean(type) {
-            this.$store.dispatch('toggleBoolean', type);
+            this.$store.dispatch("toggleBoolean", type);
         },
 
         formatTime(date) {

@@ -430,6 +430,12 @@
                     margin: 0 0 0 18px;
                 }
             }
+            .dialog-wrapper {
+                z-index: 0;
+                .dialog-footer {
+                    margin-bottom: 0;
+                }
+            }
         }
     }
 

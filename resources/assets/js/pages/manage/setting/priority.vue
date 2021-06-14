@@ -97,6 +97,9 @@ export default {
                     list: this.formDatum
                 },
             }).then(({data}) => {
+                if (save) {
+                    $A.messageSuccess('修改成功');
+                }
                 this.loadIng--;
                 this.$store.state.taskPriority = $A.cloneJSON(data);
                 this.formDatum = data;
@@ -104,14 +107,11 @@ export default {
                     this.addDatum();
                 }
                 this.formDatum_bak = $A.cloneJSON(this.formDatum);
-                if (save) {
-                    $A.messageSuccess('修改成功');
-                }
             }).catch(({msg}) => {
-                this.loadIng--;
                 if (save) {
                     $A.modalError(msg);
                 }
+                this.loadIng--;
             });
         }
     }

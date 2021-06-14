@@ -158,7 +158,7 @@ export default {
                 return;
             }
             this.$set(task, 'loading', true);
-            this.$store.dispatch("subTask", task.id).then(({data}) => {
+            this.$store.dispatch("getSubTask", task.id).then(({data}) => {
                 this.$set(task, 'loading', false);
                 this.$set(task, 'sub_list', data);
                 this.$set(task, 'sub_open', true);
@@ -170,9 +170,9 @@ export default {
 
         openTask(task) {
             if (task.parent_id > 0) {
-                this.$store.dispatch('openTask', task.parent_id)
+                this.$store.dispatch("openTask", task.parent_id)
             } else {
-                this.$store.dispatch('openTask', task.id)
+                this.$store.dispatch("openTask", task.id)
             }
         },
 

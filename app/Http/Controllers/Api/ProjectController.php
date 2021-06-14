@@ -10,6 +10,7 @@ use App\Models\ProjectTask;
 use App\Models\ProjectTaskFile;
 use App\Models\ProjectUser;
 use App\Models\User;
+use App\Models\WebSocketDialog;
 use App\Module\Base;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
@@ -974,6 +975,64 @@ class ProjectController extends AbstractController
     }
 
     /**
+     * 创建/获取聊天室
+     *
+     * @apiParam {Number} task_id               任务ID
+     */
+    public function task__dialog()
+    {
+        $user = User::authE();
+        if (Base::isError($user)) {
+            return $user;
+        } else {
+            $user = User::IDE($user['data']);
+        }
+        //
+        $task_id = intval(Request::input('task_id'));
+        // 任务
+        $task = ProjectTask::whereId($task_id)->first();
+        if (empty($task)) {
+            return Base::retError('任务不存在');
+        }
+        // 项目
+        $project = Project::select($this->projectSelect)
+            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->where('projects.id', $task->project_id)
+            ->where('project_users.userid', $user->userid)
+            ->first();
+        if (empty($project)) {
+            return Base::retError('项目不存在或不在成员列表内');
+        }
+        //
+        if ($task->parent_id > 0) {
+            return Base::retError('子任务不支持此功能');
+        }
+        //
+        return AbstractModel::transaction(function() use ($task) {
+            if (empty($task->dialog_id)) {
+                $task->lockForUpdate();
+                $userids = $task->taskUser->pluck('userid')->toArray();
+                $items = ProjectTask::with(['taskUser'])->where('parent_id', $task->id)->whereNull('archived_at')->get();
+                foreach ($items as $item) {
+                    $userids = array_merge($userids, $item->taskUser->pluck('userid')->toArray());
+                }
+                $userids = array_values(array_filter(array_unique($userids)));
+                $dialog = WebSocketDialog::createGroup('', $userids, 'task');
+                if ($dialog) {
+                    $task->dialog_id = $dialog->id;
+                    $task->save();
+                }
+            }
+            if (empty($task->dialog_id)) {
+                return Base::retError('创建聊天失败');
+            }
+            return Base::retSuccess('success', [
+                'dialog_id' => $task->dialog_id,
+            ]);
+        });
+    }
+
+    /**
      * 归档任务
      *
      * @apiParam {Number} task_id               任务ID
@@ -1001,6 +1060,10 @@ class ProjectController extends AbstractController
             ->first();
         if (empty($project)) {
             return Base::retError('项目不存在或不在成员列表内');
+        }
+        //
+        if ($task->parent_id > 0) {
+            return Base::retError('子任务不支持此功能');
         }
         //
         return $task->archivedTask(Carbon::now());

@@ -136,7 +136,7 @@
                 if (!this.userid) {
                     return;
                 }
-                this.$store.dispatch('userBasic', {
+                this.$store.dispatch("getUserBasic", {
                     userid: this.userid,
                     success: (user) => {
                         this.user = user;

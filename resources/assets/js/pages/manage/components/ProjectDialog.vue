@@ -54,7 +54,7 @@ export default {
     methods: {
         getMsg() {
             if (this.projectChatShow && this.projectDetail.dialog_id) {
-                this.$store.dispatch('dialogMsgList', this.projectDetail.dialog_id);
+                this.$store.dispatch("getDialogMsgList", this.projectDetail.dialog_id);
             }
         }
     }

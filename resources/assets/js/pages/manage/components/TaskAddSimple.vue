@@ -107,7 +107,7 @@ export default {
             this.active = true;
             this.$nextTick(() => {
                 if (this.taskPriority.length === 0) {
-                    this.$store.dispatch('taskPriority').then(() => {
+                    this.$store.dispatch('getTaskPriority').then(() => {
                         if (!this.addData.p_name && this.taskPriority.length > 0) {
                             this.choosePriority(this.taskPriority[0])
                         }
@@ -152,6 +152,7 @@ export default {
             }
             this.loadIng++;
             this.$store.dispatch("taskAdd", this.getData()).then(({msg}) => {
+                $A.messageSuccess(msg);
                 this.loadIng--;
                 this.active = false;
                 this.addData = {
@@ -163,10 +164,9 @@ export default {
                     p_name: '',
                     p_color: '',
                 }
-                $A.messageSuccess(msg);
             }).catch(({msg}) => {
-                this.loadIng--;
                 $A.modalError(msg);
+                this.loadIng--;
             });
         },
 

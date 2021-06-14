@@ -60,7 +60,7 @@ export default {
             if (res.ret === 1) {
                 if (index > -1) {
                     this.projectOpenTask.files.splice(index, 1, res.data);
-                    this.$store.dispatch("taskData", {
+                    this.$store.dispatch("saveTask", {
                         id: this.projectOpenTask.id,
                         file_num: this.projectOpenTask.files.length,
                     });

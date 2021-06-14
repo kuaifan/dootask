@@ -131,7 +131,7 @@
                     userids.push(value);
                 });
                 //
-                this.$store.dispatch('userBasic', {
+                this.$store.dispatch("getUserBasic", {
                     userid: userids,
                     complete: () => {
                         this.initialized = true;

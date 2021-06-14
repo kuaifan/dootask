@@ -55,17 +55,17 @@ export default {
                 url: 'system/setting?type=' + (save ? 'save' : 'get'),
                 data: this.formDatum,
             }).then(({data}) => {
-                this.loadIng--;
-                this.formDatum = data;
-                this.formDatum_bak = $A.cloneJSON(this.formDatum);
                 if (save) {
                     $A.messageSuccess('修改成功');
                 }
-            }).catch(({msg}) => {
                 this.loadIng--;
+                this.formDatum = data;
+                this.formDatum_bak = $A.cloneJSON(this.formDatum);
+            }).catch(({msg}) => {
                 if (save) {
                     $A.modalError(msg);
                 }
+                this.loadIng--;
             });
         }
     }

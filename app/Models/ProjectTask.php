@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int|null $parent_id 父级任务ID
  * @property int|null $project_id 项目ID
  * @property int|null $column_id 列表ID
+ * @property int|null $dialog_id 聊天会话ID
  * @property string|null $name 标题
  * @property string|null $color 颜色
  * @property string|null $desc 描述
@@ -31,7 +32,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \App\Models\ProjectTaskContent|null $content
- * @property-read int $dialog_id
  * @property-read int $file_num
  * @property-read int $msg_num
  * @property-read bool $overdue
@@ -57,6 +57,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereDesc($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereDialogId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereEndAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereName($value)
@@ -85,7 +86,6 @@ class ProjectTask extends AbstractModel
         'percent',
         'today',
         'overdue',
-        'dialog_id',
     ];
 
     /**
@@ -107,7 +107,7 @@ class ProjectTask extends AbstractModel
     public function getMsgNumAttribute()
     {
         if (!isset($this->attributes['msg_num'])) {
-            $this->attributes['msg_num'] = WebSocketDialogMsg::whereDialogId($this->dialog_id)->whereExtraInt($this->id)->count();
+            $this->attributes['msg_num'] = $this->dialog_id ? WebSocketDialogMsg::whereDialogId($this->dialog_id)->count() : 0;
         }
         return $this->attributes['msg_num'];
     }
@@ -195,18 +195,6 @@ class ProjectTask extends AbstractModel
             }
         }
         return false;
-    }
-
-    /**
-     * 对话ID
-     * @return int
-     */
-    public function getDialogIdAttribute()
-    {
-        if (!isset($this->attributes['dialog_id'])) {
-            $this->attributes['dialog_id'] = intval(Project::whereId($this->project_id)->value('dialog_id'));
-        }
-        return $this->attributes['dialog_id'];
     }
 
     /**

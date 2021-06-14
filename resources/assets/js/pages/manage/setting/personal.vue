@@ -76,12 +76,12 @@ export default {
                         url: 'users/editdata',
                         data: this.formDatum,
                     }).then(() => {
-                        this.loadIng--;
                         $A.messageSuccess('修改成功');
-                        this.$store.dispatch('userInfo');
-                    }).catch(({msg}) => {
                         this.loadIng--;
+                        this.$store.dispatch('getUserInfo');
+                    }).catch(({msg}) => {
                         $A.modalError(msg);
+                        this.loadIng--;
                     });
                 }
             })

@@ -81,7 +81,7 @@ export default {
 
     mounted() {
         this.dialogLoad++;
-        this.$store.dispatch("dialogList").then(() => {
+        this.$store.dispatch("getDialogList").then(() => {
             this.dialogLoad--;
             this.openDialogStorage();
         }).catch(() => {
@@ -125,7 +125,7 @@ export default {
     methods: {
         openDialog(dialog) {
             this.$store.state.method.setStorage('messengerDialogId', dialog.id)
-            this.$store.dispatch('dialogMsgList', dialog.id);
+            this.$store.dispatch("getDialogMsgList", dialog.id);
         },
 
         openDialogStorage() {

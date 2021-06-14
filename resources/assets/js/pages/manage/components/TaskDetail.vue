@@ -319,28 +319,40 @@
             </div>
             <TaskUpload ref="upload" class="upload"/>
         </div>
-        <div class="task-dialog" >
-            <div class="head">
-                <Icon class="icon" type="ios-chatbubbles-outline" />
-                <div class="nav">
-                    <p class="active">{{$L('聊天')}}</p>
-                    <p>{{$L('动态')}}</p>
+        <div class="task-dialog">
+            <DialogWrapper v-if="taskDetail.dialog_id > 0">
+                <div slot="head" class="head">
+                    <Icon class="icon" type="ios-chatbubbles-outline" />
+                    <div class="nav">
+                        <p class="active">{{$L('聊天')}}</p>
+                        <p>{{$L('动态')}}</p>
+                    </div>
+                </div>
+            </DialogWrapper>
+            <div v-else>
+                <div class="head">
+                    <Icon class="icon" type="ios-chatbubbles-outline" />
+                    <div class="nav">
+                        <p class="active">{{$L('聊天')}}</p>
+                        <p>{{$L('动态')}}</p>
+                    </div>
+                </div>
+                <div class="no-dialog" :style="dialogStyle">
+                    <div class="no-tip">{{$L('暂无消息')}}</div>
+                    <div class="no-input">
+                        <Input
+                            class="dialog-input"
+                            v-model="msgText"
+                            type="textarea"
+                            :rows="1"
+                            :autosize="{ minRows: 1, maxRows: 3 }"
+                            :maxlength="255"
+                            :placeholder="$L('输入消息...')"
+                            @on-keydown="msgKeydown"/>
+                    </div>
                 </div>
             </div>
-            <div class="no-dialog" :style="dialogStyle">
-                <div class="no-tip">{{$L('暂无消息')}}</div>
-                <div class="no-input">
-                    <Input
-                        ref="input"
-                        class="dialog-input"
-                        v-model="taskDetail._msgText"
-                        type="textarea"
-                        :rows="1"
-                        :autosize="{ minRows: 1, maxRows: 3 }"
-                        :maxlength="255"
-                        :placeholder="$L('输入消息...')"/>
-                </div>
-            </div>
+            <Input ref="input" v-show="false"/>
         </div>
     </div>
 </template>
@@ -351,10 +363,11 @@ import TEditor from "../../../components/TEditor";
 import TaskPriority from "./TaskPriority";
 import UserInput from "../../../components/UserInput";
 import TaskUpload from "./TaskUpload";
+import DialogWrapper from "./DialogWrapper";
 
 export default {
     name: "TaskDetail",
-    components: {TaskUpload, UserInput, TaskPriority, TEditor},
+    components: {DialogWrapper, TaskUpload, UserInput, TaskPriority, TEditor},
     props: {
         openTask: {
             type: Object,
@@ -393,6 +406,8 @@ export default {
 
             innerHeight: window.innerHeight,
 
+            msgText: '',
+
             taskPlugins: [
                 'advlist autolink lists link image charmap print preview hr anchor pagebreak imagetools',
                 'searchreplace visualblocks visualchars code',
@@ -422,7 +437,7 @@ export default {
     },
 
     mounted() {
-        this.$store.dispatch('taskPriority');
+        this.$store.dispatch('getTaskPriority');
         this.nowInterval = setInterval(() => {
             this.nowTime = Math.round(new Date().getTime() / 1000);
         }, 1000);
@@ -561,6 +576,7 @@ export default {
         openTask: {
             handler(data) {
                 this.taskDetail = $A.cloneJSON(data);
+                this.$store.dispatch("getDialogMsgList", this.taskDetail.dialog_id);
             },
             immediate: true,
             deep: true
@@ -753,11 +769,11 @@ export default {
                         task_id: this.taskDetail.id,
                         type: type,
                     }).then(({msg}) => {
-                        this.$Modal.remove();
                         $A.messageSuccess(msg);
-                    }).catch(({msg}) => {
                         this.$Modal.remove();
+                    }).catch(({msg}) => {
                         $A.modalError(msg, 301);
+                        this.$Modal.remove();
                     });
                 }
             });
@@ -778,14 +794,14 @@ export default {
                 task_id: this.taskDetail.id,
                 owner: this.ownerData.owner_userid
             }).then(({msg}) => {
-                this.ownerLoad--;
-                this.ownerShow = false;
-                this.$store.dispatch("taskOne", this.taskDetail.id);
                 $A.messageSuccess(msg);
-            }).catch(({msg}) => {
                 this.ownerLoad--;
                 this.ownerShow = false;
+                this.$store.dispatch("getTaskOne", this.taskDetail.id);
+            }).catch(({msg}) => {
                 $A.modalError(msg);
+                this.ownerLoad--;
+                this.ownerShow = false;
             })
         },
 
@@ -808,14 +824,14 @@ export default {
                 task_id: this.taskDetail.id,
                 assist,
             }).then(({msg}) => {
-                this.assistLoad--;
-                this.assistShow = false;
-                this.$store.dispatch("taskOne", this.taskDetail.id);
                 $A.messageSuccess(msg);
-            }).catch(({msg}) => {
                 this.assistLoad--;
                 this.assistShow = false;
+                this.$store.dispatch("getTaskOne", this.taskDetail.id);
+            }).catch(({msg}) => {
                 $A.modalError(msg);
+                this.assistLoad--;
+                this.assistShow = false;
             })
         },
 
@@ -894,12 +910,12 @@ export default {
                 task_id: this.taskDetail.id,
                 name: this.addsubName,
             }).then(({msg}) => {
+                $A.messageSuccess(msg);
                 this.addsubLoad--;
                 this.addsubName = "";
-                $A.messageSuccess(msg);
             }).catch(({msg}) => {
-                this.addsubLoad--;
                 $A.modalError(msg);
+                this.addsubLoad--;
             });
         },
 
@@ -939,6 +955,35 @@ export default {
                     break;
             }
         },
+
+        msgKeydown(e) {
+            if (e.keyCode === 13) {
+                if (e.shiftKey) {
+                    return;
+                }
+                e.preventDefault();
+                this.msgDialog();
+            }
+        },
+
+        msgDialog() {
+            if (!this.msgText) {
+                return;
+            }
+            this.$store.dispatch("call", {
+                url: 'project/task/dialog',
+                data: {
+                    task_id: this.taskDetail.id,
+                },
+            }).then(({data}) => {
+                this.$store.dispatch("saveTask", {
+                    id: this.taskDetail.id,
+                    dialog_id: data.dialog_id
+                });
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            });
+        }
     }
 }
 </script>

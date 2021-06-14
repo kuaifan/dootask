@@ -80,7 +80,7 @@ export default {
                 },
             }).then(({data}) => {
                 this.loadIng--;
-                this.$store.dispatch('saveUserInfo', data);
+                this.$store.dispatch("saveUserInfo", data);
                 this.goNext();
             }).catch(({data, msg}) => {
                 this.loadIng--;
