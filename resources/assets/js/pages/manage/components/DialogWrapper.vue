@@ -39,6 +39,8 @@
                 :rows="1"
                 :autosize="{ minRows: 1, maxRows: 3 }"
                 :maxlength="255"
+                @on-focus="onEventFocus"
+                @on-blur="onEventblur"
                 @on-keydown="chatKeydown"
                 @on-input-paste="pasteDrag"
                 :placeholder="$L('输入消息...')" />
@@ -141,13 +143,10 @@ export default {
                     text: this.msgText,
                 },
             }).then(({data}) => {
-                this.$store.dispatch("dialogMsgSplice", {id: tempId, data});
+                this.$store.dispatch("dialogMsgUpdate", {id: tempId, data});
             }).catch(({msg}) => {
-                $A.modalWarning({
-                    title: '发送失败',
-                    content: msg
-                });
-                this.$store.dispatch("dialogMsgSplice", {id: tempId});
+                $A.modalError(msg);
+                this.$store.dispatch("dialogMsgUpdate", {id: tempId});
             });
             //
             this.msgText = '';
@@ -214,11 +213,11 @@ export default {
                     break;
 
                 case 'error':
-                    this.$store.dispatch("dialogMsgSplice", {id: file.tempId});
+                    this.$store.dispatch("dialogMsgUpdate", {id: file.tempId});
                     break;
 
                 case 'success':
-                    this.$store.dispatch("dialogMsgSplice", {id: file.tempId, data: file.data});
+                    this.$store.dispatch("dialogMsgUpdate", {id: file.tempId, data: file.data});
                     break;
             }
         },
@@ -246,6 +245,14 @@ export default {
         goNewBottom() {
             this.autoBottom = true;
             this.goBottom();
+        },
+
+        onEventFocus(e) {
+            this.$emit("on-focus", e)
+        },
+
+        onEventblur(e) {
+            this.$emit("on-blur", e)
         },
 
         formatTime(date) {

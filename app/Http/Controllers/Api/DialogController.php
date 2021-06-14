@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\ProjectTask;
+use App\Models\ProjectTaskFile;
 use App\Models\User;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
@@ -247,11 +249,36 @@ class DialogController extends AbstractController
         if (Base::isError($data)) {
             return Base::retError($data['msg']);
         } else {
-            $msg = $data['data'];
-            $msg['thumb'] = Base::unFillUrl($msg['thumb']);
-            $msg['size'] *= 1024;
+            $fileData = $data['data'];
+            $fileData['thumb'] = Base::unFillUrl($fileData['thumb']);
+            $fileData['size'] *= 1024;
             //
-            return WebSocketDialogMsg::sendMsg($dialog_id, 'file', $msg, $user->userid, $extra_int, $extra_str);
+            if ($dialog->type === 'group') {
+                if ($dialog->group_type === 'task') {
+                    $task = ProjectTask::whereDialogId($dialog->id)->first();
+                    if ($task) {
+                        $file = ProjectTaskFile::createInstance([
+                            'project_id' => $task->project_id,
+                            'task_id' => $task->id,
+                            'name' => $fileData['name'],
+                            'size' => $fileData['size'],
+                            'ext' => $fileData['ext'],
+                            'path' => $fileData['path'],
+                            'thumb' => $fileData['thumb'],
+                            'userid' => $user->userid,
+                        ]);
+                        $file->save();
+                    }
+                }
+            }
+            //
+            $result = WebSocketDialogMsg::sendMsg($dialog_id, 'file', $fileData, $user->userid, $extra_int, $extra_str);
+            if (Base::isSuccess($result)) {
+                if (isset($task)) {
+                    $result['data']['task_id'] = $task->id;
+                }
+            }
+            return $result;
         }
     }
 

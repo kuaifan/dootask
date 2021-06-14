@@ -163,7 +163,7 @@ class WebSocketDialogMsg extends AbstractModel
             $task = new WebSocketDialogMsgTask($userids, $dialogMsg->toArray());
             Task::deliver($task);
             //
-            return Base::retSuccess('发送成功', $dialogMsg);
+            return Base::retSuccess('发送成功', $dialogMsg->toArray());
         });
     }
 

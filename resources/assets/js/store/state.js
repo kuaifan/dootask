@@ -32,6 +32,23 @@ const method = {
         return params;
     },
 
+    zeroFill(str, length, after) {
+        str+= "";
+        if (str.length >= length) {
+            return str;
+        }
+        let _str = '', _ret = '';
+        for (let i = 0; i < length; i++) {
+            _str += '0';
+        }
+        if (after || typeof after === 'undefined') {
+            _ret = (_str + "" + str).substr(length * -1);
+        } else {
+            _ret = (str + "" + _str).substr(0, length);
+        }
+        return _ret;
+    },
+
     formatDate(format, v) {
         if (typeof format === 'undefined' || format === '') {
             format = 'Y-m-d H:i:s';

@@ -740,7 +740,7 @@ export default {
                 dialog_id,
             },
         }).then(result => {
-            dispatch("dialogUpdate", result.data);
+            dispatch("saveDialog", result.data);
         });
     },
 
@@ -864,12 +864,16 @@ export default {
      * @param state
      * @param params {id, data}
      */
-    dialogMsgSplice({state}, params) {
+    dialogMsgUpdate({state}, params) {
         let {id, data} = params;
         if (!id) {
             return;
         }
         if (state.method.isJson(data)) {
+            state.projectDetail.project_column.some(({project_task}) => {
+                const task = project_task.find(({dialog_id}) => dialog_id === data.dialog_id);
+                if (task) task.msg_num++;
+            });
             if (data.id && state.dialogMsgList.find(m => m.id == data.id)) {
                 data = null;
             }
@@ -998,10 +1002,11 @@ export default {
                         }
                     });
                     if (type === "dialog") {
-                        // 更新消息
+                        // 更新会话
                         (function (msg) {
-                            const {data} = msg;
+                            const {mode, data} = msg;
                             const {dialog_id} = data;
+                            // 更新消息列表
                             if (dialog_id == state.dialogId) {
                                 let index = state.dialogMsgList.findIndex(({id}) => id == data.id);
                                 if (index === -1) {
@@ -1010,11 +1015,6 @@ export default {
                                     state.dialogMsgList.splice(index, 1, data);
                                 }
                             }
-                        })(msgDetail);
-                        // 更新会话
-                        (function (msg) {
-                            const {mode, data} = msg;
-                            const {dialog_id} = data;
                             // 更新最后消息
                             let dialog = state.dialogList.find(({id}) => id == dialog_id);
                             if (dialog) {
@@ -1023,6 +1023,7 @@ export default {
                                 dispatch("getDialogOne", dialog_id);
                             }
                             if (mode === "add") {
+                                // 更新对话列表
                                 if (dialog) {
                                     // 新增未读数
                                     if (data.userid !== state.userId) dialog.unread++;
@@ -1034,6 +1035,11 @@ export default {
                                         state.dialogList.unshift(tmp);
                                     }
                                 }
+                                // 新增任务消息数量
+                                state.projectDetail.project_column.some(({project_task}) => {
+                                    const task = project_task.find(({dialog_id}) => dialog_id === data.dialog_id);
+                                    if (task) task.msg_num++;
+                                });
                                 // 新增总未读数
                                 if (data.userid !== state.userId) state.dialogMsgUnread++;
                             }

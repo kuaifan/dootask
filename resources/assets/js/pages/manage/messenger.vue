@@ -8,7 +8,7 @@
                         <Input prefix="ios-search" v-model="dialogKey" :placeholder="$L('搜索...')" clearable />
                     </div>
                 </div>
-                <div class="messenger-list overlay-y">
+                <div ref="list" class="messenger-list overlay-y">
                     <ul v-if="tabActive==='dialog'" class="dialog">
                         <li
                             v-for="(dialog, key) in dialogLists"
@@ -50,7 +50,7 @@
             </div>
 
             <div class="messenger-msg">
-                <DialogWrapper v-if="dialogId > 0"/>
+                <DialogWrapper v-if="dialogId > 0" @on-focus="scrollIntoActive"/>
                 <div v-else class="dialog-no">
                     <div class="dialog-no-icon"><Icon type="ios-chatbubbles" /></div>
                     <div class="dialog-no-text">{{$L('选择一个会话开始聊天')}}</div>
@@ -126,6 +126,7 @@ export default {
         openDialog(dialog) {
             this.$store.state.method.setStorage("messengerDialogId", dialog.id)
             this.$store.dispatch("getDialogMsgList", dialog.id);
+            this.scrollIntoActive();
         },
 
         openDialogStorage() {
@@ -211,6 +212,20 @@ export default {
             }
             return null;
         },
+
+        scrollIntoActive() {
+            this.$nextTick(() => {
+                if (this.$refs.list) {
+                    let active = this.$refs.list.querySelector(".active")
+                    if (active) {
+                        scrollIntoView(active, {
+                            behavior: 'smooth',
+                            scrollMode: 'if-needed',
+                        });
+                    }
+                }
+            })
+        }
     }
 }
 </script>

@@ -59,6 +59,9 @@ export default {
             if (res.ret === 1) {
                 file.data = res.data;
                 this.$emit('on-success', file);
+                if (res.data.task_id) {
+                    this.$store.dispatch("getTaskFiles", res.data.task_id)
+                }
             } else {
                 $A.modalWarning({
                     title: '发送失败',
