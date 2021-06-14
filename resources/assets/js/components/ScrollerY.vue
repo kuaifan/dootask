@@ -124,7 +124,14 @@ export default {
 
         autoToBottom() {
             if (this.autoBottom && this.$refs.bottom) {
-                this.$refs.bottom.scrollIntoView(false);
+                try {
+                    this.$refs.bottom.scrollIntoView(false);
+                } catch (e) {
+                    scrollIntoView(this.$refs.bottom, {
+                        behavior: 'instant',
+                        inline: 'end',
+                    })
+                }
             }
         },
 

@@ -14,7 +14,7 @@
                             v-for="(dialog, key) in dialogLists"
                             :key="key"
                             :class="{active: dialog.id == dialogId}"
-                            @click="openDialog(dialog)">
+                            @click="openDialog(dialog, true)">
                             <Icon v-if="dialog.type=='group'" class="icon-avatar" type="ios-people" />
                             <div v-else-if="dialog.dialog_user" class="user-avatar"><UserAvatar :userid="dialog.dialog_user.userid" :size="46" hide-icon-menu/></div>
                             <Icon v-else class="icon-avatar" type="md-person" />
@@ -122,17 +122,17 @@ export default {
     },
 
     methods: {
-        openDialog(dialog) {
+        openDialog(dialog, smooth) {
             this.$store.state.method.setStorage("messengerDialogId", dialog.id)
             this.$store.dispatch("getDialogMsgList", dialog.id);
-            this.scrollIntoActive();
+            this.scrollIntoActive(smooth);
         },
 
         openDialogStorage() {
             let tmpId = this.$store.state.method.getStorageInt("messengerDialogId")
             if (tmpId > 0) {
                 const dialog = this.dialogList.find(({id}) => id === tmpId);
-                dialog && this.openDialog(dialog);
+                dialog && this.openDialog(dialog, false);
             }
         },
 
@@ -214,13 +214,13 @@ export default {
             return null;
         },
 
-        scrollIntoActive() {
+        scrollIntoActive(smooth) {
             this.$nextTick(() => {
                 if (this.$refs.list) {
                     let active = this.$refs.list.querySelector(".active")
                     if (active) {
                         scrollIntoView(active, {
-                            behavior: 'instant',
+                            behavior: smooth === true ? 'smooth' : 'instant',
                             scrollMode: 'if-needed',
                         });
                     }
