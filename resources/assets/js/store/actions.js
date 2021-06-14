@@ -129,7 +129,7 @@ export default {
      */
     toggleBoolean({state}, key) {
         state[key] = !state[key]
-        state.method.setStorage('boolean:' + key, state[key]);
+        state.method.setStorage("boolean:" + key, state[key]);
     },
 
     /**
@@ -167,10 +167,10 @@ export default {
             state.userId = userInfo.userid;
             state.userToken = userInfo.token;
             state.userIsAdmin = state.method.inArray('admin', userInfo.identity);
-            state.method.setStorage('userInfo', state.userInfo);
-            dispatch('getProjectList');
-            dispatch('getDialogMsgUnread');
-            dispatch('websocketConnection');
+            state.method.setStorage("userInfo", state.userInfo);
+            dispatch("getProjectList");
+            dispatch("getDialogMsgUnread");
+            dispatch("websocketConnection");
             resolve()
         });
     },
@@ -285,7 +285,7 @@ export default {
                 state.projectList.unshift(data);
             }
         }
-        state.method.setStorage("cacheProjectList", state.projectList);
+        state.method.setStorage("cacheProjectList", state.cacheProjectList = state.projectList);
     },
 
     /**
@@ -343,8 +343,9 @@ export default {
         const project = state.cacheProjectList.find(({id}) => id == project_id);
         if (project) {
             state.projectDetail = Object.assign({project_column: [], project_user: []}, project);
+        } else {
+            state.projectDetail.id = project_id;
         }
-        state.projectDetail.id = project_id;
         //
         state.projectLoad++;
         dispatch("call", {
@@ -370,7 +371,7 @@ export default {
         let index = state.projectList.findIndex(({id}) => id == project_id);
         if (index > -1) {
             state.projectList.splice(index, 1);
-            state.method.setStorage("cacheProjectList", state.projectList);
+            state.method.setStorage("cacheProjectList", state.cacheProjectList = state.projectList);
         }
     },
 
@@ -506,6 +507,11 @@ export default {
      * @param task_id
      */
     openTask({state, dispatch}, task_id) {
+        if (state.projectChatShow) {
+            dispatch("toggleBoolean", "projectChatShow");
+        }
+        state.dialogId = 0;
+        //
         let data = {id: task_id};
         state.projectDetail.project_column.some(({project_task}) => {
             const task = project_task.find(({id}) => id === task_id);
@@ -754,7 +760,7 @@ export default {
                 userid,
             },
         }).then(result => {
-            state.method.setStorage('messengerDialogId', result.data.id)
+            state.method.setStorage("messengerDialogId", result.data.id)
             dispatch("getDialogMsgList", result.data.id);
             dispatch("saveDialog", result.data);
         }).catch(result => {
@@ -777,20 +783,20 @@ export default {
         }
         //
         state.dialogMsgList = [];
-        if (state.method.isJson(state.cacheDialogList[dialog_id])) {
-            let length = state.cacheDialogList[dialog_id].data.length;
+        if (state.method.isJson(state.cacheDialogMsg[dialog_id])) {
+            let length = state.cacheDialogMsg[dialog_id].data.length;
             if (length > 50) {
-                state.cacheDialogList[dialog_id].data.splice(0, length - 50);
+                state.cacheDialogMsg[dialog_id].data.splice(0, length - 50);
             }
-            state.dialogDetail = state.cacheDialogList[dialog_id].dialog
-            state.dialogMsgList = state.cacheDialogList[dialog_id].data
+            state.dialogDetail = state.cacheDialogMsg[dialog_id].dialog
+            state.dialogMsgList = state.cacheDialogMsg[dialog_id].data
         }
         state.dialogId = dialog_id;
         //
-        if (state.cacheDialogList[dialog_id + "::load"]) {
+        if (state.cacheDialogMsg[dialog_id + "::load"]) {
             return;
         }
-        state.cacheDialogList[dialog_id + "::load"] = true;
+        state.cacheDialogMsg[dialog_id + "::load"] = true;
         //
         state.dialogMsgLoad++;
         dispatch("call", {
@@ -800,15 +806,15 @@ export default {
             },
         }).then(result => {
             state.dialogMsgLoad--;
-            state.cacheDialogList[dialog_id + "::load"] = false;
+            state.cacheDialogMsg[dialog_id + "::load"] = false;
             const dialog = result.data.dialog;
             const reverse = result.data.data.reverse();
             // 更新缓存
-            state.cacheDialogList[dialog_id] = {
+            state.cacheDialogMsg[dialog_id] = {
                 dialog,
                 data: reverse,
             };
-            state.method.setStorage("cacheDialogList", state.cacheDialogList);
+            state.method.setStorage("cacheDialogMsg", state.cacheDialogMsg);
             // 更新当前会话消息
             if (state.dialogId == dialog_id) {
                 state.dialogDetail = dialog;
@@ -825,7 +831,7 @@ export default {
             dispatch("saveDialog", dialog);
         }).catch(() => {
             state.dialogMsgLoad--;
-            state.cacheDialogList[dialog_id + "::load"] = false;
+            state.cacheDialogMsg[dialog_id + "::load"] = false;
         });
     },
 

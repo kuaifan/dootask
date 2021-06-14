@@ -18,7 +18,7 @@
             static>
             <div ref="manageList" class="dialog-list">
                 <ul>
-                    <li v-if="dialogMsgLoad > 0" class="loading"><Loading/></li>
+                    <li v-if="dialogMsgLoad > 0 && dialogMsgList.length === 0" class="loading"><Loading/></li>
                     <li v-else-if="dialogMsgList.length === 0" class="nothing">{{$L('暂无消息')}}</li>
                     <li v-for="(item, key) in dialogMsgList" :key="key" :class="{self:item.userid == userId}">
                         <div class="dialog-avatar">

@@ -124,12 +124,12 @@ export default {
 
     methods: {
         openDialog(dialog) {
-            this.$store.state.method.setStorage('messengerDialogId', dialog.id)
+            this.$store.state.method.setStorage("messengerDialogId", dialog.id)
             this.$store.dispatch("getDialogMsgList", dialog.id);
         },
 
         openDialogStorage() {
-            let tmpId = this.$store.state.method.getStorageInt('messengerDialogId')
+            let tmpId = this.$store.state.method.getStorageInt("messengerDialogId")
             if (tmpId > 0) {
                 const dialog = this.dialogList.find(({id}) => id === tmpId);
                 dialog && this.openDialog(dialog);

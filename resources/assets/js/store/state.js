@@ -215,7 +215,7 @@ const state = { method };
     'taskUndoneShow',       // 项目面板显示未完成任务
     'taskCompletedShow'     // 项目面板显示已完成任务
 ].forEach((key) => {
-    state[key] = state.method.getStorageBoolean('boolean:' + key, true)
+    state[key] = state.method.getStorageBoolean("boolean:" + key, true)
 })
 
 // ajax
@@ -225,14 +225,14 @@ state.ajaxWsListener = [];
 
 // 数据缓存
 state.cacheUserBasic = state.method.getStorageJson("cacheUserBasic");
-state.cacheDialogList = state.method.getStorageJson("cacheDialogList");
+state.cacheDialogMsg = state.method.getStorageJson("cacheDialogMsg");
 state.cacheProjectList = state.method.getStorageArray("cacheProjectList");
 
 // 会员信息
-state.userInfo = state.method.getStorageJson('userInfo');
+state.userInfo = state.method.getStorageJson("userInfo");
 state.userId = state.userInfo.userid = state.method.runNum(state.userInfo.userid);
 state.userToken = state.userInfo.token;
-state.userIsAdmin = state.method.inArray('admin', state.userInfo.identity);
+state.userIsAdmin = state.method.inArray("admin", state.userInfo.identity);
 state.userOnline = {};
 
 // Websocket
