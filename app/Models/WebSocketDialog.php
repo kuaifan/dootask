@@ -84,7 +84,7 @@ class WebSocketDialog extends AbstractModel
         $result = AbstractModel::transaction(function () use ($userid, $group_type, $name) {
             $dialog = self::createInstance([
                 'type' => 'group',
-                'name' => $name,
+                'name' => $name ?: '',
                 'group_type' => $group_type,
             ]);
             $dialog->save();

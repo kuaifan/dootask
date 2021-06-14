@@ -253,7 +253,7 @@
                 </div>
             </div>
             <!--未完成任务-->
-            <div :class="['project-table-body', !taskUndoneShow ? 'project-table-hide' : '']">
+            <div v-if="projectDetail.task_num > 0" :class="['project-table-body', !taskUndoneShow ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
                         <i class="iconfont" @click="toggleBoolean('taskUndoneShow')">&#xe689;</i>
@@ -268,7 +268,7 @@
                 <TaskRow :list="undoneList" :color-list="taskColorList" @command="dropTask"/>
             </div>
             <!--已完成任务-->
-            <div :class="['project-table-body', !taskCompletedShow ? 'project-table-hide' : '']">
+            <div v-if="projectDetail.task_num > 0" :class="['project-table-body', !taskCompletedShow ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
                         <i class="iconfont" @click="toggleBoolean('taskCompletedShow')">&#xe689;</i>

@@ -137,9 +137,10 @@ export default {
         },
 
         openContacts(user) {
-            this.$store.dispatch("openDialogUserid", user.userid);
             this.tabActive = 'dialog';
-            this.scrollIntoActive();
+            this.$store.dispatch("openDialogUserid", user.userid).then(() => {
+                this.scrollIntoActive()
+            });
         },
 
         getContactsList() {

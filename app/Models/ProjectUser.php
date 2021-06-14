@@ -36,21 +36,4 @@ class ProjectUser extends AbstractModel
     {
         return $this->hasOne(Project::class, 'id', 'project_id');
     }
-
-    /**
-     * 退出项目
-     * @return bool
-     */
-    public function exitProject() {
-        $result = AbstractModel::transaction(function () {
-            WebSocketDialogUser::whereDialogId($this->project->dialog_id)->whereUserid($this->userid)->delete();
-            if ($this->delete()) {
-                return Base::retSuccess('success');
-            } else {
-                return Base::retError('error');
-            }
-        });
-        return Base::isSuccess($result);
-    }
-
 }

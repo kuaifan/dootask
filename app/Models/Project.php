@@ -143,11 +143,17 @@ class Project extends AbstractModel
     public function getDialogIdAttribute($value)
     {
         if ($value === 0) {
-            $userid = $this->projectUser->pluck('userid')->toArray();
-            $dialog = WebSocketDialog::createGroup('', $userid, 'project');
-            if ($dialog) {
-                $this->dialog_id = $value = $dialog->id;
-                $this->save();
+            $result = AbstractModel::transaction(function() {
+                $this->lockForUpdate();
+                $dialog = WebSocketDialog::createGroup(null, $this->relationUserids(), 'project');
+                if ($dialog) {
+                    $this->dialog_id = $dialog->id;
+                    $this->save();
+                }
+                return Base::retSuccess('success', $dialog->id);
+            });
+            if (Base::isSuccess($result)) {
+                $value = $result['data'];
             }
         }
         return $value;
@@ -182,18 +188,48 @@ class Project extends AbstractModel
      * @param int $userid   加入的会员ID
      * @return bool
      */
-    public function joinProject($userid) {
-        $result = AbstractModel::transaction(function () use ($userid) {
-            ProjectUser::updateInsert([
-                'project_id' => $this->id,
-                'userid' => $userid,
-            ]);
-            WebSocketDialogUser::updateInsert([
-                'dialog_id' => $this->dialog_id,
-                'userid' => $userid,
-            ]);
+    public function joinProject($userid)
+    {
+        if (empty($userid)) {
+            return false;
+        }
+        if (!User::whereUserid($userid)->exists()) {
+            return false;
+        }
+        ProjectUser::updateInsert([
+            'project_id' => $this->id,
+            'userid' => $userid,
+        ]);
+        return true;
+    }
+
+    /**
+     * 同步项目成员至聊天室
+     */
+    public function syncDialogUser()
+    {
+        if (empty($this->dialog_id)) {
+            return;
+        }
+        AbstractModel::transaction(function() {
+            $userids = $this->relationUserids();
+            foreach ($userids as $userid) {
+                WebSocketDialogUser::updateInsert([
+                    'dialog_id' => $this->dialog_id,
+                    'userid' => $userid,
+                ]);
+            }
+            WebSocketDialogUser::whereDialogId($this->dialog_id)->whereNotIn('userid', $userids)->delete();
         });
-        return Base::isSuccess($result);
+    }
+
+    /**
+     * 获取相关所有人员（项目负责人、项目成员）
+     * @return array
+     */
+    public function relationUserids()
+    {
+        return $this->projectUser->pluck('userid')->toArray();
     }
 
     /**
@@ -203,13 +239,15 @@ class Project extends AbstractModel
     public function deleteProject()
     {
         $result = AbstractModel::transaction(function () {
-            ProjectTask::whereProjectId($this->id)->delete();
-            ProjectColumn::whereProjectId($this->id)->delete();
             WebSocketDialog::whereId($this->dialog_id)->delete();
+            $columns = ProjectColumn::whereProjectId($this->id)->get();
+            foreach ($columns as $column) {
+                $column->deleteColumn();
+            }
             if ($this->delete()) {
-                return Base::retSuccess('success');
+                return Base::retSuccess('删除成功', $this->toArray());
             } else {
-                return Base::retError('error');
+                return Base::retError('删除失败', $this->toArray());
             }
         });
         return Base::isSuccess($result);

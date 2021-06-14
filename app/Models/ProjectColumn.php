@@ -54,11 +54,14 @@ class ProjectColumn extends AbstractModel
     public function deleteColumn()
     {
         $result = AbstractModel::transaction(function () {
-            ProjectTask::whereColumnId($this->id)->delete();
+            $tasks = ProjectTask::whereColumnId($this->id)->get();
+            foreach ($tasks as $task) {
+                $task->deleteTask();
+            }
             if ($this->delete()) {
-                return Base::retSuccess('success');
+                return Base::retSuccess('删除成功', $this->toArray());
             } else {
-                return Base::retError('error');
+                return Base::retError('删除失败', $this->toArray());
             }
         });
         return Base::isSuccess($result);

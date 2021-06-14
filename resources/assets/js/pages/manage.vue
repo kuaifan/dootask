@@ -222,7 +222,7 @@ export default {
 
         classNameRoute(path, openMenu) {
             return {
-                "active": $A.leftExists(this.curPath, '/manage/' + path),
+                "active": this.curPath == '/manage/' + path,
                 "open-menu": openMenu === true,
             };
         },

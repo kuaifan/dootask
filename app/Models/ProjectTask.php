@@ -367,6 +367,7 @@ class ProjectTask extends AbstractModel
                     ], [
                         'owner' => 1,
                     ]);
+                    $this->syncDialogUser();
                 }
             }
             // 计划时间
@@ -403,6 +404,7 @@ class ProjectTask extends AbstractModel
                         $array[] = $uid;
                     }
                     ProjectTaskUser::whereTaskId($this->id)->where('owner', '!=', 1)->whereNotIn('userid', $array)->delete();
+                    $this->syncDialogUser();
                 }
                 // 背景色
                 if (Arr::exists($data, 'color')) {
@@ -434,6 +436,47 @@ class ProjectTask extends AbstractModel
             if ($this->end_at instanceof \DateTimeInterface) $this->end_at = $this->end_at->format('Y-m-d H:i:s');
             return Base::retSuccess('修改成功');
         });
+    }
+
+    /**
+     * 同步项目成员至聊天室
+     */
+    public function syncDialogUser()
+    {
+        if ($this->parent_id > 0) {
+            $task = self::find($this->parent_id);
+            if ($task) {
+                $task->syncDialogUser();
+            }
+            return;
+        }
+        if (empty($this->dialog_id)) {
+            return;
+        }
+        AbstractModel::transaction(function() {
+            $userids = $this->relationUserids();
+            foreach ($userids as $userid) {
+                WebSocketDialogUser::updateInsert([
+                    'dialog_id' => $this->dialog_id,
+                    'userid' => $userid,
+                ]);
+            }
+            WebSocketDialogUser::whereDialogId($this->dialog_id)->whereNotIn('userid', $userids)->delete();
+        });
+    }
+
+    /**
+     * 获取任务所有人员（负责人、协助人员、子任务负责人）
+     * @return array
+     */
+    public function relationUserids()
+    {
+        $userids = $this->taskUser->pluck('userid')->toArray();
+        $items = ProjectTask::with(['taskUser'])->where('parent_id', $this->id)->whereNull('archived_at')->get();
+        foreach ($items as $item) {
+            $userids = array_merge($userids, $item->taskUser->pluck('userid')->toArray());
+        }
+        return array_values(array_filter(array_unique($userids)));
     }
 
     /**
@@ -488,8 +531,14 @@ class ProjectTask extends AbstractModel
     public function deleteTask()
     {
         return AbstractModel::transaction(function () {
-            $this->delete();
-            return Base::retSuccess('删除成功', $this->toArray());
+            if ($this->dialog_id) {
+                WebSocketDialog::whereId($this->dialog_id)->delete();
+            }
+            if ($this->delete()) {
+                return Base::retSuccess('删除成功', $this->toArray());
+            } else {
+                return Base::retError('删除失败', $this->toArray());
+            }
         });
     }
 }

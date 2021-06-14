@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Models\AbstractModel;
 use App\Models\Project;
 use App\Models\ProjectColumn;
-use App\Models\ProjectLog;
 use App\Models\ProjectTask;
 use App\Models\ProjectTaskFile;
 use App\Models\ProjectUser;
@@ -177,11 +176,6 @@ class ProjectController extends AbstractController
                 'userid' => $project->userid,
                 'owner' => 1,
             ])->save();
-            ProjectLog::createInstance([
-                'project_id' => $project->id,
-                'userid' => $project->userid,
-                'detail' => '创建项目',
-            ])->save();
             foreach ($insertColumns AS $column) {
                 $column['project_id'] = $project->id;
                 ProjectColumn::createInstance($column)->save();
@@ -332,17 +326,13 @@ class ProjectController extends AbstractController
         //
         return AbstractModel::transaction(function() use ($project, $userid) {
             $array = [];
-            foreach ($userid as $value) {
-                if ($value > 0 && $project->joinProject($value)) {
-                    $array[] = $value;
+            foreach ($userid as $uid) {
+                if ($project->joinProject($uid)) {
+                    $array[] = $uid;
                 }
             }
-            $delUser = ProjectUser::whereProjectId($project->id)->whereNotIn('userid', $array)->get();
-            if ($delUser->isNotEmpty()) {
-                foreach ($delUser as $value) {
-                    $value->exitProject();
-                }
-            }
+            ProjectUser::whereProjectId($project->id)->whereNotIn('userid', $array)->delete();
+            $project->syncDialogUser();
             return Base::retSuccess('修改成功');
         });
     }
@@ -389,6 +379,7 @@ class ProjectController extends AbstractController
             ], [
                 'owner' => 1,
             ]);
+            $project->syncDialogUser();
             //
             return Base::retSuccess('移交成功');
         });
@@ -423,11 +414,11 @@ class ProjectController extends AbstractController
             return Base::retError('项目负责人无法退出项目');
         }
         //
-        $projectUser = ProjectUser::whereProjectId($project->id)->whereUserid($user->userid)->first();
-        if ($projectUser->exitProject()) {
+        return AbstractModel::transaction(function() use ($user, $project) {
+            ProjectUser::whereProjectId($project->id)->whereUserid($user->userid)->delete();
+            $project->syncDialogUser();
             return Base::retSuccess('退出成功');
-        }
-        return Base::retError('退出失败');
+        });
     }
 
     /**
@@ -1011,13 +1002,7 @@ class ProjectController extends AbstractController
         return AbstractModel::transaction(function() use ($task) {
             if (empty($task->dialog_id)) {
                 $task->lockForUpdate();
-                $userids = $task->taskUser->pluck('userid')->toArray();
-                $items = ProjectTask::with(['taskUser'])->where('parent_id', $task->id)->whereNull('archived_at')->get();
-                foreach ($items as $item) {
-                    $userids = array_merge($userids, $item->taskUser->pluck('userid')->toArray());
-                }
-                $userids = array_values(array_filter(array_unique($userids)));
-                $dialog = WebSocketDialog::createGroup('', $userids, 'task');
+                $dialog = WebSocketDialog::createGroup(null, $task->relationUserids(), 'task');
                 if ($dialog) {
                     $task->dialog_id = $dialog->id;
                     $task->save();

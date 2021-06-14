@@ -750,20 +750,25 @@ export default {
      * @param userid
      */
     openDialogUserid({state, dispatch}, userid) {
-        if (userid === state.userId) {
-            return;
-        }
-        dispatch("call", {
-            url: 'dialog/open/user',
-            data: {
-                userid,
-            },
-        }).then(result => {
-            state.method.setStorage("messengerDialogId", result.data.id)
-            dispatch("getDialogMsgList", result.data.id);
-            dispatch("saveDialog", result.data);
-        }).catch(result => {
-            $A.modalError(result.msg);
+        return new Promise(function (resolve, reject) {
+            if (userid === state.userId) {
+                reject();
+                return;
+            }
+            dispatch("call", {
+                url: 'dialog/open/user',
+                data: {
+                    userid,
+                },
+            }).then(result => {
+                state.method.setStorage("messengerDialogId", result.data.id)
+                dispatch("getDialogMsgList", result.data.id);
+                dispatch("saveDialog", result.data);
+                resolve(result);
+            }).catch(result => {
+                $A.modalError(result.msg);
+                reject(result);
+            });
         });
     },
 
