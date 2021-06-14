@@ -267,6 +267,8 @@
                                 <div class="file-name">{{file.name}}</div>
                                 <div class="file-size">{{$A.bytesToSize(file.size)}}</div>
                             </li>
+                        </ul>
+                        <ul class="item-content">
                             <li>
                                 <div class="add-button" @click="$refs.upload.handleClick()">
                                     <i class="iconfont">&#xe6f2;</i>{{$L('添加附件')}}
@@ -278,8 +280,10 @@
                         <div class="item-label" slot="label">
                             <i class="iconfont">&#xe6f0;</i>{{$L('子任务')}}
                         </div>
-                        <ul :class="['item-content subtask', taskDetail.sub_task.length === 0 ? 'nosub' : '']">
+                        <ul class="item-content subtask">
                             <TaskDetail v-for="(task, key) in taskDetail.sub_task" :key="key" :open-task="task"/>
+                        </ul>
+                        <ul :class="['item-content', taskDetail.sub_task.length === 0 ? 'nosub' : '']">
                             <li>
                                 <Input
                                     v-if="addsubShow"
@@ -319,8 +323,8 @@
             </div>
             <TaskUpload ref="upload" class="upload"/>
         </div>
-        <div class="task-dialog">
-            <DialogWrapper v-if="taskDetail.dialog_id > 0">
+        <div class="task-dialog" :style="dialogStyle">
+            <DialogWrapper v-if="taskDetail.dialog_id > 0" ref="dialog">
                 <div slot="head" class="head">
                     <Icon class="icon" type="ios-chatbubbles-outline" />
                     <div class="nav">
@@ -337,7 +341,7 @@
                         <p>{{$L('动态')}}</p>
                     </div>
                 </div>
-                <div class="no-dialog" :style="dialogStyle">
+                <div class="no-dialog">
                     <div class="no-tip">{{$L('暂无消息')}}</div>
                     <div class="no-input">
                         <Input
@@ -472,7 +476,7 @@ export default {
             }
             if (taskDetail.dialog_id) {
                 return {
-                    minHeight: (innerHeight - 70 - 66 - 30) + 'px'
+                    minHeight: (innerHeight - 70 - 48) + 'px'
                 }
             } else {
                 return {};
@@ -979,6 +983,10 @@ export default {
                 this.$store.dispatch("saveTask", {
                     id: this.taskDetail.id,
                     dialog_id: data.dialog_id
+                });
+                this.$nextTick(() => {
+                    this.$refs.dialog.sendMsg(this.msgText);
+                    this.msgText = "";
                 });
             }).catch(({msg}) => {
                 $A.modalError(msg);

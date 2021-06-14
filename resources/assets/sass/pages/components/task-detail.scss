@@ -144,6 +144,7 @@
                         }
                     }
                     &.file {
+                        margin-bottom: -3px;
                         > li {
                             margin-bottom: 2px;
                             .file-load {
@@ -157,8 +158,12 @@
                             }
                             .file-name {
                                 padding-left: 8px;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                                white-space: nowrap;
                             }
                             .file-size {
+                                flex-shrink: 0;
                                 padding-left: 10px;
                                 height: 24px;
                                 font-size: 12px;
@@ -256,7 +261,7 @@
                         > li {
                             .add-input,
                             .add-button {
-                                margin-top: 3px;
+                                margin-top: -2px;
                             }
                         }
                     }

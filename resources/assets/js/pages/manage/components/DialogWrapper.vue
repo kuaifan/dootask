@@ -31,7 +31,17 @@
         </ScrollerY>
         <div :class="['dialog-footer', msgNew > 0 && dialogMsgList.length > 0 ? 'newmsg' : '']">
             <div class="dialog-newmsg" @click="goNewBottom">{{$L('有' + msgNew + '条新消息')}}</div>
-            <DragInput class="dialog-input" v-model="msgText" type="textarea" :rows="1" :autosize="{ minRows: 1, maxRows: 3 }" :maxlength="255" @on-keydown="chatKeydown" @on-input-paste="pasteDrag" :placeholder="$L('输入消息...')" />
+            <DragInput
+                ref="input"
+                v-model="msgText"
+                class="dialog-input"
+                type="textarea"
+                :rows="1"
+                :autosize="{ minRows: 1, maxRows: 3 }"
+                :maxlength="255"
+                @on-keydown="chatKeydown"
+                @on-input-paste="pasteDrag"
+                :placeholder="$L('输入消息...')" />
             <DialogUpload
                 ref="chatUpload"
                 class="chat-upload"
@@ -105,7 +115,14 @@ export default {
     },
 
     methods: {
-        sendMsg() {
+        sendMsg(text) {
+            if (typeof text === "string" && text) {
+                this.msgText = text;
+                this.$refs.input.focus();
+            }
+            if (!this.msgText) {
+                return;
+            }
             let tempId = $A.randomString(16);
             this.dialogMsgList.push({
                 id: tempId,
