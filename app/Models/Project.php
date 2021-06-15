@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Exceptions\ApiException;
 use App\Module\Base;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -280,7 +281,7 @@ class Project extends AbstractModel
             ->where('project_users.userid', User::token2userid())
             ->first();
         if (empty($project)) {
-            return null;
+            throw new ApiException('项目不存在或不在成员列表内');
         }
         return $project;
     }

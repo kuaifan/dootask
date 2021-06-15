@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Exceptions\ApiException;
 use App\Module\Base;
 use Arr;
 use Carbon\Carbon;
@@ -574,13 +575,13 @@ class ProjectTask extends AbstractModel
      * 根据会员ID获取任务、项目信息（用于判断会员是否存在项目内）
      * @param int $task_id
      * @param array $with
-     * @return array
+     * @return array(ProjectTask, Project)
      */
     public static function userTask($task_id, $with = [])
     {
         $task = ProjectTask::with($with)->whereId(intval($task_id))->first();
         if (empty($task)) {
-            return null;
+            throw new ApiException('任务不存在');
         }
         // 项目
         $project = Project::select([ 'projects.*', 'project_users.owner' ])
@@ -589,7 +590,7 @@ class ProjectTask extends AbstractModel
             ->where('project_users.userid', User::token2userid())
             ->first();
         if (empty($project)) {
-            return null;
+            throw new ApiException('项目不存在或不在成员列表内');
         }
         return [$task, $project];
     }

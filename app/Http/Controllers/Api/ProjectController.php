@@ -58,9 +58,6 @@ class ProjectController extends AbstractController
         $project_id = intval(Request::input('project_id'));
         //
         $project = Project::userProject($project_id);
-        if (empty($project)) {
-            return Base::retError('项目不存在或不在成员列表内');
-        }
         //
         return Base::retSuccess('success', $project);
     }
@@ -184,9 +181,6 @@ class ProjectController extends AbstractController
         }
         //
         $project = Project::userProject($project_id);
-        if (empty($project)) {
-            return Base::retError('项目不存在或不在成员列表内');
-        }
         if (!$project->owner) {
             return Base::retError('你不是项目负责人');
         }
@@ -214,9 +208,6 @@ class ProjectController extends AbstractController
         $only_column = intval(Request::input('only_column'));
         //
         $project = Project::userProject($project_id);
-        if (empty($project)) {
-            return Base::retError('项目不存在或不在成员列表内');
-        }
         //
         if ($only_column) {
             // 排序列表
@@ -266,9 +257,6 @@ class ProjectController extends AbstractController
         $userid = is_array($userid) ? $userid : [$userid];
         //
         $project = Project::userProject($project_id);
-        if (empty($project)) {
-            return Base::retError('项目不存在或不在成员列表内');
-        }
         if (!$project->owner) {
             return Base::retError('你不是项目负责人');
         }
@@ -300,9 +288,6 @@ class ProjectController extends AbstractController
         $owner_userid = intval(Request::input('owner_userid'));
         //
         $project = Project::userProject($project_id);
-        if (empty($project)) {
-            return Base::retError('项目不存在或不在成员列表内');
-        }
         if (!$project->owner) {
             return Base::retError('你不是项目负责人');
         }
@@ -337,9 +322,6 @@ class ProjectController extends AbstractController
         $project_id = intval(Request::input('project_id'));
         //
         $project = Project::userProject($project_id);
-        if (empty($project)) {
-            return Base::retError('项目不存在或不在成员列表内');
-        }
         //
         if ($project->owner) {
             return Base::retError('项目负责人无法退出项目');
@@ -364,9 +346,6 @@ class ProjectController extends AbstractController
         $project_id = intval(Request::input('project_id'));
         //
         $project = Project::userProject($project_id);
-        if (empty($project)) {
-            return Base::retError('项目不存在或不在成员列表内');
-        }
         if (!$project->owner) {
             return Base::retError('你不是项目负责人');
         }
@@ -391,9 +370,6 @@ class ProjectController extends AbstractController
         $name = trim(Request::input('name'));
         // 项目
         $project = Project::userProject($project_id);
-        if (empty($project)) {
-            return Base::retError('项目不存在或不在成员列表内');
-        }
         //
         if (empty($name)) {
             return Base::retError('列表名称不能为空');
@@ -487,9 +463,6 @@ class ProjectController extends AbstractController
         $task_id = intval(Request::input('task_id'));
         //
         list($task, $project) = ProjectTask::userTask($task_id, ['taskUser', 'taskTag']);
-        if (empty($project)) {
-            return Base::retError('项目不存在或不在成员列表内');
-        }
         //
         $task->project_name = $project->name;
         $task->column_name = ProjectColumn::whereId($task->column_id)->value('name');
@@ -507,11 +480,8 @@ class ProjectController extends AbstractController
         user::auth();
         //
         $task_id = intval(Request::input('task_id'));
-        // 任务
+        //
         list($task, $project) = ProjectTask::userTask($task_id);
-        if (empty($project)) {
-            return Base::retError('项目不存在或不在成员列表内');
-        }
         //
         $data = ProjectTask::with(['taskUser', 'taskTag'])->where('parent_id', $task->id)->whereNull('archived_at')->get();
         return Base::retSuccess('success', $data);
@@ -527,11 +497,8 @@ class ProjectController extends AbstractController
         user::auth();
         //
         $task_id = intval(Request::input('task_id'));
-        // 任务
+        //
         list($task, $project) = ProjectTask::userTask($task_id);
-        if (empty($project)) {
-            return Base::retError('项目不存在或不在成员列表内');
-        }
         //
         return Base::retSuccess('success', $task->content ?: json_decode('{}'));
     }
@@ -546,11 +513,8 @@ class ProjectController extends AbstractController
         user::auth();
         //
         $task_id = intval(Request::input('task_id'));
-        // 任务
+        //
         list($task, $project) = ProjectTask::userTask($task_id);
-        if (empty($project)) {
-            return Base::retError('项目不存在或不在成员列表内');
-        }
         //
         return Base::retSuccess('success', $task->taskFile);
     }
@@ -575,9 +539,6 @@ class ProjectController extends AbstractController
         $column_id = $data['column_id'];
         // 项目
         $project = Project::userProject($project_id);
-        if (empty($project)) {
-            return Base::retError('项目不存在或不在成员列表内');
-        }
         // 列表
         $column = null;
         $newColumn = null;
@@ -632,11 +593,8 @@ class ProjectController extends AbstractController
         //
         $task_id = intval(Request::input('task_id'));
         $name = Request::input('name');
-        // 任务
+        //
         list($task, $project) = ProjectTask::userTask($task_id);
-        if (empty($project)) {
-            return Base::retError('项目不存在或不在成员列表内');
-        }
         //
         $result = ProjectTask::addTask([
             'name' => $name,
@@ -677,11 +635,8 @@ class ProjectController extends AbstractController
         //
         parse_str(Request::getContent(), $data);
         $task_id = intval($data['task_id']);
-        // 任务
+        //
         list($task, $project) = ProjectTask::userTask($task_id);
-        if (empty($project)) {
-            return Base::retError('项目不存在或不在成员列表内');
-        }
         //
         if (Base::isDate($data['complete_at'])) {
             // 标记已完成
@@ -718,11 +673,8 @@ class ProjectController extends AbstractController
         $user = User::auth();
         //
         $task_id = Base::getPostInt('task_id');
-        // 任务
+        //
         list($task, $project) = ProjectTask::userTask($task_id);
-        if (empty($project)) {
-            return Base::retError('项目不存在或不在成员列表内');
-        }
         //
         $path = "uploads/task/" . $task->id . "/";
         $image64 = Base::getPostValue('image64');
@@ -771,11 +723,8 @@ class ProjectController extends AbstractController
         user::auth();
         //
         $task_id = intval(Request::input('task_id'));
-        // 任务
+        //
         list($task, $project) = ProjectTask::userTask($task_id);
-        if (empty($project)) {
-            return Base::retError('项目不存在或不在成员列表内');
-        }
         //
         if ($task->parent_id > 0) {
             return Base::retError('子任务不支持此功能');
@@ -809,11 +758,8 @@ class ProjectController extends AbstractController
         user::auth();
         //
         $task_id = intval(Request::input('task_id'));
-        // 任务
+        //
         list($task, $project) = ProjectTask::userTask($task_id);
-        if (empty($project)) {
-            return Base::retError('项目不存在或不在成员列表内');
-        }
         //
         if ($task->parent_id > 0) {
             return Base::retError('子任务不支持此功能');
@@ -832,11 +778,8 @@ class ProjectController extends AbstractController
         user::auth();
         //
         $task_id = intval(Request::input('task_id'));
-        // 任务
+        //
         list($task, $project) = ProjectTask::userTask($task_id);
-        if (empty($project)) {
-            return Base::retError('项目不存在或不在成员列表内');
-        }
         //
         return $task->deleteTask();
     }
