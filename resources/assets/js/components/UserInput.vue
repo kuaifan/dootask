@@ -71,6 +71,14 @@
                 type: Boolean,
                 default: true
             },
+            projectId: {
+                type: Number,
+                default: 0
+            },
+            noProjectId: {
+                type: Number,
+                default: 0
+            },
         },
         data() {
             return {
@@ -158,7 +166,9 @@
                         url: 'users/search',
                         data: {
                             keys: {
-                                key: query || ''
+                                key: query || '',
+                                project_id: this.projectId,
+                                no_project_id: this.noProjectId,
                             },
                             take: 30
                         },

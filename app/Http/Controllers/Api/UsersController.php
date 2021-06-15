@@ -331,9 +331,11 @@ class UsersController extends AbstractController
      * @apiGroup users
      * @apiName searchinfo
      *
-     * @apiParam {Object} where            搜索条件
-     * - where.key  昵称、邮箱、用户名
-     * @apiParam {Number} [take]           获取数量，10-100
+     * @apiParam {Object} keys          搜索条件
+     * - keys.key                  // 昵称、邮箱、用户名
+     * - keys.project_id           // 在指定项目ID
+     * - keys.no_project_id        // 不在指定项目ID
+     * @apiParam {Number} [take]        获取数量，10-100
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -343,12 +345,22 @@ class UsersController extends AbstractController
     {
         $builder = User::select(['userid', 'email', 'nickname', 'profession', 'userimg', 'az']);
         //
-        $keys = Request::input('where');
+        $keys = Request::input('keys');
         if (is_array($keys)) {
             if ($keys['key']) {
                 $builder->where(function($query) use ($keys) {
                     $query->where('email', 'like', '%,' . $keys['key'] . ',%')
                         ->orWhere('nickname', 'like', '%,' . $keys['key'] . ',%');
+                });
+            }
+            if (intval($keys['project_id']) > 0) {
+                $builder->whereIn('userid', function ($query) use ($keys) {
+                    $query->select('userid')->from('project_users')->where('project_id', $keys['project_id']);
+                });
+            }
+            if (intval($keys['no_project_id']) > 0) {
+                $builder->whereNotIn('userid', function ($query) use ($keys) {
+                    $query->select('userid')->from('project_users')->where('project_id', $keys['no_project_id']);
                 });
             }
         }

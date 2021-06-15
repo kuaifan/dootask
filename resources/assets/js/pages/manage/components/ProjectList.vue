@@ -19,7 +19,7 @@
                         <Icon type="md-add" />
                     </li>
                     <li :class="['project-icon', searchText!='' ? 'active' : '']">
-                        <ETooltip :value="searchText!=''" :manual="searchText!=''" transfer>
+                        <ETooltip :value="searchText!=''" :manual="searchText!=''" effect="light" transfer>
                             <Icon type="ios-search" />
                             <div slot="content">
                                 <Input v-model="searchText" :placeholder="$L('名称、描述...')" clearable autofocus/>

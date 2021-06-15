@@ -354,8 +354,9 @@ class ProjectTask extends AbstractModel
             // 负责人
             if (Arr::exists($data, 'owner')) {
                 $row = ProjectTaskUser::whereTaskId($this->id)->whereOwner(1)->first();
-                if ($row->userid != $data['owner']) {
-                    if (!User::find(intval($data['owner']))) {
+                $owner = intval($data['owner']);
+                if ($row->userid != $owner) {
+                    if (empty($this->useridInTheProject($owner))) {
                         return Base::retError('请选择正确的负责人');
                     }
                     $row->owner = 0;
@@ -363,7 +364,7 @@ class ProjectTask extends AbstractModel
                     ProjectTaskUser::updateInsert([
                         'project_id' => $this->parent_id,
                         'task_id' => $this->id,
-                        'userid' => $data['owner'],
+                        'userid' => $owner,
                     ], [
                         'owner' => 1,
                     ]);
@@ -391,9 +392,8 @@ class ProjectTask extends AbstractModel
                     $assist = is_array($data['assist']) ? $data['assist'] : [$data['assist']];
                     foreach ($assist as $uid) {
                         if (intval($uid) == 0) continue;
-                        if (ProjectTaskUser::whereTaskId($this->id)->whereUserid($uid)->whereOwner(1)->exists()) continue;
                         //
-                        if (!ProjectTaskUser::whereTaskId($this->id)->whereUserid($uid)->where('owner', '!=', 1)->exists()) {
+                        if (empty($this->useridInTheTask($uid))) {
                             ProjectTaskUser::createInstance([
                                 'project_id' => $this->parent_id,
                                 'task_id' => $this->id,
@@ -477,6 +477,34 @@ class ProjectTask extends AbstractModel
             $userids = array_merge($userids, $item->taskUser->pluck('userid')->toArray());
         }
         return array_values(array_filter(array_unique($userids)));
+    }
+
+    /**
+     * 会员id是否在项目里
+     * @param int $userid
+     * @return int 0:不存在、1存在、2存在且是管理员
+     */
+    public function useridInTheProject($userid)
+    {
+        $user = ProjectUser::whereProjectId($this->project_id)->whereUserid(intval($userid))->first();
+        if (empty($user)) {
+            return 0;
+        }
+        return $user->owner ? 2 : 1;
+    }
+
+    /**
+     * 会员id是否在任务里
+     * @param int $userid
+     * @return int 0:不存在、1存在、2存在且是管理员
+     */
+    public function useridInTheTask($userid)
+    {
+        $user = ProjectTaskUser::whereTaskId($this->id)->whereUserid(intval($userid))->first();
+        if (empty($user)) {
+            return 0;
+        }
+        return $user->owner ? 2 : 1;
     }
 
     /**

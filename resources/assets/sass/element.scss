@@ -13,6 +13,15 @@ $--tooltip-font-size: 14px;
     min-width: 100px;
     line-height: 34px;
 }
+
 .el-dropdown-menu__item--divided:before {
     height: 5px;
+}
+
+.el-tooltip__popper.is-light[x-placement^="bottom"] {
+    border-width: 0;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
+    .popper__arrow {
+        border-bottom-color: hsla(0, 0%, 85%, .5);
+    }
 }

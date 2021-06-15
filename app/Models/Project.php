@@ -233,6 +233,20 @@ class Project extends AbstractModel
     }
 
     /**
+     * 会员id是否在项目里
+     * @param int $userid
+     * @return int 0:不存在、1存在、2存在且是管理员
+     */
+    public function useridInTheProject($userid)
+    {
+        $user = ProjectUser::whereProjectId($this->id)->whereUserid(intval($userid))->first();
+        if (empty($user)) {
+            return 0;
+        }
+        return $user->owner ? 2 : 1;
+    }
+
+    /**
      * 删除项目
      * @return bool
      */

@@ -77,6 +77,7 @@
                     v-if="ownerShow"
                     v-model="ownerData.owner_userid"
                     :multiple-max="1"
+                    :project-id="taskDetail.project_id"
                     :placeholder="$L('选择任务负责人')"/>
                 <div class="task-detail-avatar-buttons">
                     <Button size="small" type="primary" @click="$refs.owner.ok()">{{$L('确定')}}</Button>
@@ -192,6 +193,7 @@
                                     v-if="ownerShow"
                                     v-model="ownerData.owner_userid"
                                     :multiple-max="1"
+                                    :project-id="taskDetail.project_id"
                                     :placeholder="$L('选择任务负责人')"/>
                                 <div class="task-detail-avatar-buttons">
                                     <Button size="small" type="primary" @click="$refs.owner.ok()">{{$L('确定')}}</Button>
@@ -222,6 +224,7 @@
                                     v-if="assistShow"
                                     v-model="assistData.assist_userid"
                                     :multiple-max="10"
+                                    :project-id="taskDetail.project_id"
                                     :disabled-choice="assistData.disabled"
                                     :placeholder="$L('选择任务协助人员')"/>
                                 <div class="task-detail-avatar-buttons">
@@ -597,6 +600,8 @@ export default {
                 this.timeForce = false;
                 this.assistForce = false;
                 this.addsubForce = false;
+                this.$refs.owner.handleClose();
+                this.$refs.assist.handleClose();
             }
         }
     },
@@ -990,6 +995,7 @@ export default {
                     dialog_id: data.dialog_id
                 });
                 this.$nextTick(() => {
+                    this.$store.dispatch("getDialogMsgList", data.dialog_id);
                     this.$refs.dialog.sendMsg(this.msgText);
                     this.msgText = "";
                 });
