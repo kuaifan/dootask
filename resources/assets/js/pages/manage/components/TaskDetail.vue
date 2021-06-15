@@ -600,8 +600,8 @@ export default {
                 this.timeForce = false;
                 this.assistForce = false;
                 this.addsubForce = false;
-                this.$refs.owner.handleClose();
-                this.$refs.assist.handleClose();
+                this.$refs.owner && this.$refs.owner.handleClose();
+                this.$refs.assist && this.$refs.assist.handleClose();
             }
         }
     },

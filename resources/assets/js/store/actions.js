@@ -714,7 +714,18 @@ export default {
             dispatch("call", {
                 url: 'dialog/lists',
             }).then(result => {
-                state.dialogList = result.data.data;
+                if (state.dialogList.length === 0) {
+                    state.dialogList = result.data.data;
+                } else {
+                    result.data.data.forEach((dialog) => {
+                        let index = state.dialogList.findIndex(({id}) => id == dialog.id);
+                        if (index > -1) {
+                            state.dialogList.splice(index, 1, Object.assign(state.dialogList[index], dialog))
+                        } else {
+                            state.dialogList.unshift(dialog);
+                        }
+                    });
+                }
                 resolve(result);
             }).catch(result => {
                 reject(result);

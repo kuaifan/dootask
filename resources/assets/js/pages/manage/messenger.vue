@@ -101,6 +101,7 @@ export default {
     },
 
     activated() {
+        this.$store.dispatch("getDialogList");
         this.openDialogStorage();
     },
 
