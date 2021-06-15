@@ -16,23 +16,23 @@
                         </UserAvatar>
                     </li>
                     <li class="project-icon" @click="addTaskOpen(0)">
-                        <Icon type="md-add" />
+                        <Icon class="menu-icon" type="md-add" />
                     </li>
                     <li :class="['project-icon', searchText!='' ? 'active' : '']">
-                        <ETooltip :value="searchText!=''" :manual="searchText!=''" effect="light" transfer>
-                            <Icon type="ios-search" />
+                        <Tooltip :always="searchText!=''" theme="light">
+                            <Icon class="menu-icon" type="ios-search" />
                             <div slot="content">
-                                <Input v-model="searchText" :placeholder="$L('名称、描述...')" clearable autofocus/>
+                                <Input v-model="searchText" :placeholder="$L('名称、描述...')" class="search-input" clearable autofocus/>
                             </div>
-                        </ETooltip>
+                        </Tooltip>
                     </li>
                     <li :class="['project-icon', projectChatShow ? 'active' : '']" @click="toggleBoolean('projectChatShow')">
-                        <Icon type="ios-chatbubbles" />
-                        <Badge :count="msgUnread"></Badge>
+                        <Icon class="menu-icon" type="ios-chatbubbles" />
+                        <Badge class="menu-badge" :count="msgUnread"></Badge>
                     </li>
                     <li class="project-icon">
                         <EDropdown @command="projectDropdown" trigger="click" transfer>
-                            <Icon type="ios-more" />
+                            <Icon class="menu-icon" type="ios-more" />
                             <EDropdownMenu v-if="projectDetail.owner_userid === userId" slot="dropdown">
                                 <EDropdownItem command="setting">{{$L('项目设置')}}</EDropdownItem>
                                 <EDropdownItem command="user">{{$L('成员管理')}}</EDropdownItem>
@@ -46,6 +46,9 @@
                     </li>
                 </ul>
                 <div class="project-switch">
+                    <div v-if="projectTablePanel && completedList.length > 0" class="project-checkbox">
+                        <Checkbox :value="projectCompleteHide" @on-change="toggleBoolean('projectCompleteHide', $event)">{{$L('隐藏已完成')}}</Checkbox>
+                    </div>
                     <div :class="['project-switch-button', !projectTablePanel ? 'menu' : '']" @click="toggleBoolean('projectTablePanel')">
                         <div><i class="iconfont">&#xe60c;</i></div>
                         <div><i class="iconfont">&#xe66a;</i></div>
@@ -68,7 +71,7 @@
                         :style="column.color ? {backgroundColor: column.color} : {}">
                         <div class="column-head-title">
                             <AutoTip>{{column.name}}</AutoTip>
-                            <em>({{column.project_task.length}})</em>
+                            <em>({{panelTask(column.project_task).length}})</em>
                         </div>
                         <div class="column-head-icon">
                             <div v-if="column.loading === true" class="loading"><Loading /></div>
@@ -119,8 +122,8 @@
                             @sort="sortUpdate"
                             @remove="sortUpdate">
                             <div
-                                v-for="item in panelTask(column.project_task)"
-                                :class="['task-item task-draggable', item.complete_at ? 'complete' : '']"
+                                v-for="item in column.project_task"
+                                :class="['task-item task-draggable', item.complete_at ? 'complete' : '', taskHidden(item) ? 'hidden' : '']"
                                 :style="item.color ? {backgroundColor: item.color} : {}"
                                 @click="openTask(item)">
                                 <div :class="['task-head', item.desc ? 'has-desc' : '']">
@@ -447,6 +450,7 @@ export default {
 
             'projectChatShow',
             'projectTablePanel',
+            'projectCompleteHide',
             'taskMyShow',
             'taskUndoneShow',
             'taskCompletedShow'
@@ -459,11 +463,16 @@ export default {
         },
 
         panelTask() {
-            const {searchText} = this;
+            const {searchText, projectCompleteHide} = this;
             return function (project_task) {
+                if (projectCompleteHide) {
+                    project_task = project_task.filter(({complete_at}) => {
+                        return !complete_at;
+                    });
+                }
                 if (searchText) {
-                    return project_task.filter((task) => {
-                        return $A.strExists(task.name, searchText) || $A.strExists(task.desc, searchText);
+                    project_task = project_task.filter(({name, desc}) => {
+                        return $A.strExists(name, searchText) || $A.strExists(desc, searchText);
                     });
                 }
                 return project_task;
@@ -486,7 +495,15 @@ export default {
                     }
                 });
             });
-            return array;
+            return array.sort((a, b) => {
+                if (a.p_level != b.p_level) {
+                    return a.p_level - b.p_level;
+                }
+                if (a.sort != b.sort) {
+                    return a.sort - b.sort;
+                }
+                return a.id - b.id;
+            });
         },
 
         undoneList() {
@@ -505,7 +522,15 @@ export default {
                     }
                 });
             });
-            return array;
+            return array.sort((a, b) => {
+                if (a.p_level != b.p_level) {
+                    return a.p_level - b.p_level;
+                }
+                if (a.sort != b.sort) {
+                    return a.sort - b.sort;
+                }
+                return a.id - b.id;
+            });
         },
 
         completedList() {
@@ -524,7 +549,15 @@ export default {
                     }
                 });
             });
-            return array;
+            return array.sort((a, b) => {
+                if (a.p_level != b.p_level) {
+                    return a.p_level - b.p_level;
+                }
+                if (a.sort != b.sort) {
+                    return a.sort - b.sort;
+                }
+                return a.id - b.id;
+            });
         },
 
         expiresFormat() {
@@ -971,6 +1004,28 @@ export default {
 
         toggleBoolean(type) {
             this.$store.dispatch("toggleBoolean", type);
+        },
+
+        taskHidden(task) {
+            const {name, desc, complete_at} = task;
+            const {searchText, projectCompleteHide} = this;
+            if (projectCompleteHide) {
+                if (complete_at) {
+                    return true;
+                }
+            }
+            if (searchText) {
+                if (!($A.strExists(name, searchText) || $A.strExists(desc, searchText))) {
+                    return true;
+                }
+            }
+            return false;
+        },
+
+        sortBy(field) {
+            return function (a, b) {
+                return a[field] - b[field];
+            }
         },
 
         formatTime(date) {

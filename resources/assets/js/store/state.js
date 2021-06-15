@@ -228,6 +228,7 @@ const state = { method };
 [
     'projectChatShow',      // 项目聊天显示
     'projectTablePanel',    // 项目面板显示类型
+    'projectCompleteHide',  // 项目面板显示已完成列表
     'taskMyShow',           // 项目面板显示我的任务
     'taskUndoneShow',       // 项目面板显示未完成任务
     'taskCompletedShow'     // 项目面板显示已完成任务

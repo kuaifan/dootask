@@ -19,15 +19,15 @@
             </Dropdown>
             <ul>
                 <li @click="toggleRoute('dashboard')" :class="classNameRoute('dashboard')">
-                    <Icon type="ios-speedometer-outline" />
+                    <i class="iconfont">&#xe6fb;</i>
                     <div class="menu-title">{{$L('仪表板')}}</div>
                 </li>
                 <li @click="toggleRoute('calendar')" :class="classNameRoute('calendar')">
-                    <Icon type="ios-calendar-outline" />
+                    <i class="iconfont">&#xe6f5;</i>
                     <div class="menu-title">{{$L('日历')}}</div>
                 </li>
                 <li @click="toggleRoute('messenger')" :class="classNameRoute('messenger')">
-                    <Icon type="ios-chatbubbles-outline" />
+                    <i class="iconfont">&#xe6eb;</i>
                     <div class="menu-title">{{$L('消息')}}</div>
                     <Badge class="menu-badge" :count="dialogMsgUnread"></Badge>
                 </li>
@@ -41,7 +41,7 @@
                             <div class="project-h1">
                                 <em @click.stop="toggleOpenMenu(item.id)"></em>
                                 <div class="title">{{item.name}}</div>
-                                <div v-if="item.task_my_num > 0" class="num">{{item.task_my_num - item.task_my_complete}}</div>
+                                <div v-if="item.task_my_num - item.task_my_complete > 0" class="num">{{item.task_my_num - item.task_my_complete}}</div>
                             </div>
                             <div class="project-h2">
                                 <p>

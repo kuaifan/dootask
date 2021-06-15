@@ -61,17 +61,21 @@
                     &.project-icon {
                         border-radius: 50%;
                         background-color: #F2F3F5;
-                        .ivu-icon {
+                        .menu-icon {
                             font-size: 20px;
                             width: 36px;
                             height: 36px;
                             line-height: 36px;
                         }
-                        .ivu-badge {
+                        .menu-badge {
                             position: absolute;
                             top: -6px;
                             left: 20px;
                             transform: scale(0.8);
+                        }
+                        .search-input {
+                            margin: 2px 0;
+                            width: 170px;
                         }
                         &.active {
                             color: #ffffff;
@@ -84,6 +88,12 @@
                 display: flex;
                 justify-content: flex-end;
                 margin-top: 24px;
+                .project-checkbox {
+                    display: flex;
+                    align-items: center;
+                    margin-right: 14px;
+                    opacity: 0.9;
+                }
                 .project-switch-button {
                     display: flex;
                     align-items: center;
@@ -279,14 +289,13 @@
                     overflow-x: hidden;
                     overflow-y: auto;
                     .task-list {
-                        flex: 1;
-                        height: 0;
-                        display: flex;
-                        flex-direction: column;
+                        > div:last-child {
+                            margin-bottom: 16px;
+                        }
                     }
                     .task-item {
                         cursor: pointer;
-                        margin: 0 10px 16px;
+                        margin: 16px 10px 0;
                         background-color: #ffffff;
                         border-radius: 12px;
                         padding: 12px;
@@ -294,9 +303,6 @@
                         position: relative;
                         &:hover {
                             box-shadow: 0 0 10px #e6ecfa;
-                        }
-                        &:first-child {
-                            margin-top: 16px;
                         }
                         .task-head {
                             display: flex;
@@ -448,6 +454,9 @@
                             .priority-color {
                                 display: none;
                             }
+                        }
+                        &.hidden {
+                            display: none;
                         }
                     }
                 }

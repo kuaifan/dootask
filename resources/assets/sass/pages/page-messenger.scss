@@ -76,27 +76,11 @@
                         > li {
                             display: flex;
                             flex-direction: row;
-                            align-items: center;
-                            height: 80px;
-                            padding: 0 12px;
+                            align-items: flex-start;
+                            padding: 16px 12px;
                             position: relative;
                             cursor: pointer;
                             list-style: none;
-                            &.active {
-                                background-color: #F4F5F7;
-                            }
-                            &.loading {
-                                margin: 0;
-                                height: 52px;
-                                display: flex;
-                                align-items: center;
-                                justify-content: center;
-                                .common-loading {
-                                    width: 20px;
-                                    height: 20px;
-                                    margin: 0;
-                                }
-                            }
                             .user-avatar,
                             .icon-avatar {
                                 width: 46px;
@@ -105,16 +89,18 @@
                                 flex-shrink: 0;
                             }
                             .icon-avatar {
-                                line-height: 46px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
                                 border-radius: 50%;
                                 font-size: 26px;
                                 background-color: #61B2F9;
                                 color: #ffffff;
                                 &.project {
-                                    background-color: #7274E3;
+                                    background-color: #6E99EB;
                                 }
                                 &.task {
-                                    background-color: #4EA3F4;
+                                    background-color: #9B96DF;
                                     font-size: 24px;
                                 }
                             }
@@ -169,6 +155,21 @@
                                 left: 42px;
                                 font-size: 12px;
                                 transform: scale(0.8);
+                            }
+                            &.active {
+                                background-color: #F4F5F7;
+                            }
+                            &.loading {
+                                margin: 0;
+                                height: 52px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                .common-loading {
+                                    width: 20px;
+                                    height: 20px;
+                                    margin: 0;
+                                }
                             }
                         }
                     }
