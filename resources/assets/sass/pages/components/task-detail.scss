@@ -348,11 +348,13 @@
                     display: flex;
                     align-items: center;
                     margin-right: 24px;
+                    cursor: pointer;
                     &.active {
                         margin-top: -2px;
                         font-size: 16px;
                         font-weight: 600;
                         color: #555555;
+                        cursor: default;
                     }
                 }
             }
@@ -377,6 +379,22 @@
                     background-color: transparent;
                     &:focus {
                         box-shadow: none;
+                    }
+                }
+            }
+        }
+        .project-log {
+            margin-left: 36px;
+            .logs-activity {
+                padding: 22px 0 0;
+                > li {
+                    list-style: none;
+                    padding-top: 0;
+                    &.logs-loading,
+                    &.logs-more,
+                    &.logs-none {
+                        height: 59px;
+                        line-height: 59px;
                     }
                 }
             }
@@ -419,9 +437,7 @@
                     padding-left: 0;
                     > p {
                         margin-right: 28px;
-                        cursor: pointer;
                         &.active {
-                            cursor: default;
                             font-size: 18px;
                         }
                     }
@@ -444,6 +460,18 @@
                 .dialog-footer {
                     margin-bottom: 0;
                 }
+            }
+            .project-log {
+                position: absolute;
+                top: 40px;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 1;
+                padding: 8px 8px;
+                margin-left: 8px;
+                background-color: #ffffff;
+                overflow: auto;
             }
         }
     }

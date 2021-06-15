@@ -390,7 +390,7 @@ export default {
         });
         if (data.id == state.projectOpenTask.id) {
             state.projectOpenTask = Object.assign({}, state.projectOpenTask, data);
-        } else if (data.parent_id == state.projectOpenTask.id) {
+        } else if (data.parent_id == state.projectOpenTask.id && state.projectOpenTask.sub_task) {
             let index = state.projectOpenTask.sub_task.findIndex(({id}) => id === data.id);
             if (index > -1) {
                 state.projectOpenTask.sub_task.splice(index, 1, Object.assign(state.projectOpenTask.sub_task[index], data))
@@ -654,7 +654,7 @@ export default {
                 }
                 if (data.id == state.projectOpenTask.id) {
                     state.projectOpenTask = Object.assign({}, state.projectOpenTask, {_show: false});
-                } else if (data.parent_id == state.projectOpenTask.id) {
+                } else if (data.parent_id == state.projectOpenTask.id && state.projectOpenTask.sub_task) {
                     let index = state.projectOpenTask.sub_task.findIndex(({id}) => id === data.id);
                     if (index > -1) {
                         state.projectOpenTask.sub_task.splice(index, 1)

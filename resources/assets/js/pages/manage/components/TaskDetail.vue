@@ -330,24 +330,28 @@
             <TaskUpload ref="upload" class="upload"/>
         </div>
         <div class="task-dialog" :style="dialogStyle">
-            <DialogWrapper v-if="taskDetail.dialog_id > 0" ref="dialog">
-                <div slot="head" class="head">
-                    <Icon class="icon" type="ios-chatbubbles-outline" />
-                    <div class="nav">
-                        <p class="active">{{$L('聊天')}}</p>
-                        <p>{{$L('动态')}}</p>
+            <template v-if="taskDetail.dialog_id > 0">
+                <DialogWrapper ref="dialog">
+                    <div slot="head" class="head">
+                        <Icon class="icon" type="ios-chatbubbles-outline" />
+                        <div class="nav">
+                            <p :class="{active:navActive=='dialog'}" @click="navActive='dialog'">{{$L('聊天')}}</p>
+                            <p :class="{active:navActive=='log'}" @click="navActive='log'">{{$L('动态')}}</p>
+                        </div>
                     </div>
-                </div>
-            </DialogWrapper>
+                </DialogWrapper>
+                <ProjectLog v-if="navActive=='log'" :task-id="taskDetail.id"/>
+            </template>
             <div v-else>
                 <div class="head">
                     <Icon class="icon" type="ios-chatbubbles-outline" />
                     <div class="nav">
-                        <p class="active">{{$L('聊天')}}</p>
-                        <p>{{$L('动态')}}</p>
+                        <p :class="{active:navActive=='dialog'}" @click="navActive='dialog'">{{$L('聊天')}}</p>
+                        <p :class="{active:navActive=='log'}" @click="navActive='log'">{{$L('动态')}}</p>
                     </div>
                 </div>
-                <div class="no-dialog">
+                <ProjectLog v-if="navActive=='log'" :task-id="taskDetail.id"/>
+                <div v-else class="no-dialog">
                     <div class="no-tip">{{$L('暂无消息')}}</div>
                     <div class="no-input">
                         <Input
@@ -374,10 +378,11 @@ import TaskPriority from "./TaskPriority";
 import UserInput from "../../../components/UserInput";
 import TaskUpload from "./TaskUpload";
 import DialogWrapper from "./DialogWrapper";
+import ProjectLog from "./ProjectLog";
 
 export default {
     name: "TaskDetail",
-    components: {DialogWrapper, TaskUpload, UserInput, TaskPriority, TEditor},
+    components: {ProjectLog, DialogWrapper, TaskUpload, UserInput, TaskPriority, TEditor},
     props: {
         openTask: {
             type: Object,
@@ -417,6 +422,7 @@ export default {
             innerHeight: window.innerHeight,
 
             msgText: '',
+            navActive: 'dialog',
 
             taskPlugins: [
                 'advlist autolink lists link image charmap print preview hr anchor pagebreak imagetools',

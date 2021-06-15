@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\AbstractModel;
 use App\Models\Project;
 use App\Models\ProjectColumn;
+use App\Models\ProjectLog;
 use App\Models\ProjectTask;
 use App\Models\ProjectTaskFile;
 use App\Models\ProjectUser;
@@ -797,5 +798,45 @@ class ProjectController extends AbstractController
         $task = ProjectTask::userTask($task_id);
         //
         return $task->deleteTask();
+    }
+
+    /**
+     * 获取项目、任务日志
+     *
+     * @apiParam {Number} project_id            项目ID
+     * @apiParam {Number} task_id               任务ID（与 项目ID 二选一，任务ID优先）
+     *
+     * @apiParam {Number} [page]                当前页，默认:1
+     * @apiParam {Number} [pagesize]            每页显示数量，默认:20，最大:100
+     */
+    public function log__lists()
+    {
+        user::auth();
+        //
+        $project_id = intval(Request::input('project_id'));
+        $task_id = intval(Request::input('task_id'));
+        //
+        $builder = ProjectLog::with(['user']);
+        if ($task_id > 0) {
+            $task = ProjectTask::userTask($task_id);
+            $builder->whereTaskId($task->id);
+        } else {
+            $project = Project::userProject($project_id);
+            $builder->whereTaskId($project->id);
+        }
+        //
+        $list = $builder->orderByDesc('created_at')->paginate(Base::getPaginate(100, 20));
+        $list->transform(function (ProjectLog $log) {
+            $timestamp = Carbon::parse($log->created_at)->timestamp;
+            $log->time = [
+                'ymd' => date(date("Y", $timestamp) == date("Y", Base::time()) ? "m-d" : "Y-m-d", $timestamp),
+                'hi' => date("h:i", $timestamp) ,
+                'week' => "周" . Base::getTimeWeek($timestamp),
+                'segment' => Base::getTimeDayeSegment($timestamp),
+            ];
+            return $log;
+        });
+        //
+        return Base::retSuccess('success', $list);
     }
 }

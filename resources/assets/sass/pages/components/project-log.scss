@@ -1,0 +1,79 @@
+.project-log {
+    .logs-activity {
+        position: relative;
+        word-break: break-all;
+        padding: 12px 12px;
+        > li {
+            list-style: none;
+            padding-top: 0;
+            &.logs-loading,
+            &.logs-more,
+            &.logs-none {
+                height: 22px;
+                line-height: 22px;
+            }
+            &.logs-loading {
+                display: flex;
+                .common-loading {
+                    margin: 0;
+                }
+            }
+            &.logs-more {
+                cursor: pointer;
+                &:hover {
+                    color: #048be0;
+                }
+            }
+            &.logs-none {
+                cursor: pointer;
+                color: #bbbbbb;
+            }
+            .logs-date {
+                color: rgba(0, 0, 0, .36);
+                padding-bottom: 14px;
+            }
+            .logs-section {
+                margin: 4px;
+                .ivu-timeline {
+                    > li {
+                        padding-bottom: 8px;
+                        &:last-child {
+                            padding-bottom: 0;
+                        }
+                        .ivu-timeline-item-head-custom {
+                            margin-top: 8px;
+                        }
+                    }
+                }
+            }
+            .logs-dot {
+                width: 18px;
+                height: 18px;
+                margin-left: 10px;
+                .avatar-box {
+                    > em {
+                        transform-origin: bottom right;
+                    }
+                }
+            }
+            .log-summary {
+                > span,
+                > a {
+                    padding-right: 6px;
+                    word-wrap: break-word;
+                    word-break: break-word;
+                }
+                .log-creator {
+                    color:rgba(0, 0, 0, 0.85)
+                }
+                .log-text {
+                    color: rgba(0,0,0,.54);
+                }
+                .log-time {
+                    color: rgba(0,0,0,.3);
+                    font-size: 12px;
+                }
+            }
+        }
+    }
+}
