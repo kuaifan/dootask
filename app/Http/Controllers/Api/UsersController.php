@@ -144,8 +144,6 @@ class UsersController extends AbstractController
      * @apiGroup users
      * @apiName info
      *
-     * @apiParam {String} [callback]           jsonp返回字段
-     *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
@@ -168,23 +166,9 @@ class UsersController extends AbstractController
      */
     public function info()
     {
-        $callback = Request::input('callback');
-        //
-        $user = User::authE();
-        if (Base::isError($user)) {
-            if (strlen($callback) > 3) {
-                return $callback . '(' . json_encode($user) . ')';
-            }
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
-        //
+        $user = User::auth();
         User::token($user);
         //
-        if (strlen($callback) > 3) {
-            return $callback . '(' . json_encode(Base::retSuccess('success', $user)) . ')';
-        }
         return Base::retSuccess('success', $user);
     }
 
@@ -206,13 +190,7 @@ class UsersController extends AbstractController
      */
     public function editdata()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
-        //
+        $user = User::auth();
         //头像
         $userimg = Request::input('userimg');
         if ($userimg) {
@@ -265,12 +243,7 @@ class UsersController extends AbstractController
      */
     public function editpass()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        $user = User::auth();
         //
         $oldpass = trim(Request::input('oldpass'));
         $newpass = trim(Request::input('newpass'));

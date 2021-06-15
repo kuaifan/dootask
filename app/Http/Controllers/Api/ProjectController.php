@@ -35,12 +35,7 @@ class ProjectController extends AbstractController
      */
     public function lists()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        $user = User::auth();
         //
         $list = Project::select($this->projectSelect)
             ->join('project_users', 'projects.id', '=', 'project_users.project_id')
@@ -58,20 +53,11 @@ class ProjectController extends AbstractController
      */
     public function one()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        user::auth();
         //
         $project_id = intval(Request::input('project_id'));
         //
-        $project = Project::select($this->projectSelect)
-            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
-            ->where('projects.id', $project_id)
-            ->where('project_users.userid', $user->userid)
-            ->first();
+        $project = Project::userProject($project_id);
         if (empty($project)) {
             return Base::retError('项目不存在或不在成员列表内');
         }
@@ -86,12 +72,7 @@ class ProjectController extends AbstractController
      */
     public function detail()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        $user = User::auth();
         //
         $project_id = intval(Request::input('project_id'));
         //
@@ -123,12 +104,7 @@ class ProjectController extends AbstractController
      */
     public function add()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        $user = User::auth();
         //项目名称
         $name = trim(Request::input('name', ''));
         $desc = trim(Request::input('desc', ''));
@@ -193,12 +169,7 @@ class ProjectController extends AbstractController
      */
     public function edit()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        user::auth();
         //
         $project_id = intval(Request::input('project_id'));
         $name = trim(Request::input('name', ''));
@@ -212,11 +183,7 @@ class ProjectController extends AbstractController
             return Base::retError('项目描述最多只能设置255个字');
         }
         //
-        $project = Project::select($this->projectSelect)
-            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
-            ->where('projects.id', $project_id)
-            ->where('project_users.userid', $user->userid)
-            ->first();
+        $project = Project::userProject($project_id);
         if (empty($project)) {
             return Base::retError('项目不存在或不在成员列表内');
         }
@@ -240,22 +207,13 @@ class ProjectController extends AbstractController
      */
     public function sort()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        user::auth();
         //
         $project_id = intval(Request::input('project_id'));
         $sort = Base::json2array(Request::input('sort'));
         $only_column = intval(Request::input('only_column'));
         //
-        $project = Project::select($this->projectSelect)
-            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
-            ->where('projects.id', $project_id)
-            ->where('project_users.userid', $user->userid)
-            ->first();
+        $project = Project::userProject($project_id);
         if (empty($project)) {
             return Base::retError('项目不存在或不在成员列表内');
         }
@@ -301,22 +259,13 @@ class ProjectController extends AbstractController
      */
     public function user()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        user::auth();
         //
         $project_id = intval(Request::input('project_id'));
         $userid = Request::input('userid');
         $userid = is_array($userid) ? $userid : [$userid];
         //
-        $project = Project::select($this->projectSelect)
-            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
-            ->where('projects.id', $project_id)
-            ->where('project_users.userid', $user->userid)
-            ->first();
+        $project = Project::userProject($project_id);
         if (empty($project)) {
             return Base::retError('项目不存在或不在成员列表内');
         }
@@ -345,21 +294,12 @@ class ProjectController extends AbstractController
      */
     public function transfer()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        user::auth();
         //
         $project_id = intval(Request::input('project_id'));
         $owner_userid = intval(Request::input('owner_userid'));
         //
-        $project = Project::select($this->projectSelect)
-            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
-            ->where('projects.id', $project_id)
-            ->where('project_users.userid', $user->userid)
-            ->first();
+        $project = Project::userProject($project_id);
         if (empty($project)) {
             return Base::retError('项目不存在或不在成员列表内');
         }
@@ -392,20 +332,11 @@ class ProjectController extends AbstractController
      */
     public function exit()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        $user = User::auth();
         //
         $project_id = intval(Request::input('project_id'));
         //
-        $project = Project::select($this->projectSelect)
-            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
-            ->where('projects.id', $project_id)
-            ->where('project_users.userid', $user->userid)
-            ->first();
+        $project = Project::userProject($project_id);
         if (empty($project)) {
             return Base::retError('项目不存在或不在成员列表内');
         }
@@ -428,20 +359,11 @@ class ProjectController extends AbstractController
      */
     public function delete()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        user::auth();
         //
         $project_id = intval(Request::input('project_id'));
         //
-        $project = Project::select($this->projectSelect)
-            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
-            ->where('projects.id', $project_id)
-            ->where('project_users.userid', $user->userid)
-            ->first();
+        $project = Project::userProject($project_id);
         if (empty($project)) {
             return Base::retError('项目不存在或不在成员列表内');
         }
@@ -463,21 +385,12 @@ class ProjectController extends AbstractController
      */
     public function column__add()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        user::auth();
         //
         $project_id = intval(Request::input('project_id'));
         $name = trim(Request::input('name'));
         // 项目
-        $project = Project::select($this->projectSelect)
-            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
-            ->where('projects.id', $project_id)
-            ->where('project_users.userid', $user->userid)
-            ->first();
+        $project = Project::userProject($project_id);
         if (empty($project)) {
             return Base::retError('项目不存在或不在成员列表内');
         }
@@ -506,12 +419,7 @@ class ProjectController extends AbstractController
      */
     public function column__update()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        $user = User::auth();
         //
         $data = Request::all();
         $column_id = intval($data['column_id']);
@@ -543,12 +451,7 @@ class ProjectController extends AbstractController
      */
     public function column__delete()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        $user = User::auth();
         //
         $column_id = intval(Request::input('column_id'));
         // 列表
@@ -579,25 +482,11 @@ class ProjectController extends AbstractController
      */
     public function task__one()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        user::auth();
         //
         $task_id = intval(Request::input('task_id'));
-        // 任务
-        $task = ProjectTask::with(['taskUser', 'taskTag'])->whereId($task_id)->first();
-        if (empty($task)) {
-            return Base::retError('任务不存在');
-        }
-        // 项目
-        $project = Project::select($this->projectSelect)
-            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
-            ->where('projects.id', $task->project_id)
-            ->where('project_users.userid', $user->userid)
-            ->first();
+        //
+        list($task, $project) = ProjectTask::userTask($task_id, ['taskUser', 'taskTag']);
         if (empty($project)) {
             return Base::retError('项目不存在或不在成员列表内');
         }
@@ -615,25 +504,11 @@ class ProjectController extends AbstractController
      */
     public function task__sublist()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        user::auth();
         //
         $task_id = intval(Request::input('task_id'));
         // 任务
-        $task = ProjectTask::whereId($task_id)->first();
-        if (empty($task)) {
-            return Base::retError('任务不存在');
-        }
-        // 项目
-        $project = Project::select($this->projectSelect)
-            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
-            ->where('projects.id', $task->project_id)
-            ->where('project_users.userid', $user->userid)
-            ->first();
+        list($task, $project) = ProjectTask::userTask($task_id);
         if (empty($project)) {
             return Base::retError('项目不存在或不在成员列表内');
         }
@@ -649,25 +524,11 @@ class ProjectController extends AbstractController
      */
     public function task__content()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        user::auth();
         //
         $task_id = intval(Request::input('task_id'));
         // 任务
-        $task = ProjectTask::whereId($task_id)->first();
-        if (empty($task)) {
-            return Base::retError('任务不存在');
-        }
-        // 项目
-        $project = Project::select($this->projectSelect)
-            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
-            ->where('projects.id', $task->project_id)
-            ->where('project_users.userid', $user->userid)
-            ->first();
+        list($task, $project) = ProjectTask::userTask($task_id);
         if (empty($project)) {
             return Base::retError('项目不存在或不在成员列表内');
         }
@@ -682,25 +543,11 @@ class ProjectController extends AbstractController
      */
     public function task__files()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        user::auth();
         //
         $task_id = intval(Request::input('task_id'));
         // 任务
-        $task = ProjectTask::whereId($task_id)->first();
-        if (empty($task)) {
-            return Base::retError('任务不存在');
-        }
-        // 项目
-        $project = Project::select($this->projectSelect)
-            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
-            ->where('projects.id', $task->project_id)
-            ->where('project_users.userid', $user->userid)
-            ->first();
+        list($task, $project) = ProjectTask::userTask($task_id);
         if (empty($project)) {
             return Base::retError('项目不存在或不在成员列表内');
         }
@@ -722,21 +569,12 @@ class ProjectController extends AbstractController
      */
     public function task__add()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        user::auth();
         parse_str(Request::getContent(), $data);
         $project_id = intval($data['project_id']);
         $column_id = $data['column_id'];
         // 项目
-        $project = Project::select($this->projectSelect)
-            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
-            ->where('projects.id', $project_id)
-            ->where('project_users.userid', $user->userid)
-            ->first();
+        $project = Project::userProject($project_id);
         if (empty($project)) {
             return Base::retError('项目不存在或不在成员列表内');
         }
@@ -790,26 +628,12 @@ class ProjectController extends AbstractController
      */
     public function task__addsub()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        user::auth();
         //
         $task_id = intval(Request::input('task_id'));
         $name = Request::input('name');
         // 任务
-        $task = ProjectTask::whereId($task_id)->first();
-        if (empty($task)) {
-            return Base::retError('任务不存在');
-        }
-        // 项目
-        $project = Project::select($this->projectSelect)
-            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
-            ->where('projects.id', $task->project_id)
-            ->where('project_users.userid', $user->userid)
-            ->first();
+        list($task, $project) = ProjectTask::userTask($task_id);
         if (empty($project)) {
             return Base::retError('项目不存在或不在成员列表内');
         }
@@ -849,26 +673,12 @@ class ProjectController extends AbstractController
      */
     public function task__update()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        user::auth();
         //
         parse_str(Request::getContent(), $data);
         $task_id = intval($data['task_id']);
         // 任务
-        $task = ProjectTask::whereId($task_id)->first();
-        if (empty($task)) {
-            return Base::retError('任务不存在');
-        }
-        // 项目
-        $project = Project::select($this->projectSelect)
-            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
-            ->where('projects.id', $task->project_id)
-            ->where('project_users.userid', $user->userid)
-            ->first();
+        list($task, $project) = ProjectTask::userTask($task_id);
         if (empty($project)) {
             return Base::retError('项目不存在或不在成员列表内');
         }
@@ -905,25 +715,11 @@ class ProjectController extends AbstractController
      */
     public function task__upload()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        $user = User::auth();
         //
         $task_id = Base::getPostInt('task_id');
         // 任务
-        $task = ProjectTask::whereId($task_id)->first();
-        if (empty($task)) {
-            return Base::retError('任务不存在');
-        }
-        // 项目
-        $project = Project::select($this->projectSelect)
-            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
-            ->where('projects.id', $task->project_id)
-            ->where('project_users.userid', $user->userid)
-            ->first();
+        list($task, $project) = ProjectTask::userTask($task_id);
         if (empty($project)) {
             return Base::retError('项目不存在或不在成员列表内');
         }
@@ -972,25 +768,11 @@ class ProjectController extends AbstractController
      */
     public function task__dialog()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        user::auth();
         //
         $task_id = intval(Request::input('task_id'));
         // 任务
-        $task = ProjectTask::whereId($task_id)->first();
-        if (empty($task)) {
-            return Base::retError('任务不存在');
-        }
-        // 项目
-        $project = Project::select($this->projectSelect)
-            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
-            ->where('projects.id', $task->project_id)
-            ->where('project_users.userid', $user->userid)
-            ->first();
+        list($task, $project) = ProjectTask::userTask($task_id);
         if (empty($project)) {
             return Base::retError('项目不存在或不在成员列表内');
         }
@@ -1024,25 +806,11 @@ class ProjectController extends AbstractController
      */
     public function task__archived()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        user::auth();
         //
         $task_id = intval(Request::input('task_id'));
         // 任务
-        $task = ProjectTask::whereId($task_id)->first();
-        if (empty($task)) {
-            return Base::retError('任务不存在');
-        }
-        // 项目
-        $project = Project::select($this->projectSelect)
-            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
-            ->where('projects.id', $task->project_id)
-            ->where('project_users.userid', $user->userid)
-            ->first();
+        list($task, $project) = ProjectTask::userTask($task_id);
         if (empty($project)) {
             return Base::retError('项目不存在或不在成员列表内');
         }
@@ -1061,25 +829,11 @@ class ProjectController extends AbstractController
      */
     public function task__delete()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        user::auth();
         //
         $task_id = intval(Request::input('task_id'));
         // 任务
-        $task = ProjectTask::whereId($task_id)->first();
-        if (empty($task)) {
-            return Base::retError('任务不存在');
-        }
-        // 项目
-        $project = Project::select($this->projectSelect)
-            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
-            ->where('projects.id', $task->project_id)
-            ->where('project_users.userid', $user->userid)
-            ->first();
+        list($task, $project) = ProjectTask::userTask($task_id);
         if (empty($project)) {
             return Base::retError('项目不存在或不在成员列表内');
         }

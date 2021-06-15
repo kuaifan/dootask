@@ -50,8 +50,10 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $e)
     {
-        if ($e instanceof ModelNotFoundException) {
-            return response()->json(Base::retError('数据不存在'));
+        if ($e instanceof ApiException) {
+            return response()->json(Base::retError($e->getMessage(), $e->getData(), $e->getCode()));
+        } elseif ($e instanceof ModelNotFoundException) {
+            return response()->json(Base::retError('Interface error'));
         }
         return parent::render($request, $e);
     }

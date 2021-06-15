@@ -266,4 +266,22 @@ class Project extends AbstractModel
         });
         return Base::isSuccess($result);
     }
+
+    /**
+     * 根据用户获取项目信息（用于判断会员是否存在项目内）
+     * @param int $project_id
+     * @return self
+     */
+    public static function userProject($project_id)
+    {
+        $project = Project::select([ 'projects.*', 'project_users.owner' ])
+            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->where('projects.id', intval($project_id))
+            ->where('project_users.userid', User::token2userid())
+            ->first();
+        if (empty($project)) {
+            return null;
+        }
+        return $project;
+    }
 }

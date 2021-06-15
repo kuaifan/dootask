@@ -27,12 +27,7 @@ class DialogController extends AbstractController
      */
     public function lists()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        $user = User::auth();
         //
         $list = WebSocketDialog::select(['web_socket_dialogs.*'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
@@ -53,12 +48,7 @@ class DialogController extends AbstractController
      */
     public function one()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        $user = User::auth();
         //
         $dialog_id = intval(Request::input('dialog_id'));
         //
@@ -81,12 +71,7 @@ class DialogController extends AbstractController
      */
     public function open__user()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        $user = User::auth();
         //
         $userid = intval(Request::input('userid'));
         if ($userid == $user->userid) {
@@ -114,12 +99,7 @@ class DialogController extends AbstractController
      */
     public function msg__lists()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        $user = User::auth();
         //
         $dialog_id = intval(Request::input('dialog_id'));
         //
@@ -164,12 +144,7 @@ class DialogController extends AbstractController
      */
     public function msg__sendtext()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        $user = User::auth();
         //
         $dialog_id = intval(Request::input('dialog_id'));
         $extra_int = intval(Request::input('extra_int'));
@@ -209,12 +184,7 @@ class DialogController extends AbstractController
      */
     public function msg__sendfile()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        $user = User::auth();
         //
         $dialog_id = Base::getPostInt('dialog_id');
         $extra_int = Base::getPostInt('extra_int');
@@ -289,12 +259,7 @@ class DialogController extends AbstractController
      */
     public function msg__readlist()
     {
-        $user = User::authE();
-        if (Base::isError($user)) {
-            return $user;
-        } else {
-            $user = User::IDE($user['data']);
-        }
+        $user = User::auth();
         //
         $msg_id = intval(Request::input('msg_id'));
         //

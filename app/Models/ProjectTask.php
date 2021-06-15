@@ -569,4 +569,28 @@ class ProjectTask extends AbstractModel
             }
         });
     }
+
+    /**
+     * 根据会员ID获取任务、项目信息（用于判断会员是否存在项目内）
+     * @param int $task_id
+     * @param array $with
+     * @return array
+     */
+    public static function userTask($task_id, $with = [])
+    {
+        $task = ProjectTask::with($with)->whereId(intval($task_id))->first();
+        if (empty($task)) {
+            return null;
+        }
+        // 项目
+        $project = Project::select([ 'projects.*', 'project_users.owner' ])
+            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->where('projects.id', $task->project_id)
+            ->where('project_users.userid', User::token2userid())
+            ->first();
+        if (empty($project)) {
+            return null;
+        }
+        return [$task, $project];
+    }
 }

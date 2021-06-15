@@ -36,15 +36,8 @@ class SystemController extends AbstractController
             if (env("SYSTEM_SETTING") == 'disabled') {
                 return Base::retError('当前环境禁止修改');
             }
-            $user = User::authE();
-            if (Base::isError($user)) {
-                return $user;
-            } else {
-                $user = User::IDE($user['data']);
-            }
-            if (!$user->isAdmin()) {
-                return Base::retError('权限不足');
-            }
+            $user = User::auth();
+            $user->isAdmin();
             $all = Request::input();
             foreach ($all AS $key => $value) {
                 if (!in_array($key, ['reg', 'login_code'])) {
@@ -79,15 +72,8 @@ class SystemController extends AbstractController
     {
         $type = trim(Request::input('type'));
         if ($type == 'save') {
-            $user = User::authE();
-            if (Base::isError($user)) {
-                return $user;
-            } else {
-                $user = User::IDE($user['data']);
-            }
-            if (!$user->isAdmin()) {
-                return Base::retError('权限不足');
-            }
+            $user = User::auth();
+            $user->isAdmin();
             $list = Base::getPostValue('list');
             $array = [];
             if (empty($list) || !is_array($list)) {

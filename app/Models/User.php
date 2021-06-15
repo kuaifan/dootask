@@ -3,6 +3,7 @@
 namespace App\Models;
 
 
+use App\Exceptions\ApiException;
 use App\Module\Base;
 use Cache;
 use Carbon\Carbon;
@@ -108,7 +109,7 @@ class User extends AbstractModel
 
     /**
      * 是否在线
-     * @return int
+     * @return bool
      */
     public function getOnlineStatus()
     {
@@ -121,11 +122,21 @@ class User extends AbstractModel
 
     /**
      * 判断是否管理员
-     * @return bool
      */
     public function isAdmin()
     {
-        return in_array('admin', $this->identity);
+        $this->identity('admin');
+    }
+
+    /**
+     * 判断用户权限（身份）
+     * @param $identity
+     */
+    public function identity($identity)
+    {
+        if (!in_array($identity, $this->identity)) {
+            throw new ApiException('权限不足');
+        }
     }
 
 
@@ -241,9 +252,27 @@ class User extends AbstractModel
 
     /**
      * 用户身份认证（获取用户信息）
-     * @return array|mixed
+     * @return self
      */
     public static function auth()
+    {
+        $user = self::authInfo();
+        if (!$user) {
+            $authorization = Base::getToken();
+            if ($authorization) {
+                throw new ApiException('身份已失效,请重新登录', $user, -1);
+            } else {
+                throw new ApiException('请登录后继续...', [], -1);
+            }
+        }
+        return $user;
+    }
+
+    /**
+     * 用户身份认证（获取用户信息）
+     * @return self|false
+     */
+    private static function authInfo()
     {
         global $_A;
         if (isset($_A["__static_auth"])) {
@@ -278,24 +307,6 @@ class User extends AbstractModel
     }
 
     /**
-     * 用户身份认证（获取用户信息）
-     * @return array
-     */
-    public static function authE()
-    {
-        $user = self::auth();
-        if (!$user) {
-            $authorization = Base::getToken();
-            if ($authorization) {
-                return Base::retError('身份已失效,请重新登录', $user, -1);
-            } else {
-                return Base::retError('请登录后继续...', [], -1);
-            }
-        }
-        return Base::retSuccess("auth", $user);
-    }
-
-    /**
      * 生成token
      * @param self $userinfo
      * @return string
@@ -306,38 +317,6 @@ class User extends AbstractModel
         unset($userinfo->encrypt);
         unset($userinfo->password);
         return $userinfo->token;
-    }
-
-    /**
-     * 判断用户权限（身份）
-     * @param $identity
-     * @return array
-     */
-    public static function identity($identity)
-    {
-        $user = self::auth();
-        if (is_array($user->identity)
-            && in_array($identity, $user->identity)) {
-            return Base::retSuccess("success");
-        }
-        return Base::retError("权限不足");
-    }
-
-    /**
-     * 判断用户权限（身份）
-     * @param $identity
-     * @return bool
-     */
-    public static function identityCheck($identity)
-    {
-        if (is_array($identity)) {
-            foreach ($identity as $id) {
-                if (!Base::isError(self::identity($id)))
-                    return true;
-            }
-            return false;
-        }
-        return Base::isSuccess(self::identity($identity));
     }
 
     /**
