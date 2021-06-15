@@ -96,7 +96,7 @@ class ProjectController extends AbstractController
      * 添加项目
      *
      * @apiParam {String} name          项目名称
-     * @apiParam {String} [desc]        项目描述
+     * @apiParam {String} [desc]        项目介绍
      * @apiParam {Array} [columns]      流程，格式[流程1, 流程2]
      */
     public function add()
@@ -111,7 +111,7 @@ class ProjectController extends AbstractController
             return Base::retError('项目名称最多只能设置32个字');
         }
         if (mb_strlen($desc) > 255) {
-            return Base::retError('项目描述最多只能设置255个字');
+            return Base::retError('项目介绍最多只能设置255个字');
         }
         //流程
         $columns = Request::input('columns');
@@ -153,6 +153,7 @@ class ProjectController extends AbstractController
                 $column['project_id'] = $project->id;
                 ProjectColumn::createInstance($column)->save();
             }
+            $project->addLog("创建项目");
             return Base::retSuccess('添加成功', $project->find($project->id));
         });
     }
@@ -162,7 +163,7 @@ class ProjectController extends AbstractController
      *
      * @apiParam {Number} project_id        项目ID
      * @apiParam {String} name              项目名称
-     * @apiParam {String} [desc]            项目描述
+     * @apiParam {String} [desc]            项目介绍
      */
     public function edit()
     {
@@ -177,7 +178,7 @@ class ProjectController extends AbstractController
             return Base::retError('项目名称最多只能设置32个字');
         }
         if (mb_strlen($desc) > 255) {
-            return Base::retError('项目描述最多只能设置255个字');
+            return Base::retError('项目介绍最多只能设置255个字');
         }
         //
         $project = Project::userProject($project_id);
@@ -185,8 +186,14 @@ class ProjectController extends AbstractController
             return Base::retError('你不是项目负责人');
         }
         //
-        $project->name = $name;
-        $project->desc = $desc;
+        if ($project->name != $name) {
+            $project->name = $name;
+            $project->addLog("修改项目名称：{$project->name} => {$name}");
+        }
+        if ($project->desc != $desc) {
+            $project->desc = $desc;
+            $project->addLog("修改项目介绍");
+        }
         $project->save();
         //
         return Base::retSuccess('修改成功', $project);
@@ -220,6 +227,7 @@ class ProjectController extends AbstractController
                 ]);
                 $index++;
             }
+            $project->addLog("调整列表排序");
         } else {
             // 排序任务
             foreach ($sort as $item) {
@@ -238,6 +246,7 @@ class ProjectController extends AbstractController
                     $index++;
                 }
             }
+            $project->addLog("调整任务排序");
         }
         return Base::retSuccess('调整成功');
     }
@@ -270,6 +279,7 @@ class ProjectController extends AbstractController
             }
             ProjectUser::whereProjectId($project->id)->whereNotIn('userid', $array)->delete();
             $project->syncDialogUser();
+            $project->addLog("修改项目成员");
             return Base::retSuccess('修改成功');
         });
     }
@@ -305,6 +315,7 @@ class ProjectController extends AbstractController
                 'owner' => 1,
             ]);
             $project->syncDialogUser();
+            $project->addLog("移交项目给会员ID：" . $owner_userid);
             //
             return Base::retSuccess('移交成功');
         });
@@ -330,6 +341,7 @@ class ProjectController extends AbstractController
         return AbstractModel::transaction(function() use ($user, $project) {
             ProjectUser::whereProjectId($project->id)->whereUserid($user->userid)->delete();
             $project->syncDialogUser();
+            $project->addLog("会员ID：" . $user->userid . " 退出项目");
             return Base::retSuccess('退出成功');
         });
     }
@@ -380,6 +392,7 @@ class ProjectController extends AbstractController
         ]);
         $column->sort = intval(ProjectColumn::whereProjectId($project->id)->orderByDesc('sort')->value('sort')) + 1;
         $column->save();
+        $column->addLog("创建列表：" . $column->name);
         //
         $data = $column->find($column->id);
         $data->project_task = [];
@@ -414,8 +427,14 @@ class ProjectController extends AbstractController
             return Base::retError('项目不存在或不在成员列表内');
         }
         //
-        if (Arr::exists($data, 'name')) $column->name = $data['name'];
-        if (Arr::exists($data, 'color')) $column->color = $data['color'];
+        if (Arr::exists($data, 'name') && $column->name != $data['name']) {
+            $column->addLog("修改列表名称：{$column->name} => {$data['name']}");
+            $column->name = $data['name'];
+        }
+        if (Arr::exists($data, 'color') && $column->color != $data['color']) {
+            $column->addLog("修改列表颜色：{$column->color} => {$data['color']}");
+            $column->color = $data['color'];
+        }
         $column->save();
         return Base::retSuccess('修改成功', $column);
     }
@@ -462,9 +481,9 @@ class ProjectController extends AbstractController
         //
         $task_id = intval(Request::input('task_id'));
         //
-        list($task, $project) = ProjectTask::userTask($task_id, ['taskUser', 'taskTag']);
+        $task = ProjectTask::userTask($task_id, ['taskUser', 'taskTag']);
         //
-        $task->project_name = $project->name;
+        $task->project_name = ProjectColumn::whereId($task->project_id)->value('name');
         $task->column_name = ProjectColumn::whereId($task->column_id)->value('name');
         //
         return Base::retSuccess('success', $task);
@@ -481,7 +500,7 @@ class ProjectController extends AbstractController
         //
         $task_id = intval(Request::input('task_id'));
         //
-        list($task, $project) = ProjectTask::userTask($task_id);
+        $task = ProjectTask::userTask($task_id);
         //
         $data = ProjectTask::with(['taskUser', 'taskTag'])->where('parent_id', $task->id)->whereNull('archived_at')->get();
         return Base::retSuccess('success', $data);
@@ -498,7 +517,7 @@ class ProjectController extends AbstractController
         //
         $task_id = intval(Request::input('task_id'));
         //
-        list($task, $project) = ProjectTask::userTask($task_id);
+        $task = ProjectTask::userTask($task_id);
         //
         return Base::retSuccess('success', $task->content ?: json_decode('{}'));
     }
@@ -514,7 +533,7 @@ class ProjectController extends AbstractController
         //
         $task_id = intval(Request::input('task_id'));
         //
-        list($task, $project) = ProjectTask::userTask($task_id);
+        $task = ProjectTask::userTask($task_id);
         //
         return Base::retSuccess('success', $task->taskFile);
     }
@@ -559,6 +578,7 @@ class ProjectController extends AbstractController
             ]);
             $column->sort = intval(ProjectColumn::whereProjectId($project->id)->orderByDesc('sort')->value('sort')) + 1;
             $column->save();
+            $column->addLog("创建列表：" . $column->name);
             $newColumn = $column->find($column->id);
             $newColumn->project_task = [];
         }
@@ -566,19 +586,16 @@ class ProjectController extends AbstractController
             return Base::retError('任务列表不存在或已被删除');
         }
         //
-        $result = ProjectTask::addTask(array_merge($data, [
+        $task = ProjectTask::addTask(array_merge($data, [
             'parent_id' => 0,
             'project_id' => $project->id,
             'column_id' => $column->id,
         ]));
-        if (Base::isSuccess($result)) {
-            $result['data'] = [
-                'new_column' => $newColumn,
-                'in_top' => intval($data['top']),
-                'task' => ProjectTask::with(['taskUser', 'taskTag'])->find($result['data']['id']),
-            ];
-        }
-        return $result;
+        return Base::retSuccess('添加成功', [
+            'new_column' => $newColumn,
+            'in_top' => intval($data['top']),
+            'task' => ProjectTask::with(['taskUser', 'taskTag'])->find($task->id),
+        ]);
     }
 
     /**
@@ -594,22 +611,19 @@ class ProjectController extends AbstractController
         $task_id = intval(Request::input('task_id'));
         $name = Request::input('name');
         //
-        list($task, $project) = ProjectTask::userTask($task_id);
+        $task = ProjectTask::userTask($task_id);
         //
-        $result = ProjectTask::addTask([
+        $task = ProjectTask::addTask([
             'name' => $name,
             'parent_id' => $task->id,
             'project_id' => $task->project_id,
             'column_id' => $task->column_id,
         ]);
-        if (Base::isSuccess($result)) {
-            $result['data'] = [
-                'new_column' => null,
-                'in_top' => 0,
-                'task' => ProjectTask::with(['taskUser', 'taskTag'])->find($result['data']['id']),
-            ];
-        }
-        return $result;
+        return Base::retSuccess('添加成功', [
+            'new_column' => null,
+            'in_top' => 0,
+            'task' => ProjectTask::with(['taskUser', 'taskTag'])->find($task->id),
+        ]);
     }
 
     /**
@@ -636,7 +650,7 @@ class ProjectController extends AbstractController
         parse_str(Request::getContent(), $data);
         $task_id = intval($data['task_id']);
         //
-        list($task, $project) = ProjectTask::userTask($task_id);
+        $task = ProjectTask::userTask($task_id);
         //
         if (Base::isDate($data['complete_at'])) {
             // 标记已完成
@@ -674,7 +688,7 @@ class ProjectController extends AbstractController
         //
         $task_id = Base::getPostInt('task_id');
         //
-        list($task, $project) = ProjectTask::userTask($task_id);
+        $task = ProjectTask::userTask($task_id);
         //
         $path = "uploads/task/" . $task->id . "/";
         $image64 = Base::getPostValue('image64');
@@ -709,6 +723,7 @@ class ProjectController extends AbstractController
                 'userid' => $user->userid,
             ]);
             $file->save();
+            $task->addLog("上传文件：" . $file->name);
             return Base::retSuccess("上传成功", $file->find($file->id));
         }
     }
@@ -724,7 +739,7 @@ class ProjectController extends AbstractController
         //
         $task_id = intval(Request::input('task_id'));
         //
-        list($task, $project) = ProjectTask::userTask($task_id);
+        $task = ProjectTask::userTask($task_id);
         //
         if ($task->parent_id > 0) {
             return Base::retError('子任务不支持此功能');
@@ -759,7 +774,7 @@ class ProjectController extends AbstractController
         //
         $task_id = intval(Request::input('task_id'));
         //
-        list($task, $project) = ProjectTask::userTask($task_id);
+        $task = ProjectTask::userTask($task_id);
         //
         if ($task->parent_id > 0) {
             return Base::retError('子任务不支持此功能');
@@ -779,7 +794,7 @@ class ProjectController extends AbstractController
         //
         $task_id = intval(Request::input('task_id'));
         //
-        list($task, $project) = ProjectTask::userTask($task_id);
+        $task = ProjectTask::userTask($task_id);
         //
         return $task->deleteTask();
     }

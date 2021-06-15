@@ -260,12 +260,32 @@ class Project extends AbstractModel
                 $column->deleteColumn();
             }
             if ($this->delete()) {
+                $this->addLog("删除项目");
                 return Base::retSuccess('删除成功', $this->toArray());
             } else {
                 return Base::retError('删除失败', $this->toArray());
             }
         });
         return Base::isSuccess($result);
+    }
+
+    /**
+     * 添加项目日志
+     * @param string $detail
+     * @param int $userid
+     * @return ProjectLog
+     */
+    public function addLog($detail, $userid = 0)
+    {
+        $log = ProjectLog::createInstance([
+            'project_id' => $this->id,
+            'column_id' => 0,
+            'task_id' => 0,
+            'userid' => $userid ?: User::token2userid(),
+            'detail' => $detail,
+        ]);
+        $log->save();
+        return $log;
     }
 
     /**

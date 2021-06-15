@@ -18,6 +18,11 @@ class ApiException extends RuntimeException
      */
     public function __construct($msg = '', $data = [], $code = 0)
     {
+        if (is_array($msg) && isset($msg['code'])) {
+            $code = $msg['code'];
+            $data = $msg['data'];
+            $msg = $msg['msg'];
+        }
         $this->data = $data;
         parent::__construct($msg, $code);
     }
