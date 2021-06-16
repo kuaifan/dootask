@@ -79,6 +79,11 @@ class ProjectTask extends AbstractModel
 {
     use SoftDeletes;
 
+    const taskSelect = [
+        'project_tasks.*',
+        'project_task_users.owner',
+    ];
+
     protected $appends = [
         'file_num',
         'msg_num',
@@ -305,15 +310,16 @@ class ProjectTask extends AbstractModel
             $task->save();
             if ($owner) {
                 ProjectTaskUser::createInstance([
-                    'project_id' => $task->parent_id,
+                    'project_id' => $task->project_id,
                     'task_id' => $task->id,
+                    'task_pid' => $task->parent_id ?: $task->id,
                     'userid' => $owner,
                     'owner' => 1,
                 ])->save();
             }
             if ($content) {
                 ProjectTaskContent::createInstance([
-                    'project_id' => $task->parent_id,
+                    'project_id' => $task->project_id,
                     'task_id' => $task->id,
                     'content' => $content,
                 ])->save();
@@ -367,7 +373,7 @@ class ProjectTask extends AbstractModel
                     $row->owner = 0;
                     $row->save();
                     ProjectTaskUser::updateInsert([
-                        'project_id' => $this->parent_id,
+                        'project_id' => $this->project_id,
                         'task_id' => $this->id,
                         'userid' => $owner,
                     ], [
@@ -402,8 +408,9 @@ class ProjectTask extends AbstractModel
                         //
                         if (empty($this->useridInTheTask($uid))) {
                             ProjectTaskUser::createInstance([
-                                'project_id' => $this->parent_id,
+                                'project_id' => $this->project_id,
                                 'task_id' => $this->id,
+                                'task_pid' => $this->parent_id ?: $this->id,
                                 'userid' => $uid,
                                 'owner' => 0,
                             ])->save();
@@ -422,7 +429,7 @@ class ProjectTask extends AbstractModel
                 // 内容
                 if (Arr::exists($data, 'content')) {
                     ProjectTaskContent::updateInsert([
-                        'project_id' => $this->parent_id,
+                        'project_id' => $this->project_id,
                         'task_id' => $this->id,
                     ], [
                         'content' => $data['content'],
@@ -625,7 +632,7 @@ class ProjectTask extends AbstractModel
             throw new ApiException('任务不存在');
         }
         //
-        $project = Project::select([ 'projects.*', 'project_users.owner' ])
+        $project = Project::select(Project::projectSelect)
             ->join('project_users', 'projects.id', '=', 'project_users.project_id')
             ->where('projects.id', $task->project_id)
             ->where('project_users.userid', User::token2userid())

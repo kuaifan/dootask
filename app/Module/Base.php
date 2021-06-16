@@ -915,6 +915,16 @@ class Base
     }
 
     /**
+     * 检测 日期格式 或 时间格式
+     * @param string $str 需要检测的字符串
+     * @return bool
+     */
+    public static function isDateOrTime($str)
+    {
+        return self::isDate($str) || self::isTime($str);
+    }
+
+    /**
      * 检测手机号码格式
      * @param string $str 需要检测的字符串
      * @return bool

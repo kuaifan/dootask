@@ -20,7 +20,7 @@
                 right: 0;
                 height: 100%;
                 width: 1px;
-                background-color: #f2f2f2;
+                background-color: #f4f5f5;
             }
             .messenger-search {
                 display: flex;
@@ -83,8 +83,9 @@
                             list-style: none;
                             .user-avatar,
                             .icon-avatar {
-                                width: 46px;
-                                height: 46px;
+                                width: 42px;
+                                height: 42px;
+                                margin: 2px;
                                 flex-grow: 0;
                                 flex-shrink: 0;
                             }
@@ -229,12 +230,12 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                height: 54px;
+                height: 52px;
                 flex-shrink: 0;
-                border-top: 1px solid #f2f2f2;
+                border-top: 1px solid #f4f5f5;
                 > i {
                     cursor: pointer;
-                    font-size: 28px;
+                    font-size: 24px;
                     margin: 0 24px;
                     color: #aaaaaa;
                     opacity: 0.9;

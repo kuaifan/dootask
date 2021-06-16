@@ -1,6 +1,4 @@
 .page-calendar {
-    display: flex;
-    flex-direction: column;
     .calendar-head {
         display: flex;
         align-items: flex-start;
@@ -30,100 +28,79 @@
                     }
                 }
             }
-        }
-    }
-    .calendar-box {
-        flex: 1;
-        height: 0;
-        display: flex;
-        flex-direction: column;
-        padding: 0 48px;
-        .head {
-            display: flex;
-            align-items: center;
-            border-bottom: 1px solid #f4f5f5;
-            > li {
+            .calendar-view {
+                margin-left: 36px;
                 flex: 1;
-                list-style: none;
                 display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 12px;
-                position: relative;
-                &:after {
-                    content: "";
-                    position: absolute;
-                    top: 0;
-                    right: 0;
-                    width: 1px;
-                    height: 100%;
-                    background-color: #f4f5f5;
-                }
-                &:last-child {
-                    &:after {
-                        display: none;
+                justify-content: flex-end;
+                > button {
+                    &:focus {
+                        box-shadow: none;
                     }
                 }
             }
         }
-        .days {
+    }
+    .calendar-box {
+        padding: 0 48px;
+        .calendar-wrapper {
             flex: 1;
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            > li {
-                flex: 1;
-                flex-shrink: 0;
-                list-style: none;
-                display: flex;
-                flex-direction: column;
-                border-bottom: 1px solid #f4f5f5;
-                > ul {
-                    flex: 1;
-                    flex-shrink: 0;
+            position: relative;
+            &:before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 2px;
+                background-color: #ffffff;
+                z-index: 1;
+            }
+            .tui-full-calendar-popup-creation {
+                .tui-full-calendar-popup-section {
                     display: flex;
-                    > li {
-                        flex: 1;
-                        flex-shrink: 0;
-                        list-style: none;
-                        position: relative;
-                        display: flex;
-                        flex-direction: column;
-                        .time {
-                            padding: 10px 10px 0;
-                            > em {
-                                font-style: normal;
-                                display: inline-block;
-                                border-radius: 50%;
-                                min-height: 24px;
-                                min-width: 24px;
-                                line-height: 24px;
-                                text-align: center;
-                                &.cur-day {
-                                    background-color: #2d8cf0;
-                                    color: #ffffff;
-                                }
-                            }
-                        }
-                        &:after {
-                            content: "";
-                            position: absolute;
-                            top: 0;
-                            right: 0;
-                            width: 1px;
-                            height: 100%;
-                            background-color: #f4f5f5;
-                        }
-                        &:last-child {
-                            &:after {
-                                display: none;
-                            }
-                        }
-                        &.pre,
-                        &.after {
-                            color: #aaaaaa;
-                        }
+                    justify-content: space-between;
+                    margin-bottom: 6px;
+                }
+                .tui-full-calendar-section-title {
+                    width: 100%;
+                }
+                .tui-full-calendar-section-start-date,
+                .tui-full-calendar-section-end-date {
+                    width: 210px;
+                }
+                .tui-full-calendar-popup-location,
+                .tui-full-calendar-section-private,
+                .tui-full-calendar-section-allday,
+                .tui-full-calendar-section-state {
+                    display: none;
+                }
+            }
+            .tui-full-calendar-popup-task {
+                .priority {
+                    color: #ffffff;
+                    padding: 2px 3px;
+                    border-radius: 4px;
+                }
+                .tui-full-calendar-calendar-dot,
+                .tui-full-calendar-ic-priority {
+                    opacity: 0;
+                }
+            }
+            .tui-datepicker {
+                .tui-calendar {
+                    th,
+                    td {
+                        height: 35px;
                     }
+                    .tui-calendar-prev-month.tui-calendar-date,
+                    .tui-calendar-next-month.tui-calendar-date {
+                        visibility: visible;
+                    }
+                }
+                .tui-datepicker-body .tui-timepicker,
+                .tui-datepicker-footer .tui-timepicker {
+                    padding: 16px 46px 16px 47px;
                 }
             }
         }

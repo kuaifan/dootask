@@ -50,6 +50,11 @@ class Project extends AbstractModel
 {
     use SoftDeletes;
 
+    const projectSelect = [
+        'projects.*',
+        'project_users.owner',
+    ];
+
     protected $appends = [
         'task_num',
         'task_complete',
@@ -295,7 +300,7 @@ class Project extends AbstractModel
      */
     public static function userProject($project_id)
     {
-        $project = Project::select([ 'projects.*', 'project_users.owner' ])
+        $project = Project::select(self::projectSelect)
             ->join('project_users', 'projects.id', '=', 'project_users.project_id')
             ->where('projects.id', intval($project_id))
             ->where('project_users.userid', User::token2userid())

@@ -46,7 +46,7 @@
                     </li>
                 </ul>
                 <div class="project-switch">
-                    <div v-if="projectTablePanel && completedList.length > 0" class="project-checkbox">
+                    <div v-if="completedCount > 0" class="project-checkbox">
                         <Checkbox :value="projectCompleteHide" @on-change="toggleBoolean('projectCompleteHide', $event)">{{$L('隐藏已完成')}}</Checkbox>
                     </div>
                     <div :class="['project-switch-button', !projectTablePanel ? 'menu' : '']" @click="toggleBoolean('projectTablePanel')">
@@ -480,10 +480,15 @@ export default {
         },
 
         myList() {
-            const {searchText, userId, projectDetail} = this;
+            const {searchText, projectCompleteHide, userId, projectDetail} = this;
             const array = [];
             projectDetail.project_column.forEach(({project_task, name}) => {
                 project_task.some((task) => {
+                    if (projectCompleteHide) {
+                        if (task.complete_at) {
+                            return false;
+                        }
+                    }
                     if (searchText) {
                         if (!$A.strExists(task.name, searchText) && !$A.strExists(task.desc, searchText)) {
                             return false;
@@ -507,10 +512,15 @@ export default {
         },
 
         undoneList() {
-            const {searchText, projectDetail} = this;
+            const {searchText, projectCompleteHide, projectDetail} = this;
             const array = [];
             projectDetail.project_column.forEach(({project_task, name}) => {
                 project_task.some((task) => {
+                    if (projectCompleteHide) {
+                        if (task.complete_at) {
+                            return false;
+                        }
+                    }
                     if (searchText) {
                         if (!$A.strExists(task.name, searchText) && !$A.strExists(task.desc, searchText)) {
                             return false;
@@ -533,11 +543,25 @@ export default {
             });
         },
 
+        completedCount() {
+            const {projectDetail} = this;
+            let count = 0;
+            projectDetail.project_column.forEach(({project_task, name}) => {
+                count += project_task.filter(({complete_at}) => !!complete_at).length;
+            });
+            return count;
+        },
+
         completedList() {
-            const {searchText, projectDetail} = this;
+            const {searchText, projectCompleteHide, projectDetail} = this;
             const array = [];
             projectDetail.project_column.forEach(({project_task, name}) => {
                 project_task.some((task) => {
+                    if (projectCompleteHide) {
+                        if (task.complete_at) {
+                            return false;
+                        }
+                    }
                     if (searchText) {
                         if (!$A.strExists(task.name, searchText) && !$A.strExists(task.desc, searchText)) {
                             return false;

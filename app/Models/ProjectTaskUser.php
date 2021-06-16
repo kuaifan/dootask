@@ -9,6 +9,7 @@ namespace App\Models;
  * @property int $id
  * @property int|null $project_id 项目ID
  * @property int|null $task_id 任务ID
+ * @property int|null $task_pid 任务ID（如果是子任务则是父级任务ID）
  * @property int|null $userid 成员ID
  * @property int|null $owner 是否任务负责人
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -21,6 +22,7 @@ namespace App\Models;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskUser whereOwner($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskUser whereProjectId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskUser whereTaskId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskUser whereTaskPid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskUser whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskUser whereUserid($value)
  * @mixin \Eloquent

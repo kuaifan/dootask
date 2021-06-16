@@ -12,6 +12,21 @@ $--tooltip-font-size: 14px;
 .el-dropdown-menu__item {
     min-width: 100px;
     line-height: 34px;
+    .item {
+        &.red {
+            color: #f00;
+            > i {
+                color: #f00;
+            }
+        }
+        &:hover {
+            &.red {
+                > i {
+                    color: #f00;
+                }
+            }
+        }
+    }
 }
 
 .el-dropdown-menu__item--divided:before {

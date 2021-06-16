@@ -23,11 +23,6 @@ use Request;
  */
 class ProjectController extends AbstractController
 {
-    private $projectSelect = [
-        'projects.*',
-        'project_users.owner',
-    ];
-
     /**
      * 项目列表
      *
@@ -38,7 +33,7 @@ class ProjectController extends AbstractController
     {
         $user = User::auth();
         //
-        $list = Project::select($this->projectSelect)
+        $list = Project::select(Project::projectSelect)
             ->join('project_users', 'projects.id', '=', 'project_users.project_id')
             ->where('project_users.userid', $user->userid)
             ->orderByDesc('projects.id')
@@ -79,7 +74,7 @@ class ProjectController extends AbstractController
                 $taskQuery->with(['taskUser', 'taskTag'])->where('parent_id', 0);
             }]);
         }, 'projectUser'])
-            ->select($this->projectSelect)
+            ->select(project::projectSelect)
             ->join('project_users', 'projects.id', '=', 'project_users.project_id')
             ->where('projects.id', $project_id)
             ->where('project_users.userid', $user->userid)
@@ -419,7 +414,7 @@ class ProjectController extends AbstractController
             return Base::retError('列表不存在');
         }
         // 项目
-        $project = Project::select($this->projectSelect)
+        $project = Project::select(project::projectSelect)
             ->join('project_users', 'projects.id', '=', 'project_users.project_id')
             ->where('projects.id', $column->project_id)
             ->where('project_users.userid', $user->userid)
@@ -456,7 +451,7 @@ class ProjectController extends AbstractController
             return Base::retError('列表不存在');
         }
         // 项目
-        $project = Project::select($this->projectSelect)
+        $project = Project::select(project::projectSelect)
             ->join('project_users', 'projects.id', '=', 'project_users.project_id')
             ->where('projects.id', $column->project_id)
             ->where('project_users.userid', $user->userid)
@@ -469,6 +464,46 @@ class ProjectController extends AbstractController
             return Base::retSuccess('删除成功');
         }
         return Base::retError('删除失败');
+    }
+
+    /**
+     * 任务列表
+     *
+     * @apiParam {String} name          任务名称（包含）
+     * @apiParam {Array} time           时间范围，格式：数组，如：[2020-12-12,2020-20-12]
+     */
+    public function task__lists()
+    {
+        $user = user::auth();
+        //
+        $builder = ProjectTask::select(ProjectTask::taskSelect);
+        //
+        $name = Request::input('name');
+        $time = Request::input('time');
+        if ($name) {
+            $builder->where(function($query) use ($name) {
+                $query->where('project_tasks.name', 'like', '%,' . $name . ',%');
+            });
+        }
+        if (is_array($time)) {
+            if (Base::isDateOrTime($time[0]) && Base::isDateOrTime($time[1])) {
+                $between = [
+                    Carbon::parse($time[0])->startOfDay(),
+                    Carbon::parse($time[1])->endOfDay()
+                ];
+                $builder->where(function($query) use ($between) {
+                    $query->whereBetween('project_tasks.start_at', $between)->orWhereBetween('project_tasks.end_at', $between);
+                });
+            }
+        }
+        //
+        $list = $builder
+            ->join('project_task_users', 'project_tasks.id', '=', 'project_task_users.task_id')
+            ->where('project_task_users.userid', $user->userid)
+            ->orderByDesc('project_tasks.id')
+            ->paginate(Base::getPaginate(200, 100));
+        //
+        return Base::retSuccess('success', $list);
     }
 
     /**

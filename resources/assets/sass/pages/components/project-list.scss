@@ -739,21 +739,10 @@
                     font-size: 16px;
                 }
             }
-            &.red {
-                color: #f00;
-                > i {
-                    color: #f00;
-                }
-            }
             &:hover {
                 > i {
                     &.ivu-icon {
                         color: #66b1ff;
-                    }
-                }
-                &.red {
-                    > i {
-                        color: #f00;
                     }
                 }
             }

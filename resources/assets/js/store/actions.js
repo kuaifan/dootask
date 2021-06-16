@@ -399,6 +399,30 @@ export default {
     },
 
     /**
+     * 获取任务列表
+     * @param state
+     * @param dispatch
+     * @param whereData
+     * @returns {Promise<unknown>}
+     */
+    getTaskList({state, dispatch}, whereData) {
+        return new Promise(function (resolve, reject) {
+            if (state.userId === 0) {
+                reject()
+                return;
+            }
+            dispatch("call", {
+                url: 'project/task/lists',
+                data: whereData,
+            }).then(result => {
+                resolve(result)
+            }).catch(result => {
+                reject(result)
+            });
+        });
+    },
+
+    /**
      * 获取任务信息
      * @param state
      * @param dispatch

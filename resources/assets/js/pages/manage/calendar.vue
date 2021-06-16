@@ -4,166 +4,212 @@
         <div class="calendar-head">
             <div class="calendar-titbox">
                 <div class="calendar-title">
-                    <h1>{{viewDay}}</h1>
+                    <h1>{{rangeText}}</h1>
                 </div>
                 <ButtonGroup class="calendar-arrow" size="small">
                     <Button @click="preMonth"><Icon type="ios-arrow-back"></Icon></Button>
                     <Button @click="curMonth">{{$L('今天')}}</Button>
                     <Button @click="afterMonth"><Icon type="ios-arrow-forward"></Icon></Button>
                 </ButtonGroup>
+                <ButtonGroup class="calendar-view">
+                    <Button @click="setView('day')" :type="calendarView == 'day' ? 'primary' : 'default'">{{$L('日')}}</Button>
+                    <Button @click="setView('week')" :type="calendarView == 'week' ? 'primary' : 'default'">{{$L('周')}}</Button>
+                    <Button @click="setView('month')" :type="calendarView == 'month' ? 'primary' : 'default'">{{$L('月')}}</Button>
+                </ButtonGroup>
             </div>
         </div>
         <div class="calendar-box">
-            <ul class="head">
-                <li>SUN</li>
-                <li>MON</li>
-                <li>TUE</li>
-                <li>WED</li>
-                <li>THU</li>
-                <li>FRI</li>
-                <li>SAT</li>
-            </ul>
-            <ul class="days">
-                <li v-for="row in days">
-                    <ul>
-                        <li v-for="(item, key) in row" :key="key" :class="item.place">
-                            <div class="time"><em :class="{'cur-day': item.ymd == curDay}">{{item.day}}</em></div>
-                        </li>
-                    </ul>
-                </li>
-            </ul>
+            <Calendar
+                ref="cal"
+                :view="calendarView"
+                :calendars="calendarLists"
+                :schedules="scheduleLists"
+                @beforeClickSchedule="onBeforeClickSchedule"
+                @beforeUpdateSchedule="onBeforeUpdateSchedule"/>
         </div>
     </div>
 </template>
 
 <script>
+import 'tui-date-picker/dist/tui-date-picker.css';
+import 'tui-time-picker/dist/tui-time-picker.css';
+import 'tui-calendar-hi/dist/tui-calendar-hi.css'
+
 import {mapState} from "vuex";
+import Calendar from "./components/Calendar";
+import moment from "moment";
+
+const today = new Date();
+
+const getDate = (type, start, value, operator) => {
+    start = new Date(start);
+    type = type.charAt(0).toUpperCase() + type.slice(1);
+
+    if (operator === '+') {
+        start[`set${type}`](start[`get${type}`]() + value);
+    } else {
+        start[`set${type}`](start[`get${type}`]() - value);
+    }
+
+    return start;
+};
 
 export default {
+    components: {Calendar},
     data() {
         return {
-            viewDay: $A.formatDate("Y-m"),
+            lists: [],
 
-            curDay: $A.formatDate("Y-m-d"),
-            curInterval: null,
+            rangeText: 'Calendar',
+            rangeTime: [],
 
+            calendarView: 'month',
+
+            scheduleLoad: 0,
+            scheduleList: [],
         }
     },
+
     mounted() {
-        this.curInterval = setInterval(() => {
-            this.curDay = $A.formatDate("Y-m-d");
-        }, 60000)
+        this.setRenderRange();
     },
 
-    destroyed() {
-        clearInterval(this.curInterval)
-    },
     computed: {
-        ...mapState(['userInfo']),
+        ...mapState(['projectList']),
 
-        days() {
-            const days = this.getDateJson(new Date(this.viewDay));
-            let row = days[days.length - 1].day >= 7 ? 5 : 6
-            let array = [], tmp = [];
-            for (let i = 0; i < days.length; i++) {
-                let obj = days[i];
-                tmp.push(obj);
-                if ((i + 1) % 7 == 0) {
-                    array.push(tmp);
-                    tmp = [];
+        calendarLists() {
+            const {projectList} = this;
+            return projectList.map((project) => {
+                return {
+                    id: project.id,
+                    name: project.name,
+                    bgColor: '#F2F3F5',
+                    borderColor: '#F2F3F5'
                 }
-                if (array.length >= row) {
-                    break;
-                }
-            }
-            return array;
+            });
+        },
+
+        scheduleLists() {
+            return this.scheduleList.filter(({complete_at}) => !complete_at)
         }
     },
-    watch: {
 
+    watch: {
+        rangeTime(time) {
+            this.getTask(time);
+        }
     },
+
     methods: {
+        getTask(time) {
+            if (this.scheduleLoad > 0) {
+                setTimeout(() => {
+                    this.getTask(time)
+                }, 100)
+                return;
+            }
+            this.scheduleLoad++;
+            this.$store.dispatch("getTaskList", {
+                time
+            }).then(({data}) => {
+                this.scheduleLoad--;
+                data.data.some((task) => {
+                    let schedule = {
+                        id: task.id,
+                        calendarId: task.project_id,
+                        title: task.name,
+                        category: 'allday',
+                        start: new Date(task.start_at).toISOString(),
+                        end: new Date(task.end_at).toISOString(),
+                        color: "#515a6e",
+                        bgColor: task.color || '#E3EAFD',
+                        borderColor: task.p_color,
+                        complete_at: task.complete_at,
+                        preventClick: true,
+                        isChecked: false,
+                    };
+                    if (task.p_name) {
+                        schedule.priority = '<span class="priority" style="background-color:' + task.p_color + '">' + task.p_name + '</span>';
+                    }
+                    if (task.overdue) {
+                        schedule.color = "#f56c6c"
+                        schedule.bgColor = "#fef0f0"
+                    }
+                    let index = this.scheduleList.findIndex(({id}) => id === task.id);
+                    if (index > -1) {
+                        this.scheduleList.splice(index, 1, schedule)
+                    } else {
+                        this.scheduleList.push(schedule)
+                    }
+                });
+            }).catch(() => {
+                this.scheduleLoad--;
+            })
+        },
+
         preMonth() {
-            const date = new Date(this.viewDay);
-            date.setMonth(date.getMonth() - 1);
-            this.viewDay = $A.formatDate("Y-m", date)
+            this.$refs.cal.getInstance().prev();
+            this.setRenderRange()
         },
 
         curMonth() {
-            this.viewDay = $A.formatDate("Y-m");
+            this.$refs.cal.getInstance().today();
+            this.setRenderRange()
         },
 
         afterMonth() {
-            const date = new Date(this.viewDay);
-            date.setMonth(date.getMonth() + 1);
-            this.viewDay = $A.formatDate("Y-m", date)
+            this.$refs.cal.getInstance().next();
+            this.setRenderRange()
         },
 
-        getDateJson(date){
-            const getMonths = (yy) => {
-                let months = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-                let months2 = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-                let mrun = yy % 100 == 0 && yy % 400 == 0 ? true : (yy % 4 == 0);
-                return mrun ? months2 : months;
-            }
-            const zeroFill = (num) => {
-                if (num < 9) return '0' + num;
-                return '' + num;
-            }
-            //获取要绘制月份的年月，
-            let yy = date.getFullYear();
-            let mm = date.getMonth();
-            //获取应该使用的月份数组。
-            let month = getMonths(yy);
-            //定义此月的1号的日期，获取其星期。
-            let begin_date = new Date(yy, mm, 1);
-            //获得上个月应该显示几天
-            let pre_num = begin_date.getDay();
-            //数组的总个数
-            let const_num = 7 * 6;
-            //当月的天数
-            let cur_num = month[mm];
-            //下个月的天数
-            let after_num = const_num - cur_num - pre_num;
-            //
-            let preyy = yy;
-            let premm = mm;
-            //月份-1小于0，则前一月为上一年
-            if (premm == 0) {
-                preyy -= 1;
-            }
-            //上个月的月份以及天数
-            premm = premm - 1 < 0 ? 11 : (premm - 1);
-            let pre_max = month[premm];
+        setView(view) {
+            this.calendarView = view;
+            this.setRenderRange()
+        },
 
-            //下个月的月份
-            let afteryy = yy;
-            let aftermm = mm;
-            if (aftermm == 11) {
-                afteryy += 1;
+        setRenderRange() {
+            this.$nextTick(() => {
+                const cal = this.$refs.cal.getInstance();
+                let options = cal.getOptions();
+                let viewName = cal.getViewName();
+                let html = [];
+                if (viewName === 'day') {
+                    html.push(this.currentCalendarDate('YYYY.MM.DD'));
+                } else if (viewName === 'month' &&
+                    (!options.month.visibleWeeksCount || options.month.visibleWeeksCount > 4)) {
+                    html.push(this.currentCalendarDate('YYYY.MM'));
+                } else {
+                    html.push(moment(cal.getDateRangeStart().getTime()).format('YYYY.MM.DD'));
+                    html.push(' ~ ');
+                    html.push(moment(cal.getDateRangeEnd().getTime()).format(' MM.DD'));
+                }
+                this.rangeText = html.join('');
+                this.rangeTime = [moment(cal.getDateRangeStart().getTime()).format('YYYY-MM-DD'), moment(cal.getDateRangeEnd().getTime()).format('YYYY-MM-DD')];
+            })
+        },
+
+        currentCalendarDate(format) {
+            const cal = this.$refs.cal.getInstance();
+            let currentDate = moment([cal.getDate().getFullYear(), cal.getDate().getMonth(), cal.getDate().getDate()]);
+            return currentDate.format(format);
+        },
+
+        onBeforeClickSchedule({type, schedule}) {
+            switch (type) {
+                case "check":
+                    break;
+                case "edit":
+                    this.$store.dispatch("openTask", schedule.id)
+                    break;
+                case "delete":
+                    break;
             }
-            aftermm = aftermm + 1 > 11 ? 0 : (aftermm + 1);
-            //定义日历数组。
-            let dateJson = [];
-            //循环得到上个月的日期。
-            for (let i = pre_num; i > 0; i--) {
-                let obj = {year: preyy, month: premm + 1, day: (pre_max - i + 1), place: 'pre'};
-                obj.ymd = obj.year + '-' + zeroFill(obj.month) + '-' + zeroFill(obj.day)
-                dateJson.push(obj);
-            }
-            //循环添加当月日期
-            for (let i = 1; i <= cur_num; i++) {
-                let obj = {year: yy, month: mm + 1, day: i, place: 'cur'};
-                obj.ymd = obj.year + '-' + zeroFill(obj.month) + '-' + zeroFill(obj.day)
-                dateJson.push(obj);
-            }
-            //循环添加下个月的日期。
-            for (let i = 1; i <= after_num; i++) {
-                let obj = {year: afteryy, month: aftermm + 1, day: i, place: 'after'};
-                obj.ymd = obj.year + '-' + zeroFill(obj.month) + '-' + zeroFill(obj.day)
-                dateJson.push(obj);
-            }
-            return dateJson;
+        },
+
+        onBeforeUpdateSchedule(res) {
+            console.group('onBeforeUpdateSchedule');
+            console.log('BeforeUpdate : ', res);
+            console.groupEnd();
         }
     }
 }
