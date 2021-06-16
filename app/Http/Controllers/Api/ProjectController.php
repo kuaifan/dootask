@@ -484,7 +484,7 @@ class ProjectController extends AbstractController
         //
         $task = ProjectTask::userTask($task_id, ['taskUser', 'taskTag']);
         //
-        $task->project_name = ProjectColumn::whereId($task->project_id)->value('name');
+        $task->project_name = Project::whereId($task->project_id)->value('name');
         $task->column_name = ProjectColumn::whereId($task->column_id)->value('name');
         //
         return Base::retSuccess('success', $task);

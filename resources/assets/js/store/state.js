@@ -226,15 +226,20 @@ const state = { method };
 
 // 变量缓存
 [
-    'projectChatShow',      // 项目聊天显示
     'projectTablePanel',    // 项目面板显示类型
-    'projectCompleteHide',  // 项目面板显示已完成列表
     'taskMyShow',           // 项目面板显示我的任务
     'taskUndoneShow',       // 项目面板显示未完成任务
     'taskCompletedShow'     // 项目面板显示已完成任务
 ].forEach((key) => {
     state[key] = state.method.getStorageBoolean("boolean:" + key, true)
-})
+});
+
+[
+    'projectChatShow',      // 项目聊天显示
+    'projectCompleteHide'   // 项目面板显示已完成列表
+].forEach((key) => {
+    state[key] = state.method.getStorageBoolean("boolean:" + key, false)
+});
 
 // ajax
 state.ajaxLoadNum = 0;
