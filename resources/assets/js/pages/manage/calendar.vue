@@ -4,23 +4,33 @@
         <div class="calendar-head">
             <div class="calendar-titbox">
                 <div class="calendar-title">
-                    <h1>{{$L('日历')}}</h1>
+                    <h1>{{viewDay}}</h1>
                 </div>
+                <ButtonGroup class="calendar-arrow" size="small">
+                    <Button @click="preMonth"><Icon type="ios-arrow-back"></Icon></Button>
+                    <Button @click="curMonth">{{$L('今天')}}</Button>
+                    <Button @click="afterMonth"><Icon type="ios-arrow-forward"></Icon></Button>
+                </ButtonGroup>
             </div>
         </div>
         <div class="calendar-box">
-            <ul>
+            <ul class="head">
+                <li>SUN</li>
                 <li>MON</li>
                 <li>TUE</li>
                 <li>WED</li>
                 <li>THU</li>
                 <li>FRI</li>
                 <li>SAT</li>
-                <li>SUN</li>
             </ul>
-            {{days}}
-            <ul>
-                <li v-for="n in 5"></li>
+            <ul class="days">
+                <li v-for="row in days">
+                    <ul>
+                        <li v-for="(item, key) in row" :key="key" :class="item.place">
+                            <div class="time"><em :class="{'cur-day': item.ymd == curDay}">{{item.day}}</em></div>
+                        </li>
+                    </ul>
+                </li>
             </ul>
         </div>
     </div>
@@ -32,53 +42,128 @@ import {mapState} from "vuex";
 export default {
     data() {
         return {
-            days: []
+            viewDay: $A.formatDate("Y-m"),
+
+            curDay: $A.formatDate("Y-m-d"),
+            curInterval: null,
 
         }
     },
     mounted() {
-        this.days = this.generateMonthCalendar('2020-09-19');
+        this.curInterval = setInterval(() => {
+            this.curDay = $A.formatDate("Y-m-d");
+        }, 60000)
+    },
+
+    destroyed() {
+        clearInterval(this.curInterval)
     },
     computed: {
         ...mapState(['userInfo']),
+
+        days() {
+            const days = this.getDateJson(new Date(this.viewDay));
+            let row = days[days.length - 1].day >= 7 ? 5 : 6
+            let array = [], tmp = [];
+            for (let i = 0; i < days.length; i++) {
+                let obj = days[i];
+                tmp.push(obj);
+                if ((i + 1) % 7 == 0) {
+                    array.push(tmp);
+                    tmp = [];
+                }
+                if (array.length >= row) {
+                    break;
+                }
+            }
+            return array;
+        }
     },
     watch: {
 
     },
     methods: {
-        generateMonthCalendar(dates, line = 6) {
-            var date = new Date(dates);                          // 初始时间格式
-            var y = date.getFullYear();
-            var m = date.getMonth();
-            var days = new Date(y, m + 1, 0).getDate();          // 获取这个月共有多少天
-            var firstDayWeek = new Date(y, m, 1).getDay();       // 月份第一天星期几
-            var arr = [];     // 存储日历格式的数组
-            var n = [];       // 日历格式中的一行
-            var d = 1;        // 日历格式中的天数
-            // 先根据这个月第一天排星期几
-            // 把上个月剩下几天留在这个月的'奸细'放在最前头
-            for(let i = 0; i < firstDayWeek; i++) {
-                // new Date(2020, 8, 0)   --> 9月没有0号 === 8月3127     n.unshift(getDate(y, m, 0 - i).getDate());
+        preMonth() {
+            const date = new Date(this.viewDay);
+            date.setMonth(date.getMonth() - 1);
+            this.viewDay = $A.formatDate("Y-m", date)
+        },
+
+        curMonth() {
+            this.viewDay = $A.formatDate("Y-m");
+        },
+
+        afterMonth() {
+            const date = new Date(this.viewDay);
+            date.setMonth(date.getMonth() + 1);
+            this.viewDay = $A.formatDate("Y-m", date)
+        },
+
+        getDateJson(date){
+            const getMonths = (yy) => {
+                let months = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+                let months2 = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+                let mrun = yy % 100 == 0 && yy % 400 == 0 ? true : (yy % 4 == 0);
+                return mrun ? months2 : months;
             }
-            // 开启循环
-            // 一星期占一行，一行一个外循环
-            // 这里我默认想要6行
-            for (let j = 0; j < line; j++) {
-                // 一天占一个格子，最多一星期7个格子
-                // 这里我想要7个格子
-                for (let i = 0; i < 7; i++) {
-                    if(d > days) {
-                        // 这个月都放完了，该放什么？
-                        // new Date(2020, 8, 31)  --> 9月没有31 === 10月1　　　　　　 n.push(new Date(y, m, d++).getDate());
-                    } else {
-                        // 放置这个月的天数　　　　　　 n.push(d++);
-                    }51
-                    if (n.length == 7) break;    // 放了7个格子该结束了
-                }
-                arr.push(n);
-                n = [];           // 这一行放完了，清空ba
+            const zeroFill = (num) => {
+                if (num < 9) return '0' + num;
+                return '' + num;
             }
-            return arr;
+            //获取要绘制月份的年月，
+            let yy = date.getFullYear();
+            let mm = date.getMonth();
+            //获取应该使用的月份数组。
+            let month = getMonths(yy);
+            //定义此月的1号的日期，获取其星期。
+            let begin_date = new Date(yy, mm, 1);
+            //获得上个月应该显示几天
+            let pre_num = begin_date.getDay();
+            //数组的总个数
+            let const_num = 7 * 6;
+            //当月的天数
+            let cur_num = month[mm];
+            //下个月的天数
+            let after_num = const_num - cur_num - pre_num;
+            //
+            let preyy = yy;
+            let premm = mm;
+            //月份-1小于0，则前一月为上一年
+            if (premm == 0) {
+                preyy -= 1;
+            }
+            //上个月的月份以及天数
+            premm = premm - 1 < 0 ? 11 : (premm - 1);
+            let pre_max = month[premm];
+
+            //下个月的月份
+            let afteryy = yy;
+            let aftermm = mm;
+            if (aftermm == 11) {
+                afteryy += 1;
+            }
+            aftermm = aftermm + 1 > 11 ? 0 : (aftermm + 1);
+            //定义日历数组。
+            let dateJson = [];
+            //循环得到上个月的日期。
+            for (let i = pre_num; i > 0; i--) {
+                let obj = {year: preyy, month: premm + 1, day: (pre_max - i + 1), place: 'pre'};
+                obj.ymd = obj.year + '-' + zeroFill(obj.month) + '-' + zeroFill(obj.day)
+                dateJson.push(obj);
+            }
+            //循环添加当月日期
+            for (let i = 1; i <= cur_num; i++) {
+                let obj = {year: yy, month: mm + 1, day: i, place: 'cur'};
+                obj.ymd = obj.year + '-' + zeroFill(obj.month) + '-' + zeroFill(obj.day)
+                dateJson.push(obj);
+            }
+            //循环添加下个月的日期。
+            for (let i = 1; i <= after_num; i++) {
+                let obj = {year: afteryy, month: aftermm + 1, day: i, place: 'after'};
+                obj.ymd = obj.year + '-' + zeroFill(obj.month) + '-' + zeroFill(obj.day)
+                dateJson.push(obj);
+            }
+            return dateJson;
         }
     }
 }

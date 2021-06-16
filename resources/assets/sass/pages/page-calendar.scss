@@ -8,6 +8,8 @@
         border-bottom: 1px solid #F4F4F5;
         .calendar-titbox {
             flex: 1;
+            display: flex;
+            align-items: center;
             margin-bottom: 16px;
             .calendar-title {
                 display: flex;
@@ -18,12 +20,112 @@
                     font-weight: 600;
                 }
             }
+            .calendar-arrow {
+                margin-left: 36px;
+                > button {
+                    color: #888888;
+                    font-size: 12px;
+                    &:focus {
+                        box-shadow: none;
+                    }
+                }
+            }
         }
     }
     .calendar-box {
         flex: 1;
         height: 0;
         display: flex;
-        margin-bottom: 16px;
+        flex-direction: column;
+        padding: 0 48px;
+        .head {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #f4f5f5;
+            > li {
+                flex: 1;
+                list-style: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 12px;
+                position: relative;
+                &:after {
+                    content: "";
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    width: 1px;
+                    height: 100%;
+                    background-color: #f4f5f5;
+                }
+                &:last-child {
+                    &:after {
+                        display: none;
+                    }
+                }
+            }
+        }
+        .days {
+            flex: 1;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            > li {
+                flex: 1;
+                flex-shrink: 0;
+                list-style: none;
+                display: flex;
+                flex-direction: column;
+                border-bottom: 1px solid #f4f5f5;
+                > ul {
+                    flex: 1;
+                    flex-shrink: 0;
+                    display: flex;
+                    > li {
+                        flex: 1;
+                        flex-shrink: 0;
+                        list-style: none;
+                        position: relative;
+                        display: flex;
+                        flex-direction: column;
+                        .time {
+                            padding: 10px 10px 0;
+                            > em {
+                                font-style: normal;
+                                display: inline-block;
+                                border-radius: 50%;
+                                min-height: 24px;
+                                min-width: 24px;
+                                line-height: 24px;
+                                text-align: center;
+                                &.cur-day {
+                                    background-color: #2d8cf0;
+                                    color: #ffffff;
+                                }
+                            }
+                        }
+                        &:after {
+                            content: "";
+                            position: absolute;
+                            top: 0;
+                            right: 0;
+                            width: 1px;
+                            height: 100%;
+                            background-color: #f4f5f5;
+                        }
+                        &:last-child {
+                            &:after {
+                                display: none;
+                            }
+                        }
+                        &.pre,
+                        &.after {
+                            color: #aaaaaa;
+                        }
+                    }
+                }
+            }
+        }
     }
 }
