@@ -38,7 +38,7 @@
         "echarts": "^5.1.1",
         "element-ui": "^2.15.2",
         "tinymce": "^5.8.1",
-        "tui-calendar-hi": "^1.13.0-3",
+        "tui-calendar-hi": "^1.13.0-5",
         "view-design-hi": "^4.6.1-1",
         "vue-clipboard2": "^0.3.1",
         "vue-emoji-picker": "^1.0.1",

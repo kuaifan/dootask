@@ -57,6 +57,19 @@
                 z-index: 1;
             }
             .tui-full-calendar-popup-creation {
+                .tui-full-calendar-icon {
+                    &.tui-full-calendar-ic-title,
+                    &.tui-full-calendar-calendar-dot {
+                        display: none;
+                    }
+                    &.tui-full-calendar-ic-date {
+                        background-image: url("data:image/svg+xml;base64,PHN2ZyB0PSIxNjIzODU5NjcwNjA3IiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9IjE2Mzg4IiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCI+PHBhdGggZD0iTTk2MCAxMjhIODMzYzAtNTMtNDMtOTYtOTYtOTZoLTE2Yy01MyAwLTk2IDQzLTk2IDk2SDQwMGMwLTI2LjUtMTAuNy01MC41LTI4LjEtNjcuOUMzNTQuNSA0Mi43IDMzMC41IDMyIDMwNCAzMmgtMTZjLTUzIDAtOTYgNDMtOTYgOTZINjRjLTM1LjMgMC02NCAyOC42LTY0IDY0djczNmMwIDM1LjMgMjguNyA2NCA2NCA2NGg4OTZjMzUuMyAwIDY0LTI4LjcgNjQtNjRWMTkyYzAtMzUuNC0yOC43LTY0LTY0LTY0eiBtLTI3MSA4YzAtMjIuMSAxNy45LTQwIDQwLTQwczQwIDE3LjkgNDAgNDB2ODBjMCAyMi4xLTE3LjkgNDAtNDAgNDAtMTEgMC0yMS00LjUtMjguMy0xMS43QzY5My41IDIzNyA2ODkgMjI3IDY4OSAyMTZ2LTgweiBtLTQzMyAwYzAtMjIuMSAxNy45LTQwIDQwLTQwczQwIDE3LjkgNDAgNDB2ODBjMCAyMi4xLTE3LjkgNDAtNDAgNDAtMTEgMC0yMS00LjUtMjguMy0xMS43QzI2MC41IDIzNyAyNTYgMjI3IDI1NiAyMTZ2LTgweiBtNzA0IDc2MGMwIDE3LjctMTQuMyAzMi0zMiAzMkg5NmMtMTcuNyAwLTMyLTE0LjMtMzItMzJWNDQ4aDg5NnY0NDh6IiBwLWlkPSIxNjM4OSIgZmlsbD0iIzUxNTE1MSI+PC9wYXRoPjwvc3ZnPg==");
+                        background-size: contain;
+                    }
+                }
+                .tui-full-calendar-content {
+                    padding-left: 0;
+                }
                 .tui-full-calendar-popup-section {
                     display: flex;
                     justify-content: space-between;
@@ -68,6 +81,9 @@
                 .tui-full-calendar-section-start-date,
                 .tui-full-calendar-section-end-date {
                     width: 210px;
+                    .tui-full-calendar-content {
+                        padding-left: 8px;
+                    }
                 }
                 .tui-full-calendar-popup-location,
                 .tui-full-calendar-section-private,
@@ -79,12 +95,29 @@
             .tui-full-calendar-popup-task {
                 .priority {
                     color: #ffffff;
-                    padding: 2px 3px;
+                    padding: 2px 4px;
                     border-radius: 4px;
+                    margin-right: 6px;
+                }
+                .overdue {
+                    color: #f5222d;
+                    background: #fff1f0;
+                    border: 1px solid #ffa39e;
+                    padding: 1px 3px;
+                    border-radius: 4px;
+                    margin-right: 6px;
                 }
                 .tui-full-calendar-calendar-dot,
                 .tui-full-calendar-ic-priority {
                     opacity: 0;
+                }
+                .tui-full-calendar-ic-edit {
+                    top: -2px;
+                    background-image: url("data:image/svg+xml;base64,PHN2ZyB0PSIxNjIzODU5MzY4MTg5IiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9IjExMTkiIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48cGF0aCBkPSJNODMzLjQyODU3MTY4IDYySDE5MC41NzE0MjgzMmExMjguNTcxNDI4MzIgMTI4LjU3MTQyODMyIDAgMCAwLTEyOC41NzE0MjgzMiAxMjguNTcxNDI4MzJ2NjQyLjg1NzE0MzM2YTEyOC41NzE0MjgzMiAxMjguNTcxNDI4MzIgMCAwIDAgMTI4LjU3MTQyODMyIDEyOC41NzE0MjgzMmg2NDIuODU3MTQzMzZhMTI4LjU3MTQyODMyIDEyOC41NzE0MjgzMiAwIDAgMCAxMjguNTcxNDI4MzItMTI4LjU3MTQyODMyVjE5MC41NzE0MjgzMmExMjguNTcxNDI4MzIgMTI4LjU3MTQyODMyIDAgMCAwLTEyOC41NzE0MjgzMi0xMjguNTcxNDI4MzJ6IG02NC4yODU3MTQxNiA3NzEuNDI4NTcxNjhhNjQuMjg1NzE0MTYgNjQuMjg1NzE0MTYgMCAwIDEtNjQuMjg1NzE0MTcgNjQuMjg1NzE0MTZIMTkwLjU3MTQyODMyYTY0LjI4NTcxNDE2IDY0LjI4NTcxNDE2IDAgMCAxLTY0LjI4NTcxNDE2LTY0LjI4NTcxNDE2VjE5MC41NzE0MjgzMmE2NC4yODU3MTQxNiA2NC4yODU3MTQxNiAwIDAgMSA2NC4yODU3MTQxNy02NC4yODU3MTQxNmg2NDIuODU3MTQzMzVhNjQuMjg1NzE0MTYgNjQuMjg1NzE0MTYgMCAwIDEgNjQuMjg1NzE0MTYgNjQuMjg1NzE0MTd6IiBwLWlkPSIxMTIwIiBmaWxsPSIjNTE1MTUxIj48L3BhdGg+PHBhdGggZD0iTTE5MC41NzE0MjgzMiAyNTQuODU3MTQyNDhoNjQuMjg1NzE0MTZ2NjQuMjg1NzE1MDRIMTkwLjU3MTQyODMyek0zMTkuMTQyODU3NTIgMjU0Ljg1NzE0MjQ4aDQ1MHY2NC4yODU3MTUwNEgzMTkuMTQyODU3NTJ6TTE5MC41NzE0MjgzMiA0NDcuNzE0Mjg1ODRoNjQuMjg1NzE0MTZ2NjQuMjg1NzE0MTZIMTkwLjU3MTQyODMyek0zMTkuMTQyODU3NTIgNDQ3LjcxNDI4NTg0aDQ1MHY2NC4yODU3MTQxNkgzMTkuMTQyODU3NTJ6TTE5MC41NzE0MjgzMiA2NDAuNTcxNDI4MzJoNjQuMjg1NzE0MTZ2NjQuMjg1NzE0MTZIMTkwLjU3MTQyODMyek0zMTkuMTQyODU3NTIgNjQwLjU3MTQyODMyaDMyMS40Mjg1NzA4djY0LjI4NTcxNDE2SDMxOS4xNDI4NTc1MnoiIHAtaWQ9IjExMjEiIGZpbGw9IiM1MTUxNTEiPjwvcGF0aD48L3N2Zz4=");
+                }
+                .tui-full-calendar-ic-delete {
+                    top: -2px;
+                    background-image: url("data:image/svg+xml;base64,PHN2ZyB0PSIxNjIzODU5MzMwMTc2IiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9Ijc5MiIgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiPjxwYXRoIGQ9Ik04OTIuMjg4IDI1NmgtMTkxLjE2OEEyMDIuMjQgMjAyLjI0IDAgMCAwIDUwOS42MzIgNjIuMDggMjAxLjIxNiAyMDEuMjE2IDAgMCAwIDMxOC44NDggMjU2SDEyOGMtMTguNjg4IDAtNjYuMDQ4LTQuMjI0LTY2LjA0OCAyNC43NjhDNjEuOTUyIDMyNy43NDQgMTA5LjM3NiAzMjAgMTI4IDMyMGg2NHY1MTJhMTQ2LjQ5NiAxNDYuNDk2IDAgMCAwIDEyNy40MjQgMTI4aDM4Mi4yNzJBMTUwLjAxNiAxNTAuMDE2IDAgMCAwIDgzMiA4MzJsLTMuMzkyLTUxMmg2NGMxOC4zNjggMCA2NS4wMjQgMS40NzIgNjUuMDI0LTM5Ljc0NEE3Mi4zODQgNzIuMzg0IDAgMCAwIDg5Mi4yODggMjU2ek01MDkuNjMyIDEyOC41MTJBMTM4LjE3NiAxMzguMTc2IDAgMCAxIDYzNy40NCAyNTZIMzgyLjU5MmExMzcuOTIgMTM3LjkyIDAgMCAxIDEyNy4wNC0xMjcuNDg4ek03NjggODMyYTk3Ljk4NCA5Ny45ODQgMCAwIDEtNjYuODggNjRIMzE4Ljg0OGE5My41NjggOTMuNTY4IDAgMCAxLTY0LTY0VjMyMEg3Njh2NTEyeiBtLTM4NS40MDgtNjRWNTEyYzAtMTguNDk2IDAuOTYtNjAuOTkyIDM2LjczNi02MC45OTIgMjcuMzI4IDAgMjYuNDk2IDQzLjAwOCAyNi45NDQgNjAuOTkydjI1NmMwIDE4LjQ5Ni02LjQgMjAuMDMyLTI0Ljk2IDIwLjAzMnMtMzguNzItMS41MzYtMzguNzItMjAuMDMyeiBtMTkxLjE2OCAwVjUxMmE2NCA2NCAwIDAgMSAyMy44MDgtNjAuOTkyYzQyLjQzMiAwIDM5LjM2IDQzLjAwOCAzOS44NzIgNjAuOTkydjI1NmMwIDE4LjQ5Ni0xOS41ODQgMjAuMDMyLTM3Ljk1MiAyMC4wMzJzLTI1Ljc5Mi0xLjUzNi0yNS43OTItMjAuMDMyeiIgcC1pZD0iNzkzIiBmaWxsPSIjNTE1MTUxIj48L3BhdGg+PC9zdmc+");
                 }
             }
             .tui-datepicker {

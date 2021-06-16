@@ -48,22 +48,13 @@ export default {
         theme: {
             type: Object,
             default() {
-                return {
-                    'common.border': '1px solid #f4f5f5',
-                    'month.dayname.fontSize': '14px',
-                    'month.dayname.borderLeft': '1px solid #f4f5f5',
-                    'month.dayname.height': '50px',
-                };
+                return {};
             }
         },
         template: {
             type: Object,
             default() {
-                return {
-                    titlePlaceholder: function () {
-                        return "Task Description"
-                    }
-                };
+                return {};
             }
         },
         week: {
@@ -208,6 +199,10 @@ export default {
         },
         getInstance() {
             return this.calendarInstance;
+        },
+        resetRender() {
+            this.calendarInstance.clear();
+            this.reflectSchedules();
         },
         invoke(methodName, ...args) {
             let result;

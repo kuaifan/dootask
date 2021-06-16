@@ -22,7 +22,9 @@
             <Calendar
                 ref="cal"
                 :view="calendarView"
-                :calendars="calendarLists"
+                :theme="calendarTheme"
+                :template="calendarTemplate"
+                :calendars="calendarList"
                 :schedules="scheduleLists"
                 @beforeClickSchedule="onBeforeClickSchedule"
                 @beforeUpdateSchedule="onBeforeUpdateSchedule"/>
@@ -64,6 +66,9 @@ export default {
             rangeTime: [],
 
             calendarView: 'month',
+            calendarTheme: {},
+            calendarTemplate: {},
+            calendarList: [],
 
             scheduleLoad: 0,
             scheduleList: [],
@@ -74,20 +79,12 @@ export default {
         this.setRenderRange();
     },
 
+    activated() {
+        this.$refs.cal.resetRender();
+    },
+
     computed: {
         ...mapState(['projectList']),
-
-        calendarLists() {
-            const {projectList} = this;
-            return projectList.map((project) => {
-                return {
-                    id: project.id,
-                    name: project.name,
-                    bgColor: '#F2F3F5',
-                    borderColor: '#F2F3F5'
-                }
-            });
-        },
 
         scheduleLists() {
             return this.scheduleList.filter(({complete_at}) => !complete_at)
@@ -97,10 +94,42 @@ export default {
     watch: {
         rangeTime(time) {
             this.getTask(time);
+        },
+
+        projectList(data) {
+            const list = data.map((project) => {
+                return {
+                    id: project.id,
+                    name: project.name,
+                }
+            });
+            if (JSON.stringify(list) != JSON.stringify(this.calendarList)) {
+                this.calendarList = list;
+            }
         }
     },
 
     methods: {
+        initLanguage() {
+            this.calendarTheme = {
+                'common.border': '1px solid #f4f5f5',
+                'month.dayname.fontSize': '14px',
+                'month.dayname.borderLeft': '1px solid #f4f5f5',
+                'month.dayname.height': '50px',
+            }
+            this.calendarTemplate = {
+                titlePlaceholder: () => {
+                    return this.$L("任务描述")
+                },
+                popupEdit: () => {
+                    return this.$L("详情");
+                },
+                popupDelete: () => {
+                    return this.$L("删除");
+                }
+            }
+        },
+
         getTask(time) {
             if (this.scheduleLoad > 0) {
                 setTimeout(() => {
@@ -134,6 +163,7 @@ export default {
                     if (task.overdue) {
                         schedule.color = "#f56c6c"
                         schedule.bgColor = "#fef0f0"
+                        schedule.priority+= '<span class="overdue">' + this.$L('超期未完成') + '</span>';
                     }
                     let index = this.scheduleList.findIndex(({id}) => id === task.id);
                     if (index > -1) {
@@ -195,13 +225,48 @@ export default {
         },
 
         onBeforeClickSchedule({type, schedule}) {
+            let data = this.scheduleList.find(({id}) => id === schedule.id);
+            if (!data) {
+                return;
+            }
             switch (type) {
                 case "check":
+                    this.$set(data, 'complete_at', $A.formatDate("Y-m-d H:i:s"))
+                    this.$store.dispatch("taskUpdate", {
+                        task_id: data.id,
+                        complete_at: $A.formatDate("Y-m-d H:i:s"),
+                    }).then(({msg}) => {
+                        $A.messageSuccess(msg);
+                    }).catch(({msg}) => {
+                        this.$set(data, 'complete_at', null)
+                        $A.modalError(msg);
+                    });
                     break;
+
                 case "edit":
                     this.$store.dispatch("openTask", schedule.id)
                     break;
+
                 case "delete":
+                    $A.modalConfirm({
+                        title: '删除任务',
+                        content: '你确定要删除任务【' + data.title + '】吗？',
+                        loading: true,
+                        onOk: () => {
+                            this.scheduleList = this.scheduleList.filter(({id}) => id !== data.id);
+                            this.$store.dispatch("taskArchivedOrRemove", {
+                                task_id: data.id,
+                                type: 'delete',
+                            }).then(({msg}) => {
+                                $A.messageSuccess(msg);
+                                this.$Modal.remove();
+                            }).catch(({msg}) => {
+                                $A.modalError(msg, 301);
+                                this.$Modal.remove();
+                                this.setRenderRange();
+                            });
+                        }
+                    });
                     break;
             }
         },
