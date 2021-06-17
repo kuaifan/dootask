@@ -413,6 +413,9 @@ export default {
             });
             return;
         }
+        if (data.parent_id > 0) {
+            return;
+        }
         let task = {
             id: data.id,
             calendarId: String(data.project_id),
@@ -673,7 +676,7 @@ export default {
                         }
                     }
                 }
-                if (data.task_id == state.projectOpenTask.id) {
+                if (task.parent_id == state.projectOpenTask.id) {
                     let index = state.projectOpenTask.sub_task.findIndex(({id}) => id === task.id)
                     if (index === -1) {
                         state.projectOpenTask.sub_task.push(task);
