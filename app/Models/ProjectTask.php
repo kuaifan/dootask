@@ -329,10 +329,7 @@ class ProjectTask extends AbstractModel
                     $subtask['parent_id'] = $task->id;
                     $subtask['project_id'] = $task->project_id;
                     $subtask['column_id'] = $task->column_id;
-                    $result = self::addTask($subtask);
-                    if (Base::isError($result)) {
-                        return $result;
-                    }
+                    self::addTask($subtask);
                 }
             }
             $task->addLog("创建{任务}：" . $task->name);

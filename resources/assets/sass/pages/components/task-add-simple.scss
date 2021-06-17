@@ -48,3 +48,90 @@
         }
     }
 }
+
+.task-add-row {
+    background-color: #ffffff;
+    border-bottom: 1px solid #F4F4F5;
+    position: relative;
+    > div {
+        display: flex;
+        padding: 8px 12px;
+        border-right: 1px solid #F4F4F5;
+        &:last-child {
+            border-right: 0;
+        }
+        &.row-add {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 48px;
+            padding-left: 34px;
+            .add-btn {
+                display: block;
+                cursor: pointer;
+                opacity: 0.5;
+                transition: opacity 0.3s;
+                .add-icon {
+                    font-size: 16px;
+                    margin-right: 8px;
+                }
+                &:hover {
+                    opacity: 1;
+                }
+            }
+            .add-input {
+                display: none;
+                align-items: flex-start;
+                border: 1px solid #dcdee2;
+                border-radius: 4px;
+                color: #515a6e;
+                background-color: #fff;
+                &:hover {
+                    border-color: #57a3f3;
+                }
+                textarea {
+                    border-color: transparent;
+                    resize: none;
+                    &:focus {
+                        box-shadow: none;
+                    }
+                }
+                .priority {
+                    margin: 0 4px;
+                    display: flex;
+                    align-items: center;
+                    height: 31px;
+                    > ul {
+                        flex: 1;
+                        display: flex;
+                        align-items: center;
+                        > li {
+                            list-style: none;
+                            margin-right: 4px;
+                            .iconfont {
+                                font-size: 17px;
+                                cursor: pointer;
+                            }
+                        }
+                    }
+                    .ivu-icon {
+                        cursor: pointer;
+                        font-size: 15px;
+                        margin: 0 5px 0 3px;
+                    }
+                }
+            }
+
+            &.active {
+                padding-top: 7px;
+                padding-bottom: 7px;
+                .add-btn {
+                    display: none;
+                }
+                .add-input {
+                    display: flex;
+                }
+            }
+        }
+    }
+}

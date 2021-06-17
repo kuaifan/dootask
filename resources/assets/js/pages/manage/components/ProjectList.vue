@@ -240,18 +240,7 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow :list="myList" :color-list="taskColorList" @command="dropTask"/>
-                <div @click="addTaskOpen(0)">
-                    <Row class="task-row">
-                        <Col span="12" class="row-add">
-                            <Icon type="ios-add" /> {{$L('添加任务')}}
-                        </Col>
-                        <Col span="3"></Col>
-                        <Col span="3"></Col>
-                        <Col span="3"></Col>
-                        <Col span="3"></Col>
-                    </Row>
-                </div>
+                <TaskRow :list="myList" open-key="my" :color-list="taskColorList" @command="dropTask" fast-add-task/>
             </div>
             <!--未完成任务-->
             <div v-if="projectDetail.task_num > 0" :class="['project-table-body', !taskUndoneShow ? 'project-table-hide' : '']">
@@ -266,7 +255,7 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow :list="undoneList" :color-list="taskColorList" @command="dropTask"/>
+                <TaskRow :list="undoneList" open-key="undone" :color-list="taskColorList" @command="dropTask"/>
             </div>
             <!--已完成任务-->
             <div v-if="projectDetail.task_num > 0" :class="['project-table-body', !taskCompletedShow ? 'project-table-hide' : '']">
@@ -281,7 +270,7 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow :list="completedList" :color-list="taskColorList" @command="dropTask"/>
+                <TaskRow :list="completedList" open-key="completed" :color-list="taskColorList" @command="dropTask"/>
             </div>
         </div>
 
@@ -796,6 +785,7 @@ export default {
                         if (index > -1) {
                             this.projectDetail.project_column.splice(index, 1);
                         }
+                        this.$store.dispatch("getProjectOne", column.project_id);
                     }).catch(({msg}) => {
                         $A.modalError(msg, 301);
                         this.$set(column, 'loading', false);

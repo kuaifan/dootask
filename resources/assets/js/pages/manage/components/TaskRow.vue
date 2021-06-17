@@ -5,19 +5,18 @@
                 <em v-if="item.p_name && item.parent_id === 0" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
                 <Col span="12" :class="['row-name', item.complete_at ? 'complete' : '']">
                     <Icon
-                        v-if="item.sub_num > 0"
-                        :class="['sub-icon', item.sub_open ? 'active' : '']"
+                        v-if="item.sub_num > 0 || fastAddTask"
+                        :class="['sub-icon', item[openName] ? 'active' : '']"
                         type="ios-arrow-forward"
                         @click="getSublist(item)"/>
-                    <div v-if="item.loading === true" class="loading"><Loading /></div>
                     <EDropdown
-                        v-else
                         trigger="click"
                         size="small"
                         @command="dropTask(item, $event)">
-                        <div>
+                        <div class="drop-icon">
                             <Icon v-if="item.complete_at" class="completed" type="md-checkmark-circle" />
                             <Icon v-else type="md-radio-button-off" />
+                            <div v-if="item.loading === true" class="loading"><Loading /></div>
                         </div>
                         <EDropdownMenu slot="dropdown" class="project-list-more-dropdown-menu">
                             <EDropdownItem v-if="item.complete_at" command="uncomplete">
@@ -84,20 +83,25 @@
                 </Col>
             </Row>
             <TaskRow
-                v-if="item.sub_open===true"
-                :list="item.sub_list"
+                v-if="item[openName]===true"
+                :list="item.sub_task"
+                :parent-id="item.id"
+                :fast-add-task="fastAddTask"
                 :color-list="colorList"
+                :open-key="openKey"
                 @command="dropTask"/>
         </div>
+        <TaskAddSimple v-if="fastAddTask" :parent-id="parentId" row-mode/>
     </div>
 </template>
 
 <script>
 import TaskPriority from "./TaskPriority";
+import TaskAddSimple from "./TaskAddSimple";
 
 export default {
     name: "TaskRow",
-    components: {TaskPriority},
+    components: {TaskAddSimple, TaskPriority},
     props: {
         list: {
             type: Array,
@@ -110,6 +114,18 @@ export default {
             default: () => {
                 return [];
             }
+        },
+        parentId: {
+            type: Number,
+            default: 0
+        },
+        fastAddTask: {
+            type: Boolean,
+            default: false
+        },
+        openKey: {
+            type: String,
+            default: 'default'
         },
     },
     data() {
@@ -128,6 +144,9 @@ export default {
         clearInterval(this.nowInterval)
     },
     computed: {
+        openName() {
+            return 'sub_open_' + this.openKey
+        },
         expiresFormat() {
             const {nowTime} = this;
             return function (date) {
@@ -141,17 +160,14 @@ export default {
             }
         },
     },
-    watch: {
-
-    },
     methods: {
         dropTask(task, command) {
             this.$emit("command", task, command)
         },
 
         getSublist(task) {
-            if (task.sub_open === true) {
-                this.$set(task, 'sub_open', false);
+            if (task[this.openName] === true) {
+                this.$set(task, this.openName, false);
                 return;
             }
             if (task.loading === true) {
@@ -160,8 +176,8 @@ export default {
             this.$set(task, 'loading', true);
             this.$store.dispatch("getSubTask", task.id).then(({data}) => {
                 this.$set(task, 'loading', false);
-                this.$set(task, 'sub_list', data);
-                this.$set(task, 'sub_open', true);
+                this.$set(task, 'sub_task', data);
+                this.$set(task, this.openName, true);
             }).catch(({msg}) => {
                 this.$set(task, 'loading', false);
                 $A.modalError(msg);

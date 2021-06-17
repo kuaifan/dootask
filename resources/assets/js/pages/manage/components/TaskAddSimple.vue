@@ -1,5 +1,43 @@
 <template>
-    <div :class="['task-add-simple', active ? 'active' : '']" @mouseenter="mouseEnter=true" @mouseleave="mouseEnter=false">
+    <Row v-if="rowMode" class="task-add-row">
+        <Col span="12" :class="['row-add', active ? 'active' : '']">
+            <div class="add-input" @mouseenter="mouseEnter=true" @mouseleave="mouseEnter=false">
+                <Input
+                    v-model="addData.name"
+                    ref="input"
+                    type="textarea"
+                    :rows="1"
+                    :autosize="{ minRows: 1, maxRows: 3 }"
+                    :maxlength="255"
+                    :placeholder="$L(typeName + '描述，回车创建')"
+                    @on-focus="onFocus=true"
+                    @on-blur="onFocus=false"
+                    @on-keydown="onKeydown"/>
+                <div v-if="parentId == 0" class="priority">
+                    <ul>
+                        <li v-for="(item, key) in taskPriority" :key="key">
+                            <ETooltip v-if="active" :content="item.name + ' (' + item.days + $L('天') + ')'">
+                                <i
+                                    class="iconfont"
+                                    :style="{color:item.color}"
+                                    v-html="addData.p_name == item.name ? '&#xe61d;' : '&#xe61c;'"
+                                    @click="choosePriority(item)"></i>
+                            </ETooltip>
+                        </li>
+                    </ul>
+                    <Icon type="md-settings" @click="onPriority"/>
+                </div>
+            </div>
+            <div class="add-btn" @click="openAdd">
+                <Icon class="add-icon" type="md-add" />{{$L('添加' + typeName)}}
+            </div>
+        </Col>
+        <Col span="3"></Col>
+        <Col span="3"></Col>
+        <Col span="3"></Col>
+        <Col span="3"></Col>
+    </Row>
+    <div v-else :class="['task-add-simple', active ? 'active' : '']" @mouseenter="mouseEnter=true" @mouseleave="mouseEnter=false">
         <Input
             v-model="addData.name"
             ref="input"
@@ -7,12 +45,12 @@
             :rows="2"
             :autosize="{ minRows: 2, maxRows: 3 }"
             :maxlength="255"
-            :placeholder="$L('任务描述，回车创建')"
+            :placeholder="$L(typeName + '描述，回车创建')"
             @on-focus="onFocus=true"
             @on-blur="onFocus=false"
-            @on-keydown="onKeydown"></Input>
+            @on-keydown="onKeydown"/>
         <div class="add-placeholder" @click="openAdd">
-            <Icon type="md-add" />{{$L('添加任务')}}
+            <Icon type="md-add" />{{$L('添加' + typeName)}}
         </div>
         <div class="priority">
             <ul>
@@ -37,17 +75,27 @@ import {mapState} from "vuex";
 export default {
     name: "TaskAddSimple",
     props: {
+        parentId: {
+            type: Number,
+            default: 0
+        },
         projectId: {
-            default: ''
+            type: Number,
+            default: 0
         },
         columnId: {
-            default: ''
+            type: Number,
+            default: 0
         },
         addTop: {
             type: Boolean,
             default: false
         },
         autoActive: {
+            type: Boolean,
+            default: false
+        },
+        rowMode: {
             type: Boolean,
             default: false
         }
@@ -77,7 +125,11 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'taskPriority']),
+        ...mapState(['userId', 'taskPriority', 'projectDetail']),
+
+        typeName() {
+            return (this.parentId > 0 ? '子任务' : '任务');
+        }
     },
 
     watch: {
@@ -96,11 +148,18 @@ export default {
 
     methods: {
         getData() {
-            this.addData.project_id = this.projectId;
-            this.addData.column_id = this.columnId;
-            this.addData.owner = [this.userId];
-            this.addData.top = this.addTop ? 1 : 0;
-            return $A.cloneJSON(this.addData);
+            if (this.parentId > 0) {
+                return {
+                    task_id: this.parentId,
+                    name: this.addData.name,
+                }
+            } else {
+                this.addData.project_id = this.projectId || this.projectDetail.id;
+                this.addData.column_id = this.columnId || '';
+                this.addData.owner = [this.userId];
+                this.addData.top = this.addTop ? 1 : 0;
+                return $A.cloneJSON(this.addData);
+            }
         },
 
         openAdd() {
@@ -141,7 +200,8 @@ export default {
                 return;
             }
             this.loadIng++;
-            this.$store.dispatch("taskAdd", this.getData()).then(({msg}) => {
+            let type = this.parentId > 0 ? 'taskAddSub' : 'taskAdd';
+            this.$store.dispatch(type, this.getData()).then(({msg}) => {
                 $A.messageSuccess(msg);
                 this.loadIng--;
                 this.active = false;
@@ -167,7 +227,9 @@ export default {
             this.$set(this.addData, 'p_level', item.priority)
             this.$set(this.addData, 'p_name', item.name)
             this.$set(this.addData, 'p_color', item.color)
-            this.$refs.input.focus()
+            this.$nextTick(() => {
+                this.$refs.input.focus();
+            });
         },
 
         defaultPriority() {

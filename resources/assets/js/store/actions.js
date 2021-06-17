@@ -660,10 +660,26 @@ export default {
                 url: 'project/task/addsub',
                 data: data,
             }).then(result => {
-                if (data.task_id == state.projectOpenTask.id) {
-                    state.projectOpenTask.sub_task.push(result.data.task);
+                const {task} = result.data;
+                if (state.projectDetail.id == task.project_id) {
+                    const column = state.projectDetail.project_column.find(({id}) => id === task.column_id);
+                    if (column) {
+                        const project_task = column.project_task.find(({id}) => id === task.parent_id)
+                        if (project_task) {
+                            let index = project_task.sub_task.findIndex(({id}) => id === task.id)
+                            if (index === -1) {
+                                project_task.sub_task.push(task);
+                            }
+                        }
+                    }
                 }
-                dispatch("getTaskOne", data.task_id);
+                if (data.task_id == state.projectOpenTask.id) {
+                    let index = state.projectOpenTask.sub_task.findIndex(({id}) => id === task.id)
+                    if (index === -1) {
+                        state.projectOpenTask.sub_task.push(task);
+                    }
+                }
+                dispatch("getTaskOne", task.parent_id);
                 resolve(result)
             }).catch(result => {
                 reject(result)

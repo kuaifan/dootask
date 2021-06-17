@@ -8,8 +8,10 @@
                 </div>
                 <ButtonGroup class="calendar-arrow" size="small">
                     <Button @click="preMonth"><Icon type="ios-arrow-back"></Icon></Button>
-                    <Button @click="curMonth">{{$L('今天')}}</Button>
                     <Button @click="afterMonth"><Icon type="ios-arrow-forward"></Icon></Button>
+                </ButtonGroup>
+                <ButtonGroup class="calendar-arrow" size="small">
+                    <Button @click="curMonth">{{$L('今天')}}</Button>
                 </ButtonGroup>
                 <ButtonGroup class="calendar-view">
                     <Button @click="setView('day')" :type="calendarView == 'day' ? 'primary' : 'default'">{{$L('日')}}</Button>
