@@ -3,11 +3,15 @@
     flex-direction: column;
     .project-head {
         display: flex;
+        flex-direction: column;
         align-items: flex-start;
         margin: 32px 32px 0;
         .project-titbox {
-            flex: 1;
-            margin-bottom: 16px;
+            width: 100%;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 36px;
             .project-title {
                 display: flex;
                 align-items: center;
@@ -26,23 +30,11 @@
                     }
                 }
             }
-            .project-subtitle {
-                color: #999999;
-                margin-top: 18px;
-                line-height: 24px;
-            }
-        }
-        .project-icobox {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            height: 100%;
-            margin-top: 2px;
-            margin-left: 80px;
             .project-icons {
                 display: flex;
                 align-items: center;
                 flex-shrink: 0;
+                margin-top: 3px;
                 > li {
                     list-style: none;
                     display: flex;
@@ -84,63 +76,78 @@
                     }
                 }
             }
-            .project-switch {
+        }
+        .project-subtitle {
+            width: 100%;
+            color: #999999;
+            line-height: 24px;
+            margin-top: -18px;
+            margin-bottom: 6px;
+            padding-right: 260px;
+        }
+        .project-switch {
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            .project-checkbox {
                 display: flex;
-                justify-content: flex-end;
-                margin-top: 24px;
-                .project-checkbox {
-                    display: flex;
-                    align-items: center;
-                    margin-right: 14px;
-                    opacity: 0.9;
+                align-items: center;
+                margin-right: 14px;
+                opacity: 0.9;
+                .ivu-checkbox-focus {
+                    box-shadow: none;
                 }
-                .project-switch-button {
+            }
+            .project-switch-button {
+                display: flex;
+                align-items: center;
+                background-color: #ffffff;
+                border-radius: 6px;
+                position: relative;
+                transition: box-shadow 0.2s;
+                &:hover {
+                    box-shadow: 0 0 10px #e6ecfa;
+                }
+                &:before {
+                    content: "";
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 50%;
+                    height: 100%;
+                    z-index: 0;
+                    color: #2d8cf0;
+                    border-radius: 6px;
+                    border: 1px solid #2d8cf0;
+                    background-color: #e6f7ff;
+                    transition: left 0.2s;
+                }
+                > div {
+                    z-index: 1;
+                    width: 32px;
+                    height: 30px;
                     display: flex;
                     align-items: center;
-                    background-color: #ffffff;
+                    justify-content: center;
                     border-radius: 6px;
-                    position: relative;
-                    &:before {
-                        content: "";
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 50%;
-                        height: 100%;
-                        z-index: 0;
+                    cursor: pointer;
+                    color: #515a6e;
+                    > i {
+                        font-size: 17px;
+                    }
+                    &:first-child {
                         color: #2d8cf0;
-                        border-radius: 6px;
-                        border: 1px solid #2d8cf0;
-                        background-color: #e6f7ff;
-                        transition: left 0.2s;
                     }
-                    > div {
-                        z-index: 1;
-                        width: 32px;
-                        height: 30px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        border-radius: 6px;
-                        cursor: pointer;
+                }
+                &.menu {
+                    &:before {
+                        left: 50%;
+                    }
+                    > div:first-child {
                         color: #515a6e;
-                        > i {
-                            font-size: 17px;
-                        }
-                        &:first-child {
-                            color: #2d8cf0;
-                        }
                     }
-                    &.menu {
-                        &:before {
-                            left: 50%;
-                        }
-                        > div:first-child {
-                            color: #515a6e;
-                        }
-                        > div:last-child {
-                            color: #2d8cf0;
-                        }
+                    > div:last-child {
+                        color: #2d8cf0;
                     }
                 }
             }

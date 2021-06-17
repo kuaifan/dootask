@@ -108,10 +108,10 @@ export default {
     watch: {
         calendars(newValue) {
             this.calendarInstance.setCalendars(newValue);
+            this.$nextTick(this.resetRender)
         },
         schedules() {
-            this.calendarInstance.clear();
-            this.reflectSchedules();
+            this.resetRender();
         },
         view(newValue) {
             this.calendarInstance.changeView(newValue, true);

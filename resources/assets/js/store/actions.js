@@ -378,9 +378,10 @@ export default {
     /**
      * 保存任务信息
      * @param state
+     * @param dispatch
      * @param data
      */
-    saveTask({state}, data) {
+    saveTask({state, dispatch}, data) {
         state.projectDetail.project_column.some(({project_task}) => {
             let index = project_task.findIndex(({id}) => id === data.id);
             if (index > -1) {
@@ -395,6 +396,46 @@ export default {
             if (index > -1) {
                 state.projectOpenTask.sub_task.splice(index, 1, Object.assign(state.projectOpenTask.sub_task[index], data))
             }
+        }
+        dispatch("saveCalendarTask", data)
+    },
+
+    /**
+     * 保存任务信息（日历任务）
+     * @param state
+     * @param data
+     */
+    saveCalendarTask({state}, data) {
+        let task = {
+            id: data.id,
+            calendarId: String(data.project_id),
+            title: data.name,
+            body: data.desc,
+            category: 'allday',
+            start: new Date(data.start_at).toISOString(),
+            end: new Date(data.end_at).toISOString(),
+            color: "#515a6e",
+            bgColor: data.color || '#E3EAFD',
+            borderColor: data.p_color,
+            complete_at: data.complete_at,
+            priority: '',
+            preventClick: true,
+            isChecked: false,
+        };
+        if (data.p_name) {
+            task.priority = '<span class="priority" style="background-color:' + data.p_color + '">' + data.p_name + '</span>';
+        }
+        if (data.overdue) {
+            task.title = '[' + $A.L('超期') + '] ' + task.title
+            task.color = "#f56c6c"
+            task.bgColor = "#fef0f0"
+            task.priority+= '<span class="overdue">' + $A.L('超期未完成') + '</span>';
+        }
+        let index = state.calendarTask.findIndex(({id}) => id === data.id);
+        if (index > -1) {
+            state.calendarTask.splice(index, 1, Object.assign(state.calendarTask[index], task))
+        } else {
+            state.calendarTask.push(task)
         }
     },
 
@@ -560,7 +601,7 @@ export default {
      */
     taskAdd({state, dispatch}, data) {
         return new Promise(function (resolve, reject) {
-            const post = state.method.cloneJSON(data);
+            const post = state.method.cloneJSON(state.method.date2string(data));
             if (state.method.isArray(post.column_id)) {
                 post.column_id = post.column_id.find((val) => val)
             }
@@ -587,6 +628,7 @@ export default {
                         }
                     }
                 }
+                dispatch("saveCalendarTask", task);
                 dispatch("getProjectOne", task.project_id);
                 resolve(result)
             }).catch(result => {
@@ -628,7 +670,7 @@ export default {
      */
     taskUpdate({state, dispatch}, data) {
         return new Promise(function (resolve, reject) {
-            const post = state.method.cloneJSON(data);
+            const post = state.method.cloneJSON(state.method.date2string(data));
             if (state.method.isArray(post.owner)) {
                 post.owner = post.owner.find((id) => id)
             }
@@ -684,6 +726,11 @@ export default {
                         state.projectOpenTask.sub_task.splice(index, 1)
                     }
                 }
+                let index = state.calendarTask.findIndex(({id}) => id === data.id);
+                if (index > -1) {
+                    state.calendarTask.splice(index, 1)
+                }
+                dispatch("getProjectOne", data.project_id);
                 resolve(result);
             }).catch(result => {
                 reject(result)

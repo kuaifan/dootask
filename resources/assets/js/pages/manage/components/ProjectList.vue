@@ -6,9 +6,6 @@
                     <h1>{{projectDetail.name}}</h1>
                     <div v-if="projectLoad > 0" class="project-load"><Loading/></div>
                 </div>
-                <div v-if="projectDetail.desc" class="project-subtitle">{{projectDetail.desc}}</div>
-            </div>
-            <div class="project-icobox">
                 <ul class="project-icons">
                     <li>
                         <UserAvatar :userid="projectDetail.owner_userid" :size="36">
@@ -45,14 +42,15 @@
                         </EDropdown>
                     </li>
                 </ul>
-                <div class="project-switch">
-                    <div v-if="completedCount > 0" class="project-checkbox">
-                        <Checkbox :value="projectCompleteHide" @on-change="toggleBoolean('projectCompleteHide', $event)">{{$L('隐藏已完成')}}</Checkbox>
-                    </div>
-                    <div :class="['project-switch-button', !projectTablePanel ? 'menu' : '']" @click="toggleBoolean('projectTablePanel')">
-                        <div><i class="iconfont">&#xe60c;</i></div>
-                        <div><i class="iconfont">&#xe66a;</i></div>
-                    </div>
+            </div>
+            <div v-if="projectDetail.desc" class="project-subtitle">{{projectDetail.desc}}</div>
+            <div class="project-switch">
+                <div v-if="completedCount > 0" class="project-checkbox">
+                    <Checkbox :value="projectCompleteShow" @on-change="toggleBoolean('projectCompleteShow', $event)">{{$L('显示已完成')}}</Checkbox>
+                </div>
+                <div :class="['project-switch-button', !projectTablePanel ? 'menu' : '']" @click="toggleBoolean('projectTablePanel')">
+                    <div><i class="iconfont">&#xe60c;</i></div>
+                    <div><i class="iconfont">&#xe66a;</i></div>
                 </div>
             </div>
         </div>
@@ -450,7 +448,7 @@ export default {
 
             'projectChatShow',
             'projectTablePanel',
-            'projectCompleteHide',
+            'projectCompleteShow',
             'taskMyShow',
             'taskUndoneShow',
             'taskCompletedShow'
@@ -463,9 +461,9 @@ export default {
         },
 
         panelTask() {
-            const {searchText, projectCompleteHide} = this;
+            const {searchText, projectCompleteShow} = this;
             return function (project_task) {
-                if (projectCompleteHide) {
+                if (!projectCompleteShow) {
                     project_task = project_task.filter(({complete_at}) => {
                         return !complete_at;
                     });
@@ -480,11 +478,11 @@ export default {
         },
 
         myList() {
-            const {searchText, projectCompleteHide, userId, projectDetail} = this;
+            const {searchText, projectCompleteShow, userId, projectDetail} = this;
             const array = [];
             projectDetail.project_column.forEach(({project_task, name}) => {
                 project_task.some((task) => {
-                    if (projectCompleteHide) {
+                    if (!projectCompleteShow) {
                         if (task.complete_at) {
                             return false;
                         }
@@ -512,11 +510,11 @@ export default {
         },
 
         undoneList() {
-            const {searchText, projectCompleteHide, projectDetail} = this;
+            const {searchText, projectCompleteShow, projectDetail} = this;
             const array = [];
             projectDetail.project_column.forEach(({project_task, name}) => {
                 project_task.some((task) => {
-                    if (projectCompleteHide) {
+                    if (!projectCompleteShow) {
                         if (task.complete_at) {
                             return false;
                         }
@@ -553,11 +551,11 @@ export default {
         },
 
         completedList() {
-            const {searchText, projectCompleteHide, projectDetail} = this;
+            const {searchText, projectCompleteShow, projectDetail} = this;
             const array = [];
             projectDetail.project_column.forEach(({project_task, name}) => {
                 project_task.some((task) => {
-                    if (projectCompleteHide) {
+                    if (!projectCompleteShow) {
                         if (task.complete_at) {
                             return false;
                         }
@@ -1032,8 +1030,8 @@ export default {
 
         taskHidden(task) {
             const {name, desc, complete_at} = task;
-            const {searchText, projectCompleteHide} = this;
-            if (projectCompleteHide) {
+            const {searchText, projectCompleteShow} = this;
+            if (!projectCompleteShow) {
                 if (complete_at) {
                     return true;
                 }

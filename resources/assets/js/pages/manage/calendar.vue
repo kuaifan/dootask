@@ -25,7 +25,8 @@
                 :theme="calendarTheme"
                 :template="calendarTemplate"
                 :calendars="calendarList"
-                :schedules="scheduleLists"
+                :schedules="calendarTasks"
+                @beforeCreateSchedule="onBeforeCreateSchedule"
                 @beforeClickSchedule="onBeforeClickSchedule"
                 @beforeUpdateSchedule="onBeforeUpdateSchedule"/>
         </div>
@@ -71,7 +72,6 @@ export default {
             calendarList: [],
 
             scheduleLoad: 0,
-            scheduleList: [],
         }
     },
 
@@ -84,10 +84,10 @@ export default {
     },
 
     computed: {
-        ...mapState(['projectList']),
+        ...mapState(['projectList', 'calendarTask']),
 
-        scheduleLists() {
-            return this.scheduleList.filter(({complete_at}) => !complete_at)
+        calendarTasks() {
+            return this.calendarTask.filter(({complete_at}) => !complete_at)
         }
     },
 
@@ -99,7 +99,7 @@ export default {
         projectList(data) {
             const list = data.map((project) => {
                 return {
-                    id: project.id,
+                    id: String(project.id),
                     name: project.name,
                 }
             });
@@ -120,6 +120,9 @@ export default {
             this.calendarTemplate = {
                 titlePlaceholder: () => {
                     return this.$L("任务描述")
+                },
+                popupSave: () => {
+                    return this.$L("保存");
                 },
                 popupEdit: () => {
                     return this.$L("详情");
@@ -143,34 +146,7 @@ export default {
             }).then(({data}) => {
                 this.scheduleLoad--;
                 data.data.some((task) => {
-                    let schedule = {
-                        id: task.id,
-                        calendarId: task.project_id,
-                        title: task.name,
-                        category: 'allday',
-                        start: new Date(task.start_at).toISOString(),
-                        end: new Date(task.end_at).toISOString(),
-                        color: "#515a6e",
-                        bgColor: task.color || '#E3EAFD',
-                        borderColor: task.p_color,
-                        complete_at: task.complete_at,
-                        preventClick: true,
-                        isChecked: false,
-                    };
-                    if (task.p_name) {
-                        schedule.priority = '<span class="priority" style="background-color:' + task.p_color + '">' + task.p_name + '</span>';
-                    }
-                    if (task.overdue) {
-                        schedule.color = "#f56c6c"
-                        schedule.bgColor = "#fef0f0"
-                        schedule.priority+= '<span class="overdue">' + this.$L('超期未完成') + '</span>';
-                    }
-                    let index = this.scheduleList.findIndex(({id}) => id === task.id);
-                    if (index > -1) {
-                        this.scheduleList.splice(index, 1, schedule)
-                    } else {
-                        this.scheduleList.push(schedule)
-                    }
+                    this.$store.dispatch("saveCalendarTask", task)
                 });
             }).catch(() => {
                 this.scheduleLoad--;
@@ -224,8 +200,20 @@ export default {
             return currentDate.format(format);
         },
 
+        onBeforeCreateSchedule(res) {
+            this.$store.dispatch("taskAdd", {
+                project_id: res.calendarId,
+                times: [res.start.toDate(), res.end.toDate()],
+                name: res.title
+            }).then(({msg}) => {
+                $A.messageSuccess(msg);
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            });
+        },
+
         onBeforeClickSchedule({type, schedule}) {
-            let data = this.scheduleList.find(({id}) => id === schedule.id);
+            let data = this.calendarTask.find(({id}) => id === schedule.id);
             if (!data) {
                 return;
             }
@@ -253,7 +241,6 @@ export default {
                         content: '你确定要删除任务【' + data.title + '】吗？',
                         loading: true,
                         onOk: () => {
-                            this.scheduleList = this.scheduleList.filter(({id}) => id !== data.id);
                             this.$store.dispatch("taskArchivedOrRemove", {
                                 task_id: data.id,
                                 type: 'delete',
@@ -272,9 +259,27 @@ export default {
         },
 
         onBeforeUpdateSchedule(res) {
-            console.group('onBeforeUpdateSchedule');
-            console.log('BeforeUpdate : ', res);
-            console.groupEnd();
+            const {changes, schedule} = res;
+            let data = this.calendarTask.find(({id}) => id === schedule.id);
+            if (!data) {
+                return;
+            }
+            if (changes.start || changes.end) {
+                const cal = this.$refs.cal.getInstance();
+                cal.updateSchedule(schedule.id, schedule.calendarId, changes);
+                //
+                this.$store.dispatch("taskUpdate", {
+                    task_id: data.id,
+                    times: [
+                        (changes.start || schedule.start).toDate(),
+                        (changes.end || schedule.end).toDate(),
+                    ],
+                }).then(({msg}) => {
+                    $A.messageSuccess(msg);
+                }).catch(({msg}) => {
+                    $A.modalError(msg);
+                });
+            }
         }
     }
 }

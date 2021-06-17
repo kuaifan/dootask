@@ -236,7 +236,7 @@ const state = { method };
 
 [
     'projectChatShow',      // 项目聊天显示
-    'projectCompleteHide'   // 项目面板显示已完成列表
+    'projectCompleteShow'   // 项目面板显示已完成列表
 ].forEach((key) => {
     state[key] = state.method.getStorageBoolean("boolean:" + key, false)
 });
@@ -275,6 +275,7 @@ state.projectOpenTask = {_show: false, id: 0, task_user: [], task_tag: []};
 state.projectTaskContent = {};
 state.projectTaskFiles = {};
 state.projectSubTask = {};
+state.calendarTask = [];
 
 // 会话聊天
 state.dialogId = 0;
