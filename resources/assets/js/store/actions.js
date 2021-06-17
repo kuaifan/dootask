@@ -416,6 +416,9 @@ export default {
         if (data.parent_id > 0) {
             return;
         }
+        if (!data.start_at || !data.end_at) {
+            return;
+        }
         let task = {
             id: data.id,
             calendarId: String(data.project_id),
