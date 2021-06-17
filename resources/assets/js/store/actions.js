@@ -419,6 +419,9 @@ export default {
         if (!data.start_at || !data.end_at) {
             return;
         }
+        if (!data.userid != state.userId) {
+            return;
+        }
         let task = {
             id: data.id,
             calendarId: String(data.project_id),
@@ -612,40 +615,22 @@ export default {
      * 添加任务
      * @param state
      * @param dispatch
+     * @param commit
      * @param data
      * @returns {Promise<unknown>}
      */
-    taskAdd({state, dispatch}, data) {
+    taskAdd({state, dispatch, commit}, data) {
         return new Promise(function (resolve, reject) {
             const post = state.method.cloneJSON(state.method.date2string(data));
-            if (state.method.isArray(post.column_id)) {
-                post.column_id = post.column_id.find((val) => val)
-            }
-            if (state.method.isArray(post.owner)) {
-                post.owner = post.owner.find((val) => val)
-            }
+            if (state.method.isArray(post.column_id)) post.column_id = post.column_id.find((val) => val)
+            if (state.method.isArray(post.owner)) post.owner = post.owner.find((val) => val)
             //
             dispatch("call", {
                 url: 'project/task/add',
                 data: post,
                 method: 'post',
             }).then(result => {
-                const {task, in_top, new_column} = result.data;
-                if (state.projectDetail.id == task.project_id) {
-                    if (new_column) {
-                        state.projectDetail.project_column.push(new_column);
-                    }
-                    const column = state.projectDetail.project_column.find(({id}) => id === task.column_id);
-                    if (column) {
-                        if (in_top) {
-                            column.project_task.unshift(task);
-                        } else {
-                            column.project_task.push(task);
-                        }
-                    }
-                }
-                dispatch("saveTask", task);
-                dispatch("getProjectOne", task.project_id);
+                commit("taskAddSuccess", result.data)
                 resolve(result)
             }).catch(result => {
                 reject(result)
@@ -655,38 +640,18 @@ export default {
 
     /**
      * 添加子任务
-     * @param state
      * @param dispatch
+     * @param commit
      * @param data {task_id, name}
      * @returns {Promise<unknown>}
      */
-    taskAddSub({state, dispatch}, data) {
+    taskAddSub({dispatch, commit}, data) {
         return new Promise(function (resolve, reject) {
             dispatch("call", {
                 url: 'project/task/addsub',
                 data: data,
             }).then(result => {
-                const {task} = result.data;
-                if (state.projectDetail.id == task.project_id) {
-                    const column = state.projectDetail.project_column.find(({id}) => id === task.column_id);
-                    if (column) {
-                        const project_task = column.project_task.find(({id}) => id === task.parent_id)
-                        if (project_task && project_task.sub_task) {
-                            let index = project_task.sub_task.findIndex(({id}) => id === task.id)
-                            if (index === -1) {
-                                project_task.sub_task.push(task);
-                            }
-                        }
-                    }
-                }
-                if (task.parent_id == state.projectOpenTask.id) {
-                    let index = state.projectOpenTask.sub_task.findIndex(({id}) => id === task.id)
-                    if (index === -1) {
-                        state.projectOpenTask.sub_task.push(task);
-                    }
-                }
-                dispatch("saveTask", task);
-                dispatch("getTaskOne", task.parent_id);
+                commit("taskAddSuccess", result.data)
                 resolve(result)
             }).catch(result => {
                 reject(result)
@@ -1045,8 +1010,9 @@ export default {
      * 初始化 websocket
      * @param state
      * @param dispatch
+     * @param commit
      */
-    websocketConnection({state, dispatch}) {
+    websocketConnection({state, dispatch, commit}) {
         clearTimeout(state.wsTimeout);
         if (state.userId === 0) {
             if (state.ws) {
@@ -1116,49 +1082,65 @@ export default {
                             }
                         }
                     });
-                    if (type === "dialog") {
-                        // 更新会话
-                        (function (msg) {
-                            const {mode, data} = msg;
-                            const {dialog_id} = data;
-                            // 更新消息列表
-                            if (dialog_id == state.dialogId) {
-                                let index = state.dialogMsgList.findIndex(({id}) => id == data.id);
-                                if (index === -1) {
-                                    state.dialogMsgList.push(data);
-                                } else {
-                                    state.dialogMsgList.splice(index, 1, data);
-                                }
-                            }
-                            // 更新最后消息
-                            let dialog = state.dialogList.find(({id}) => id == dialog_id);
-                            if (dialog) {
-                                dialog.last_msg = data;
-                            } else {
-                                dispatch("getDialogOne", dialog_id);
-                            }
-                            if (mode === "add") {
-                                // 更新对话列表
-                                if (dialog) {
-                                    // 新增未读数
-                                    if (data.userid !== state.userId) dialog.unread++;
-                                    // 移动到首位
-                                    const index = state.dialogList.findIndex(({id}) => id == dialog_id);
-                                    if (index > -1) {
-                                        const tmp = state.dialogList[index];
-                                        state.dialogList.splice(index, 1);
-                                        state.dialogList.unshift(tmp);
+                    switch (type) {
+                        /**
+                         * 会话消息
+                         */
+                        case "dialog": // 更新会话
+                            (function (msg) {
+                                const {mode, data} = msg;
+                                const {dialog_id} = data;
+                                // 更新消息列表
+                                if (dialog_id == state.dialogId) {
+                                    let index = state.dialogMsgList.findIndex(({id}) => id == data.id);
+                                    if (index === -1) {
+                                        state.dialogMsgList.push(data);
+                                    } else {
+                                        state.dialogMsgList.splice(index, 1, data);
                                     }
                                 }
-                                // 新增任务消息数量
-                                state.projectDetail.project_column.some(({project_task}) => {
-                                    const task = project_task.find(({dialog_id}) => dialog_id === data.dialog_id);
-                                    if (task) task.msg_num++;
-                                });
-                                // 新增总未读数
-                                if (data.userid !== state.userId) state.dialogMsgUnread++;
-                            }
-                        })(msgDetail);
+                                // 更新最后消息
+                                let dialog = state.dialogList.find(({id}) => id == dialog_id);
+                                if (dialog) {
+                                    dialog.last_msg = data;
+                                } else {
+                                    dispatch("getDialogOne", dialog_id);
+                                }
+                                if (mode === "add") {
+                                    // 更新对话列表
+                                    if (dialog) {
+                                        // 新增未读数
+                                        if (data.userid !== state.userId) dialog.unread++;
+                                        // 移动到首位
+                                        const index = state.dialogList.findIndex(({id}) => id == dialog_id);
+                                        if (index > -1) {
+                                            const tmp = state.dialogList[index];
+                                            state.dialogList.splice(index, 1);
+                                            state.dialogList.unshift(tmp);
+                                        }
+                                    }
+                                    // 新增任务消息数量
+                                    state.projectDetail.project_column.some(({project_task}) => {
+                                        const task = project_task.find(({dialog_id}) => dialog_id === data.dialog_id);
+                                        if (task) task.msg_num++;
+                                    });
+                                    // 新增总未读数
+                                    if (data.userid !== state.userId) state.dialogMsgUnread++;
+                                }
+                            })(msgDetail);
+                            break;
+
+                        /**
+                         * 任务消息
+                         */
+                        case "projectTask":
+                            (function (msg) {
+                                const {action, data} = msg;
+                                if (action == 'add') {
+                                    commit("taskAddSuccess", data)
+                                }
+                            })(msgDetail);
+                            break;
                     }
                     break
             }

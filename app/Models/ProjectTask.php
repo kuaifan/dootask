@@ -4,8 +4,10 @@ namespace App\Models;
 
 use App\Exceptions\ApiException;
 use App\Module\Base;
+use App\Tasks\PushTask;
 use Arr;
 use Carbon\Carbon;
+use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -614,6 +616,28 @@ class ProjectTask extends AbstractModel
         ]);
         $log->save();
         return $log;
+    }
+
+    /**
+     * 推送消息
+     * @param string $action
+     * @param array $data
+     */
+    public function pushMsg($action, $data)
+    {
+        if (!$this->project) {
+            return;
+        }
+        $lists = [
+            'userid' => $this->project->relationUserids(),
+            'msg' => [
+                'type' => 'projectTask',
+                'action' => $action,
+                'data' => $data,
+            ]
+        ];
+        $task = new PushTask($lists, false);
+        Task::deliver($task);
     }
 
     /**

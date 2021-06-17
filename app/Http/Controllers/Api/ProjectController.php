@@ -628,11 +628,13 @@ class ProjectController extends AbstractController
             'project_id' => $project->id,
             'column_id' => $column->id,
         ]));
-        return Base::retSuccess('添加成功', [
+        $data = [
             'new_column' => $newColumn,
             'in_top' => intval($data['top']),
             'task' => ProjectTask::with(['taskUser', 'taskTag'])->find($task->id),
-        ]);
+        ];
+        $task->pushMsg('add', $data);
+        return Base::retSuccess('添加成功', $data);
     }
 
     /**
@@ -656,11 +658,13 @@ class ProjectController extends AbstractController
             'project_id' => $task->project_id,
             'column_id' => $task->column_id,
         ]);
-        return Base::retSuccess('添加成功', [
+        $data = [
             'new_column' => null,
             'in_top' => 0,
             'task' => ProjectTask::with(['taskUser', 'taskTag'])->find($task->id),
-        ]);
+        ];
+        $task->pushMsg('add', $data);
+        return Base::retSuccess('添加成功', $data);
     }
 
     /**

@@ -18,14 +18,16 @@ use Hhxsv5\LaravelS\Swoole\Task\Task;
 class PushTask extends AbstractTask
 {
     protected $params;
+    protected $retryOffline = true;
 
     /**
      * PushTask constructor.
      * @param array|string $params
      */
-    public function __construct($params = [])
+    public function __construct($params = [],  $retryOffline = true)
     {
         $this->params = $params;
+        $this->retryOffline = $retryOffline;
     }
 
     public function start()
@@ -43,7 +45,7 @@ class PushTask extends AbstractTask
                 self::sendTmpMsgForUserid(intval(Base::leftDelete($this->params, "RETRY::")));
             }
         }
-        is_array($this->params) && self::push($this->params);
+        is_array($this->params) && self::push($this->params, '', 1, $this->retryOffline);
     }
 
     /**
@@ -162,7 +164,7 @@ class PushTask extends AbstractTask
                         'fd' => $fid,
                         'msg' => $msg,
                     ]);
-                    $task = new PushTask($key);
+                    $task = new PushTask($key, $retryOffline);
                     $task->delay($delay);
                     Task::deliver($task);
                 }
@@ -173,14 +175,5 @@ class PushTask extends AbstractTask
                 self::addTmpMsg($offline_user, $msg);
             }
         }
-    }
-
-    /**
-     * 推送消息（仅推送当前在线的）
-     * @param array $lists 消息列表
-     */
-    public static function pushO(array $lists, $key = '', $delay = 1)
-    {
-        self::push($lists, $key, $delay, false);
     }
 }
