@@ -24,7 +24,7 @@ use Request;
 class ProjectController extends AbstractController
 {
     /**
-     * 项目列表
+     * 获取项目列表
      *
      * @apiParam {Number} [page]        当前页，默认:1
      * @apiParam {Number} [pagesize]    每页显示数量，默认:100，最大:200
@@ -43,11 +43,11 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 单个项目信息
+     * 获取项目基础信息
      *
      * @apiParam {Number} project_id     项目ID
      */
-    public function one()
+    public function basic()
     {
         user::auth();
         //
@@ -59,7 +59,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 单个项目详情（比"单个项目信息"多）
+     * 获取项目详细信息
      *
      * @apiParam {Number} project_id     项目ID
      */
@@ -508,11 +508,11 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 获取任务
+     * 获取任务基础信息
      *
      * @apiParam {Number} task_id            任务ID
      */
-    public function task__one()
+    public function task__basic()
     {
         user::auth();
         //

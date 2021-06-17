@@ -343,7 +343,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/basic          09. 获取指定会员基本信息
+     * @api {get} api/users/basic          09. 获取指定会员基础信息
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0

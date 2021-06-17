@@ -785,7 +785,7 @@ export default {
                         if (index > -1) {
                             this.projectDetail.project_column.splice(index, 1);
                         }
-                        this.$store.dispatch("getProjectOne", column.project_id);
+                        this.$store.dispatch("getProjectBasic", column.project_id);
                     }).catch(({msg}) => {
                         $A.modalError(msg, 301);
                         this.$set(column, 'loading', false);

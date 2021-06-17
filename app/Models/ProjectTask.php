@@ -573,9 +573,10 @@ class ProjectTask extends AbstractModel
                 // 归档任务
                 $this->archived_at = $archived_at;
                 $this->addLog("任务归档：" . $this->name);
+                $this->pushMsg('archived', $this->toArray());
             }
             $this->save();
-            return Base::retSuccess('修改成功', $this->toArray());
+            return Base::retSuccess('保存成功', $this->toArray());
         });
     }
 
@@ -589,12 +590,10 @@ class ProjectTask extends AbstractModel
             if ($this->dialog_id) {
                 WebSocketDialog::whereId($this->dialog_id)->delete();
             }
-            if ($this->delete()) {
-                $this->addLog("删除{任务}：" . $this->name);
-                return Base::retSuccess('删除成功', $this->toArray());
-            } else {
-                return Base::retError('删除失败', $this->toArray());
-            }
+            $this->delete();
+            $this->addLog("删除{任务}：" . $this->name);
+            $this->pushMsg('delete', $this->toArray());
+            return Base::retSuccess('删除成功', $this->toArray());
         });
     }
 

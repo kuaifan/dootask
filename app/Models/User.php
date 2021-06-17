@@ -332,7 +332,7 @@ class User extends AbstractModel
     }
 
     /**
-     * userid 获取 基本信息
+     * userid 获取 基础信息
      * @param int $userid 会员ID
      * @return self
      */

@@ -188,7 +188,7 @@ export default {
     },
 
     /**
-     * 获取用户基本信息
+     * 获取用户基础信息
      * @param state
      * @param dispatch
      * @param params {userid, success, complete}
@@ -316,12 +316,12 @@ export default {
      * @param dispatch
      * @param project_id
      */
-    getProjectOne({state, dispatch}, project_id) {
+    getProjectBasic({state, dispatch}, project_id) {
         if (state.method.runNum(project_id) === 0) {
             return;
         }
         dispatch("call", {
-            url: 'project/one',
+            url: 'project/basic',
             data: {
                 project_id: project_id,
             },
@@ -419,7 +419,7 @@ export default {
         if (!data.start_at || !data.end_at) {
             return;
         }
-        if (!data.userid != state.userId) {
+        if (!data.owner) {
             return;
         }
         let task = {
@@ -489,10 +489,10 @@ export default {
      * @param task_id
      * @returns {Promise<unknown>}
      */
-    getTaskOne({state, dispatch}, task_id) {
+    getTaskBasic({state, dispatch}, task_id) {
         return new Promise(function (resolve, reject) {
             dispatch("call", {
-                url: 'project/task/one',
+                url: 'project/task/basic',
                 data: {
                     task_id,
                 },
@@ -605,7 +605,7 @@ export default {
         data.sub_task = state.projectSubTask[data.id] || []
         //
         state.projectOpenTask = Object.assign({}, data, {_show: true});
-        dispatch("getTaskOne", data.id);
+        dispatch("getTaskBasic", data.id);
         dispatch("getTaskContent", data.id);
         dispatch("getTaskFiles", data.id);
         dispatch("getSubTask", data.id);
@@ -678,15 +678,15 @@ export default {
                 method: 'post',
             }).then(result => {
                 if (result.data.parent_id) {
-                    dispatch("getTaskOne", result.data.parent_id);
+                    dispatch("getTaskBasic", result.data.parent_id);
                 }
                 if (typeof post.complete_at !== "undefined") {
-                    dispatch("getProjectOne", result.data.project_id);
+                    dispatch("getProjectBasic", result.data.project_id);
                 }
                 dispatch("saveTask", result.data);
                 resolve(result)
             }).catch(result => {
-                dispatch("getTaskOne", post.task_id);
+                dispatch("getTaskBasic", post.task_id);
                 reject(result)
             });
         });
@@ -694,12 +694,12 @@ export default {
 
     /**
      * 删除或归档任务
-     * @param state
      * @param dispatch
+     * @param commit
      * @param data {task_id, type}
      * @returns {Promise<unknown>}
      */
-    taskArchivedOrRemove({state, dispatch}, data) {
+    taskArchivedOrRemove({dispatch, commit}, data) {
         let {task_id, type} = data;
         return new Promise(function (resolve, reject) {
             dispatch("call", {
@@ -708,27 +708,7 @@ export default {
                     task_id,
                 },
             }).then(result => {
-                const {data} = result;
-                const column = state.projectDetail.project_column.find(({id}) => id === data.column_id);
-                if (column) {
-                    let index = column.project_task.findIndex(({id}) => id === data.id);
-                    if (index > -1) {
-                        column.project_task.splice(index, 1);
-                    }
-                }
-                if (data.id == state.projectOpenTask.id) {
-                    state.projectOpenTask = Object.assign({}, state.projectOpenTask, {_show: false});
-                } else if (data.parent_id == state.projectOpenTask.id && state.projectOpenTask.sub_task) {
-                    let index = state.projectOpenTask.sub_task.findIndex(({id}) => id === data.id);
-                    if (index > -1) {
-                        state.projectOpenTask.sub_task.splice(index, 1)
-                    }
-                }
-                let index = state.calendarTask.findIndex(({id}) => id === data.id);
-                if (index > -1) {
-                    state.calendarTask.splice(index, 1)
-                }
-                dispatch("getProjectOne", data.project_id);
+                commit("taskRemoveSuccess", result.data);
                 resolve(result);
             }).catch(result => {
                 reject(result)
@@ -803,14 +783,14 @@ export default {
     },
 
     /**
-     * 获取单个会话
+     * 获取会话基础信息
      * @param state
      * @param dispatch
      * @param dialog_id
      */
-    getDialogOne({state, dispatch}, dialog_id) {
+    getDialogBasic({state, dispatch}, dialog_id) {
         dispatch("call", {
-            url: 'dialog/one',
+            url: 'dialog/basic',
             data: {
                 dialog_id,
             },
@@ -1104,7 +1084,7 @@ export default {
                                 if (dialog) {
                                     dialog.last_msg = data;
                                 } else {
-                                    dispatch("getDialogOne", dialog_id);
+                                    dispatch("getDialogBasic", dialog_id);
                                 }
                                 if (mode === "add") {
                                     // 更新对话列表
@@ -1136,8 +1116,14 @@ export default {
                         case "projectTask":
                             (function (msg) {
                                 const {action, data} = msg;
-                                if (action == 'add') {
-                                    commit("taskAddSuccess", data)
+                                switch (action) {
+                                    case 'add':
+                                        commit("taskAddSuccess", data)
+                                        break;
+                                    case 'archived':
+                                    case 'delete':
+                                        commit("taskRemoveSuccess", data)
+                                        break;
                                 }
                             })(msgDetail);
                             break;
