@@ -103,7 +103,7 @@ export default {
                     }
                     this.lists[key].lists.push(item);
                 });
-                this.hasMorePages = data.hasMorePages;
+                this.hasMorePages = data.current_page < data.last_page;
                 this.totalNum = data.total;
             }).catch(() => {
                 this.loadIng--;

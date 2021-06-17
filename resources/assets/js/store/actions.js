@@ -668,7 +668,7 @@ export default {
                     const column = state.projectDetail.project_column.find(({id}) => id === task.column_id);
                     if (column) {
                         const project_task = column.project_task.find(({id}) => id === task.parent_id)
-                        if (project_task) {
+                        if (project_task && project_task.sub_task) {
                             let index = project_task.sub_task.findIndex(({id}) => id === task.id)
                             if (index === -1) {
                                 project_task.sub_task.push(task);
