@@ -392,6 +392,7 @@ class ProjectController extends AbstractController
         //
         $data = $column->find($column->id);
         $data->project_task = [];
+        $data->pushMsg("add", $data->toArray());
         return Base::retSuccess('添加成功', $data);
     }
 
@@ -461,7 +462,9 @@ class ProjectController extends AbstractController
         }
         //
         if ($column->deleteColumn()) {
-            return Base::retSuccess('删除成功');
+            $data = ['id' => $column->id];
+            $column->pushMsg("delete", $data);
+            return Base::retSuccess('删除成功', $data);
         }
         return Base::retError('删除失败');
     }

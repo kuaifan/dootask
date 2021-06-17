@@ -1,5 +1,32 @@
 export default {
     /**
+     * 添加列表成功
+     * @param state
+     * @param data
+     */
+    columnAddSuccess(state, data) {
+        if (state.projectDetail.id == data.project_id) {
+            let index = state.projectDetail.project_column.findIndex(({id}) => id === data.id);
+            if (index === -1) {
+                state.projectDetail.project_column.push(data);
+            }
+        }
+    },
+
+    /**
+     * 删除列表成功
+     * @param state
+     * @param data
+     */
+    columnRemoveSuccess(state, data) {
+        let index = state.projectDetail.project_column.findIndex(({id}) => id === data.id);
+        if (index > -1) {
+            state.projectDetail.project_column.splice(index, 1);
+        }
+        this.dispatch("getProjectBasic", data.project_id);
+    },
+
+    /**
      * 添加任务成功
      * @param state
      * @param data

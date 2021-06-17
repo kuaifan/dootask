@@ -1064,7 +1064,7 @@ export default {
                     });
                     switch (type) {
                         /**
-                         * 会话消息
+                         * 聊天会话消息
                          */
                         case "dialog": // 更新会话
                             (function (msg) {
@@ -1106,6 +1106,23 @@ export default {
                                     });
                                     // 新增总未读数
                                     if (data.userid !== state.userId) state.dialogMsgUnread++;
+                                }
+                            })(msgDetail);
+                            break;
+
+                        /**
+                         * 任务列表消息
+                         */
+                        case "projectColumn":
+                            (function (msg) {
+                                const {action, data} = msg;
+                                switch (action) {
+                                    case 'add':
+                                        commit("columnAddSuccess", data)
+                                        break;
+                                    case 'delete':
+                                        commit("columnRemoveSuccess", data)
+                                        break;
                                 }
                             })(msgDetail);
                             break;

@@ -76,9 +76,10 @@
                             <EDropdown
                                 v-else
                                 trigger="click"
+                                size="small"
                                 @command="dropColumn(column, $event)">
                                 <Icon type="ios-more" />
-                                <EDropdownMenu slot="dropdown" class="project-list-more-dropdown-menu column-more">
+                                <EDropdownMenu slot="dropdown" class="project-list-more-dropdown-menu">
                                     <EDropdownItem command="title">
                                         <div class="item">
                                             <Icon type="md-create" />{{$L('修改')}}
@@ -701,7 +702,7 @@ export default {
             }).then(({data, msg}) => {
                 $A.messageSuccess(msg);
                 this.addColumnName = '';
-                this.projectDetail.project_column.push(data)
+                this.$store.commit("columnAddSuccess", data);
             }).catch(({msg}) => {
                 $A.modalError(msg);
             });
@@ -777,15 +778,11 @@ export default {
                         data: {
                             column_id: column.id,
                         },
-                    }).then(({msg}) => {
+                    }).then(({data, msg}) => {
                         $A.messageSuccess(msg);
                         this.$set(column, 'loading', false);
                         this.$Modal.remove();
-                        let index = this.projectDetail.project_column.findIndex(({id}) => id === column.id);
-                        if (index > -1) {
-                            this.projectDetail.project_column.splice(index, 1);
-                        }
-                        this.$store.dispatch("getProjectBasic", column.project_id);
+                        this.$store.commit("columnRemoveSuccess", data);
                     }).catch(({msg}) => {
                         $A.modalError(msg, 301);
                         this.$set(column, 'loading', false);

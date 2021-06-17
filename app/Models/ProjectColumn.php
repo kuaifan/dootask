@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Module\Base;
+use App\Tasks\PushTask;
+use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -17,6 +19,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \App\Models\Project|null $project
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectTask[] $projectTask
  * @property-read int|null $project_task_count
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectColumn newModelQuery()
@@ -38,6 +41,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class ProjectColumn extends AbstractModel
 {
     use SoftDeletes;
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function project(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Project::class, 'id', 'project_id');
+    }
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
@@ -85,5 +96,27 @@ class ProjectColumn extends AbstractModel
         ]);
         $log->save();
         return $log;
+    }
+
+    /**
+     * 推送消息
+     * @param string $action
+     * @param array $data
+     */
+    public function pushMsg($action, $data)
+    {
+        if (!$this->project) {
+            return;
+        }
+        $lists = [
+            'userid' => $this->project->relationUserids(),
+            'msg' => [
+                'type' => 'projectColumn',
+                'action' => $action,
+                'data' => $data,
+            ]
+        ];
+        $task = new PushTask($lists, false);
+        Task::deliver($task);
     }
 }
