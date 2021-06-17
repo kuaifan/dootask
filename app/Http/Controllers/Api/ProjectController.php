@@ -498,7 +498,8 @@ class ProjectController extends AbstractController
         }
         //
         $list = $builder
-            ->join('project_task_users', 'project_tasks.id', '=', 'project_task_users.task_id')
+            ->join('project_task_users', 'project_tasks.id', '=', 'project_task_users.task_pid')
+            ->where('project_tasks.parent_id', 0)
             ->where('project_task_users.userid', $user->userid)
             ->orderByDesc('project_tasks.id')
             ->paginate(Base::getPaginate(200, 100));

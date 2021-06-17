@@ -679,6 +679,7 @@ export default {
                         state.projectOpenTask.sub_task.push(task);
                     }
                 }
+                dispatch("saveTask", task);
                 dispatch("getTaskOne", task.parent_id);
                 resolve(result)
             }).catch(result => {
