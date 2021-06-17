@@ -163,7 +163,7 @@ class ProjectController extends AbstractController
      * @apiParam {String} name              项目名称
      * @apiParam {String} [desc]            项目介绍
      */
-    public function edit()
+    public function update()
     {
         user::auth();
         //
@@ -193,8 +193,84 @@ class ProjectController extends AbstractController
             $project->addLog("修改项目介绍");
         }
         $project->save();
+        $project->pushMsg('update', $project->toArray());
         //
         return Base::retSuccess('修改成功', $project);
+    }
+
+    /**
+     * 修改项目成员
+     *
+     * @apiParam {Number} project_id        项目ID
+     * @apiParam {Number} userid            成员ID 或 成员ID组
+     */
+    public function user()
+    {
+        user::auth();
+        //
+        $project_id = intval(Request::input('project_id'));
+        $userid = Request::input('userid');
+        $userid = is_array($userid) ? $userid : [$userid];
+        //
+        $project = Project::userProject($project_id);
+        if (!$project->owner) {
+            return Base::retError('你不是项目负责人');
+        }
+        //
+        return AbstractModel::transaction(function() use ($project, $userid) {
+            $array = [];
+            foreach ($userid as $uid) {
+                if ($project->joinProject($uid)) {
+                    $array[] = $uid;
+                }
+            }
+            $delete = ProjectUser::whereProjectId($project->id)->whereNotIn('userid', $array);
+            $deleteUser = $delete->pluck('userid');
+            $delete->delete();
+            $project->syncDialogUser();
+            $project->addLog("修改项目成员");
+            $project->pushMsg('delete', null, $deleteUser->toArray());
+            $project->pushMsg('detail');
+            return Base::retSuccess('修改成功', ['id' => $project->id]);
+        });
+    }
+
+    /**
+     * 移交项目
+     *
+     * @apiParam {Number} project_id        项目ID
+     * @apiParam {Number} owner_userid      新的项目负责人ID
+     */
+    public function transfer()
+    {
+        user::auth();
+        //
+        $project_id = intval(Request::input('project_id'));
+        $owner_userid = intval(Request::input('owner_userid'));
+        //
+        $project = Project::userProject($project_id);
+        if (!$project->owner) {
+            return Base::retError('你不是项目负责人');
+        }
+        //
+        if (!User::whereUserid($owner_userid)->exists()) {
+            return Base::retError('会员不存在');
+        }
+        //
+        return AbstractModel::transaction(function() use ($owner_userid, $project) {
+            ProjectUser::whereProjectId($project->id)->update(['owner' => 0]);
+            ProjectUser::updateInsert([
+                'project_id' => $project->id,
+                'userid' => $owner_userid,
+            ], [
+                'owner' => 1,
+            ]);
+            $project->syncDialogUser();
+            $project->addLog("移交项目给会员ID：" . $owner_userid);
+            $project->pushMsg('detail');
+            //
+            return Base::retSuccess('移交成功', ['id' => $project->id]);
+        });
     }
 
     /**
@@ -246,77 +322,8 @@ class ProjectController extends AbstractController
             }
             $project->addLog("调整任务排序");
         }
+        $project->pushMsg('detail');
         return Base::retSuccess('调整成功');
-    }
-
-    /**
-     * 修改项目成员
-     *
-     * @apiParam {Number} project_id        项目ID
-     * @apiParam {Number} userid            成员ID 或 成员ID组
-     */
-    public function user()
-    {
-        user::auth();
-        //
-        $project_id = intval(Request::input('project_id'));
-        $userid = Request::input('userid');
-        $userid = is_array($userid) ? $userid : [$userid];
-        //
-        $project = Project::userProject($project_id);
-        if (!$project->owner) {
-            return Base::retError('你不是项目负责人');
-        }
-        //
-        return AbstractModel::transaction(function() use ($project, $userid) {
-            $array = [];
-            foreach ($userid as $uid) {
-                if ($project->joinProject($uid)) {
-                    $array[] = $uid;
-                }
-            }
-            ProjectUser::whereProjectId($project->id)->whereNotIn('userid', $array)->delete();
-            $project->syncDialogUser();
-            $project->addLog("修改项目成员");
-            return Base::retSuccess('修改成功');
-        });
-    }
-
-    /**
-     * 移交项目
-     *
-     * @apiParam {Number} project_id        项目ID
-     * @apiParam {Number} owner_userid      新的项目负责人ID
-     */
-    public function transfer()
-    {
-        user::auth();
-        //
-        $project_id = intval(Request::input('project_id'));
-        $owner_userid = intval(Request::input('owner_userid'));
-        //
-        $project = Project::userProject($project_id);
-        if (!$project->owner) {
-            return Base::retError('你不是项目负责人');
-        }
-        //
-        if (!User::whereUserid($owner_userid)->exists()) {
-            return Base::retError('会员不存在');
-        }
-        //
-        return AbstractModel::transaction(function() use ($owner_userid, $project) {
-            ProjectUser::whereProjectId($project->id)->update(['owner' => 0]);
-            ProjectUser::updateInsert([
-                'project_id' => $project->id,
-                'userid' => $owner_userid,
-            ], [
-                'owner' => 1,
-            ]);
-            $project->syncDialogUser();
-            $project->addLog("移交项目给会员ID：" . $owner_userid);
-            //
-            return Base::retSuccess('移交成功');
-        });
     }
 
     /**
@@ -340,6 +347,7 @@ class ProjectController extends AbstractController
             ProjectUser::whereProjectId($project->id)->whereUserid($user->userid)->delete();
             $project->syncDialogUser();
             $project->addLog("会员ID：" . $user->userid . " 退出项目");
+            $project->pushMsg('delete', null, $user->userid);
             return Base::retSuccess('退出成功', ['id' => $project->id]);
         });
     }

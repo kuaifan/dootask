@@ -266,9 +266,9 @@ class Project extends AbstractModel
             foreach ($columns as $column) {
                 $column->deleteColumn(false);
             }
-            $this->pushMsg('delete', $this->toArray());
             $this->delete();
             $this->addLog("删除项目");
+            $this->pushMsg('delete');
             return Base::retSuccess('删除成功', $this->toArray());
         });
         return Base::isSuccess($result);
@@ -296,12 +296,19 @@ class Project extends AbstractModel
     /**
      * 推送消息
      * @param string $action
-     * @param array $data
+     * @param array $data       发送内容，默认为[id=>项目ID]
+     * @param array $userid     指定会员，默认为项目所有成员
      */
-    public function pushMsg($action, $data)
+    public function pushMsg($action, $data = null, $userid = null)
     {
+        if ($data === null) {
+            $data = ['id' => $this->id];
+        }
+        if ($userid === null) {
+            $userid = $this->relationUserids();
+        }
         $lists = [
-            'userid' => $this->relationUserids(),
+            'userid' => $userid,
             'msg' => [
                 'type' => 'project',
                 'action' => $action,

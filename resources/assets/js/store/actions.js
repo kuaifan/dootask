@@ -314,16 +314,16 @@ export default {
      * 获取项目信息
      * @param state
      * @param dispatch
-     * @param project_id
+     * @param data {id}
      */
-    getProjectBasic({state, dispatch}, project_id) {
-        if (state.method.runNum(project_id) === 0) {
+    getProjectBasic({state, dispatch}, data) {
+        if (state.method.runNum(data.id) === 0) {
             return;
         }
         dispatch("call", {
             url: 'project/basic',
             data: {
-                project_id: project_id,
+                project_id: data.id,
             },
         }).then(result => {
             dispatch("saveProject", result.data);
@@ -334,24 +334,24 @@ export default {
      * 获取项目详情
      * @param state
      * @param dispatch
-     * @param project_id
+     * @param data {id}
      */
-    getProjectDetail({state, dispatch}, project_id) {
-        if (state.method.runNum(project_id) === 0) {
+    getProjectDetail({state, dispatch}, data) {
+        if (state.method.runNum(data.id) === 0) {
             return;
         }
-        const project = state.cacheProjectList.find(({id}) => id == project_id);
+        const project = state.cacheProjectList.find(({id}) => id == data.id);
         if (project) {
             state.projectDetail = Object.assign({project_column: [], project_user: []}, project);
         } else {
-            state.projectDetail.id = project_id;
+            state.projectDetail.id = data.id;
         }
         //
         state.projectLoad++;
         dispatch("call", {
             url: 'project/detail',
             data: {
-                project_id: project_id,
+                project_id: data.id,
             },
         }).then(result => {
             state.projectLoad--;
@@ -365,7 +365,7 @@ export default {
     /**
      * 删除项目信息
      * @param state
-     * @param data
+     * @param data {id}
      */
     removeProject({state}, data) {
         let index = state.projectList.findIndex(({id}) => id == data.id);
@@ -689,7 +689,7 @@ export default {
                     dispatch("getTaskBasic", result.data.parent_id);
                 }
                 if (typeof post.complete_at !== "undefined") {
-                    dispatch("getProjectBasic", result.data.project_id);
+                    dispatch("getProjectBasic", {id: result.data.project_id});
                 }
                 dispatch("saveTask", result.data);
                 resolve(result)
@@ -716,7 +716,7 @@ export default {
                     task_id,
                 },
             }).then(result => {
-                commit("taskRemoveSuccess", result.data);
+                commit("taskDeleteSuccess", result.data);
                 resolve(result);
             }).catch(result => {
                 reject(result)
@@ -1126,7 +1126,11 @@ export default {
                                 const {action, data} = msg;
                                 switch (action) {
                                     case 'add':
+                                    case 'update':
                                         dispatch("saveProject", data)
+                                        break;
+                                    case 'detail':
+                                        dispatch("getProjectDetail", data);
                                         break;
                                     case 'delete':
                                         dispatch("removeProject", data);
@@ -1146,7 +1150,7 @@ export default {
                                         commit("columnAddSuccess", data)
                                         break;
                                     case 'delete':
-                                        commit("columnRemoveSuccess", data)
+                                        commit("columnDeleteSuccess", data)
                                         break;
                                 }
                             })(msgDetail);
@@ -1164,7 +1168,7 @@ export default {
                                         break;
                                     case 'archived':
                                     case 'delete':
-                                        commit("taskRemoveSuccess", data)
+                                        commit("taskDeleteSuccess", data)
                                         break;
                                 }
                             })(msgDetail);

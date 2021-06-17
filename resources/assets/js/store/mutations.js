@@ -1,6 +1,6 @@
 export default {
     /**
-     * 添加列表成功
+     * 添加列表
      * @param state
      * @param data
      */
@@ -14,20 +14,20 @@ export default {
     },
 
     /**
-     * 删除列表成功
+     * 删除列表
      * @param state
      * @param data
      */
-    columnRemoveSuccess(state, data) {
+    columnDeleteSuccess(state, data) {
         let index = state.projectDetail.project_column.findIndex(({id}) => id === data.id);
         if (index > -1) {
             state.projectDetail.project_column.splice(index, 1);
         }
-        this.dispatch("getProjectBasic", data.project_id);
+        this.dispatch("getProjectBasic", {id: data.project_id});
     },
 
     /**
-     * 添加任务成功
+     * 添加任务
      * @param state
      * @param data
      */
@@ -51,7 +51,7 @@ export default {
                     }
                 }
             }
-            this.dispatch("getProjectBasic", task.project_id);
+            this.dispatch("getProjectBasic", {id: task.project_id});
         } else {
             // 添加子任务
             if (state.projectDetail.id == task.project_id) {
@@ -78,11 +78,11 @@ export default {
     },
 
     /**
-     * 移除任务成功
+     * 删除任务
      * @param state
      * @param data
      */
-    taskRemoveSuccess(state, data) {
+    taskDeleteSuccess(state, data) {
         const column = state.projectDetail.project_column.find(({id}) => id === data.column_id);
         if (column) {
             let index = column.project_task.findIndex(({id}) => id === data.id);
@@ -102,6 +102,6 @@ export default {
         if (index > -1) {
             state.calendarTask.splice(index, 1)
         }
-        this.dispatch("getProjectBasic", data.project_id);
+        this.dispatch("getProjectBasic", {id: data.project_id});
     }
 }

@@ -626,7 +626,7 @@ export default {
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.sortDisabled = false;
-                this.$store.dispatch("getProjectDetail", this.projectDetail.id);
+                this.$store.dispatch("getProjectDetail", this.projectDetail);
             });
         },
 
@@ -782,7 +782,7 @@ export default {
                         $A.messageSuccess(msg);
                         this.$set(column, 'loading', false);
                         this.$Modal.remove();
-                        this.$store.commit("columnRemoveSuccess", data);
+                        this.$store.commit("columnDeleteSuccess", data);
                     }).catch(({msg}) => {
                         $A.modalError(msg, 301);
                         this.$set(column, 'loading', false);
@@ -869,7 +869,7 @@ export default {
         onSetting() {
             this.settingLoad++;
             this.$store.dispatch("call", {
-                url: 'project/edit',
+                url: 'project/update',
                 data: this.settingData,
             }).then(({data, msg}) => {
                 $A.messageSuccess(msg);
@@ -890,11 +890,11 @@ export default {
                     project_id: this.userData.project_id,
                     userid: this.userData.userids,
                 },
-            }).then(({msg}) => {
+            }).then(({data, msg}) => {
                 $A.messageSuccess(msg);
                 this.userLoad--;
                 this.userShow = false;
-                this.$store.dispatch("getProjectDetail", this.userData.project_id);
+                this.$store.dispatch("getProjectDetail", data);
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.userLoad--;
@@ -909,11 +909,11 @@ export default {
                     project_id: this.transferData.project_id,
                     owner_userid: this.transferData.owner_userid[0],
                 },
-            }).then(({msg}) => {
+            }).then(({data, msg}) => {
                 $A.messageSuccess(msg);
                 this.transferLoad--;
                 this.transferShow = false;
-                this.$store.dispatch("getProjectDetail", this.transferData.project_id);
+                this.$store.dispatch("getProjectDetail", data);
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.transferLoad--;

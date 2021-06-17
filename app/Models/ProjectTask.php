@@ -591,11 +591,11 @@ class ProjectTask extends AbstractModel
             if ($this->dialog_id) {
                 WebSocketDialog::whereId($this->dialog_id)->delete();
             }
+            $this->delete();
+            $this->addLog("删除{任务}：" . $this->name);
             if ($pushMsg) {
                 $this->pushMsg('delete', $this->toArray());
             }
-            $this->delete();
-            $this->addLog("删除{任务}：" . $this->name);
             return Base::retSuccess('删除成功', $this->toArray());
         });
     }
@@ -623,15 +623,22 @@ class ProjectTask extends AbstractModel
     /**
      * 推送消息
      * @param string $action
-     * @param array $data
+     * @param array $data       发送内容，默认为[id=>任务ID]
+     * @param array $userid     指定会员，默认为项目所有成员
      */
-    public function pushMsg($action, $data)
+    public function pushMsg($action, $data = null, $userid = null)
     {
         if (!$this->project) {
             return;
         }
+        if ($data === null) {
+            $data = ['id' => $this->id];
+        }
+        if ($userid === null) {
+            $userid = $this->project->relationUserids();
+        }
         $lists = [
-            'userid' => $this->project->relationUserids(),
+            'userid' => $userid,
             'msg' => [
                 'type' => 'projectTask',
                 'action' => $action,

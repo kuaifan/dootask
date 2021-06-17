@@ -24,7 +24,7 @@ export default {
             this.project_id = route.params.id;
         },
         project_id(id) {
-            this.$store.dispatch("getProjectDetail", id);
+            this.$store.dispatch("getProjectDetail", {id});
         }
     },
 }
