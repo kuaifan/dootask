@@ -294,7 +294,7 @@
                 maxWidth: '640px'
             }"
             :mask-closable="false">
-            <TaskAdd ref="add" v-model="addData"/>
+            <TaskAdd ref="add" v-model="addData" @on-add="onAddTask"/>
             <div slot="footer">
                 <Button type="default" @click="addShow=false">{{$L('取消')}}</Button>
                 <Button type="primary" :loading="taskLoad > 0" @click="onAddTask">{{$L('添加')}}</Button>
@@ -641,6 +641,10 @@ export default {
         },
 
         onAddTask() {
+            if (!this.addData.name) {
+                $A.messageError("任务描述不能为空");
+                return;
+            }
             this.taskLoad++;
             this.$store.dispatch("taskAdd", this.addData).then(({msg}) => {
                 $A.messageSuccess(msg);
@@ -676,6 +680,9 @@ export default {
             }
             this.$refs.add.defaultPriority();
             this.addShow = true;
+            this.$nextTick(() => {
+                this.$refs.add.$refs.input.focus();
+            })
         },
 
         addColumnOpen() {

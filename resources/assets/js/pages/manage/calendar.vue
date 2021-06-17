@@ -28,7 +28,8 @@
                 :schedules="calendarTasks"
                 @beforeCreateSchedule="onBeforeCreateSchedule"
                 @beforeClickSchedule="onBeforeClickSchedule"
-                @beforeUpdateSchedule="onBeforeUpdateSchedule"/>
+                @beforeUpdateSchedule="onBeforeUpdateSchedule"
+                disable-click/>
         </div>
     </div>
 </template>
@@ -145,9 +146,7 @@ export default {
                 time
             }).then(({data}) => {
                 this.scheduleLoad--;
-                data.data.some((task) => {
-                    this.$store.dispatch("saveCalendarTask", task)
-                });
+                this.$store.dispatch("saveCalendarTask", data.data)
             }).catch(() => {
                 this.scheduleLoad--;
             })

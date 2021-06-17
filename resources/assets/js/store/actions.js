@@ -403,9 +403,16 @@ export default {
     /**
      * 保存任务信息（日历任务）
      * @param state
+     * @param dispatch
      * @param data
      */
-    saveCalendarTask({state}, data) {
+    saveCalendarTask({state, dispatch}, data) {
+        if (state.method.isArray(data)) {
+            data.forEach((task) => {
+                dispatch("saveCalendarTask", task)
+            });
+            return;
+        }
         let task = {
             id: data.id,
             calendarId: String(data.project_id),
@@ -430,6 +437,9 @@ export default {
             task.color = "#f56c6c"
             task.bgColor = "#fef0f0"
             task.priority+= '<span class="overdue">' + $A.L('超期未完成') + '</span>';
+        }
+        if (!task.borderColor) {
+            task.borderColor = task.bgColor;
         }
         let index = state.calendarTask.findIndex(({id}) => id === data.id);
         if (index > -1) {
@@ -504,7 +514,7 @@ export default {
                 const {content} = result.data;
                 state.projectTaskContent[task_id] = content;
                 if (task_id == state.projectOpenTask.id) {
-                    state.projectOpenTask = Object.assign({}, state.projectOpenTask, {content: content});
+                    state.projectOpenTask = Object.assign({}, state.projectOpenTask, {content: content || ''});
                 }
                 resolve(result)
             }).catch(result => {
@@ -628,7 +638,7 @@ export default {
                         }
                     }
                 }
-                dispatch("saveCalendarTask", task);
+                dispatch("saveTask", task);
                 dispatch("getProjectOne", task.project_id);
                 resolve(result)
             }).catch(result => {

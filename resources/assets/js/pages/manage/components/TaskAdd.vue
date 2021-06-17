@@ -4,11 +4,13 @@
             <FormItem :label="$L('任务描述')">
                 <Input
                     v-model="value.name"
+                    ref="input"
                     type="textarea"
                     :rows="1"
                     :autosize="{ minRows: 1, maxRows: 3 }"
                     :maxlength="255"
-                    :placeholder="$L('必填')"></Input>
+                    :placeholder="$L('必填')"
+                    @on-keydown="onKeydown"/>
             </FormItem>
             <FormItem :label="$L('任务详情')">
                 <TEditor
@@ -233,6 +235,15 @@ export default {
                 if ($A.rightExists(tempc[0], '00:00') && $A.rightExists(tempc[1], '00:00')) {
                     this.$set(times, 1, tempc[1].replace("00:00", "23:59"));
                 }
+            }
+        },
+        onKeydown(e) {
+            if (e.keyCode === 13) {
+                if (e.shiftKey) {
+                    return;
+                }
+                e.preventDefault();
+                this.$emit("on-add")
             }
         },
         addSubTask() {
