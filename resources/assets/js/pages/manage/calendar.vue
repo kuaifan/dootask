@@ -24,6 +24,8 @@
             <Calendar
                 ref="cal"
                 :view="calendarView"
+                :week="calendarWeek"
+                :month="calendarMonth"
                 :theme="calendarTheme"
                 :template="calendarTemplate"
                 :calendars="calendarList"
@@ -70,6 +72,8 @@ export default {
             rangeTime: [],
 
             calendarView: 'month',
+            calendarWeek: {},
+            calendarMonth: {},
             calendarTheme: {},
             calendarTemplate: {},
             calendarList: [],
@@ -117,6 +121,17 @@ export default {
 
     methods: {
         initLanguage() {
+            let daynames = [
+                this.$L('周日'),
+                this.$L('周一'),
+                this.$L('周二'),
+                this.$L('周三'),
+                this.$L('周四'),
+                this.$L('周五'),
+                this.$L('周六')
+            ];
+            this.calendarWeek = {daynames};
+            this.calendarMonth = {daynames};
             this.calendarTheme = {
                 'common.border': '1px solid #f4f5f5',
                 'month.dayname.fontSize': '14px',

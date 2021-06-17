@@ -44,6 +44,8 @@
 </template>
 
 <script>
+import {mapState} from "vuex";
+
 export default {
     data() {
         return {
@@ -64,6 +66,24 @@ export default {
         this.systemSetting();
     },
 
+
+
+    computed: {
+        ...mapState(['taskPriority']),
+    },
+
+    watch: {
+        taskPriority: {
+            handler(data) {
+                this.formDatum = $A.cloneJSON(data);
+                if (this.formDatum.length === 0) {
+                    this.addDatum();
+                }
+            },
+            immediate: true,
+        }
+    },
+
     methods: {
         submitForm() {
             this.$refs.formDatum.validate((valid) => {
@@ -74,7 +94,7 @@ export default {
         },
 
         resetForm() {
-            this.formDatum = $A.cloneJSON(this.formDatum_bak);
+            this.formDatum = $A.cloneJSON(this.taskPriority);
         },
 
         addDatum() {
@@ -102,11 +122,6 @@ export default {
                 }
                 this.loadIng--;
                 this.$store.state.taskPriority = $A.cloneJSON(data);
-                this.formDatum = data;
-                if (this.formDatum.length === 0) {
-                    this.addDatum();
-                }
-                this.formDatum_bak = $A.cloneJSON(this.formDatum);
             }).catch(({msg}) => {
                 if (save) {
                     $A.modalError(msg);
