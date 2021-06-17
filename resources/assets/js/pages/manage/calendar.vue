@@ -97,17 +97,20 @@ export default {
             this.getTask(time);
         },
 
-        projectList(data) {
-            const list = data.map((project) => {
-                return {
-                    id: String(project.id),
-                    name: project.name,
+        projectList: {
+            handler(data) {
+                const list = data.map((project) => {
+                    return {
+                        id: String(project.id),
+                        name: project.name,
+                    }
+                });
+                if (JSON.stringify(list) != JSON.stringify(this.calendarList)) {
+                    this.calendarList = list;
                 }
-            });
-            if (JSON.stringify(list) != JSON.stringify(this.calendarList)) {
-                this.calendarList = list;
-            }
-        }
+            },
+            immediate: true,
+        },
     },
 
     methods: {
