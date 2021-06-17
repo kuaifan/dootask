@@ -242,24 +242,6 @@ body {
     }
 }
 
-.modal-info-show {
-    display: flex;
-    .column {
-        color: #6D6D6D;
-        margin: 5px 0;
-        min-width: 70px;
-        max-width: 100px;
-        text-align: right;
-    }
-    .value {
-        flex: 1;
-        width: 0;
-        color: #414141;
-        margin: 5px 0 5px 5px;
-        word-break: break-all;
-    }
-}
-
 *[hidden="hidden"] {
     display: none !important;
 }

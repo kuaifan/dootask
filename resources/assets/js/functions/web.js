@@ -11,10 +11,10 @@
     $.extend({
         // 弹窗
         modalConfig(config) {
-            if (typeof config === "string") {
-                config = {
-                    content: config
-                };
+            if (typeof config === "undefined") {
+                config = {content: "Undefined"};
+            } else if (typeof config === "string") {
+                config = {content: config};
             }
             config.title = $A.L(config.title || (typeof config.render === 'undefined' ? '温馨提示' : ''));
             config.content = $A.L(config.content || '');
@@ -112,27 +112,6 @@
             $A.Modal.error($A.modalConfig(config));
         },
 
-        modalInfoShow(title, data, addConfig) {
-            let content = '';
-            for (let i in data) {
-                let item = data[i];
-                content += `<div class="modal-info-show">`;
-                content += `    <div class="column">${item.column}：</div>`;
-                content += `    <div class="value">${item.value || item.value == '0' ? item.value : '-'}</div>`;
-                content += `</div>`;
-            }
-            let config = {
-                title: title,
-                content: content,
-                okText: $A.L('关闭'),
-                closable: true
-            };
-            if (typeof addConfig == 'object' && addConfig) {
-                config = Object.assign(config, addConfig);
-            }
-            this.Modal.info(config);
-        },
-
         modalAlert(msg) {
             alert($A.L(msg));
         },
@@ -152,10 +131,10 @@
 
         //通知
         noticeConfig(config) {
-            if (typeof config === "string") {
-                config = {
-                    desc: config
-                };
+            if (typeof config === "undefined") {
+                config = {desc: "Undefined"};
+            } else if (typeof config === "string") {
+                config = {desc: config};
             }
             config.title = $A.L(config.title || (typeof config.render === 'undefined' ? '温馨提示' : ''));
             config.desc = $A.L(config.desc || '');
