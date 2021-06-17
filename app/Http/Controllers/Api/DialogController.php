@@ -138,8 +138,6 @@ class DialogController extends AbstractController
      * 发送消息
      *
      * @apiParam {Number} dialog_id         对话ID
-     * @apiParam {Number} [extra_int]       额外参数（数字）
-     * @apiParam {String} [extra_str]       额外参数（字符）
      * @apiParam {String} text              消息内容
      */
     public function msg__sendtext()
@@ -147,8 +145,6 @@ class DialogController extends AbstractController
         $user = User::auth();
         //
         $dialog_id = intval(Request::input('dialog_id'));
-        $extra_int = intval(Request::input('extra_int'));
-        $extra_str = trim(Request::input('extra_str'));
         $text = trim(Request::input('text'));
         //
         if (mb_strlen($text) < 1) {
@@ -169,15 +165,13 @@ class DialogController extends AbstractController
             'text' => $text
         ];
         //
-        return WebSocketDialogMsg::sendMsg($dialog_id, 'text', $msg, $user->userid, $extra_int, $extra_str);
+        return WebSocketDialogMsg::sendMsg($dialog_id, 'text', $msg, $user->userid);
     }
 
     /**
      * {post}文件上传
      *
      * @apiParam {Number} dialog_id         对话ID
-     * @apiParam {Number} [extra_int]       额外参数（数字）
-     * @apiParam {String} [extra_str]       额外参数（字符）
      * @apiParam {String} [filename]        post-文件名称
      * @apiParam {String} [image64]         post-base64图片（二选一）
      * @apiParam {File} [files]             post-文件对象（二选一）
@@ -187,8 +181,6 @@ class DialogController extends AbstractController
         $user = User::auth();
         //
         $dialog_id = Base::getPostInt('dialog_id');
-        $extra_int = Base::getPostInt('extra_int');
-        $extra_str = Base::getPostValue('extra_str');
         //
         if (!WebSocketDialogUser::whereDialogId($dialog_id)->whereUserid($user->userid)->exists()) {
             return Base::retError('不在成员列表内');
@@ -242,7 +234,7 @@ class DialogController extends AbstractController
                 }
             }
             //
-            $result = WebSocketDialogMsg::sendMsg($dialog_id, 'file', $fileData, $user->userid, $extra_int, $extra_str);
+            $result = WebSocketDialogMsg::sendMsg($dialog_id, 'file', $fileData, $user->userid);
             if (Base::isSuccess($result)) {
                 if (isset($task)) {
                     $result['data']['task_id'] = $task->id;

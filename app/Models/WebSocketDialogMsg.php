@@ -19,8 +19,6 @@ use Hhxsv5\LaravelS\Swoole\Task\Task;
  * @property array|mixed $msg 详细消息
  * @property int|null $read 已阅数量
  * @property int|null $send 发送数量
- * @property int|null $extra_int 额外数字参数
- * @property string|null $extra_str 额外字符参数
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read int|mixed $percentage
@@ -29,8 +27,6 @@ use Hhxsv5\LaravelS\Swoole\Task\Task;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg query()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereDialogId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereExtraInt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereExtraStr($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereMsg($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereRead($value)
@@ -134,19 +130,15 @@ class WebSocketDialogMsg extends AbstractModel
      * @param string $type      消息类型
      * @param array $msg        发送的消息
      * @param int $sender       发送的会员ID（默认自己，0为系统）
-     * @param int $extra_int
-     * @param string $extra_str
      * @return array
      */
-    public static function sendMsg($dialog_id, $type, $msg, $sender = 0, $extra_int = 0, $extra_str = '')
+    public static function sendMsg($dialog_id, $type, $msg, $sender = 0)
     {
         $dialogMsg = self::createInstance([
             'userid' => $sender ?: User::token2userid(),
             'type' => $type,
             'msg' => $msg,
             'read' => 0,
-            'extra_int' => $extra_int,
-            'extra_str' => $extra_str,
         ]);
         return AbstractModel::transaction(function () use ($dialog_id, $msg, $dialogMsg) {
             $dialog = WebSocketDialog::checkDialog($dialogMsg->userid, $dialog_id);
