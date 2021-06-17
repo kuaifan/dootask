@@ -365,13 +365,21 @@ export default {
     /**
      * 删除项目信息
      * @param state
-     * @param project_id
+     * @param data
      */
-    removeProject({state}, project_id) {
-        let index = state.projectList.findIndex(({id}) => id == project_id);
+    removeProject({state}, data) {
+        let index = state.projectList.findIndex(({id}) => id == data.id);
         if (index > -1) {
             state.projectList.splice(index, 1);
             state.method.setStorage("cacheProjectList", state.cacheProjectList = state.projectList);
+        }
+        if (state.projectDetail.id == data.id) {
+            const project = state.projectList.find(({id}) => id && id != data.id);
+            if (project) {
+                $A.goForward({path: '/manage/project/' + project.id});
+            } else {
+                $A.goForward({path: '/manage/dashboard'});
+            }
         }
     },
 
@@ -1106,6 +1114,23 @@ export default {
                                     });
                                     // 新增总未读数
                                     if (data.userid !== state.userId) state.dialogMsgUnread++;
+                                }
+                            })(msgDetail);
+                            break;
+
+                        /**
+                         * 项目消息
+                         */
+                        case "project":
+                            (function (msg) {
+                                const {action, data} = msg;
+                                switch (action) {
+                                    case 'add':
+                                        dispatch("saveProject", data)
+                                        break;
+                                    case 'delete':
+                                        dispatch("removeProject", data);
+                                        break;
                                 }
                             })(msgDetail);
                             break;

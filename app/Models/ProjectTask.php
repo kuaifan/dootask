@@ -582,17 +582,20 @@ class ProjectTask extends AbstractModel
 
     /**
      * 删除任务
+     * @param bool $pushMsg 是否推送
      * @return array|bool
      */
-    public function deleteTask()
+    public function deleteTask($pushMsg = true)
     {
-        return AbstractModel::transaction(function () {
+        return AbstractModel::transaction(function () use ($pushMsg) {
             if ($this->dialog_id) {
                 WebSocketDialog::whereId($this->dialog_id)->delete();
             }
+            if ($pushMsg) {
+                $this->pushMsg('delete', $this->toArray());
+            }
             $this->delete();
             $this->addLog("删除{任务}：" . $this->name);
-            $this->pushMsg('delete', $this->toArray());
             return Base::retSuccess('删除成功', $this->toArray());
         });
     }

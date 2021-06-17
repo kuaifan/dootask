@@ -931,16 +931,10 @@ export default {
                         data: {
                             project_id: this.projectDetail.id,
                         },
-                    }).then(({msg}) => {
+                    }).then(({data, msg}) => {
                         $A.messageSuccess(msg);
                         this.$Modal.remove();
-                        this.$store.dispatch("removeProject", this.projectDetail.id);
-                        const project = this.projectList.find(({id}) => id);
-                        if (project) {
-                            this.goForward({path: '/manage/project/' + project.id}, true);
-                        } else {
-                            this.goForward({path: '/manage/dashboard'}, true);
-                        }
+                        this.$store.dispatch("removeProject", data);
                     }).catch(({msg}) => {
                         $A.modalError(msg, 301);
                         this.$Modal.remove();
@@ -960,16 +954,10 @@ export default {
                         data: {
                             project_id: this.projectDetail.id,
                         },
-                    }).then(({msg}) => {
+                    }).then(({data, msg}) => {
                         $A.messageSuccess(msg);
                         this.$Modal.remove();
-                        this.$store.dispatch("removeProject", this.projectDetail.id);
-                        const project = this.projectList.find(({id}) => id);
-                        if (project) {
-                            this.goForward({path: '/manage/project/' + project.id}, true);
-                        } else {
-                            this.goForward({path: '/manage/dashboard'}, true);
-                        }
+                        this.$store.dispatch("removeProject", data);
                     }).catch(({msg}) => {
                         $A.modalError(msg, 301);
                         this.$Modal.remove();

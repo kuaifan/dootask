@@ -149,8 +149,10 @@ class ProjectController extends AbstractController
                 $column['project_id'] = $project->id;
                 ProjectColumn::createInstance($column)->save();
             }
-            $project->addLog("创建项目");
-            return Base::retSuccess('添加成功', $project->find($project->id));
+            $data = $project->find($project->id);
+            $data->addLog("创建项目");
+            $data->pushMsg('add', $data->toArray());
+            return Base::retSuccess('添加成功', $data);
         });
     }
 
@@ -338,7 +340,7 @@ class ProjectController extends AbstractController
             ProjectUser::whereProjectId($project->id)->whereUserid($user->userid)->delete();
             $project->syncDialogUser();
             $project->addLog("会员ID：" . $user->userid . " 退出项目");
-            return Base::retSuccess('退出成功');
+            return Base::retSuccess('退出成功', ['id' => $project->id]);
         });
     }
 
@@ -359,7 +361,7 @@ class ProjectController extends AbstractController
         }
         //
         if ($project->deleteProject()) {
-            return Base::retSuccess('删除成功');
+            return Base::retSuccess('删除成功', ['id' => $project->id]);
         }
         return Base::retError('删除失败');
     }
@@ -462,9 +464,7 @@ class ProjectController extends AbstractController
         }
         //
         if ($column->deleteColumn()) {
-            $data = ['id' => $column->id];
-            $column->pushMsg("delete", $data);
-            return Base::retSuccess('删除成功', $data);
+            return Base::retSuccess('删除成功', ['id' => $column->id]);
         }
         return Base::retError('删除失败');
     }

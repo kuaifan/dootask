@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Exceptions\ApiException;
 use App\Module\Base;
+use App\Tasks\PushTask;
+use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -262,14 +264,12 @@ class Project extends AbstractModel
             WebSocketDialog::whereId($this->dialog_id)->delete();
             $columns = ProjectColumn::whereProjectId($this->id)->get();
             foreach ($columns as $column) {
-                $column->deleteColumn();
+                $column->deleteColumn(false);
             }
-            if ($this->delete()) {
-                $this->addLog("删除项目");
-                return Base::retSuccess('删除成功', $this->toArray());
-            } else {
-                return Base::retError('删除失败', $this->toArray());
-            }
+            $this->pushMsg('delete', $this->toArray());
+            $this->delete();
+            $this->addLog("删除项目");
+            return Base::retSuccess('删除成功', $this->toArray());
         });
         return Base::isSuccess($result);
     }
@@ -291,6 +291,25 @@ class Project extends AbstractModel
         ]);
         $log->save();
         return $log;
+    }
+
+    /**
+     * 推送消息
+     * @param string $action
+     * @param array $data
+     */
+    public function pushMsg($action, $data)
+    {
+        $lists = [
+            'userid' => $this->relationUserids(),
+            'msg' => [
+                'type' => 'project',
+                'action' => $action,
+                'data' => $data,
+            ]
+        ];
+        $task = new PushTask($lists, false);
+        Task::deliver($task);
     }
 
     /**
