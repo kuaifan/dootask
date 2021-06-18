@@ -45,7 +45,7 @@ class PushTask extends AbstractTask
                 self::sendTmpMsgForUserid(intval(Base::leftDelete($this->params, "RETRY::")));
             }
         }
-        is_array($this->params) && self::push($this->params, '', 1, $this->retryOffline);
+        is_array($this->params) && self::push($this->params, $this->retryOffline);
     }
 
     /**
@@ -87,7 +87,7 @@ class PushTask extends AbstractTask
             ->chunk(100, function($list) use ($userid) {
                 foreach ($list as $item) {
                     self::push([
-                        'tmp_msg_id' => $item->id,
+                        'tmpMsgId' => $item->id,
                         'userid' => $userid,
                         'msg' => Base::json2array($item->msg),
                     ]);
@@ -98,11 +98,11 @@ class PushTask extends AbstractTask
     /**
      * 推送消息
      * @param array $lists 消息列表
-     * @param string|int $key 延迟推送key依据，留空立即推送（延迟推送时发给同一人同一种消息类型只发送最新的一条）
-     * @param int $delay 延迟推送时间，默认：1秒（$key填写时有效）
      * @param bool $retryOffline 如果会员不在线，等上线后继续发送
+     * @param string $key 延迟推送key依据，留空立即推送（延迟推送时发给同一人同一种消息类型只发送最新的一条）
+     * @param int $delay 延迟推送时间，默认：1秒（$key填写时有效）
      */
-    public static function push(array $lists, $key = '', $delay = 1, $retryOffline = true)
+    public static function push(array $lists, $retryOffline = true, $key = null, $delay = 1)
     {
         if (!is_array($lists) || empty($lists)) {
             return;
@@ -117,8 +117,9 @@ class PushTask extends AbstractTask
             }
             $userid = $item['userid'];
             $fd = $item['fd'];
+            $ignoreFd = $item['ignoreFd'];
             $msg = $item['msg'];
-            $tmp_msg_id = intval($item['tmp_msg_id']);
+            $tmpMsgId = intval($item['tmpMsgId']);
             if (!is_array($msg)) {
                 continue;
             }
@@ -127,7 +128,7 @@ class PushTask extends AbstractTask
                 continue;
             }
             // 发送对象
-            $offline_user = [];
+            $offlineUser = [];
             $array = [];
             if ($fd) {
                 if (is_array($fd)) {
@@ -145,34 +146,41 @@ class PushTask extends AbstractTask
                     if ($row->isNotEmpty()) {
                         $array = array_merge($array, $row->toArray());
                     } else {
-                        $offline_user[] = $uid;
+                        $offlineUser[] = $uid;
                     }
                 }
             }
+            if ($ignoreFd) {
+                $ignoreFd = is_array($ignoreFd) ? $ignoreFd : [$ignoreFd];
+            }
             // 开始发送
             foreach ($array as $fid) {
-                if (empty($key)) {
-                    try {
-                        $swoole->push($fid, Base::array2json($msg));
-                        $tmp_msg_id > 0 && WebSocketTmpMsg::whereId($tmp_msg_id)->update(['send' => 1]);
-                    } catch (\Exception $e) {
-
-                    }
-                } else {
-                    $key =  "PUSH::" . $fid . ":" . $type . ":" . $key;
+                if ($ignoreFd) {
+                    if (in_array($fid, $ignoreFd)) continue;
+                }
+                if ($key) {
+                    $key = "PUSH::" . $fid . ":" . $type . ":" . $key;
                     Cache::put($key, [
                         'fd' => $fid,
+                        'ignoreFd' => $ignoreFd,
                         'msg' => $msg,
                     ]);
                     $task = new PushTask($key, $retryOffline);
                     $task->delay($delay);
                     Task::deliver($task);
+                } else {
+                    try {
+                        $swoole->push($fid, Base::array2json($msg));
+                        $tmpMsgId > 0 && WebSocketTmpMsg::whereId($tmpMsgId)->update(['send' => 1]);
+                    } catch (\Exception $e) {
+
+                    }
                 }
             }
             // 记录不在线的
-            if ($retryOffline && $tmp_msg_id == 0) {
-                $offline_user = array_values(array_unique($offline_user));
-                self::addTmpMsg($offline_user, $msg);
+            if ($retryOffline && $tmpMsgId == 0) {
+                $offlineUser = array_values(array_unique($offlineUser));
+                self::addTmpMsg($offlineUser, $msg);
             }
         }
     }

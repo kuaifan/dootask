@@ -6,6 +6,7 @@ use App\Module\Base;
 use App\Tasks\PushTask;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Request;
 
 /**
  * Class ProjectColumn
@@ -117,6 +118,7 @@ class ProjectColumn extends AbstractModel
             $userid = $this->project->relationUserids();
         }
         $lists = [
+            'ignoreFd' => Request::header('fd'),
             'userid' => $userid,
             'msg' => [
                 'type' => 'projectColumn',

@@ -9,6 +9,7 @@ use Arr;
 use Carbon\Carbon;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Request;
 
 /**
  * Class ProjectTask
@@ -638,6 +639,7 @@ class ProjectTask extends AbstractModel
             $userid = $this->project->relationUserids();
         }
         $lists = [
+            'ignoreFd' => Request::header('fd'),
             'userid' => $userid,
             'msg' => [
                 'type' => 'projectTask',
