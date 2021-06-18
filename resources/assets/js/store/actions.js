@@ -1208,12 +1208,12 @@ export default {
                                     case 'upload':
                                         commit("taskUploadSuccess", data)
                                         break;
-                                    case 'dialog':
-                                        commit("taskDialogSuccess", data)
-                                        break;
                                     case 'archived':
                                     case 'delete':
                                         commit("taskDeleteSuccess", data)
+                                        break;
+                                    case 'dialog':
+                                        dispatch("saveTask", data)
                                         break;
                                 }
                             })(msgDetail);

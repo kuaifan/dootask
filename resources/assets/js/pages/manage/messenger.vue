@@ -83,6 +83,7 @@ export default {
             dialogLoad: 0,
             dialogKey: '',
             dialogType: '',
+            dialogMounted: false,
 
             contactsLoad: 0,
             contactsLists: null,
@@ -93,16 +94,20 @@ export default {
         this.dialogLoad++;
         this.$store.dispatch("getDialogList").then(() => {
             this.dialogLoad--;
+            this.dialogMounted = true;
             this.openDialogStorage();
         }).catch(() => {
             this.dialogLoad--;
+            this.dialogMounted = true;
             this.openDialogStorage();
         });
     },
 
     activated() {
-        this.$store.dispatch("getDialogList");
-        this.openDialogStorage();
+        if (this.dialogMounted) {
+            this.$store.dispatch("getDialogList");
+            this.openDialogStorage();
+        }
     },
 
     computed: {

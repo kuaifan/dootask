@@ -595,10 +595,14 @@ export default {
             immediate: true,
             deep: true
         },
+        'openTask.dialog_id' (dialog_id) {
+            if (dialog_id) {
+                this.$store.dispatch("getDialogMsgList", dialog_id)
+            }
+        },
         'openTask._show' (show) {
             if (show) {
                 this.$nextTick(() => {
-                    this.$store.dispatch("getDialogMsgList", this.taskDetail.dialog_id)
                     this.$refs.input.focus()
                 });
             } else {
@@ -996,7 +1000,7 @@ export default {
                     task_id: this.taskDetail.id,
                 },
             }).then(({data}) => {
-                this.$store.commit("taskDialogSuccess", data);
+                this.$store.dispatch("saveTask", data);
                 this.$nextTick(() => {
                     this.$refs.dialog.sendMsg(this.msgText);
                     this.msgText = "";

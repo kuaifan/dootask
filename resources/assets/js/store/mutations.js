@@ -142,16 +142,6 @@ export default {
     },
 
     /**
-     * 任务打开聊天
-     * @param state
-     * @param data
-     */
-    taskDialogSuccess(state, data) {
-        this.dispatch("saveTask", data);
-        this.dispatch("getDialogMsgList", data.dialog_id);
-    },
-
-    /**
      * 删除任务
      * @param state
      * @param data
