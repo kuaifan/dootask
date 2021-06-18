@@ -113,9 +113,8 @@ class AbstractModel extends Model
      */
     public static function updateData($where, $updateArray)
     {
-        $isUpdate = false;
         if ($updateArray) {
-            $result = self::transaction(function () use ($updateArray, $where) {
+            self::transaction(function () use ($updateArray, $where) {
                 $list = static::where($where)->get();
                 if ($list->isNotEmpty()) {
                     foreach ($list AS $row) {
@@ -124,9 +123,9 @@ class AbstractModel extends Model
                     }
                 }
             });
-            $isUpdate = Base::isSuccess($result);
+            return true;
         }
-        return $isUpdate;
+        return false;
     }
 
     /**
@@ -154,7 +153,7 @@ class AbstractModel extends Model
     /**
      * 用于Model的事务处理
      * @param \Closure $closure
-     * @return array
+     * @return mixed
      */
     public static function transaction(\Closure $closure)
     {

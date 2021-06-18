@@ -309,7 +309,7 @@ class ProjectTask extends AbstractModel
             $task->sort = intval(self::whereColumnId($task->column_id)->orderByDesc('sort')->value('sort')) + 1;
         }
         //
-        $result = AbstractModel::transaction(function() use ($subtasks, $content, $owner, $task) {
+        return AbstractModel::transaction(function() use ($subtasks, $content, $owner, $task) {
             $task->save();
             if ($owner) {
                 ProjectTaskUser::createInstance([
@@ -336,29 +336,25 @@ class ProjectTask extends AbstractModel
                 }
             }
             $task->addLog("创建{任务}：" . $task->name);
-            return Base::retSuccess('success', $task);
+            return $task;
         });
-        if (Base::isError($result)) {
-            throw new ApiException($result);
-        }
-        return $result['data'];
     }
 
     /**
      * 修改任务
      * @param $data
      * @param $updateContent
-     * @return array
+     * @return bool
      */
     public function updateTask($data, &$updateContent)
     {
-        return AbstractModel::transaction(function () use ($data, &$updateContent) {
+        AbstractModel::transaction(function () use ($data, &$updateContent) {
             // 标题
             if (Arr::exists($data, 'name') && $this->name != $data['name']) {
                 if (empty($data['name'])) {
-                    return Base::retError('任务描述不能为空');
+                    throw new ApiException('任务描述不能为空');
                 } elseif (mb_strlen($data['name']) > 255) {
-                    return Base::retError('任务描述最多只能设置255个字');
+                    throw new ApiException('任务描述最多只能设置255个字');
                 }
                 $this->name = $data['name'];
                 $this->addLog("修改{任务}标题：{$this->name} => {$data['name']}");
@@ -369,7 +365,7 @@ class ProjectTask extends AbstractModel
                 $owner = intval($data['owner']);
                 if ($row->userid != $owner) {
                     if (empty($this->useridInTheProject($owner))) {
-                        return Base::retError('请选择正确的负责人');
+                        throw new ApiException('请选择正确的负责人');
                     }
                     $row->owner = 0;
                     $row->save();
@@ -460,8 +456,8 @@ class ProjectTask extends AbstractModel
             $this->save();
             if ($this->start_at instanceof \DateTimeInterface) $this->start_at = $this->start_at->format('Y-m-d H:i:s');
             if ($this->end_at instanceof \DateTimeInterface) $this->end_at = $this->end_at->format('Y-m-d H:i:s');
-            return Base::retSuccess('修改成功');
         });
+        return true;
     }
 
     /**
@@ -536,11 +532,11 @@ class ProjectTask extends AbstractModel
     /**
      * 标记已完成、未完成
      * @param Carbon|null $complete_at 完成时间
-     * @return array|bool
+     * @return bool
      */
     public function completeTask($complete_at)
     {
-        return AbstractModel::transaction(function () use ($complete_at) {
+        AbstractModel::transaction(function () use ($complete_at) {
             if ($complete_at === null) {
                 // 标记未完成
                 $this->complete_at = null;
@@ -549,25 +545,25 @@ class ProjectTask extends AbstractModel
                 // 标记已完成
                 if ($this->parent_id == 0) {
                     if (self::whereParentId($this->id)->whereCompleteAt(null)->exists()) {
-                        return Base::retError('子任务未完成');
+                        throw new ApiException('子任务未完成');
                     }
                 }
                 $this->complete_at = $complete_at;
                 $this->addLog("{任务}标记已完成：" . $this->name);
             }
             $this->save();
-            return Base::retSuccess('修改成功');
         });
+        return true;
     }
 
     /**
      * 归档任务、取消归档
      * @param Carbon|null $archived_at 归档时间
-     * @return array
+     * @return bool
      */
     public function archivedTask($archived_at)
     {
-        return AbstractModel::transaction(function () use ($archived_at) {
+        AbstractModel::transaction(function () use ($archived_at) {
             if ($archived_at === null) {
                 // 取消归档
                 $this->archived_at = null;
@@ -579,28 +575,28 @@ class ProjectTask extends AbstractModel
                 $this->pushMsg('archived');
             }
             $this->save();
-            return Base::retSuccess('保存成功', $this->toArray());
         });
+        return true;
     }
 
     /**
      * 删除任务
      * @param bool $pushMsg 是否推送
-     * @return array
+     * @return bool
      */
     public function deleteTask($pushMsg = true)
     {
-        return AbstractModel::transaction(function () use ($pushMsg) {
+        AbstractModel::transaction(function () {
             if ($this->dialog_id) {
                 WebSocketDialog::whereId($this->dialog_id)->delete();
             }
             $this->delete();
             $this->addLog("删除{任务}：" . $this->name);
-            if ($pushMsg) {
-                $this->pushMsg('delete');
-            }
-            return Base::retSuccess('删除成功', $this->toArray());
         });
+        if ($pushMsg) {
+            $this->pushMsg('delete');
+        }
+        return true;
     }
 
     /**

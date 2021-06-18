@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Exceptions\ApiException;
 use App\Module\Base;
 use App\Tasks\PushTask;
 use App\Tasks\WebSocketDialogMsgTask;
@@ -91,7 +92,7 @@ class WebSocketDialogMsg extends AbstractModel
         if (empty($userid)) {
             return false;
         }
-        $result = self::transaction(function() use ($userid) {
+        self::transaction(function() use ($userid) {
             $msgRead = WebSocketDialogMsgRead::whereMsgId($this->id)->whereUserid($userid)->lockForUpdate()->first();
             if (empty($msgRead)) {
                 $msgRead = WebSocketDialogMsgRead::createInstance([
@@ -121,7 +122,7 @@ class WebSocketDialogMsg extends AbstractModel
                 ]);
             }
         });
-        return Base::isSuccess($result);
+        return true;
     }
 
     /**
@@ -140,22 +141,18 @@ class WebSocketDialogMsg extends AbstractModel
             'msg' => $msg,
             'read' => 0,
         ]);
-        $result = AbstractModel::transaction(function () use ($dialog_id, $msg, $dialogMsg) {
+        AbstractModel::transaction(function () use ($dialog_id, $msg, $dialogMsg) {
             $dialog = WebSocketDialog::find($dialog_id);
             if (empty($dialog)) {
-                return Base::retError('获取会话失败');
+                throw new ApiException('获取会话失败');
             }
             $dialog->last_at = Carbon::now();
             $dialog->save();
             $dialogMsg->send = 1;
             $dialogMsg->dialog_id = $dialog->id;
             $dialogMsg->save();
-            //
-            return Base::retSuccess('发送成功', $dialogMsg->toArray());
         });
-        if (Base::isSuccess($result)) {
-            Task::deliver(new WebSocketDialogMsgTask($dialogMsg->id));
-        }
-        return $result;
+        Task::deliver(new WebSocketDialogMsgTask($dialogMsg->id));
+        return Base::retSuccess('发送成功', $dialogMsg);
     }
 }

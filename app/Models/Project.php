@@ -152,18 +152,15 @@ class Project extends AbstractModel
     public function getDialogIdAttribute($value)
     {
         if ($value === 0) {
-            $result = AbstractModel::transaction(function() {
+            return AbstractModel::transaction(function() {
                 $this->lockForUpdate();
                 $dialog = WebSocketDialog::createGroup(null, $this->relationUserids(), 'project');
                 if ($dialog) {
                     $this->dialog_id = $dialog->id;
                     $this->save();
                 }
-                return Base::retSuccess('success', $dialog->id);
+                return $dialog->id;
             });
-            if (Base::isSuccess($result)) {
-                $value = $result['data'];
-            }
         }
         return $value;
     }
@@ -261,7 +258,7 @@ class Project extends AbstractModel
      */
     public function deleteProject()
     {
-        $result = AbstractModel::transaction(function () {
+        AbstractModel::transaction(function () {
             WebSocketDialog::whereId($this->dialog_id)->delete();
             $columns = ProjectColumn::whereProjectId($this->id)->get();
             foreach ($columns as $column) {
@@ -269,10 +266,9 @@ class Project extends AbstractModel
             }
             $this->delete();
             $this->addLog("删除项目");
-            $this->pushMsg('delete');
-            return Base::retSuccess('删除成功', $this->toArray());
         });
-        return Base::isSuccess($result);
+        $this->pushMsg('delete');
+        return true;
     }
 
     /**

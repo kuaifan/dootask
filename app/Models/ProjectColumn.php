@@ -62,22 +62,22 @@ class ProjectColumn extends AbstractModel
     /**
      * 删除列表
      * @param bool $pushMsg 是否推送
-     * @return array
+     * @return bool
      */
     public function deleteColumn($pushMsg = true)
     {
-        return AbstractModel::transaction(function () use ($pushMsg) {
+        AbstractModel::transaction(function () use ($pushMsg) {
             $tasks = ProjectTask::whereColumnId($this->id)->get();
             foreach ($tasks as $task) {
                 $task->deleteTask($pushMsg);
             }
             $this->delete();
             $this->addLog("删除列表：" . $this->name);
-            if ($pushMsg) {
-                $this->pushMsg("delete");
-            }
-            return Base::retSuccess('删除成功', $this->toArray());
         });
+        if ($pushMsg) {
+            $this->pushMsg("delete");
+        }
+        return true;
     }
 
     /**

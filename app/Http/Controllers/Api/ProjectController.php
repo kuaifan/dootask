@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exceptions\ApiException;
 use App\Models\AbstractModel;
 use App\Models\Project;
 use App\Models\ProjectColumn;
@@ -217,7 +218,7 @@ class ProjectController extends AbstractController
             return Base::retError('你不是项目负责人');
         }
         //
-        return AbstractModel::transaction(function() use ($project, $userid) {
+        $deleteUser = AbstractModel::transaction(function() use ($project, $userid) {
             $array = [];
             foreach ($userid as $uid) {
                 if ($project->joinProject($uid)) {
@@ -229,10 +230,12 @@ class ProjectController extends AbstractController
             $delete->delete();
             $project->syncDialogUser();
             $project->addLog("修改项目成员");
-            $project->pushMsg('delete', null, $deleteUser->toArray());
-            $project->pushMsg('detail');
-            return Base::retSuccess('修改成功', ['id' => $project->id]);
+            return $deleteUser->toArray();
         });
+        //
+        $project->pushMsg('delete', null, $deleteUser);
+        $project->pushMsg('detail');
+        return Base::retSuccess('修改成功', ['id' => $project->id]);
     }
 
     /**
@@ -257,7 +260,7 @@ class ProjectController extends AbstractController
             return Base::retError('会员不存在');
         }
         //
-        return AbstractModel::transaction(function() use ($owner_userid, $project) {
+        AbstractModel::transaction(function() use ($owner_userid, $project) {
             ProjectUser::whereProjectId($project->id)->update(['owner' => 0]);
             ProjectUser::updateInsert([
                 'project_id' => $project->id,
@@ -267,10 +270,10 @@ class ProjectController extends AbstractController
             ]);
             $project->syncDialogUser();
             $project->addLog("移交项目给会员ID：" . $owner_userid);
-            $project->pushMsg('detail');
-            //
-            return Base::retSuccess('移交成功', ['id' => $project->id]);
         });
+        //
+        $project->pushMsg('detail');
+        return Base::retSuccess('移交成功', ['id' => $project->id]);
     }
 
     /**
@@ -343,13 +346,13 @@ class ProjectController extends AbstractController
             return Base::retError('项目负责人无法退出项目');
         }
         //
-        return AbstractModel::transaction(function() use ($user, $project) {
+        AbstractModel::transaction(function() use ($user, $project) {
             ProjectUser::whereProjectId($project->id)->whereUserid($user->userid)->delete();
             $project->syncDialogUser();
             $project->addLog("会员ID：" . $user->userid . " 退出项目");
             $project->pushMsg('delete', null, $user->userid);
-            return Base::retSuccess('退出成功', ['id' => $project->id]);
         });
+        return Base::retSuccess('退出成功', ['id' => $project->id]);
     }
 
     /**
@@ -368,10 +371,8 @@ class ProjectController extends AbstractController
             return Base::retError('你不是项目负责人');
         }
         //
-        if ($project->deleteProject()) {
-            return Base::retSuccess('删除成功', ['id' => $project->id]);
-        }
-        return Base::retError('删除失败');
+        $project->deleteProject();
+        return Base::retSuccess('删除成功', ['id' => $project->id]);
     }
 
     /**
@@ -472,7 +473,8 @@ class ProjectController extends AbstractController
             return Base::retError('项目不存在或不在成员列表内');
         }
         //
-        return $column->deleteColumn();
+        $column->deleteColumn();
+        return Base::retSuccess('删除成功', $column->toArray());
     }
 
     /**
@@ -709,26 +711,24 @@ class ProjectController extends AbstractController
             if ($task->complete_at) {
                 return Base::retError('任务已完成');
             }
-            $result = $task->completeTask(Carbon::now());
+            $task->completeTask(Carbon::now());
             $updateComplete = true;
         } elseif (Arr::exists($data, 'complete_at')) {
             // 标记未完成
             if (!$task->complete_at) {
                 return Base::retError('未完成任务');
             }
-            $result = $task->completeTask(null);
+            $task->completeTask(null);
             $updateComplete = true;
         } else {
             // 更新任务
-            $result = $task->updateTask($data, $updateContent);
+            $task->updateTask($data, $updateContent);
         }
-        if (Base::isSuccess($result)) {
-            $result['data'] = $task->toArray();
-            $result['data']['is_update_complete'] = $updateComplete;
-            $result['data']['is_update_content'] = $updateContent;
-            $task->pushMsg('update', $result['data']);
-        }
-        return $result;
+        $data = $task->toArray();
+        $data['is_update_complete'] = $updateComplete;
+        $data['is_update_content'] = $updateContent;
+        $task->pushMsg('update', $data);
+        return Base::retSuccess('修改成功', $data);
     }
 
     /**
@@ -804,7 +804,7 @@ class ProjectController extends AbstractController
             return Base::retError('子任务不支持此功能');
         }
         //
-        return AbstractModel::transaction(function() use ($task) {
+        AbstractModel::transaction(function() use ($task) {
             if (empty($task->dialog_id)) {
                 $task->lockForUpdate();
                 $dialog = WebSocketDialog::createGroup(null, $task->relationUserids(), 'task');
@@ -814,14 +814,15 @@ class ProjectController extends AbstractController
                 }
             }
             if (empty($task->dialog_id)) {
-                return Base::retError('创建聊天失败');
+                throw new ApiException('创建聊天失败');
             }
-            $task->pushMsg('dialog');
-            return Base::retSuccess('success', [
-                'id' => $task->id,
-                'dialog_id' => $task->dialog_id,
-            ]);
         });
+        //
+        $task->pushMsg('dialog');
+        return Base::retSuccess('success', [
+            'id' => $task->id,
+            'dialog_id' => $task->dialog_id,
+        ]);
     }
 
     /**
@@ -841,7 +842,8 @@ class ProjectController extends AbstractController
             return Base::retError('子任务不支持此功能');
         }
         //
-        return $task->archivedTask(Carbon::now());
+        $task->archivedTask(Carbon::now());
+        return Base::retSuccess('保存成功', $task);
     }
 
     /**
@@ -857,7 +859,8 @@ class ProjectController extends AbstractController
         //
         $task = ProjectTask::userTask($task_id);
         //
-        return $task->deleteTask();
+        $task->deleteTask();
+        return Base::retSuccess('删除成功', $task);
     }
 
     /**
