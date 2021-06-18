@@ -88,8 +88,6 @@ export default {
             autoBottom: true,
             autoInterval: null,
 
-            memberShowAll: false,
-
             dialogDrag: false,
 
             msgText: '',
@@ -118,8 +116,8 @@ export default {
         ]),
 
         dialogMsgLists() {
-            const {dialogMsgList} = this;
-            return dialogMsgList.sort((a, b) => {
+            const list = $A.cloneJSON(this.dialogMsgList);
+            return list.sort((a, b) => {
                 return a.id - b.id;
             });
         },
@@ -139,6 +137,7 @@ export default {
         },
 
         dialogId() {
+            this.autoBottom = true;
             this.msgNew = 0;
             this.topId = -1;
         }
