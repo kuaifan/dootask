@@ -177,5 +177,32 @@ export default {
             state.calendarTask.splice(index, 1)
         }
         this.dispatch("getProjectBasic", {id: data.project_id});
-    }
+    },
+
+    /**
+     * 会话消息列表
+     * @param state
+     * @param data
+     */
+    dialogMsgListSuccess(state, data) {
+        const dialog = data.dialog;
+        const list = data.data;
+        // 更新当前会话消息
+        if (state.dialogId == dialog.id) {
+            state.dialogDetail = dialog;
+            list.forEach((item) => {
+                let index = state.dialogMsgList.findIndex(({id}) => id == item.id);
+                if (index === -1) {
+                    state.dialogMsgList.unshift(item);
+                } else {
+                    state.dialogMsgList.splice(index, 1, item);
+                }
+            })
+        }
+        // 页数数据
+        state.dialogMsgCurrentPage = data.current_page;
+        state.dialogMsgHasMorePages = data.current_page < data.last_page;
+        // 更新会话数据
+        this.dispatch("saveDialog", dialog);
+    },
 }

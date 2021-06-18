@@ -78,10 +78,6 @@ export default {
         }
     },
 
-    mounted() {
-        this.msgRead()
-    },
-
     computed: {
         ...mapState(['userId']),
 
@@ -94,11 +90,16 @@ export default {
         }
     },
 
-    methods: {
-        msgRead() {
-            this.$store.dispatch("dialogMsgRead", this.msgData);
-        },
+    watch: {
+        msgData: {
+            handler(data) {
+                this.$store.dispatch("dialogMsgRead", data);
+            },
+            immediate: true,
+        }
+    },
 
+    methods: {
         popperShow() {
             this.$store.dispatch("call", {
                 url: 'dialog/msg/readlist',

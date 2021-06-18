@@ -139,7 +139,7 @@ class ProjectController extends AbstractController
             'desc' => $desc,
             'userid' => $user->userid,
         ]);
-        return AbstractModel::transaction(function() use ($insertColumns, $project) {
+        AbstractModel::transaction(function() use ($insertColumns, $project) {
             $project->save();
             ProjectUser::createInstance([
                 'project_id' => $project->id,
@@ -150,11 +150,12 @@ class ProjectController extends AbstractController
                 $column['project_id'] = $project->id;
                 ProjectColumn::createInstance($column)->save();
             }
-            $data = $project->find($project->id);
-            $data->addLog("创建项目");
-            $data->pushMsg('add', $data->toArray());
-            return Base::retSuccess('添加成功', $data);
         });
+        //
+        $data = $project->find($project->id);
+        $data->addLog("创建项目");
+        $data->pushMsg('add', $data->toArray());
+        return Base::retSuccess('添加成功', $data);
     }
 
     /**

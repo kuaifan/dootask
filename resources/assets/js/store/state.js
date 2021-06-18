@@ -281,9 +281,11 @@ state.calendarTask = [];
 state.dialogId = 0;
 state.dialogList = [];
 state.dialogDetail = {};
+state.dialogMsgUnread = 0;
 state.dialogMsgLoad = 0;
 state.dialogMsgList = [];
-state.dialogMsgUnread = 0;
+state.dialogMsgCurrentPage = 1;
+state.dialogMsgHasMorePages = false;
 
 // 任务优先级
 state.taskPriority = [];

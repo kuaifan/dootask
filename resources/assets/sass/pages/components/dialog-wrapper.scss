@@ -175,6 +175,18 @@
                             }
                         }
                     }
+                    &.history {
+                        cursor: pointer;
+                        justify-content: center;
+                        font-size: 13px;
+                        padding: 3px 0;
+                        margin: 12px 0;
+                        opacity: 0.6;
+                        transition: opacity 0.2s;
+                        &:hover {
+                            opacity: 1;
+                        }
+                    }
                     &.loading {
                         padding: 12px 0;
                         justify-content: center;
