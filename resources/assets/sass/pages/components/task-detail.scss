@@ -408,6 +408,14 @@
                 }
             }
         }
+        .dialog-wrapper {
+            .dialog-scroller {
+                padding: 0 16px 0 32px
+            }
+            .dialog-footer {
+                padding: 0 14px 0 28px;
+            }
+        }
     }
 
     &.open-dialog {

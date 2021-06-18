@@ -444,6 +444,10 @@
                             max-height: 50%;
                             border-radius: 2px;
                         }
+                        &.additem {
+                            cursor: default;
+                            padding: 0;
+                        }
                         &.complete {
                             opacity: 0.5;
                             &:hover {

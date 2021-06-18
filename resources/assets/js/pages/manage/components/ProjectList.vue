@@ -102,7 +102,7 @@
                         </div>
                     </div>
                     <div :ref="'column_' + column.id" class="column-task overlay-y">
-                        <div v-if="column.addTopShow===true" class="task-item">
+                        <div v-if="column.addTopShow===true" class="task-item additem">
                             <TaskAddSimple
                                 :column-id="column.id"
                                 :project-id="projectDetail.id"
@@ -192,7 +192,7 @@
                                 </div>
                                 <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
                             </div>
-                            <div class="task-item">
+                            <div class="task-item additem">
                                 <TaskAddSimple
                                     :column-id="column.id"
                                     :project-id="projectDetail.id"

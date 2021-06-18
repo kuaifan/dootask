@@ -1,10 +1,13 @@
 .task-add-simple {
+    padding: 12px;
     .ivu-input-wrapper {
         display: none;
     }
     .add-placeholder {
         cursor: pointer;
         color: #888888;
+        margin: -12px;
+        padding: 12px;
         .ivu-icon {
             margin-right: 4px;
         }
