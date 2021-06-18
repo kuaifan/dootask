@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Exceptions\ApiException;
 use App\Module\Base;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -157,33 +158,24 @@ class AbstractModel extends Model
      */
     public static function transaction(\Closure $closure)
     {
-        //开启事务
         try {
             DB::beginTransaction();
             $result = $closure();
-            if (is_bool($result)) {
-                if ($result === false) {
-                    throw new \Exception('处理失败');  // 错误：① 返回faske
-                }
-            } elseif ($result) {
-                if (is_string($result)) {
-                    throw new \Exception($result);              // 错误：② 返回字符串（错误描述）
-                } elseif (is_array($result)
-                    && Base::isError($result)) {
-                    throw new \Exception($result['msg']);       // 错误：③ 返回数组，且ret=0
-                }
-            }
             DB::commit();
-            return $result ?: Base::retSuccess('success');
+            return $result;
         } catch (\Throwable $e) {
-            info($e);
             //接收异常处理并回滚
             try {
                 DB::rollBack();
             } catch (\Throwable $eb) {
                 info($eb);
             }
-            return Base::retError($e->getMessage() ?: '处理错误');
+            if ($e instanceof ApiException) {
+                throw new ApiException($e->getMessage(), $e->getData(), $e->getCode());
+            } else {
+                info($e);
+                throw new ApiException($e->getMessage() ?: '处理错误');
+            }
         }
     }
 }
