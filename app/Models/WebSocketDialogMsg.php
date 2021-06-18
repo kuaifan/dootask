@@ -98,16 +98,15 @@ class WebSocketDialogMsg extends AbstractModel
                     'dialog_id' => $this->dialog_id,
                     'msg_id' => $this->id,
                     'userid' => $userid,
+                    'after' => 1,
                 ]);
-                try {
-                    $msgRead->saveOrFail();
-                    $this->send = WebSocketDialogMsgRead::whereMsgId($this->id)->count();
-                    $this->save();
-                } catch (\Throwable $e) {
-                    $msgRead = $msgRead->first();
+                if ($msgRead->saveOrIgnore()) {
+                    $this->increment('send');
+                } else {
+                    return;
                 }
             }
-            if ($msgRead && !$msgRead->read_at) {
+            if (!$msgRead->read_at) {
                 $msgRead->read_at = Carbon::now();
                 $msgRead->save();
                 $this->increment('read');
@@ -115,7 +114,7 @@ class WebSocketDialogMsg extends AbstractModel
                     'userid' => $this->userid,
                     'msg' => [
                         'type' => 'dialog',
-                        'mode' => 'up',
+                        'mode' => 'update',
                         'data' => $this->toArray(),
                     ]
                 ]);
@@ -141,19 +140,16 @@ class WebSocketDialogMsg extends AbstractModel
             'read' => 0,
         ]);
         return AbstractModel::transaction(function () use ($dialog_id, $msg, $dialogMsg) {
-            $dialog = WebSocketDialog::checkDialog($dialogMsg->userid, $dialog_id);
+            $dialog = WebSocketDialog::find($dialog_id);
             if (empty($dialog)) {
                 return Base::retError('获取会话失败');
             }
             $dialog->last_at = Carbon::now();
             $dialog->save();
-            $userids = WebSocketDialogUser::whereDialogId($dialog->id)->where('userid', '!=', $dialogMsg->userid)->pluck('userid')->toArray();
-            $dialogMsg->send = count($userids);
             $dialogMsg->dialog_id = $dialog->id;
             $dialogMsg->save();
             //
-            $task = new WebSocketDialogMsgTask($userids, $dialogMsg->toArray());
-            Task::deliver($task);
+            Task::deliver(new WebSocketDialogMsgTask($dialogMsg->id));
             //
             return Base::retSuccess('发送成功', $dialogMsg->toArray());
         });

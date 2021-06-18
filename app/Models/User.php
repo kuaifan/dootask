@@ -149,22 +149,22 @@ class User extends AbstractModel
      * @param $email
      * @param $password
      * @param array $other
-     * @return array
+     * @return self
      */
     public static function reg($email, $password, $other = [])
     {
         //邮箱
         if (!Base::isMail($email)) {
-            return Base::retError('请输入正确的邮箱地址');
+            throw new ApiException('请输入正确的邮箱地址');
         }
         if (User::email2userid($email) > 0) {
-            return Base::retError('邮箱地址已存在');
+            throw new ApiException('邮箱地址已存在');
         }
         //密码
         if (strlen($password) < 6) {
-            return Base::retError(['密码设置不能小于%位数', 6]);
+            throw new ApiException('密码设置不能小于6位数');
         } elseif (strlen($password) > 32) {
-            return Base::retError(['密码最多只能设置%位数', 32]);
+            throw new ApiException('密码最多只能设置32位数');
         }
         //开始注册
         $encrypt = Base::generatePassword(6);
@@ -180,7 +180,7 @@ class User extends AbstractModel
         $user = User::createInstance($inArray);
         $user->save();
         User::AZUpdate($user->userid);
-        return Base::retSuccess('success', $user);
+        return $user->find($user->userid);
     }
 
     /**

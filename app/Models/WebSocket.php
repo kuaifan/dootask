@@ -3,8 +3,6 @@
 namespace App\Models;
 
 
-use Request;
-
 /**
  * Class WebSocket
  *
@@ -28,20 +26,4 @@ use Request;
  */
 class WebSocket extends AbstractModel
 {
-
-    /**
-     * 获取其他fd（获取其他设备）
-     * @return array
-     */
-    public static function getOtherFd($fd)
-    {
-        if (empty($fd)) {
-            return [];
-        }
-        $row = self::whereFd($fd)->first();
-        if ($row) {
-            return self::whereUserid($row->userid)->where('id', '!=', $row->id)->pluck('fd')->toArray();
-        }
-        return [];
-    }
 }

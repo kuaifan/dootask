@@ -47,11 +47,6 @@ class UsersController extends AbstractController
                 return Base::retError('未开放注册');
             }
             $user = User::reg($email, $password);
-            if (Base::isError($user)) {
-                return $user;
-            } else {
-                $user = User::IDE($user['data']);
-            }
         } else {
             $needCode = !Base::isError(User::needCode($email));
             if ($needCode) {

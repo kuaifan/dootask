@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Exceptions\ApiException;
 use App\Module\Base;
 
 /**
@@ -15,10 +16,14 @@ use App\Module\Base;
  * @property string|null $last_at 最后消息时间
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\WebSocketDialogUser[] $dialogUser
+ * @property-read int|null $dialog_user_count
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog query()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereGroupType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereLastAt($value)
@@ -26,11 +31,45 @@ use App\Module\Base;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereUpdatedAt($value)
  * @mixin \Eloquent
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereDeletedAt($value)
  */
 class WebSocketDialog extends AbstractModel
 {
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function dialogUser(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(WebSocketDialogUser::class, 'dialog_id', 'id');
+    }
+
+    /**
+     * 获取对话（同时检验对话身份）
+     * @param $id
+     * @return self
+     */
+    public static function checkDialog($id)
+    {
+        $dialog = WebSocketDialog::whereId($id)->first();
+        if (empty($dialog)) {
+            throw new ApiException('对话不存在或已被删除');
+        }
+        //
+        $userid = User::token2userid();
+        if ($dialog->type === 'group' && $dialog->group_type === 'task') {
+            // 任务群对话校验是否在项目内
+            $project_id = intval(ProjectTask::whereDialogId($dialog->id)->value('project_id'));
+            if ($project_id > 0) {
+                if (ProjectUser::whereProjectId($project_id)->whereUserid($userid)->exists()) {
+                    return $dialog;
+                }
+            }
+        }
+        if (!WebSocketDialogUser::whereDialogId($dialog->id)->whereUserid($userid)->exists()) {
+            throw new ApiException('不在成员列表内');
+        }
+        return $dialog;
+    }
+
     /**
      * 格式化对话
      * @param WebSocketDialog $dialog
@@ -140,25 +179,6 @@ class WebSocketDialog extends AbstractModel
             WebSocketDialogUser::whereDialogId($dialog_id)->whereUserid($userid)->delete();
         }
         return true;
-    }
-
-    /**
-     * 获取对话
-     * @param int $userid       会员ID
-     * @param int $dialog_id    会话ID
-     * @return self
-     */
-    public static function checkDialog($userid, $dialog_id)
-    {
-        if ($userid == 0) {
-            return self::whereId($dialog_id)->first();
-        } else {
-            return self::select(['web_socket_dialogs.*'])
-                ->join('web_socket_dialog_users', 'web_socket_dialog_users.dialog_id', '=', 'web_socket_dialogs.id')
-                ->where('web_socket_dialogs.id', $dialog_id)
-                ->where('web_socket_dialog_users.userid', $userid)
-                ->first();
-        }
     }
 
     /**

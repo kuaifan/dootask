@@ -103,13 +103,7 @@ class DialogController extends AbstractController
         //
         $dialog_id = intval(Request::input('dialog_id'));
         //
-        if (!WebSocketDialogUser::whereDialogId($dialog_id)->whereUserid($user->userid)->exists()) {
-            return Base::retError('不在成员列表内');
-        }
-        $dialog = WebSocketDialog::whereId($dialog_id)->first();
-        if (empty($dialog)) {
-            return Base::retError('对话不存在或已被删除');
-        }
+        $dialog = WebSocketDialog::checkDialog($dialog_id);
         //
         $list = WebSocketDialogMsg::whereDialogId($dialog_id)->orderByDesc('id')->paginate(Base::getPaginate(100, 50));
         $list->transform(function (WebSocketDialogMsg $item) use ($user) {
@@ -153,13 +147,7 @@ class DialogController extends AbstractController
             return Base::retError('消息内容最大不能超过20000字');
         }
         //
-        if (!WebSocketDialogUser::whereDialogId($dialog_id)->whereUserid($user->userid)->exists()) {
-            return Base::retError('不在成员列表内');
-        }
-        $dialog = WebSocketDialog::whereId($dialog_id)->first();
-        if (empty($dialog)) {
-            return Base::retError('对话不存在或已被删除');
-        }
+        WebSocketDialog::checkDialog($dialog_id);
         //
         $msg = [
             'text' => $text
@@ -182,13 +170,7 @@ class DialogController extends AbstractController
         //
         $dialog_id = Base::getPostInt('dialog_id');
         //
-        if (!WebSocketDialogUser::whereDialogId($dialog_id)->whereUserid($user->userid)->exists()) {
-            return Base::retError('不在成员列表内');
-        }
-        $dialog = WebSocketDialog::whereId($dialog_id)->first();
-        if (empty($dialog)) {
-            return Base::retError('对话不存在或已被删除');
-        }
+        $dialog = WebSocketDialog::checkDialog($dialog_id);
         //
         $path = "uploads/chat/" . $user->userid . "/";
         $image64 = Base::getPostValue('image64');

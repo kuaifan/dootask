@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Builder|static with($relations)
  * @method static \Illuminate\Database\Query\Builder|static select($columns = [])
@@ -31,6 +32,19 @@ class AbstractModel extends Model
         'updated_at',
         'deleted_at',
     ];
+
+    /**
+     * 保存数据忽略错误
+     * @return bool
+     */
+    protected function scopeSaveOrIgnore()
+    {
+        try {
+            return $this->save();
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
 
     /**
      * 获取模型主键的值（如果没有则先保存）
@@ -132,16 +146,6 @@ class AbstractModel extends Model
             return null;
         }
         return $row;
-    }
-
-    /**
-     * 定义变量为对象（IDE高亮）
-     * @param $value
-     * @return static
-     */
-    public static function IDE($value)
-    {
-        return $value;
     }
 
     /**

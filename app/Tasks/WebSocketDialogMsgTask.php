@@ -2,7 +2,7 @@
 
 namespace App\Tasks;
 
-use App\Models\WebSocket;
+use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Models\WebSocketDialogMsgRead;
 use Request;
@@ -17,65 +17,53 @@ use Request;
  */
 class WebSocketDialogMsgTask extends AbstractTask
 {
-    protected $userid;
-    protected $dialogMsgArray;
-    protected $currentFd;
+    protected $id;
+    protected $ignoreFd;
 
     /**
      * WebSocketDialogMsgTask constructor.
-     * @param int|array $userid         发送对象ID 或 ID组
-     * @param array $dialogMsgArray     发送的内容
-     * @param null $currentFd           当前发送会员的 websocket fd （用于给其他设备发送消息，留空通过header获取）
+     * @param int $id         消息ID
      */
-    public function __construct($userid, array $dialogMsgArray, $currentFd = null)
+    public function __construct($id)
     {
-        $this->userid = $userid;
-        $this->dialogMsgArray = $dialogMsgArray;
-        $this->currentFd = $currentFd ?: Request::header('fd');
+        $this->id = $id;
+        $this->ignoreFd = Request::header('fd');
     }
 
     public function start()
     {
-        $userids = is_array($this->userid) ? $this->userid : [$this->userid];
-        $msgId = intval($this->dialogMsgArray['id']);
-        $send = intval($this->dialogMsgArray['send']);
-        $dialogId = intval($this->dialogMsgArray['dialog_id']);
-        if (empty($userids) || empty($msgId)) {
+        $msg = WebSocketDialogMsg::find($this->id);
+        if (empty($msg)) {
+            return;
+        }
+        $dialog = WebSocketDialog::find($msg->dialog_id);
+        if (empty($dialog)) {
             return;
         }
         // 推送目标
-        $pushIds = [];
+        $userids = $dialog->dialogUser->pluck('userid')->toArray();
         foreach ($userids AS $userid) {
-            $msgRead = WebSocketDialogMsgRead::createInstance([
-                'dialog_id' => $dialogId,
-                'msg_id' => $msgId,
-                'userid' => $userid,
-            ]);
-            try {
-                $msgRead->saveOrFail();
-                $pushIds[] = $userid;
-            } catch (\Throwable $e) {
-                //
+            if ($userid == $msg->userid) {
+                continue;
             }
+            WebSocketDialogMsgRead::createInstance([
+                'dialog_id' => $msg->dialog_id,
+                'msg_id' => $msg->id,
+                'userid' => $userid,
+            ])->saveOrIgnore();
         }
-        $fd = WebSocket::getOtherFd($this->currentFd);
         // 更新已发送数量
-        if ($send != count($pushIds)) {
-            $send = WebSocketDialogMsgRead::whereMsgId($msgId)->count();
-            WebSocketDialogMsg::whereId($msgId)->update([ 'send' => $send ]);
-            $this->dialogMsgArray['send'] = $send;
-        }
+        $msg->send = WebSocketDialogMsgRead::whereMsgId($msg->id)->count();
+        $msg->save();
         // 开始推送消息
-        if ($pushIds || $fd) {
-            PushTask::push([
-                'userid' => $pushIds,
-                'fd' => $fd,
-                'msg' => [
-                    'type' => 'dialog',
-                    'mode' => 'add',
-                    'data' => $this->dialogMsgArray,
-                ]
-            ]);
-        }
+        PushTask::push([
+            'userid' => $userids,
+            'ignoreFd' => $this->ignoreFd,
+            'msg' => [
+                'type' => 'dialog',
+                'mode' => 'add',
+                'data' => $msg->toArray(),
+            ]
+        ]);
     }
 }

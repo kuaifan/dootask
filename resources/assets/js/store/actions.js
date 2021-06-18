@@ -971,7 +971,7 @@ export default {
      */
     dialogMsgRead({state, dispatch}, msgData) {
         if (msgData.userid == state.userId) return;
-        if (typeof msgData.r === "undefined") msgData.r = {};
+        if (!state.method.isJson(msgData.r)) msgData.r = {};
         //
         const {id, dialog_id, r} = msgData;
         if (!r.read_at) {
@@ -993,7 +993,7 @@ export default {
                 }
             });
             state.wsReadWaitList = [];
-        }, 10);
+        }, 20);
     },
 
     /**
