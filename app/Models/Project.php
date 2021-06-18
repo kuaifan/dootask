@@ -72,16 +72,16 @@ class Project extends AbstractModel
      */
     private function generateTaskData()
     {
-        if (!isset($this->attributes['task_num'])) {
+        if (!isset($this->appendattrs['task_num'])) {
             $builder = ProjectTask::whereProjectId($this->id)->whereParentId(0)->whereNull('archived_at');
-            $this->attributes['task_num'] = $builder->count();
-            $this->attributes['task_complete'] = $builder->whereNotNull('complete_at')->count();
-            $this->attributes['task_percent'] = $this->attributes['task_num'] ? intval($this->attributes['task_complete'] / $this->attributes['task_num'] * 100) : 0;
+            $this->appendattrs['task_num'] = $builder->count();
+            $this->appendattrs['task_complete'] = $builder->whereNotNull('complete_at')->count();
+            $this->appendattrs['task_percent'] = $this->appendattrs['task_num'] ? intval($this->appendattrs['task_complete'] / $this->appendattrs['task_num'] * 100) : 0;
             //
             $builder = ProjectTask::whereProjectId($this->id)->whereParentId(0)->whereNull('archived_at');
-            $this->attributes['task_my_num'] = $builder->whereUserid(User::token2userid())->count();
-            $this->attributes['task_my_complete'] = $builder->whereUserid(User::token2userid())->whereNotNull('complete_at')->count();
-            $this->attributes['task_my_percent'] = $this->attributes['task_my_num'] ? intval($this->attributes['task_my_complete'] / $this->attributes['task_my_num'] * 100) : 0;
+            $this->appendattrs['task_my_num'] = $builder->whereUserid(User::token2userid())->count();
+            $this->appendattrs['task_my_complete'] = $builder->whereUserid(User::token2userid())->whereNotNull('complete_at')->count();
+            $this->appendattrs['task_my_percent'] = $this->appendattrs['task_my_num'] ? intval($this->appendattrs['task_my_complete'] / $this->appendattrs['task_my_num'] * 100) : 0;
         }
     }
 
@@ -92,7 +92,7 @@ class Project extends AbstractModel
     public function getTaskNumAttribute()
     {
         $this->generateTaskData();
-        return $this->attributes['task_num'];
+        return $this->appendattrs['task_num'];
     }
 
     /**
@@ -102,7 +102,7 @@ class Project extends AbstractModel
     public function getTaskCompleteAttribute()
     {
         $this->generateTaskData();
-        return $this->attributes['task_complete'];
+        return $this->appendattrs['task_complete'];
     }
 
     /**
@@ -112,7 +112,7 @@ class Project extends AbstractModel
     public function getTaskPercentAttribute()
     {
         $this->generateTaskData();
-        return $this->attributes['task_percent'];
+        return $this->appendattrs['task_percent'];
     }
 
     /**
@@ -122,7 +122,7 @@ class Project extends AbstractModel
     public function getTaskMyNumAttribute()
     {
         $this->generateTaskData();
-        return $this->attributes['task_my_num'];
+        return $this->appendattrs['task_my_num'];
     }
 
     /**
@@ -132,7 +132,7 @@ class Project extends AbstractModel
     public function getTaskMyCompleteAttribute()
     {
         $this->generateTaskData();
-        return $this->attributes['task_my_complete'];
+        return $this->appendattrs['task_my_complete'];
     }
 
     /**
@@ -142,7 +142,7 @@ class Project extends AbstractModel
     public function getTaskMyPercentAttribute()
     {
         $this->generateTaskData();
-        return $this->attributes['task_my_percent'];
+        return $this->appendattrs['task_my_percent'];
     }
 
     /**

@@ -779,10 +779,10 @@ export default {
                     result.data.data.forEach((dialog) => {
                         let index = state.dialogList.findIndex(({id}) => id == dialog.id);
                         if (index > -1) {
-                            state.dialogList.splice(index, 1, Object.assign(state.dialogList[index], dialog))
-                        } else {
-                            state.dialogList.unshift(dialog);
+                            dialog = Object.assign(state.dialogList[index], dialog)
+                            state.dialogList.splice(index, 1);
                         }
+                        state.dialogList.push(dialog);
                     });
                 }
                 resolve(result);
@@ -1089,6 +1089,9 @@ export default {
                                         state.dialogMsgList.splice(index, 1, data);
                                     }
                                 }
+                                if (mode === "add2") {
+                                    return;
+                                }
                                 // 更新最后消息
                                 let dialog = state.dialogList.find(({id}) => id == dialog_id);
                                 if (dialog) {
@@ -1096,7 +1099,7 @@ export default {
                                 } else {
                                     dispatch("getDialogBasic", dialog_id);
                                 }
-                                if (mode === "add") {
+                                if (mode === "add1") {
                                     // 更新对话列表
                                     if (dialog) {
                                         // 新增未读数
@@ -1104,7 +1107,7 @@ export default {
                                         // 移动到首位
                                         const index = state.dialogList.findIndex(({id}) => id == dialog_id);
                                         if (index > -1) {
-                                            const tmp = state.dialogList[index];
+                                            const tmp = state.method.cloneJSON(state.dialogList[index]);
                                             state.dialogList.splice(index, 1);
                                             state.dialogList.unshift(tmp);
                                         }

@@ -52,14 +52,14 @@ class WebSocketDialogMsg extends AbstractModel
      */
     public function getPercentageAttribute()
     {
-        if (!isset($this->attributes['percentage'])) {
+        if (!isset($this->appendattrs['percentage'])) {
             if ($this->read > $this->send || empty($this->send)) {
-                $this->attributes['percentage'] = 100;
+                $this->appendattrs['percentage'] = 100;
             } else {
-                $this->attributes['percentage'] = intval($this->read / $this->send * 100);
+                $this->appendattrs['percentage'] = intval($this->read / $this->send * 100);
             }
         }
-        return $this->attributes['percentage'];
+        return $this->appendattrs['percentage'];
     }
 
     /**
@@ -101,7 +101,8 @@ class WebSocketDialogMsg extends AbstractModel
                     'after' => 1,
                 ]);
                 if ($msgRead->saveOrIgnore()) {
-                    $this->increment('send');
+                    $this->send = WebSocketDialogMsgRead::whereMsgId($this->id)->count();
+                    $this->save();
                 } else {
                     return;
                 }
@@ -139,20 +140,22 @@ class WebSocketDialogMsg extends AbstractModel
             'msg' => $msg,
             'read' => 0,
         ]);
-        return AbstractModel::transaction(function () use ($dialog_id, $msg, $dialogMsg) {
+        $result = AbstractModel::transaction(function () use ($dialog_id, $msg, $dialogMsg) {
             $dialog = WebSocketDialog::find($dialog_id);
             if (empty($dialog)) {
                 return Base::retError('获取会话失败');
             }
             $dialog->last_at = Carbon::now();
             $dialog->save();
+            $dialogMsg->send = 1;
             $dialogMsg->dialog_id = $dialog->id;
             $dialogMsg->save();
             //
-            Task::deliver(new WebSocketDialogMsgTask($dialogMsg->id));
-            //
             return Base::retSuccess('发送成功', $dialogMsg->toArray());
         });
+        if (Base::isSuccess($result)) {
+            Task::deliver(new WebSocketDialogMsgTask($dialogMsg->id));
+        }
+        return $result;
     }
-
 }

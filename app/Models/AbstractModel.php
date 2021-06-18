@@ -33,6 +33,8 @@ class AbstractModel extends Model
         'deleted_at',
     ];
 
+    protected $appendattrs = [];
+
     /**
      * 保存数据忽略错误
      * @return bool

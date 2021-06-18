@@ -27,6 +27,7 @@ use Carbon\Carbon;
  * @property string|null $last_at 最后登录时间
  * @property string|null $line_ip 最后在线IP（接口）
  * @property string|null $line_at 最后在线时间（接口）
+ * @property int|null $dialog_id 最后打开的会话ID
  * @property string|null $created_ip 注册IP
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -37,6 +38,7 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereChangepass($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereCreatedIp($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereDialogId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereEmail($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereEncrypt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereIdentity($value)
@@ -46,11 +48,11 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereLineIp($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereLoginNum($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereNickname($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User wherePassword($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereProfession($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUserid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUserimg($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User wherePassword($value)
  * @mixin \Eloquent
  */
 class User extends AbstractModel

@@ -2,12 +2,13 @@
 
 namespace App\Tasks;
 
+@error_reporting(E_ALL & ~E_NOTICE);
+
+use App\Models\User;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Models\WebSocketDialogMsgRead;
 use Request;
-
-@error_reporting(E_ALL & ~E_NOTICE);
 
 
 /**
@@ -40,7 +41,8 @@ class WebSocketDialogMsgTask extends AbstractTask
         if (empty($dialog)) {
             return;
         }
-        // 推送目标
+
+        // 推送目标①：群成员
         $userids = $dialog->dialogUser->pluck('userid')->toArray();
         foreach ($userids AS $userid) {
             if ($userid == $msg->userid) {
@@ -61,9 +63,31 @@ class WebSocketDialogMsgTask extends AbstractTask
             'ignoreFd' => $this->ignoreFd,
             'msg' => [
                 'type' => 'dialog',
-                'mode' => 'add',
+                'mode' => 'add1',
                 'data' => $msg->toArray(),
             ]
         ]);
+
+        // 推送目标②：正在打开这个会话的会员
+        $list = User::whereDialogId($dialog->id)->pluck('userid')->toArray();
+        if ($list) {
+            $array = [];
+            foreach ($list as $uid) {
+                if (!in_array($uid, $userids)) {
+                    $array[] = $uid;
+                }
+            }
+            if ($array) {
+                PushTask::push([
+                    'userid' => $array,
+                    'ignoreFd' => $this->ignoreFd,
+                    'msg' => [
+                        'type' => 'dialog',
+                        'mode' => 'add2',
+                        'data' => $msg->toArray(),
+                    ]
+                ]);
+            }
+        }
     }
 }

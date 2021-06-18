@@ -90,7 +90,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * 消息列表
+     * 获取消息列表
      *
      * @apiParam {Number} dialog_id         对话ID
      *
@@ -113,6 +113,9 @@ class DialogController extends AbstractController
         //
         $data = $list->toArray();
         $data['dialog'] = WebSocketDialog::formatData($dialog, $user->userid);
+        //
+        $user->dialog_id = $dialog->id;
+        $user->save();
         //
         return Base::retSuccess('success', $data);
     }

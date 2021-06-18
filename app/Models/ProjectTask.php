@@ -103,10 +103,10 @@ class ProjectTask extends AbstractModel
      */
     public function getFileNumAttribute()
     {
-        if (!isset($this->attributes['file_num'])) {
-            $this->attributes['file_num'] = ProjectTaskFile::whereTaskId($this->id)->count();
+        if (!isset($this->appendattrs['file_num'])) {
+            $this->appendattrs['file_num'] = ProjectTaskFile::whereTaskId($this->id)->count();
         }
-        return $this->attributes['file_num'];
+        return $this->appendattrs['file_num'];
     }
 
     /**
@@ -115,10 +115,10 @@ class ProjectTask extends AbstractModel
      */
     public function getMsgNumAttribute()
     {
-        if (!isset($this->attributes['msg_num'])) {
-            $this->attributes['msg_num'] = $this->dialog_id ? WebSocketDialogMsg::whereDialogId($this->dialog_id)->count() : 0;
+        if (!isset($this->appendattrs['msg_num'])) {
+            $this->appendattrs['msg_num'] = $this->dialog_id ? WebSocketDialogMsg::whereDialogId($this->dialog_id)->count() : 0;
         }
-        return $this->attributes['msg_num'];
+        return $this->appendattrs['msg_num'];
     }
 
     /**
@@ -127,22 +127,22 @@ class ProjectTask extends AbstractModel
     private function generateSubTaskData()
     {
         if ($this->parent_id > 0) {
-            $this->attributes['sub_num'] = 0;
-            $this->attributes['sub_complete'] = 0;
-            $this->attributes['percent'] = $this->complete_at ? 100 : 0;
+            $this->appendattrs['sub_num'] = 0;
+            $this->appendattrs['sub_complete'] = 0;
+            $this->appendattrs['percent'] = $this->complete_at ? 100 : 0;
             return;
         }
-        if (!isset($this->attributes['sub_num'])) {
+        if (!isset($this->appendattrs['sub_num'])) {
             $builder = self::whereParentId($this->id)->whereNull('archived_at');
-            $this->attributes['sub_num'] = $builder->count();
-            $this->attributes['sub_complete'] = $builder->whereNotNull('complete_at')->count();
+            $this->appendattrs['sub_num'] = $builder->count();
+            $this->appendattrs['sub_complete'] = $builder->whereNotNull('complete_at')->count();
             //
             if ($this->complete_at) {
-                $this->attributes['percent'] = 100;
-            } elseif ($this->attributes['sub_complete'] == 0) {
-                $this->attributes['percent'] = 0;
+                $this->appendattrs['percent'] = 100;
+            } elseif ($this->appendattrs['sub_complete'] == 0) {
+                $this->appendattrs['percent'] = 0;
             } else {
-                $this->attributes['percent'] = intval($this->attributes['sub_complete'] / $this->attributes['sub_num'] * 100);
+                $this->appendattrs['percent'] = intval($this->appendattrs['sub_complete'] / $this->appendattrs['sub_num'] * 100);
             }
         }
     }
@@ -154,7 +154,7 @@ class ProjectTask extends AbstractModel
     public function getSubNumAttribute()
     {
         $this->generateSubTaskData();
-        return $this->attributes['sub_num'];
+        return $this->appendattrs['sub_num'];
     }
 
     /**
@@ -164,7 +164,7 @@ class ProjectTask extends AbstractModel
     public function getSubCompleteAttribute()
     {
         $this->generateSubTaskData();
-        return $this->attributes['sub_complete'];
+        return $this->appendattrs['sub_complete'];
     }
 
     /**
@@ -174,7 +174,7 @@ class ProjectTask extends AbstractModel
     public function getPercentAttribute()
     {
         $this->generateSubTaskData();
-        return $this->attributes['percent'];
+        return $this->appendattrs['percent'];
     }
 
     /**
