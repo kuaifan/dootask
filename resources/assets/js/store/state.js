@@ -283,6 +283,7 @@ state.dialogList = [];
 state.dialogDetail = {};
 state.dialogMsgUnread = 0;
 state.dialogMsgLoad = 0;
+state.dialogMsgPush = {};
 state.dialogMsgList = [];
 state.dialogMsgCurrentPage = 1;
 state.dialogMsgHasMorePages = false;

@@ -903,26 +903,31 @@ export default {
      * @param commit
      */
     getDialogMsgListNextPage({state, dispatch, commit}) {
-        if (!state.dialogMsgHasMorePages) {
-            return;
-        }
-        state.dialogMsgHasMorePages = false;
-        state.dialogMsgCurrentPage++;
-        //
-        const dialog_id = state.dialogId;
-        //
-        state.dialogMsgLoad++;
-        dispatch("call", {
-            url: 'dialog/msg/lists',
-            data: {
-                dialog_id: dialog_id,
-                page: state.dialogMsgCurrentPage
-            },
-        }).then(result => {
-            state.dialogMsgLoad--;
-            commit("dialogMsgListSuccess", result.data);
-        }).catch(() => {
-            state.dialogMsgLoad--;
+        return new Promise(function (resolve, reject) {
+            if (!state.dialogMsgHasMorePages) {
+                reject()
+                return;
+            }
+            state.dialogMsgHasMorePages = false;
+            state.dialogMsgCurrentPage++;
+            //
+            const dialog_id = state.dialogId;
+            //
+            state.dialogMsgLoad++;
+            dispatch("call", {
+                url: 'dialog/msg/lists',
+                data: {
+                    dialog_id: dialog_id,
+                    page: state.dialogMsgCurrentPage
+                },
+            }).then(result => {
+                state.dialogMsgLoad--;
+                commit("dialogMsgListSuccess", result.data);
+                resolve(result)
+            }).catch((result) => {
+                state.dialogMsgLoad--;
+                reject(result)
+            });
         });
     },
 
@@ -1106,6 +1111,7 @@ export default {
                                 if (dialog_id == state.dialogId) {
                                     let index = state.dialogMsgList.findIndex(({id}) => id == data.id);
                                     if (index === -1) {
+                                        state.dialogMsgPush = data;
                                         state.dialogMsgList.push(data);
                                     } else {
                                         state.dialogMsgList.splice(index, 1, data);

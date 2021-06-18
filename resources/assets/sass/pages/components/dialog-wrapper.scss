@@ -187,6 +187,24 @@
                             opacity: 1;
                         }
                     }
+                    &.history-tip {
+                        position: relative;
+                        padding-top: 60px;
+                        .history-text {
+                            font-style: normal;
+                            position: absolute;
+                            top: 10px;
+                            left: 50%;
+                            height: 22px;
+                            line-height: 22px;
+                            padding: 0 48px;
+                            text-align: center;
+                            font-size: 12px;
+                            border-radius: 2px;
+                            background: #f5f5f5;
+                            transform: translateX(-50%);
+                        }
+                    }
                     &.loading {
                         padding: 12px 0;
                         justify-content: center;

@@ -22,16 +22,21 @@
         </slot>
         <ScrollerY
             ref="scroller"
-            class="dialog-scroller"
+            class="dialog-scroller overlay-y"
             :auto-bottom="autoBottom"
             @on-scroll="chatScroll"
             static>
             <div ref="manageList" class="dialog-list">
                 <ul>
-                    <li v-if="dialogMsgHasMorePages" class="history" @click="$store.dispatch('getDialogMsgListNextPage')">{{$L('加载历史消息')}}</li>
+                    <li v-if="dialogMsgHasMorePages" class="history" @click="loadNextPage">{{$L('加载历史消息')}}</li>
                     <li v-else-if="dialogMsgLoad > 0 && dialogMsgList.length === 0" class="loading"><Loading/></li>
                     <li v-else-if="dialogMsgList.length === 0" class="nothing">{{$L('暂无消息')}}</li>
-                    <li v-for="(item, key) in dialogMsgList" :key="key" :class="{self:item.userid == userId}">
+                    <li
+                        v-for="item in dialogMsgLists"
+                        :id="'view_' + item.id"
+                        :key="item.id"
+                        :class="{self:item.userid == userId, 'history-tip': topId == item.id}">
+                        <em v-if="topId == item.id" class="history-text">{{$L('历史消息')}}</em>
                         <div class="dialog-avatar">
                             <UserAvatar :userid="item.userid" :tooltip-disabled="item.userid == userId" :size="30"/>
                         </div>
@@ -88,8 +93,8 @@ export default {
             dialogDrag: false,
 
             msgText: '',
-            msgLength: 0,
             msgNew: 0,
+            topId: 0,
         }
     },
 
@@ -107,9 +112,17 @@ export default {
             'dialogId',
             'dialogDetail',
             'dialogMsgLoad',
+            'dialogMsgPush',
             'dialogMsgList',
             'dialogMsgHasMorePages',
         ]),
+
+        dialogMsgLists() {
+            const {dialogMsgList} = this;
+            return dialogMsgList.sort((a, b) => {
+                return a.id - b.id;
+            });
+        },
 
         peopleNum() {
             return this.dialogDetail.type === 'group' ? $A.runNum(this.dialogDetail.people) : 0;
@@ -117,20 +130,17 @@ export default {
     },
 
     watch: {
-        dialogMsgList(list) {
-            if (!this.autoBottom) {
-                let length = list.length - this.msgLength;
-                if (length > 0) {
-                    this.msgNew+= length;
-                }
-            } else {
+        dialogMsgPush() {
+            if (this.autoBottom) {
                 this.$nextTick(this.goBottom);
+            } else {
+                this.msgNew++;
             }
-            this.msgLength = list.length;
         },
 
         dialogId() {
             this.msgNew = 0;
+            this.topId = -1;
         }
     },
 
@@ -302,6 +312,26 @@ export default {
                 dialog_id: this.dialogDetail.id
             });
         },
+
+        loadNextPage() {
+            let topId = this.dialogMsgLists[0].id;
+            this.$store.dispatch('getDialogMsgListNextPage').then(() => {
+                this.$nextTick(() => {
+                    this.topId = topId;
+                    let dom = document.getElementById("view_" + topId);
+                    if (dom) {
+                        try {
+                            dom.scrollIntoView(true);
+                        } catch (e) {
+                            scrollIntoView(dom, {
+                                behavior: 'instant',
+                                inline: 'start',
+                            })
+                        }
+                    }
+                });
+            });
+        }
     }
 }
 </script>
