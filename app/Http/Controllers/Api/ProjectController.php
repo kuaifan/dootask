@@ -702,24 +702,29 @@ class ProjectController extends AbstractController
         //
         $task = ProjectTask::userTask($task_id);
         //
+        $updateComplete = false;
         if (Base::isDate($data['complete_at'])) {
             // 标记已完成
             if ($task->complete_at) {
                 return Base::retError('任务已完成');
             }
             $result = $task->completeTask(Carbon::now());
+            $updateComplete = true;
         } elseif (Arr::exists($data, 'complete_at')) {
             // 标记未完成
             if (!$task->complete_at) {
                 return Base::retError('未完成任务');
             }
             $result = $task->completeTask(null);
+            $updateComplete = true;
         } else {
             // 更新任务
             $result = $task->updateTask($data);
         }
         if (Base::isSuccess($result)) {
             $result['data'] = $task->toArray();
+            $result['data']['is_update_complete'] = $updateComplete;
+            $task->pushMsg('update', $result['data']);
         }
         return $result;
     }
@@ -773,8 +778,10 @@ class ProjectController extends AbstractController
                 'userid' => $user->userid,
             ]);
             $file->save();
+            $file = $file->find($file->id);
             $task->addLog("上传文件：" . $file->name);
-            return Base::retSuccess("上传成功", $file->find($file->id));
+            $task->pushMsg('upload', $file->toArray());
+            return Base::retSuccess("上传成功", $file);
         }
     }
 

@@ -26,6 +26,7 @@
                             ref="upload"
                             accept="image/*"
                             :action="actionUrl"
+                            :headers="uploadHeaders"
                             :data="uploadParams"
                             :show-upload-list="false"
                             :max-size="maxSize"
@@ -75,6 +76,8 @@
 </template>
 
 <script>
+    import {mapState} from "vuex";
+
     export default {
         name: 'ImgUpload',
         props: {
@@ -107,7 +110,6 @@
             return {
                 actionUrl: this.$store.state.method.apiUrl('system/imgupload'),
                 params: {
-                    token: this.$store.state.userToken,
                     width: this.width,
                     height: this.height
                 },
@@ -163,6 +165,15 @@
             }
         },
         computed: {
+            ...mapState(['userToken']),
+
+            uploadHeaders() {
+                return {
+                    fd: this.$store.state.method.getStorageString("userWsFd"),
+                    token: this.userToken,
+                }
+            },
+
             uploadParams() {
                 if (Object.keys(this.otherParams).length > 0) {
                     return Object.assign(this.params, this.otherParams);
@@ -263,7 +274,6 @@
                     $A.noticeWarning(this.$L('最多只能上传 ' + this.maxNum + ' 张图片。'));
                 }
                 this.params = {
-                    token: this.$store.state.userToken,
                     width: this.width,
                     height: this.height
                 };

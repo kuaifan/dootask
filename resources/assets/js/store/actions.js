@@ -671,27 +671,21 @@ export default {
      * 更新任务
      * @param state
      * @param dispatch
+     * @param commit
      * @param data
      * @returns {Promise<unknown>}
      */
-    taskUpdate({state, dispatch}, data) {
+    taskUpdate({state, dispatch, commit}, data) {
         return new Promise(function (resolve, reject) {
             const post = state.method.cloneJSON(state.method.date2string(data));
-            if (state.method.isArray(post.owner)) {
-                post.owner = post.owner.find((id) => id)
-            }
+            if (state.method.isArray(post.owner)) post.owner = post.owner.find((id) => id)
+            //
             dispatch("call", {
                 url: 'project/task/update',
                 data: post,
                 method: 'post',
             }).then(result => {
-                if (result.data.parent_id) {
-                    dispatch("getTaskBasic", result.data.parent_id);
-                }
-                if (typeof post.complete_at !== "undefined") {
-                    dispatch("getProjectBasic", {id: result.data.project_id});
-                }
-                dispatch("saveTask", result.data);
+                commit("taskUpdateSuccess", result.data)
                 resolve(result)
             }).catch(result => {
                 dispatch("getTaskBasic", post.task_id);
@@ -1168,6 +1162,12 @@ export default {
                                 switch (action) {
                                     case 'add':
                                         commit("taskAddSuccess", data)
+                                        break;
+                                    case 'update':
+                                        commit("taskUpdateSuccess", data)
+                                        break;
+                                    case 'upload':
+                                        commit("taskUploadSuccess", data)
                                         break;
                                     case 'archived':
                                     case 'delete':

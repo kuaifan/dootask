@@ -3,6 +3,7 @@
         name="files"
         ref="upload"
         :action="actionUrl"
+        :headers="headers"
         :data="params"
         multiple
         :format="uploadFormat"
@@ -37,12 +38,18 @@ export default {
     computed: {
         ...mapState(['userToken', 'projectOpenTask']),
 
+        headers() {
+            return {
+                fd: this.$store.state.method.getStorageString("userWsFd"),
+                token: this.userToken,
+            }
+        },
+
         params() {
             return {
                 task_id: this.projectOpenTask.id,
-                token: this.userToken,
             }
-        }
+        },
     },
 
     methods: {
@@ -54,25 +61,19 @@ export default {
             }
         },
 
-        handleSuccess(res, file) {
+        handleSuccess({ret, data, msg}, file) {
             //上传完成
             let index = this.projectOpenTask.files.findIndex(({tempId}) => tempId == file.tempId);
-            if (res.ret === 1) {
-                if (index > -1) {
-                    this.projectOpenTask.files.splice(index, 1, res.data);
-                    this.$store.dispatch("saveTask", {
-                        id: this.projectOpenTask.id,
-                        file_num: this.projectOpenTask.files.length,
-                    });
-                }
+            if (index > -1) {
+                this.projectOpenTask.files.splice(index, 1);
+            }
+            if (ret === 1) {
+                this.$store.commit("taskUploadSuccess", data)
             } else {
-                if (index > -1) {
-                    this.projectOpenTask.files.splice(index, 1);
-                }
                 this.$refs.upload.fileList.pop();
                 $A.modalWarning({
                     title: '发送失败',
-                    content: '文件 ' + file.name + ' 发送失败，' + res.msg
+                    content: '文件 ' + file.name + ' 发送失败，' + msg
                 });
             }
         },

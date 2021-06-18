@@ -19,7 +19,7 @@
                 ref="fileUpload"
                 class="upload-control"
                 :action="actionUrl"
-                :data="params"
+                :headers="headers"
                 multiple
                 :format="uploadFormat"
                 :show-upload-list="false"
@@ -53,6 +53,7 @@
 <script>
     import tinymce from 'tinymce/tinymce';
     import ImgUpload from "./ImgUpload";
+    import {mapState} from "vuex";
 
     export default {
         name: 'TEditor',
@@ -129,7 +130,6 @@
                 uploadIng: 0,
                 uploadFormat: ['jpg', 'jpeg', 'png', 'gif', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'esp', 'pdf', 'rar', 'zip', 'gz'],
                 actionUrl: this.$store.state.method.apiUrl('system/fileupload'),
-                params: { token: this.$store.state.userToken },
                 maxSize: 10240
             };
         },
@@ -147,6 +147,16 @@
             }
             this.spinShow = true;
             $A(this.$refs.myTextarea).show();
+        },
+        computed: {
+            ...mapState(['userToken']),
+
+            headers() {
+                return {
+                    fd: this.$store.state.method.getStorageString("userWsFd"),
+                    token: this.userToken,
+                }
+            },
         },
         watch: {
             value(newValue) {
@@ -481,9 +491,6 @@
 
             handleBeforeUpload() {
                 //上传前判断
-                this.params = {
-                    token: this.$store.state.userToken,
-                };
                 return true;
             },
         }

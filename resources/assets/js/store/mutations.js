@@ -94,6 +94,51 @@ export default {
     },
 
     /**
+     * 更新任务
+     * @param state
+     * @param data
+     */
+    taskUpdateSuccess(state, data) {
+        if (data.parent_id) {
+            this.dispatch("getTaskBasic", data.parent_id);
+        }
+        if (data.is_update_complete) {
+            this.dispatch("getProjectBasic", {id: data.project_id});
+        }
+        this.dispatch("saveTask", data);
+    },
+
+    /**
+     * 任务上传附件
+     * @param state
+     * @param data
+     */
+    taskUploadSuccess(state, data) {
+        if (state.projectOpenTask.id == data.task_id) {
+            let index = state.projectOpenTask.files.findIndex(({id}) => id == data.id);
+            if (index > -1) {
+                state.projectOpenTask.files.splice(index, 1, data);
+            } else {
+                state.projectOpenTask.files.push(data)
+            }
+        }
+        state.projectDetail.project_column.some(({project_task}) => {
+            let task = project_task.find(({id}) => id === data.task_id);
+            if (task) {
+                if (!state.method.isJson(task._file_tmp)) task._file_tmp = {}
+                if (task._file_tmp[data.id] !== true) {
+                    task._file_tmp[data.id] = true;
+                    this.dispatch("saveTask", {
+                        id: task.id,
+                        file_num: task.file_num + 1,
+                    });
+                }
+                return true;
+            }
+        });
+    },
+
+    /**
      * 删除任务
      * @param state
      * @param data

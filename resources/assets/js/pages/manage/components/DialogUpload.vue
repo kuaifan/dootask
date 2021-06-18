@@ -3,6 +3,7 @@
         name="files"
         ref="upload"
         :action="actionUrl"
+        :headers="headers"
         :data="params"
         multiple
         :format="uploadFormat"
@@ -37,10 +38,16 @@ export default {
     computed: {
         ...mapState(['userToken', 'dialogId']),
 
+        headers() {
+            return {
+                fd: this.$store.state.method.getStorageString("userWsFd"),
+                token: this.userToken,
+            }
+        },
+
         params() {
             return {
                 dialog_id: this.dialogId,
-                token: this.userToken,
             }
         }
     },
