@@ -561,7 +561,7 @@ class ProjectTask extends AbstractModel
     /**
      * 归档任务、取消归档
      * @param Carbon|null $archived_at 归档时间
-     * @return array|bool
+     * @return array
      */
     public function archivedTask($archived_at)
     {
@@ -574,7 +574,7 @@ class ProjectTask extends AbstractModel
                 // 归档任务
                 $this->archived_at = $archived_at;
                 $this->addLog("任务归档：" . $this->name);
-                $this->pushMsg('archived', $this->toArray());
+                $this->pushMsg('archived');
             }
             $this->save();
             return Base::retSuccess('保存成功', $this->toArray());
@@ -584,7 +584,7 @@ class ProjectTask extends AbstractModel
     /**
      * 删除任务
      * @param bool $pushMsg 是否推送
-     * @return array|bool
+     * @return array
      */
     public function deleteTask($pushMsg = true)
     {
@@ -595,7 +595,7 @@ class ProjectTask extends AbstractModel
             $this->delete();
             $this->addLog("删除{任务}：" . $this->name);
             if ($pushMsg) {
-                $this->pushMsg('delete', $this->toArray());
+                $this->pushMsg('delete');
             }
             return Base::retSuccess('删除成功', $this->toArray());
         });
@@ -624,7 +624,7 @@ class ProjectTask extends AbstractModel
     /**
      * 推送消息
      * @param string $action
-     * @param array $data       发送内容，默认为[id=>任务ID]
+     * @param array $data       发送内容，默认为[id, parent_id, project_id, column_id]
      * @param array $userid     指定会员，默认为项目所有成员
      */
     public function pushMsg($action, $data = null, $userid = null)
@@ -633,7 +633,12 @@ class ProjectTask extends AbstractModel
             return;
         }
         if ($data === null) {
-            $data = ['id' => $this->id];
+            $data = [
+                'id' => $this->id,
+                'parent_id' => $this->parent_id,
+                'project_id' => $this->project_id,
+                'column_id' => $this->column_id,
+            ];
         }
         if ($userid === null) {
             $userid = $this->project->relationUserids();

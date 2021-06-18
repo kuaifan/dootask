@@ -472,10 +472,7 @@ class ProjectController extends AbstractController
             return Base::retError('项目不存在或不在成员列表内');
         }
         //
-        if ($column->deleteColumn()) {
-            return Base::retSuccess('删除成功', ['id' => $column->id]);
-        }
-        return Base::retError('删除失败');
+        return $column->deleteColumn();
     }
 
     /**

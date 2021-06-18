@@ -62,11 +62,11 @@ class ProjectColumn extends AbstractModel
     /**
      * 删除列表
      * @param bool $pushMsg 是否推送
-     * @return bool
+     * @return array
      */
     public function deleteColumn($pushMsg = true)
     {
-        $result = AbstractModel::transaction(function () use ($pushMsg) {
+        return AbstractModel::transaction(function () use ($pushMsg) {
             $tasks = ProjectTask::whereColumnId($this->id)->get();
             foreach ($tasks as $task) {
                 $task->deleteTask($pushMsg);
@@ -74,11 +74,10 @@ class ProjectColumn extends AbstractModel
             $this->delete();
             $this->addLog("删除列表：" . $this->name);
             if ($pushMsg) {
-                $this->pushMsg("delete", $this->toArray());
+                $this->pushMsg("delete");
             }
             return Base::retSuccess('删除成功', $this->toArray());
         });
-        return Base::isSuccess($result);
     }
 
     /**
@@ -103,7 +102,7 @@ class ProjectColumn extends AbstractModel
     /**
      * 推送消息
      * @param string $action
-     * @param array $data       发送内容，默认为[id=>列表ID]
+     * @param array $data       发送内容，默认为[id, project_id]
      * @param array $userid     指定会员，默认为项目所有成员
      */
     public function pushMsg($action, $data = null, $userid = null)
@@ -112,7 +111,10 @@ class ProjectColumn extends AbstractModel
             return;
         }
         if ($data === null) {
-            $data = ['id' => $this->id];
+            $data = [
+                'id' => $this->id,
+                'project_id' => $this->project_id,
+            ];
         }
         if ($userid === null) {
             $userid = $this->project->relationUserids();

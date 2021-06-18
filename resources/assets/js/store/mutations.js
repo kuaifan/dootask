@@ -30,7 +30,7 @@ export default {
     /**
      * 删除列表
      * @param state
-     * @param data
+     * @param data {id, project_id}
      */
     columnDeleteSuccess(state, data) {
         if (state.projectDetail.id == data.project_id) {
