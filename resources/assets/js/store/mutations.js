@@ -102,8 +102,11 @@ export default {
         if (data.parent_id) {
             this.dispatch("getTaskBasic", data.parent_id);
         }
-        if (data.is_update_complete) {
+        if (data.is_update_complete === true) {
             this.dispatch("getProjectBasic", {id: data.project_id});
+        }
+        if (data.is_update_content === true) {
+            this.dispatch("getTaskContent", data.id);
         }
         this.dispatch("saveTask", data);
     },
@@ -136,6 +139,16 @@ export default {
                 return true;
             }
         });
+    },
+
+    /**
+     * 任务打开聊天
+     * @param state
+     * @param data
+     */
+    taskDialogSuccess(state, data) {
+        this.dispatch("saveTask", data);
+        this.dispatch("getDialogMsgList", data.dialog_id);
     },
 
     /**

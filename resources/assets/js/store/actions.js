@@ -685,7 +685,15 @@ export default {
                 data: post,
                 method: 'post',
             }).then(result => {
-                commit("taskUpdateSuccess", result.data)
+                const {data} = result;
+                if (data.is_update_content === true) {
+                    state.projectTaskContent[data.id] = post['content'];
+                    if (data.id == state.projectOpenTask.id) {
+                        state.projectOpenTask = Object.assign({}, state.projectOpenTask, {content: post['content']});
+                    }
+                    data.is_update_content = false;
+                }
+                commit("taskUpdateSuccess", data)
                 resolve(result)
             }).catch(result => {
                 dispatch("getTaskBasic", post.task_id);
@@ -1168,6 +1176,9 @@ export default {
                                         break;
                                     case 'upload':
                                         commit("taskUploadSuccess", data)
+                                        break;
+                                    case 'dialog':
+                                        commit("taskDialogSuccess", data)
                                         break;
                                     case 'archived':
                                     case 'delete':

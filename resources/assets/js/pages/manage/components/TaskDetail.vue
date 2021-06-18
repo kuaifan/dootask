@@ -996,12 +996,8 @@ export default {
                     task_id: this.taskDetail.id,
                 },
             }).then(({data}) => {
-                this.$store.dispatch("saveTask", {
-                    id: this.taskDetail.id,
-                    dialog_id: data.dialog_id
-                });
+                this.$store.commit("taskDialogSuccess", data);
                 this.$nextTick(() => {
-                    this.$store.dispatch("getDialogMsgList", data.dialog_id);
                     this.$refs.dialog.sendMsg(this.msgText);
                     this.msgText = "";
                 });

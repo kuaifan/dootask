@@ -703,6 +703,7 @@ class ProjectController extends AbstractController
         $task = ProjectTask::userTask($task_id);
         //
         $updateComplete = false;
+        $updateContent = false;
         if (Base::isDate($data['complete_at'])) {
             // 标记已完成
             if ($task->complete_at) {
@@ -719,11 +720,12 @@ class ProjectController extends AbstractController
             $updateComplete = true;
         } else {
             // 更新任务
-            $result = $task->updateTask($data);
+            $result = $task->updateTask($data, $updateContent);
         }
         if (Base::isSuccess($result)) {
             $result['data'] = $task->toArray();
             $result['data']['is_update_complete'] = $updateComplete;
+            $result['data']['is_update_content'] = $updateContent;
             $task->pushMsg('update', $result['data']);
         }
         return $result;
@@ -814,7 +816,9 @@ class ProjectController extends AbstractController
             if (empty($task->dialog_id)) {
                 return Base::retError('创建聊天失败');
             }
+            $task->pushMsg('dialog');
             return Base::retSuccess('success', [
+                'id' => $task->id,
                 'dialog_id' => $task->dialog_id,
             ]);
         });

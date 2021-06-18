@@ -347,11 +347,12 @@ class ProjectTask extends AbstractModel
     /**
      * 修改任务
      * @param $data
+     * @param $updateContent
      * @return array
      */
-    public function updateTask($data)
+    public function updateTask($data, &$updateContent)
     {
-        return AbstractModel::transaction(function () use ($data) {
+        return AbstractModel::transaction(function () use ($data, &$updateContent) {
             // 标题
             if (Arr::exists($data, 'name') && $this->name != $data['name']) {
                 if (empty($data['name'])) {
@@ -436,6 +437,7 @@ class ProjectTask extends AbstractModel
                     ]);
                     $this->desc = Base::getHtml($data['content']);
                     $this->addLog("修改任务详细描述");
+                    $updateContent = true;
                 }
                 // 优先级
                 $p = false;
@@ -624,7 +626,7 @@ class ProjectTask extends AbstractModel
     /**
      * 推送消息
      * @param string $action
-     * @param array $data       发送内容，默认为[id, parent_id, project_id, column_id]
+     * @param array $data       发送内容，默认为[id, parent_id, project_id, column_id, dialog_id]
      * @param array $userid     指定会员，默认为项目所有成员
      */
     public function pushMsg($action, $data = null, $userid = null)
@@ -638,6 +640,7 @@ class ProjectTask extends AbstractModel
                 'parent_id' => $this->parent_id,
                 'project_id' => $this->project_id,
                 'column_id' => $this->column_id,
+                'dialog_id' => $this->dialog_id,
             ];
         }
         if ($userid === null) {
