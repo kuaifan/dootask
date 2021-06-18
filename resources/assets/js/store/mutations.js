@@ -14,16 +14,32 @@ export default {
     },
 
     /**
+     * 更新列表
+     * @param state
+     * @param data
+     */
+    columnUpdateSuccess(state, data) {
+        if (state.projectDetail.id == data.project_id) {
+            let index = state.projectDetail.project_column.findIndex(({id}) => id === data.id);
+            if (index > -1) {
+                state.projectDetail.project_column.splice(index, 1, Object.assign({}, state.projectDetail.project_column[index], data));
+            }
+        }
+    },
+
+    /**
      * 删除列表
      * @param state
      * @param data
      */
     columnDeleteSuccess(state, data) {
-        let index = state.projectDetail.project_column.findIndex(({id}) => id === data.id);
-        if (index > -1) {
-            state.projectDetail.project_column.splice(index, 1);
+        if (state.projectDetail.id == data.project_id) {
+            let index = state.projectDetail.project_column.findIndex(({id}) => id === data.id);
+            if (index > -1) {
+                state.projectDetail.project_column.splice(index, 1);
+            }
+            this.dispatch("getProjectBasic", {id: data.project_id});
         }
-        this.dispatch("getProjectBasic", {id: data.project_id});
     },
 
     /**

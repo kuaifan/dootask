@@ -754,7 +754,7 @@ export default {
                 }),
             }).then(({data}) => {
                 this.$set(column, 'loading', false);
-                Object.keys(data).forEach(key =>  this.$set(column, key, data[key]));
+                this.$store.commit("columnUpdateSuccess", data);
             }).catch(({msg}) => {
                 this.$set(column, 'loading', false);
                 Object.keys(updata).forEach(key => this.$set(column, key, backup[key]));

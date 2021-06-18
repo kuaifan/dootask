@@ -443,6 +443,7 @@ class ProjectController extends AbstractController
             $column->color = $data['color'];
         }
         $column->save();
+        $column->pushMsg("update", $column->toArray());
         return Base::retSuccess('修改成功', $column);
     }
 

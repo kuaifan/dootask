@@ -1149,6 +1149,9 @@ export default {
                                     case 'add':
                                         commit("columnAddSuccess", data)
                                         break;
+                                    case 'update':
+                                        commit("columnUpdateSuccess", data)
+                                        break;
                                     case 'delete':
                                         commit("columnDeleteSuccess", data)
                                         break;
