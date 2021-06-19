@@ -483,7 +483,7 @@ class ProjectController extends AbstractController
 
         $data = [];
 
-        // 今日待任务
+        // 今日待完成
         $between = [
             Carbon::today()->startOfDay(),
             Carbon::today()->endOfDay()
@@ -501,8 +501,9 @@ class ProjectController extends AbstractController
     /**
      * 任务列表
      *
-     * @apiParam {String} name          任务名称（包含）
-     * @apiParam {Array} time           时间范围，格式：数组，如：[2020-12-12,2020-20-12]
+     * @apiParam {String} name              任务名称（包含）
+     * @apiParam {Array} time               时间范围，如：['2020-12-12', '2020-12-30']
+     * @apiParam {String} time_before       指定时间之前，如：2020-12-30 00:00:00（填写此项时time参数无效）
      */
     public function task__lists()
     {
@@ -512,18 +513,21 @@ class ProjectController extends AbstractController
         //
         $name = Request::input('name');
         $time = Request::input('time');
+        $time_before = Request::input('time_before');
         if ($name) {
             $builder->where(function($query) use ($name) {
                 $query->where('project_tasks.name', 'like', '%,' . $name . ',%');
             });
         }
-        if (is_array($time)) {
+        if (Base::isDateOrTime($time_before)) {
+            $builder->whereNotNull('project_tasks.end_at')->where('project_tasks.end_at', '<', Carbon::parse($time_before));
+        } elseif (is_array($time)) {
             if (Base::isDateOrTime($time[0]) && Base::isDateOrTime($time[1])) {
                 $between = [
                     Carbon::parse($time[0])->startOfDay(),
                     Carbon::parse($time[1])->endOfDay()
                 ];
-                $builder->where(function($query) use ($between) {
+                $builder->where(function ($query) use ($between) {
                     $query->whereBetween('project_tasks.start_at', $between)->orWhereBetween('project_tasks.end_at', $between);
                 });
             }

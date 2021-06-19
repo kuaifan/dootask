@@ -272,6 +272,7 @@ state.projectLoad = 0;
 state.projectList = state.cacheProjectList;
 state.projectDetail = {id: 0, project_column: [], project_user: []};
 state.projectOpenTask = {_show: false, id: 0, task_user: [], task_tag: []};
+state.projectTaskStatistics = {};
 state.projectTaskContent = {};
 state.projectTaskFiles = {};
 state.projectSubTask = {};

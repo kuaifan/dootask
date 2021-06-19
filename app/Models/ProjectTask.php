@@ -7,6 +7,7 @@ use App\Module\Base;
 use App\Tasks\PushTask;
 use Arr;
 use Carbon\Carbon;
+use DB;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Request;
@@ -249,14 +250,21 @@ class ProjectTask extends AbstractModel
 
     /**
      * 查询自己的任务
-     * @param $query
+     * @param self $query
      * @param null $user
-     * @return mixed
+     * @return self
      */
     public function scopeAuthData($query, $user = null)
     {
+        $pre = DB::getTablePrefix();
         $user = $user ?: User::auth();
         $query->join('project_task_users', 'project_tasks.id', '=', 'project_task_users.task_pid')
+            ->whereExists(function ($der) use ($pre) {
+                $der->select(DB::raw(1))
+                    ->from('project_task_users as B')
+                    ->whereColumn('project_task_users.task_pid', '=', 'B.task_pid')
+                    ->havingRaw("max({$pre}B.id) = {$pre}project_task_users.id");
+            })
             ->whereNull('project_tasks.archived_at')
             ->where('project_tasks.parent_id', 0)
             ->where('project_task_users.userid', $user->userid);

@@ -191,9 +191,9 @@ class Project extends AbstractModel
 
     /**
      * 查询自己的项目
-     * @param $query
+     * @param self $query
      * @param null $user
-     * @return mixed
+     * @return self
      */
     public function scopeAuthData($query, $user = null)
     {

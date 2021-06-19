@@ -467,6 +467,19 @@ export default {
     },
 
     /**
+     * 获取任务统计
+     * @param state
+     * @param dispatch
+     */
+    getTaskStatistics({state, dispatch}) {
+        dispatch("call", {
+            url: 'project/task/statistics',
+        }).then(({data}) => {
+            state.projectTaskStatistics = data;
+        });
+    },
+
+    /**
      * 获取任务列表
      * @param state
      * @param dispatch
