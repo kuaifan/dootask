@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Exceptions\ApiException;
-use App\Module\Base;
 use App\Tasks\PushTask;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -33,6 +32,7 @@ use Request;
  * @property-read int|null $project_log_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectUser[] $projectUser
  * @property-read int|null $project_user_count
+ * @method static \Illuminate\Database\Eloquent\Builder|Project authData($user = null)
  * @method static \Illuminate\Database\Eloquent\Builder|Project newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Project newQuery()
  * @method static \Illuminate\Database\Query\Builder|Project onlyTrashed()
@@ -190,6 +190,20 @@ class Project extends AbstractModel
     }
 
     /**
+     * 查询自己的项目
+     * @param $query
+     * @param null $user
+     * @return mixed
+     */
+    public function scopeAuthData($query, $user = null)
+    {
+        $user = $user ?: User::auth();
+        $query->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->where('project_users.userid', $user->userid);
+        return $query;
+    }
+
+    /**
      * 加入项目
      * @param int $userid   加入的会员ID
      * @return bool
@@ -325,9 +339,8 @@ class Project extends AbstractModel
     public static function userProject($project_id)
     {
         $project = Project::select(self::projectSelect)
-            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->authData()
             ->where('projects.id', intval($project_id))
-            ->where('project_users.userid', User::token2userid())
             ->first();
         if (empty($project)) {
             throw new ApiException('项目不存在或不在成员列表内');

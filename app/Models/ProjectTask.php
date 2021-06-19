@@ -50,6 +50,7 @@ use Request;
  * @property-read int|null $task_tag_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectTaskUser[] $taskUser
  * @property-read int|null $task_user_count
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask authData($user = null)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask newQuery()
  * @method static \Illuminate\Database\Query\Builder|ProjectTask onlyTrashed()
@@ -244,6 +245,22 @@ class ProjectTask extends AbstractModel
     public function taskTag(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(projectTaskTag::class, 'task_id', 'id')->orderBy('id');
+    }
+
+    /**
+     * 查询自己的任务
+     * @param $query
+     * @param null $user
+     * @return mixed
+     */
+    public function scopeAuthData($query, $user = null)
+    {
+        $user = $user ?: User::auth();
+        $query->join('project_task_users', 'project_tasks.id', '=', 'project_task_users.task_pid')
+            ->whereNull('project_tasks.archived_at')
+            ->where('project_tasks.parent_id', 0)
+            ->where('project_task_users.userid', $user->userid);
+        return $query;
     }
 
     /**
@@ -669,9 +686,8 @@ class ProjectTask extends AbstractModel
         }
         //
         $project = Project::select(Project::projectSelect)
-            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->authData()
             ->where('projects.id', $task->project_id)
-            ->where('project_users.userid', User::token2userid())
             ->first();
         if (empty($project)) {
             throw new ApiException('项目不存在或不在成员列表内');

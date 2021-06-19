@@ -170,7 +170,14 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'userInfo', 'dialogMsgUnread', 'projectList', 'projectOpenTask', 'projectChatShow']),
+        ...mapState([
+            'userId',
+            'userInfo',
+            'dialogMsgUnread',
+            'projectList',
+            'projectOpenTask',
+            'projectChatShow'
+        ]),
     },
 
     watch: {

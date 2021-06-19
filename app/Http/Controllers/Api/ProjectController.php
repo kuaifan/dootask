@@ -32,11 +32,10 @@ class ProjectController extends AbstractController
      */
     public function lists()
     {
-        $user = User::auth();
+        User::auth();
         //
         $list = Project::select(Project::projectSelect)
-            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
-            ->where('project_users.userid', $user->userid)
+            ->authData()
             ->orderByDesc('projects.id')
             ->paginate(Base::getPaginate(200, 100));
         //
@@ -50,7 +49,7 @@ class ProjectController extends AbstractController
      */
     public function basic()
     {
-        user::auth();
+        User::auth();
         //
         $project_id = intval(Request::input('project_id'));
         //
@@ -66,7 +65,7 @@ class ProjectController extends AbstractController
      */
     public function detail()
     {
-        $user = User::auth();
+        User::auth();
         //
         $project_id = intval(Request::input('project_id'));
         //
@@ -76,9 +75,8 @@ class ProjectController extends AbstractController
             }]);
         }, 'projectUser'])
             ->select(project::projectSelect)
-            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->authData()
             ->where('projects.id', $project_id)
-            ->where('project_users.userid', $user->userid)
             ->first();
         if (empty($project)) {
             return Base::retError('项目不存在或不在成员列表内');
@@ -167,7 +165,7 @@ class ProjectController extends AbstractController
      */
     public function update()
     {
-        user::auth();
+        User::auth();
         //
         $project_id = intval(Request::input('project_id'));
         $name = trim(Request::input('name', ''));
@@ -208,7 +206,7 @@ class ProjectController extends AbstractController
      */
     public function user()
     {
-        user::auth();
+        User::auth();
         //
         $project_id = intval(Request::input('project_id'));
         $userid = Request::input('userid');
@@ -247,7 +245,7 @@ class ProjectController extends AbstractController
      */
     public function transfer()
     {
-        user::auth();
+        User::auth();
         //
         $project_id = intval(Request::input('project_id'));
         $owner_userid = intval(Request::input('owner_userid'));
@@ -286,7 +284,7 @@ class ProjectController extends AbstractController
      */
     public function sort()
     {
-        user::auth();
+        User::auth();
         //
         $project_id = intval(Request::input('project_id'));
         $sort = Base::json2array(Request::input('sort'));
@@ -363,7 +361,7 @@ class ProjectController extends AbstractController
      */
     public function delete()
     {
-        user::auth();
+        User::auth();
         //
         $project_id = intval(Request::input('project_id'));
         //
@@ -384,7 +382,7 @@ class ProjectController extends AbstractController
      */
     public function column__add()
     {
-        user::auth();
+        User::auth();
         //
         $project_id = intval(Request::input('project_id'));
         $name = trim(Request::input('name'));
@@ -417,7 +415,7 @@ class ProjectController extends AbstractController
      */
     public function column__update()
     {
-        $user = User::auth();
+        User::auth();
         //
         $data = Request::all();
         $column_id = intval($data['column_id']);
@@ -428,9 +426,8 @@ class ProjectController extends AbstractController
         }
         // 项目
         $project = Project::select(project::projectSelect)
-            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->authData()
             ->where('projects.id', $column->project_id)
-            ->where('project_users.userid', $user->userid)
             ->first();
         if (empty($project)) {
             return Base::retError('项目不存在或不在成员列表内');
@@ -456,7 +453,7 @@ class ProjectController extends AbstractController
      */
     public function column__delete()
     {
-        $user = User::auth();
+        User::auth();
         //
         $column_id = intval(Request::input('column_id'));
         // 列表
@@ -466,9 +463,8 @@ class ProjectController extends AbstractController
         }
         // 项目
         $project = Project::select(project::projectSelect)
-            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->authData()
             ->where('projects.id', $column->project_id)
-            ->where('project_users.userid', $user->userid)
             ->first();
         if (empty($project)) {
             return Base::retError('项目不存在或不在成员列表内');
@@ -479,6 +475,30 @@ class ProjectController extends AbstractController
     }
 
     /**
+     * 任务统计
+     */
+    public function task__statistics()
+    {
+        User::auth();
+
+        $data = [];
+
+        // 今日待任务
+        $between = [
+            Carbon::today()->startOfDay(),
+            Carbon::today()->endOfDay()
+        ];
+        $data['today'] = ProjectTask::authData()->where(function($query) use ($between) {
+            $query->whereBetween('project_tasks.start_at', $between)->orWhereBetween('project_tasks.end_at', $between);
+        })->count();
+
+        // 超期未完成
+        $data['overdue'] = ProjectTask::authData()->whereNotNull('project_tasks.end_at')->where('project_tasks.end_at', '<', Carbon::now())->count();
+
+        return Base::retSuccess('success', $data);
+    }
+
+    /**
      * 任务列表
      *
      * @apiParam {String} name          任务名称（包含）
@@ -486,9 +506,9 @@ class ProjectController extends AbstractController
      */
     public function task__lists()
     {
-        $user = user::auth();
+        User::auth();
         //
-        $builder = ProjectTask::select(ProjectTask::taskSelect);
+        $builder = ProjectTask::select(ProjectTask::taskSelect)->authData();
         //
         $name = Request::input('name');
         $time = Request::input('time');
@@ -509,13 +529,7 @@ class ProjectController extends AbstractController
             }
         }
         //
-        $list = $builder
-            ->join('project_task_users', 'project_tasks.id', '=', 'project_task_users.task_pid')
-            ->whereNull('project_tasks.archived_at')
-            ->where('project_tasks.parent_id', 0)
-            ->where('project_task_users.userid', $user->userid)
-            ->orderByDesc('project_tasks.id')
-            ->paginate(Base::getPaginate(200, 100));
+        $list = $builder->orderByDesc('project_tasks.id')->paginate(Base::getPaginate(200, 100));
         //
         return Base::retSuccess('success', $list);
     }
@@ -527,7 +541,7 @@ class ProjectController extends AbstractController
      */
     public function task__basic()
     {
-        user::auth();
+        User::auth();
         //
         $task_id = intval(Request::input('task_id'));
         //
@@ -546,7 +560,7 @@ class ProjectController extends AbstractController
      */
     public function task__sublist()
     {
-        user::auth();
+        User::auth();
         //
         $task_id = intval(Request::input('task_id'));
         //
@@ -563,7 +577,7 @@ class ProjectController extends AbstractController
      */
     public function task__content()
     {
-        user::auth();
+        User::auth();
         //
         $task_id = intval(Request::input('task_id'));
         //
@@ -579,7 +593,7 @@ class ProjectController extends AbstractController
      */
     public function task__files()
     {
-        user::auth();
+        User::auth();
         //
         $task_id = intval(Request::input('task_id'));
         //
@@ -602,7 +616,7 @@ class ProjectController extends AbstractController
      */
     public function task__add()
     {
-        user::auth();
+        User::auth();
         parse_str(Request::getContent(), $data);
         $project_id = intval($data['project_id']);
         $column_id = $data['column_id'];
@@ -658,7 +672,7 @@ class ProjectController extends AbstractController
      */
     public function task__addsub()
     {
-        user::auth();
+        User::auth();
         //
         $task_id = intval(Request::input('task_id'));
         $name = Request::input('name');
@@ -699,7 +713,7 @@ class ProjectController extends AbstractController
      */
     public function task__update()
     {
-        user::auth();
+        User::auth();
         //
         parse_str(Request::getContent(), $data);
         $task_id = intval($data['task_id']);
@@ -796,7 +810,7 @@ class ProjectController extends AbstractController
      */
     public function task__dialog()
     {
-        user::auth();
+        User::auth();
         //
         $task_id = intval(Request::input('task_id'));
         //
@@ -834,7 +848,7 @@ class ProjectController extends AbstractController
      */
     public function task__archived()
     {
-        user::auth();
+        User::auth();
         //
         $task_id = intval(Request::input('task_id'));
         //
@@ -855,7 +869,7 @@ class ProjectController extends AbstractController
      */
     public function task__delete()
     {
-        user::auth();
+        User::auth();
         //
         $task_id = intval(Request::input('task_id'));
         //
@@ -876,7 +890,7 @@ class ProjectController extends AbstractController
      */
     public function log__lists()
     {
-        user::auth();
+        User::auth();
         //
         $project_id = intval(Request::input('project_id'));
         $task_id = intval(Request::input('task_id'));

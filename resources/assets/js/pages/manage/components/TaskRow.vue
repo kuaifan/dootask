@@ -5,7 +5,7 @@
                 <em v-if="item.p_name && item.parent_id === 0" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
                 <Col span="12" :class="['row-name', item.complete_at ? 'complete' : '']">
                     <Icon
-                        v-if="item.sub_num > 0 || fastAddTask"
+                        v-if="item.sub_num > 0 || (item.parent_id===0 && fastAddTask)"
                         :class="['sub-icon', item[openName] ? 'active' : '']"
                         type="ios-arrow-forward"
                         @click="getSublist(item)"/>
@@ -86,7 +86,7 @@
                 v-if="item[openName]===true"
                 :list="item.sub_task"
                 :parent-id="item.id"
-                :fast-add-task="fastAddTask"
+                :fast-add-task="item.parent_id===0 && fastAddTask"
                 :color-list="colorList"
                 :open-key="openKey"
                 @command="dropTask"/>
