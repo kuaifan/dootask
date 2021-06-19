@@ -45,7 +45,7 @@
                 </ul>
             </div>
         </ScrollerY>
-        <div :class="['dialog-footer', msgNew > 0 && dialogMsgList.length > 0 ? 'newmsg' : '']">
+        <div :class="['dialog-footer', msgNew > 0 && dialogMsgList.length > 0 ? 'newmsg' : '']" @click="onActive">
             <div class="dialog-newmsg" @click="goNewBottom">{{$L('有' + msgNew + '条新消息')}}</div>
             <DragInput
                 ref="input"
@@ -162,6 +162,8 @@ export default {
                 },
             });
             this.autoBottom = true;
+            this.$store.commit("dialogMoveToTop", this.dialogId);
+            this.onActive();
             //
             this.$store.dispatch("call", {
                 url: 'dialog/msg/sendtext',
@@ -237,6 +239,9 @@ export default {
                         userid: this.userId,
                         msg: { },
                     });
+                    this.autoBottom = true;
+                    this.$store.commit("dialogMoveToTop", this.dialogId);
+                    this.onActive();
                     break;
 
                 case 'error':
@@ -260,6 +265,9 @@ export default {
                     this.autoBottom = false;
                     break;
             }
+            if (res.scale === 1) {
+                this.autoBottom = true;
+            }
         },
 
         goBottom() {
@@ -280,6 +288,10 @@ export default {
 
         onEventblur(e) {
             this.$emit("on-blur", e)
+        },
+
+        onActive() {
+            this.$emit("on-active");
         },
 
         formatTime(date) {

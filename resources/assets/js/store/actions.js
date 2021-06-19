@@ -885,7 +885,7 @@ export default {
             // 更新缓存
             state.cacheDialogMsg[dialog_id] = {
                 dialog: data.dialog,
-                data: data.data.reverse(),
+                data: [],
             };
             state.method.setStorage("cacheDialogMsg", state.cacheDialogMsg);
             // 更新当前会话消息
@@ -958,9 +958,10 @@ export default {
     /**
      * 根据消息ID 删除 或 替换 会话数据
      * @param state
+     * @param commit
      * @param params {id, data}
      */
-    dialogMsgUpdate({state}, params) {
+    dialogMsgUpdate({state, commit}, params) {
         let {id, data} = params;
         if (!id) {
             return;
@@ -978,6 +979,7 @@ export default {
         if (index > -1) {
             if (data) {
                 state.dialogMsgList.splice(index, 1, state.method.cloneJSON(data));
+                commit("dialogMsgListStorageCurrent");
                 // 是最后一条消息时更新会话 last_msg
                 if (state.dialogMsgList.length - 1 == index) {
                     const dialog = state.dialogList.find(({id}) => id == data.dialog_id);
@@ -1116,6 +1118,7 @@ export default {
                                     } else {
                                         state.dialogMsgList.splice(index, 1, data);
                                     }
+                                    commit("dialogMsgListStorageCurrent");
                                 }
                                 if (mode === "add2") {
                                     return;
@@ -1133,12 +1136,7 @@ export default {
                                         // 新增未读数
                                         if (data.userid !== state.userId) dialog.unread++;
                                         // 移动到首位
-                                        const index = state.dialogList.findIndex(({id}) => id == dialog_id);
-                                        if (index > -1) {
-                                            const tmp = state.method.cloneJSON(state.dialogList[index]);
-                                            state.dialogList.splice(index, 1);
-                                            state.dialogList.unshift(tmp);
-                                        }
+                                        commit("dialogMoveToTop", dialog_id);
                                     }
                                     // 新增任务消息数量
                                     state.projectDetail.project_column.some(({project_task}) => {

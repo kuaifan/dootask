@@ -187,8 +187,8 @@ class ProjectController extends AbstractController
         }
         //
         if ($project->name != $name) {
-            $project->name = $name;
             $project->addLog("修改项目名称：{$project->name} => {$name}");
+            $project->name = $name;
         }
         if ($project->desc != $desc) {
             $project->desc = $desc;
@@ -511,6 +511,7 @@ class ProjectController extends AbstractController
         //
         $list = $builder
             ->join('project_task_users', 'project_tasks.id', '=', 'project_task_users.task_pid')
+            ->whereNull('project_tasks.archived_at')
             ->where('project_tasks.parent_id', 0)
             ->where('project_task_users.userid', $user->userid)
             ->orderByDesc('project_tasks.id')

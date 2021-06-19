@@ -59,8 +59,8 @@
                 </div>
             </div>
 
-            <div class="messenger-msg" @click="scrollIntoActive">
-                <DialogWrapper v-if="dialogId > 0"/>
+            <div class="messenger-msg">
+                <DialogWrapper v-if="dialogId > 0" @on-active="scrollIntoActive"/>
                 <div v-else class="dialog-no">
                     <div class="dialog-no-icon"><Icon type="ios-chatbubbles" /></div>
                     <div class="dialog-no-text">{{$L('选择一个会话开始聊天')}}</div>

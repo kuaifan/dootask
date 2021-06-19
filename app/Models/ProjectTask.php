@@ -356,8 +356,8 @@ class ProjectTask extends AbstractModel
                 } elseif (mb_strlen($data['name']) > 255) {
                     throw new ApiException('任务描述最多只能设置255个字');
                 }
-                $this->name = $data['name'];
                 $this->addLog("修改{任务}标题：{$this->name} => {$data['name']}");
+                $this->name = $data['name'];
             }
             // 负责人
             if (Arr::exists($data, 'owner')) {
@@ -420,8 +420,8 @@ class ProjectTask extends AbstractModel
                 }
                 // 背景色
                 if (Arr::exists($data, 'color') && $this->color != $data['color']) {
-                    $this->color = $data['color'];
                     $this->addLog("修改任务背景色：{$this->color} => {$data['color']}");
+                    $this->color = $data['color'];
                 }
                 // 内容
                 if (Arr::exists($data, 'content')) {
