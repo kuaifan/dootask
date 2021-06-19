@@ -34,25 +34,24 @@ export default {
         }
     },
 
-    mounted() {
-        this.getMsg();
-    },
-
     computed: {
         ...mapState(['projectDetail', 'projectChatShow']),
     },
 
     watch: {
-        projectDetail() {
-            this.getMsg()
+        'projectDetail.dialog_id' () {
+            this.getMsgList()
         },
-        projectChatShow() {
-            this.getMsg()
+        projectChatShow: {
+            handler() {
+                this.getMsgList()
+            },
+            immediate: true
         }
     },
 
     methods: {
-        getMsg() {
+        getMsgList() {
             if (this.projectChatShow && this.projectDetail.dialog_id) {
                 this.$store.dispatch("getDialogMsgList", this.projectDetail.dialog_id);
             }

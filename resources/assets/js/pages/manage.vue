@@ -60,7 +60,7 @@
                     <Loading v-if="loadIng > 0"/>
                 </li>
             </ul>
-            <Button class="manage-box-new" type="primary" icon="md-add" @click="addShow=true">{{$L('新建项目')}}</Button>
+            <Button class="manage-box-new" type="primary" icon="md-add" @click="onAddShow">{{$L('新建项目')}}</Button>
         </div>
 
         <div class="manage-box-main">
@@ -76,7 +76,7 @@
             :mask-closable="false">
             <Form ref="addProject" :model="addData" :rules="addRule" label-width="auto" @submit.native.prevent>
                 <FormItem prop="name" :label="$L('项目名称')">
-                    <Input type="text" v-model="addData.name"></Input>
+                    <Input ref="projectName" type="text" v-model="addData.name"></Input>
                 </FormItem>
                 <FormItem prop="columns" :label="$L('项目模板')">
                     <Select v-model="addData.template" @on-change="(res) => {$set(addData, 'columns', columns[res].value)}" :placeholder="$L('请选择模板')">
@@ -277,6 +277,13 @@ export default {
                         });
                     }
                 },
+            })
+        },
+
+        onAddShow() {
+            this.addShow = true;
+            this.$nextTick(() => {
+                this.$refs.projectName.focus();
             })
         },
 
