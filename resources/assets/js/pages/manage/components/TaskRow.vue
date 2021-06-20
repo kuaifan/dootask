@@ -34,7 +34,7 @@
                                     <Icon type="ios-filing" />{{$L('归档')}}
                                 </div>
                             </EDropdownItem>
-                            <EDropdownItem command="delete">
+                            <EDropdownItem command="remove">
                                 <div class="item">
                                     <Icon type="md-trash" />{{$L('删除')}}
                                 </div>

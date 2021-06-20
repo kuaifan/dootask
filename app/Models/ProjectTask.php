@@ -84,11 +84,6 @@ class ProjectTask extends AbstractModel
 {
     use SoftDeletes;
 
-    const taskSelect = [
-        'project_tasks.*',
-        'project_task_users.owner',
-    ];
-
     protected $appends = [
         'file_num',
         'msg_num',
@@ -258,7 +253,7 @@ class ProjectTask extends AbstractModel
     {
         $pre = DB::getTablePrefix();
         $user = $user ?: User::auth();
-        $query->select(ProjectTask::taskSelect)
+        $query->select("project_tasks.*")
             ->join('project_task_users', 'project_tasks.id', '=', 'project_task_users.task_pid')
             ->whereExists(function ($der) use ($pre) {
                 $der->select(DB::raw(1))
@@ -267,7 +262,6 @@ class ProjectTask extends AbstractModel
                     ->whereColumn('project_task_users.task_pid', '=', 'B.task_pid')
                     ->havingRaw("max({$pre}B.id) = {$pre}project_task_users.id");
             })
-            ->whereNull('project_tasks.archived_at')
             ->where('project_task_users.userid', $user->userid);
         return $query;
     }
@@ -689,7 +683,7 @@ class ProjectTask extends AbstractModel
      */
     public static function userTask($task_id, $with = [])
     {
-        $task = self::with($with)->whereId(intval($task_id))->first();
+        $task = self::with($with)->whereId(intval($task_id))->whereNull('archived_at')->first();
         if (empty($task)) {
             throw new ApiException('任务不存在');
         }

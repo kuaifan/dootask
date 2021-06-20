@@ -288,6 +288,27 @@ export default {
     },
 
     /**
+     * 忘记项目数据
+     * @param state
+     * @param project_id
+     */
+    forgetProject({state}, project_id) {
+        let index = state.projects.findIndex(({id}) => id == project_id);
+        if (index > -1) {
+            state.projects.splice(index, 1);
+        }
+        if (state.projectId == project_id) {
+            const project = state.projects.find(({id}) => id && id != project_id);
+            if (project) {
+                $A.goForward({path: '/manage/project/' + project.id});
+            } else {
+                $A.goForward({path: '/manage/dashboard'});
+            }
+        }
+        state.method.setStorage("cacheProjects", state.cacheProjects = state.projects);
+    },
+
+    /**
      * 获取项目
      * @param state
      * @param dispatch
@@ -313,16 +334,13 @@ export default {
      * 获取单个项目
      * @param state
      * @param dispatch
-     * @param data {id}
+     * @param project_id
      */
-    getProjectOne({state, dispatch}, data) {
-        if (state.method.runNum(data.id) === 0) {
-            return;
-        }
+    getProjectOne({state, dispatch}, project_id) {
         dispatch("call", {
             url: 'project/one',
             data: {
-                project_id: data.id,
+                project_id,
             },
         }).then(result => {
             dispatch("saveProject", result.data);
@@ -333,35 +351,23 @@ export default {
 
     /**
      * 删除项目
-     * @param state
-     * @param data {id}
+     * @param dispatch
+     * @param project_id
      */
-    removeProject({state}, data) {
-        if (state.method.runNum(data.id) === 0) {
-            return;
-        }
-        let index = state.projects.findIndex(({id}) => id == data.id);
-        if (index > -1) {
-            state.projects.splice(index, 1);
-        }
-        if (state.projectId == data.id) {
-            const project = state.projects.find(({id}) => id && id != data.id);
-            if (project) {
-                $A.goForward({path: '/manage/project/' + project.id});
-            } else {
-                $A.goForward({path: '/manage/dashboard'});
-            }
-        }
-        //
-        dispatch("call", {
-            url: 'project/delete',
-            data: {
-                project_id: data.id,
-            },
-        }).then(result => {
-            state.method.setStorage("cacheProjects", state.cacheProjects = state.projects);
-        }).catch(result => {
-            //
+    removeProject({dispatch}, project_id) {
+        return new Promise(function (resolve, reject) {
+            dispatch("call", {
+                url: 'project/delete',
+                data: {
+                    project_id,
+                },
+            }).then(result => {
+                dispatch("forgetProject", project_id)
+                resolve(result)
+            }).catch(result => {
+                dispatch("getProjectOne", project_id);
+                reject(result)
+            });
         });
     },
 
@@ -406,12 +412,25 @@ export default {
     },
 
     /**
+     * 忘记列表数据
+     * @param state
+     * @param column_id
+     */
+    forgetColumn({state}, column_id) {
+        let index = state.columns.findIndex(({id}) => id == column_id);
+        if (index > -1) {
+            state.columns.splice(index, 1);
+        }
+        state.method.setStorage("cacheColumns", state.cacheColumns = state.columns);
+    },
+
+    /**
      * 获取列表
      * @param state
      * @param dispatch
-     * @param data {project_id}
+     * @param project_id
      */
-    getColumns({state, dispatch}, data) {
+    getColumns({state, dispatch}, project_id) {
         if (state.userId === 0) {
             state.columns = [];
             return;
@@ -422,7 +441,7 @@ export default {
         dispatch("call", {
             url: 'project/column/lists',
             data: {
-                project_id: data.project_id
+                project_id
             }
         }).then(result => {
             dispatch("saveColumn", result.data.data);
@@ -433,27 +452,20 @@ export default {
 
     /**
      * 删除列表
-     * @param state
-     * @param data {id}
+     * @param dispatch
+     * @param column_id
      */
-    removeColumn({state}, data) {
-        if (state.method.runNum(data.id) === 0) {
-            return;
-        }
-        let index = state.columns.findIndex(({id}) => id == data.id);
-        if (index > -1) {
-            state.columns.splice(index, 1);
-        }
-        //
-        dispatch("call", {
-            url: 'project/column/delete',
-            data: {
-                column_id: data.id,
-            },
-        }).then(result => {
-            state.method.setStorage("cacheColumns", state.cacheColumns = state.columns);
-        }).catch(result => {
-            //
+    removeColumn({dispatch}, column_id) {
+        return new Promise(function (resolve, reject) {
+            dispatch("call", {
+                url: 'project/column/delete',
+                data: {
+                    column_id,
+                },
+            }).then(result => {
+                dispatch("forgetColumn", column_id)
+                resolve(result)
+            }).catch(reject);
         });
     },
 
@@ -486,10 +498,26 @@ export default {
     },
 
     /**
+     * 忘记任务数据
+     * @param state
+     * @param task_id
+     */
+    forgetTask({state}, task_id) {
+        let index = state.tasks.findIndex(({id}) => id == task_id);
+        if (index > -1) {
+            state.tasks.splice(index, 1);
+        }
+        if (state.taskId == task_id) {
+            state.taskId = 0;
+        }
+        state.method.setStorage("cacheTasks", state.cacheTasks = state.tasks);
+    },
+
+    /**
      * 获取任务
      * @param state
      * @param dispatch
-     * @param data {project_id, parent_id}
+     * @param data {?project_id, ?parent_id}
      */
     getTasks({state, dispatch}, data) {
         if (state.userId === 0) {
@@ -532,32 +560,46 @@ export default {
     },
 
     /**
-     * 删除或归档任务
-     * @param state
+     * 删除任务
      * @param dispatch
-     * @param data {id, type}
+     * @param task_id
      * @returns {Promise<unknown>}
      */
-    taskArchivedOrRemove({state, dispatch}, data) {
+    removeTask({dispatch}, task_id) {
         return new Promise(function (resolve, reject) {
-            if (state.method.runNum(data.id) === 0) {
-                return;
-            }
-            let index = state.tasks.findIndex(({id}) => id == data.id);
-            if (index > -1) {
-                state.tasks.splice(index, 1);
-            }
-            //
             dispatch("call", {
-                url: 'project/task/' + data.type,
+                url: 'project/task/delete',
                 data: {
-                    task_id: data.id,
+                    task_id: task_id,
                 },
             }).then(result => {
-                state.method.setStorage("cacheTasks", state.cacheTasks = state.tasks);
+                dispatch("forgetTask", task_id)
                 resolve(result)
             }).catch(result => {
-                dispatch("getTaskOne", data.id);
+                dispatch("getTaskOne", task_id);
+                reject(result)
+            });
+        });
+    },
+
+    /**
+     * 归档任务
+     * @param dispatch
+     * @param task_id
+     * @returns {Promise<unknown>}
+     */
+    archivedTask({dispatch}, task_id) {
+        return new Promise(function (resolve, reject) {
+            dispatch("call", {
+                url: 'project/task/archived',
+                data: {
+                    task_id: task_id,
+                },
+            }).then(result => {
+                dispatch("forgetTask", task_id)
+                resolve(result)
+            }).catch(result => {
+                dispatch("getTaskOne", task_id);
                 reject(result)
             });
         });

@@ -76,7 +76,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['projects', 'tasks']),
+        ...mapState(['userId', 'projects', 'tasks']),
 
         list() {
             let datas = $A.cloneJSON(this.tasks);
@@ -90,7 +90,7 @@ export default {
                 if (!data.start_at || !data.end_at) {
                     return false;
                 }
-                return data.owner;
+                return data.task_user.find(({userid}) => userid == this.userId);
             })
             return datas.map(data => {
                 let task = {
@@ -287,10 +287,7 @@ export default {
                         content: '你确定要删除任务【' + data.name + '】吗？',
                         loading: true,
                         onOk: () => {
-                            this.$store.dispatch("taskArchivedOrRemove", {
-                                id: data.id,
-                                type: 'delete',
-                            }).then(({msg}) => {
+                            this.$store.dispatch("removeTask", data.id).then(({msg}) => {
                                 $A.messageSuccess(msg);
                                 this.$Modal.remove();
                             }).catch(({msg}) => {

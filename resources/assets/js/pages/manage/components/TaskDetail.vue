@@ -29,7 +29,7 @@
                             <Icon type="md-time" />{{$L('时间')}}
                         </div>
                     </EDropdownItem>
-                    <EDropdownItem command="delete">
+                    <EDropdownItem command="remove">
                         <div class="item">
                             <Icon type="md-trash" />{{$L('删除')}}
                         </div>
@@ -119,7 +119,7 @@
                                 <Icon type="ios-filing" />{{$L('归档')}}
                             </div>
                         </EDropdownItem>
-                        <EDropdownItem command="delete">
+                        <EDropdownItem command="remove">
                             <div class="item">
                                 <Icon type="md-trash" />{{$L('删除')}}
                             </div>
@@ -731,7 +731,7 @@ export default {
                     this.openTime()
                     break;
                 case 'archived':
-                case 'delete':
+                case 'remove':
                     this.archivedOrRemoveTask(command);
                     break;
             }
@@ -778,21 +778,20 @@ export default {
         },
 
         archivedOrRemoveTask(type) {
-            let typeName = type == 'delete' ? '删除' : '归档';
-            let typeTitle = this.taskDetail.parent_id > 0 ? '子任务' : '任务';
+            let typeDispatch = type == 'remove' ? 'removeTask' : 'archivedTask';
+            let typeName = type == 'remove' ? '删除' : '归档';
+            let typeTask = this.taskDetail.parent_id > 0 ? '子任务' : '任务';
             $A.modalConfirm({
-                title: typeName + typeTitle,
-                content: '你确定要' + typeName + typeTitle + '【' + this.taskDetail.name + '】吗？',
+                title: typeName + typeTask,
+                content: '你确定要' + typeName + typeTask + '【' + this.taskDetail.name + '】吗？',
                 loading: true,
                 onOk: () => {
                     if (this.taskDetail.loading === true) {
+                        this.$Modal.remove();
                         return;
                     }
                     this.$set(this.taskDetail, 'loading', true);
-                    this.$store.dispatch("taskArchivedOrRemove", {
-                        task_id: this.taskDetail.id,
-                        type: type,
-                    }).then(({msg}) => {
+                    this.$store.dispatch(typeDispatch, this.taskDetail.id).then(({msg}) => {
                         $A.messageSuccess(msg);
                         this.$Modal.remove();
                     }).catch(({msg}) => {

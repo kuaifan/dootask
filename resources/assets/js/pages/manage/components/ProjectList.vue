@@ -151,7 +151,7 @@
                                                         <Icon type="ios-filing" />{{$L('归档')}}
                                                     </div>
                                                 </EDropdownItem>
-                                                <EDropdownItem command="delete">
+                                                <EDropdownItem command="remove">
                                                     <div class="item">
                                                         <Icon type="md-trash" />{{$L('删除')}}
                                                     </div>
@@ -793,42 +793,30 @@ export default {
         },
 
         dropTask(task, command) {
-            if (command === 'complete') {
-                if (task.complete_at) return;
-                this.updateTask(task, {
-                    complete_at: $A.formatDate("Y-m-d H:i:s")
-                })
-            }
-            else if (command === 'uncomplete') {
-                if (!task.complete_at) return;
-                this.updateTask(task, {
-                    complete_at: false
-                })
-            }
-            else if (command === 'archived') {
-                $A.modalConfirm({
-                    title: '归档任务',
-                    content: '你确定要归档任务【' + task.name + '】吗？',
-                    loading: true,
-                    onOk: () => {
-                        this.archivedOrRemoveTask(task, 'archived');
+            switch (command) {
+                case 'complete':
+                    if (task.complete_at) return;
+                    this.updateTask(task, {
+                        complete_at: $A.formatDate("Y-m-d H:i:s")
+                    })
+                    break;
+                case 'uncomplete':
+                    if (!task.complete_at) return;
+                    this.updateTask(task, {
+                        complete_at: false
+                    })
+                    break;
+                case 'archived':
+                case 'remove':
+                    this.archivedOrRemoveTask(task, command);
+                    break;
+                default:
+                    if (command.name) {
+                        this.updateTask(task, {
+                            color: command.color
+                        })
                     }
-                });
-            }
-            else if (command === 'delete') {
-                $A.modalConfirm({
-                    title: '删除任务',
-                    content: '你确定要删除任务【' + task.name + '】吗？',
-                    loading: true,
-                    onOk: () => {
-                        this.archivedOrRemoveTask(task, 'delete');
-                    }
-                });
-            }
-            else if (command.name) {
-                this.updateTask(task, {
-                    color: command.color
-                })
+                    break;
             }
         },
 
@@ -850,19 +838,27 @@ export default {
         },
 
         archivedOrRemoveTask(task, type) {
-            if (task.loading === true) {
-                return;
-            }
-            this.$set(task, 'loading', true);
-            this.$store.dispatch("taskArchivedOrRemove", {
-                task_id: task.id,
-                type: type,
-            }).then(({msg}) => {
-                $A.messageSuccess(msg);
-                this.$Modal.remove();
-            }).catch(({msg}) => {
-                $A.modalError(msg, 301);
-                this.$Modal.remove();
+            let typeDispatch = type == 'remove' ? 'removeTask' : 'archivedTask';
+            let typeName = type == 'remove' ? '删除' : '归档';
+            let typeTask = task.parent_id > 0 ? '子任务' : '任务';
+            $A.modalConfirm({
+                title: typeName + typeTask,
+                content: '你确定要' + typeName + typeTask + '【' + task.name + '】吗？',
+                loading: true,
+                onOk: () => {
+                    if (task.loading === true) {
+                        this.$Modal.remove();
+                        return;
+                    }
+                    this.$set(task, 'loading', true);
+                    this.$store.dispatch(typeDispatch, task.id).then(({msg}) => {
+                        $A.messageSuccess(msg);
+                        this.$Modal.remove();
+                    }).catch(({msg}) => {
+                        $A.modalError(msg, 301);
+                        this.$Modal.remove();
+                    });
+                }
             });
         },
 
@@ -934,7 +930,7 @@ export default {
                     }).then(({data, msg}) => {
                         $A.messageSuccess(msg);
                         this.$Modal.remove();
-                        this.$store.dispatch("removeProject", data);
+                        this.$store.dispatch("removeProject", data.id);
                     }).catch(({msg}) => {
                         $A.modalError(msg, 301);
                         this.$Modal.remove();
@@ -957,7 +953,7 @@ export default {
                     }).then(({data, msg}) => {
                         $A.messageSuccess(msg);
                         this.$Modal.remove();
-                        this.$store.dispatch("removeProject", data);
+                        this.$store.dispatch("removeProject", data.id);
                     }).catch(({msg}) => {
                         $A.modalError(msg, 301);
                         this.$Modal.remove();

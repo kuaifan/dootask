@@ -16,15 +16,16 @@ export default {
             project_id: 0,
         }
     },
-    mounted() {
-        this.project_id = this.$route.params.id;
-    },
     watch: {
-        '$route' (route) {
-            this.project_id = route.params.id;
+        '$route': {
+            handler(route) {
+                this.project_id = route.params.id;
+            },
+            immediate: true
         },
         project_id(id) {
-            this.$store.dispatch("getProjectDetail", {id});
+            this.$store.state.projectId = id;
+            this.$store.dispatch("getProjectOne", id);
         }
     },
 }

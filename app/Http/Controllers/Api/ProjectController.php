@@ -96,7 +96,7 @@ class ProjectController extends AbstractController
      *
      * @apiParam {String} name          项目名称
      * @apiParam {String} [desc]        项目介绍
-     * @apiParam {Array} [columns]      列表，格式[列表1, 列表2]
+     * @apiParam {String} [columns]     列表，格式：列表名称1,列表名称2
      */
     public function add()
     {
@@ -113,8 +113,7 @@ class ProjectController extends AbstractController
             return Base::retError('项目介绍最多只能设置255个字');
         }
         // 列表
-        $columns = Request::input('columns');
-        if (!is_array($columns)) $columns = [];
+        $columns = explode(",", Request::input('columns'));
         $insertColumns = [];
         $sort = 0;
         foreach ($columns AS $column) {
@@ -515,7 +514,7 @@ class ProjectController extends AbstractController
     {
         User::auth();
         //
-        $builder = ProjectTask::with(['taskUser', 'taskTag']);
+        $builder = ProjectTask::with(['taskUser', 'taskTag'])->whereNull('project_tasks.archived_at');
         //
         $parent_id = intval(Request::input('parent_id'));
         $project_id = intval(Request::input('project_id'));
@@ -525,10 +524,10 @@ class ProjectController extends AbstractController
         //
         if ($parent_id > 0) {
             ProjectTask::userTask($parent_id);
-            $builder->where('parent_id', $parent_id)->whereNull('archived_at');
+            $builder->where('parent_id', $parent_id);
         } elseif ($project_id > 0) {
             Project::userProject($project_id);
-            $builder->where('project_id', $project_id)->whereNull('archived_at');
+            $builder->where('project_id', $project_id);
         } else {
             $builder->authData();
         }
@@ -867,7 +866,7 @@ class ProjectController extends AbstractController
         }
         //
         $task->archivedTask(Carbon::now());
-        return Base::retSuccess('保存成功', ['id' => $task->id]);
+        return Base::retSuccess('设置成功', ['id' => $task->id]);
     }
 
     /**

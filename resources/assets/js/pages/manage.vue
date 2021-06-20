@@ -78,21 +78,13 @@
                 <FormItem prop="name" :label="$L('项目名称')">
                     <Input ref="projectName" type="text" v-model="addData.name"></Input>
                 </FormItem>
-                <FormItem prop="columns" :label="$L('项目模板')">
-                    <Select v-model="addData.template" @on-change="(res) => {$set(addData, 'columns', columns[res].value)}" :placeholder="$L('请选择模板')">
+                <FormItem v-if="addData.columns" :label="$L('任务列表')">
+                    <TagInput v-model="addData.columns"/>
+                </FormItem>
+                <FormItem v-else :label="$L('项目模板')">
+                    <Select :value="0" @on-change="(i) => {$set(addData, 'columns', columns[i].value.join(','))}" :placeholder="$L('请选择模板')">
                         <Option v-for="(item, index) in columns" :value="index" :key="index">{{ item.label }}</Option>
                     </Select>
-                </FormItem>
-                <FormItem v-if="addData.columns.length > 0" :label="$L('任务列表')">
-                    <div style="line-height:38px">
-                        <span v-for="(item, index) in addData.columns">
-                            <Tag @on-close="() => { addData.columns.splice(index, 1)}" closable size="large" color="primary">{{item}}</Tag>
-                        </span>
-                    </div>
-                    <div style="margin-top:4px;"></div>
-                    <div style="margin-bottom:-16px">
-                        <Button icon="ios-add" type="dashed" @click="addColumns">{{$L('添加列表')}}</Button>
-                    </div>
                 </FormItem>
             </Form>
             <div slot="footer">
@@ -131,8 +123,7 @@ export default {
             addShow: false,
             addData: {
                 name: '',
-                columns: [],
-                template: 0,
+                columns: '',
             },
             addRule: {},
 
@@ -250,45 +241,6 @@ export default {
             };
         },
 
-        addColumns() {
-            this.columnsValue = "";
-            $A.modalConfirm({
-                render: (h) => {
-                    return h('div', [
-                        h('div', {
-                            style: {
-                                fontSize: '16px',
-                                fontWeight: '500',
-                                marginBottom: '20px',
-                            }
-                        }, this.$L('添加流程')),
-                        h('TagInput', {
-                            props: {
-                                value: this.columnsValue,
-                                autofocus: true,
-                                placeholder: this.$L('请输入流程名称，多个可用英文逗号分隔。')
-                            },
-                            on: {
-                                input: (val) => {
-                                    this.columnsValue = val;
-                                }
-                            }
-                        })
-                    ])
-                },
-                onOk: () => {
-                    if (this.columnsValue) {
-                        let array = $A.trim(this.columnsValue).split(",");
-                        array.forEach((name) => {
-                            if ($A.trim(name)) {
-                                this.addData.columns.push($A.trim(name));
-                            }
-                        });
-                    }
-                },
-            })
-        },
-
         onAddShow() {
             this.addShow = true;
             this.$nextTick(() => {
@@ -308,7 +260,6 @@ export default {
                         this.loadIng--;
                         this.addShow = false;
                         this.$refs.addProject.resetFields();
-                        this.$set(this.addData, 'template', 0);
                         this.$store.dispatch("saveProject", data);
                         this.toggleRoute('project/' + data.id)
                     }).catch(({msg}) => {
