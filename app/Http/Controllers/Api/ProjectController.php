@@ -362,7 +362,7 @@ class ProjectController extends AbstractController
      *
      * @apiParam {Number} project_id        项目ID
      */
-    public function delete()
+    public function remove()
     {
         User::auth();
         //
@@ -478,7 +478,7 @@ class ProjectController extends AbstractController
      *
      * @apiParam {Number} column_id         列表ID（留空为添加列表）
      */
-    public function column__delete()
+    public function column__remove()
     {
         User::auth();
         //
@@ -874,7 +874,7 @@ class ProjectController extends AbstractController
      *
      * @apiParam {Number} task_id               任务ID
      */
-    public function task__delete()
+    public function task__remove()
     {
         User::auth();
         //

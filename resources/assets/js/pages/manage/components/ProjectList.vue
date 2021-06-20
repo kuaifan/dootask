@@ -774,7 +774,7 @@ export default {
                     this.$set(column, 'loading', true);
                     //
                     this.$store.dispatch("call", {
-                        url: 'project/column/delete',
+                        url: 'project/column/remove',
                         data: {
                             column_id: column.id,
                         },
@@ -923,7 +923,7 @@ export default {
                 loading: true,
                 onOk: () => {
                     this.$store.dispatch("call", {
-                        url: 'project/delete',
+                        url: 'project/remove',
                         data: {
                             project_id: this.projectDetail.id,
                         },

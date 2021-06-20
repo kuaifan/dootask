@@ -357,7 +357,7 @@ export default {
     removeProject({dispatch}, project_id) {
         return new Promise(function (resolve, reject) {
             dispatch("call", {
-                url: 'project/delete',
+                url: 'project/remove',
                 data: {
                     project_id,
                 },
@@ -458,7 +458,7 @@ export default {
     removeColumn({dispatch}, column_id) {
         return new Promise(function (resolve, reject) {
             dispatch("call", {
-                url: 'project/column/delete',
+                url: 'project/column/remove',
                 data: {
                     column_id,
                 },
@@ -568,7 +568,7 @@ export default {
     removeTask({dispatch}, task_id) {
         return new Promise(function (resolve, reject) {
             dispatch("call", {
-                url: 'project/task/delete',
+                url: 'project/task/remove',
                 data: {
                     task_id: task_id,
                 },
