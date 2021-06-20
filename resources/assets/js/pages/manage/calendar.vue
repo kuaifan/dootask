@@ -29,7 +29,7 @@
                 :theme="calendarTheme"
                 :template="calendarTemplate"
                 :calendars="calendarList"
-                :schedules="calendarTasks"
+                :schedules="list"
                 @beforeCreateSchedule="onBeforeCreateSchedule"
                 @beforeClickSchedule="onBeforeClickSchedule"
                 @beforeUpdateSchedule="onBeforeUpdateSchedule"
@@ -47,21 +47,6 @@ import {mapState} from "vuex";
 import Calendar from "./components/Calendar";
 import moment from "moment";
 
-const today = new Date();
-
-const getDate = (type, start, value, operator) => {
-    start = new Date(start);
-    type = type.charAt(0).toUpperCase() + type.slice(1);
-
-    if (operator === '+') {
-        start[`set${type}`](start[`get${type}`]() + value);
-    } else {
-        start[`set${type}`](start[`get${type}`]() - value);
-    }
-
-    return start;
-};
-
 export default {
     components: {Calendar},
     data() {
@@ -78,7 +63,7 @@ export default {
             calendarTemplate: {},
             calendarList: [],
 
-            scheduleLoad: 0,
+            loadIng: 0,
         }
     },
 
@@ -91,10 +76,53 @@ export default {
     },
 
     computed: {
-        ...mapState(['projectList', 'calendarTask']),
+        ...mapState(['projects', 'tasks']),
 
-        calendarTasks() {
-            return this.calendarTask.filter(({complete_at}) => !complete_at)
+        list() {
+            let datas = $A.cloneJSON(this.tasks);
+            datas = datas.filter((data) => {
+                if (data.parent_id > 0) {
+                    return false;
+                }
+                if (data.complete_at) {
+                    return false;
+                }
+                if (!data.start_at || !data.end_at) {
+                    return false;
+                }
+                return data.owner;
+            })
+            return datas.map(data => {
+                let task = {
+                    id: data.id,
+                    calendarId: String(data.project_id),
+                    title: data.name,
+                    body: data.desc,
+                    category: 'allday',
+                    start: new Date(data.start_at).toISOString(),
+                    end: new Date(data.end_at).toISOString(),
+                    color: "#515a6e",
+                    bgColor: data.color || '#E3EAFD',
+                    borderColor: data.p_color,
+                    complete_at: data.complete_at,
+                    priority: '',
+                    preventClick: true,
+                    isChecked: false,
+                };
+                if (data.p_name) {
+                    task.priority = '<span class="priority" style="background-color:' + data.p_color + '">' + data.p_name + '</span>';
+                }
+                if (data.overdue) {
+                    task.title = '[' + $A.L('超期') + '] ' + task.title
+                    task.color = "#f56c6c"
+                    task.bgColor = "#fef0f0"
+                    task.priority+= '<span class="overdue">' + $A.L('超期未完成') + '</span>';
+                }
+                if (!task.borderColor) {
+                    task.borderColor = task.bgColor;
+                }
+                return task;
+            });
         }
     },
 
@@ -103,7 +131,7 @@ export default {
             this.getTask(time);
         },
 
-        projectList: {
+        projects: {
             handler(data) {
                 const list = data.map((project) => {
                     return {
@@ -155,20 +183,19 @@ export default {
         },
 
         getTask(time) {
-            if (this.scheduleLoad > 0) {
+            if (this.loadIng > 0) {
                 setTimeout(() => {
                     this.getTask(time)
                 }, 100)
                 return;
             }
-            this.scheduleLoad++;
-            this.$store.dispatch("getTaskList", {
+            this.loadIng++;
+            this.$store.dispatch("getTasks", {
                 time
-            }).then(({data}) => {
-                this.scheduleLoad--;
-                this.$store.dispatch("saveCalendarTask", data.data)
+            }).then(() => {
+                this.loadIng--;
             }).catch(() => {
-                this.scheduleLoad--;
+                this.loadIng--;
             })
         },
 
@@ -232,7 +259,7 @@ export default {
         },
 
         onBeforeClickSchedule({type, schedule}) {
-            let data = this.calendarTask.find(({id}) => id === schedule.id);
+            let data = this.tasks.find(({id}) => id === schedule.id);
             if (!data) {
                 return;
             }
@@ -251,17 +278,17 @@ export default {
                     break;
 
                 case "edit":
-                    this.$store.dispatch("openTask", schedule.id)
+                    this.$store.dispatch("openTask", data.id)
                     break;
 
                 case "delete":
                     $A.modalConfirm({
                         title: '删除任务',
-                        content: '你确定要删除任务【' + data.title + '】吗？',
+                        content: '你确定要删除任务【' + data.name + '】吗？',
                         loading: true,
                         onOk: () => {
                             this.$store.dispatch("taskArchivedOrRemove", {
-                                task_id: data.id,
+                                id: data.id,
                                 type: 'delete',
                             }).then(({msg}) => {
                                 $A.messageSuccess(msg);
@@ -279,7 +306,7 @@ export default {
 
         onBeforeUpdateSchedule(res) {
             const {changes, schedule} = res;
-            let data = this.calendarTask.find(({id}) => id === schedule.id);
+            let data = this.tasks.find(({id}) => id === schedule.id);
             if (!data) {
                 return;
             }

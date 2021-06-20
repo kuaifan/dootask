@@ -20,6 +20,7 @@ use Request;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read int $owner_userid
  * @property-read int $task_complete
  * @property-read int $task_my_complete
  * @property-read int $task_my_num
@@ -65,6 +66,7 @@ class Project extends AbstractModel
         'task_my_num',
         'task_my_complete',
         'task_my_percent',
+        'owner_userid',
     ];
 
     /**
@@ -143,6 +145,19 @@ class Project extends AbstractModel
     {
         $this->generateTaskData();
         return $this->appendattrs['task_my_percent'];
+    }
+
+    /**
+     * 负责人会员ID
+     * @return int
+     */
+    public function getOwnerUseridAttribute()
+    {
+        if (!isset($this->appendattrs['owner_userid'])) {
+            $ownerUser = $this->projectUser->where('owner', 1)->first();
+            $this->appendattrs['owner_userid'] = $ownerUser ? $ownerUser->userid : 0;
+        }
+        return $this->appendattrs['owner_userid'];
     }
 
     /**
@@ -338,7 +353,7 @@ class Project extends AbstractModel
      */
     public static function userProject($project_id)
     {
-        $project = Project::select(self::projectSelect)
+        $project = self::select(self::projectSelect)
             ->authData()
             ->where('projects.id', intval($project_id))
             ->first();

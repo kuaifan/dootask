@@ -249,7 +249,9 @@ state.ajaxWsListener = [];
 // 数据缓存
 state.cacheUserBasic = state.method.getStorageJson("cacheUserBasic");
 state.cacheDialogMsg = state.method.getStorageJson("cacheDialogMsg");
-state.cacheProjectList = state.method.getStorageArray("cacheProjectList");
+state.cacheProjects = state.method.getStorageArray("cacheProjects");
+state.cacheColumns = state.method.getStorageArray("cacheColumns");
+state.cacheTasks = state.method.getStorageArray("cacheTasks");
 
 // 会员信息
 state.userInfo = state.method.getStorageJson("userInfo");
@@ -268,15 +270,15 @@ state.wsReadTimeout = null;
 state.wsReadWaitList = [];
 
 // 项目任务
-state.projectLoad = 0;
-state.projectList = state.cacheProjectList;
-state.projectDetail = {id: 0, project_column: [], project_user: []};
-state.projectOpenTask = {_show: false, id: 0, task_user: [], task_tag: []};
-state.projectTaskStatistics = {};
-state.projectTaskContent = {};
-state.projectTaskFiles = {};
-state.projectSubTask = {};
-state.calendarTask = [];
+state.projects = [];
+state.projectStatistics = {};
+state.columns = [];
+state.tasks = [];
+state.taskContents = [];
+state.taskFiles = [];
+state.taskLogs = [];
+state.projectId = 0;
+state.taskId = 0;
 
 // 会话聊天
 state.dialogId = 0;

@@ -821,7 +821,7 @@ export default {
                 $A.messageSuccess(msg);
                 this.ownerLoad--;
                 this.ownerShow = false;
-                this.$store.dispatch("getTaskBasic", this.taskDetail.id);
+                this.$store.dispatch("getTaskOne", this.taskDetail.id);
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.ownerLoad--;
@@ -851,7 +851,7 @@ export default {
                 $A.messageSuccess(msg);
                 this.assistLoad--;
                 this.assistShow = false;
-                this.$store.dispatch("getTaskBasic", this.taskDetail.id);
+                this.$store.dispatch("getTaskOne", this.taskDetail.id);
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.assistLoad--;

@@ -5,33 +5,33 @@
             <div class="dashboard-hello">{{$L('欢迎您，' + userInfo.nickname)}}</div>
             <div class="dashboard-desc">{{$L('以下是你当前的任务统计数据')}}</div>
             <ul class="dashboard-block">
-                <li @click="active='today'">
+                <li @click="dashboard='today'">
                     <div class="block-title">{{$L('今日待完成')}}</div>
                     <div class="block-data">
-                        <div class="block-num">{{projectTaskStatistics.today || '...'}}</div>
+                        <div class="block-num">{{projectStatistics.today || '...'}}</div>
                         <i class="iconfont">&#xe6f4;</i>
                     </div>
                 </li>
-                <li @click="active='overdue'">
+                <li @click="dashboard='overdue'">
                     <div class="block-title">{{$L('超期未完成')}}</div>
                     <div class="block-data">
-                        <div class="block-num">{{projectTaskStatistics.overdue || '...'}}</div>
+                        <div class="block-num">{{projectStatistics.overdue || '...'}}</div>
                         <i class="iconfont">&#xe603;</i>
                     </div>
                 </li>
                 <li>
                     <div class="block-title">{{$L('参与的项目')}}</div>
                     <div class="block-data">
-                        <div class="block-num">{{projectList.length}}</div>
+                        <div class="block-num">{{projects.length}}</div>
                         <i class="iconfont">&#xe6f9;</i>
                     </div>
                 </li>
             </ul>
-            <div class="dashboard-title">{{getTitle}}</div>
+            <div class="dashboard-title">{{title}}</div>
             <ul class="dashboard-list overlay-y">
-                <li v-for="item in taskList">
+                <li v-for="item in list" :key="item.id" @click="$store.dispatch('openTask', item.id)">
                     <i class="iconfont">&#xe625;</i>
-                    <div class="item-title">{{item.title}}</div>
+                    <div class="item-title">{{item.name}}</div>
                     <div class="item-time"></div>
                 </li>
             </ul>
@@ -46,22 +46,27 @@ export default {
     data() {
         return {
             loadIng: 0,
-
-            active: 'today',
+            active: false,
+            dashboard: 'today',
         }
     },
 
     activated() {
-        this.$store.dispatch("getTaskStatistics");
-        this.getDashboardTask();
+        this.getTask();
+        this.active = true;
+        this.$store.dispatch("getProjectStatistics");
+    },
+
+    deactivated() {
+        this.active = false;
     },
 
     computed: {
-        ...mapState(['userInfo', 'projectList', 'projectTaskStatistics', 'calendarTask']),
+        ...mapState(['userInfo', 'projects', 'projectStatistics', 'tasks', 'taskId']),
 
-        getTitle() {
-            const {active} = this;
-            switch (active) {
+        title() {
+            const {dashboard} = this;
+            switch (dashboard) {
                 case 'today':
                     return this.$L('今日任务');
                 case 'overdue':
@@ -71,14 +76,20 @@ export default {
             }
         },
 
-        taskList() {
-            const {calendarTask, active} = this;
+        list() {
+            const {tasks, dashboard} = this;
             const todayStart = new Date($A.formatDate("Y-m-d 00:00:00")),
                 todayEnd = new Date($A.formatDate("Y-m-d 23:59:59"));
-            return calendarTask.filter((item) => {
-                const start = new Date(item.start);
-                const end = new Date(item.end);
-                switch (active) {
+            return tasks.filter((data) => {
+                const start = new Date(data.start_at),
+                    end = new Date(data.end_at);
+                if (data.parent_id > 0) {
+                    return false;
+                }
+                if (data.complete_at) {
+                    return false;
+                }
+                switch (dashboard) {
                     case 'today':
                         return (start >= todayStart && start <= todayEnd) || (end >= todayStart && end <= todayEnd);
                     case 'overdue':
@@ -91,17 +102,23 @@ export default {
     },
 
     watch: {
-        active() {
-            this.getDashboardTask();
+        dashboard() {
+            this.getTask();
+        },
+
+        taskId(id) {
+            if (id == 0 && this.active) {
+                this.$store.dispatch("getProjectStatistics");
+            }
         }
     },
 
     methods: {
-        getDashboardTask() {
-            let payload = {};
-            switch (this.active) {
+        getTask() {
+            let data = {};
+            switch (this.dashboard) {
                 case 'today':
-                    payload = {
+                    data = {
                         time: [
                             $A.formatDate("Y-m-d 00:00:00"),
                             $A.formatDate("Y-m-d 23:59:59")
@@ -109,7 +126,7 @@ export default {
                     }
                     break;
                 case 'overdue':
-                    payload = {
+                    data = {
                         time_before: $A.formatDate("Y-m-d 00:00:00")
                     }
                     break;
@@ -118,9 +135,8 @@ export default {
             }
             //
             this.loadIng++;
-            this.$store.dispatch("getTaskList", payload).then(({data}) => {
+            this.$store.dispatch("getTasks", data).then(() => {
                 this.loadIng--;
-                this.$store.dispatch("saveCalendarTask", data.data)
             }).catch(() => {
                 this.loadIng--;
             })

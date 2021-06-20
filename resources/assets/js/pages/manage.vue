@@ -34,7 +34,7 @@
                 <li class="menu-project">
                     <ul>
                         <li
-                            v-for="(item, key) in projectList"
+                            v-for="(item, key) in projects"
                             :key="key"
                             :class="classNameRoute('project/' + item.id, openMenu[item.id])"
                             @click="toggleRoute('project/' + item.id)">
@@ -103,20 +103,21 @@
 
         <!--任务详情-->
         <Modal
-            v-model="projectOpenTask._show"
+            :value="taskId > 0"
             :mask-closable="false"
             :styles="{
                 width: '90%',
-                maxWidth: projectOpenTask.dialog_id ? '1200px' : '640px'
+                maxWidth: taskData.dialog_id ? '1200px' : '640px'
             }"
+            @on-visible-change="taskVisibleChange"
             footer-hide>
-            <TaskDetail :open-task="projectOpenTask"/>
+            <TaskDetail :open-task="taskData"/>
         </Modal>
     </div>
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
 import TaskDetail from "./manage/components/TaskDetail";
 
 export default {
@@ -174,18 +175,19 @@ export default {
             'userId',
             'userInfo',
             'dialogMsgUnread',
-            'projectList',
-            'projectOpenTask',
-            'projectChatShow'
+            'projects',
+            'projectChatShow',
+            'taskId',
         ]),
+        ...mapGetters(['taskData'])
     },
 
     watch: {
         '$route' (route) {
             this.curPath = route.path;
         },
-        'projectOpenTask._show' (show) {
-            if (show) {
+        taskId (id) {
+            if (id > 0) {
                 if (this.projectChatShow) {
                     this._projectChatShow = true;
                     this.$store.dispatch("toggleBoolean", "projectChatShow");
@@ -316,6 +318,12 @@ export default {
                 }
             });
         },
+
+        taskVisibleChange(visible) {
+            if (!visible) {
+                this.$store.dispatch('openTask', 0)
+            }
+        }
     }
 }
 </script>

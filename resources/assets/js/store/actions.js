@@ -168,7 +168,7 @@ export default {
             state.userToken = userInfo.token;
             state.userIsAdmin = state.method.inArray('admin', userInfo.identity);
             state.method.setStorage("userInfo", state.userInfo);
-            dispatch("getProjectList");
+            dispatch("getProjects");
             dispatch("getDialogMsgUnread");
             dispatch("websocketConnection");
             resolve()
@@ -260,267 +260,304 @@ export default {
         });
     },
 
+    /** *****************************************************************************************/
+    /** ************************************** 项目 **********************************************/
+    /** *****************************************************************************************/
+
     /**
-     * 保存项目信息
+     * 保存项目数据
      * @param state
+     * @param dispatch
      * @param data
      */
-    saveProject({state}, data) {
+    saveProject({state, dispatch}, data) {
         if (state.method.isArray(data)) {
-            if (state.projectDetail.id) {
-                const project = data.find(({id}) => id == state.projectDetail.id);
-                if (project) {
-                    state.projectDetail = Object.assign({}, state.projectDetail, project)
-                }
-            }
-            state.projectList = data;
+            data.forEach((project) => {
+                dispatch("saveProject", project)
+            });
+            return;
         } else if (state.method.isJson(data)) {
-            if (data.id == state.projectDetail.id) {
-                state.projectDetail = Object.assign({}, state.projectDetail, data)
-            }
-            let index = state.projectList.findIndex(({id}) => id == data.id);
+            let index = state.projects.findIndex(({id}) => id == data.id);
             if (index > -1) {
-                state.projectList.splice(index, 1, Object.assign({}, state.projectList[index], data));
+                state.projects.splice(index, 1, Object.assign(state.projects[index], data));
             } else {
-                state.projectList.unshift(data);
+                state.projects.push(data);
             }
         }
-        state.method.setStorage("cacheProjectList", state.cacheProjectList = state.projectList);
+        state.method.setStorage("cacheProjects", state.cacheProjects = state.projects);
     },
 
     /**
-     * 获取项目列表
+     * 获取项目
      * @param state
      * @param dispatch
      */
-    getProjectList({state, dispatch}) {
+    getProjects({state, dispatch}) {
         if (state.userId === 0) {
-            state.projectList = [];
+            state.projects = [];
             return;
         }
-        if (state.cacheProjectList.length > 0) {
-            state.projectList = state.cacheProjectList;
+        if (state.cacheProjects.length > 0) {
+            state.projects = state.cacheProjects;
         }
         dispatch("call", {
             url: 'project/lists',
         }).then(result => {
             dispatch("saveProject", result.data.data);
         }).catch(result => {
-            $A.modalError(result.msg);
+            //
         });
     },
 
     /**
-     * 获取项目信息
+     * 获取单个项目
      * @param state
      * @param dispatch
      * @param data {id}
      */
-    getProjectBasic({state, dispatch}, data) {
+    getProjectOne({state, dispatch}, data) {
         if (state.method.runNum(data.id) === 0) {
             return;
         }
         dispatch("call", {
-            url: 'project/basic',
+            url: 'project/one',
             data: {
                 project_id: data.id,
             },
         }).then(result => {
-            dispatch("saveProject", result.data);
-        });
-    },
-
-    /**
-     * 获取项目详情
-     * @param state
-     * @param dispatch
-     * @param data {id}
-     */
-    getProjectDetail({state, dispatch}, data) {
-        if (state.method.runNum(data.id) === 0) {
-            return;
-        }
-        const project = state.cacheProjectList.find(({id}) => id == data.id);
-        if (project) {
-            state.projectDetail = Object.assign({project_column: [], project_user: []}, project);
-        } else {
-            state.projectDetail.id = data.id;
-        }
-        //
-        state.projectLoad++;
-        dispatch("call", {
-            url: 'project/detail',
-            data: {
-                project_id: data.id,
-            },
-        }).then(result => {
-            state.projectLoad--;
             dispatch("saveProject", result.data);
         }).catch(result => {
-            state.projectLoad--;
-            $A.modalError(result.msg);
+            //
         });
     },
 
     /**
-     * 删除项目信息
+     * 删除项目
      * @param state
      * @param data {id}
      */
     removeProject({state}, data) {
-        let index = state.projectList.findIndex(({id}) => id == data.id);
-        if (index > -1) {
-            state.projectList.splice(index, 1);
-            state.method.setStorage("cacheProjectList", state.cacheProjectList = state.projectList);
+        if (state.method.runNum(data.id) === 0) {
+            return;
         }
-        if (state.projectDetail.id == data.id) {
-            const project = state.projectList.find(({id}) => id && id != data.id);
+        let index = state.projects.findIndex(({id}) => id == data.id);
+        if (index > -1) {
+            state.projects.splice(index, 1);
+        }
+        if (state.projectId == data.id) {
+            const project = state.projects.find(({id}) => id && id != data.id);
             if (project) {
                 $A.goForward({path: '/manage/project/' + project.id});
             } else {
                 $A.goForward({path: '/manage/dashboard'});
             }
         }
+        //
+        dispatch("call", {
+            url: 'project/delete',
+            data: {
+                project_id: data.id,
+            },
+        }).then(result => {
+            state.method.setStorage("cacheProjects", state.cacheProjects = state.projects);
+        }).catch(result => {
+            //
+        });
     },
 
     /**
-     * 保存任务信息
+     * 获取项目统计
+     * @param state
+     * @param dispatch
+     */
+    getProjectStatistics({state, dispatch}) {
+        dispatch("call", {
+            url: 'project/statistics',
+        }).then(({data}) => {
+            state.projectStatistics = data;
+        });
+    },
+
+    /** *****************************************************************************************/
+    /** ************************************** 列表 **********************************************/
+    /** *****************************************************************************************/
+
+    /**
+     * 保存列表数据
+     * @param state
+     * @param dispatch
+     * @param data
+     */
+    saveColumn({state, dispatch}, data) {
+        if (state.method.isArray(data)) {
+            data.forEach((column) => {
+                dispatch("saveColumn", column)
+            });
+            return;
+        } else if (state.method.isJson(data)) {
+            let index = state.columns.findIndex(({id}) => id == data.id);
+            if (index > -1) {
+                state.columns.splice(index, 1, Object.assign(state.columns[index], data));
+            } else {
+                state.columns.push(data);
+            }
+        }
+        state.method.setStorage("cacheColumns", state.cacheColumns = state.columns);
+    },
+
+    /**
+     * 获取列表
+     * @param state
+     * @param dispatch
+     * @param data {project_id}
+     */
+    getColumns({state, dispatch}, data) {
+        if (state.userId === 0) {
+            state.columns = [];
+            return;
+        }
+        if (state.cacheColumns.length > 0) {
+            state.columns = state.cacheColumns;
+        }
+        dispatch("call", {
+            url: 'project/column/lists',
+            data: {
+                project_id: data.project_id
+            }
+        }).then(result => {
+            dispatch("saveColumn", result.data.data);
+        }).catch(result => {
+            //
+        });
+    },
+
+    /**
+     * 删除列表
+     * @param state
+     * @param data {id}
+     */
+    removeColumn({state}, data) {
+        if (state.method.runNum(data.id) === 0) {
+            return;
+        }
+        let index = state.columns.findIndex(({id}) => id == data.id);
+        if (index > -1) {
+            state.columns.splice(index, 1);
+        }
+        //
+        dispatch("call", {
+            url: 'project/column/delete',
+            data: {
+                column_id: data.id,
+            },
+        }).then(result => {
+            state.method.setStorage("cacheColumns", state.cacheColumns = state.columns);
+        }).catch(result => {
+            //
+        });
+    },
+
+
+    /** *****************************************************************************************/
+    /** ************************************** 任务 **********************************************/
+    /** *****************************************************************************************/
+
+    /**
+     * 保存任务数据
      * @param state
      * @param dispatch
      * @param data
      */
     saveTask({state, dispatch}, data) {
-        state.projectDetail.project_column.some(({project_task}) => {
-            let index = project_task.findIndex(({id}) => id === data.id);
-            if (index > -1) {
-                project_task.splice(index, 1, Object.assign(project_task[index], data))
-                return true;
-            }
-        });
-        if (data.id == state.projectOpenTask.id) {
-            state.projectOpenTask = Object.assign({}, state.projectOpenTask, data);
-        } else if (data.parent_id == state.projectOpenTask.id && state.projectOpenTask.sub_task) {
-            let index = state.projectOpenTask.sub_task.findIndex(({id}) => id === data.id);
-            if (index > -1) {
-                state.projectOpenTask.sub_task.splice(index, 1, Object.assign(state.projectOpenTask.sub_task[index], data))
-            }
-        }
-        dispatch("saveCalendarTask", data)
-    },
-
-    /**
-     * 保存任务信息（日历任务）
-     * @param state
-     * @param dispatch
-     * @param data
-     */
-    saveCalendarTask({state, dispatch}, data) {
         if (state.method.isArray(data)) {
             data.forEach((task) => {
-                dispatch("saveCalendarTask", task)
+                dispatch("saveTask", task)
             });
             return;
-        }
-        if (data.parent_id > 0) {
-            return;
-        }
-        if (!data.start_at || !data.end_at) {
-            return;
-        }
-        if (!data.owner) {
-            return;
-        }
-        let task = {
-            id: data.id,
-            calendarId: String(data.project_id),
-            title: data.name,
-            body: data.desc,
-            category: 'allday',
-            start: new Date(data.start_at).toISOString(),
-            end: new Date(data.end_at).toISOString(),
-            color: "#515a6e",
-            bgColor: data.color || '#E3EAFD',
-            borderColor: data.p_color,
-            complete_at: data.complete_at,
-            priority: '',
-            preventClick: true,
-            isChecked: false,
-        };
-        if (data.p_name) {
-            task.priority = '<span class="priority" style="background-color:' + data.p_color + '">' + data.p_name + '</span>';
-        }
-        if (data.overdue) {
-            task.title = '[' + $A.L('超期') + '] ' + task.title
-            task.color = "#f56c6c"
-            task.bgColor = "#fef0f0"
-            task.priority+= '<span class="overdue">' + $A.L('超期未完成') + '</span>';
-        }
-        if (!task.borderColor) {
-            task.borderColor = task.bgColor;
-        }
-        let index = state.calendarTask.findIndex(({id}) => id === data.id);
-        if (index > -1) {
-            state.calendarTask.splice(index, 1, Object.assign(state.calendarTask[index], task))
-        } else {
-            state.calendarTask.push(task)
-        }
-    },
-
-    /**
-     * 获取任务统计
-     * @param state
-     * @param dispatch
-     */
-    getTaskStatistics({state, dispatch}) {
-        dispatch("call", {
-            url: 'project/task/statistics',
-        }).then(({data}) => {
-            state.projectTaskStatistics = data;
-        });
-    },
-
-    /**
-     * 获取任务列表
-     * @param state
-     * @param dispatch
-     * @param whereData
-     * @returns {Promise<unknown>}
-     */
-    getTaskList({state, dispatch}, whereData) {
-        return new Promise(function (resolve, reject) {
-            if (state.userId === 0) {
-                reject()
-                return;
+        } else if (state.method.isJson(data)) {
+            let index = state.tasks.findIndex(({id}) => id == data.id);
+            if (index > -1) {
+                state.tasks.splice(index, 1, Object.assign(state.tasks[index], data));
+            } else {
+                state.tasks.push(data);
             }
-            dispatch("call", {
-                url: 'project/task/lists',
-                data: whereData,
-            }).then(result => {
-                resolve(result)
-            }).catch(result => {
-                reject(result)
-            });
+        }
+        state.method.setStorage("cacheTasks", state.cacheTasks = state.tasks);
+    },
+
+    /**
+     * 获取任务
+     * @param state
+     * @param dispatch
+     * @param data {project_id, parent_id}
+     */
+    getTasks({state, dispatch}, data) {
+        if (state.userId === 0) {
+            state.tasks = [];
+            return;
+        }
+        if (state.cacheTasks.length > 0) {
+            state.tasks = state.cacheTasks;
+        }
+        dispatch("call", {
+            url: 'project/task/lists',
+            data: data
+        }).then(result => {
+            dispatch("saveTask", result.data.data);
+        }).catch(result => {
+            //
         });
     },
 
     /**
-     * 获取任务信息
+     * 获取单个任务
      * @param state
      * @param dispatch
      * @param task_id
+     */
+    getTaskOne({state, dispatch}, task_id) {
+        if (state.method.runNum(task_id) === 0) {
+            return;
+        }
+        dispatch("call", {
+            url: 'project/task/one',
+            data: {
+                task_id,
+            },
+        }).then(result => {
+            dispatch("saveTask", result.data);
+        }).catch(result => {
+            //
+        });
+    },
+
+    /**
+     * 删除或归档任务
+     * @param state
+     * @param dispatch
+     * @param data {id, type}
      * @returns {Promise<unknown>}
      */
-    getTaskBasic({state, dispatch}, task_id) {
+    taskArchivedOrRemove({state, dispatch}, data) {
         return new Promise(function (resolve, reject) {
+            if (state.method.runNum(data.id) === 0) {
+                return;
+            }
+            let index = state.tasks.findIndex(({id}) => id == data.id);
+            if (index > -1) {
+                state.tasks.splice(index, 1);
+            }
+            //
             dispatch("call", {
-                url: 'project/task/basic',
+                url: 'project/task/' + data.type,
                 data: {
-                    task_id,
+                    task_id: data.id,
                 },
             }).then(result => {
-                dispatch("saveTask", result.data);
+                state.method.setStorage("cacheTasks", state.cacheTasks = state.tasks);
                 resolve(result)
             }).catch(result => {
+                dispatch("getTaskOne", data.id);
                 reject(result)
             });
         });
@@ -541,15 +578,14 @@ export default {
                     task_id,
                 },
             }).then(result => {
-                const {content} = result.data;
-                state.projectTaskContent[task_id] = content;
-                if (task_id == state.projectOpenTask.id) {
-                    state.projectOpenTask = Object.assign({}, state.projectOpenTask, {content: content || ''});
+                let index = state.taskContents.findIndex(({id}) => id == result.data.id)
+                if (index > -1) {
+                    state.taskContents.splice(index, 1, result.data)
+                } else {
+                    state.taskContents.push(result.data)
                 }
                 resolve(result)
-            }).catch(result => {
-                reject(result)
-            });
+            }).catch(reject);
         });
     },
 
@@ -568,40 +604,16 @@ export default {
                     task_id,
                 },
             }).then(result => {
-                state.projectTaskFiles[task_id] = result.data;
-                if (task_id == state.projectOpenTask.id) {
-                    state.projectOpenTask = Object.assign({}, state.projectOpenTask, {files: result.data});
-                }
+                result.data.forEach((data) => {
+                    let index = state.taskFiles.findIndex(({id}) => id == data.id)
+                    if (index > -1) {
+                        state.taskFiles.splice(index, 1, data)
+                    } else {
+                        state.taskFiles.push(data)
+                    }
+                })
                 resolve(result)
-            }).catch(result => {
-                reject(result)
-            });
-        });
-    },
-
-    /**
-     * 获取子任务
-     * @param state
-     * @param dispatch
-     * @param task_id
-     * @returns {Promise<unknown>}
-     */
-    getSubTask({state, dispatch}, task_id) {
-        return new Promise(function (resolve, reject) {
-            dispatch("call", {
-                url: 'project/task/sublist',
-                data: {
-                    task_id,
-                },
-            }).then(result => {
-                state.projectSubTask[task_id] = result.data;
-                if (task_id == state.projectOpenTask.id) {
-                    state.projectOpenTask = Object.assign({}, state.projectOpenTask, {sub_task: result.data});
-                }
-                resolve(result)
-            }).catch(result => {
-                reject(result)
-            });
+            }).catch(reject);
         });
     },
 
@@ -612,35 +624,23 @@ export default {
      * @param task_id
      */
     openTask({state, dispatch}, task_id) {
-        let data = state.method.isJson(task_id) ? task_id : {id: task_id};
-        state.projectDetail.project_column.some(({project_task}) => {
-            const task = project_task.find(({id}) => id === data.id);
-            if (task) {
-                data = Object.assign(data, task);
-                return true
-            }
-        });
-        //
-        data.content = state.projectTaskContent[data.id] || ""
-        data.files = state.projectTaskFiles[data.id] || []
-        data.sub_task = state.projectSubTask[data.id] || []
-        //
-        state.projectOpenTask = Object.assign({}, data, {_show: true});
-        dispatch("getTaskBasic", data.id);
-        dispatch("getTaskContent", data.id);
-        dispatch("getTaskFiles", data.id);
-        dispatch("getSubTask", data.id);
+        state.taskId = task_id;
+        if (task_id > 0) {
+            dispatch("getTaskOne", task_id);
+            dispatch("getTaskContent", task_id);
+            dispatch("getTaskFiles", task_id);
+            dispatch("getTasks", {parent_id: task_id});
+        }
     },
 
     /**
      * 添加任务
      * @param state
-     * @param dispatch
      * @param commit
      * @param data
      * @returns {Promise<unknown>}
      */
-    taskAdd({state, dispatch, commit}, data) {
+    taskAdd({state, dispatch}, data) {
         return new Promise(function (resolve, reject) {
             const post = state.method.cloneJSON(state.method.date2string(data));
             if (state.method.isArray(post.column_id)) post.column_id = post.column_id.find((val) => val)
@@ -651,32 +651,31 @@ export default {
                 data: post,
                 method: 'post',
             }).then(result => {
-                commit("taskAddSuccess", result.data)
+                const {new_column, task} = result.data;
+                dispatch("saveColumn", new_column)
+                dispatch("saveTask", task)
                 resolve(result)
-            }).catch(result => {
-                reject(result)
-            });
+            }).catch(reject);
         });
     },
 
     /**
      * 添加子任务
      * @param dispatch
-     * @param commit
      * @param data {task_id, name}
      * @returns {Promise<unknown>}
      */
-    taskAddSub({dispatch, commit}, data) {
+    taskAddSub({dispatch}, data) {
         return new Promise(function (resolve, reject) {
             dispatch("call", {
                 url: 'project/task/addsub',
                 data: data,
             }).then(result => {
-                commit("taskAddSuccess", result.data)
+                const {new_column, task} = result.data;
+                dispatch("saveColumn", new_column)
+                dispatch("saveTask", task)
                 resolve(result)
-            }).catch(result => {
-                reject(result)
-            });
+            }).catch(reject);
         });
     },
 
@@ -684,11 +683,10 @@ export default {
      * 更新任务
      * @param state
      * @param dispatch
-     * @param commit
      * @param data
      * @returns {Promise<unknown>}
      */
-    taskUpdate({state, dispatch, commit}, data) {
+    taskUpdate({state, dispatch}, data) {
         return new Promise(function (resolve, reject) {
             const post = state.method.cloneJSON(state.method.date2string(data));
             if (state.method.isArray(post.owner)) post.owner = post.owner.find((id) => id)
@@ -698,42 +696,10 @@ export default {
                 data: post,
                 method: 'post',
             }).then(result => {
-                const {data} = result;
-                if (data.is_update_content === true) {
-                    state.projectTaskContent[data.id] = post['content'];
-                    if (data.id == state.projectOpenTask.id) {
-                        state.projectOpenTask = Object.assign({}, state.projectOpenTask, {content: post['content']});
-                    }
-                    data.is_update_content = false;
-                }
-                commit("taskUpdateSuccess", data)
+                dispatch("saveTask", result.data)
                 resolve(result)
             }).catch(result => {
-                dispatch("getTaskBasic", post.task_id);
-                reject(result)
-            });
-        });
-    },
-
-    /**
-     * 删除或归档任务
-     * @param dispatch
-     * @param commit
-     * @param data {task_id, type}
-     * @returns {Promise<unknown>}
-     */
-    taskArchivedOrRemove({dispatch, commit}, data) {
-        let {task_id, type} = data;
-        return new Promise(function (resolve, reject) {
-            dispatch("call", {
-                url: 'project/task/' + type,
-                data: {
-                    task_id,
-                },
-            }).then(result => {
-                commit("taskDeleteSuccess", result.data);
-                resolve(result);
-            }).catch(result => {
+                dispatch("getTaskOne", post.task_id);
                 reject(result)
             });
         });
@@ -752,11 +718,14 @@ export default {
             }).then(result => {
                 state.taskPriority = result.data;
                 resolve(result)
-            }).catch(result => {
-                reject(result)
-            });
+            }).catch(reject);
         });
     },
+
+
+    /** *****************************************************************************************/
+    /** ************************************** 会话 **********************************************/
+    /** *****************************************************************************************/
 
     /**
      * 更新会话数据
@@ -980,10 +949,10 @@ export default {
             return;
         }
         if (state.method.isJson(data)) {
-            state.projectDetail.project_column.some(({project_task}) => {
-                const task = project_task.find(({dialog_id}) => dialog_id === data.dialog_id);
-                if (task) task.msg_num++;
-            });
+            const task = state.tasks.find(({dialog_id}) => dialog_id === data.dialog_id);
+            if (task) {
+                task.msg_num++;
+            }
             if (data.id && state.dialogMsgList.find(m => m.id == data.id)) {
                 data = null;
             }
@@ -1152,10 +1121,8 @@ export default {
                                         commit("dialogMoveToTop", dialog_id);
                                     }
                                     // 新增任务消息数量
-                                    state.projectDetail.project_column.some(({project_task}) => {
-                                        const task = project_task.find(({dialog_id}) => dialog_id === data.dialog_id);
-                                        if (task) task.msg_num++;
-                                    });
+                                    const task = state.tasks.find(({dialog_id}) => dialog_id === data.dialog_id);
+                                    if (task) task.msg_num++;
                                     // 新增总未读数
                                     if (data.userid !== state.userId) state.dialogMsgUnread++;
                                 }

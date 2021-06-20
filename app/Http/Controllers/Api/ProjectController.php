@@ -25,6 +25,39 @@ use Request;
 class ProjectController extends AbstractController
 {
     /**
+     * 任务统计
+     */
+    public function statistics()
+    {
+        User::auth();
+
+        $data = [];
+
+        // 今日待完成
+        $between = [
+            Carbon::today()->startOfDay(),
+            Carbon::today()->endOfDay()
+        ];
+        $data['today'] = ProjectTask::authData()
+            ->whereNull('project_tasks.complete_at')
+            ->where('project_tasks.parent_id', 0)
+            ->where(function ($query) use ($between) {
+                $query->whereBetween('project_tasks.start_at', $between)->orWhereBetween('project_tasks.end_at', $between);
+            })
+            ->count();
+
+        // 超期未完成
+        $data['overdue'] = ProjectTask::authData()
+            ->whereNull('project_tasks.complete_at')
+            ->where('project_tasks.parent_id', 0)
+            ->whereNotNull('project_tasks.end_at')
+            ->where('project_tasks.end_at', '<', Carbon::now())
+            ->count();
+
+        return Base::retSuccess('success', $data);
+    }
+
+    /**
      * 获取项目列表
      *
      * @apiParam {Number} [page]        当前页，默认:1
@@ -43,11 +76,11 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 获取项目基础信息
+     * 获取一个项目信息
      *
      * @apiParam {Number} project_id     项目ID
      */
-    public function basic()
+    public function one()
     {
         User::auth();
         //
@@ -59,45 +92,16 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 获取项目详细信息
-     *
-     * @apiParam {Number} project_id     项目ID
-     */
-    public function detail()
-    {
-        User::auth();
-        //
-        $project_id = intval(Request::input('project_id'));
-        //
-        $project = Project::with(['projectColumn' => function($query) {
-            $query->with(['projectTask' => function($taskQuery) {
-                $taskQuery->with(['taskUser', 'taskTag'])->where('parent_id', 0);
-            }]);
-        }, 'projectUser'])
-            ->select(project::projectSelect)
-            ->authData()
-            ->where('projects.id', $project_id)
-            ->first();
-        if (empty($project)) {
-            return Base::retError('项目不存在或不在成员列表内');
-        }
-        $owner_user = $project->projectUser->where('owner', 1)->first();
-        $project->owner_userid = $owner_user ? $owner_user->userid : 0;
-        //
-        return Base::retSuccess('success', $project);
-    }
-
-    /**
      * 添加项目
      *
      * @apiParam {String} name          项目名称
      * @apiParam {String} [desc]        项目介绍
-     * @apiParam {Array} [columns]      流程，格式[流程1, 流程2]
+     * @apiParam {Array} [columns]      列表，格式[列表1, 列表2]
      */
     public function add()
     {
         $user = User::auth();
-        //项目名称
+        // 项目名称
         $name = trim(Request::input('name', ''));
         $desc = trim(Request::input('desc', ''));
         if (mb_strlen($name) < 2) {
@@ -108,7 +112,7 @@ class ProjectController extends AbstractController
         if (mb_strlen($desc) > 255) {
             return Base::retError('项目介绍最多只能设置255个字');
         }
-        //流程
+        // 列表
         $columns = Request::input('columns');
         if (!is_array($columns)) $columns = [];
         $insertColumns = [];
@@ -129,9 +133,9 @@ class ProjectController extends AbstractController
             ];
         }
         if (count($insertColumns) > 30) {
-            return Base::retError('项目流程最多不能超过30个');
+            return Base::retError('项目列表最多不能超过30个');
         }
-        //开始创建
+        // 开始创建
         $project = Project::createInstance([
             'name' => $name,
             'desc' => $desc,
@@ -150,7 +154,7 @@ class ProjectController extends AbstractController
             }
         });
         //
-        $data = $project->find($project->id);
+        $data = Project::find($project->id);
         $data->addLog("创建项目");
         $data->pushMsg('add', $data->toArray());
         return Base::retSuccess('添加成功', $data);
@@ -375,6 +379,30 @@ class ProjectController extends AbstractController
     }
 
     /**
+     * 获取任务列表
+     *
+     * @apiParam {Number} project_id        项目ID
+     *
+     * @apiParam {Number} [page]            当前页，默认:1
+     * @apiParam {Number} [pagesize]        每页显示数量，默认:100，最大:200
+     */
+    public function column__lists()
+    {
+        User::auth();
+        //
+        $project_id = intval(Request::input('project_id'));
+        // 项目
+        $project = Project::userProject($project_id);
+        //
+        $list = ProjectColumn::whereProjectId($project->id)
+            ->orderBy('sort')
+            ->orderBy('id')
+            ->paginate(Base::getPaginate(200, 100));
+        //
+        return Base::retSuccess('success', $list);
+    }
+
+    /**
      * 添加任务列表
      *
      * @apiParam {Number} project_id        项目ID
@@ -400,7 +428,7 @@ class ProjectController extends AbstractController
         $column->save();
         $column->addLog("创建列表：" . $column->name);
         //
-        $data = $column->find($column->id);
+        $data = ProjectColumn::find($column->id);
         $data->project_task = [];
         $data->pushMsg("add", $data->toArray());
         return Base::retSuccess('添加成功', $data);
@@ -471,54 +499,46 @@ class ProjectController extends AbstractController
         }
         //
         $column->deleteColumn();
-        return Base::retSuccess('删除成功', $column->toArray());
-    }
-
-    /**
-     * 任务统计
-     */
-    public function task__statistics()
-    {
-        User::auth();
-
-        $data = [];
-
-        // 今日待完成
-        $between = [
-            Carbon::today()->startOfDay(),
-            Carbon::today()->endOfDay()
-        ];
-        $data['today'] = ProjectTask::authData()->where(function($query) use ($between) {
-            $query->whereBetween('project_tasks.start_at', $between)->orWhereBetween('project_tasks.end_at', $between);
-        })->count();
-
-        // 超期未完成
-        $data['overdue'] = ProjectTask::authData()->whereNotNull('project_tasks.end_at')->where('project_tasks.end_at', '<', Carbon::now())->count();
-
-        return Base::retSuccess('success', $data);
+        return Base::retSuccess('删除成功', ['id' => $column->id]);
     }
 
     /**
      * 任务列表
      *
-     * @apiParam {String} name              任务名称（包含）
-     * @apiParam {Array} time               时间范围，如：['2020-12-12', '2020-12-30']
-     * @apiParam {String} time_before       指定时间之前，如：2020-12-30 00:00:00（填写此项时time参数无效）
+     * @apiParam {Number} [project_id]       项目ID
+     * @apiParam {Number} [parent_id]        主任务ID（填写后 project_id 无效）
+     * @apiParam {String} [name]             任务描述关键词
+     * @apiParam {Array} [time]              时间范围，如：['2020-12-12', '2020-12-30']
+     * @apiParam {String} [time_before]      指定时间之前，如：2020-12-30 00:00:00（填写此项时time参数无效）
      */
     public function task__lists()
     {
         User::auth();
         //
-        $builder = ProjectTask::select(ProjectTask::taskSelect)->authData();
+        $builder = ProjectTask::with(['taskUser', 'taskTag']);
         //
+        $parent_id = intval(Request::input('parent_id'));
+        $project_id = intval(Request::input('project_id'));
         $name = Request::input('name');
         $time = Request::input('time');
         $time_before = Request::input('time_before');
+        //
+        if ($parent_id > 0) {
+            ProjectTask::userTask($parent_id);
+            $builder->where('parent_id', $parent_id)->whereNull('archived_at');
+        } elseif ($project_id > 0) {
+            Project::userProject($project_id);
+            $builder->where('project_id', $project_id)->whereNull('archived_at');
+        } else {
+            $builder->authData();
+        }
+        //
         if ($name) {
             $builder->where(function($query) use ($name) {
                 $query->where('project_tasks.name', 'like', '%,' . $name . ',%');
             });
         }
+        //
         if (Base::isDateOrTime($time_before)) {
             $builder->whereNotNull('project_tasks.end_at')->where('project_tasks.end_at', '<', Carbon::parse($time_before));
         } elseif (is_array($time)) {
@@ -539,11 +559,11 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 获取任务基础信息
+     * 获取单个任务信息
      *
      * @apiParam {Number} task_id            任务ID
      */
-    public function task__basic()
+    public function task__one()
     {
         User::auth();
         //
@@ -555,23 +575,6 @@ class ProjectController extends AbstractController
         $task->column_name = ProjectColumn::whereId($task->column_id)->value('name');
         //
         return Base::retSuccess('success', $task);
-    }
-
-    /**
-     * 获取子任务
-     *
-     * @apiParam {Number} task_id            任务ID
-     */
-    public function task__sublist()
-    {
-        User::auth();
-        //
-        $task_id = intval(Request::input('task_id'));
-        //
-        $task = ProjectTask::userTask($task_id);
-        //
-        $data = ProjectTask::with(['taskUser', 'taskTag'])->where('parent_id', $task->id)->whereNull('archived_at')->get();
-        return Base::retSuccess('success', $data);
     }
 
     /**
@@ -661,10 +664,10 @@ class ProjectController extends AbstractController
         ]));
         $data = [
             'new_column' => $newColumn,
-            'in_top' => intval($data['top']),
-            'task' => ProjectTask::with(['taskUser', 'taskTag'])->find($task->id),
+            'task' => ProjectTask::with(['taskUser', 'taskTag'])->find($task->id)->toArray(),
         ];
         $task->pushMsg('add', $data);
+        $data['task']['owner'] = 1;
         return Base::retSuccess('添加成功', $data);
     }
 
@@ -691,10 +694,10 @@ class ProjectController extends AbstractController
         ]);
         $data = [
             'new_column' => null,
-            'in_top' => 0,
-            'task' => ProjectTask::with(['taskUser', 'taskTag'])->find($task->id),
+            'task' => ProjectTask::with(['taskUser', 'taskTag'])->find($task->id)->toArray(),
         ];
         $task->pushMsg('add', $data);
+        $data['task']['owner'] = 1;
         return Base::retSuccess('添加成功', $data);
     }
 
@@ -800,7 +803,8 @@ class ProjectController extends AbstractController
                 'userid' => $user->userid,
             ]);
             $file->save();
-            $file = $file->find($file->id);
+            //
+            $file = ProjectTaskFile::find($file->id);
             $task->addLog("上传文件：" . $file->name);
             $task->pushMsg('upload', $file->toArray());
             return Base::retSuccess("上传成功", $file);
@@ -863,7 +867,7 @@ class ProjectController extends AbstractController
         }
         //
         $task->archivedTask(Carbon::now());
-        return Base::retSuccess('保存成功', $task);
+        return Base::retSuccess('保存成功', ['id' => $task->id]);
     }
 
     /**
@@ -880,7 +884,7 @@ class ProjectController extends AbstractController
         $task = ProjectTask::userTask($task_id);
         //
         $task->deleteTask();
-        return Base::retSuccess('删除成功', $task);
+        return Base::retSuccess('删除成功', ['id' => $task->id]);
     }
 
     /**

@@ -4,11 +4,6 @@
 <script>
 import Calendar from 'tui-calendar-hi';
 
-const scheduleNeedProp = [
-    'start',
-    'category'
-];
-
 export default {
     name: 'Calendar',
     props: {
@@ -27,7 +22,7 @@ export default {
                 let notHave = false;
 
                 value.forEach(schedule => {
-                    notHave = scheduleNeedProp.some(prop => !schedule.hasOwnProperty(prop));
+                    notHave = [ 'start', 'category' ].some(prop => !schedule.hasOwnProperty(prop));
                 });
 
                 return !notHave;

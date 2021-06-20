@@ -36,7 +36,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userToken', 'projectOpenTask']),
+        ...mapState(['userToken', 'taskId', 'taskFiles']),
 
         headers() {
             return {
@@ -47,7 +47,7 @@ export default {
 
         params() {
             return {
-                task_id: this.projectOpenTask.id,
+                task_id: this.taskId,
             }
         },
     },
@@ -57,18 +57,19 @@ export default {
             //上传时
             if (typeof file.tempId === "undefined") {
                 file.tempId = $A.randomString(8);
-                this.projectOpenTask.files.push(file);
+                file.task_id = this.taskId;
+                this.taskFiles.push(file);
             }
         },
 
         handleSuccess({ret, data, msg}, file) {
             //上传完成
-            let index = this.projectOpenTask.files.findIndex(({tempId}) => tempId == file.tempId);
+            let index = this.taskFiles.findIndex(({tempId}) => tempId == file.tempId);
             if (index > -1) {
-                this.projectOpenTask.files.splice(index, 1);
+                this.taskFiles.splice(index, 1);
             }
             if (ret === 1) {
-                this.$store.commit("taskUploadSuccess", data)
+                this.taskFiles.push(data);
             } else {
                 this.$refs.upload.fileList.pop();
                 $A.modalWarning({

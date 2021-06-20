@@ -318,10 +318,7 @@ export default {
             if (!this.dialogDetail.group_info) {
                 return;
             }
-            this.$store.dispatch("openTask", {
-                id: this.dialogDetail.group_info.id,
-                dialog_id: this.dialogDetail.id
-            });
+            this.$store.dispatch("openTask", this.dialogDetail.group_info.id);
         },
 
         loadNextPage() {

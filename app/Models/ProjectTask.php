@@ -258,15 +258,16 @@ class ProjectTask extends AbstractModel
     {
         $pre = DB::getTablePrefix();
         $user = $user ?: User::auth();
-        $query->join('project_task_users', 'project_tasks.id', '=', 'project_task_users.task_pid')
+        $query->select(ProjectTask::taskSelect)
+            ->join('project_task_users', 'project_tasks.id', '=', 'project_task_users.task_pid')
             ->whereExists(function ($der) use ($pre) {
                 $der->select(DB::raw(1))
                     ->from('project_task_users as B')
+                    ->where('B.owner', 1)
                     ->whereColumn('project_task_users.task_pid', '=', 'B.task_pid')
                     ->havingRaw("max({$pre}B.id) = {$pre}project_task_users.id");
             })
             ->whereNull('project_tasks.archived_at')
-            ->where('project_tasks.parent_id', 0)
             ->where('project_task_users.userid', $user->userid);
         return $query;
     }
@@ -688,7 +689,7 @@ class ProjectTask extends AbstractModel
      */
     public static function userTask($task_id, $with = [])
     {
-        $task = ProjectTask::with($with)->whereId(intval($task_id))->first();
+        $task = self::with($with)->whereId(intval($task_id))->first();
         if (empty($task)) {
             throw new ApiException('任务不存在');
         }
