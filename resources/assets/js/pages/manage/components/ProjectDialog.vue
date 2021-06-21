@@ -4,11 +4,11 @@
             <div slot="head">
                 <div class="dialog-user">
                     <div class="member-head">
-                        <div class="member-title">{{$L('项目成员')}}<span>({{projectDetail.project_user.length}})</span></div>
+                        <div class="member-title">{{$L('项目成员')}}<span>({{projectData.project_user.length}})</span></div>
                         <div class="member-view-all" @click="memberShowAll=!memberShowAll">{{$L('查看所有')}}</div>
                     </div>
                     <ul :class="['member-list', memberShowAll ? 'member-all' : '']">
-                        <li v-for="item in projectDetail.project_user">
+                        <li v-for="item in projectData.project_user">
                             <UserAvatar :userid="item.userid" :size="36"/>
                         </li>
                     </ul>
@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import {mapState} from "vuex";
+import {mapGetters, mapState} from "vuex";
 import DialogWrapper from "./DialogWrapper";
 
 export default {
@@ -35,11 +35,13 @@ export default {
     },
 
     computed: {
-        ...mapState(['projectDetail', 'projectChatShow']),
+        ...mapState(['projectChatShow']),
+
+        ...mapGetters(['projectData'])
     },
 
     watch: {
-        'projectDetail.dialog_id' () {
+        'projectData.dialog_id' () {
             this.getMsgList()
         },
         projectChatShow: {
@@ -52,8 +54,8 @@ export default {
 
     methods: {
         getMsgList() {
-            if (this.projectChatShow && this.projectDetail.dialog_id) {
-                this.$store.dispatch("getDialogMsgList", this.projectDetail.dialog_id);
+            if (this.projectChatShow && this.projectData.dialog_id) {
+                this.$store.dispatch("getDialogMsgList", this.projectData.dialog_id);
             }
         }
     }

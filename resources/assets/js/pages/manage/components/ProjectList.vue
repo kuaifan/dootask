@@ -3,12 +3,12 @@
         <div class="project-head">
             <div class="project-titbox">
                 <div class="project-title">
-                    <h1>{{projectDetail.name}}</h1>
-                    <div v-if="projectLoad > 0" class="project-load"><Loading/></div>
+                    <h1>{{projectData.name}}</h1>
+                    <!--<div class="project-load"><Loading/></div>-->
                 </div>
                 <ul class="project-icons">
                     <li>
-                        <UserAvatar :userid="projectDetail.owner_userid" :size="36">
+                        <UserAvatar :userid="projectData.owner_userid" :size="36">
                             <p>{{$L('项目负责人')}}</p>
                         </UserAvatar>
                     </li>
@@ -30,7 +30,7 @@
                     <li class="project-icon">
                         <EDropdown @command="projectDropdown" trigger="click" transfer>
                             <Icon class="menu-icon" type="ios-more" />
-                            <EDropdownMenu v-if="projectDetail.owner_userid === userId" slot="dropdown">
+                            <EDropdownMenu v-if="projectData.owner_userid === userId" slot="dropdown">
                                 <EDropdownItem command="setting">{{$L('项目设置')}}</EDropdownItem>
                                 <EDropdownItem command="user">{{$L('成员管理')}}</EDropdownItem>
                                 <EDropdownItem command="transfer" divided>{{$L('移交项目')}}</EDropdownItem>
@@ -43,7 +43,7 @@
                     </li>
                 </ul>
             </div>
-            <div v-if="projectDetail.desc" class="project-subtitle">{{projectDetail.desc}}</div>
+            <div v-if="projectData.desc" class="project-subtitle">{{projectData.desc}}</div>
             <div class="project-switch">
                 <div v-if="completedCount > 0" class="project-checkbox">
                     <Checkbox :value="projectCompleteShow" @on-change="toggleBoolean('projectCompleteShow', $event)">{{$L('显示已完成')}}</Checkbox>
@@ -56,23 +56,23 @@
         </div>
         <div v-if="projectTablePanel" class="project-column overlay-x">
             <Draggable
-                :list="projectDetail.project_column"
+                :list="projectData.columns"
                 :animation="150"
                 :disabled="sortDisabled"
                 class="column-list"
                 tag="ul"
                 draggable=".column-item"
                 @sort="sortUpdate(true)">
-                <li v-for="column in projectDetail.project_column" class="column-item">
+                <li v-for="column in projectData.columns" class="column-item">
                     <div
                         :class="['column-head', column.color ? 'custom-color' : '']"
                         :style="column.color ? {backgroundColor: column.color} : {}">
                         <div class="column-head-title">
                             <AutoTip>{{column.name}}</AutoTip>
-                            <em>({{panelTask(column.project_task).length}})</em>
+                            <em>({{panelTask(column.tasks).length}})</em>
                         </div>
                         <div class="column-head-icon">
-                            <div v-if="column.loading === true" class="loading"><Loading /></div>
+                            <div v-if="columnLoad[column.id] === true" class="loading"><Loading /></div>
                             <EDropdown
                                 v-else
                                 trigger="click"
@@ -85,7 +85,7 @@
                                             <Icon type="md-create" />{{$L('修改')}}
                                         </div>
                                     </EDropdownItem>
-                                    <EDropdownItem command="delete">
+                                    <EDropdownItem command="remove">
                                         <div class="item">
                                             <Icon type="md-trash" />{{$L('删除')}}
                                         </div>
@@ -105,14 +105,14 @@
                         <div v-if="column.addTopShow===true" class="task-item additem">
                             <TaskAddSimple
                                 :column-id="column.id"
-                                :project-id="projectDetail.id"
+                                :project-id="projectId"
                                 :add-top="true"
                                 @on-close="column.addTopShow=false"
                                 @on-priority="addTaskOpen"
                                 auto-active/>
                         </div>
                         <Draggable
-                            :list="column.project_task"
+                            :list="column.tasks"
                             :animation="150"
                             :disabled="sortDisabled"
                             class="task-list"
@@ -121,14 +121,14 @@
                             @sort="sortUpdate"
                             @remove="sortUpdate">
                             <div
-                                v-for="item in column.project_task"
-                                :class="['task-item task-draggable', item.complete_at ? 'complete' : '', taskHidden(item) ? 'hidden' : '']"
+                                v-for="item in column.tasks"
+                                :class="['task-item task-draggable', item.complete_at ? 'complete' : '', taskIsHidden(item) ? 'hidden' : '']"
                                 :style="item.color ? {backgroundColor: item.color} : {}"
                                 @click="openTask(item)">
                                 <div :class="['task-head', item.desc ? 'has-desc' : '']">
                                     <div class="task-title"><pre>{{item.name}}</pre></div>
                                     <div class="task-menu" @click.stop="">
-                                        <div v-if="item.loading === true" class="loading"><Loading /></div>
+                                        <div v-if="taskLoad[item.id] === true" class="loading"><Loading /></div>
                                         <EDropdown
                                             v-else
                                             trigger="click"
@@ -195,7 +195,7 @@
                             <div class="task-item additem">
                                 <TaskAddSimple
                                     :column-id="column.id"
-                                    :project-id="projectDetail.id"
+                                    :project-id="projectId"
                                     @on-priority="addTaskOpen"/>
                             </div>
                         </Draggable>
@@ -244,7 +244,7 @@
                 <TaskRow :list="myList" open-key="my" :color-list="taskColorList" @command="dropTask" fast-add-task/>
             </div>
             <!--未完成任务-->
-            <div v-if="projectDetail.task_num > 0" :class="['project-table-body', !taskUndoneShow ? 'project-table-hide' : '']">
+            <div v-if="projectData.task_num > 0" :class="['project-table-body', !taskUndoneShow ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
                         <i class="iconfont" @click="toggleBoolean('taskUndoneShow')">&#xe689;</i>
@@ -259,7 +259,7 @@
                 <TaskRow :list="undoneList" open-key="undone" :color-list="taskColorList" @command="dropTask"/>
             </div>
             <!--已完成任务-->
-            <div v-if="projectDetail.task_num > 0" :class="['project-table-body', !taskCompletedShow ? 'project-table-hide' : '']">
+            <div v-if="projectData.task_num > 0" :class="['project-table-body', !taskCompletedShow ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
                         <i class="iconfont" @click="toggleBoolean('taskCompletedShow')">&#xe689;</i>
@@ -284,10 +284,10 @@
                 maxWidth: '640px'
             }"
             :mask-closable="false">
-            <TaskAdd ref="add" v-model="addData" @on-add="onAddTask"/>
+            <TaskAdd ref="add" @on-add="onAddTask"/>
             <div slot="footer">
                 <Button type="default" @click="addShow=false">{{$L('取消')}}</Button>
-                <Button type="primary" :loading="taskLoad > 0" @click="onAddTask">{{$L('添加')}}</Button>
+                <Button type="primary" :loading="addLoad > 0" @click="onAddTask">{{$L('添加')}}</Button>
             </div>
         </Modal>
 
@@ -348,7 +348,7 @@
 import Draggable from 'vuedraggable'
 import TaskPriority from "./TaskPriority";
 import TaskAdd from "./TaskAdd";
-import {mapState} from "vuex";
+import {mapGetters, mapState} from "vuex";
 import UserInput from "../../../components/UserInput";
 import TaskAddSimple from "./TaskAddSimple";
 import TaskRow from "./TaskRow";
@@ -360,19 +360,13 @@ export default {
             nowTime: Math.round(new Date().getTime() / 1000),
             nowInterval: null,
 
+            columnLoad: {},
+            taskLoad: {},
+
             searchText: '',
 
             addShow: false,
-            addData: {
-                owner: 0,
-                column_id: 0,
-                times: [],
-                subtasks: [],
-                p_level: 0,
-                p_name: '',
-                p_color: '',
-            },
-            taskLoad: 0,
+            addLoad: 0,
 
             addColumnShow: false,
             addColumnName: '',
@@ -432,61 +426,64 @@ export default {
             'userId',
             'dialogList',
 
-            'projectList',
-            'projectDetail',
-            'projectLoad',
+            'projectId',
+            'tasks',
+            'columns',
 
             'projectChatShow',
             'projectTablePanel',
             'projectCompleteShow',
+
             'taskMyShow',
             'taskUndoneShow',
             'taskCompletedShow'
         ]),
 
+        ...mapGetters(['projectData']),
+
         msgUnread() {
-            const {dialogList, projectDetail} = this;
-            const dialog = dialogList.find(({id}) => id === projectDetail.dialog_id);
+            const {dialogList, projectData} = this;
+            const dialog = dialogList.find(({id}) => id === projectData.dialog_id);
             return dialog ? dialog.unread : 0;
         },
 
         panelTask() {
             const {searchText, projectCompleteShow} = this;
-            return function (project_task) {
+            return function (list) {
                 if (!projectCompleteShow) {
-                    project_task = project_task.filter(({complete_at}) => {
+                    list = list.filter(({complete_at}) => {
                         return !complete_at;
                     });
                 }
                 if (searchText) {
-                    project_task = project_task.filter(({name, desc}) => {
+                    list = list.filter(({name, desc}) => {
                         return $A.strExists(name, searchText) || $A.strExists(desc, searchText);
                     });
                 }
-                return project_task;
+                return list;
             }
         },
 
         myList() {
-            const {searchText, projectCompleteShow, userId, projectDetail} = this;
-            const array = [];
-            projectDetail.project_column.forEach(({project_task, name}) => {
-                project_task.some((task) => {
-                    if (!projectCompleteShow) {
-                        if (task.complete_at) {
-                            return false;
-                        }
+            const {projectId, tasks, searchText, projectCompleteShow, userId} = this;
+            const array = tasks.filter((task) => {
+                if (task.parent_id > 0) {
+                    return false;
+                }
+                if (task.project_id != projectId) {
+                    return false;
+                }
+                if (!projectCompleteShow) {
+                    if (task.complete_at) {
+                        return false;
                     }
-                    if (searchText) {
-                        if (!$A.strExists(task.name, searchText) && !$A.strExists(task.desc, searchText)) {
-                            return false;
-                        }
+                }
+                if (searchText) {
+                    if (!$A.strExists(task.name, searchText) && !$A.strExists(task.desc, searchText)) {
+                        return false;
                     }
-                    if (task.task_user.find(({userid}) => userid == userId)) {
-                        task.column_name = name;
-                        array.push(task);
-                    }
-                });
+                }
+                return task.task_user.find(({userid}) => userid == userId);
             });
             return array.sort((a, b) => {
                 if (a.p_level != b.p_level) {
@@ -500,25 +497,25 @@ export default {
         },
 
         undoneList() {
-            const {searchText, projectCompleteShow, projectDetail} = this;
-            const array = [];
-            projectDetail.project_column.forEach(({project_task, name}) => {
-                project_task.some((task) => {
-                    if (!projectCompleteShow) {
-                        if (task.complete_at) {
-                            return false;
-                        }
+            const {projectId, tasks, searchText, projectCompleteShow} = this;
+            const array = tasks.filter((task) => {
+                if (task.parent_id > 0) {
+                    return false;
+                }
+                if (task.project_id != projectId) {
+                    return false;
+                }
+                if (!projectCompleteShow) {
+                    if (task.complete_at) {
+                        return false;
                     }
-                    if (searchText) {
-                        if (!$A.strExists(task.name, searchText) && !$A.strExists(task.desc, searchText)) {
-                            return false;
-                        }
+                }
+                if (searchText) {
+                    if (!$A.strExists(task.name, searchText) && !$A.strExists(task.desc, searchText)) {
+                        return false;
                     }
-                    if (!task.complete_at) {
-                        task.column_name = name;
-                        array.push(task);
-                    }
-                });
+                }
+                return !task.complete_at;
             });
             return array.sort((a, b) => {
                 if (a.p_level != b.p_level) {
@@ -532,34 +529,38 @@ export default {
         },
 
         completedCount() {
-            const {projectDetail} = this;
-            let count = 0;
-            projectDetail.project_column.forEach(({project_task, name}) => {
-                count += project_task.filter(({complete_at}) => !!complete_at).length;
-            });
-            return count;
+            const {projectId, tasks} = this;
+            return tasks.filter((task) => {
+                if (task.parent_id > 0) {
+                    return false;
+                }
+                if (task.project_id != projectId) {
+                    return false;
+                }
+                return task.complete_at;
+            }).length;
         },
 
         completedList() {
-            const {searchText, projectCompleteShow, projectDetail} = this;
-            const array = [];
-            projectDetail.project_column.forEach(({project_task, name}) => {
-                project_task.some((task) => {
-                    if (!projectCompleteShow) {
-                        if (task.complete_at) {
-                            return false;
-                        }
-                    }
-                    if (searchText) {
-                        if (!$A.strExists(task.name, searchText) && !$A.strExists(task.desc, searchText)) {
-                            return false;
-                        }
-                    }
+            const {projectId, tasks, searchText, projectCompleteShow} = this;
+            const array = tasks.filter((task) => {
+                if (task.parent_id > 0) {
+                    return false;
+                }
+                if (task.project_id != projectId) {
+                    return false;
+                }
+                if (!projectCompleteShow) {
                     if (task.complete_at) {
-                        task.column_name = name;
-                        array.push(task);
+                        return false;
                     }
-                });
+                }
+                if (searchText) {
+                    if (!$A.strExists(task.name, searchText) && !$A.strExists(task.desc, searchText)) {
+                        return false;
+                    }
+                }
+                return task.complete_at;
             });
             return array.sort((a, b) => {
                 if (a.p_level != b.p_level) {
@@ -587,7 +588,7 @@ export default {
     },
 
     watch: {
-        projectDetail() {
+        projectData() {
             this.sortData = this.getSort();
         }
     },
@@ -595,12 +596,12 @@ export default {
     methods: {
         getSort() {
             const sortData = [];
-            this.projectDetail.project_column.forEach((column) => {
+            this.projectData.columns.forEach((column) => {
                 sortData.push({
                     id: column.id,
-                    task: column.project_task.map(({id}) => id)
+                    task: column.tasks.map(({id}) => id)
                 });
-            });
+            })
             return sortData;
         },
 
@@ -616,7 +617,7 @@ export default {
             this.$store.dispatch("call", {
                 url: 'project/sort',
                 data: {
-                    project_id: this.projectDetail.id,
+                    project_id: this.projectId,
                     sort: this.sortData,
                     only_column: only_column === true ? 1 : 0
                 },
@@ -626,33 +627,19 @@ export default {
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.sortDisabled = false;
-                this.$store.dispatch("getProjectDetail", this.projectDetail);
+                this.$store.state.tasks = this.tasks.filter(({project_id}) => project_id != this.projectId);
+                this.$store.dispatch("getTasks", {project_id: this.projectId})
             });
         },
 
         onAddTask() {
-            if (!this.addData.name) {
-                $A.messageError("任务描述不能为空");
-                return;
-            }
-            this.taskLoad++;
-            this.$store.dispatch("taskAdd", this.addData).then(({msg}) => {
-                $A.messageSuccess(msg);
-                this.taskLoad--;
-                this.addShow = false;
-                this.addData = {
-                    owner: 0,
-                    column_id: 0,
-                    times: [],
-                    subtasks: [],
-                    p_level: 0,
-                    p_name: '',
-                    p_color: '',
-                };
-            }).catch(({msg}) => {
-                $A.modalError(msg);
-                this.taskLoad--;
-            });
+            this.addLoad++;
+            this.$refs.add.onAdd((success) => {
+                this.addLoad--;
+                if (success) {
+                    this.addShow = false;
+                }
+            })
         },
 
         addTopShow(column) {
@@ -661,14 +648,11 @@ export default {
         },
 
         addTaskOpen(column_id) {
-            if ($A.isJson(column_id)) {
-                this.addData = Object.assign({}, this.addData, column_id);
-            } else {
-                this.$set(this.addData, 'owner', this.userId);
-                this.$set(this.addData, 'column_id', column_id);
-                this.$set(this.addData, 'project_id', this.projectDetail.id);
-            }
             this.$refs.add.defaultPriority();
+            this.$refs.add.setData($A.isJson(column_id) ? column_id : {
+                'owner': this.userId,
+                'column_id': column_id,
+            });
             this.addShow = true;
             this.$nextTick(() => {
                 this.$refs.add.$refs.input.focus();
@@ -696,13 +680,13 @@ export default {
             this.$store.dispatch("call", {
                 url: 'project/column/add',
                 data: {
-                    project_id: this.projectDetail.id,
+                    project_id: this.projectId,
                     name: name,
                 },
             }).then(({data, msg}) => {
                 $A.messageSuccess(msg);
                 this.addColumnName = '';
-                this.$store.commit("columnAddSuccess", data);
+                this.$store.dispatch("saveColumn", data);
             }).catch(({msg}) => {
                 $A.modalError(msg);
             });
@@ -712,7 +696,7 @@ export default {
             if (command === 'title') {
                 this.titleColumn(column);
             }
-            else if (command === 'delete') {
+            else if (command === 'remove') {
                 this.removeColumn(column);
             }
             else if (command.name) {
@@ -739,12 +723,11 @@ export default {
         },
 
         updateColumn(column, updata) {
-            if (column.loading === true) {
+            if (this.columnLoad[column.id] === true) {
                 return;
             }
-            this.$set(column, 'loading', true);
+            this.$set(this.columnLoad, column.id, true);
             //
-            const backup = $A.cloneJSON(column);
             Object.keys(updata).forEach(key => this.$set(column, key, updata[key]));
             //
             this.$store.dispatch("call", {
@@ -753,11 +736,11 @@ export default {
                     column_id: column.id,
                 }),
             }).then(({data}) => {
-                this.$set(column, 'loading', false);
-                this.$store.commit("columnUpdateSuccess", data);
+                this.$set(this.columnLoad, column.id, false);
+                this.$store.dispatch("saveColumn", data);
             }).catch(({msg}) => {
-                this.$set(column, 'loading', false);
-                Object.keys(updata).forEach(key => this.$set(column, key, backup[key]));
+                this.$set(this.columnLoad, column.id, false);
+                this.$store.dispatch("getColumns", {project_id: this.projectId})
                 $A.modalError(msg);
             });
         },
@@ -768,10 +751,10 @@ export default {
                 content: '你确定要删除列表【' + column.name + '】及列表内的任务吗？',
                 loading: true,
                 onOk: () => {
-                    if (column.loading === true) {
+                    if (this.columnLoad[column.id] === true) {
                         return;
                     }
-                    this.$set(column, 'loading', true);
+                    this.$set(this.columnLoad, column.id, true);
                     //
                     this.$store.dispatch("call", {
                         url: 'project/column/remove',
@@ -780,12 +763,12 @@ export default {
                         },
                     }).then(({data, msg}) => {
                         $A.messageSuccess(msg);
-                        this.$set(column, 'loading', false);
+                        this.$set(this.columnLoad, column.id, false);
                         this.$Modal.remove();
-                        this.$store.commit("columnDeleteSuccess", data);
+                        this.$store.dispatch("forgetColumn", data.id);
                     }).catch(({msg}) => {
                         $A.modalError(msg, 301);
-                        this.$set(column, 'loading', false);
+                        this.$set(this.columnLoad, column.id, false);
                         this.$Modal.remove();
                     });
                 }
@@ -821,19 +804,21 @@ export default {
         },
 
         updateTask(task, updata) {
-            if (task.loading === true) {
+            if (this.taskLoad[task.id] === true) {
                 return;
             }
-            this.$set(task, 'loading', true);
+            this.$set(this.taskLoad, task.id, true);
             //
             Object.keys(updata).forEach(key => this.$set(task, key, updata[key]));
+            //
             this.$store.dispatch("taskUpdate", Object.assign(updata, {
                 task_id: task.id,
             })).then(() => {
-                this.$set(task, 'loading', false);
+                this.$set(this.taskLoad, task.id, false);
             }).catch(({msg}) => {
-                this.$set(task, 'loading', false);
                 $A.modalError(msg);
+                this.$set(this.taskLoad, task.id, false);
+                this.$store.dispatch("getTaskOne", task.id);
             });
         },
 
@@ -846,17 +831,19 @@ export default {
                 content: '你确定要' + typeName + typeTask + '【' + task.name + '】吗？',
                 loading: true,
                 onOk: () => {
-                    if (task.loading === true) {
+                    if (this.taskLoad[task.id] === true) {
                         this.$Modal.remove();
                         return;
                     }
-                    this.$set(task, 'loading', true);
+                    this.$set(this.taskLoad, task.id, true);
                     this.$store.dispatch(typeDispatch, task.id).then(({msg}) => {
                         $A.messageSuccess(msg);
                         this.$Modal.remove();
+                        this.$set(this.taskLoad, task.id, false);
                     }).catch(({msg}) => {
                         $A.modalError(msg, 301);
                         this.$Modal.remove();
+                        this.$set(this.taskLoad, task.id, false);
                     });
                 }
             });
@@ -866,7 +853,9 @@ export default {
             this.settingLoad++;
             this.$store.dispatch("call", {
                 url: 'project/update',
-                data: this.settingData,
+                data: Object.assign(this.settingData, {
+                    project_id: this.projectId
+                }),
             }).then(({data, msg}) => {
                 $A.messageSuccess(msg);
                 this.settingLoad--;
@@ -883,14 +872,14 @@ export default {
             this.$store.dispatch("call", {
                 url: 'project/user',
                 data: {
-                    project_id: this.userData.project_id,
+                    project_id: this.projectId,
                     userid: this.userData.userids,
                 },
-            }).then(({data, msg}) => {
+            }).then(({msg}) => {
                 $A.messageSuccess(msg);
                 this.userLoad--;
                 this.userShow = false;
-                this.$store.dispatch("getProjectDetail", data);
+                this.$store.dispatch("getProjectOne", this.projectId);
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.userLoad--;
@@ -902,14 +891,14 @@ export default {
             this.$store.dispatch("call", {
                 url: 'project/transfer',
                 data: {
-                    project_id: this.transferData.project_id,
+                    project_id: this.projectId,
                     owner_userid: this.transferData.owner_userid[0],
                 },
-            }).then(({data, msg}) => {
+            }).then(({msg}) => {
                 $A.messageSuccess(msg);
                 this.transferLoad--;
                 this.transferShow = false;
-                this.$store.dispatch("getProjectDetail", data);
+                this.$store.dispatch("getProjectOne", this.projectId);
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.transferLoad--;
@@ -919,18 +908,12 @@ export default {
         onDelete() {
             $A.modalConfirm({
                 title: '删除项目',
-                content: '你确定要删除项目【' + this.projectDetail.name + '】吗？',
+                content: '你确定要删除项目【' + this.projectData.name + '】吗？',
                 loading: true,
                 onOk: () => {
-                    this.$store.dispatch("call", {
-                        url: 'project/remove',
-                        data: {
-                            project_id: this.projectDetail.id,
-                        },
-                    }).then(({data, msg}) => {
+                    this.$store.dispatch("removeProject", this.projectId).then(({msg}) => {
                         $A.messageSuccess(msg);
                         this.$Modal.remove();
-                        this.$store.dispatch("removeProject", data.id);
                     }).catch(({msg}) => {
                         $A.modalError(msg, 301);
                         this.$Modal.remove();
@@ -942,18 +925,12 @@ export default {
         onExit() {
             $A.modalConfirm({
                 title: '退出项目',
-                content: '你确定要退出项目【' + this.projectDetail.name + '】吗？',
+                content: '你确定要退出项目【' + this.projectData.name + '】吗？',
                 loading: true,
                 onOk: () => {
-                    this.$store.dispatch("call", {
-                        url: 'project/exit',
-                        data: {
-                            project_id: this.projectDetail.id,
-                        },
-                    }).then(({data, msg}) => {
+                    this.$store.dispatch("exitProject", this.projectId).then(({msg}) => {
                         $A.messageSuccess(msg);
                         this.$Modal.remove();
-                        this.$store.dispatch("removeProject", data.id);
                     }).catch(({msg}) => {
                         $A.modalError(msg, 301);
                         this.$Modal.remove();
@@ -965,9 +942,8 @@ export default {
         projectDropdown(name) {
             switch (name) {
                 case "setting":
-                    this.$set(this.settingData, 'project_id', this.projectDetail.id);
-                    this.$set(this.settingData, 'name', this.projectDetail.name);
-                    this.$set(this.settingData, 'desc', this.projectDetail.desc);
+                    this.$set(this.settingData, 'name', this.projectData.name);
+                    this.$set(this.settingData, 'desc', this.projectData.desc);
                     this.settingShow = true;
                     this.$nextTick(() => {
                         this.$refs.projectName.focus();
@@ -975,15 +951,13 @@ export default {
                     break;
 
                 case "user":
-                    this.$set(this.userData, 'project_id', this.projectDetail.id);
-                    this.$set(this.userData, 'userids', this.projectDetail.project_user.map(({userid}) => userid));
-                    this.$set(this.userData, 'uncancelable', [this.projectDetail.owner_userid]);
+                    this.$set(this.userData, 'userids', this.projectData.project_user.map(({userid}) => userid));
+                    this.$set(this.userData, 'uncancelable', [this.projectData.owner_userid]);
                     this.userShow = true;
                     break;
 
                 case "transfer":
-                    this.$set(this.transferData, 'project_id', this.projectDetail.id);
-                    this.$set(this.transferData, 'owner_userid', [this.projectDetail.owner_userid]);
+                    this.$set(this.transferData, 'owner_userid', [this.projectData.owner_userid]);
                     this.transferShow = true;
                     break;
 
@@ -1009,7 +983,7 @@ export default {
             this.$store.dispatch("toggleBoolean", type);
         },
 
-        taskHidden(task) {
+        taskIsHidden(task) {
             const {name, desc, complete_at} = task;
             const {searchText, projectCompleteShow} = this;
             if (!projectCompleteShow) {
@@ -1023,12 +997,6 @@ export default {
                 }
             }
             return false;
-        },
-
-        sortBy(field) {
-            return function (a, b) {
-                return a[field] - b[field];
-            }
         },
 
         formatTime(date) {

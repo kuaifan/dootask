@@ -144,9 +144,9 @@ export default {
             }).then(result => {
                 dispatch("saveUserInfo", result.data);
                 resolve(result)
-            }).catch(result => {
-                dispatch("logout");
-                reject(result)
+            }).catch(e => {
+                !e.ret && console.error(e);
+                reject(e)
             });
         });
     },
@@ -242,10 +242,10 @@ export default {
                 dispatch("saveUserOnlineStatus", item);
                 typeof success === "function" && success(item, true)
             });
-        }).catch(result => {
+        }).catch(e => {
+            !e.ret && console.error(e);
             state.cacheUserBasic["::load"] = false;
             typeof complete === "function" && complete()
-            $A.modalError(result.msg);
         });
     },
 
@@ -324,9 +324,10 @@ export default {
         dispatch("call", {
             url: 'project/lists',
         }).then(result => {
+            state.projects = [];
             dispatch("saveProject", result.data.data);
-        }).catch(result => {
-            //
+        }).catch(e => {
+            !e.ret && console.error(e);
         });
     },
 
@@ -344,8 +345,8 @@ export default {
             },
         }).then(result => {
             dispatch("saveProject", result.data);
-        }).catch(result => {
-            //
+        }).catch(e => {
+            !e.ret && console.error(e);
         });
     },
 
@@ -364,9 +365,33 @@ export default {
             }).then(result => {
                 dispatch("forgetProject", project_id)
                 resolve(result)
-            }).catch(result => {
+            }).catch(e => {
+                !e.ret && console.error(e);
                 dispatch("getProjectOne", project_id);
-                reject(result)
+                reject(e)
+            });
+        });
+    },
+
+    /**
+     * 退出项目
+     * @param dispatch
+     * @param project_id
+     */
+    exitProject({dispatch}, project_id) {
+        return new Promise(function (resolve, reject) {
+            dispatch("call", {
+                url: 'project/exit',
+                data: {
+                    project_id,
+                },
+            }).then(result => {
+                dispatch("forgetProject", project_id)
+                resolve(result)
+            }).catch(e => {
+                !e.ret && console.error(e);
+                dispatch("getProjectOne", project_id);
+                reject(e)
             });
         });
     },
@@ -444,9 +469,10 @@ export default {
                 project_id
             }
         }).then(result => {
+            state.columns = state.columns.filter((item) => item.project_id != project_id);
             dispatch("saveColumn", result.data.data);
-        }).catch(result => {
-            //
+        }).catch(e => {
+            !e.ret && console.error(e);
         });
     },
 
@@ -465,7 +491,9 @@ export default {
             }).then(result => {
                 dispatch("forgetColumn", column_id)
                 resolve(result)
-            }).catch(reject);
+            }).catch(e => {
+                !e.ret && console.error(e);
+            });
         });
     },
 
@@ -531,9 +559,15 @@ export default {
             url: 'project/task/lists',
             data: data
         }).then(result => {
+            if (data.project_id) {
+                state.tasks = state.tasks.filter((item) => item.project_id != data.project_id);
+            }
+            if (data.parent_id) {
+                state.tasks = state.tasks.filter((item) => item.parent_id != data.parent_id);
+            }
             dispatch("saveTask", result.data.data);
-        }).catch(result => {
-            //
+        }).catch(e => {
+            !e.ret && console.error(e);
         });
     },
 
@@ -554,8 +588,8 @@ export default {
             },
         }).then(result => {
             dispatch("saveTask", result.data);
-        }).catch(result => {
-            //
+        }).catch(e => {
+            !e.ret && console.error(e);
         });
     },
 
@@ -575,9 +609,10 @@ export default {
             }).then(result => {
                 dispatch("forgetTask", task_id)
                 resolve(result)
-            }).catch(result => {
+            }).catch(e => {
+                !e.ret && console.error(e);
                 dispatch("getTaskOne", task_id);
-                reject(result)
+                reject(e)
             });
         });
     },
@@ -598,9 +633,10 @@ export default {
             }).then(result => {
                 dispatch("forgetTask", task_id)
                 resolve(result)
-            }).catch(result => {
+            }).catch(e => {
+                !e.ret && console.error(e);
                 dispatch("getTaskOne", task_id);
-                reject(result)
+                reject(e)
             });
         });
     },
@@ -627,7 +663,9 @@ export default {
                     state.taskContents.push(result.data)
                 }
                 resolve(result)
-            }).catch(reject);
+            }).catch(e => {
+                !e.ret && console.error(e);
+            });
         });
     },
 
@@ -655,7 +693,9 @@ export default {
                     }
                 })
                 resolve(result)
-            }).catch(reject);
+            }).catch(e => {
+                !e.ret && console.error(e);
+            });
         });
     },
 
@@ -697,7 +737,9 @@ export default {
                 dispatch("saveColumn", new_column)
                 dispatch("saveTask", task)
                 resolve(result)
-            }).catch(reject);
+            }).catch(e => {
+                !e.ret && console.error(e);
+            });
         });
     },
 
@@ -717,7 +759,9 @@ export default {
                 dispatch("saveColumn", new_column)
                 dispatch("saveTask", task)
                 resolve(result)
-            }).catch(reject);
+            }).catch(e => {
+                !e.ret && console.error(e);
+            });
         });
     },
 
@@ -740,9 +784,10 @@ export default {
             }).then(result => {
                 dispatch("saveTask", result.data)
                 resolve(result)
-            }).catch(result => {
+            }).catch(e => {
+                !e.ret && console.error(e);
                 dispatch("getTaskOne", post.task_id);
-                reject(result)
+                reject(e)
             });
         });
     },
@@ -760,7 +805,9 @@ export default {
             }).then(result => {
                 state.taskPriority = result.data;
                 resolve(result)
-            }).catch(reject);
+            }).catch(e => {
+                !e.ret && console.error(e);
+            });
         });
     },
 
@@ -810,8 +857,9 @@ export default {
                     });
                 }
                 resolve(result);
-            }).catch(result => {
-                reject(result);
+            }).catch(e => {
+                !e.ret && console.error(e);
+                reject(e);
             });
         });
     },
@@ -855,9 +903,9 @@ export default {
                 dispatch("getDialogMsgList", result.data.id);
                 dispatch("saveDialog", result.data);
                 resolve(result);
-            }).catch(result => {
-                $A.modalError(result.msg);
-                reject(result);
+            }).catch(e => {
+                !e.ret && console.error(e);
+                reject(e);
             });
         });
     },
@@ -914,7 +962,8 @@ export default {
             state.method.setStorage("cacheDialogMsg", state.cacheDialogMsg);
             // 更新当前会话消息
             commit("dialogMsgListSuccess", data);
-        }).catch(() => {
+        }).catch(e => {
+            !e.ret && console.error(e);
             state.dialogMsgLoad--;
             state.cacheDialogMsg[dialog_id + "::load"] = false;
         });
@@ -948,9 +997,10 @@ export default {
                 state.dialogMsgLoad--;
                 commit("dialogMsgListSuccess", result.data);
                 resolve(result)
-            }).catch((result) => {
+            }).catch(e => {
+                !e.ret && console.error(e);
                 state.dialogMsgLoad--;
-                reject(result)
+                reject(e)
             });
         });
     },

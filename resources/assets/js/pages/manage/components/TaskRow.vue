@@ -6,7 +6,7 @@
                 <Col span="12" :class="['row-name', item.complete_at ? 'complete' : '']">
                     <Icon
                         v-if="item.sub_num > 0 || (item.parent_id===0 && fastAddTask)"
-                        :class="['sub-icon', item[openName] ? 'active' : '']"
+                        :class="['sub-icon', taskOpen[item.id] ? 'active' : '']"
                         type="ios-arrow-forward"
                         @click="getSublist(item)"/>
                     <EDropdown
@@ -16,7 +16,7 @@
                         <div class="drop-icon">
                             <Icon v-if="item.complete_at" class="completed" type="md-checkmark-circle" />
                             <Icon v-else type="md-radio-button-off" />
-                            <div v-if="item.loading === true" class="loading"><Loading /></div>
+                            <div v-if="taskLoad[item.id] === true" class="loading"><Loading /></div>
                         </div>
                         <EDropdownMenu slot="dropdown" class="project-list-more-dropdown-menu">
                             <EDropdownItem v-if="item.complete_at" command="uncomplete">
@@ -83,8 +83,8 @@
                 </Col>
             </Row>
             <TaskRow
-                v-if="item[openName]===true"
-                :list="item.sub_task"
+                v-if="taskOpen[item.id]===true"
+                :list="subTask(item.id)"
                 :parent-id="item.id"
                 :fast-add-task="item.parent_id===0 && fastAddTask"
                 :color-list="colorList"
@@ -98,6 +98,7 @@
 <script>
 import TaskPriority from "./TaskPriority";
 import TaskAddSimple from "./TaskAddSimple";
+import {mapState} from "vuex";
 
 export default {
     name: "TaskRow",
@@ -132,6 +133,9 @@ export default {
         return {
             nowTime: Math.round(new Date().getTime() / 1000),
             nowInterval: null,
+
+            taskLoad: {},
+            taskOpen: {}
         }
     },
     mounted() {
@@ -143,10 +147,16 @@ export default {
     destroyed() {
         clearInterval(this.nowInterval)
     },
+
     computed: {
-        openName() {
-            return 'sub_open_' + this.openKey
+        ...mapState(['tasks']),
+
+        subTask() {
+            return function(task_id) {
+                return this.tasks.filter(({parent_id}) => parent_id == task_id);
+            }
         },
+
         expiresFormat() {
             const {nowTime} = this;
             return function (date) {
@@ -166,20 +176,22 @@ export default {
         },
 
         getSublist(task) {
-            if (task[this.openName] === true) {
-                this.$set(task, this.openName, false);
+            if (this.taskOpen[task.id] === true) {
+                this.$set(this.taskOpen, task.id, false);
                 return;
             }
-            if (task.loading === true) {
+            if (this.taskLoad[task.id] === true) {
                 return;
             }
-            this.$set(task, 'loading', true);
-            this.$store.dispatch("getSubTask", task.id).then(({data}) => {
-                this.$set(task, 'loading', false);
-                this.$set(task, 'sub_task', data);
-                this.$set(task, this.openName, true);
+            this.$set(this.taskLoad, task.id, true);
+            //
+            this.$store.dispatch("getTasks", {
+                parent_id: task.id
+            }).then(() => {
+                this.$set(this.taskLoad, task.id, false);
+                this.$set(this.taskOpen, task.id, true);
             }).catch(({msg}) => {
-                this.$set(task, 'loading', false);
+                this.$set(this.taskLoad, task.id, false);
                 $A.modalError(msg);
             });
         },

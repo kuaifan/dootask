@@ -70,7 +70,7 @@
 </template>
 
 <script>
-import {mapState} from "vuex";
+import {mapGetters, mapState} from "vuex";
 
 export default {
     name: "TaskAddSimple",
@@ -125,7 +125,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'taskPriority', 'projectDetail']),
+        ...mapState(['userId', 'taskPriority']),
 
         typeName() {
             return (this.parentId > 0 ? '子任务' : '任务');
@@ -154,7 +154,7 @@ export default {
                     name: this.addData.name,
                 }
             } else {
-                this.addData.project_id = this.projectId || this.projectDetail.id;
+                this.addData.project_id = this.projectId || this.$store.state.projectId;
                 this.addData.column_id = this.columnId || '';
                 this.addData.owner = [this.userId];
                 this.addData.top = this.addTop ? 1 : 0;
