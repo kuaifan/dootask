@@ -751,10 +751,7 @@ export default {
                 data: post,
                 method: 'post',
             }).then(result => {
-                const {new_column, task} = result.data;
-                dispatch("saveColumn", new_column)
-                dispatch("saveTask", task)
-                dispatch("getProjectOne", task.project_id);
+                dispatch("addTaskSuccess", result.data)
                 resolve(result)
             }).catch(e => {
                 !e.ret && console.error(e);
@@ -775,15 +772,31 @@ export default {
                 url: 'project/task/addsub',
                 data: data,
             }).then(result => {
-                const {task} = result.data;
-                dispatch("saveTask", task)
-                dispatch("getTaskOne", task.parent_id);
+                dispatch("addTaskSuccess", result.data)
                 resolve(result)
             }).catch(e => {
                 !e.ret && console.error(e);
                 reject(e);
             });
         });
+    },
+
+    /**
+     * 添加任务成功
+     * @param dispatch
+     * @param data
+     */
+    addTaskSuccess({dispatch}, data) {
+        const {new_column, task} = data;
+        if (new_column) {
+            dispatch("saveColumn", new_column)
+        }
+        dispatch("saveTask", task)
+        if (task.parent_id) {
+            dispatch("getTaskOne", task.parent_id);
+        } else {
+            dispatch("getProjectOne", task.project_id);
+        }
     },
 
     /**
@@ -1255,10 +1268,13 @@ export default {
                                         dispatch("saveProject", data)
                                         break;
                                     case 'detail':
-                                        dispatch("getProjectDetail", data);
+                                        dispatch("getProjectOne", data);
                                         break;
                                     case 'delete':
-                                        dispatch("removeProject", data);
+                                        dispatch("forgetProject", data.id);
+                                        break;
+                                    case 'sort':
+                                        dispatch("getTasks", {project_id: data.id})
                                         break;
                                 }
                             })(msgDetail);
@@ -1272,13 +1288,11 @@ export default {
                                 const {action, data} = msg;
                                 switch (action) {
                                     case 'add':
-                                        commit("columnAddSuccess", data)
-                                        break;
                                     case 'update':
-                                        commit("columnUpdateSuccess", data)
+                                        dispatch("saveColumn", data)
                                         break;
                                     case 'delete':
-                                        commit("columnDeleteSuccess", data)
+                                        dispatch("forgetColumn", data.id)
                                         break;
                                 }
                             })(msgDetail);
@@ -1292,20 +1306,18 @@ export default {
                                 const {action, data} = msg;
                                 switch (action) {
                                     case 'add':
-                                        commit("taskAddSuccess", data)
+                                        dispatch("addTaskSuccess", data)
                                         break;
                                     case 'update':
-                                        commit("taskUpdateSuccess", data)
+                                    case 'dialog':
+                                        dispatch("saveTask", data)
                                         break;
                                     case 'upload':
-                                        commit("taskUploadSuccess", data)
+                                        dispatch("getTaskFiles", data.id)
                                         break;
                                     case 'archived':
                                     case 'delete':
-                                        commit("taskDeleteSuccess", data)
-                                        break;
-                                    case 'dialog':
-                                        dispatch("saveTask", data)
+                                        dispatch("forgetTask", data.id)
                                         break;
                                 }
                             })(msgDetail);

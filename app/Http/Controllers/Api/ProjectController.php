@@ -327,7 +327,7 @@ class ProjectController extends AbstractController
             }
             $project->addLog("调整任务排序");
         }
-        $project->pushMsg('detail');
+        $project->pushMsg('sort');
         return Base::retSuccess('调整成功');
     }
 
