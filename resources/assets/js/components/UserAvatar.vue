@@ -7,7 +7,7 @@
             <slot/>
             <p>{{$L('昵称')}}: {{user.nickname}}</p>
             <p>{{$L('职位/职称')}}: {{user.profession || '-'}}</p>
-            <div v-if="userId != userid && !hideIconMenu" class="avatar-icons">
+            <div v-if="userId != userid && showIconMenu" class="avatar-icons">
                 <Icon type="ios-chatbubbles" @click="openDialog"/>
             </div>
         </div>
@@ -45,7 +45,7 @@
                 type: Boolean,
                 default: false
             },
-            hideIconMenu: {
+            showIconMenu: {
                 type: Boolean,
                 default: false
             },

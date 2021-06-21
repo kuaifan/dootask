@@ -83,7 +83,7 @@
                     <Button size="small" type="primary" @click="$refs.owner.ok()">{{$L('确定')}}</Button>
                 </div>
             </div>
-            <UserAvatar v-if="getOwner" :userid="getOwner.userid" :size="20" hide-icon-menu/>
+            <UserAvatar v-if="getOwner" :userid="getOwner.userid" :size="20"/>
             <div v-else>--</div>
         </Poptip>
     </li>
@@ -201,7 +201,7 @@
                                 </div>
                             </div>
                             <div v-if="getOwner" class="user-list">
-                                <UserAvatar :userid="getOwner.userid" :size="28" hide-icon-menu/>
+                                <UserAvatar :userid="getOwner.userid" :size="28"/>
                             </div>
                             <div v-else>--</div>
                         </Poptip>
@@ -233,7 +233,7 @@
                                 </div>
                             </div>
                             <div v-if="getAssist.length > 0" class="user-list">
-                                <UserAvatar v-for="item in getAssist" :key="item.userid" :userid="item.userid" :size="28" hide-icon-menu/>
+                                <UserAvatar v-for="item in getAssist" :key="item.userid" :userid="item.userid" :size="28"/>
                             </div>
                             <div v-else>--</div>
                         </Poptip>

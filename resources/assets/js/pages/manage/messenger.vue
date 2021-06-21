@@ -26,7 +26,7 @@
                                 <i v-else-if="dialog.group_type=='task'" class="iconfont icon-avatar task">&#xe6f4;</i>
                                 <Icon v-else class="icon-avatar" type="ios-people" />
                             </template>
-                            <div v-else-if="dialog.dialog_user" class="user-avatar"><UserAvatar :userid="dialog.dialog_user.userid" :size="42" hide-icon-menu/></div>
+                            <div v-else-if="dialog.dialog_user" class="user-avatar"><UserAvatar :userid="dialog.dialog_user.userid" :size="42"/></div>
                             <Icon v-else class="icon-avatar" type="md-person" />
                             <div class="dialog-box">
                                 <div class="dialog-title">
@@ -45,7 +45,7 @@
                             <div class="label">{{label}}</div>
                             <ul>
                                 <li v-for="(user, index) in users" :key="index" @click="openContacts(user)">
-                                    <div class="avatar"><UserAvatar :userid="user.userid" :size="30" hide-icon-menu/></div>
+                                    <div class="avatar"><UserAvatar :userid="user.userid" :size="30"/></div>
                                     <div class="nickname">{{user.nickname}}</div>
                                 </li>
                             </ul>
