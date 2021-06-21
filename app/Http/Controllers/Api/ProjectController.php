@@ -38,22 +38,20 @@ class ProjectController extends AbstractController
             Carbon::today()->startOfDay(),
             Carbon::today()->endOfDay()
         ];
-        $data['today'] = ProjectTask::authData()
-            ->whereNull('project_tasks.archived_at')
-            ->whereNull('project_tasks.complete_at')
-            ->where('project_tasks.parent_id', 0)
+        $data['today'] = ProjectTask::authData()->whereParentId(0)
+            ->whereNull('archived_at')
+            ->whereNull('complete_at')
             ->where(function ($query) use ($between) {
-                $query->whereBetween('project_tasks.start_at', $between)->orWhereBetween('project_tasks.end_at', $between);
+                $query->whereBetween('start_at', $between)->orWhereBetween('end_at', $between);
             })
             ->count();
 
         // 超期未完成
-        $data['overdue'] = ProjectTask::authData()
-            ->whereNull('project_tasks.archived_at')
-            ->whereNull('project_tasks.complete_at')
-            ->where('project_tasks.parent_id', 0)
-            ->whereNotNull('project_tasks.end_at')
-            ->where('project_tasks.end_at', '<', Carbon::now())
+        $data['overdue'] = ProjectTask::authData()->whereParentId(0)
+            ->whereNull('archived_at')
+            ->whereNull('complete_at')
+            ->whereNotNull('end_at')
+            ->where('end_at', '<', Carbon::now())
             ->count();
 
         return Base::retSuccess('success', $data);
@@ -509,57 +507,63 @@ class ProjectController extends AbstractController
      * @apiParam {Number} [project_id]       项目ID
      * @apiParam {Number} [parent_id]        主任务ID（填写此项时 project_id 参数无效）
      * @apiParam {String} [name]             任务描述关键词
-     * @apiParam {Array} [time]              指定时间范围未完成，如：['2020-12-12', '2020-12-30']
-     * @apiParam {String} [time_before]      指定时间之前未完成，如：2020-12-30 00:00:00（填写此项时 time 参数无效）
+     * @apiParam {Array} [time]              指定时间范围，如：['2020-12-12', '2020-12-30']
+     * @apiParam {String} [time_before]      指定时间之前，如：2020-12-30 00:00:00（填写此项时 time 参数无效）
+     * @apiParam {String} [complete]         完成状态
+     * - all：所有（默认）
+     * - yes：已完成
+     * - no：未完成
      */
     public function task__lists()
     {
         User::auth();
         //
-        $builder = ProjectTask::with(['taskUser', 'taskTag'])->whereNull('project_tasks.archived_at');
+        $builder = ProjectTask::with(['taskUser', 'taskTag'])->whereNull('archived_at');
         //
         $parent_id = intval(Request::input('parent_id'));
         $project_id = intval(Request::input('project_id'));
         $name = Request::input('name');
         $time = Request::input('time');
         $time_before = Request::input('time_before');
+        $complete = Request::input('complete');
         //
         if ($parent_id > 0) {
             ProjectTask::userTask($parent_id);
-            $builder->where('project_tasks.parent_id', $parent_id);
+            $builder->whereParentId($parent_id);
         } elseif ($project_id > 0) {
             Project::userProject($project_id);
-            $builder->where('project_tasks.project_id', $project_id);
+            $builder->whereParentId(0)->whereProjectId($project_id);
         } else {
-            $builder->authData();
+            $builder->whereParentId(0)->authData();
         }
         //
         if ($name) {
             $builder->where(function($query) use ($name) {
-                $query->where('project_tasks.name', 'like', '%,' . $name . ',%');
+                $query->where('name', 'like', '%,' . $name . ',%');
             });
         }
         //
         if (Base::isDateOrTime($time_before)) {
-            $builder
-                ->whereNull('project_tasks.complete_at')
-                ->whereNotNull('project_tasks.end_at')
-                ->where('project_tasks.end_at', '<', Carbon::parse($time_before));
+            $builder->whereNotNull('end_at')->where('end_at', '<', Carbon::parse($time_before));
         } elseif (is_array($time)) {
             if (Base::isDateOrTime($time[0]) && Base::isDateOrTime($time[1])) {
                 $between = [
                     Carbon::parse($time[0])->startOfDay(),
                     Carbon::parse($time[1])->endOfDay()
                 ];
-                $builder
-                    ->whereNull('project_tasks.complete_at')
-                    ->where(function ($query) use ($between) {
-                        $query->whereBetween('project_tasks.start_at', $between)->orWhereBetween('project_tasks.end_at', $between);
-                    });
+                $builder->where(function ($query) use ($between) {
+                    $query->whereBetween('start_at', $between)->orWhereBetween('end_at', $between);
+                });
             }
         }
         //
-        $list = $builder->orderByDesc('project_tasks.id')->paginate(Base::getPaginate(200, 100));
+        if ($complete === 'yes') {
+            $builder->whereNotNull('complete_at');
+        } elseif ($complete === 'no') {
+            $builder->whereNull('complete_at');
+        }
+        //
+        $list = $builder->orderByDesc('id')->paginate(Base::getPaginate(200, 100));
         //
         return Base::retSuccess('success', $list);
     }

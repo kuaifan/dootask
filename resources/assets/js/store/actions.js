@@ -145,7 +145,7 @@ export default {
                 dispatch("saveUserInfo", result.data);
                 resolve(result)
             }).catch(e => {
-                !e.ret && console.error(e);
+                console.error(e);
                 reject(e)
             });
         });
@@ -243,7 +243,7 @@ export default {
                 typeof success === "function" && success(item, true)
             });
         }).catch(e => {
-            !e.ret && console.error(e);
+            console.error(e);
             state.cacheUserBasic["::load"] = false;
             typeof complete === "function" && complete()
         });
@@ -327,7 +327,7 @@ export default {
             state.projects = [];
             dispatch("saveProject", result.data.data);
         }).catch(e => {
-            !e.ret && console.error(e);
+            console.error(e);
         });
     },
 
@@ -346,7 +346,7 @@ export default {
         }).then(result => {
             dispatch("saveProject", result.data);
         }).catch(e => {
-            !e.ret && console.error(e);
+            console.error(e);
         });
     },
 
@@ -366,7 +366,7 @@ export default {
                 dispatch("forgetProject", project_id)
                 resolve(result)
             }).catch(e => {
-                !e.ret && console.error(e);
+                console.error(e);
                 dispatch("getProjectOne", project_id);
                 reject(e)
             });
@@ -389,7 +389,7 @@ export default {
                 dispatch("forgetProject", project_id)
                 resolve(result)
             }).catch(e => {
-                !e.ret && console.error(e);
+                console.error(e);
                 dispatch("getProjectOne", project_id);
                 reject(e)
             });
@@ -475,7 +475,7 @@ export default {
             state.columns = state.columns.filter((item) => item.project_id != project_id || ids.includes(item.id));
             dispatch("saveColumn", result.data.data);
         }).catch(e => {
-            !e.ret && console.error(e);
+            console.error(e);
         });
     },
 
@@ -495,7 +495,7 @@ export default {
                 dispatch("forgetColumn", column_id)
                 resolve(result)
             }).catch(e => {
-                !e.ret && console.error(e);
+                console.error(e);
                 reject(e);
             });
         });
@@ -562,7 +562,7 @@ export default {
      * 获取任务
      * @param state
      * @param dispatch
-     * @param data {?project_id, ?parent_id}
+     * @param data
      */
     getTasks({state, dispatch}, data) {
         if (state.userId === 0) {
@@ -576,16 +576,33 @@ export default {
             url: 'project/task/lists',
             data: data
         }).then(result => {
-            const ids = result.data.data.map(({id}) => id)
+            const resData = result.data;
+            const ids = resData.data.map(({id}) => id)
             if (data.project_id) {
                 state.tasks = state.tasks.filter((item) => item.project_id != data.project_id || ids.includes(item.id));
             }
             if (data.parent_id) {
                 state.tasks = state.tasks.filter((item) => item.parent_id != data.parent_id || ids.includes(item.id));
             }
-            dispatch("saveTask", result.data.data);
+            dispatch("saveTask", resData.data);
+            //
+            if (resData.next_page_url) {
+                const nextData = Object.assign(data, {
+                    page: resData.current_page + 1,
+                });
+                if (resData.current_page % 5 === 0) {
+                    $A.modalWarning({
+                        content: "数据已超过" + resData.to + "条，是否继续加载？",
+                        onOk: () => {
+                            dispatch("getTasks", nextData)
+                        }
+                    });
+                } else {
+                    dispatch("getTasks", nextData)
+                }
+            }
         }).catch(e => {
-            !e.ret && console.error(e);
+            console.error(e);
         });
     },
 
@@ -607,7 +624,7 @@ export default {
         }).then(result => {
             dispatch("saveTask", result.data);
         }).catch(e => {
-            !e.ret && console.error(e);
+            console.error(e);
         });
     },
 
@@ -628,7 +645,7 @@ export default {
                 dispatch("forgetTask", task_id)
                 resolve(result)
             }).catch(e => {
-                !e.ret && console.error(e);
+                console.error(e);
                 dispatch("getTaskOne", task_id);
                 reject(e)
             });
@@ -652,7 +669,7 @@ export default {
                 dispatch("forgetTask", task_id)
                 resolve(result)
             }).catch(e => {
-                !e.ret && console.error(e);
+                console.error(e);
                 dispatch("getTaskOne", task_id);
                 reject(e)
             });
@@ -682,7 +699,7 @@ export default {
                 }
                 resolve(result)
             }).catch(e => {
-                !e.ret && console.error(e);
+                console.error(e);
                 reject(e);
             });
         });
@@ -713,7 +730,7 @@ export default {
                 })
                 resolve(result)
             }).catch(e => {
-                !e.ret && console.error(e);
+                console.error(e);
                 reject(e);
             });
         });
@@ -756,7 +773,7 @@ export default {
                 dispatch("addTaskSuccess", result.data)
                 resolve(result)
             }).catch(e => {
-                !e.ret && console.error(e);
+                console.error(e);
                 reject(e);
             });
         });
@@ -777,7 +794,7 @@ export default {
                 dispatch("addTaskSuccess", result.data)
                 resolve(result)
             }).catch(e => {
-                !e.ret && console.error(e);
+                console.error(e);
                 reject(e);
             });
         });
@@ -821,7 +838,7 @@ export default {
                 dispatch("saveTask", result.data)
                 resolve(result)
             }).catch(e => {
-                !e.ret && console.error(e);
+                console.error(e);
                 dispatch("getTaskOne", post.task_id);
                 reject(e)
             });
@@ -842,7 +859,7 @@ export default {
                 state.taskPriority = result.data;
                 resolve(result)
             }).catch(e => {
-                !e.ret && console.error(e);
+                console.error(e);
                 reject(e);
             });
         });
@@ -895,7 +912,7 @@ export default {
                 }
                 resolve(result);
             }).catch(e => {
-                !e.ret && console.error(e);
+                console.error(e);
                 reject(e);
             });
         });
@@ -941,7 +958,7 @@ export default {
                 dispatch("saveDialog", result.data);
                 resolve(result);
             }).catch(e => {
-                !e.ret && console.error(e);
+                console.error(e);
                 reject(e);
             });
         });
@@ -1000,7 +1017,7 @@ export default {
             // 更新当前会话消息
             commit("dialogMsgListSuccess", data);
         }).catch(e => {
-            !e.ret && console.error(e);
+            console.error(e);
             state.dialogMsgLoad--;
             state.cacheDialogMsg[dialog_id + "::load"] = false;
         });
@@ -1035,7 +1052,7 @@ export default {
                 commit("dialogMsgListSuccess", result.data);
                 resolve(result)
             }).catch(e => {
-                !e.ret && console.error(e);
+                console.error(e);
                 state.dialogMsgLoad--;
                 reject(e)
             });

@@ -200,20 +200,16 @@ export default {
 
     methods: {
         getTask() {
-            let data = {};
+            let data = {complete: "no"};
             switch (this.dashboard) {
                 case 'today':
-                    data = {
-                        time: [
-                            $A.formatDate("Y-m-d 00:00:00"),
-                            $A.formatDate("Y-m-d 23:59:59")
-                        ],
-                    }
+                    data.time = [
+                        $A.formatDate("Y-m-d 00:00:00"),
+                        $A.formatDate("Y-m-d 23:59:59")
+                    ]
                     break;
                 case 'overdue':
-                    data = {
-                        time_before: $A.formatDate("Y-m-d 00:00:00")
-                    }
+                    data.time_before = $A.formatDate("Y-m-d 00:00:00")
                     break;
                 default:
                     return;
@@ -267,6 +263,7 @@ export default {
                 task_id: task.id,
             })).then(() => {
                 this.$set(this.taskLoad, task.id, false);
+                this.$store.dispatch("getProjectStatistics");
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.$set(this.taskLoad, task.id, false);
@@ -292,6 +289,7 @@ export default {
                         $A.messageSuccess(msg);
                         this.$Modal.remove();
                         this.$set(this.taskLoad, task.id, false);
+                        this.$store.dispatch("getProjectStatistics");
                     }).catch(({msg}) => {
                         $A.modalError(msg, 301);
                         this.$Modal.remove();

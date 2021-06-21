@@ -191,7 +191,8 @@ export default {
             }
             this.loadIng++;
             this.$store.dispatch("getTasks", {
-                time
+                time: time,
+                complete: "no"
             }).then(() => {
                 this.loadIng--;
             }).catch(() => {

@@ -7,7 +7,6 @@ use App\Module\Base;
 use App\Tasks\PushTask;
 use Arr;
 use Carbon\Carbon;
-use DB;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Request;
@@ -40,6 +39,7 @@ use Request;
  * @property-read int $file_num
  * @property-read int $msg_num
  * @property-read bool $overdue
+ * @property-read bool $owner
  * @property-read int $percent
  * @property-read int $sub_complete
  * @property-read int $sub_num
@@ -84,12 +84,8 @@ class ProjectTask extends AbstractModel
 {
     use SoftDeletes;
 
-    const taskSelect = [
-        'project_tasks.*',
-        'project_task_users.owner',
-    ];
-
     protected $appends = [
+        'owner',
         'file_num',
         'msg_num',
         'sub_num',
@@ -98,6 +94,22 @@ class ProjectTask extends AbstractModel
         'today',
         'overdue',
     ];
+
+    /**
+     * 是否我是负责人
+     * @return bool
+     */
+    public function getOwnerAttribute()
+    {
+        if (!isset($this->appendattrs['owner'])) {
+            if ($this->parent_id > 0) {
+                $this->appendattrs['owner'] = ProjectTaskUser::whereTaskId($this->id)->whereUserid(User::userid())->whereOwner(1)->exists();
+            } else {
+                $this->appendattrs['owner'] = ProjectTaskUser::whereTaskPid($this->id)->whereUserid(User::userid())->whereOwner(1)->exists();
+            }
+        }
+        return $this->appendattrs['owner'];
+    }
 
     /**
      * 附件数量
@@ -256,18 +268,10 @@ class ProjectTask extends AbstractModel
      */
     public function scopeAuthData($query, $user = null)
     {
-        $pre = DB::getTablePrefix();
         $user = $user ?: User::auth();
-        $query->select(self::taskSelect)
-            ->join('project_task_users', 'project_tasks.id', '=', 'project_task_users.task_pid')
-            ->whereExists(function ($der) use ($pre) {
-                $der->select(DB::raw(1))
-                    ->from('project_task_users as B')
-                    ->where('B.owner', 1)
-                    ->whereColumn('project_task_users.task_pid', '=', 'B.task_pid')
-                    ->havingRaw("max({$pre}B.id) = {$pre}project_task_users.id");
-            })
-            ->where('project_task_users.userid', $user->userid);
+        $query->whereIn('id', function ($qy) use ($user) {
+            $qy->select('task_pid')->from('project_task_users')->where('userid', $user->userid);
+        });
         return $query;
     }
 

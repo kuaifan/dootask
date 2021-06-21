@@ -253,6 +253,19 @@ class User extends AbstractModel
     }
 
     /**
+     * 获取我的ID
+     * @return int
+     */
+    public static function userid()
+    {
+        $user = self::authInfo();
+        if (!$user) {
+            return 0;
+        }
+        return $user->userid;
+    }
+
+    /**
      * 用户身份认证（获取用户信息）
      * @return self
      */
