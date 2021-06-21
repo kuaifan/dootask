@@ -87,10 +87,10 @@ export default {
                 if (data.complete_at) {
                     return false;
                 }
-                if (!data.start_at || !data.end_at) {
+                if (!data.end_at) {
                     return false;
                 }
-                return data.task_user.find(({userid}) => userid == this.userId);
+                return data.owner;
             })
             return datas.map(data => {
                 let task = {

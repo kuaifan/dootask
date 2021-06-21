@@ -84,6 +84,11 @@ class ProjectTask extends AbstractModel
 {
     use SoftDeletes;
 
+    const taskSelect = [
+        'project_tasks.*',
+        'project_task_users.owner',
+    ];
+
     protected $appends = [
         'file_num',
         'msg_num',
@@ -253,7 +258,7 @@ class ProjectTask extends AbstractModel
     {
         $pre = DB::getTablePrefix();
         $user = $user ?: User::auth();
-        $query->select("project_tasks.*")
+        $query->select(self::taskSelect)
             ->join('project_task_users', 'project_tasks.id', '=', 'project_task_users.task_pid')
             ->whereExists(function ($der) use ($pre) {
                 $der->select(DB::raw(1))
@@ -387,6 +392,7 @@ class ProjectTask extends AbstractModel
                     $row = ProjectTaskUser::createInstance([
                         'project_id' => $this->project_id,
                         'task_id' => $this->id,
+                        'task_pid' => $this->parent_id ?: $this->id,
                         'userid' => $owner,
                         'owner' => 1,
                     ]);

@@ -471,7 +471,8 @@ export default {
                 project_id
             }
         }).then(result => {
-            state.columns = state.columns.filter((item) => item.project_id != project_id);
+            const ids = result.data.data.map(({id}) => id)
+            state.columns = state.columns.filter((item) => item.project_id != project_id || ids.includes(item.id));
             dispatch("saveColumn", result.data.data);
         }).catch(e => {
             !e.ret && console.error(e);
@@ -575,11 +576,12 @@ export default {
             url: 'project/task/lists',
             data: data
         }).then(result => {
+            const ids = result.data.data.map(({id}) => id)
             if (data.project_id) {
-                state.tasks = state.tasks.filter((item) => item.project_id != data.project_id);
+                state.tasks = state.tasks.filter((item) => item.project_id != data.project_id || ids.includes(item.id));
             }
             if (data.parent_id) {
-                state.tasks = state.tasks.filter((item) => item.parent_id != data.parent_id);
+                state.tasks = state.tasks.filter((item) => item.parent_id != data.parent_id || ids.includes(item.id));
             }
             dispatch("saveTask", result.data.data);
         }).catch(e => {

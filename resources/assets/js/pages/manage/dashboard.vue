@@ -72,8 +72,7 @@
                         </EDropdown>
                         <div class="item-title" @click="$store.dispatch('openTask', item.id)">{{item.name}}</div>
                         <div :class="['item-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']">
-                            <Icon type="ios-time-outline"/>
-                            {{expiresFormat(item.end_at)}}
+                            <Icon type="ios-time-outline"/>{{expiresFormat(item.end_at)}}
                         </div>
                     </li>
                 </ul>
@@ -135,10 +134,11 @@ export default {
         },
 
         list() {
-            const {tasks, dashboard} = this;
+            const {dashboard} = this;
             const todayStart = new Date($A.formatDate("Y-m-d 00:00:00")),
                 todayEnd = new Date($A.formatDate("Y-m-d 23:59:59"));
-            return tasks.filter((data) => {
+            let datas = $A.cloneJSON(this.tasks);
+            datas = datas.filter((data) => {
                 if (data.parent_id > 0) {
                     return false;
                 }
@@ -146,6 +146,9 @@ export default {
                     return false;
                 }
                 if (!data.end_at) {
+                    return false;
+                }
+                if (!data.owner) {
                     return false;
                 }
                 const start = new Date(data.start_at),
@@ -156,11 +159,12 @@ export default {
                     case 'today':
                         return (start >= todayStart && start <= todayEnd) || (end >= todayStart && end <= todayEnd);
                     case 'overdue':
-                        return end < todayStart;
+                        return end <= todayStart;
                     default:
                         return false;
                 }
-            }).sort((a, b) => {
+            })
+            return datas.sort((a, b) => {
                 if (a._end_time != b._end_time) {
                     return a._end_time - b._end_time;
                 }

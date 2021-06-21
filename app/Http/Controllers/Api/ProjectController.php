@@ -39,6 +39,7 @@ class ProjectController extends AbstractController
             Carbon::today()->endOfDay()
         ];
         $data['today'] = ProjectTask::authData()
+            ->whereNull('project_tasks.archived_at')
             ->whereNull('project_tasks.complete_at')
             ->where('project_tasks.parent_id', 0)
             ->where(function ($query) use ($between) {
@@ -48,6 +49,7 @@ class ProjectController extends AbstractController
 
         // 超期未完成
         $data['overdue'] = ProjectTask::authData()
+            ->whereNull('project_tasks.archived_at')
             ->whereNull('project_tasks.complete_at')
             ->where('project_tasks.parent_id', 0)
             ->whereNotNull('project_tasks.end_at')
@@ -505,10 +507,10 @@ class ProjectController extends AbstractController
      * 任务列表
      *
      * @apiParam {Number} [project_id]       项目ID
-     * @apiParam {Number} [parent_id]        主任务ID（填写后 project_id 无效）
+     * @apiParam {Number} [parent_id]        主任务ID（填写此项时 project_id 参数无效）
      * @apiParam {String} [name]             任务描述关键词
-     * @apiParam {Array} [time]              时间范围，如：['2020-12-12', '2020-12-30']
-     * @apiParam {String} [time_before]      指定时间之前，如：2020-12-30 00:00:00（填写此项时time参数无效）
+     * @apiParam {Array} [time]              指定时间范围未完成，如：['2020-12-12', '2020-12-30']
+     * @apiParam {String} [time_before]      指定时间之前未完成，如：2020-12-30 00:00:00（填写此项时 time 参数无效）
      */
     public function task__lists()
     {
@@ -524,10 +526,10 @@ class ProjectController extends AbstractController
         //
         if ($parent_id > 0) {
             ProjectTask::userTask($parent_id);
-            $builder->where('parent_id', $parent_id);
+            $builder->where('project_tasks.parent_id', $parent_id);
         } elseif ($project_id > 0) {
             Project::userProject($project_id);
-            $builder->where('project_id', $project_id);
+            $builder->where('project_tasks.project_id', $project_id);
         } else {
             $builder->authData();
         }
@@ -539,16 +541,21 @@ class ProjectController extends AbstractController
         }
         //
         if (Base::isDateOrTime($time_before)) {
-            $builder->whereNotNull('project_tasks.end_at')->where('project_tasks.end_at', '<', Carbon::parse($time_before));
+            $builder
+                ->whereNull('project_tasks.complete_at')
+                ->whereNotNull('project_tasks.end_at')
+                ->where('project_tasks.end_at', '<', Carbon::parse($time_before));
         } elseif (is_array($time)) {
             if (Base::isDateOrTime($time[0]) && Base::isDateOrTime($time[1])) {
                 $between = [
                     Carbon::parse($time[0])->startOfDay(),
                     Carbon::parse($time[1])->endOfDay()
                 ];
-                $builder->where(function ($query) use ($between) {
-                    $query->whereBetween('project_tasks.start_at', $between)->orWhereBetween('project_tasks.end_at', $between);
-                });
+                $builder
+                    ->whereNull('project_tasks.complete_at')
+                    ->where(function ($query) use ($between) {
+                        $query->whereBetween('project_tasks.start_at', $between)->orWhereBetween('project_tasks.end_at', $between);
+                    });
             }
         }
         //
