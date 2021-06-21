@@ -542,18 +542,13 @@ export default {
         },
 
         completedList() {
-            const {projectId, tasks, searchText, projectCompleteShow} = this;
+            const {projectId, tasks, searchText} = this;
             const array = tasks.filter((task) => {
                 if (task.parent_id > 0) {
                     return false;
                 }
                 if (task.project_id != projectId) {
                     return false;
-                }
-                if (!projectCompleteShow) {
-                    if (task.complete_at) {
-                        return false;
-                    }
                 }
                 if (searchText) {
                     if (!$A.strExists(task.name, searchText) && !$A.strExists(task.desc, searchText)) {

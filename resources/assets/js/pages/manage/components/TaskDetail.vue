@@ -94,8 +94,8 @@
                 <Icon v-if="taskDetail.complete_at" class="icon completed" type="md-checkmark-circle" @click="updateData('uncomplete')"/>
                 <Icon v-else class="icon" type="md-radio-button-off" @click="updateData('complete')"/>
                 <div class="nav">
-                    <p v-if="taskDetail.project_name">{{taskDetail.project_name}}</p>
-                    <p v-if="taskDetail.column_name">{{taskDetail.column_name}}</p>
+                    <p v-if="projectName">{{projectName}}</p>
+                    <p v-if="columnName">{{columnName}}</p>
                     <p v-if="taskDetail.id">{{taskDetail.id}}</p>
                 </div>
                 <EDropdown
@@ -466,7 +466,29 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'taskId', 'tasks', 'taskContents', 'taskFiles', 'taskPriority']),
+        ...mapState(['userId', 'projects', 'columns', 'taskId', 'tasks', 'taskContents', 'taskFiles', 'taskPriority']),
+
+        projectName() {
+            if (!this.taskDetail.project_id) {
+                return ''
+            }
+            if (this.taskDetail.project_name) {
+                return this.taskDetail.project_name;
+            }
+            const project = this.projects.find(({id}) => id == this.taskDetail.project_id)
+            return project ? project.name : '';
+        },
+
+        columnName() {
+            if (!this.taskDetail.column_id) {
+                return ''
+            }
+            if (this.taskDetail.column_name) {
+                return this.taskDetail.column_name;
+            }
+            const column = this.columns.find(({id}) => id == this.taskDetail.column_id)
+            return column ? column.name : '';
+        },
 
         taskContent() {
             if (!this.taskId) {

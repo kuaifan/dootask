@@ -229,13 +229,13 @@ const state = { method };
     'projectTablePanel',    // 项目面板显示类型
     'taskMyShow',           // 项目面板显示我的任务
     'taskUndoneShow',       // 项目面板显示未完成任务
-    'taskCompletedShow'     // 项目面板显示已完成任务
 ].forEach((key) => {
     state[key] = state.method.getStorageBoolean("boolean:" + key, true)
 });
 
 [
     'projectChatShow',      // 项目聊天显示
+    'taskCompletedShow',    // 项目面板显示已完成任务
     'projectCompleteShow'   // 项目面板显示已完成列表
 ].forEach((key) => {
     state[key] = state.method.getStorageBoolean("boolean:" + key, false)
