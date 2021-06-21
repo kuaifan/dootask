@@ -24,10 +24,12 @@ export default {
             this.project_id = route.params.id;
         },
         project_id(id) {
-            this.$store.state.projectId = $A.runNum(id);
-            this.$store.dispatch("getProjectOne", id);
-            this.$store.dispatch("getColumns", id);
-            this.$store.dispatch("getTasks", {project_id: id});
+            if (id > 0) {
+                this.$store.state.projectId = $A.runNum(id);
+                this.$store.dispatch("getProjectOne", id);
+                this.$store.dispatch("getColumns", id);
+                this.$store.dispatch("getTasks", {project_id: id});
+            }
         }
     },
 }

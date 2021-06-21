@@ -747,7 +747,8 @@ class ProjectController extends AbstractController
             $task->updateTask($data, $updateContent);
         }
         $data = $task->toArray();
-        $data['is_update_complete'] = $updateComplete;
+        $data['is_subtask'] = $task->parent_id > 0;
+        $data['is_update_complete'] = $task->parent_id == 0 && $updateComplete;
         $data['is_update_content'] = $updateContent;
         $task->pushMsg('update', $data);
         return Base::retSuccess('修改成功', $data);

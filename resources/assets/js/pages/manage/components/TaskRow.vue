@@ -60,7 +60,7 @@
                     </div>
                 </Col>
                 <Col span="3" class="row-column">
-                    <div v-if="item.parent_id === 0" class="task-column">{{item.column_name}}</div>
+                    <div v-if="item.parent_id === 0" class="task-column">{{columnName(item.column_id)}}</div>
                 </Col>
                 <Col span="3" class="row-priority">
                     <TaskPriority v-if="item.p_name && item.parent_id === 0" :backgroundColor="item.p_color">{{item.p_name}}</TaskPriority>
@@ -91,7 +91,7 @@
                 :open-key="openKey"
                 @command="dropTask"/>
         </div>
-        <TaskAddSimple v-if="fastAddTask" :parent-id="parentId" row-mode/>
+        <TaskAddSimple v-if="fastAddTask || parentId > 0" :parent-id="parentId" row-mode/>
     </div>
 </template>
 
@@ -149,11 +149,15 @@ export default {
     },
 
     computed: {
-        ...mapState(['tasks']),
+        ...mapState(['tasks', 'columns']),
 
         subTask() {
             return function(task_id) {
-                return this.tasks.filter(({parent_id}) => parent_id == task_id);
+                return this.tasks.filter(({parent_id}) => {
+                    return parent_id == task_id
+                }).sort((a, b) => {
+                    return a.id - b.id;
+                });
             }
         },
 
@@ -171,6 +175,11 @@ export default {
         },
     },
     methods: {
+        columnName(column_id) {
+            const column = this.columns.find(({id}) => id == column_id)
+            return column ? column.name : '';
+        },
+
         dropTask(task, command) {
             this.$emit("command", task, command)
         },

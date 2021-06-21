@@ -439,11 +439,13 @@ export default {
     /**
      * 忘记列表数据
      * @param state
+     * @param dispatch
      * @param column_id
      */
-    forgetColumn({state}, column_id) {
+    forgetColumn({state, dispatch}, column_id) {
         let index = state.columns.findIndex(({id}) => id == column_id);
         if (index > -1) {
+            dispatch('getProjectOne', state.columns[index].project_id)
             state.columns.splice(index, 1);
         }
         state.method.setStorage("cacheColumns", state.cacheColumns = state.columns);
@@ -493,6 +495,7 @@ export default {
                 resolve(result)
             }).catch(e => {
                 !e.ret && console.error(e);
+                reject(e);
             });
         });
     },
@@ -521,6 +524,16 @@ export default {
             } else {
                 state.tasks.push(data);
             }
+            //
+            if (data.is_subtask) {
+                dispatch("getTaskOne", data.parent_id);
+            }
+            if (data.is_update_complete) {
+                dispatch("getProjectOne", data.project_id);
+            }
+            if (data.is_update_content) {
+                dispatch("getTaskContent", data.id);
+            }
         }
         state.method.setStorage("cacheTasks", state.cacheTasks = state.tasks);
     },
@@ -528,11 +541,14 @@ export default {
     /**
      * 忘记任务数据
      * @param state
+     * @param dispatch
      * @param task_id
      */
-    forgetTask({state}, task_id) {
+    forgetTask({state, dispatch}, task_id) {
         let index = state.tasks.findIndex(({id}) => id == task_id);
         if (index > -1) {
+            dispatch("getTaskOne", state.tasks[index].parent_id)
+            dispatch('getProjectOne', state.tasks[index].project_id)
             state.tasks.splice(index, 1);
         }
         if (state.taskId == task_id) {
@@ -665,6 +681,7 @@ export default {
                 resolve(result)
             }).catch(e => {
                 !e.ret && console.error(e);
+                reject(e);
             });
         });
     },
@@ -695,6 +712,7 @@ export default {
                 resolve(result)
             }).catch(e => {
                 !e.ret && console.error(e);
+                reject(e);
             });
         });
     },
@@ -736,9 +754,11 @@ export default {
                 const {new_column, task} = result.data;
                 dispatch("saveColumn", new_column)
                 dispatch("saveTask", task)
+                dispatch("getProjectOne", task.project_id);
                 resolve(result)
             }).catch(e => {
                 !e.ret && console.error(e);
+                reject(e);
             });
         });
     },
@@ -755,12 +775,13 @@ export default {
                 url: 'project/task/addsub',
                 data: data,
             }).then(result => {
-                const {new_column, task} = result.data;
-                dispatch("saveColumn", new_column)
+                const {task} = result.data;
                 dispatch("saveTask", task)
+                dispatch("getTaskOne", task.parent_id);
                 resolve(result)
             }).catch(e => {
                 !e.ret && console.error(e);
+                reject(e);
             });
         });
     },
@@ -807,6 +828,7 @@ export default {
                 resolve(result)
             }).catch(e => {
                 !e.ret && console.error(e);
+                reject(e);
             });
         });
     },

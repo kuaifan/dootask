@@ -381,24 +381,26 @@ class ProjectTask extends AbstractModel
             }
             // 负责人
             if (Arr::exists($data, 'owner')) {
-                $row = ProjectTaskUser::whereTaskId($this->id)->whereOwner(1)->first();
                 $owner = intval($data['owner']);
-                if ($row->userid != $owner) {
-                    if (empty($this->useridInTheProject($owner))) {
-                        throw new ApiException('请选择正确的负责人');
-                    }
-                    $row->owner = 0;
-                    $row->save();
-                    ProjectTaskUser::updateInsert([
+                $row = ProjectTaskUser::whereTaskId($this->id)->whereUserid($owner)->first();
+                if (empty($row)) {
+                    $row = ProjectTaskUser::createInstance([
                         'project_id' => $this->project_id,
                         'task_id' => $this->id,
                         'userid' => $owner,
-                    ], [
                         'owner' => 1,
                     ]);
-                    $this->syncDialogUser();
-                    $this->addLog("修改{任务}负责人为会员ID：" . $owner);
+                } else {
+                    $row->owner = 1;
                 }
+                $row->save();
+                if ($this->parent_id) {
+                    ProjectTaskUser::whereTaskId($this->id)->where('id', '!=', $row->id)->delete();
+                } else {
+                    ProjectTaskUser::whereTaskId($this->id)->where('id', '!=', $row->id)->update([ 'owner' => 0 ]);
+                }
+                $this->syncDialogUser();
+                $this->addLog("修改{任务}负责人为会员ID：" . $row->userid);
             }
             // 计划时间
             if (Arr::exists($data, 'times')) {

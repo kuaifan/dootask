@@ -140,7 +140,8 @@
                 </div>
                 <div class="desc">
                     <TEditor
-                        v-model="taskDetail.content"
+                        ref="desc"
+                        :value="taskContent"
                         :plugins="taskPlugins"
                         :options="taskOptions"
                         :option-full="taskOptionFull"
@@ -262,12 +263,12 @@
                             </li>
                         </ul>
                     </FormItem>
-                    <FormItem v-if="hasFile">
+                    <FormItem v-if="fileList.length > 0">
                         <div class="item-label" slot="label">
                             <i class="iconfont">&#xe6e6;</i>{{$L('附件')}}
                         </div>
                         <ul class="item-content file">
-                            <li v-for="file in taskDetail.files">
+                            <li v-for="file in fileList">
                                 <img v-if="file.id" class="file-ext" :src="file.thumb"/>
                                 <Loading v-else class="file-load"/>
                                 <a class="file-name" :href="file.path||'javascript:;'" target="_blank">{{file.name}}</a>
@@ -282,14 +283,14 @@
                             </li>
                         </ul>
                     </FormItem>
-                    <FormItem v-if="hasSubtask || addsubForce">
+                    <FormItem v-if="subList.length > 0 || addsubForce">
                         <div class="item-label" slot="label">
                             <i class="iconfont">&#xe6f0;</i>{{$L('子任务')}}
                         </div>
                         <ul class="item-content subtask">
-                            <TaskDetail v-for="(task, key) in taskDetail.sub_task" :key="key" :open-task="task"/>
+                            <TaskDetail v-for="(task, key) in subList" :key="key" :open-task="task"/>
                         </ul>
-                        <ul :class="['item-content', taskDetail.sub_task.length === 0 ? 'nosub' : '']">
+                        <ul :class="['item-content', subList.length === 0 ? 'nosub' : '']">
                             <li>
                                 <Input
                                     v-if="addsubShow"
@@ -465,7 +466,37 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'taskPriority']),
+        ...mapState(['userId', 'taskId', 'tasks', 'taskContents', 'taskFiles', 'taskPriority']),
+
+        taskContent() {
+            if (!this.taskId) {
+                return "";
+            }
+            let content = this.taskContents.find(({task_id}) => task_id == this.taskId)
+            return content ? content.content : ''
+        },
+
+        fileList() {
+            if (!this.taskId) {
+                return [];
+            }
+            return this.taskFiles.filter(({task_id}) => {
+                return task_id == this.taskId
+            }).sort((a, b) => {
+                return a.id - b.id;
+            });
+        },
+
+        subList() {
+            if (!this.taskId) {
+                return [];
+            }
+            return this.tasks.filter(({parent_id}) => {
+                return parent_id == this.taskId
+            }).sort((a, b) => {
+                return a.id - b.id;
+            });
+        },
 
         scrollerStyle() {
             const {innerHeight, taskDetail} = this;
@@ -519,16 +550,6 @@ export default {
             return string;
         },
 
-        hasFile() {
-            const {taskDetail} = this;
-            return $A.isArray(taskDetail.files) && taskDetail.files.length > 0;
-        },
-
-        hasSubtask() {
-            const {taskDetail} = this;
-            return $A.isArray(taskDetail.sub_task) && taskDetail.sub_task.length > 0;
-        },
-
         getOwner() {
             const {taskDetail} = this;
             if (!$A.isArray(taskDetail.task_user)) {
@@ -569,14 +590,14 @@ export default {
                     name: '截止时间',
                 });
             }
-            if (!($A.isArray(taskDetail.files) && taskDetail.files.length > 0)) {
+            if (this.fileList.length == 0) {
                 list.push({
                     command: 'file',
                     icon: '&#xe6e6;',
                     name: '附件',
                 });
             }
-            if (!($A.isArray(taskDetail.sub_task) && taskDetail.sub_task.length > 0)) {
+            if (this.subList.length == 0) {
                 list.push({
                     command: 'subtask',
                     icon: '&#xe6f0;',
@@ -755,6 +776,12 @@ export default {
                     break;
                 case 'times':
                     this.$set(this.taskDetail, 'times', [params.start_at, params.end_at])
+                    break;
+                case 'content':
+                    if (this.$refs.desc.getContent() == this.taskContent) {
+                        return;
+                    }
+                    this.$set(this.taskDetail, 'content', this.$refs.desc.getContent())
                     break;
             }
             //

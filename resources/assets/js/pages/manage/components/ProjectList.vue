@@ -627,7 +627,6 @@ export default {
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.sortDisabled = false;
-                this.$store.state.tasks = this.tasks.filter(({project_id}) => project_id != this.projectId);
                 this.$store.dispatch("getTasks", {project_id: this.projectId})
             });
         },
