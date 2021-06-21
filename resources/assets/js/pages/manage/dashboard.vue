@@ -8,14 +8,14 @@
                 <li @click="dashboard='today'">
                     <div class="block-title">{{$L('今日待完成')}}</div>
                     <div class="block-data">
-                        <div class="block-num">{{projectStatistics.today || '...'}}</div>
+                        <div class="block-num">{{projectStatistics.today || 0}}</div>
                         <i class="iconfont">&#xe6f4;</i>
                     </div>
                 </li>
                 <li @click="dashboard='overdue'">
                     <div class="block-title">{{$L('超期未完成')}}</div>
                     <div class="block-data">
-                        <div class="block-num">{{projectStatistics.overdue || '...'}}</div>
+                        <div class="block-num">{{projectStatistics.overdue || 0}}</div>
                         <i class="iconfont">&#xe603;</i>
                     </div>
                 </li>
@@ -27,55 +27,57 @@
                     </div>
                 </li>
             </ul>
-            <div class="dashboard-title">{{title}}</div>
-            <ul class="dashboard-list overlay-y">
-                <li v-for="item in list" :key="item.id" :style="item.color ? {backgroundColor: item.color} : {}">
-                    <EDropdown
-                        trigger="click"
-                        size="small"
-                        placement="bottom"
-                        @command="dropTask(item, $event)">
-                        <div class="drop-icon">
-                            <i class="iconfont">&#xe625;</i>
-                        </div>
-                        <EDropdownMenu slot="dropdown" class="project-list-more-dropdown-menu">
-                            <EDropdownItem v-if="item.complete_at" command="uncomplete">
-                                <div class="item red">
-                                    <Icon type="md-checkmark-circle-outline" />{{$L('标记未完成')}}
-                                </div>
-                            </EDropdownItem>
-                            <EDropdownItem v-else command="complete">
-                                <div class="item">
-                                    <Icon type="md-radio-button-off" />{{$L('完成')}}
-                                </div>
-                            </EDropdownItem>
-                            <EDropdownItem v-if="item.parent_id === 0" command="archived">
-                                <div class="item">
-                                    <Icon type="ios-filing" />{{$L('归档')}}
-                                </div>
-                            </EDropdownItem>
-                            <EDropdownItem command="remove">
-                                <div class="item">
-                                    <Icon type="md-trash" />{{$L('删除')}}
-                                </div>
-                            </EDropdownItem>
-                            <template v-if="item.parent_id === 0">
-                                <EDropdownItem v-if="item.parent_id === 0" divided disabled>{{$L('背景色')}}</EDropdownItem>
-                                <EDropdownItem v-for="(c, k) in $store.state.taskColorList" :key="k" :command="c">
-                                    <div class="item">
-                                        <i class="iconfont" :style="{color:c.color||'#f9f9f9'}" v-html="c.color == item.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
+            <template v-if="list.length > 0">
+                <div class="dashboard-title">{{title}}</div>
+                <ul class="dashboard-list overlay-y">
+                    <li v-for="item in list" :key="item.id" :style="item.color ? {backgroundColor: item.color} : {}">
+                        <EDropdown
+                            trigger="click"
+                            size="small"
+                            placement="bottom"
+                            @command="dropTask(item, $event)">
+                            <div class="drop-icon">
+                                <i class="iconfont">&#xe625;</i>
+                            </div>
+                            <EDropdownMenu slot="dropdown" class="project-list-more-dropdown-menu">
+                                <EDropdownItem v-if="item.complete_at" command="uncomplete">
+                                    <div class="item red">
+                                        <Icon type="md-checkmark-circle-outline" />{{$L('标记未完成')}}
                                     </div>
                                 </EDropdownItem>
-                            </template>
-                        </EDropdownMenu>
-                    </EDropdown>
-                    <div class="item-title" @click="$store.dispatch('openTask', item.id)">{{item.name}}</div>
-                    <div :class="['item-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']">
-                        <Icon type="ios-time-outline"/>
-                        {{expiresFormat(item.end_at)}}
-                    </div>
-                </li>
-            </ul>
+                                <EDropdownItem v-else command="complete">
+                                    <div class="item">
+                                        <Icon type="md-radio-button-off" />{{$L('完成')}}
+                                    </div>
+                                </EDropdownItem>
+                                <EDropdownItem v-if="item.parent_id === 0" command="archived">
+                                    <div class="item">
+                                        <Icon type="ios-filing" />{{$L('归档')}}
+                                    </div>
+                                </EDropdownItem>
+                                <EDropdownItem command="remove">
+                                    <div class="item">
+                                        <Icon type="md-trash" />{{$L('删除')}}
+                                    </div>
+                                </EDropdownItem>
+                                <template v-if="item.parent_id === 0">
+                                    <EDropdownItem v-if="item.parent_id === 0" divided disabled>{{$L('背景色')}}</EDropdownItem>
+                                    <EDropdownItem v-for="(c, k) in $store.state.taskColorList" :key="k" :command="c">
+                                        <div class="item">
+                                            <i class="iconfont" :style="{color:c.color||'#f9f9f9'}" v-html="c.color == item.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
+                                        </div>
+                                    </EDropdownItem>
+                                </template>
+                            </EDropdownMenu>
+                        </EDropdown>
+                        <div class="item-title" @click="$store.dispatch('openTask', item.id)">{{item.name}}</div>
+                        <div :class="['item-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']">
+                            <Icon type="ios-time-outline"/>
+                            {{expiresFormat(item.end_at)}}
+                        </div>
+                    </li>
+                </ul>
+            </template>
         </div>
     </div>
 </template>

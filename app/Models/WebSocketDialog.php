@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Exceptions\ApiException;
-use App\Module\Base;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Class WebSocketDialog
@@ -21,6 +21,7 @@ use App\Module\Base;
  * @property-read int|null $dialog_user_count
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog newQuery()
+ * @method static \Illuminate\Database\Query\Builder|WebSocketDialog onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog query()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereDeletedAt($value)
@@ -30,10 +31,14 @@ use App\Module\Base;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Query\Builder|WebSocketDialog withTrashed()
+ * @method static \Illuminate\Database\Query\Builder|WebSocketDialog withoutTrashed()
  * @mixin \Eloquent
  */
 class WebSocketDialog extends AbstractModel
 {
+    use SoftDeletes;
+
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
@@ -100,10 +105,10 @@ class WebSocketDialog extends AbstractModel
                 break;
             case "group":
                 if ($dialog->group_type === 'project') {
-                    $dialog->group_info = Project::select(['id', 'name'])->whereDialogId($dialog->id)->first();
+                    $dialog->group_info = Project::withTrashed()->select(['id', 'name'])->whereDialogId($dialog->id)->first();
                     $dialog->name = $dialog->group_info ? $dialog->group_info->name : '';
                 } elseif ($dialog->group_type === 'task') {
-                    $dialog->group_info = ProjectTask::select(['id', 'name'])->whereDialogId($dialog->id)->first();
+                    $dialog->group_info = ProjectTask::withTrashed()->select(['id', 'name'])->whereDialogId($dialog->id)->first();
                     $dialog->name = $dialog->group_info ? $dialog->group_info->name : '';
                 }
                 break;

@@ -262,7 +262,7 @@ class User extends AbstractModel
         if (!$user) {
             $authorization = Base::getToken();
             if ($authorization) {
-                throw new ApiException('身份已失效,请重新登录', $user, -1);
+                throw new ApiException('身份已失效,请重新登录', [], -1);
             } else {
                 throw new ApiException('请登录后继续...', [], -1);
             }
