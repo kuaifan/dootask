@@ -29,10 +29,51 @@
             </ul>
             <div class="dashboard-title">{{title}}</div>
             <ul class="dashboard-list overlay-y">
-                <li v-for="item in list" :key="item.id" @click="$store.dispatch('openTask', item.id)">
-                    <i class="iconfont">&#xe625;</i>
-                    <div class="item-title">{{item.name}}</div>
-                    <div class="item-time"></div>
+                <li v-for="item in list" :key="item.id" :style="item.color ? {backgroundColor: item.color} : {}">
+                    <EDropdown
+                        trigger="click"
+                        size="small"
+                        placement="bottom"
+                        @command="dropTask(item, $event)">
+                        <div class="drop-icon">
+                            <i class="iconfont">&#xe625;</i>
+                        </div>
+                        <EDropdownMenu slot="dropdown" class="project-list-more-dropdown-menu">
+                            <EDropdownItem v-if="item.complete_at" command="uncomplete">
+                                <div class="item red">
+                                    <Icon type="md-checkmark-circle-outline" />{{$L('标记未完成')}}
+                                </div>
+                            </EDropdownItem>
+                            <EDropdownItem v-else command="complete">
+                                <div class="item">
+                                    <Icon type="md-radio-button-off" />{{$L('完成')}}
+                                </div>
+                            </EDropdownItem>
+                            <EDropdownItem v-if="item.parent_id === 0" command="archived">
+                                <div class="item">
+                                    <Icon type="ios-filing" />{{$L('归档')}}
+                                </div>
+                            </EDropdownItem>
+                            <EDropdownItem command="remove">
+                                <div class="item">
+                                    <Icon type="md-trash" />{{$L('删除')}}
+                                </div>
+                            </EDropdownItem>
+                            <template v-if="item.parent_id === 0">
+                                <EDropdownItem v-if="item.parent_id === 0" divided disabled>{{$L('背景色')}}</EDropdownItem>
+                                <EDropdownItem v-for="(c, k) in $store.state.taskColorList" :key="k" :command="c">
+                                    <div class="item">
+                                        <i class="iconfont" :style="{color:c.color||'#f9f9f9'}" v-html="c.color == item.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
+                                    </div>
+                                </EDropdownItem>
+                            </template>
+                        </EDropdownMenu>
+                    </EDropdown>
+                    <div class="item-title" @click="$store.dispatch('openTask', item.id)">{{item.name}}</div>
+                    <div :class="['item-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']">
+                        <Icon type="ios-time-outline"/>
+                        {{expiresFormat(item.end_at)}}
+                    </div>
                 </li>
             </ul>
         </div>
@@ -45,10 +86,25 @@ import {mapState} from "vuex";
 export default {
     data() {
         return {
+            nowTime: Math.round(new Date().getTime() / 1000),
+            nowInterval: null,
+
             loadIng: 0,
             active: false,
             dashboard: 'today',
+
+            taskLoad: {}
         }
+    },
+
+    mounted() {
+        this.nowInterval = setInterval(() => {
+            this.nowTime = Math.round(new Date().getTime() / 1000);
+        }, 1000)
+    },
+
+    destroyed() {
+        clearInterval(this.nowInterval)
     },
 
     activated() {
@@ -81,14 +137,19 @@ export default {
             const todayStart = new Date($A.formatDate("Y-m-d 00:00:00")),
                 todayEnd = new Date($A.formatDate("Y-m-d 23:59:59"));
             return tasks.filter((data) => {
-                const start = new Date(data.start_at),
-                    end = new Date(data.end_at);
                 if (data.parent_id > 0) {
                     return false;
                 }
                 if (data.complete_at) {
                     return false;
                 }
+                if (!data.end_at) {
+                    return false;
+                }
+                const start = new Date(data.start_at),
+                    end = new Date(data.end_at);
+                data._start_time = start;
+                data._end_time = end;
                 switch (dashboard) {
                     case 'today':
                         return (start >= todayStart && start <= todayEnd) || (end >= todayStart && end <= todayEnd);
@@ -97,8 +158,26 @@ export default {
                     default:
                         return false;
                 }
+            }).sort((a, b) => {
+                if (a._end_time != b._end_time) {
+                    return a._end_time - b._end_time;
+                }
+                return a.id - b.id;
             });
-        }
+        },
+
+        expiresFormat() {
+            const {nowTime} = this;
+            return function (date) {
+                let time = Math.round(new Date(date).getTime() / 1000) - nowTime;
+                if (time < 86400 * 4 && time > 0 ) {
+                    return this.formatSeconds(time);
+                } else if (time <= 0) {
+                    return '-' + this.formatSeconds(time * -1);
+                }
+                return this.formatTime(date)
+            }
+        },
     },
 
     watch: {
@@ -140,7 +219,117 @@ export default {
             }).catch(() => {
                 this.loadIng--;
             })
-        }
+        },
+
+        dropTask(task, command) {
+            switch (command) {
+                case 'complete':
+                    if (task.complete_at) return;
+                    this.updateTask(task, {
+                        complete_at: $A.formatDate("Y-m-d H:i:s")
+                    })
+                    break;
+                case 'uncomplete':
+                    if (!task.complete_at) return;
+                    this.updateTask(task, {
+                        complete_at: false
+                    })
+                    break;
+                case 'archived':
+                case 'remove':
+                    this.archivedOrRemoveTask(task, command);
+                    break;
+                default:
+                    if (command.name) {
+                        this.updateTask(task, {
+                            color: command.color
+                        })
+                    }
+                    break;
+            }
+        },
+
+        updateTask(task, updata) {
+            if (this.taskLoad[task.id] === true) {
+                return;
+            }
+            this.$set(this.taskLoad, task.id, true);
+            //
+            Object.keys(updata).forEach(key => this.$set(task, key, updata[key]));
+            //
+            this.$store.dispatch("taskUpdate", Object.assign(updata, {
+                task_id: task.id,
+            })).then(() => {
+                this.$set(this.taskLoad, task.id, false);
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+                this.$set(this.taskLoad, task.id, false);
+                this.$store.dispatch("getTaskOne", task.id);
+            });
+        },
+
+        archivedOrRemoveTask(task, type) {
+            let typeDispatch = type == 'remove' ? 'removeTask' : 'archivedTask';
+            let typeName = type == 'remove' ? '删除' : '归档';
+            let typeTask = task.parent_id > 0 ? '子任务' : '任务';
+            $A.modalConfirm({
+                title: typeName + typeTask,
+                content: '你确定要' + typeName + typeTask + '【' + task.name + '】吗？',
+                loading: true,
+                onOk: () => {
+                    if (this.taskLoad[task.id] === true) {
+                        this.$Modal.remove();
+                        return;
+                    }
+                    this.$set(this.taskLoad, task.id, true);
+                    this.$store.dispatch(typeDispatch, task.id).then(({msg}) => {
+                        $A.messageSuccess(msg);
+                        this.$Modal.remove();
+                        this.$set(this.taskLoad, task.id, false);
+                    }).catch(({msg}) => {
+                        $A.modalError(msg, 301);
+                        this.$Modal.remove();
+                        this.$set(this.taskLoad, task.id, false);
+                    });
+                }
+            });
+        },
+
+        formatTime(date) {
+            let time = Math.round(new Date(date).getTime() / 1000),
+                string = '';
+            if ($A.formatDate('Ymd') === $A.formatDate('Ymd', time)) {
+                string = $A.formatDate('H:i', time)
+            } else if ($A.formatDate('Y') === $A.formatDate('Y', time)) {
+                string = $A.formatDate('m-d', time)
+            } else {
+                string = $A.formatDate('Y-m-d', time)
+            }
+            return string || '';
+        },
+
+        formatBit(val) {
+            val = +val
+            return val > 9 ? val : '0' + val
+        },
+
+        formatSeconds(second) {
+            let duration
+            let days = Math.floor(second / 86400);
+            let hours = Math.floor((second % 86400) / 3600);
+            let minutes = Math.floor(((second % 86400) % 3600) / 60);
+            let seconds = Math.floor(((second % 86400) % 3600) % 60);
+            if (days > 0) {
+                if (hours > 0) duration = days + "d," + this.formatBit(hours) + "h";
+                else if (minutes > 0) duration = days + "d," + this.formatBit(minutes) + "min";
+                else if (seconds > 0) duration = days + "d," + this.formatBit(seconds) + "s";
+                else duration = days + "d";
+            }
+            else if (hours > 0) duration = this.formatBit(hours) + ":" + this.formatBit(minutes) + ":" + this.formatBit(seconds);
+            else if (minutes > 0) duration = this.formatBit(minutes) + ":" + this.formatBit(seconds);
+            else if (seconds > 0) duration = this.formatBit(seconds) + "s";
+            return duration;
+        },
     }
 }
 </script>

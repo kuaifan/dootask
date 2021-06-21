@@ -91,7 +91,7 @@
                                         </div>
                                     </EDropdownItem>
                                     <EDropdownItem divided disabled>{{$L('颜色')}}</EDropdownItem>
-                                    <EDropdownItem v-for="(c, k) in columnColorList" :key="k" :command="c">
+                                    <EDropdownItem v-for="(c, k) in $store.state.columnColorList" :key="k" :command="c">
                                         <div class="item">
                                             <i class="iconfont" :style="{color:c.color}" v-html="c.color == column.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
                                         </div>
@@ -157,7 +157,7 @@
                                                     </div>
                                                 </EDropdownItem>
                                                 <EDropdownItem divided disabled>{{$L('背景色')}}</EDropdownItem>
-                                                <EDropdownItem v-for="(c, k) in taskColorList" :key="k" :command="c">
+                                                <EDropdownItem v-for="(c, k) in $store.state.taskColorList" :key="k" :command="c">
                                                     <div class="item">
                                                         <i class="iconfont" :style="{color:c.color||'#f9f9f9'}" v-html="c.color == item.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
                                                     </div>
@@ -241,7 +241,7 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow :list="myList" open-key="my" :color-list="taskColorList" @command="dropTask" fast-add-task/>
+                <TaskRow :list="myList" open-key="my" @command="dropTask" fast-add-task/>
             </div>
             <!--未完成任务-->
             <div v-if="projectData.task_num > 0" :class="['project-table-body', !taskUndoneShow ? 'project-table-hide' : '']">
@@ -256,7 +256,7 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow :list="undoneList" open-key="undone" :color-list="taskColorList" @command="dropTask"/>
+                <TaskRow :list="undoneList" open-key="undone" @command="dropTask"/>
             </div>
             <!--已完成任务-->
             <div v-if="projectData.task_num > 0" :class="['project-table-body', !taskCompletedShow ? 'project-table-hide' : '']">
@@ -271,7 +271,7 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow :list="completedList" open-key="completed" :color-list="taskColorList" @command="dropTask"/>
+                <TaskRow :list="completedList" open-key="completed" @command="dropTask"/>
             </div>
         </div>
 
@@ -385,29 +385,6 @@ export default {
             transferShow: false,
             transferData: {},
             transferLoad: 0,
-
-            columnColorList: [
-                {name: '默认', color: ''},
-                {name: '灰色', color: '#6C6F71'},
-                {name: '棕色', color: '#695C56'},
-                {name: '橘色', color: '#9E7549'},
-                {name: '黄色', color: '#A0904F'},
-                {name: '绿色', color: '#4D7771'},
-                {name: '蓝色', color: '#4C7088'},
-                {name: '紫色', color: '#6B5C8D'},
-                {name: '粉色', color: '#8E5373'},
-                {name: '红色', color: '#9D6058'},
-            ],
-
-            taskColorList: [
-                {name: '默认', color: ''},
-                {name: '黄色', color: '#FCF4A7'},
-                {name: '蓝色', color: '#BCF2FD'},
-                {name: '绿色', color: '#C3FDAA'},
-                {name: '粉色', color: '#F6C9C8'},
-                {name: '紫色', color: '#BAC9FB'},
-                {name: '灰色', color: '#EEEEEE'},
-            ]
         }
     },
 

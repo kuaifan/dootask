@@ -99,13 +99,15 @@
                 &:last-child {
                     margin-bottom: 12px;
                 }
-                .iconfont {
-                    color: #bbbbbb;
-                    font-size: 18px;
+                .el-dropdown {
                     flex-shrink: 0;
                     width: 22px;
                     height: 22px;
                     line-height: 22px;
+                    .iconfont {
+                        color: #bbbbbb;
+                        font-size: 18px;
+                    }
                 }
                 .item-title {
                     flex: 1;
@@ -113,8 +115,24 @@
                     line-height: 22px;
                 }
                 .item-time {
-                    padding-left: 12px;
+                    display: flex;
+                    align-items: center;
+                    height: 22px;
+                    line-height: 22px;
+                    font-size: 13px;
+                    margin-left: 12px;
                     flex-shrink: 0;
+                    color: #aaaaaa;
+                    &.overdue {
+                        color: #ed4014;
+                    }
+                    &.today {
+                        color: #ff9900;
+                    }
+                    .ivu-icon {
+                        margin-right: 3px;
+                        font-size: 14px;
+                    }
                 }
             }
         }

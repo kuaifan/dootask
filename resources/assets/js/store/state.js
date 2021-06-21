@@ -280,6 +280,28 @@ state.taskLogs = [];
 state.projectId = 0;
 state.taskId = 0;
 
+state.columnColorList = [
+    {name: '默认', color: ''},
+    {name: '灰色', color: '#6C6F71'},
+    {name: '棕色', color: '#695C56'},
+    {name: '橘色', color: '#9E7549'},
+    {name: '黄色', color: '#A0904F'},
+    {name: '绿色', color: '#4D7771'},
+    {name: '蓝色', color: '#4C7088'},
+    {name: '紫色', color: '#6B5C8D'},
+    {name: '粉色', color: '#8E5373'},
+    {name: '红色', color: '#9D6058'},
+];
+state.taskColorList = [
+    {name: '默认', color: ''},
+    {name: '黄色', color: '#FCF4A7'},
+    {name: '蓝色', color: '#BCF2FD'},
+    {name: '绿色', color: '#C3FDAA'},
+    {name: '粉色', color: '#F6C9C8'},
+    {name: '紫色', color: '#BAC9FB'},
+    {name: '灰色', color: '#EEEEEE'},
+];
+
 // 会话聊天
 state.dialogId = 0;
 state.dialogList = [];
