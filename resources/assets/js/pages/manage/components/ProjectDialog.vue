@@ -1,6 +1,6 @@
 <template>
     <div class="project-dialog">
-        <DialogWrapper class="project-dialog-wrapper">
+        <DialogWrapper :dialog-id="projectData.dialog_id" class="project-dialog-wrapper">
             <div slot="head">
                 <div class="dialog-user">
                     <div class="member-head">
@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import {mapGetters, mapState} from "vuex";
+import {mapGetters} from "vuex";
 import DialogWrapper from "./DialogWrapper";
 
 export default {
@@ -35,29 +35,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['projectChatShow']),
-
         ...mapGetters(['projectData'])
     },
-
-    watch: {
-        'projectData.dialog_id' () {
-            this.getMsgList()
-        },
-        projectChatShow: {
-            handler() {
-                this.getMsgList()
-            },
-            immediate: true
-        }
-    },
-
-    methods: {
-        getMsgList() {
-            if (this.projectChatShow && this.projectData.dialog_id) {
-                this.$store.dispatch("getDialogMsgList", this.projectData.dialog_id);
-            }
-        }
-    }
 }
 </script>

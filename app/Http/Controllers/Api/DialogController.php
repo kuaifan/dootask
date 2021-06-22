@@ -42,11 +42,11 @@ class DialogController extends AbstractController
     }
 
     /**
-     * 获取会话基础信息
+     * 获取单个会话信息
      *
      * @apiParam {Number} dialog_id         对话ID
      */
-    public function basic()
+    public function one()
     {
         $user = User::auth();
         //

@@ -9,15 +9,16 @@
                     </div>
                 </div>
                 <div v-if="tabActive==='dialog'" class="messenger-nav">
-                    <p :class="{active:dialogType==''}" @click="dialogType=''">{{$L('全部')}}</p>
-                    <p :class="{active:dialogType=='project'}" @click="dialogType='project'">{{$L('项目')}}</p>
-                    <p :class="{active:dialogType=='task'}" @click="dialogType='task'">{{$L('任务')}}</p>
-                    <p :class="{active:dialogType=='user'}" @click="dialogType='user'">{{$L('个人')}}</p>
+                    <p
+                        v-for="(item, key) in dialogType"
+                        :key="key"
+                        :class="{active:dialogActive==item.type}"
+                        @click="dialogActive=item.type">{{$L(item.name)}}</p>
                 </div>
                 <div ref="list" class="messenger-list overlay-y">
                     <ul v-if="tabActive==='dialog'" class="dialog">
                         <li
-                            v-for="(dialog, key) in dialogLists"
+                            v-for="(dialog, key) in dialogList"
                             :key="key"
                             :class="{active: dialog.id == dialogId}"
                             @click="openDialog(dialog, true)">
@@ -38,7 +39,6 @@
                             </div>
                             <Badge class="dialog-num" :count="dialog.unread"/>
                         </li>
-                        <li v-if="dialogLoad > 0" class="loading"><Loading/></li>
                     </ul>
                     <ul v-else class="contacts">
                         <li v-for="(users, label) in contactsLists">
@@ -60,7 +60,7 @@
             </div>
 
             <div class="messenger-msg">
-                <DialogWrapper v-if="dialogId > 0" @on-active="scrollIntoActive"/>
+                <DialogWrapper v-if="dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive"/>
                 <div v-else class="dialog-no">
                     <div class="dialog-no-icon"><Icon type="ios-chatbubbles" /></div>
                     <div class="dialog-no-text">{{$L('选择一个会话开始聊天')}}</div>
@@ -80,50 +80,40 @@ export default {
         return {
             tabActive: 'dialog',
 
-            dialogLoad: 0,
+            dialogType: [
+                {type: '', name: '全部'},
+                {type: 'project', name: '项目'},
+                {type: 'task', name: '任务'},
+                {type: 'user', name: '个人'},
+            ],
+            dialogActive: '',
             dialogKey: '',
-            dialogType: '',
-            dialogMounted: false,
+            dialogId: 0,
 
             contactsLoad: 0,
             contactsLists: null,
         }
     },
 
-    mounted() {
-        this.dialogLoad++;
-        this.$store.dispatch("getDialogList").then(() => {
-            this.dialogLoad--;
-            this.dialogMounted = true;
-            this.openDialogStorage();
-        }).catch(() => {
-            this.dialogLoad--;
-            this.dialogMounted = true;
-            this.openDialogStorage();
-        });
-    },
-
     activated() {
-        if (this.dialogMounted) {
-            this.$store.dispatch("getDialogList");
-            this.openDialogStorage();
-        }
+        this.$store.dispatch("getDialogs");
+        this.openDialogStorage();
     },
 
     computed: {
-        ...mapState(['userId', 'dialogId', 'dialogList']),
+        ...mapState(['userId', 'dialogs']),
 
-        dialogLists() {
-            const {dialogType, dialogKey} = this;
-            if (dialogType == '' && dialogKey == '') {
-                return this.dialogList;
+        dialogList() {
+            const {dialogActive, dialogKey} = this;
+            if (dialogActive == '' && dialogKey == '') {
+                return this.dialogs;
             }
-            return this.dialogList.filter(({name, type, group_type, last_msg}) => {
-                if (dialogType) {
-                    switch (dialogType) {
+            return this.dialogs.filter(({name, type, group_type, last_msg}) => {
+                if (dialogActive) {
+                    switch (dialogActive) {
                         case 'project':
                         case 'task':
-                            if (group_type != dialogType) {
+                            if (group_type != dialogActive) {
                                 return false;
                             }
                             break;
@@ -158,15 +148,15 @@ export default {
 
     methods: {
         openDialog(dialog, smooth) {
-            this.$store.state.method.setStorage("messengerDialogId", dialog.id)
-            this.$store.dispatch("getDialogMsgList", dialog.id);
+            this.$store.state.method.setStorage("messenger::dialogId", dialog.id)
+            this.dialogId = dialog.id;
             this.scrollIntoActive(smooth);
         },
 
         openDialogStorage() {
-            let tmpId = this.$store.state.method.getStorageInt("messengerDialogId")
-            if (tmpId > 0) {
-                const dialog = this.dialogList.find(({id}) => id === tmpId);
+            this.dialogId = this.$store.state.method.getStorageInt("messenger::dialogId")
+            if (this.dialogId > 0) {
+                const dialog = this.dialogs.find(({id}) => id === this.dialogId);
                 dialog && this.openDialog(dialog, false);
             }
         },
@@ -259,9 +249,9 @@ export default {
                             scrollMode: 'if-needed',
                         });
                     } else {
-                        let dialog = this.dialogList.find(({id}) => id == this.dialogId)
-                        if (dialog && this.dialogType) {
-                            this.dialogType = '';
+                        let dialog = this.dialogs.find(({id}) => id == this.dialogId)
+                        if (dialog && this.dialogActive) {
+                            this.dialogActive = '';
                             this.$nextTick(() => {
                                 let active = this.$refs.list.querySelector(".active")
                                 if (active) {

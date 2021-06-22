@@ -2,11 +2,12 @@
     <div class="page-project">
         <PageTitle>{{ $L('项目面板') }}</PageTitle>
         <ProjectList/>
-        <ProjectDialog v-if="$store.state.projectChatShow"/>
+        <ProjectDialog v-if="tablePanel('chat')"/>
     </div>
 </template>
 
 <script>
+import {mapGetters} from "vuex";
 import ProjectList from "./components/ProjectList";
 import ProjectDialog from "./components/ProjectDialog";
 export default {
@@ -16,9 +17,15 @@ export default {
             project_id: 0,
         }
     },
+
     mounted() {
         this.project_id = this.$route.params.id;
     },
+
+    computed: {
+        ...mapGetters(['tablePanel']),
+    },
+
     watch: {
         '$route' (route) {
             this.project_id = route.params.id;

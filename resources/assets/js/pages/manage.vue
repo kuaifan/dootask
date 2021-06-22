@@ -29,7 +29,7 @@
                 <li @click="toggleRoute('messenger')" :class="classNameRoute('messenger')">
                     <i class="iconfont">&#xe6eb;</i>
                     <div class="menu-title">{{$L('消息')}}</div>
-                    <Badge class="menu-badge" :count="dialogMsgUnread"></Badge>
+                    <Badge class="menu-badge" :count="msgAllUnread"></Badge>
                 </li>
                 <li class="menu-project">
                     <ul>
@@ -165,30 +165,25 @@ export default {
         ...mapState([
             'userId',
             'userInfo',
-            'dialogMsgUnread',
+            'dialogs',
             'projects',
-            'projectChatShow',
             'taskId',
         ]),
-        ...mapGetters(['taskData'])
+
+        ...mapGetters(['taskData']),
+
+        msgAllUnread() {
+            let num = 0;
+            this.dialogs.map(({unread}) => {
+                num += unread;
+            })
+            return num;
+        }
     },
 
     watch: {
         '$route' (route) {
             this.curPath = route.path;
-        },
-        taskId (id) {
-            if (id > 0) {
-                if (this.projectChatShow) {
-                    this._projectChatShow = true;
-                    this.$store.dispatch("toggleBoolean", "projectChatShow");
-                }
-            } else {
-                if (this._projectChatShow) {
-                    this._projectChatShow = false;
-                    this.$store.dispatch("toggleBoolean", "projectChatShow");
-                }
-            }
         }
     },
 

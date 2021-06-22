@@ -226,11 +226,6 @@ const method = {
 // 方法类
 const state = { method };
 
-// ajax
-state.ajaxLoadNum = 0;
-state.ajaxWsReady = false;
-state.ajaxWsListener = [];
-
 // 数据缓存
 state.cacheUserBasic = state.method.getStorageJson("cacheUserBasic");
 state.cacheDialogMsg = state.method.getStorageJson("cacheDialogMsg");
@@ -239,15 +234,12 @@ state.cacheColumns = state.method.getStorageArray("cacheColumns");
 state.cacheTasks = state.method.getStorageArray("cacheTasks");
 state.cacheTaskSubs = state.method.getStorageArray("cacheTaskSubs");
 state.cacheTablePanel = state.method.getStorageArray("cacheTablePanel");
-state.projectChatShow = state.method.getStorageBoolean("boolean:projectChatShow", false)
-state.projectCompleteShow = state.method.getStorageBoolean("boolean:projectCompleteShow", false)
+state.showCompletedTask = state.method.getStorageBoolean("boolean:showCompletedTask")
 
-// 会员信息
-state.userInfo = state.method.getStorageJson("userInfo");
-state.userId = state.userInfo.userid = state.method.runNum(state.userInfo.userid);
-state.userToken = state.userInfo.token;
-state.userIsAdmin = state.method.inArray("admin", state.userInfo.identity);
-state.userOnline = {};
+// Ajax
+state.ajaxLoadNum = 0;
+state.ajaxWsReady = false;
+state.ajaxWsListener = [];
 
 // Websocket
 state.ws = null;
@@ -258,30 +250,30 @@ state.wsListener = {};
 state.wsReadTimeout = null;
 state.wsReadWaitList = [];
 
+// 会员信息
+state.userInfo = state.method.getStorageJson("userInfo");
+state.userId = state.userInfo.userid = state.method.runNum(state.userInfo.userid);
+state.userToken = state.userInfo.token;
+state.userIsAdmin = state.method.inArray("admin", state.userInfo.identity);
+state.userOnline = {};
+
+// 会话聊天
+state.dialogs = [];
+state.dialogMsgs = [];
+state.dialogMsgPush = {};
+
 // 项目任务
+state.projectId = 0;
 state.projects = [];
 state.projectLoad = 0;
 state.projectStatistics = {};
 state.columns = [];
+state.taskId = 0;
 state.tasks = [];
 state.taskSubs = [];
 state.taskContents = [];
 state.taskFiles = [];
 state.taskLogs = [];
-state.projectId = 0;
-state.taskId = 0;
-
-// 会话聊天
-state.dialogId = 0;
-state.dialogList = [];
-state.dialogDetail = {};
-
-state.dialogMsgUnread = 0;
-state.dialogMsgLoad = 0;
-state.dialogMsgPush = {};
-state.dialogMsgList = [];
-state.dialogMsgCurrentPage = 1;
-state.dialogMsgHasMorePages = false;
 
 // 任务优先级
 state.taskPriority = [];

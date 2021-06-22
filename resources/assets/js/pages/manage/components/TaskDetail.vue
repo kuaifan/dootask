@@ -332,7 +332,7 @@
         </div>
         <div class="task-dialog" :style="dialogStyle">
             <template v-if="taskDetail.dialog_id > 0">
-                <DialogWrapper ref="dialog">
+                <DialogWrapper ref="dialog" :dialog-id="taskDetail.dialog_id">
                     <div slot="head" class="head">
                         <Icon class="icon" type="ios-chatbubbles-outline" />
                         <div class="nav">
@@ -637,11 +637,6 @@ export default {
             },
             immediate: true,
             deep: true
-        },
-        'openTask.dialog_id' (dialog_id) {
-            if (dialog_id) {
-                this.$store.dispatch("getDialogMsgList", dialog_id)
-            }
         },
         'openTask._show' (show) {
             if (show) {

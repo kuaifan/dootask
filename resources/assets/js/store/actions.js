@@ -191,7 +191,7 @@ export default {
             state.userIsAdmin = state.method.inArray('admin', userInfo.identity);
             state.method.setStorage("userInfo", state.userInfo);
             dispatch("getProjects");
-            dispatch("getDialogMsgUnread");
+            dispatch("getDialogs");
             dispatch("websocketConnection");
             resolve()
         });
@@ -542,7 +542,6 @@ export default {
             });
         });
     },
-
 
     /** *****************************************************************************************/
     /** ************************************** 任务 **********************************************/
@@ -941,7 +940,6 @@ export default {
         });
     },
 
-
     /** *****************************************************************************************/
     /** ************************************** 会话 **********************************************/
     /** *****************************************************************************************/
@@ -953,15 +951,21 @@ export default {
      * @param data
      */
     saveDialog({state, dispatch}, data) {
-        let splice = false;
-        state.dialogList.some(({id, unread}, index) => {
-            if (id == data.id) {
-                unread !== data.unread && dispatch('getDialogMsgUnread');
-                state.dialogList.splice(index, 1, data);
-                return splice = true;
+        if (state.method.isArray(data)) {
+            data.forEach((dialog) => {
+                dispatch("saveDialog", dialog)
+            });
+        } else if (state.method.isJson(data)) {
+            let index = state.dialogs.findIndex(({id}) => id == data.id);
+            if (index > -1) {
+                state.dialogs.splice(index, 1, Object.assign(state.dialogs[index], data));
+            } else {
+                state.dialogs.push(data);
             }
-        });
-        !splice && state.dialogList.unshift(data)
+            setTimeout(() => {
+                state.method.setStorage("cacheDialogs", state.cacheDialogs = state.dialogs);
+            })
+        }
     },
 
     /**
@@ -969,23 +973,12 @@ export default {
      * @param state
      * @param dispatch
      */
-    getDialogList({state, dispatch}) {
+    getDialogs({state, dispatch}) {
         return new Promise(function (resolve, reject) {
             dispatch("call", {
                 url: 'dialog/lists',
             }).then(result => {
-                if (state.dialogList.length === 0) {
-                    state.dialogList = result.data.data;
-                } else {
-                    result.data.data.forEach((dialog) => {
-                        let index = state.dialogList.findIndex(({id}) => id == dialog.id);
-                        if (index > -1) {
-                            dialog = Object.assign(state.dialogList[index], dialog)
-                            state.dialogList.splice(index, 1);
-                        }
-                        state.dialogList.push(dialog);
-                    });
-                }
+                dispatch("saveDialog", result.data.data);
                 resolve(result);
             }).catch(e => {
                 console.error(e);
@@ -1000,9 +993,9 @@ export default {
      * @param dispatch
      * @param dialog_id
      */
-    getDialogBasic({state, dispatch}, dialog_id) {
+    getDialogOne({state, dispatch}, dialog_id) {
         dispatch("call", {
-            url: 'dialog/basic',
+            url: 'dialog/one',
             data: {
                 dialog_id,
             },
@@ -1029,7 +1022,6 @@ export default {
                 },
             }).then(result => {
                 state.method.setStorage("messengerDialogId", result.data.id)
-                dispatch("getDialogMsgList", result.data.id);
                 dispatch("saveDialog", result.data);
                 resolve(result);
             }).catch(e => {
@@ -1040,61 +1032,82 @@ export default {
     },
 
     /**
+     * 将会话移动到首位
+     * @param state
+     * @param dialog_id
+     */
+    dialogMoveTop({state}, dialog_id) {
+        const index = state.dialogs.findIndex(({id}) => id == dialog_id);
+        if (index > -1) {
+            const tmp = state.method.cloneJSON(state.dialogs[index]);
+            state.dialogs.splice(index, 1);
+            state.dialogs.unshift(tmp);
+        }
+    },
+
+    /** *****************************************************************************************/
+    /** ************************************** 消息 **********************************************/
+    /** *****************************************************************************************/
+
+    /**
+     * 更新消息数据
+     * @param state
+     * @param dispatch
+     * @param data
+     */
+    saveDialogMsg({state, dispatch}, data) {
+        if (state.method.isArray(data)) {
+            data.forEach((msg) => {
+                dispatch("saveDialogMsg", msg)
+            });
+        } else if (state.method.isJson(data)) {
+            let index = state.dialogMsgs.findIndex(({id}) => id == data.id);
+            if (index > -1) {
+                state.dialogMsgs.splice(index, 1, Object.assign(state.dialogMsgs[index], data));
+            } else {
+                state.dialogMsgs.push(data);
+            }
+            setTimeout(() => {
+                state.method.setStorage("cacheDialogMsgs", state.cacheDialogMsgs = state.dialogMsgs);
+            })
+        }
+    },
+
+    /**
      * 获取会话消息
      * @param state
      * @param dispatch
-     * @param commit
      * @param dialog_id
      */
-    getDialogMsgList({state, dispatch, commit}, dialog_id) {
-        if (state.method.runNum(dialog_id) === 0) {
+    getDialogMsgs({state, dispatch}, dialog_id) {
+        const dialog = state.dialogs.filter(({id}) => id == dialog_id);
+        if (!dialog) {
             return;
         }
-        if (state.dialogId == dialog_id) {
+        if (dialog.loading) {
             return;
         }
+        dialog.loading = true;
+        dialog.currentPage = 1;
+        dialog.hasMorePages = false;
         //
-        state.dialogMsgList = [];
-        state.dialogMsgCurrentPage = 1;
-        state.dialogMsgHasMorePages = false;
-        if (state.method.isJson(state.cacheDialogMsg[dialog_id])) {
-            let length = state.cacheDialogMsg[dialog_id].data.length;
-            if (length > 50) {
-                state.cacheDialogMsg[dialog_id].data.splice(0, length - 50);
-            }
-            state.dialogDetail = state.cacheDialogMsg[dialog_id].dialog
-            state.dialogMsgList = state.cacheDialogMsg[dialog_id].data
-        }
-        state.dialogId = dialog_id;
-        //
-        if (state.cacheDialogMsg[dialog_id + "::load"]) {
-            return;
-        }
-        state.cacheDialogMsg[dialog_id + "::load"] = true;
-        //
-        state.dialogMsgLoad++;
         dispatch("call", {
             url: 'dialog/msg/lists',
             data: {
                 dialog_id: dialog_id,
-                page: state.dialogMsgCurrentPage
+                page: dialog.currentPage
             },
         }).then(result => {
-            state.dialogMsgLoad--;
-            state.cacheDialogMsg[dialog_id + "::load"] = false;
-            const data = result.data;
-            // 更新缓存
-            state.cacheDialogMsg[dialog_id] = {
-                dialog: data.dialog,
-                data: [],
-            };
-            state.method.setStorage("cacheDialogMsg", state.cacheDialogMsg);
-            // 更新当前会话消息
-            commit("dialogMsgListSuccess", data);
+            dialog.loading = false;
+            const ids = result.data.data.map(({id}) => id)
+            if (ids.length == 0) {
+                return;
+            }
+            state.dialogMsgs = state.dialogMsgs.filter((item) => item.dialog_id != dialog_id || ids.includes(item.id));
+            dispatch("saveDialogMsg", result.data.data);
         }).catch(e => {
             console.error(e);
-            state.dialogMsgLoad--;
-            state.cacheDialogMsg[dialog_id + "::load"] = false;
+            dialog.loading = false;
         });
     },
 
@@ -1102,95 +1115,39 @@ export default {
      * 获取下一页会话消息
      * @param state
      * @param dispatch
-     * @param commit
+     * @param dialog_id
      */
-    getDialogMsgListNextPage({state, dispatch, commit}) {
+    getDialogMsgNextPage({state, dispatch}, dialog_id) {
         return new Promise(function (resolve, reject) {
-            if (!state.dialogMsgHasMorePages) {
+            const dialog = state.dialogs.filter(({id}) => id == dialog_id);
+            if (!dialog) {
                 return;
             }
-            state.dialogMsgHasMorePages = false;
-            state.dialogMsgCurrentPage++;
+            if (!dialog.hasMorePages) {
+                return;
+            }
+            if (dialog.loading) {
+                return;
+            }
+            dialog.loading = true;
+            dialog.currentPage++;
             //
-            const dialog_id = state.dialogId;
-            //
-            state.dialogMsgLoad++;
             dispatch("call", {
                 url: 'dialog/msg/lists',
                 data: {
                     dialog_id: dialog_id,
-                    page: state.dialogMsgCurrentPage
+                    page: dialog.currentPage
                 },
             }).then(result => {
-                state.dialogMsgLoad--;
-                commit("dialogMsgListSuccess", result.data);
+                dialog.loading = false;
+                dispatch("saveDialogMsg", result.data);
                 resolve(result)
             }).catch(e => {
                 console.error(e);
-                state.dialogMsgLoad--;
+                dialog.loading = false;
                 reject(e)
             });
         });
-    },
-
-    /**
-     * 获取未读信息
-     * @param state
-     * @param dispatch
-     */
-    getDialogMsgUnread({state, dispatch}) {
-        if (state.userId === 0) {
-            state.dialogMsgUnread = 0;
-            return;
-        }
-        const unread = state.dialogMsgUnread;
-        dispatch("call", {
-            url: 'dialog/msg/unread',
-        }).then(result => {
-            if (unread == state.dialogMsgUnread) {
-                state.dialogMsgUnread = result.data.unread;
-            } else {
-                setTimeout(() => {
-                    dispatch('getDialogMsgUnread');
-                }, 200);
-            }
-        });
-    },
-
-    /**
-     * 根据消息ID 删除 或 替换 会话数据
-     * @param state
-     * @param commit
-     * @param params {id, data}
-     */
-    dialogMsgUpdate({state, commit}, params) {
-        let {id, data} = params;
-        if (!id) {
-            return;
-        }
-        if (state.method.isJson(data)) {
-            const task = state.tasks.find(({dialog_id}) => dialog_id === data.dialog_id);
-            if (task) {
-                task.msg_num++;
-            }
-            if (data.id && state.dialogMsgList.find(m => m.id == data.id)) {
-                data = null;
-            }
-        }
-        let index = state.dialogMsgList.findIndex(m => m.id == id);
-        if (index > -1) {
-            if (data) {
-                state.dialogMsgList.splice(index, 1, state.method.cloneJSON(data));
-                commit("dialogMsgListStorageCurrent");
-                // 是最后一条消息时更新会话 last_msg
-                if (state.dialogMsgList.length - 1 == index) {
-                    const dialog = state.dialogList.find(({id}) => id == data.dialog_id);
-                    if (dialog) dialog.last_msg = data;
-                }
-            } else {
-                state.dialogMsgList.splice(index, 1);
-            }
-        }
     },
 
     /**
@@ -1208,10 +1165,9 @@ export default {
             return;
         }
         r.read_at = state.method.formatDate('Y-m-d H:i:s');
-        let dialog = state.dialogList.find(({id}) => id == dialog_id);
+        let dialog = state.dialogs.find(({id}) => id == dialog_id);
         if (dialog && dialog.unread > 0) {
             dialog.unread--
-            state.dialogMsgUnread--;
         }
         //
         state.wsReadWaitList.push(id);
@@ -1312,25 +1268,17 @@ export default {
                                 const {mode, data} = msg;
                                 const {dialog_id} = data;
                                 // 更新消息列表
-                                if (dialog_id == state.dialogId) {
-                                    let index = state.dialogMsgList.findIndex(({id}) => id == data.id);
-                                    if (index === -1) {
-                                        state.dialogMsgPush = data;
-                                        state.dialogMsgList.push(data);
-                                    } else {
-                                        state.dialogMsgList.splice(index, 1, data);
-                                    }
-                                    commit("dialogMsgListStorageCurrent");
-                                }
+                                state.dialogMsgPush = data;
+                                dispatch("saveDialogMsg", data)
                                 if (mode === "add2") {
                                     return;
                                 }
                                 // 更新最后消息
-                                let dialog = state.dialogList.find(({id}) => id == dialog_id);
+                                let dialog = state.dialogs.find(({id}) => id == dialog_id);
                                 if (dialog) {
                                     dialog.last_msg = data;
                                 } else {
-                                    dispatch("getDialogBasic", dialog_id);
+                                    dispatch("getDialogOne", dialog_id);
                                 }
                                 if (mode === "add1") {
                                     // 更新对话列表
@@ -1338,13 +1286,11 @@ export default {
                                         // 新增未读数
                                         if (data.userid !== state.userId) dialog.unread++;
                                         // 移动到首位
-                                        commit("dialogMoveToTop", dialog_id);
+                                        dispatch("dialogMoveTop", dialog_id);
                                     }
                                     // 新增任务消息数量
-                                    const task = state.tasks.find(({dialog_id}) => dialog_id === data.dialog_id);
+                                    const task = state.tasks.find(({dialog_id}) => dialog_id === dialog_id);
                                     if (task) task.msg_num++;
-                                    // 新增总未读数
-                                    if (data.userid !== state.userId) state.dialogMsgUnread++;
                                 }
                             })(msgDetail);
                             break;

@@ -23,7 +23,7 @@
                             </div>
                         </Tooltip>
                     </li>
-                    <li :class="['project-icon', projectChatShow ? 'active' : '']" @click="$store.dispatch('toggleBoolean', 'projectChatShow')">
+                    <li :class="['project-icon', tablePanel('chat') ? 'active' : '']" @click="$store.dispatch('toggleTablePanel', 'chat')">
                         <Icon class="menu-icon" type="ios-chatbubbles" />
                         <Badge class="menu-badge" :count="msgUnread"></Badge>
                     </li>
@@ -46,7 +46,7 @@
             <div v-if="projectData.desc" class="project-subtitle">{{projectData.desc}}</div>
             <div class="project-switch">
                 <div v-if="completedCount > 0" class="project-checkbox">
-                    <Checkbox :value="projectCompleteShow" @on-change="$store.dispatch('toggleBoolean', 'projectCompleteShow')">{{$L('显示已完成')}}</Checkbox>
+                    <Checkbox :value="showCompletedTask" @on-change="$store.dispatch('toggleBoolean', 'showCompletedTask')">{{$L('显示已完成')}}</Checkbox>
                 </div>
                 <div :class="['project-switch-button', !tablePanel('card') ? 'menu' : '']" @click="$store.dispatch('toggleTablePanel', 'card')">
                     <div><i class="iconfont">&#xe60c;</i></div>
@@ -401,29 +401,28 @@ export default {
     computed: {
         ...mapState([
             'userId',
-            'dialogList',
+            'dialogs',
 
             'projectId',
             'projectLoad',
             'tasks',
             'columns',
 
-            'projectChatShow',
-            'projectCompleteShow',
+            'showCompletedTask',
         ]),
 
         ...mapGetters(['projectData', 'tablePanel']),
 
         msgUnread() {
-            const {dialogList, projectData} = this;
-            const dialog = dialogList.find(({id}) => id === projectData.dialog_id);
+            const {dialogs, projectData} = this;
+            const dialog = dialogs.find(({id}) => id === projectData.dialog_id);
             return dialog ? dialog.unread : 0;
         },
 
         panelTask() {
-            const {searchText, projectCompleteShow} = this;
+            const {searchText, showCompletedTask} = this;
             return function (list) {
-                if (!projectCompleteShow) {
+                if (!showCompletedTask) {
                     list = list.filter(({complete_at}) => {
                         return !complete_at;
                     });
@@ -438,12 +437,12 @@ export default {
         },
 
         myList() {
-            const {projectId, tasks, searchText, projectCompleteShow, userId} = this;
+            const {projectId, tasks, searchText, showCompletedTask, userId} = this;
             const array = tasks.filter((task) => {
                 if (task.project_id != projectId) {
                     return false;
                 }
-                if (!projectCompleteShow) {
+                if (!showCompletedTask) {
                     if (task.complete_at) {
                         return false;
                     }
@@ -467,12 +466,12 @@ export default {
         },
 
         undoneList() {
-            const {projectId, tasks, searchText, projectCompleteShow} = this;
+            const {projectId, tasks, searchText, showCompletedTask} = this;
             const array = tasks.filter((task) => {
                 if (task.project_id != projectId) {
                     return false;
                 }
-                if (!projectCompleteShow) {
+                if (!showCompletedTask) {
                     if (task.complete_at) {
                         return false;
                     }
@@ -936,8 +935,8 @@ export default {
 
         taskIsHidden(task) {
             const {name, desc, complete_at} = task;
-            const {searchText, projectCompleteShow} = this;
-            if (!projectCompleteShow) {
+            const {searchText, showCompletedTask} = this;
+            if (!showCompletedTask) {
                 if (complete_at) {
                     return true;
                 }

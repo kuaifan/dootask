@@ -7,14 +7,14 @@
         <slot name="head">
             <div class="dialog-title">
                 <div class="main-title">
-                    <h2>{{dialogDetail.name}}</h2>
+                    <h2>{{dialogData.name}}</h2>
                     <em v-if="peopleNum > 0">({{peopleNum}})</em>
                 </div>
-                <template v-if="dialogDetail.type === 'group'">
-                    <div v-if="dialogDetail.group_type === 'project'" class="sub-title pointer" @click="openProject">
+                <template v-if="dialogData.type === 'group'">
+                    <div v-if="dialogData.group_type === 'project'" class="sub-title pointer" @click="openProject">
                         {{$L('项目聊天室')}} {{$L('打开项目管理')}}
                     </div>
-                    <div v-else-if="dialogDetail.group_type === 'task'" class="sub-title pointer" @click="openTask">
+                    <div v-else-if="dialogData.group_type === 'task'" class="sub-title pointer" @click="openTask">
                         {{$L('任务聊天室')}} {{$L('查看任务详情')}}
                     </div>
                 </template>
@@ -28,11 +28,11 @@
             static>
             <div ref="manageList" class="dialog-list">
                 <ul>
-                    <li v-if="dialogMsgHasMorePages" class="history" @click="loadNextPage">{{$L('加载历史消息')}}</li>
-                    <li v-else-if="dialogMsgLoad > 0 && dialogMsgList.length === 0" class="loading"><Loading/></li>
+                    <li v-if="dialogData.hasMorePages" class="history" @click="loadNextPage">{{$L('加载历史消息')}}</li>
+                    <li v-else-if="dialogData.loading > 0 && dialogMsgList.length === 0" class="loading"><Loading/></li>
                     <li v-else-if="dialogMsgList.length === 0" class="nothing">{{$L('暂无消息')}}</li>
                     <li
-                        v-for="item in dialogMsgLists"
+                        v-for="item in dialogMsgList"
                         :id="'view_' + item.id"
                         :key="item.id"
                         :class="{self:item.userid == userId, 'history-tip': topId == item.id}">
@@ -40,7 +40,17 @@
                         <div class="dialog-avatar">
                             <UserAvatar :userid="item.userid" :tooltip-disabled="item.userid == userId" :size="30"/>
                         </div>
-                        <DialogView :msg-data="item" :dialog-type="dialogDetail.type"/>
+                        <DialogView :msg-data="item" :dialog-type="dialogData.type"/>
+                    </li>
+                    <li
+                        v-for="item in tempMsgList"
+                        :id="'tmp_' + item.id"
+                        :key="'tmp_' + item.id"
+                        :class="{self:item.userid == userId}">
+                        <div class="dialog-avatar">
+                            <UserAvatar :userid="item.userid" :tooltip-disabled="item.userid == userId" :size="30"/>
+                        </div>
+                        <DialogView :msg-data="item" :dialog-type="dialogData.type"/>
                     </li>
                 </ul>
             </div>
@@ -83,6 +93,13 @@ import DialogUpload from "./DialogUpload";
 export default {
     name: "DialogWrapper",
     components: {DialogUpload, DialogView, ScrollerY, DragInput},
+    props: {
+        dialogId: {
+            type: Number,
+            default: 0
+        },
+    },
+
     data() {
         return {
             autoBottom: true,
@@ -93,37 +110,45 @@ export default {
             msgText: '',
             msgNew: 0,
             topId: 0,
+
+            tempMsgs: []
         }
-    },
-
-    destroyed() {
-        this.$store.state.dialogId = 0;
-    },
-
-    deactivated() {
-        this.$store.state.dialogId = 0;
     },
 
     computed: {
         ...mapState([
             'userId',
-            'dialogId',
-            'dialogDetail',
-            'dialogMsgLoad',
+            'dialogs',
+            'dialogMsgs',
             'dialogMsgPush',
-            'dialogMsgList',
-            'dialogMsgHasMorePages',
         ]),
 
-        dialogMsgLists() {
-            const list = $A.cloneJSON(this.dialogMsgList);
-            return list.sort((a, b) => {
+        dialogData() {
+            return this.dialogs.find(({id}) => id == this.dialogId) || {};
+        },
+
+        dialogMsgList() {
+            if (!this.dialogId) {
+                return [];
+            }
+            return $A.cloneJSON(this.dialogMsgs.filter(({dialog_id}) => {
+                return dialog_id == this.dialogId;
+            })).sort((a, b) => {
                 return a.id - b.id;
             });
         },
 
+        tempMsgList() {
+            if (!this.dialogId) {
+                return [];
+            }
+            return $A.cloneJSON(this.tempMsgs.filter(({dialog_id}) => {
+                return dialog_id == this.dialogId;
+            }));
+        },
+
         peopleNum() {
-            return this.dialogDetail.type === 'group' ? $A.runNum(this.dialogDetail.people) : 0;
+            return this.dialogData.type === 'group' ? $A.runNum(this.dialogData.people) : 0;
         }
     },
 
@@ -136,10 +161,14 @@ export default {
             }
         },
 
-        dialogId() {
-            this.autoBottom = true;
-            this.msgNew = 0;
-            this.topId = -1;
+        dialogId: {
+            handler(id) {
+                this.autoBottom = true;
+                this.msgNew = 0;
+                this.topId = -1;
+                this.$store.dispatch("getDialogMsgs", id);
+            },
+            immediate: true
         }
     },
 
@@ -153,8 +182,9 @@ export default {
                 return;
             }
             let tempId = $A.randomString(16);
-            this.dialogMsgList.push({
+            this.tempMsgs.push({
                 id: tempId,
+                dialog_id: this.dialogData.id,
                 type: 'text',
                 userid: this.userId,
                 msg: {
@@ -162,7 +192,6 @@ export default {
                 },
             });
             this.autoBottom = true;
-            this.$store.commit("dialogMoveToTop", this.dialogId);
             this.onActive();
             //
             this.$store.dispatch("call", {
@@ -172,13 +201,15 @@ export default {
                     text: this.msgText,
                 },
             }).then(({data}) => {
-                this.$store.dispatch("dialogMsgUpdate", {id: tempId, data});
+                this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
+                this.$store.dispatch("saveDialogMsg", data);
             }).catch(({msg}) => {
                 $A.modalError(msg);
-                this.$store.dispatch("dialogMsgUpdate", {id: tempId});
+                this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
             });
             //
             this.msgText = '';
+            this.$store.dispatch("dialogMoveTop", this.dialogId);
         },
 
         chatKeydown(e) {
@@ -233,23 +264,25 @@ export default {
         chatFile(type, file) {
             switch (type) {
                 case 'progress':
-                    this.dialogMsgList.push({
+                    this.tempMsgs.push({
                         id: file.tempId,
+                        dialog_id: this.dialogData.id,
                         type: 'loading',
                         userid: this.userId,
                         msg: { },
                     });
                     this.autoBottom = true;
-                    this.$store.commit("dialogMoveToTop", this.dialogId);
+                    this.$store.dispatch("dialogMoveTop", this.dialogId);
                     this.onActive();
                     break;
 
                 case 'error':
-                    this.$store.dispatch("dialogMsgUpdate", {id: file.tempId});
+                    this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
                     break;
 
                 case 'success':
-                    this.$store.dispatch("dialogMsgUpdate", {id: file.tempId, data: file.data});
+                    this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
+                    this.$store.dispatch("saveDialogMsg", file.data);
                     break;
             }
         },
@@ -308,22 +341,22 @@ export default {
         },
 
         openProject() {
-            if (!this.dialogDetail.group_info) {
+            if (!this.dialogData.group_info) {
                 return;
             }
-            this.goForward({path: '/manage/project/' + this.dialogDetail.group_info.id});
+            this.goForward({path: '/manage/project/' + this.dialogData.group_info.id});
         },
 
         openTask() {
-            if (!this.dialogDetail.group_info) {
+            if (!this.dialogData.group_info) {
                 return;
             }
-            this.$store.dispatch("openTask", this.dialogDetail.group_info.id);
+            this.$store.dispatch("openTask", this.dialogData.group_info.id);
         },
 
         loadNextPage() {
-            let topId = this.dialogMsgLists[0].id;
-            this.$store.dispatch('getDialogMsgListNextPage').then(() => {
+            let topId = this.dialogMsgList[0].id;
+            this.$store.dispatch('getDialogMsgNextPage').then(() => {
                 this.$nextTick(() => {
                     this.topId = topId;
                     let dom = document.getElementById("view_" + topId);
