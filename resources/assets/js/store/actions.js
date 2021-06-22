@@ -275,7 +275,6 @@ export default {
             data.forEach((project) => {
                 dispatch("saveProject", project)
             });
-            return;
         } else if (state.method.isJson(data)) {
             let index = state.projects.findIndex(({id}) => id == data.id);
             if (index > -1) {
@@ -283,10 +282,10 @@ export default {
             } else {
                 state.projects.push(data);
             }
+            setTimeout(() => {
+                state.method.setStorage("cacheProjects", state.cacheProjects = state.projects);
+            })
         }
-        setTimeout(() => {
-            state.method.setStorage("cacheProjects", state.cacheProjects = state.projects);
-        })
     },
 
     /**
@@ -433,7 +432,6 @@ export default {
             data.forEach((column) => {
                 dispatch("saveColumn", column)
             });
-            return;
         } else if (state.method.isJson(data)) {
             let index = state.columns.findIndex(({id}) => id == data.id);
             if (index > -1) {
@@ -441,10 +439,10 @@ export default {
             } else {
                 state.columns.push(data);
             }
+            setTimeout(() => {
+                state.method.setStorage("cacheColumns", state.cacheColumns = state.columns);
+            })
         }
-        setTimeout(() => {
-            state.method.setStorage("cacheColumns", state.cacheColumns = state.columns);
-        })
     },
 
     /**
@@ -485,6 +483,9 @@ export default {
             }
         }).then(result => {
             const ids = result.data.data.map(({id}) => id)
+            if (ids.length == 0) {
+                return;
+            }
             state.columns = state.columns.filter((item) => item.project_id != project_id || ids.includes(item.id));
             dispatch("saveColumn", result.data.data);
         }).catch(e => {
@@ -530,13 +531,13 @@ export default {
             data.forEach((task) => {
                 dispatch("saveTask", task)
             });
-            return;
         } else if (state.method.isJson(data)) {
-            let index = state.tasks.findIndex(({id}) => id == data.id);
+            let key = data.parent_id > 0 ? 'taskSubs' : 'tasks';
+            let index = state[key].findIndex(({id}) => id == data.id);
             if (index > -1) {
-                state.tasks.splice(index, 1, Object.assign(state.tasks[index], data));
+                state[key].splice(index, 1, Object.assign(state[key][index], data));
             } else {
-                state.tasks.push(data);
+                state[key].push(data);
             }
             //
             if (data.is_subtask) {
@@ -548,10 +549,15 @@ export default {
             if (data.is_update_content) {
                 dispatch("getTaskContent", data.id);
             }
+            //
+            setTimeout(() => {
+                if (data.parent_id > 0) {
+                    state.method.setStorage("cacheTaskSubs", state.cacheTaskSubs = state[key]);
+                } else {
+                    state.method.setStorage("cacheTasks", state.cacheTasks = state[key]);
+                }
+            })
         }
-        setTimeout(() => {
-            state.method.setStorage("cacheTasks", state.cacheTasks = state.tasks);
-        })
     },
 
     /**
@@ -595,11 +601,14 @@ export default {
         }).then(result => {
             const resData = result.data;
             const ids = resData.data.map(({id}) => id)
+            if (ids.length == 0) {
+                return;
+            }
             if (data.project_id) {
                 state.tasks = state.tasks.filter((item) => item.project_id != data.project_id || ids.includes(item.id));
             }
             if (data.parent_id) {
-                state.tasks = state.tasks.filter((item) => item.parent_id != data.parent_id || ids.includes(item.id));
+                state.taskSubs = state.taskSubs.filter((item) => item.parent_id != data.parent_id || ids.includes(item.id));
             }
             dispatch("saveTask", resData.data);
             //

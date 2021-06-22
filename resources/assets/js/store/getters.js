@@ -1,6 +1,5 @@
 export default {
     projectData(state) {
-        console.log(111);
         let projectId = state.projectId;
         if (projectId == 0) {
             projectId = state.method.runNum(window.__projectId);
@@ -19,9 +18,6 @@ export default {
                 });
                 project.columns.forEach((column) => {
                     column.tasks = state.method.cloneJSON(state.tasks.filter((task) => {
-                        if (task.parent_id > 0) {
-                            return false;
-                        }
                         return task.column_id == column.id;
                     })).sort((a, b) => {
                         if (a.sort != b.sort) {

@@ -254,6 +254,7 @@ state.cacheDialogMsg = state.method.getStorageJson("cacheDialogMsg");
 state.cacheProjects = state.method.getStorageArray("cacheProjects");
 state.cacheColumns = state.method.getStorageArray("cacheColumns");
 state.cacheTasks = state.method.getStorageArray("cacheTasks");
+state.cacheTaskSubs = state.method.getStorageArray("cacheTaskSubs");
 
 // 会员信息
 state.userInfo = state.method.getStorageJson("userInfo");
@@ -276,6 +277,7 @@ state.projects = [];
 state.projectStatistics = {};
 state.columns = [];
 state.tasks = [];
+state.taskSubs = [];
 state.taskContents = [];
 state.taskFiles = [];
 state.taskLogs = [];

@@ -139,9 +139,6 @@ export default {
                 todayEnd = new Date($A.formatDate("Y-m-d 23:59:59"));
             let datas = $A.cloneJSON(this.tasks);
             datas = datas.filter((data) => {
-                if (data.parent_id > 0) {
-                    return false;
-                }
                 if (data.complete_at) {
                     return false;
                 }

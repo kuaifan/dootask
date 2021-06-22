@@ -81,9 +81,6 @@ export default {
         list() {
             let datas = $A.cloneJSON(this.tasks);
             datas = datas.filter((data) => {
-                if (data.parent_id > 0) {
-                    return false;
-                }
                 if (data.complete_at) {
                     return false;
                 }

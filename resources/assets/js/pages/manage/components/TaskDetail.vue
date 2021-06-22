@@ -466,7 +466,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'projects', 'columns', 'taskId', 'tasks', 'taskContents', 'taskFiles', 'taskPriority']),
+        ...mapState(['userId', 'projects', 'columns', 'taskId', 'taskSubs', 'taskContents', 'taskFiles', 'taskPriority']),
 
         projectName() {
             if (!this.taskDetail.project_id) {
@@ -513,7 +513,7 @@ export default {
             if (!this.taskId) {
                 return [];
             }
-            return this.tasks.filter(({parent_id}) => {
+            return this.taskSubs.filter(({parent_id}) => {
                 return parent_id == this.taskId
             }).sort((a, b) => {
                 return a.id - b.id;

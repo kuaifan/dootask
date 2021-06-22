@@ -444,9 +444,6 @@ export default {
         myList() {
             const {projectId, tasks, searchText, projectCompleteShow, userId} = this;
             const array = tasks.filter((task) => {
-                if (task.parent_id > 0) {
-                    return false;
-                }
                 if (task.project_id != projectId) {
                     return false;
                 }
@@ -476,9 +473,6 @@ export default {
         undoneList() {
             const {projectId, tasks, searchText, projectCompleteShow} = this;
             const array = tasks.filter((task) => {
-                if (task.parent_id > 0) {
-                    return false;
-                }
                 if (task.project_id != projectId) {
                     return false;
                 }
@@ -508,9 +502,6 @@ export default {
         completedCount() {
             const {projectId, tasks} = this;
             return tasks.filter((task) => {
-                if (task.parent_id > 0) {
-                    return false;
-                }
                 if (task.project_id != projectId) {
                     return false;
                 }
@@ -521,9 +512,6 @@ export default {
         completedList() {
             const {projectId, tasks, searchText} = this;
             const array = tasks.filter((task) => {
-                if (task.parent_id > 0) {
-                    return false;
-                }
                 if (task.project_id != projectId) {
                     return false;
                 }
