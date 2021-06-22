@@ -1277,7 +1277,11 @@ export default {
                                 // 更新最后消息
                                 let dialog = state.dialogs.find(({id}) => id == dialog_id);
                                 if (dialog) {
-                                    dialog.last_msg = data;
+                                    dispatch("saveDialog", {
+                                        id: dialog_id,
+                                        last_msg: data,
+                                        last_at: state.method.formatDate("Y-m-d H:i:s")
+                                    });
                                 } else {
                                     dispatch("getDialogOne", dialog_id);
                                 }

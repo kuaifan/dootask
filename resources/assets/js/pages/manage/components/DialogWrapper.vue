@@ -202,6 +202,11 @@ export default {
                 },
             }).then(({data}) => {
                 this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
+                this.$store.dispatch("saveDialog", {
+                    id: this.dialogId,
+                    last_msg: data,
+                    last_at: $A.formatDate("Y-m-d H:i:s")
+                });
                 this.$store.dispatch("saveDialogMsg", data);
             }).catch(({msg}) => {
                 $A.modalError(msg);
