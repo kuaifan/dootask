@@ -1080,7 +1080,7 @@ export default {
      * @param dialog_id
      */
     getDialogMsgs({state, dispatch}, dialog_id) {
-        const dialog = state.dialogs.filter(({id}) => id == dialog_id);
+        const dialog = state.dialogs.find(({id}) => id == dialog_id);
         if (!dialog) {
             return;
         }
@@ -1099,11 +1099,14 @@ export default {
             },
         }).then(result => {
             dialog.loading = false;
+            dialog.currentPage = result.data.current_page;
+            dialog.hasMorePages = !!result.data.next_page_url;
             const ids = result.data.data.map(({id}) => id)
             if (ids.length == 0) {
                 return;
             }
             state.dialogMsgs = state.dialogMsgs.filter((item) => item.dialog_id != dialog_id || ids.includes(item.id));
+            dispatch("saveDialog", result.data.dialog);
             dispatch("saveDialogMsg", result.data.data);
         }).catch(e => {
             console.error(e);
@@ -1119,7 +1122,7 @@ export default {
      */
     getDialogMsgNextPage({state, dispatch}, dialog_id) {
         return new Promise(function (resolve, reject) {
-            const dialog = state.dialogs.filter(({id}) => id == dialog_id);
+            const dialog = state.dialogs.find(({id}) => id == dialog_id);
             if (!dialog) {
                 return;
             }
@@ -1140,7 +1143,9 @@ export default {
                 },
             }).then(result => {
                 dialog.loading = false;
-                dispatch("saveDialogMsg", result.data);
+                dialog.currentPage = result.data.current_page;
+                dialog.hasMorePages = !!result.data.next_page_url;
+                dispatch("saveDialogMsg", result.data.data);
                 resolve(result)
             }).catch(e => {
                 console.error(e);
@@ -1154,23 +1159,19 @@ export default {
      * 发送已阅消息
      * @param state
      * @param dispatch
-     * @param msgData
+     * @param data
      */
-    dialogMsgRead({state, dispatch}, msgData) {
-        if (msgData.userid == state.userId) return;
-        if (!state.method.isJson(msgData.r)) msgData.r = {};
+    dialogMsgRead({state, dispatch}, data) {
+        if (data.userid == state.userId) return;
+        if (data.is_read === true) return;
+        data.is_read = true;
         //
-        const {id, dialog_id, r} = msgData;
-        if (r.read_at) {
-            return;
-        }
-        r.read_at = state.method.formatDate('Y-m-d H:i:s');
-        let dialog = state.dialogs.find(({id}) => id == dialog_id);
+        let dialog = state.dialogs.find(({id}) => id == data.dialog_id);
         if (dialog && dialog.unread > 0) {
             dialog.unread--
         }
         //
-        state.wsReadWaitList.push(id);
+        state.wsReadWaitList.push(data.id);
         clearTimeout(state.wsReadTimeout);
         state.wsReadTimeout = setTimeout(() => {
             dispatch("websocketSend", {

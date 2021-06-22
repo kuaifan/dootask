@@ -107,16 +107,17 @@ class DialogController extends AbstractController
         //
         $list = WebSocketDialogMsg::whereDialogId($dialog_id)->orderByDesc('id')->paginate(Base::getPaginate(100, 50));
         $list->transform(function (WebSocketDialogMsg $item) use ($user) {
-            $item->r = $item->userid === $user->userid ? null : WebSocketDialogMsgRead::whereMsgId($item->id)->whereUserid($user->userid)->first();
+            $item->is_read = $item->userid === $user->userid || WebSocketDialogMsgRead::whereMsgId($item->id)->whereUserid($user->userid)->value('read_at');
             return $item;
         });
         //
         $data = $list->toArray();
-        $data['dialog'] = WebSocketDialog::formatData($dialog, $user->userid);
-        //
-        $user->dialog_id = $dialog->id;
-        $user->save();
-        //
+        if ($list->currentPage() === 1) {
+            $data['dialog'] = WebSocketDialog::formatData($dialog, $user->userid);
+            //
+            $user->dialog_id = $dialog->id;
+            $user->save();
+        }
         return Base::retSuccess('success', $data);
     }
 

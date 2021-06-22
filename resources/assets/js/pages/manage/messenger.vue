@@ -60,7 +60,7 @@
             </div>
 
             <div class="messenger-msg">
-                <DialogWrapper v-if="dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive"/>
+                <DialogWrapper v-if="dialogs.length > 0 && dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive"/>
                 <div v-else class="dialog-no">
                     <div class="dialog-no-icon"><Icon type="ios-chatbubbles" /></div>
                     <div class="dialog-no-text">{{$L('选择一个会话开始聊天')}}</div>
@@ -96,7 +96,6 @@ export default {
     },
 
     activated() {
-        this.$store.dispatch("getDialogs");
         this.openDialogStorage();
     },
 

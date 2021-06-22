@@ -30,7 +30,8 @@ export default {
             }
         }
         return {
-            columns: []
+            columns: [],
+            project_user: []
         };
     },
 

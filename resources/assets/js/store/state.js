@@ -131,8 +131,6 @@ const method = {
         let keyName = '__state__';
         if (key.substring(0, 5) === 'cache') {
             keyName = '__state:' + key + '__';
-        } else if (key.substring(0, 7) === 'boolean') {
-            keyName = '__state:Boolean__';
         }
         if (typeof value === 'undefined') {
             return this.loadFromlLocal(key, '', keyName);
@@ -228,13 +226,14 @@ const state = { method };
 
 // 数据缓存
 state.cacheUserBasic = state.method.getStorageJson("cacheUserBasic");
-state.cacheDialogMsg = state.method.getStorageJson("cacheDialogMsg");
+state.cacheDialogs = state.method.getStorageArray("cacheDialogs");
+state.cacheDialogMsgs = state.method.getStorageArray("cacheDialogMsgs");
 state.cacheProjects = state.method.getStorageArray("cacheProjects");
 state.cacheColumns = state.method.getStorageArray("cacheColumns");
 state.cacheTasks = state.method.getStorageArray("cacheTasks");
 state.cacheTaskSubs = state.method.getStorageArray("cacheTaskSubs");
 state.cacheTablePanel = state.method.getStorageArray("cacheTablePanel");
-state.showCompletedTask = state.method.getStorageBoolean("boolean:showCompletedTask")
+state.showCompletedTask = state.method.getStorageBoolean("showCompletedTask")
 
 // Ajax
 state.ajaxLoadNum = 0;

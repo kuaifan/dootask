@@ -53,7 +53,6 @@
 </template>
 
 <script>
-import {mapState} from "vuex";
 import WCircle from "../../../components/WCircle";
 
 export default {
@@ -78,9 +77,11 @@ export default {
         }
     },
 
-    computed: {
-        ...mapState(['userId']),
+    activated() {
+        this.msgRead()
+    },
 
+    computed: {
         readList() {
             return this.read_list.filter(({read_at}) => read_at)
         },
@@ -92,14 +93,29 @@ export default {
 
     watch: {
         msgData: {
-            handler(data) {
-                this.$store.dispatch("dialogMsgRead", data);
+            handler() {
+                this.msgRead();
             },
             immediate: true,
         }
     },
 
     methods: {
+        msgRead() {
+            if (this.msgData._r === true) {
+                return;
+            }
+            this.msgData._r = true;
+            //
+            this.$nextTick(() => {
+                if (!this.$el.offsetParent) {
+                    this.msgData._r = false;
+                    return
+                }
+                this.$store.dispatch("dialogMsgRead", this.msgData);
+            })
+        },
+
         popperShow() {
             this.$store.dispatch("call", {
                 url: 'dialog/msg/readlist',

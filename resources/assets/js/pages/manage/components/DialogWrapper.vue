@@ -356,7 +356,7 @@ export default {
 
         loadNextPage() {
             let topId = this.dialogMsgList[0].id;
-            this.$store.dispatch('getDialogMsgNextPage').then(() => {
+            this.$store.dispatch('getDialogMsgNextPage', this.dialogId).then(() => {
                 this.$nextTick(() => {
                     this.topId = topId;
                     let dom = document.getElementById("view_" + topId);
