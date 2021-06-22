@@ -1,6 +1,6 @@
 <template>
     <div class="project-dialog">
-        <DialogWrapper v-if="dialogs.length > 0" :dialog-id="projectData.dialog_id" class="project-dialog-wrapper">
+        <DialogWrapper :dialog-id="projectData.dialog_id" class="project-dialog-wrapper">
             <div slot="head">
                 <div class="dialog-user">
                     <div class="member-head">
@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import {mapGetters, mapState} from "vuex";
+import {mapGetters} from "vuex";
 import DialogWrapper from "./DialogWrapper";
 
 export default {
@@ -35,7 +35,6 @@ export default {
     },
 
     computed: {
-        ...mapState(['dialogs']),
         ...mapGetters(['projectData'])
     },
 }

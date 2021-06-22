@@ -106,6 +106,7 @@ export default {
             autoInterval: null,
 
             dialogDrag: false,
+            dialogReady: false,
 
             msgText: '',
             msgNew: 0,
@@ -162,17 +163,39 @@ export default {
         },
 
         dialogId: {
-            handler(id) {
+            handler() {
+                this.dialogReady = false;
                 this.autoBottom = true;
                 this.msgNew = 0;
                 this.topId = -1;
-                this.$store.dispatch("getDialogMsgs", id);
+                this.getMsg();
             },
             immediate: true
+        },
+
+        dialogs: {
+            handler() {
+                this.getMsg();
+            },
+            deep: true
         }
     },
 
     methods: {
+        getMsg() {
+            if (!this.dialogId) {
+                return;
+            }
+            if (this.dialogs.findIndex(({id}) => id == this.dialogId) === -1) {
+                return;
+            }
+            if (this.dialogReady) {
+                return;
+            }
+            this.dialogReady = true;
+            this.$store.dispatch("getDialogMsgs", this.dialogId);
+        },
+
         sendMsg(text) {
             if (typeof text === "string" && text) {
                 this.msgText = text;

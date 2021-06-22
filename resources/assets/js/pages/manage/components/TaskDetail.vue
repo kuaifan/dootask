@@ -332,7 +332,7 @@
         </div>
         <div class="task-dialog" :style="dialogStyle">
             <template v-if="taskDetail.dialog_id > 0">
-                <DialogWrapper ref="dialog" v-if="dialogs.length" :dialog-id="taskDetail.dialog_id">
+                <DialogWrapper ref="dialog" :dialog-id="taskDetail.dialog_id">
                     <div slot="head" class="head">
                         <Icon class="icon" type="ios-chatbubbles-outline" />
                         <div class="nav">
@@ -475,7 +475,6 @@ export default {
             'taskContents',
             'taskFiles',
             'taskPriority',
-            'dialogs'
         ]),
 
         projectName() {
