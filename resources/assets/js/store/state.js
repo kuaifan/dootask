@@ -260,6 +260,7 @@ state.wsReadWaitList = [];
 
 // 项目任务
 state.projects = [];
+state.projectLoad = 0;
 state.projectStatistics = {};
 state.columns = [];
 state.tasks = [];
@@ -270,6 +271,22 @@ state.taskLogs = [];
 state.projectId = 0;
 state.taskId = 0;
 
+// 会话聊天
+state.dialogId = 0;
+state.dialogList = [];
+state.dialogDetail = {};
+
+state.dialogMsgUnread = 0;
+state.dialogMsgLoad = 0;
+state.dialogMsgPush = {};
+state.dialogMsgList = [];
+state.dialogMsgCurrentPage = 1;
+state.dialogMsgHasMorePages = false;
+
+// 任务优先级
+state.taskPriority = [];
+
+// 列表背景色
 state.columnColorList = [
     {name: '默认', color: ''},
     {name: '灰色', color: '#444444'},
@@ -282,6 +299,8 @@ state.columnColorList = [
     {name: '粉色', color: '#ff819c'},
     {name: '红色', color: '#ff7070'},
 ];
+
+// 任务背景色
 state.taskColorList = [
     {name: '默认', color: ''},
     {name: '黄色', color: '#fffae6'},
@@ -291,19 +310,5 @@ state.taskColorList = [
     {name: '紫色', color: '#f6ecff'},
     {name: '灰色', color: '#f3f3f3'},
 ];
-
-// 会话聊天
-state.dialogId = 0;
-state.dialogList = [];
-state.dialogDetail = {};
-state.dialogMsgUnread = 0;
-state.dialogMsgLoad = 0;
-state.dialogMsgPush = {};
-state.dialogMsgList = [];
-state.dialogMsgCurrentPage = 1;
-state.dialogMsgHasMorePages = false;
-
-// 任务优先级
-state.taskPriority = [];
 
 export default state

@@ -4,7 +4,7 @@
             <div class="project-titbox">
                 <div class="project-title">
                     <h1>{{projectData.name}}</h1>
-                    <!--<div class="project-load"><Loading/></div>-->
+                    <div v-if="projectLoad > 0" class="project-load"><Loading/></div>
                 </div>
                 <ul class="project-icons">
                     <li>
@@ -404,6 +404,7 @@ export default {
             'dialogList',
 
             'projectId',
+            'projectLoad',
             'tasks',
             'columns',
 

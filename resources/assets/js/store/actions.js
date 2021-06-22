@@ -1,5 +1,3 @@
-import state from "./state";
-
 export default {
     /**
      * 访问接口
@@ -366,6 +364,7 @@ export default {
      * @returns {Promise<unknown>}
      */
     getProjectOne({state, dispatch}, project_id) {
+        state.projectLoad++;
         return new Promise(function (resolve, reject) {
             dispatch("call", {
                 url: 'project/one',
@@ -373,10 +372,12 @@ export default {
                     project_id,
                 },
             }).then(result => {
+                state.projectLoad--;
                 dispatch("saveProject", result.data);
                 resolve(result)
             }).catch(e => {
                 console.error(e);
+                state.projectLoad--;
                 reject(e)
             });
         });
@@ -500,12 +501,14 @@ export default {
         if (state.cacheColumns.length > 0) {
             state.columns = state.cacheColumns;
         }
+        state.projectLoad++;
         dispatch("call", {
             url: 'project/column/lists',
             data: {
                 project_id
             }
         }).then(result => {
+            state.projectLoad--;
             const ids = result.data.data.map(({id}) => id)
             if (ids.length == 0) {
                 return;
@@ -514,6 +517,7 @@ export default {
             dispatch("saveColumn", result.data.data);
         }).catch(e => {
             console.error(e);
+            state.projectLoad--;
         });
     },
 
@@ -619,10 +623,16 @@ export default {
         if (state.cacheTasks.length > 0) {
             state.tasks = state.cacheTasks;
         }
+        if (data.project_id) {
+            state.projectLoad++;
+        }
         dispatch("call", {
             url: 'project/task/lists',
             data: data
         }).then(result => {
+            if (data.project_id) {
+                state.projectLoad--;
+            }
             const resData = result.data;
             const ids = resData.data.map(({id}) => id)
             if (ids.length == 0) {
@@ -653,6 +663,9 @@ export default {
             }
         }).catch(e => {
             console.error(e);
+            if (data.project_id) {
+                state.projectLoad--;
+            }
         });
     },
 
