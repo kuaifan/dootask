@@ -123,16 +123,6 @@ export default {
     },
 
     /**
-     * 切换Boolean变量
-     * @param state
-     * @param key
-     */
-    toggleBoolean({state}, key) {
-        state[key] = !state[key]
-        state.method.setStorage("boolean:" + key, state[key]);
-    },
-
-    /**
      * 切换面板变量
      * @param state
      * @param key

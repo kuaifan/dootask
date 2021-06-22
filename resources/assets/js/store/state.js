@@ -233,7 +233,6 @@ state.cacheColumns = state.method.getStorageArray("cacheColumns");
 state.cacheTasks = state.method.getStorageArray("cacheTasks");
 state.cacheTaskSubs = state.method.getStorageArray("cacheTaskSubs");
 state.cacheTablePanel = state.method.getStorageArray("cacheTablePanel");
-state.showCompletedTask = state.method.getStorageBoolean("showCompletedTask")
 
 // Ajax
 state.ajaxLoadNum = 0;

@@ -46,7 +46,7 @@
             <div v-if="projectData.desc" class="project-subtitle">{{projectData.desc}}</div>
             <div class="project-switch">
                 <div v-if="completedCount > 0" class="project-checkbox">
-                    <Checkbox :value="showCompletedTask" @on-change="$store.dispatch('toggleBoolean', 'showCompletedTask')">{{$L('显示已完成')}}</Checkbox>
+                    <Checkbox :value="tablePanel('completedTask')" @on-change="$store.dispatch('toggleTablePanel', 'completedTask')">{{$L('显示已完成')}}</Checkbox>
                 </div>
                 <div :class="['project-switch-button', !tablePanel('card') ? 'menu' : '']" @click="$store.dispatch('toggleTablePanel', 'card')">
                     <div><i class="iconfont">&#xe60c;</i></div>
@@ -407,8 +407,6 @@ export default {
             'projectLoad',
             'tasks',
             'columns',
-
-            'showCompletedTask',
         ]),
 
         ...mapGetters(['projectData', 'tablePanel']),
@@ -420,9 +418,9 @@ export default {
         },
 
         panelTask() {
-            const {searchText, showCompletedTask} = this;
+            const {searchText} = this;
             return function (list) {
-                if (!showCompletedTask) {
+                if (!this.tablePanel('completedTask')) {
                     list = list.filter(({complete_at}) => {
                         return !complete_at;
                     });
@@ -437,12 +435,12 @@ export default {
         },
 
         myList() {
-            const {projectId, tasks, searchText, showCompletedTask, userId} = this;
+            const {projectId, tasks, searchText, userId} = this;
             const array = tasks.filter((task) => {
                 if (task.project_id != projectId) {
                     return false;
                 }
-                if (!showCompletedTask) {
+                if (!this.tablePanel('completedTask')) {
                     if (task.complete_at) {
                         return false;
                     }
@@ -466,12 +464,12 @@ export default {
         },
 
         undoneList() {
-            const {projectId, tasks, searchText, showCompletedTask} = this;
+            const {projectId, tasks, searchText} = this;
             const array = tasks.filter((task) => {
                 if (task.project_id != projectId) {
                     return false;
                 }
-                if (!showCompletedTask) {
+                if (!this.tablePanel('completedTask')) {
                     if (task.complete_at) {
                         return false;
                     }
@@ -935,8 +933,8 @@ export default {
 
         taskIsHidden(task) {
             const {name, desc, complete_at} = task;
-            const {searchText, showCompletedTask} = this;
-            if (!showCompletedTask) {
+            const {searchText} = this;
+            if (!this.tablePanel('completedTask')) {
                 if (complete_at) {
                     return true;
                 }

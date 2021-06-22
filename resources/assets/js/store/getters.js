@@ -64,6 +64,7 @@ export default {
                     showMy: true,
                     showUndone: true,
                     showCompleted: false,
+                    completedTask: false,
                 }
                 state.cacheTablePanel.push(cache);
             }
