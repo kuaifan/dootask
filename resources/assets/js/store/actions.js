@@ -599,6 +599,16 @@ export default {
     },
 
     /**
+     * 增加任务消息数量
+     * @param state
+     * @param dialog_id
+     */
+    increaseTaskMsgNum({state}, dialog_id) {
+        const task = state.tasks.find((task) => task.dialog_id === dialog_id);
+        if (task) task.msg_num++;
+    },
+
+    /**
      * 获取任务
      * @param state
      * @param dispatch
@@ -1284,8 +1294,7 @@ export default {
                                         dispatch("dialogMoveTop", dialog_id);
                                     }
                                     // 新增任务消息数量
-                                    const task = state.tasks.find(({dialog_id}) => dialog_id === dialog_id);
-                                    if (task) task.msg_num++;
+                                    dispatch("increaseTaskMsgNum", dialog_id);
                                 }
                             })(msgDetail);
                             break;

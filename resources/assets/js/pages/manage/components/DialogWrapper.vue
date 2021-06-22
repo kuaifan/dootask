@@ -225,19 +225,13 @@ export default {
                 },
             }).then(({data}) => {
                 this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
-                this.$store.dispatch("saveDialog", {
-                    id: this.dialogId,
-                    last_msg: data,
-                    last_at: $A.formatDate("Y-m-d H:i:s")
-                });
-                this.$store.dispatch("saveDialogMsg", data);
+                this.sendSuccess(data);
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
             });
             //
             this.msgText = '';
-            this.$store.dispatch("dialogMoveTop", this.dialogId);
         },
 
         chatKeydown(e) {
@@ -300,7 +294,6 @@ export default {
                         msg: { },
                     });
                     this.autoBottom = true;
-                    this.$store.dispatch("dialogMoveTop", this.dialogId);
                     this.onActive();
                     break;
 
@@ -310,9 +303,20 @@ export default {
 
                 case 'success':
                     this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
-                    this.$store.dispatch("saveDialogMsg", file.data);
+                    this.sendSuccess(file.data)
                     break;
             }
+        },
+
+        sendSuccess(data) {
+            this.$store.dispatch("saveDialog", {
+                id: this.dialogId,
+                last_msg: data,
+                last_at: $A.formatDate("Y-m-d H:i:s")
+            });
+            this.$store.dispatch("saveDialogMsg", data);
+            this.$store.dispatch("dialogMoveTop", this.dialogId);
+            this.$store.dispatch("increaseTaskMsgNum", this.dialogId);
         },
 
         chatScroll(res) {
