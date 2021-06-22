@@ -628,20 +628,25 @@ export default {
      * @param state
      * @param dispatch
      * @param task_id
+     * @returns {Promise<unknown>}
      */
     getTaskOne({state, dispatch}, task_id) {
-        if (state.method.runNum(task_id) === 0) {
-            return;
-        }
-        dispatch("call", {
-            url: 'project/task/one',
-            data: {
-                task_id,
-            },
-        }).then(result => {
-            dispatch("saveTask", result.data);
-        }).catch(e => {
-            console.error(e);
+        return new Promise(function (resolve, reject) {
+            if (state.method.runNum(task_id) === 0) {
+                return;
+            }
+            dispatch("call", {
+                url: 'project/task/one',
+                data: {
+                    task_id,
+                },
+            }).then(result => {
+                dispatch("saveTask", result.data);
+                resolve(result)
+            }).catch(e => {
+                console.error(e);
+                reject(e)
+            });
         });
     },
 
@@ -762,10 +767,18 @@ export default {
     openTask({state, dispatch}, task_id) {
         state.taskId = task_id;
         if (task_id > 0) {
-            dispatch("getTaskOne", task_id);
-            dispatch("getTaskContent", task_id);
-            dispatch("getTaskFiles", task_id);
-            dispatch("getTasks", {parent_id: task_id});
+            dispatch("getTaskOne", task_id).then(() => {
+                dispatch("getTaskContent", task_id);
+                dispatch("getTaskFiles", task_id);
+                dispatch("getTasks", {parent_id: task_id});
+            }).catch(({msg}) => {
+                $A.modalWarning({
+                    content: msg,
+                    onOk: () => {
+                        state.taskId = 0;
+                    }
+                });
+            });
         }
     },
 
@@ -961,7 +974,6 @@ export default {
     openDialogUserid({state, dispatch}, userid) {
         return new Promise(function (resolve, reject) {
             if (userid === state.userId) {
-                reject();
                 return;
             }
             dispatch("call", {
@@ -1049,7 +1061,6 @@ export default {
     getDialogMsgListNextPage({state, dispatch, commit}) {
         return new Promise(function (resolve, reject) {
             if (!state.dialogMsgHasMorePages) {
-                reject()
                 return;
             }
             state.dialogMsgHasMorePages = false;

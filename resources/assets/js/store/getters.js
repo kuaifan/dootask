@@ -1,5 +1,6 @@
 export default {
     projectData(state) {
+        console.log(111);
         let projectId = state.projectId;
         if (projectId == 0) {
             projectId = state.method.runNum(window.__projectId);
