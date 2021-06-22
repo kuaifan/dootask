@@ -1,3 +1,5 @@
+import state from "./state";
+
 export default {
     /**
      * 访问接口
@@ -130,6 +132,28 @@ export default {
     toggleBoolean({state}, key) {
         state[key] = !state[key]
         state.method.setStorage("boolean:" + key, state[key]);
+    },
+
+    /**
+     * 切换面板变量
+     * @param state
+     * @param key
+     */
+    toggleTablePanel({state}, key) {
+        if (state.projectId) {
+            let index = state.cacheTablePanel.findIndex(({project_id}) => project_id == state.projectId)
+            if (index === -1) {
+                state.cacheTablePanel.push({
+                    project_id: state.projectId,
+                });
+                index = state.cacheTablePanel.findIndex(({project_id}) => project_id == state.projectId)
+            }
+            const cache = state.cacheTablePanel[index];
+            state.cacheTablePanel.splice(index, 1, Object.assign(cache, {
+                [key]: !cache[key]
+            }))
+            state.method.setStorage("cacheTablePanel", state.cacheTablePanel);
+        }
     },
 
     /**

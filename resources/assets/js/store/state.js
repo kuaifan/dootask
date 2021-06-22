@@ -226,23 +226,6 @@ const method = {
 // 方法类
 const state = { method };
 
-// 变量缓存
-[
-    'projectTablePanel',    // 项目面板显示类型
-    'taskMyShow',           // 项目面板显示我的任务
-    'taskUndoneShow',       // 项目面板显示未完成任务
-].forEach((key) => {
-    state[key] = state.method.getStorageBoolean("boolean:" + key, true)
-});
-
-[
-    'projectChatShow',      // 项目聊天显示
-    'taskCompletedShow',    // 项目面板显示已完成任务
-    'projectCompleteShow'   // 项目面板显示已完成列表
-].forEach((key) => {
-    state[key] = state.method.getStorageBoolean("boolean:" + key, false)
-});
-
 // ajax
 state.ajaxLoadNum = 0;
 state.ajaxWsReady = false;
@@ -255,6 +238,9 @@ state.cacheProjects = state.method.getStorageArray("cacheProjects");
 state.cacheColumns = state.method.getStorageArray("cacheColumns");
 state.cacheTasks = state.method.getStorageArray("cacheTasks");
 state.cacheTaskSubs = state.method.getStorageArray("cacheTaskSubs");
+state.cacheTablePanel = state.method.getStorageArray("cacheTablePanel");
+state.projectChatShow = state.method.getStorageBoolean("boolean:projectChatShow", false)
+state.projectCompleteShow = state.method.getStorageBoolean("boolean:projectCompleteShow", false)
 
 // 会员信息
 state.userInfo = state.method.getStorageJson("userInfo");

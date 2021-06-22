@@ -23,7 +23,7 @@
                             </div>
                         </Tooltip>
                     </li>
-                    <li :class="['project-icon', projectChatShow ? 'active' : '']" @click="toggleBoolean('projectChatShow')">
+                    <li :class="['project-icon', projectChatShow ? 'active' : '']" @click="$store.dispatch('toggleBoolean', 'projectChatShow')">
                         <Icon class="menu-icon" type="ios-chatbubbles" />
                         <Badge class="menu-badge" :count="msgUnread"></Badge>
                     </li>
@@ -46,15 +46,15 @@
             <div v-if="projectData.desc" class="project-subtitle">{{projectData.desc}}</div>
             <div class="project-switch">
                 <div v-if="completedCount > 0" class="project-checkbox">
-                    <Checkbox :value="projectCompleteShow" @on-change="toggleBoolean('projectCompleteShow', $event)">{{$L('显示已完成')}}</Checkbox>
+                    <Checkbox :value="projectCompleteShow" @on-change="$store.dispatch('toggleBoolean', 'projectCompleteShow')">{{$L('显示已完成')}}</Checkbox>
                 </div>
-                <div :class="['project-switch-button', !projectTablePanel ? 'menu' : '']" @click="toggleBoolean('projectTablePanel')">
+                <div :class="['project-switch-button', !tablePanel('card') ? 'menu' : '']" @click="$store.dispatch('toggleTablePanel', 'card')">
                     <div><i class="iconfont">&#xe60c;</i></div>
                     <div><i class="iconfont">&#xe66a;</i></div>
                 </div>
             </div>
         </div>
-        <div v-if="projectTablePanel" class="project-column overlay-x">
+        <div v-if="tablePanel('card')" class="project-column overlay-x">
             <Draggable
                 :list="projectData.columns"
                 :animation="150"
@@ -229,10 +229,10 @@
                 </Row>
             </div>
             <!--我的任务-->
-            <div :class="['project-table-body', !taskMyShow ? 'project-table-hide' : '']">
+            <div :class="['project-table-body', !tablePanel('showMy') ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
-                        <i class="iconfont" @click="toggleBoolean('taskMyShow')">&#xe689;</i>
+                        <i class="iconfont" @click="$store.dispatch('toggleTablePanel', 'showMy')">&#xe689;</i>
                         <div class="row-h1">{{$L('我的任务')}}</div>
                         <div class="row-num">({{myList.length}})</div>
                     </Col>
@@ -244,10 +244,10 @@
                 <TaskRow :list="myList" open-key="my" @command="dropTask" fast-add-task/>
             </div>
             <!--未完成任务-->
-            <div v-if="projectData.task_num > 0" :class="['project-table-body', !taskUndoneShow ? 'project-table-hide' : '']">
+            <div v-if="projectData.task_num > 0" :class="['project-table-body', !tablePanel('showUndone') ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
-                        <i class="iconfont" @click="toggleBoolean('taskUndoneShow')">&#xe689;</i>
+                        <i class="iconfont" @click="$store.dispatch('toggleTablePanel', 'showUndone')">&#xe689;</i>
                         <div class="row-h1">{{$L('未完成任务')}}</div>
                         <div class="row-num">({{undoneList.length}})</div>
                     </Col>
@@ -259,10 +259,10 @@
                 <TaskRow :list="undoneList" open-key="undone" @command="dropTask"/>
             </div>
             <!--已完成任务-->
-            <div v-if="projectData.task_num > 0" :class="['project-table-body', !taskCompletedShow ? 'project-table-hide' : '']">
+            <div v-if="projectData.task_num > 0" :class="['project-table-body', !tablePanel('showCompleted') ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
-                        <i class="iconfont" @click="toggleBoolean('taskCompletedShow')">&#xe689;</i>
+                        <i class="iconfont" @click="$store.dispatch('toggleTablePanel', 'showCompleted')">&#xe689;</i>
                         <div class="row-h1">{{$L('已完成任务')}}</div>
                         <div class="row-num">({{completedList.length}})</div>
                     </Col>
@@ -408,15 +408,10 @@ export default {
             'columns',
 
             'projectChatShow',
-            'projectTablePanel',
             'projectCompleteShow',
-
-            'taskMyShow',
-            'taskUndoneShow',
-            'taskCompletedShow'
         ]),
 
-        ...mapGetters(['projectData']),
+        ...mapGetters(['projectData', 'tablePanel']),
 
         msgUnread() {
             const {dialogList, projectData} = this;
@@ -936,10 +931,6 @@ export default {
             } else {
                 this.$store.dispatch("openTask", task.id)
             }
-        },
-
-        toggleBoolean(type) {
-            this.$store.dispatch("toggleBoolean", type);
         },
 
         taskIsHidden(task) {

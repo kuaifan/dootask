@@ -48,4 +48,24 @@ export default {
         }
         return {};
     },
+
+    tablePanel(state) {
+        return function (key) {
+            if (!state.projectId) {
+                return false;
+            }
+            let cache = state.cacheTablePanel.find(({project_id}) => project_id == state.projectId);
+            if (!cache) {
+                cache = {
+                    project_id: state.projectId,
+                    card: true,
+                    showMy: true,
+                    showUndone: true,
+                    showCompleted: false,
+                }
+                state.cacheTablePanel.push(cache);
+            }
+            return cache && !!cache[key];
+        }
+    }
 }
