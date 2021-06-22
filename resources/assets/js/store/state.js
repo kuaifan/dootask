@@ -130,7 +130,9 @@ const method = {
         }
         let keyName = '__state__';
         if (key.substring(0, 5) === 'cache') {
-            keyName = '__state:Cache__';
+            keyName = '__state:' + key + '__';
+        } else if (key.substring(0, 7) === 'boolean') {
+            keyName = '__state:Boolean__';
         }
         if (typeof value === 'undefined') {
             return this.loadFromlLocal(key, '', keyName);

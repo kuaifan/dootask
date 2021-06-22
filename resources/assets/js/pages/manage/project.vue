@@ -26,9 +26,22 @@ export default {
         project_id(id) {
             if (id > 0) {
                 this.$store.state.projectId = $A.runNum(id);
-                this.$store.dispatch("getProjectOne", id);
-                this.$store.dispatch("getColumns", id);
-                this.$store.dispatch("getTasks", {project_id: id});
+                this.$store.dispatch("getProjectOne", id).then(() => {
+                    this.$store.dispatch("getColumns", id);
+                    this.$store.dispatch("getTasks", {project_id: id});
+                }).catch(({msg}) => {
+                    $A.modalWarning({
+                        content: msg,
+                        onOk: () => {
+                            const project = this.$store.state.projects.find(({id}) => id);
+                            if (project) {
+                                $A.goForward({path: '/manage/project/' + project.id});
+                            } else {
+                                $A.goForward({path: '/manage/dashboard'});
+                            }
+                        }
+                    });
+                });
             }
         }
     },

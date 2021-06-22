@@ -105,6 +105,7 @@
                     align-items: center;
                     height: auto;
                     padding: 14px 0 0;
+                    cursor: default;
                     > ul {
                         width: 100%;
                         > li {
@@ -112,6 +113,7 @@
                             flex-direction: column;
                             margin: 4px auto;
                             list-style: none;
+                            cursor: pointer;
                             .project-h1 {
                                 position: relative;
                                 display: flex;

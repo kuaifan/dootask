@@ -284,7 +284,9 @@ export default {
                 state.projects.push(data);
             }
         }
-        state.method.setStorage("cacheProjects", state.cacheProjects = state.projects);
+        setTimeout(() => {
+            state.method.setStorage("cacheProjects", state.cacheProjects = state.projects);
+        })
     },
 
     /**
@@ -305,7 +307,9 @@ export default {
                 $A.goForward({path: '/manage/dashboard'});
             }
         }
-        state.method.setStorage("cacheProjects", state.cacheProjects = state.projects);
+        setTimeout(() => {
+            state.method.setStorage("cacheProjects", state.cacheProjects = state.projects);
+        })
     },
 
     /**
@@ -336,17 +340,22 @@ export default {
      * @param state
      * @param dispatch
      * @param project_id
+     * @returns {Promise<unknown>}
      */
     getProjectOne({state, dispatch}, project_id) {
-        dispatch("call", {
-            url: 'project/one',
-            data: {
-                project_id,
-            },
-        }).then(result => {
-            dispatch("saveProject", result.data);
-        }).catch(e => {
-            console.error(e);
+        return new Promise(function (resolve, reject) {
+            dispatch("call", {
+                url: 'project/one',
+                data: {
+                    project_id,
+                },
+            }).then(result => {
+                dispatch("saveProject", result.data);
+                resolve(result)
+            }).catch(e => {
+                console.error(e);
+                reject(e)
+            });
         });
     },
 
@@ -433,7 +442,9 @@ export default {
                 state.columns.push(data);
             }
         }
-        state.method.setStorage("cacheColumns", state.cacheColumns = state.columns);
+        setTimeout(() => {
+            state.method.setStorage("cacheColumns", state.cacheColumns = state.columns);
+        })
     },
 
     /**
@@ -448,7 +459,9 @@ export default {
             dispatch('getProjectOne', state.columns[index].project_id)
             state.columns.splice(index, 1);
         }
-        state.method.setStorage("cacheColumns", state.cacheColumns = state.columns);
+        setTimeout(() => {
+            state.method.setStorage("cacheColumns", state.cacheColumns = state.columns);
+        })
     },
 
     /**
@@ -536,7 +549,9 @@ export default {
                 dispatch("getTaskContent", data.id);
             }
         }
-        state.method.setStorage("cacheTasks", state.cacheTasks = state.tasks);
+        setTimeout(() => {
+            state.method.setStorage("cacheTasks", state.cacheTasks = state.tasks);
+        })
     },
 
     /**
@@ -555,7 +570,9 @@ export default {
         if (state.taskId == task_id) {
             state.taskId = 0;
         }
-        state.method.setStorage("cacheTasks", state.cacheTasks = state.tasks);
+        setTimeout(() => {
+            state.method.setStorage("cacheTasks", state.cacheTasks = state.tasks);
+        })
     },
 
     /**
