@@ -83,7 +83,9 @@
                     <Button size="small" type="primary" @click="$refs.owner.ok()">{{$L('确定')}}</Button>
                 </div>
             </div>
-            <UserAvatar v-if="getOwner" :userid="getOwner.userid" :size="20"/>
+            <template v-if="getOwner.length > 0">
+                <UserAvatar v-for="item in getOwner" :key="item.userid" :userid="item.userid" :size="20" tooltip-disabled/>
+            </template>
             <div v-else>--</div>
         </Poptip>
     </li>
@@ -98,6 +100,17 @@
                     <p v-if="columnName">{{columnName}}</p>
                     <p v-if="taskDetail.id">{{taskDetail.id}}</p>
                 </div>
+                <Poptip
+                    v-if="getOwner.length === 0"
+                    confirm
+                    ref="owner"
+                    class="pick"
+                    :title="$L('你确认领取任务吗？')"
+                    placement="bottom"
+                    @on-ok="onOwner(true)"
+                    transfer>
+                    <Button type="primary">{{$L('我要领取任务')}}</Button>
+                </Poptip>
                 <EDropdown
                     trigger="click"
                     placement="bottom"
@@ -175,7 +188,7 @@
                             </li>
                         </ul>
                     </FormItem>
-                    <FormItem>
+                    <FormItem v-if="getOwner.length > 0">
                         <div class="item-label" slot="label">
                             <i class="iconfont">&#xe6e4;</i>{{$L('负责人')}}
                         </div>
@@ -193,17 +206,16 @@
                                 <UserInput
                                     v-if="ownerShow"
                                     v-model="ownerData.owner_userid"
-                                    :multiple-max="1"
+                                    :multiple-max="10"
                                     :project-id="taskDetail.project_id"
                                     :placeholder="$L('选择任务负责人')"/>
                                 <div class="task-detail-avatar-buttons">
                                     <Button size="small" type="primary" @click="$refs.owner.ok()">{{$L('确定')}}</Button>
                                 </div>
                             </div>
-                            <div v-if="getOwner" class="user-list">
-                                <UserAvatar :userid="getOwner.userid" :size="28"/>
+                            <div class="user-list">
+                                <UserAvatar v-for="item in getOwner" :key="item.userid" :userid="item.userid" :size="28" tooltip-disabled/>
                             </div>
-                            <div v-else>--</div>
                         </Poptip>
                     </FormItem>
                     <FormItem v-if="getAssist.length > 0 || assistForce">
@@ -584,9 +596,11 @@ export default {
         getOwner() {
             const {taskDetail} = this;
             if (!$A.isArray(taskDetail.task_user)) {
-                return null;
+                return [];
             }
-            return taskDetail.task_user.find(({owner}) => owner === 1);
+            return taskDetail.task_user.filter(({owner}) => owner === 1).sort((a, b) => {
+                return a.id - b.id;
+            });
         },
 
         getAssist() {
@@ -594,7 +608,9 @@ export default {
             if (!$A.isArray(taskDetail.task_user)) {
                 return [];
             }
-            return taskDetail.task_user.filter(({owner}) => owner !== 1);
+            return taskDetail.task_user.filter(({owner}) => owner !== 1).sort((a, b) => {
+                return a.id - b.id;
+            });
         },
 
         menuList() {
@@ -856,19 +872,25 @@ export default {
         },
 
         openOwner() {
-            this.$set(this.taskDetail, 'owner_userid', [this.getOwner.userid])
-            this.$set(this.ownerData, 'owner_userid', [this.getOwner.userid]);
+            const list = this.getOwner.map(({userid}) => userid)
+            this.$set(this.taskDetail, 'owner_userid', list)
+            this.$set(this.ownerData, 'owner_userid', list)
             this.ownerShow = true;
         },
 
-        onOwner() {
+        onOwner(pick) {
+            if (pick === true && this.getOwner.length === 0) {
+                this.ownerData.owner_userid = [this.userId];
+            }
             if ($A.jsonStringify(this.taskDetail.owner_userid) === $A.jsonStringify(this.ownerData.owner_userid)) {
                 return;
             }
+            let owner = this.ownerData.owner_userid;
+            if ($A.count(owner) == 0) owner = '';
             this.ownerLoad++;
             this.$store.dispatch("taskUpdate", {
                 task_id: this.taskDetail.id,
-                owner: this.ownerData.owner_userid
+                owner: owner,
             }).then(({msg}) => {
                 $A.messageSuccess(msg);
                 this.ownerLoad--;
@@ -885,7 +907,7 @@ export default {
             const list = this.getAssist.map(({userid}) => userid)
             this.$set(this.taskDetail, 'assist_userid', list)
             this.$set(this.assistData, 'assist_userid', list);
-            this.$set(this.assistData, 'disabled', [this.getOwner.userid]);
+            this.$set(this.assistData, 'disabled', this.getOwner.map(({userid}) => userid))
             this.assistShow = true;
         },
 

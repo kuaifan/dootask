@@ -175,8 +175,11 @@
                                 </div>
                                 <div class="task-users">
                                     <ul>
-                                        <li v-for="(user, keyu) in item.task_user" :key="keyu">
+                                        <li v-for="(user, keyu) in ownerUser(item.task_user)" :key="keyu">
                                             <UserAvatar :userid="user.userid" size="32" :borderWitdh="2" :borderColor="item.color"/>
+                                        </li>
+                                        <li v-if="ownerUser(item.task_user).length === 0" class="no-owner">
+                                            <Button type="primary" size="small">{{$L('领取任务')}}</Button>
                                         </li>
                                     </ul>
                                     <div v-if="item.file_num > 0" class="task-icon">{{item.file_num}}<Icon type="ios-link-outline" /></div>
@@ -984,6 +987,12 @@ export default {
                 }
             }
             return false;
+        },
+
+        ownerUser(list) {
+            return list.filter(({owner}) => owner == 1).sort((a, b) => {
+                return a.id - b.id;
+            });
         },
 
         formatTime(date) {

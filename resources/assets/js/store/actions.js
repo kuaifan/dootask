@@ -861,7 +861,6 @@ export default {
         return new Promise(function (resolve, reject) {
             const post = state.method.cloneJSON(state.method.date2string(data));
             if (state.method.isArray(post.column_id)) post.column_id = post.column_id.find((val) => val)
-            if (state.method.isArray(post.owner)) post.owner = post.owner.find((val) => val)
             //
             dispatch("call", {
                 url: 'project/task/add',
@@ -926,7 +925,6 @@ export default {
     taskUpdate({state, dispatch}, data) {
         return new Promise(function (resolve, reject) {
             const post = state.method.cloneJSON(state.method.date2string(data));
-            if (state.method.isArray(post.owner)) post.owner = post.owner.find((id) => id)
             //
             dispatch("call", {
                 url: 'project/task/update',

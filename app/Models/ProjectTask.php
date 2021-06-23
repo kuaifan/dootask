@@ -327,10 +327,16 @@ class ProjectTask extends AbstractModel
             }
         }
         // 负责人
-        $owner = intval($owner) ?: User::userid();
-        if (!ProjectUser::whereProjectId($project_id)->whereUserid($owner)->exists()) {
-            throw new ApiException($retPre . '负责人填写错误');
+        $owner = is_array($owner) ? $owner : [$owner];
+        $tmpArray = [];
+        foreach ($owner as $uid) {
+            if (intval($uid) == 0) continue;
+            if (!ProjectUser::whereProjectId($project_id)->whereUserid($uid)->exists()) {
+                throw new ApiException($retPre . '负责人填写错误');
+            }
+            $tmpArray[] = $uid;
         }
+        $owner = $tmpArray;
         // 创建人
         $task->userid = User::userid();
         // 排序位置
@@ -342,12 +348,12 @@ class ProjectTask extends AbstractModel
         //
         return AbstractModel::transaction(function() use ($subtasks, $content, $owner, $task) {
             $task->save();
-            if ($owner) {
+            foreach ($owner as $uid) {
                 ProjectTaskUser::createInstance([
                     'project_id' => $task->project_id,
                     'task_id' => $task->id,
                     'task_pid' => $task->parent_id ?: $task->id,
-                    'userid' => $owner,
+                    'userid' => $uid,
                     'owner' => 1,
                 ])->save();
             }
@@ -392,27 +398,37 @@ class ProjectTask extends AbstractModel
             }
             // 负责人
             if (Arr::exists($data, 'owner')) {
-                $owner = intval($data['owner']);
-                $row = ProjectTaskUser::whereTaskId($this->id)->whereUserid($owner)->first();
-                if (empty($row)) {
-                    $row = ProjectTaskUser::createInstance([
-                        'project_id' => $this->project_id,
+                $count = $this->task_user_count;
+                $array = [];
+                $owner = is_array($data['owner']) ? $data['owner'] : [$data['owner']];
+                foreach ($owner as $uid) {
+                    if (intval($uid) == 0) continue;
+                    if (!$this->project->useridInTheProject($uid)) continue;
+                    //
+                    ProjectTaskUser::updateInsert([
                         'task_id' => $this->id,
+                        'userid' => $uid,
+                    ], [
+                        'project_id' => $this->project_id,
                         'task_pid' => $this->parent_id ?: $this->id,
-                        'userid' => $owner,
                         'owner' => 1,
                     ]);
-                } else {
-                    $row->owner = 1;
+                    $array[] = $uid;
+                    if ($this->parent_id) {
+                        break; // 子任务只能是一个负责人
+                    }
                 }
-                $row->save();
-                if ($this->parent_id) {
-                    ProjectTaskUser::whereTaskId($this->id)->where('id', '!=', $row->id)->delete();
-                } else {
-                    ProjectTaskUser::whereTaskId($this->id)->where('id', '!=', $row->id)->update([ 'owner' => 0 ]);
-                }
+                ProjectTaskUser::whereTaskId($this->id)->whereOwner(1)->whereNotIn('userid', $array)->delete();
                 $this->syncDialogUser();
-                $this->addLog("修改{任务}负责人为会员ID：" . $row->userid);
+                if (count($array) == 0) {
+                    $this->addLog("删除{任务}负责人");
+                } else {
+                    if ($count == 0) {
+                        $this->addLog("认领{任务}");
+                    } else {
+                        $this->addLog("修改{任务}负责人");
+                    }
+                }
             }
             // 计划时间
             if (Arr::exists($data, 'times')) {
@@ -436,25 +452,29 @@ class ProjectTask extends AbstractModel
                     $assist = is_array($data['assist']) ? $data['assist'] : [$data['assist']];
                     foreach ($assist as $uid) {
                         if (intval($uid) == 0) continue;
+                        if (!$this->project->useridInTheProject($uid)) continue;
                         //
-                        if (empty($this->useridInTheTask($uid))) {
-                            ProjectTaskUser::createInstance([
-                                'project_id' => $this->project_id,
-                                'task_id' => $this->id,
-                                'task_pid' => $this->parent_id ?: $this->id,
-                                'userid' => $uid,
-                                'owner' => 0,
-                            ])->save();
-                        }
+                        ProjectTaskUser::updateInsert([
+                            'task_id' => $this->id,
+                            'userid' => $uid,
+                        ], [
+                            'project_id' => $this->project_id,
+                            'task_pid' => $this->parent_id ?: $this->id,
+                            'owner' => 0,
+                        ]);
                         $array[] = $uid;
                     }
-                    ProjectTaskUser::whereTaskId($this->id)->where('owner', '!=', 1)->whereNotIn('userid', $array)->delete();
+                    ProjectTaskUser::whereTaskId($this->id)->whereOwner(0)->whereNotIn('userid', $array)->delete();
                     $this->syncDialogUser();
-                    $this->addLog("修改协助人员");
+                    if (count($array) == 0) {
+                        $this->addLog("删除{任务}协助人员");
+                    } else {
+                        $this->addLog("修改{任务}协助人员");
+                    }
                 }
                 // 背景色
                 if (Arr::exists($data, 'color') && $this->color != $data['color']) {
-                    $this->addLog("修改任务背景色：{$this->color} => {$data['color']}");
+                    $this->addLog("修改{任务}背景色：{$this->color} => {$data['color']}");
                     $this->color = $data['color'];
                 }
                 // 内容
@@ -466,7 +486,7 @@ class ProjectTask extends AbstractModel
                         'content' => $data['content'],
                     ]);
                     $this->desc = Base::getHtml($data['content']);
-                    $this->addLog("修改任务详细描述");
+                    $this->addLog("修改{任务}详细描述");
                     $updateContent = true;
                 }
                 // 优先级
@@ -484,7 +504,7 @@ class ProjectTask extends AbstractModel
                     $p = true;
                 }
                 if ($p) {
-                    $this->addLog("修改任务优先级");
+                    $this->addLog("修改{任务}优先级");
                 }
             }
             $this->save();

@@ -388,6 +388,12 @@
                                     &:first-child {
                                         margin-left: 0;
                                     }
+                                    &.no-owner {
+                                        width: auto;
+                                        .ivu-btn-small {
+                                            font-size: 12px;
+                                        }
+                                    }
                                 }
                             }
                             .task-icon {
@@ -670,6 +676,11 @@
                                 margin-left: -6px;
                                 &:first-child {
                                     margin-left: 0;
+                                }
+                                &.no-owner {
+                                    height: 32px;
+                                    display: flex;
+                                    align-items: center;
                                 }
                             }
                         }

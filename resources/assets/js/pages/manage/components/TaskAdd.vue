@@ -63,7 +63,11 @@
                     @on-change="taskTimeChange(addData.times)"/>
             </FormItem>
             <FormItem :label="$L('任务负责人')">
-                <UserInput v-model="addData.owner" :multiple-max="1" :placeholder="$L('选择任务负责人')"/>
+                <UserInput
+                    v-model="addData.owner"
+                    :multiple-max="10"
+                    :placeholder="$L('选择任务负责人')"
+                    :project-id="projectId"/>
             </FormItem>
             <div class="subtasks">
                 <div v-if="addData.subtasks.length > 0" class="sublist">
@@ -94,7 +98,8 @@
                             <UserInput
                                 v-model="item.owner"
                                 :multiple-max="1"
-                                :placeholder="$L('选择负责人')"/>
+                                :placeholder="$L('选择负责人')"
+                                :project-id="projectId"/>
                         </Col>
                     </Row>
                 </div>
