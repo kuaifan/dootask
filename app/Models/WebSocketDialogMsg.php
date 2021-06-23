@@ -136,7 +136,7 @@ class WebSocketDialogMsg extends AbstractModel
     public static function sendMsg($dialog_id, $type, $msg, $sender = 0)
     {
         $dialogMsg = self::createInstance([
-            'userid' => $sender ?: User::token2userid(),
+            'userid' => $sender ?: User::userid(),
             'type' => $type,
             'msg' => $msg,
             'read' => 0,

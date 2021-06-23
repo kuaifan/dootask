@@ -19,6 +19,7 @@ use Request;
  * @property int|null $userid 创建人
  * @property int|mixed $dialog_id 聊天会话ID
  * @property string|null $archived_at 归档时间
+ * @property int|null $archived_userid 归档会员
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
@@ -41,6 +42,7 @@ use Request;
  * @method static \Illuminate\Database\Query\Builder|Project onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|Project query()
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereArchivedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Project whereArchivedUserid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereDesc($value)
@@ -84,8 +86,8 @@ class Project extends AbstractModel
             $this->appendattrs['task_percent'] = $this->appendattrs['task_num'] ? intval($this->appendattrs['task_complete'] / $this->appendattrs['task_num'] * 100) : 0;
             //
             $builder = ProjectTask::whereProjectId($this->id)->whereParentId(0)->whereNull('archived_at');
-            $this->appendattrs['task_my_num'] = $builder->whereUserid(User::token2userid())->count();
-            $this->appendattrs['task_my_complete'] = $builder->whereUserid(User::token2userid())->whereNotNull('complete_at')->count();
+            $this->appendattrs['task_my_num'] = $builder->whereUserid(User::userid())->count();
+            $this->appendattrs['task_my_complete'] = $builder->whereUserid(User::userid())->whereNotNull('complete_at')->count();
             $this->appendattrs['task_my_percent'] = $this->appendattrs['task_my_num'] ? intval($this->appendattrs['task_my_complete'] / $this->appendattrs['task_my_num'] * 100) : 0;
         }
     }
@@ -299,6 +301,7 @@ class Project extends AbstractModel
             } else {
                 // 归档任务
                 $this->archived_at = $archived_at;
+                $this->archived_userid = User::userid();
                 $this->addLog("项目归档");
                 $this->pushMsg('archived');
             }
@@ -337,7 +340,7 @@ class Project extends AbstractModel
             'project_id' => $this->id,
             'column_id' => 0,
             'task_id' => 0,
-            'userid' => $userid ?: User::token2userid(),
+            'userid' => $userid ?: User::userid(),
             'detail' => $detail,
         ]);
         $log->save();

@@ -59,7 +59,7 @@ class WebSocketDialog extends AbstractModel
             throw new ApiException('对话不存在或已被删除');
         }
         //
-        $userid = User::token2userid();
+        $userid = User::userid();
         if ($dialog->type === 'group' && $dialog->group_type === 'task') {
             // 任务群对话校验是否在项目内
             $project_id = intval(ProjectTask::whereDialogId($dialog->id)->value('project_id'));

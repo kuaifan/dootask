@@ -33,12 +33,14 @@
                             <EDropdownMenu v-if="projectData.owner_userid === userId" slot="dropdown">
                                 <EDropdownItem command="setting">{{$L('项目设置')}}</EDropdownItem>
                                 <EDropdownItem command="user">{{$L('成员管理')}}</EDropdownItem>
-                                <EDropdownItem command="archived" divided>{{$L('归档项目')}}</EDropdownItem>
-                                <EDropdownItem command="transfer">{{$L('移交项目')}}</EDropdownItem>
+                                <EDropdownItem command="archived_task">{{$L('已归档任务')}}</EDropdownItem>
+                                <EDropdownItem command="transfer" divided>{{$L('移交项目')}}</EDropdownItem>
+                                <EDropdownItem command="archived">{{$L('归档项目')}}</EDropdownItem>
                                 <EDropdownItem command="delete" style="color:#f40">{{$L('删除项目')}}</EDropdownItem>
                             </EDropdownMenu>
                             <EDropdownMenu v-else slot="dropdown">
-                                <EDropdownItem command="exit">{{$L('退出项目')}}</EDropdownItem>
+                                <EDropdownItem command="archived_task">{{$L('已归档任务')}}</EDropdownItem>
+                                <EDropdownItem command="exit" style="color:#f40">{{$L('退出项目')}}</EDropdownItem>
                             </EDropdownMenu>
                         </EDropdown>
                     </li>

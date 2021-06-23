@@ -35,7 +35,7 @@ class InvokeController extends BaseController
         // 使用websocket请求
         $apiWebsocket = Request::header('Api-Websocket');
         if ($apiWebsocket) {
-            $userid = User::token2userid();
+            $userid = User::userid();
             if ($userid > 0) {
                 $url = 'http://127.0.0.1:' . env('LARAVELS_LISTEN_PORT') . Request::getRequestUri();
                 $task = new IhttpTask($url, Request::post(), [

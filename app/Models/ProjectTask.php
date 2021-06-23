@@ -26,6 +26,7 @@ use Request;
  * @property string|null $start_at 计划开始时间
  * @property string|null $end_at 计划结束时间
  * @property string|null $archived_at 归档时间
+ * @property int|null $archived_userid 归档会员
  * @property string|null $complete_at 完成时间
  * @property int|null $userid 创建人
  * @property int|null $p_level 优先级
@@ -57,6 +58,7 @@ use Request;
  * @method static \Illuminate\Database\Query\Builder|ProjectTask onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask query()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereArchivedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereArchivedUserid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereColor($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereColumnId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereCompleteAt($value)
@@ -325,12 +327,12 @@ class ProjectTask extends AbstractModel
             }
         }
         // 负责人
-        $owner = intval($owner) ?: User::token2userid();
+        $owner = intval($owner) ?: User::userid();
         if (!ProjectUser::whereProjectId($project_id)->whereUserid($owner)->exists()) {
             throw new ApiException($retPre . '负责人填写错误');
         }
         // 创建人
-        $task->userid = User::token2userid();
+        $task->userid = User::userid();
         // 排序位置
         if ($top) {
             $task->sort = intval(self::whereColumnId($task->column_id)->orderBy('sort')->value('sort')) - 1;
@@ -603,6 +605,7 @@ class ProjectTask extends AbstractModel
             } else {
                 // 归档任务
                 $this->archived_at = $archived_at;
+                $this->archived_userid = User::userid();
                 $this->addLog("任务归档：" . $this->name);
                 $this->pushMsg('archived');
             }
@@ -641,7 +644,7 @@ class ProjectTask extends AbstractModel
             'project_id' => $this->project_id,
             'column_id' => $this->column_id,
             'task_id' => $this->parent_id ?: $this->id,
-            'userid' => $userid ?: User::token2userid(),
+            'userid' => $userid ?: User::userid(),
             'detail' => $detail,
         ]);
         $log->save();

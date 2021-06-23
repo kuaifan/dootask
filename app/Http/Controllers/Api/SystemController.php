@@ -213,14 +213,14 @@ class SystemController extends AbstractController
      */
     public function imgupload()
     {
-        if (User::token2userid() === 0) {
+        if (User::userid() === 0) {
             return Base::retError('身份失效，等重新登录');
         }
         $scale = [intval(Request::input('width')), intval(Request::input('height'))];
         if (!$scale[0] && !$scale[1]) {
             $scale = [2160, 4160, -1];
         }
-        $path = "uploads/picture/" . User::token2userid() . "/" . date("Ym") . "/";
+        $path = "uploads/picture/" . User::userid() . "/" . date("Ym") . "/";
         $image64 = trim(Base::getPostValue('image64'));
         $fileName = trim(Base::getPostValue('filename'));
         if ($image64) {
@@ -262,10 +262,10 @@ class SystemController extends AbstractController
      */
     public function imgview()
     {
-        if (User::token2userid() === 0) {
+        if (User::userid() === 0) {
             return Base::retError('身份失效，等重新登录');
         }
-        $publicPath = "uploads/picture/" . User::token2userid() . "/";
+        $publicPath = "uploads/picture/" . User::userid() . "/";
         $dirPath = public_path($publicPath);
         $dirs = $files = [];
         //
@@ -360,10 +360,10 @@ class SystemController extends AbstractController
      */
     public function fileupload()
     {
-        if (User::token2userid() === 0) {
+        if (User::userid() === 0) {
             return Base::retError('身份失效，等重新登录');
         }
-        $path = "uploads/files/" . User::token2userid() . "/" . date("Ym") . "/";
+        $path = "uploads/files/" . User::userid() . "/" . date("Ym") . "/";
         $image64 = trim(Base::getPostValue('image64'));
         $fileName = trim(Base::getPostValue('filename'));
         if ($image64) {

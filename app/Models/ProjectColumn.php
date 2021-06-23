@@ -92,7 +92,7 @@ class ProjectColumn extends AbstractModel
             'project_id' => $this->project_id,
             'column_id' => $this->id,
             'task_id' => 0,
-            'userid' => $userid ?: User::token2userid(),
+            'userid' => $userid ?: User::userid(),
             'detail' => $detail,
         ]);
         $log->save();
