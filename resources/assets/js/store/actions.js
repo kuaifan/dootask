@@ -969,6 +969,25 @@ export default {
     },
 
     /**
+     * 更新会话最后消息
+     * @param state
+     * @param dispatch
+     * @param data
+     */
+    updateDialogLastMsg({state, dispatch}, data) {
+        let dialog = state.dialogs.find(({id}) => id == data.dialog_id);
+        if (dialog) {
+            dispatch("saveDialog", {
+                id: data.dialog_id,
+                last_msg: data,
+                last_at: state.method.formatDate("Y-m-d H:i:s")
+            });
+        } else {
+            dispatch("getDialogOne", data.dialog_id);
+        }
+    },
+
+    /**
      * 获取会话列表
      * @param state
      * @param dispatch
@@ -1036,7 +1055,7 @@ export default {
      * @param state
      * @param dialog_id
      */
-    dialogMoveTop({state}, dialog_id) {
+    moveDialogTop({state}, dialog_id) {
         const index = state.dialogs.findIndex(({id}) => id == dialog_id);
         if (index > -1) {
             const tmp = state.method.cloneJSON(state.dialogs[index]);
@@ -1271,27 +1290,18 @@ export default {
                                 // 更新消息列表
                                 state.dialogMsgPush = data;
                                 dispatch("saveDialogMsg", data)
-                                if (mode === "add2") {
+                                if (mode === "chat") {
                                     return;
                                 }
                                 // 更新最后消息
-                                let dialog = state.dialogs.find(({id}) => id == dialog_id);
-                                if (dialog) {
-                                    dispatch("saveDialog", {
-                                        id: dialog_id,
-                                        last_msg: data,
-                                        last_at: state.method.formatDate("Y-m-d H:i:s")
-                                    });
-                                } else {
-                                    dispatch("getDialogOne", dialog_id);
-                                }
-                                if (mode === "add1") {
+                                dispatch("updateDialogLastMsg", data);
+                                if (mode === "add") {
                                     // 更新对话列表
                                     if (dialog) {
                                         // 新增未读数
                                         if (data.userid !== state.userId) dialog.unread++;
                                         // 移动到首位
-                                        dispatch("dialogMoveTop", dialog_id);
+                                        dispatch("moveDialogTop", dialog_id);
                                     }
                                     // 新增任务消息数量
                                     dispatch("increaseTaskMsgNum", dialog_id);

@@ -309,13 +309,9 @@ export default {
         },
 
         sendSuccess(data) {
-            this.$store.dispatch("saveDialog", {
-                id: this.dialogId,
-                last_msg: data,
-                last_at: $A.formatDate("Y-m-d H:i:s")
-            });
             this.$store.dispatch("saveDialogMsg", data);
-            this.$store.dispatch("dialogMoveTop", this.dialogId);
+            this.$store.dispatch("updateDialogLastMsg", data);
+            this.$store.dispatch("moveDialogTop", this.dialogId);
             this.$store.dispatch("increaseTaskMsgNum", this.dialogId);
         },
 

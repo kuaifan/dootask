@@ -111,12 +111,14 @@ class DialogController extends AbstractController
             return $item;
         });
         //
+        if ($dialog->type == 'group' && $dialog->group_type == 'task') {
+            $user->task_dialog_id = $dialog->id;
+            $user->save();
+        }
+        //
         $data = $list->toArray();
         if ($list->currentPage() === 1) {
             $data['dialog'] = WebSocketDialog::formatData($dialog, $user->userid);
-            //
-            $user->dialog_id = $dialog->id;
-            $user->save();
         }
         return Base::retSuccess('success', $data);
     }

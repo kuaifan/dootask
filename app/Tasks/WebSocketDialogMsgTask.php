@@ -63,30 +63,32 @@ class WebSocketDialogMsgTask extends AbstractTask
             'ignoreFd' => $this->ignoreFd,
             'msg' => [
                 'type' => 'dialog',
-                'mode' => 'add1',
+                'mode' => 'add',
                 'data' => $msg->toArray(),
             ]
         ]);
 
-        // 推送目标②：正在打开这个会话的会员
-        $list = User::whereDialogId($dialog->id)->pluck('userid')->toArray();
-        if ($list) {
-            $array = [];
-            foreach ($list as $uid) {
-                if (!in_array($uid, $userids)) {
-                    $array[] = $uid;
+        // 推送目标②：正在打开这个任务会话的会员
+        if ($dialog->type == 'group' && $dialog->group_type == 'task') {
+            $list = User::whereTaskDialogId($dialog->id)->pluck('userid')->toArray();
+            if ($list) {
+                $array = [];
+                foreach ($list as $uid) {
+                    if (!in_array($uid, $userids)) {
+                        $array[] = $uid;
+                    }
                 }
-            }
-            if ($array) {
-                PushTask::push([
-                    'userid' => $array,
-                    'ignoreFd' => $this->ignoreFd,
-                    'msg' => [
-                        'type' => 'dialog',
-                        'mode' => 'add2',
-                        'data' => $msg->toArray(),
-                    ]
-                ]);
+                if ($array) {
+                    PushTask::push([
+                        'userid' => $array,
+                        'ignoreFd' => $this->ignoreFd,
+                        'msg' => [
+                            'type' => 'dialog',
+                            'mode' => 'chat',
+                            'data' => $msg->toArray(),
+                        ]
+                    ]);
+                }
             }
         }
     }
