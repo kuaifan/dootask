@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Exceptions\ApiException;
 use App\Tasks\PushTask;
+use Carbon\Carbon;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Request;
@@ -17,6 +18,7 @@ use Request;
  * @property string|null $desc 描述、备注
  * @property int|null $userid 创建人
  * @property int|mixed $dialog_id 聊天会话ID
+ * @property string|null $archived_at 归档时间
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
@@ -38,6 +40,7 @@ use Request;
  * @method static \Illuminate\Database\Eloquent\Builder|Project newQuery()
  * @method static \Illuminate\Database\Query\Builder|Project onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|Project query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Project whereArchivedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereDesc($value)
@@ -70,7 +73,7 @@ class Project extends AbstractModel
     ];
 
     /**
-     * 生成子任务数据
+     * 生成任务数据
      */
     private function generateTaskData()
     {
@@ -282,6 +285,29 @@ class Project extends AbstractModel
     }
 
     /**
+     * 归档任务、取消归档
+     * @param Carbon|null $archived_at 归档时间
+     * @return bool
+     */
+    public function archivedProject($archived_at)
+    {
+        AbstractModel::transaction(function () use ($archived_at) {
+            if ($archived_at === null) {
+                // 取消归档
+                $this->archived_at = null;
+                $this->addLog("项目取消归档");
+            } else {
+                // 归档任务
+                $this->archived_at = $archived_at;
+                $this->addLog("项目归档");
+                $this->pushMsg('archived');
+            }
+            $this->save();
+        });
+        return true;
+    }
+
+    /**
      * 删除项目
      * @return bool
      */
@@ -354,6 +380,7 @@ class Project extends AbstractModel
     {
         $project = self::select(self::projectSelect)
             ->authData()
+            ->whereNull('archived_at')
             ->where('projects.id', intval($project_id))
             ->first();
         if (empty($project)) {

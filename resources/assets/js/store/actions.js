@@ -374,6 +374,29 @@ export default {
     },
 
     /**
+     * 归档项目
+     * @param dispatch
+     * @param project_id
+     */
+    archivedProject({dispatch}, project_id) {
+        return new Promise(function (resolve, reject) {
+            dispatch("call", {
+                url: 'project/archived',
+                data: {
+                    project_id,
+                },
+            }).then(result => {
+                dispatch("forgetProject", project_id)
+                resolve(result)
+            }).catch(e => {
+                console.error(e);
+                dispatch("getProjectOne", project_id);
+                reject(e)
+            });
+        });
+    },
+
+    /**
      * 删除项目
      * @param dispatch
      * @param project_id
@@ -1323,6 +1346,7 @@ export default {
                                     case 'detail':
                                         dispatch("getProjectOne", data);
                                         break;
+                                    case 'archived':
                                     case 'delete':
                                         dispatch("forgetProject", data.id);
                                         break;

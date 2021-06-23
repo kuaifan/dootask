@@ -33,7 +33,8 @@
                             <EDropdownMenu v-if="projectData.owner_userid === userId" slot="dropdown">
                                 <EDropdownItem command="setting">{{$L('项目设置')}}</EDropdownItem>
                                 <EDropdownItem command="user">{{$L('成员管理')}}</EDropdownItem>
-                                <EDropdownItem command="transfer" divided>{{$L('移交项目')}}</EDropdownItem>
+                                <EDropdownItem command="archived" divided>{{$L('归档项目')}}</EDropdownItem>
+                                <EDropdownItem command="transfer">{{$L('移交项目')}}</EDropdownItem>
                                 <EDropdownItem command="delete" style="color:#f40">{{$L('删除项目')}}</EDropdownItem>
                             </EDropdownMenu>
                             <EDropdownMenu v-else slot="dropdown">
@@ -857,6 +858,23 @@ export default {
             });
         },
 
+        onArchived() {
+            $A.modalConfirm({
+                title: '归档项目',
+                content: '你确定要归档项目【' + this.projectData.name + '】吗？',
+                loading: true,
+                onOk: () => {
+                    this.$store.dispatch("archivedProject", this.projectId).then(({msg}) => {
+                        $A.messageSuccess(msg);
+                        this.$Modal.remove();
+                    }).catch(({msg}) => {
+                        $A.modalError(msg, 301);
+                        this.$Modal.remove();
+                    });
+                }
+            });
+        },
+
         onDelete() {
             $A.modalConfirm({
                 title: '删除项目',
@@ -911,6 +929,10 @@ export default {
                 case "transfer":
                     this.$set(this.transferData, 'owner_userid', [this.projectData.owner_userid]);
                     this.transferShow = true;
+                    break;
+
+                case "archived":
+                    this.onArchived();
                     break;
 
                 case "delete":

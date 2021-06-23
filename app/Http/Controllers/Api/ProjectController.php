@@ -60,6 +60,10 @@ class ProjectController extends AbstractController
     /**
      * 获取项目列表
      *
+     * @apiParam {String} [archived]         归档状态
+     * - no：未归档（默认）
+     * - yes：已归档
+     *
      * @apiParam {Number} [page]        当前页，默认:1
      * @apiParam {Number} [pagesize]    每页显示数量，默认:100，最大:200
      */
@@ -67,10 +71,15 @@ class ProjectController extends AbstractController
     {
         User::auth();
         //
-        $list = Project::select(Project::projectSelect)
-            ->authData()
-            ->orderByDesc('projects.id')
-            ->paginate(Base::getPaginate(200, 100));
+        $archived = Request::input('archived', 'no');
+        //
+        $builder = Project::select(Project::projectSelect)->authData();
+        if ($archived == 'yes') {
+            $builder->whereNotNull('archived_at');
+        } elseif ($archived == 'no') {
+            $builder->whereNull('archived_at');
+        }
+        $list = $builder->orderByDesc('projects.id')->paginate(Base::getPaginate(200, 100));
         //
         return Base::retSuccess('success', $list);
     }
@@ -358,6 +367,26 @@ class ProjectController extends AbstractController
     }
 
     /**
+     * 归档项目
+     *
+     * @apiParam {Number} project_id        项目ID
+     */
+    public function archived()
+    {
+        User::auth();
+        //
+        $project_id = intval(Request::input('project_id'));
+        //
+        $project = Project::userProject($project_id);
+        if (!$project->owner) {
+            return Base::retError('你不是项目负责人');
+        }
+        //
+        $project->archivedProject(Carbon::now());
+        return Base::retSuccess('设置成功', ['id' => $project->id]);
+    }
+
+    /**
      * 删除项目
      *
      * @apiParam {Number} project_id        项目ID
@@ -513,6 +542,9 @@ class ProjectController extends AbstractController
      * - all：所有（默认）
      * - yes：已完成
      * - no：未完成
+     * @apiParam {String} [archived]         归档状态
+     * - yes：已归档
+     * - no：未归档（默认）
      */
     public function task__lists()
     {
@@ -525,7 +557,8 @@ class ProjectController extends AbstractController
         $name = Request::input('name');
         $time = Request::input('time');
         $time_before = Request::input('time_before');
-        $complete = Request::input('complete');
+        $complete = Request::input('complete', 'all');
+        $archived = Request::input('archived', 'no');
         //
         if ($parent_id > 0) {
             ProjectTask::userTask($parent_id);
@@ -561,6 +594,12 @@ class ProjectController extends AbstractController
             $builder->whereNotNull('complete_at');
         } elseif ($complete === 'no') {
             $builder->whereNull('complete_at');
+        }
+        //
+        if ($archived == 'yes') {
+            $builder->whereNotNull('archived_at');
+        } elseif ($archived == 'no') {
+            $builder->whereNull('archived_at');
         }
         //
         $list = $builder->orderByDesc('id')->paginate(Base::getPaginate(200, 100));
