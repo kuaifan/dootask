@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Exceptions\ApiException;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -45,6 +46,21 @@ class WebSocketDialog extends AbstractModel
     public function dialogUser(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(WebSocketDialogUser::class, 'dialog_id', 'id');
+    }
+
+    /**
+     * 删除会话
+     * @return bool
+     */
+    public function deleteDialog()
+    {
+        AbstractModel::transaction(function () {
+            WebSocketDialogMsgRead::whereDialogId($this->id)->whereNull('read_at')->update([
+                'read_at' => Carbon::now()
+            ]);
+            $this->delete();
+        });
+        return true;
     }
 
     /**

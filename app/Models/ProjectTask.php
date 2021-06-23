@@ -626,6 +626,12 @@ class ProjectTask extends AbstractModel
     public function deleteTask($pushMsg = true)
     {
         AbstractModel::transaction(function () {
+            if ($this->dialog_id) {
+                $dialog = WebSocketDialog::find($this->dialog_id);
+                if ($dialog) {
+                    $dialog->deleteDialog();
+                }
+            }
             $this->delete();
             $this->addLog("删除{任务}：" . $this->name);
         });

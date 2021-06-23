@@ -318,6 +318,10 @@ class Project extends AbstractModel
     public function deleteProject()
     {
         AbstractModel::transaction(function () {
+            $dialog = WebSocketDialog::find($this->dialog_id);
+            if ($dialog) {
+                $dialog->deleteDialog();
+            }
             $columns = ProjectColumn::whereProjectId($this->id)->get();
             foreach ($columns as $column) {
                 $column->deleteColumn(false);
