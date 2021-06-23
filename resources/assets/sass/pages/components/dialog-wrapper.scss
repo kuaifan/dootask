@@ -167,7 +167,7 @@
                                 margin-left: 4px;
                                 transform: scale(0.9);
                                 font-size: 12px;
-                                color: #87d068;
+                                color: $primary-color;
                             }
                             .percent {
                                 display: none;
@@ -234,7 +234,7 @@
                             margin: 0 8px 0 0;
                             .dialog-content {
                                 color: #ffffff;
-                                background-color: #2d8cf0;
+                                background-color: $primary-color;
                                 border-radius: 6px 6px 0 6px;
                                 &.file {
                                     background-color: #F4F5F7;

@@ -28,7 +28,7 @@
                 font-size: 18px;
                 cursor: pointer;
                 &.completed {
-                    color: #87d068;
+                    color: $primary-color;
                 }
             }
             .nav {
@@ -111,6 +111,9 @@
                             display: flex;
                             cursor: pointer;
                         }
+                        .task-priority {
+                            padding: 0 7px;
+                        }
                         .picker-time {
                             display: flex;
                             align-items: center;
@@ -163,7 +166,7 @@
                                 text-overflow: ellipsis;
                                 white-space: nowrap;
                                 &:hover {
-                                    color: #2d8cf0;
+                                    color: $primary-color;
                                 }
                             }
                             .file-size {
@@ -198,7 +201,7 @@
                                     font-size: 16px;
                                     color: #cccccc;
                                     &.completed {
-                                        color: #87d068;
+                                        color: $primary-color;
                                     }
                                 }
                                 &.sub-icon {

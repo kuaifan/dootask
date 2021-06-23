@@ -387,7 +387,7 @@ class User extends AbstractModel
      */
     public static function AZUpdate($userid)
     {
-        $row = self::whereUserid($userid)->select(['email', 'nickname'])->first();
+        $row = self::whereUserid($userid)->first();
         if ($row) {
             $row->az = Base::getFirstCharter($row->nickname);
             $row->save();

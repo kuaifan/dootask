@@ -71,10 +71,12 @@ export default {
         submitForm() {
             this.$refs.formDatum.validate((valid) => {
                 if (valid) {
+                    let data = $A.cloneJSON(this.formDatum);
+                    if ($A.runNum(data.userimg) == 0) data.userimg = "";
                     this.loadIng++;
                     this.$store.dispatch("call", {
                         url: 'users/editdata',
-                        data: this.formDatum,
+                        data,
                     }).then(() => {
                         $A.messageSuccess('修改成功');
                         this.loadIng--;

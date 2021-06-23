@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\User;
 use App\Module\Base;
+use Arr;
 use Cache;
 use Captcha;
 use Carbon\Carbon;
@@ -186,15 +187,20 @@ class UsersController extends AbstractController
     public function editdata()
     {
         $user = User::auth();
+        $data = Request::all();
         //头像
-        $userimg = Request::input('userimg');
-        if ($userimg) {
-            $userimg = is_array($userimg) ? $userimg[0]['path'] : $userimg;
-            $user->userimg = Base::unFillUrl($userimg);
+        if (Arr::exists($data, 'userimg')) {
+            $userimg = Request::input('userimg');
+            if ($userimg) {
+                $userimg = is_array($userimg) ? $userimg[0]['path'] : $userimg;
+                $user->userimg = Base::unFillUrl($userimg);
+            } else {
+                $user->userimg = '';
+            }
         }
         //昵称
-        $nickname = trim(Request::input('nickname'));
-        if ($nickname) {
+        if (Arr::exists($data, 'nickname')) {
+            $nickname = trim(Request::input('nickname'));
             if (mb_strlen($nickname) < 2) {
                 return Base::retError('昵称不可以少于2个字');
             } elseif (mb_strlen($nickname) > 20) {
@@ -204,8 +210,8 @@ class UsersController extends AbstractController
             }
         }
         //职位/职称
-        $profession = trim(Request::input('profession'));
-        if ($profession) {
+        if (Arr::exists($data, 'profession')) {
+            $profession = trim(Request::input('profession'));
             if (mb_strlen($profession) < 2) {
                 return Base::retError('职位/职称不可以少于2个字');
             } elseif (mb_strlen($profession) > 20) {

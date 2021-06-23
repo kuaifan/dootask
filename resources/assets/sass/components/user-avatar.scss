@@ -7,7 +7,7 @@
             position: relative;
             border-radius: 50%;
             .avatar-text {
-                background-color: #87d068;
+                background-color: $primary-color;
             }
             > em {
                 position: absolute;
@@ -22,7 +22,7 @@
             }
             &.online {
                 > em {
-                    background-color: #87d068;
+                    background-color: $primary-color;
                 }
             }
         }

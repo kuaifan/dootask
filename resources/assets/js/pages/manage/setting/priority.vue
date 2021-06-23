@@ -57,7 +57,7 @@ export default {
                 'name': '',
                 'priority': 1,
                 'days': 1,
-                'color': '#2D8CF0',
+                'color': '#8bcf70',
             }
         }
     },

@@ -90,7 +90,7 @@ export default {
                             style: {
                                 fontSize: '13px',
                                 cursor: 'pointer',
-                                color: '#2d8cf0',
+                                color: '#8bcf70',
                             },
                             on: {
                                 'on-ok': () => {

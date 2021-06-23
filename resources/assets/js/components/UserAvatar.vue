@@ -67,7 +67,7 @@
             this.getData()
         },
         computed: {
-            ...mapState(["userId", "userOnline"]),
+            ...mapState(["userId", "userInfo", "userOnline"]),
 
             boxStyle() {
                 const style = {};
@@ -125,6 +125,12 @@
                 this.getData()
             },
 
+            userInfo(info) {
+                if (info.userid == this.userid) {
+                    this.user = info;
+                }
+            },
+
             userOnline(data) {
                 if (this.user && typeof data[this.user.userid] !== "undefined") {
                     this.$set(this.user, 'online', data[this.user.userid]);
@@ -134,6 +140,10 @@
         methods: {
             getData() {
                 if (!this.userid) {
+                    return;
+                }
+                if (this.userid == this.userInfo.userid) {
+                    this.user = this.userInfo;
                     return;
                 }
                 this.$store.dispatch("getUserBasic", {
