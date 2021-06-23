@@ -602,6 +602,10 @@ class ProjectTask extends AbstractModel
                 // 取消归档
                 $this->archived_at = null;
                 $this->addLog("任务取消归档：" . $this->name);
+                $this->pushMsg('add', [
+                    'new_column' => null,
+                    'task' => ProjectTask::with(['taskUser', 'taskTag'])->find($this->id)->toArray(),
+                ]);
             } else {
                 // 归档任务
                 $this->archived_at = $archived_at;
@@ -691,22 +695,22 @@ class ProjectTask extends AbstractModel
      * 根据会员ID获取任务、项目信息（用于判断会员是否存在项目内）
      * @param int $task_id
      * @param array $with
+     * @param bool $ignoreArchived 排除已归档
      * @return self
      */
-    public static function userTask($task_id, $with = [])
+    public static function userTask($task_id, $with = [], $ignoreArchived = true)
     {
-        $task = self::with($with)->whereId(intval($task_id))->whereNull('archived_at')->first();
+        $builder = self::with($with)->whereId(intval($task_id));
+        if ($ignoreArchived) {
+            $builder->whereNull('archived_at');
+        }
+        $task = $builder->first();
         if (empty($task)) {
             throw new ApiException('任务不存在');
         }
         //
-        $project = Project::select(Project::projectSelect)
-            ->authData()
-            ->where('projects.id', $task->project_id)
-            ->first();
-        if (empty($project)) {
-            throw new ApiException('项目不存在或不在成员列表内');
-        }
+        Project::userProject($task->project_id, $ignoreArchived);
+        //
         return $task;
     }
 }

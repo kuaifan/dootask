@@ -40,7 +40,7 @@
                             </EDropdownMenu>
                             <EDropdownMenu v-else slot="dropdown">
                                 <EDropdownItem command="archived_task">{{$L('已归档任务')}}</EDropdownItem>
-                                <EDropdownItem command="exit" style="color:#f40">{{$L('退出项目')}}</EDropdownItem>
+                                <EDropdownItem command="exit" divided style="color:#f40">{{$L('退出项目')}}</EDropdownItem>
                             </EDropdownMenu>
                         </EDropdown>
                     </li>
@@ -344,6 +344,14 @@
                 <Button type="primary" :loading="transferLoad > 0" @click="onTransfer">{{$L('移交')}}</Button>
             </div>
         </Modal>
+
+        <!--查看归档任务-->
+        <Drawer
+            v-model="archivedTaskShow"
+            :width="680"
+            :title="$L('归档的任务')">
+            <TaskArchived v-if="archivedTaskShow" :project-id="projectId"/>
+        </Drawer>
     </div>
 </template>
 
@@ -355,9 +363,10 @@ import {mapGetters, mapState} from "vuex";
 import UserInput from "../../../components/UserInput";
 import TaskAddSimple from "./TaskAddSimple";
 import TaskRow from "./TaskRow";
+import TaskArchived from "./TaskArchived";
 export default {
     name: "ProjectList",
-    components: {TaskRow, Draggable, TaskAddSimple, UserInput, TaskAdd, TaskPriority},
+    components: {TaskArchived, TaskRow, Draggable, TaskAddSimple, UserInput, TaskAdd, TaskPriority},
     data() {
         return {
             nowTime: Math.round(new Date().getTime() / 1000),
@@ -388,6 +397,8 @@ export default {
             transferShow: false,
             transferData: {},
             transferLoad: 0,
+
+            archivedTaskShow: false,
         }
     },
 
@@ -926,6 +937,10 @@ export default {
                     this.$set(this.userData, 'userids', this.projectData.project_user.map(({userid}) => userid));
                     this.$set(this.userData, 'uncancelable', [this.projectData.owner_userid]);
                     this.userShow = true;
+                    break;
+
+                case "archived_task":
+                    this.archivedTaskShow = true;
                     break;
 
                 case "transfer":

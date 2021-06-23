@@ -369,20 +369,28 @@ class ProjectController extends AbstractController
     /**
      * 归档项目
      *
-     * @apiParam {Number} project_id        项目ID
+     * @apiParam {Number} project_id            项目ID
+     * @apiParam {String} [type]                类型
+     * - add：归档（默认）
+     * - recovery：还原归档
      */
     public function archived()
     {
         User::auth();
         //
         $project_id = intval(Request::input('project_id'));
+        $type = Request::input('type', 'add');
         //
-        $project = Project::userProject($project_id);
+        $project = Project::userProject($project_id, false);
         if (!$project->owner) {
             return Base::retError('你不是项目负责人');
         }
         //
-        $project->archivedProject(Carbon::now());
+        if ($type == 'recovery') {
+            $project->archivedProject(null);
+        } elseif ($type == 'add') {
+            $project->archivedProject(Carbon::now());
+        }
         return Base::retSuccess('设置成功', ['id' => $project->id]);
     }
 
@@ -550,7 +558,7 @@ class ProjectController extends AbstractController
     {
         User::auth();
         //
-        $builder = ProjectTask::with(['taskUser', 'taskTag'])->whereNull('archived_at');
+        $builder = ProjectTask::with(['taskUser', 'taskTag']);
         //
         $parent_id = intval(Request::input('parent_id'));
         $project_id = intval(Request::input('project_id'));
@@ -903,20 +911,28 @@ class ProjectController extends AbstractController
      * 归档任务
      *
      * @apiParam {Number} task_id               任务ID
+     * @apiParam {String} [type]                类型
+     * - add：归档（默认）
+     * - recovery：还原归档
      */
     public function task__archived()
     {
         User::auth();
         //
         $task_id = intval(Request::input('task_id'));
+        $type = Request::input('type', 'add');
         //
-        $task = ProjectTask::userTask($task_id);
+        $task = ProjectTask::userTask($task_id, [], false);
         //
         if ($task->parent_id > 0) {
             return Base::retError('子任务不支持此功能');
         }
         //
-        $task->archivedTask(Carbon::now());
+        if ($type == 'recovery') {
+            $task->archivedTask(null);
+        } elseif ($type == 'add') {
+            $task->archivedTask(Carbon::now());
+        }
         return Base::retSuccess('设置成功', ['id' => $task->id]);
     }
 

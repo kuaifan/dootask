@@ -240,10 +240,28 @@ body {
             }
         }
     }
+    .ivu-drawer-content {
+        border-radius: 18px 0 0 18px;
+        .ivu-drawer-header {
+            border-bottom: 1px solid transparent;
+            padding-bottom: 5px;
+            .ivu-drawer-header-inner {
+                font-size: 18px;
+                padding: 0 4px;
+                height: 32px;
+                line-height: 32px;
+            }
+        }
+    }
 }
 
 *[hidden="hidden"] {
     display: none !important;
+}
+
+.page-box {
+    text-align: center;
+    padding: 20px 0;
 }
 
 .icon-loading {

@@ -13,8 +13,12 @@
                     </div>
                 </div>
                 <DropdownMenu slot="list">
-                    <DropdownItem v-for="(item, key) in menu" :key="key" :name="item.path">{{$L(item.name)}}</DropdownItem>
-                    <DropdownItem divided name="signout">{{$L('退出登录')}}</DropdownItem>
+                    <DropdownItem
+                        v-for="(item, key) in menu"
+                        v-if="!item.admin||userIsAdmin"
+                        :key="key"
+                        :name="item.path">{{$L(item.name)}}</DropdownItem>
+                    <DropdownItem divided name="signout" style="color:#f40">{{$L('退出登录')}}</DropdownItem>
                 </DropdownMenu>
             </Dropdown>
             <ul>
@@ -105,15 +109,24 @@
             footer-hide>
             <TaskDetail :open-task="taskData"/>
         </Modal>
+
+        <!--查看归档项目-->
+        <Drawer
+            v-model="archivedProjectShow"
+            :width="680"
+            :title="$L('归档的项目')">
+            <ProjectArchived v-if="archivedProjectShow"/>
+        </Drawer>
     </div>
 </template>
 
 <script>
 import { mapState, mapGetters } from 'vuex'
 import TaskDetail from "./manage/components/TaskDetail";
+import ProjectArchived from "./manage/components/ProjectArchived";
 
 export default {
-    components: {TaskDetail},
+    components: {ProjectArchived, TaskDetail},
     data() {
         return {
             loadIng: 0,
@@ -130,25 +143,16 @@ export default {
             columns: [],
 
             menu: [
-                {
-                    path: 'personal',
-                    name: '个人设置'
-                },
-                {
-                    path: 'password',
-                    name: '密码设置'
-                },
-                {
-                    path: 'system',
-                    name: '系统设置'
-                },
-                {
-                    path: 'priority',
-                    name: '任务等级'
-                }
+                {path: 'personal', admin: false, name: '个人设置'},
+                {path: 'password', admin: false, name: '密码设置'},
+                {path: 'system', admin: true, name: '系统设置'},
+                {path: 'priority', admin: true, name: '任务等级'},
+                {path: 'archivedProject', admin: false, name: '已归档项目'}
             ],
 
-            openMenu: {}
+            openMenu: {},
+
+            archivedProjectShow: false,
         }
     },
 
@@ -165,6 +169,7 @@ export default {
         ...mapState([
             'userId',
             'userInfo',
+            'userIsAdmin',
             'dialogs',
             'projects',
             'taskId',
@@ -224,6 +229,9 @@ export default {
                         this.$store.dispatch("logout")
                     }
                 });
+                return;
+            } else if (path === 'archivedProject') {
+                this.archivedProjectShow = true;
                 return;
             }
             this.toggleRoute('setting/' + path);

@@ -5,6 +5,10 @@
 </template>
 
 <script>
+import VueResizeObserver from "vue-resize-observer";
+import Vue from 'vue'
+Vue.use(VueResizeObserver);
+
     export default {
         name: 'TableAction',
         props: {

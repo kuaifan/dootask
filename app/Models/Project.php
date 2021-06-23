@@ -298,6 +298,7 @@ class Project extends AbstractModel
                 // 取消归档
                 $this->archived_at = null;
                 $this->addLog("项目取消归档");
+                $this->pushMsg('add', $this->toArray());
             } else {
                 // 归档任务
                 $this->archived_at = $archived_at;
@@ -377,15 +378,16 @@ class Project extends AbstractModel
     /**
      * 根据用户获取项目信息（用于判断会员是否存在项目内）
      * @param int $project_id
+     * @param bool $ignoreArchived 排除已归档
      * @return self
      */
-    public static function userProject($project_id)
+    public static function userProject($project_id, $ignoreArchived = true)
     {
-        $project = self::select(self::projectSelect)
-            ->authData()
-            ->whereNull('archived_at')
-            ->where('projects.id', intval($project_id))
-            ->first();
+        $builder = self::select(self::projectSelect)->authData()->where('projects.id', intval($project_id));
+        if ($ignoreArchived) {
+            $builder->whereNull('projects.archived_at');
+        }
+        $project = $builder->first();
         if (empty($project)) {
             throw new ApiException('项目不存在或不在成员列表内');
         }
