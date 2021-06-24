@@ -732,7 +732,7 @@ class ProjectTask extends AbstractModel
      * @param bool $ignoreArchived 排除已归档
      * @return self
      */
-    public static function userTask($task_id, $with = [], $ignoreArchived = true)
+    public static function userTask($task_id, $with = [], $ignoreArchived = true, &$project = null)
     {
         $builder = self::with($with)->whereId(intval($task_id));
         if ($ignoreArchived) {
@@ -744,7 +744,6 @@ class ProjectTask extends AbstractModel
         }
         //
         $project = Project::userProject($task->project_id, $ignoreArchived);
-        $task->project_owner = $project->owner;
         //
         return $task;
     }
