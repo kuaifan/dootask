@@ -591,7 +591,7 @@ export default {
             }
             //
             setTimeout(() => {
-                if (data.parent_id > 0) {
+                if (key == 'taskSubs') {
                     state.method.setStorage("cacheTaskSubs", state.cacheTaskSubs = state[key]);
                 } else {
                     state.method.setStorage("cacheTasks", state.cacheTasks = state[key]);
@@ -608,16 +608,27 @@ export default {
      */
     forgetTask({state, dispatch}, task_id) {
         let index = state.tasks.findIndex(({id}) => id == task_id);
+        let key = 'tasks';
+        if (index === -1) {
+            index = state.taskSubs.findIndex(({id}) => id == task_id);
+            key = 'taskSubs';
+        }
         if (index > -1) {
-            dispatch("getTaskOne", state.tasks[index].parent_id)
-            dispatch('getProjectOne', state.tasks[index].project_id)
-            state.tasks.splice(index, 1);
+            dispatch("getTaskOne", state[key][index].parent_id)
+            if (key == 'tasks') {
+                dispatch('getProjectOne', state[key][index].project_id)
+            }
+            state[key].splice(index, 1);
         }
         if (state.taskId == task_id) {
             state.taskId = 0;
         }
         setTimeout(() => {
-            state.method.setStorage("cacheTasks", state.cacheTasks = state.tasks);
+            if (key == 'taskSubs') {
+                state.method.setStorage("cacheTaskSubs", state.cacheTaskSubs = state[key]);
+            } else {
+                state.method.setStorage("cacheTasks", state.cacheTasks = state[key]);
+            }
         })
     },
 

@@ -1,6 +1,6 @@
 <template>
     <div class="page-dashboard">
-        <PageTitle>{{$L('仪表板')}}</PageTitle>
+        <PageTitle>{{$L('仪表盘')}}</PageTitle>
         <div class="dashboard-wrapper">
             <div class="dashboard-hello">{{$L('欢迎您，' + userInfo.nickname)}}</div>
             <div class="dashboard-desc">{{$L('以下是你当前的任务统计数据')}}</div>
@@ -162,10 +162,7 @@ export default {
                 }
             })
             return datas.sort((a, b) => {
-                if (a._end_time != b._end_time) {
-                    return a._end_time - b._end_time;
-                }
-                return a.id - b.id;
+                return a._end_time - b._end_time;
             });
         },
 

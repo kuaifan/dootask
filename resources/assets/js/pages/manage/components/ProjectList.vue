@@ -473,10 +473,9 @@ export default {
                 if (a.p_level != b.p_level) {
                     return a.p_level - b.p_level;
                 }
-                if (a.sort != b.sort) {
-                    return a.sort - b.sort;
-                }
-                return a.id - b.id;
+                let at1 = new Date(a.end_at),
+                    at2 = new Date(b.end_at);
+                return at1 - at2;
             });
         },
 
@@ -502,10 +501,9 @@ export default {
                 if (a.p_level != b.p_level) {
                     return a.p_level - b.p_level;
                 }
-                if (a.sort != b.sort) {
-                    return a.sort - b.sort;
-                }
-                return a.id - b.id;
+                let at1 = new Date(a.end_at),
+                    at2 = new Date(b.end_at);
+                return at1 - at2;
             });
         },
 
@@ -533,13 +531,9 @@ export default {
                 return task.complete_at;
             });
             return array.sort((a, b) => {
-                if (a.p_level != b.p_level) {
-                    return a.p_level - b.p_level;
-                }
-                if (a.sort != b.sort) {
-                    return a.sort - b.sort;
-                }
-                return a.id - b.id;
+                let at1 = new Date(a.complete_at),
+                    at2 = new Date(b.complete_at);
+                return at2 - at1;
             });
         },
 

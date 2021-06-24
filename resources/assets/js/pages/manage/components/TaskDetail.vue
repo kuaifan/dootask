@@ -663,8 +663,8 @@ export default {
             immediate: true,
             deep: true
         },
-        'openTask._show' (show) {
-            if (show) {
+        taskId (id) {
+            if (id > 0) {
                 this.$nextTick(() => {
                     this.$refs.input.focus()
                 });

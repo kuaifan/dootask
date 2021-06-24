@@ -24,7 +24,7 @@
             <ul>
                 <li @click="toggleRoute('dashboard')" :class="classNameRoute('dashboard')">
                     <i class="iconfont">&#xe6fb;</i>
-                    <div class="menu-title">{{$L('仪表板')}}</div>
+                    <div class="menu-title">{{$L('仪表盘')}}</div>
                 </li>
                 <li @click="toggleRoute('calendar')" :class="classNameRoute('calendar')">
                     <i class="iconfont">&#xe6f5;</i>
