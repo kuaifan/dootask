@@ -743,7 +743,8 @@ class ProjectTask extends AbstractModel
             throw new ApiException('任务不存在');
         }
         //
-        Project::userProject($task->project_id, $ignoreArchived);
+        $project = Project::userProject($task->project_id, $ignoreArchived);
+        $task->project_owner = $project->owner;
         //
         return $task;
     }

@@ -169,7 +169,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 修改项目
+     * 修改项目（限：项目负责人）
      *
      * @apiParam {Number} project_id        项目ID
      * @apiParam {String} name              项目名称
@@ -193,7 +193,7 @@ class ProjectController extends AbstractController
         //
         $project = Project::userProject($project_id);
         if (!$project->owner) {
-            return Base::retError('你不是项目负责人');
+            return Base::retError('仅限项目负责人修改');
         }
         //
         if ($project->name != $name) {
@@ -211,7 +211,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 修改项目成员
+     * 修改项目成员（限：项目负责人）
      *
      * @apiParam {Number} project_id        项目ID
      * @apiParam {Number} userid            成员ID 或 成员ID组
@@ -226,7 +226,7 @@ class ProjectController extends AbstractController
         //
         $project = Project::userProject($project_id);
         if (!$project->owner) {
-            return Base::retError('你不是项目负责人');
+            return Base::retError('仅限项目负责人修改');
         }
         //
         $deleteUser = AbstractModel::transaction(function() use ($project, $userid) {
@@ -252,7 +252,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 移交项目
+     * 移交项目（限：项目负责人）
      *
      * @apiParam {Number} project_id        项目ID
      * @apiParam {Number} owner_userid      新的项目负责人ID
@@ -354,7 +354,6 @@ class ProjectController extends AbstractController
         $project_id = intval(Request::input('project_id'));
         //
         $project = Project::userProject($project_id);
-        //
         if ($project->owner) {
             return Base::retError('项目负责人无法退出项目');
         }
@@ -370,7 +369,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 归档项目
+     * 归档项目（限：项目负责人）
      *
      * @apiParam {Number} project_id            项目ID
      * @apiParam {String} [type]                类型
@@ -386,7 +385,7 @@ class ProjectController extends AbstractController
         //
         $project = Project::userProject($project_id, false);
         if (!$project->owner) {
-            return Base::retError('你不是项目负责人');
+            return Base::retError('仅限项目负责人操作');
         }
         //
         if ($type == 'recovery') {
@@ -398,7 +397,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 删除项目
+     * 删除项目（限：项目负责人）
      *
      * @apiParam {Number} project_id        项目ID
      */
@@ -410,7 +409,7 @@ class ProjectController extends AbstractController
         //
         $project = Project::userProject($project_id);
         if (!$project->owner) {
-            return Base::retError('你不是项目负责人');
+            return Base::retError('仅限项目负责人删除');
         }
         //
         $project->deleteProject();
@@ -492,13 +491,7 @@ class ProjectController extends AbstractController
             return Base::retError('列表不存在');
         }
         // 项目
-        $project = Project::select(project::projectSelect)
-            ->authData()
-            ->where('projects.id', $column->project_id)
-            ->first();
-        if (empty($project)) {
-            return Base::retError('项目不存在或不在成员列表内');
-        }
+        Project::userProject($column->project_id);
         //
         if (Arr::exists($data, 'name') && $column->name != $data['name']) {
             $column->addLog("修改列表名称：{$column->name} => {$data['name']}");
@@ -529,13 +522,7 @@ class ProjectController extends AbstractController
             return Base::retError('列表不存在');
         }
         // 项目
-        $project = Project::select(project::projectSelect)
-            ->authData()
-            ->where('projects.id', $column->project_id)
-            ->first();
-        if (empty($project)) {
-            return Base::retError('项目不存在或不在成员列表内');
-        }
+        Project::userProject($column->project_id);
         //
         $column->deleteColumn();
         return Base::retSuccess('删除成功', ['id' => $column->id]);
@@ -731,7 +718,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 添加子任务
+     * 添加子任务（限：项目、任务负责人）
      *
      * @apiParam {Number} task_id               任务ID
      * @apiParam {String} name                  任务描述
@@ -744,6 +731,9 @@ class ProjectController extends AbstractController
         $name = Request::input('name');
         //
         $task = ProjectTask::userTask($task_id);
+        if (!$task->owner && !$task->project_owner) {
+            return Base::retError('仅限项目或任务负责人添加');
+        }
         //
         $task = ProjectTask::addTask([
             'name' => $name,
@@ -760,7 +750,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * {post} 修改任务、子任务
+     * {post} 修改任务、子任务（限：项目、任务负责人）
      *
      * @apiParam {Number} task_id               任务ID
      * @apiParam {String} [name]                任务描述
@@ -784,6 +774,9 @@ class ProjectController extends AbstractController
         $task_id = intval($data['task_id']);
         //
         $task = ProjectTask::userTask($task_id);
+        if (!$task->owner && !$task->project_owner) {
+            return Base::retError('仅限项目或任务负责人修改');
+        }
         //
         $updateComplete = false;
         $updateContent = false;
@@ -813,7 +806,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * {post} 上传文件
+     * {post} 上传文件（限：项目、任务负责人）
      *
      * @apiParam {Number} task_id               任务ID
      * @apiParam {String} [filename]            post-文件名称
@@ -827,6 +820,9 @@ class ProjectController extends AbstractController
         $task_id = Base::getPostInt('task_id');
         //
         $task = ProjectTask::userTask($task_id);
+        if (!$task->owner && !$task->project_owner) {
+            return Base::retError('仅限项目或任务负责人上传');
+        }
         //
         $path = "uploads/task/" . $task->id . "/";
         $image64 = Base::getPostValue('image64');
@@ -908,7 +904,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 归档任务
+     * 归档任务（限：项目、任务负责人）
      *
      * @apiParam {Number} task_id               任务ID
      * @apiParam {String} [type]                类型
@@ -923,6 +919,9 @@ class ProjectController extends AbstractController
         $type = Request::input('type', 'add');
         //
         $task = ProjectTask::userTask($task_id, [], false);
+        if (!$task->owner && !$task->project_owner) {
+            return Base::retError('仅限项目或任务负责人操作');
+        }
         //
         if ($task->parent_id > 0) {
             return Base::retError('子任务不支持此功能');
@@ -937,7 +936,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 删除任务
+     * 删除任务（限：项目、任务负责人）
      *
      * @apiParam {Number} task_id               任务ID
      */
@@ -948,6 +947,9 @@ class ProjectController extends AbstractController
         $task_id = intval(Request::input('task_id'));
         //
         $task = ProjectTask::userTask($task_id);
+        if (!$task->owner && !$task->project_owner) {
+            return Base::retError('仅限项目或任务负责人删除');
+        }
         //
         $task->deleteTask();
         return Base::retSuccess('删除成功', ['id' => $task->id]);
