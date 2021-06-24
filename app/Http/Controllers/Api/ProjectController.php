@@ -767,6 +767,7 @@ class ProjectController extends AbstractController
             'parent_id' => $task->id,
             'project_id' => $task->project_id,
             'column_id' => $task->column_id,
+            'owner' => [User::userid()]
         ]);
         $data = [
             'new_column' => null,

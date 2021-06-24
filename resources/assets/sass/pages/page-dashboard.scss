@@ -86,6 +86,7 @@
             padding: 0 12px;
             overflow: auto;
             > li {
+                position: relative;
                 list-style: none;
                 display: flex;
                 background: #F9FAFB;
@@ -99,6 +100,14 @@
                 }
                 &:last-child {
                     margin-bottom: 12px;
+                }
+                .priority-color {
+                    position: absolute;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    left: 0;
+                    height: 12px;
+                    width: 2px;
                 }
                 .el-dropdown {
                     flex-shrink: 0;
@@ -115,24 +124,26 @@
                     padding-left: 6px;
                     line-height: 22px;
                 }
-                .item-time {
+                .item-icon {
                     display: flex;
                     align-items: center;
-                    height: 22px;
-                    line-height: 22px;
                     font-size: 13px;
-                    margin-left: 12px;
-                    flex-shrink: 0;
+                    margin-left: 16px;
+                    height: 22px;
                     color: #aaaaaa;
+                    cursor: pointer;
+                    .iconfont {
+                        font-size: 13px;
+                    }
+                    > em {
+                        font-style: normal;
+                        margin-left: 4px;
+                    }
                     &.overdue {
                         color: #ed4014;
                     }
                     &.today {
                         color: #ff9900;
-                    }
-                    .ivu-icon {
-                        margin-right: 3px;
-                        font-size: 14px;
                     }
                 }
             }

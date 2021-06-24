@@ -30,13 +30,18 @@
             <template v-if="list.length > 0">
                 <div class="dashboard-title">{{title}}</div>
                 <ul class="dashboard-list overlay-y">
-                    <li v-for="item in list" :key="item.id" :style="item.color ? {backgroundColor: item.color} : {}">
+                    <li
+                        v-for="item in list"
+                        :key="item.id"
+                        :style="item.color ? {backgroundColor: item.color} : {}"
+                        @click="$store.dispatch('openTask', item.id)">
+                        <em v-if="item.p_name && item.parent_id === 0" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
                         <EDropdown
                             trigger="click"
                             size="small"
                             placement="bottom"
                             @command="dropTask(item, $event)">
-                            <div class="drop-icon">
+                            <div class="drop-icon" @click.stop="">
                                 <i class="iconfont">&#xe625;</i>
                             </div>
                             <EDropdownMenu slot="dropdown" class="project-list-more-dropdown-menu">
@@ -70,9 +75,17 @@
                                 </template>
                             </EDropdownMenu>
                         </EDropdown>
-                        <div class="item-title" @click="$store.dispatch('openTask', item.id)">{{item.name}}</div>
-                        <div :class="['item-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']">
-                            <Icon type="ios-time-outline"/>{{expiresFormat(item.end_at)}}
+                        <div class="item-title">{{item.name}}</div>
+                        <div v-if="item.desc" class="item-icon">
+                            <i class="iconfont">&#xe71a;</i>
+                        </div>
+                        <div v-if="item.sub_num > 0" class="item-icon">
+                            <i class="iconfont">&#xe71f;</i>
+                            <em>{{item.sub_complete}}/{{item.sub_num}}</em>
+                        </div>
+                        <div :class="['item-icon', item.today ? 'today' : '', item.overdue ? 'overdue' : '']">
+                            <i class="iconfont">&#xe71d;</i>
+                            <em>{{expiresFormat(item.end_at)}}</em>
                         </div>
                     </li>
                 </ul>

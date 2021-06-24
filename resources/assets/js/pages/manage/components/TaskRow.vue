@@ -12,6 +12,7 @@
                     <EDropdown
                         trigger="click"
                         size="small"
+                        placement="bottom"
                         @command="dropTask(item, $event)">
                         <div class="drop-icon">
                             <Icon v-if="item.complete_at" class="completed" type="md-checkmark-circle" />
@@ -51,12 +52,21 @@
                     </EDropdown>
                     <div class="item-title" @click="openTask(item)">{{item.name}}</div>
                     <div class="item-icons" @click="openTask(item)">
-                        <div v-if="item.file_num > 0" class="item-icon">{{item.file_num}}<Icon type="ios-link-outline" /></div>
-                        <div v-if="item.msg_num > 0" class="item-icon">{{item.msg_num}}<Icon type="ios-chatbubbles-outline" /></div>
-                    </div>
-                    <div v-if="item.sub_num > 0" class="item-sub-num" @click="getSublist(item)">
-                        <Icon type="md-git-merge" />
-                        {{item.sub_complete}}/{{item.sub_num}}
+                        <div v-if="item.desc" class="item-icon">
+                            <i class="iconfont">&#xe71a;</i>
+                        </div>
+                        <div v-if="item.file_num > 0" class="item-icon">
+                            <i class="iconfont">&#xe71c;</i>
+                            <em>{{item.file_num}}</em>
+                        </div>
+                        <div v-if="item.msg_num > 0" class="item-icon">
+                            <i class="iconfont">&#xe71e;</i>
+                            <em>{{item.msg_num}}</em>
+                        </div>
+                        <div v-if="item.sub_num > 0" class="item-icon" @click.stop="getSublist(item)">
+                            <i class="iconfont">&#xe71f;</i>
+                            <em>{{item.sub_complete}}/{{item.sub_num}}</em>
+                        </div>
                     </div>
                 </Col>
                 <Col span="3" class="row-column">
