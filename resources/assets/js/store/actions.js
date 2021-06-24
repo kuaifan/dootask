@@ -1454,8 +1454,11 @@ export default {
                                         dispatch("addTaskSuccess", data)
                                         break;
                                     case 'update':
+                                        dispatch("saveTask", data)
+                                        break;
                                     case 'dialog':
                                         dispatch("saveTask", data)
+                                        dispatch("getDialogOne", data.dialog_id)
                                         break;
                                     case 'upload':
                                         dispatch("getTaskFiles", data.task_id)

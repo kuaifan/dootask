@@ -345,7 +345,7 @@
         </div>
         <div class="task-dialog" :style="dialogStyle">
             <template v-if="taskDetail.dialog_id > 0">
-                <DialogWrapper ref="dialog" :dialog-id="taskDetail.dialog_id">
+                <DialogWrapper v-if="taskId > 0" ref="dialog" :dialog-id="taskDetail.dialog_id">
                     <div slot="head" class="head">
                         <Icon class="icon" type="ios-chatbubbles-outline" />
                         <div class="nav">
@@ -1083,6 +1083,7 @@ export default {
                 },
             }).then(({data}) => {
                 this.$store.dispatch("saveTask", data);
+                this.$store.dispatch("getDialogOne", data.dialog_id);
                 this.$nextTick(() => {
                     this.$refs.dialog.sendMsg(this.msgText);
                     this.msgText = "";

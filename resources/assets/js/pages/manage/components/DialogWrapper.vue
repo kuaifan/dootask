@@ -162,24 +162,19 @@ export default {
         },
 
         dialogId: {
-            handler() {
-                this.autoBottom = true;
-                this.msgNew = 0;
-                this.topId = -1;
-                this.getMsg();
+            handler(id) {
+                if (id) {
+                    this.autoBottom = true;
+                    this.msgNew = 0;
+                    this.topId = -1;
+                    this.$store.dispatch("getDialogMsgs", id);
+                }
             },
             immediate: true
         }
     },
 
     methods: {
-        getMsg() {
-            if (!this.dialogId) {
-                return;
-            }
-            this.$store.dispatch("getDialogMsgs", this.dialogId);
-        },
-
         sendMsg(text) {
             if (typeof text === "string" && text) {
                 this.msgText = text;
