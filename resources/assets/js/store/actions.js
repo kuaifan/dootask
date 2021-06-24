@@ -354,8 +354,12 @@ export default {
      * @returns {Promise<unknown>}
      */
     getProjectOne({state, dispatch}, project_id) {
-        state.projectLoad++;
         return new Promise(function (resolve, reject) {
+            if (state.method.runNum(project_id) === 0) {
+                reject({msg: 'Parameter error'});
+                return;
+            }
+            state.projectLoad++;
             dispatch("call", {
                 url: 'project/one',
                 data: {
@@ -380,6 +384,10 @@ export default {
      */
     archivedProject({dispatch}, project_id) {
         return new Promise(function (resolve, reject) {
+            if (state.method.runNum(project_id) === 0) {
+                reject({msg: 'Parameter error'});
+                return;
+            }
             dispatch("call", {
                 url: 'project/archived',
                 data: {
@@ -403,6 +411,10 @@ export default {
      */
     removeProject({dispatch}, project_id) {
         return new Promise(function (resolve, reject) {
+            if (state.method.runNum(project_id) === 0) {
+                reject({msg: 'Parameter error'});
+                return;
+            }
             dispatch("call", {
                 url: 'project/remove',
                 data: {
@@ -426,6 +438,10 @@ export default {
      */
     exitProject({dispatch}, project_id) {
         return new Promise(function (resolve, reject) {
+            if (state.method.runNum(project_id) === 0) {
+                reject({msg: 'Parameter error'});
+                return;
+            }
             dispatch("call", {
                 url: 'project/exit',
                 data: {
@@ -541,6 +557,10 @@ export default {
      */
     removeColumn({dispatch}, column_id) {
         return new Promise(function (resolve, reject) {
+            if (state.method.runNum(column_id) === 0) {
+                reject({msg: 'Parameter error'});
+                return;
+            }
             dispatch("call", {
                 url: 'project/column/remove',
                 data: {
@@ -580,7 +600,7 @@ export default {
                 state[key].push(data);
             }
             //
-            if (data.is_subtask) {
+            if (data.parent_id) {
                 dispatch("getTaskOne", data.parent_id);
             }
             if (data.is_update_complete) {
@@ -712,6 +732,7 @@ export default {
     getTaskOne({state, dispatch}, task_id) {
         return new Promise(function (resolve, reject) {
             if (state.method.runNum(task_id) === 0) {
+                reject({msg: 'Parameter error'});
                 return;
             }
             dispatch("call", {
@@ -737,6 +758,10 @@ export default {
      */
     removeTask({dispatch}, task_id) {
         return new Promise(function (resolve, reject) {
+            if (state.method.runNum(task_id) === 0) {
+                reject({msg: 'Parameter error'});
+                return;
+            }
             dispatch("call", {
                 url: 'project/task/remove',
                 data: {
@@ -761,6 +786,10 @@ export default {
      */
     archivedTask({dispatch}, task_id) {
         return new Promise(function (resolve, reject) {
+            if (state.method.runNum(task_id) === 0) {
+                reject({msg: 'Parameter error'});
+                return;
+            }
             dispatch("call", {
                 url: 'project/task/archived',
                 data: {
@@ -786,6 +815,10 @@ export default {
      */
     getTaskContent({state, dispatch}, task_id) {
         return new Promise(function (resolve, reject) {
+            if (state.method.runNum(task_id) === 0) {
+                reject({msg: 'Parameter error'});
+                return;
+            }
             dispatch("call", {
                 url: 'project/task/content',
                 data: {
@@ -815,6 +848,10 @@ export default {
      */
     getTaskFiles({state, dispatch}, task_id) {
         return new Promise(function (resolve, reject) {
+            if (state.method.runNum(task_id) === 0) {
+                reject({msg: 'Parameter error'});
+                return;
+            }
             dispatch("call", {
                 url: 'project/task/files',
                 data: {
@@ -1064,6 +1101,7 @@ export default {
     openDialogUserid({state, dispatch}, userid) {
         return new Promise(function (resolve, reject) {
             if (userid === state.userId) {
+                reject({msg: 'Parameter error'});
                 return;
             }
             dispatch("call", {
@@ -1175,12 +1213,15 @@ export default {
         return new Promise(function (resolve, reject) {
             const dialog = state.dialogs.find(({id}) => id == dialog_id);
             if (!dialog) {
+                reject({msg: 'Parameter error'});
                 return;
             }
             if (!dialog.hasMorePages) {
+                reject({msg: 'No more page'});
                 return;
             }
             if (dialog.loading) {
+                reject({msg: 'Loading'});
                 return;
             }
             dialog.loading = true;
@@ -1353,7 +1394,8 @@ export default {
                                         dispatch("saveProject", data)
                                         break;
                                     case 'detail':
-                                        dispatch("getProjectOne", data);
+                                        dispatch("getProjectOne", data.id);
+                                        dispatch("getTasks", {project_id: data.id})
                                         break;
                                     case 'archived':
                                     case 'delete':
@@ -1399,7 +1441,7 @@ export default {
                                         dispatch("saveTask", data)
                                         break;
                                     case 'upload':
-                                        dispatch("getTaskFiles", data.id)
+                                        dispatch("getTaskFiles", data.task_id)
                                         break;
                                     case 'archived':
                                     case 'delete':

@@ -328,7 +328,17 @@
             </Form>
             <div slot="footer">
                 <Button type="default" @click="userShow=false">{{$L('取消')}}</Button>
-                <Button type="primary" :loading="userLoad > 0" @click="onUser">{{$L('保存')}}</Button>
+                <Poptip
+                    confirm
+                    placement="bottom"
+                    @on-ok="onUser"
+                    transfer>
+                    <div slot="title">
+                        <p><strong>{{$L('移除成员负责的任务将变成无负责人，')}}</strong></p>
+                        <p>{{$L('注意此操作不可逆！')}}</p>
+                    </div>
+                    <Button type="primary" :loading="userLoad > 0" style="margin-left:8px">{{$L('保存')}}</Button>
+                </Poptip>
             </div>
         </Modal>
 
@@ -843,6 +853,7 @@ export default {
                 this.userLoad--;
                 this.userShow = false;
                 this.$store.dispatch("getProjectOne", this.projectId);
+                this.$store.dispatch("getTasks", {project_id: this.projectId})
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.userLoad--;
@@ -862,6 +873,7 @@ export default {
                 this.transferLoad--;
                 this.transferShow = false;
                 this.$store.dispatch("getProjectOne", this.projectId);
+                this.$store.dispatch("getTasks", {project_id: this.projectId})
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.transferLoad--;

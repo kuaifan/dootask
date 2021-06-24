@@ -298,7 +298,7 @@ class Project extends AbstractModel
                 // 取消归档
                 $this->archived_at = null;
                 $this->addLog("项目取消归档");
-                $this->pushMsg('add', $this->toArray());
+                $this->pushMsg('add', $this);
             } else {
                 // 归档任务
                 $this->archived_at = $archived_at;

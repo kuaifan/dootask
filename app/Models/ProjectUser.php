@@ -45,7 +45,6 @@ class ProjectUser extends AbstractModel
         $tasks = ProjectTask::whereProjectId($this->project_id)->authData($this->userid)->get();
         foreach ($tasks as $task) {
             if (ProjectTaskUser::whereTaskId($task->id)->whereUserid($this->userid)->delete()) {
-                $task->pushMsg('update');
                 $task->syncDialogUser();
             }
         }

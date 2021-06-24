@@ -164,7 +164,7 @@ class ProjectController extends AbstractController
         //
         $data = Project::find($project->id);
         $data->addLog("创建项目");
-        $data->pushMsg('add', $data->toArray());
+        $data->pushMsg('add', $data);
         return Base::retSuccess('添加成功', $data);
     }
 
@@ -205,7 +205,7 @@ class ProjectController extends AbstractController
             $project->addLog("修改项目介绍");
         }
         $project->save();
-        $project->pushMsg('update', $project->toArray());
+        $project->pushMsg('update', $project);
         //
         return Base::retSuccess('修改成功', $project);
     }
@@ -469,7 +469,7 @@ class ProjectController extends AbstractController
         //
         $data = ProjectColumn::find($column->id);
         $data->project_task = [];
-        $data->pushMsg("add", $data->toArray());
+        $data->pushMsg("add", $data);
         return Base::retSuccess('添加成功', $data);
     }
 
@@ -509,7 +509,7 @@ class ProjectController extends AbstractController
             $column->color = $data['color'];
         }
         $column->save();
-        $column->pushMsg("update", $column->toArray());
+        $column->pushMsg("update", $column);
         return Base::retSuccess('修改成功', $column);
     }
 
@@ -724,7 +724,7 @@ class ProjectController extends AbstractController
         ]));
         $data = [
             'new_column' => $newColumn,
-            'task' => ProjectTask::with(['taskUser', 'taskTag'])->find($task->id)->toArray(),
+            'task' => ProjectTask::with(['taskUser', 'taskTag'])->find($task->id),
         ];
         $task->pushMsg('add', $data);
         return Base::retSuccess('添加成功', $data);
@@ -753,7 +753,7 @@ class ProjectController extends AbstractController
         ]);
         $data = [
             'new_column' => null,
-            'task' => ProjectTask::with(['taskUser', 'taskTag'])->find($task->id)->toArray(),
+            'task' => ProjectTask::with(['taskUser', 'taskTag'])->find($task->id),
         ];
         $task->pushMsg('add', $data);
         return Base::retSuccess('添加成功', $data);
@@ -805,10 +805,9 @@ class ProjectController extends AbstractController
             // 更新任务
             $task->updateTask($data, $updateContent);
         }
-        $data = $task->toArray();
-        $data['is_subtask'] = $task->parent_id > 0;
-        $data['is_update_complete'] = $task->parent_id == 0 && $updateComplete;
-        $data['is_update_content'] = $updateContent;
+        $data = ProjectTask::with(['taskUser', 'taskTag'])->find($task->id);
+        $data->is_update_complete = $task->parent_id == 0 && $updateComplete;
+        $data->is_update_content = $updateContent;
         $task->pushMsg('update', $data);
         return Base::retSuccess('修改成功', $data);
     }
@@ -865,7 +864,7 @@ class ProjectController extends AbstractController
             //
             $file = ProjectTaskFile::find($file->id);
             $task->addLog("上传文件：" . $file->name);
-            $task->pushMsg('upload', $file->toArray());
+            $task->pushMsg('upload', $file);
             return Base::retSuccess("上传成功", $file);
         }
     }

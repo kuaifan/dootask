@@ -398,7 +398,7 @@ class ProjectTask extends AbstractModel
             }
             // 负责人
             if (Arr::exists($data, 'owner')) {
-                $count = $this->task_user_count;
+                $count = $this->taskUser->count();
                 $array = [];
                 $owner = is_array($data['owner']) ? $data['owner'] : [$data['owner']];
                 foreach ($owner as $uid) {
@@ -418,17 +418,21 @@ class ProjectTask extends AbstractModel
                         break; // 子任务只能是一个负责人
                     }
                 }
-                ProjectTaskUser::whereTaskId($this->id)->whereOwner(1)->whereNotIn('userid', $array)->delete();
-                $this->syncDialogUser();
-                if (count($array) == 0) {
-                    $this->addLog("删除{任务}负责人");
-                } else {
-                    if ($count == 0) {
+                if ($array) {
+                    if ($count == 0 && count($array) == 1 && $array[0] == User::userid()) {
                         $this->addLog("认领{任务}");
                     } else {
-                        $this->addLog("修改{任务}负责人");
+                        $this->addLog("修改{任务}负责人：" . implode(",", $array));
                     }
                 }
+                $rows = ProjectTaskUser::whereTaskId($this->id)->whereOwner(1)->whereNotIn('userid', $array)->get();
+                if ($rows->isNotEmpty()) {
+                    $this->addLog("删除{任务}负责人：" . $rows->implode('userid', ','));
+                    foreach ($rows as $row) {
+                        $row->delete();
+                    }
+                }
+                $this->syncDialogUser();
             }
             // 计划时间
             if (Arr::exists($data, 'times')) {
@@ -464,13 +468,17 @@ class ProjectTask extends AbstractModel
                         ]);
                         $array[] = $uid;
                     }
-                    ProjectTaskUser::whereTaskId($this->id)->whereOwner(0)->whereNotIn('userid', $array)->delete();
-                    $this->syncDialogUser();
-                    if (count($array) == 0) {
-                        $this->addLog("删除{任务}协助人员");
-                    } else {
-                        $this->addLog("修改{任务}协助人员");
+                    if ($array) {
+                        $this->addLog("修改{任务}协助人员：" . implode(",", $array));
                     }
+                    $rows = ProjectTaskUser::whereTaskId($this->id)->whereOwner(0)->whereNotIn('userid', $array)->get();
+                    if ($rows->isNotEmpty()) {
+                        $this->addLog("删除{任务}协助人员：" . $rows->implode('userid', ','));
+                        foreach ($rows as $row) {
+                            $row->delete();
+                        }
+                    }
+                    $this->syncDialogUser();
                 }
                 // 背景色
                 if (Arr::exists($data, 'color') && $this->color != $data['color']) {
@@ -624,7 +632,7 @@ class ProjectTask extends AbstractModel
                 $this->addLog("任务取消归档：" . $this->name);
                 $this->pushMsg('add', [
                     'new_column' => null,
-                    'task' => ProjectTask::with(['taskUser', 'taskTag'])->find($this->id)->toArray(),
+                    'task' => ProjectTask::with(['taskUser', 'taskTag'])->find($this->id),
                 ]);
             } else {
                 // 归档任务
