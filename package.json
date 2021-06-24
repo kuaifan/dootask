@@ -37,6 +37,7 @@
     "dependencies": {
         "echarts": "^5.1.1",
         "element-ui": "^2.15.2",
+        "notification-koro1": "^1.1.1",
         "tinymce": "^5.8.1",
         "tui-calendar-hi": "^1.13.0-5",
         "view-design-hi": "^4.6.1-1",

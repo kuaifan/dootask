@@ -1127,8 +1127,8 @@ export default {
                     userid,
                 },
             }).then(result => {
-                state.method.setStorage("messengerDialogId", result.data.id)
                 dispatch("saveDialog", result.data);
+                state.dialogOpenId = result.data.id;
                 resolve(result);
             }).catch(e => {
                 console.error(e);

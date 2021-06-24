@@ -259,6 +259,7 @@ state.userOnline = {};
 state.dialogs = [];
 state.dialogMsgs = [];
 state.dialogMsgPush = {};
+state.dialogOpenId = 0;
 
 // 项目任务
 state.projectId = 0;

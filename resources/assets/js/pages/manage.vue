@@ -124,6 +124,7 @@
 import { mapState, mapGetters } from 'vuex'
 import TaskDetail from "./manage/components/TaskDetail";
 import ProjectArchived from "./manage/components/ProjectArchived";
+import notificationKoro from "notification-koro1";
 
 export default {
     components: {ProjectArchived, TaskDetail},
@@ -153,12 +154,19 @@ export default {
             openMenu: {},
 
             archivedProjectShow: false,
+
+            natificationHidden: false,
+            natificationReady: false,
+            notificationClass: null,
         }
     },
 
     mounted() {
         this.$store.dispatch("getUserInfo");
         this.$store.dispatch("getTaskPriority");
+        //
+        this.notificationInit();
+        this.onVisibilityChange();
     },
 
     deactivated() {
@@ -173,6 +181,7 @@ export default {
             'dialogs',
             'projects',
             'taskId',
+            'dialogMsgPush',
         ]),
 
         ...mapGetters(['taskData']),
@@ -189,6 +198,34 @@ export default {
     watch: {
         '$route' (route) {
             this.curPath = route.path;
+        },
+        dialogMsgPush(data) {
+            if (this.natificationHidden && this.natificationReady) {
+                const {userid, type, msg} = data;
+                let body = '';
+                switch (type) {
+                    case 'text':
+                        body = msg.text;
+                        break;
+                    case 'file':
+                        body = '[' + this.$L(msg.type == 'img' ? '图片信息' : '文件信息') + ']'
+                        break;
+                    default:
+                        return;
+                }
+                this.$store.dispatch("getUserBasic", {
+                    userid: userid,
+                    success: (user) => {
+                        this.notificationClass.replaceTitle(user.nickname);
+                        this.notificationClass.replaceOptions({
+                            icon: user.userimg,
+                            body: body,
+                            requireInteraction: true
+                        });
+                        this.notificationClass.userAgreed();
+                    }
+                });
+            }
         }
     },
 
@@ -277,6 +314,56 @@ export default {
             if (!visible) {
                 this.$store.dispatch('openTask', 0)
             }
+        },
+
+        notificationInit() {
+            this.notificationClass = new notificationKoro(this.$L("打开通知成功"));
+            if (this.notificationClass.support) {
+                this.notificationClass.notificationEvent({
+                    onclick: () => {
+                        window.focus();
+                        this.notificationClass.close();
+                        this.goForward({path: '/manage/messenger'});
+                        this.$store.dispatch("openDialogUserid", this.dialogMsgPush.userid);
+                    },
+                });
+                this.notificationPermission();
+            }
+        },
+
+        notificationPermission() {
+            const userSelectFn = msg => {
+                switch (msg) {
+                    // 随时可以调用通知
+                    case 'already granted':
+                    case 'granted':
+                        return this.natificationReady = true;
+
+                    // 请求权限通知被关闭，再次调用
+                    case 'close':
+                        return this.notificationClass.initNotification(userSelectFn);
+
+                    // 请求权限当前被拒绝 || 曾经被拒绝
+                    case 'denied':
+                    case 'already denied':
+                        if (msg === "denied") {
+                            console.log("您刚刚拒绝显示通知 请在设置中更改设置");
+                        } else {
+                            console.log("您曾级拒绝显示通知 请在设置中更改设置");
+                        }
+                        break;
+                }
+            };
+            this.notificationClass.initNotification(userSelectFn);
+        },
+
+        onVisibilityChange() {
+            let hiddenProperty = 'hidden' in document ? 'hidden' : 'webkitHidden' in document ? 'webkitHidden' : 'mozHidden' in document ? 'mozHidden' : null;
+            let visibilityChangeEvent = hiddenProperty.replace(/hidden/i, 'visibilitychange');
+            let visibilityChangeListener = () => {
+                this.natificationHidden = !!document[hiddenProperty]
+            }
+            document.addEventListener(visibilityChangeEvent, visibilityChangeListener);
         }
     }
 }

@@ -100,7 +100,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'dialogs']),
+        ...mapState(['userId', 'dialogs', 'dialogOpenId']),
 
         dialogList() {
             const {dialogActive, dialogKey} = this;
@@ -145,6 +145,10 @@ export default {
             if (val && this.contactsLists === null) {
                 this.getContactsList();
             }
+        },
+        dialogOpenId(id) {
+            this.$store.state.method.setStorage("messenger::dialogId", id)
+            this.dialogId = id;
         }
     },
 
