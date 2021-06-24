@@ -195,7 +195,7 @@
                                         :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
                                         :open-delay="600"
                                         :content="item.end_at">
-                                        <div v-if="!item.complete_at"><Icon type="ios-time-outline"/>{{ expiresFormat(item.end_at) }}</div>
+                                        <div v-if="!item.complete_at"><i class="iconfont">&#xe71d;</i>{{ expiresFormat(item.end_at) }}</div>
                                     </ETooltip>
                                 </div>
                                 <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>

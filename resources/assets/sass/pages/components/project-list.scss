@@ -422,7 +422,6 @@
                                 padding: 1px 4px;
                                 margin-left: 18px;
                                 font-size: 12px;
-                                font-weight: 500;
                                 border-radius: 3px;
                                 display: flex;
                                 align-items: center;
@@ -432,12 +431,13 @@
                                     background-color: #ed4014;
                                 }
                                 &.today {
+                                    font-weight: 500;
                                     color: #ffffff;
                                     background-color: #ff9900;
                                 }
-                                .ivu-icon {
+                                .iconfont {
                                     margin-right: 3px;
-                                    font-size: 14px;
+                                    font-size: 12px;
                                 }
                             }
                         }

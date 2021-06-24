@@ -133,8 +133,10 @@
                                 .ivu-tag-text {
                                     display: flex;
                                     align-items: center;
-                                    > i {
-                                        padding-right: 2px;
+                                    .iconfont {
+                                        transform: scale(0.9);
+                                        font-size: 14px;
+                                        padding-right: 3px;
                                     }
                                 }
                             }

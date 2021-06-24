@@ -268,7 +268,7 @@
                                     transfer>
                                     <div class="picker-time">
                                         <div @click="openTime" class="time">{{taskDetail.end_at ? cutTime : '--'}}</div>
-                                        <Tag v-if="!taskDetail.complete_at && taskDetail.today" color="blue"><Icon type="ios-time-outline"/>{{expiresFormat(taskDetail.end_at)}}</Tag>
+                                        <Tag v-if="!taskDetail.complete_at && taskDetail.today" color="blue"><i class="iconfont">&#xe71d;</i>{{expiresFormat(taskDetail.end_at)}}</Tag>
                                         <Tag v-if="!taskDetail.complete_at && taskDetail.overdue" color="red">{{$L('超期未完成')}}</Tag>
                                     </div>
                                 </DatePicker>
