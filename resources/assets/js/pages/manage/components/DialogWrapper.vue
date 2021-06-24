@@ -289,9 +289,9 @@ export default {
 
         sendSuccess(data) {
             this.$store.dispatch("saveDialogMsg", data);
-            this.$store.dispatch("updateDialogLastMsg", data);
-            this.$store.dispatch("moveDialogTop", this.dialogId);
             this.$store.dispatch("increaseTaskMsgNum", this.dialogId);
+            this.$store.dispatch("moveDialogTop", this.dialogId);
+            this.$store.dispatch("updateDialogLastMsg", data);
         },
 
         chatScroll(res) {

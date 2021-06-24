@@ -1379,12 +1379,12 @@ export default {
                                 // 更新消息列表
                                 state.dialogMsgPush = data;
                                 dispatch("saveDialogMsg", data)
-                                if (mode === "chat") {
-                                    return;
-                                }
-                                // 更新最后消息
-                                dispatch("updateDialogLastMsg", data);
-                                if (mode === "add") {
+                                if (mode === "add" || mode === "chat") {
+                                    // 新增任务消息数量
+                                    dispatch("increaseTaskMsgNum", dialog_id);
+                                    if (mode === "chat") {
+                                        return;
+                                    }
                                     let dialog = state.dialogs.find(({id}) => id == data.dialog_id);
                                     // 更新对话列表
                                     if (dialog) {
@@ -1393,9 +1393,9 @@ export default {
                                         // 移动到首位
                                         dispatch("moveDialogTop", dialog_id);
                                     }
-                                    // 新增任务消息数量
-                                    dispatch("increaseTaskMsgNum", dialog_id);
                                 }
+                                // 更新最后消息
+                                dispatch("updateDialogLastMsg", data);
                             })(msgDetail);
                             break;
 
