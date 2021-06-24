@@ -1005,7 +1005,7 @@ class ProjectController extends AbstractController
             $builder->whereTaskId($task->id);
         } else {
             $project = Project::userProject($project_id);
-            $builder->whereTaskId($project->id);
+            $builder->whereProjectId($project->id);
         }
         //
         $list = $builder->orderByDesc('created_at')->paginate(Base::getPaginate(100, 20));

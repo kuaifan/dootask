@@ -33,12 +33,14 @@
                             <EDropdownMenu v-if="projectData.owner_userid === userId" slot="dropdown">
                                 <EDropdownItem command="setting">{{$L('项目设置')}}</EDropdownItem>
                                 <EDropdownItem command="user">{{$L('成员管理')}}</EDropdownItem>
+                                <EDropdownItem command="log">{{$L('项目动态')}}</EDropdownItem>
                                 <EDropdownItem command="archived_task">{{$L('已归档任务')}}</EDropdownItem>
                                 <EDropdownItem command="transfer" divided>{{$L('移交项目')}}</EDropdownItem>
                                 <EDropdownItem command="archived">{{$L('归档项目')}}</EDropdownItem>
                                 <EDropdownItem command="delete" style="color:#f40">{{$L('删除项目')}}</EDropdownItem>
                             </EDropdownMenu>
                             <EDropdownMenu v-else slot="dropdown">
+                                <EDropdownItem command="log">{{$L('项目动态')}}</EDropdownItem>
                                 <EDropdownItem command="archived_task">{{$L('已归档任务')}}</EDropdownItem>
                                 <EDropdownItem command="exit" divided style="color:#f40">{{$L('退出项目')}}</EDropdownItem>
                             </EDropdownMenu>
@@ -247,7 +249,7 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow :list="myList" open-key="my" @command="dropTask" fast-add-task/>
+                <TaskRow v-if="tablePanel('showMy')" :list="myList" open-key="my" @command="dropTask" fast-add-task/>
             </div>
             <!--未完成任务-->
             <div v-if="projectData.task_num > 0" :class="['project-table-body', !tablePanel('showUndone') ? 'project-table-hide' : '']">
@@ -262,7 +264,7 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow :list="undoneList" open-key="undone" @command="dropTask"/>
+                <TaskRow v-if="tablePanel('showUndone')" :list="undoneList" open-key="undone" @command="dropTask"/>
             </div>
             <!--已完成任务-->
             <div v-if="projectData.task_num > 0" :class="['project-table-body', !tablePanel('showCompleted') ? 'project-table-hide' : '']">
@@ -277,7 +279,7 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow :list="completedList" open-key="completed" @command="dropTask"/>
+                <TaskRow v-if="tablePanel('showCompleted')" :list="completedList" open-key="completed" @command="dropTask"/>
             </div>
         </div>
 
@@ -358,6 +360,14 @@
             </div>
         </Modal>
 
+        <!--查看项目动态-->
+        <Drawer
+            v-model="logShow"
+            :width="680"
+            :title="$L('项目动态')">
+            <ProjectLog v-if="logShow" :project-id="projectId"/>
+        </Drawer>
+
         <!--查看归档任务-->
         <Drawer
             v-model="archivedTaskShow"
@@ -377,9 +387,10 @@ import UserInput from "../../../components/UserInput";
 import TaskAddSimple from "./TaskAddSimple";
 import TaskRow from "./TaskRow";
 import TaskArchived from "./TaskArchived";
+import ProjectLog from "./ProjectLog";
 export default {
     name: "ProjectList",
-    components: {TaskArchived, TaskRow, Draggable, TaskAddSimple, UserInput, TaskAdd, TaskPriority},
+    components: {ProjectLog, TaskArchived, TaskRow, Draggable, TaskAddSimple, UserInput, TaskAdd, TaskPriority},
     data() {
         return {
             nowTime: Math.round(new Date().getTime() / 1000),
@@ -411,6 +422,7 @@ export default {
             transferData: {},
             transferLoad: 0,
 
+            logShow: false,
             archivedTaskShow: false,
         }
     },
@@ -946,6 +958,10 @@ export default {
                     this.$set(this.userData, 'userids', this.projectData.project_user.map(({userid}) => userid));
                     this.$set(this.userData, 'uncancelable', [this.projectData.owner_userid]);
                     this.userShow = true;
+                    break;
+
+                case "log":
+                    this.logShow = true;
                     break;
 
                 case "archived_task":
