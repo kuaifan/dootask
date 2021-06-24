@@ -348,22 +348,22 @@
                     <div slot="head" class="head">
                         <Icon class="icon" type="ios-chatbubbles-outline" />
                         <div class="nav">
-                            <p :class="{active:navActive=='dialog'}" @click="navActive='dialog'">{{$L('聊天')}}</p>
-                            <p :class="{active:navActive=='log'}" @click="navActive='log'">{{$L('动态')}}</p>
+                            <p :class="{active:navActive=='dialog'}" @click="setNavActive('dialog')">{{$L('聊天')}}</p>
+                            <p :class="{active:navActive=='log'}" @click="setNavActive('log')">{{$L('动态')}}</p>
                         </div>
                     </div>
                 </DialogWrapper>
-                <ProjectLog v-if="navActive=='log'" :task-id="taskDetail.id"/>
+                <ProjectLog v-if="navActive=='log'" ref="log" :task-id="taskDetail.id"/>
             </template>
             <div v-else>
                 <div class="head">
                     <Icon class="icon" type="ios-chatbubbles-outline" />
                     <div class="nav">
-                        <p :class="{active:navActive=='dialog'}" @click="navActive='dialog'">{{$L('聊天')}}</p>
-                        <p :class="{active:navActive=='log'}" @click="navActive='log'">{{$L('动态')}}</p>
+                        <p :class="{active:navActive=='dialog'}" @click="setNavActive('dialog')">{{$L('聊天')}}</p>
+                        <p :class="{active:navActive=='log'}" @click="setNavActive('log')">{{$L('动态')}}</p>
                     </div>
                 </div>
-                <ProjectLog v-if="navActive=='log'" :task-id="taskDetail.id"/>
+                <ProjectLog v-if="navActive=='log'" ref="log" :task-id="taskDetail.id"/>
                 <div v-else class="no-dialog">
                     <div class="no-tip">{{$L('暂无消息')}}</div>
                     <div class="no-input">
@@ -1015,6 +1015,13 @@ export default {
                 $A.modalError(msg);
                 this.addsubLoad--;
             });
+        },
+
+        setNavActive(act) {
+            if (act == 'log' && this.navActive == act) {
+                this.$refs.log.getLists(true);
+            }
+            this.navActive = act;
         },
 
         dropAdd(command) {
