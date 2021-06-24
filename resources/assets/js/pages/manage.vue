@@ -201,7 +201,7 @@ export default {
         },
         dialogMsgPush(data) {
             if (this.natificationHidden && this.natificationReady) {
-                const {userid, type, msg} = data;
+                const {id, dialog_id, type, msg} = data;
                 let body = '';
                 switch (type) {
                     case 'text':
@@ -213,20 +213,26 @@ export default {
                     default:
                         return;
                 }
-                this.$store.dispatch("getUserBasic", {
-                    userid: userid,
-                    success: (user) => {
-                        this.notificationClass.replaceTitle(user.nickname);
-                        this.notificationClass.replaceOptions({
-                            icon: user.userimg,
-                            body: body,
-                            data: data,
-                            tag: "dialog",
-                            requireInteraction: true
-                        });
-                        this.notificationClass.userAgreed();
-                    }
+                this._notificationId = id;
+                this.notificationClass.replaceOptions({
+                    icon: $A.serverUrl('images/logo.png'),
+                    body: body,
+                    data: data,
+                    tag: "dialog",
+                    requireInteraction: true
                 });
+                let dialog = this.dialogs.find((item) => item.id == dialog_id);
+                if (dialog) {
+                    this.notificationClass.replaceTitle(dialog.name);
+                    this.notificationClass.userAgreed();
+                } else {
+                    this.$store.dispatch("getDialogOne", dialog_id).then(({data}) => {
+                        if (this._notificationId === id) {
+                            this.notificationClass.replaceTitle(data.name);
+                            this.notificationClass.userAgreed();
+                        }
+                    })
+                }
             }
         }
     },
@@ -323,6 +329,7 @@ export default {
             if (this.notificationClass.support) {
                 this.notificationClass.notificationEvent({
                     onclick: ({target}) => {
+                        console.log("[Notification] Click", target);
                         this.notificationClass.close();
                         window.focus();
                         //

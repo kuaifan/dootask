@@ -1093,19 +1093,30 @@ export default {
     },
 
     /**
-     * 获取会话基础信息
+     * 获取单个会话信息
      * @param state
      * @param dispatch
      * @param dialog_id
+     * @returns {Promise<unknown>}
      */
     getDialogOne({state, dispatch}, dialog_id) {
-        dispatch("call", {
-            url: 'dialog/one',
-            data: {
-                dialog_id,
-            },
-        }).then(result => {
-            dispatch("saveDialog", result.data);
+        return new Promise(function (resolve, reject) {
+            if (state.method.runNum(dialog_id) === 0) {
+                reject({msg: 'Parameter error'});
+                return;
+            }
+            dispatch("call", {
+                url: 'dialog/one',
+                data: {
+                    dialog_id,
+                },
+            }).then(result => {
+                dispatch("saveDialog", result.data);
+                resolve(result);
+            }).catch(e => {
+                console.error(e);
+                reject(e);
+            });
         });
     },
 
@@ -1381,8 +1392,6 @@ export default {
                             (function (msg) {
                                 const {mode, data} = msg;
                                 const {dialog_id} = data;
-                                // 更新消息列表
-                                dispatch("saveDialogMsg", data)
                                 if (mode === "add" || mode === "chat") {
                                     // 新增任务消息数量
                                     dispatch("increaseTaskMsgNum", dialog_id);
@@ -1399,6 +1408,8 @@ export default {
                                     }
                                     state.dialogMsgPush = data;
                                 }
+                                // 更新消息列表
+                                dispatch("saveDialogMsg", data)
                                 // 更新最后消息
                                 dispatch("updateDialogLastMsg", data);
                             })(msgDetail);
