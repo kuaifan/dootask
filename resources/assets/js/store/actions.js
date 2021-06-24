@@ -1222,6 +1222,8 @@ export default {
             dialog.loading = false;
             dialog.currentPage = result.data.current_page;
             dialog.hasMorePages = !!result.data.next_page_url;
+            dispatch("saveDialog", dialog);
+            //
             const ids = result.data.data.map(({id}) => id)
             if (ids.length == 0) {
                 return;

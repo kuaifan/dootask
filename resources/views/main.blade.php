@@ -10,6 +10,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'WebPage') }}</title>
+    <link rel="shortcut icon" href="{{ asset_main('favicon.ico') }}">
     <link rel="stylesheet" type="text/css" href="{{ mix('css/app.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset_main('css/iview.css') }}">
     <script src="{{ asset_main('js/jquery.min.js') }}"></script>
