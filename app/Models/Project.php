@@ -36,7 +36,7 @@ use Request;
  * @property-read int|null $project_log_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectUser[] $projectUser
  * @property-read int|null $project_user_count
- * @method static \Illuminate\Database\Eloquent\Builder|Project authData($user = null)
+ * @method static \Illuminate\Database\Eloquent\Builder|Project authData($userid = null)
  * @method static \Illuminate\Database\Eloquent\Builder|Project newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Project newQuery()
  * @method static \Illuminate\Database\Query\Builder|Project onlyTrashed()
@@ -85,9 +85,9 @@ class Project extends AbstractModel
             $this->appendattrs['task_complete'] = $builder->whereNotNull('complete_at')->count();
             $this->appendattrs['task_percent'] = $this->appendattrs['task_num'] ? intval($this->appendattrs['task_complete'] / $this->appendattrs['task_num'] * 100) : 0;
             //
-            $builder = ProjectTask::whereProjectId($this->id)->whereParentId(0)->whereNull('archived_at');
-            $this->appendattrs['task_my_num'] = $builder->whereUserid(User::userid())->count();
-            $this->appendattrs['task_my_complete'] = $builder->whereUserid(User::userid())->whereNotNull('complete_at')->count();
+            $builder = ProjectTask::whereProjectId($this->id)->whereParentId(0)->authData(User::userid())->whereNull('archived_at');
+            $this->appendattrs['task_my_num'] = $builder->count();
+            $this->appendattrs['task_my_complete'] = $builder->whereNotNull('complete_at')->count();
             $this->appendattrs['task_my_percent'] = $this->appendattrs['task_my_num'] ? intval($this->appendattrs['task_my_complete'] / $this->appendattrs['task_my_num'] * 100) : 0;
         }
     }
@@ -212,14 +212,14 @@ class Project extends AbstractModel
     /**
      * 查询自己的项目
      * @param self $query
-     * @param null $user
+     * @param null $userid
      * @return self
      */
-    public function scopeAuthData($query, $user = null)
+    public function scopeAuthData($query, $userid = null)
     {
-        $user = $user ?: User::auth();
+        $userid = $userid ?: User::userid();
         $query->join('project_users', 'projects.id', '=', 'project_users.project_id')
-            ->where('project_users.userid', $user->userid);
+            ->where('project_users.userid', $userid);
         return $query;
     }
 

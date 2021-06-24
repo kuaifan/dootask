@@ -52,7 +52,7 @@ use Request;
  * @property-read int|null $task_tag_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectTaskUser[] $taskUser
  * @property-read int|null $task_user_count
- * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask authData($user = null)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask authData($userid = null)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask newQuery()
  * @method static \Illuminate\Database\Query\Builder|ProjectTask onlyTrashed()
@@ -265,14 +265,14 @@ class ProjectTask extends AbstractModel
     /**
      * 查询自己的任务
      * @param self $query
-     * @param null $user
+     * @param null $userid
      * @return self
      */
-    public function scopeAuthData($query, $user = null)
+    public function scopeAuthData($query, $userid = null)
     {
-        $user = $user ?: User::auth();
-        $query->whereIn('id', function ($qy) use ($user) {
-            $qy->select('task_pid')->from('project_task_users')->where('userid', $user->userid);
+        $userid = $userid ?: User::userid();
+        $query->whereIn('id', function ($qy) use ($userid) {
+            $qy->select('task_pid')->from('project_task_users')->where('userid', $userid);
         });
         return $query;
     }

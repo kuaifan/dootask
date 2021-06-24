@@ -236,9 +236,11 @@ class ProjectController extends AbstractController
                     $array[] = $uid;
                 }
             }
-            $delete = ProjectUser::whereProjectId($project->id)->whereNotIn('userid', $array);
-            $deleteUser = $delete->pluck('userid');
-            $delete->delete();
+            $deleteRows = ProjectUser::whereProjectId($project->id)->whereNotIn('userid', $array)->get();
+            $deleteUser = $deleteRows->pluck('userid');
+            foreach ($deleteRows as $row) {
+                $row->exitProject();
+            }
             $project->syncDialogUser();
             $project->addLog("修改项目成员");
             return $deleteUser->toArray();
@@ -358,7 +360,8 @@ class ProjectController extends AbstractController
         }
         //
         AbstractModel::transaction(function() use ($user, $project) {
-            ProjectUser::whereProjectId($project->id)->whereUserid($user->userid)->delete();
+            $row = ProjectUser::whereProjectId($project->id)->whereUserid($user->userid)->first();
+            $row && $row->exitProject();
             $project->syncDialogUser();
             $project->addLog("会员ID：" . $user->userid . " 退出项目");
             $project->pushMsg('delete', null, $user->userid);

@@ -36,4 +36,19 @@ class ProjectUser extends AbstractModel
     {
         return $this->hasOne(Project::class, 'id', 'project_id');
     }
+
+    /**
+     * 退出项目
+     */
+    public function exitProject()
+    {
+        $tasks = ProjectTask::whereProjectId($this->project_id)->authData($this->userid)->get();
+        foreach ($tasks as $task) {
+            if (ProjectTaskUser::whereTaskId($task->id)->whereUserid($this->userid)->delete()) {
+                $task->pushMsg('update');
+                $task->syncDialogUser();
+            }
+        }
+        $this->delete();
+    }
 }
