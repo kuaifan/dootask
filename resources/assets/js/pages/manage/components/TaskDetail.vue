@@ -285,6 +285,7 @@
                                 <Loading v-else class="file-load"/>
                                 <a class="file-name" :href="file.path||'javascript:;'" target="_blank">{{file.name}}</a>
                                 <div class="file-size">{{$A.bytesToSize(file.size)}}</div>
+                                <i class="iconfont file-delete" @click="deleteFile(file.id)">&#xe6ea;</i>
                             </li>
                         </ul>
                         <ul class="item-content">
@@ -1088,6 +1089,20 @@ export default {
                 });
             }).catch(({msg}) => {
                 $A.modalError(msg);
+            });
+        },
+
+        deleteFile(file_id) {
+            this.$store.dispatch("forgetTaskFile", file_id)
+            //
+            this.$store.dispatch("call", {
+                url: 'project/task/filedelete',
+                data: {
+                    file_id,
+                },
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+                this.$store.dispatch("getTaskFiles", this.taskDetail.id)
             });
         }
     }

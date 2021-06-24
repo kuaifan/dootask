@@ -657,6 +657,33 @@ class ProjectController extends AbstractController
     }
 
     /**
+     * 删除任务文件（限：项目、任务负责人）
+     *
+     * @apiParam {Number} file_id            文件ID
+     */
+    public function task__filedelete()
+    {
+        User::auth();
+        //
+        $file_id = intval(Request::input('file_id'));
+        //
+        $file = ProjectTaskFile::find($file_id);
+        if (empty($file)) {
+            return Base::retError('文件不存在或已被删除');
+        }
+        //
+        $task = ProjectTask::userTask($file->task_id, [], true, $project);
+        if (!$task->owner && !$project->owner) {
+            return Base::retError('仅限项目或任务负责人操作');
+        }
+        //
+        $task->pushMsg('filedelete', $file);
+        $file->delete();
+        //
+        return Base::retSuccess('success', $file);
+    }
+
+    /**
      * {post} 添加任务
      *
      * @apiParam {Number} project_id            项目ID

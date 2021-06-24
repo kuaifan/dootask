@@ -875,6 +875,19 @@ export default {
     },
 
     /**
+     * 忘记任务文件
+     * @param state
+     * @param dispatch
+     * @param file_id
+     */
+    forgetTaskFile({state, dispatch}, file_id) {
+        let index = state.taskFiles.findIndex(({id}) => id == file_id)
+        if (index > -1) {
+            state.taskFiles.splice(index, 1)
+        }
+    },
+
+    /**
      * 打开任务详情页
      * @param state
      * @param dispatch
@@ -1169,9 +1182,12 @@ export default {
      * @param dialog_id
      */
     getDialogMsgs({state, dispatch}, dialog_id) {
-        const dialog = state.dialogs.find(({id}) => id == dialog_id);
+        let dialog = state.dialogs.find(({id}) => id == dialog_id);
         if (!dialog) {
-            return;
+            dialog = {
+                id: dialog_id,
+            };
+            state.dialogs.push(dialog);
         }
         if (dialog.loading) {
             return;
@@ -1369,6 +1385,7 @@ export default {
                                 // 更新最后消息
                                 dispatch("updateDialogLastMsg", data);
                                 if (mode === "add") {
+                                    let dialog = state.dialogs.find(({id}) => id == data.dialog_id);
                                     // 更新对话列表
                                     if (dialog) {
                                         // 新增未读数
@@ -1442,6 +1459,9 @@ export default {
                                         break;
                                     case 'upload':
                                         dispatch("getTaskFiles", data.task_id)
+                                        break;
+                                    case 'filedelete':
+                                        dispatch("forgetTaskFile", data.id)
                                         break;
                                     case 'archived':
                                     case 'delete':

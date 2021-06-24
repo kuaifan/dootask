@@ -105,9 +105,12 @@ export default {
         dialogList() {
             const {dialogActive, dialogKey} = this;
             if (dialogActive == '' && dialogKey == '') {
-                return this.dialogs;
+                return this.dialogs.filter(({name}) => name !== undefined);
             }
             return this.dialogs.filter(({name, type, group_type, last_msg}) => {
+                if (name === undefined) {
+                    return false;
+                }
                 if (dialogActive) {
                     switch (dialogActive) {
                         case 'project':
