@@ -73,6 +73,7 @@
             <DialogUpload
                 ref="chatUpload"
                 class="chat-upload"
+                :dialog-id="dialogId"
                 @on-progress="chatFile('progress', $event)"
                 @on-success="chatFile('success', $event)"
                 @on-error="chatFile('error', $event)"/>
@@ -277,11 +278,11 @@ export default {
                     break;
 
                 case 'error':
-                    this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
+                    this.tempMsgs = this.tempMsgs.filter(({id}) => id != file.tempId)
                     break;
 
                 case 'success':
-                    this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
+                    this.tempMsgs = this.tempMsgs.filter(({id}) => id != file.tempId)
                     this.sendSuccess(file.data)
                     break;
             }

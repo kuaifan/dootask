@@ -22,6 +22,10 @@ import {mapState} from "vuex";
 export default {
     name: 'DialogUpload',
     props: {
+        dialogId: {
+            type: Number,
+            default: 0
+        },
         maxSize: {
             type: Number,
             default: 204800
@@ -36,7 +40,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userToken', 'dialogId']),
+        ...mapState(['userToken']),
 
         headers() {
             return {

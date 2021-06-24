@@ -600,7 +600,7 @@ export default {
                 state[key].push(data);
             }
             //
-            if (data.parent_id) {
+            if (index > -1 && data.parent_id) {
                 dispatch("getTaskOne", data.parent_id);
             }
             if (data.is_update_complete) {
@@ -866,6 +866,10 @@ export default {
                         state.taskFiles.push(data)
                     }
                 })
+                dispatch("saveTask", {
+                    id: task_id,
+                    file_num: result.data.length
+                });
                 resolve(result)
             }).catch(e => {
                 console.error(e);
