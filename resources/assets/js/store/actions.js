@@ -1128,6 +1128,7 @@ export default {
                 },
             }).then(result => {
                 dispatch("saveDialog", result.data);
+                state.method.setStorage("messenger::dialogId", result.data.id);
                 state.dialogOpenId = result.data.id;
                 resolve(result);
             }).catch(e => {
@@ -1381,7 +1382,6 @@ export default {
                                 const {mode, data} = msg;
                                 const {dialog_id} = data;
                                 // 更新消息列表
-                                state.dialogMsgPush = data;
                                 dispatch("saveDialogMsg", data)
                                 if (mode === "add" || mode === "chat") {
                                     // 新增任务消息数量
@@ -1397,6 +1397,7 @@ export default {
                                         // 移动到首位
                                         dispatch("moveDialogTop", dialog_id);
                                     }
+                                    state.dialogMsgPush = data;
                                 }
                                 // 更新最后消息
                                 dispatch("updateDialogLastMsg", data);

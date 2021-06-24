@@ -147,7 +147,6 @@ export default {
             }
         },
         dialogOpenId(id) {
-            this.$store.state.method.setStorage("messenger::dialogId", id)
             this.dialogId = id;
         }
     },

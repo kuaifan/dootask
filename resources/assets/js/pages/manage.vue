@@ -220,6 +220,8 @@ export default {
                         this.notificationClass.replaceOptions({
                             icon: user.userimg,
                             body: body,
+                            data: data,
+                            tag: "dialog",
                             requireInteraction: true
                         });
                         this.notificationClass.userAgreed();
@@ -320,11 +322,21 @@ export default {
             this.notificationClass = new notificationKoro(this.$L("打开通知成功"));
             if (this.notificationClass.support) {
                 this.notificationClass.notificationEvent({
-                    onclick: () => {
-                        window.focus();
+                    onclick: ({target}) => {
                         this.notificationClass.close();
-                        this.goForward({path: '/manage/messenger'});
-                        this.$store.dispatch("openDialogUserid", this.dialogMsgPush.userid);
+                        window.focus();
+                        //
+                        const {tag, data} = target;
+                        if (tag == 'dialog') {
+                            if (!$A.isJson(data)) {
+                                return;
+                            }
+                            this.goForward({path: '/manage/messenger'});
+                            if (data.dialog_id) {
+                                this.$store.state.method.setStorage("messenger::dialogId", data.dialog_id)
+                                this.$store.state.dialogOpenId = data.dialog_id;
+                            }
+                        }
                     },
                 });
                 this.notificationPermission();
