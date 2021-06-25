@@ -6,6 +6,7 @@
 /public/.user.ini
 /storage/*.key
 /vendor
+/build
 /tmp
 ._*
 .env

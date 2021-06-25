@@ -1,5 +1,7 @@
 {
-    "private": true,
+    "name": "DooTask",
+    "version": "0.0.2",
+    "description": "DooTask is task management system",
     "scripts": {
         "dev": "npm run development",
         "development": "mix",
@@ -19,6 +21,7 @@
         "laravel-mix": "^6.0.6",
         "lodash": "^4.17.19",
         "moment": "^2.29.1",
+        "nativefier": "^44.0.4",
         "node-sass": "^4.11.0",
         "postcss": "^8.1.14",
         "resolve-url-loader": "^4.0.0",

@@ -1412,7 +1412,9 @@ export default {
                                     // 更新对话列表
                                     if (dialog) {
                                         // 新增未读数
-                                        if (data.userid !== state.userId) dialog.unread++;
+                                        if (data.userid !== state.userId && state.dialogMsgs.findIndex(({id}) => id == data.id) === -1) {
+                                            dialog.unread++;
+                                        }
                                         // 移动到首位
                                         dispatch("moveDialogTop", dialog_id);
                                     }
