@@ -2,6 +2,9 @@ const mix = require('laravel-mix');
 const ipv4 = require('internal-ip').v4.sync();
 
 const mixBuildName = function (str) {
+    if (typeof str !== "string") {
+        return str;
+    }
     if (/resources_assets_js_pages_(.*?)_vue/.test(str)) {
         str = /resources_assets_js_pages_(.*?)_vue/.exec(str)[1];
     }
