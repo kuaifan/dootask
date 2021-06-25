@@ -12,15 +12,20 @@
         display: flex;
         flex-direction: column;
         align-items: center;
+        padding: 32px 0;
+        width: 100%;
+        max-height: 100%;
+        overflow: auto;
         .login-logo {
-            width: 72px;
-            height: 72px;
+            flex-shrink: 0;
+            width: 68px;
+            height: 68px;
             background: url("../images/logo.svg") no-repeat center center;
             background-size: contain;
         }
         .login-box {
             margin-top: 32px;
-            width: 450px;
+            width: 400px;
             border-radius: 12px;
             background-color: #ffffff;
             box-shadow: 0 0 10px #e6ecfa;
@@ -37,12 +42,15 @@
                 color: #AAAAAA;
             }
             .login-input {
-                margin: 40px;
+                margin: 32px 40px;
                 > * {
                     margin-top: 26px;
                 }
                 .ivu-input {
                     border-color: #f1f1f1;
+                }
+                .ivu-input-large {
+                    font-size: 15px;
                 }
                 .login-code {
                     .ivu-input-group-prepend,
@@ -63,6 +71,9 @@
                             height: 100%;
                         }
                     }
+                }
+                .login-switch {
+                    color: #aaaaaa;
                 }
             }
         }

@@ -40,6 +40,10 @@
                 border-radius: 8px;
                 background-color: #ffffff;
                 cursor: pointer;
+                transition: box-shadow 0.3s;
+                &.menu-visible {
+                    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
+                }
                 .manage-box-avatar {
                     width: 36px;
                     height: 36px;

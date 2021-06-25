@@ -15,7 +15,9 @@
             <div :class="['avatar-box', userId === userid || user.online ? 'online' : '']" :style="boxStyle">
                 <em :style="spotStyle"></em>
                 <EAvatar v-if="showImg" :src="user.userimg" :size="avatarSize"/>
-                <EAvatar v-else :size="avatarSize" class="avatar-text">{{nickname}}</EAvatar>
+                <EAvatar v-else :size="avatarSize" class="avatar-text">
+                    <span :style="spotStyle">{{nickname}}</span>
+                </EAvatar>
             </div>
             <div v-if="showName" class="avatar-name">{{user.nickname}}</div>
         </div>

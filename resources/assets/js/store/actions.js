@@ -263,9 +263,11 @@ export default {
 
     /**
      * 登出（打开登录页面）
+     * @param state
      * @param dispatch
      */
-    logout({dispatch}) {
+    logout({state, dispatch}) {
+        state.method.clearLocal();
         dispatch("saveUserInfo", {}).then(() => {
             const from = window.location.pathname == '/' ? '' : encodeURIComponent(window.location.href);
             $A.goForward({path: '/login', query: from ? {from: from} : {}}, true);

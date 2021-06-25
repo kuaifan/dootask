@@ -10,6 +10,11 @@
             align-items: center;
             .avatar-text {
                 background-color: $primary-color;
+                > span {
+                    display: inline-block;
+                    font-size: 15px;
+                    line-height: 1;
+                }
             }
             > em {
                 position: absolute;

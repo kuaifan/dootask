@@ -1,8 +1,12 @@
 <template>
     <div class="page-manage">
         <div class="manage-box-menu">
-            <Dropdown class="manage-box-dropdown" trigger="click" @on-click="settingRoute">
-                <div class="manage-box-title">
+            <Dropdown
+                class="manage-box-dropdown"
+                trigger="click"
+                @on-click="settingRoute"
+                @on-visible-change="menuVisibleChange">
+                <div :class="['manage-box-title', visibleMenu ? 'menu-visible' : '']">
                     <div class="manage-box-avatar">
                         <UserAvatar :userid="userId" :size="36" tooltip-disabled/>
                     </div>
@@ -15,8 +19,8 @@
                 <DropdownMenu slot="list">
                     <DropdownItem
                         v-for="(item, key) in menu"
-                        v-if="!item.admin||userIsAdmin"
                         :key="key"
+                        :divided="!!item.divided"
                         :name="item.path">{{$L(item.name)}}</DropdownItem>
                     <DropdownItem divided name="signout" style="color:#f40">{{$L('退出登录')}}</DropdownItem>
                 </DropdownMenu>
@@ -143,15 +147,8 @@ export default {
 
             columns: [],
 
-            menu: [
-                {path: 'personal', admin: false, name: '个人设置'},
-                {path: 'password', admin: false, name: '密码设置'},
-                {path: 'system', admin: true, name: '系统设置'},
-                {path: 'priority', admin: true, name: '任务等级'},
-                {path: 'archivedProject', admin: false, name: '已归档项目'}
-            ],
-
             openMenu: {},
+            visibleMenu: false,
 
             archivedProjectShow: false,
 
@@ -196,6 +193,27 @@ export default {
                 num += unread;
             })
             return num;
+        },
+
+        menu() {
+            const {userIsAdmin} = this;
+            if (userIsAdmin) {
+                return [
+                    {path: 'personal', name: '个人设置'},
+                    {path: 'password', name: '密码设置'},
+                    {path: 'system', name: '系统设置', divided: true},
+                    {path: 'priority', name: '任务等级'},
+                    {path: 'project', name: '项目管理'},
+                    {path: 'user', name: '会员管理', divided: true},
+                    {path: 'archivedProject', name: '已归档的项目'}
+                ]
+            } else {
+                return [
+                    {path: 'personal', name: '个人设置'},
+                    {path: 'password', name: '密码设置'},
+                    {path: 'archivedProject', name: '已归档的项目', divided: true}
+                ]
+            }
         }
     },
 
@@ -280,20 +298,29 @@ export default {
         },
 
         settingRoute(path) {
-            if (path === 'signout') {
-                $A.modalConfirm({
-                    title: '退出登录',
-                    content: '你确定要登出系统？',
-                    onOk: () => {
-                        this.$store.dispatch("logout")
-                    }
-                });
-                return;
-            } else if (path === 'archivedProject') {
-                this.archivedProjectShow = true;
-                return;
+            switch (path) {
+                case 'project':
+                    return;
+                case 'user':
+                    return;
+                case 'archivedProject':
+                    this.archivedProjectShow = true;
+                    return;
+                case 'signout':
+                    $A.modalConfirm({
+                        title: '退出登录',
+                        content: '你确定要登出系统？',
+                        onOk: () => {
+                            this.$store.dispatch("logout")
+                        }
+                    });
+                    return;
             }
             this.toggleRoute('setting/' + path);
+        },
+
+        menuVisibleChange(visible) {
+            this.visibleMenu = visible
         },
 
         classNameRoute(path, openMenu) {
