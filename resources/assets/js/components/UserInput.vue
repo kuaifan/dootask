@@ -25,7 +25,7 @@
                 :avatar="item.userimg"
                 :disabled="isDisabled(item.userid)">
                 <div class="user-input-option">
-                    <div class="user-input-avatar"><WAvatar :src="item.userimg"/></div>
+                    <div class="user-input-avatar"><EAvatar class="avatar" :src="item.userimg"/></div>
                     <div class="user-input-nickname">{{ item.nickname }}</div>
                     <div class="user-input-userid">ID: {{ item.userid }}</div>
                 </div>
@@ -36,10 +36,8 @@
 </template>
 
 <script>
-    import WAvatar from "./WAvatar";
     export default {
         name: 'UserInput',
-        components: {WAvatar},
         props: {
             value: {
                 type: [String, Number, Array],

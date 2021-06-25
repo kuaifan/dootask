@@ -30,11 +30,13 @@ Vue.component('TableAction', TableAction);
 Vue.component('UserAvatar', UserAvatar);
 
 import {
+    Avatar,
     Tooltip,
     Dropdown,
     DropdownMenu,
     DropdownItem,
 } from 'element-ui';
+Vue.component('EAvatar', Avatar);
 Vue.component('ETooltip', Tooltip);
 Vue.component('EDropdown', Dropdown);
 Vue.component('EDropdownMenu', DropdownMenu);

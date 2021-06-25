@@ -6,6 +6,8 @@
         .avatar-box {
             position: relative;
             border-radius: 50%;
+            display: flex;
+            align-items: center;
             .avatar-text {
                 background-color: $primary-color;
             }
@@ -13,8 +15,8 @@
                 position: absolute;
                 right: 0;
                 bottom: 0;
-                width: 9px;
-                height: 9px;
+                width: 8px;
+                height: 8px;
                 border-radius: 50%;
                 background-color: #ff0000;
                 border: 1px solid #ffffff;

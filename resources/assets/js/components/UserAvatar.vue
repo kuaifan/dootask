@@ -14,8 +14,8 @@
         <div class="avatar-wrapper">
             <div :class="['avatar-box', userId === userid || user.online ? 'online' : '']" :style="boxStyle">
                 <em :style="spotStyle"></em>
-                <WAvatar v-if="showImg" :src="user.userimg" :size="avatarSize"/>
-                <WAvatar v-else :size="avatarSize" class="avatar-text">{{nickname}}</WAvatar>
+                <EAvatar v-if="showImg" :src="user.userimg" :size="avatarSize"/>
+                <EAvatar v-else :size="avatarSize" class="avatar-text">{{nickname}}</EAvatar>
             </div>
             <div v-if="showName" class="avatar-name">{{user.nickname}}</div>
         </div>
@@ -23,11 +23,9 @@
 </template>
 
 <script>
-    import WAvatar from "./WAvatar";
     import {mapState} from "vuex";
     export default {
         name: 'UserAvatar',
-        components: {WAvatar},
         props: {
             userid: {
                 type: [String, Number],

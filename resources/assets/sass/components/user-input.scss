@@ -27,7 +27,9 @@
         display: flex;
         align-items: center;
         .user-input-avatar {
-            .ivu-avatar {
+            display: flex;
+            align-items: center;
+            .avatar {
                 width: 26px;
                 height: 26px;
             }

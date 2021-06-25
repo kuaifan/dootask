@@ -333,13 +333,14 @@
                 <Poptip
                     confirm
                     placement="bottom"
+                    style="margin-left:8px"
                     @on-ok="onUser"
                     transfer>
                     <div slot="title">
                         <p><strong>{{$L('移除成员负责的任务将变成无负责人，')}}</strong></p>
                         <p>{{$L('注意此操作不可逆！')}}</p>
                     </div>
-                    <Button type="primary" :loading="userLoad > 0" style="margin-left:8px">{{$L('保存')}}</Button>
+                    <Button type="primary" :loading="userLoad > 0">{{$L('保存')}}</Button>
                 </Poptip>
             </div>
         </Modal>
