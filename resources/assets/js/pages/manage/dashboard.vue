@@ -1,6 +1,6 @@
 <template>
     <div class="page-dashboard">
-        <PageTitle>{{$L('仪表盘')}}</PageTitle>
+        <PageTitle :title="$L('仪表盘')"/>
         <div class="dashboard-wrapper">
             <div class="dashboard-hello">{{$L('欢迎您，' + userInfo.nickname)}}</div>
             <div class="dashboard-desc">{{$L('以下是你当前的任务统计数据')}}</div>

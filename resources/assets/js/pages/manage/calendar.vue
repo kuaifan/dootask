@@ -1,6 +1,6 @@
 <template>
     <div class="page-calendar">
-        <PageTitle>{{$L('日历')}}</PageTitle>
+        <PageTitle :title="$L('日历')"/>
         <div class="calendar-head">
             <div class="calendar-titbox">
                 <div class="calendar-title">

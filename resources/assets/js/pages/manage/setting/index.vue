@@ -1,6 +1,6 @@
 <template>
     <div class="page-setting">
-        <PageTitle :title="$L(titleNameRoute || '设置')"/>
+        <PageTitle :title="$L(titleNameRoute)"/>
         <div class="setting-head">
             <div class="setting-titbox">
                 <div class="setting-title">
@@ -58,7 +58,7 @@ export default {
                     return true;
                 }
             })
-            return name;
+            return name || '设置';
         }
     },
     watch: {

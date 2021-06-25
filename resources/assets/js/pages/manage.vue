@@ -155,6 +155,8 @@ export default {
 
             archivedProjectShow: false,
 
+            titleInterval: null,
+
             natificationHidden: false,
             natificationReady: false,
             notificationClass: null,
@@ -165,12 +167,14 @@ export default {
         this.$store.dispatch("getUserInfo");
         this.$store.dispatch("getTaskPriority");
         //
+        this.startCountTitle();
         this.notificationInit();
         this.onVisibilityChange();
     },
 
     deactivated() {
         this.addShow = false;
+        clearInterval(this.titleInterval);
     },
 
     computed: {
@@ -321,6 +325,38 @@ export default {
         taskVisibleChange(visible) {
             if (!visible) {
                 this.$store.dispatch('openTask', 0)
+            }
+        },
+
+        startCountTitle() {
+            this.titleInterval = setInterval(() => {
+                let {title} = document;
+                let newTitle = title.replace(/^(.*?)\((\d+)\)$/g, "$1")
+                if (this.userId) {
+                    if (this.msgAllUnread > 0) {
+                        newTitle+= " (" + this.msgAllUnread + ")"
+                    }
+                }
+                if (title != newTitle) {
+                    this.setPageTile(newTitle);
+                }
+            }, 500)
+        },
+
+        setPageTile(title) {
+            document.title = title;
+            let mobile = navigator.userAgent.toLowerCase();
+            if (/iphone|ipad|ipod/.test(mobile)) {
+                let iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                let iframeCallback = function () {
+                    setTimeout(function () {
+                        iframe.removeEventListener('load', iframeCallback);
+                        document.body.removeChild(iframe)
+                    }, 0)
+                };
+                iframe.addEventListener('load', iframeCallback);
+                document.body.appendChild(iframe)
             }
         },
 

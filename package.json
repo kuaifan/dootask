@@ -1,6 +1,6 @@
 {
     "name": "DooTask",
-    "version": "0.0.2",
+    "version": "0.2.12",
     "description": "DooTask is task management system",
     "scripts": {
         "dev": "npm run development",
@@ -16,6 +16,7 @@
         "cross-env": "^7.0.2",
         "css-loader": "^5.2.6",
         "file-loader": "^6.2.0",
+        "inquirer": "^8.1.1",
         "internal-ip": "^6.2.0",
         "jquery": "^3.5.1",
         "laravel-mix": "^6.0.6",

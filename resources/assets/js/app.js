@@ -71,7 +71,7 @@ Vue.prototype.goForward = function(location, isReplace) {
     if (typeof location === 'string') location = {name: location};
     if (isReplace === true) {
         app.$router.replace(location).then(() => {});
-    }else{
+    } else {
         app.$router.push(location).then(() => {});
     }
 };

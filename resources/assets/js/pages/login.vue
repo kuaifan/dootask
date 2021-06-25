@@ -1,6 +1,6 @@
 <template>
     <div class="page-login">
-        <PageTitle>{{$L('登录页面')}}</PageTitle>
+        <PageTitle :title="$L('登录')"/>
         <div class="login-body">
             <div class="login-logo"></div>
             <div class="login-box">

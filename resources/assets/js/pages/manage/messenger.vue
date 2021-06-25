@@ -1,6 +1,6 @@
 <template>
     <div class="page-messenger">
-        <PageTitle>{{$L('消息')}}</PageTitle>
+        <PageTitle :title="$L('消息')"/>
         <div class="messenger-wrapper">
             <div class="messenger-select">
                 <div class="messenger-search">
