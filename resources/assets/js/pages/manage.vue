@@ -203,6 +203,7 @@ export default {
         '$route' (route) {
             this.curPath = route.path;
         },
+
         dialogMsgPush(data) {
             if (this.natificationHidden && this.natificationReady) {
                 const {id, dialog_id, type, msg} = data;
@@ -237,6 +238,15 @@ export default {
                         }
                     })
                 }
+            }
+        },
+
+        natificationHidden(val) {
+            clearTimeout(this.notificationTimeout);
+            if (!val) {
+                this.notificationTimeout = setTimeout(() => {
+                    this.notificationClass.close();
+                }, 6000);
             }
         }
     },

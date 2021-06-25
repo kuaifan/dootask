@@ -1,7 +1,7 @@
 {
     "name": "DooTask",
-    "version": "0.2.12",
-    "description": "DooTask is task management system",
+    "version": "0.2.13",
+    "description": "DooTask is task management system.",
     "scripts": {
         "dev": "npm run development",
         "development": "mix",
@@ -9,7 +9,9 @@
         "watch-poll": "mix watch -- --watch-options-poll=1000",
         "hot": "mix watch --hot",
         "prod": "npm run production",
-        "production": "mix --production"
+        "production": "mix --production",
+        "version": "node ./version.js",
+        "native": "node ./nativefier.js"
     },
     "devDependencies": {
         "axios": "^0.21",
