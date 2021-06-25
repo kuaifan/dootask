@@ -1087,16 +1087,16 @@ export default {
      * @param dispatch
      */
     getDialogs({state, dispatch}) {
-        return new Promise(function (resolve, reject) {
-            dispatch("call", {
-                url: 'dialog/lists',
-            }).then(result => {
-                dispatch("saveDialog", result.data.data);
-                resolve(result);
-            }).catch(e => {
-                console.error(e);
-                reject(e);
-            });
+        if (state.userId === 0) {
+            state.dialogs = [];
+            return;
+        }
+        dispatch("call", {
+            url: 'dialog/lists',
+        }).then(result => {
+            dispatch("saveDialog", result.data.data);
+        }).catch(e => {
+            console.error(e);
         });
     },
 
