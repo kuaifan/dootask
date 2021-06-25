@@ -26,7 +26,7 @@ export default {
                         return a.id - b.id;
                     });
                 })
-                return project;
+                return Object.freeze(project);
             }
         }
         return {
