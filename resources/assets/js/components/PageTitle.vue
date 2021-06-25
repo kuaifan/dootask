@@ -27,6 +27,12 @@
         activated() {
             this.updateTitle()
         },
+        watch: {
+            title() {
+                this.pagePath = this.$route.path;
+                this.updateTitle()
+            }
+        },
         methods: {
             updateTitle () {
                 let pageTitle;

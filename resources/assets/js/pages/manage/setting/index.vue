@@ -1,6 +1,6 @@
 <template>
     <div class="page-setting">
-        <PageTitle>{{$L('设置')}}</PageTitle>
+        <PageTitle :title="$L(titleNameRoute || '设置')"/>
         <div class="setting-head">
             <div class="setting-titbox">
                 <div class="setting-title">

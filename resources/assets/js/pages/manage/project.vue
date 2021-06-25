@@ -1,6 +1,6 @@
 <template>
     <div class="page-project">
-        <PageTitle>{{ $L('项目面板') }}</PageTitle>
+        <PageTitle>{{$L('项目面板')}}</PageTitle>
         <ProjectList/>
         <ProjectDialog v-if="tablePanel('chat')"/>
     </div>

@@ -1,5 +1,6 @@
 <template>
     <div class="project-list">
+        <PageTitle :title="projectData.name"/>
         <div class="project-head">
             <div class="project-titbox">
                 <div class="project-title">
