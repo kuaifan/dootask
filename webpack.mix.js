@@ -29,7 +29,7 @@ mix
     .webpackConfig({
         output: {
             chunkFilename: function ({chunk}) {
-                return `js/build/${mixBuildName(chunk.id)}.${mix.inProduction() ? '[hash:8].' : ''}js`
+                return `js/build/${mixBuildName(chunk.id)}.js`
             }
         },
     })

@@ -28,11 +28,11 @@ export default [
                 component: () => import('./pages/manage/messenger.vue'),
             },
             {
-                name: 'manage-setting',
                 path: 'setting',
                 component: () => import('./pages/manage/setting/index.vue'),
                 children: [
                     {
+                        name: 'manage-setting',
                         path: '',
                         redirect: 'personal',
                     },
@@ -47,12 +47,12 @@ export default [
                         component: () => import('./pages/manage/setting/password.vue'),
                     },
                     {
-                        name: 'manage-setting-personal',
+                        name: 'manage-setting-system',
                         path: 'system',
                         component: () => import('./pages/manage/setting/system.vue'),
                     },
                     {
-                        name: 'manage-setting-personal',
+                        name: 'manage-setting-priority',
                         path: 'priority',
                         component: () => import('./pages/manage/setting/priority.vue'),
                     },

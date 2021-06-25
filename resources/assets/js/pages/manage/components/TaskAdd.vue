@@ -18,7 +18,7 @@
                     :plugins="taskPlugins"
                     :options="taskOptions"
                     :option-full="taskOptionFull"
-                    :placeholder="$L('选填...')"></TEditor>
+                    :placeholder="$L('选填...')"/>
             </FormItem>
             <div class="advanced-option">
                 <Button :class="{advanced: advanced}" @click="advanced=!advanced">{{$L('高级选项')}}</Button>
@@ -141,8 +141,8 @@ export default {
             taskPlugins: [
                 'advlist autolink lists link image charmap print preview hr anchor pagebreak imagetools',
                 'searchreplace visualblocks visualchars code',
-                'insertdatetime media nonbreaking save table contextmenu directionality',
-                'emoticons paste textcolor colorpicker imagetools codesample',
+                'insertdatetime media nonbreaking save table directionality',
+                'emoticons paste imagetools codesample',
                 'autoresize'
             ],
             taskOptions: {

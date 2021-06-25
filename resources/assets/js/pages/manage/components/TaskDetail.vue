@@ -154,13 +154,14 @@
                 <div class="desc">
                     <TEditor
                         ref="desc"
+                        v-if="loadEditor"
                         :value="taskContent"
                         :plugins="taskPlugins"
                         :options="taskOptions"
                         :option-full="taskOptionFull"
                         :placeholder="$L('详细描述...')"
                         @on-blur="updateData('content')"
-                        inline></TEditor>
+                        inline/>
                 </div>
                 <Form class="items" label-position="left" label-width="auto" @submit.native.prevent>
                     <FormItem v-if="taskDetail.p_name">
@@ -417,6 +418,7 @@ export default {
     data() {
         return {
             taskDetail: {},
+            loadEditor: false,
 
             ownerShow: false,
             ownerData: {},
@@ -450,8 +452,8 @@ export default {
             taskPlugins: [
                 'advlist autolink lists link image charmap print preview hr anchor pagebreak imagetools',
                 'searchreplace visualblocks visualchars code',
-                'insertdatetime media nonbreaking save table contextmenu directionality',
-                'emoticons paste textcolor colorpicker imagetools codesample',
+                'insertdatetime media nonbreaking save table directionality',
+                'emoticons paste imagetools codesample',
                 'autoresize'
             ],
             taskOptions: {
@@ -676,6 +678,7 @@ export default {
         taskId (id) {
             if (id > 0) {
                 this.$nextTick(() => {
+                    this.loadEditor = true;
                     this.$refs.input.focus()
                 });
             } else {
