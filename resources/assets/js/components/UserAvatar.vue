@@ -84,7 +84,7 @@
                     return {}
                 }
                 return {
-                    'transform': 'scale(' + Math.min(1, size / 32) + ')',
+                    'transform': 'scale(' + Math.min(1.2, size / 32) + ')',
                 }
             },
 

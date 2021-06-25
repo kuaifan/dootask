@@ -20,6 +20,7 @@
                 border-radius: 50%;
                 background-color: #ff0000;
                 border: 1px solid #ffffff;
+                transform-origin: right bottom;
                 z-index: 1;
             }
             &.online {
