@@ -183,19 +183,26 @@
                                 color: #bbbbbb;
                             }
                             .file-delete {
-                                display: none;
                                 padding-left: 12px;
-                                font-size: 14px;
-                                cursor: pointer;
-                                color: #aaaaaa;
-                                transition: color 0.3s;
-                                &:hover {
-                                    color: #ff0000;
+                                .iconfont {
+                                    display: none;
+                                    font-size: 14px;
+                                    color: #aaaaaa;
+                                    transition: color 0.3s;
+                                    cursor: pointer;
+                                    &:hover {
+                                        color: #ff0000;
+                                    }
+                                    &.deling {
+                                        display: inline-block;
+                                    }
                                 }
                             }
                             &:hover {
                                 .file-delete {
-                                    display: inline-block;
+                                    .iconfont {
+                                        display: inline-block;
+                                    }
                                 }
                             }
                         }
@@ -277,7 +284,6 @@
                             .subtask-avatar {
                                 height: 26px;
                                 line-height: 26px;
-                                margin-top: -2px;
                                 cursor: pointer;
                             }
                             .ivu-icon-ios-loading {
@@ -536,6 +542,17 @@
                 opacity: .2;
                 z-index: 1;
             }
+        }
+    }
+}
+
+.task-detail-delete-file-popover {
+    max-width: 200px;
+    .buttons {
+        text-align: right;
+        margin-top: 12px;
+        .ivu-btn-small {
+            font-size: 12px
         }
     }
 }

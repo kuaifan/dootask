@@ -285,7 +285,16 @@
                                 <Loading v-else class="file-load"/>
                                 <a class="file-name" :href="file.path||'javascript:;'" target="_blank">{{file.name}}</a>
                                 <div class="file-size">{{$A.bytesToSize(file.size)}}</div>
-                                <i class="iconfont file-delete" @click="deleteFile(file.id)">&#xe6ea;</i>
+                                <EPopover v-model="file._deling" class="file-delete">
+                                    <div class="task-detail-delete-file-popover">
+                                        <p>{{$L('你确定要删除这个文件吗？')}}</p>
+                                        <div class="buttons">
+                                            <Button size="small" type="text" @click="file._deling=false">取消</Button>
+                                            <Button size="small" type="primary" @click="deleteFile(file)">确定</Button>
+                                        </div>
+                                    </div>
+                                    <i slot="reference" :class="['iconfont', file._deling ? 'deling' : '']">&#xe6ea;</i>
+                                </EPopover>
                             </li>
                         </ul>
                         <ul class="item-content">
@@ -1093,13 +1102,14 @@ export default {
             });
         },
 
-        deleteFile(file_id) {
-            this.$store.dispatch("forgetTaskFile", file_id)
+        deleteFile(file) {
+            this.$set(file, '_deling', false);
+            this.$store.dispatch("forgetTaskFile", file.id)
             //
             this.$store.dispatch("call", {
                 url: 'project/task/filedelete',
                 data: {
-                    file_id,
+                    file_id: file.id,
                 },
             }).catch(({msg}) => {
                 $A.modalError(msg);

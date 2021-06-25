@@ -32,12 +32,14 @@ Vue.component('UserAvatar', UserAvatar);
 import {
     Avatar,
     Tooltip,
+    Popover,
     Dropdown,
     DropdownMenu,
     DropdownItem,
 } from 'element-ui';
 Vue.component('EAvatar', Avatar);
 Vue.component('ETooltip', Tooltip);
+Vue.component('EPopover', Popover);
 Vue.component('EDropdown', Dropdown);
 Vue.component('EDropdownMenu', DropdownMenu);
 Vue.component('EDropdownItem', DropdownItem);
