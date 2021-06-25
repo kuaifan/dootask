@@ -379,10 +379,11 @@ export default {
 
     /**
      * 归档项目
+     * @param state
      * @param dispatch
      * @param project_id
      */
-    archivedProject({dispatch}, project_id) {
+    archivedProject({state, dispatch}, project_id) {
         return new Promise(function (resolve, reject) {
             if (state.method.runNum(project_id) === 0) {
                 reject({msg: 'Parameter error'});
@@ -406,10 +407,11 @@ export default {
 
     /**
      * 删除项目
+     * @param state
      * @param dispatch
      * @param project_id
      */
-    removeProject({dispatch}, project_id) {
+    removeProject({state, dispatch}, project_id) {
         return new Promise(function (resolve, reject) {
             if (state.method.runNum(project_id) === 0) {
                 reject({msg: 'Parameter error'});
@@ -433,10 +435,11 @@ export default {
 
     /**
      * 退出项目
+     * @param state
      * @param dispatch
      * @param project_id
      */
-    exitProject({dispatch}, project_id) {
+    exitProject({state, dispatch}, project_id) {
         return new Promise(function (resolve, reject) {
             if (state.method.runNum(project_id) === 0) {
                 reject({msg: 'Parameter error'});
@@ -552,10 +555,11 @@ export default {
 
     /**
      * 删除列表
+     * @param state
      * @param dispatch
      * @param column_id
      */
-    removeColumn({dispatch}, column_id) {
+    removeColumn({state, dispatch}, column_id) {
         return new Promise(function (resolve, reject) {
             if (state.method.runNum(column_id) === 0) {
                 reject({msg: 'Parameter error'});
@@ -634,7 +638,9 @@ export default {
             key = 'taskSubs';
         }
         if (index > -1) {
-            dispatch("getTaskOne", state[key][index].parent_id)
+            if (state[key][index].parent_id) {
+                dispatch("getTaskOne", state[key][index].parent_id)
+            }
             if (key == 'tasks') {
                 dispatch('getProjectOne', state[key][index].project_id)
             }
@@ -752,11 +758,12 @@ export default {
 
     /**
      * 删除任务
+     * @param state
      * @param dispatch
      * @param task_id
      * @returns {Promise<unknown>}
      */
-    removeTask({dispatch}, task_id) {
+    removeTask({state, dispatch}, task_id) {
         return new Promise(function (resolve, reject) {
             if (state.method.runNum(task_id) === 0) {
                 reject({msg: 'Parameter error'});
@@ -780,11 +787,12 @@ export default {
 
     /**
      * 归档任务
+     * @param state
      * @param dispatch
      * @param task_id
      * @returns {Promise<unknown>}
      */
-    archivedTask({dispatch}, task_id) {
+    archivedTask({state, dispatch}, task_id) {
         return new Promise(function (resolve, reject) {
             if (state.method.runNum(task_id) === 0) {
                 reject({msg: 'Parameter error'});
