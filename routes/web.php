@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\DialogController;
+use App\Http\Controllers\Api\FileController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\SystemController;
 use App\Http\Controllers\Api\UsersController;
@@ -35,6 +36,9 @@ Route::prefix('api')->middleware(['webapi'])->group(function () {
     // 对话
     Route::any('dialog/{method}',                   DialogController::class);
     Route::any('dialog/{method}/{action}',          DialogController::class);
+    // 文件
+    Route::any('file/{method}',                     FileController::class);
+    Route::any('file/{method}/{action}',            FileController::class);
 });
 
 /**

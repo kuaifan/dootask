@@ -1,0 +1,172 @@
+.page-file {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    .file-wrapper {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        .file-head {
+            display: flex;
+            align-items: center;
+            padding-bottom: 16px;
+            margin: 32px 32px 16px;
+            border-bottom: 1px solid #F4F4F5;
+            > h1 {
+                flex: 1;
+                color: #333333;
+                font-size: 28px;
+                font-weight: 600;
+            }
+            .file-search {
+                flex-shrink: 0;
+                margin-left: 24px;
+                cursor: pointer;
+                .iconfont {
+                    font-size: 18px;
+                }
+            }
+            .file-add {
+                flex-shrink: 0;
+                margin-left: 24px;
+                cursor: pointer;
+                .iconfont {
+                    font-size: 18px;
+                }
+            }
+        }
+        .file-no {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            margin-bottom: 5%;
+            opacity: 0.8;
+            > i {
+                font-size: 64px;
+            }
+            > p {
+                margin-top: 18px;
+                font-size: 14px;
+                font-weight: 500;
+                line-height: 1;
+            }
+        }
+        .file-list {
+            flex: 1;
+            padding: 0 20px 20px;
+            > ul {
+                > li {
+                    list-style: none;
+                    float: left;
+                    margin: 12px;
+                    width: 90px;
+                    height: 95px;
+                    text-align: center;
+                    position: relative;
+                    overflow: visible;
+                    border: 1px dashed transparent;
+                    border-radius: 5px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: space-between;
+                    .file-input {
+                        margin: 0 2px 2px;
+                        position: relative;
+                        input {
+                            margin: 0;
+                            padding: 1px 5px;
+                            font-size: 13px;
+                        }
+                        .file-load {
+                            position: absolute;
+                            top: 0;
+                            right: 6px;
+                            bottom: 0;
+                            display: flex;
+                            .common-loading {
+                                width: 10px;
+                                height: 10px;
+                            }
+                        }
+                    }
+                    .file-name {
+                        display: block;
+                        width: 100%;
+                        height: 20px;
+                        line-height: 20px;
+                        color: #666;
+                        font-size: 12px;
+                        text-align: center;
+                        margin-top: 5px;
+                        margin-bottom: 3px;
+                        padding: 0 6px;
+                        overflow: hidden;
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                    }
+                    .file-icon {
+                        display: inline-block;
+                        width: 38px;
+                        height: 38px;
+                        background: no-repeat center center;
+                        background-size: contain;
+                        margin-top: 14px;
+                    }
+                    &.folder .file-icon {
+                        background-image: url("../images/file/folder.svg");
+                    }
+                    &.document .file-icon {
+                        background-image: url("../images/file/document.svg");
+                    }
+                    &.mind .file-icon {
+                        background-image: url("../images/file/mind.svg");
+                    }
+                    &.sheet .file-icon {
+                        background-image: url("../images/file/sheet.svg");
+                    }
+                    &.flow .file-icon {
+                        background-image: url("../images/file/flow.svg");
+                    }
+                    &:hover {
+                        background-color: #f4f5f7;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.page-file-dropdown-menu {
+    .file-item {
+        display: flex;
+        align-items: center;
+        position: relative;
+        &:before {
+            content: "";
+            width: 14px;
+            height: 14px;
+            background: no-repeat center center;
+            background-size: contain;
+            margin-right: 6px;
+        }
+        &.folder:before {
+            background-image: url("../images/file/folder.svg");
+        }
+        &.document:before {
+            background-image: url("../images/file/document.svg");
+        }
+        &.mind:before {
+            background-image: url("../images/file/mind.svg");
+        }
+        &.sheet:before {
+            background-image: url("../images/file/sheet.svg");
+        }
+        &.flow:before {
+            background-image: url("../images/file/flow.svg");
+        }
+    }
+}

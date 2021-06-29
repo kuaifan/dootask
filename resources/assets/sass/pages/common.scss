@@ -269,6 +269,20 @@ body {
     display: none !important;
 }
 
+.clearfix {
+    *zoom: 1;
+
+    &:after,
+    &:before {
+        display: table;
+        content: ""
+    }
+    &:after {
+        clear: both
+    }
+}
+
+
 .page-box {
     text-align: center;
     padding: 20px 0;

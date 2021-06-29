@@ -63,6 +63,11 @@ export default [
                 path: 'project/:id',
                 component: () => import('./pages/manage/project.vue'),
             },
+            {
+                name: 'manage-file',
+                path: 'file',
+                component: () => import('./pages/manage/file.vue'),
+            },
         ]
     },
     {
