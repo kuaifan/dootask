@@ -485,6 +485,16 @@ class ProjectTask extends AbstractModel
                     $this->addLog("修改{任务}背景色：{$this->color} => {$data['color']}");
                     $this->color = $data['color'];
                 }
+                // 列表
+                if (Arr::exists($data, 'column_id')) {
+                    $oldName = ProjectColumn::whereProjectId($this->project_id)->whereId($this->column_id)->value('name');
+                    $column = ProjectColumn::whereProjectId($this->project_id)->whereId($data['column_id'])->first();
+                    if (empty($column)) {
+                        throw new ApiException('请选择正确的列表');
+                    }
+                    $this->addLog("修改{任务}列表：{$oldName} => {$column->name}");
+                    $this->column_id = $column->id;
+                }
                 // 内容
                 if (Arr::exists($data, 'content')) {
                     ProjectTaskContent::updateInsert([

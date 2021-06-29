@@ -238,6 +238,12 @@ body {
                 margin: 0;
                 padding: 0;
             }
+            .ivu-progress-text {
+                flex-shrink: 0;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
         }
     }
     .ivu-drawer-content {

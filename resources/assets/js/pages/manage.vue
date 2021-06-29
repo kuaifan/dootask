@@ -126,8 +126,8 @@
         <Drawer
             v-model="allProjectShow"
             :width="900"
-            :title="$L('项目管理')">
-
+            :title="$L('所有项目')">
+            <ProjectManagement v-if="allProjectShow"/>
         </Drawer>
 
         <!--查看归档项目-->
@@ -146,9 +146,10 @@ import TaskDetail from "./manage/components/TaskDetail";
 import ProjectArchived from "./manage/components/ProjectArchived";
 import notificationKoro from "notification-koro1";
 import TeamManagement from "./manage/components/TeamManagement";
+import ProjectManagement from "./manage/components/ProjectManagement";
 
 export default {
-    components: {TeamManagement, ProjectArchived, TaskDetail},
+    components: {ProjectManagement, TeamManagement, ProjectArchived, TaskDetail},
     data() {
         return {
             loadIng: 0,
@@ -224,7 +225,7 @@ export default {
                     {path: 'system', name: '系统设置', divided: true},
                     {path: 'priority', name: '任务等级'},
                     {path: 'allUser', name: '团队管理', divided: true},
-                    {path: 'allProject', name: '项目管理'},
+                    {path: 'allProject', name: '所有项目'},
                     {path: 'archivedProject', name: '已归档的项目'}
                 ]
             } else {

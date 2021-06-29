@@ -82,8 +82,6 @@ export default {
                 {
                     title: this.$L('ID'),
                     key: 'userid',
-                    minWidth: 60,
-                    maxWidth: 100,
                 },
                 {
                     title: this.$L('邮箱'),

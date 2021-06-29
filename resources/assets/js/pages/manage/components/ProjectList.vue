@@ -444,6 +444,8 @@ export default {
             'userId',
             'dialogs',
 
+            'taskPriority',
+
             'projectId',
             'projectLoad',
             'tasks',
@@ -763,6 +765,34 @@ export default {
         },
 
         dropTask(task, command) {
+            if ($A.isJson(command)) {
+                if (command.name) {
+                    // 修改背景色
+                    this.updateTask(task, {
+                        color: command.color
+                    })
+                }
+                return;
+            }
+            if ($A.leftExists(command, 'column::')) {
+                // 修改列表
+                this.updateTask(task, {
+                    column_id: $A.leftDelete(command, 'column::')
+                })
+                return;
+            }
+            if ($A.leftExists(command, 'priority::')) {
+                // 修改优先级
+                let data = this.taskPriority[parseInt($A.leftDelete(command, 'priority::'))];
+                if (data) {
+                    this.updateTask(task, {
+                        p_level: data.priority,
+                        p_name: data.name,
+                        p_color: data.color,
+                    })
+                }
+                return;
+            }
             switch (command) {
                 case 'complete':
                     if (task.complete_at) return;
@@ -770,22 +800,17 @@ export default {
                         complete_at: $A.formatDate("Y-m-d H:i:s")
                     })
                     break;
+
                 case 'uncomplete':
                     if (!task.complete_at) return;
                     this.updateTask(task, {
                         complete_at: false
                     })
                     break;
+
                 case 'archived':
                 case 'remove':
                     this.archivedOrRemoveTask(task, command);
-                    break;
-                default:
-                    if (command.name) {
-                        this.updateTask(task, {
-                            color: command.color
-                        })
-                    }
                     break;
             }
         },

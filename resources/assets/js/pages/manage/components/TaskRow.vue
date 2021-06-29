@@ -70,13 +70,41 @@
                     </div>
                 </Col>
                 <Col span="3" class="row-column">
-                    <div v-if="item.parent_id === 0" class="task-column">{{columnName(item.column_id)}}</div>
+                    <EDropdown
+                        v-if="item.parent_id === 0"
+                        trigger="click"
+                        size="small"
+                        placement="bottom"
+                        @command="dropTask(item, $event)">
+                        <div class="task-column">{{columnName(item.column_id)}}</div>
+                        <EDropdownMenu slot="dropdown">
+                            <EDropdownItem v-for="column in columnList(item.project_id)" :key="column.id" :command="'column::' + column.id">
+                                {{column.name}}
+                            </EDropdownItem>
+                        </EDropdownMenu>
+                    </EDropdown>
                 </Col>
                 <Col span="3" class="row-priority">
-                    <TaskPriority v-if="item.p_name && item.parent_id === 0" :backgroundColor="item.p_color">{{item.p_name}}</TaskPriority>
+                    <EDropdown
+                        v-if="item.p_name && item.parent_id === 0"
+                        trigger="click"
+                        size="small"
+                        placement="bottom"
+                        @command="dropTask(item, $event)">
+                        <TaskPriority :backgroundColor="item.p_color">{{item.p_name}}</TaskPriority>
+                        <EDropdownMenu slot="dropdown">
+                            <EDropdownItem v-for="(item, key) in taskPriority" :key="key" :command="'priority::' + key">
+                                <i
+                                    class="iconfont"
+                                    :style="{color:item.color}"
+                                    v-html="item.p_name == item.name ? '&#xe61d;' : '&#xe61c;'"></i>
+                                {{item.name}}
+                            </EDropdownItem>
+                        </EDropdownMenu>
+                    </EDropdown>
                 </Col>
                 <Col span="3" class="row-user">
-                    <ul>
+                    <ul @click="openTask(item)">
                         <li v-for="(user, keyu) in ownerUser(item.task_user)" :key="keyu" v-if="keyu < 3">
                             <UserAvatar :userid="user.userid" size="32" :borderWitdh="2" :borderColor="item.color"/>
                         </li>
@@ -91,7 +119,7 @@
                         :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
                         :open-delay="600"
                         :content="item.end_at">
-                        <div>{{expiresFormat(item.end_at)}}</div>
+                        <div @click="openTask(item)">{{expiresFormat(item.end_at)}}</div>
                     </ETooltip>
                 </Col>
             </Row>
@@ -155,7 +183,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['taskSubs', 'columns']),
+        ...mapState(['taskSubs', 'taskPriority', 'columns']),
 
         subTask() {
             return function(task_id) {
@@ -209,6 +237,10 @@ export default {
                 this.$set(this.taskLoad, task.id, false);
                 $A.modalError(msg);
             });
+        },
+
+        columnList(id) {
+            return this.columns.filter(({project_id}) => project_id == id);
         },
 
         openTask(task) {

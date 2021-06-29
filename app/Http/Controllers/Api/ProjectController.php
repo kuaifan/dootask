@@ -60,24 +60,42 @@ class ProjectController extends AbstractController
     /**
      * 获取项目列表
      *
+     * @apiParam {String} [all]              是否查看所有项目（限制管理员）
      * @apiParam {String} [archived]         归档状态
+     * - all：全部
      * - no：未归档（默认）
      * - yes：已归档
+     * @apiParam {Object} [keys]            搜索条件
+     * - keys.name              项目名称
      *
      * @apiParam {Number} [page]        当前页，默认:1
      * @apiParam {Number} [pagesize]    每页显示数量，默认:100，最大:200
      */
     public function lists()
     {
-        User::auth();
+        $user = User::auth();
         //
+        $all = Request::input('all');
         $archived = Request::input('archived', 'no');
         //
-        $builder = Project::select(Project::projectSelect)->authData();
+        if ($all) {
+            $user->identity('admin');
+            $builder = Project::select('projects.*');
+        } else {
+            $builder = Project::select(Project::projectSelect)->authData();
+        }
+        //
         if ($archived == 'yes') {
-            $builder->whereNotNull('archived_at');
+            $builder->whereNotNull('projects.archived_at');
         } elseif ($archived == 'no') {
-            $builder->whereNull('archived_at');
+            $builder->whereNull('projects.archived_at');
+        }
+        //
+        $keys = Request::input('keys');
+        if (is_array($keys)) {
+            if ($keys['name']) {
+                $builder->where('projects.name', 'like', '%' . $keys['name'] . '%');
+            }
         }
         $list = $builder->orderByDesc('projects.id')->paginate(Base::getPaginate(200, 100));
         //

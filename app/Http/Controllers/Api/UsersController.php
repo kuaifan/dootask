@@ -80,6 +80,10 @@ class UsersController extends AbstractController
             if ($user->password != Base::md52($password, $user->encrypt)) {
                 return $retError('账号或密码错误');
             }
+            //
+            if (in_array('disable', $user->identity)) {
+                return $retError('帐号已停用...');
+            }
             Cache::forget("code::" . $email);
         }
         //
