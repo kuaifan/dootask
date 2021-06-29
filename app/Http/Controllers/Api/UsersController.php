@@ -133,6 +133,24 @@ class UsersController extends AbstractController
     }
 
     /**
+     * @api {get} api/users/login/codejson          07. 验证码json
+     *
+     * @apiDescription 用于判断是否需要登录验证码
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName login__codejson
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function login__codejson()
+    {
+        $captcha = Captcha::create('default', true);
+        return Base::retSuccess('请求成功', $captcha);
+    }
+
+    /**
      * @api {get} api/users/info          04. 获取我的信息
      *
      * @apiDescription 需要token身份
@@ -280,24 +298,6 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/login/codejson          07. 验证码json
-     *
-     * @apiDescription 用于判断是否需要登录验证码
-     * @apiVersion 1.0.0
-     * @apiGroup users
-     * @apiName login__codejson
-     *
-     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据
-     */
-    public function login__codejson()
-    {
-        $captcha = Captcha::create('default', true);
-        return Base::retSuccess('请求成功', $captcha);
-    }
-
-    /**
      * @api {get} api/users/search          08. 搜索会员列表
      *
      * @apiDescription 搜索会员列表
@@ -306,9 +306,9 @@ class UsersController extends AbstractController
      * @apiName searchinfo
      *
      * @apiParam {Object} keys          搜索条件
-     * - keys.key                  // 昵称、邮箱、用户名
-     * - keys.project_id           // 在指定项目ID
-     * - keys.no_project_id        // 不在指定项目ID
+     * - keys.key               昵称、邮箱
+     * - keys.project_id        在指定项目ID
+     * - keys.no_project_id     不在指定项目ID
      * @apiParam {Number} [take]        获取数量，10-100
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
@@ -375,5 +375,141 @@ class UsersController extends AbstractController
             }
         }
         return Base::retSuccess('success', $retArray);
+    }
+
+    /**
+     * 会员列表（限管理员）
+     *
+     * @apiParam {Object} [keys]        搜索条件
+     * - keys.email             邮箱
+     * - keys.nickname          昵称
+     * - keys.profession        职位
+     * @apiParam {Number} [page]        当前页，默认:1
+     * @apiParam {Number} [pagesize]    每页显示数量，默认:20，最大:50
+     */
+    public function lists()
+    {
+        User::auth('admin');
+        //
+        $builder = User::select(['*', 'nickname as nickname_original']);
+        //
+        $keys = Request::input('keys');
+        if (is_array($keys)) {
+            if ($keys['email']) {
+                $builder->where('email', 'like', '%' . $keys['email'] . '%');
+            }
+            if ($keys['nickname']) {
+                $builder->where('nickname', 'like', '%' . $keys['nickname'] . '%');
+            }
+            if ($keys['profession']) {
+                $builder->where('profession', 'like', '%' . $keys['profession'] . '%');
+            }
+            if ($keys['identity']) {
+                if (Base::leftExists($keys['identity'], "no")) {
+                    $builder->where('identity', 'not like', '%,' . Base::leftDelete($keys['identity'], 'no') . ',%');
+                } else {
+                    $builder->where('identity', 'like', '%,' . $keys['identity'] . ',%');
+                }
+            }
+        }
+        $list = $builder->orderByDesc('userid')->paginate(Base::getPaginate(50, 20));
+        //
+        return Base::retSuccess('success', $list);
+    }
+
+    /**
+     * 操作会员（限管理员）
+     *
+     * @apiParam {Number} userid          会员ID
+     * @apiParam {String} [type]          操作
+     * - setadmin             设为管理员
+     * - clearadmin           取消管理员
+     * - setdisable           设为禁用
+     * - cleardisable         取消禁用
+     * - delete               删除会员
+     * @apiParam {String} [password]      新的密码
+     * @apiParam {String} [nickname]      昵称
+     * @apiParam {String} [profession]    职位
+     */
+    public function operation()
+    {
+        User::auth('admin');
+        //
+        $data = Request::all();
+        $userid = intval($data['userid']);
+        $type = $data['type'];
+        //
+        $userInfo = User::find($userid);
+        if (empty($userInfo)) {
+            return Base::retError('会员不存在或已被删除');
+        }
+        //
+        $upArray = [];
+        switch ($type) {
+            case 'setadmin':
+                $upArray['identity'] = array_diff($userInfo->identity, ['admin']);
+                $upArray['identity'][] = 'admin';
+                break;
+
+            case 'clearadmin':
+                $upArray['identity'] = array_diff($userInfo->identity, ['admin']);
+                break;
+
+            case 'setdisable':
+                $upArray['identity'] = array_diff($userInfo->identity, ['disable']);
+                $upArray['identity'][] = 'disable';
+                break;
+
+            case 'cleardisable':
+                $upArray['identity'] = array_diff($userInfo->identity, ['disable']);
+                break;
+
+            case 'delete':
+                $userInfo->delete();
+                break;
+        }
+        if (isset($upArray['identity'])) {
+            $upArray['identity'] = "," . implode(",", $upArray['identity']) . ",";
+        }
+        // 密码
+        if (Arr::exists($data, 'password')) {
+            $password = trim($data['password']);
+            if (strlen($password) < 6) {
+                return Base::retError('密码设置不能小于6位数');
+            } elseif (strlen($password) > 32) {
+                return Base::retError('密码最多只能设置32位数');
+            }
+            $upArray['encrypt'] = Base::generatePassword(6);
+            $upArray['password'] = Base::md52($password, $upArray['encrypt']);
+            $upArray['changepass'] = 1;
+        }
+        // 昵称
+        if (Arr::exists($data, 'nickname')) {
+            $nickname = trim($data['nickname']);
+            if (mb_strlen($nickname) < 2) {
+                return Base::retError('昵称不可以少于2个字');
+            } elseif (mb_strlen($nickname) > 20) {
+                return Base::retError('昵称最多只能设置20个字');
+            } else {
+                $upArray['nickname'] = $nickname;
+            }
+        }
+        // 职位/职称
+        if (Arr::exists($data, 'profession')) {
+            $profession = trim($data['profession']);
+            if (mb_strlen($profession) < 2) {
+                return Base::retError('职位/职称不可以少于2个字');
+            } elseif (mb_strlen($profession) > 20) {
+                return Base::retError('职位/职称最多只能设置20个字');
+            } else {
+                $upArray['profession'] = $profession;
+            }
+        }
+        if ($upArray) {
+            $userInfo->updateInstance($upArray);
+            $userInfo->save();
+        }
+        //
+        return Base::retSuccess('修改成功', $userInfo);
     }
 }

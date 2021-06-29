@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class UsersTableSeeder extends Seeder
@@ -14,12 +15,14 @@ class UsersTableSeeder extends Seeder
      */
     public function run()
     {
-        
 
-        \DB::table('users')->delete();
-        
+
+        if (User::count() > 0) {
+            return;
+        }
+
         \DB::table('users')->insert(array (
-            0 => 
+            0 =>
             array (
                 'userid' => 1,
                 'identity' => ',admin,',
@@ -41,7 +44,7 @@ class UsersTableSeeder extends Seeder
                 'created_at' => '2021-06-02 11:01:14',
                 'updated_at' => '2021-06-25 18:50:28',
             ),
-            1 => 
+            1 =>
             array (
                 'userid' => 2,
                 'identity' => '',
@@ -64,7 +67,7 @@ class UsersTableSeeder extends Seeder
                 'updated_at' => '2021-06-25 18:51:06',
             ),
         ));
-        
-        
+
+
     }
 }

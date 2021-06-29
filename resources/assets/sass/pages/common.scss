@@ -268,6 +268,34 @@ body {
     padding: 20px 0;
 }
 
+.search-box {
+    margin-bottom: 24px;
+    > ul {
+        display: flex;
+        align-items: flex-end;
+        > li {
+            flex: 1;
+            flex-shrink: 0;
+            margin-right: 12px;
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            &:last-child {
+                margin-right: 0;
+            }
+            .search-label {
+                font-weight: 600;
+            }
+            .search-content {
+                margin-top: 6px;
+            }
+            &.search-button {
+                flex: none;
+            }
+        }
+    }
+}
+
 .icon-loading {
     animation: icon-loading-load 0.6s infinite linear;
 }

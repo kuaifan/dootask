@@ -18,7 +18,7 @@ class CreateUsersTable extends Migration
             $table->string('identity')->nullable()->default('')->comment('身份');
             $table->string('az', 10)->nullable()->default('')->comment('A-Z');
             $table->string('email', 100)->nullable()->default('')->unique()->comment('邮箱');
-            $table->string('nickname')->nullable()->comment('昵称');
+            $table->string('nickname')->nullable()->default('')->comment('昵称');
             $table->string('profession')->nullable()->default('')->comment('职位/职称');
             $table->string('userimg')->nullable()->default('')->comment('头像');
             $table->string('encrypt', 50)->nullable()->default('');

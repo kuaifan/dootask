@@ -20,6 +20,7 @@ import Loading from './components/Loading.vue'
 import AutoTip from './components/AutoTip.vue'
 import TagInput from './components/TagInput.vue'
 import TableAction from './components/TableAction.vue'
+import QuickEdit from './components/QuickEdit.vue'
 import UserAvatar from './components/UserAvatar.vue'
 
 Vue.component('PageTitle', PageTitle);
@@ -27,6 +28,7 @@ Vue.component('Loading', Loading);
 Vue.component('AutoTip', AutoTip);
 Vue.component('TagInput', TagInput)
 Vue.component('TableAction', TableAction);
+Vue.component('QuickEdit', QuickEdit);
 Vue.component('UserAvatar', UserAvatar);
 
 import {

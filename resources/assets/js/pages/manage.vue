@@ -114,6 +114,22 @@
             <TaskDetail :open-task="taskData"/>
         </Modal>
 
+        <!--查看所有团队-->
+        <Drawer
+            v-model="allUserShow"
+            :width="900"
+            :title="$L('团队管理')">
+            <TeamManagement v-if="allUserShow"/>
+        </Drawer>
+
+        <!--查看所有项目-->
+        <Drawer
+            v-model="allProjectShow"
+            :width="900"
+            :title="$L('项目管理')">
+
+        </Drawer>
+
         <!--查看归档项目-->
         <Drawer
             v-model="archivedProjectShow"
@@ -129,9 +145,10 @@ import { mapState, mapGetters } from 'vuex'
 import TaskDetail from "./manage/components/TaskDetail";
 import ProjectArchived from "./manage/components/ProjectArchived";
 import notificationKoro from "notification-koro1";
+import TeamManagement from "./manage/components/TeamManagement";
 
 export default {
-    components: {ProjectArchived, TaskDetail},
+    components: {TeamManagement, ProjectArchived, TaskDetail},
     data() {
         return {
             loadIng: 0,
@@ -150,6 +167,8 @@ export default {
             openMenu: {},
             visibleMenu: false,
 
+            allUserShow: false,
+            allProjectShow: false,
             archivedProjectShow: false,
 
             titleInterval: null,
@@ -201,16 +220,18 @@ export default {
                 return [
                     {path: 'personal', name: '个人设置'},
                     {path: 'password', name: '密码设置'},
+                    {path: 'clearCache', name: '清除缓存'},
                     {path: 'system', name: '系统设置', divided: true},
                     {path: 'priority', name: '任务等级'},
-                    {path: 'project', name: '项目管理'},
-                    {path: 'user', name: '会员管理', divided: true},
+                    {path: 'allUser', name: '团队管理', divided: true},
+                    {path: 'allProject', name: '项目管理'},
                     {path: 'archivedProject', name: '已归档的项目'}
                 ]
             } else {
                 return [
                     {path: 'personal', name: '个人设置'},
                     {path: 'password', name: '密码设置'},
+                    {path: 'clearCache', name: '清除缓存'},
                     {path: 'archivedProject', name: '已归档的项目', divided: true}
                 ]
             }
@@ -220,6 +241,11 @@ export default {
     watch: {
         '$route' (route) {
             this.curPath = route.path;
+            this.chackPass();
+        },
+
+        userInfo() {
+            this.chackPass();
         },
 
         dialogMsgPush(data) {
@@ -289,6 +315,12 @@ export default {
             };
         },
 
+        chackPass() {
+            if (this.userInfo.changepass === 1) {
+                this.goForward({path: '/manage/setting/password'});
+            }
+        },
+
         toggleRoute(path) {
             this.goForward({path: '/manage/' + path});
         },
@@ -299,12 +331,19 @@ export default {
 
         settingRoute(path) {
             switch (path) {
-                case 'project':
+                case 'allUser':
+                    this.allUserShow = true;
                     return;
-                case 'user':
+                case 'allProject':
+                    this.allProjectShow = true;
                     return;
                 case 'archivedProject':
                     this.archivedProjectShow = true;
+                    return;
+                case 'clearCache':
+                    this.$store.state.method.clearLocal();
+                    this.$store.dispatch("saveUserInfo", this.userInfo);
+                    $A.messageSuccess("清除成功");
                     return;
                 case 'signout':
                     $A.modalConfirm({

@@ -1,5 +1,6 @@
 <template>
     <div class="setting-item submit">
+        <Alert v-if="userInfo.changepass" type="warning" showIcon style="margin-bottom:32px">{{$L('请先修改登录密码！')}}</Alert>
         <Form ref="formDatum" :model="formDatum" :rules="ruleDatum" label-width="auto" @submit.native.prevent>
             <FormItem :label="$L('旧密码')" prop="oldpass">
                 <Input v-model="formDatum.oldpass" type="password"></Input>
@@ -19,6 +20,8 @@
 </template>
 
 <script>
+import {mapState} from "vuex";
+
 export default {
     data() {
         return {
@@ -32,6 +35,9 @@ export default {
 
             ruleDatum: { },
         }
+    },
+    computed: {
+        ...mapState(['userInfo']),
     },
     methods: {
         initLanguage() {

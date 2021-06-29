@@ -267,9 +267,10 @@ class User extends AbstractModel
 
     /**
      * 用户身份认证（获取用户信息）
+     * @param null $identity 判断身份
      * @return self
      */
-    public static function auth()
+    public static function auth($identity = null)
     {
         $user = self::authInfo();
         if (!$user) {
@@ -279,6 +280,12 @@ class User extends AbstractModel
             } else {
                 throw new ApiException('请登录后继续...', [], -1);
             }
+        }
+        if (in_array('disable', $user->identity)) {
+            throw new ApiException('帐号已停用...', [], -1);
+        }
+        if ($identity) {
+            $user->identity($identity);
         }
         return $user;
     }
