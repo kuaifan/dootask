@@ -300,6 +300,14 @@ body {
             }
         }
     }
+    &.auto {
+        display: flex;
+        > ul {
+            > li:not(.search-button) {
+                min-width: 180px;
+            }
+        }
+    }
 }
 
 .icon-loading {

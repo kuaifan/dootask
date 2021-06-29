@@ -644,6 +644,13 @@
                             white-space: nowrap;
                         }
                     }
+                    &.row-priority {
+                        .el-dropdown {
+                            display: flex;
+                            align-items: center;
+                            overflow: hidden;
+                        }
+                    }
                     &.row-user {
                         padding: 8px;
                         > ul {

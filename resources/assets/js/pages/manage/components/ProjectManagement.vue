@@ -1,6 +1,6 @@
 <template>
     <div class="project-management">
-        <div class="search-box" style="display:inline-block">
+        <div class="search-box auto">
             <ul>
                 <li>
                     <div class="search-label">
@@ -8,6 +8,18 @@
                     </div>
                     <div class="search-content">
                         <Input v-model="keys.name" clearable/>
+                    </div>
+                </li>
+                <li>
+                    <div class="search-label">
+                        {{$L("项目状态")}}
+                    </div>
+                    <div class="search-content">
+                        <Select v-model="keys.status">
+                            <Option value="">{{$L('全部')}}</Option>
+                            <Option value="unarchived">{{$L('未归档')}}</Option>
+                            <Option value="archived">{{$L('已归档')}}</Option>
+                        </Select>
                     </div>
                 </li>
                 <li class="search-button">
@@ -125,13 +137,19 @@ export default {
             ]
         },
         getLists() {
+            let archived = 'all';
+            if (this.keys.status == 'archived') {
+                archived = 'yes';
+            } else if (this.keys.status == 'unarchived') {
+                archived = 'no';
+            }
             this.loadIng++;
             this.$store.dispatch("call", {
                 url: 'project/lists',
                 data: {
                     keys: this.keys,
                     all: 1,
-                    archived: 'all',
+                    archived,
                     page: Math.max(this.page, 1),
                     pagesize: Math.max($A.runNum(this.pageSize), 20),
                 },

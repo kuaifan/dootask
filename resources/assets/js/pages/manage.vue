@@ -133,7 +133,7 @@
         <!--查看归档项目-->
         <Drawer
             v-model="archivedProjectShow"
-            :width="680"
+            :width="900"
             :title="$L('归档的项目')">
             <ProjectArchived v-if="archivedProjectShow"/>
         </Drawer>

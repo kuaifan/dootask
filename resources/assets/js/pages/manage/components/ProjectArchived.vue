@@ -1,5 +1,20 @@
 <template>
     <div class="project-archived">
+        <div class="search-box auto">
+            <ul>
+                <li>
+                    <div class="search-label">
+                        {{$L("项目名")}}
+                    </div>
+                    <div class="search-content">
+                        <Input v-model="keys.name" clearable/>
+                    </div>
+                </li>
+                <li class="search-button">
+                    <Button :loading="loadIng > 0" type="primary" icon="ios-search" @click="getLists">{{$L('搜索')}}</Button>
+                </li>
+            </ul>
+        </div>
         <Table :columns="columns" :data="list" :no-data-text="$L(noText)"></Table>
         <Page
             class="page-box"
@@ -19,6 +34,8 @@ export default {
         return {
             loadIng: 0,
 
+            keys: {},
+
             columns: [],
             list: [],
 
@@ -35,6 +52,10 @@ export default {
         initLanguage() {
             this.columns = [
                 {
+                    title: this.$L('ID'),
+                    key: 'id',
+                },
+                {
                     title: this.$L('项目名称'),
                     key: 'name',
                     minWidth: 200,
@@ -50,7 +71,7 @@ export default {
                 {
                     title: this.$L('归档会员'),
                     key: 'archived_userid',
-                    minWidth: 100,
+                    minWidth: 80,
                     render: (h, {row}) => {
                         return h('UserAvatar', {
                             props: {
@@ -59,6 +80,19 @@ export default {
                                 showName: true
                             }
                         });
+                    }
+                },
+                {
+                    title: this.$L('负责人'),
+                    minWidth: 80,
+                    render: (h, {row}) => {
+                        return h('UserAvatar', {
+                            props: {
+                                showName: true,
+                                size: 22,
+                                userid: row.owner_userid,
+                            }
+                        })
                     }
                 },
                 {
@@ -83,7 +117,17 @@ export default {
                                     this.recovery(params.row);
                                 }
                             },
-                        }, this.$L('还原'));
+                        }, [
+                            h('Button', {
+                                props: {
+                                    type: 'primary',
+                                    size: 'small'
+                                },
+                                style: {
+                                    fontSize: '12px',
+                                },
+                            }, this.$L('还原')),
+                        ]);
                         return h('TableAction', {
                             props: {
                                 column: params.column
