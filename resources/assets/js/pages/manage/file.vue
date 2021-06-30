@@ -27,7 +27,7 @@
                 <ul>
                     <li @click="[pid=0,searchKey='']">{{$L('全部文件')}}</li>
                     <li v-if="searchKey">{{$L('搜索')}} "{{searchKey}}"</li>
-                    <li v-else v-for="item in navigator" @click="pid=item.id">{{item.name}}</li>
+                    <li v-else v-for="item in navigator" @click="pid=item.id"><span :title="item.name">{{item.name}}</span></li>
                 </ul>
                 <Button v-if="shearFile && shearFile.pid != pid" size="small" type="primary" @click="shearTo">
                     <div class="file-shear">
@@ -318,6 +318,10 @@ export default {
                 } else {
                     this.$set(item, '_edit', false);
                 }
+                return;
+            }
+            if (item.newname == item.name) {
+                this.$set(item, '_edit', false);
                 return;
             }
             if (item._load) {

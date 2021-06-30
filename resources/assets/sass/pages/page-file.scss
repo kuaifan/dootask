@@ -69,6 +69,7 @@
             > ul {
                 display: flex;
                 align-items: center;
+                overflow: auto;
                 > li {
                     display: flex;
                     list-style: none;
@@ -90,6 +91,13 @@
                         font-size: 16px;
                         font-weight: 500;
                         font-family: system-ui, sans-serif;
+                    }
+                    > span {
+                        display: inline-block;
+                        max-width: 180px;
+                        overflow: hidden;
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
                     }
                 }
             }
@@ -121,8 +129,8 @@
                     list-style: none;
                     float: left;
                     margin: 12px;
-                    width: 90px;
-                    height: 95px;
+                    width: 94px;
+                    height: 100px;
                     text-align: center;
                     position: relative;
                     overflow: visible;
@@ -186,8 +194,8 @@
                     }
                     .file-icon {
                         display: inline-block;
-                        width: 46px;
-                        height: 46px;
+                        width: 52px;
+                        height: 52px;
                         background-repeat: no-repeat;
                         background-size: contain;
                         margin-top: 12px;
