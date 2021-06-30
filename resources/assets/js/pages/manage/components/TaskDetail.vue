@@ -290,8 +290,8 @@
                                     <div class="task-detail-delete-file-popover">
                                         <p>{{$L('你确定要删除这个文件吗？')}}</p>
                                         <div class="buttons">
-                                            <Button size="small" type="text" @click="file._deling=false">取消</Button>
-                                            <Button size="small" type="primary" @click="deleteFile(file)">确定</Button>
+                                            <Button size="small" type="text" @click="file._deling=false">{{$L('取消')}}</Button>
+                                            <Button size="small" type="primary" @click="deleteFile(file)">{{$L('确定')}}</Button>
                                         </div>
                                     </div>
                                     <i slot="reference" :class="['iconfont', file._deling ? 'deling' : '']">&#xe6ea;</i>

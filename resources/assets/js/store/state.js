@@ -271,6 +271,7 @@ state.dialogOpenId = 0;
 
 // 文件
 state.files = [];
+state.fileContent = {};
 
 // 项目任务
 state.projectId = 0;

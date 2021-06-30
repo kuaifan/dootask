@@ -1,8 +1,20 @@
 <template>
     <div class="file-content">
         <div class="edit-header">
-            <div class="header-title">{{file.name}}</div>
-            <div v-if="file.type=='document'" class="header-hint">
+            <div class="header-title">
+                <EPopover v-if="!equalContent" v-model="unsaveTip" class="file-unsave-tip">
+                    <div class="task-detail-delete-file-popover">
+                        <p>{{$L('未保存当前修改内容？')}}</p>
+                        <div class="buttons">
+                            <Button size="small" type="text" @click="unsaveGive">{{$L('放弃')}}</Button>
+                            <Button size="small" type="primary" @click="unsaveSave">{{$L('保存')}}</Button>
+                        </div>
+                    </div>
+                    <span slot="reference">[{{$L('未保存')}}*]</span>
+                </EPopover>
+                {{file.name}}
+            </div>
+            <div v-if="file.type=='document' && contentDetail" class="header-hint">
                 <ButtonGroup size="small" shape="circle">
                     <Button :type="`${contentDetail.type!='md'?'primary':'default'}`" @click="$set(contentDetail, 'type', 'text')">{{$L('文本编辑器')}}</Button>
                     <Button :type="`${contentDetail.type=='md'?'primary':'default'}`" @click="$set(contentDetail, 'type', 'md')">{{$L('MD编辑器')}}</Button>
@@ -29,7 +41,7 @@
             </Dropdown>
             <Button v-if="!file.only_view" :disabled="equalContent" :loading="loadIng > 0" class="header-button" size="small" type="primary" @click="handleClick('save')">{{$L('保存')}}</Button>
         </div>
-        <div v-if="contentId > 0" class="content-body">
+        <div v-if="contentDetail" class="content-body">
             <template v-if="file.type=='document'">
                 <MDEditor v-if="contentDetail.type=='md'" v-model="contentDetail.content" height="100%"/>
                 <TEditor v-else v-model="contentDetail.content" height="100%" @editorSave="handleClick('saveBefore')"/>
@@ -44,6 +56,7 @@
 <script>
 import Vue from 'vue'
 import Minder from '../../../components/minder'
+import {mapState} from "vuex";
 Vue.use(Minder)
 
 const MDEditor = () => import('../../../components/MDEditor/index');
@@ -68,10 +81,16 @@ export default {
             loadIng: 0,
 
             fileId: 0,
-            contentId: 0,
-            contentDetail: {},
+
+            unsaveTip: false,
+
+            contentDetail: null,
             contentBak: {},
         }
+    },
+
+    destroyed() {
+        this.fileContent[this.fileId] = this.contentDetail;
     },
 
     watch: {
@@ -88,6 +107,8 @@ export default {
     },
 
     computed: {
+        ...mapState(['fileContent']),
+
         equalContent() {
             return this.contentBak == $A.jsonStringify(this.contentDetail);
         },
@@ -99,6 +120,10 @@ export default {
                 this.contentDetail = {};
                 return;
             }
+            if (typeof this.fileContent[this.fileId] !== "undefined") {
+                this.contentDetail = this.fileContent[this.fileId];
+                return;
+            }
             this.loadIng++;
             this.$store.dispatch("call", {
                 url: 'file/content',
@@ -107,7 +132,6 @@ export default {
                 },
             }).then(({data}) => {
                 this.loadIng--;
-                this.contentId = data.id;
                 this.contentDetail = data.content;
                 this.updateBak();
             }).catch(({msg}) => {
@@ -175,6 +199,17 @@ export default {
                     this.$refs.mySheet.exportExcel(this.file.title, act);
                     break;
             }
+        },
+
+        unsaveGive() {
+            delete this.fileContent[this.fileId];
+            this.getContent();
+            this.unsaveTip = false;
+        },
+
+        unsaveSave() {
+            this.handleClick('save');
+            this.unsaveTip = false;
         }
     }
 }

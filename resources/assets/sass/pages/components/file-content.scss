@@ -25,10 +25,21 @@
             color: #333333;
             padding-left: 24px;
             padding-right: 24px;
+            line-height: 24px;
             font-size: 16px;
             overflow: hidden;
             text-overflow:ellipsis;
             white-space: nowrap;
+            .file-unsave-tip {
+                color: #333333;
+                padding-right: 6px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: color 0.3s;
+                &:hover {
+                    color: #000000;
+                }
+            }
         }
         .header-hint {
             padding-right: 22px;
