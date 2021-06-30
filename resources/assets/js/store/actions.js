@@ -330,9 +330,6 @@ export default {
                 },
             }).then((result) => {
                 const ids = result.data.map(({id}) => id)
-                if (ids.length == 0) {
-                    return;
-                }
                 state.files = state.files.filter((item) => item.pid != pid || ids.includes(item.id));
                 dispatch("saveFile", result.data);
                 resolve(result)

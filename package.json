@@ -1,6 +1,6 @@
 {
     "name": "DooTask",
-    "version": "0.2.19",
+    "version": "0.2.28",
     "description": "DooTask is task management system.",
     "scripts": {
         "dev": "npm run development",
