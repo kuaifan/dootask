@@ -13,23 +13,29 @@
             padding-bottom: 16px;
             margin: 32px 32px 16px;
             border-bottom: 1px solid #F4F4F5;
-            > h1 {
+            .file-nav {
                 flex: 1;
-                color: #333333;
-                font-size: 28px;
-                font-weight: 600;
+                display: flex;
+                align-items: center;
+                > h1 {
+                    color: #333333;
+                    font-size: 28px;
+                    font-weight: 600;
+                }
             }
             .file-search {
                 flex-shrink: 0;
-                margin-left: 24px;
+                margin-left: 22px;
                 cursor: pointer;
-                .iconfont {
-                    font-size: 18px;
+                width: 140px;
+                transition: width 0.3s;
+                &.has-value {
+                    width: 180px;
                 }
             }
             .file-add {
                 flex-shrink: 0;
-                margin-left: 24px;
+                margin-left: 22px;
                 cursor: pointer;
                 .iconfont {
                     font-size: 18px;
@@ -52,6 +58,59 @@
                 font-size: 14px;
                 font-weight: 500;
                 line-height: 1;
+            }
+        }
+        .file-navigator {
+            display: flex;
+            align-items: center;
+            height: 24px;
+            line-height: 24px;
+            margin: 0 32px 0;
+            > ul {
+                display: flex;
+                align-items: center;
+                > li {
+                    display: flex;
+                    list-style: none;
+                    align-items: center;
+                    padding-left: 8px;
+                    font-size: 14px;
+                    color: #09aaff;
+                    cursor: pointer;
+                    &:last-child {
+                        color: #515a6e;
+                        cursor: default;
+                    }
+                    &+li:before {
+                        content: "\203a";
+                        margin-top: -2px;
+                        padding-right: 8px;
+                        color: #515a6e;
+                        line-height: 1;
+                        font-size: 16px;
+                        font-weight: 500;
+                        font-family: system-ui, sans-serif;
+                    }
+                }
+            }
+            .ivu-btn {
+                font-size: 12px;
+                margin-left: 12px;
+            }
+            .file-shear {
+                display: flex;
+                align-items: center;
+                > span {
+                    padding-right: 3px;
+                }
+                > em {
+                    display: inline-block;
+                    max-width: 120px;
+                    font-style: normal;
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                }
             }
         }
         .file-list {
@@ -98,7 +157,7 @@
                         width: 100%;
                         height: 20px;
                         line-height: 20px;
-                        color: #666;
+                        color: #515a6e;
                         font-size: 12px;
                         text-align: center;
                         margin-top: 5px;
@@ -108,13 +167,33 @@
                         white-space: nowrap;
                         text-overflow: ellipsis;
                     }
+                    .file-menu {
+                        opacity: 0;
+                        position: absolute;
+                        top: 0;
+                        right: 0;
+                        transition: opacity 0.2s;
+                        display: flex;
+                        .ivu-icon {
+                            font-size: 16px;
+                            color: #aaaaaa;
+                            transition: color 0.2s;
+                            padding: 2px 5px;
+                            &:hover {
+                                color: #515a6e;
+                            }
+                        }
+                    }
                     .file-icon {
                         display: inline-block;
-                        width: 38px;
-                        height: 38px;
-                        background: no-repeat center center;
+                        width: 46px;
+                        height: 46px;
+                        background-repeat: no-repeat;
                         background-size: contain;
-                        margin-top: 14px;
+                        margin-top: 12px;
+                    }
+                    &.shear {
+                        opacity: 0.38;
                     }
                     &.folder .file-icon {
                         background-image: url("../images/file/folder.svg");
@@ -133,6 +212,9 @@
                     }
                     &:hover {
                         background-color: #f4f5f7;
+                        .file-menu {
+                            opacity: 1;
+                        }
                     }
                 }
             }
@@ -147,11 +229,11 @@
         position: relative;
         &:before {
             content: "";
-            width: 14px;
-            height: 14px;
-            background: no-repeat center center;
+            width: 18px;
+            height: 18px;
+            background-repeat: no-repeat;
             background-size: contain;
-            margin-right: 6px;
+            margin-right: 8px;
         }
         &.folder:before {
             background-image: url("../images/file/folder.svg");
