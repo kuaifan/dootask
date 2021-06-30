@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 
 use App\Models\File;
+use App\Models\FileContent;
 use App\Models\User;
 use App\Module\Base;
 use Request;
@@ -193,5 +194,91 @@ class FileController extends AbstractController
         }
         $file->deleteFile();
         return Base::retSuccess('删除成功', $file);
+    }
+
+    /**
+     * 文件内容
+     *
+     * @apiParam {Number} id            文件ID
+     */
+    public function content()
+    {
+        $user = User::auth();
+        //
+        $id = intval(Request::input('id'));
+        //
+        $file = File::whereUserid($user->userid)->whereId($id)->first();
+        if (empty($file)) {
+            return Base::retError('文件不存在或已被删除');
+        }
+        //
+        $content = FileContent::whereFid($file->id)->orderByDesc('id')->first();
+        if (empty($content)) {
+            $content = FileContent::createInstance([
+                'fid' => $file->id,
+                'content' => '{}',
+                'userid' => $user->userid,
+            ]);
+            $content->save();
+        }
+        //
+        $content->content = $content->getFormatContent();
+        return Base::retSuccess('success', $content);
+    }
+
+    /**
+     * 保存文件内容
+     *
+     * @apiParam {Number} id            文件ID
+     * @apiParam {Object} [D]               Request Payload 提交
+     * - content: 内容
+     */
+    public function content__save()
+    {
+        $user = User::auth();
+        //
+        $id = Base::getPostInt('id');
+        $content = Base::getPostValue('content');
+        //
+        $file = File::whereUserid($user->userid)->whereId($id)->first();
+        if (empty($file)) {
+            return Base::retError('文件不存在或已被删除');
+        }
+        //
+        $text = '';
+        if ($file->type == 'document') {
+            $data = Base::json2array($content);
+            $isRep = false;
+            preg_match_all("/<img\s*src=\"data:image\/(png|jpg|jpeg);base64,(.*?)\"/s", $data['content'], $matchs);
+            foreach ($matchs[2] as $key => $text) {
+                $p = "uploads/files/document/" . $id . "/";
+                Base::makeDir(public_path($p));
+                $p.= md5($text) . "." . $matchs[1][$key];
+                $r = file_put_contents(public_path($p), base64_decode($text));
+                if ($r) {
+                    $data['content'] = str_replace($matchs[0][$key], '<img src="' . Base::fillUrl($p) . '"', $data['content']);
+                    $isRep = true;
+                }
+            }
+            $text = strip_tags($data['content']);
+            if ($isRep == true) {
+                $content = Base::array2json($data);
+            }
+        }
+        //
+        $content = FileContent::createInstance([
+            'fid' => $file->id,
+            'content' => $content,
+            'text' => $text,
+            'size' => strlen($content) * 8,
+            'userid' => $user->userid,
+        ]);
+        $content->save();
+        //
+        $file->size = $content->size;
+        $file->save();
+        //
+        $content->content = $content->getFormatContent();
+        return Base::retSuccess('保存成功', $content);
     }
 }

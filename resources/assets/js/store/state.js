@@ -269,6 +269,9 @@ state.dialogMsgs = [];
 state.dialogMsgPush = {};
 state.dialogOpenId = 0;
 
+// 文件
+state.files = [];
+
 // 项目任务
 state.projectId = 0;
 state.projects = [];

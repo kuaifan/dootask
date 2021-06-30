@@ -79,9 +79,10 @@
         <Drawer
             v-model="editShow"
             placement="bottom"
-            height="94%"
+            :height="editHeight"
+            :mask-closable="false"
             :mask-style="{backgroundColor:'rgba(0,0,0,0.7)'}">
-
+            <FileContent v-if="editShow" :file="editInfo"/>
         </Drawer>
     </div>
 </template>
@@ -89,8 +90,11 @@
 <script>
 import {mapState} from "vuex";
 import {sortBy} from "lodash";
+const FileContent = () => import('./components/FileContent');
+
 
 export default {
+    components: {FileContent},
     data() {
         return {
             loadIng: 0,
@@ -107,23 +111,18 @@ export default {
                 {value: 'flow', name: "流程图"},
             ],
 
-            files: [],
-
             editShow: false,
+            editHeight: 0,
             editInfo: {},
         }
     },
 
     mounted() {
-
-    },
-
-    destroyed() {
-
+        this.editHeight = window.innerHeight - 40;
     },
 
     computed: {
-        ...mapState(['userInfo']),
+        ...mapState(['userInfo', 'files']),
 
         shearFile() {
             const {files, shearId} = this;
@@ -165,44 +164,19 @@ export default {
     watch: {
         pid: {
             handler() {
-                this.getLists();
+                this.loadIng++;
+                this.$store.dispatch("getFiles", this.pid).then(() => {
+                    this.loadIng--;
+                }).catch(({msg}) => {
+                    $A.modalError(msg);
+                    this.loadIng--;
+                })
             },
             immediate: true
         }
     },
 
     methods: {
-        getLists() {
-            this.loadIng++;
-            this.$store.dispatch("call", {
-                url: 'file/lists',
-                data: {
-                    pid: this.pid,
-                },
-            }).then(({data}) => {
-                this.loadIng--;
-                this.saveFile(data);
-            }).catch(({msg}) => {
-                $A.modalError(msg);
-                this.loadIng--;
-            })
-        },
-
-        saveFile(file) {
-            if ($A.isArray(file)) {
-                file.forEach((item) => {
-                    this.saveFile(item);
-                });
-                return;
-            }
-            let index = this.files.findIndex(({id}) => id == file.id);
-            if (index > -1) {
-                this.files.splice(index, 1, file);
-            } else {
-                this.files.push(file)
-            }
-        },
-
         addFile(command) {
             let id = $A.randomString(8);
             this.files.push({
@@ -228,6 +202,7 @@ export default {
                 this.searchKey = '';
                 this.pid = item.id;
             } else {
+                this.editHeight = window.innerHeight - 40;
                 this.editShow = true;
                 this.editInfo = item;
             }
@@ -257,7 +232,7 @@ export default {
                         },
                     }).then(({data, msg}) => {
                         $A.messageSuccess(msg);
-                        this.saveFile(data);
+                        this.$store.dispatch("saveFile", data);
                     }).catch(({msg}) => {
                         $A.modalError(msg);
                     });
@@ -282,7 +257,7 @@ export default {
                             }).then(({msg}) => {
                                 $A.messageSuccess(msg);
                                 this.$Modal.remove();
-                                this.removeFile(item.id);
+                                this.$store.dispatch("forgetFile", item.id);
                             }).catch(({msg}) => {
                                 $A.modalError(msg);
                                 this.$Modal.remove();
@@ -306,18 +281,9 @@ export default {
             }).then(({data, msg}) => {
                 $A.messageSuccess(msg);
                 this.shearId = 0;
-                this.saveFile(data);
+                this.$store.dispatch("saveFile", data);
             }).catch(({msg}) => {
                 $A.modalError(msg);
-            });
-        },
-
-        removeFile(id) {
-            this.files = this.files.filter((file) => file.id != id);
-            this.files.forEach((file) => {
-                if (file.pid == id) {
-                    this.removeFile(file.id);
-                }
             });
         },
 
@@ -329,7 +295,7 @@ export default {
             let isCreate = !/^\d+$/.test(item.id);
             if (!item.newname) {
                 if (isCreate) {
-                    this.files = this.files.filter(({id}) => id != item.id);
+                    this.$store.dispatch("forgetFile", item.id);
                 } else {
                     this.$set(item, '_edit', false);
                 }
@@ -355,15 +321,15 @@ export default {
                 $A.messageSuccess(msg)
                 this.$set(item, '_load', false);
                 this.$set(item, '_edit', false);
-                this.saveFile(data);
+                this.$store.dispatch("saveFile", data);
                 if (isCreate) {
-                    this.files = this.files.filter(({id}) => id != item.id);
+                    this.$store.dispatch("forgetFile", item.id);
                 }
             }).catch(({msg}) => {
                 $A.modalError(msg)
                 this.$set(item, '_load', false);
                 if (isCreate) {
-                    this.files = this.files.filter(({id}) => id != item.id);
+                    this.$store.dispatch("forgetFile", item.id);
                 }
             })
         }

@@ -275,6 +275,76 @@ export default {
     },
 
     /** *****************************************************************************************/
+    /** ************************************** 文件 **********************************************/
+    /** *****************************************************************************************/
+
+    /**
+     * 保存文件数据
+     * @param state
+     * @param dispatch
+     * @param data
+     */
+    saveFile({state, dispatch}, data) {
+        if (state.method.isArray(data)) {
+            data.forEach((file) => {
+                dispatch("saveFile", file);
+            });
+        } else if (state.method.isJson(data)) {
+            let index = state.files.findIndex(({id}) => id == data.id);
+            if (index > -1) {
+                state.files.splice(index, 1, data);
+            } else {
+                state.files.push(data)
+            }
+        }
+    },
+
+    /**
+     * 忘记文件数据
+     * @param state
+     * @param dispatch
+     * @param file_id
+     */
+    forgetFile({state, dispatch}, file_id) {
+        state.files = state.files.filter((file) => file.id != file_id);
+        state.files.forEach((file) => {
+            if (file.pid == file_id) {
+                dispatch("forgetFile", file.id);
+            }
+        });
+    },
+
+    /**
+     * 获取文件
+     * @param state
+     * @param dispatch
+     * @param pid
+     * @returns {Promise<unknown>}
+     */
+    getFiles({state, dispatch}, pid) {
+        return new Promise(function (resolve, reject) {
+            dispatch("call", {
+                url: 'file/lists',
+                data: {
+                    pid,
+                },
+            }).then((result) => {
+                const ids = result.data.map(({id}) => id)
+                if (ids.length == 0) {
+                    return;
+                }
+                state.files = state.files.filter((item) => item.pid != pid || ids.includes(item.id));
+                dispatch("saveFile", result.data);
+                resolve(result)
+            }).catch(e => {
+                console.error(e);
+                reject(e)
+            });
+        });
+    },
+
+
+    /** *****************************************************************************************/
     /** ************************************** 项目 **********************************************/
     /** *****************************************************************************************/
 

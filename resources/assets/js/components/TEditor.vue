@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="teditor-wrapper">
         <div class="teditor-box" :class="[!inline&&spinShow?'teditor-loadstyle':'teditor-loadedstyle']">
             <div v-if="inline" ref="myTextarea" :id="id">{{ content }}</div>
             <textarea v-else ref="myTextarea" :id="id">{{ content }}</textarea>

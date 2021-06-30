@@ -1,0 +1,145 @@
+.file-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    border-radius: 18px 18px 0 0;
+    overflow: hidden;
+
+    .edit-header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        width: 100%;
+        height: 42px;
+        min-width: 900px;
+        background-color: #ffffff;
+        box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.05);
+        position: relative;
+        z-index: 99;
+        .header-title {
+            flex: 1;
+            color: #333333;
+            padding-left: 24px;
+            padding-right: 24px;
+            font-size: 16px;
+            overflow: hidden;
+            text-overflow:ellipsis;
+            white-space: nowrap;
+        }
+        .header-hint {
+            padding-right: 22px;
+            font-size: 12px;
+            color: #666;
+            white-space: nowrap;
+            .ivu-btn {
+                font-size: 12px;
+                padding: 0 10px;
+            }
+            .ivu-dropdown-item {
+                font-size: 12px !important;
+            }
+        }
+        .header-button {
+            font-size: 12px;
+            margin-right: 24px;
+        }
+    }
+
+    .content-body {
+        flex: 1;
+        display: flex;
+        position: relative;
+
+        .teditor-wrapper,
+        .mdeditor-wrapper {
+            flex: 1;
+            display: flex;
+        }
+
+        .mdeditor-box {
+            position: relative;
+            width: 100%;
+
+            .markdown {
+                position: absolute;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                right: 0;
+                overflow: auto;
+                transform: translateZ(0);
+
+                .markdown-toolbars {
+                    border-bottom: 1px solid #eeeeee;
+                }
+
+                &.border {
+                    border: 0 !important;
+                }
+            }
+        }
+
+        .teditor-loadedstyle {
+            height: 100%;
+
+            .tox-tinymce {
+                border: 0;
+                border-radius: 0;
+            }
+
+            .tox-mbtn {
+                height: 36px;
+            }
+
+            .tox-menubar,
+            .tox-toolbar-overlord {
+                padding: 0 12%;
+                background: #ffffff;
+            }
+
+            .tox-toolbar__overflow,
+            .tox-toolbar__primary {
+                background: none !important;
+                border-top: 1px solid #eaeaea !important;
+            }
+
+            .tox-toolbar-overlord {
+                border-bottom: 1px solid #E9E9E9 !important;
+            }
+
+            .tox-toolbar__group:not(:last-of-type) {
+                border-right: 1px solid #eaeaea !important;
+            }
+
+            .tox-sidebar-wrap {
+                margin: 22px 12%;
+                border: 1px solid #e8e8e8;
+                border-radius: 2px;
+                box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.08);
+
+                .tox-edit-area {
+                    border-top: 0;
+                }
+            }
+
+            .tox-statusbar {
+                border-top: 1px solid #E9E9E9;
+
+                .tox-statusbar__resize-handle {
+                    display: none;
+                }
+            }
+        }
+
+        .luckysheet {
+            border: 0;
+        }
+    }
+}
+.luckysheet-input-box {
+    z-index: 99999 !important;
+}

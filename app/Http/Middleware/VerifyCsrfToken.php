@@ -33,7 +33,7 @@ class VerifyCsrfToken extends Middleware
         // 聊天发文件
         'api/dialog/msg/sendfile/',
 
-        // 保存文件
-        'api/file/save/',
+        // 保存文件内容
+        'api/file/content/save/',
     ];
 }

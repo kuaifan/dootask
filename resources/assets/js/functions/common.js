@@ -901,8 +901,109 @@
                 $A(this).css(_css);
             });
             return scale;
-        }
+        },
 
+        /**
+         * 动态加载js文件
+         * @param url
+         * @param callback
+         */
+        loadScript(url, callback) {
+            if (this.rightExists(url, '.css')) {
+                this.loadCss(url, callback)
+                return;
+            }
+            if (this.__loadScript[url] === true) {
+                typeof callback === "function" && callback();
+                return;
+            }
+            let script = document.createElement("script");
+            script.type = "text/javascript";
+            if (script.readyState) {
+                script.onreadystatechange = () => {
+                    if (script.readyState === "loaded" || script.readyState === "complete") {
+                        script.onreadystatechange = null;
+                        this.__loadScript[url] = true;
+                        typeof callback === "function" && callback();
+                    }
+                };
+            } else {
+                script.onload = () => {
+                    this.__loadScript[url] = true;
+                    typeof callback === "function" && callback();
+                };
+            }
+            if (this.rightExists(url, '.js')) {
+                script.src = url + "?hash=" + window.systemInformation.version;
+            } else {
+                script.src = url;
+            }
+            document.body.appendChild(script);
+        },
+        loadScriptS(urls, callback) {
+            let i = 0;
+            let recursiveCallback = () => {
+                if (++i < urls.length) {
+                    this.loadScript(urls[i], recursiveCallback)
+                } else {
+                    typeof callback === "function" && callback();
+                }
+            }
+            this.loadScript(urls[0], recursiveCallback);
+        },
+        __loadScript: {},
+
+        /**
+         * 动态加载css
+         * @param url
+         * @param callback
+         */
+        loadCss(url, callback) {
+            if (this.rightExists(url, '.js')) {
+                this.loadScript(url, callback)
+                return;
+            }
+            if (this.__loadCss[url] === true) {
+                typeof callback === "function" && callback();
+                return;
+            }
+            var script = document.createElement('link');
+            if (script.readyState) {
+                script.onreadystatechange = () => {
+                    if (script.readyState == 'loaded' || script.readyState == 'complete') {
+                        script.onreadystatechange = null;
+                        this.__loadCss[url] = true;
+                        typeof callback === "function" && callback();
+
+                    }
+                };
+            } else {
+                script.onload = () => {
+                    this.__loadCss[url] = true;
+                    typeof callback === "function" && callback();
+
+                };
+            }
+            script.rel = 'stylesheet';
+            if (this.rightExists(url, '.css')) {
+                script.href = url + "?hash=" + window.systemInformation.version;
+            } else {
+                script.href = url;
+            }
+            document.getElementsByTagName('head').item(0).appendChild(script);
+        },
+        loadCssS(urls, callback) {
+            let i = 0;
+            let recursiveCallback = () => {
+                if (++i < urls.length) {
+                    this.loadCss(urls[i], recursiveCallback)
+                } else {
+                    typeof callback === "function" && callback();
+                }
+            }
+            this.loadCss(urls[0], recursiveCallback);
+        },
+        __loadCss: {},
     });
 
     /**

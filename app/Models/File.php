@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int|null $cid 复制ID
  * @property string|null $name 名称
  * @property string|null $type 类型
+ * @property int|null $size 大小(B)
  * @property int|null $userid 拥有者ID
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -27,6 +28,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|File whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File wherePid($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|File whereSize($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereUserid($value)
@@ -46,6 +48,7 @@ class File extends AbstractModel
     {
         AbstractModel::transaction(function () {
             $this->delete();
+            FileContent::whereFid($this->id)->delete();
             $list = self::wherePid($this->id)->get();
             if ($list->isNotEmpty()) {
                 foreach ($list as $item) {

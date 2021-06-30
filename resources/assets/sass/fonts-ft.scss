@@ -1,0 +1,114 @@
+@font-face {
+    font-family:zenicon;
+    src:url(../fonts/zenicon.woff2) format("woff2")
+}
+
+.ft.icon {
+    font-family: zenicon, serif;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    white-space: nowrap;
+    word-wrap: normal;
+    text-rendering: auto;
+    transform: scale(1.2);
+    transform-origin: 50% 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    speak: none;
+    direction: ltr;
+    -webkit-font-feature-settings: "liga";
+    padding-left: 1px
+}
+
+.ft+.el-el-button,.ft+.ft,.ft+.z-confirm,.ft+.z-execute,.ft+.z-link,.ft+a {
+    margin-left: .6rem
+}
+
+.ft.l12 {
+    margin-left: 12px
+}
+
+.ft.r12 {
+    margin-right: 12px
+}
+
+.ft.hover {
+    cursor: pointer
+}
+
+.ft.hover:hover {
+    color: #0285d7
+}
+
+.ft.dark {
+    color: #0d0d0d
+}
+
+.ft.gray {
+    color: #666
+}
+
+.ft.yellow {
+    color: #f90
+}
+
+.ft.red {
+    color: #ed3f14
+}
+
+.ft.green {
+    color: #19be6b
+}
+
+.ft.blue {
+    color: #2d8cf0
+}
+
+.ft.center {
+    text-align: center
+}
+
+.ft.right {
+    text-align: right
+}
+
+.ft.bold {
+    font-weight: 700
+}
+
+.ft.underline {
+    text-decoration: underline
+}
+
+.ft.through {
+    text-decoration: line-through
+}
+
+.ft.italic {
+    font-style: italic
+}
+
+.ft.cursor {
+    cursor: pointer
+}
+
+.ft.h1 {
+    font-size: 1.3rem
+}
+
+.ft.h2 {
+    font-size: 1.2rem
+}
+
+.ft.h3 {
+    font-size: 1.1rem
+}
+
+.ft.h4 {
+    font-size: .9rem
+}
+
+.ft.h5 {
+    font-size: .8rem
+}
