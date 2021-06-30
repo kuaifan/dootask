@@ -16,6 +16,22 @@ use Request;
 class FileController extends AbstractController
 {
     /**
+     * 获取文件列表
+     *
+     * @apiParam {Number} [pid]         父级ID
+     */
+    public function lists()
+    {
+        $user = User::auth();
+        //
+        $pid = intval(Request::input('pid'));
+        //
+        $list = File::whereUserid($user->userid)->wherePid($pid)->orderBy('name')->take(500)->get();
+        //
+        return Base::retSuccess('success', $list);
+    }
+
+    /**
      * 添加项目
      *
      * @apiParam {String} name          项目名称
@@ -46,9 +62,12 @@ class FileController extends AbstractController
         }
         //
         if ($pid > 0) {
-            if (!File::whereUserid($user->id)->whereId($pid)->exists()) {
+            if (!File::whereUserid($user->userid)->whereId($pid)->exists()) {
                 return Base::retError('参数错误');
             }
+        }
+        if (File::whereUserid($user->userid)->wherePid($pid)->count() >= 300) {
+            return Base::retError('每个文件夹里最多只能创建300个文件或文件夹');
         }
         // 开始创建
         $file = File::createInstance([
