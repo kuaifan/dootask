@@ -222,7 +222,7 @@ class FileController extends AbstractController
             $content->save();
         }
         //
-        $content->content = $content->getFormatContent();
+        $content->content = $content->formatContent($file->type, $content->content);
         return Base::retSuccess('success', $content);
     }
 
@@ -278,7 +278,7 @@ class FileController extends AbstractController
         $file->size = $content->size;
         $file->save();
         //
-        $content->content = $content->getFormatContent();
+        $content->content = $content->formatContent($file->type, $content->content);
         return Base::retSuccess('保存成功', $content);
     }
 }

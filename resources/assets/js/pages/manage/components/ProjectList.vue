@@ -60,7 +60,7 @@
                 </div>
             </div>
         </div>
-        <div v-if="tablePanel('card')" class="project-column overlay-x">
+        <div v-if="tablePanel('card')" class="project-column">
             <Draggable
                 :list="projectData.columns"
                 :animation="150"

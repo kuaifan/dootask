@@ -5,6 +5,7 @@
     flex-direction: column;
     .file-wrapper {
         flex: 1;
+        height: 0;
         display: flex;
         flex-direction: column;
         .file-head {
@@ -120,28 +121,142 @@
                     text-overflow: ellipsis;
                 }
             }
+            .flex-full {
+                flex: 1;
+            }
+            .switch-button {
+                display: flex;
+                align-items: center;
+                background-color: #ffffff;
+                border-radius: 6px;
+                position: relative;
+                transition: box-shadow 0.2s;
+                &:hover {
+                    box-shadow: 0 0 10px #e6ecfa;
+                }
+                &:before {
+                    content: "";
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 50%;
+                    height: 100%;
+                    z-index: 0;
+                    color: $primary-color;
+                    border-radius: 6px;
+                    border: 1px solid $primary-color;
+                    background-color: rgba($primary-color, 0.1);
+                    transition: left 0.2s;
+                }
+                > div {
+                    z-index: 1;
+                    width: 32px;
+                    height: 30px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    color: #515a6e;
+                    > i {
+                        font-size: 17px;
+                    }
+                    &:first-child {
+                        color: $primary-color;
+                    }
+                }
+                &.table {
+                    &:before {
+                        left: 50%;
+                    }
+                    > div:first-child {
+                        color: #515a6e;
+                    }
+                    > div:last-child {
+                        color: $primary-color;
+                    }
+                }
+            }
+        }
+        .file-table {
+            flex: 1;
+            cursor: default;
+            margin: 16px 32px 32px;
+            .ivu-table {
+                &:before {
+                    display: none;
+                }
+                .ivu-table-tip {
+                    opacity: 0.8;
+                    span {
+                        font-size: 14px;
+                        font-weight: 500;
+                        line-height: 1.8;
+                        &:before {
+                            display: block;
+                            content: "\e60b";
+                            font-family: "iconfont", "serif" !important;
+                            font-size: 64px;
+                            font-style: normal;
+                            -webkit-font-smoothing: antialiased;
+                            -webkit-text-stroke-width: 0.2px;
+                        }
+                    }
+                }
+            }
+            .file-name {
+                display: flex;
+                align-items: center;
+                position: relative;
+                padding-right: 26px;
+                &:before {
+                    flex-shrink: 0;
+                    content: "";
+                    width: 18px;
+                    height: 18px;
+                    background-repeat: no-repeat;
+                    background-size: contain;
+                    margin-right: 8px;
+                }
+                &.folder:before {
+                    background-image: url("../images/file/folder.svg");
+                }
+                &.document:before {
+                    background-image: url("../images/file/document.svg");
+                }
+                &.mind:before {
+                    background-image: url("../images/file/mind.svg");
+                }
+                &.sheet:before {
+                    background-image: url("../images/file/sheet.svg");
+                }
+                &.flow:before {
+                    background-image: url("../images/file/flow.svg");
+                }
+            }
         }
         .file-list {
             flex: 1;
             padding: 0 20px 20px;
+            margin-top: 16px;
+            overflow: auto;
             > ul {
+                margin-top: -12px;
                 > li {
                     list-style: none;
                     float: left;
                     margin: 12px;
-                    width: 94px;
-                    height: 100px;
-                    text-align: center;
+                    width: 100px;
+                    height: 110px;
                     position: relative;
-                    overflow: visible;
-                    border: 1px dashed transparent;
                     border-radius: 5px;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
                     justify-content: space-between;
+                    cursor: pointer;
                     .file-input {
-                        margin: 0 2px 2px;
+                        margin: 0 4px 4px;
                         position: relative;
                         input {
                             margin: 0;
@@ -168,8 +283,7 @@
                         color: #515a6e;
                         font-size: 12px;
                         text-align: center;
-                        margin-top: 5px;
-                        margin-bottom: 3px;
+                        margin-bottom: 5px;
                         padding: 0 6px;
                         overflow: hidden;
                         white-space: nowrap;
@@ -194,8 +308,8 @@
                     }
                     .file-icon {
                         display: inline-block;
-                        width: 52px;
-                        height: 52px;
+                        width: 64px;
+                        height: 64px;
                         background-repeat: no-repeat;
                         background-size: contain;
                         margin-top: 12px;
@@ -236,6 +350,7 @@
         align-items: center;
         position: relative;
         &:before {
+            flex-shrink: 0;
             content: "";
             width: 18px;
             height: 18px;

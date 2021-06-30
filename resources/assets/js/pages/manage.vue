@@ -25,7 +25,7 @@
                     <DropdownItem divided name="signout" style="color:#f40">{{$L('退出登录')}}</DropdownItem>
                 </DropdownMenu>
             </Dropdown>
-            <ul>
+            <ul class="overlay-y">
                 <li @click="toggleRoute('dashboard')" :class="classNameRoute('dashboard')">
                     <i class="iconfont">&#xe6fb;</i>
                     <div class="menu-title">{{$L('仪表盘')}}</div>

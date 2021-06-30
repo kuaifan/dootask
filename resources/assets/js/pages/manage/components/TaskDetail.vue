@@ -562,7 +562,7 @@ export default {
                 return {};
             }
             return {
-                maxHeight: (innerHeight - 70 - 66 - 30) + 'px'
+                maxHeight: (innerHeight - (innerHeight > 900 ? 200 : 70) - 66 - 30) + 'px'
             }
         },
 
@@ -573,7 +573,7 @@ export default {
             }
             if (taskDetail.dialog_id) {
                 return {
-                    minHeight: (innerHeight - 70 - 48) + 'px'
+                    minHeight: (innerHeight - (innerHeight > 900 ? 200 : 70) - 48) + 'px'
                 }
             } else {
                 return {};

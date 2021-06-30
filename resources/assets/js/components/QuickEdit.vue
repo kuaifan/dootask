@@ -6,7 +6,7 @@
         </div>
         <template v-else>
             <div class="quick-text"><slot></slot></div>
-            <Icon class="quick-icon" type="ios-create-outline" @click="onClick"/>
+            <Icon class="quick-icon" type="ios-create-outline" @click.stop="onClick"/>
         </template>
     </div>
 </template>
@@ -26,8 +26,10 @@ export default {
         }
     },
 
-    mounted() {
-
+    watch: {
+        isEdit(val) {
+            this.$emit("on-edit", val);
+        }
     },
 
     methods: {

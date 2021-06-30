@@ -35,44 +35,60 @@
                         "<em>{{shearFile.name}}</em>"
                     </div>
                 </Button>
+                <div class="flex-full"></div>
+                <div :class="['switch-button', tableMode ? 'table' : '']" @click="tableMode=!tableMode">
+                    <div><i class="iconfont">&#xe60c;</i></div>
+                    <div><i class="iconfont">&#xe66a;</i></div>
+                </div>
             </div>
-            <div v-if="fileList.length == 0 && loadIng == 0" class="file-no">
-                <i class="iconfont">&#xe60b;</i>
-                <p>{{$L('没有任何文件')}}</p>
+            <div v-if="tableMode" class="file-table">
+                <Table
+                    :columns="columns"
+                    :data="fileList"
+                    :height="tableHeight"
+                    :no-data-text="$L('没有任何文件')"
+                    @on-cell-click="clickRow"
+                    stripe/>
             </div>
-            <div v-else class="file-list">
-                <ul class="clearfix">
-                    <li v-for="item in fileList" :class="[item.type, item.id && shearId == item.id ? 'shear' : '']" @click="openFile(item)">
-                        <EDropdown
-                            trigger="click"
-                            size="small"
-                            placement="bottom"
-                            class="file-menu"
-                            @command="dropFile(item, $event)">
-                            <Icon @click.stop="" type="ios-more" />
-                            <EDropdownMenu slot="dropdown">
-                                <EDropdownItem command="open">{{$L('打开')}}</EDropdownItem>
-                                <EDropdownItem divided command="rename">{{$L('重命名')}}</EDropdownItem>
-                                <EDropdownItem :disabled="item.type=='folder'" command="copy">{{$L('复制')}}</EDropdownItem>
-                                <EDropdownItem command="shear">{{$L('剪切')}}</EDropdownItem>
-                                <EDropdownItem divided command="delete" style="color:red">{{$L('删除')}}</EDropdownItem>
-                            </EDropdownMenu>
-                        </EDropdown>
-                        <div class="file-icon"></div>
-                        <div v-if="item._edit" class="file-input">
-                            <Input
-                                :ref="'input_' + item.id"
-                                v-model="item.newname"
+            <template v-else>
+                <div v-if="fileList.length == 0 && loadIng == 0" class="file-no">
+                    <i class="iconfont">&#xe60b;</i>
+                    <p>{{$L('没有任何文件')}}</p>
+                </div>
+                <div v-else class="file-list">
+                    <ul class="clearfix">
+                        <li v-for="item in fileList" :class="[item.type, item.id && shearId == item.id ? 'shear' : '']" @click="openFile(item)">
+                            <EDropdown
+                                trigger="click"
                                 size="small"
-                                :disabled="item._load"
-                                @on-blur="onBlur(item)"
-                                @on-enter="onEnter(item)"/>
-                            <div v-if="item._load" class="file-load"><Loading/></div>
-                        </div>
-                        <div v-else class="file-name" :title="item.name">{{item.name}}</div>
-                    </li>
-                </ul>
-            </div>
+                                placement="bottom"
+                                class="file-menu"
+                                @command="dropFile(item, $event)">
+                                <Icon @click.stop="" type="ios-more" />
+                                <EDropdownMenu slot="dropdown">
+                                    <EDropdownItem command="open">{{$L('打开')}}</EDropdownItem>
+                                    <EDropdownItem divided command="rename">{{$L('重命名')}}</EDropdownItem>
+                                    <EDropdownItem :disabled="item.type=='folder'" command="copy">{{$L('复制')}}</EDropdownItem>
+                                    <EDropdownItem command="shear">{{$L('剪切')}}</EDropdownItem>
+                                    <EDropdownItem divided command="delete" style="color:red">{{$L('删除')}}</EDropdownItem>
+                                </EDropdownMenu>
+                            </EDropdown>
+                            <div class="file-icon"></div>
+                            <div v-if="item._edit" class="file-input">
+                                <Input
+                                    :ref="'input_' + item.id"
+                                    v-model="item.newname"
+                                    size="small"
+                                    :disabled="item._load"
+                                    @on-blur="onBlur(item)"
+                                    @on-enter="onEnter(item)"/>
+                                <div v-if="item._load" class="file-load"><Loading/></div>
+                            </div>
+                            <div v-else class="file-name" :title="item.name">{{item.name}}</div>
+                        </li>
+                    </ul>
+                </div>
+            </template>
         </div>
 
         <!--查看修改文件-->
@@ -100,7 +116,7 @@ export default {
             loadIng: 0,
             searchKey: '',
 
-            pid: 0,
+            pid: this.$store.state.method.getStorageInt("fileOpenPid"),
             shearId: 0,
 
             types: [
@@ -111,6 +127,10 @@ export default {
                 {value: 'flow', name: "流程图"},
             ],
 
+            tableHeight: 500,
+            tableMode: this.$store.state.method.getStorageBoolean("fileTableMode"),
+            columns: [],
+
             editShow: false,
             editHeight: 0,
             editInfo: {},
@@ -118,6 +138,7 @@ export default {
     },
 
     mounted() {
+        this.tableHeight = window.innerHeight - 160;
         this.editHeight = window.innerHeight - 40;
     },
 
@@ -155,6 +176,8 @@ export default {
                 if (file) {
                     array.unshift(file);
                     pid = file.pid;
+                } else {
+                    pid = 0;
                 }
             }
             return array;
@@ -167,16 +190,99 @@ export default {
                 this.loadIng++;
                 this.$store.dispatch("getFiles", this.pid).then(() => {
                     this.loadIng--;
+                    this.$store.state.method.setStorage("fileOpenPid", this.pid)
                 }).catch(({msg}) => {
                     $A.modalError(msg);
                     this.loadIng--;
-                })
+                });
             },
             immediate: true
+        },
+
+        tableMode(val) {
+            this.$store.state.method.setStorage("fileTableMode", val)
         }
     },
 
     methods: {
+        initLanguage() {
+            this.columns = [
+                {
+                    title: this.$L('文件名'),
+                    key: 'name',
+                    minWidth: 200,
+                    resizable: true,
+                    sortable: true,
+                    render: (h, {row}) => {
+                        return h('div', {
+                            class: 'file-name ' + row.type
+                        }, [
+                            h('QuickEdit', {
+                                props: {
+                                    value: row.name,
+                                },
+                                on: {
+                                    'on-edit': (b) => {
+                                        const file = this.files.find(({id}) => id == row.id);
+                                        if (file) {
+                                            setTimeout(() => {
+                                                this.$set(file, '_edit', b);
+                                            }, 100);
+                                        }
+                                    },
+                                    'on-update': (val, cb) => {
+                                        const file = this.files.find(({id}) => id == row.id);
+                                        if (file) {
+                                            file.newname = val
+                                            this.onEnter(file);
+                                        }
+                                        cb();
+                                    }
+                                }
+                            }, [
+                                h('AutoTip', row.name)
+                            ])
+                        ]);
+                    }
+                },
+                {
+                    title: this.$L('大小'),
+                    key: 'size',
+                    width: 120,
+                    resizable: true,
+                    sortable: true,
+                    render: (h, {row}) => {
+                        if (row.type == 'folder') {
+                            return h('div', '-')
+                        }
+                        return h('AutoTip', $A.bytesToSize(row.size));
+                    }
+                },
+                {
+                    title: this.$L('类型'),
+                    key: 'type',
+                    width: 120,
+                    resizable: true,
+                    sortable: true,
+                    render: (h, {row}) => {
+                        let type = this.types.find(({value}) => value == row.type);
+                        if (type) {
+                            return h('AutoTip', type.name);
+                        } else {
+                            return h('div', '-')
+                        }
+                    }
+                },
+                {
+                    title: this.$L('最后修改'),
+                    key: 'updated_at',
+                    width: 168,
+                    resizable: true,
+                    sortable: true,
+                },
+            ]
+        },
+
         addFile(command) {
             let id = $A.randomString(8);
             this.files.push({
@@ -195,7 +301,10 @@ export default {
         },
 
         openFile(item) {
-            if (item._edit || item._load) {
+            if (this.fileList.findIndex((file) => file._edit === true) > -1) {
+                return;
+            }
+            if (item._load) {
                 return;
             }
             if (item.type == 'folder') {
@@ -206,6 +315,10 @@ export default {
                 this.editShow = true;
                 this.editInfo = item;
             }
+        },
+
+        clickRow(row) {
+            this.dropFile(row, 'open');
         },
 
         dropFile(item, command) {

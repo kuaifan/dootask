@@ -42,13 +42,15 @@ class FileContent extends AbstractModel
 
     /**
      * 获取格式内容
+     * @param $type
+     * @param $content
      * @return array|array[]|mixed|string[]
      */
-    public function getFormatContent()
+    public static function formatContent($type, $content)
     {
-        $content = Base::json2array($this->content);
+        $content = Base::json2array($content);
         if (empty($content)) {
-            switch ($this->type) {
+            switch ($type) {
                 case 'document':
                     $content = [
                         "type" => "text",
