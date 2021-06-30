@@ -246,21 +246,35 @@ body {
             }
         }
     }
-    .ivu-drawer-content {
-        border-radius: 18px 0 0 18px;
-        .ivu-drawer-header {
-            padding-top: 16px;
-            padding-bottom: 6px;
-            border-bottom: 1px solid transparent;
-            .ivu-drawer-header-inner {
-                font-size: 18px;
-                padding: 0 4px;
-                height: 32px;
-                line-height: 32px;
+    .ivu-drawer-right {
+        .ivu-drawer-content {
+            border-radius: 18px 0 0 18px;
+            .ivu-drawer-header {
+                padding-top: 16px;
+                padding-bottom: 6px;
+                border-bottom: 1px solid transparent;
+                .ivu-drawer-header-inner {
+                    font-size: 18px;
+                    padding: 0 4px;
+                    height: 32px;
+                    line-height: 32px;
+                }
+            }
+            .ivu-drawer-body {
+                padding: 10px 20px;
             }
         }
-        .ivu-drawer-body {
-            padding: 10px 20px;
+    }
+    .ivu-drawer-bottom {
+        .ivu-drawer-content {
+            border-radius: 18px 18px 0 0;
+            .ivu-drawer-close {
+                top: -42px;
+                .ivu-icon {
+                    font-size: 40px;
+                    color: #ffffff;
+                }
+            }
         }
     }
 }

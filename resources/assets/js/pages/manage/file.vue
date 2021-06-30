@@ -74,6 +74,15 @@
                 </ul>
             </div>
         </div>
+
+        <!--查看修改文件-->
+        <Drawer
+            v-model="editShow"
+            placement="bottom"
+            height="94%"
+            :mask-style="{backgroundColor:'rgba(0,0,0,0.7)'}">
+
+        </Drawer>
     </div>
 </template>
 
@@ -99,6 +108,9 @@ export default {
             ],
 
             files: [],
+
+            editShow: false,
+            editInfo: {},
         }
     },
 
@@ -215,6 +227,9 @@ export default {
             if (item.type == 'folder') {
                 this.searchKey = '';
                 this.pid = item.id;
+            } else {
+                this.editShow = true;
+                this.editInfo = item;
             }
         },
 
