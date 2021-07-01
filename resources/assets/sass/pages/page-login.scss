@@ -39,6 +39,7 @@
                 font-size: 14px;
                 text-align: center;
                 margin-top: 12px;
+                padding: 0 12px;
                 color: #AAAAAA;
             }
             .login-input {
@@ -77,9 +78,30 @@
                 }
             }
         }
-        .login-forgot {
-            color: #aaaaaa;
-            margin-top: 36px;
+        .login-bottom {
+            margin-top: 18px;
+            display: flex;
+            align-items: center;
+            width: 388px;
+            .login-language {
+                flex-shrink: 0;
+                display: flex;
+                align-items: center;
+                cursor: pointer;
+                color: #666666;
+                .iconfont {
+                    margin-top: 1px;
+                    margin-left: 3px;
+                    transform: scale(0.8);
+                    font-size: 12px;
+                }
+            }
+            .login-forgot {
+                flex: 1;
+                padding-left: 24px;
+                color: #aaaaaa;
+                text-align: right;
+            }
         }
     }
 }

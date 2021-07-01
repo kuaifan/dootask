@@ -25,7 +25,18 @@
                     <div v-else class="login-switch">{{$L('还没有帐号？')}}<a href="javascript:void(0)" @click="loginType='reg'">{{$L('注册帐号')}}</a></div>
                 </div>
             </div>
-            <div class="login-forgot">{{$L('忘记密码了？')}}<a href="javascript:void(0)" @click="forgotPassword">{{$L('重置密码')}}</a></div>
+            <div class="login-bottom">
+                <Dropdown trigger="click" @on-click="setLanguage" transfer>
+                    <div class="login-language">
+                        {{currentLanguage}}
+                        <i class="iconfont">&#xe689;</i>
+                    </div>
+                    <Dropdown-menu slot="list">
+                        <Dropdown-item v-for="(item, key) in languageList" :key="key" :name="key" :selected="getLanguage() === key">{{item}}</Dropdown-item>
+                    </Dropdown-menu>
+                </Dropdown>
+                <div class="login-forgot">{{$L('忘记密码了？')}}<a href="javascript:void(0)" @click="forgotPassword">{{$L('重置密码')}}</a></div>
+            </div>
         </div>
     </div>
 </template>
@@ -46,6 +57,11 @@ export default {
             code: '',
         }
     },
+    computed: {
+        currentLanguage() {
+            return this.languageList[this.languageType] || 'Language'
+        }
+    },
     methods: {
         forgotPassword() {
             $A.modalWarning("请联系管理员！");
@@ -56,7 +72,7 @@ export default {
         },
 
         onBlur() {
-            if (this.loginType != 'login') {
+            if (this.loginType != 'login' || !this.email) {
                 this.codeNeed = false;
                 return;
             }

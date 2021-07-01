@@ -22,6 +22,17 @@
                         :key="key"
                         :divided="!!item.divided"
                         :name="item.path">{{$L(item.name)}}</DropdownItem>
+                    <Dropdown placement="right-start" @on-click="setLanguage">
+                        <DropdownItem divided>
+                            <div class="manage-menu-language">
+                                {{currentLanguage}}
+                                <Icon type="ios-arrow-forward"></Icon>
+                            </div>
+                        </DropdownItem>
+                        <DropdownMenu slot="list">
+                            <Dropdown-item v-for="(item, key) in languageList" :key="key" :name="key" :selected="getLanguage() === key">{{item}}</Dropdown-item>
+                        </DropdownMenu>
+                    </Dropdown>
                     <DropdownItem divided name="signout" style="color:#f40">{{$L('退出登录')}}</DropdownItem>
                 </DropdownMenu>
             </Dropdown>
@@ -94,7 +105,7 @@
                     <TagInput v-model="addData.columns"/>
                 </FormItem>
                 <FormItem v-else :label="$L('项目模板')">
-                    <Select :value="0" @on-change="(i) => {$set(addData, 'columns', columns[i].value.join(','))}" :placeholder="$L('请选择模板')">
+                    <Select :value="0" @on-change="selectChange" :placeholder="$L('请选择模板')">
                         <Option v-for="(item, index) in columns" :value="index" :key="index">{{ item.label }}</Option>
                     </Select>
                 </FormItem>
@@ -217,6 +228,10 @@ export default {
                 num += unread;
             })
             return num;
+        },
+
+        currentLanguage() {
+            return this.languageList[this.languageType] || 'Language'
         },
 
         menu() {
@@ -360,7 +375,9 @@ export default {
                     });
                     return;
             }
-            this.toggleRoute('setting/' + path);
+            if (this.menu.findIndex((m) => m.path == path) > -1) {
+                this.toggleRoute('setting/' + path);
+            }
         },
 
         menuVisibleChange(visible) {
@@ -401,6 +418,12 @@ export default {
                     });
                 }
             });
+        },
+
+        selectChange(index) {
+            this.$nextTick(() => {
+                this.$set(this.addData, 'columns', this.columns[index].value.join(','));
+            })
         },
 
         taskVisibleChange(visible) {

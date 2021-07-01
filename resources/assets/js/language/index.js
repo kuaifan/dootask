@@ -4,8 +4,8 @@ const languageTypeLists = {
     "TH": "ภาษาไทย",
     "KO": "한국어",
     "JA": "日本語",
-    "CN": "中文-简体",
-    "TC": "中文-繁體",
+    "CN": "简体中文",
+    "TC": "繁體中文",
 };
 const languageCachesObjects = {};
 const languageListenerObjects = [];
@@ -71,6 +71,7 @@ export default {
                         this.languageInit = true;
                         //
                         this.addLanguageData(require("./language.js").default);
+                        this.addLanguageData(window.languageData);
                         //
                         languageListenerObjects.push((lang) => {
                             this.languageType = lang;
