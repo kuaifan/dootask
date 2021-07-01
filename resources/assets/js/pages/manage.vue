@@ -440,32 +440,13 @@ export default {
             this.titleInterval = setInterval(() => {
                 let {title} = document;
                 let newTitle = title.replace(/^(.*?)\((\d+)\)$/g, "$1")
-                if (this.userId) {
-                    if (this.msgAllUnread > 0) {
-                        newTitle+= " (" + this.msgAllUnread + ")"
-                    }
+                if (this.userId && this.msgAllUnread > 0) {
+                    newTitle+= " (" + this.msgAllUnread + ")"
                 }
                 if (title != newTitle) {
-                    this.setPageTile(newTitle);
+                    document.title = newTitle;
                 }
-            }, 500)
-        },
-
-        setPageTile(title) {
-            document.title = title;
-            let mobile = navigator.userAgent.toLowerCase();
-            if (/iphone|ipad|ipod/.test(mobile)) {
-                let iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                let iframeCallback = function () {
-                    setTimeout(function () {
-                        iframe.removeEventListener('load', iframeCallback);
-                        document.body.removeChild(iframe)
-                    }, 0)
-                };
-                iframe.addEventListener('load', iframeCallback);
-                document.body.appendChild(iframe)
-            }
+            }, 1000)
         },
 
         notificationInit() {

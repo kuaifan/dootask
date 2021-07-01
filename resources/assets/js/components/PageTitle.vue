@@ -3,6 +3,8 @@
 </template>
 
 <script>
+import {mapState} from "vuex";
+
 export default {
     name: 'PageTitle',
     props: {
@@ -20,6 +22,23 @@ export default {
 
     activated() {
         this.updateTitle()
+    },
+
+
+    computed: {
+        ...mapState([
+            'userId',
+            'dialogs',
+        ]),
+
+
+        msgAllUnread() {
+            let num = 0;
+            this.dialogs.map(({unread}) => {
+                num += unread;
+            })
+            return num;
+        },
     },
 
     watch: {
@@ -49,20 +68,10 @@ export default {
         },
 
         setPageTile(title) {
-            document.title = title;
-            let mobile = navigator.userAgent.toLowerCase();
-            if (/iphone|ipad|ipod/.test(mobile)) {
-                let iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                let iframeCallback = function () {
-                    setTimeout(function () {
-                        iframe.removeEventListener('load', iframeCallback);
-                        document.body.removeChild(iframe)
-                    }, 0)
-                };
-                iframe.addEventListener('load', iframeCallback);
-                document.body.appendChild(iframe)
+            if (this.userId && this.msgAllUnread > 0) {
+                title+= " (" + this.msgAllUnread + ")"
             }
+            document.title = title;
         }
     }
 }
