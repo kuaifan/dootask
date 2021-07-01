@@ -1,5 +1,8 @@
 .page-calendar {
+    display: flex;
+    flex-direction: column;
     .calendar-head {
+        flex-shrink: 0;
         display: flex;
         align-items: flex-start;
         margin: 32px 32px 16px;
@@ -42,7 +45,11 @@
         }
     }
     .calendar-box {
-        padding: 0 48px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 0 48px 6px;
+        overflow: hidden;
         .calendar-wrapper {
             flex: 1;
             position: relative;
@@ -68,6 +75,10 @@
                     border-bottom-color: rgba(217, 217, 217, .5);
                 }
             }
+            .tui-full-calendar-dropdown-menu {
+                border-color: #e8e8e8;
+                width: calc(100% - 14px);
+            }
             .tui-full-calendar-popup-creation {
                 .tui-full-calendar-icon {
                     &.tui-full-calendar-ic-title,
@@ -88,6 +99,7 @@
                     margin-bottom: 10px;
                     .tui-full-calendar-popup-section-item {
                         height: 36px;
+                        line-height: 34px;
                         border-color: #e8e8e8;
                         border-radius: 4px;
                     }

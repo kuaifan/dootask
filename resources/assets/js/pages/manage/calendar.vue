@@ -67,12 +67,9 @@ export default {
         }
     },
 
-    mounted() {
-        this.setRenderRange();
-    },
-
     activated() {
         this.$refs.cal.resetRender();
+        this.setRenderRange();
     },
 
     computed: {
@@ -248,7 +245,8 @@ export default {
             this.$store.dispatch("taskAdd", {
                 project_id: res.calendarId,
                 times: [res.start.toDate(), res.end.toDate()],
-                name: res.title
+                name: res.title,
+                owner: this.userId,
             }).then(({msg}) => {
                 $A.messageSuccess(msg);
             }).catch(({msg}) => {

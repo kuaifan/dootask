@@ -709,7 +709,7 @@ class ProjectController extends AbstractController
      * @apiParam {String} name                  任务描述
      * @apiParam {String} [content]             任务详情
      * @apiParam {Array} [times]                计划时间（格式：开始时间,结束时间；如：2020-01-01 00:00,2020-01-01 23:59）
-     * @apiParam {Number} [owner]               负责人，留空为自己
+     * @apiParam {Number} [owner]               负责人
      * @apiParam {Array} [subtasks]             子任务（格式：[{name,owner,times}]）
      * @apiParam {Number} [top]                 添加的任务排到列表最前面
      */

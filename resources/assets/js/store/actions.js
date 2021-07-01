@@ -1413,10 +1413,10 @@ export default {
         //
         state.ws = new WebSocket(url);
         state.ws.onopen = (e) => {
-            console.log("[WS] Open", e)
+            // console.log("[WS] Open", e)
         };
         state.ws.onclose = (e) => {
-            console.log("[WS] Close", e);
+            // console.log("[WS] Close", e);
             state.ws = null;
             //
             clearTimeout(state.wsTimeout);
@@ -1425,7 +1425,7 @@ export default {
             }, 3000);
         };
         state.ws.onerror = (e) => {
-            console.log("[WS] Error", e);
+            // console.log("[WS] Error", e);
             state.ws = null;
             //
             clearTimeout(state.wsTimeout);
@@ -1434,7 +1434,7 @@ export default {
             }, 3000);
         };
         state.ws.onmessage = (e) => {
-            console.log("[WS] Message", e);
+            // console.log("[WS] Message", e);
             const msgDetail = state.method.jsonParse(event.data);
             const {type, msgId} = msgDetail;
             switch (type) {
@@ -1459,7 +1459,7 @@ export default {
                             try {
                                 call(msgDetail);
                             } catch (err) {
-                                console.log("[WS] Callerr", err);
+                                // console.log("[WS] Callerr", err);
                             }
                         }
                     });
