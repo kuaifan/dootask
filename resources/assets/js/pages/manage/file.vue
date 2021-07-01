@@ -14,7 +14,7 @@
                         trigger="click"
                         placement="bottom"
                         @command="addFile">
-                        <i class="iconfont">&#xe6f2;</i>
+                        <i class="taskfont">&#xe6f2;</i>
                         <EDropdownMenu slot="dropdown" class="page-file-dropdown-menu">
                             <EDropdownItem v-for="(type, key) in types" :key="key" :command="type.value">
                                 <div :class="['file-item ' + type.value]">{{$L('新建' + type.name)}}</div>
@@ -37,8 +37,8 @@
                 </Button>
                 <div class="flex-full"></div>
                 <div :class="['switch-button', tableMode ? 'table' : '']" @click="tableMode=!tableMode">
-                    <div><i class="iconfont">&#xe60c;</i></div>
-                    <div><i class="iconfont">&#xe66a;</i></div>
+                    <div><i class="taskfont">&#xe60c;</i></div>
+                    <div><i class="taskfont">&#xe66a;</i></div>
                 </div>
             </div>
             <div v-if="tableMode" class="file-table">
@@ -52,7 +52,7 @@
             </div>
             <template v-else>
                 <div v-if="fileList.length == 0 && loadIng == 0" class="file-no">
-                    <i class="iconfont">&#xe60b;</i>
+                    <i class="taskfont">&#xe60b;</i>
                     <p>{{$L('没有任何文件')}}</p>
                 </div>
                 <div v-else class="file-list">
@@ -79,7 +79,7 @@
                                     :ref="'input_' + item.id"
                                     v-model="item.newname"
                                     size="small"
-                                    :disabled="item._load"
+                                    :disabled="!!item._load"
                                     @on-blur="onBlur(item)"
                                     @on-enter="onEnter(item)"/>
                                 <div v-if="item._load" class="file-load"><Loading/></div>
@@ -98,7 +98,7 @@
             :height="editHeight"
             :mask-closable="false"
             :mask-style="{backgroundColor:'rgba(0,0,0,0.7)'}">
-            <FileContent v-if="editShow" :file="editInfo"/>
+            <FileContent :file="editInfo"/>
         </Drawer>
     </div>
 </template>
@@ -214,15 +214,48 @@ export default {
                     resizable: true,
                     sortable: true,
                     render: (h, {row}) => {
-                        return h('div', {
-                            class: 'file-name ' + row.type
-                        }, [
-                            h('QuickEdit', {
+                        let array = [];
+                        let isCreate = !/^\d+$/.test(row.id);
+                        if (isCreate) {
+                            // 新建
+                            array.push(h('Input', {
+                                props: {
+                                    elementId: 'input_' + row.id,
+                                    value: row.newname,
+                                    autofocus: true,
+                                    disabled: !!row._load,
+                                },
+                                style: {
+                                    width: 'auto'
+                                },
+                                on: {
+                                    'on-change': (event) => {
+                                        row.newname = event.target.value;
+                                    },
+                                    'on-blur': () => {
+                                        const file = this.files.find(({id}) => id == row.id);
+                                        if (file) {
+                                            file.newname = row.newname;
+                                            this.onBlur(file)
+                                        }
+                                    },
+                                    'on-enter': () => {
+                                        const file = this.files.find(({id}) => id == row.id);
+                                        if (file) {
+                                            file.newname = row.newname;
+                                            this.onEnter(file)
+                                        }
+                                    }
+                                }
+                            }))
+                        } else {
+                            // 编辑
+                            array.push(h('QuickEdit', {
                                 props: {
                                     value: row.name,
                                 },
                                 on: {
-                                    'on-edit': (b) => {
+                                    'on-edit-change': (b) => {
                                         const file = this.files.find(({id}) => id == row.id);
                                         if (file) {
                                             setTimeout(() => {
@@ -241,8 +274,11 @@ export default {
                                 }
                             }, [
                                 h('AutoTip', row.name)
-                            ])
-                        ]);
+                            ]));
+                        }
+                        return h('div', {
+                            class: 'file-name ' + row.type
+                        }, array);
                     }
                 },
                 {
@@ -293,11 +329,7 @@ export default {
                 name: '',
                 newname: this.$L('未命名')
             });
-            this.$nextTick(() => {
-                this.$refs['input_' + id][0].focus({
-                    cursor: 'all'
-                })
-            })
+            this.autoBlur(id)
         },
 
         openFile(item) {
@@ -330,11 +362,7 @@ export default {
                 case 'rename':
                     this.$set(item, 'newname', item.name);
                     this.$set(item, '_edit', true);
-                    this.$nextTick(() => {
-                        this.$refs['input_' + item.id][0].focus({
-                            cursor: 'all'
-                        })
-                    })
+                    this.autoBlur(item.id)
                     break;
 
                 case 'copy':
@@ -398,6 +426,18 @@ export default {
             }).catch(({msg}) => {
                 $A.modalError(msg);
             });
+        },
+
+        autoBlur(id) {
+            this.$nextTick(() => {
+                if (this.$refs['input_' + id]) {
+                    this.$refs['input_' + id][0].focus({
+                        cursor: 'all'
+                    })
+                } else if (document.getElementById('input_' + id)) {
+                    document.getElementById('input_' + id).focus();
+                }
+            })
         },
 
         onBlur(item) {

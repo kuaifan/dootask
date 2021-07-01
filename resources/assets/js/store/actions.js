@@ -292,7 +292,7 @@ export default {
         } else if (state.method.isJson(data)) {
             let index = state.files.findIndex(({id}) => id == data.id);
             if (index > -1) {
-                state.files.splice(index, 1, data);
+                state.files.splice(index, 1, Object.assign(state.files[index], data));
             } else {
                 state.files.push(data)
             }

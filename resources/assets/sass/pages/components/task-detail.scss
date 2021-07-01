@@ -99,7 +99,7 @@
                     display: flex;
                     align-items: center;
                     color: #bbbbbb;
-                    .iconfont {
+                    .taskfont {
                         margin-right: 4px;
                     }
                 }
@@ -133,7 +133,7 @@
                                 .ivu-tag-text {
                                     display: flex;
                                     align-items: center;
-                                    .iconfont {
+                                    .taskfont {
                                         transform: scale(0.9);
                                         font-size: 14px;
                                         padding-right: 3px;
@@ -184,7 +184,7 @@
                             }
                             .file-delete {
                                 padding-left: 12px;
-                                .iconfont {
+                                .taskfont {
                                     display: none;
                                     font-size: 14px;
                                     color: #aaaaaa;
@@ -200,7 +200,7 @@
                             }
                             &:hover {
                                 .file-delete {
-                                    .iconfont {
+                                    .taskfont {
                                         display: inline-block;
                                     }
                                 }

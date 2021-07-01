@@ -55,8 +55,8 @@
                     <Checkbox :value="tablePanel('completedTask')" @on-change="$store.dispatch('toggleTablePanel', 'completedTask')">{{$L('显示已完成')}}</Checkbox>
                 </div>
                 <div :class="['project-switch-button', !tablePanel('card') ? 'menu' : '']" @click="$store.dispatch('toggleTablePanel', 'card')">
-                    <div><i class="iconfont">&#xe60c;</i></div>
-                    <div><i class="iconfont">&#xe66a;</i></div>
+                    <div><i class="taskfont">&#xe60c;</i></div>
+                    <div><i class="taskfont">&#xe66a;</i></div>
                 </div>
             </div>
         </div>
@@ -99,7 +99,7 @@
                                     <EDropdownItem divided disabled>{{$L('颜色')}}</EDropdownItem>
                                     <EDropdownItem v-for="(c, k) in $store.state.columnColorList" :key="k" :command="c">
                                         <div class="item">
-                                            <i class="iconfont" :style="{color:c.color}" v-html="c.color == column.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
+                                            <i class="taskfont" :style="{color:c.color}" v-html="c.color == column.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
                                         </div>
                                     </EDropdownItem>
                                 </EDropdownMenu>
@@ -165,7 +165,7 @@
                                                 <EDropdownItem divided disabled>{{$L('背景色')}}</EDropdownItem>
                                                 <EDropdownItem v-for="(c, k) in $store.state.taskColorList" :key="k" :command="c">
                                                     <div class="item">
-                                                        <i class="iconfont" :style="{color:c.color||'#f9f9f9'}" v-html="c.color == item.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
+                                                        <i class="taskfont" :style="{color:c.color||'#f9f9f9'}" v-html="c.color == item.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
                                                     </div>
                                                 </EDropdownItem>
                                             </EDropdownMenu>
@@ -196,7 +196,7 @@
                                         :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
                                         :open-delay="600"
                                         :content="item.end_at">
-                                        <div v-if="!item.complete_at"><i class="iconfont">&#xe71d;</i>{{ expiresFormat(item.end_at) }}</div>
+                                        <div v-if="!item.complete_at"><i class="taskfont">&#xe71d;</i>{{ expiresFormat(item.end_at) }}</div>
                                     </ETooltip>
                                 </div>
                                 <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
@@ -241,7 +241,7 @@
             <div :class="['project-table-body', !tablePanel('showMy') ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
-                        <i class="iconfont" @click="$store.dispatch('toggleTablePanel', 'showMy')">&#xe689;</i>
+                        <i class="taskfont" @click="$store.dispatch('toggleTablePanel', 'showMy')">&#xe689;</i>
                         <div class="row-h1">{{$L('我的任务')}}</div>
                         <div class="row-num">({{myList.length}})</div>
                     </Col>
@@ -256,7 +256,7 @@
             <div v-if="projectData.task_num > 0" :class="['project-table-body', !tablePanel('showUndone') ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
-                        <i class="iconfont" @click="$store.dispatch('toggleTablePanel', 'showUndone')">&#xe689;</i>
+                        <i class="taskfont" @click="$store.dispatch('toggleTablePanel', 'showUndone')">&#xe689;</i>
                         <div class="row-h1">{{$L('未完成任务')}}</div>
                         <div class="row-num">({{undoneList.length}})</div>
                     </Col>
@@ -271,7 +271,7 @@
             <div v-if="projectData.task_num > 0" :class="['project-table-body', !tablePanel('showCompleted') ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
-                        <i class="iconfont" @click="$store.dispatch('toggleTablePanel', 'showCompleted')">&#xe689;</i>
+                        <i class="taskfont" @click="$store.dispatch('toggleTablePanel', 'showCompleted')">&#xe689;</i>
                         <div class="row-h1">{{$L('已完成任务')}}</div>
                         <div class="row-num">({{completedList.length}})</div>
                     </Col>
@@ -642,6 +642,7 @@ export default {
                 'owner': this.userId,
                 'column_id': column_id,
             });
+            this.$Modal.resetIndex();
             this.addShow = true;
             this.$nextTick(() => {
                 this.$refs.add.$refs.input.focus();

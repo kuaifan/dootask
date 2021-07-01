@@ -436,7 +436,7 @@
                                     color: #ffffff;
                                     background-color: #ff9900;
                                 }
-                                .iconfont {
+                                .taskfont {
                                     margin-right: 3px;
                                     font-size: 12px;
                                 }
@@ -528,7 +528,7 @@
                     display: none;
                 }
                 .row-title {
-                    .iconfont {
+                    .taskfont {
                         transform: rotate(-90deg);
                     }
                 }
@@ -556,7 +556,7 @@
                         font-weight: 500;
                         color: #333333;
                         padding-left: 14px;
-                        .iconfont {
+                        .taskfont {
                             cursor: pointer;
                             transition: transform 0.3s;
                             font-size: 12px;
@@ -628,7 +628,7 @@
                                 margin-left: 16px;
                                 color: #aaaaaa;
                                 cursor: pointer;
-                                .iconfont {
+                                .taskfont {
                                     font-size: 12px;
                                 }
                                 > em {

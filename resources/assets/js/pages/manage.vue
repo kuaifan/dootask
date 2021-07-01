@@ -38,20 +38,20 @@
             </Dropdown>
             <ul class="overlay-y">
                 <li @click="toggleRoute('dashboard')" :class="classNameRoute('dashboard')">
-                    <i class="iconfont">&#xe6fb;</i>
+                    <i class="taskfont">&#xe6fb;</i>
                     <div class="menu-title">{{$L('仪表盘')}}</div>
                 </li>
                 <li @click="toggleRoute('calendar')" :class="classNameRoute('calendar')">
-                    <i class="iconfont">&#xe6f5;</i>
+                    <i class="taskfont">&#xe6f5;</i>
                     <div class="menu-title">{{$L('日历')}}</div>
                 </li>
                 <li @click="toggleRoute('messenger')" :class="classNameRoute('messenger')">
-                    <i class="iconfont">&#xe6eb;</i>
+                    <i class="taskfont">&#xe6eb;</i>
                     <div class="menu-title">{{$L('消息')}}</div>
                     <Badge class="menu-badge" :count="msgAllUnread"></Badge>
                 </li>
                 <li @click="toggleRoute('file')" :class="classNameRoute('file')">
-                    <i class="iconfont">&#xe6f3;</i>
+                    <i class="taskfont">&#xe6f3;</i>
                     <div class="menu-title">{{$L('文件')}}</div>
                 </li>
                 <li class="menu-project">
@@ -266,6 +266,10 @@ export default {
 
         userInfo() {
             this.chackPass();
+        },
+
+        taskId(id) {
+            id > 0 && this.$Modal.resetIndex();
         },
 
         dialogMsgPush(data) {

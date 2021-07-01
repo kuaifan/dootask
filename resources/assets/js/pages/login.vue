@@ -29,7 +29,7 @@
                 <Dropdown trigger="click" @on-click="setLanguage" transfer>
                     <div class="login-language">
                         {{currentLanguage}}
-                        <i class="iconfont">&#xe689;</i>
+                        <i class="taskfont">&#xe689;</i>
                     </div>
                     <Dropdown-menu slot="list">
                         <Dropdown-item v-for="(item, key) in languageList" :key="key" :name="key" :selected="getLanguage() === key">{{item}}</Dropdown-item>

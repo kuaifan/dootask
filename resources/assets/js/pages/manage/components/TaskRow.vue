@@ -44,7 +44,7 @@
                                 <EDropdownItem v-if="item.parent_id === 0" divided disabled>{{$L('背景色')}}</EDropdownItem>
                                 <EDropdownItem v-for="(c, k) in $store.state.taskColorList" :key="k" :command="c">
                                     <div class="item">
-                                        <i class="iconfont" :style="{color:c.color||'#f9f9f9'}" v-html="c.color == item.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
+                                        <i class="taskfont" :style="{color:c.color||'#f9f9f9'}" v-html="c.color == item.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
                                     </div>
                                 </EDropdownItem>
                             </template>
@@ -53,18 +53,18 @@
                     <div class="item-title" @click="openTask(item)">{{item.name}}</div>
                     <div class="item-icons" @click="openTask(item)">
                         <div v-if="item.desc" class="item-icon">
-                            <i class="iconfont">&#xe71a;</i>
+                            <i class="taskfont">&#xe71a;</i>
                         </div>
                         <div v-if="item.file_num > 0" class="item-icon">
-                            <i class="iconfont">&#xe71c;</i>
+                            <i class="taskfont">&#xe71c;</i>
                             <em>{{item.file_num}}</em>
                         </div>
                         <div v-if="item.msg_num > 0" class="item-icon">
-                            <i class="iconfont">&#xe71e;</i>
+                            <i class="taskfont">&#xe71e;</i>
                             <em>{{item.msg_num}}</em>
                         </div>
                         <div v-if="item.sub_num > 0" class="item-icon" @click.stop="getSublist(item)">
-                            <i class="iconfont">&#xe71f;</i>
+                            <i class="taskfont">&#xe71f;</i>
                             <em>{{item.sub_complete}}/{{item.sub_num}}</em>
                         </div>
                     </div>
@@ -95,7 +95,7 @@
                         <EDropdownMenu slot="dropdown">
                             <EDropdownItem v-for="(item, key) in taskPriority" :key="key" :command="'priority::' + key">
                                 <i
-                                    class="iconfont"
+                                    class="taskfont"
                                     :style="{color:item.color}"
                                     v-html="item.p_name == item.name ? '&#xe61d;' : '&#xe61c;'"></i>
                                 {{item.name}}

@@ -18,7 +18,7 @@
                         <li v-for="(item, key) in taskPriority" :key="key">
                             <ETooltip v-if="active" :content="item.name + ' (' + item.days + $L('天') + ')'">
                                 <i
-                                    class="iconfont"
+                                    class="taskfont"
                                     :style="{color:item.color}"
                                     v-html="addData.p_name == item.name ? '&#xe61d;' : '&#xe61c;'"
                                     @click="choosePriority(item)"></i>
@@ -57,7 +57,7 @@
                 <li v-for="(item, key) in taskPriority" :key="key">
                     <ETooltip v-if="active" :content="item.name + ' (' + item.days + $L('天') + ')'">
                         <i
-                            class="iconfont"
+                            class="taskfont"
                             :style="{color:item.color}"
                             v-html="addData.p_name == item.name ? '&#xe61d;' : '&#xe61c;'"
                             @click="choosePriority(item)"></i>

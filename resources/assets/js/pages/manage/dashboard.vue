@@ -9,21 +9,21 @@
                     <div class="block-title">{{$L('今日待完成')}}</div>
                     <div class="block-data">
                         <div class="block-num">{{projectStatistics.today || 0}}</div>
-                        <i class="iconfont">&#xe6f4;</i>
+                        <i class="taskfont">&#xe6f4;</i>
                     </div>
                 </li>
                 <li @click="dashboard='overdue'">
                     <div class="block-title">{{$L('超期未完成')}}</div>
                     <div class="block-data">
                         <div class="block-num">{{projectStatistics.overdue || 0}}</div>
-                        <i class="iconfont">&#xe603;</i>
+                        <i class="taskfont">&#xe603;</i>
                     </div>
                 </li>
                 <li>
                     <div class="block-title">{{$L('参与的项目')}}</div>
                     <div class="block-data">
                         <div class="block-num">{{projects.length}}</div>
-                        <i class="iconfont">&#xe6f9;</i>
+                        <i class="taskfont">&#xe6f9;</i>
                     </div>
                 </li>
             </ul>
@@ -42,7 +42,7 @@
                             placement="bottom"
                             @command="dropTask(item, $event)">
                             <div class="drop-icon" @click.stop="">
-                                <i class="iconfont">&#xe625;</i>
+                                <i class="taskfont">&#xe625;</i>
                             </div>
                             <EDropdownMenu slot="dropdown" class="project-list-more-dropdown-menu">
                                 <EDropdownItem v-if="item.complete_at" command="uncomplete">
@@ -69,7 +69,7 @@
                                     <EDropdownItem v-if="item.parent_id === 0" divided disabled>{{$L('背景色')}}</EDropdownItem>
                                     <EDropdownItem v-for="(c, k) in $store.state.taskColorList" :key="k" :command="c">
                                         <div class="item">
-                                            <i class="iconfont" :style="{color:c.color||'#f9f9f9'}" v-html="c.color == item.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
+                                            <i class="taskfont" :style="{color:c.color||'#f9f9f9'}" v-html="c.color == item.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
                                         </div>
                                     </EDropdownItem>
                                 </template>
@@ -77,14 +77,14 @@
                         </EDropdown>
                         <div class="item-title">{{item.name}}</div>
                         <div v-if="item.desc" class="item-icon">
-                            <i class="iconfont">&#xe71a;</i>
+                            <i class="taskfont">&#xe71a;</i>
                         </div>
                         <div v-if="item.sub_num > 0" class="item-icon">
-                            <i class="iconfont">&#xe71f;</i>
+                            <i class="taskfont">&#xe71f;</i>
                             <em>{{item.sub_complete}}/{{item.sub_num}}</em>
                         </div>
                         <div :class="['item-icon', item.today ? 'today' : '', item.overdue ? 'overdue' : '']">
-                            <i class="iconfont">&#xe71d;</i>
+                            <i class="taskfont">&#xe71d;</i>
                             <em>{{expiresFormat(item.end_at)}}</em>
                         </div>
                     </li>

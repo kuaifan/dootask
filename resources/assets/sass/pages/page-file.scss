@@ -38,7 +38,7 @@
                 flex-shrink: 0;
                 margin-left: 22px;
                 cursor: pointer;
-                .iconfont {
+                .taskfont {
                     font-size: 18px;
                 }
             }
@@ -195,7 +195,7 @@
                         &:before {
                             display: block;
                             content: "\e60b";
-                            font-family: "iconfont", "serif" !important;
+                            font-family: "taskfont", "serif" !important;
                             font-size: 64px;
                             font-style: normal;
                             -webkit-font-smoothing: antialiased;

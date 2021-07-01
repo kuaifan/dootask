@@ -23,8 +23,8 @@
                             :class="{active: dialog.id == dialogId}"
                             @click="openDialog(dialog, true)">
                             <template v-if="dialog.type=='group'">
-                                <i v-if="dialog.group_type=='project'" class="iconfont icon-avatar project">&#xe6f9;</i>
-                                <i v-else-if="dialog.group_type=='task'" class="iconfont icon-avatar task">&#xe6f4;</i>
+                                <i v-if="dialog.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
+                                <i v-else-if="dialog.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
                                 <Icon v-else class="icon-avatar" type="ios-people" />
                             </template>
                             <div v-else-if="dialog.dialog_user" class="user-avatar"><UserAvatar :userid="dialog.dialog_user.userid" :size="42"/></div>

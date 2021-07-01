@@ -166,7 +166,7 @@
                 <Form class="items" label-position="left" label-width="auto" @submit.native.prevent>
                     <FormItem v-if="taskDetail.p_name">
                         <div class="item-label" slot="label">
-                            <i class="iconfont">&#xe6ec;</i>{{$L('优先级')}}
+                            <i class="taskfont">&#xe6ec;</i>{{$L('优先级')}}
                         </div>
                         <ul class="item-content">
                             <li>
@@ -179,7 +179,7 @@
                                     <EDropdownMenu slot="dropdown">
                                         <EDropdownItem v-for="(item, key) in taskPriority" :key="key" :command="item">
                                             <i
-                                                class="iconfont"
+                                                class="taskfont"
                                                 :style="{color:item.color}"
                                                 v-html="taskDetail.p_name == item.name ? '&#xe61d;' : '&#xe61c;'"></i>
                                             {{item.name}}
@@ -191,7 +191,7 @@
                     </FormItem>
                     <FormItem v-if="getOwner.length > 0">
                         <div class="item-label" slot="label">
-                            <i class="iconfont">&#xe6e4;</i>{{$L('负责人')}}
+                            <i class="taskfont">&#xe6e4;</i>{{$L('负责人')}}
                         </div>
                         <Poptip
                             ref="owner"
@@ -221,7 +221,7 @@
                     </FormItem>
                     <FormItem v-if="getAssist.length > 0 || assistForce">
                         <div class="item-label" slot="label">
-                            <i class="iconfont">&#xe63f;</i>{{$L('协助人员')}}
+                            <i class="taskfont">&#xe63f;</i>{{$L('协助人员')}}
                         </div>
                         <Poptip
                             ref="assist"
@@ -253,7 +253,7 @@
                     </FormItem>
                     <FormItem v-if="taskDetail.end_at || timeForce">
                         <div class="item-label" slot="label">
-                            <i class="iconfont">&#xe6e8;</i>{{$L('截止时间')}}
+                            <i class="taskfont">&#xe6e8;</i>{{$L('截止时间')}}
                         </div>
                         <ul class="item-content">
                             <li>
@@ -269,7 +269,7 @@
                                     transfer>
                                     <div class="picker-time">
                                         <div @click="openTime" class="time">{{taskDetail.end_at ? cutTime : '--'}}</div>
-                                        <Tag v-if="!taskDetail.complete_at && taskDetail.today" color="blue"><i class="iconfont">&#xe71d;</i>{{expiresFormat(taskDetail.end_at)}}</Tag>
+                                        <Tag v-if="!taskDetail.complete_at && taskDetail.today" color="blue"><i class="taskfont">&#xe71d;</i>{{expiresFormat(taskDetail.end_at)}}</Tag>
                                         <Tag v-if="!taskDetail.complete_at && taskDetail.overdue" color="red">{{$L('超期未完成')}}</Tag>
                                     </div>
                                 </DatePicker>
@@ -278,7 +278,7 @@
                     </FormItem>
                     <FormItem v-if="fileList.length > 0">
                         <div class="item-label" slot="label">
-                            <i class="iconfont">&#xe6e6;</i>{{$L('附件')}}
+                            <i class="taskfont">&#xe6e6;</i>{{$L('附件')}}
                         </div>
                         <ul class="item-content file">
                             <li v-for="file in fileList">
@@ -294,21 +294,21 @@
                                             <Button size="small" type="primary" @click="deleteFile(file)">{{$L('确定')}}</Button>
                                         </div>
                                     </div>
-                                    <i slot="reference" :class="['iconfont', file._deling ? 'deling' : '']">&#xe6ea;</i>
+                                    <i slot="reference" :class="['taskfont', file._deling ? 'deling' : '']">&#xe6ea;</i>
                                 </EPopover>
                             </li>
                         </ul>
                         <ul class="item-content">
                             <li>
                                 <div class="add-button" @click="$refs.upload.handleClick()">
-                                    <i class="iconfont">&#xe6f2;</i>{{$L('添加附件')}}
+                                    <i class="taskfont">&#xe6f2;</i>{{$L('添加附件')}}
                                 </div>
                             </li>
                         </ul>
                     </FormItem>
                     <FormItem v-if="subList.length > 0 || addsubForce">
                         <div class="item-label" slot="label">
-                            <i class="iconfont">&#xe6f0;</i>{{$L('子任务')}}
+                            <i class="taskfont">&#xe6f0;</i>{{$L('子任务')}}
                         </div>
                         <ul class="item-content subtask">
                             <TaskDetail v-for="(task, key) in subList" :key="key" :open-task="task"/>
@@ -325,7 +325,7 @@
                                     @on-blur="addsubChackClose"
                                     @on-keydown="addsubKeydown"/>
                                 <div v-else class="add-button" @click="addsubOpen">
-                                    <i class="iconfont">&#xe6f2;</i>{{$L('添加子任务')}}
+                                    <i class="taskfont">&#xe6f2;</i>{{$L('添加子任务')}}
                                 </div>
                             </li>
                         </ul>
@@ -337,14 +337,14 @@
                         placement="bottom"
                         @command="dropAdd">
                         <div class="add-button">
-                            <i class="iconfont">&#xe6f2;</i>
+                            <i class="taskfont">&#xe6f2;</i>
                             {{$L('添加')}}
                             <em v-for="item in menuList">{{$L(item.name)}}</em>
                         </div>
                         <EDropdownMenu slot="dropdown">
                             <EDropdownItem v-for="(item, key) in menuList" :key="key" :command="item.command">
                                 <div class="item">
-                                    <i class="iconfont" v-html="item.icon"></i>{{$L(item.name)}}
+                                    <i class="taskfont" v-html="item.icon"></i>{{$L(item.name)}}
                                 </div>
                             </EDropdownItem>
                         </EDropdownMenu>
