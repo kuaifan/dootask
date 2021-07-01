@@ -202,7 +202,7 @@ export default {
                     break;
 
                 case 'sheet':
-                    this.$refs.mySheet.exportExcel(this.file.title, act);
+                    this.$refs.mySheet.exportExcel(this.file.name, act);
                     break;
             }
         },

@@ -146,6 +146,18 @@ export default {
             this.$emit('input', value);
         },
 
+        chatatABC(n) {
+            var orda = 'a'.charCodeAt(0);
+            var ordz = 'z'.charCodeAt(0);
+            var len = ordz - orda + 1;
+            var s = "";
+            while (n >= 0) {
+                s = String.fromCharCode(n % len + orda) + s;
+                n = Math.floor(n / len) - 1;
+            }
+            return s.toUpperCase();
+        },
+
         exportExcel(bookName, bookType) {
             let allSheetData = window.luckysheet.getluckysheetfile();
             let SheetNames = [];
@@ -157,7 +169,7 @@ export default {
                 let cellValue = null;
                 // 获取单元格的背景色
                 let setBackground = (row, col, bg) => {
-                    var colA = window.luckysheet.luckysheetchatatABC(col);
+                    var colA = this.chatatABC(col);
                     var key = colA + (row + 1);
                     bgConfig[key] = bg.replace(/\#?/, '');
                 }
