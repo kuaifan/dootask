@@ -293,6 +293,7 @@ export default {
             this.$store.dispatch("increaseTaskMsgNum", this.dialogId);
             this.$store.dispatch("moveDialogTop", this.dialogId);
             this.$store.dispatch("updateDialogLastMsg", data);
+            this.onActive();
         },
 
         chatScroll(res) {
