@@ -27,8 +27,8 @@ class WebSocketsTableSeeder extends Seeder
                 'key' => '1d274f8a181854b719040773b874558f',
                 'fd' => '118',
                 'userid' => 1,
-                'created_at' => '2021-07-01 18:03:05',
-                'updated_at' => '2021-07-01 18:03:05',
+                'created_at' => seeders_at('2021-07-01 18:03:05'),
+                'updated_at' => seeders_at('2021-07-01 18:03:05'),
             ),
             1 =>
             array (
@@ -36,8 +36,8 @@ class WebSocketsTableSeeder extends Seeder
                 'key' => '7fdff81ae562ac8e037b4a0103becbb3',
                 'fd' => '119',
                 'userid' => 1,
-                'created_at' => '2021-07-01 18:03:13',
-                'updated_at' => '2021-07-01 18:03:13',
+                'created_at' => seeders_at('2021-07-01 18:03:13'),
+                'updated_at' => seeders_at('2021-07-01 18:03:13'),
             ),
             2 =>
             array (
@@ -45,8 +45,8 @@ class WebSocketsTableSeeder extends Seeder
                 'key' => '26823fece8755d2b60cf8f406e4a4ed9',
                 'fd' => '120',
                 'userid' => 1,
-                'created_at' => '2021-07-01 18:03:47',
-                'updated_at' => '2021-07-01 18:03:47',
+                'created_at' => seeders_at('2021-07-01 18:03:47'),
+                'updated_at' => seeders_at('2021-07-01 18:03:47'),
             ),
         ));
 

@@ -27,8 +27,8 @@ class ProjectUsersTableSeeder extends Seeder
                 'project_id' => 1,
                 'userid' => 1,
                 'owner' => 1,
-                'created_at' => '2021-07-01 10:46:47',
-                'updated_at' => '2021-07-01 10:46:47',
+                'created_at' => seeders_at('2021-07-01 10:46:47'),
+                'updated_at' => seeders_at('2021-07-01 10:46:47'),
             ),
             1 =>
             array (
@@ -36,8 +36,8 @@ class ProjectUsersTableSeeder extends Seeder
                 'project_id' => 2,
                 'userid' => 1,
                 'owner' => 1,
-                'created_at' => '2021-07-01 10:47:45',
-                'updated_at' => '2021-07-01 10:47:45',
+                'created_at' => seeders_at('2021-07-01 10:47:45'),
+                'updated_at' => seeders_at('2021-07-01 10:47:45'),
             ),
             2 =>
             array (
@@ -45,8 +45,8 @@ class ProjectUsersTableSeeder extends Seeder
                 'project_id' => 3,
                 'userid' => 1,
                 'owner' => 1,
-                'created_at' => '2021-07-01 11:02:57',
-                'updated_at' => '2021-07-01 11:02:57',
+                'created_at' => seeders_at('2021-07-01 11:02:57'),
+                'updated_at' => seeders_at('2021-07-01 11:02:57'),
             ),
             3 =>
             array (
@@ -54,8 +54,8 @@ class ProjectUsersTableSeeder extends Seeder
                 'project_id' => 4,
                 'userid' => 1,
                 'owner' => 1,
-                'created_at' => '2021-07-01 11:43:01',
-                'updated_at' => '2021-07-01 11:43:01',
+                'created_at' => seeders_at('2021-07-01 11:43:01'),
+                'updated_at' => seeders_at('2021-07-01 11:43:01'),
             ),
             4 =>
             array (
@@ -63,8 +63,8 @@ class ProjectUsersTableSeeder extends Seeder
                 'project_id' => 5,
                 'userid' => 1,
                 'owner' => 1,
-                'created_at' => '2021-07-01 15:33:23',
-                'updated_at' => '2021-07-01 15:33:23',
+                'created_at' => seeders_at('2021-07-01 15:33:23'),
+                'updated_at' => seeders_at('2021-07-01 15:33:23'),
             ),
             5 =>
             array (
@@ -72,8 +72,8 @@ class ProjectUsersTableSeeder extends Seeder
                 'project_id' => 6,
                 'userid' => 1,
                 'owner' => 1,
-                'created_at' => '2021-07-01 15:37:06',
-                'updated_at' => '2021-07-01 15:37:06',
+                'created_at' => seeders_at('2021-07-01 15:37:06'),
+                'updated_at' => seeders_at('2021-07-01 15:37:06'),
             ),
             6 =>
             array (
@@ -81,8 +81,8 @@ class ProjectUsersTableSeeder extends Seeder
                 'project_id' => 7,
                 'userid' => 1,
                 'owner' => 1,
-                'created_at' => '2021-07-01 16:15:28',
-                'updated_at' => '2021-07-01 16:15:28',
+                'created_at' => seeders_at('2021-07-01 16:15:28'),
+                'updated_at' => seeders_at('2021-07-01 16:15:28'),
             ),
             7 =>
             array (
@@ -90,8 +90,8 @@ class ProjectUsersTableSeeder extends Seeder
                 'project_id' => 3,
                 'userid' => 2,
                 'owner' => 0,
-                'created_at' => '2021-07-01 16:22:42',
-                'updated_at' => '2021-07-01 16:22:42',
+                'created_at' => seeders_at('2021-07-01 16:22:42'),
+                'updated_at' => seeders_at('2021-07-01 16:22:42'),
             ),
             8 =>
             array (
@@ -99,8 +99,8 @@ class ProjectUsersTableSeeder extends Seeder
                 'project_id' => 2,
                 'userid' => 2,
                 'owner' => 0,
-                'created_at' => '2021-07-01 16:23:15',
-                'updated_at' => '2021-07-01 16:23:15',
+                'created_at' => seeders_at('2021-07-01 16:23:15'),
+                'updated_at' => seeders_at('2021-07-01 16:23:15'),
             ),
             9 =>
             array (
@@ -108,8 +108,8 @@ class ProjectUsersTableSeeder extends Seeder
                 'project_id' => 7,
                 'userid' => 2,
                 'owner' => 0,
-                'created_at' => '2021-07-01 16:23:40',
-                'updated_at' => '2021-07-01 16:23:40',
+                'created_at' => seeders_at('2021-07-01 16:23:40'),
+                'updated_at' => seeders_at('2021-07-01 16:23:40'),
             ),
             10 =>
             array (
@@ -117,8 +117,8 @@ class ProjectUsersTableSeeder extends Seeder
                 'project_id' => 5,
                 'userid' => 2,
                 'owner' => 0,
-                'created_at' => '2021-07-01 16:29:38',
-                'updated_at' => '2021-07-01 16:29:38',
+                'created_at' => seeders_at('2021-07-01 16:29:38'),
+                'updated_at' => seeders_at('2021-07-01 16:29:38'),
             ),
         ));
 

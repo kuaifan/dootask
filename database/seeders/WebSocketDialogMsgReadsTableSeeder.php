@@ -28,7 +28,7 @@ class WebSocketDialogMsgReadsTableSeeder extends Seeder
                 'msg_id' => 5,
                 'userid' => 1,
                 'after' => 0,
-                'read_at' => '2021-07-01 16:21:28',
+                'read_at' => seeders_at('2021-07-01 16:21:28'),
             ),
             1 =>
             array (
@@ -37,7 +37,7 @@ class WebSocketDialogMsgReadsTableSeeder extends Seeder
                 'msg_id' => 6,
                 'userid' => 2,
                 'after' => 0,
-                'read_at' => '2021-07-01 16:25:43',
+                'read_at' => seeders_at('2021-07-01 16:25:43'),
             ),
             2 =>
             array (
@@ -46,7 +46,7 @@ class WebSocketDialogMsgReadsTableSeeder extends Seeder
                 'msg_id' => 7,
                 'userid' => 1,
                 'after' => 0,
-                'read_at' => '2021-07-01 16:27:44',
+                'read_at' => seeders_at('2021-07-01 16:27:44'),
             ),
             3 =>
             array (
@@ -55,7 +55,7 @@ class WebSocketDialogMsgReadsTableSeeder extends Seeder
                 'msg_id' => 2,
                 'userid' => 2,
                 'after' => 1,
-                'read_at' => '2021-07-01 16:26:03',
+                'read_at' => seeders_at('2021-07-01 16:26:03'),
             ),
             4 =>
             array (
@@ -64,7 +64,7 @@ class WebSocketDialogMsgReadsTableSeeder extends Seeder
                 'msg_id' => 8,
                 'userid' => 1,
                 'after' => 0,
-                'read_at' => '2021-07-01 16:27:21',
+                'read_at' => seeders_at('2021-07-01 16:27:21'),
             ),
             5 =>
             array (
@@ -73,7 +73,7 @@ class WebSocketDialogMsgReadsTableSeeder extends Seeder
                 'msg_id' => 9,
                 'userid' => 1,
                 'after' => 0,
-                'read_at' => '2021-07-01 16:27:21',
+                'read_at' => seeders_at('2021-07-01 16:27:21'),
             ),
             6 =>
             array (
@@ -82,7 +82,7 @@ class WebSocketDialogMsgReadsTableSeeder extends Seeder
                 'msg_id' => 10,
                 'userid' => 1,
                 'after' => 0,
-                'read_at' => '2021-07-01 16:27:21',
+                'read_at' => seeders_at('2021-07-01 16:27:21'),
             ),
             7 =>
             array (
@@ -91,7 +91,7 @@ class WebSocketDialogMsgReadsTableSeeder extends Seeder
                 'msg_id' => 11,
                 'userid' => 2,
                 'after' => 0,
-                'read_at' => '2021-07-01 16:32:00',
+                'read_at' => seeders_at('2021-07-01 16:32:00'),
             ),
             8 =>
             array (
@@ -100,7 +100,7 @@ class WebSocketDialogMsgReadsTableSeeder extends Seeder
                 'msg_id' => 12,
                 'userid' => 2,
                 'after' => 0,
-                'read_at' => '2021-07-01 16:31:43',
+                'read_at' => seeders_at('2021-07-01 16:31:43'),
             ),
             9 =>
             array (
@@ -109,7 +109,7 @@ class WebSocketDialogMsgReadsTableSeeder extends Seeder
                 'msg_id' => 13,
                 'userid' => 2,
                 'after' => 0,
-                'read_at' => '2021-07-01 16:31:43',
+                'read_at' => seeders_at('2021-07-01 16:31:43'),
             ),
             10 =>
             array (
@@ -118,7 +118,7 @@ class WebSocketDialogMsgReadsTableSeeder extends Seeder
                 'msg_id' => 14,
                 'userid' => 2,
                 'after' => 0,
-                'read_at' => '2021-07-01 16:31:37',
+                'read_at' => seeders_at('2021-07-01 16:31:37'),
             ),
             11 =>
             array (
@@ -127,7 +127,7 @@ class WebSocketDialogMsgReadsTableSeeder extends Seeder
                 'msg_id' => 4,
                 'userid' => 2,
                 'after' => 1,
-                'read_at' => '2021-07-01 16:31:37',
+                'read_at' => seeders_at('2021-07-01 16:31:37'),
             ),
             12 =>
             array (
@@ -181,7 +181,7 @@ class WebSocketDialogMsgReadsTableSeeder extends Seeder
                 'msg_id' => 20,
                 'userid' => 2,
                 'after' => 0,
-                'read_at' => '2021-07-01 16:37:34',
+                'read_at' => seeders_at('2021-07-01 16:37:34'),
             ),
             18 =>
             array (
@@ -190,7 +190,7 @@ class WebSocketDialogMsgReadsTableSeeder extends Seeder
                 'msg_id' => 21,
                 'userid' => 1,
                 'after' => 0,
-                'read_at' => '2021-07-01 17:12:23',
+                'read_at' => seeders_at('2021-07-01 17:12:23'),
             ),
             19 =>
             array (
@@ -199,7 +199,7 @@ class WebSocketDialogMsgReadsTableSeeder extends Seeder
                 'msg_id' => 22,
                 'userid' => 2,
                 'after' => 0,
-                'read_at' => '2021-07-01 16:58:00',
+                'read_at' => seeders_at('2021-07-01 16:58:00'),
             ),
             20 =>
             array (
@@ -208,7 +208,7 @@ class WebSocketDialogMsgReadsTableSeeder extends Seeder
                 'msg_id' => 23,
                 'userid' => 2,
                 'after' => 0,
-                'read_at' => '2021-07-01 16:57:54',
+                'read_at' => seeders_at('2021-07-01 16:57:54'),
             ),
             21 =>
             array (
@@ -217,7 +217,7 @@ class WebSocketDialogMsgReadsTableSeeder extends Seeder
                 'msg_id' => 24,
                 'userid' => 2,
                 'after' => 0,
-                'read_at' => '2021-07-01 16:57:46',
+                'read_at' => seeders_at('2021-07-01 16:57:46'),
             ),
             22 =>
             array (
@@ -226,7 +226,7 @@ class WebSocketDialogMsgReadsTableSeeder extends Seeder
                 'msg_id' => 25,
                 'userid' => 1,
                 'after' => 0,
-                'read_at' => '2021-07-01 17:12:20',
+                'read_at' => seeders_at('2021-07-01 17:12:20'),
             ),
             23 =>
             array (
@@ -235,7 +235,7 @@ class WebSocketDialogMsgReadsTableSeeder extends Seeder
                 'msg_id' => 26,
                 'userid' => 1,
                 'after' => 0,
-                'read_at' => '2021-07-01 16:59:43',
+                'read_at' => seeders_at('2021-07-01 16:59:43'),
             ),
             24 =>
             array (
@@ -244,7 +244,7 @@ class WebSocketDialogMsgReadsTableSeeder extends Seeder
                 'msg_id' => 27,
                 'userid' => 1,
                 'after' => 0,
-                'read_at' => '2021-07-01 16:59:42',
+                'read_at' => seeders_at('2021-07-01 16:59:42'),
             ),
             25 =>
             array (

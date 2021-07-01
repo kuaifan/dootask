@@ -29,7 +29,6 @@ class DatabaseSeeder extends Seeder
         $this->call(WebSocketDialogMsgsTableSeeder::class);
         $this->call(WebSocketDialogUsersTableSeeder::class);
         $this->call(WebSocketDialogsTableSeeder::class);
-        $this->call(WebSocketTmpMsgsTableSeeder::class);
         $this->call(WebSocketsTableSeeder::class);
     }
 }

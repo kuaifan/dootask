@@ -30,9 +30,9 @@ class ProjectsTableSeeder extends Seeder
                 'dialog_id' => 3,
                 'archived_at' => NULL,
                 'archived_userid' => 0,
-                'created_at' => '2021-07-01 10:46:47',
-                'updated_at' => '2021-07-01 10:46:55',
-                'deleted_at' => '2021-07-01 10:46:55',
+                'created_at' => seeders_at('2021-07-01 10:46:47'),
+                'updated_at' => seeders_at('2021-07-01 10:46:55'),
+                'deleted_at' => seeders_at('2021-07-01 10:46:55'),
             ),
             1 =>
             array (
@@ -45,8 +45,8 @@ class ProjectsTableSeeder extends Seeder
                 'dialog_id' => 5,
                 'archived_at' => NULL,
                 'archived_userid' => 0,
-                'created_at' => '2021-07-01 10:47:45',
-                'updated_at' => '2021-07-01 16:42:23',
+                'created_at' => seeders_at('2021-07-01 10:47:45'),
+                'updated_at' => seeders_at('2021-07-01 16:42:23'),
                 'deleted_at' => NULL,
             ),
             2 =>
@@ -58,8 +58,8 @@ class ProjectsTableSeeder extends Seeder
                 'dialog_id' => 7,
                 'archived_at' => NULL,
                 'archived_userid' => 0,
-                'created_at' => '2021-07-01 11:02:57',
-                'updated_at' => '2021-07-01 16:41:59',
+                'created_at' => seeders_at('2021-07-01 11:02:57'),
+                'updated_at' => seeders_at('2021-07-01 16:41:59'),
                 'deleted_at' => NULL,
             ),
             3 =>
@@ -73,8 +73,8 @@ class ProjectsTableSeeder extends Seeder
                 'dialog_id' => 9,
                 'archived_at' => NULL,
                 'archived_userid' => 0,
-                'created_at' => '2021-07-01 11:43:01',
-                'updated_at' => '2021-07-01 17:04:04',
+                'created_at' => seeders_at('2021-07-01 11:43:01'),
+                'updated_at' => seeders_at('2021-07-01 17:04:04'),
                 'deleted_at' => NULL,
             ),
             4 =>
@@ -86,8 +86,8 @@ class ProjectsTableSeeder extends Seeder
                 'dialog_id' => 11,
                 'archived_at' => NULL,
                 'archived_userid' => 0,
-                'created_at' => '2021-07-01 15:33:23',
-                'updated_at' => '2021-07-01 16:09:27',
+                'created_at' => seeders_at('2021-07-01 15:33:23'),
+                'updated_at' => seeders_at('2021-07-01 16:09:27'),
                 'deleted_at' => NULL,
             ),
             5 =>
@@ -99,8 +99,8 @@ class ProjectsTableSeeder extends Seeder
                 'dialog_id' => 13,
                 'archived_at' => NULL,
                 'archived_userid' => 0,
-                'created_at' => '2021-07-01 15:37:06',
-                'updated_at' => '2021-07-01 17:03:29',
+                'created_at' => seeders_at('2021-07-01 15:37:06'),
+                'updated_at' => seeders_at('2021-07-01 17:03:29'),
                 'deleted_at' => NULL,
             ),
             6 =>
@@ -112,8 +112,8 @@ class ProjectsTableSeeder extends Seeder
                 'dialog_id' => 15,
                 'archived_at' => NULL,
                 'archived_userid' => 0,
-                'created_at' => '2021-07-01 16:15:28',
-                'updated_at' => '2021-07-01 17:04:46',
+                'created_at' => seeders_at('2021-07-01 16:15:28'),
+                'updated_at' => seeders_at('2021-07-01 17:04:46'),
                 'deleted_at' => NULL,
             ),
         ));
