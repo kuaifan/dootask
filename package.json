@@ -1,6 +1,6 @@
 {
     "name": "DooTask",
-    "version": "0.2.31",
+    "version": "0.2.32",
     "description": "DooTask is task management system.",
     "scripts": {
         "dev": "npm run development",
@@ -23,6 +23,7 @@
         "jquery": "^3.5.1",
         "jspdf": "^2.3.1",
         "laravel-mix": "^6.0.6",
+        "less-loader": "^10.0.0",
         "lodash": "^4.17.19",
         "moment": "^2.29.1",
         "nativefier": "^44.0.4",
@@ -30,7 +31,7 @@
         "postcss": "^8.1.14",
         "resolve-url-loader": "^4.0.0",
         "sass": "^1.34.1",
-        "sass-loader": "^7.1.0",
+        "sass-loader": "^8.0.2",
         "stylus": "^0.54.8",
         "stylus-loader": "^3.0.2",
         "vue": "^2.6.12",

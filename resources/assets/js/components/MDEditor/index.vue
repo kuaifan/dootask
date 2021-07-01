@@ -288,7 +288,7 @@
                 //上传大小错误
                 $A.modalWarning({
                     title: '超出文件大小限制',
-                    content: '文件 ' + file.name + ' 太大，不能超过' + $A.bytesToSize(this.maxSize * 1024) + '。'
+                    content: '文件 ' + file.name + ' 太大，不能超过：' + $A.bytesToSize(this.maxSize * 1024) + '。'
                 });
             },
 

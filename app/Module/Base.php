@@ -2243,12 +2243,12 @@ class Base
             }
             $extension = strtolower($file->getClientOriginalExtension());
             if ($type && is_array($type) && !in_array($extension, $type)) {
-                return Base::retError(['文件格式错误，限制类型：%', implode(",", $type)]);
+                return Base::retError('文件格式错误，限制类型：' . implode(",", $type));
             }
             try {
                 $fileSize = $file->getSize();
                 if ($param['size'] > 0 && $fileSize > $param['size'] * 1024) {
-                    return Base::retError(['文件大小超限，最大限制：%KB', $param['size']]);
+                    return Base::retError('文件大小超限，最大限制：' . $param['size'] . 'KB');
                 }
             } catch (Exception $e) {
                 $fileSize = 0;

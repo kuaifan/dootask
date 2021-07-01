@@ -3,7 +3,7 @@
         <Form ref="formDatum" :model="formDatum" :rules="ruleDatum" label-width="auto" @submit.native.prevent>
             <FormItem :label="$L('头像')" prop="userimg">
                 <ImgUpload v-model="formDatum.userimg" :num="1"></ImgUpload>
-                <span class="form-tip">{{$L('建议尺寸：%', '200x200')}}</span>
+                <span class="form-tip">{{$L('建议尺寸：200x200')}}</span>
             </FormItem>
             <FormItem :label="$L('邮箱')">
                 <Input v-model="userInfo.email" disabled></Input>

@@ -61,4 +61,52 @@ class IndexController extends InvokeController
 
         return "success";
     }
+
+    /**
+     * 提取所有中文
+     * @return array|string
+     */
+    public function allcn()
+    {
+        if (!Base::is_internal_ip()) {
+            // 限制内网访问
+            return "Forbidden Access";
+        }
+        $list = Base::readDir(resource_path());
+        $array = [];
+        foreach ($list as $item) {
+            $content = file_get_contents($item);
+            preg_match_all("/\\\$L\((.*?)\)/", $content, $matchs);
+            if ($matchs) {
+                foreach ($matchs[1] as $text) {
+                    $array[trim(trim($text, '"'), "'")] = trim(trim($text, '"'), "'");
+                }
+            }
+        }
+        return array_values($array);
+    }
+
+    /**
+     * 提取所有中文
+     * @return array|string
+     */
+    public function allcn__php()
+    {
+        if (!Base::is_internal_ip()) {
+            // 限制内网访问
+            return "Forbidden Access";
+        }
+        $list = Base::readDir(app_path());
+        $array = [];
+        foreach ($list as $item) {
+            $content = file_get_contents($item);
+            preg_match_all("/(retSuccess|retError|ApiException)\((.*?)[,|)]/", $content, $matchs);
+            if ($matchs) {
+                foreach ($matchs[2] as $text) {
+                    $array[trim(trim($text, '"'), "'")] = trim(trim($text, '"'), "'");
+                }
+            }
+        }
+        return array_values($array);
+    }
 }

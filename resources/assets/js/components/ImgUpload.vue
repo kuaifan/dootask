@@ -260,7 +260,7 @@
                 //上传大小错误
                 $A.noticeWarning({
                     title: this.$L('超出文件大小限制'),
-                    desc: this.$L('文件 ' + file.name + ' 太大，不能超过' + $A.bytesToSize(this.maxSize * 1024))
+                    desc: this.$L('文件 ' + file.name + ' 太大，不能超过：' + $A.bytesToSize(this.maxSize * 1024))
                 });
             },
             handleBeforeUpload () {

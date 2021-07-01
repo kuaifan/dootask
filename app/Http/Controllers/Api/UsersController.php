@@ -369,7 +369,7 @@ class UsersController extends AbstractController
             $array[] = $userid;
         }
         if (count($array) > 50) {
-            return Base::retError(['一次最多只能获取%条数据', 50]);
+            return Base::retError('一次最多只能获取50条数据');
         }
         $retArray = [];
         foreach ($array AS $id) {
