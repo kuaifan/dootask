@@ -104,16 +104,16 @@
                                     </EDropdownItem>
                                 </EDropdownMenu>
                             </EDropdown>
-                            <Icon class="last" type="md-add" @click="addTopShow(column)" />
+                            <Icon class="last" type="md-add" @click="addTopShow(column.id, true)" />
                         </div>
                     </div>
                     <div :ref="'column_' + column.id" class="column-task overlay-y">
-                        <div v-if="column.addTopShow===true" class="task-item additem">
+                        <div v-if="!!columnTopShow[column.id]" class="task-item additem">
                             <TaskAddSimple
                                 :column-id="column.id"
                                 :project-id="projectId"
                                 :add-top="true"
-                                @on-close="column.addTopShow=false"
+                                @on-close="addTopShow(column.id, false)"
                                 @on-priority="addTaskOpen"
                                 auto-active/>
                         </div>
@@ -399,6 +399,7 @@ export default {
             nowInterval: null,
 
             columnLoad: {},
+            columnTopShow: {},
             taskLoad: {},
 
             searchText: '',
@@ -631,9 +632,11 @@ export default {
             })
         },
 
-        addTopShow(column) {
-            this.$set(column, 'addTopShow', true);
-            this.$refs['column_' + column.id][0].scrollTop = 0;
+        addTopShow(id, show) {
+            this.$set(this.columnTopShow, id, show);
+            if (show) {
+                this.$refs['column_' + id][0].scrollTop = 0;
+            }
         },
 
         addTaskOpen(column_id) {
