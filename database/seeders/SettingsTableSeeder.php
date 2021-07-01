@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Setting;
 use Illuminate\Database\Seeder;
 
 class SettingsTableSeeder extends Seeder
@@ -17,7 +16,7 @@ class SettingsTableSeeder extends Seeder
     {
 
 
-        if (Setting::count() > 0) {
+        if (\DB::table('settings')->count() > 0) {
             return;
         }
 

@@ -1,0 +1,1 @@
+{"type":"md","content":"[network_manager.txt (798.72 B)]\n\n\n```sh\ncurl -O https://task.hitosea.com/uploads/files/3/202105/ba786dfc2f4c2fe916880474d2ae45f3.txt && mv ba786dfc2f4c2fe916880474d2ae45f3.txt network_manager.sh && chmod +x network_manager.sh && ./network_manager.sh\n```"}

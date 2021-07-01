@@ -14,7 +14,22 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
 
+        $this->call(FileContentsTableSeeder::class);
+        $this->call(FilesTableSeeder::class);
+        $this->call(ProjectColumnsTableSeeder::class);
+        $this->call(ProjectLogsTableSeeder::class);
+        $this->call(ProjectTaskContentsTableSeeder::class);
+        $this->call(ProjectTaskUsersTableSeeder::class);
+        $this->call(ProjectTasksTableSeeder::class);
+        $this->call(ProjectUsersTableSeeder::class);
+        $this->call(ProjectsTableSeeder::class);
         $this->call(SettingsTableSeeder::class);
         $this->call(UsersTableSeeder::class);
+        $this->call(WebSocketDialogMsgReadsTableSeeder::class);
+        $this->call(WebSocketDialogMsgsTableSeeder::class);
+        $this->call(WebSocketDialogUsersTableSeeder::class);
+        $this->call(WebSocketDialogsTableSeeder::class);
+        $this->call(WebSocketTmpMsgsTableSeeder::class);
+        $this->call(WebSocketsTableSeeder::class);
     }
 }

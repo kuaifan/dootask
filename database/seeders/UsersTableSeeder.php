@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class UsersTableSeeder extends Seeder
@@ -17,7 +16,7 @@ class UsersTableSeeder extends Seeder
     {
 
 
-        if (User::count() > 0) {
+        if (\DB::table('users')->count() > 0) {
             return;
         }
 
@@ -34,15 +33,15 @@ class UsersTableSeeder extends Seeder
                 'encrypt' => 'AJnoOb',
                 'password' => '7d996ac317f1b9db564750ef3b8790fc',
                 'changepass' => 0,
-                'login_num' => 64,
+                'login_num' => 73,
                 'last_ip' => '10.22.22.1',
-                'last_at' => '2021-06-25 18:50:13',
+                'last_at' => '2021-07-01 16:58:16',
                 'line_ip' => '10.22.22.1',
-                'line_at' => '2021-06-25 18:50:13',
-                'task_dialog_id' => 28,
+                'line_at' => '2021-07-01 17:43:48',
+                'task_dialog_id' => 18,
                 'created_ip' => '',
                 'created_at' => '2021-06-02 11:01:14',
-                'updated_at' => '2021-06-25 18:50:28',
+                'updated_at' => '2021-07-01 17:43:48',
             ),
             1 =>
             array (
@@ -56,15 +55,15 @@ class UsersTableSeeder extends Seeder
                 'encrypt' => '18cZzh',
                 'password' => '7eedd4cbf70da996d21f641bcc6cb412',
                 'changepass' => 0,
-                'login_num' => 58,
+                'login_num' => 63,
                 'last_ip' => '10.22.22.1',
-                'last_at' => '2021-06-25 18:50:51',
+                'last_at' => '2021-07-01 16:57:40',
                 'line_ip' => '10.22.22.1',
-                'line_at' => '2021-06-25 18:50:51',
-                'task_dialog_id' => 28,
+                'line_at' => '2021-07-01 16:57:40',
+                'task_dialog_id' => 16,
                 'created_ip' => '',
                 'created_at' => '2021-06-02 11:01:14',
-                'updated_at' => '2021-06-25 18:51:06',
+                'updated_at' => '2021-07-01 16:58:00',
             ),
         ));
 
