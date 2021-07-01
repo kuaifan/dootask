@@ -171,7 +171,7 @@ class Project extends AbstractModel
      */
     public function getDialogIdAttribute($value)
     {
-        if ($value === 0) {
+        if ($value === 0 && $this->id) {
             return AbstractModel::transaction(function() {
                 $this->lockForUpdate();
                 $dialog = WebSocketDialog::createGroup(null, $this->relationUserids(), 'project');
