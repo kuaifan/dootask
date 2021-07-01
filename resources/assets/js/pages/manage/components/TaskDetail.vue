@@ -390,7 +390,6 @@
                     </div>
                 </div>
             </div>
-            <Input ref="input" v-show="false"/>
         </div>
     </div>
 </template>
@@ -679,7 +678,6 @@ export default {
             if (id > 0) {
                 this.$nextTick(() => {
                     this.loadEditor = true;
-                    this.$refs.input.focus()
                 });
             } else {
                 this.timeOpen = false;

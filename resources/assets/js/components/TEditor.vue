@@ -1,12 +1,18 @@
 <template>
     <div class="teditor-wrapper">
-        <div class="teditor-box" :class="[!inline&&spinShow?'teditor-loadstyle':'teditor-loadedstyle']">
-            <div v-if="inline" ref="myTextarea" :id="id">{{ content }}</div>
-            <textarea v-else ref="myTextarea" :id="id">{{ content }}</textarea>
-            <Spin fix v-if="!inline&&spinShow">
-                <Icon type="ios-loading" size=18 class="upload-control-spin-icon-load"></Icon>
-                <div>{{$L('加载组件中...')}}</div>
-            </Spin>
+        <input ref="input" class="teditor-bginput"/>
+        <div class="teditor-box" :class="[!inline && spinShow ? 'teditor-loadstyle' : 'teditor-loadedstyle']">
+            <template v-if="inline">
+                <div ref="myTextarea" :id="id" v-html="content"></div>
+                <Icon v-if="spinShow" type="ios-loading" :size="18" class="icon-loading icon-inline"></Icon>
+            </template>
+            <template v-else>
+                <textarea ref="myTextarea" :id="id">{{ content }}</textarea>
+                <Spin fix v-if="spinShow">
+                    <Icon type="ios-loading" :size="18" class="icon-loading"></Icon>
+                    <div>{{$L('加载组件中...')}}</div>
+                </Spin>
+            </template>
             <ImgUpload
                 ref="myUpload"
                 class="upload-control"
@@ -32,7 +38,7 @@
                 :before-upload="handleBeforeUpload"/>
         </div>
         <Spin fix v-if="uploadIng > 0">
-            <Icon type="ios-loading" class="upload-control-spin-icon-load"></Icon>
+            <Icon type="ios-loading" class="icon-loading"></Icon>
             <div>{{$L('正在上传文件...')}}</div>
         </Spin>
         <Modal v-model="transfer" class="teditor-transfer" @on-visible-change="transferChange" footer-hide fullscreen transfer>
@@ -43,7 +49,7 @@
                 <textarea :id="'T_' + id">{{ content }}</textarea>
             </div>
             <Spin fix v-if="uploadIng > 0">
-                <Icon type="ios-loading" class="upload-control-spin-icon-load"></Icon>
+                <Icon type="ios-loading" class="icon-loading"></Icon>
                 <div>{{$L('正在上传文件...')}}</div>
             </Spin>
         </Modal>
@@ -341,6 +347,11 @@
                                     this.editor.setMode('readonly');
                                 } else {
                                     this.editor.setMode('design');
+                                }
+                                if (this.inline) {
+                                    this.$nextTick(() => {
+                                        this.$refs.input.focus();
+                                    });
                                 }
                                 this.$emit('editorInit', this.editor);
                             });
