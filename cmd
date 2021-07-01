@@ -144,6 +144,7 @@ if [ $# -gt 0 ];then
         check_node
         $COMPOSE exec php /bin/bash -c "php bin/run --mode=prod"
         supervisorctl_restart php
+        rm -rf "./public/js/build"
         npm run prod
     elif [[ "$1" == "super" ]]; then
         shift 1

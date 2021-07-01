@@ -51,13 +51,13 @@ export default {
     },
     mounted() {
         $A.loadScriptS([
-            window.location.origin + '/plugins/luckysheet/plugins/css/pluginsCss.css',
-            window.location.origin + '/plugins/luckysheet/plugins/plugins.css',
-            window.location.origin + '/plugins/luckysheet/css/luckysheet.css',
-            window.location.origin + '/plugins/luckysheet/assets/iconfont/iconfont.css',
+            window.location.origin + '/js/luckysheet/plugins/css/pluginsCss.css',
+            window.location.origin + '/js/luckysheet/plugins/plugins.css',
+            window.location.origin + '/js/luckysheet/css/luckysheet.css',
+            window.location.origin + '/js/luckysheet/assets/iconfont/iconfont.css',
             //
-            window.location.origin + '/plugins/luckysheet/plugins/js/plugin.js',
-            window.location.origin + '/plugins/luckysheet/luckysheet.umd.js',
+            window.location.origin + '/js/luckysheet/plugins/js/plugin.js',
+            window.location.origin + '/js/luckysheet/luckysheet.umd.js',
         ], () => {
             this.loadIng = false;
             this.bakValue = JSON.stringify(this.value);
@@ -99,7 +99,7 @@ export default {
                 ],
                 lang: lang,
                 loading: {
-                    image: 'image://' + window.location.origin + '/plugins/luckysheet/css/loading.gif'
+                    image: 'image://' + window.location.origin + '/js/luckysheet/css/loading.gif'
                 },
                 data: value ? $A.cloneJSON(value) : [
                     {
