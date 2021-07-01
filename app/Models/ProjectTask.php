@@ -243,7 +243,7 @@ class ProjectTask extends AbstractModel
      */
     public function taskFile(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(projectTaskFile::class, 'task_id', 'id')->orderBy('id');
+        return $this->hasMany(ProjectTaskFile::class, 'task_id', 'id')->orderBy('id');
     }
 
     /**
@@ -251,7 +251,7 @@ class ProjectTask extends AbstractModel
      */
     public function taskUser(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(projectTaskUser::class, 'task_id', 'id')->orderByDesc('owner')->orderByDesc('id');
+        return $this->hasMany(ProjectTaskUser::class, 'task_id', 'id')->orderByDesc('owner')->orderByDesc('id');
     }
 
     /**
@@ -259,7 +259,7 @@ class ProjectTask extends AbstractModel
      */
     public function taskTag(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(projectTaskTag::class, 'task_id', 'id')->orderBy('id');
+        return $this->hasMany(ProjectTaskTag::class, 'task_id', 'id')->orderBy('id');
     }
 
     /**

@@ -190,7 +190,7 @@ class Project extends AbstractModel
      */
     public function projectColumn(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(projectColumn::class, 'project_id', 'id')->orderBy('sort')->orderBy('id');
+        return $this->hasMany(ProjectColumn::class, 'project_id', 'id')->orderBy('sort')->orderBy('id');
     }
 
     /**
@@ -198,7 +198,7 @@ class Project extends AbstractModel
      */
     public function projectLog(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(projectLog::class, 'project_id', 'id')->orderByDesc('id');
+        return $this->hasMany(ProjectLog::class, 'project_id', 'id')->orderByDesc('id');
     }
 
     /**
@@ -206,7 +206,7 @@ class Project extends AbstractModel
      */
     public function projectUser(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(projectUser::class, 'project_id', 'id')->orderBy('id');
+        return $this->hasMany(ProjectUser::class, 'project_id', 'id')->orderBy('id');
     }
 
     /**
