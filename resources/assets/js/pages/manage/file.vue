@@ -98,7 +98,7 @@
             :height="editHeight"
             :mask-closable="false"
             :mask-style="{backgroundColor:'rgba(0,0,0,0.7)'}">
-            <FileContent :file="editInfo"/>
+            <FileContent v-if="editShowNum > 0" :parent-show="editShow" :file="editInfo"/>
         </Drawer>
     </div>
 </template>
@@ -132,6 +132,7 @@ export default {
             columns: [],
 
             editShow: false,
+            editShowNum: 0,
             editHeight: 0,
             editInfo: {},
         }
@@ -197,6 +198,12 @@ export default {
                 });
             },
             immediate: true
+        },
+
+        editShow(val) {
+            if (val) {
+                this.editShowNum++;
+            }
         },
 
         tableMode(val) {

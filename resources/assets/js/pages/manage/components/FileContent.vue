@@ -74,6 +74,10 @@ export default {
                 return {};
             }
         },
+        parentShow: {
+            type: Boolean,
+            default: true
+        },
     },
 
     data() {
@@ -89,10 +93,6 @@ export default {
         }
     },
 
-    destroyed() {
-        this.fileContent[this.fileId] = this.contentDetail;
-    },
-
     watch: {
         file: {
             handler(info) {
@@ -103,6 +103,12 @@ export default {
             },
             immediate: true,
             deep: true,
+        },
+
+        parentShow(val) {
+            if (!val) {
+                this.fileContent[this.fileId] = this.contentDetail;
+            }
         }
     },
 
