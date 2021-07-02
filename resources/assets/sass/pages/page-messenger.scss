@@ -49,13 +49,20 @@
             .messenger-nav {
                 display: flex;
                 align-items: center;
-                justify-content: center;
+                justify-content: space-evenly;
                 padding: 2px 0 12px;
                 > p {
+                    position: relative;
                     line-height: 1;
-                    padding: 0 16px;
+                    padding: 0 6px;
                     color: #888888;
                     cursor: pointer;
+                    .nav-num {
+                        position: absolute;
+                        top: -12px;
+                        right: -8px;
+                        transform: scale(0.7);
+                    }
                     &.active {
                         color: #555555;
                         font-weight: 500;
@@ -154,7 +161,6 @@
                                 position: absolute;
                                 top: 10px;
                                 left: 42px;
-                                font-size: 12px;
                                 transform: scale(0.8);
                             }
                             &.active {

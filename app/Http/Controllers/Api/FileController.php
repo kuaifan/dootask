@@ -7,6 +7,7 @@ use App\Models\File;
 use App\Models\FileContent;
 use App\Models\User;
 use App\Module\Base;
+use Arr;
 use Request;
 
 /**
@@ -20,14 +21,24 @@ class FileController extends AbstractController
      * 获取文件列表
      *
      * @apiParam {Number} [pid]         父级ID
+     * @apiParam {String} [key]         关键词
      */
     public function lists()
     {
         $user = User::auth();
         //
-        $pid = intval(Request::input('pid'));
+        $data = Request::all();
+        $pid = intval($data['pid']);
+        $key = trim($data['key']);
         //
-        $list = File::whereUserid($user->userid)->wherePid($pid)->take(500)->get();
+        $builder = File::whereUserid($user->userid);
+        if (Arr::exists($data, 'pid')) {
+            $builder->wherePid($pid);
+        }
+        if (Arr::exists($data, 'key')) {
+            $builder->where('name', 'like', '%' . $key . '%');
+        }
+        $list = $builder->take(500)->get();
         $array = $list->toArray();
         //
         while ($pid > 0) {
@@ -270,7 +281,7 @@ class FileController extends AbstractController
             'fid' => $file->id,
             'content' => $content,
             'text' => $text,
-            'size' => strlen($content) * 8,
+            'size' => strlen($content),
             'userid' => $user->userid,
         ]);
         $content->save();

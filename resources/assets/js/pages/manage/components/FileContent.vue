@@ -49,6 +49,7 @@
             <Flow v-else-if="file.type=='flow'" ref="myFlow" v-model="contentDetail" @saveData="handleClick('saveBefore')"/>
             <Minder v-else-if="file.type=='mind'" ref="myMind" v-model="contentDetail" @saveData="handleClick('saveBefore')"/>
             <LuckySheet v-else-if="file.type=='sheet'" ref="mySheet" v-model="contentDetail"/>
+            <div v-if="loadContent > 0" class="content-load"><Loading/></div>
         </div>
     </div>
 </template>
@@ -82,6 +83,7 @@ export default {
 
     data() {
         return {
+            loadContent: 0,
             loadIng: 0,
 
             fileId: 0,
@@ -131,6 +133,7 @@ export default {
                 return;
             }
             this.loadIng++;
+            this.loadContent++;
             this.$store.dispatch("call", {
                 url: 'file/content',
                 data: {
@@ -138,11 +141,13 @@ export default {
                 },
             }).then(({data}) => {
                 this.loadIng--;
+                this.loadContent--;
                 this.contentDetail = data.content;
                 this.updateBak();
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.loadIng--;
+                this.loadContent--;
             })
         },
 

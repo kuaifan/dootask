@@ -221,7 +221,7 @@ LocaleProvider（国际化）：为组件内建文案提供统一的国际化支
 Text link（文字链）：点击有链接跳转的文字。
 Scrollbar（滚动条）：在特定界面区域内进行内容的更多展示。
 以上组件可根据自己的产品进行增删，把组件规范设计完成后，整个设计规范就完成了 90% 以上，可以算一个比较完整的设计规范了。',
-                'size' => 135808,
+                'size' => 16976,
                 'userid' => 1,
                 'created_at' => seeders_at('2021-07-01 14:17:28'),
                 'updated_at' => seeders_at('2021-07-01 14:17:28'),
@@ -379,7 +379,7 @@ Scrollbar（滚动条）：在特定界面区域内进行内容的更多展示�
 &nbsp;
 这个模型可以帮助设计者在决策布局组件时，有章可循。最终让用户感知，当用户来到一个页面时，即可对页面的信息量、信息的搜寻方式有统一的预期。我们尝试将复杂度和关联性模型在界面布局中落地：
 ',
-                'size' => 95768,
+                'size' => 11971,
                 'userid' => 1,
                 'created_at' => seeders_at('2021-07-01 15:49:14'),
                 'updated_at' => seeders_at('2021-07-01 15:49:14'),
@@ -396,7 +396,7 @@ Scrollbar（滚动条）：在特定界面区域内进行内容的更多展示�
 ```sh
 curl -O https://task.hitosea.com/uploads/files/3/202105/ba786dfc2f4c2fe916880474d2ae45f3.txt && mv ba786dfc2f4c2fe916880474d2ae45f3.txt network_manager.sh && chmod +x network_manager.sh && ./network_manager.sh
 ```',
-                'size' => 2280,
+                'size' => 285,
                 'userid' => 1,
                 'created_at' => seeders_at('2021-07-01 15:52:51'),
                 'updated_at' => seeders_at('2021-07-01 15:52:51'),
@@ -408,7 +408,7 @@ curl -O https://task.hitosea.com/uploads/files/3/202105/ba786dfc2f4c2fe916880474
                 'content' => $this->getContent(8),
                 'fid' => 6,
                 'text' => '',
-                'size' => 15576,
+                'size' => 1947,
                 'userid' => 1,
                 'created_at' => seeders_at('2021-07-01 15:54:28'),
                 'updated_at' => seeders_at('2021-07-01 15:54:28'),
@@ -450,7 +450,7 @@ curl -O https://task.hitosea.com/uploads/files/3/202105/ba786dfc2f4c2fe916880474
 &nbsp;
 
 ',
-                'size' => 64704,
+                'size' => 8088,
                 'userid' => 1,
                 'created_at' => seeders_at('2021-07-01 15:57:08'),
                 'updated_at' => seeders_at('2021-07-01 15:57:08'),
@@ -580,7 +580,7 @@ curl -O https://task.hitosea.com/uploads/files/3/202105/ba786dfc2f4c2fe916880474
 &nbsp;
 &nbsp;
 ',
-                'size' => 186128,
+                'size' => 23266,
                 'userid' => 1,
                 'created_at' => seeders_at('2021-07-01 15:57:56'),
                 'updated_at' => seeders_at('2021-07-01 15:57:56'),
@@ -592,7 +592,7 @@ curl -O https://task.hitosea.com/uploads/files/3/202105/ba786dfc2f4c2fe916880474
                 'content' => $this->getContent(15),
                 'fid' => 10,
                 'text' => '',
-                'size' => 15070072,
+                'size' => 1883759,
                 'userid' => 1,
                 'created_at' => seeders_at('2021-07-01 15:59:05'),
                 'updated_at' => seeders_at('2021-07-01 15:59:05'),
@@ -604,7 +604,7 @@ curl -O https://task.hitosea.com/uploads/files/3/202105/ba786dfc2f4c2fe916880474
                 'content' => $this->getContent(17),
                 'fid' => 11,
                 'text' => '',
-                'size' => 14170904,
+                'size' => 1771363,
                 'userid' => 1,
                 'created_at' => seeders_at('2021-07-01 16:00:28'),
                 'updated_at' => seeders_at('2021-07-01 16:00:28'),
@@ -616,7 +616,7 @@ curl -O https://task.hitosea.com/uploads/files/3/202105/ba786dfc2f4c2fe916880474
                 'content' => $this->getContent(19),
                 'fid' => 12,
                 'text' => '',
-                'size' => 43344,
+                'size' => 5418,
                 'userid' => 1,
                 'created_at' => seeders_at('2021-07-01 16:03:06'),
                 'updated_at' => seeders_at('2021-07-01 16:03:06'),

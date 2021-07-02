@@ -13,7 +13,10 @@
                         v-for="(item, key) in dialogType"
                         :key="key"
                         :class="{active:dialogActive==item.type}"
-                        @click="dialogActive=item.type">{{$L(item.name)}}</p>
+                        @click="dialogActive=item.type">
+                        <Badge class="nav-num" :count="msgUnread(item.type)"/>
+                        {{$L(item.name)}}
+                    </p>
                 </div>
                 <div ref="list" class="messenger-list overlay-y">
                     <ul v-if="tabActive==='dialog'" class="dialog">
@@ -137,6 +140,31 @@ export default {
                 }
                 return true;
             })
+        },
+
+        msgUnread() {
+            return function (type) {
+                let num = 0;
+                this.dialogs.map((dialog) => {
+                    switch (type) {
+                        case 'project':
+                        case 'task':
+                            if (type == dialog.group_type) {
+                                num += dialog.unread;
+                            }
+                            break;
+                        case 'user':
+                            if (type == dialog.type) {
+                                num += dialog.unread;
+                            }
+                            break;
+                        default:
+                            num += dialog.unread;
+                            break;
+                    }
+                });
+                return num;
+            }
         },
     },
 

@@ -7,7 +7,7 @@
                     <h1>{{$L('文件')}}</h1>
                 </div>
                 <div :class="['file-search', searchKey ? 'has-value' : '']">
-                    <Input v-model="searchKey" suffix="ios-search" :placeholder="$L('搜索名称')"/>
+                    <Input v-model="searchKey" suffix="ios-search" @on-change="onSearchChange" :placeholder="$L('搜索名称')"/>
                 </div>
                 <div class="file-add">
                     <EDropdown
@@ -29,6 +29,7 @@
                     <li v-if="searchKey">{{$L('搜索')}} "{{searchKey}}"</li>
                     <li v-else v-for="item in navigator" @click="pid=item.id"><span :title="item.name">{{item.name}}</span></li>
                 </ul>
+                <div v-if="loadIng > 0" class="nav-load"><Loading/></div>
                 <Button v-if="shearFile && shearFile.pid != pid" size="small" type="primary" @click="shearTo">
                     <div class="file-shear">
                         <span>{{$L('粘贴')}}</span>
@@ -115,6 +116,7 @@ export default {
         return {
             loadIng: 0,
             searchKey: '',
+            searchTimeout: null,
 
             pid: this.$store.state.method.getStorageInt("fileOpenPid"),
             shearId: 0,
@@ -189,7 +191,9 @@ export default {
         pid: {
             handler() {
                 this.loadIng++;
-                this.$store.dispatch("getFiles", this.pid).then(() => {
+                this.$store.dispatch("getFiles", {
+                    pid: this.pid
+                }).then(() => {
                     this.loadIng--;
                     this.$store.state.method.setStorage("fileOpenPid", this.pid)
                 }).catch(({msg}) => {
@@ -492,6 +496,22 @@ export default {
                     this.$store.dispatch("forgetFile", item.id);
                 }
             })
+        },
+
+        onSearchChange() {
+            clearTimeout(this.searchTimeout);
+            if (this.searchKey.trim() != '') {
+                this.searchTimeout = setTimeout(() => {
+                    this.loadIng++;
+                    this.$store.dispatch("getFiles", {
+                        key: this.searchKey,
+                    }).then(() => {
+                        this.loadIng--;
+                    }).catch(() => {
+                        this.loadIng--;
+                    });
+                }, 600)
+            }
         }
     }
 }

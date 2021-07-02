@@ -318,19 +318,17 @@ export default {
      * 获取文件
      * @param state
      * @param dispatch
-     * @param pid
+     * @param data {?pid, ?key}
      * @returns {Promise<unknown>}
      */
-    getFiles({state, dispatch}, pid) {
+    getFiles({state, dispatch}, data) {
         return new Promise(function (resolve, reject) {
             dispatch("call", {
                 url: 'file/lists',
-                data: {
-                    pid,
-                },
+                data,
             }).then((result) => {
                 const ids = result.data.map(({id}) => id)
-                state.files = state.files.filter((item) => item.pid != pid || ids.includes(item.id));
+                state.files = state.files.filter((item) => item.pid != data.pid || ids.includes(item.id));
                 dispatch("saveFile", result.data);
                 resolve(result)
             }).catch(e => {

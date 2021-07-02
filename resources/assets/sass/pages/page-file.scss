@@ -102,6 +102,18 @@
                     }
                 }
             }
+            .nav-load {
+                margin-left: 4px;
+                width: 24px;
+                height: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                .common-loading {
+                    width: 12px;
+                    height: 12px;
+                }
+            }
             .ivu-btn {
                 font-size: 12px;
                 margin-left: 12px;
