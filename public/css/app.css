@@ -3958,6 +3958,7 @@
 }
 
 .teditor-box .icon-inline {
+  color: #bbbbbb;
   position: absolute;
   left: 0;
   top: 0;
@@ -5239,6 +5240,20 @@ body .ivu-drawer-bottom .ivu-drawer-content .ivu-drawer-close .ivu-icon {
   text-overflow: ellipsis;
 }
 
+.page-file .file-wrapper .file-navigator .nav-load {
+  margin-left: 4px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-file .file-wrapper .file-navigator .nav-load .common-loading {
+  width: 12px;
+  height: 12px;
+}
+
 .page-file .file-wrapper .file-navigator .ivu-btn {
   font-size: 12px;
   margin-left: 12px;
@@ -6017,15 +6032,23 @@ body .ivu-drawer-bottom .ivu-drawer-content .ivu-drawer-close .ivu-icon {
 .page-messenger .messenger-wrapper .messenger-select .messenger-nav {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-evenly;
   padding: 2px 0 12px;
 }
 
 .page-messenger .messenger-wrapper .messenger-select .messenger-nav > p {
+  position: relative;
   line-height: 1;
-  padding: 0 16px;
+  padding: 0 6px;
   color: #888888;
   cursor: pointer;
+}
+
+.page-messenger .messenger-wrapper .messenger-select .messenger-nav > p .nav-num {
+  position: absolute;
+  top: -12px;
+  right: -8px;
+  transform: scale(0.7);
 }
 
 .page-messenger .messenger-wrapper .messenger-select .messenger-nav > p.active {
@@ -6138,7 +6161,6 @@ body .ivu-drawer-bottom .ivu-drawer-content .ivu-drawer-close .ivu-icon {
   position: absolute;
   top: 10px;
   left: 42px;
-  font-size: 12px;
   transform: scale(0.8);
 }
 
@@ -7036,6 +7058,22 @@ body .ivu-drawer-bottom .ivu-drawer-content .ivu-drawer-close .ivu-icon {
 
 .file-content .content-body .luckysheet {
   border: 0;
+}
+
+.file-content .content-body .content-load {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+}
+
+.file-content .content-body .content-load .common-loading {
+  margin: 0;
 }
 
 .luckysheet-input-box {
