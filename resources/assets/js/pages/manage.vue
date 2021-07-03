@@ -57,7 +57,7 @@
                 <li class="menu-project">
                     <ul>
                         <li
-                            v-for="(item, key) in projects"
+                            v-for="(item, key) in projectLists"
                             :key="key"
                             :class="classNameRoute('project/' + item.id, openMenu[item.id])"
                             @click="toggleRoute('project/' + item.id)">
@@ -255,6 +255,12 @@ export default {
                     {path: 'archivedProject', name: '已归档的项目', divided: true}
                 ]
             }
+        },
+
+        projectLists() {
+            return this.projects.sort((a, b) => {
+                return b.id - a.id;
+            });
         }
     },
 

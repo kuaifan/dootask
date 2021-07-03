@@ -609,10 +609,9 @@ export default {
         }).then(result => {
             state.projectLoad--;
             const ids = result.data.data.map(({id}) => id)
-            if (ids.length == 0) {
-                return;
+            if (ids.length > 0) {
+                state.columns = state.columns.filter((item) => item.project_id != project_id || ids.includes(item.id));
             }
-            state.columns = state.columns.filter((item) => item.project_id != project_id || ids.includes(item.id));
             dispatch("saveColumn", result.data.data);
         }).catch(e => {
             console.error(e);
@@ -761,14 +760,13 @@ export default {
             }
             const resData = result.data;
             const ids = resData.data.map(({id}) => id)
-            if (ids.length == 0) {
-                return;
-            }
-            if (data.project_id) {
-                state.tasks = state.tasks.filter((item) => item.project_id != data.project_id || ids.includes(item.id));
-            }
-            if (data.parent_id) {
-                state.taskSubs = state.taskSubs.filter((item) => item.parent_id != data.parent_id || ids.includes(item.id));
+            if (ids.length > 0) {
+                if (data.project_id) {
+                    state.tasks = state.tasks.filter((item) => item.project_id != data.project_id || ids.includes(item.id));
+                }
+                if (data.parent_id) {
+                    state.taskSubs = state.taskSubs.filter((item) => item.parent_id != data.parent_id || ids.includes(item.id));
+                }
             }
             dispatch("saveTask", resData.data);
             //
@@ -1161,7 +1159,7 @@ export default {
         dispatch("call", {
             url: 'dialog/lists',
         }).then(result => {
-            dispatch("saveDialog", result.data.data);
+            dispatch("saveDialog", result.data.data.reverse());
         }).catch(e => {
             console.error(e);
         });
@@ -1300,10 +1298,9 @@ export default {
             dispatch("saveDialog", dialog);
             //
             const ids = result.data.data.map(({id}) => id)
-            if (ids.length == 0) {
-                return;
+            if (ids.length > 0) {
+                state.dialogMsgs = state.dialogMsgs.filter((item) => item.dialog_id != dialog_id || ids.includes(item.id));
             }
-            state.dialogMsgs = state.dialogMsgs.filter((item) => item.dialog_id != dialog_id || ids.includes(item.id));
             dispatch("saveDialog", result.data.dialog);
             dispatch("saveDialogMsg", result.data.data);
         }).catch(e => {
