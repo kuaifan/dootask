@@ -166,26 +166,6 @@ class Project extends AbstractModel
     }
 
     /**
-     * @param $value
-     * @return int|mixed
-     */
-    public function getDialogIdAttribute($value)
-    {
-        if ($value === 0 && $this->id) {
-            return AbstractModel::transaction(function() {
-                $this->lockForUpdate();
-                $dialog = WebSocketDialog::createGroup(null, $this->relationUserids(), 'project');
-                if ($dialog) {
-                    $this->dialog_id = $dialog->id;
-                    $this->save();
-                }
-                return $dialog->id;
-            });
-        }
-        return $value;
-    }
-
-    /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function projectColumn(): \Illuminate\Database\Eloquent\Relations\HasMany
