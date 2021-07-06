@@ -119,7 +119,7 @@ class ProjectColumn extends AbstractModel
         if ($userid === null) {
             $userid = $this->project->relationUserids();
         }
-        $lists = [
+        $params = [
             'ignoreFd' => Request::header('fd'),
             'userid' => $userid,
             'msg' => [
@@ -128,7 +128,7 @@ class ProjectColumn extends AbstractModel
                 'data' => $data,
             ]
         ];
-        $task = new PushTask($lists, false);
+        $task = new PushTask($params, false);
         Task::deliver($task);
     }
 }

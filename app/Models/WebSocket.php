@@ -11,6 +11,7 @@ namespace App\Models;
  * @property string $key
  * @property string|null $fd
  * @property int|null $userid
+ * @property string|null $path
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocket newModelQuery()
@@ -20,6 +21,7 @@ namespace App\Models;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocket whereFd($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocket whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocket whereKey($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocket wherePath($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocket whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocket whereUserid($value)
  * @mixin \Eloquent

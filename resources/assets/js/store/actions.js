@@ -1574,14 +1574,15 @@ export default {
     /**
      * 发送 websocket 消息
      * @param state
-     * @param params {type, data, callback, msgId}
+     * @param params {type, data, callback}
      */
     websocketSend({state}, params) {
         if (!state.method.isJson(params)) {
+            typeof callback === "function" && callback(null, false)
             return;
         }
         const {type, data, callback} = params;
-        let msgId = params.msgId;
+        let msgId = undefined;
         if (!state.ws) {
             typeof callback === "function" && callback(null, false)
             return;
@@ -1599,6 +1600,22 @@ export default {
         } catch (e) {
             typeof callback === "function" && callback(null, false)
         }
+    },
+
+    /**
+     * 记录 websocket 访问状态
+     * @param state
+     * @param dispatch
+     * @param path
+     */
+    websocketPath({state, dispatch}, path) {
+        clearTimeout(state.wsPathTimeout);
+        state.wsPathValue = path;
+        state.wsPathTimeout = setTimeout(() => {
+            if (state.wsPathValue == path) {
+                dispatch("websocketSend", {type: 'path', data: {path}});
+            }
+        }, 3000);
     },
 
     /**

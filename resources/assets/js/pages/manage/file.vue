@@ -204,10 +204,16 @@ export default {
             immediate: true
         },
 
-        editShow(val) {
-            if (val) {
-                this.editShowNum++;
-            }
+        editShow: {
+            handler(val) {
+                if (val) {
+                    this.editShowNum++;
+                    this.$store.dispatch("websocketPath", "file/content/" + this.editInfo.id)
+                } else {
+                    this.$store.dispatch("websocketPath", "file")
+                }
+            },
+            immediate: true
         },
 
         tableMode(val) {
@@ -355,8 +361,8 @@ export default {
                 this.pid = item.id;
             } else {
                 this.editHeight = window.innerHeight - 40;
-                this.editShow = true;
                 this.editInfo = item;
+                this.editShow = true;
             }
         },
 

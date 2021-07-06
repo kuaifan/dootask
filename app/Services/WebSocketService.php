@@ -132,6 +132,22 @@ class WebSocketService implements WebSocketHandlerInterface
                     $item->readSuccess($userid);
                 });
                 return;
+
+            /**
+             * 访问状态
+             */
+            case 'path':
+                $row = WebSocket::whereFd($frame->fd)->first();
+                if ($row) {
+                    $pathNew = $data['path'];
+                    $pathOld = $row->path;
+                    $row->path = $pathNew;
+                    $row->save();
+                    if (preg_match("/^file\/content\/\d+$/", $pathNew) || preg_match("/^file\/content\/\d+$/", $pathOld)) {
+                        $this->pushPath($pathNew);
+                    }
+                }
+                return;
         }
         //
         if ($msgId) {
@@ -196,5 +212,29 @@ class WebSocketService implements WebSocketHandlerInterface
     private function getUserid($fd)
     {
         return intval(WebSocket::whereFd($fd)->value('userid'));
+    }
+
+    /**
+     * 发送给相同访问状态的会员
+     * @param $path
+     */
+    private function pushPath($path)
+    {
+        $array = WebSocket::wherePath($path)->pluck('userid')->toArray();
+        if ($array) {
+            $userids = array_values(array_filter(array_unique($array)));
+            $params = [
+                'userid' => $userids,
+                'msg' => [
+                    'type' => 'path',
+                    'data' => [
+                        'path' => $path,
+                        'userids' => $userids
+                    ],
+                ]
+            ];
+            $task = new PushTask($params, false);
+            Task::deliver($task);
+        }
     }
 }

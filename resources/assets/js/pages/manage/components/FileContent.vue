@@ -14,6 +14,14 @@
                 </EPopover>
                 {{file.name}}
             </div>
+            <div class="header-user">
+                <ul>
+                    <li v-for="(userid, index) in editUser" :key="index" v-if="index <= 10">
+                        <UserAvatar :userid="userid" :size="28" :border-witdh="2"/>
+                    </li>
+                    <li v-if="editUser.length > 10" class="more">{{editUser.length > 99 ? '99+' : editUser.length}}</li>
+                </ul>
+            </div>
             <div v-if="file.type=='document' && contentDetail" class="header-hint">
                 <ButtonGroup size="small" shape="circle">
                     <Button :type="`${contentDetail.type!='md'?'primary':'default'}`" @click="$set(contentDetail, 'type', 'text')">{{$L('文本编辑器')}}</Button>
@@ -92,6 +100,8 @@ export default {
 
             contentDetail: null,
             contentBak: {},
+
+            editUser: []
         }
     },
 
@@ -107,15 +117,31 @@ export default {
             deep: true,
         },
 
-        parentShow(val) {
-            if (!val) {
-                this.fileContent[this.fileId] = this.contentDetail;
-            }
-        }
+        wsMsg: {
+            handler({type, data}) {
+                if (type == 'path') {
+                    if (data.path == 'file/content/' + this.fileId) {
+                        this.editUser = data.userids;
+                    }
+                }
+            },
+            deep: true,
+        },
+
+        parentShow: {
+            handler(val) {
+                if (!val) {
+                    this.fileContent[this.fileId] = this.contentDetail;
+                } else {
+                    this.editUser = [this.userId];
+                }
+            },
+            immediate: true,
+        },
     },
 
     computed: {
-        ...mapState(['fileContent']),
+        ...mapState(['fileContent', 'wsMsg', 'userId']),
 
         equalContent() {
             return this.contentBak == $A.jsonStringify(this.contentDetail);

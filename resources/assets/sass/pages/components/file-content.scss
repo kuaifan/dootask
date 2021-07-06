@@ -41,6 +41,29 @@
                 }
             }
         }
+        .header-user {
+            margin-right: 24px;
+            > ul {
+                display: flex;
+                align-items: center;
+                > li {
+                    list-style: none;
+                    margin-right: -4px;
+                    &.more {
+                        width: 28px;
+                        height: 28px;
+                        text-align: center;
+                        line-height: 24px;
+                        font-size: 12px;
+                        border: 2px solid #ffffff;
+                        background-color: #8bcf70;
+                        color: #ffffff;
+                        z-index: 1;
+                        border-radius: 50%;
+                    }
+                }
+            }
+        }
         .header-hint {
             padding-right: 22px;
             font-size: 12px;

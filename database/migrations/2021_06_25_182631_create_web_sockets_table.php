@@ -17,6 +17,7 @@ class CreateWebSocketsTable extends Migration
             $table->bigIncrements('id');
             $table->string('key', 50)->default('')->unique('pre_ws_key_unique');
             $table->string('fd', 50)->nullable()->default('');
+            $table->string('path', 255)->nullable()->default('');
             $table->bigInteger('userid')->nullable()->default(0)->index('pre_ws_userid_index');
             $table->timestamps();
         });
