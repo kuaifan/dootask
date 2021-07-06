@@ -47,6 +47,7 @@ const questions = [
             value: {
                 platform: 'windows',
                 arch: 'x64',
+                icon: './resources/assets/statics/public/images/logo-app.ico',
             }
         }]
     }

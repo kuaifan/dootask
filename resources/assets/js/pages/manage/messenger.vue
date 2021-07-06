@@ -146,21 +146,23 @@ export default {
             return function (type) {
                 let num = 0;
                 this.dialogs.map((dialog) => {
-                    switch (type) {
-                        case 'project':
-                        case 'task':
-                            if (type == dialog.group_type) {
+                    if (dialog.unread) {
+                        switch (type) {
+                            case 'project':
+                            case 'task':
+                                if (type == dialog.group_type) {
+                                    num += dialog.unread;
+                                }
+                                break;
+                            case 'user':
+                                if (type == dialog.type) {
+                                    num += dialog.unread;
+                                }
+                                break;
+                            default:
                                 num += dialog.unread;
-                            }
-                            break;
-                        case 'user':
-                            if (type == dialog.type) {
-                                num += dialog.unread;
-                            }
-                            break;
-                        default:
-                            num += dialog.unread;
-                            break;
+                                break;
+                        }
                     }
                 });
                 return num;

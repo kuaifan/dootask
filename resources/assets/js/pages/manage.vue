@@ -225,7 +225,9 @@ export default {
         msgAllUnread() {
             let num = 0;
             this.dialogs.map(({unread}) => {
-                num += unread;
+                if (unread) {
+                    num += unread;
+                }
             })
             return num;
         },
