@@ -23,6 +23,19 @@
                     font-size: 28px;
                     font-weight: 600;
                 }
+                .file-refresh {
+                    display: none;
+                    cursor: pointer;
+                    margin-left: 12px;
+                    > i {
+                        font-size: 18px;
+                    }
+                }
+                &:hover {
+                    .file-refresh {
+                        display: block;
+                    }
+                }
             }
             .file-search {
                 flex-shrink: 0;
@@ -106,7 +119,7 @@
                 }
             }
             .nav-load {
-                margin-left: 4px;
+                margin-left: 8px;
                 width: 24px;
                 height: 24px;
                 display: flex;
@@ -116,6 +129,9 @@
                     width: 12px;
                     height: 12px;
                 }
+            }
+            .nav-refresh {
+                margin-left: 8px;
             }
             .ivu-btn {
                 font-size: 12px;
@@ -332,8 +348,8 @@
                         .taskfont {
                             position: absolute;
                             right: 10px;
-                            bottom: -1px;
-                            font-size: 16px;
+                            bottom: -2px;
+                            font-size: 18px;
                             color: #ffffff;
                         }
                     }
@@ -343,8 +359,8 @@
                     &.folder .file-icon {
                         background-image: url("../images/file/folder.svg");
                         .taskfont {
-                            right: 7px;
-                            bottom: 3px;
+                            right: 6px;
+                            bottom: 2px;
                         }
                     }
                     &.document .file-icon {

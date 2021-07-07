@@ -154,4 +154,20 @@ class File extends AbstractModel
         });
         return true;
     }
+
+    /**
+     * 获取文件并检测权限
+     * @param $id
+     * @param null $noExistTis
+     * @return File
+     */
+    public static function allowFind($id, $noExistTis = null)
+    {
+        $file = File::find($id);
+        if (empty($file)) {
+            throw new ApiException($noExistTis ?: '文件不存在或已被删除');
+        }
+        $file->chackAllow(User::userid());
+        return $file;
+    }
 }

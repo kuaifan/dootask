@@ -5,6 +5,7 @@
             <div class="file-head">
                 <div class="file-nav">
                     <h1>{{$L('文件')}}</h1>
+                    <div v-if="loadIng == 0" class="file-refresh" @click="getFileList"><i class="taskfont">&#xe6ae;</i></div>
                 </div>
                 <div :class="['file-search', searchKey ? 'has-value' : '']">
                     <Input v-model="searchKey" suffix="ios-search" @on-change="onSearchChange" :placeholder="$L('搜索名称')"/>
@@ -70,18 +71,12 @@
                                 @command="dropFile(item, $event)">
                                 <Icon @click.stop="" type="ios-more" />
                                 <EDropdownMenu slot="dropdown">
-                                    <template v-if="item.userid == userId">
-                                        <EDropdownItem command="open">{{$L('打开')}}</EDropdownItem>
-                                        <EDropdownItem command="rename" divided>{{$L('重命名')}}</EDropdownItem>
-                                        <EDropdownItem command="copy" :disabled="item.type=='folder'">{{$L('复制')}}</EDropdownItem>
-                                        <EDropdownItem command="shear">{{$L('剪切')}}</EDropdownItem>
-                                        <EDropdownItem command="share" divided>{{$L('共享')}}</EDropdownItem>
-                                        <EDropdownItem command="delete" divided style="color:red">{{$L('删除')}}</EDropdownItem>
-                                    </template>
-                                    <template v-else>
-                                        <EDropdownItem command="open">{{$L('打开')}}</EDropdownItem>
-                                        <EDropdownItem command="copy" :disabled="item.type=='folder'">{{$L('复制')}}</EDropdownItem>
-                                    </template>
+                                    <EDropdownItem command="open">{{$L('打开')}}</EDropdownItem>
+                                    <EDropdownItem command="rename" divided>{{$L('重命名')}}</EDropdownItem>
+                                    <EDropdownItem command="copy" :disabled="item.type=='folder'">{{$L('复制')}}</EDropdownItem>
+                                    <EDropdownItem command="shear" :disabled="item.userid != userId">{{$L('剪切')}}</EDropdownItem>
+                                    <EDropdownItem command="share" :disabled="item.userid != userId" divided>{{$L('共享')}}</EDropdownItem>
+                                    <EDropdownItem command="delete" divided style="color:red">{{$L('删除')}}</EDropdownItem>
                                 </EDropdownMenu>
                             </EDropdown>
                             <div class="file-icon">
@@ -110,7 +105,7 @@
             :title="$L('共享设置')"
             :mask-closable="false">
             <Form ref="addProject" :model="shareInfo" label-width="auto" @submit.native.prevent>
-                <FormItem prop="type" :label="$L('共享类型')">
+                <FormItem prop="type" :label="$L('共享对象')">
                     <RadioGroup v-model="shareInfo.share">
                         <Radio :label="1">{{$L('所有人')}}</Radio>
                         <Radio :label="2">{{$L('指定成员')}}</Radio>
@@ -229,14 +224,7 @@ export default {
     watch: {
         pid: {
             handler() {
-                this.loadIng++;
-                this.$store.dispatch("getFiles", this.pid).then(() => {
-                    this.loadIng--;
-                    this.$store.state.method.setStorage("fileOpenPid", this.pid)
-                }).catch(({msg}) => {
-                    $A.modalError(msg);
-                    this.loadIng--;
-                });
+                this.getFileList();
             },
             immediate: true
         },
@@ -371,6 +359,17 @@ export default {
                     sortable: true,
                 },
             ]
+        },
+
+        getFileList() {
+            this.loadIng++;
+            this.$store.dispatch("getFiles", this.pid).then(() => {
+                this.loadIng--;
+                this.$store.state.method.setStorage("fileOpenPid", this.pid)
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+                this.loadIng--;
+            });
         },
 
         addFile(command) {
@@ -595,7 +594,7 @@ export default {
                 return;
             }
             if (![1, 2].includes(this.shareInfo.share)) {
-                $A.messageWarning("请选择共享类型")
+                $A.messageWarning("请选择共享对象")
                 return;
             }
             this.shareLoad++;

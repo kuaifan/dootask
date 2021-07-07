@@ -113,10 +113,8 @@ class FileController extends AbstractController
         //
         if ($id > 0) {
             // 修改
-            $file = File::whereUserid($user->userid)->whereId($id)->first();
-            if (empty($file)) {
-                return Base::retError('文件不存在或已被删除');
-            }
+            $file = File::allowFind($id);
+            //
             $file->name = $name;
             $file->save();
             return Base::retSuccess('修改成功', $file);
@@ -132,20 +130,25 @@ class FileController extends AbstractController
                 return Base::retError('类型错误');
             }
             //
+            $userid = $user->userid;
             if ($pid > 0) {
-                if (!File::whereUserid($user->userid)->whereId($pid)->exists()) {
-                    return Base::retError('参数错误');
+                if (File::wherePid($pid)->count() >= 300) {
+                    return Base::retError('每个文件夹里最多只能创建300个文件或文件夹');
                 }
-            }
-            if (File::whereUserid($user->userid)->wherePid($pid)->count() >= 300) {
-                return Base::retError('每个文件夹里最多只能创建300个文件或文件夹');
+                $row = File::allowFind($pid, '主文件不存在');
+                $userid = $row->userid;
+            } else {
+                if (File::whereUserid($user->userid)->wherePid(0)->count() >= 300) {
+                    return Base::retError('每个文件夹里最多只能创建300个文件或文件夹');
+                }
             }
             // 开始创建
             $file = File::createInstance([
                 'pid' => $pid,
                 'name' => $name,
                 'type' => $type,
-                'userid' => $user->userid,
+                'userid' => $userid,
+                'created_id' => $user->userid,
             ]);
             $file->save();
             //
@@ -165,10 +168,13 @@ class FileController extends AbstractController
         //
         $id = intval(Request::input('id'));
         //
-        $row = File::whereUserid($user->userid)->whereId($id)->first();
-        if (empty($row)) {
-            return Base::retError('文件不存在或已被删除');
+        $row = File::allowFind($id);
+        //
+        $userid = $user->userid;
+        if ($row->pid > 0) {
+            $userid = intval(File::whereId($row->pid)->value('userid'));
         }
+        //
         if ($row->type == 'folder') {
             return Base::retError('不支持复制文件夹');
         }
@@ -180,7 +186,8 @@ class FileController extends AbstractController
             'pid' => $row->pid,
             'name' => $name,
             'type' => $row->type,
-            'userid' => $user->userid,
+            'userid' => $userid,
+            'created_id' => $user->userid,
         ]);
         $file->save();
         //
@@ -201,9 +208,12 @@ class FileController extends AbstractController
         $id = intval(Request::input('id'));
         $pid = intval(Request::input('pid'));
         //
-        $file = File::whereUserid($user->userid)->whereId($id)->first();
+        $file = File::whereId($id)->first();
         if (empty($file)) {
             return Base::retError('文件不存在或已被删除');
+        }
+        if ($file->userid != $user->userid) {
+            return Base::retError('仅限所有者操作');
         }
         //
         if ($pid > 0) {
@@ -233,14 +243,9 @@ class FileController extends AbstractController
      */
     public function remove()
     {
-        $user = User::auth();
-        //
         $id = intval(Request::input('id'));
         //
-        $file = File::whereUserid($user->userid)->whereId($id)->first();
-        if (empty($file)) {
-            return Base::retError('文件不存在或已被删除');
-        }
+        $file = File::allowFind($id);
         $file->deleteFile();
         return Base::retSuccess('删除成功', $file);
     }
@@ -256,10 +261,7 @@ class FileController extends AbstractController
         //
         $id = intval(Request::input('id'));
         //
-        $file = File::whereUserid($user->userid)->whereId($id)->first();
-        if (empty($file)) {
-            return Base::retError('文件不存在或已被删除');
-        }
+        $file = File::allowFind($id);
         //
         $content = FileContent::whereFid($file->id)->orderByDesc('id')->first();
         if (empty($content)) {
@@ -289,10 +291,7 @@ class FileController extends AbstractController
         $id = Base::getPostInt('id');
         $content = Base::getPostValue('content');
         //
-        $file = File::whereUserid($user->userid)->whereId($id)->first();
-        if (empty($file)) {
-            return Base::retError('文件不存在或已被删除');
-        }
+        $file = File::allowFind($id);
         //
         $text = '';
         if ($file->type == 'document') {
@@ -346,7 +345,6 @@ class FileController extends AbstractController
         if (empty($file)) {
             return Base::retError('文件不存在或已被删除');
         }
-        //
         if ($file->userid != $user->userid) {
             return Base::retError('仅限所有者操作');
         }
@@ -366,7 +364,7 @@ class FileController extends AbstractController
      * @apiParam {String} action        动作
      * - share: 设置共享
      * - unshare: 取消共享
-     * @apiParam {Number} [share]       共享方式
+     * @apiParam {Number} [share]       共享对象
      * - 1: 共享给所有人
      * - 2: 共享给指定成员
      * @apiParam {Array} [userids]      共享成员，格式: [userid1, userid2, userid3]
@@ -384,7 +382,6 @@ class FileController extends AbstractController
         if (empty($file)) {
             return Base::retError('文件不存在或已被删除');
         }
-        //
         if ($file->userid != $user->userid) {
             return Base::retError('仅限所有者操作');
         }
@@ -400,7 +397,7 @@ class FileController extends AbstractController
         } else {
             // 设置共享
             if (!in_array($share, [1, 2])) {
-                return Base::retError('请选择共享类型');
+                return Base::retError('请选择共享对象');
             }
             $file->setShare($share);
             if ($share == 2) {
