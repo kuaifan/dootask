@@ -1,0 +1,10 @@
+{
+    "name": "DooTask-App",
+    "version": "1.0.0",
+    "description": "DooTask is task management system.",
+    "main": "main.js",
+    "license": "MIT",
+    "devDependencies": {
+        "electron": "^13.1.6"
+    }
+}
