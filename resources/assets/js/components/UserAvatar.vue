@@ -12,14 +12,14 @@
             </div>
         </div>
         <div class="avatar-wrapper">
-            <div :class="['avatar-box', userId === userid || user.online ? 'online' : '']" :style="boxStyle">
+            <div v-if="showIcon" :class="['avatar-box', userId === userid || user.online ? 'online' : '']" :style="boxStyle">
                 <em :style="spotStyle"></em>
                 <EAvatar v-if="showImg" :src="user.userimg" :size="avatarSize"/>
                 <EAvatar v-else :size="avatarSize" class="avatar-text">
                     <span :style="spotStyle">{{nickname}}</span>
                 </EAvatar>
             </div>
-            <div v-if="showName" class="avatar-name">{{user.nickname}}</div>
+            <div v-if="showName" class="avatar-name" :style="nameStyle">{{user.nickname}}</div>
         </div>
     </ETooltip>
 </template>
@@ -36,6 +36,10 @@
             size: {
                 type: [String, Number],
                 default: 'default'
+            },
+            showIcon: {
+                type: Boolean,
+                default: true
             },
             showName: {
                 type: Boolean,
@@ -87,6 +91,17 @@
                 }
                 return {
                     'transform': 'scale(' + Math.min(1.25, size / 32) + ')',
+                }
+            },
+
+            nameStyle() {
+                const {showIcon} = this;
+                if (!showIcon) {
+                    return {
+                        paddingLeft: 0
+                    }
+                } else {
+                    return {}
                 }
             },
 

@@ -80,7 +80,13 @@
                                 </EDropdownMenu>
                             </EDropdown>
                             <div class="file-icon">
-                                <i v-if="item.share" class="taskfont">&#xe63f;</i>
+                                <template v-if="item.share">
+                                    <UserAvatar v-if="item.userid != userId" :userid="item.userid" class="share-avatar" :size="20"/>
+                                    <div v-else class="share-icon">
+                                        <i v-if="item.share == 1" class="taskfont" :title="$L('所有人')">&#xe75c;</i>
+                                        <i v-else class="taskfont" :title="$L('指定成员')">&#xe757;</i>
+                                    </div>
+                                </template>
                             </div>
                             <div v-if="item._edit" class="file-input">
                                 <Input
@@ -179,6 +185,11 @@ export default {
         this.editHeight = window.innerHeight - 40;
     },
 
+    activated() {
+        this.$store.dispatch("websocketPath", "file");
+        this.getFileList();
+    },
+
     computed: {
         ...mapState(['userId', 'userInfo', 'files']),
 
@@ -222,28 +233,23 @@ export default {
     },
 
     watch: {
-        pid: {
-            handler() {
-                this.getFileList();
-            },
-            immediate: true
-        },
-
-        editShow: {
-            handler(val) {
-                if (val) {
-                    this.editShowNum++;
-                    this.$store.dispatch("websocketPath", "file/content/" + this.editInfo.id)
-                } else {
-                    this.$store.dispatch("websocketPath", "file")
-                }
-            },
-            immediate: true
+        pid() {
+            this.getFileList();
         },
 
         tableMode(val) {
             this.$store.state.method.setStorage("fileTableMode", val)
-        }
+        },
+
+        editShow(val) {
+            if (val) {
+                this.editShowNum++;
+                this.$store.dispatch("websocketPath", "file/content/" + this.editInfo.id);
+            } else {
+                this.$store.dispatch("websocketPath", "file");
+                this.getFileList();
+            }
+        },
     },
 
     methods: {
@@ -290,6 +296,13 @@ export default {
                                     }
                                 }
                             }))
+                            return h('div', {
+                                class: 'file-nbox'
+                            }, [
+                                h('div', {
+                                    class: 'file-name ' + row.type,
+                                }, array),
+                            ]);
                         } else {
                             // 编辑
                             array.push(h('QuickEdit', {
@@ -317,16 +330,42 @@ export default {
                             }, [
                                 h('AutoTip', row.name)
                             ]));
+                            //
+                            const iconArray = [];
+                            if (row.share) {
+                                if (row.share == 1) {
+                                    iconArray.push(h('i', {
+                                        class: 'taskfont',
+                                        domProps: {
+                                            title: this.$L('所有人'),
+                                            innerHTML: '&#xe75c;'
+                                        },
+                                    }))
+                                } else {
+                                    iconArray.push(h('i', {
+                                        class: 'taskfont',
+                                        domProps: {
+                                            title: this.$L('指定成员'),
+                                            innerHTML: '&#xe757;'
+                                        },
+                                    }))
+                                }
+                            }
+                            return h('div', {
+                                class: 'file-nbox'
+                            }, [
+                                h('div', {
+                                    class: 'file-name ' + row.type,
+                                }, array),
+                                iconArray
+                            ]);
                         }
-                        return h('div', {
-                            class: 'file-name ' + row.type
-                        }, array);
                     }
                 },
                 {
                     title: this.$L('大小'),
                     key: 'size',
-                    width: 120,
+                    width: 110,
                     resizable: true,
                     sortable: true,
                     render: (h, {row}) => {
@@ -339,7 +378,7 @@ export default {
                 {
                     title: this.$L('类型'),
                     key: 'type',
-                    width: 120,
+                    width: 110,
                     resizable: true,
                     sortable: true,
                     render: (h, {row}) => {
@@ -349,6 +388,23 @@ export default {
                         } else {
                             return h('div', '-')
                         }
+                    }
+                },
+                {
+                    title: this.$L('所有者'),
+                    key: 'userid',
+                    width: 130,
+                    resizable: true,
+                    sortable: true,
+                    render: (h, {row}) => {
+                        return h('UserAvatar', {
+                            props: {
+                                size: 18,
+                                userid: row.userid,
+                                showIcon: false,
+                                showName: true,
+                            }
+                        });
                     }
                 },
                 {

@@ -266,6 +266,19 @@ class User extends AbstractModel
     }
 
     /**
+     * 获取我的昵称
+     * @return string
+     */
+    public static function nickname()
+    {
+        $user = self::authInfo();
+        if (!$user) {
+            return '';
+        }
+        return $user->nickname;
+    }
+
+    /**
      * 用户身份认证（获取用户信息）
      * @param null $identity 判断身份
      * @return self

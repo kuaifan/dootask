@@ -235,34 +235,46 @@
                     }
                 }
             }
-            .file-name {
+            .file-nbox {
                 display: flex;
                 align-items: center;
                 position: relative;
-                padding-right: 26px;
-                &:before {
-                    flex-shrink: 0;
-                    content: "";
-                    width: 18px;
-                    height: 18px;
-                    background-repeat: no-repeat;
-                    background-size: contain;
-                    margin-right: 8px;
+                .file-name {
+                    flex: 1;
+                    width: 0;
+                    display: flex;
+                    align-items: center;
+                    position: relative;
+                    margin-right: 46px;
+                    &:before {
+                        flex-shrink: 0;
+                        content: "";
+                        width: 22px;
+                        height: 22px;
+                        background-repeat: no-repeat;
+                        background-size: contain;
+                        margin-right: 8px;
+                    }
+                    &.folder:before {
+                        background-image: url("../images/file/folder.svg");
+                    }
+                    &.document:before {
+                        background-image: url("../images/file/document.svg");
+                    }
+                    &.mind:before {
+                        background-image: url("../images/file/mind.svg");
+                    }
+                    &.sheet:before {
+                        background-image: url("../images/file/sheet.svg");
+                    }
+                    &.flow:before {
+                        background-image: url("../images/file/flow.svg");
+                    }
                 }
-                &.folder:before {
-                    background-image: url("../images/file/folder.svg");
-                }
-                &.document:before {
-                    background-image: url("../images/file/document.svg");
-                }
-                &.mind:before {
-                    background-image: url("../images/file/mind.svg");
-                }
-                &.sheet:before {
-                    background-image: url("../images/file/sheet.svg");
-                }
-                &.flow:before {
-                    background-image: url("../images/file/flow.svg");
+                .taskfont {
+                    color: #aaaaaa;
+                    font-size: 16px;
+                    margin: 0 3px;
                 }
             }
         }
@@ -345,23 +357,31 @@
                         background-size: contain;
                         margin-top: 12px;
                         position: relative;
-                        .taskfont {
+                        .share-icon,
+                        .share-avatar {
                             position: absolute;
-                            right: 10px;
-                            bottom: -2px;
-                            font-size: 18px;
-                            color: #ffffff;
+                            right: 0;
+                            bottom: 0;
+                            background-color: #9ACD7B;
+                            width: 20px;
+                            height: 20px;
+                            border-radius: 50%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            transform: scale(0.9);
+                            .taskfont {
+                                font-size: 18px;
+                                color: #ffffff;
+                            }
                         }
+
                     }
                     &.shear {
                         opacity: 0.38;
                     }
                     &.folder .file-icon {
                         background-image: url("../images/file/folder.svg");
-                        .taskfont {
-                            right: 6px;
-                            bottom: 2px;
-                        }
                     }
                     &.document .file-icon {
                         background-image: url("../images/file/document.svg");

@@ -3,7 +3,11 @@
 namespace App\Models;
 
 use App\Exceptions\ApiException;
+use App\Module\Base;
+use App\Tasks\PushTask;
+use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Request;
 
 /**
  * Class File
@@ -153,6 +157,35 @@ class File extends AbstractModel
             }
         });
         return true;
+    }
+
+    /**
+     * 推送内容发生变化消息
+     */
+    public function pushContentChange()
+    {
+        $userid = [$this->userid];
+        if ($this->share == 1) {
+            $userid = array_merge($userid, WebSocket::wherePath('file/content/' . $this->id)->pluck('userid')->toArray());
+        } elseif ($this->share == 2) {
+            $userid = array_merge($userid, FileUser::whereFileId($this->id)->pluck('userid')->toArray());
+        }
+        //
+        $userid = array_values(array_filter(array_unique($userid)));
+        $params = [
+            'ignoreFd' => Request::header('fd'),
+            'userid' => $userid,
+            'msg' => [
+                'type' => 'fileContentChange',
+                'data' => [
+                    'id' => $this->id,
+                    'nickname' => User::nickname(),
+                    'time' => Base::time()
+                ],
+            ]
+        ];
+        $task = new PushTask($params, false);
+        Task::deliver($task);
     }
 
     /**

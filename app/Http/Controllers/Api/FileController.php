@@ -325,8 +325,8 @@ class FileController extends AbstractController
         //
         $file->size = $content->size;
         $file->save();
+        $file->pushContentChange();
         //
-        $content->content = $content->formatContent($file->type, $content->content);
         return Base::retSuccess('保存成功', $content);
     }
 
