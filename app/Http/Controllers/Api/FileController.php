@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\File;
 use App\Models\FileContent;
+use App\Models\FileUser;
 use App\Models\User;
 use App\Module\Base;
 use Arr;
@@ -21,7 +22,6 @@ class FileController extends AbstractController
      * 获取文件列表
      *
      * @apiParam {Number} [pid]         父级ID
-     * @apiParam {String} [key]         关键词
      */
     public function lists()
     {
@@ -29,26 +29,64 @@ class FileController extends AbstractController
         //
         $data = Request::all();
         $pid = intval($data['pid']);
-        $key = trim($data['key']);
         //
-        $builder = File::whereUserid($user->userid);
-        if (Arr::exists($data, 'pid')) {
-            $builder->wherePid($pid);
+        if ($pid > 0) {
+            $file = File::find($pid);
+            if (empty($file)) {
+                return Base::retError('Not exist');
+            }
+            $file->chackAllow($user->userid);
+            //
+            $builder = File::wherePid($pid);
+        } else {
+            $builder = File::whereUserid($user->userid);
         }
-        if (Arr::exists($data, 'key')) {
-            $builder->where('name', 'like', '%' . $key . '%');
-        }
-        $list = $builder->take(500)->get();
-        $array = $list->toArray();
+        $array = $builder->take(500)->get()->toArray();
         //
-        while ($pid > 0) {
-            $file = File::whereUserid($user->userid)->whereId($pid)->first();
-            if ($file) {
+        if ($pid > 0) {
+            // 遍历获取父级
+            while ($pid > 0) {
+                $file = File::whereId($pid)->first();
+                if (empty($file)) {
+                    break;
+                }
                 $array[] = $file->toArray();
                 $pid = $file->pid;
             }
+        } else {
+            // 获取共享相关
+            $list = File::where('userid', '!=', $user->userid)->where(function ($query) use ($user) {
+                $query->where('share', 1)->orWhere(function ($q2) use ($user) {
+                    $q2->where('share', 2)->whereIn('id', function ($q3) use ($user) {
+                        $q3->select('file_id')->from('file_users')->where('userid', $user->userid);
+                    });
+                });
+            })->get();
+            if ($list->isNotEmpty()) {
+                $array = array_merge($array, $list->toArray());
+            }
         }
         return Base::retSuccess('success', $array);
+    }
+
+    /**
+     * 搜索文件列表
+     *
+     * @apiParam {String} [key]         关键词
+     */
+    public function search()
+    {
+        $user = User::auth();
+        //
+        $key = trim(Request::input('key'));
+        if (empty($key)) {
+            return Base::retError('请输入关键词');
+        }
+        //
+        $builder = File::whereUserid($user->userid)->where('name', 'like', '%' . $key . '%');
+        $list = $builder->take(50)->get();
+        //
+        return Base::retSuccess('success', $list);
     }
 
     /**
@@ -291,5 +329,100 @@ class FileController extends AbstractController
         //
         $content->content = $content->formatContent($file->type, $content->content);
         return Base::retSuccess('保存成功', $content);
+    }
+
+    /**
+     * 获取共享信息
+     *
+     * @apiParam {Number} id            文件ID
+     */
+    public function share()
+    {
+        $user = User::auth();
+        //
+        $id = intval(Request::input('id'));
+        //
+        $file = File::whereId($id)->first();
+        if (empty($file)) {
+            return Base::retError('文件不存在或已被删除');
+        }
+        //
+        if ($file->userid != $user->userid) {
+            return Base::retError('仅限所有者操作');
+        }
+        //
+        $userids = FileUser::whereFileId($file->id)->pluck('userid')->toArray();
+        //
+        return Base::retSuccess('success', [
+            'id' => $file->id,
+            'userids' => $userids
+        ]);
+    }
+
+    /**
+     * 获取共享信息
+     *
+     * @apiParam {Number} id            文件ID
+     * @apiParam {String} action        动作
+     * - share: 设置共享
+     * - unshare: 取消共享
+     * @apiParam {Number} [share]       共享方式
+     * - 1: 共享给所有人
+     * - 2: 共享给指定成员
+     * @apiParam {Array} [userids]      共享成员，格式: [userid1, userid2, userid3]
+     */
+    public function share__update()
+    {
+        $user = User::auth();
+        //
+        $id = intval(Request::input('id'));
+        $action = Request::input('action');
+        $share = intval(Request::input('share'));
+        $userids = Request::input('userids');
+        //
+        $file = File::whereId($id)->first();
+        if (empty($file)) {
+            return Base::retError('文件不存在或已被删除');
+        }
+        //
+        if ($file->userid != $user->userid) {
+            return Base::retError('仅限所有者操作');
+        }
+        //
+        if ($file->isNnShare()) {
+            return Base::retError('已经处于共享目录中');
+        }
+        //
+        if ($action == 'unshare') {
+            // 取消共享
+            $file->setShare(0);
+            return Base::retSuccess('取消成功', $file);
+        } else {
+            // 设置共享
+            if (!in_array($share, [1, 2])) {
+                return Base::retError('请选择共享类型');
+            }
+            $file->setShare($share);
+            if ($share == 2) {
+                $array = [];
+                if (is_array($userids)) {
+                    foreach ($userids as $userid) {
+                        if (!intval($userid)) continue;
+                        if (!User::whereUserid($userid)->exists()) continue;
+                        FileUser::updateInsert([
+                            'file_id' => $file->id,
+                            'userid' => $userid,
+                        ]);
+                        $array[] = $userid;
+                    }
+                }
+                if (empty($array)) {
+                    FileUser::whereFileId($file->id)->delete();
+                } else {
+                    FileUser::whereFileId($file->id)->whereNotIn('userid', $array)->delete();
+                }
+            }
+            return Base::retSuccess('设置成功', $file);
+        }
     }
 }

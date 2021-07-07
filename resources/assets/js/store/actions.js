@@ -318,17 +318,19 @@ export default {
      * 获取文件
      * @param state
      * @param dispatch
-     * @param data {?pid, ?key}
+     * @param pid
      * @returns {Promise<unknown>}
      */
-    getFiles({state, dispatch}, data) {
+    getFiles({state, dispatch}, pid) {
         return new Promise(function (resolve, reject) {
             dispatch("call", {
                 url: 'file/lists',
-                data,
+                data: {
+                    pid
+                },
             }).then((result) => {
                 const ids = result.data.map(({id}) => id)
-                state.files = state.files.filter((item) => item.pid != data.pid || ids.includes(item.id));
+                state.files = state.files.filter((item) => item.pid != pid || ids.includes(item.id));
                 dispatch("saveFile", result.data);
                 resolve(result)
             }).catch(e => {
@@ -338,6 +340,29 @@ export default {
         });
     },
 
+    /**
+     * 搜索文件
+     * @param state
+     * @param dispatch
+     * @param key
+     * @returns {Promise<unknown>}
+     */
+    searchFiles({state, dispatch}, key) {
+        return new Promise(function (resolve, reject) {
+            dispatch("call", {
+                url: 'file/search',
+                data: {
+                    key,
+                },
+            }).then((result) => {
+                dispatch("saveFile", result.data);
+                resolve(result)
+            }).catch(e => {
+                console.error(e);
+                reject(e)
+            });
+        });
+    },
 
     /** *****************************************************************************************/
     /** ************************************** 项目 **********************************************/

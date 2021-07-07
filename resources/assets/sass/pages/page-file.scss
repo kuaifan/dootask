@@ -93,6 +93,9 @@
                         font-weight: 500;
                         font-family: system-ui, sans-serif;
                     }
+                    .taskfont {
+                        padding-right: 2px;
+                    }
                     > span {
                         display: inline-block;
                         max-width: 180px;
@@ -325,12 +328,24 @@
                         background-repeat: no-repeat;
                         background-size: contain;
                         margin-top: 12px;
+                        position: relative;
+                        .taskfont {
+                            position: absolute;
+                            right: 10px;
+                            bottom: -1px;
+                            font-size: 16px;
+                            color: #ffffff;
+                        }
                     }
                     &.shear {
                         opacity: 0.38;
                     }
                     &.folder .file-icon {
                         background-image: url("../images/file/folder.svg");
+                        .taskfont {
+                            right: 7px;
+                            bottom: 3px;
+                        }
                     }
                     &.document .file-icon {
                         background-image: url("../images/file/document.svg");

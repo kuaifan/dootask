@@ -21,6 +21,8 @@ class CreateFilesTable extends Migration
             $table->string('type', 20)->nullable()->default('')->comment('类型');
             $table->bigInteger('size')->nullable()->default(0)->comment('大小(B)');
             $table->bigInteger('userid')->nullable()->default(0)->comment('拥有者ID');
+            $table->tinyInteger('share')->nullable()->default(0)->comment('是否共享');
+            $table->bigInteger('created_id')->nullable()->default(0)->comment('创建者');
             $table->timestamps();
             $table->softDeletes();
         });

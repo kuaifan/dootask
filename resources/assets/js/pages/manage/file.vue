@@ -27,7 +27,10 @@
                 <ul>
                     <li @click="[pid=0,searchKey='']">{{$L('全部文件')}}</li>
                     <li v-if="searchKey">{{$L('搜索')}} "{{searchKey}}"</li>
-                    <li v-else v-for="item in navigator" @click="pid=item.id"><span :title="item.name">{{item.name}}</span></li>
+                    <li v-else v-for="item in navigator" @click="pid=item.id">
+                        <i v-if="item.share" class="taskfont">&#xe63f;</i>
+                        <span :title="item.name">{{item.name}}</span>
+                    </li>
                 </ul>
                 <div v-if="loadIng > 0" class="nav-load"><Loading/></div>
                 <Button v-if="shearFile && shearFile.pid != pid" size="small" type="primary" @click="shearTo">
@@ -67,14 +70,23 @@
                                 @command="dropFile(item, $event)">
                                 <Icon @click.stop="" type="ios-more" />
                                 <EDropdownMenu slot="dropdown">
-                                    <EDropdownItem command="open">{{$L('打开')}}</EDropdownItem>
-                                    <EDropdownItem divided command="rename">{{$L('重命名')}}</EDropdownItem>
-                                    <EDropdownItem :disabled="item.type=='folder'" command="copy">{{$L('复制')}}</EDropdownItem>
-                                    <EDropdownItem command="shear">{{$L('剪切')}}</EDropdownItem>
-                                    <EDropdownItem divided command="delete" style="color:red">{{$L('删除')}}</EDropdownItem>
+                                    <template v-if="item.userid == userId">
+                                        <EDropdownItem command="open">{{$L('打开')}}</EDropdownItem>
+                                        <EDropdownItem command="rename" divided>{{$L('重命名')}}</EDropdownItem>
+                                        <EDropdownItem command="copy" :disabled="item.type=='folder'">{{$L('复制')}}</EDropdownItem>
+                                        <EDropdownItem command="shear">{{$L('剪切')}}</EDropdownItem>
+                                        <EDropdownItem command="share" divided>{{$L('共享')}}</EDropdownItem>
+                                        <EDropdownItem command="delete" divided style="color:red">{{$L('删除')}}</EDropdownItem>
+                                    </template>
+                                    <template v-else>
+                                        <EDropdownItem command="open">{{$L('打开')}}</EDropdownItem>
+                                        <EDropdownItem command="copy" :disabled="item.type=='folder'">{{$L('复制')}}</EDropdownItem>
+                                    </template>
                                 </EDropdownMenu>
                             </EDropdown>
-                            <div class="file-icon"></div>
+                            <div class="file-icon">
+                                <i v-if="item.share" class="taskfont">&#xe63f;</i>
+                            </div>
                             <div v-if="item._edit" class="file-input">
                                 <Input
                                     :ref="'input_' + item.id"
@@ -92,6 +104,28 @@
             </template>
         </div>
 
+        <!--项目设置-->
+        <Modal
+            v-model="shareShow"
+            :title="$L('共享设置')"
+            :mask-closable="false">
+            <Form ref="addProject" :model="shareInfo" label-width="auto" @submit.native.prevent>
+                <FormItem prop="type" :label="$L('共享类型')">
+                    <RadioGroup v-model="shareInfo.share">
+                        <Radio :label="1">{{$L('所有人')}}</Radio>
+                        <Radio :label="2">{{$L('指定成员')}}</Radio>
+                    </RadioGroup>
+                </FormItem>
+                <FormItem v-if="shareInfo.share === 2" prop="userids" :label="$L('共享成员')">
+                    <UserInput v-if="!shareInfo.userTmpHide" v-model="shareInfo.userids" :disabledChoice="[shareInfo.userid]" :multiple-max="100" :placeholder="$L('选择共享成员')"/>
+                </FormItem>
+            </Form>
+            <div slot="footer">
+                <Button type="default" :loading="shareLoad > 0" @click="onShare(false)">{{$L('取消共享')}}</Button>
+                <Button type="primary" :loading="shareLoad > 0" @click="onShare(true)">{{$L('设置共享')}}</Button>
+            </div>
+        </Modal>
+
         <!--查看修改文件-->
         <Drawer
             v-model="editShow"
@@ -107,11 +141,12 @@
 <script>
 import {mapState} from "vuex";
 import {sortBy} from "lodash";
+import UserInput from "../../components/UserInput";
 const FileContent = () => import('./components/FileContent');
 
 
 export default {
-    components: {FileContent},
+    components: {UserInput, FileContent},
     data() {
         return {
             loadIng: 0,
@@ -133,6 +168,10 @@ export default {
             tableMode: this.$store.state.method.getStorageBoolean("fileTableMode"),
             columns: [],
 
+            shareShow: false,
+            shareInfo: {},
+            shareLoad: 0,
+
             editShow: false,
             editShowNum: 0,
             editHeight: 0,
@@ -146,7 +185,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userInfo', 'files']),
+        ...mapState(['userId', 'userInfo', 'files']),
 
         shearFile() {
             const {files, shearId} = this;
@@ -191,9 +230,7 @@ export default {
         pid: {
             handler() {
                 this.loadIng++;
-                this.$store.dispatch("getFiles", {
-                    pid: this.pid
-                }).then(() => {
+                this.$store.dispatch("getFiles", this.pid).then(() => {
                     this.loadIng--;
                     this.$store.state.method.setStorage("fileOpenPid", this.pid)
                 }).catch(({msg}) => {
@@ -400,6 +437,18 @@ export default {
                     this.shearId = item.id;
                     break;
 
+                case 'share':
+                    this.shareInfo = {
+                        id: item.id,
+                        name: item.name,
+                        userid: item.userid,
+                        share: item.share,
+                        _share: item.share,
+                    };
+                    this.shareShow = true;
+                    this.getShare();
+                    break;
+
                 case 'delete':
                     let typeName = item.type == 'folder' ? '文件夹' : '文件';
                     $A.modalConfirm({
@@ -509,15 +558,61 @@ export default {
             if (this.searchKey.trim() != '') {
                 this.searchTimeout = setTimeout(() => {
                     this.loadIng++;
-                    this.$store.dispatch("getFiles", {
-                        key: this.searchKey,
-                    }).then(() => {
+                    this.$store.dispatch("searchFiles", this.searchKey).then(() => {
                         this.loadIng--;
                     }).catch(() => {
                         this.loadIng--;
                     });
                 }, 600)
             }
+        },
+
+        getShare() {
+            this.shareLoad++;
+            this.$store.dispatch("call", {
+                url: 'file/share',
+                data: {
+                    id: this.shareInfo.id
+                },
+            }).then(({data}) => {
+                this.shareLoad--;
+                if (data.id == this.shareInfo.id) {
+                    this.shareInfo = Object.assign({userTmpHide: true}, this.shareInfo, data);
+                    this.$nextTick(() => {
+                        this.$set(this.shareInfo, 'userTmpHide', false);
+                    })
+                }
+            }).catch(({msg}) => {
+                this.shareLoad--;
+                this.shareShow = false;
+                $A.modalError(msg)
+            })
+        },
+
+        onShare(share) {
+            if (!share && !this.shareInfo._share) {
+                this.shareShow = false;
+                return;
+            }
+            if (![1, 2].includes(this.shareInfo.share)) {
+                $A.messageWarning("请选择共享类型")
+                return;
+            }
+            this.shareLoad++;
+            this.$store.dispatch("call", {
+                url: 'file/share/update',
+                data: Object.assign(this.shareInfo, {
+                    action: share ? 'share' : 'unshare'
+                }),
+            }).then(({data, msg}) => {
+                this.shareLoad--;
+                this.shareShow = false;
+                $A.messageSuccess(msg)
+                this.$store.dispatch("saveFile", data);
+            }).catch(({msg}) => {
+                this.shareLoad--;
+                $A.modalError(msg)
+            })
         }
     }
 }
