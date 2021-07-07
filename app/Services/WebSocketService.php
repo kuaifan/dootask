@@ -143,7 +143,10 @@ class WebSocketService implements WebSocketHandlerInterface
                     $pathOld = $row->path;
                     $row->path = $pathNew;
                     $row->save();
-                    if (preg_match("/^file\/content\/\d+$/", $pathNew) || preg_match("/^file\/content\/\d+$/", $pathOld)) {
+                    if (preg_match("/^file\/content\/\d+$/", $pathOld)) {
+                        $this->pushPath($pathOld);
+                    }
+                    if (preg_match("/^file\/content\/\d+$/", $pathNew)) {
                         $this->pushPath($pathNew);
                     }
                 }

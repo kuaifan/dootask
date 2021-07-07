@@ -1640,7 +1640,7 @@ export default {
             if (state.wsPathValue == path) {
                 dispatch("websocketSend", {type: 'path', data: {path}});
             }
-        }, 3000);
+        }, 1000);
     },
 
     /**
