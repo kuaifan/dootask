@@ -63,7 +63,10 @@ class FileController extends AbstractController
                 });
             })->get();
             if ($list->isNotEmpty()) {
-                $array = array_merge($array, $list->toArray());
+                foreach ($list as $item) {
+                    $item->pid = 0;
+                    $array[] = $item->toArray();
+                }
             }
         }
         return Base::retSuccess('success', $array);
