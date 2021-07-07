@@ -11,7 +11,6 @@
         "prod": "npm run production",
         "production": "mix --production",
         "version": "node ./version.js",
-        "electron": "cd electron && electron ./",
         "native": "node ./nativefier.js"
     },
     "devDependencies": {

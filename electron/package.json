@@ -4,6 +4,9 @@
     "description": "DooTask is task management system.",
     "main": "main.js",
     "license": "MIT",
+    "scripts": {
+        "start": "electron ."
+    },
     "devDependencies": {
         "electron": "^13.1.6"
     }
