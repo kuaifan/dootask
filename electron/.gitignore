@@ -1,3 +1,8 @@
-node_modules
-public
+node_modules/
+public/
 package-lock.json
+
+out/
+
+
+.native

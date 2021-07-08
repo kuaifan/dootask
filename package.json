@@ -11,7 +11,8 @@
         "prod": "npm run production",
         "production": "mix --production",
         "version": "node ./version.js",
-        "native": "node ./native.js"
+        "electron-start": "node ./electron/index.js start",
+        "electron-make": "node ./electron/index.js make"
     },
     "devDependencies": {
         "axios": "^0.21",

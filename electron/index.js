@@ -1,6 +1,9 @@
 const fs = require('fs');
 const path  = require('path')
-const package  = require('./package.json')
+const inquirer = require('inquirer');
+const child_process = require('child_process');
+const config  = require('./package.json')
+const argv = process.argv;
 
 // 删除
 function deleteFile(path) {
@@ -82,11 +85,45 @@ function copyDir(srcDir, tarDir, cb) {
     }
 }
 
+// 给地址加上前后
+function formatUrl(str) {
+    let url;
+    if (str.substring(0, 7) === "http://" ||
+        str.substring(0, 8) === "https://") {
+        url = str.trim();
+    } else {
+        url = "http://" + str.trim();
+    }
+    if (url.substring(url.length - 1) != "/") {
+        url+= "/"
+    }
+    return url;
+}
+
+// 运行命令
+function exec(command, quiet) {
+    return new Promise((resolve, reject) => {
+        try {
+            let child = child_process.exec(command, {encoding: 'utf8'}, () => {
+                resolve();
+            });
+            if (!quiet) {
+                child.stdout.pipe(process.stdout);
+            }
+            child.stderr.pipe(process.stderr);
+        } catch (e) {
+            console.error('execute command failed :', command);
+            reject(e);
+        }
+    })
+}
+
 /** ***************************************************************************************************/
 /** ***************************************************************************************************/
 /** ***************************************************************************************************/
 
-const electronDir = path.resolve("electron/public");
+const electronDir = path.resolve(__dirname, "public");
+const nativeCachePath = path.resolve(__dirname, ".native");
 if (fs.existsSync(electronDir)) {
     deleteFile(electronDir);
 }
@@ -98,14 +135,62 @@ fs.mkdirSync(electronDir);
     'images',
     'js',
 ].forEach(function (item) {
-    copyDir(path.resolve("public/" + item), electronDir + "/" + item)
+    copyDir(path.resolve(__dirname, "../public", item), electronDir + "/" + item)
 })
 
-copyFile(path.resolve("electron/index.html"), electronDir + "/index.html")
+copyFile(path.resolve(__dirname, "index.html"), electronDir + "/index.html")
 
-fs.writeFileSync(electronDir + "/config.js", `window.systemInformation = {
-    version: "${package.version}",
-    origin: "./",
-    apiUrl: "http://127.0.0.1:2222/api/"
-}`, 'utf8');
+
+const questions = [
+    {
+        type: 'input',
+        name: 'targetUrl',
+        message: "请输入网站地址",
+        default: () => {
+            if (fs.existsSync(nativeCachePath)) {
+                return fs.readFileSync(nativeCachePath, 'utf8');
+            }
+            return undefined;
+        },
+        validate: function (value) {
+            return value !== ''
+        }
+    }, {
+        type: 'list',
+        name: 'platform',
+        message: "选择操作系统平台",
+        choices: [{
+            name: "MacOS Intel",
+            value: {
+                platform: 'mac',
+                arch: 'x64',
+            }
+        }, {
+            name: "MacOS Arm64",
+            value: {
+                platform: 'mac',
+                arch: 'arm64',
+            }
+        }, {
+            name: "Window x86_64",
+            value: {
+                platform: 'windows',
+                arch: 'x64',
+            }
+        }]
+    }
+];
+
+inquirer.prompt(questions).then(answers => {
+    let data = `window.systemInformation = {
+        version: "${config.version}",
+        origin: "./",
+        apiUrl: "${formatUrl(answers.targetUrl)}api/"
+    }`;
+    fs.writeFileSync(nativeCachePath, formatUrl(answers.targetUrl));
+    fs.writeFileSync(electronDir + "/config.js", data, 'utf8');
+    exec("cd electron && npm run " + (argv[2] || "start")).then(r => {})
+});
+
+
 
