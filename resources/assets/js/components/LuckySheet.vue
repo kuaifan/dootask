@@ -94,9 +94,9 @@ export default {
             let config = {
                 container: this.id,
                 showinfobar: false,
-                plugins: [
+                /*plugins: [
                     'chart'
-                ],
+                ],*/
                 lang: lang,
                 loading: {
                     image: 'image://' + $A.originUrl('js/luckysheet/css/loading.gif')
