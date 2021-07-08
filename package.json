@@ -12,7 +12,7 @@
         "production": "mix --production",
         "version": "node ./version.js",
         "electron-start": "node ./electron/index.js start",
-        "electron-make": "node ./electron/index.js make"
+        "electron-build": "node ./electron/index.js build"
     },
     "devDependencies": {
         "axios": "^0.21",
