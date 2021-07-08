@@ -10,19 +10,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <title>Dootask</title>
-    <link rel="stylesheet" type="text/css" href="./public/css/app.css">
-    <link rel="stylesheet" type="text/css" href="./public/css/iview.css">
-    <script src="./public/js/jquery.min.js"></script>
-    <script src="./public/js/bootstrap.min.js"></script>
-    <script src="./public/js/language.all.js"></script>
-    <script src="./public/js/scroll-into-view.min.js"></script>
-    <script>
-        window.systemInformation = {
-            version: "0.2.63",
-            origin: window.location.origin + "/",
-            apiUrl: null
-        };
-    </script>
+    <link rel="stylesheet" type="text/css" href="./css/app.css">
+    <link rel="stylesheet" type="text/css" href="./css/iview.css">
+    <script src="./js/jquery.min.js"></script>
+    <script src="./js/bootstrap.min.js"></script>
+    <script src="./js/language.all.js"></script>
+    <script src="./js/scroll-into-view.min.js"></script>
+    <script src="./config.js"></script>
 </head>
 <body>
 
@@ -43,7 +37,7 @@
 </div>
 
 <script type="text/javascript">
-    document.writeln("<script src=\'./public/js/app.js?v=" + window.systemInformation.version + "\'><\/script>");
+    document.writeln("<script src=\'./js/app.js?v=" + window.systemInformation.version + "\'><\/script>");
 </script>
 
 </body>

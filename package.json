@@ -11,7 +11,7 @@
         "prod": "npm run production",
         "production": "mix --production",
         "version": "node ./version.js",
-        "native": "node ./nativefier.js"
+        "native": "node ./native.js"
     },
     "devDependencies": {
         "axios": "^0.21",

@@ -52,12 +52,12 @@ export default {
     mounted() {
         $A.loadScriptS([
             'js/luckysheet/plugins/css/pluginsCss.css',
-            'js/js/luckysheet/plugins/plugins.css',
-            'js/js/luckysheet/css/luckysheet.css',
-            'js/js/luckysheet/assets/iconfont/iconfont.css',
+            'js/luckysheet/plugins/plugins.css',
+            'js/luckysheet/css/luckysheet.css',
+            'js/luckysheet/assets/iconfont/iconfont.css',
             //
-            'js/js/luckysheet/plugins/js/plugin.js',
-            'js/js/luckysheet/luckysheet.umd.js',
+            'js/luckysheet/plugins/js/plugin.js',
+            'js/luckysheet/luckysheet.umd.js',
         ], () => {
             this.loadIng = false;
             this.bakValue = JSON.stringify(this.value);
@@ -99,7 +99,7 @@ export default {
                 ],
                 lang: lang,
                 loading: {
-                    image: 'image://.js/luckysheet/css/loading.gif'
+                    image: 'image://' + $A.originUrl('js/luckysheet/css/loading.gif')
                 },
                 data: value ? $A.cloneJSON(value) : [
                     {
