@@ -1,19 +1,16 @@
 const method = {
     apiUrl(str) {
-        let origin;
-        origin = window.location.origin;
-        origin = 'http://127.0.0.1:2222';
-        //
         if (str.substring(0, 2) === "//" ||
             str.substring(0, 7) === "http://" ||
             str.substring(0, 8) === "https://" ||
-            str.substring(0, 6) === "ftp://") {
+            str.substring(0, 6) === "ftp://" ||
+            str.substring(0, 1) === "/") {
             return str;
         }
-        if (str.substring(0, 1) == "/") {
-            return origin + str;
+        if (window.systemInformation && typeof window.systemInformation.apiUrl === "string") {
+            return window.systemInformation.apiUrl + str;
         } else {
-            return origin + "/api/" + str;
+            return window.location.origin + "/api/" + str;
         }
     },
 

@@ -15,7 +15,7 @@ function createWindow () {
     })
 
     // and load the index.html of the app.
-    mainWindow.loadFile('../public/index_electron.html').then(r => {
+    mainWindow.loadFile('./index.html').then(r => {
 
     })
 

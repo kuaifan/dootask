@@ -1422,12 +1422,10 @@ export default {
             }
             return;
         }
-        let url = window.webSocketConfig.URL;
-        if (!url) {
-            url = state.method.apiUrl('/ws');
-            url = url.replace("https://", "wss://");
-            url = url.replace("http://", "ws://");
-        }
+        //
+        let url = state.method.apiUrl('ws');
+        url = url.replace("https://", "wss://");
+        url = url.replace("http://", "ws://");
         url += "?action=web&token=" + state.userToken;
         //
         state.ws = new WebSocket(url);

@@ -19,8 +19,7 @@
     <script src="{{ asset_main('js/scroll-into-view.min.js') }}"></script>
     <script>
         window.csrfToken = { csrfToken : "{{ csrf_token() }}" };
-        window.webSocketConfig = { URL: "{{ env('LARAVELS_PROXY_URL') }}", DEBUG: {{ env('APP_DEBUG') ? "true" : "false" }}, LISTENER: {} };
-        window.systemInformation = { version : "{{ $version }}" };
+        window.systemInformation = { version : "{{ $version }}", origin: window.location.origin + "/", apiUrl: null };
     </script>
 </head>
 <body>

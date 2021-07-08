@@ -3,8 +3,6 @@
  */
 (function (window, $, undefined) {
 
-    let serverUrl = window.location.origin + '/';
-
     /**
      * =============================================================================
      * **************************   基础函数类   **************************
@@ -209,7 +207,7 @@
          * @param str
          * @returns {string}
          */
-        serverUrl: function (str) {
+        originUrl: function (str) {
             if (str.substring(0, 2) === "//" ||
                 str.substring(0, 7) === "http://" ||
                 str.substring(0, 8) === "https://" ||
@@ -217,7 +215,11 @@
                 str.substring(0, 1) === "/") {
                 return str;
             }
-            return serverUrl + str;
+            if (window.systemInformation && typeof window.systemInformation.origin === "string") {
+                return window.systemInformation.origin + str;
+            } else {
+                return window.location.origin + "/" + str;
+            }
         },
 
         /**
@@ -878,6 +880,7 @@
          * @param callback
          */
         loadScript(url, callback) {
+            url = $A.originUrl(url);
             if (this.rightExists(url, '.css')) {
                 this.loadCss(url, callback)
                 return;
@@ -928,6 +931,7 @@
          * @param callback
          */
         loadCss(url, callback) {
+            url = $A.originUrl(url);
             if (this.rightExists(url, '.js')) {
                 this.loadScript(url, callback)
                 return;
@@ -936,7 +940,7 @@
                 typeof callback === "function" && callback();
                 return;
             }
-            var script = document.createElement('link');
+            let script = document.createElement('link');
             if (script.readyState) {
                 script.onreadystatechange = () => {
                     if (script.readyState == 'loaded' || script.readyState == 'complete') {

@@ -296,7 +296,7 @@ export default {
                 }
                 this._notificationId = id;
                 this.notificationClass.replaceOptions({
-                    icon: './images/logo.png',
+                    icon: $A.originUrl('images/logo.png'),
                     body: body,
                     data: data,
                     tag: "dialog",
