@@ -114,7 +114,7 @@
                     language = 'zh'
                     break;
             }
-            this.url = window.location.origin + '/js/grapheditor/' + (this.readOnly ? 'viewer' : 'index') + '.html?lang=' + language;
+            this.url = './js/grapheditor/' + (this.readOnly ? 'viewer' : 'index') + '.html?lang=' + language;
         },
         mounted() {
             window.addEventListener('message', this.handleMessage)

@@ -1,8 +1,8 @@
 @font-face {
     font-family: 'taskfont';  /* Project id 2583385 */
-    src: url('//at.alicdn.com/t/font_2583385_vbi15jduv0n.woff2?t=1625644968453') format('woff2'),
-    url('//at.alicdn.com/t/font_2583385_vbi15jduv0n.woff?t=1625644968453') format('woff'),
-    url('//at.alicdn.com/t/font_2583385_vbi15jduv0n.ttf?t=1625644968453') format('truetype');
+    src: url('../css/fonts/taskfont.woff2') format('woff2'),
+    url('../css/fonts/taskfont.woff') format('woff'),
+    url('../css/fonts/taskfont.ttf') format('truetype');
 }
 
 .taskfont {

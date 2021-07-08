@@ -221,37 +221,6 @@
         },
 
         /**
-         * 获取IP地址详情
-         * @param ip
-         * @param callback
-         */
-        getIpInfo: function(ip, callback) {
-            if (!this.strExists(ip, ".")) {
-                return;
-            }
-            let keyName = '__ip' + ip.substring(0, 1) + '__';
-            let key = this.getMiddle(ip, '', '.');
-            let res = this.loadFromlLocal(key, ip, '', keyName);
-            if (typeof res == "object") {
-                if (typeof callback == "function") {
-                    callback(res);
-                }
-                return;
-            }
-            $A.ajaxc({
-                url: $A.serverUrl('api/system/get/ipinfo'),
-                data: { ip: ip },
-                timeout: 8000,
-                success: (res) => {
-                    this.savaToLocal(key, ip, res, keyName);
-                    if (typeof callback == "function") {
-                        callback(res);
-                    }
-                }
-            });
-        },
-
-        /**
          * 新增&&获取缓存数据
          * @param key
          * @param value

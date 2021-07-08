@@ -7,15 +7,17 @@ const path = require('path')
 function createWindow () {
     // Create the browser window.
     const mainWindow = new BrowserWindow({
-        width: 800,
-        height: 600,
+        width: 1280,
+        height: 800,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js')
         }
     })
 
     // and load the index.html of the app.
-    mainWindow.loadFile('index.html')
+    mainWindow.loadFile('../public/index_electron.html').then(r => {
+
+    })
 
     // Open the DevTools.
     // mainWindow.webContents.openDevTools()

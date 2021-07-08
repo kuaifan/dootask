@@ -51,7 +51,7 @@ VueRouter.prototype.push = function push(location) {
     return originalPush.call(this, location).catch(err => err)
 }
 const router = new VueRouter({
-    mode: 'history',
+    mode: 'hash',
     routes
 });
 
@@ -64,7 +64,7 @@ router.beforeEach((to, from, next) => {
     ViewUI.LoadingBar.start();
     next();
 });
-router.afterEach((to, from, next) => {
+router.afterEach(() => {
     ViewUI.LoadingBar.finish();
 });
 

@@ -28,6 +28,7 @@ mix
     .sass('resources/assets/sass/app.scss', 'public/css')
     .webpackConfig({
         output: {
+            publicPath: './',
             chunkFilename: function ({chunk}) {
                 return `js/build/${mixBuildName(chunk.id)}.js`
             }

@@ -212,7 +212,7 @@
                 return {
                     inline: isFull ? false : this.inline,
                     selector: (isFull ? '#T_' : '#') + this.id,
-                    base_url: $A.serverUrl('js/tinymce'),
+                    base_url: './js/tinymce',
                     language: "zh_CN",
                     toolbar: this.toolbar,
                     plugins: this.plugin(isFull),
