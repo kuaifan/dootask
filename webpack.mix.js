@@ -21,10 +21,10 @@ if (!['--watch', '--hot'].includes(argv[3])) {
     output.publicPath = './';
 }
 
-let platform = "web";
+let is_web = true;
 let publicPath = 'public'
 if (argv[4] === '--electron') {
-    platform = "electron"
+    is_web = false
     publicPath = 'electron/public';
 }
 
@@ -38,7 +38,7 @@ mix
             output,
             plugins: [
                 new webpack.DefinePlugin({
-                    '__PLATFORM': platform
+                    '__IS_WEB': is_web,
                 })
             ]
         }

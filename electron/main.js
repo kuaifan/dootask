@@ -1,6 +1,13 @@
-const {app, BrowserWindow} = require('electron')
+const fs = require('fs')
 const path = require('path')
-let willQuitApp = false;
+const {app, BrowserWindow} = require('electron')
+
+let willQuitApp = false,
+    devloadCachePath = path.resolve(__dirname, ".devload"),
+    devloadUrl = "";
+if (fs.existsSync(devloadCachePath)) {
+    devloadUrl = fs.readFileSync(devloadCachePath, 'utf8')
+}
 
 function getCounterValue(title) {
     const itemCountRegex = /[([{]([\d.,]*)\+?[}\])]/;
@@ -17,9 +24,15 @@ function createWindow(setDockBadge) {
         }
     })
 
-    mainWindow.loadFile('./public/index.html').then(r => {
+    if (devloadUrl) {
+        mainWindow.loadURL(devloadUrl).then(r => {
 
-    })
+        })
+    } else {
+        mainWindow.loadFile('./public/index.html').then(r => {
+
+        })
+    }
 
     mainWindow.on('page-title-updated', function (event, title) {
         const counterValue = getCounterValue(title);

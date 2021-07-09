@@ -6,6 +6,7 @@
     "license": "MIT",
     "scripts": {
         "start": "electron-forge start",
+        "start-quiet": "electron-forge start &> /dev/null",
         "build": "electron-builder",
         "build-mac-intel": "electron-builder --mac",
         "build-mac-m1": "electron-builder --mac --arm64",
@@ -20,6 +21,7 @@
         "@electron-forge/maker-rpm": "^6.0.0-beta.57",
         "@electron-forge/maker-squirrel": "^6.0.0-beta.57",
         "@electron-forge/maker-zip": "^6.0.0-beta.57",
+        "dotenv": "^9.0.2",
         "electron": "^13.1.6",
         "electron-builder": "^22.11.7"
     },

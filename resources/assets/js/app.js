@@ -52,7 +52,7 @@ VueRouter.prototype.push = function push(location) {
 }
 
 const router = new VueRouter({
-    mode: __PLATFORM === "web" ? 'history' : 'hash',
+    mode: !__IS_WEB ? 'hash' : 'history',
     routes
 });
 
