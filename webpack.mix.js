@@ -1,7 +1,8 @@
 const mix = require('laravel-mix');
 const ipv4 = require('internal-ip').v4.sync();
+const argv = process.argv;
 
-const mixBuildName = function (str) {
+let mixBuildName = function (str) {
     if (typeof str !== "string") {
         return str;
     }
@@ -11,28 +12,36 @@ const mixBuildName = function (str) {
     return str.replace(/_/g, '/');
 }
 
-/*
- |--------------------------------------------------------------------------
- | Mix Asset Management
- |--------------------------------------------------------------------------
- |
- | Mix provides a clean, fluent API for defining some Webpack build steps
- | for your Laravel applications. By default, we are compiling the CSS
- | file for the application as well as bundling up all the JS files.
- |
- */
+let output = {
+    chunkFilename: function ({chunk}) {
+        return `js/build/${mixBuildName(chunk.id)}.js`
+    }
+};
+if (!['--watch', '--hot'].includes(argv[3])) {
+    output.publicPath = './';
+}
+
+let platform = "web";
+let publicPath = 'public'
+if (argv[4] === '--electron') {
+    platform = "electron"
+    publicPath = 'electron/public';
+}
 
 mix
-    .copy('resources/assets/statics/public', 'public')
-    .js('resources/assets/js/app.js', 'public/js')
-    .sass('resources/assets/sass/app.scss', 'public/css')
-    .webpackConfig({
-        output: {
-            publicPath: './',
-            chunkFilename: function ({chunk}) {
-                return `js/build/${mixBuildName(chunk.id)}.js`
-            }
-        },
+    .copy('resources/assets/statics/public', publicPath)
+    .js('resources/assets/js/app.js', 'js')
+    .sass('resources/assets/sass/app.scss', 'css')
+    .setPublicPath(publicPath)
+    .webpackConfig(webpack => {
+        return {
+            output,
+            plugins: [
+                new webpack.DefinePlugin({
+                    '__PLATFORM': platform
+                })
+            ]
+        }
     })
     .options({
         processCssUrls: false,

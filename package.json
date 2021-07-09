@@ -3,16 +3,10 @@
     "version": "0.2.71",
     "description": "DooTask is task management system.",
     "scripts": {
-        "dev": "npm run development",
-        "development": "mix",
-        "watch": "mix watch",
-        "watch-poll": "mix watch -- --watch-options-poll=1000",
-        "hot": "mix watch --hot",
-        "prod": "npm run production",
-        "production": "mix --production",
-        "version": "node ./version.js",
-        "electron-start": "node ./electron/index.js start",
-        "electron-build": "node ./electron/index.js build"
+        "start": "./cmd dev",
+        "build": "./cmd prod",
+        "build-electron": "node ./electron/build.js",
+        "version": "node ./version.js"
     },
     "devDependencies": {
         "axios": "^0.21",

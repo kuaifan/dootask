@@ -138,14 +138,14 @@ if [ $# -gt 0 ];then
         check_node
         $COMPOSE exec php /bin/bash -c "php bin/run --mode=dev"
         supervisorctl_restart php
-        npm run hot
+        mix watch --hot
     elif [[ "$1" == "prod" ]]; then
         shift 1
         check_node
         $COMPOSE exec php /bin/bash -c "php bin/run --mode=prod"
         supervisorctl_restart php
         rm -rf "./public/js/build"
-        npm run prod
+        mix --production
     elif [[ "$1" == "super" ]]; then
         shift 1
         supervisorctl_restart "$@"
