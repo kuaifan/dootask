@@ -7,7 +7,7 @@
 
 /*!
  * TOAST UI Date Picker
- * @version 4.2.0
+ * @version 4.2.2
  * @author NHN. FE Development Lab <dl_javascript@nhn.com>
  * @license MIT
  */
