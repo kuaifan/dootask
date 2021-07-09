@@ -36,9 +36,9 @@ mix
         };
         if (isElectron) {
             config.target = 'electron-renderer'
-        }
-        if (!isHot) {
-            config.output.publicPath = './'
+            if (!isHot) {
+                config.output.publicPath = './'
+            }
         }
         return config
     })
