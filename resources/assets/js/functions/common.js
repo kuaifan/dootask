@@ -216,10 +216,14 @@
                 return str;
             }
             if (window.systemInformation && typeof window.systemInformation.origin === "string") {
-                return window.systemInformation.origin + str;
+                str = window.systemInformation.origin + str;
             } else {
-                return window.location.origin + "/" + str;
+                str = window.location.origin + "/" + str;
             }
+            while (str.indexOf("/../") !== -1) {
+                str = str.replace(/\/(((?!\/).)*)\/\.\.\//, "/")
+            }
+            return str
         },
 
         /**
@@ -1558,4 +1562,4 @@
     });
 
     window.$A = $;
-})(window, require('jquery'));
+})(window, window.$ = window.jQuery = require('jquery'));

@@ -8,10 +8,14 @@ const method = {
             return str;
         }
         if (window.systemInformation && typeof window.systemInformation.apiUrl === "string") {
-            return window.systemInformation.apiUrl + str;
+            str = window.systemInformation.apiUrl + str;
         } else {
-            return window.location.origin + "/api/" + str;
+            str = window.location.origin + "/api/" + str;
         }
+        while (str.indexOf("/../") !== -1) {
+            str = str.replace(/\/(((?!\/).)*)\/\.\.\//, "/")
+        }
+        return str
     },
 
     date2string(params, format) {

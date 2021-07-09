@@ -1423,7 +1423,7 @@ export default {
             return;
         }
         //
-        let url = state.method.apiUrl('ws');
+        let url = state.method.apiUrl('../ws');
         url = url.replace("https://", "wss://");
         url = url.replace("http://", "ws://");
         url += "?action=web&token=" + state.userToken;
