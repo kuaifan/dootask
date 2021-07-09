@@ -2,7 +2,7 @@ const fs = require('fs');
 const path  = require('path')
 const inquirer = require('inquirer');
 const child_process = require('child_process');
-const config  = require('./package.json')
+const config  = require('../package.json')
 const argv = process.argv;
 
 // 删除
@@ -155,31 +155,25 @@ const questions = [
         validate: function (value) {
             return value !== ''
         }
-    }, {
+    }
+];
+if (argv[2] == 'build') {
+    questions.push({
         type: 'list',
         name: 'platform',
         message: "选择操作系统平台",
         choices: [{
             name: "MacOS Intel",
-            value: {
-                platform: 'mac',
-                arch: 'x64',
-            }
+            value: "build-mac-intel"
         }, {
-            name: "MacOS Arm64",
-            value: {
-                platform: 'mac',
-                arch: 'arm64',
-            }
+            name: "MacOS M1",
+            value: "build-mac-m1"
         }, {
             name: "Window x86_64",
-            value: {
-                platform: 'windows',
-                arch: 'x64',
-            }
+            value: "build-mac-win"
         }]
-    }
-];
+    })
+}
 
 inquirer.prompt(questions).then(answers => {
     let data = `window.systemInformation = {
@@ -189,7 +183,15 @@ inquirer.prompt(questions).then(answers => {
     }`;
     fs.writeFileSync(nativeCachePath, formatUrl(answers.targetUrl));
     fs.writeFileSync(electronDir + "/config.js", data, 'utf8');
-    exec("cd electron && npm run " + (argv[2] || "start")).then(r => {})
+    //
+    let packageFile = path.resolve(__dirname, "package.json");
+    let packageString = fs.readFileSync(packageFile, 'utf8');
+    packageString = packageString.replace(/"version":\s*"(.*?)"/, `"version": "${config.version}"`);
+    packageString = packageString.replace(/"name":\s*"(.*?)"/, `"name": "${config.name}"`);
+    fs.writeFileSync(packageFile, packageString, 'utf8');
+    //
+    let platform = argv[2] == "build" ? answers.platform : "start";
+    exec("cd electron && npm run " + (platform)).then(r => {})
 });
 
 

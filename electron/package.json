@@ -1,12 +1,15 @@
 {
     "name": "DooTask",
-    "version": "1.0.0",
+    "version": "0.2.71",
     "description": "DooTask is task management system.",
     "main": "main.js",
     "license": "MIT",
     "scripts": {
         "start": "electron-forge start",
         "build": "electron-builder",
+        "build-mac-intel": "electron-builder --mac",
+        "build-mac-m1": "electron-builder --mac --arm64",
+        "build-win": "electron-builder --win",
         "package": "electron-forge package",
         "make": "electron-forge make",
         "publish": "electron-forge publish"
@@ -30,8 +33,7 @@
             "preload.js"
         ],
         "mac": {
-            "icon": "../resources/assets/statics/public/images/logo-app.png",
-            "target" : { "target": "dir", "arch": "arm64" }
+            "icon": "../resources/assets/statics/public/images/logo-app.png"
         },
         "win": {
             "icon": "../resources/assets/statics/public/images/logo-app.ico"
