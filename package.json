@@ -40,6 +40,7 @@
     },
     "dependencies": {
         "echarts": "^5.1.1",
+        "electron": "^13.1.6",
         "element-ui": "^2.15.2",
         "notification-koro1": "^1.1.1",
         "tinymce": "^5.8.1",

@@ -46,13 +46,17 @@ Vue.component('EDropdown', Dropdown);
 Vue.component('EDropdownMenu', DropdownMenu);
 Vue.component('EDropdownItem', DropdownItem);
 
+if (!!__IS_ELECTRON) {
+    Vue.prototype.$electron = require('electron')
+}
+
 const originalPush = VueRouter.prototype.push
 VueRouter.prototype.push = function push(location) {
     return originalPush.call(this, location).catch(err => err)
 }
 
 const router = new VueRouter({
-    mode: !__IS_WEB ? 'hash' : 'history',
+    mode: !!__IS_ELECTRON ? 'hash' : 'history',
     routes
 });
 

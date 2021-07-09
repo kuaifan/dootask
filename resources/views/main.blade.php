@@ -13,8 +13,6 @@
     <link rel="shortcut icon" href="{{ asset_main('favicon.ico') }}">
     <link rel="stylesheet" type="text/css" href="{{ mix('css/app.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset_main('css/iview.css') }}">
-    <script src="{{ asset_main('js/jquery.min.js') }}"></script>
-    <script src="{{ asset_main('js/bootstrap.min.js') }}"></script>
     <script src="{{ asset_main('js/language.all.js') }}"></script>
     <script src="{{ asset_main('js/scroll-into-view.min.js') }}"></script>
     <script>

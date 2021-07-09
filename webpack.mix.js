@@ -12,21 +12,9 @@ let mixBuildName = function (str) {
     return str.replace(/_/g, '/');
 }
 
-let output = {
-    chunkFilename: function ({chunk}) {
-        return `js/build/${mixBuildName(chunk.id)}.js`
-    }
-};
-if (!['--watch', '--hot'].includes(argv[3])) {
-    output.publicPath = './';
-}
-
-let is_web = true;
-let publicPath = 'public'
-if (argv[4] === '--electron') {
-    is_web = false
-    publicPath = 'electron/public';
-}
+let isHot = argv.includes('--hot');
+let isElectron = argv.includes('--electron');
+let publicPath = (!isHot && isElectron) ? 'electron/public' : 'public';
 
 mix
     .copy('resources/assets/statics/public', publicPath)
@@ -34,14 +22,25 @@ mix
     .sass('resources/assets/sass/app.scss', 'css')
     .setPublicPath(publicPath)
     .webpackConfig(webpack => {
-        return {
-            output,
+        let config = {
+            output: {
+                chunkFilename: ({chunk}) => {
+                    return `js/build/${mixBuildName(chunk.id)}.js`
+                }
+            },
             plugins: [
                 new webpack.DefinePlugin({
-                    '__IS_WEB': is_web,
+                    '__IS_ELECTRON': isElectron,
                 })
             ]
+        };
+        if (isElectron) {
+            config.target = 'electron-renderer'
         }
+        if (!isHot) {
+            config.output.publicPath = './'
+        }
+        return config
     })
     .options({
         processCssUrls: false,

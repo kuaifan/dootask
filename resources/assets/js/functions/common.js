@@ -1558,4 +1558,4 @@
     });
 
     window.$A = $;
-})(window, window.jQuery);
+})(window, require('jquery'));

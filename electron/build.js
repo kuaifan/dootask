@@ -146,7 +146,7 @@ if (argv[2] === "--build") {
     });
 } else {
     fs.writeFileSync(devloadCachePath, formatUrl("127.0.0.1:" + env.parsed.APP_PORT), 'utf8');
-    child_process.spawn("mix", ["watch", "--hot"], {stdio: "inherit"});
+    child_process.spawn("mix", ["watch", "--hot", "--", "--env", "--electron"], {stdio: "inherit"});
     child_process.spawn("npm", ["run", "start-quiet"], {stdio: "inherit", cwd: "electron"});
 }
 
