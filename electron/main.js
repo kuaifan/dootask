@@ -1,6 +1,7 @@
 const fs = require('fs')
 const path = require('path')
-const {app, BrowserWindow, ipcMain} = require('electron')
+const XLSX = require('xlsx');
+const {app, BrowserWindow, ipcMain, dialog} = require('electron')
 
 let willQuitApp = false,
     devloadCachePath = path.resolve(__dirname, ".devload"),
@@ -78,4 +79,18 @@ ipcMain.on('setDockBadge', (event, arg) => {
     } else {
         app.dock.setBadge("")
     }
+});
+
+ipcMain.on('saveSheet', (event, data, filename, opts) => {
+    const EXTENSIONS = "xls|xlsx|xlsm|xlsb|xml|csv|txt|dif|sylk|slk|prn|ods|fods|htm|html".split("|");
+    dialog.showSaveDialog({
+        title: 'Save file as',
+        defaultPath: filename,
+        filters: [{
+            name: "Spreadsheets",
+            extensions: EXTENSIONS
+        }]
+    }).then(o => {
+        XLSX.writeFile(data, o.filePath, opts);
+    });
 });

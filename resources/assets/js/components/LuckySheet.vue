@@ -97,6 +97,12 @@ export default {
                 plugins: [
                     'chart'
                 ],
+                showtoolbarConfig: {
+                    chart: false
+                },
+                cellRightClickConfig: {
+                    chart: false
+                },
                 lang: lang,
                 loading: {
                     image: 'image://' + $A.originUrl('js/luckysheet/css/loading.gif')
@@ -258,12 +264,19 @@ export default {
                 }
             });
             //
-            XLSX.writeFile({
+            const data = {
                 SheetNames: SheetNames,
                 Sheets: Sheets
-            }, bookName + "." + (bookType == 'xlml' ? 'xls' : bookType), {
+            }
+            const opts = {
                 bookType: bookType || "xlsx"
-            });
+            }
+            const filename = bookName + "." + (bookType == 'xlml' ? 'xls' : bookType);
+            if (this.isElectron) {
+                this.$electron.ipcRenderer.send('saveSheet', data, filename, opts);
+            } else {
+                XLSX.writeFile(data, filename, opts);
+            }
         },
 
         isPercentage(value) {
