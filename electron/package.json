@@ -6,7 +6,7 @@
     "license": "MIT",
     "scripts": {
         "start": "electron-forge start",
-        "start-quiet": "electron-forge start &> /dev/null",
+        "start-quiet": "sleep 3 && electron-forge start &> /dev/null",
         "build": "electron-builder",
         "build-mac-intel": "electron-builder --mac",
         "build-mac-m1": "electron-builder --mac --arm64",

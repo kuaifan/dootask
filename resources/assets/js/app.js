@@ -46,7 +46,9 @@ Vue.component('EDropdown', Dropdown);
 Vue.component('EDropdownMenu', DropdownMenu);
 Vue.component('EDropdownItem', DropdownItem);
 
+Vue.prototype.isElectron = false;
 if (!!__IS_ELECTRON) {
+    Vue.prototype.isElectron = true;
     Vue.prototype.$electron = require('electron')
 }
 

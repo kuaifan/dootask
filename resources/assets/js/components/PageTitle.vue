@@ -26,19 +26,7 @@ export default {
 
 
     computed: {
-        ...mapState([
-            'userId',
-            'dialogs',
-        ]),
-
-
-        msgAllUnread() {
-            let num = 0;
-            this.dialogs.map(({unread}) => {
-                num += unread;
-            })
-            return num;
-        },
+        ...mapState(['userId']),
     },
 
     watch: {
@@ -68,9 +56,6 @@ export default {
         },
 
         setPageTile(title) {
-            if (this.userId && this.msgAllUnread > 0) {
-                title+= " (" + this.msgAllUnread + ")"
-            }
             document.title = title;
         }
     }

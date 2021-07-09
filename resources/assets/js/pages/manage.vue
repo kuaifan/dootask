@@ -187,8 +187,6 @@ export default {
             allProjectShow: false,
             archivedProjectShow: false,
 
-            titleInterval: null,
-
             natificationHidden: false,
             natificationReady: false,
             notificationClass: null,
@@ -199,14 +197,16 @@ export default {
         this.$store.dispatch("getUserInfo");
         this.$store.dispatch("getTaskPriority");
         //
-        this.startCountTitle();
         this.notificationInit();
         this.onVisibilityChange();
+        //
+        if (this.isElectron) {
+            this.$electron.ipcRenderer.send('setDockBadge', 0);
+        }
     },
 
     deactivated() {
         this.addShow = false;
-        clearInterval(this.titleInterval);
     },
 
     computed: {
@@ -278,6 +278,12 @@ export default {
 
         taskId(id) {
             id > 0 && this.$Modal.resetIndex();
+        },
+
+        msgAllUnread(val) {
+            if (this.isElectron) {
+                this.$electron.ipcRenderer.send('setDockBadge', val);
+            }
         },
 
         dialogMsgPush(data) {
@@ -442,19 +448,6 @@ export default {
             if (!visible) {
                 this.$store.dispatch('openTask', 0)
             }
-        },
-
-        startCountTitle() {
-            this.titleInterval = setInterval(() => {
-                let {title} = document;
-                let newTitle = title.replace(/^(.*?)\((\d+)\)$/g, "$1")
-                if (this.userId && this.msgAllUnread > 0) {
-                    newTitle+= " (" + this.msgAllUnread + ")"
-                }
-                if (title != newTitle) {
-                    document.title = newTitle;
-                }
-            }, 1000)
         },
 
         notificationInit() {
