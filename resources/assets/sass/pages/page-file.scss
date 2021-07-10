@@ -270,6 +270,15 @@
                     &.flow:before {
                         background-image: url("../images/file/flow.svg");
                     }
+                    &.word:before {
+                        background-image: url("../images/file/word.svg");
+                    }
+                    &.excel:before {
+                        background-image: url("../images/file/excel.svg");
+                    }
+                    &.ppt:before {
+                        background-image: url("../images/file/ppt.svg");
+                    }
                 }
                 .taskfont {
                     color: #aaaaaa;
@@ -395,6 +404,15 @@
                     &.flow .file-icon {
                         background-image: url("../images/file/flow.svg");
                     }
+                    &.word .file-icon {
+                        background-image: url("../images/file/word.svg");
+                    }
+                    &.excel .file-icon {
+                        background-image: url("../images/file/excel.svg");
+                    }
+                    &.ppt .file-icon {
+                        background-image: url("../images/file/ppt.svg");
+                    }
                     &:hover {
                         background-color: #f4f5f7;
                         .file-menu {
@@ -435,6 +453,15 @@
         }
         &.flow:before {
             background-image: url("../images/file/flow.svg");
+        }
+        &.word:before {
+            background-image: url("../images/file/word.svg");
+        }
+        &.excel:before {
+            background-image: url("../images/file/excel.svg");
+        }
+        &.ppt:before {
+            background-image: url("../images/file/ppt.svg");
         }
     }
 }

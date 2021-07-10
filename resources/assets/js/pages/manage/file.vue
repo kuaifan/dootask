@@ -17,7 +17,7 @@
                         @command="addFile">
                         <i class="taskfont">&#xe6f2;</i>
                         <EDropdownMenu slot="dropdown" class="page-file-dropdown-menu">
-                            <EDropdownItem v-for="(type, key) in types" :key="key" :command="type.value">
+                            <EDropdownItem v-for="(type, key) in types" :key="key" :divided="!!type.divided" :command="type.value">
                                 <div :class="['file-item ' + type.value]">{{$L('新建' + type.name)}}</div>
                             </EDropdownItem>
                         </EDropdownMenu>
@@ -98,7 +98,7 @@
                                     @on-enter="onEnter(item)"/>
                                 <div v-if="item._load" class="file-load"><Loading/></div>
                             </div>
-                            <div v-else class="file-name" :title="item.name">{{item.name}}</div>
+                            <div v-else class="file-name" :title="item.name">{{formatName(item.name, item.type)}}</div>
                         </li>
                     </ul>
                 </div>
@@ -159,10 +159,13 @@ export default {
 
             types: [
                 {value: 'folder', name: "目录"},
-                {value: 'document', name: "文本"},
+                {value: 'document', name: "文本", divided: true},
                 {value: 'mind', name: "脑图"},
                 {value: 'sheet', name: "表格"},
                 {value: 'flow', name: "流程图"},
+                {value: 'word', name: " Word 文档", label: "Word", divided: true},
+                {value: 'excel', name: " Excel 工作表", label: "Excel"},
+                {value: 'ppt', name: " PPT 演示文稿", label: "PPT"},
             ],
 
             tableHeight: 500,
@@ -304,7 +307,7 @@ export default {
                                 }, array),
                             ]);
                         } else {
-                            // 编辑
+                            // 编辑、查看
                             array.push(h('QuickEdit', {
                                 props: {
                                     value: row.name,
@@ -328,7 +331,7 @@ export default {
                                     }
                                 }
                             }, [
-                                h('AutoTip', row.name)
+                                h('AutoTip', this.formatName(row.name, row.type))
                             ]));
                             //
                             const iconArray = [];
@@ -384,7 +387,7 @@ export default {
                     render: (h, {row}) => {
                         let type = this.types.find(({value}) => value == row.type);
                         if (type) {
-                            return h('AutoTip', type.name);
+                            return h('AutoTip', type.label || type.name);
                         } else {
                             return h('div', '-')
                         }
@@ -415,6 +418,17 @@ export default {
                     sortable: true,
                 },
             ]
+        },
+
+        formatName(name, type) {
+            if (type == 'word') {
+                name += ".docx";
+            } else if (type == 'excel') {
+                name += ".xlsx";
+            } else if (type == 'ppt') {
+                name += ".pptx";
+            }
+            return name;
         },
 
         getFileList() {

@@ -171,20 +171,20 @@
         .luckysheet {
             border: 0;
         }
+    }
 
-        .content-load {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 1000;
-            .common-loading {
-                margin: 0;
-            }
+    .content-load {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 42px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1000;
+        .common-loading {
+            margin: 0;
         }
     }
 }

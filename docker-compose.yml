@@ -79,6 +79,21 @@ services:
         ipv4_address: 10.22.22.5
     restart: unless-stopped
 
+  office:
+    container_name: "dooteak-office-${DOCKER_ID}"
+    image: "onlyoffice/documentserver"
+    ports:
+      - "${APP_PORT_ONLYOFFICE}:80"
+    volumes:
+      - ./docker/office/data:/var/www/onlyoffice/Data
+      - ./docker/office/logs:/var/log/onlyoffice
+    environment:
+      TZ: "Asia/Shanghai"
+    networks:
+      extnetwork:
+        ipv4_address: 10.22.22.6
+    restart: unless-stopped
+
 networks:
   extnetwork:
     name: "dooteak-networks-${DOCKER_ID}"

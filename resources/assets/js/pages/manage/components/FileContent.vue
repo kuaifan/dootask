@@ -12,7 +12,7 @@
                     </div>
                     <span slot="reference">[{{$L('未保存')}}*]</span>
                 </EPopover>
-                {{file.name}}
+                {{formatName(file.name, file.type)}}
             </div>
             <div class="header-user">
                 <ul>
@@ -57,8 +57,9 @@
             <Flow v-else-if="file.type=='flow'" ref="myFlow" v-model="contentDetail" @saveData="handleClick('saveBefore')"/>
             <Minder v-else-if="file.type=='mind'" ref="myMind" v-model="contentDetail" @saveData="handleClick('saveBefore')"/>
             <LuckySheet v-else-if="file.type=='sheet'" ref="mySheet" v-model="contentDetail"/>
-            <div v-if="loadContent > 0" class="content-load"><Loading/></div>
+            <OnlyOffice v-else-if="['word', 'excel', 'ppt'].includes(file.type)" v-model="contentDetail"/>
         </div>
+        <div v-if="loadContent > 0" class="content-load"><Loading/></div>
     </div>
 </template>
 
@@ -72,10 +73,11 @@ const MDEditor = () => import('../../../components/MDEditor/index');
 const TEditor = () => import('../../../components/TEditor');
 const LuckySheet = () => import('../../../components/LuckySheet');
 const Flow = () => import('../../../components/flow');
+const OnlyOffice = () => import('../../../components/OnlyOffice');
 
 export default {
     name: "FileContent",
-    components: {TEditor, MDEditor, LuckySheet, Flow},
+    components: {TEditor, MDEditor, LuckySheet, Flow, OnlyOffice},
     props: {
         file: {
             type: Object,
@@ -168,6 +170,11 @@ export default {
                 this.contentDetail = this.fileContent[this.fileId];
                 return;
             }
+            if (['word', 'excel', 'ppt'].includes(this.file.type)) {
+                this.contentDetail = $A.cloneJSON(this.file);
+                this.updateBak();
+                return;
+            }
             this.loadIng++;
             this.loadContent++;
             this.$store.dispatch("call", {
@@ -255,7 +262,18 @@ export default {
         unsaveSave() {
             this.handleClick('save');
             this.unsaveTip = false;
-        }
+        },
+
+        formatName(name, type) {
+            if (type == 'word') {
+                name += ".docx";
+            } else if (type == 'excel') {
+                name += ".xlsx";
+            } else if (type == 'ppt') {
+                name += ".pptx";
+            }
+            return name;
+        },
     }
 }
 </script>

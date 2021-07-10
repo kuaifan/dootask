@@ -8,8 +8,10 @@ use App\Models\FileContent;
 use App\Models\FileUser;
 use App\Models\User;
 use App\Module\Base;
+use App\Module\Ihttp;
 use Arr;
 use Request;
+use Response;
 
 /**
  * @apiDefine file
@@ -129,6 +131,9 @@ class FileController extends AbstractController
                 'mind',
                 'sheet',
                 'flow',
+                'word',
+                'excel',
+                'ppt',
             ])) {
                 return Base::retError('类型错误');
             }
@@ -254,30 +259,32 @@ class FileController extends AbstractController
     }
 
     /**
-     * 文件内容
+     * 获取文件内容
      *
      * @apiParam {Number} id            文件ID
      */
     public function content()
     {
-        $user = User::auth();
-        //
         $id = intval(Request::input('id'));
         //
         $file = File::allowFind($id);
         //
-        $content = FileContent::whereFid($file->id)->orderByDesc('id')->first();
-        if (empty($content)) {
-            $content = FileContent::createInstance([
-                'fid' => $file->id,
-                'content' => '{}',
-                'userid' => $user->userid,
-            ]);
-            $content->save();
+        switch ($file->type) {
+            case "word":
+                return Response::download(resource_path('assets/statics/empty/empty.docx'));
+
+            case "excel":
+                return Response::download(resource_path('assets/statics/empty/empty.xlsx'));
+
+            case "ppt":
+                return Response::download(resource_path('assets/statics/empty/empty.pptx'));
+
+            default:
+                $content = FileContent::whereFid($file->id)->orderByDesc('id')->first();
+                return Base::retSuccess('success', [
+                    'content' => FileContent::formatContent($file->type, $content ? $content->content : [])
+                ]);
         }
-        //
-        $content->content = $content->formatContent($file->type, $content->content);
-        return Base::retSuccess('success', $content);
     }
 
     /**
@@ -295,6 +302,10 @@ class FileController extends AbstractController
         $content = Base::getPostValue('content');
         //
         $file = File::allowFind($id);
+        //
+        if (in_array($file->type, ['word', 'excel', 'ppt'])) {
+            return Base::retError($file->type . ' 不支持此方式保存');
+        }
         //
         $text = '';
         if ($file->type == 'document') {
@@ -331,6 +342,44 @@ class FileController extends AbstractController
         $file->pushContentChange();
         //
         return Base::retSuccess('保存成功', $content);
+    }
+
+    /**
+     * 保存文件内容（office）
+     *
+     * @apiParam {Number} id            文件ID
+     */
+    public function content__office()
+    {
+        $user = User::auth();
+        //
+        $id = intval(Request::input('id'));
+        $status = intval(Request::input('status'));
+        $key = Request::input('key');
+        $url = Request::input('url');
+        //
+        $file = File::allowFind($id);
+        //
+        if ($status === 2) {
+            $parse = parse_url($url);
+            $url = 'http://10.22.22.6' . $parse['query'] . '?' . $parse['query'];
+            $path = public_path('uploads/office/' . $file->id . '/' . $key);
+            Base::makeDir(dirname($path));
+            $res = Ihttp::download($url, $path);
+            if (Base::isSuccess($res)) {
+                FileContent::createInstance([
+                    'fid' => $file->id,
+                    'content' => [
+                        'from' => $url,
+                        'url' => 'uploads/office/' . $file->id . '/' . $key
+                    ],
+                    'text' => '',
+                    'size' => filesize($path),
+                    'userid' => $user->userid,
+                ])->save();
+            }
+        }
+        return ['error' => 0];
     }
 
     /**
