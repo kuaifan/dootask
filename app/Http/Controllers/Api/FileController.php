@@ -362,21 +362,26 @@ class FileController extends AbstractController
         //
         if ($status === 2) {
             $parse = parse_url($url);
-            $url = 'http://10.22.22.6' . $parse['query'] . '?' . $parse['query'];
-            $path = public_path('uploads/office/' . $file->id . '/' . $key);
-            Base::makeDir(dirname($path));
-            $res = Ihttp::download($url, $path);
+            $from = 'http://10.22.22.6' . $parse['path'] . '?' . $parse['query'];
+            $path = 'uploads/office/' . $file->id . '/' . $user->userid . '-' . $key;
+            $save = public_path($path);
+            Base::makeDir(dirname($save));
+            $res = Ihttp::download($from, $save);
             if (Base::isSuccess($res)) {
-                FileContent::createInstance([
+                $content = FileContent::createInstance([
                     'fid' => $file->id,
                     'content' => [
-                        'from' => $url,
-                        'url' => 'uploads/office/' . $file->id . '/' . $key
+                        'from' => $from,
+                        'url' => $path
                     ],
                     'text' => '',
-                    'size' => filesize($path),
+                    'size' => filesize($save),
                     'userid' => $user->userid,
-                ])->save();
+                ]);
+                $content->save();
+                //
+                $file->size = $content->size;
+                $file->save();
             }
         }
         return ['error' => 0];
