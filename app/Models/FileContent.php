@@ -5,6 +5,7 @@ namespace App\Models;
 
 use App\Module\Base;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Response;
 
 /**
  * Class FileContent
@@ -44,11 +45,17 @@ class FileContent extends AbstractModel
      * 获取格式内容
      * @param $type
      * @param $content
-     * @return array|array[]|mixed|string[]
+     * @return array|\Symfony\Component\HttpFoundation\BinaryFileResponse
      */
     public static function formatContent($type, $content)
     {
         $content = Base::json2array($content);
+        if (in_array($type, ['word', 'excel', 'ppt'])) {
+            if (empty($content)) {
+                return Response::download(resource_path('assets/statics/empty/empty.' . str_replace(['word', 'excel', 'ppt'], ['docx', 'xlsx', 'pptx'], $type)));
+            }
+            return Response::download(public_path($content['url']));
+        }
         if (empty($content)) {
             switch ($type) {
                 case 'document':
@@ -72,6 +79,6 @@ class FileContent extends AbstractModel
                     break;
             }
         }
-        return $content;
+        return Base::retSuccess('success', [ 'content' => $content ]);
     }
 }

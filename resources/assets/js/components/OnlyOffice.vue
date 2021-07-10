@@ -109,6 +109,7 @@ export default {
             const config = {
                 "document": {
                     "fileType": this.fileType,
+                    "key": this.fileType + '-' + this.value.id,
                     "title": this.fileName + '.' + this.fileType,
                     "url": this.fileUrl,
                 },

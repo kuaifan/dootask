@@ -1,6 +1,6 @@
 <template>
     <div class="file-content">
-        <div class="edit-header">
+        <div v-show="!['word', 'excel', 'ppt'].includes(file.type)" class="edit-header">
             <div class="header-title">
                 <EPopover v-if="!equalContent" v-model="unsaveTip" class="file-unsave-tip">
                     <div class="task-detail-delete-file-popover">

@@ -269,22 +269,8 @@ class FileController extends AbstractController
         //
         $file = File::allowFind($id);
         //
-        switch ($file->type) {
-            case "word":
-                return Response::download(resource_path('assets/statics/empty/empty.docx'));
-
-            case "excel":
-                return Response::download(resource_path('assets/statics/empty/empty.xlsx'));
-
-            case "ppt":
-                return Response::download(resource_path('assets/statics/empty/empty.pptx'));
-
-            default:
-                $content = FileContent::whereFid($file->id)->orderByDesc('id')->first();
-                return Base::retSuccess('success', [
-                    'content' => FileContent::formatContent($file->type, $content ? $content->content : [])
-                ]);
-        }
+        $content = FileContent::whereFid($file->id)->orderByDesc('id')->first();
+        return FileContent::formatContent($file->type, $content ? $content->content : []);
     }
 
     /**
@@ -302,10 +288,6 @@ class FileController extends AbstractController
         $content = Base::getPostValue('content');
         //
         $file = File::allowFind($id);
-        //
-        if (in_array($file->type, ['word', 'excel', 'ppt'])) {
-            return Base::retError($file->type . ' 不支持此方式保存');
-        }
         //
         $text = '';
         if ($file->type == 'document') {

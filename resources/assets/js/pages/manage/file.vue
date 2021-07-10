@@ -133,7 +133,8 @@
             placement="bottom"
             :height="editHeight"
             :mask-closable="false"
-            :mask-style="{backgroundColor:'rgba(0,0,0,0.7)'}">
+            :mask-style="{backgroundColor:'rgba(0,0,0,0.7)'}"
+            class-name="page-file-drawer">
             <FileContent v-if="editShowNum > 0" :parent-show="editShow" :file="editInfo"/>
         </Drawer>
     </div>
