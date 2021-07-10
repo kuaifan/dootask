@@ -60,7 +60,7 @@ class FileContent extends AbstractModel
             switch ($type) {
                 case 'document':
                     $content = [
-                        "type" => "text",
+                        "type" => "md",
                         "content" => "",
                     ];
                     break;

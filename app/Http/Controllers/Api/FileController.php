@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 
+use App\Models\AbstractModel;
 use App\Models\File;
 use App\Models\FileContent;
 use App\Models\FileUser;
@@ -345,7 +346,7 @@ class FileController extends AbstractController
         if ($status === 2) {
             $parse = parse_url($url);
             $from = 'http://10.22.22.6' . $parse['path'] . '?' . $parse['query'];
-            $path = 'uploads/office/' . $file->id . '/' . $user->userid . '-' . $key;
+            $path = 'uploads/office/' . date("Ym") . '/' . $file->id . '/' . $user->userid . '-' . $key;
             $save = public_path($path);
             Base::makeDir(dirname($save));
             $res = Ihttp::download($from, $save);
@@ -367,6 +368,88 @@ class FileController extends AbstractController
             }
         }
         return ['error' => 0];
+    }
+
+    /**
+     * 保存文件内容（上传文件）
+     *
+     * @apiParam {Number} [pid]         父级ID
+     * @apiParam {String} [files]           文件名
+     */
+    public function content__upload()
+    {
+        $user = User::auth();
+        //
+        $pid = intval(Request::input('pid'));
+        //
+        $userid = $user->userid;
+        if ($pid > 0) {
+            if (File::wherePid($pid)->count() >= 300) {
+                return Base::retError('每个文件夹里最多只能创建300个文件或文件夹');
+            }
+            $row = File::allowFind($pid, '主文件不存在');
+            $userid = $row->userid;
+        } else {
+            if (File::whereUserid($user->userid)->wherePid(0)->count() >= 300) {
+                return Base::retError('每个文件夹里最多只能创建300个文件或文件夹');
+            }
+        }
+        //
+        $path = 'uploads/office/' . date("Ym") . '/u' . $user->userid . '/';
+        $data = Base::upload([
+            "file" => Request::file('files'),
+            "type" => 'office',
+            "path" => $path,
+        ]);
+        if (Base::isError($data)) {
+            return $data;
+        }
+        $data = $data['data'];
+        //
+        $type = "";
+        switch ($data['ext']) {
+            case 'doc':
+            case 'docx':
+                $type = "word";
+                break;
+            case 'xls':
+            case 'xlsx':
+                $type = "excel";
+                break;
+            case 'ppt':
+            case 'pptx':
+                $type = "ppt";
+                break;
+        }
+        $file = File::createInstance([
+            'pid' => $pid,
+            'name' => Base::rightDelete($data['name'], '.' . $data['ext']),
+            'type' => $type,
+            'userid' => $userid,
+            'created_id' => $user->userid,
+        ]);
+        // 开始创建
+        return AbstractModel::transaction(function () use ($user, $data, $file) {
+            $file->save();
+            //
+            $content = FileContent::createInstance([
+                'fid' => $file->id,
+                'content' => [
+                    'from' => '',
+                    'url' => $data['path']
+                ],
+                'text' => '',
+                'size' => $data['size'] * 1024,
+                'userid' => $user->userid,
+            ]);
+            $content->save();
+            //
+            $file->size = $content->size;
+            $file->save();
+            //
+            $data = File::find($file->id);
+            return Base::retSuccess($data['name'] . ' 上传成功', $data);
+        });
     }
 
     /**

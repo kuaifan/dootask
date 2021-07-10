@@ -17,8 +17,13 @@
                         @command="addFile">
                         <i class="taskfont">&#xe6f2;</i>
                         <EDropdownMenu slot="dropdown" class="page-file-dropdown-menu">
-                            <EDropdownItem v-for="(type, key) in types" :key="key" :divided="!!type.divided" :command="type.value">
-                                <div :class="['file-item ' + type.value]">{{$L('新建' + type.name)}}</div>
+                            <EDropdownItem
+                                v-for="(type, key) in types"
+                                v-if="type.label"
+                                :key="key"
+                                :divided="!!type.divided"
+                                :command="type.value">
+                                <div :class="['file-item ' + type.value]">{{$L(type.label)}}</div>
                             </EDropdownItem>
                         </EDropdownMenu>
                     </EDropdown>
@@ -105,6 +110,24 @@
             </template>
         </div>
 
+        <Upload
+            name="files"
+            ref="fileUpload"
+            v-show="false"
+            :action="actionUrl"
+            :headers="headers"
+            multiple
+            :format="uploadFormat"
+            :accept="uploadAccept"
+            :show-upload-list="false"
+            :max-size="maxSize"
+            :on-progress="handleProgress"
+            :on-success="handleSuccess"
+            :on-error="handleError"
+            :on-format-error="handleFormatError"
+            :on-exceeded-size="handleMaxSize"
+            :before-upload="handleBeforeUpload"/>
+
         <!--项目设置-->
         <Modal
             v-model="shareShow"
@@ -159,14 +182,53 @@ export default {
             shearId: 0,
 
             types: [
-                {value: 'folder', name: "目录"},
-                {value: 'document', name: "文本", divided: true},
-                {value: 'mind', name: "脑图"},
-                {value: 'sheet', name: "表格"},
-                {value: 'flow', name: "流程图"},
-                {value: 'word', name: " Word 文档", label: "Word", divided: true},
-                {value: 'excel', name: " Excel 工作表", label: "Excel"},
-                {value: 'ppt', name: " PPT 演示文稿", label: "PPT"},
+                {
+                    "value": "folder",
+                    "label": "新建目录",
+                    "name": "目录",
+                },
+                {
+                    "value": "upload",
+                    "label": "上传文件",
+                    "name": "上传",
+                },
+                {
+                    "value": "document",
+                    "label": "文本",
+                    "name": "文本",
+                    "divided": true
+                },
+                {
+                    "value": "sheet",
+                    "label": null,
+                    "name": "表格",
+                },
+                {
+                    "value": "flow",
+                    "label": "流程图",
+                    "name": "流程图",
+                },
+                {
+                    "value": "mind",
+                    "label": "思维导图",
+                    "name": "导图",
+                },
+                {
+                    "value": "word",
+                    "label": "Word 文档",
+                    "name": "Word",
+                    "divided": true
+                },
+                {
+                    "value": "excel",
+                    "label": "Excel 工作表",
+                    "name": "Excel",
+                },
+                {
+                    "value": "ppt",
+                    "label": "PPT 演示文稿",
+                    "name": "PPT",
+                }
             ],
 
             tableHeight: 500,
@@ -181,6 +243,11 @@ export default {
             editShowNum: 0,
             editHeight: 0,
             editInfo: {},
+
+            uploadIng: 0,
+            uploadFormat: ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'],
+            uploadAccept: ['.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'].join(","),
+            maxSize: 204800
         }
     },
 
@@ -195,7 +262,18 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'userInfo', 'files']),
+        ...mapState(['userId', 'userToken', 'userInfo', 'files']),
+
+        actionUrl() {
+            return this.$store.state.method.apiUrl('file/content/upload?pid=' + this.pid)
+        },
+
+        headers() {
+            return {
+                fd: this.$store.state.method.getStorageString("userWsFd"),
+                token: this.userToken,
+            }
+        },
 
         shearFile() {
             const {files, shearId} = this;
@@ -388,7 +466,7 @@ export default {
                     render: (h, {row}) => {
                         let type = this.types.find(({value}) => value == row.type);
                         if (type) {
-                            return h('AutoTip', type.label || type.name);
+                            return h('AutoTip', type.name);
                         } else {
                             return h('div', '-')
                         }
@@ -444,6 +522,10 @@ export default {
         },
 
         addFile(command) {
+            if (command == 'upload') {
+                this.$refs.fileUpload.handleClick();
+                return;
+            }
             let id = $A.randomString(8);
             this.files.push({
                 _edit: true,
@@ -683,7 +765,53 @@ export default {
                 this.shareLoad--;
                 $A.modalError(msg)
             })
-        }
+        },
+
+        /********************文件上传部分************************/
+
+        handleProgress() {
+            //开始上传
+            this.uploadIng++;
+        },
+
+        handleSuccess(res, file) {
+            //上传完成
+            this.uploadIng--;
+            if (res.ret === 1) {
+                this.$store.dispatch("saveFile", res.data);
+            } else {
+                $A.modalWarning({
+                    title: '上传失败',
+                    content: '文件 ' + file.name + ' 上传失败，' + res.msg
+                });
+            }
+        },
+
+        handleError() {
+            //上传错误
+            this.uploadIng--;
+        },
+
+        handleFormatError(file) {
+            //上传类型错误
+            $A.modalWarning({
+                title: '文件格式不正确',
+                content: '文件 ' + file.name + ' 格式不正确，仅支持上传：' + this.uploadFormat.join(',')
+            });
+        },
+
+        handleMaxSize(file) {
+            //上传大小错误
+            $A.modalWarning({
+                title: '超出文件大小限制',
+                content: '文件 ' + file.name + ' 太大，不能超过：' + $A.bytesToSize(this.maxSize * 1024) + '。'
+            });
+        },
+
+        handleBeforeUpload() {
+            //上传前判断
+            return true;
+        },
     }
 }
 </script>

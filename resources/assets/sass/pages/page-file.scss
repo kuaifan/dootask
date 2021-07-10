@@ -255,6 +255,9 @@
                         background-size: contain;
                         margin-right: 8px;
                     }
+                    &.upload:before {
+                        background-image: url("../images/file/upload.svg");
+                    }
                     &.folder:before {
                         background-image: url("../images/file/folder.svg");
                     }
@@ -389,6 +392,9 @@
                     &.shear {
                         opacity: 0.38;
                     }
+                    &.upload .file-icon {
+                        background-image: url("../images/file/upload.svg");
+                    }
                     &.folder .file-icon {
                         background-image: url("../images/file/folder.svg");
                     }
@@ -438,6 +444,9 @@
             background-repeat: no-repeat;
             background-size: contain;
             margin-right: 8px;
+        }
+        &.upload:before {
+            background-image: url("../images/file/upload.svg");
         }
         &.folder:before {
             background-image: url("../images/file/folder.svg");

@@ -38,5 +38,8 @@ class VerifyCsrfToken extends Middleware
 
         // 保存文件内容（office）
         'api/file/content/office/',
+
+        // 保存文件内容（上传）
+        'api/file/content/upload/',
     ];
 }

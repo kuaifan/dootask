@@ -24,8 +24,8 @@
             </div>
             <div v-if="file.type=='document' && contentDetail" class="header-hint">
                 <ButtonGroup size="small" shape="circle">
-                    <Button :type="`${contentDetail.type!='md'?'primary':'default'}`" @click="$set(contentDetail, 'type', 'text')">{{$L('文本编辑器')}}</Button>
                     <Button :type="`${contentDetail.type=='md'?'primary':'default'}`" @click="$set(contentDetail, 'type', 'md')">{{$L('MD编辑器')}}</Button>
+                    <Button :type="`${contentDetail.type!='md'?'primary':'default'}`" @click="$set(contentDetail, 'type', 'text')">{{$L('文本编辑器')}}</Button>
                 </ButtonGroup>
             </div>
             <div v-if="file.type=='mind'" class="header-hint">

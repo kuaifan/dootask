@@ -2229,6 +2229,9 @@ class Base
                 case 'file':
                     $type = ['jpg', 'jpeg', 'png', 'gif', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'esp', 'pdf', 'rar', 'zip', 'gz'];
                     break;
+                case 'office':
+                    $type = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'];
+                    break;
                 case 'firmware':
                     $type = ['img', 'tar', 'bin'];
                     break;
