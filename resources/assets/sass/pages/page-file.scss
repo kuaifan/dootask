@@ -42,10 +42,31 @@
                 flex-shrink: 0;
                 margin-left: 22px;
                 cursor: pointer;
-                width: 140px;
-                transition: width 0.3s;
-                &.has-value {
-                    width: 180px;
+                .ivu-input-wrapper {
+                    width: auto;
+                    transform: translateZ(0);
+                    .ivu-input {
+                        border-color: #dcdee2;
+                        width: 0;
+                        padding-left: 0;
+                        padding-right: 30px;
+                        border-radius: 16px;
+                        transition: all 0.3s;
+                    }
+                    .ivu-input-suffix {
+                        i {
+                            color: #515a6e;
+                        }
+                    }
+                }
+                &.has-value,
+                &:hover {
+                    .ivu-input-wrapper {
+                        .ivu-input {
+                            width: 140px;
+                            padding-left: 14px;
+                        }
+                    }
                 }
             }
             .file-add {
@@ -445,6 +466,19 @@
 }
 
 .page-file-dropdown-menu {
+    .ivu-dropdown {
+        width: 100%;
+        .arrow-forward-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-right: -6px;
+            min-width: 90px;
+            .ivu-icon {
+                opacity: 0.7;
+            }
+        }
+    }
     .file-item {
         display: flex;
         align-items: center;

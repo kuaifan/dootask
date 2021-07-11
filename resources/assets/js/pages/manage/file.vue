@@ -9,8 +9,8 @@
                     <h1>{{$L('文件')}}</h1>
                     <div v-if="loadIng == 0" class="file-refresh" @click="getFileList"><i class="taskfont">&#xe6ae;</i></div>
                 </div>
-                <div :class="['file-search', searchKey ? 'has-value' : '']">
-                    <Input v-model="searchKey" suffix="ios-search" @on-change="onSearchChange" :placeholder="$L('搜索名称')"/>
+                <div :class="['file-search', searchKey ? 'has-value' : '']" @click="onSearchFocus" @mouseenter="onSearchFocus">
+                    <Input v-model="searchKey" ref="searchInput" suffix="ios-search" @on-change="onSearchChange" :placeholder="$L('搜索名称')"/>
                 </div>
                 <div class="file-add">
                     <Button shape="circle" icon="md-add" @click.stop="handleRightClick($event, null, true)"></Button>
@@ -96,6 +96,21 @@
                     <DropdownMenu slot="list" class="page-file-dropdown-menu">
                         <template v-if="contextMenuItem.id">
                             <DropdownItem @click.native="handleContextClick('open')">{{$L('打开')}}</DropdownItem>
+                            <Dropdown placement="right-start" transfer>
+                                <DropdownItem divided>
+                                    <div class="arrow-forward-item">{{$L('新建')}}<Icon type="ios-arrow-forward"></Icon></div>
+                                </DropdownItem>
+                                <DropdownMenu slot="list" class="page-file-dropdown-menu">
+                                    <DropdownItem
+                                        v-for="(type, key) in types"
+                                        v-if="type.label"
+                                        :key="key"
+                                        :divided="!!type.divided"
+                                        @click.native="addFile(type.value)">
+                                        <div :class="['file-item ' + type.value]">{{$L(type.label)}}</div>
+                                    </DropdownItem>
+                                </DropdownMenu>
+                            </Dropdown>
                             <DropdownItem @click.native="handleContextClick('rename')" divided>{{$L('重命名')}}</DropdownItem>
                             <DropdownItem @click.native="handleContextClick('copy')" :disabled="contextMenuItem.type=='folder'">{{$L('复制')}}</DropdownItem>
                             <DropdownItem @click.native="handleContextClick('shear')" :disabled="contextMenuItem.userid != userId">{{$L('剪切')}}</DropdownItem>
@@ -157,7 +172,7 @@
             :on-exceeded-size="handleMaxSize"
             :before-upload="handleBeforeUpload"/>
 
-        <!--项目设置-->
+        <!--共享设置-->
         <Modal
             v-model="shareShow"
             :title="$L('共享设置')"
@@ -165,7 +180,7 @@
             <Form ref="addProject" :model="shareInfo" label-width="auto" @submit.native.prevent>
                 <FormItem prop="type" :label="$L('共享对象')">
                     <RadioGroup v-model="shareInfo.share">
-                        <Radio :label="1">{{$L('所有人')}}</Radio>
+                        <Radio v-if="userIsAdmin" :label="1">{{$L('所有人')}}</Radio>
                         <Radio :label="2">{{$L('指定成员')}}</Radio>
                     </RadioGroup>
                 </FormItem>
@@ -306,7 +321,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'userToken', 'userInfo', 'files']),
+        ...mapState(['userId', 'userToken', 'userIsAdmin', 'userInfo', 'files']),
 
         actionUrl() {
             return this.$store.state.method.apiUrl('file/content/upload?pid=' + this.pid)
@@ -608,6 +623,9 @@ export default {
         },
 
         openFile(item) {
+            if (this.contextMenuVisible) {
+                return;
+            }
             if (this.fileList.findIndex((file) => file._edit === true) > -1) {
                 return;
             }
@@ -688,6 +706,10 @@ export default {
                         share: item.share,
                         _share: item.share,
                     };
+                    if (!this.userIsAdmin) {
+                        // 不是管理员只能共享给指定人
+                        this.shareInfo.share = 2;
+                    }
                     this.shareShow = true;
                     this.getShare();
                     break;
@@ -796,6 +818,14 @@ export default {
                 if (isCreate) {
                     this.$store.dispatch("forgetFile", item.id);
                 }
+            })
+        },
+
+        onSearchFocus() {
+            this.$nextTick(() => {
+                this.$refs.searchInput.focus({
+                    cursor: "end"
+                });
             })
         },
 
