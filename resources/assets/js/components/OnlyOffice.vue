@@ -76,7 +76,8 @@ export default {
                 if (!url) {
                     return;
                 }
-                $A.loadScript("http://127.0.0.1:2224/web-apps/apps/api/documents/api.js", () => {
+                const uri = new URL(this.$store.state.method.apiUrl('web-apps'));
+                $A.loadScript(`http://${uri.hostname}:2224/web-apps/apps/api/documents/api.js`, () => {
                     this.loadFile()
                 })
             },
@@ -106,6 +107,17 @@ export default {
                 this.docEditor = null;
             }
             //
+            let lang = "zh";
+            switch (this.getLanguage()) {
+                case 'CN':
+                case 'TC':
+                    lang = "zh";
+                    break;
+                default:
+                    lang = 'en';
+                    break;
+            }
+            //
             const config = {
                 "document": {
                     "fileType": this.fileType,
@@ -115,7 +127,7 @@ export default {
                 },
                 "editorConfig": {
                     "mode": "edit",
-                    "lang": "zh-CN",
+                    "lang": lang,
                     "user": {
                         "id": this.userInfo.userid,
                         "name": this.userInfo.nickname

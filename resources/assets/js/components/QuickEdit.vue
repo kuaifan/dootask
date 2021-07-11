@@ -53,7 +53,9 @@ export default {
             this.content = this.value;
             this.isEdit = true;
             this.$nextTick(() => {
-                this.$refs.input.focus();
+                this.$refs.input.focus({
+                  cursor: 'all'
+                });
             })
         },
 

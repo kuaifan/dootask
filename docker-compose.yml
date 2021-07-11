@@ -87,6 +87,9 @@ services:
     volumes:
       - ./docker/office/data:/var/www/onlyoffice/Data
       - ./docker/office/logs:/var/log/onlyoffice
+      - ./docker/office/resources/documenteditor/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/documenteditor/main/resources/css/app.css
+      - ./docker/office/resources/presentationeditor/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/presentationeditor/main/resources/css/app.css
+      - ./docker/office/resources/spreadsheeteditor/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/spreadsheeteditor/main/resources/css/app.css
     environment:
       TZ: "Asia/Shanghai"
     networks:

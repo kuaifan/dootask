@@ -26,7 +26,7 @@
                         <span :title="item.name">{{item.name}}</span>
                     </li>
                 </ul>
-                <Button v-if="shearFile && shearFile.pid != pid" size="small" type="primary" @click="shearTo">
+                <Button v-if="shearFile" :disabled="shearFile.pid == pid" size="small" type="primary" @click="shearTo">
                     <div class="file-shear">
                         <span>{{$L('粘贴')}}</span>
                         "<em>{{shearFile.name}}</em>"
@@ -60,7 +60,7 @@
                     <ul class="clearfix">
                         <li
                             v-for="item in fileList"
-                            :class="[item.type, item.id && shearId == item.id ? 'shear' : '']"
+                            :class="[item.type, item.id && shearId == item.id ? 'shear' : '', !!item._highlight ? 'highlight' : '']"
                             @contextmenu.prevent.stop="handleRightClick($event, item)"
                             @click="openFile(item)">
                             <div class="file-menu" @click.stop="handleRightClick($event, item)">
@@ -92,7 +92,7 @@
             </template>
 
             <div class="file-menu" :style="contextMenuStyles">
-                <Dropdown trigger="custom" :visible="contextMenuVisible" transfer @on-clickoutside="handleClickContextMenuOutside">
+                <Dropdown trigger="custom" :visible="contextMenuVisible" transfer @on-clickoutside="handleClickContextMenuOutside" @on-visible-change="handleVisibleChangeMenu">
                     <DropdownMenu slot="list" class="page-file-dropdown-menu">
                         <template v-if="contextMenuItem.id">
                             <DropdownItem @click.native="handleContextClick('open')">{{$L('打开')}}</DropdownItem>
@@ -638,6 +638,16 @@ export default {
 
         handleClickContextMenuOutside() {
             this.contextMenuVisible = false;
+        },
+
+        handleVisibleChangeMenu(visible) {
+            let file = this.files.find(({_highlight}) => !!_highlight)
+            if (file) {
+                this.$set(file, '_highlight', false);
+            }
+            if (visible && this.contextMenuItem.id) {
+                this.$set(this.contextMenuItem, '_highlight', true);
+            }
         },
 
         dropFile(item, command) {

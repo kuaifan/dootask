@@ -426,6 +426,9 @@
                     &.ppt .file-icon {
                         background-image: url("../images/file/ppt.svg");
                     }
+                    &.highlight {
+                        background-color: #f4f5f7;
+                    }
                     &:hover {
                         background-color: #f4f5f7;
                         .file-menu {
