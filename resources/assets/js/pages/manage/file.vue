@@ -1,7 +1,9 @@
 <template>
     <div class="page-file">
         <PageTitle :title="$L('文件')"/>
-        <div class="file-wrapper">
+
+        <div class="file-wrapper" ref="fileWrapper">
+
             <div class="file-head">
                 <div class="file-nav">
                     <h1>{{$L('文件')}}</h1>
@@ -11,24 +13,10 @@
                     <Input v-model="searchKey" suffix="ios-search" @on-change="onSearchChange" :placeholder="$L('搜索名称')"/>
                 </div>
                 <div class="file-add">
-                    <EDropdown
-                        trigger="click"
-                        placement="bottom"
-                        @command="addFile">
-                        <i class="taskfont">&#xe6f2;</i>
-                        <EDropdownMenu slot="dropdown" class="page-file-dropdown-menu">
-                            <EDropdownItem
-                                v-for="(type, key) in types"
-                                v-if="type.label"
-                                :key="key"
-                                :divided="!!type.divided"
-                                :command="type.value">
-                                <div :class="['file-item ' + type.value]">{{$L(type.label)}}</div>
-                            </EDropdownItem>
-                        </EDropdownMenu>
-                    </EDropdown>
+                    <Button shape="circle" icon="md-add" @click.stop="handleRightClick($event, null, true)"></Button>
                 </div>
             </div>
+
             <div class="file-navigator">
                 <ul>
                     <li @click="[pid=0,searchKey='']">{{$L('全部文件')}}</li>
@@ -38,19 +26,20 @@
                         <span :title="item.name">{{item.name}}</span>
                     </li>
                 </ul>
-                <div v-if="loadIng > 0" class="nav-load"><Loading/></div>
                 <Button v-if="shearFile && shearFile.pid != pid" size="small" type="primary" @click="shearTo">
                     <div class="file-shear">
                         <span>{{$L('粘贴')}}</span>
                         "<em>{{shearFile.name}}</em>"
                     </div>
                 </Button>
+                <div v-if="loadIng > 0" class="nav-load"><Loading/></div>
                 <div class="flex-full"></div>
                 <div :class="['switch-button', tableMode ? 'table' : '']" @click="tableMode=!tableMode">
                     <div><i class="taskfont">&#xe60c;</i></div>
                     <div><i class="taskfont">&#xe66a;</i></div>
                 </div>
             </div>
+
             <div v-if="tableMode" class="file-table">
                 <Table
                     :columns="columns"
@@ -58,6 +47,8 @@
                     :height="tableHeight"
                     :no-data-text="$L('没有任何文件')"
                     @on-cell-click="clickRow"
+                    @on-contextmenu="handleContextMenu"
+                    context-menu
                     stripe/>
             </div>
             <template v-else>
@@ -65,25 +56,16 @@
                     <i class="taskfont">&#xe60b;</i>
                     <p>{{$L('没有任何文件')}}</p>
                 </div>
-                <div v-else class="file-list">
+                <div v-else class="file-list" @contextmenu.prevent="handleRightClick">
                     <ul class="clearfix">
-                        <li v-for="item in fileList" :class="[item.type, item.id && shearId == item.id ? 'shear' : '']" @click="openFile(item)">
-                            <EDropdown
-                                trigger="click"
-                                size="small"
-                                placement="bottom"
-                                class="file-menu"
-                                @command="dropFile(item, $event)">
-                                <Icon @click.stop="" type="ios-more" />
-                                <EDropdownMenu slot="dropdown">
-                                    <EDropdownItem command="open">{{$L('打开')}}</EDropdownItem>
-                                    <EDropdownItem command="rename" divided>{{$L('重命名')}}</EDropdownItem>
-                                    <EDropdownItem command="copy" :disabled="item.type=='folder'">{{$L('复制')}}</EDropdownItem>
-                                    <EDropdownItem command="shear" :disabled="item.userid != userId">{{$L('剪切')}}</EDropdownItem>
-                                    <EDropdownItem command="share" :disabled="item.userid != userId" divided>{{$L('共享')}}</EDropdownItem>
-                                    <EDropdownItem command="delete" divided style="color:red">{{$L('删除')}}</EDropdownItem>
-                                </EDropdownMenu>
-                            </EDropdown>
+                        <li
+                            v-for="item in fileList"
+                            :class="[item.type, item.id && shearId == item.id ? 'shear' : '']"
+                            @contextmenu.prevent.stop="handleRightClick($event, item)"
+                            @click="openFile(item)">
+                            <div class="file-menu" @click.stop="handleRightClick($event, item)">
+                                <Icon type="ios-more" />
+                            </div>
                             <div class="file-icon">
                                 <template v-if="item.share">
                                     <UserAvatar v-if="item.userid != userId" :userid="item.userid" class="share-avatar" :size="20"/>
@@ -108,15 +90,62 @@
                     </ul>
                 </div>
             </template>
+
+            <div class="file-menu" :style="contextMenuStyles">
+                <Dropdown trigger="custom" :visible="contextMenuVisible" transfer @on-clickoutside="handleClickContextMenuOutside">
+                    <DropdownMenu slot="list" class="page-file-dropdown-menu">
+                        <template v-if="contextMenuItem.id">
+                            <DropdownItem @click.native="handleContextClick('open')">{{$L('打开')}}</DropdownItem>
+                            <DropdownItem @click.native="handleContextClick('rename')" divided>{{$L('重命名')}}</DropdownItem>
+                            <DropdownItem @click.native="handleContextClick('copy')" :disabled="contextMenuItem.type=='folder'">{{$L('复制')}}</DropdownItem>
+                            <DropdownItem @click.native="handleContextClick('shear')" :disabled="contextMenuItem.userid != userId">{{$L('剪切')}}</DropdownItem>
+                            <DropdownItem @click.native="handleContextClick('share')" :disabled="contextMenuItem.userid != userId" divided>{{$L('共享')}}</DropdownItem>
+                            <DropdownItem @click.native="handleContextClick('delete')" divided style="color:red">{{$L('删除')}}</DropdownItem>
+                        </template>
+                        <template v-else>
+                            <DropdownItem
+                                v-for="(type, key) in types"
+                                v-if="type.label"
+                                :key="key"
+                                :divided="!!type.divided"
+                                @click.native="addFile(type.value)">
+                                <div :class="['file-item ' + type.value]">{{$L(type.label)}}</div>
+                            </DropdownItem>
+                        </template>
+                    </DropdownMenu>
+                </Dropdown>
+            </div>
         </div>
 
+        <!--上传文件-->
         <Upload
             name="files"
             ref="fileUpload"
             v-show="false"
             :action="actionUrl"
             :headers="headers"
-            multiple
+            :multiple="true"
+            :webkitdirectory="false"
+            :format="uploadFormat"
+            :accept="uploadAccept"
+            :show-upload-list="false"
+            :max-size="maxSize"
+            :on-progress="handleProgress"
+            :on-success="handleSuccess"
+            :on-error="handleError"
+            :on-format-error="handleFormatError"
+            :on-exceeded-size="handleMaxSize"
+            :before-upload="handleBeforeUpload"/>
+
+        <!--上传文件夹-->
+        <Upload
+            name="files"
+            ref="dirUpload"
+            v-show="false"
+            :action="actionUrl"
+            :headers="headers"
+            :multiple="true"
+            :webkitdirectory="true"
             :format="uploadFormat"
             :accept="uploadAccept"
             :show-upload-list="false"
@@ -167,6 +196,7 @@
 import {mapState} from "vuex";
 import {sortBy} from "lodash";
 import UserInput from "../../components/UserInput";
+
 const FileContent = () => import('./components/FileContent');
 
 
@@ -184,13 +214,19 @@ export default {
             types: [
                 {
                     "value": "folder",
-                    "label": "新建目录",
-                    "name": "目录",
+                    "label": "新建文件夹",
+                    "name": "文件夹",
                 },
                 {
                     "value": "upload",
                     "label": "上传文件",
-                    "name": "上传",
+                    "name": null,
+                    "divided": true
+                },
+                {
+                    "value": "updir",
+                    "label": "上传文件夹",
+                    "name": null,
                 },
                 {
                     "value": "document",
@@ -244,10 +280,18 @@ export default {
             editHeight: 0,
             editInfo: {},
 
+            uploadDir: false,
             uploadIng: 0,
             uploadFormat: ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'],
             uploadAccept: ['.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'].join(","),
-            maxSize: 204800
+            maxSize: 204800,
+
+            contextMenuItem: {},
+            contextMenuVisible: false,
+            contextMenuStyles: {
+                top: 0,
+                left: 0
+            },
         }
     },
 
@@ -390,6 +434,7 @@ export default {
                             array.push(h('QuickEdit', {
                                 props: {
                                     value: row.name,
+                                    autoEdit: !!row._edit
                                 },
                                 on: {
                                     'on-edit-change': (b) => {
@@ -464,7 +509,7 @@ export default {
                     resizable: true,
                     sortable: true,
                     render: (h, {row}) => {
-                        let type = this.types.find(({value}) => value == row.type);
+                        let type = this.types.find(({value, name}) => value == row.type && name);
                         if (type) {
                             return h('AutoTip', type.name);
                         } else {
@@ -523,7 +568,12 @@ export default {
 
         addFile(command) {
             if (command == 'upload') {
+                this.uploadDir = false
                 this.$refs.fileUpload.handleClick();
+                return;
+            } else if (command == 'updir') {
+                this.uploadDir = true
+                this.$refs.dirUpload.handleClick();
                 return;
             }
             let id = $A.randomString(8);
@@ -536,6 +586,25 @@ export default {
                 newname: this.$L('未命名')
             });
             this.autoBlur(id)
+        },
+
+        handleRightClick(event, item, isAddButton) {
+            this.contextMenuItem = $A.isJson(item) ? item : {};
+            if (this.contextMenuVisible) {
+                this.handleClickContextMenuOutside();
+            }
+            this.$nextTick(() => {
+                const fileWrap = this.$refs.fileWrapper;
+                const fileBounding = fileWrap.getBoundingClientRect();
+                this.contextMenuStyles = {
+                    left: `${event.clientX - fileBounding.left}px`,
+                    top: `${event.clientY - fileBounding.top}px`
+                };
+                if (isAddButton === true) {
+                    this.contextMenuStyles.top = `${event.target.clientHeight + event.target.offsetTop - 5}px`
+                }
+                this.contextMenuVisible = true;
+            })
         },
 
         openFile(item) {
@@ -557,6 +626,18 @@ export default {
 
         clickRow(row) {
             this.dropFile(row, 'open');
+        },
+
+        handleContextMenu(row, event) {
+            this.handleRightClick(event, this.files.find(({id}) => id === row.id) || {});
+        },
+
+        handleContextClick(command) {
+            this.dropFile(this.contextMenuItem, command)
+        },
+
+        handleClickContextMenuOutside() {
+            this.contextMenuVisible = false;
         },
 
         dropFile(item, command) {
@@ -653,7 +734,10 @@ export default {
                         cursor: 'all'
                     })
                 } else if (document.getElementById('input_' + id)) {
-                    document.getElementById('input_' + id).focus();
+                    const el = document.getElementById('input_' + id);
+                    const len = el.value.length;
+                    el.focus();
+                    el.setSelectionRange(0, len);
                 }
             })
         },
@@ -794,6 +878,9 @@ export default {
 
         handleFormatError(file) {
             //上传类型错误
+            if (this.uploadDir) {
+                return;
+            }
             $A.modalWarning({
                 title: '文件格式不正确',
                 content: '文件 ' + file.name + ' 格式不正确，仅支持上传：' + this.uploadFormat.join(',')

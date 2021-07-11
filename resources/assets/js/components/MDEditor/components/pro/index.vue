@@ -171,7 +171,7 @@
                 @mouseenter="mousescrollSide('right')">
                 <div v-html="html" ref="previewInner"></div>
             </div>
-            <!-- 目录 -->
+            <!-- 文件夹 -->
             <ul v-show="tocShow" class="toc-anchor">
                 <li class="toc-anchor-item" v-for="item in tocLists" :key="item.anchor" @click="tocClick(item)">
                     <span :class="`toc-link-${tocLevel(item.level)}${tocAction == item.anchor ? ' toc-link-action' : ''}`" :anchor="item.anchor" :title="item.text">{{item.text}}</span>

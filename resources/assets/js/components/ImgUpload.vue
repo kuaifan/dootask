@@ -334,7 +334,7 @@
             browseItem(item) {
                 //点击选择图片
                 if (item.type === 'dir') {
-                    //目录
+                    //文件夹
                     this.browsePicture(item.path);
                 }else if (item.type === 'file') {
                     //文件

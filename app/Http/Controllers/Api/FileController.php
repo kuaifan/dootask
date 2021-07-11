@@ -509,7 +509,7 @@ class FileController extends AbstractController
         }
         //
         if ($file->isNnShare()) {
-            return Base::retError('已经处于共享目录中');
+            return Base::retError('已经处于共享文件夹中');
         }
         //
         if ($action == 'unshare') {

@@ -7,7 +7,7 @@ const argv = process.argv;
 const env = require('dotenv').config({ path: './.env' })
 
 /**
- * 删除目录及文件
+ * 删除文件夹及文件
  * @param path
  */
 function deleteFile(path) {

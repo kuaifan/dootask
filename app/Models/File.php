@@ -51,21 +51,21 @@ class File extends AbstractModel
 
     /**
      * 是否有访问权限
-     *  ① 自己的目录
-     *  ② 共享所有人的目录
+     *  ① 自己的文件夹
+     *  ② 共享所有人的文件夹
      *  ③ 在指定共享人员内
      * @param $userid
      */
     public function chackAllow($userid)
     {
         if ($userid == $this->userid) {
-            // ① 自己的目录
+            // ① 自己的文件夹
             return;
         }
         $row = $this->getShareInfo();
         if ($row) {
             if ($row->share == 1) {
-                // ② 共享所有人的目录
+                // ② 共享所有人的文件夹
                 return;
             } elseif ($row->share == 2) {
                 // ③ 在指定共享人员内
@@ -101,7 +101,7 @@ class File extends AbstractModel
     }
 
     /**
-     * 是否处于共享目录内（不含自身）
+     * 是否处于共享文件夹内（不含自身）
      * @return bool
      */
     public function isNnShare()

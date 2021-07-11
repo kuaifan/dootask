@@ -249,7 +249,7 @@ class Base
     }
 
     /**
-     * 新建目录
+     * 新建文件夹
      * @param $path
      * @return mixed
      */
@@ -268,7 +268,7 @@ class Base
     }
 
     /**
-     * 删除目录
+     * 删除文件夹
      * @param $path
      */
     public static function deleteDir($path)
@@ -277,9 +277,9 @@ class Base
     }
 
     /**
-     * 删除目录及目录下所有的文件
+     * 删除文件夹及文件夹下所有的文件
      * @param $dirName
-     * @param bool $undeleteDir 不删除目录（只删除文件）
+     * @param bool $undeleteDir 不删除文件夹（只删除文件）
      */
     public static function deleteDirAndFile($dirName, $undeleteDir = false)
     {
@@ -2129,7 +2129,7 @@ class Base
                 $array = [
                     "name" => $fileName,                                                //原文件名
                     "size" => Base::twoFloat($fileSize / 1024, true),         //大小KB
-                    "file" => $filePath . $fileName,                                    //目录的完整路径                "D:\www....KzZ.jpg"
+                    "file" => $filePath . $fileName,                                    //文件的完整路径                "D:\www....KzZ.jpg"
                     "path" => $fileDir . $fileName,                                     //相对路径                     "uploads/pic....KzZ.jpg"
                     "url" => Base::fillUrl($fileDir . $fileName),                   //完整的URL                    "https://.....hhsKzZ.jpg"
                     "thumb" => '',                                                      //缩略图（预览图）               "https://.....hhsKzZ.jpg_thumb.jpg"
@@ -2278,7 +2278,7 @@ class Base
             $array = [
                 "name" => $file->getClientOriginalName(),               //原文件名
                 "size" => Base::twoFloat($fileSize / 1024, true),       //大小KB
-                "file" => public_path($param['path'] . $fileName),        //目录的完整路径                "D:\www....KzZ.jpg"
+                "file" => public_path($param['path'] . $fileName),        //文件的完整路径                "D:\www....KzZ.jpg"
                 "path" => $param['path'] . $fileName,                     //相对路径                     "uploads/pic....KzZ.jpg"
                 "url" => Base::fillUrl($param['path'] . $fileName),       //完整的URL                    "https://.....hhsKzZ.jpg"
                 "thumb" => '',                                          //缩略图（预览图）               "https://.....hhsKzZ.jpg_thumb.jpg"
