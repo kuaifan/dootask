@@ -487,7 +487,7 @@ class FileController extends AbstractController
      * - share: 设置共享
      * - unshare: 取消共享
      * @apiParam {Number} [share]       共享对象
-     * - 1: 共享给所有人
+     * - 1: 共享给所有人（限管理员）
      * - 2: 共享给指定成员
      * @apiParam {Array} [userids]      共享成员，格式: [userid1, userid2, userid3]
      */
@@ -520,6 +520,9 @@ class FileController extends AbstractController
             // 设置共享
             if (!in_array($share, [1, 2])) {
                 return Base::retError('请选择共享对象');
+            }
+            if ($share == 1) {
+                $user->isAdmin();
             }
             $file->setShare($share);
             if ($share == 2) {
