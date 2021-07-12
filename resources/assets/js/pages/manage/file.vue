@@ -195,7 +195,10 @@
         </Modal>
 
         <!--查看/修改文件-->
-        <DrawerOverlay v-model="editShow" class="page-file-drawer">
+        <DrawerOverlay
+            v-model="editShow"
+            class="page-file-drawer"
+            :mask-closable="false">
             <FileContent v-if="editShowNum > 0" :parent-show="editShow" :file="editInfo"/>
         </DrawerOverlay>
 

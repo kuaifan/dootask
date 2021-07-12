@@ -27,6 +27,10 @@
                 type: Boolean,
                 default: true
             },
+            escClosable: {
+                type: Boolean,
+                default: true
+            },
             placement: {
                 validator (value) {
                     return ['right', 'bottom'].includes(value)
@@ -43,6 +47,14 @@
             return {
 
             }
+        },
+
+        mounted () {
+            document.addEventListener('keydown', this.escClose);
+        },
+
+        beforeDestroy () {
+            document.removeEventListener('keydown', this.escClose);
         },
 
         computed: {
@@ -72,6 +84,13 @@
             close() {
                 this.$emit("input", !this.value)
             },
+            escClose(e) {
+                if (this.value && this.escClosable) {
+                    if (e.keyCode === 27) {
+                        this.close()
+                    }
+                }
+            }
         }
     }
 </script>

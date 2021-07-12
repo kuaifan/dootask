@@ -112,6 +112,7 @@ export default {
             handler(info) {
                 if (this.fileId != info.id) {
                     this.fileId = info.id;
+                    this.contentDetail = null;
                     this.getContent();
                 }
             },
