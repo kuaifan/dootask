@@ -107,7 +107,7 @@ export default {
                 loading: {
                     image: 'image://' + $A.originUrl('js/luckysheet/css/loading.gif')
                 },
-                data: value ? $A.cloneJSON(value) : [
+                data: $A.isArray(value) ? $A.cloneJSON(value) : [
                     {
                         "name": "Sheet1",
                     }

@@ -52,8 +52,16 @@ export default {
             docEditor: null,
         }
     },
+
     mounted() {
         //
+    },
+
+    beforeDestroy() {
+        if (this.docEditor !== null) {
+            this.docEditor.destroyEditor();
+            this.docEditor = null;
+        }
     },
 
     computed: {
@@ -135,7 +143,9 @@ export default {
                     "callbackUrl": this.serverUrl + 'api/file/content/office?id=' + this.value.id + '&token=' + this.userToken,
                 }
             };
-            this.docEditor = new DocsAPI.DocEditor(this.id, config);
+            this.$nextTick(() => {
+                this.docEditor = new DocsAPI.DocEditor(this.id, config);
+            })
         }
     }
 }
