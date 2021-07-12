@@ -1,4 +1,18 @@
 .project-management {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 20px;
+    overflow: auto;
+    .management-title {
+        color: #333333;
+        font-size: 20px;
+        font-weight: 500;
+        line-height: 1;
+        margin-bottom: 24px;
+    }
     .project-name {
         line-height: 1;
         .ivu-tag {

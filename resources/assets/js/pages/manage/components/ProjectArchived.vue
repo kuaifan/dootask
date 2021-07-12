@@ -1,6 +1,7 @@
 <template>
     <div class="project-archived">
-        <div class="search-box auto">
+        <div class="archived-title">{{$L('归档的项目')}}</div>
+        <div class="search-container auto">
             <ul>
                 <li>
                     <div class="search-label">
@@ -17,7 +18,7 @@
         </div>
         <Table :columns="columns" :data="list" :no-data-text="$L(noText)"></Table>
         <Page
-            class="page-box"
+            class="page-container"
             :total="total"
             :current="page"
             :disabled="loadIng > 0"

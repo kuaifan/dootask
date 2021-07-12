@@ -40,7 +40,7 @@
                 </div>
             </div>
 
-            <div v-if="tableMode" class="file-table">
+            <div v-if="tableMode" class="file-table" @contextmenu.prevent="handleRightClick">
                 <Table
                     :columns="columns"
                     :data="fileList"
@@ -194,30 +194,11 @@
             </div>
         </Modal>
 
-        <!--查看修改文件-->
-        <div :class="['shot-overlay', editShow ? 'overlay-visible' : 'overlay-hide']">
-            <div class="overlay-content">
-                <div class="shot-container">
-                    <FileContent v-if="editShowNum > 0" :parent-show="editShow" :file="editInfo"/>
-                </div>
-            </div>
-            <a href="javascript:void(0)" class="close-overlay" @click="editShow=false">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26" fill="none" role="img" class="icon fill-current">
-                    <path d="M8.28596 6.51819C7.7978 6.03003 7.00634 6.03003 6.51819 6.51819C6.03003 7.00634 6.03003 7.7978 6.51819 8.28596L11.2322 13L6.51819 17.714C6.03003 18.2022 6.03003 18.9937 6.51819 19.4818C7.00634 19.97 7.7978 19.97 8.28596 19.4818L13 14.7678L17.714 19.4818C18.2022 19.97 18.9937 19.97 19.4818 19.4818C19.97 18.9937 19.97 18.2022 19.4818 17.714L14.7678 13L19.4818 8.28596C19.97 7.7978 19.97 7.00634 19.4818 6.51819C18.9937 6.03003 18.2022 6.03003 17.714 6.51819L13 11.2322L8.28596 6.51819Z" fill="currentColor"></path>
-                </svg>
-            </a>
-        </div>
-
-
-<!--        <Drawer
-            v-model="editShow"
-            placement="bottom"
-            :height="editHeight"
-            :mask-closable="false"
-            :mask-style="{backgroundColor:'rgba(0,0,0,0.7)'}"
-            class-name="page-file-drawer">
+        <!--查看/修改文件-->
+        <DrawerOverlay v-model="editShow" class="page-file-drawer">
             <FileContent v-if="editShowNum > 0" :parent-show="editShow" :file="editInfo"/>
-        </Drawer>-->
+        </DrawerOverlay>
+
     </div>
 </template>
 
@@ -225,12 +206,13 @@
 import {mapState} from "vuex";
 import {sortBy} from "lodash";
 import UserInput from "../../components/UserInput";
+import DrawerOverlay from "../../components/DrawerOverlay";
 
 const FileContent = () => import('./components/FileContent');
 
 
 export default {
-    components: {UserInput, FileContent},
+    components: {DrawerOverlay, UserInput, FileContent},
     data() {
         return {
             loadIng: 0,
@@ -306,7 +288,6 @@ export default {
 
             editShow: false,
             editShowNum: 0,
-            editHeight: 0,
             editInfo: {},
 
             uploadDir: false,
@@ -326,7 +307,6 @@ export default {
 
     mounted() {
         this.tableHeight = window.innerHeight - 160;
-        this.editHeight = window.innerHeight - 40;
     },
 
     activated() {
@@ -650,7 +630,6 @@ export default {
                 this.searchKey = '';
                 this.pid = item.id;
             } else {
-                this.editHeight = window.innerHeight - 40;
                 this.editInfo = item;
                 this.editShow = true;
             }

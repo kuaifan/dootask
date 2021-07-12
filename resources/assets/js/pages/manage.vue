@@ -130,28 +130,28 @@
         </Modal>
 
         <!--查看所有团队-->
-        <Drawer
+        <DrawerOverlay
             v-model="allUserShow"
-            :width="900"
-            :title="$L('团队管理')">
+            placement="right"
+            :size="900">
             <TeamManagement v-if="allUserShow"/>
-        </Drawer>
+        </DrawerOverlay>
 
         <!--查看所有项目-->
-        <Drawer
+        <DrawerOverlay
             v-model="allProjectShow"
-            :width="900"
-            :title="$L('所有项目')">
+            placement="right"
+            :size="900">
             <ProjectManagement v-if="allProjectShow"/>
-        </Drawer>
+        </DrawerOverlay>
 
         <!--查看归档项目-->
-        <Drawer
+        <DrawerOverlay
             v-model="archivedProjectShow"
-            :width="900"
-            :title="$L('归档的项目')">
+            placement="right"
+            :size="900">
             <ProjectArchived v-if="archivedProjectShow"/>
-        </Drawer>
+        </DrawerOverlay>
     </div>
 </template>
 
@@ -162,9 +162,10 @@ import ProjectArchived from "./manage/components/ProjectArchived";
 import notificationKoro from "notification-koro1";
 import TeamManagement from "./manage/components/TeamManagement";
 import ProjectManagement from "./manage/components/ProjectManagement";
+import DrawerOverlay from "../components/DrawerOverlay";
 
 export default {
-    components: {ProjectManagement, TeamManagement, ProjectArchived, TaskDetail},
+    components: {DrawerOverlay, ProjectManagement, TeamManagement, ProjectArchived, TaskDetail},
     data() {
         return {
             loadIng: 0,

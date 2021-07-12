@@ -26,6 +26,7 @@
 import {mapState} from "vuex";
 
 export default {
+    name: "OnlyOffice",
     props: {
         id: {
             type: String,

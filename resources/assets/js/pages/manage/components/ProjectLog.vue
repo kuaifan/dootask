@@ -1,5 +1,6 @@
 <template>
     <div class="project-log">
+        <div class="log-title">{{$L('项目动态')}}</div>
         <ul class="logs-activity">
             <li v-for="items in lists">
                 <div class="logs-date">{{logDate(items)}}</div>

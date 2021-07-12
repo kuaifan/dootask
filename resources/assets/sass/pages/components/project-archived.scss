@@ -1,0 +1,16 @@
+.project-archived {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 20px;
+    overflow: auto;
+    .archived-title {
+        color: #333333;
+        font-size: 20px;
+        font-weight: 500;
+        line-height: 1;
+        margin-bottom: 24px;
+    }
+}

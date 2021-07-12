@@ -363,20 +363,20 @@
         </Modal>
 
         <!--查看项目动态-->
-        <Drawer
+        <DrawerOverlay
             v-model="logShow"
-            :width="680"
-            :title="$L('项目动态')">
+            placement="right"
+            :size="768">
             <ProjectLog v-if="logShow" :project-id="projectId"/>
-        </Drawer>
+        </DrawerOverlay>
 
         <!--查看归档任务-->
-        <Drawer
+        <DrawerOverlay
             v-model="archivedTaskShow"
-            :width="680"
-            :title="$L('归档的任务')">
+            placement="right"
+            :size="768">
             <TaskArchived v-if="archivedTaskShow" :project-id="projectId"/>
-        </Drawer>
+        </DrawerOverlay>
     </div>
 </template>
 
@@ -390,9 +390,12 @@ import TaskAddSimple from "./TaskAddSimple";
 import TaskRow from "./TaskRow";
 import TaskArchived from "./TaskArchived";
 import ProjectLog from "./ProjectLog";
+import DrawerOverlay from "../../../components/DrawerOverlay";
 export default {
     name: "ProjectList",
-    components: {ProjectLog, TaskArchived, TaskRow, Draggable, TaskAddSimple, UserInput, TaskAdd, TaskPriority},
+    components: {
+        DrawerOverlay,
+        ProjectLog, TaskArchived, TaskRow, Draggable, TaskAddSimple, UserInput, TaskAdd, TaskPriority},
     data() {
         return {
             nowTime: Math.round(new Date().getTime() / 1000),

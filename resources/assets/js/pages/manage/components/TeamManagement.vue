@@ -1,6 +1,7 @@
 <template>
     <div class="team-management">
-        <div class="search-box">
+        <div class="management-title">{{$L('团队管理')}}</div>
+        <div class="search-container">
             <ul>
                 <li>
                     <div class="search-label">
@@ -45,7 +46,7 @@
         </div>
         <Table :columns="columns" :data="list" :no-data-text="$L(noText)"></Table>
         <Page
-            class="page-box"
+            class="page-container"
             :total="total"
             :current="page"
             :disabled="loadIng > 0"
