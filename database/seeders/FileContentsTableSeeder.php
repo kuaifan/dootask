@@ -588,30 +588,6 @@ curl -O https://task.hitosea.com/uploads/files/3/202105/ba786dfc2f4c2fe916880474
             ),
             6 =>
             array (
-                'id' => 15,
-                'content' => $this->getContent(15),
-                'fid' => 10,
-                'text' => '',
-                'size' => 1883759,
-                'userid' => 1,
-                'created_at' => seeders_at('2021-07-01 15:59:05'),
-                'updated_at' => seeders_at('2021-07-01 15:59:05'),
-                'deleted_at' => NULL,
-            ),
-            7 =>
-            array (
-                'id' => 17,
-                'content' => $this->getContent(17),
-                'fid' => 11,
-                'text' => '',
-                'size' => 1771363,
-                'userid' => 1,
-                'created_at' => seeders_at('2021-07-01 16:00:28'),
-                'updated_at' => seeders_at('2021-07-01 16:00:28'),
-                'deleted_at' => NULL,
-            ),
-            8 =>
-            array (
                 'id' => 19,
                 'content' => $this->getContent(19),
                 'fid' => 12,
