@@ -1587,6 +1587,24 @@ export default {
                                 }
                             })(msgDetail);
                             break;
+
+                        /**
+                         * 文件消息
+                         */
+                        case "file":
+                            (function (msg) {
+                                const {action, data} = msg;
+                                switch (action) {
+                                    case 'add':
+                                    case 'update':
+                                        dispatch("saveFile", data);
+                                        break;
+                                    case 'delete':
+                                        dispatch("forgetFile", data.id);
+                                        break;
+                                }
+                            })(msgDetail);
+                            break;
                     }
                     break
             }

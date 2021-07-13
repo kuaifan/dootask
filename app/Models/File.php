@@ -148,11 +148,12 @@ class File extends AbstractModel
     {
         AbstractModel::transaction(function () {
             $this->delete();
+            $this->pushMsg('delete');
             FileContent::whereFid($this->id)->delete();
             $list = self::wherePid($this->id)->get();
             if ($list->isNotEmpty()) {
-                foreach ($list as $item) {
-                    $item->deleteFile();
+                foreach ($list as $file) {
+                    $file->deleteFile();
                 }
             }
         });
@@ -160,29 +161,49 @@ class File extends AbstractModel
     }
 
     /**
-     * 推送内容发生变化消息
+     * 推送消息
+     * @param $action
+     * @param File|null $data   发送内容，默认为[id]
+     * @param array $userid     指定会员，默认为可查看文件的人
      */
-    public function pushContentChange()
+    public function pushMsg($action, $data = null, $userid = null)
     {
-        $userid = [$this->userid];
-        if ($this->share == 1) {
-            $userid = array_merge($userid, WebSocket::wherePath('file/content/' . $this->id)->pluck('userid')->toArray());
-        } elseif ($this->share == 2) {
-            $userid = array_merge($userid, FileUser::whereFileId($this->id)->pluck('userid')->toArray());
+        if ($data === null) {
+            $data = [
+                'id' => $this->id
+            ];
         }
         //
-        $userid = array_values(array_filter(array_unique($userid)));
+        if ($userid === null) {
+            $userid = [$this->userid];
+            if ($this->share == 1) {
+                $builder = WebSocket::select(['userid']);
+                if ($action == 'content') {
+                    $builder->wherePath('file/content/' . $this->id);
+                }
+                $userid = array_merge($userid, $builder->pluck('userid')->toArray());
+            } elseif ($this->share == 2) {
+                $userid = array_merge($userid, FileUser::whereFileId($this->id)->pluck('userid')->toArray());
+            }
+            $userid = array_values(array_filter(array_unique($userid)));
+        }
+        if (empty($userid)) {
+            return;
+        }
+        //
+        $msg = [
+            'type' => 'file',
+            'action' => $action,
+            'data' => $data,
+        ];
+        if ($action == 'content') {
+            $msg['nickname'] = User::nickname();
+            $msg['time'] = time();
+        }
         $params = [
             'ignoreFd' => Request::header('fd'),
             'userid' => $userid,
-            'msg' => [
-                'type' => 'fileContentChange',
-                'data' => [
-                    'id' => $this->id,
-                    'nickname' => User::nickname(),
-                    'time' => Base::time()
-                ],
-            ]
+            'msg' => $msg
         ];
         $task = new PushTask($params, false);
         Task::deliver($task);

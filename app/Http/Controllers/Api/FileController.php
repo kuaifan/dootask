@@ -8,6 +8,7 @@ use App\Models\File;
 use App\Models\FileContent;
 use App\Models\FileUser;
 use App\Models\User;
+use App\Models\WebSocket;
 use App\Module\Base;
 use App\Module\Ihttp;
 use Arr;
@@ -123,6 +124,7 @@ class FileController extends AbstractController
             //
             $file->name = $name;
             $file->save();
+            $file->pushMsg('update', $file);
             return Base::retSuccess('修改成功', $file);
         } else {
             // 添加
@@ -162,6 +164,7 @@ class FileController extends AbstractController
             $file->save();
             //
             $data = File::find($file->id);
+            $data->pushMsg('add', $data);
             return Base::retSuccess('添加成功', $data);
         }
     }
@@ -201,6 +204,7 @@ class FileController extends AbstractController
         $file->save();
         //
         $data = File::find($file->id);
+        $data->pushMsg('add', $data);
         return Base::retSuccess('复制成功', $data);
     }
 
@@ -242,6 +246,7 @@ class FileController extends AbstractController
         //
         $file->pid = $pid;
         $file->save();
+        $file->pushMsg('update', $file);
         return Base::retSuccess('操作成功', $file);
     }
 
@@ -322,7 +327,7 @@ class FileController extends AbstractController
         //
         $file->size = $content->size;
         $file->save();
-        $file->pushContentChange();
+        $file->pushMsg('content');
         //
         return Base::retSuccess('保存成功', $content);
     }
@@ -365,6 +370,7 @@ class FileController extends AbstractController
                 //
                 $file->size = $content->size;
                 $file->save();
+                $file->pushMsg('update', $file);
             }
         }
         return ['error' => 0];
@@ -448,6 +454,7 @@ class FileController extends AbstractController
             $file->save();
             //
             $data = File::find($file->id);
+            $data->pushMsg('add', $data);
             return Base::retSuccess($data['name'] . ' 上传成功', $data);
         });
     }
@@ -514,8 +521,15 @@ class FileController extends AbstractController
         //
         if ($action == 'unshare') {
             // 取消共享
+            if ($file->share == 1) {
+                $uids = WebSocket::select(['userid'])->pluck('userid')->toArray();
+            } else {
+                $uids = FileUser::whereFileId($file->id)->pluck('userid')->toArray();
+            }
+            $uids = array_values(array_diff($uids, [$user->userid]));
+            //
             $file->setShare(0);
-            return Base::retSuccess('取消成功', $file);
+            $message = '取消成功';
         } else {
             // 设置共享
             if (!in_array($share, [1, 2])) {
@@ -539,12 +553,20 @@ class FileController extends AbstractController
                     }
                 }
                 if (empty($array)) {
-                    FileUser::whereFileId($file->id)->delete();
+                    $builder = FileUser::whereFileId($file->id);
                 } else {
-                    FileUser::whereFileId($file->id)->whereNotIn('userid', $array)->delete();
+                    $builder = FileUser::whereFileId($file->id)->whereNotIn('userid', $array);
                 }
+                $uids = (clone $builder)->pluck('userid')->toArray();
+                $builder->delete();
             }
-            return Base::retSuccess('设置成功', $file);
+            $message = '设置成功';
         }
+        //
+        $file->pushMsg('update', $file);
+        if (isset($uids)) {
+            $file->pushMsg('delete', null, $uids);
+        }
+        return Base::retSuccess($message, $file);
     }
 }

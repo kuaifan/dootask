@@ -121,21 +121,28 @@ export default {
         },
 
         wsMsg: {
-            handler({type, data}) {
-                if (type == 'path') {
-                    if (data.path == 'file/content/' + this.fileId) {
-                        this.editUser = data.userids;
-                    }
-                } else if (type == 'fileContentChange') {
-                    if (this.parentShow && data.id == this.fileId) {
-                        $A.modalConfirm({
-                            title: "更新提示",
-                            content: '团队成员（' + data.nickname + '）更新了内容，<br/>更新时间：' + $A.formatDate("Y-m-d H:i:s", data.time) + '。<br/><br/>点击【确定】加载最新内容。',
-                            onOk: () => {
-                                this.getContent();
+            handler(info) {
+                const {type, data} = info;
+                switch (type) {
+                    case 'path':
+                        if (data.path == 'file/content/' + this.fileId) {
+                            this.editUser = data.userids;
+                        }
+                        break;
+
+                    case 'file':
+                        if (data.action == 'content') {
+                            if (this.parentShow && data.id == this.fileId) {
+                                $A.modalConfirm({
+                                    title: "更新提示",
+                                    content: '团队成员（' + info.nickname + '）更新了内容，<br/>更新时间：' + $A.formatDate("Y-m-d H:i:s", info.time) + '。<br/><br/>点击【确定】加载最新内容。',
+                                    onOk: () => {
+                                        this.getContent();
+                                    }
+                                });
                             }
-                        });
-                    }
+                        }
+                        break;
                 }
             },
             deep: true,
