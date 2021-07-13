@@ -1,5 +1,5 @@
 <template>
-    <div class="project-log">
+    <div :class="['project-log', taskId == 0 ? 'is-drawer' : '']">
         <div class="log-title">{{$L('项目动态')}}</div>
         <ul class="logs-activity">
             <li v-for="items in lists">

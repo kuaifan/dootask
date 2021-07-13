@@ -182,7 +182,7 @@
                                             <UserAvatar :userid="user.userid" size="32" :borderWitdh="2" :borderColor="item.color"/>
                                         </li>
                                         <li v-if="ownerUser(item.task_user).length === 0" class="no-owner">
-                                            <Button type="primary" size="small">{{$L('领取任务')}}</Button>
+                                            <Button type="primary" size="small" ghost>{{$L('领取任务')}}</Button>
                                         </li>
                                     </ul>
                                     <div v-if="item.file_num > 0" class="task-icon">{{item.file_num}}<Icon type="ios-link-outline" /></div>
