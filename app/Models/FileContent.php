@@ -52,7 +52,7 @@ class FileContent extends AbstractModel
         $content = Base::json2array($content);
         if (in_array($type, ['word', 'excel', 'ppt'])) {
             if (empty($content)) {
-                return Response::download(resource_path('assets/statics/empty/empty.' . str_replace(['word', 'excel', 'ppt'], ['docx', 'xlsx', 'pptx'], $type)));
+                return Response::download(resource_path('assets/statics/office/empty.' . str_replace(['word', 'excel', 'ppt'], ['docx', 'xlsx', 'pptx'], $type)));
             }
             return Response::download(public_path($content['url']));
         }
