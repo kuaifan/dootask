@@ -81,9 +81,7 @@ services:
 
   office:
     container_name: "dooteak-office-${DOCKER_ID}"
-    image: "onlyoffice/documentserver"
-    ports:
-      - "${APP_PORT_ONLYOFFICE}:80"
+    image: "onlyoffice/documentserver:6.3.1.32"
     volumes:
       - ./docker/office/data:/var/www/onlyoffice/Data
       - ./docker/office/logs:/var/log/onlyoffice

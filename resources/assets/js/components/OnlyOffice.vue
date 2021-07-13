@@ -85,8 +85,7 @@ export default {
                 if (!url) {
                     return;
                 }
-                const uri = new URL(this.$store.state.method.apiUrl('web-apps'));
-                $A.loadScript(`http://${uri.hostname}:2224/web-apps/apps/api/documents/api.js`, () => {
+                $A.loadScript("web-apps/apps/api/documents/api.js", () => {
                     this.loadFile()
                 })
             },

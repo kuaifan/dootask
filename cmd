@@ -32,6 +32,19 @@ supervisorctl_restart() {
     fi
 }
 
+check_docker() {
+    docker -v &> /dev/null
+    if [ $? -ne  0 ]; then
+        echo -e "${Error} ${RedBG} 未安装 Docker！${Font}"
+        exit 1
+    fi
+    docker-compose -v &> /dev/null
+    if [ $? -ne  0 ]; then
+        echo -e "${Error} ${RedBG} 未安装 Docker-compose！${Font}"
+        exit 1
+    fi
+}
+
 check_node() {
     npm -v > /dev/null
     if [ $? -ne  0 ]; then
@@ -86,6 +99,7 @@ env_init() {
 
 COMPOSE="docker-compose"
 env_init
+check_docker
 
 if [ $# -gt 0 ];then
     if [[ "$1" == "init" ]] || [[ "$1" == "install" ]]; then

@@ -1,5 +1,5 @@
 <template>
-    <div class="page-manage">
+    <div v-show="userId > 0" class="page-manage">
         <div class="manage-box-menu">
             <Dropdown
                 class="manage-box-dropdown"
