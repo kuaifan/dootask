@@ -3,7 +3,7 @@ version: '3'
 services:
   php:
     container_name: "dooteak-php-${DOCKER_ID}"
-    image: "kuaifan/phpdootask"
+    image: "kuaifan/dootaskphp:8.0"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./docker/crontab/crontab.conf:/etc/supervisor/conf.d/crontab.conf

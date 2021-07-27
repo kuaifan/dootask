@@ -131,7 +131,7 @@ if [ $# -gt 0 ];then
         supervisorctl_restart php
     elif [[ "$1" == "uninstall" ]]; then
         shift 1
-        read -rp "确定要卸载（含：删除容器、数据库、日志）吗？(y/N): " uninstall
+        read -rp "确定要卸载（含：删除容器、数据库、日志）吗？(y/n): " uninstall
         [[ -z ${uninstall} ]] && uninstall="N"
         case $uninstall in
         [yY][eE][sS] | [yY])

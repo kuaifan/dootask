@@ -877,7 +877,7 @@ class Base
             return false;
         } else {
             list($year, $month, $day) = $strArr;
-            if (checkdate($month, $day, $year)) {
+            if (checkdate(intval($month), intval($day), intval($year))) {
                 return true;
             } else {
                 return false;
