@@ -54,7 +54,7 @@ export default {
             this.isEdit = true;
             this.$nextTick(() => {
                 this.$refs.input.focus({
-                  cursor: 'all'
+                    cursor: 'all'
                 });
             })
         },
@@ -66,6 +66,9 @@ export default {
         onEnter() {
             if (this.content == this.value) {
                 this.isEdit = false;
+                return;
+            }
+            if (this.isLoad) {
                 return;
             }
             this.isLoad = true;

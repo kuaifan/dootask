@@ -7,7 +7,7 @@
         :disabled="!showTooltip"
         :max-width="tooltipMaxWidth"
         transfer>
-        <span ref="content" @mouseenter="handleTooltipIn" class="common-auto-tip">
+        <span ref="content" @mouseenter="handleTooltipIn" class="common-auto-tip" @click="onClick">
             <template v-if="existSlot"><slot/></template>
             <template v-else>{{text}}</template>
         </span>
@@ -87,6 +87,9 @@
                 this.showTooltip = Math.floor(rangeWidth) > Math.floor($content.offsetWidth);
                 range = null;
             },
+            onClick(e) {
+                this.$emit("on-click", e)
+            }
         }
     }
 </script>
