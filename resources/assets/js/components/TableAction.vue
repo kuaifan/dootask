@@ -1,6 +1,46 @@
 <template>
-    <div class="td-action" :style="tdStyle">
-        <div ref="action" @mouseenter="handleIn" class="td-action-container" v-resize="onResize"><slot></slot></div>
+    <div class="td-action" :style="tdStyle" :data-width="width" :data-height="height">
+        <div
+            ref="action"
+            class="td-action-container"
+            :class="{'td-action-menu':menu.length > 0}"
+            @mouseenter="handleIn"
+            v-resize="onResize">
+            <slot></slot>
+            <ETooltip
+                v-for="(item, key) in menu"
+                placement="top"
+                :key="key"
+                :disabled="!item.title"
+                :content="item.title"
+                :enterable="false"
+                :open-delay="600">
+                <EDropdown
+                    v-if="item.children && item.children.length > 0"
+                    size="medium"
+                    trigger="click"
+                    class="menu-dropdown"
+                    @command="onClick">
+                    <i class="aliicon menu-icon" v-html="item.icon" :style="item.style || {}"></i>
+                    <EDropdownMenu slot="dropdown">
+                        <EDropdownItem
+                            v-for="(d, k) in item.children"
+                            :key="k"
+                            :command="d.action"
+                            :divided="!!d.divided"
+                            :style="d.style || {}">
+                            <div>{{d.title}}</div>
+                        </EDropdownItem>
+                    </EDropdownMenu>
+                </EDropdown>
+                <i
+                    v-else
+                    class="aliicon menu-icon"
+                    v-html="item.icon"
+                    :style="item.style || {}"
+                    @click="onClick(item.action)"></i>
+            </ETooltip>
+        </div>
     </div>
 </template>
 
@@ -18,6 +58,10 @@ Vue.use(VueResizeObserver);
                     return {};
                 }
             },
+            autoWidth: {
+                type: Boolean,
+                default: true
+            },
             minWidth: {
                 type: Number,
                 default: 80
@@ -25,6 +69,12 @@ Vue.use(VueResizeObserver);
             align: {
                 type: String,
                 default: ''
+            },
+            menu: {
+                type: Array,
+                default: () => {
+                    return [];
+                }
             },
         },
         data() {
@@ -46,8 +96,16 @@ Vue.use(VueResizeObserver);
             tdStyle() {
                 const style = {};
                 const {align} = this;
-                if (['left', 'center', 'right'].includes(align.toLowerCase())) {
-                    style.textAlign = align;
+                switch (align.toLowerCase()) {
+                    case 'left':
+                        style.justifyContent = 'flex-start';
+                        break;
+                    case 'center':
+                        style.justifyContent = 'center';
+                        break;
+                    case 'right':
+                        style.justifyContent = 'flex-end';
+                        break;
                 }
                 return style;
             }
@@ -65,6 +123,9 @@ Vue.use(VueResizeObserver);
                 })
             },
             onResize({ width, height }) {
+                if (!this.autoWidth) {
+                    return;
+                }
                 $A(".ivu-table-column-" + this.column.__id).each((index, el) => {
                     let action = $A(el).find(".td-action-container")
                     if (action.length > 0) {
@@ -81,7 +142,14 @@ Vue.use(VueResizeObserver);
                 if (this.column.maxWidth) {
                     newWidth = Math.min(this.column.maxWidth, newWidth);
                 }
-                newWidth != this.column.width && this.$set(this.column, 'width', newWidth)
+                if (newWidth != this.column.width) {
+                    this.$nextTick(() => {
+                        this.$set(this.column, 'width', newWidth);
+                    })
+                }
+            },
+            onClick(action) {
+                this.$emit("action", action)
             }
         }
     }

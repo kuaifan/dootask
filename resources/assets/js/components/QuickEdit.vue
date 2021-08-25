@@ -1,7 +1,8 @@
 <template>
-    <div class="quick-edit">
-        <div v-if="isEdit" class="quick-input">
-            <Input ref="input" v-model="content" :disabled="isLoad" @on-blur="onBlur" @on-enter="onEnter"/>
+    <div class="quick-edit" :class="[alwaysIcon ? 'quick-always' : '']">
+        <div v-if="isEdit" v-clickoutside="onEnter" class="quick-input">
+            <TagInput v-if="isTag" ref="input" v-model="content" :disabled="isLoad" @on-enter="onEnter"/>
+            <Input v-else ref="input" v-model="content" :disabled="isLoad" @on-enter="onEnter"/>
             <div v-if="isLoad" class="quick-loading"><Loading/></div>
         </div>
         <template v-else>
@@ -12,14 +13,25 @@
 </template>
 
 <script>
+import clickoutside from "../directives/clickoutside";
+
 export default {
     name: 'QuickEdit',
+    directives: {clickoutside},
     props: {
         value: {
 
         },
         autoEdit: {
 
+        },
+        isTag: {
+            type: Boolean,
+            default: false
+        },
+        alwaysIcon: {
+            type: Boolean,
+            default: false
         },
     },
 
@@ -59,10 +71,6 @@ export default {
             })
         },
 
-        onBlur() {
-            this.onEnter();
-        },
-
         onEnter() {
             if (this.content == this.value) {
                 this.isEdit = false;
@@ -77,7 +85,7 @@ export default {
                 this.isEdit = false;
                 this.isLoad = false;
             })
-        }
+        },
     }
 }
 </script>

@@ -40,9 +40,36 @@
                     padding: 0 20px;
                     margin: 5px 0;
                     position: relative;
+
                     &.active,
                     &:hover {
                         background-color: #F4F5F7;
+                    }
+
+                    &.divided {
+                        position: relative;
+                        margin-top: 10px;
+                        padding-top: 10px;
+                        &:before {
+                            content: "";
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            right: 0;
+                            z-index: 1;
+                            height: 1px;
+                            background-color: #F4F4F5;
+                        }
+                        &:after {
+                            content: "";
+                            position: absolute;
+                            top: 1px;
+                            left: 0;
+                            right: 0;
+                            z-index: 2;
+                            height: 9px;
+                            background-color: #ffffff;
+                        }
                     }
                 }
             }

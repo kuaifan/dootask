@@ -200,7 +200,7 @@
                 if (typeof items === 'string') {
                     items = [{'url': items}];
                 }
-                let lists = [];
+                let list = [];
                 $A.each(items, (index, item)=>{
                     if (typeof item === 'string') item = {'url': item};
                     if (item.url) {
@@ -208,10 +208,10 @@
                         item.status = 'finished';
                         if (typeof item.path === 'undefined') item.path = item.url;
                         if (typeof item.thumb === 'undefined') item.thumb = item.url;
-                        lists.push(item);
+                        list.push(item);
                     }
                 });
-                return lists;
+                return list;
             },
             handleView (item) {
                 //查看

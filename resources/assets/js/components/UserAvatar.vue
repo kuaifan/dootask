@@ -1,8 +1,10 @@
 <template>
-    <ETooltip v-if="user"
-             class="common-avatar"
-             :open-delay="600"
-             :disabled="tooltipDisabled">
+    <ETooltip
+        v-if="user"
+        class="common-avatar"
+        :open-delay="600"
+        :disabled="tooltipDisabled"
+        :placement="tooltipPlacement">
         <div slot="content" class="common-avatar-transfer">
             <slot/>
             <p>{{$L('昵称')}}: {{user.nickname}}</p>
@@ -14,7 +16,7 @@
         <div class="avatar-wrapper">
             <div v-if="showIcon" :class="['avatar-box', userId === userid || user.online ? 'online' : '']" :style="boxStyle">
                 <em :style="spotStyle"></em>
-                <EAvatar v-if="showImg" :src="user.userimg" :size="avatarSize"/>
+                <EAvatar v-if="showImg" :class="{'avatar-default':isDefault}" :src="user.userimg" :size="avatarSize"/>
                 <EAvatar v-else :size="avatarSize" class="avatar-text">
                     <span :style="spotStyle">{{nickname}}</span>
                 </EAvatar>
@@ -52,6 +54,10 @@
             showIconMenu: {
                 type: Boolean,
                 default: false
+            },
+            tooltipPlacement: {
+                type: String,
+                default: 'bottom'
             },
             borderWitdh: {
                 type: Number,
@@ -121,6 +127,11 @@
                     return false;
                 }
                 return !$A.rightExists(userimg, '/avatar.png');
+            },
+
+            isDefault() {
+                const {userimg} = this.user
+                return $A.strExists(userimg, '/avatar/default_');
             },
 
             nickname() {

@@ -13,9 +13,8 @@
                 <ul>
                     <li
                         v-for="(item, key) in menu"
-                        v-if="!item.admin||userIsAdmin"
                         :key="key"
-                        :class="classNameRoute(item.path)"
+                        :class="classNameRoute(item.path, item.divided)"
                         @click="toggleRoute(item.path)">{{$L(item.name)}}</li>
                 </ul>
             </div>
@@ -34,13 +33,6 @@ export default {
     data() {
         return {
             curPath: this.$route.path,
-
-            menu: [
-                {path: 'personal', admin: false, name: '个人设置'},
-                {path: 'password', admin: false, name: '密码设置'},
-                {path: 'system', admin: true, name: '系统设置'},
-                {path: 'priority', admin: true, name: '任务等级'},
-            ],
         }
     },
     mounted() {
@@ -48,6 +40,20 @@ export default {
     },
     computed: {
         ...mapState(['userInfo', 'userIsAdmin']),
+
+        menu() {
+            let menu = [
+                {path: 'personal', name: '个人设置'},
+                {path: 'password', name: '密码设置'},
+            ]
+            if (this.userIsAdmin) {
+                menu.push(...[
+                    {path: 'system', name: '系统设置', divided: true},
+                    {path: 'priority', name: '任务等级'},
+                ])
+            }
+            return menu;
+        },
 
         titleNameRoute() {
             const {curPath, menu} = this;
@@ -71,9 +77,10 @@ export default {
             this.goForward({path: '/manage/setting/' + path});
         },
 
-        classNameRoute(path) {
+        classNameRoute(path, divided) {
             return {
-                "active": $A.leftExists(this.curPath, '/manage/setting/' + path)
+                "active": $A.leftExists(this.curPath, '/manage/setting/' + path),
+                "divided": !!divided
             };
         },
     }

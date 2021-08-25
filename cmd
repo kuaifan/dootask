@@ -33,12 +33,12 @@ supervisorctl_restart() {
 }
 
 check_docker() {
-    docker --help &> /dev/null
+    docker --version &> /dev/null
     if [ $? -ne  0 ]; then
         echo -e "${Error} ${RedBG} 未安装 Docker！${Font}"
         exit 1
     fi
-    docker-compose --help &> /dev/null
+    docker-compose --version &> /dev/null
     if [ $? -ne  0 ]; then
         echo -e "${Error} ${RedBG} 未安装 Docker-compose！${Font}"
         exit 1
@@ -46,7 +46,7 @@ check_docker() {
 }
 
 check_node() {
-    npm --help &> /dev/null
+    npm --version > /dev/null
     if [ $? -ne  0 ]; then
         echo -e "${Error} ${RedBG} 未安装nodejs！${Font}"
         exit 1

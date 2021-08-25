@@ -104,15 +104,26 @@ body {
         }
         .td-action {
             max-width: 100%;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-            vertical-align: middle;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             .td-action-container {
-                display: inline-block;
+                flex-shrink: 0;
                 a {
                     font-size: 12px;
                     padding: 0 5px;
+                }
+                &.td-action-menu {
+                    display: flex;
+                    align-items: center;
+                    .menu-dropdown {
+                        display: flex;
+                    }
+                    .menu-icon {
+                        cursor: pointer;
+                        font-size: 21px;
+                        padding: 0 6px;
+                    }
                 }
             }
         }

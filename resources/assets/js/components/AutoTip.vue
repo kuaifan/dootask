@@ -1,15 +1,15 @@
 <template>
     <ETooltip
-        :content="text"
+        :content="tipText"
         :placement="placement"
-        :theme="tooltipTheme"
+        :effect="tooltipTheme"
         :delay="delay"
         :disabled="!showTooltip"
         :max-width="tooltipMaxWidth"
         transfer>
         <span ref="content" @mouseenter="handleTooltipIn" class="common-auto-tip" @click="onClick">
             <template v-if="existSlot"><slot/></template>
-            <template v-else>{{text}}</template>
+            <template v-else>{{content}}</template>
         </span>
     </ETooltip>
 </template>
@@ -40,44 +40,22 @@
 
         data() {
             return {
-                slotText: '',
-                showTooltip: false  // 鼠标滑过overflow文本时，再检查是否需要显示
+                showTooltip: false,  // 鼠标滑过overflow文本时，再检查是否需要显示
+                tooltipContent: '',
             }
         },
 
-        mounted () {
-            this.updateConetne()
-        },
-
-        beforeUpdate () {
-            this.updateConetne()
-        },
-
-        activated() {
-            this.updateConetne()
-        },
-
         computed: {
-            text() {
-                const {content, slotText} = this;
-                if (content) {
-                    return content;
-                }
-                if (typeof slotText === 'undefined' || slotText.length < 1 || typeof slotText[0].text !== 'string') {
-                    return '';
-                }
-                return slotText[0].text;
+            tipText() {
+                const {content, tooltipContent} = this;
+                return content || tooltipContent || "";
             },
             existSlot() {
-                const {slotText} = this;
-                return !(typeof slotText === 'undefined' || slotText.length < 1);
+                return !(typeof this.$slots.default === 'undefined' || this.$slots.default.length < 1);
             },
         },
 
         methods: {
-            updateConetne () {
-                this.slotText = this.$slots.default;
-            },
             handleTooltipIn () {
                 const $content = this.$refs.content;
                 let range = document.createRange();
@@ -85,6 +63,14 @@
                 range.setEnd($content, $content.childNodes.length);
                 const rangeWidth = range.getBoundingClientRect().width;
                 this.showTooltip = Math.floor(rangeWidth) > Math.floor($content.offsetWidth);
+                if (this.showTooltip && this.existSlot) {
+                    const tmpArray = this.$slots.default.map((e) => {
+                        if (e.text) return e.text
+                        if (e.elm.innerText) return e.elm.innerText
+                        return ""
+                    })
+                    this.tooltipContent = tmpArray.join("");
+                }
                 range = null;
             },
             onClick(e) {

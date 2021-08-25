@@ -18,7 +18,7 @@
             @on-set-default-options="setDefaultOptions">
             <div v-if="multipleMax" slot="drop-prepend" class="user-drop-prepend">{{$L('最多只能选择' + multipleMax + '个')}}</div>
             <Option
-                v-for="(item, key) in lists"
+                v-for="(item, key) in list"
                 :value="item.userid"
                 :key="key"
                 :label="item.nickname"
@@ -85,7 +85,7 @@
                 loading: false,
                 openLoad: false,
                 values: [],
-                lists: []
+                list: []
             }
         },
         mounted() {
@@ -121,7 +121,7 @@
             openChange(show) {
                 if (show && !this.openLoad) {
                     this.openLoad = true;
-                    if (this.lists.length == this.values.length || this.lists.length <= 1) {
+                    if (this.list.length == this.values.length || this.list.length <= 1) {
                         this.$nextTick(this.searchUser);
                     }
                 }
@@ -130,7 +130,7 @@
             setDefaultOptions(options) {
                 const userids = [];
                 options.forEach(({value, label}) => {
-                    this.lists.push({
+                    this.list.push({
                         userid: value,
                         nickname: label,
                     });
@@ -148,9 +148,9 @@
                             this.$set(option, 'label', user.nickname)
                             this.$set(option, 'avatar', user.userimg)
                         }
-                        this.lists.some((item, index) => {
+                        this.list.some((item, index) => {
                             if (item.userid == user.userid) {
-                                this.$set(this.lists, index, Object.assign(item, user));
+                                this.$set(this.list, index, Object.assign(item, user));
                             }
                         });
                     }
@@ -172,14 +172,14 @@
                         },
                     }).then(({data}) => {
                         this.loading = false;
-                        this.lists = data;
+                        this.list = data;
                     }).catch(({msg}) => {
                         this.loading = false;
-                        this.lists = [];
+                        this.list = [];
                         $A.messageWarning(msg);
                     });
                 } else {
-                    this.lists = [];
+                    this.list = [];
                 }
             },
 

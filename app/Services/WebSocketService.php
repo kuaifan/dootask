@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-@error_reporting(E_ALL & ~E_NOTICE);
+@error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 
 use App\Models\User;
 use App\Models\WebSocket;

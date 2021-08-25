@@ -1,5 +1,6 @@
 <template>
-    <div :class="['drawer-overlay', placement, value ? 'overlay-visible' : 'overlay-hide']" @click="mask">
+    <div :class="['drawer-overlay', placement, value ? 'overlay-visible' : 'overlay-hide']">
+        <div class="overlay-mask" @click="mask"></div>
         <div class="overlay-body" :style="bodyStyle">
             <div class="overlay-close">
                 <a href="javascript:void(0)" @click.stop="close">
@@ -8,9 +9,7 @@
                     </svg>
                 </a>
             </div>
-            <div class="overlay-content" @click.stop="">
-                <slot/>
-            </div>
+            <div class="overlay-content"><slot/></div>
         </div>
     </div>
 </template>
@@ -87,7 +86,12 @@
             escClose(e) {
                 if (this.value && this.escClosable) {
                     if (e.keyCode === 27) {
-                        this.close()
+                        let show = false;
+                        $A(".ivu-modal").each((i, e) => {
+                            show = $(e).is(":visible");
+                            return !show;
+                        })
+                        !show && this.close()
                     }
                 }
             }

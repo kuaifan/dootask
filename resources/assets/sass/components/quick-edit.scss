@@ -4,6 +4,7 @@
     max-width: 100%;
     .quick-input {
         flex: 1;
+        max-width: 100%;
         position: relative;
         .quick-loading {
             position: absolute;
@@ -33,9 +34,25 @@
         font-size: 16px;
         cursor: pointer;
     }
+    &.quick-always {
+        .quick-icon {
+            display: inline-block;
+            opacity: 0.3;
+            transition: opacity 0.2s;
+        }
+    }
     &:hover {
         .quick-icon {
             display: inline-block;
+            opacity: 1;
+        }
+    }
+}
+.ivu-table-row-hover {
+    .quick-edit {
+        .quick-icon {
+            display: inline-block;
+            opacity: 1;
         }
     }
 }

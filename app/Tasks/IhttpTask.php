@@ -1,7 +1,7 @@
 <?php
 namespace App\Tasks;
 
-@error_reporting(E_ALL & ~E_NOTICE);
+@error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 
 use App\Module\Base;
 use App\Module\Ihttp;

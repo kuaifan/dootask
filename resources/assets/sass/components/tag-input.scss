@@ -11,8 +11,16 @@
     cursor: text;
     vertical-align: middle;
     line-height: normal;
-    -webkit-transition: border .2s ease-in-out, background .2s ease-in-out, -webkit-box-shadow .2s ease-in-out;
-    transition: border .2s ease-in-out, background .2s ease-in-out, -webkit-box-shadow .2s ease-in-out;
+    transition: all .2s;
+
+    &:hover {
+        border-color: #a2d98d;
+    }
+
+    &.focus {
+        border-color: #a2d98d;
+        box-shadow: 0 0 0 2px rgba(139,207,112,.2)
+    }
 
     .tags-item, .tags-input {
         position: relative;
@@ -62,7 +70,7 @@
         left: 0;
         top: 0;
         z-index: -1;
-        color: #ffffff00;
+        color: rgba(255, 255, 255, 0);
     }
 }
 .common-tag-input::after {
@@ -70,4 +78,16 @@
     display: block;
     height: 0;
     clear: both;
+}
+.ivu-form-item-error {
+    .common-tag-input {
+        border-color: #ed4014;
+        &:hover {
+            border-color: #ed4014;
+        }
+        &.focus {
+            border-color: #ed4014;
+            box-shadow: 0 0 0 2px rgba(237,64,20,.2)
+        }
+    }
 }

@@ -131,7 +131,7 @@
                 :open-key="openKey"
                 @command="dropTask"/>
         </div>
-        <TaskAddSimple v-if="fastAddTask || parentId > 0" :parent-id="parentId" row-mode/>
+        <TaskAddSimple v-if="fastAddTask || parentId > 0" :parent-id="parentId" row-mode @on-priority="onPriority"/>
     </div>
 </template>
 
@@ -216,6 +216,10 @@ export default {
 
         dropTask(task, command) {
             this.$emit("command", task, command)
+        },
+
+        onPriority(data) {
+            this.$emit("on-priority", data)
         },
 
         getSublist(task) {

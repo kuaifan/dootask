@@ -250,7 +250,7 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow v-if="tablePanel('showMy')" :list="myList" open-key="my" @command="dropTask" fast-add-task/>
+                <TaskRow v-if="tablePanel('showMy')" :list="myList" open-key="my" @command="dropTask" @on-priority="addTaskOpen" fast-add-task/>
             </div>
             <!--未完成任务-->
             <div v-if="projectData.task_num > 0" :class="['project-table-body', !tablePanel('showUndone') ? 'project-table-hide' : '']">
@@ -265,7 +265,7 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow v-if="tablePanel('showUndone')" :list="undoneList" open-key="undone" @command="dropTask"/>
+                <TaskRow v-if="tablePanel('showUndone')" :list="undoneList" open-key="undone" @command="dropTask" @on-priority="addTaskOpen"/>
             </div>
             <!--已完成任务-->
             <div v-if="projectData.task_num > 0" :class="['project-table-body', !tablePanel('showCompleted') ? 'project-table-hide' : '']">
@@ -280,7 +280,7 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow v-if="tablePanel('showCompleted')" :list="completedList" open-key="completed" @command="dropTask"/>
+                <TaskRow v-if="tablePanel('showCompleted')" :list="completedList" open-key="completed" @command="dropTask" @on-priority="addTaskOpen"/>
             </div>
         </div>
 

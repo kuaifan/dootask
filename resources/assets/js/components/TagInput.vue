@@ -1,12 +1,22 @@
 <template>
-    <div class="common-tag-input" @paste="pasteText($event)" @click="clickWrap">
+    <div class="common-tag-input" :class="{focus:isFocus}" @paste="pasteText($event)" @click="focus">
         <div class="tags-item" v-for="(text, index) in disSource">
             <span class="tags-content" @click.stop="">{{text}}</span><span class="tags-del" @click.stop="delTag(index)">&times;</span>
         </div>
-        <textarea ref="myTextarea" class="tags-input" :style="{ minWidth: minWidth + 'px' }" :placeholder="tis || placeholder"
-                  v-model="content" @keydown.enter="downEnter($event)" @keyup="addTag($event, content)"
-                  @blur="addTag(false, content)" @keydown.delete="delTag(false)" :disabled="disabled" :readonly="readonly"></textarea>
-        <span ref="myPlaceholder" v-if="showPlaceholder || tis !== ''" class="tags-placeholder">{{tis || placeholder}}</span>
+        <textarea
+            ref="myTextarea"
+            class="tags-input"
+            v-model="content"
+            :style="{ minWidth: minWidth + 'px' }"
+            :placeholder="tis || placeholderText"
+            @keydown.enter="downEnter($event)"
+            @keydown.delete="delTag(false)"
+            @keyup="addTag($event, content)"
+            @focus="onFocus"
+            @blur="onBlur"
+            :disabled="disabled"
+            :readonly="readonly"/>
+        <span ref="myPlaceholder" v-if="showPlaceholder || tis !== ''" class="tags-placeholder">{{tis || placeholderText}}</span>
     </div>
 </template>
 
@@ -53,6 +63,8 @@
                 content: '',
 
                 disSource: disSource,
+
+                isFocus: false
             }
         },
         mounted() {
@@ -82,9 +94,36 @@
                     temp += item;
                 });
                 this.$emit('input', temp);
+                this.$emit('on-change');
+            }
+        },
+        computed: {
+            placeholderText() {
+                if (this.disSource.length > 0) {
+                    return ""
+                }
+                return this.placeholder
             }
         },
         methods: {
+            focus(option) {
+                const $el = this.$refs.myTextarea;
+                $el.focus(option);
+                const { cursor } = option || {};
+                if (cursor) {
+                    const len = $el.value.length;
+                    switch (cursor) {
+                        case 'start':
+                            $el.setSelectionRange(0, 0);
+                            break;
+                        case 'end':
+                            $el.setSelectionRange(len, len);
+                            break;
+                        default:
+                            $el.setSelectionRange(0, len);
+                    }
+                }
+            },
             wayMinWidth() {
                 this.showPlaceholder = true;
                 this.$nextTick(() => {
@@ -107,35 +146,46 @@
                 let content = (e.clipboardData || window.clipboardData).getData('text');
                 this.addTag(false, content)
             },
-            clickWrap() {
-                this.$refs.myTextarea.focus();
-            },
             downEnter(e) {
                 e.preventDefault();
             },
+            onFocus() {
+                this.isFocus = true;
+            },
+            onBlur() {
+                this.isFocus = false;
+                this.addTag(false, this.content)
+            },
             addTag(e, content) {
-                if (e.keyCode === 13 || e === false) {
+
+                if (e === false || e.keyCode === 13) {
                     if (content.trim() != '' && this.disSource.indexOf(content.trim()) === -1) {
                         this.disSource.push(content.trim());
                     }
                     this.content = '';
-                } else {
-                    if (this.max > 0 && this.disSource.length >= this.max) {
-                        this.content = '';
-                        this.tis = '最多只能添加' + this.max + '个';
-                        clearInterval(this.tisTimeout);
-                        this.tisTimeout = setTimeout(() => { this.tis = ''; }, 2000);
-                        return;
+                    //
+                    if (e.keyCode === 13) {
+                        this.$nextTick(() => {
+                            this.$emit("on-enter", e)
+                        })
                     }
-                    let temp = content.trim();
-                    let cutPos = temp.length - this.cut.length;
-                    if (temp != '' && temp.substring(cutPos) === this.cut) {
-                        temp = temp.substring(0, cutPos);
-                        if (temp.trim() != '' && this.disSource.indexOf(temp.trim()) === -1) {
-                            this.disSource.push(temp.trim());
-                        }
-                        this.content = '';
+                    return;
+                }
+                if (this.max > 0 && this.disSource.length >= this.max) {
+                    this.content = '';
+                    this.tis = '最多只能添加' + this.max + '个';
+                    clearInterval(this.tisTimeout);
+                    this.tisTimeout = setTimeout(() => { this.tis = ''; }, 2000);
+                    return;
+                }
+                let temp = content.trim();
+                let cutPos = temp.length - this.cut.length;
+                if (temp != '' && temp.substring(cutPos) === this.cut) {
+                    temp = temp.substring(0, cutPos);
+                    if (temp.trim() != '' && this.disSource.indexOf(temp.trim()) === -1) {
+                        this.disSource.push(temp.trim());
                     }
+                    this.content = '';
                 }
             },
             delTag(index) {
@@ -145,7 +195,8 @@
                     }
                     index = this.disSource.length - 1;
                 }
-                this.disSource.splice(index, 1)
+                this.disSource.splice(index, 1);
+                this.focus();
             }
         }
     }

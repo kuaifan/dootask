@@ -93,7 +93,11 @@ class User extends AbstractModel
      */
     public function getUserimgAttribute($value)
     {
-        return $value ? Base::fillUrl($value) : url('images/other/avatar.png');
+        if ($value) {
+            return Base::fillUrl($value);
+        }
+        $name = ($this->userid - 1) % 21 + 1;
+        return url("images/avatar/default_{$name}.png");
     }
 
     /**

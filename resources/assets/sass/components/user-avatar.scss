@@ -8,6 +8,9 @@
             border-radius: 50%;
             display: flex;
             align-items: center;
+            .avatar-default {
+                background-color: transparent;
+            }
             .avatar-text {
                 background-color: $primary-color;
                 > span {
@@ -23,7 +26,7 @@
                 width: 8px;
                 height: 8px;
                 border-radius: 50%;
-                background-color: #ff0000;
+                background-color: #ff9900;
                 border: 1px solid #ffffff;
                 transform-origin: right bottom;
                 z-index: 1;
