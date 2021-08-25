@@ -14,14 +14,14 @@
         margin-bottom: 24px;
     }
     .team-email {
-        line-height: 1;
+        display: flex;
+        align-items: center;
         .ivu-tag {
             height: 18px;
             line-height: 18px;
             padding: 0 4px;
-            margin: 0 -2px 0 0;
             transform: scale(0.8);
-            transform-origin: left bottom;
+            transform-origin: right center;
         }
     }
 }
