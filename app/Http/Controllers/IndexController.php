@@ -109,4 +109,40 @@ class IndexController extends InvokeController
         }
         return array_values($array);
     }
+
+    /**
+     * 提取所有中文
+     * @return array|string
+     */
+    public function allcn__all()
+    {
+        if (!Base::is_internal_ip(Base::getIp())) {
+            // 限制内网访问
+            return "Forbidden Access";
+        }
+        $list = array_merge(Base::readDir(app_path()), Base::readDir(resource_path()));
+        $array = [];
+        foreach ($list as $item) {
+            if (Base::rightExists($item, "language.all.js")) {
+                continue;
+            }
+            if (Base::rightExists($item, ".php") || Base::rightExists($item, ".vue") || Base::rightExists($item, ".js")) {
+                $content = file_get_contents($item);
+                preg_match_all("/(['\"])(.*?)[\u{4e00}-\u{9fa5}\u{FE30}-\u{FFA0}]+([\s\S]((?!\n).)*)\\1/u", $content, $matchs);
+                if ($matchs) {
+                    foreach ($matchs[0] as $text) {
+                        $tmp = preg_replace("/\/\/(.*?)$/", "", $text);
+                        $tmp = preg_replace("/\/\/(.*?)\n/", "", $tmp);
+                        $tmp = str_replace("：", "", $tmp);
+                        if (!preg_match("/[\u{4e00}-\u{9fa5}\u{FE30}-\u{FFA0}]/u", $tmp)){
+                            continue;  // 没有中文
+                        }
+                        $val = trim(trim($text, '"'), "'");
+                        $array[md5($val)] = $val;
+                    }
+                }
+            }
+        }
+        return implode("\n", array_values($array));
+    }
 }
