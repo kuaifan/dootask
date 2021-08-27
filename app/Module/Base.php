@@ -109,11 +109,8 @@ class Base
      * @param string $ip
      * @return bool
      */
-    public static function is_ipv4($ip = '')
+    public static function is_ipv4($ip)
     {
-        if (empty($ip)) {
-            $ip = Base::getIp();
-        }
         return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false;
     }
 
@@ -122,11 +119,8 @@ class Base
      * @param string $ip
      * @return bool
      */
-    public static function is_extranet_ip($ip = '')
+    public static function is_extranet_ip($ip)
     {
-        if (empty($ip)) {
-            $ip = Base::getIp();
-        }
         if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
             return false;
         }
@@ -138,11 +132,8 @@ class Base
      * @param string $ip
      * @return bool
      */
-    public static function is_internal_ip($ip = '')
+    public static function is_internal_ip($ip)
     {
-        if (empty($ip)) {
-            $ip = Base::getIp();
-        }
         if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
             return false;
         }
@@ -1576,7 +1567,7 @@ class Base
     {
         if (strpos($str, '@')) {
             $email_array = explode("@", $str);
-            $prevfix = (strlen($email_array[0]) < 4) ? "" : substr($str, 0, 3); //邮箱前缀
+            $prevfix = substr($str, 0, strlen($email_array[0]) < 4 ? 1 : 3); //邮箱前缀
             $count = 0;
             $str = preg_replace('/([\d\w+_-]{0,100})@/', '***@', $str, -1, $count);
             return $prevfix . $str;
@@ -1588,11 +1579,11 @@ class Base
         if (preg_match($pattern, $str)) {
             return preg_replace($pattern, '$1 **** **** **** $5', $str);
         }
-        $pattern = '/([\d]{4})([\d]{4})([\d]{4})([\d]{0,})?/i';
+        $pattern = '/([\d]{4})([\d]{4})([\d]{4})([\d]*)?/i';
         if (preg_match($pattern, $str)) {
             return preg_replace($pattern, '$1 **** **** $4', $str);
         }
-        $pattern = '/([\d]{4})([\d]{4})([\d]{0,})?/i';
+        $pattern = '/([\d]{4})([\d]{4})([\d]*)?/i';
         if (preg_match($pattern, $str)) {
             return preg_replace($pattern, '$1 **** $3', $str);
         }
@@ -2756,10 +2747,11 @@ class Base
         $original = trim($original);
         $ipSpeeds = [];
         if (preg_match('/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\s*:\s*xmt\/rcv\/\%loss/i', $original)) {
-            preg_match_all("/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\s*:\s*xmt\/rcv\/\%loss\s*\=\s*(.*?)\,\s*min\/avg\/max\s*\=\s*(\d+.?\d+)\/(\d+.?\d+)\/(\d+.?\d+)/i", $original, $matches);
-            if ($matches && intval($matches[1]) > 0) {
-                foreach ($matches[1] as $key => $item) {
-                    $ipSpeeds[$item] = $matches[4][$key];
+            $strings = explode("\n", $original);
+            foreach ($strings as $string) {
+                preg_match("/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\s*:\s*xmt\/rcv\/\%loss\s*\=\s*(.*?)%(\,\s*min\/avg\/max\s*\=\s*(\d+.?\d+)\/(\d+.?\d+)\/(\d+.?\d+))*/i", $string, $match);
+                if ($match) {
+                    $ipSpeeds[$match[1]] = isset($match[5]) ? max(1, intval($match[5])) : 0;
                 }
             }
         } else {
@@ -2772,14 +2764,14 @@ class Base
                 if ($context) {
                     preg_match("/p\(\d+\) = (\d+),/i", $context, $matches);
                     if ($matches && intval($matches[1]) > 0) {
-                        $ipSpeeds[$strings[$i]] = intval($matches[1]);
+                        $ipSpeeds[$strings[$i]] = max(1, intval($matches[1]));
                         continue;
                     }
                     preg_match("/min\/avg\/max\/(sdev|stddev)\s*\=\s*(\d+.?\d+)\/(\d+.?\d+)\/(\d+.?\d+)\//i", $context, $matches);
                     if ($matches && intval($matches[3]) > 0) {
-                        $ipSpeeds[$strings[$i]] = intval($matches[3]);
+                        $ipSpeeds[$strings[$i]] = max(1, intval($matches[3]));
                     } elseif (Base::strExists($context, '100% packet loss') || Base::strExists($context, '100.00% packet loss')) {
-                        $ipSpeeds[$strings[$i]] = -1;
+                        $ipSpeeds[$strings[$i]] = 0;
                     }
                 }
             }
