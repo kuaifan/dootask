@@ -95,7 +95,7 @@ class Base
      */
     public static function is_cidr($cidr)
     {
-        if (strpos($cidr, '/') !== false) {
+        if (str_contains($cidr, '/')) {
             list($cidr, $netmask) = explode('/', $cidr, 2);
             if ($netmask > 32 || $netmask < 0 || trim($netmask) == '') {
                 return false;
@@ -406,12 +406,12 @@ class Base
         }
         $data = trim($data);
         if ($data == '') return $default;
-        if (strpos(strtolower($data), 'array') === 0 && strtolower($data) !== 'array') {
+        if (str_starts_with(strtolower($data), 'array') && strtolower($data) !== 'array') {
             @ini_set('display_errors', 'on');
             @eval("\$array = $data;");
             @ini_set('display_errors', 'off');
         } else {
-            if (strpos($data, '{\\') === 0) {
+            if (str_starts_with($data, '{\\')) {
                 $data = stripslashes($data);
             }
             $array = json_decode($data, true);
@@ -743,12 +743,12 @@ class Base
         if (empty($str)) {
             return $str;
         }
-        if (substr($str, 0, 2) == "//" ||
-            substr($str, 0, 7) == "http://" ||
-            substr($str, 0, 8) == "https://" ||
-            substr($str, 0, 6) == "ftp://" ||
-            substr($str, 0, 1) == "/" ||
-            substr(str_replace(' ', '', $str), 0, 11) == "data:image/"
+        if (str_starts_with($str, "//") ||
+            str_starts_with($str, "http://") ||
+            str_starts_with($str, "https://") ||
+            str_starts_with($str, "ftp://") ||
+            str_starts_with($str, "/") ||
+            str_starts_with(str_replace(' ', '', $str), "data:image/")
         ) {
             return $str;
         } else {
@@ -802,14 +802,14 @@ class Base
         if (preg_match($pattern, $content)) {
             preg_match_all($pattern, $content, $matchs);
             foreach ($matchs[3] as $index => $value) {
-                if (!(substr($value, 0, 7) == "http://" ||
-                    substr($value, 0, 8) == "https://" ||
-                    substr($value, 0, 6) == "ftp://" ||
-                    substr(str_replace(' ', '', $value), 0, 11) == "data:image/"
+                if (!(str_starts_with($value, "http://") ||
+                    str_starts_with($value, "https://") ||
+                    str_starts_with($value, "ftp://") ||
+                    str_starts_with(str_replace(' ', '', $value), "data:image/")
                 )) {
-                    if (substr($value, 0, 2) == "//") {
+                    if (str_starts_with($value, "//")) {
                         $value = "http:" . $value;
-                    } elseif (substr($value, 0, 1) == "/") {
+                    } elseif (str_starts_with($value, "/")) {
                         $value = substr($value, 1);
                     }
                     $newValue = "<img" . $matchs[1][$index] . "src=" . $matchs[2][$index] . self::fillUrl($value) . $matchs[2][$index];
@@ -1051,7 +1051,7 @@ class Base
         if (!is_string($string) || !is_string($find)) {
             return false;
         }
-        return !(strpos($string, $find) === FALSE);
+        return str_contains($string, $find);
     }
 
     /**
@@ -1059,7 +1059,7 @@ class Base
      * @param string $string //原字符串
      * @param string $find //判断字符串
      * @param bool|false $lower //是否不区分大小写
-     * @return int
+     * @return bool
      */
     public static function leftExists($string, $find, $lower = false)
     {
@@ -1070,7 +1070,7 @@ class Base
             $string = strtolower($string);
             $find = strtolower($find);
         }
-        return (substr($string, 0, strlen($find)) == $find);
+        return str_starts_with($string, $find);
     }
 
     /**
@@ -1089,7 +1089,7 @@ class Base
             $string = strtolower($string);
             $find = strtolower($find);
         }
-        return (substr($string, strlen($find) * -1) == $find);
+        return str_ends_with($string, $find);
     }
 
     /**
@@ -1131,10 +1131,10 @@ class Base
      */
     public static function getMiddle($str, $ta = '', $tb = '')
     {
-        if ($ta && strpos($str, $ta) !== false) {
+        if ($ta && str_contains($str, $ta)) {
             $str = substr($str, strpos($str, $ta) + strlen($ta));
         }
-        if ($tb && strpos($str, $tb) !== false) {
+        if ($tb && str_contains($str, $tb)) {
             $str = substr($str, 0, strpos($str, $tb));
         }
         return $str;
@@ -1584,7 +1584,7 @@ class Base
         if (Base::isMobile($str)) {
             return substr($str, 0, 3) . "****" . substr($str, -4);
         }
-        $pattern = '/([\d]{4})([\d]{4})([\d]{4})([\d]{4})([\d]{0,})?/i';
+        $pattern = '/([\d]{4})([\d]{4})([\d]{4})([\d]{4})([\d]*)?/i';
         if (preg_match($pattern, $str)) {
             return preg_replace($pattern, '$1 **** **** **** $5', $str);
         }
@@ -1891,9 +1891,9 @@ class Base
         if (substr_count($ip, '.') == 3 && $ip == $range) {
             return true;
         }
-        if (strpos($range, '/') !== false) {
+        if (str_contains($range, '/')) {
             list($range, $netmask) = explode('/', $range, 2);
-            if (strpos($netmask, '.') !== false) {
+            if (str_contains($netmask, '.')) {
                 $netmask = str_replace('*', '0', $netmask);
                 $netmask_dec = ip2long($netmask);
                 return ((ip2long($ip) & $netmask_dec) == (ip2long($range) & $netmask_dec));
@@ -1911,12 +1911,12 @@ class Base
                 return (($ip_dec & $netmask_dec) == ($range_dec & $netmask_dec));
             }
         } else {
-            if (strpos($range, '*') !== false) {
+            if (str_contains($range, '*')) {
                 $lower = str_replace('*', '0', $range);
                 $upper = str_replace('*', '255', $range);
                 $range = "$lower-$upper";
             }
-            if (strpos($range, '-') !== false) {
+            if (str_contains($range, '-')) {
                 list($lower, $upper) = explode('-', $range, 2);
                 $lower_dec = (float)sprintf("%u", ip2long($lower));
                 $upper_dec = (float)sprintf("%u", ip2long($upper));
@@ -2042,7 +2042,7 @@ class Base
      */
     public static function isWechat()
     {
-        return strpos(Request::server('HTTP_USER_AGENT'), 'MicroMessenger') !== false;
+        return str_contains(Request::server('HTTP_USER_AGENT'), 'MicroMessenger');
     }
 
     /**
@@ -2052,9 +2052,9 @@ class Base
     public static function browser()
     {
         $user_agent = Request::server('HTTP_USER_AGENT');
-        if (strpos($user_agent, 'AlipayClient') !== false) {
+        if (str_contains($user_agent, 'AlipayClient')) {
             return 'alipay';
-        } elseif (strpos($user_agent, 'MicroMessenger') !== false) {
+        } elseif (str_contains($user_agent, 'MicroMessenger')) {
             return 'weixin';
         } else {
             return 'none';
@@ -2137,50 +2137,48 @@ class Base
                     "height" => -1,                                                     //图片高度
                     "ext" => $extension,                                                //文件后缀名
                 ];
-                if (in_array($extension, ['png', 'jpg', 'jpeg', 'gif'])) {
-                    //图片尺寸
-                    $paramet = getimagesize($array['file']);
-                    $array['width'] = $paramet[0];
-                    $array['height'] = $paramet[1];
-                    //原图压缩
-                    if ($param['scale'] && is_array($param['scale'])) {
-                        list($width, $height) = $param['scale'];
-                        if (($width > 0 && $array['width'] > $width) || ($height > 0 && $array['height'] > $height)) {
-                            $cut = ($width > 0 && $height > 0) ? 1 : -1;
-                            $cut = $param['scale'][2] ?? $cut;
-                            //图片压缩
-                            $tmpFile = $array['file'] . '_tmp.jpg';
-                            if (Base::imgThumb($array['file'], $tmpFile, $width, $height, $cut)) {
-                                $tmpSize = filesize($tmpFile);
-                                if ($tmpSize > $fileSize) {
-                                    @unlink($tmpFile);
-                                } else {
-                                    @unlink($array['file']);
-                                    rename($tmpFile, $array['file']);
-                                }
+                //图片尺寸
+                $paramet = getimagesize($array['file']);
+                $array['width'] = $paramet[0];
+                $array['height'] = $paramet[1];
+                //原图压缩
+                if ($param['scale'] && is_array($param['scale'])) {
+                    list($width, $height) = $param['scale'];
+                    if (($width > 0 && $array['width'] > $width) || ($height > 0 && $array['height'] > $height)) {
+                        $cut = ($width > 0 && $height > 0) ? 1 : -1;
+                        $cut = $param['scale'][2] ?? $cut;
+                        //图片压缩
+                        $tmpFile = $array['file'] . '_tmp.jpg';
+                        if (Base::imgThumb($array['file'], $tmpFile, $width, $height, $cut)) {
+                            $tmpSize = filesize($tmpFile);
+                            if ($tmpSize > $fileSize) {
+                                @unlink($tmpFile);
+                            } else {
+                                @unlink($array['file']);
+                                rename($tmpFile, $array['file']);
                             }
-                            //图片尺寸
-                            $paramet = getimagesize($array['file']);
-                            $array['width'] = $paramet[0];
-                            $array['height'] = $paramet[1];
-                            //重命名
-                            if ($scaleName) {
-                                $scaleName = str_replace(['{WIDTH}', '{HEIGHT}'], [$array['width'], $array['height']], $scaleName);
-                                if (rename($array['file'], Base::rightDelete($array['file'], $fileName) . $scaleName)) {
-                                    $array['file'] = Base::rightDelete($array['file'], $fileName) . $scaleName;
-                                    $array['path'] = Base::rightDelete($array['path'], $fileName) . $scaleName;
-                                    $array['url'] = Base::rightDelete($array['url'], $fileName) . $scaleName;
-                                }
+                        }
+                        //图片尺寸
+                        $paramet = getimagesize($array['file']);
+                        $array['width'] = $paramet[0];
+                        $array['height'] = $paramet[1];
+                        //重命名
+                        if ($scaleName) {
+                            $scaleName = str_replace(['{WIDTH}', '{HEIGHT}'], [$array['width'], $array['height']], $scaleName);
+                            if (rename($array['file'], Base::rightDelete($array['file'], $fileName) . $scaleName)) {
+                                $array['file'] = Base::rightDelete($array['file'], $fileName) . $scaleName;
+                                $array['path'] = Base::rightDelete($array['path'], $fileName) . $scaleName;
+                                $array['url'] = Base::rightDelete($array['url'], $fileName) . $scaleName;
                             }
                         }
                     }
-                    //生成缩略图
-                    $array['thumb'] = $array['path'];
-                    if (Base::imgThumb($array['file'], $array['file'] . "_thumb.jpg", 180, 0)) {
-                        $array['thumb'] .= "_thumb.jpg";
-                    }
-                    $array['thumb'] = Base::fillUrl($array['thumb']);
                 }
+                //生成缩略图
+                $array['thumb'] = $array['path'];
+                if (Base::imgThumb($array['file'], $array['file'] . "_thumb.jpg", 180, 0)) {
+                    $array['thumb'] .= "_thumb.jpg";
+                }
+                $array['thumb'] = Base::fillUrl($array['thumb']);
                 return Base::retSuccess('success', $array);
             }
         }
@@ -2245,7 +2243,7 @@ class Base
                     return Base::retError('错误的类型参数');
             }
             $extension = strtolower($file->getClientOriginalExtension());
-            if ($type && is_array($type) && !in_array($extension, $type)) {
+            if ($type && !in_array($extension, $type)) {
                 return Base::retError('文件格式错误，限制类型：' . implode(",", $type));
             }
             try {
@@ -2294,20 +2292,12 @@ class Base
                 $data = imagecreatefromstring(file_get_contents($array['file']));
                 $exif = @exif_read_data($array['file']);
                 if (!empty($exif['Orientation'])) {
-                    switch ($exif['Orientation']) {
-                        case 8:
-                            $data = imagerotate($data, 90, 0);
-                            break;
-                        case 3:
-                            $data = imagerotate($data, 180, 0);
-                            break;
-                        case 6:
-                            $data = imagerotate($data, -90, 0);
-                            break;
-                        default:
-                            $data = null;
-                            break;
-                    }
+                    $data = match ($exif['Orientation']) {
+                        8 => imagerotate($data, 90, 0),
+                        3 => imagerotate($data, 180, 0),
+                        6 => imagerotate($data, -90, 0),
+                        default => null,
+                    };
                     if ($data !== null) {
                         imagejpeg($data, $array['file']);
                     }
@@ -2506,41 +2496,13 @@ class Base
      */
     public static function extIcon($ext)
     {
-        $value = 'images/ext/file.png';
-        switch ($ext) {
-            case "docx":
-                $value = 'images/ext/doc.png';
-                break;
-            case "xlsx":
-                $value = 'images/ext/xls.png';
-                break;
-            case "pptx":
-                $value = 'images/ext/ppt.png';
-                break;
-            case "ai":
-            case "avi":
-            case "bmp":
-            case "cdr":
-            case "doc":
-            case "eps":
-            case "gif":
-            case "mov":
-            case "mp3":
-            case "mp4":
-            case "pdf":
-            case "ppt":
-            case "pr":
-            case "psd":
-            case "rar":
-            case "svg":
-            case "tif":
-            case "txt":
-            case "xls":
-            case "zip":
-                $value = 'images/ext/' . $ext . '.png';
-                break;
-        }
-        return $value;
+        return match ($ext) {
+            "docx" => 'images/ext/doc.png',
+            "xlsx" => 'images/ext/xls.png',
+            "pptx" => 'images/ext/ppt.png',
+            "ai", "avi", "bmp", "cdr", "doc", "eps", "gif", "mov", "mp3", "mp4", "pdf", "ppt", "pr", "psd", "rar", "svg", "tif", "txt", "xls", "zip" => 'images/ext/' . $ext . '.png',
+            default => 'images/ext/file.png',
+        };
     }
 
     /**
@@ -2602,14 +2564,10 @@ class Base
         $arr = [];
         foreach ($args as $k => $v) {
             if (isset($args[$k + 1]) && $args[$k + 1]) {
-                switch ($k) {
-                    case 0:
-                        $arr[$k] = $pailie($v, $args[$k + 1]);
-                        break;
-                    default:
-                        $arr[$k] = $pailie($arr[$k - 1], $args[$k + 1]);
-                        break;
-                }
+                $arr[$k] = match ($k) {
+                    0 => $pailie($v, $args[$k + 1]),
+                    default => $pailie($arr[$k - 1], $args[$k + 1]),
+                };
             }
         }
         $key = count($arr) - 1;
@@ -2618,14 +2576,14 @@ class Base
 
     /**
      * 获取当前是本月第几个星期
-     * @return false|float
+     * @return float
      */
     public static function getMonthWeek()
     {
         $time = strtotime(date("Y-m-01"));
         $w = date('w', $time);
         $j = date("j");
-        return ceil(($j + $w) / 7);
+        return ceil(($j . $w) / 7);
     }
 
     /**

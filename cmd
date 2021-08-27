@@ -171,6 +171,14 @@ if [ $# -gt 0 ];then
             env_set APP_DEBUG "true"
         fi
         supervisorctl_restart php
+    elif [[ "$1" == "https" ]]; then
+        shift 1
+        if [[ "$@" == "auto" ]];then
+            env_set APP_FORCE_URL_SCHEME "auto"
+        else
+            env_set APP_FORCE_URL_SCHEME "true"
+        fi
+        supervisorctl_restart php
     elif [[ "$1" == "artisan" ]]; then
         shift 1
         e="php artisan $@" && $COMPOSE exec php /bin/bash -c "$e"
