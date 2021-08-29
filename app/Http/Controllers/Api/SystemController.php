@@ -226,12 +226,12 @@ class SystemController extends AbstractController
                 [
                     'icon' => 'logo-apple',
                     'name' => 'macOS Intel',
-                    'file' => "{$array['name']}-{$array['version']}-mac.zip"
+                    'file' => "{$array['name']}-{$array['version']}.dmg"
                 ],
                 [
                     'icon' => 'logo-apple',
                     'name' => 'macOS M1',
-                    'file' => "{$array['name']}-{$array['version']}-arm64-mac.zip"
+                    'file' => "{$array['name']}-{$array['version']}-arm64.dmg"
                 ],
                 [
                     'icon' => 'logo-windows',
@@ -380,7 +380,7 @@ class SystemController extends AbstractController
                     'thumb' => Base::fillUrl('images/other/dir.png'),
                     'inode' => fileatime($v),
                 ];
-            } elseif (substr($filename, -10) != "_thumb.jpg") {
+            } elseif (!str_ends_with($filename, "_thumb.jpg")) {
                 $array = [
                     'type' => 'file',
                     'title' => $filename,

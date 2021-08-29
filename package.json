@@ -14,7 +14,6 @@
         "cross-env": "^7.0.2",
         "css-loader": "^5.2.6",
         "echarts": "^5.1.1",
-        "electron": "^13.1.6",
         "element-ui": "^2.15.2",
         "file-loader": "^6.2.0",
         "inquirer": "^8.1.1",
