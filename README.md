@@ -1,62 +1,81 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+# Install (Docker)
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+English | **[中文文档](./README_CN.md)**
 
-## About Laravel
+- [Screenshot Preview](README_PREVIEW.md)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Setup
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+> `Docker` & `Docker Compose` must be installed
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-## Learning Laravel
+### Deployment project
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+```bash
+# 1、Clone the repository
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+# using ssh
+git clone git@github.com:kuaifan/dootask.git
+# or you can use https
+git clone https://github.com/kuaifan/dootask.git
 
-## Laravel Sponsors
+# 2、enter directory
+cd dootask
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+# 3、Build project
+./cmd install
+```
+Installed, project url: **`http://IP:PORT`**（`PORT`Default is`2222`）。
 
-### Premium Partners
+### Default Account
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
+```text
+account: admin@dootask.com
+password: 123456
+```
 
-## Contributing
+### Change port
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+./cmd php bin/run --port=2222
+./cmd up -d
+```
 
-## Code of Conduct
+### Stop server
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+./cmd stop
 
-## Security Vulnerabilities
+# P.S: Once application is set up, whenever you want to start the server (if it is stopped) run below command
+./cmd start
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Shortcuts for running command
 
-## License
+```bash
+# You can do this using the following command
+./cmd artisan "your command"          // To run a artisan command
+./cmd php "your command"              // To run a php command
+./cmd composer "your command"         // To run a composer command
+./cmd supervisorctl "your command"    // To run a supervisorctl command
+./cmd test "your command"             // To run a phpunit command
+./cmd npm "your command"              // To run a npm command
+./cmd yarn "your command"             // To run a yarn command
+./cmd mysql "your command"            // To run a mysql command (use `./cmd mysql bak` Backup database)
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Upgrade
+
+**Note: Please back up your data before upgrading!**
+
+```bash
+# Enter directory and run command
+./cmd update
+```
+
+## Uninstall
+
+```bash
+# Enter directory and run command
+./cmd uninstall
+```
