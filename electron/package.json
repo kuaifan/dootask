@@ -1,6 +1,6 @@
 {
     "name": "DooTask",
-    "version": "0.3.10",
+    "version": "0.3.16",
     "description": "DooTask is task management system.",
     "main": "main.js",
     "license": "MIT",
@@ -21,6 +21,7 @@
         "@electron-forge/maker-rpm": "^6.0.0-beta.57",
         "@electron-forge/maker-squirrel": "^6.0.0-beta.57",
         "@electron-forge/maker-zip": "^6.0.0-beta.57",
+        "dmg-license": "^1.0.9",
         "dotenv": "^9.0.2",
         "electron": "^13.1.6",
         "electron-builder": "^22.11.7"
