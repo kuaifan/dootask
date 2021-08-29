@@ -1,0 +1,10 @@
+{
+  "name": "API",
+  "title": "APP接口",
+  "version": "1.0.0",
+  "description": "APP接口文档",
+  "url": "https://你的域名/",
+  "template": {
+    "withGenerator": false
+  }
+}

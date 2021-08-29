@@ -57,7 +57,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {post} api/system/priority          01. 获取优先级、保存优先级
+     * @api {post} api/system/priority          02. 获取优先级、保存优先级
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -103,7 +103,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/info          02. 获取终端详细信息
+     * @api {get} api/system/get/info          03. 获取终端详细信息
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -132,7 +132,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/ip          03. 获取IP地址
+     * @api {get} api/system/get/ip          04. 获取IP地址
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -147,7 +147,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/cnip          04. 是否中国IP地址
+     * @api {get} api/system/get/cnip          05. 是否中国IP地址
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -164,7 +164,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/ipgcj02          05. 获取IP地址经纬度
+     * @api {get} api/system/get/ipgcj02          06. 获取IP地址经纬度
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -181,7 +181,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/ipinfo          06. 获取IP地址详细信息
+     * @api {get} api/system/get/ipinfo          07. 获取IP地址详细信息
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -198,7 +198,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/appinfo          06. 获取应用下载信息
+     * @api {get} api/system/get/appinfo          08. 获取应用下载信息
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -255,7 +255,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/appdown          06. 下载应用
+     * @api {get} api/system/get/appdown          09. 下载应用
      *
      * @apiVersion 1.0.0
      * @apiGroup system

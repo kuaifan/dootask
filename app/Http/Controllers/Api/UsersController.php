@@ -137,7 +137,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/login/codejson          07. 验证码json
+     * @api {get} api/users/login/codejson          04. 验证码json
      *
      * @apiDescription 用于判断是否需要登录验证码
      * @apiVersion 1.0.0
@@ -155,7 +155,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/info          04. 获取我的信息
+     * @api {get} api/users/info          05. 获取我的信息
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -191,7 +191,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/editdata          05. 修改自己的资料
+     * @api {get} api/users/editdata          06. 修改自己的资料
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -250,7 +250,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/editpass          06. 修改自己的密码
+     * @api {get} api/users/editpass          07. 修改自己的密码
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
