@@ -1,6 +1,6 @@
 {
     "name": "DooTask",
-    "version": "0.3.4",
+    "version": "0.3.10",
     "description": "DooTask is task management system.",
     "main": "main.js",
     "license": "MIT",

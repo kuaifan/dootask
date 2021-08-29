@@ -91,6 +91,9 @@
                 </ul>
             </template>
         </div>
+        <div v-if="downList.length > 0" class="download-app">
+            <Button icon="md-download" type="primary" @click="goDownApp">{{$L('客户端下载')}}</Button>
+        </div>
     </div>
 </template>
 
@@ -107,7 +110,9 @@ export default {
             active: false,
             dashboard: 'today',
 
-            taskLoad: {}
+            taskLoad: {},
+
+            downList: []
         }
     },
 
@@ -115,6 +120,9 @@ export default {
         this.nowInterval = setInterval(() => {
             this.nowTime = Math.round(new Date().getTime() / 1000);
         }, 1000)
+        if (!this.isElectron) {
+            this.getAppInfo();
+        }
     },
 
     destroyed() {
@@ -206,6 +214,18 @@ export default {
     },
 
     methods: {
+        getAppInfo() {
+            this.$store.dispatch("call", {
+                url: 'system/get/appinfo',
+            }).then(({data}) => {
+                this.downList = data.list;
+            });
+        },
+
+        goDownApp() {
+            this.goForward({path: '/manage/download'});
+        },
+
         getTask() {
             let data = {complete: "no"};
             switch (this.dashboard) {

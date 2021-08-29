@@ -68,7 +68,17 @@ export default [
                 path: 'file',
                 component: () => import('./pages/manage/file.vue'),
             },
+            {
+                name: 'manage-download',
+                path: 'download',
+                component: () => import('./pages/download.vue'),
+            },
         ]
+    },
+    {
+        name: 'download',
+        path: '/download',
+        component: () => import('./pages/download.vue'),
     },
     {
         name: 'login',

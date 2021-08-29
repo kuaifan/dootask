@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\User;
 use App\Module\Base;
 use Request;
+use Response;
 
 /**
  * @apiDefine system
@@ -194,6 +195,81 @@ class SystemController extends AbstractController
      */
     public function get__ipinfo() {
         return Base::getIpInfo(Request::input("ip"));
+    }
+
+    /**
+     * @api {get} api/system/get/appinfo          06. 获取应用下载信息
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName get__appinfo
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function get__appinfo() {
+        $array = [
+            'name' => '',
+            'version' => '',
+            'list' => [],
+        ];
+        //
+        $file = base_path("electron/package.json");
+        $dist = base_path("electron/dist");
+        if (file_exists($file)) {
+            $packageArray = json_decode(file_get_contents($file), true);
+            $array['name'] = $packageArray['name'] ?? 'No app';
+            $array['version'] = $packageArray['version'] ?? '';
+            //
+            $list = [
+                [
+                    'icon' => 'logo-apple',
+                    'name' => 'macOS Intel',
+                    'file' => "{$array['name']}-{$array['version']}-mac.zip"
+                ],
+                [
+                    'icon' => 'logo-apple',
+                    'name' => 'macOS M1',
+                    'file' => "{$array['name']}-{$array['version']}-arm64-mac.zip"
+                ],
+                [
+                    'icon' => 'logo-windows',
+                    'name' => 'Windows x64',
+                    'file' => "{$array['name']} Setup {$array['version']}.exe"
+                ]
+            ];
+            foreach ($list as $item) {
+                if (file_exists("{$dist}/{$item['file']}")) {
+                    $item['url'] = Base::fillUrl('api/system/get/appdown?file=' . urlencode($item['file']));
+                    $item['size'] = filesize("{$dist}/{$item['file']}");
+                    $array['list'][] = $item;
+                }
+            }
+        }
+        //
+        if (count($array['list']) == 0) {
+            return Base::retError('No file');
+        }
+        return Base::retSuccess('success', $array);
+    }
+
+    /**
+     * @api {get} api/system/get/appdown          06. 下载应用
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName get__appdown
+     *
+     * @apiParam {String} file        文件名称
+     */
+    public function get__appdown() {
+        $file = Request::input("file");
+        $path = base_path("electron/dist/" . $file);
+        if (!file_exists($path)) {
+            return Base::ajaxError("No file");
+        }
+        return Response::download($path);
     }
 
     /**

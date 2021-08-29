@@ -149,6 +149,12 @@
             }
         }
     }
+    .download-app {
+        position: absolute;
+        bottom: 26px;
+        right: 26px;
+        z-index: 1;
+    }
     .nopage {
         width: 100%;
         height: 100%;

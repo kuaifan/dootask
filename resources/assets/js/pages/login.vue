@@ -38,6 +38,9 @@
                 <div class="login-forgot">{{$L('忘记密码了？')}}<a href="javascript:void(0)" @click="forgotPassword">{{$L('重置密码')}}</a></div>
             </div>
         </div>
+        <div v-if="downList.length > 0" class="download-app">
+            <Button icon="md-download" type="primary" to="./download" target="_blank">{{$L('客户端下载')}}</Button>
+        </div>
     </div>
 </template>
 
@@ -55,6 +58,13 @@ export default {
             password: '',
             password2: '',
             code: '',
+
+            downList: []
+        }
+    },
+    mounted() {
+        if (!this.isElectron) {
+            this.getAppInfo();
         }
     },
     computed: {
@@ -63,6 +73,14 @@ export default {
         }
     },
     methods: {
+        getAppInfo() {
+            this.$store.dispatch("call", {
+                url: 'system/get/appinfo',
+            }).then(({data}) => {
+                this.downList = data.list;
+            });
+        },
+
         forgotPassword() {
             $A.modalWarning("请联系管理员！");
         },
