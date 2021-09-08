@@ -53,14 +53,6 @@ check_node() {
     fi
 }
 
-check_md5sum() {
-    date +%s%N | md5sum > /dev/null
-    if [ $? -ne  0 ]; then
-        echo -e "${Error} ${RedBG} 未安装 md5sum！${Font}"
-        exit 1
-    fi
-}
-
 env_get() {
     key=$1
     value=`cat ${cur_path}/.env | grep "^$key=" | awk -F '=' '{print $2}'`
@@ -84,12 +76,10 @@ env_init() {
         cp .env.docker .env
     fi
     if [ -z "$(env_get DB_ROOT_PASSWORD)" ];then
-        check_md5sum
-        env_set DB_ROOT_PASSWORD "$(date +%s%N | md5sum | cut -c 1-16)"
+        env_set DB_ROOT_PASSWORD "$(docker run -it --rm alpine sh -c "date +%s%N | md5sum | cut -c 1-16")"
     fi
     if [ -z "$(env_get DOCKER_ID)" ];then
-        check_md5sum
-        env_set DOCKER_ID "$(date +%s%N | md5sum | cut -c 1-6)"
+        env_set DOCKER_ID "$(docker run -it --rm alpine sh -c "date +%s%N | md5sum | cut -c 1-6")"
     fi
 }
 
