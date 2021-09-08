@@ -72,6 +72,19 @@ function formatUrl(str) {
     return url;
 }
 
+/**
+ * 右边是否包含
+ * @param string
+ * @param find
+ * @param lower
+ * @returns {boolean}
+ */
+function rightExists(string, find) {
+    string += "";
+    find += "";
+    return (string.substring(string.length - find.length) === find);
+}
+
 /** ***************************************************************************************************/
 /** ***************************************************************************************************/
 /** ***************************************************************************************************/
@@ -100,6 +113,9 @@ if (argv[2] === "--build") {
                 return undefined;
             },
             validate: function (value) {
+                if (!rightExists(value, "/")) {
+                    return '网址必须以 "/" 结尾';
+                }
                 return value !== ''
             }
         },
