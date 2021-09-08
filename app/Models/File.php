@@ -50,31 +50,43 @@ class File extends AbstractModel
     use SoftDeletes;
 
     /**
+     * 是否有访问权限（没有时抛出异常）
+     * @param $userid
+     */
+    public function exceAllow($userid)
+    {
+        if (!$this->chackAllow($userid)) {
+            throw new ApiException('没有访问权限');
+        }
+    }
+
+    /**
      * 是否有访问权限
      *  ① 自己的文件夹
      *  ② 共享所有人的文件夹
      *  ③ 在指定共享人员内
      * @param $userid
+     * @return bool
      */
     public function chackAllow($userid)
     {
         if ($userid == $this->userid) {
             // ① 自己的文件夹
-            return;
+            return true;
         }
         $row = $this->getShareInfo();
         if ($row) {
             if ($row->share == 1) {
                 // ② 共享所有人的文件夹
-                return;
+                return true;
             } elseif ($row->share == 2) {
                 // ③ 在指定共享人员内
                 if (FileUser::whereFileId($row->id)->whereUserid($userid)->exists()) {
-                    return;
+                    return true;
                 }
             }
         }
-        throw new ApiException('没有访问权限');
+        return false;
     }
 
     /**
@@ -221,7 +233,7 @@ class File extends AbstractModel
         if (empty($file)) {
             throw new ApiException($noExistTis ?: '文件不存在或已被删除');
         }
-        $file->chackAllow(User::userid());
+        $file->exceAllow(User::userid());
         return $file;
     }
 }

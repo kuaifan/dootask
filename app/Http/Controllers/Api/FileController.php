@@ -39,7 +39,7 @@ class FileController extends AbstractController
             if (empty($file)) {
                 return Base::retError('Not exist');
             }
-            $file->chackAllow($user->userid);
+            $file->exceAllow($user->userid);
             //
             $builder = File::wherePid($pid);
         } else {
@@ -54,8 +54,10 @@ class FileController extends AbstractController
                 if (empty($file)) {
                     break;
                 }
-                $array[] = $file->toArray();
                 $pid = $file->pid;
+                $temp = $file->toArray();
+                $temp['allow'] = $file->chackAllow($user->userid);
+                $array[] = $temp;
             }
         } else {
             // 获取共享相关
@@ -67,9 +69,10 @@ class FileController extends AbstractController
                 });
             })->get();
             if ($list->isNotEmpty()) {
-                foreach ($list as $item) {
-                    $item->pid = 0;
-                    $array[] = $item->toArray();
+                foreach ($list as $file) {
+                    $temp = $file->toArray();
+                    $temp['pid'] = 0;
+                    $array[] = $temp;
                 }
             }
         }

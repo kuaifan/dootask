@@ -52,7 +52,7 @@
                     stripe/>
             </div>
             <template v-else>
-                <div v-if="fileList.length == 0 && loadIng == 0" class="file-no">
+                <div v-if="fileList.length == 0 && loadIng == 0" class="file-no" @contextmenu.prevent="handleRightClick">
                     <i class="taskfont">&#xe60b;</i>
                     <p>{{$L('没有任何文件')}}</p>
                 </div>
@@ -358,7 +358,7 @@ export default {
             let {pid, files} = this;
             let array = [];
             while (pid > 0) {
-                let file = files.find(({id}) => id == pid);
+                let file = files.find(({id, allow}) => id == pid && allow !== false);
                 if (file) {
                     array.unshift(file);
                     pid = file.pid;
