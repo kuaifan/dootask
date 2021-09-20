@@ -126,6 +126,7 @@
                                 cursor: pointer;
                             }
                             .ivu-tag {
+                                flex-shrink: 0;
                                 margin-left: 10px;
                                 padding: 0 4px;
                                 height: 20px;

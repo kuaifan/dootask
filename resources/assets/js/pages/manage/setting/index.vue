@@ -5,11 +5,14 @@
             <div class="setting-titbox">
                 <div class="setting-title">
                     <h1>{{$L('设置')}}</h1>
+                    <div class="setting-more" @click="show768Menu=!show768Menu">
+                        <Icon :type="show768Menu ? 'md-close' : 'md-more'" />
+                    </div>
                 </div>
             </div>
         </div>
         <div class="setting-box">
-            <div class="setting-menu">
+            <div class="setting-menu" :class="{'show768-menu':show768Menu}">
                 <ul>
                     <li
                         v-for="(item, key) in menu"
@@ -33,6 +36,7 @@ export default {
     data() {
         return {
             curPath: this.$route.path,
+            show768Menu: true,
         }
     },
     mounted() {
@@ -74,6 +78,7 @@ export default {
     },
     methods: {
         toggleRoute(path) {
+            this.show768Menu = false;
             this.goForward({path: '/manage/setting/' + path});
         },
 

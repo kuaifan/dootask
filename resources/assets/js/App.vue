@@ -2,7 +2,7 @@
     <div id="app">
         <transition :name="transitionName">
             <keep-alive>
-                <router-view class="child-view"></router-view>
+                <router-view class="child-view" :class="{'view-768': $store.state.windowMax768}"></router-view>
             </keep-alive>
         </transition>
         <Spinner/>
@@ -36,6 +36,11 @@
             }
             //
             setInterval(this.searchEnter, 1000);
+            //
+            window.addEventListener('resize', this.windowMax768Listener);
+        },
+        beforeDestroy() {
+            window.removeEventListener('resize', this.windowMax768Listener);
         },
         watch: {
             '$route' (To, From) {
@@ -146,6 +151,10 @@
                         }
                     }
                 });
+            },
+
+            windowMax768Listener() {
+                this.$store.state.windowMax768 = window.innerWidth <= 768
             },
         }
     }

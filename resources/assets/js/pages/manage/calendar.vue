@@ -143,14 +143,23 @@ export default {
 
     methods: {
         initLanguage() {
+            this.addLanguageData([
+                {"_": "{日}","CN": "日","EN": "Sun","TC": "日","KM": "Sun","TH": "Sun","KO": "Sun","JA": "Sun"},
+                {"_": "{一}","CN": "一","EN": "Mon","TC": "一","KM": "Mon","TH": "Mon","KO": "Mon","JA": "Mon"},
+                {"_": "{二}","CN": "二","EN": "Tue","TC": "二","KM": "Tue","TH": "Tue","KO": "Tue","JA": "Tue"},
+                {"_": "{三}","CN": "三","EN": "Wed","TC": "三","KM": "Wed","TH": "Wed","KO": "Wed","JA": "Wed"},
+                {"_": "{四}","CN": "四","EN": "Thu","TC": "四","KM": "Thu","TH": "Thu","KO": "Thu","JA": "Thu"},
+                {"_": "{五}","CN": "五","EN": "Fri","TC": "五","KM": "Fri","TH": "Fri","KO": "Fri","JA": "Fri"},
+                {"_": "{六}","CN": "六","EN": "Sat","TC": "六","KM": "Sat","TH": "Sat","KO": "Sat","JA": "Sat"},
+            ]);
             let daynames = [
-                this.$L('周日'),
-                this.$L('周一'),
-                this.$L('周二'),
-                this.$L('周三'),
-                this.$L('周四'),
-                this.$L('周五'),
-                this.$L('周六')
+                this.$L('{日}'),
+                this.$L('{一}'),
+                this.$L('{二}'),
+                this.$L('{三}'),
+                this.$L('{四}'),
+                this.$L('{五}'),
+                this.$L('{六}')
             ];
             this.calendarWeek = {daynames};
             this.calendarMonth = {daynames};

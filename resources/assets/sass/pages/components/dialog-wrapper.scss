@@ -28,9 +28,13 @@
             display: flex;
             align-items: center;
             line-height: 22px;
+            max-width: 100%;
             > h2 {
                 font-size: 17px;
                 font-weight: 600;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
             > em {
                 font-style: normal;
@@ -372,5 +376,14 @@
         bottom: 0;
         width: 1px;
         background-color: #F4F4F5;
+    }
+}
+
+@media (max-width: 768px) {
+    .dialog-wrapper {
+        .dialog-footer {
+            padding: 0 20px;
+            margin-bottom: 16px;
+        }
     }
 }

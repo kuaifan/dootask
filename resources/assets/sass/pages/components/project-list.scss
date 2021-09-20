@@ -755,3 +755,48 @@
         }
     }
 }
+
+@media (max-width: 768px) {
+    .project-list {
+        .project-head {
+            margin: 24px 24px 0;
+            .project-titbox {
+                display: block;
+                .project-title {
+                    float: left;
+                    padding-bottom: 4px;
+                }
+                .project-icons {
+                    float: right;
+                    margin-left: 24px;
+                    margin-top: 4px;
+                    justify-content: flex-end;
+                }
+            }
+            .project-subtitle {
+                padding-right: 12px;
+                margin-bottom: 6px;
+            }
+        }
+        .project-column {
+            > ul {
+                > li {
+                    &:first-child {
+                        margin-left: 10px;
+                    }
+                    &:last-child {
+                        margin-right: 10px;
+                    }
+                }
+            }
+        }
+        .project-table {
+            overflow-x: auto;
+            .project-table-head,
+            .project-table-body {
+                min-width: 768px;
+                margin: 0 24px 12px;
+            }
+        }
+    }
+}

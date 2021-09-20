@@ -64,7 +64,7 @@
             <Draggable
                 :list="projectData.columns"
                 :animation="150"
-                :disabled="sortDisabled"
+                :disabled="sortDisabled || $store.state.windowMax768"
                 class="column-list"
                 tag="ul"
                 draggable=".column-item"
@@ -120,7 +120,7 @@
                         <Draggable
                             :list="column.tasks"
                             :animation="150"
-                            :disabled="sortDisabled"
+                            :disabled="sortDisabled || $store.state.windowMax768"
                             class="task-list"
                             draggable=".task-draggable"
                             group="task"
@@ -385,12 +385,14 @@ import Draggable from 'vuedraggable'
 import TaskPriority from "./TaskPriority";
 import TaskAdd from "./TaskAdd";
 import {mapGetters, mapState} from "vuex";
+import {Store} from 'le5le-store';
 import UserInput from "../../../components/UserInput";
 import TaskAddSimple from "./TaskAddSimple";
 import TaskRow from "./TaskRow";
 import TaskArchived from "./TaskArchived";
 import ProjectLog from "./ProjectLog";
 import DrawerOverlay from "../../../components/DrawerOverlay";
+
 export default {
     name: "ProjectList",
     components: {
@@ -430,17 +432,28 @@ export default {
 
             logShow: false,
             archivedTaskShow: false,
+
+            projectDialogsubscribe: null,
         }
     },
 
     mounted() {
         this.nowInterval = setInterval(() => {
             this.nowTime = Math.round(new Date().getTime() / 1000);
-        }, 1000)
+        }, 1000);
+        //
+        this.projectDialogsubscribe = Store.subscribe('onProjectDialogBack', () => {
+            this.$store.dispatch('toggleTablePanel', 'chat');
+        });
     },
 
     destroyed() {
-        clearInterval(this.nowInterval)
+        clearInterval(this.nowInterval);
+        //
+        if (this.projectDialogsubscribe) {
+            this.projectDialogsubscribe.unsubscribe();
+            this.projectDialogsubscribe = null;
+        }
     },
 
     computed: {

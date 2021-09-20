@@ -17,12 +17,16 @@
                     <h2>{{$L('群聊')}}</h2>
                 </div>
             </div>
+            <div slot="inputBefore" class="dialog-back" @click="onInputBack">
+                <Icon type="md-arrow-back" />
+            </div>
         </DialogWrapper>
     </div>
 </template>
 
 <script>
 import {mapGetters} from "vuex";
+import {Store} from 'le5le-store';
 import DialogWrapper from "./DialogWrapper";
 
 export default {
@@ -37,5 +41,11 @@ export default {
     computed: {
         ...mapGetters(['projectData'])
     },
+
+    methods: {
+        onInputBack() {
+            Store.set('onProjectDialogBack', null);
+        }
+    }
 }
 </script>

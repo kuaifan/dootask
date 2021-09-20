@@ -241,4 +241,38 @@
             overflow: auto;
         }
     }
+    .manage-mini-menu {
+        display: none;
+    }
+}
+
+
+@media (max-width: 768px) {
+    .page-manage {
+        .manage-box-menu {
+            position: fixed;
+            z-index: 49;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+            transform: translateX(-120%);
+            &.show768-menu {
+                transform: translateX(0);
+            }
+        }
+        .manage-mini-menu {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 46px;
+            height: 42px;
+            font-size: 22px;
+            background-color: #ffffff;
+            white-space: nowrap;
+            border-radius: 4px;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+        }
+    }
 }

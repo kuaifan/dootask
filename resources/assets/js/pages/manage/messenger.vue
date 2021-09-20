@@ -2,7 +2,7 @@
     <div class="page-messenger">
         <PageTitle :title="$L('消息')"/>
         <div class="messenger-wrapper">
-            <div class="messenger-select">
+            <div class="messenger-select" :class="{'show768-menu':dialogId == 0}">
                 <div class="messenger-search">
                     <div class="search-wrapper">
                         <Input prefix="ios-search" v-model="dialogKey" :placeholder="$L('搜索...')" clearable />
@@ -63,7 +63,11 @@
             </div>
 
             <div class="messenger-msg">
-                <DialogWrapper v-if="dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive"/>
+                <DialogWrapper v-if="dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive">
+                    <div slot="inputBefore" class="dialog-back" @click="closeDialog">
+                        <Icon type="md-arrow-back" />
+                    </div>
+                </DialogWrapper>
                 <div v-else class="dialog-no">
                     <div class="dialog-no-icon"><Icon type="ios-chatbubbles" /></div>
                     <div class="dialog-no-text">{{$L('选择一个会话开始聊天')}}</div>
@@ -182,6 +186,11 @@ export default {
     },
 
     methods: {
+        closeDialog() {
+            this.dialogId = 0;
+            this.$store.state.method.setStorage("messenger::dialogId", 0)
+        },
+
         openDialog(dialog, smooth) {
             this.$store.state.method.setStorage("messenger::dialogId", dialog.id)
             this.dialogId = dialog.id;

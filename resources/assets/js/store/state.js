@@ -240,6 +240,9 @@ const method = {
 // 方法类
 const state = { method };
 
+// 浏览器宽度≤768返回true
+state.windowMax768 = window.innerWidth <= 768;
+
 // 数据缓存
 state.cacheUserBasic = state.method.getStorageJson("cacheUserBasic");
 state.cacheDialogs = state.method.getStorageArray("cacheDialogs");

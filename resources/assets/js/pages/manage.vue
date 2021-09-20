@@ -1,6 +1,6 @@
 <template>
     <div v-show="userId > 0" class="page-manage">
-        <div class="manage-box-menu">
+        <div class="manage-box-menu" :class="{'show768-menu': show768Menu}">
             <Dropdown
                 class="manage-box-dropdown"
                 trigger="click"
@@ -152,6 +152,16 @@
             :size="900">
             <ProjectArchived v-if="archivedProjectShow"/>
         </DrawerOverlay>
+
+        <!--菜单按钮-->
+        <DragBallComponent
+            :distanceLeft="0"
+            :distanceTop="60"
+            @on-click="show768Menu=!show768Menu">
+            <div class="manage-mini-menu">
+                <Icon :type="show768Menu ? 'md-close' : 'md-menu'" />
+            </div>
+        </DragBallComponent>
     </div>
 </template>
 
@@ -163,9 +173,10 @@ import notificationKoro from "notification-koro1";
 import TeamManagement from "./manage/components/TeamManagement";
 import ProjectManagement from "./manage/components/ProjectManagement";
 import DrawerOverlay from "../components/DrawerOverlay";
+import DragBallComponent from "../components/DragBallComponent";
 
 export default {
-    components: {DrawerOverlay, ProjectManagement, TeamManagement, ProjectArchived, TaskDetail},
+    components: {DragBallComponent, DrawerOverlay, ProjectManagement, TeamManagement, ProjectArchived, TaskDetail},
     data() {
         return {
             loadIng: 0,
@@ -183,6 +194,7 @@ export default {
 
             openMenu: {},
             visibleMenu: false,
+            show768Menu: false,
 
             allUserShow: false,
             allProjectShow: false,
@@ -361,6 +373,7 @@ export default {
         },
 
         toggleRoute(path) {
+            this.show768Menu = false;
             this.goForward({path: '/manage/' + path});
         },
 

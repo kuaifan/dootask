@@ -82,6 +82,8 @@ export default {
             this.columns = [
                 {
                     title: this.$L('ID'),
+                    minWidth: 50,
+                    maxWidth: 70,
                     key: 'userid',
                 },
                 {

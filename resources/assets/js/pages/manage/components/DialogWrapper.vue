@@ -57,6 +57,7 @@
         </ScrollerY>
         <div :class="['dialog-footer', msgNew > 0 && dialogMsgList.length > 0 ? 'newmsg' : '']" @click="onActive">
             <div class="dialog-newmsg" @click="goNewBottom">{{$L('有' + msgNew + '条新消息')}}</div>
+            <slot name="inputBefore"/>
             <DragInput
                 ref="input"
                 v-model="msgText"
@@ -154,6 +155,15 @@ export default {
     },
 
     watch: {
+        '$route': {
+            handler (route) {
+                if (route.query && route.query.msg && this.msgText == '') {
+                    this.msgText = route.query.msg;
+                }
+            },
+            immediate: true
+        },
+
         dialogMsgPush() {
             if (this.autoBottom) {
                 this.$nextTick(this.goBottom);

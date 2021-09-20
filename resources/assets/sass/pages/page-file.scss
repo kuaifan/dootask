@@ -530,3 +530,19 @@
         border-radius: 20px 20px 0 0 !important;
     }
 }
+
+@media (max-width: 768px) {
+    .page-file {
+        .file-wrapper {
+            .file-head {
+                margin: 24px 24px 16px;
+            }
+            .file-navigator {
+                margin: 0 24px 0;
+            }
+            .file-table {
+                margin: 16px 24px 24px;
+            }
+        }
+    }
+}

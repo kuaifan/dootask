@@ -261,6 +261,13 @@
             height: 100%;
             display: flex;
             position: relative;
+            .dialog-wrapper {
+                .dialog-footer {
+                    .dialog-back {
+                        display: none;
+                    }
+                }
+            }
             .dialog-no {
                 flex: 1;
                 display: flex;
@@ -282,6 +289,54 @@
                     background-color: #f4f5f7;
                     padding: 4px 15px;
                     border-radius: 14px;
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .page-messenger {
+        .messenger-wrapper {
+            .messenger-select {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                max-width: none;
+                background-color: #ffffff;
+                z-index: 48;
+                transition: all 0.2s;
+                transform: translateX(-120%);
+                &.show768-menu {
+                    transform: translateX(0);
+                }
+            }
+            .messenger-msg {
+                .dialog-wrapper {
+                    .dialog-title {
+                        height: 54px;
+                        align-items: center;
+                    }
+                    .dialog-footer {
+                        position: relative;
+                        .dialog-back {
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            bottom: 0;
+                            width: 64px;
+                            z-index: 1;
+                            font-size: 26px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        }
+                        .dialog-input {
+                            width: calc(100% - 44px);
+                        }
+                    }
                 }
             }
         }

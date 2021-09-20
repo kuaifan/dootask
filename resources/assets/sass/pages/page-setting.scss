@@ -13,9 +13,13 @@
                 display: flex;
                 align-items: center;
                 > h1 {
+                    flex: 1;
                     color: #333333;
                     font-size: 28px;
                     font-weight: 600;
+                }
+                .setting-more {
+                    display: none;
                 }
             }
         }
@@ -24,7 +28,7 @@
         flex: 1;
         height: 0;
         display: flex;
-        margin-bottom: 16px;
+        padding-bottom: 16px;
         .setting-menu {
             width: 200px;
             flex-shrink: 0;
@@ -99,10 +103,14 @@
         .ivu-select-selection {
             max-width: 460px;
         }
+        .ivu-form {
+            overflow: auto;
+        }
         .form-tip {
             color: #999999;
         }
         .setting-color {
+            min-width: 400px;
             max-width: 600px;
             margin-bottom: 12px;
             > div {
@@ -147,6 +155,45 @@
                 z-index: 1;
                 padding: 16px 24px 0;
                 border-top: 1px solid #F4F4F5;
+            }
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .page-setting {
+        .setting-head {
+            .setting-titbox {
+                .setting-title {
+                    .setting-more {
+                        display: flex;
+                        font-size: 24px;
+                        width: 42px;
+                        height: 42px;
+                        align-items: center;
+                        justify-content: center;
+                    }
+                }
+            }
+        }
+        .setting-box {
+            position: relative;
+            .setting-menu {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 9;
+                transition: all 0.2s;
+                background-color: #ffffff;
+                transform: translateX(-120%);
+                &.show768-menu {
+                    transform: translateX(0);
+                }
+                > ul {
+                    padding: 12px 32px;
+                }
             }
         }
     }

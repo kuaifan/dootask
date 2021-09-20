@@ -191,3 +191,13 @@
 .luckysheet-input-box {
     z-index: 99999 !important;
 }
+
+@media (max-width: 1200px) {
+    .file-content {
+        overflow: auto;
+        .edit-header,
+        .content-body {
+            min-width: 1200px;
+        }
+    }
+}

@@ -17,6 +17,7 @@
             color: #333333;
             font-size: 24px;
             font-weight: 600;
+            word-wrap: break-word;
         }
         .dashboard-desc {
             margin-top: 18px;
@@ -177,6 +178,29 @@
             background-color: #f4f5f7;
             padding: 4px 15px;
             border-radius: 14px;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .page-dashboard {
+        .dashboard-wrapper {
+            max-width: 86%;
+            max-height: 96%;
+            .dashboard-block {
+                display: block;
+                margin-top: 10px;
+                > li {
+                    margin: 0 0 10px;
+                    padding: 8px 12px;
+                }
+            }
+            .dashboard-title {
+                margin-top: 36px;
+            }
+        }
+        .download-app {
+            display: none;
         }
     }
 }

@@ -90,7 +90,7 @@
         </Poptip>
     </li>
     <!--主任务-->
-    <div v-else v-show="taskDetail.id > 0" :class="{'task-detail':true, 'open-dialog': taskDetail.dialog_id, 'completed': taskDetail.complete_at}">
+    <div v-else v-show="taskDetail.id > 0" :class="{'task-detail':true, 'open-dialog': hasOpenDialog, 'completed': taskDetail.complete_at}">
         <div class="task-info">
             <div class="head">
                 <Icon v-if="taskDetail.complete_at" class="icon completed" type="md-checkmark-circle" @click="updateData('uncomplete')"/>
@@ -354,7 +354,7 @@
             <TaskUpload ref="upload" class="upload"/>
         </div>
         <div class="task-dialog" :style="dialogStyle">
-            <template v-if="taskDetail.dialog_id > 0">
+            <template v-if="hasOpenDialog">
                 <DialogWrapper v-if="taskId > 0" ref="dialog" :dialog-id="taskDetail.dialog_id">
                     <div slot="head" class="head">
                         <Icon class="icon" type="ios-chatbubbles-outline" />
@@ -552,12 +552,16 @@ export default {
             });
         },
 
+        hasOpenDialog() {
+            return this.taskDetail.dialog_id > 0 && !this.$store.state.windowMax768;
+        },
+
         scrollerStyle() {
-            const {innerHeight, taskDetail} = this;
+            const {innerHeight, hasOpenDialog} = this;
             if (!innerHeight) {
                 return {};
             }
-            if (!taskDetail.dialog_id) {
+            if (!hasOpenDialog) {
                 return {};
             }
             return {
@@ -566,16 +570,15 @@ export default {
         },
 
         dialogStyle() {
-            const {innerHeight, taskDetail} = this;
+            const {innerHeight, hasOpenDialog} = this;
             if (!innerHeight) {
                 return {};
             }
-            if (taskDetail.dialog_id) {
-                return {
-                    minHeight: (innerHeight - (innerHeight > 900 ? 200 : 70) - 48) + 'px'
-                }
-            } else {
+            if (!hasOpenDialog) {
                 return {};
+            }
+            return {
+                minHeight: (innerHeight - (innerHeight > 900 ? 200 : 70) - 48) + 'px'
             }
         },
 
@@ -1095,7 +1098,14 @@ export default {
                 this.$store.dispatch("saveTask", data);
                 this.$store.dispatch("getDialogOne", data.dialog_id);
                 this.$nextTick(() => {
-                    this.$refs.dialog.sendMsg(this.msgText);
+                    if (this.$store.state.windowMax768) {
+                        this.goForward({path: '/manage/messenger', query: {msg: this.msgText}});
+                        this.$store.state.method.setStorage("messenger::dialogId", data.dialog_id)
+                        this.$store.state.dialogOpenId = data.dialog_id;
+                        this.$store.dispatch('openTask', 0);
+                    } else {
+                        this.$refs.dialog.sendMsg(this.msgText);
+                    }
                     this.msgText = "";
                 });
             }).catch(({msg}) => {

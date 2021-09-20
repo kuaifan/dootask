@@ -17,3 +17,16 @@
         flex-shrink: 0;
     }
 }
+
+@media (max-width: 768px) {
+    .page-project {
+        .project-dialog {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            max-width: none;
+        }
+    }
+}

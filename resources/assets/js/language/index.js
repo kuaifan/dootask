@@ -110,7 +110,7 @@ export default {
                         return;
                     }
                     this.__initLanguageData();
-                    this.languageData.push(...data);
+                    this.languageData.unshift(...data);
                 },
 
                 /**
@@ -184,6 +184,10 @@ export default {
                     if (typeof languageCachesObjects[text] === "undefined") {
                         let tmpRege = null;
                         let tmpData = this.languageData.find((obj) => {
+                            if (typeof obj._ !== "undefined") {
+                                tmpRege = new RegExp("^" + this.replaceEscape(obj._).replace(/%/g, "(.*?)") + "$", "g");
+                                return !!text.match(tmpRege);
+                            }
                             return Object.values(obj).find((val) => {
                                 tmpRege = new RegExp("^" + this.replaceEscape(val).replace(/%/g, "(.*?)") + "$", "g");
                                 return !!text.match(tmpRege);
