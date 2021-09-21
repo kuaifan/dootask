@@ -71,7 +71,7 @@
                 @on-keydown="chatKeydown"
                 @on-input-paste="pasteDrag"
                 :placeholder="$L('输入消息...')" />
-            <div v-if="msgText" class="dialog-send" @click="sendMsg">
+            <div v-if="msgText != ''" class="dialog-send" @click="sendMsg">
                 <Icon type="md-send" />
             </div>
             <DialogUpload
@@ -199,7 +199,7 @@ export default {
                 this.msgText = text;
                 this.$refs.input.focus();
             }
-            if (!this.msgText) {
+            if (this.msgText == '') {
                 return;
             }
             let tempId = $A.randomString(16);
