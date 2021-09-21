@@ -185,8 +185,9 @@
 @media (max-width: 768px) {
     .page-dashboard {
         .dashboard-wrapper {
+            display: block;
             max-width: 86%;
-            max-height: 96%;
+            max-height: 86%;
             .dashboard-block {
                 display: block;
                 margin-top: 10px;
@@ -197,6 +198,16 @@
             }
             .dashboard-title {
                 margin-top: 36px;
+            }
+            .dashboard-list {
+                padding-bottom: 22px;
+                > li {
+                    .item-title {
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap
+                    }
+                }
             }
         }
         .download-app {

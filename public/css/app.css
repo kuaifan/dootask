@@ -5314,8 +5314,9 @@ body .ivu-drawer-bottom .ivu-drawer-content .ivu-drawer-close .ivu-icon {
 
 @media (max-width: 768px) {
   .page-dashboard .dashboard-wrapper {
+    display: block;
     max-width: 86%;
-    max-height: 96%;
+    max-height: 86%;
   }
   .page-dashboard .dashboard-wrapper .dashboard-block {
     display: block;
@@ -5327,6 +5328,14 @@ body .ivu-drawer-bottom .ivu-drawer-content .ivu-drawer-close .ivu-icon {
   }
   .page-dashboard .dashboard-wrapper .dashboard-title {
     margin-top: 36px;
+  }
+  .page-dashboard .dashboard-wrapper .dashboard-list {
+    padding-bottom: 22px;
+  }
+  .page-dashboard .dashboard-wrapper .dashboard-list > li .item-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .page-dashboard .download-app {
     display: none;
@@ -7580,6 +7589,7 @@ body .ivu-drawer-bottom .ivu-drawer-content .ivu-drawer-close .ivu-icon {
   align-items: flex-end;
   padding: 0 28px;
   margin-bottom: 20px;
+  position: relative;
 }
 
 .dialog-wrapper .dialog-footer .dialog-newmsg {
@@ -7599,7 +7609,7 @@ body .ivu-drawer-bottom .ivu-drawer-content .ivu-drawer-close .ivu-icon {
 
 .dialog-wrapper .dialog-footer .dialog-input {
   background-color: #F4F5F7;
-  padding: 10px 12px;
+  padding: 10px 52px 10px 12px;
   border-radius: 10px;
 }
 
@@ -7611,6 +7621,18 @@ body .ivu-drawer-bottom .ivu-drawer-content .ivu-drawer-close .ivu-icon {
 
 .dialog-wrapper .dialog-footer .dialog-input .ivu-input:focus {
   box-shadow: none;
+}
+
+.dialog-wrapper .dialog-footer .dialog-send {
+  position: absolute;
+  top: 0;
+  right: 28px;
+  bottom: 0;
+  font-size: 18px;
+  width: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .dialog-wrapper .dialog-footer .chat-upload {
@@ -7712,6 +7734,9 @@ body .ivu-drawer-bottom .ivu-drawer-content .ivu-drawer-close .ivu-icon {
   .dialog-wrapper .dialog-footer {
     padding: 0 20px;
     margin-bottom: 16px;
+  }
+  .dialog-wrapper .dialog-footer .dialog-send {
+    right: 20px;
   }
 }
 
@@ -10078,6 +10103,9 @@ body .ivu-drawer-bottom .ivu-drawer-content .ivu-drawer-close .ivu-icon {
 }
 
 @media (max-width: 768px) {
+  .task-detail .task-info .scroller {
+    overflow-x: auto;
+  }
   .task-detail .task-dialog .no-dialog .no-input {
     position: relative;
     padding-right: 52px;

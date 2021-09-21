@@ -586,6 +586,11 @@
 
 @media (max-width: 768px) {
     .task-detail {
+        .task-info {
+            .scroller {
+                overflow-x: auto;
+            }
+        }
         .task-dialog {
             .no-dialog {
                 .no-input {

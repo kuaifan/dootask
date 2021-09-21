@@ -268,6 +268,7 @@
         align-items: flex-end;
         padding: 0 28px;
         margin-bottom: 20px;
+        position: relative;
         .dialog-newmsg {
             display: none;
             height: 30px;
@@ -284,7 +285,7 @@
         }
         .dialog-input {
             background-color: #F4F5F7;
-            padding: 10px 12px;
+            padding: 10px 52px 10px 12px;
             border-radius: 10px;
             .ivu-input {
                 border: 0;
@@ -294,6 +295,17 @@
                     box-shadow: none;
                 }
             }
+        }
+        .dialog-send {
+            position: absolute;
+            top: 0;
+            right: 28px;
+            bottom: 0;
+            font-size: 18px;
+            width: 46px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .chat-upload {
             display: none;
@@ -384,6 +396,9 @@
         .dialog-footer {
             padding: 0 20px;
             margin-bottom: 16px;
+            .dialog-send {
+                right: 20px;
+            }
         }
     }
 }

@@ -23,7 +23,7 @@
         <ScrollerY
             ref="scroller"
             class="dialog-scroller overlay-y"
-            :auto-bottom="autoBottom"
+            :auto-bottom="autoBottom && !inputFocus"
             @on-scroll="chatScroll"
             static>
             <div ref="manageList" class="dialog-list">
@@ -71,6 +71,9 @@
                 @on-keydown="chatKeydown"
                 @on-input-paste="pasteDrag"
                 :placeholder="$L('输入消息...')" />
+            <div v-if="msgText" class="dialog-send" @click="sendMsg">
+                <Icon type="md-send" />
+            </div>
             <DialogUpload
                 ref="chatUpload"
                 class="chat-upload"
@@ -108,6 +111,7 @@ export default {
             autoInterval: null,
 
             dialogDrag: false,
+            inputFocus: false,
 
             msgText: '',
             msgNew: 0,
@@ -208,6 +212,9 @@ export default {
                     text: this.msgText,
                 },
             });
+            if (this.$store.state.windowMax768) {
+                this.$refs.input.blur();
+            }
             this.autoBottom = true;
             this.onActive();
             //
@@ -339,10 +346,12 @@ export default {
         },
 
         onEventFocus(e) {
+            this.inputFocus = true;
             this.$emit("on-focus", e)
         },
 
         onEventblur(e) {
+            this.inputFocus = false;
             this.$emit("on-blur", e)
         },
 
