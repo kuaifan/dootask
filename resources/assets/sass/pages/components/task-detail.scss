@@ -35,12 +35,20 @@
                 flex: 1;
                 display: flex;
                 align-items: center;
-                padding-left: 18px;
+                margin-left: 18px;
                 font-size: 12px;
+                width: 0;
+                height: 40px;
+                overflow: auto;
                 > p {
                     display: flex;
                     align-items: center;
                     padding-right: 5px;
+                    > span {
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap
+                    }
                     &:after {
                         content: "/";
                         padding-left: 5px;
@@ -401,6 +409,8 @@
                 margin-left: 36px;
             }
             .no-input {
+                display: flex;
+                align-items: center;
                 margin: 32px 0 0 36px;
                 background-color: #F4F5F7;
                 padding: 10px 12px;
@@ -412,6 +422,9 @@
                     &:focus {
                         box-shadow: none;
                     }
+                }
+                .no-send {
+                    display: none;
                 }
             }
         }
@@ -568,5 +581,33 @@
     > button {
         font-size: 12px;
         transform: scale(0.9);
+    }
+}
+
+@media (max-width: 768px) {
+    .task-detail {
+        .task-dialog {
+            .no-dialog {
+                .no-input {
+                    position: relative;
+                    padding-right: 52px;
+                    .no-send {
+                        position: absolute;
+                        top: 0;
+                        right: 0;
+                        bottom: 0;
+                        font-size: 18px;
+                        width: 46px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        .common-loading {
+                            width: 20px;
+                            height: 20px;
+                        }
+                    }
+                }
+            }
+        }
     }
 }

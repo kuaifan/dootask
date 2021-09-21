@@ -96,9 +96,9 @@
                 <Icon v-if="taskDetail.complete_at" class="icon completed" type="md-checkmark-circle" @click="updateData('uncomplete')"/>
                 <Icon v-else class="icon" type="md-radio-button-off" @click="updateData('complete')"/>
                 <div class="nav">
-                    <p v-if="projectName">{{projectName}}</p>
-                    <p v-if="columnName">{{columnName}}</p>
-                    <p v-if="taskDetail.id">{{taskDetail.id}}</p>
+                    <p v-if="projectName"><span>{{projectName}}</span></p>
+                    <p v-if="columnName"><span>{{columnName}}</span></p>
+                    <p v-if="taskDetail.id"><span>{{taskDetail.id}}</span></p>
                 </div>
                 <Poptip
                     v-if="getOwner.length === 0"
@@ -387,6 +387,10 @@
                             :maxlength="255"
                             :placeholder="$L('输入消息...')"
                             @on-keydown="msgKeydown"/>
+                        <div class="no-send" @click="openSend">
+                            <Loading v-if="sendLoad"/>
+                            <Icon v-else type="md-send" />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -447,6 +451,8 @@ export default {
 
             msgText: '',
             navActive: 'dialog',
+
+            sendLoad: false,
 
             taskPlugins: [
                 'advlist autolink lists link image charmap print preview hr anchor pagebreak imagetools',
@@ -1099,7 +1105,7 @@ export default {
                 this.$store.dispatch("getDialogOne", data.dialog_id);
                 this.$nextTick(() => {
                     if (this.$store.state.windowMax768) {
-                        this.goForward({path: '/manage/messenger', query: {msg: this.msgText}});
+                        this.goForward({path: '/manage/messenger', query: {sendmsg: this.msgText}});
                         this.$store.state.method.setStorage("messenger::dialogId", data.dialog_id)
                         this.$store.state.dialogOpenId = data.dialog_id;
                         this.$store.dispatch('openTask', 0);
@@ -1109,6 +1115,32 @@ export default {
                     this.msgText = "";
                 });
             }).catch(({msg}) => {
+                $A.modalError(msg);
+            });
+        },
+
+        openSend() {
+            if (this.sendLoad) {
+                return;
+            }
+            this.sendLoad = true;
+            this.$store.dispatch("call", {
+                url: 'project/task/dialog',
+                data: {
+                    task_id: this.taskDetail.id,
+                },
+            }).then(({data}) => {
+                this.sendLoad = false;
+                this.$store.dispatch("saveTask", data);
+                this.$store.dispatch("getDialogOne", data.dialog_id);
+                this.$nextTick(() => {
+                    this.goForward({path: '/manage/messenger', query: {sendmsg: this.msgText}});
+                    this.$store.state.method.setStorage("messenger::dialogId", data.dialog_id)
+                    this.$store.state.dialogOpenId = data.dialog_id;
+                    this.$store.dispatch('openTask', 0);
+                });
+            }).catch(({msg}) => {
+                this.sendLoad = false;
                 $A.modalError(msg);
             });
         },

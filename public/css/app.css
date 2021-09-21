@@ -7041,6 +7041,9 @@ body .ivu-drawer-bottom .ivu-drawer-content .ivu-drawer-close .ivu-icon {
 }
 
 @media (max-width: 768px) {
+  .page-project .project-list {
+    height: auto;
+  }
   .page-project .project-dialog {
     position: absolute;
     top: 0;
@@ -9451,14 +9454,23 @@ body .ivu-drawer-bottom .ivu-drawer-content .ivu-drawer-close .ivu-icon {
   flex: 1;
   display: flex;
   align-items: center;
-  padding-left: 18px;
+  margin-left: 18px;
   font-size: 12px;
+  width: 0;
+  height: 40px;
+  overflow: auto;
 }
 
 .task-detail .task-info .head .nav > p {
   display: flex;
   align-items: center;
   padding-right: 5px;
+}
+
+.task-detail .task-info .head .nav > p > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .task-detail .task-info .head .nav > p:after {
@@ -9880,6 +9892,8 @@ body .ivu-drawer-bottom .ivu-drawer-content .ivu-drawer-close .ivu-icon {
 }
 
 .task-detail .task-dialog .no-dialog .no-input {
+  display: flex;
+  align-items: center;
   margin: 32px 0 0 36px;
   background-color: #F4F5F7;
   padding: 10px 12px;
@@ -9894,6 +9908,10 @@ body .ivu-drawer-bottom .ivu-drawer-content .ivu-drawer-close .ivu-icon {
 
 .task-detail .task-dialog .no-dialog .no-input .ivu-input:focus {
   box-shadow: none;
+}
+
+.task-detail .task-dialog .no-dialog .no-input .no-send {
+  display: none;
 }
 
 .task-detail .task-dialog .project-log {
@@ -10057,6 +10075,28 @@ body .ivu-drawer-bottom .ivu-drawer-content .ivu-drawer-close .ivu-icon {
 .task-detail-avatar-buttons > button {
   font-size: 12px;
   transform: scale(0.9);
+}
+
+@media (max-width: 768px) {
+  .task-detail .task-dialog .no-dialog .no-input {
+    position: relative;
+    padding-right: 52px;
+  }
+  .task-detail .task-dialog .no-dialog .no-input .no-send {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    font-size: 18px;
+    width: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .task-detail .task-dialog .no-dialog .no-input .no-send .common-loading {
+    width: 20px;
+    height: 20px;
+  }
 }
 
 .task-priority {

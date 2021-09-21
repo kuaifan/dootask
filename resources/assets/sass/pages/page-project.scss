@@ -20,6 +20,9 @@
 
 @media (max-width: 768px) {
     .page-project {
+        .project-list {
+            height: auto;
+        }
         .project-dialog {
             position: absolute;
             top: 0;

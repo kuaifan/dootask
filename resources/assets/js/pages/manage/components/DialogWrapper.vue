@@ -157,8 +157,12 @@ export default {
     watch: {
         '$route': {
             handler (route) {
-                if (route.query && route.query.msg && this.msgText == '') {
-                    this.msgText = route.query.msg;
+                if (route.query && route.query.sendmsg && this.msgText == '') {
+                    let query = $A.cloneJSON(route.query);
+                    delete query.sendmsg;
+                    this.goForward({query}, true);
+                    this.msgText = route.query.sendmsg;
+                    this.$nextTick(this.sendMsg);
                 }
             },
             immediate: true
