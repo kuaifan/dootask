@@ -214,7 +214,7 @@ export default {
             typeof success === "function" && success(state.userInfo, true);
             return;
         }
-        const time = Math.round(new Date().getTime() / 1000);
+        const time = state.method.Time();
         const array = [];
         (state.method.isArray(userid) ? userid : [userid]).some((uid) => {
             if (state.cacheUserBasic[uid]) {

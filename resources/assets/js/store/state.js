@@ -18,26 +18,22 @@ const method = {
         return str
     },
 
-    date2string(params, format) {
-        if (params === null) {
-            return params;
+    Time(v) {
+        let time
+        if (typeof v === "string" && this.strExists(v, "-")) {
+            v = v.replace(/-/g, '/');
+            time = new Date(v).getTime();
+        } else {
+            time = new Date().getTime();
         }
-        if (typeof format === "undefined") {
-            format = "Y-m-d H:i:s";
+        return Math.round(time / 1000)
+    },
+
+    Date(v) {
+        if (typeof v === "string" && this.strExists(v, "-")) {
+            v = v.replace(/-/g, '/');
         }
-        if (params instanceof Date) {
-            params = this.formatDate(format, params);
-        } else if (this.isJson(params)) {
-            for (let key in params) {
-                if (!params.hasOwnProperty(key)) continue;
-                params[key] = this.date2string(params[key], format);
-            }
-        } else if (this.isArray(params)) {
-            params.forEach((val, index) => {
-                params[index] = this.date2string(val, format);
-            });
-        }
-        return params;
+        return new Date(v);
     },
 
     zeroFill(str, length, after) {
@@ -70,7 +66,7 @@ const method = {
             } else if (/^(-)?\d{1,10}$/.test(v)) {
                 dateObj = new Date(v * 1000);
             } else {
-                dateObj = new Date(v);
+                dateObj = this.Date(v);
             }
         }
         //
@@ -81,6 +77,28 @@ const method = {
         format = format.replace(/i/g, this.zeroFill(dateObj.getMinutes(), 2));
         format = format.replace(/s/g, this.zeroFill(dateObj.getSeconds(), 2));
         return format;
+    },
+
+    date2string(params, format) {
+        if (params === null) {
+            return params;
+        }
+        if (typeof format === "undefined") {
+            format = "Y-m-d H:i:s";
+        }
+        if (params instanceof Date) {
+            params = this.formatDate(format, params);
+        } else if (this.isJson(params)) {
+            for (let key in params) {
+                if (!params.hasOwnProperty(key)) continue;
+                params[key] = this.date2string(params[key], format);
+            }
+        } else if (this.isArray(params)) {
+            params.forEach((val, index) => {
+                params[index] = this.date2string(val, format);
+            });
+        }
+        return params;
     },
 
     setStorage(key, value) {

@@ -400,7 +400,7 @@ export default {
         ProjectLog, TaskArchived, TaskRow, Draggable, TaskAddSimple, UserInput, TaskAdd, TaskPriority},
     data() {
         return {
-            nowTime: Math.round(new Date().getTime() / 1000),
+            nowTime: $A.Time(),
             nowInterval: null,
 
             columnLoad: {},
@@ -439,7 +439,7 @@ export default {
 
     mounted() {
         this.nowInterval = setInterval(() => {
-            this.nowTime = Math.round(new Date().getTime() / 1000);
+            this.nowTime = $A.Time();
         }, 1000);
         //
         this.projectDialogsubscribe = Store.subscribe('onProjectDialogBack', () => {
@@ -516,8 +516,8 @@ export default {
                 if (a.p_level != b.p_level) {
                     return a.p_level - b.p_level;
                 }
-                let at1 = new Date(a.end_at),
-                    at2 = new Date(b.end_at);
+                let at1 = $A.Date(a.end_at),
+                    at2 = $A.Date(b.end_at);
                 return at1 - at2;
             });
         },
@@ -544,8 +544,8 @@ export default {
                 if (a.p_level != b.p_level) {
                     return a.p_level - b.p_level;
                 }
-                let at1 = new Date(a.end_at),
-                    at2 = new Date(b.end_at);
+                let at1 = $A.Date(a.end_at),
+                    at2 = $A.Date(b.end_at);
                 return at1 - at2;
             });
         },
@@ -574,8 +574,8 @@ export default {
                 return task.complete_at;
             });
             return array.sort((a, b) => {
-                let at1 = new Date(a.complete_at),
-                    at2 = new Date(b.complete_at);
+                let at1 = $A.Date(a.complete_at),
+                    at2 = $A.Date(b.complete_at);
                 return at2 - at1;
             });
         },
@@ -583,7 +583,7 @@ export default {
         expiresFormat() {
             const {nowTime} = this;
             return function (date) {
-                let time = Math.round(new Date(date).getTime() / 1000) - nowTime;
+                let time = Math.round($A.Date(date).getTime() / 1000) - nowTime;
                 if (time < 86400 * 4 && time > 0 ) {
                     return this.formatSeconds(time);
                 } else if (time <= 0) {
@@ -1065,7 +1065,7 @@ export default {
         },
 
         formatTime(date) {
-            let time = Math.round(new Date(date).getTime() / 1000),
+            let time = Math.round($A.Date(date).getTime() / 1000),
                 string = '';
             if ($A.formatDate('Ymd') === $A.formatDate('Ymd', time)) {
                 string = $A.formatDate('H:i', time)

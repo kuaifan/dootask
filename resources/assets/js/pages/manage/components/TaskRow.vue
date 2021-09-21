@@ -165,7 +165,7 @@ export default {
     },
     data() {
         return {
-            nowTime: Math.round(new Date().getTime() / 1000),
+            nowTime: $A.Time(),
             nowInterval: null,
 
             taskLoad: {},
@@ -174,7 +174,7 @@ export default {
     },
     mounted() {
         this.nowInterval = setInterval(() => {
-            this.nowTime = Math.round(new Date().getTime() / 1000);
+            this.nowTime = $A.Time();
         }, 1000)
     },
 
@@ -198,7 +198,7 @@ export default {
         expiresFormat() {
             const {nowTime} = this;
             return function (date) {
-                let time = Math.round(new Date(date).getTime() / 1000) - nowTime;
+                let time = Math.round($A.Date(date).getTime() / 1000) - nowTime;
                 if (time < 86400 * 4 && time > 0 ) {
                     return this.formatSeconds(time);
                 } else if (time <= 0) {
@@ -262,7 +262,7 @@ export default {
         },
 
         formatTime(date) {
-            let time = Math.round(new Date(date).getTime() / 1000),
+            let time = Math.round($A.Date(date).getTime() / 1000),
                 string = '';
             if ($A.formatDate('Ymd') === $A.formatDate('Ymd', time)) {
                 string = $A.formatDate('H:i', time)

@@ -128,7 +128,7 @@ export default {
         },
 
         formatTime(date) {
-            let time = Math.round(new Date(date).getTime() / 1000),
+            let time = Math.round($A.Date(date).getTime() / 1000),
                 string = '';
             if ($A.formatDate('Ymd') === $A.formatDate('Ymd', time)) {
                 string = $A.formatDate('H:i', time)

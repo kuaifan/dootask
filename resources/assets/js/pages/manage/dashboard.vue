@@ -103,7 +103,7 @@ import {mapState} from "vuex";
 export default {
     data() {
         return {
-            nowTime: Math.round(new Date().getTime() / 1000),
+            nowTime: $A.Time(),
             nowInterval: null,
 
             loadIng: 0,
@@ -118,7 +118,7 @@ export default {
 
     mounted() {
         this.nowInterval = setInterval(() => {
-            this.nowTime = Math.round(new Date().getTime() / 1000);
+            this.nowTime = $A.Time();
         }, 1000)
         if (!this.isElectron) {
             this.getAppInfo();
@@ -156,8 +156,8 @@ export default {
 
         list() {
             const {dashboard} = this;
-            const todayStart = new Date($A.formatDate("Y-m-d 00:00:00")),
-                todayEnd = new Date($A.formatDate("Y-m-d 23:59:59"));
+            const todayStart = $A.Date($A.formatDate("Y-m-d 00:00:00")),
+                todayEnd = $A.Date($A.formatDate("Y-m-d 23:59:59"));
             let datas = $A.cloneJSON(this.tasks);
             datas = datas.filter((data) => {
                 if (data.complete_at) {
@@ -169,8 +169,8 @@ export default {
                 if (!data.owner) {
                     return false;
                 }
-                const start = new Date(data.start_at),
-                    end = new Date(data.end_at);
+                const start = $A.Date(data.start_at),
+                    end = $A.Date(data.end_at);
                 data._start_time = start;
                 data._end_time = end;
                 switch (dashboard) {
@@ -190,7 +190,7 @@ export default {
         expiresFormat() {
             const {nowTime} = this;
             return function (date) {
-                let time = Math.round(new Date(date).getTime() / 1000) - nowTime;
+                let time = Math.round($A.Date(date).getTime() / 1000) - nowTime;
                 if (time < 86400 * 4 && time > 0 ) {
                     return this.formatSeconds(time);
                 } else if (time <= 0) {
@@ -327,7 +327,7 @@ export default {
         },
 
         formatTime(date) {
-            let time = Math.round(new Date(date).getTime() / 1000),
+            let time = Math.round($A.Date(date).getTime() / 1000),
                 string = '';
             if ($A.formatDate('Ymd') === $A.formatDate('Ymd', time)) {
                 string = $A.formatDate('H:i', time)

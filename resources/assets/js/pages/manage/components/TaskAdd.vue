@@ -179,7 +179,7 @@ export default {
     methods: {
         initLanguage() {
             const lastSecond = (e) => {
-                return new Date($A.formatDate("Y-m-d 23:59:29", Math.round(e / 1000)))
+                return $A.Date($A.formatDate("Y-m-d 23:59:29", Math.round(e / 1000)))
             };
             this.timeOptions = {
                 shortcuts: [{

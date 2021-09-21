@@ -293,6 +293,36 @@
         },
 
         /**
+         * 返回10位数时间戳
+         * @param v
+         * @returns {number}
+         * @constructor
+         */
+        Time: function (v) {
+            let time
+            if (typeof v === "string" && this.strExists(v, "-")) {
+                v = v.replace(/-/g, '/');
+                time = new Date(v).getTime();
+            } else {
+                time = new Date().getTime();
+            }
+            return Math.round(time / 1000)
+        },
+
+        /**
+         * 返回时间对象
+         * @param v
+         * @returns {Date}
+         * @constructor
+         */
+        Date: function (v) {
+            if (typeof v === "string" && this.strExists(v, "-")) {
+                v = v.replace(/-/g, '/');
+            }
+            return new Date(v);
+        },
+
+        /**
          * 补零
          * @param str
          * @param length
@@ -345,7 +375,7 @@
                 } else {
                     return v;
                 }
-                dateObj = new Date(v);
+                dateObj = $A.Date(v);
             }
             //
             format = format.replace(/Y/g, dateObj.getFullYear());
@@ -365,7 +395,7 @@
          */
         timeDiff: function(s, e) {
             if (typeof e === 'undefined') {
-                e = Math.round(new Date().getTime()/1000);
+                e = $A.Time();
             }
             let d = e - s;
             if (d > 86400) {

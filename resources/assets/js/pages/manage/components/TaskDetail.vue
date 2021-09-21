@@ -444,7 +444,7 @@ export default {
                 shortcuts: []
             },
 
-            nowTime: Math.round(new Date().getTime() / 1000),
+            nowTime: $A.Time(),
             nowInterval: null,
 
             innerHeight: window.innerHeight,
@@ -484,7 +484,7 @@ export default {
 
     mounted() {
         this.nowInterval = setInterval(() => {
-            this.nowTime = Math.round(new Date().getTime() / 1000);
+            this.nowTime = $A.Time();
         }, 1000);
         window.addEventListener('resize', this.innerHeightListener);
     },
@@ -591,7 +591,7 @@ export default {
         expiresFormat() {
             const {nowTime} = this;
             return function (date) {
-                let time = Math.round(new Date(date).getTime() / 1000) - nowTime;
+                let time = Math.round($A.Date(date).getTime() / 1000) - nowTime;
                 if (time < 86400 * 4 && time > 0 ) {
                     return this.formatSeconds(time);
                 } else if (time <= 0) {
@@ -604,11 +604,11 @@ export default {
         cutTime() {
             const {nowTime, taskDetail} = this;
             let string = "";
-            let start_at = Math.round(new Date(taskDetail.start_at).getTime() / 1000);
+            let start_at = Math.round($A.Date(taskDetail.start_at).getTime() / 1000);
             if (start_at > nowTime) {
                 string = $A.formatDate('Y/m/d H:i', start_at) + " ~ "
             }
-            let end_at = Math.round(new Date(taskDetail.end_at).getTime() / 1000);
+            let end_at = Math.round($A.Date(taskDetail.end_at).getTime() / 1000);
             string+= $A.formatDate('Y/m/d H:i', end_at);
             return string;
         },
@@ -702,7 +702,7 @@ export default {
     methods: {
         initLanguage() {
             const lastSecond = (e) => {
-                return new Date($A.formatDate("Y-m-d 23:59:29", Math.round(e / 1000)))
+                return $A.Date($A.formatDate("Y-m-d 23:59:29", Math.round(e / 1000)))
             };
             this.timeOptions = {
                 shortcuts: [{
@@ -757,7 +757,7 @@ export default {
         },
 
         formatTime(date) {
-            let time = Math.round(new Date(date).getTime() / 1000),
+            let time = Math.round($A.Date(date).getTime() / 1000),
                 string = '';
             if ($A.formatDate('Ymd') === $A.formatDate('Ymd', time)) {
                 string = $A.formatDate('H:i', time)
