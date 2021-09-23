@@ -447,7 +447,7 @@ export default {
             nowTime: $A.Time(),
             nowInterval: null,
 
-            innerHeight: window.innerHeight,
+            innerHeight: Math.min(1100, window.innerHeight),
 
             msgText: '',
             navActive: 'dialog',
@@ -753,7 +753,7 @@ export default {
         },
 
         innerHeightListener() {
-            this.innerHeight = window.innerHeight;
+            this.innerHeight = Math.min(1100, window.innerHeight);
         },
 
         formatTime(date) {
