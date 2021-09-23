@@ -93,7 +93,7 @@ class FileController extends AbstractController
             return Base::retError('请输入关键词');
         }
         //
-        $builder = File::whereUserid($user->userid)->where('name', 'like', '%' . $key . '%');
+        $builder = File::whereUserid($user->userid)->where("name", "like", "%{$key}%");
         $list = $builder->take(50)->get();
         //
         return Base::retSuccess('success', $list);

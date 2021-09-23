@@ -94,7 +94,7 @@ class ProjectController extends AbstractController
         $keys = Request::input('keys');
         if (is_array($keys)) {
             if ($keys['name']) {
-                $builder->where('projects.name', 'like', '%' . $keys['name'] . '%');
+                $builder->where("projects.name", "like", "%{$keys['name']}%");
             }
         }
         $list = $builder->orderByDesc('projects.id')->paginate(Base::getPaginate(200, 100));
@@ -594,7 +594,7 @@ class ProjectController extends AbstractController
         //
         if ($name) {
             $builder->where(function($query) use ($name) {
-                $query->where('name', 'like', '%,' . $name . ',%');
+                $query->where("name", "like", "%{$name}%");
             });
         }
         //

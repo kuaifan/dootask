@@ -327,8 +327,8 @@ class UsersController extends AbstractController
         if (is_array($keys)) {
             if ($keys['key']) {
                 $builder->where(function($query) use ($keys) {
-                    $query->where('email', 'like', '%,' . $keys['key'] . ',%')
-                        ->orWhere('nickname', 'like', '%,' . $keys['key'] . ',%');
+                    $query->where("email", "like", "%{$keys['key']}%")
+                        ->orWhere("nickname", "like", "%{$keys['key']}%");
                 });
             }
             if (intval($keys['project_id']) > 0) {
@@ -400,19 +400,19 @@ class UsersController extends AbstractController
         $keys = Request::input('keys');
         if (is_array($keys)) {
             if ($keys['email']) {
-                $builder->where('email', 'like', '%' . $keys['email'] . '%');
+                $builder->where("email", "like", "%{$keys['email']}%");
             }
             if ($keys['nickname']) {
-                $builder->where('nickname', 'like', '%' . $keys['nickname'] . '%');
+                $builder->where("nickname", "like", "%{$keys['nickname']}%");
             }
             if ($keys['profession']) {
-                $builder->where('profession', 'like', '%' . $keys['profession'] . '%');
+                $builder->where("profession", "like", "%{$keys['profession']}%");
             }
             if ($keys['identity']) {
                 if (Base::leftExists($keys['identity'], "no")) {
-                    $builder->where('identity', 'not like', '%,' . Base::leftDelete($keys['identity'], 'no') . ',%');
+                    $builder->where("identity", "not like", "%," . Base::leftDelete($keys['identity'], 'no') . ",%");
                 } else {
-                    $builder->where('identity', 'like', '%,' . $keys['identity'] . ',%');
+                    $builder->where("identity", "like", "%,{$keys['identity']},%");
                 }
             }
         }
