@@ -5,7 +5,8 @@
             <div class="messenger-select" :class="{'show768-menu':dialogId == 0}">
                 <div class="messenger-search">
                     <div class="search-wrapper">
-                        <Input prefix="ios-search" v-model="dialogKey" :placeholder="$L('搜索...')" clearable />
+                        <Input v-if="tabActive==='dialog'" prefix="ios-search" v-model="dialogKey" :placeholder="$L('搜索...')" clearable />
+                        <Input v-else prefix="ios-search" v-model="contactsKey" :placeholder="$L('搜索...')" clearable />
                     </div>
                 </div>
                 <div v-if="tabActive==='dialog'" class="messenger-nav">
@@ -97,6 +98,7 @@ export default {
             dialogKey: '',
             dialogId: 0,
 
+            contactsKey: '',
             contactsLoad: 0,
             contactsLists: null,
         }
@@ -177,11 +179,19 @@ export default {
     watch: {
         tabActive(val) {
             if (val && this.contactsLists === null) {
-                this.getContactsList();
+                this.getContactsList(1);
             }
         },
         dialogOpenId(id) {
             this.dialogId = id;
+        },
+        contactsKey(val) {
+            setTimeout(() => {
+                if (this.contactsKey == val) {
+                    this.contactsLists = null;
+                    this.getContactsList(1);
+                }
+            }, 600);
         }
     },
 
@@ -212,7 +222,7 @@ export default {
             });
         },
 
-        getContactsList() {
+        getContactsList(page) {
             if (this.contactsLists === null) {
                 this.contactsLists = {};
             }
@@ -220,11 +230,18 @@ export default {
             this.$store.dispatch("call", {
                 url: 'users/search',
                 data: {
-                    take: 50
+                    keys: {
+                        key: this.contactsKey
+                    },
+                    sorts: {
+                        az: 'asc'
+                    },
+                    page: page,
+                    pagesize: 50
                 },
             }).then(({data}) => {
                 this.contactsLoad--;
-                data.some((user) => {
+                data.data.some((user) => {
                     if (user.userid === this.userId) {
                         return false;
                     }
@@ -238,6 +255,9 @@ export default {
                         this.contactsLists[az].push(user);
                     }
                 });
+                if (data.next_page_url && data.current_page < 3) {
+                    this.getContactsList(data.current_page + 1)
+                }
             }).catch(() => {
                 this.contactsLoad--;
             });
