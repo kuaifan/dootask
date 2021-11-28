@@ -310,10 +310,15 @@ class UsersController extends AbstractController
      * @apiName searchinfo
      *
      * @apiParam {Object} keys          搜索条件
-     * - keys.key               昵称、邮箱
-     * - keys.project_id        在指定项目ID
-     * - keys.no_project_id     不在指定项目ID
+     * - keys.key                           昵称、邮箱
+     * - keys.project_id                    在指定项目ID
+     * - keys.no_project_id                 不在指定项目ID
+     * @apiParam {Object} sorts         排序方式
+     * - sorts.az                           字母
+     *
      * @apiParam {Number} [take]        获取数量，10-100
+     * @apiParam {Number} [page]        当前页，默认:1（赋值分页模式，take参数无效）
+     * @apiParam {Number} [pagesize]    每页显示数量，默认:10，最大:100
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -324,6 +329,7 @@ class UsersController extends AbstractController
         $builder = User::select(['userid', 'email', 'nickname', 'profession', 'userimg', 'az']);
         //
         $keys = Request::input('keys');
+        $sorts = Request::input('sorts');
         if (is_array($keys)) {
             if ($keys['key']) {
                 $builder->where(function($query) use ($keys) {
@@ -342,8 +348,17 @@ class UsersController extends AbstractController
                 });
             }
         }
+        if (is_array($sorts)) {
+            if (in_array($sorts['az'], ['asc', 'desc'])) {
+                $builder->orderBy('az', $sorts['az']);
+            }
+        }
         //
-        $list = $builder->orderBy('userid')->take(Base::getPaginate(100, 10, 'take'))->get();
+        if (Request::exists('page')) {
+            $list = $builder->orderBy('userid')->paginate(Base::getPaginate(100, 10));
+        } else {
+            $list = $builder->orderBy('userid')->take(Base::getPaginate(100, 10, 'take'))->get();
+        }
         return Base::retSuccess('success', $list);
     }
 
