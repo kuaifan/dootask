@@ -210,12 +210,14 @@ class WebSocketDialog extends AbstractModel
     public static function checkUserDialog($userid, $userid2)
     {
         $dialogUser = self::select(['web_socket_dialogs.*'])
-            ->join('web_socket_dialog_users', 'web_socket_dialog_users.dialog_id', '=', 'web_socket_dialogs.id')
+            ->join('web_socket_dialog_users as u1', 'web_socket_dialogs.id', '=', 'u1.dialog_id')
+            ->join('web_socket_dialog_users as u2', 'web_socket_dialogs.id', '=', 'u2.dialog_id')
+            ->where('u1.userid', $userid)
+            ->where('u2.userid', $userid2)
             ->where('web_socket_dialogs.type', 'user')
-            ->whereIn('web_socket_dialog_users.userid', [$userid, $userid2])
-            ->get();
-        if ($dialogUser->count() >= 2) {
-            return $dialogUser[0];
+            ->first();
+        if ($dialogUser) {
+            return $dialogUser;
         }
         return AbstractModel::transaction(function () use ($userid2, $userid) {
             $dialog = self::createInstance([
