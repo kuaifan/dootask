@@ -51,7 +51,7 @@ class IndexController extends InvokeController
      */
     public function crontab()
     {
-        if (!Base::is_internal_ip()) {
+        if (!Base::is_internal_ip(Base::getIp())) {
             // 限制内网访问
             return "Forbidden Access";
         }
@@ -68,7 +68,7 @@ class IndexController extends InvokeController
      */
     public function allcn()
     {
-        if (!Base::is_internal_ip()) {
+        if (!Base::is_internal_ip(Base::getIp())) {
             // 限制内网访问
             return "Forbidden Access";
         }
@@ -92,7 +92,7 @@ class IndexController extends InvokeController
      */
     public function allcn__php()
     {
-        if (!Base::is_internal_ip()) {
+        if (!Base::is_internal_ip(Base::getIp())) {
             // 限制内网访问
             return "Forbidden Access";
         }
