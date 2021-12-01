@@ -15,10 +15,10 @@
 ```bash
 # 1、克隆项目到您的本地或服务器
 
-# 使用ssh
-git clone git@github.com:kuaifan/dootask.git
-# 或者你也可以使用https
+# 通过github克隆项目
 git clone https://github.com/kuaifan/dootask.git
+# 或者你也可以使用gitee
+git clone https://gitee.com/aipaw/dootask.git
 
 # 2、进入目录
 cd dootask

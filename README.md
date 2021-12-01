@@ -15,10 +15,10 @@ English | **[中文文档](./README_CN.md)**
 ```bash
 # 1、Clone the repository
 
-# using ssh
-git clone git@github.com:kuaifan/dootask.git
-# or you can use https
+# Clone projects on github
 git clone https://github.com/kuaifan/dootask.git
+# or you can use gitee
+git clone https://gitee.com/aipaw/dootask.git
 
 # 2、enter directory
 cd dootask
