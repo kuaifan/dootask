@@ -60,9 +60,7 @@ password: 123456
 ./cmd composer "your command"         // To run a composer command
 ./cmd supervisorctl "your command"    // To run a supervisorctl command
 ./cmd test "your command"             // To run a phpunit command
-./cmd npm "your command"              // To run a npm command
-./cmd yarn "your command"             // To run a yarn command
-./cmd mysql "your command"            // To run a mysql command (use `./cmd mysql bak` Backup database)
+./cmd mysql "your command"            // To run a mysql command (backup: Backup database, recovery: Restore database)
 ```
 
 ## Upgrade

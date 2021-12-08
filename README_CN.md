@@ -60,9 +60,7 @@ password: 123456
 ./cmd composer "your command"         // 运行 composer 命令
 ./cmd supervisorctl "your command"    // 运行 supervisorctl 命令
 ./cmd test "your command"             // 运行 phpunit 命令
-./cmd npm "your command"              // 运行 npm 命令
-./cmd yarn "your command"             // 运行 yarn 命令
-./cmd mysql "your command"            // 运行 mysql 命令 (可以使用 `./cmd mysql bak` 命令来备份数据库)
+./cmd mysql "your command"            // 运行 mysql 命令 (backup: 备份数据库，recovery: 还原数据库)
 ```
 
 ## 升级更新

@@ -23,10 +23,17 @@ judge() {
     fi
 }
 
+rand(){
+    local min=$1
+    local max=$(($2-$min+1))
+    local num=$(($RANDOM+1000000000))
+    echo $(($num%$max+$min))
+}
+
 supervisorctl_restart() {
-    RES=`docker-compose exec php /bin/bash -c "supervisorctl update $1"`
+    local RES=`run_exec php "supervisorctl update $1"`
     if [ -z "$RES" ];then
-        docker-compose exec php /bin/bash -c "supervisorctl restart $1"
+        run_exec php "supervisorctl restart $1"
     else
         echo -e "$RES"
     fi
@@ -53,16 +60,59 @@ check_node() {
     fi
 }
 
+run_compile() {
+    local type=$1
+    local npxcmd=""
+    check_node
+    if [ ! -d "./node_modules" ]; then
+        npm install
+    fi
+    run_exec php "php bin/run --mode=$type"
+    supervisorctl_restart php
+    #
+    mix -V &> /dev/null
+    if [ $? -ne  0 ]; then
+        npxcmd="npx"
+    fi
+    if [ "$type" = "prod" ]; then
+        rm -rf "./public/js/build"
+        $npxcmd mix --production
+    else
+        $npxcmd mix watch --hot
+    fi
+}
+
+run_exec() {
+    local container=$1
+    local cmd=$2
+    local name=`get_docker_name $container`
+    if [ "$container" = "mariadb" ]; then
+        docker exec -it "$name" /bin/sh -c "$cmd"
+    else
+        docker exec -it "$name" /bin/bash -c "$cmd"
+    fi
+}
+
+get_docker_name() {
+    local container=$1
+    local name=`docker-compose ps | awk '{print $1}' | grep "\-$container\-"`
+    if [ -z "$name" ]; then
+        echo -e "${Error} ${RedBG} 没有找到 $container 容器! ${Font}"
+        exit 1
+    fi
+    echo $name
+}
+
 env_get() {
-    key=$1
-    value=`cat ${cur_path}/.env | grep "^$key=" | awk -F '=' '{print $2}'`
+    local key=$1
+    local value=`cat ${cur_path}/.env | grep "^$key=" | awk -F '=' '{print $2}'`
     echo "$value"
 }
 
 env_set() {
-    key=$1
-    val=$2
-    exist=`cat ${cur_path}/.env | grep "^$key="`
+    local key=$1
+    local val=$2
+    local exist=`cat ${cur_path}/.env | grep "^$key="`
     if [ -z "$exist" ];then
         echo "$key=$val" >> $cur_path/.env
     else
@@ -78,8 +128,11 @@ env_init() {
     if [ -z "$(env_get DB_ROOT_PASSWORD)" ];then
         env_set DB_ROOT_PASSWORD "$(docker run -it --rm alpine sh -c "date +%s%N | md5sum | cut -c 1-16")"
     fi
-    if [ -z "$(env_get DOCKER_ID)" ];then
-        env_set DOCKER_ID "$(docker run -it --rm alpine sh -c "date +%s%N | md5sum | cut -c 1-6")"
+    if [ -z "$(env_get APP_ID)" ];then
+        env_set APP_ID "$(docker run -it --rm alpine sh -c "date +%s%N | md5sum | cut -c 1-6")"
+    fi
+    if [ -z "$(env_get APP_IPPR)" ];then
+        env_set APP_IPPR "10.$(rand 50 100).$(rand 100 200)"
     fi
 }
 
@@ -87,38 +140,33 @@ env_init() {
 ####################################################################################
 ####################################################################################
 
-COMPOSE="docker-compose"
 env_init
 check_docker
 
 if [ $# -gt 0 ];then
     if [[ "$1" == "init" ]] || [[ "$1" == "install" ]]; then
         shift 1
-        networkid=`docker network ls | grep "dooteak-networks-" | awk '{print $1}'`
-        if [ -n "$networkid" ]; then
-            docker network rm "$networkid" > /dev/null
-        fi
         rm -rf composer.lock
         rm -rf package-lock.json
         mkdir -p ${cur_path}/docker/mysql/data
         chmod -R 777 ${cur_path}/docker/mysql/data
-        $COMPOSE up -d
-        $COMPOSE restart php
-        $COMPOSE exec php /bin/bash -c "composer install"
-        [ -z "$(env_get APP_KEY)" ] && $COMPOSE exec php /bin/bash -c "php artisan key:generate"
-        $COMPOSE exec php /bin/bash -c "php artisan migrate --seed"
-        $COMPOSE exec php /bin/bash -c "php bin/run --port=2222 --ssl=2223"
-        $COMPOSE exec php /bin/bash -c "php bin/run --mode=prod"
-        $COMPOSE stop
-        $COMPOSE start
+        docker-compose up -d
+        sleep 3
+        run_exec php "composer install"
+        [ -z "$(env_get APP_KEY)" ] && run_exec php "php artisan key:generate"
+        run_exec php "php artisan migrate --seed"
+        run_exec php "php bin/run --mode=prod"
+        docker-compose stop
+        docker-compose start
     elif [[ "$1" == "update" ]]; then
         shift 1
         git fetch --all
         git reset --hard origin/$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
         git pull
-        $COMPOSE exec php /bin/bash -c "composer update"
-        $COMPOSE exec php /bin/bash -c "php artisan migrate"
+        run_exec php "composer update"
+        run_exec php "php artisan migrate"
         supervisorctl_restart php
+        docker-compose up -d
     elif [[ "$1" == "uninstall" ]]; then
         shift 1
         read -rp "确定要卸载（含：删除容器、数据库、日志）吗？(y/n): " uninstall
@@ -132,27 +180,22 @@ if [ $# -gt 0 ];then
             exit 2
             ;;
         esac
+        docker-compose down
         docker-compose rm -fs
         rm -rf "./docker/mysql/data"
         rm -rf "./docker/log/supervisor"
         find "./storage/logs" -name "*.log" | xargs rm -rf
         echo -e "${OK} ${GreenBG} 卸载完成 ${Font}"
-    elif [[ "$1" == "dev" ]]; then
+    elif [[ "$1" == "dev" ]] || [[ "$1" == "development" ]]; then
         shift 1
-        check_node
-        $COMPOSE exec php /bin/bash -c "php bin/run --mode=dev"
-        supervisorctl_restart php
-        mix watch --hot
-    elif [[ "$1" == "prod" ]]; then
+        run_compile dev
+    elif [[ "$1" == "prod" ]] || [[ "$1" == "production" ]]; then
         shift 1
-        check_node
-        $COMPOSE exec php /bin/bash -c "php bin/run --mode=prod"
-        supervisorctl_restart php
-        rm -rf "./public/js/build"
-        mix --production
-    elif [[ "$1" == "super" ]]; then
+        run_compile prod
+    elif [[ "$1" == "doc" ]]; then
         shift 1
-        supervisorctl_restart "$@"
+        run_exec php "php app/Http/Controllers/Api/apidoc.php"
+        docker run -it --rm -v ${cur_path}:/home/node/apidoc kuaifan/apidoc -i app/Http/Controllers/Api -o public/docs
     elif [[ "$1" == "debug" ]]; then
         shift 1
         if [[ "$@" == "close" ]];then
@@ -171,44 +214,69 @@ if [ $# -gt 0 ];then
         supervisorctl_restart php
     elif [[ "$1" == "artisan" ]]; then
         shift 1
-        e="php artisan $@" && $COMPOSE exec php /bin/bash -c "$e"
+        e="php artisan $@" && run_exec php "$e"
     elif [[ "$1" == "php" ]]; then
         shift 1
-        e="php $@" && $COMPOSE exec php /bin/bash -c "$e"
+        e="php $@" && run_exec php "$e"
     elif [[ "$1" == "mysql" ]]; then
         shift 1
-        if [[ "$@" == "bak" ]];then
+        if [[ "$@" == "backup" ]]; then
+            # 备份数据库
             database=$(env_get DB_DATABASE)
-            password=$(env_get DB_ROOT_PASSWORD)
-            filename="${cur_path}/docker/mysql/bak/${database}_$(date "+%Y%m%d%H%M%S").sql.gz"
-            $COMPOSE exec mariadb /bin/sh -c "exec mysqldump --databases $database -uroot -p\"$password\"" | gzip > $filename
+            username=$(env_get DB_USERNAME)
+            password=$(env_get DB_PASSWORD)
+            mkdir -p ${cur_path}/docker/mysql/backup
+            filename="${cur_path}/docker/mysql/backup/${database}_$(date "+%Y%m%d%H%M%S").sql.gz"
+            run_exec mariadb "exec mysqldump --databases $database -u$username -p$password" | gzip > $filename
             judge "备份数据库"
             [ -f "$filename" ] && echo -e "备份文件：$filename"
+        elif [[ "$@" == "recovery" ]];then
+            # 还原数据库
+            database=$(env_get DB_DATABASE)
+            username=$(env_get DB_USERNAME)
+            password=$(env_get DB_PASSWORD)
+            mkdir -p ${cur_path}/docker/mysql/backup
+            list=`ls -1 "${cur_path}/docker/mysql/backup" | grep ".sql.gz"`
+            if [ -z "$list" ]; then
+                echo -e "${Error} ${RedBG} 没有备份文件！${Font}"
+                exit 1
+            fi
+            echo "$list"
+            read -rp "请输入备份文件名称还原：" inputname
+            filename="${cur_path}/docker/mysql/backup/${inputname}"
+            if [ ! -f "$filename" ]; then
+                echo -e "${Error} ${RedBG} 备份文件：${inputname} 不存在！ ${Font}"
+                exit 1
+            fi
+            container_name=`get_docker_name mariadb`
+            docker cp $filename $container_name:/
+            run_exec mariadb "gunzip < /$inputname | mysql -u$username -p$password $database"
+            judge "还原数据库"
         else
-            e="mysql $@" && $COMPOSE exec mariadb /bin/sh -c "$e"
+            e="mysql $@" && run_exec mariadb "$e"
         fi
     elif [[ "$1" == "composer" ]]; then
         shift 1
-        e="composer $@" && $COMPOSE exec php /bin/bash -c "$e"
+        e="composer $@" && run_exec php "$e"
+    elif [[ "$1" == "super" ]]; then
+        shift 1
+        supervisorctl_restart "$@"
     elif [[ "$1" == "supervisorctl" ]]; then
         shift 1
-        e="supervisorctl $@" && $COMPOSE exec php /bin/bash -c "$e"
+        e="supervisorctl $@" && run_exec php "$e"
+    elif [[ "$1" == "models" ]]; then
+        shift 1
+        run_exec php "php artisan ide-helper:models -W"
     elif [[ "$1" == "test" ]]; then
         shift 1
-        e="./vendor/bin/phpunit $@" && $COMPOSE exec php /bin/bash -c "$e"
-    elif [[ "$1" == "npm" ]]; then
-        shift 1
-        e="npm $@" && $COMPOSE exec php /bin/bash -c "$e"
-    elif [[ "$1" == "yarn" ]]; then
-        shift 1
-        e="yarn $@" && $COMPOSE exec php /bin/bash -c "$e"
+        e="./vendor/bin/phpunit $@" && run_exec php "$e"
     elif [[ "$1" == "restart" ]]; then
         shift 1
-        $COMPOSE stop "$@"
-        $COMPOSE start "$@"
+        docker-compose stop "$@"
+        docker-compose start "$@"
     else
-        $COMPOSE "$@"
+        docker-compose "$@"
     fi
 else
-    $COMPOSE ps
+    docker-compose ps
 fi

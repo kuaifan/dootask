@@ -2,7 +2,7 @@ version: '3'
 
 services:
   php:
-    container_name: "dooteak-php-${DOCKER_ID}"
+    container_name: "dootask-php-${APP_ID}"
     image: "kuaifan/phpswoole:8.0"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -24,14 +24,14 @@ services:
       MYSQL_PASSWORD: "${DB_PASSWORD}"
     networks:
       extnetwork:
-        ipv4_address: 10.22.22.2
+        ipv4_address: "${APP_IPPR}.2"
     depends_on:
       - redis
       - mariadb
     restart: unless-stopped
 
   nginx:
-    container_name: "dooteak-nginx-${DOCKER_ID}"
+    container_name: "dootask-nginx-${APP_ID}"
     image: "nginx:alpine"
     ports:
       - "${APP_PORT}:80"
@@ -44,23 +44,26 @@ services:
       TZ: "Asia/Shanghai"
     networks:
       extnetwork:
-        ipv4_address: 10.22.22.3
+        ipv4_address: "${APP_IPPR}.3"
     depends_on:
       - php
+    links:
+      - php
+      - office
     restart: unless-stopped
 
   redis:
-    container_name: "dooteak-redis-${DOCKER_ID}"
+    container_name: "dootask-redis-${APP_ID}"
     image: "redis:alpine"
     environment:
       TZ: "Asia/Shanghai"
     networks:
       extnetwork:
-        ipv4_address: 10.22.22.4
+        ipv4_address: "${APP_IPPR}.4"
     restart: unless-stopped
 
   mariadb:
-    container_name: "dooteak-mariadb-${DOCKER_ID}"
+    container_name: "dootask-mariadb-${APP_ID}"
     image: "mariadb"
     ports: # mysql ports item
       - "33062:3306" # mysql ports value
@@ -76,11 +79,11 @@ services:
       MYSQL_PASSWORD: "${DB_PASSWORD}"
     networks:
       extnetwork:
-        ipv4_address: 10.22.22.5
+        ipv4_address: "${APP_IPPR}.5"
     restart: unless-stopped
 
   office:
-    container_name: "dooteak-office-${DOCKER_ID}"
+    container_name: "dootask-office-${APP_ID}"
     image: "onlyoffice/documentserver:6.3.1.32"
     volumes:
       - ./docker/office/data:/var/www/onlyoffice/Data
@@ -92,13 +95,13 @@ services:
       TZ: "Asia/Shanghai"
     networks:
       extnetwork:
-        ipv4_address: 10.22.22.6
+        ipv4_address: "${APP_IPPR}.6"
     restart: unless-stopped
 
 networks:
   extnetwork:
-    name: "dooteak-networks-${DOCKER_ID}"
+    name: "dootask-networks-${APP_ID}"
     ipam:
       config:
-        - subnet: 10.22.22.0/24
-          gateway: 10.22.22.1
+        - subnet: "${APP_IPPR}.0/24"
+          gateway: "${APP_IPPR}.1"

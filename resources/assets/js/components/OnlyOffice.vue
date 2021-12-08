@@ -44,7 +44,7 @@ export default {
 
     data() {
         return {
-            serverUrl: 'http://10.22.22.3/',
+            serverUrl: 'http://' + window.systemInformation.ippr + '.3/',
 
             fileName: null,
             fileType: null,

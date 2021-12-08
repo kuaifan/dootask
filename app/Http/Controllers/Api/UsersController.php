@@ -175,9 +175,9 @@ class UsersController extends AbstractController
         "userimg": "",
         "login_num": 10,
         "changepass": 0,
-        "last_ip": "10.22.22.1",
+        "last_ip": "127.0.0.1",
         "last_at": "2021-06-01 12:00:00",
-        "line_ip": "10.22.22.1",
+        "line_ip": "127.0.0.1",
         "line_at": "2021-06-01 12:00:00",
         "created_ip": "",
     }

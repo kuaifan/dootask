@@ -353,7 +353,7 @@ class FileController extends AbstractController
         //
         if ($status === 2) {
             $parse = parse_url($url);
-            $from = 'http://10.22.22.6' . $parse['path'] . '?' . $parse['query'];
+            $from = 'http://' . env('APP_IPPR') . '.6' . $parse['path'] . '?' . $parse['query'];
             $path = 'uploads/office/' . date("Ym") . '/' . $file->id . '/' . $user->userid . '-' . $key;
             $save = public_path($path);
             Base::makeDir(dirname($save));
