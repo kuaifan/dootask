@@ -118,6 +118,10 @@ env_set() {
     else
         command="sed -i '/^$key=/c\\$key=$val' /www/.env"
         docker run -it --rm -v ${cur_path}:/www alpine sh -c "$command"
+        if [ $? -ne  0 ]; then
+            echo -e "${Error} ${RedBG} 设置env参数失败！${Font}"
+            exit 1
+        fi
     fi
 }
 
