@@ -34,7 +34,6 @@ services:
     image: "nginx:alpine"
     ports:
       - "${APP_PORT}:80"
-      - "${APP_PORT_SSL}:443"
     volumes:
       - ./docker/nginx:/etc/nginx/conf.d
       - ./public:/var/www/public

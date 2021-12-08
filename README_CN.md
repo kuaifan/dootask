@@ -63,6 +63,15 @@ password: 123456
 ./cmd mysql "your command"            // 运行 mysql 命令 (backup: 备份数据库，recovery: 还原数据库)
 ```
 
+### 代理开启 HTTPS
+``` 
+// .env 文件添加
+APP_SCHEME=1
+
+// nginx 代理配置添加
+proxy_set_header X-Forwarded-Proto $scheme;
+```
+
 ## 升级更新
 
 **注意：在升级之前请备份好你的数据！**

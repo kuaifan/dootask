@@ -6,7 +6,6 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Request;
-use URL;
 
 class WebApi
 {
@@ -28,13 +27,9 @@ class WebApi
             header('Access-Control-Allow-Headers:Content-Type, platform, platform-channel, token, release, Access-Control-Allow-Origin');
         }
 
-        $APP_FORCE_URL_SCHEME = env('APP_FORCE_URL_SCHEME', 'auto');
-        if ($APP_FORCE_URL_SCHEME == 'https' || $APP_FORCE_URL_SCHEME === true) {
-            URL::forceScheme('https');
-        } elseif ($APP_FORCE_URL_SCHEME == 'http' || $APP_FORCE_URL_SCHEME === false) {
-            URL::forceScheme('http');
-        } elseif (Request::header('x-forwarded-server-port', 80) == 443) {
-            URL::forceScheme('https');
+        $APP_SCHEME = env('APP_SCHEME', 'auto');
+        if (in_array(strtolower($APP_SCHEME), ['https', 'on', 'ssl', '1', 'true', 'yes'], true)) {
+            $request->setTrustedProxies([$request->getClientIp()], $request::HEADER_X_FORWARDED_PROTO);
         }
 
         return $next($request);

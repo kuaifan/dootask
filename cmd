@@ -211,9 +211,9 @@ if [ $# -gt 0 ];then
     elif [[ "$1" == "https" ]]; then
         shift 1
         if [[ "$@" == "auto" ]];then
-            env_set APP_FORCE_URL_SCHEME "auto"
+            env_set APP_SCHEME "auto"
         else
-            env_set APP_FORCE_URL_SCHEME "true"
+            env_set APP_SCHEME "true"
         fi
         supervisorctl_restart php
     elif [[ "$1" == "artisan" ]]; then

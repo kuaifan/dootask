@@ -63,6 +63,15 @@ password: 123456
 ./cmd mysql "your command"            // To run a mysql command (backup: Backup database, recovery: Restore database)
 ```
 
+### NGINX OPEN HTTPS
+``` 
+// .env add
+APP_SCHEME=1
+
+// nginx add
+proxy_set_header X-Forwarded-Proto $scheme;
+```
+
 ## Upgrade
 
 **Note: Please back up your data before upgrading!**

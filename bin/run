@@ -73,7 +73,7 @@ class runLoader
     }
 }
 
-$array = getopt('', ['port:', 'ssl:', 'mode:']);
+$array = getopt('', ['port:', 'mode:']);
 $loader = new runLoader();
 
 if (isset($array['mode'])) {
@@ -83,9 +83,6 @@ if (isset($array['mode'])) {
 $data = [];
 if (isset($array['port'])) {
     $data['APP_PORT'] = $array['port'];
-}
-if (isset($array['ssl'])) {
-    $data['APP_PORT_SSL'] = $array['ssl'];
 }
 if ($data) {
     $loader->modifyEnv($data);
