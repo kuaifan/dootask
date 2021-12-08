@@ -77,8 +77,15 @@ proxy_set_header X-Forwarded-Proto $scheme;
 **注意：在升级之前请备份好你的数据！**
 
 ```bash
-# 进入项目所在目录，运行一下命令即可
+# 方法1：进入项目所在目录，运行一下命令即可
 ./cmd update
+
+# （或者）方法2：如果方法1失败请使用此方法
+git pull
+./cmd mysql backup
+./cmd uninstall
+./cmd install
+./cmd mysql recovery
 ```
 
 ## 卸载项目

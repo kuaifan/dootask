@@ -77,8 +77,15 @@ proxy_set_header X-Forwarded-Proto $scheme;
 **Note: Please back up your data before upgrading!**
 
 ```bash
-# Enter directory and run command
+# Method 1: Enter directory and run command
 ./cmd update
+
+# Or method 2: use this method if method 1 fails
+git pull
+./cmd mysql backup
+./cmd uninstall
+./cmd install
+./cmd mysql recovery
 ```
 
 ## Uninstall
