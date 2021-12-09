@@ -7,7 +7,6 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./docker/crontab/crontab.conf:/etc/supervisor/conf.d/crontab.conf
-      - ./docker/dns/dns.conf:/etc/supervisor/conf.d/dns.conf
       - ./docker/php/php.conf:/etc/supervisor/conf.d/php.conf
       - ./docker/php/php.ini:/usr/local/etc/php/php.ini
       - ./docker/log/supervisor:/var/log/supervisor
@@ -65,10 +64,12 @@ services:
     ports: # mysql ports item
       - "33062:3306" # mysql ports value
     volumes:
+      - ./docker/mysql/repassword.sh:/etc/mysql/repassword.sh
       - ./docker/mysql/conf.d:/etc/mysql/conf.d
       - ./docker/mysql/data:/var/lib/mysql
     environment:
       TZ: "Asia/Shanghai"
+      MYSQL_PREFIX: "${DB_PREFIX}"
       MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
       MYSQL_DATABASE: "${DB_DATABASE}"
       MYSQL_USER: "${DB_USERNAME}"

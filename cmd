@@ -23,7 +23,7 @@ judge() {
     fi
 }
 
-rand(){
+rand() {
     local min=$1
     local max=$(($2-$min+1))
     local num=$(($RANDOM+1000000000))
@@ -32,7 +32,7 @@ rand(){
 
 supervisorctl_restart() {
     local RES=`run_exec php "supervisorctl update $1"`
-    if [ -z "$RES" ];then
+    if [ -z "$RES" ]; then
         run_exec php "supervisorctl restart $1"
     else
         echo -e "$RES"
@@ -60,6 +60,10 @@ check_node() {
     fi
 }
 
+docker_name() {
+    echo `docker-compose ps | awk '{print $1}' | grep "\-$1\-"`
+}
+
 run_compile() {
     local type=$1
     local npxcmd=""
@@ -85,22 +89,56 @@ run_compile() {
 run_exec() {
     local container=$1
     local cmd=$2
-    local name=`get_docker_name $container`
-    if [ "$container" = "mariadb" ]; then
+    local name=`docker_name $container`
+    if [ -z "$name" ]; then
+        echo -e "${Error} ${RedBG} 没有找到 $container 容器! ${Font}"
+        exit 1
+    fi
+    if [ "$container" = "mariadb" ] || [ "$container" = "nginx" ] || [ "$container" = "redis" ]; then
         docker exec -it "$name" /bin/sh -c "$cmd"
     else
         docker exec -it "$name" /bin/bash -c "$cmd"
     fi
 }
 
-get_docker_name() {
-    local container=$1
-    local name=`docker-compose ps | awk '{print $1}' | grep "\-$container\-"`
-    if [ -z "$name" ]; then
-        echo -e "${Error} ${RedBG} 没有找到 $container 容器! ${Font}"
-        exit 1
+run_mysql() {
+    if [ "$1" = "backup" ]; then
+        # 备份数据库
+        database=$(env_get DB_DATABASE)
+        username=$(env_get DB_USERNAME)
+        password=$(env_get DB_PASSWORD)
+        mkdir -p ${cur_path}/docker/mysql/backup
+        filename="${cur_path}/docker/mysql/backup/${database}_$(date "+%Y%m%d%H%M%S").sql.gz"
+        run_exec mariadb "exec mysqldump --databases $database -u$username -p$password" | gzip > $filename
+        judge "备份数据库"
+        [ -f "$filename" ] && echo -e "备份文件：$filename"
+    elif [ "$1" = "recovery" ]; then
+        # 还原数据库
+        database=$(env_get DB_DATABASE)
+        username=$(env_get DB_USERNAME)
+        password=$(env_get DB_PASSWORD)
+        mkdir -p ${cur_path}/docker/mysql/backup
+        list=`ls -1 "${cur_path}/docker/mysql/backup" | grep ".sql.gz"`
+        if [ -z "$list" ]; then
+            echo -e "${Error} ${RedBG} 没有备份文件！${Font}"
+            exit 1
+        fi
+        echo "$list"
+        read -rp "请输入备份文件名称还原：" inputname
+        filename="${cur_path}/docker/mysql/backup/${inputname}"
+        if [ ! -f "$filename" ]; then
+            echo -e "${Error} ${RedBG} 备份文件：${inputname} 不存在！ ${Font}"
+            exit 1
+        fi
+        container_name=`docker_name mariadb`
+        if [ -z "$container_name" ]; then
+            echo -e "${Error} ${RedBG} 没有找到 mariadb 容器! ${Font}"
+            exit 1
+        fi
+        docker cp $filename $container_name:/
+        run_exec mariadb "gunzip < /$inputname | mysql -u$username -p$password $database"
+        judge "还原数据库"
     fi
-    echo $name
 }
 
 env_get() {
@@ -113,7 +151,7 @@ env_set() {
     local key=$1
     local val=$2
     local exist=`cat ${cur_path}/.env | grep "^$key="`
-    if [ -z "$exist" ];then
+    if [ -z "$exist" ]; then
         echo "$key=$val" >> $cur_path/.env
     else
         command="sed -i '/^$key=/c\\$key=$val' /www/.env"
@@ -126,16 +164,16 @@ env_set() {
 }
 
 env_init() {
-    if [ ! -f ".env" ];then
+    if [ ! -f ".env" ]; then
         cp .env.docker .env
     fi
-    if [ -z "$(env_get DB_ROOT_PASSWORD)" ];then
+    if [ -z "$(env_get DB_ROOT_PASSWORD)" ]; then
         env_set DB_ROOT_PASSWORD "$(docker run -it --rm alpine sh -c "date +%s%N | md5sum | cut -c 1-16")"
     fi
-    if [ -z "$(env_get APP_ID)" ];then
+    if [ -z "$(env_get APP_ID)" ]; then
         env_set APP_ID "$(docker run -it --rm alpine sh -c "date +%s%N | md5sum | cut -c 1-6")"
     fi
-    if [ -z "$(env_get APP_IPPR)" ];then
+    if [ -z "$(env_get APP_IPPR)" ]; then
         env_set APP_IPPR "10.$(rand 50 100).$(rand 100 200)"
     fi
 }
@@ -147,7 +185,7 @@ env_init() {
 env_init
 check_docker
 
-if [ $# -gt 0 ];then
+if [ $# -gt 0 ]; then
     if [[ "$1" == "init" ]] || [[ "$1" == "install" ]]; then
         shift 1
         rm -rf composer.lock
@@ -155,13 +193,14 @@ if [ $# -gt 0 ];then
         mkdir -p ${cur_path}/docker/mysql/data
         chmod -R 777 ${cur_path}/docker/mysql/data
         docker-compose up -d
-        sleep 3
+        docker-compose restart php
         run_exec php "composer install"
         [ -z "$(env_get APP_KEY)" ] && run_exec php "php artisan key:generate"
         run_exec php "php artisan migrate --seed"
         run_exec php "php bin/run --mode=prod"
         docker-compose stop
         docker-compose start
+        run_exec mariadb "sh /etc/mysql/repassword.sh"
     elif [[ "$1" == "update" ]]; then
         shift 1
         git fetch --all
@@ -185,7 +224,6 @@ if [ $# -gt 0 ];then
             ;;
         esac
         docker-compose down
-        docker-compose rm -fs
         rm -rf "./docker/mysql/data"
         rm -rf "./docker/log/supervisor"
         find "./storage/logs" -name "*.log" | xargs rm -rf
@@ -202,7 +240,7 @@ if [ $# -gt 0 ];then
         docker run -it --rm -v ${cur_path}:/home/node/apidoc kuaifan/apidoc -i app/Http/Controllers/Api -o public/docs
     elif [[ "$1" == "debug" ]]; then
         shift 1
-        if [[ "$@" == "close" ]];then
+        if [[ "$@" == "close" ]]; then
             env_set APP_DEBUG "false"
         else
             env_set APP_DEBUG "true"
@@ -210,7 +248,7 @@ if [ $# -gt 0 ];then
         supervisorctl_restart php
     elif [[ "$1" == "https" ]]; then
         shift 1
-        if [[ "$@" == "auto" ]];then
+        if [[ "$@" == "auto" ]]; then
             env_set APP_SCHEME "auto"
         else
             env_set APP_SCHEME "true"
@@ -222,40 +260,18 @@ if [ $# -gt 0 ];then
     elif [[ "$1" == "php" ]]; then
         shift 1
         e="php $@" && run_exec php "$e"
+    elif [[ "$1" == "nginx" ]]; then
+        shift 1
+        e="nginx $@" && run_exec nginx "$e"
+    elif [[ "$1" == "redis" ]]; then
+        shift 1
+        e="redis $@" && run_exec redis "$e"
     elif [[ "$1" == "mysql" ]]; then
         shift 1
-        if [[ "$@" == "backup" ]]; then
-            # 备份数据库
-            database=$(env_get DB_DATABASE)
-            username=$(env_get DB_USERNAME)
-            password=$(env_get DB_PASSWORD)
-            mkdir -p ${cur_path}/docker/mysql/backup
-            filename="${cur_path}/docker/mysql/backup/${database}_$(date "+%Y%m%d%H%M%S").sql.gz"
-            run_exec mariadb "exec mysqldump --databases $database -u$username -p$password" | gzip > $filename
-            judge "备份数据库"
-            [ -f "$filename" ] && echo -e "备份文件：$filename"
-        elif [[ "$@" == "recovery" ]];then
-            # 还原数据库
-            database=$(env_get DB_DATABASE)
-            username=$(env_get DB_USERNAME)
-            password=$(env_get DB_PASSWORD)
-            mkdir -p ${cur_path}/docker/mysql/backup
-            list=`ls -1 "${cur_path}/docker/mysql/backup" | grep ".sql.gz"`
-            if [ -z "$list" ]; then
-                echo -e "${Error} ${RedBG} 没有备份文件！${Font}"
-                exit 1
-            fi
-            echo "$list"
-            read -rp "请输入备份文件名称还原：" inputname
-            filename="${cur_path}/docker/mysql/backup/${inputname}"
-            if [ ! -f "$filename" ]; then
-                echo -e "${Error} ${RedBG} 备份文件：${inputname} 不存在！ ${Font}"
-                exit 1
-            fi
-            container_name=`get_docker_name mariadb`
-            docker cp $filename $container_name:/
-            run_exec mariadb "gunzip < /$inputname | mysql -u$username -p$password $database"
-            judge "还原数据库"
+        if [ "$1" = "backup" ]; then
+            run_mysql backup
+        elif [ "$1" = "recovery" ]; then
+            run_mysql recovery
         else
             e="mysql $@" && run_exec mariadb "$e"
         fi

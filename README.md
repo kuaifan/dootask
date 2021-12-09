@@ -28,13 +28,6 @@ cd dootask
 ```
 Installed, project url: **`http://IP:PORT`**（`PORT`Default is`2222`）。
 
-### Default Account
-
-```text
-account: admin@dootask.com
-password: 123456
-```
-
 ### Change port
 
 ```bash
@@ -57,19 +50,22 @@ password: 123456
 # You can do this using the following command
 ./cmd artisan "your command"          // To run a artisan command
 ./cmd php "your command"              // To run a php command
+./cmd nginx "your command"            // To run a nginx command
+./cmd redis "your command"            // To run a redis command
 ./cmd composer "your command"         // To run a composer command
 ./cmd supervisorctl "your command"    // To run a supervisorctl command
 ./cmd test "your command"             // To run a phpunit command
 ./cmd mysql "your command"            // To run a mysql command (backup: Backup database, recovery: Restore database)
 ```
 
-### NGINX OPEN HTTPS
-``` 
-// .env add
-APP_SCHEME=1
+### NGINX PROXY SSL
 
-// nginx add
+```bash 
+# 1、nginx config add
 proxy_set_header X-Forwarded-Proto $scheme;
+
+# 2、execute command
+./cmd https
 ```
 
 ## Upgrade

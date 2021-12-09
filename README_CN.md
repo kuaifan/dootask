@@ -28,13 +28,6 @@ cd dootask
 ```
 安装完毕，项目地址为：**`http://IP:PORT`**（`PORT`默认为`2222`）。
 
-### 默认账号
-
-```text
-account: admin@dootask.com
-password: 123456
-```
-
 ### 更换端口
 
 ```bash
@@ -57,19 +50,22 @@ password: 123456
 # 你可以使用以下命令来执行
 ./cmd artisan "your command"          // 运行 artisan 命令
 ./cmd php "your command"              // 运行 php 命令
+./cmd nginx "your command"            // 运行 nginx 命令
+./cmd redis "your command"            // 运行 redis 命令
 ./cmd composer "your command"         // 运行 composer 命令
 ./cmd supervisorctl "your command"    // 运行 supervisorctl 命令
 ./cmd test "your command"             // 运行 phpunit 命令
 ./cmd mysql "your command"            // 运行 mysql 命令 (backup: 备份数据库，recovery: 还原数据库)
 ```
 
-### 代理开启 HTTPS
-``` 
-// .env 文件添加
-APP_SCHEME=1
+### NGINX 代理 SSL
 
-// nginx 代理配置添加
+```bash 
+# 1、nginx 代理配置添加
 proxy_set_header X-Forwarded-Proto $scheme;
+
+# 2、执行命令
+./cmd https
 ```
 
 ## 升级更新
