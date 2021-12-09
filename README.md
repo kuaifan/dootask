@@ -67,10 +67,12 @@ cd dootask
 ### NGINX PROXY SSL
 
 ```bash 
-# 1、nginx config add
+# 1、Nginx config add
+proxy_set_header X-Forwarded-Host $http_host;
 proxy_set_header X-Forwarded-Proto $scheme;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 
-# 2、execute command
+# 2、Enter directory and run command
 ./cmd https
 ```
 
@@ -79,7 +81,7 @@ proxy_set_header X-Forwarded-Proto $scheme;
 **Note: Please back up your data before upgrading!**
 
 ```bash
-# Method 1: Enter directory and run command
+# Method 1: enter directory and run command
 ./cmd update
 
 # Or method 2: use this method if method 1 fails

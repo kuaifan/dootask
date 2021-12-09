@@ -67,10 +67,12 @@ cd dootask
 ### NGINX 代理 SSL
 
 ```bash 
-# 1、nginx 代理配置添加
+# 1、Nginx 代理配置添加
+proxy_set_header X-Forwarded-Host $http_host;
 proxy_set_header X-Forwarded-Proto $scheme;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 
-# 2、执行命令
+# 2、进入项目所在目录，运行以下命令
 ./cmd https
 ```
 
@@ -79,7 +81,7 @@ proxy_set_header X-Forwarded-Proto $scheme;
 **注意：在升级之前请备份好你的数据！**
 
 ```bash
-# 方法1：进入项目所在目录，运行一下命令即可
+# 方法1：进入项目所在目录，运行以下命令
 ./cmd update
 
 # （或者）方法2：如果方法1失败请使用此方法
@@ -93,6 +95,6 @@ git pull
 ## 卸载项目
 
 ```bash
-# 进入项目所在目录，运行一下命令即可
+# 进入项目所在目录，运行以下命令
 ./cmd uninstall
 ```
