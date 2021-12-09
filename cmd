@@ -182,8 +182,8 @@ env_init() {
 ####################################################################################
 ####################################################################################
 
-env_init
 check_docker
+env_init
 
 if [ $# -gt 0 ]; then
     if [[ "$1" == "init" ]] || [[ "$1" == "install" ]]; then
@@ -200,6 +200,8 @@ if [ $# -gt 0 ]; then
         run_exec php "php bin/run --mode=prod"
         docker-compose stop
         docker-compose start
+        echo -e "${OK} ${GreenBG} 安装完成 ${Font}"
+        echo -e "地址: http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
         run_exec mariadb "sh /etc/mysql/repassword.sh"
     elif [[ "$1" == "update" ]]; then
         shift 1
