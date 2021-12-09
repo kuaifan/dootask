@@ -26,7 +26,13 @@ cd dootask
 # 3、Build project
 ./cmd install
 ```
-Installed, project url: **`http://IP:PORT`**（`PORT`Default is`2222`）。
+
+### Reset password
+
+```bash
+# Reset default account password
+./cmd repassword
+```
 
 ### Change port
 

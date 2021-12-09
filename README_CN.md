@@ -26,7 +26,13 @@ cd dootask
 # 3、一键构建项目
 ./cmd install
 ```
-安装完毕，项目地址为：**`http://IP:PORT`**（`PORT`默认为`2222`）。
+
+### 重置密码
+
+```bash
+# 重置默认管理员密码
+./cmd repassword
+```
 
 ### 更换端口
 

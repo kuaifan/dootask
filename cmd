@@ -230,6 +230,9 @@ if [ $# -gt 0 ]; then
         rm -rf "./docker/log/supervisor"
         find "./storage/logs" -name "*.log" | xargs rm -rf
         echo -e "${OK} ${GreenBG} 卸载完成 ${Font}"
+    elif [[ "$1" == "repassword" ]]; then
+        shift 1
+        run_exec mariadb "sh /etc/mysql/repassword.sh"
     elif [[ "$1" == "dev" ]] || [[ "$1" == "development" ]]; then
         shift 1
         run_compile dev
