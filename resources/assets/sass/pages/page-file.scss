@@ -307,6 +307,27 @@
                     &.ppt:before {
                         background-image: url("../images/file/ppt.svg");
                     }
+                    &.compress:before {
+                        background-image: url("../images/file/compress.svg");
+                    }
+                    &.image:before {
+                        background-image: url("../images/file/image.svg");
+                    }
+                    &.media:before {
+                        background-image: url("../images/file/media.svg");
+                    }
+                    &.pdf:before {
+                        background-image: url("../images/file/pdf.svg");
+                    }
+                    &.text:before {
+                        background-image: url("../images/file/text.svg");
+                    }
+                    &.cad:before {
+                        background-image: url("../images/file/cad.svg");
+                    }
+                    &.other:before {
+                        background-image: url("../images/file/other.svg");
+                    }
                 }
                 .taskfont {
                     color: #aaaaaa;
@@ -447,6 +468,27 @@
                     &.ppt .file-icon {
                         background-image: url("../images/file/ppt.svg");
                     }
+                    &.compress .file-icon {
+                        background-image: url("../images/file/compress.svg");
+                    }
+                    &.image .file-icon {
+                        background-image: url("../images/file/image.svg");
+                    }
+                    &.media .file-icon {
+                        background-image: url("../images/file/media.svg");
+                    }
+                    &.pdf .file-icon {
+                        background-image: url("../images/file/pdf.svg");
+                    }
+                    &.text .file-icon {
+                        background-image: url("../images/file/text.svg");
+                    }
+                    &.cad .file-icon {
+                        background-image: url("../images/file/cad.svg");
+                    }
+                    &.other .file-icon {
+                        background-image: url("../images/file/other.svg");
+                    }
                     &.highlight {
                         background-color: #f4f5f7;
                     }
@@ -521,6 +563,27 @@
         }
         &.ppt:before {
             background-image: url("../images/file/ppt.svg");
+        }
+        &.compress:before {
+            background-image: url("../images/file/compress.svg");
+        }
+        &.image:before {
+            background-image: url("../images/file/image.svg");
+        }
+        &.media:before {
+            background-image: url("../images/file/media.svg");
+        }
+        &.pdf:before {
+            background-image: url("../images/file/pdf.svg");
+        }
+        &.text:before {
+            background-image: url("../images/file/text.svg");
+        }
+        &.cad:before {
+            background-image: url("../images/file/cad.svg");
+        }
+        &.other:before {
+            background-image: url("../images/file/other.svg");
         }
     }
 }
