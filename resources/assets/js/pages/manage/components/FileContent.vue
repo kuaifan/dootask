@@ -14,7 +14,7 @@
                         </div>
                         <span slot="reference">[{{$L('未保存')}}*]</span>
                     </EPopover>
-                    {{formatName(file.name, file.type)}}
+                    {{formatName(file)}}
                 </div>
                 <div class="header-user">
                     <ul>
@@ -62,7 +62,7 @@
                 <OnlyOffice v-else-if="['word', 'excel', 'ppt'].includes(file.type)" v-model="contentDetail"/>
             </div>
         </template>
-        <div v-if="loadContent > 0" class="content-load"><Loading/></div>
+        <div v-if="loadContent > 0 || previewLoad" class="content-load"><Loading/></div>
     </div>
 </template>
 
@@ -106,8 +106,17 @@ export default {
             contentDetail: null,
             contentBak: {},
 
-            editUser: []
+            editUser: [],
+
+            loadPreview: true,
         }
+    },
+
+    mounted() {
+        window.addEventListener('message', this.handleMessage)
+    },
+    beforeDestroy() {
+        window.removeEventListener('message', this.handleMessage)
     },
 
     watch: {
@@ -174,6 +183,10 @@ export default {
             return this.contentDetail && this.contentDetail.preview === true;
         },
 
+        previewLoad() {
+            return this.isPreview && this.loadPreview === true;
+        },
+
         previewUrl() {
             if (this.isPreview) {
                 return this.$store.state.method.apiUrl("../fileview/onlinePreview?url=" + encodeURIComponent(this.contentDetail.url))
@@ -184,6 +197,15 @@ export default {
     },
 
     methods: {
+        handleMessage (event) {
+            const data = event.data;
+            switch (data.act) {
+                case 'ready':
+                    this.loadPreview = false;
+                    break
+            }
+        },
+
         getContent() {
             if (!this.fileId) {
                 this.contentDetail = {};
@@ -287,13 +309,9 @@ export default {
             this.unsaveTip = false;
         },
 
-        formatName(name, type) {
-            if (type == 'word') {
-                name += ".docx";
-            } else if (type == 'excel') {
-                name += ".xlsx";
-            } else if (type == 'ppt') {
-                name += ".pptx";
+        formatName({name, ext}) {
+            if (ext != '') {
+                name += "." + ext;
             }
             return name;
         },
