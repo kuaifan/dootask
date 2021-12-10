@@ -5,6 +5,7 @@ namespace App\Exceptions;
 use App\Module\Base;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -56,5 +57,19 @@ class Handler extends ExceptionHandler
             return response()->json(Base::retError('Interface error'));
         }
         return parent::render($request, $e);
+    }
+
+    /**
+     * 重写report优雅记录
+     * @param Throwable $e
+     * @throws Throwable
+     */
+    public function report(Throwable $e)
+    {
+        if ($e instanceof ApiException) {
+            Log::error($e->getMessage(), ['exception' => ' at ' . $e->getFile() .':' . $e->getLine()]);
+        } else {
+            parent::report($e);
+        }
     }
 }
