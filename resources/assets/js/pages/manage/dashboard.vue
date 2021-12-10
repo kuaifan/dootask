@@ -219,6 +219,8 @@ export default {
                 url: 'system/get/appinfo',
             }).then(({data}) => {
                 this.downList = data.list;
+            }).catch(() => {
+                this.downList = [];
             });
         },
 

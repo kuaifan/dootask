@@ -210,6 +210,7 @@ class UsersController extends AbstractController
     {
         $user = User::auth();
         $data = Request::all();
+        $user->checkSystem(1);
         //头像
         if (Arr::exists($data, 'userimg')) {
             $userimg = Request::input('userimg');
@@ -267,6 +268,7 @@ class UsersController extends AbstractController
     public function editpass()
     {
         $user = User::auth();
+        $user->checkSystem();
         //
         $oldpass = trim(Request::input('oldpass'));
         $newpass = trim(Request::input('newpass'));
@@ -277,15 +279,6 @@ class UsersController extends AbstractController
         }
         if ($oldpass == $newpass) {
             return Base::retError('新旧密码一致');
-        }
-        //
-        if (env("PASSWORD_ADMIN") == 'disabled') {
-            if ($user->userid == 1) {
-                return Base::retError('当前环境禁止修改密码');
-            }
-        }
-        if (env("PASSWORD_OWNER") == 'disabled') {
-            return Base::retError('当前环境禁止修改密码');
         }
         //
         $verify = User::whereUserid($user->userid)->wherePassword(Base::md52($oldpass, User::token2encrypt()))->count();
@@ -462,6 +455,7 @@ class UsersController extends AbstractController
         if (empty($userInfo)) {
             return Base::retError('会员不存在或已被删除');
         }
+        $userInfo->checkSystem(1);
         //
         $upArray = [];
         switch ($type) {

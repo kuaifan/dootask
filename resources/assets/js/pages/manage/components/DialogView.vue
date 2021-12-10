@@ -124,6 +124,8 @@ export default {
                 },
             }).then(({data}) => {
                 this.read_list = data;
+            }).catch(() => {
+                this.read_list = [];
             });
         },
 

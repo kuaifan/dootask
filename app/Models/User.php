@@ -145,6 +145,24 @@ class User extends AbstractModel
         }
     }
 
+    /**
+     * 检查环境是否允许
+     * @param null $onlyUserid  仅指定会员
+     */
+    public function checkSystem($onlyUserid = null)
+    {
+        if ($onlyUserid && $onlyUserid != $this->userid) {
+            return;
+        }
+        if (env("PASSWORD_ADMIN") == 'disabled') {
+            if ($this->userid == 1) {
+                throw new ApiException('当前环境禁止此操作');
+            }
+        }
+        if (env("PASSWORD_OWNER") == 'disabled') {
+            throw new ApiException('当前环境禁止此操作');
+        }
+    }
 
     /** ***************************************************************************************** */
     /** ***************************************************************************************** */
