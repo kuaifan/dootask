@@ -9,6 +9,11 @@
                 <div v-if="loginType=='reg'" class="login-subtitle">{{$L('输入您的信息以创建帐户。')}}</div>
                 <div v-else class="login-subtitle">{{$L('输入您的凭证以访问您的帐户。')}}</div>
 
+                <div class="login-testuser">
+                    {{$L('演示账号')}}: <em>admin@dootask.com</em>&nbsp;&nbsp;
+                    {{$L('密码')}}: <em>123456</em>
+                </div>
+
                 <div class="login-input">
                     <Input v-model="email" prefix="ios-mail-outline" :placeholder="$L('输入您的电子邮件')" size="large" @on-enter="onLogin" @on-blur="onBlur" />
                     <Input v-model="password" prefix="ios-lock-outline" :placeholder="$L('输入您的密码')" type="password" size="large" @on-enter="onLogin" />
@@ -78,6 +83,8 @@ export default {
                 url: 'system/get/appinfo',
             }).then(({data}) => {
                 this.downList = data.list;
+            }).catch(() => {
+                this.downList = [];
             });
         },
 
