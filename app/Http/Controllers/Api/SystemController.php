@@ -56,7 +56,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/demo          获取演示账号
+     * @api {get} api/system/demo          02. 获取演示账号
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -80,7 +80,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {post} api/system/priority          02. 获取优先级、保存优先级
+     * @api {post} api/system/priority          03. 获取优先级、保存优先级
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -125,7 +125,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/info          03. 获取终端详细信息
+     * @api {get} api/system/get/info          04. 获取终端详细信息
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -154,7 +154,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/ip          04. 获取IP地址
+     * @api {get} api/system/get/ip          05. 获取IP地址
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -169,7 +169,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/cnip          05. 是否中国IP地址
+     * @api {get} api/system/get/cnip          06. 是否中国IP地址
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -186,7 +186,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/ipgcj02          06. 获取IP地址经纬度
+     * @api {get} api/system/get/ipgcj02          07. 获取IP地址经纬度
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -203,7 +203,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/ipinfo          07. 获取IP地址详细信息
+     * @api {get} api/system/get/ipinfo          08. 获取IP地址详细信息
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -220,7 +220,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/appinfo          08. 获取应用下载信息
+     * @api {get} api/system/get/appinfo          09. 获取应用下载信息
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -277,7 +277,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/appdown          09. 下载应用
+     * @api {get} api/system/get/appdown          10. 下载应用
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -295,7 +295,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {post} api/system/imgupload          10. 上传图片
+     * @api {post} api/system/imgupload          11. 上传图片
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -345,7 +345,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/imgview          11. 浏览图片空间
+     * @api {get} api/system/get/imgview          12. 浏览图片空间
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -441,7 +441,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {post} api/system/fileupload          12. 上传文件
+     * @api {post} api/system/fileupload          13. 上传文件
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0

@@ -198,8 +198,7 @@ if [ $# -gt 0 ]; then
         [ -z "$(env_get APP_KEY)" ] && run_exec php "php artisan key:generate"
         run_exec php "php artisan migrate --seed"
         run_exec php "php bin/run --mode=prod"
-        docker-compose stop
-        docker-compose start
+        docker-compose up -d
         echo -e "${OK} ${GreenBG} 安装完成 ${Font}"
         echo -e "地址: http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
         run_exec mariadb "sh /etc/mysql/repassword.sh"

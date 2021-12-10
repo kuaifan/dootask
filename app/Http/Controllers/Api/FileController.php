@@ -420,13 +420,12 @@ class FileController extends AbstractController
             'doc', 'docx' => "word",
             'xls', 'xlsx' => "excel",
             'ppt', 'pptx' => "ppt",
-
-            'wps' => "wps", //
+            'wps' => "wps",
             'jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'raw' => "picture",
             'rar', 'zip', 'jar', '7-zip', 'tar', 'gzip', '7z' => "archive",
-            'tif', 'tiff' => "tif", //
+            'tif', 'tiff' => "tif",
             'dwg', 'dxf' => "cad",
-            'ofd' => "ofd", //
+            'ofd' => "ofd",
             'pdf' => "pdf",
             'txt' => "txt",
             'html', 'htm', 'asp', 'jsp', 'xml', 'json', 'properties', 'md', 'gitignore', 'log', 'java', 'py', 'c', 'cpp', 'sql', 'sh', 'bat', 'm', 'bas', 'prg', 'cmd',
