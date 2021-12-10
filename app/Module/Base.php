@@ -2218,17 +2218,22 @@ class Base
                 case 'file':
                     $type = ['jpg', 'jpeg', 'png', 'gif', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'esp', 'pdf', 'rar', 'zip', 'gz'];
                     break;
-                case 'office':
-                    $type = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'];
-                    break;
                 case 'firmware':
                     $type = ['img', 'tar', 'bin'];
                     break;
                 case 'md':
                     $type = ['md'];
                     break;
-                case 'node_template':
-                    $type = ['csv'];
+                case 'more':
+                    $type = [
+                        'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
+                        'txt', 'html', 'htm', 'asp', 'jsp', 'xml', 'json', 'properties', 'md', 'gitignore', 'log', 'java', 'py', 'c', 'cpp', 'sql', 'sh', 'bat', 'm', 'bas', 'prg', 'cmd',
+                        'jpg', 'jpeg', 'png', 'gif',
+                        'zip', 'rar', 'jar', 'tar', 'gzip',
+                        'mp3', 'wav', 'mp4', 'flv',
+                        'pdf',
+                        'dwg'
+                    ];
                     break;
                 default:
                     return Base::retError('错误的类型参数');

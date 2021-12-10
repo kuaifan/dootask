@@ -85,7 +85,7 @@
                                     @on-enter="onEnter(item)"/>
                                 <div v-if="item._load" class="file-load"><Loading/></div>
                             </div>
-                            <div v-else class="file-name" :title="item.name">{{formatName(item.name, item.type)}}</div>
+                            <div v-else class="file-name" :title="item.name">{{formatName(item)}}</div>
                         </li>
                     </ul>
                 </div>
@@ -199,7 +199,7 @@
             v-model="editShow"
             class="page-file-drawer"
             :mask-closable="false">
-            <FileContent v-if="editShowNum > 0" :parent-show="editShow" :file="editInfo"/>
+            <FileContent v-if="editNum > 0" :parent-show="editShow" :file="editInfo"/>
         </DrawerOverlay>
 
     </div>
@@ -290,13 +290,21 @@ export default {
             shareLoad: 0,
 
             editShow: false,
-            editShowNum: 0,
+            editNum: 0,
             editInfo: {},
 
             uploadDir: false,
             uploadIng: 0,
-            uploadFormat: ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'],
-            uploadAccept: ['.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'].join(","),
+            uploadFormat: [
+                'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
+                'txt', 'html', 'htm', 'asp', 'jsp', 'xml', 'json', 'properties', 'md', 'gitignore', 'log', 'java', 'py', 'c', 'cpp', 'sql', 'sh', 'bat', 'm', 'bas', 'prg', 'cmd',
+                'jpg', 'jpeg', 'png', 'gif',
+                'zip', 'rar', 'jar', 'tar', 'gzip',
+                'mp3', 'wav', 'mp4', 'flv',
+                'pdf',
+                'dwg'
+            ],
+            uploadAccept: '',
             maxSize: 204800,
 
             contextMenuItem: {},
@@ -310,6 +318,9 @@ export default {
 
     mounted() {
         this.tableHeight = window.innerHeight - 160;
+        this.uploadAccept = this.uploadFormat.map(item => {
+            return '.' + item
+        }).join(",");
     },
 
     activated() {
@@ -381,7 +392,7 @@ export default {
 
         editShow(val) {
             if (val) {
-                this.editShowNum++;
+                this.editNum++;
                 this.$store.dispatch("websocketPath", "file/content/" + this.editInfo.id);
             } else {
                 this.$store.dispatch("websocketPath", "file");
@@ -397,7 +408,6 @@ export default {
                     title: this.$L('文件名'),
                     key: 'name',
                     minWidth: 200,
-                    resizable: true,
                     sortable: true,
                     render: (h, {row}) => {
                         let array = [];
@@ -467,7 +477,7 @@ export default {
                                     }
                                 }
                             }, [
-                                h('AutoTip', this.formatName(row.name, row.type))
+                                h('AutoTip', this.formatName(row))
                             ]));
                             //
                             const iconArray = [];
@@ -556,13 +566,9 @@ export default {
             ]
         },
 
-        formatName(name, type) {
-            if (type == 'word') {
-                name += ".docx";
-            } else if (type == 'excel') {
-                name += ".xlsx";
-            } else if (type == 'ppt') {
-                name += ".pptx";
+        formatName({name, ext}) {
+            if (ext != '') {
+                name += "." + ext;
             }
             return name;
         },

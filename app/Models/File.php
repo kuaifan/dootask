@@ -10,18 +10,18 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Request;
 
 /**
- * Class File
+ * App\Models\File
  *
- * @package App\Models
  * @property int $id
  * @property int|null $pid 上级ID
  * @property int|null $cid 复制ID
  * @property string|null $name 名称
  * @property string|null $type 类型
+ * @property string|null $ext 后缀名
  * @property int|null $size 大小(B)
  * @property int|null $userid 拥有者ID
- * @property int|null $share 是否共享(1:共享所有人,2:指定成员)
- * @property int|null $created_id 创建者ID
+ * @property int|null $share 是否共享
+ * @property int|null $created_id 创建者
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
@@ -33,6 +33,7 @@ use Request;
  * @method static \Illuminate\Database\Eloquent\Builder|File whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereCreatedId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|File whereExt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File wherePid($value)
