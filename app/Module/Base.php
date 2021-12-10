@@ -2226,13 +2226,18 @@ class Base
                     break;
                 case 'more':
                     $type = [
-                        'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
-                        'txt', 'html', 'htm', 'asp', 'jsp', 'xml', 'json', 'properties', 'md', 'gitignore', 'log', 'java', 'py', 'c', 'cpp', 'sql', 'sh', 'bat', 'm', 'bas', 'prg', 'cmd',
-                        'jpg', 'jpeg', 'png', 'gif',
-                        'zip', 'rar', 'jar', 'tar', 'gzip',
-                        'mp3', 'wav', 'mp4', 'flv',
+                        'docx', 'wps', 'doc', 'xls', 'xlsx', 'ppt', 'pptx',
+                        'jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'raw',
+                        'rar', 'zip', 'jar', '7-zip', 'tar', 'gzip', '7z',
+                        'tif', 'tiff',
+                        'dwg', 'dxf',
+                        'ofd',
                         'pdf',
-                        'dwg'
+                        'txt',
+                        'html', 'htm', 'asp', 'jsp', 'xml', 'json', 'properties', 'md', 'gitignore', 'log', 'java', 'py', 'c', 'cpp', 'sql', 'sh', 'bat', 'm', 'bas', 'prg', 'cmd',
+                        'php', 'go', 'python', 'js', 'ftl', 'css', 'lua', 'rb', 'yaml', 'yml', 'h', 'cs', 'aspx',
+                        'mp3', 'wav', 'mp4', 'flv',
+                        'avi', 'mov', 'wmv', 'mkv', '3gp', 'rm',
                     ];
                     break;
                 default:

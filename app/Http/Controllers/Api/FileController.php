@@ -420,12 +420,19 @@ class FileController extends AbstractController
             'doc', 'docx' => "word",
             'xls', 'xlsx' => "excel",
             'ppt', 'pptx' => "ppt",
-            'txt', 'html', 'htm', 'asp', 'jsp', 'xml', 'json', 'properties', 'md', 'gitignore', 'log', 'java', 'py', 'c', 'cpp', 'sql', 'sh', 'bat', 'm', 'bas', 'prg', 'cmd' => "text",
-            'jpg', 'jpeg', 'png', 'gif' => 'image',
-            'zip', 'rar', 'jar', 'tar', 'gzip' => 'compress',
-            'mp3', 'wav', 'mp4', 'flv' => 'media',
-            'pdf' => 'pdf',
-            'dwg' => 'cad',
+
+            'wps' => "wps", //
+            'jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'raw' => "picture",
+            'rar', 'zip', 'jar', '7-zip', 'tar', 'gzip', '7z' => "archive",
+            'tif', 'tiff' => "tif", //
+            'dwg', 'dxf' => "cad",
+            'ofd' => "ofd", //
+            'pdf' => "pdf",
+            'txt' => "txt",
+            'html', 'htm', 'asp', 'jsp', 'xml', 'json', 'properties', 'md', 'gitignore', 'log', 'java', 'py', 'c', 'cpp', 'sql', 'sh', 'bat', 'm', 'bas', 'prg', 'cmd',
+            'php', 'go', 'python', 'js', 'ftl', 'css', 'lua', 'rb', 'yaml', 'yml', 'h', 'cs', 'aspx' => "code",
+            'mp3', 'wav', 'mp4', 'flv',
+            'avi', 'mov', 'wmv', 'mkv', '3gp', 'rm' => "media",
             default => "",
         };
         $file = File::createInstance([
