@@ -37,8 +37,7 @@ class SystemController extends AbstractController
             if (env("SYSTEM_SETTING") == 'disabled') {
                 return Base::retError('当前环境禁止修改');
             }
-            $user = User::auth();
-            $user->isAdmin();
+            User::auth('admin');
             $all = Request::input();
             foreach ($all AS $key => $value) {
                 if (!in_array($key, ['reg', 'login_code'])) {
@@ -54,6 +53,30 @@ class SystemController extends AbstractController
         $setting['login_code'] = $setting['login_code'] ?: 'auto';
         //
         return Base::retSuccess('success', $setting ?: json_decode('{}'));
+    }
+
+    /**
+     * @api {get} api/system/demo          获取演示账号
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName demo
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function demo()
+    {
+        $demo_account = env('DEMO_ACCOUNT');
+        $demo_password = env('DEMO_PASSWORD');
+        if (empty($demo_account) || empty($demo_password)) {
+            return Base::retError('No demo account');
+        }
+        return Base::retSuccess('success', [
+            'account' => $demo_account,
+            'password' => $demo_password,
+        ]);
     }
 
     /**
@@ -73,8 +96,7 @@ class SystemController extends AbstractController
     {
         $type = trim(Request::input('type'));
         if ($type == 'save') {
-            $user = User::auth();
-            $user->isAdmin();
+            User::auth('admin');
             $list = Base::getPostValue('list');
             $array = [];
             if (empty($list) || !is_array($list)) {

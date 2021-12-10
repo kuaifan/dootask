@@ -42,18 +42,25 @@
                 padding: 0 12px;
                 color: #AAAAAA;
             }
-            .login-testuser {
+            .login-demo {
                 margin-top: 30px;
                 margin-bottom: -36px;
-                //display: flex;
-                display: none;
+                display: flex;
                 align-items: center;
                 justify-content: center;
                 color: #888888;
-                > em {
-                    font-style: normal;
-                    text-decoration: underline;
-                    margin-left: 2px;
+                > li {
+                    list-style: none;
+                    padding: 0;
+                    margin-right: 6px;
+                    &:last-child {
+                        margin-right: 0;
+                    }
+                    > em {
+                        font-style: normal;
+                        text-decoration: underline;
+                        margin-left: 2px;
+                    }
                 }
             }
             .login-input {
