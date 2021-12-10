@@ -85,7 +85,7 @@ export default {
                 if (!url) {
                     return;
                 }
-                $A.loadScript(this.$store.state.method.apiUrl("../web-apps/apps/api/documents/api.js"), () => {
+                $A.loadScript(this.$store.state.method.apiUrl("../office/web-apps/apps/api/documents/api.js"), () => {
                     this.loadFile()
                 })
             },

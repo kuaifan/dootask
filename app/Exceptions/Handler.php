@@ -60,7 +60,7 @@ class Handler extends ExceptionHandler
     }
 
     /**
-     * 重写report优雅记录laravel日志
+     * 重写report优雅记录
      * @param Throwable $e
      * @throws Throwable
      */

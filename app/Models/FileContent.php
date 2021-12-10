@@ -57,26 +57,28 @@ class FileContent extends AbstractModel
             return Response::download(public_path($content['url']));
         }
         if (empty($content)) {
-            switch ($type) {
-                case 'document':
-                    $content = [
-                        "type" => "md",
-                        "content" => "",
-                    ];
-                    break;
-
-                case 'sheet':
-                    $content = [
-                        [
-                            "name" => "Sheet1",
-                            "config" => json_decode('{}'),
-                        ]
-                    ];
-                    break;
-
-                default:
-                    $content = json_decode('{}');
-                    break;
+            $content = match ($type) {
+                'document' => [
+                    "type" => "md",
+                    "content" => "",
+                ],
+                'sheet' => [
+                    [
+                        "name" => "Sheet1",
+                        "config" => json_decode('{}'),
+                    ]
+                ],
+                default => json_decode('{}'),
+            };
+        } else {
+            $content['preview'] = false;
+            if ($content['ext'] && !in_array($content['ext'], ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'])) {
+                $url = 'http://' . env('APP_IPPR') . '.3/' . $content['url'];
+                if ($type == 'image') {
+                    $url = Base::fillUrl($content['url']);
+                }
+                $content['url'] = base64_encode($url);
+                $content['preview'] = true;
             }
         }
         return Base::retSuccess('success', [ 'content' => $content ]);

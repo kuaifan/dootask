@@ -407,7 +407,8 @@ class FileController extends AbstractController
         $path = 'uploads/office/' . date("Ym") . '/u' . $user->userid . '/';
         $data = Base::upload([
             "file" => Request::file('files'),
-            "type" => 'office',
+            "type" => 'more',
+            "autoThumb" => false,
             "path" => $path,
         ]);
         if (Base::isError($data)) {
@@ -415,36 +416,36 @@ class FileController extends AbstractController
         }
         $data = $data['data'];
         //
-        $type = "";
-        switch ($data['ext']) {
-            case 'doc':
-            case 'docx':
-                $type = "word";
-                break;
-            case 'xls':
-            case 'xlsx':
-                $type = "excel";
-                break;
-            case 'ppt':
-            case 'pptx':
-                $type = "ppt";
-                break;
-        }
+        $type = match ($data['ext']) {
+            'doc', 'docx' => "word",
+            'xls', 'xlsx' => "excel",
+            'ppt', 'pptx' => "ppt",
+            'txt', 'html', 'htm', 'asp', 'jsp', 'xml', 'json', 'properties', 'md', 'gitignore', 'log', 'java', 'py', 'c', 'cpp', 'sql', 'sh', 'bat', 'm', 'bas', 'prg', 'cmd' => "text",
+            'jpg', 'jpeg', 'png', 'gif' => 'image',
+            'zip', 'rar', 'jar', 'tar', 'gzip' => 'compress',
+            'mp3', 'wav', 'mp4', 'flv' => 'media',
+            'pdf' => 'pdf',
+            'dwg' => 'cad',
+            default => "",
+        };
         $file = File::createInstance([
             'pid' => $pid,
             'name' => Base::rightDelete($data['name'], '.' . $data['ext']),
             'type' => $type,
+            'ext' => $data['ext'],
             'userid' => $userid,
             'created_id' => $user->userid,
         ]);
         // 开始创建
-        return AbstractModel::transaction(function () use ($user, $data, $file) {
+        return AbstractModel::transaction(function () use ($type, $user, $data, $file) {
             $file->save();
             //
             $content = FileContent::createInstance([
                 'fid' => $file->id,
                 'content' => [
                     'from' => '',
+                    'type' => $type,
+                    'ext' => $data['ext'],
                     'url' => $data['path']
                 ],
                 'text' => '',
