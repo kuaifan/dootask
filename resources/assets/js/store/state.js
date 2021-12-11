@@ -266,15 +266,16 @@ state.cacheLoading = {};
 // User
 state.cacheUserActive = {};
 state.cacheUserWait = [];
-state.cacheUserBasic = state.method.getStorageArray("cacheUserBasic");
+state.cacheUserBasic = [];
 // Dialog
-state.cacheDialogs = state.method.getStorageArray("cacheDialogs");
-state.cacheDialogMsgs = state.method.getStorageArray("cacheDialogMsgs");
+state.cacheDialogs = [];
+state.cacheDialogMsgs = [];
 // Project
-state.cacheProjects = state.method.getStorageArray("cacheProjects");
-state.cacheColumns = state.method.getStorageArray("cacheColumns");
-state.cacheTasks = state.method.getStorageArray("cacheTasks");
-state.cacheTaskSubs = state.method.getStorageArray("cacheTaskSubs");
+state.cacheProjects = [];
+state.cacheColumns = [];
+state.cacheTasks = [];
+state.cacheTaskSubs = [];
+// TablePanel
 state.cacheTablePanel = state.method.getStorageArray("cacheTablePanel");
 
 // Ajax

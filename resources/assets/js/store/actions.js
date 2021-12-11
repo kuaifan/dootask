@@ -278,9 +278,6 @@ export default {
         }
         state.cacheUserActive = Object.assign(data, {__:Math.random()});
         Store.set('cacheUserActive', data);
-        setTimeout(() => {
-            state.method.setStorage("cacheUserBasic", state.cacheUserBasic);
-        })
     },
 
     /**
@@ -408,9 +405,6 @@ export default {
             } else {
                 state.projects.push(data);
             }
-            setTimeout(() => {
-                state.method.setStorage("cacheProjects", state.cacheProjects = state.projects);
-            })
         }
     },
 
@@ -432,9 +426,6 @@ export default {
                 $A.goForward({path: '/manage/dashboard'});
             }
         }
-        setTimeout(() => {
-            state.method.setStorage("cacheProjects", state.cacheProjects = state.projects);
-        })
     },
 
     /**
@@ -618,9 +609,6 @@ export default {
             } else {
                 state.columns.push(data);
             }
-            setTimeout(() => {
-                state.method.setStorage("cacheColumns", state.cacheColumns = state.columns);
-            })
         }
     },
 
@@ -636,9 +624,6 @@ export default {
             dispatch('getProjectOne', state.columns[index].project_id)
             state.columns.splice(index, 1);
         }
-        setTimeout(() => {
-            state.method.setStorage("cacheColumns", state.cacheColumns = state.columns);
-        })
     },
 
     /**
@@ -734,14 +719,6 @@ export default {
             if (data.is_update_content) {
                 dispatch("getTaskContent", data.id);
             }
-            //
-            setTimeout(() => {
-                if (key == 'taskSubs') {
-                    state.method.setStorage("cacheTaskSubs", state.cacheTaskSubs = state[key]);
-                } else {
-                    state.method.setStorage("cacheTasks", state.cacheTasks = state[key]);
-                }
-            })
         }
     },
 
@@ -770,13 +747,6 @@ export default {
         if (state.taskId == task_id) {
             state.taskId = 0;
         }
-        setTimeout(() => {
-            if (key == 'taskSubs') {
-                state.method.setStorage("cacheTaskSubs", state.cacheTaskSubs = state[key]);
-            } else {
-                state.method.setStorage("cacheTasks", state.cacheTasks = state[key]);
-            }
-        })
     },
 
     /**
@@ -1176,9 +1146,6 @@ export default {
             } else {
                 state.dialogs.push(data);
             }
-            setTimeout(() => {
-                state.method.setStorage("cacheDialogs", state.cacheDialogs = state.dialogs);
-            })
         }
     },
 
@@ -1313,9 +1280,6 @@ export default {
             } else {
                 state.dialogMsgs.push(data);
             }
-            setTimeout(() => {
-                state.method.setStorage("cacheDialogMsgs", state.cacheDialogMsgs = state.dialogMsgs);
-            })
         }
     },
 

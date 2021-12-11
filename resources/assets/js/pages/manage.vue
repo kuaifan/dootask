@@ -217,9 +217,6 @@ export default {
     },
 
     mounted() {
-        this.$store.state.method.clearLocal();
-        this.$store.dispatch("saveUserInfo", this.userInfo);
-        //
         this.$store.dispatch("getUserInfo");
         this.$store.dispatch("getTaskPriority");
         //
