@@ -159,6 +159,9 @@
                     });
                     this.$store.dispatch("getUserBasic", {userid: value});
                 });
+                if (this.list.length == 0) {
+                    this.initialized = true;
+                }
             },
 
             searchUser(query) {
