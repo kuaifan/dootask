@@ -542,34 +542,36 @@ class FileController extends AbstractController
             $message = '取消成功';
         } else {
             // 设置共享
-            if (!in_array($share, [1, 2])) {
-                return Base::retError('请选择共享对象');
-            }
-            if ($share == 1) {
-                $user->isAdmin();
+            switch ($share) {
+                case 1:
+                    $user->isAdmin();
+                    break;
+
+                case 2:
+                    $array = [];
+                    if (is_array($userids)) {
+                        foreach ($userids as $userid) {
+                            if (!intval($userid)) continue;
+                            if (!User::whereUserid($userid)->exists()) continue;
+                            FileUser::updateInsert([
+                                'file_id' => $file->id,
+                                'userid' => $userid,
+                            ]);
+                            $array[] = $userid;
+                        }
+                    }
+                    if (empty($array)) {
+                        return Base::retError('请选择共享成员');
+                    }
+                    $builder = FileUser::whereFileId($file->id)->whereNotIn('userid', $array);
+                    $uids = (clone $builder)->pluck('userid')->toArray();
+                    $builder->delete();
+                    break;
+
+                default:
+                    return Base::retError('请选择共享对象');
             }
             $file->setShare($share);
-            if ($share == 2) {
-                $array = [];
-                if (is_array($userids)) {
-                    foreach ($userids as $userid) {
-                        if (!intval($userid)) continue;
-                        if (!User::whereUserid($userid)->exists()) continue;
-                        FileUser::updateInsert([
-                            'file_id' => $file->id,
-                            'userid' => $userid,
-                        ]);
-                        $array[] = $userid;
-                    }
-                }
-                if (empty($array)) {
-                    $builder = FileUser::whereFileId($file->id);
-                } else {
-                    $builder = FileUser::whereFileId($file->id)->whereNotIn('userid', $array);
-                }
-                $uids = (clone $builder)->pluck('userid')->toArray();
-                $builder->delete();
-            }
             $message = '设置成功';
         }
         //
