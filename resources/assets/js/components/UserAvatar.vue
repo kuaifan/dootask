@@ -67,6 +67,10 @@
                 type: String,
                 default: ''
             },
+            asynch: {
+                type: Boolean,
+                default: true
+            },
         },
         data() {
             return {
@@ -172,6 +176,14 @@
                     this.user = this.userInfo;
                     return;
                 }
+                if (this.asynch) {
+                    setTimeout(this.loadData);
+                } else {
+                    this.loadData();
+                }
+            },
+
+            loadData() {
                 this.$store.dispatch("getUserBasic", {
                     userid: this.userid,
                     success: (user) => {

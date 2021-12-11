@@ -19,7 +19,11 @@
                         {{$L(item.name)}}
                     </p>
                 </div>
-                <div ref="list" class="messenger-list overlay-y">
+                <ScrollerY
+                    ref="list"
+                    class="messenger-list overlay-y"
+                    @on-scroll="listScroll"
+                    static>
                     <ul v-if="tabActive==='dialog'" class="dialog">
                         <li
                             v-for="(dialog, key) in dialogList"
@@ -45,7 +49,7 @@
                         </li>
                     </ul>
                     <ul v-else class="contacts">
-                        <li v-for="(users, label) in contactsLists">
+                        <li v-for="(users, label) in contactsData">
                             <div class="label">{{label}}</div>
                             <ul>
                                 <li v-for="(user, index) in users" :key="index" @click="openContacts(user)">
@@ -55,8 +59,9 @@
                             </ul>
                         </li>
                         <li v-if="contactsLoad > 0" class="loading"><Loading/></li>
+                        <li v-else-if="!contactsHasMorePages" class="loaded">{{$L('共' + contactsList.length + '位联系人')}}</li>
                     </ul>
-                </div>
+                </ScrollerY>
                 <div class="messenger-menu">
                     <Icon @click="tabActive='dialog'" :class="{active:tabActive==='dialog'}" type="ios-chatbubbles" />
                     <Icon @click="tabActive='contacts'" :class="{active:tabActive==='contacts'}" type="md-person" />
@@ -81,9 +86,10 @@
 <script>
 import {mapState} from "vuex";
 import DialogWrapper from "./components/DialogWrapper";
+import ScrollerY from "../../components/ScrollerY";
 
 export default {
-    components: {DialogWrapper},
+    components: {ScrollerY, DialogWrapper},
     data() {
         return {
             tabActive: 'dialog',
@@ -100,7 +106,10 @@ export default {
 
             contactsKey: '',
             contactsLoad: 0,
-            contactsLists: null,
+            contactsList: [],
+            contactsData: null,
+            contactsCurrentPage: 1,
+            contactsHasMorePages: false,
         }
     },
 
@@ -178,7 +187,7 @@ export default {
 
     watch: {
         tabActive(val) {
-            if (val && this.contactsLists === null) {
+            if (val && this.contactsData === null) {
                 this.getContactsList(1);
             }
         },
@@ -188,7 +197,7 @@ export default {
         contactsKey(val) {
             setTimeout(() => {
                 if (this.contactsKey == val) {
-                    this.contactsLists = null;
+                    this.contactsData = null;
                     this.getContactsList(1);
                 }
             }, 600);
@@ -196,6 +205,20 @@ export default {
     },
 
     methods: {
+        listScroll(res) {
+            switch (res.directionreal) {
+                case 'up':
+                    if (res.scrollE < 10) {
+                        if (this.tabActive === 'contacts'
+                            && this.contactsLoad == 0
+                            && this.contactsHasMorePages) {
+                            this.getContactsList(this.contactsCurrentPage + 1);
+                        }
+                    }
+                    break;
+            }
+        },
+
         closeDialog() {
             this.dialogId = 0;
             this.$store.state.method.setStorage("messenger::dialogId", 0)
@@ -223,8 +246,8 @@ export default {
         },
 
         getContactsList(page) {
-            if (this.contactsLists === null) {
-                this.contactsLists = {};
+            if (this.contactsData === null) {
+                this.contactsData = {};
             }
             this.contactsLoad++;
             this.$store.dispatch("call", {
@@ -246,20 +269,21 @@ export default {
                         return false;
                     }
                     let az = user.az ? user.az.toUpperCase() : "#";
-                    if (typeof this.contactsLists[az] === "undefined") this.contactsLists[az] = [];
+                    if (typeof this.contactsData[az] === "undefined") this.contactsData[az] = [];
                     //
-                    let index = this.contactsLists[az].findIndex(({userid}) => userid === user.userid);
+                    let index = this.contactsData[az].findIndex(({userid}) => userid === user.userid);
                     if (index > -1) {
-                        this.contactsLists[az].splice(index, 1, user);
+                        this.contactsData[az].splice(index, 1, user);
                     } else {
-                        this.contactsLists[az].push(user);
+                        this.contactsData[az].push(user);
+                        this.contactsList.push(user);
                     }
                 });
-                if (data.next_page_url && data.current_page < 3) {
-                    this.getContactsList(data.current_page + 1)
-                }
+                this.contactsCurrentPage = data.current_page;
+                this.contactsHasMorePages = data.current_page < data.last_page;
             }).catch(() => {
                 this.contactsLoad--;
+                this.contactsHasMorePages = false;
             });
         },
 

@@ -193,7 +193,8 @@
                                 line-height: 34px;
                                 border-bottom: 1px solid #efefef;
                             }
-                            &.loading {
+                            &.loading,
+                            &.loaded {
                                 margin: 0;
                                 height: 52px;
                                 display: flex;
