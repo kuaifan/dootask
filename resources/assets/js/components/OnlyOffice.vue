@@ -44,8 +44,6 @@ export default {
 
     data() {
         return {
-            serverUrl: 'http://' + window.systemInformation.ippr + '.3/',
-
             fileName: null,
             fileType: null,
             fileUrl: null,
@@ -72,7 +70,7 @@ export default {
     watch: {
         value: {
             handler(val) {
-                this.fileUrl = this.serverUrl + 'api/file/content/?id=' + val.id + '&token=' + this.userToken;
+                this.fileUrl = 'http://nginx/api/file/content/?id=' + val.id + '&token=' + this.userToken;
                 this.fileType = this.getType(val.type);
                 this.fileName = val.name;
             },
@@ -140,7 +138,7 @@ export default {
                         "id": this.userInfo.userid,
                         "name": this.userInfo.nickname
                     },
-                    "callbackUrl": this.serverUrl + 'api/file/content/office?id=' + this.value.id + '&token=' + this.userToken,
+                    "callbackUrl": 'http://nginx/api/file/content/office?id=' + this.value.id + '&token=' + this.userToken,
                 }
             };
             this.$nextTick(() => {
