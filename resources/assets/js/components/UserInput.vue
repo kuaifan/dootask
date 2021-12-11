@@ -36,6 +36,8 @@
 </template>
 
 <script>
+    import {Store} from 'le5le-store';
+
     export default {
         name: 'UserInput',
         props: {
@@ -85,7 +87,10 @@
                 loading: false,
                 openLoad: false,
                 values: [],
-                list: []
+
+                list: [],
+                options: [],
+                subscribe: null,
             }
         },
         mounted() {
@@ -97,6 +102,24 @@
             this.$nextTick(() => {
                 this.ready = true;
             });
+            this.subscribe = Store.subscribe('cacheUserActive', (data) => {
+                let index = this.list.findIndex(({userid}) => userid == data.userid);
+                if (index > -1) {
+                    this.initialized = true;
+                    this.$set(this.list, index, Object.assign({}, this.list[index], data));
+                }
+                let option = this.options.find(({value}) => value == data.userid);
+                if (option) {
+                    this.$set(option, 'label', data.nickname)
+                    this.$set(option, 'avatar', data.userimg)
+                }
+            });
+        },
+        beforeDestroy() {
+            if (this.subscribe) {
+                this.subscribe.unsubscribe();
+                this.subscribe = null;
+            }
         },
         computed: {
             maxHiddenClass() {
@@ -128,32 +151,13 @@
             },
 
             setDefaultOptions(options) {
-                const userids = [];
+                this.options = options;
                 options.forEach(({value, label}) => {
                     this.list.push({
                         userid: value,
                         nickname: label,
                     });
-                    userids.push(value);
-                });
-                //
-                this.$store.dispatch("getUserBasic", {
-                    userid: userids,
-                    complete: () => {
-                        this.initialized = true;
-                    },
-                    success: (user) => {
-                        let option = options.find(({value}) => value == user.userid);
-                        if (option) {
-                            this.$set(option, 'label', user.nickname)
-                            this.$set(option, 'avatar', user.userimg)
-                        }
-                        this.list.some((item, index) => {
-                            if (item.userid == user.userid) {
-                                this.$set(this.list, index, Object.assign(item, user));
-                            }
-                        });
-                    }
+                    this.$store.dispatch("getUserBasic", {userid: value});
                 });
             },
 

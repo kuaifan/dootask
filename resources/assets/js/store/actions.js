@@ -1,3 +1,5 @@
+import {Store} from 'le5le-store';
+
 export default {
     /**
      * 访问接口
@@ -204,62 +206,81 @@ export default {
      * 获取用户基础信息
      * @param state
      * @param dispatch
-     * @param params {userid, success, complete}
+     * @param data {userid}
      */
-    getUserBasic({state, dispatch}, params) {
-        if (!state.method.isJson(params)) {
-            return;
-        }
-        const {userid, success, complete} = params;
-        if (userid === state.userId) {
-            typeof success === "function" && success(state.userInfo, true);
-            return;
-        }
-        const time = state.method.Time();
-        const array = [];
-        (state.method.isArray(userid) ? userid : [userid]).some((uid) => {
-            if (state.cacheUserBasic[uid]) {
-                typeof success === "function" && success(state.cacheUserBasic[uid].data, false);
-                if (time - state.cacheUserBasic[uid].time <= 30) {
-                    return false;
-                }
-            }
-            array.push(uid);
-        });
-        if (array.length === 0) {
-            typeof complete === "function" && complete()
+    getUserBasic({state, dispatch}, data) {
+        if (state.cacheLoading["loadUserBasic"] === true) {
+            data && state.cacheUserWait.push(data);
             return;
         }
         //
-        if (state.cacheUserBasic["::load"] === true) {
-            setTimeout(() => {
-                dispatch("getUserBasic", params);
-            }, 20);
-            return;
+        let time = $A.Time();
+        let list = state.method.cloneJSON(state.cacheUserWait);
+        if (data && data.userid) {
+            list.push(data)
         }
-        state.cacheUserBasic["::load"] = true;
+        state.cacheUserWait = [];
+        //
+        let array = [];
+        let timeout = 0;
+        list.some((item) => {
+            let temp = state.cacheUserBasic.find(({userid}) => userid == item.userid);
+            if (temp && time - temp._time <= 30) {
+                setTimeout(() => {
+                    state.cacheUserActive = Object.assign(temp, {__:Math.random()});
+                    Store.set('cacheUserActive', temp);
+                }, timeout += 5);
+                return false;
+            }
+            array.push(item);
+        });
+        if (array.length === 0) {
+            return;
+        } else if (array.length > 30) {
+            state.cacheUserWait = array.slice(30)
+            array = array.slice(0, 30)
+        }
+        //
+        state.cacheLoading["loadUserBasic"] = true;
         dispatch("call", {
             url: 'users/basic',
             data: {
-                userid: array
+                userid: array.map(({userid}) => userid)
             },
         }).then(result => {
-            state.cacheUserBasic["::load"] = false;
-            typeof complete === "function" && complete()
-            result.data.forEach((item) => {
-                state.cacheUserBasic[item.userid] = {
-                    time,
-                    data: item
-                };
-                state.method.setStorage("cacheUserBasic", state.cacheUserBasic);
-                dispatch("saveUserOnlineStatus", item);
-                typeof success === "function" && success(item, true)
+            time = $A.Time();
+            array.forEach((value) => {
+                let data = result.data.find(({userid}) => userid == value.userid) || Object.assign(value, {email: ""});
+                data._time = time;
+                dispatch("saveUserBasic", data);
             });
+            state.cacheLoading["loadUserBasic"] = false;
+            dispatch("getUserBasic");
         }).catch(e => {
             console.error(e);
-            state.cacheUserBasic["::load"] = false;
-            typeof complete === "function" && complete()
+            state.cacheLoading["loadUserBasic"] = false;
+            dispatch("getUserBasic");
         });
+    },
+
+    /**
+     * 保存用户基础信息
+     * @param state
+     * @param data
+     */
+    saveUserBasic({state}, data) {
+        let index = state.cacheUserBasic.findIndex(({userid}) => userid == data.userid);
+        if (index > -1) {
+            data = Object.assign(state.cacheUserBasic[index], data)
+            state.cacheUserBasic.splice(index, 1, data);
+        } else {
+            state.cacheUserBasic.push(data)
+        }
+        state.cacheUserActive = Object.assign(data, {__:Math.random()});
+        Store.set('cacheUserActive', data);
+        setTimeout(() => {
+            state.method.setStorage("cacheUserBasic", state.cacheUserBasic);
+        })
     },
 
     /**

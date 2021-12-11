@@ -262,9 +262,15 @@ const state = { method };
 state.windowMax768 = window.innerWidth <= 768;
 
 // 数据缓存
-state.cacheUserBasic = state.method.getStorageJson("cacheUserBasic");
+state.cacheLoading = {};
+// User
+state.cacheUserActive = {};
+state.cacheUserWait = [];
+state.cacheUserBasic = state.method.getStorageArray("cacheUserBasic");
+// Dialog
 state.cacheDialogs = state.method.getStorageArray("cacheDialogs");
 state.cacheDialogMsgs = state.method.getStorageArray("cacheDialogMsgs");
+// Project
 state.cacheProjects = state.method.getStorageArray("cacheProjects");
 state.cacheColumns = state.method.getStorageArray("cacheColumns");
 state.cacheTasks = state.method.getStorageArray("cacheTasks");

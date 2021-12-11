@@ -28,6 +28,8 @@
 
 <script>
     import {mapState} from "vuex";
+    import {Store} from 'le5le-store';
+
     export default {
         name: 'UserAvatar',
         props: {
@@ -67,18 +69,27 @@
                 type: String,
                 default: ''
             },
-            asynch: {
-                type: Boolean,
-                default: true
-            },
         },
         data() {
             return {
-                user: null
+                user: null,
+                subscribe: null
             }
         },
         mounted() {
-            this.getData()
+            this.getData();
+            //
+            this.subscribe = Store.subscribe('cacheUserActive', (data) => {
+                if (data.userid == this.userid) {
+                    this.user = data;
+                }
+            });
+        },
+        beforeDestroy() {
+            if (this.subscribe) {
+                this.subscribe.unsubscribe();
+                this.subscribe = null;
+            }
         },
         computed: {
             ...mapState(["userId", "userInfo", "userOnline"]),
@@ -176,20 +187,7 @@
                     this.user = this.userInfo;
                     return;
                 }
-                if (this.asynch) {
-                    setTimeout(this.loadData);
-                } else {
-                    this.loadData();
-                }
-            },
-
-            loadData() {
-                this.$store.dispatch("getUserBasic", {
-                    userid: this.userid,
-                    success: (user) => {
-                        this.user = user;
-                    }
-                });
+                this.$store.dispatch("getUserBasic", {userid: this.userid});
             },
 
             openDialog() {

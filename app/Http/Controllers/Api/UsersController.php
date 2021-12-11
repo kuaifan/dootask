@@ -363,7 +363,7 @@ class UsersController extends AbstractController
      * @apiGroup users
      * @apiName basic
      *
-     * @apiParam {Number} userid          会员ID(多个格式：jsonArray，一次最多30个)
+     * @apiParam {Number} userid          会员ID(多个格式：jsonArray，一次最多50个)
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
