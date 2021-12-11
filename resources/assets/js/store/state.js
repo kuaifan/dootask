@@ -305,6 +305,7 @@ state.fileContent = {};
 // 项目任务
 state.projectId = 0;
 state.projects = [];
+state.projectTotal = 0;
 state.projectLoad = 0;
 state.projectStatistics = {};
 state.columns = [];

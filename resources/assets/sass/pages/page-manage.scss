@@ -222,6 +222,31 @@
                 }
             }
         }
+        .manage-project-search {
+            width: 80%;
+            padding: 0 3px;
+            margin: 12px 0 -2px;
+            border-radius: 12px;
+            background-color: #ffffff;
+            overflow: hidden;
+            .ivu-input {
+                padding-left: 30px;
+                border-color: transparent;
+                background-color: transparent;
+                &:hover,
+                &:focus {
+                    box-shadow: none;
+                }
+            }
+            &.loading {
+                .ivu-icon-ios-search {
+                    animation: icon-loading-load 0.6s infinite linear;
+                    &:before {
+                        content: "\F45B";
+                    }
+                }
+            }
+        }
         .manage-box-new {
             width: 80%;
             height: 38px;

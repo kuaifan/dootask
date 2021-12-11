@@ -317,6 +317,11 @@
             }
             .add-input {
                 margin-top: 6px;
+                &.loading {
+                    .ivu-icon-ios-loading {
+                        animation: icon-loading-load 0.6s infinite linear;
+                    }
+                }
             }
             .add-button {
                 cursor: pointer;

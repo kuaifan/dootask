@@ -5900,74 +5900,87 @@ body .ivu-drawer-bottom .ivu-drawer-content .ivu-drawer-close .ivu-icon {
   background-repeat: no-repeat;
   background-size: contain;
   margin-right: 8px;
+  background-image: url("../images/file/other.svg");
 }
 
-.page-file .file-wrapper .file-table .file-nbox .file-name.upload:before {
-  background-image: url("../images/file/upload.svg");
-}
-
-.page-file .file-wrapper .file-table .file-nbox .file-name.updir:before {
-  background-image: url("../images/file/updir.svg");
-}
-
-.page-file .file-wrapper .file-table .file-nbox .file-name.folder:before {
-  background-image: url("../images/file/folder.svg");
-}
-
-.page-file .file-wrapper .file-table .file-nbox .file-name.document:before {
-  background-image: url("../images/file/document.svg");
-}
-
-.page-file .file-wrapper .file-table .file-nbox .file-name.mind:before {
-  background-image: url("../images/file/mind.svg");
-}
-
-.page-file .file-wrapper .file-table .file-nbox .file-name.sheet:before {
-  background-image: url("../images/file/sheet.svg");
-}
-
-.page-file .file-wrapper .file-table .file-nbox .file-name.flow:before {
-  background-image: url("../images/file/flow.svg");
-}
-
-.page-file .file-wrapper .file-table .file-nbox .file-name.word:before {
-  background-image: url("../images/file/word.svg");
-}
-
-.page-file .file-wrapper .file-table .file-nbox .file-name.excel:before {
-  background-image: url("../images/file/excel.svg");
-}
-
-.page-file .file-wrapper .file-table .file-nbox .file-name.ppt:before {
-  background-image: url("../images/file/ppt.svg");
-}
-
-.page-file .file-wrapper .file-table .file-nbox .file-name.compress:before {
-  background-image: url("../images/file/compress.svg");
-}
-
-.page-file .file-wrapper .file-table .file-nbox .file-name.image:before {
-  background-image: url("../images/file/image.svg");
-}
-
-.page-file .file-wrapper .file-table .file-nbox .file-name.media:before {
-  background-image: url("../images/file/media.svg");
-}
-
-.page-file .file-wrapper .file-table .file-nbox .file-name.pdf:before {
-  background-image: url("../images/file/pdf.svg");
-}
-
-.page-file .file-wrapper .file-table .file-nbox .file-name.text:before {
-  background-image: url("../images/file/text.svg");
+.page-file .file-wrapper .file-table .file-nbox .file-name.archive:before {
+  background-image: url("../images/file/archive.svg");
 }
 
 .page-file .file-wrapper .file-table .file-nbox .file-name.cad:before {
   background-image: url("../images/file/cad.svg");
 }
 
-.page-file .file-wrapper .file-table .file-nbox .file-name.other:before {
-  background-image: url("../images/file/other.svg");
+.page-file .file-wrapper .file-table .file-nbox .file-name.code:before {
+  background-image: url("../images/file/code.svg");
+}
+
+.page-file .file-wrapper .file-table .file-nbox .file-name.document:before {
+  background-image: url("../images/file/document.svg");
+}
+
+.page-file .file-wrapper .file-table .file-nbox .file-name.excel:before {
+  background-image: url("../images/file/excel.svg");
+}
+
+.page-file .file-wrapper .file-table .file-nbox .file-name.flow:before {
+  background-image: url("../images/file/flow.svg");
+}
+
+.page-file .file-wrapper .file-table .file-nbox .file-name.folder:before {
+  background-image: url("../images/file/folder.svg");
+}
+
+.page-file .file-wrapper .file-table .file-nbox .file-name.media:before {
+  background-image: url("../images/file/media.svg");
+}
+
+.page-file .file-wrapper .file-table .file-nbox .file-name.mind:before {
+  background-image: url("../images/file/mind.svg");
+}
+
+.page-file .file-wrapper .file-table .file-nbox .file-name.ofd:before {
+  background-image: url("../images/file/ofd.svg");
+}
+
+.page-file .file-wrapper .file-table .file-nbox .file-name.pdf:before {
+  background-image: url("../images/file/pdf.svg");
+}
+
+.page-file .file-wrapper .file-table .file-nbox .file-name.picture:before {
+  background-image: url("../images/file/picture.svg");
+}
+
+.page-file .file-wrapper .file-table .file-nbox .file-name.ppt:before {
+  background-image: url("../images/file/ppt.svg");
+}
+
+.page-file .file-wrapper .file-table .file-nbox .file-name.sheet:before {
+  background-image: url("../images/file/sheet.svg");
+}
+
+.page-file .file-wrapper .file-table .file-nbox .file-name.tif:before {
+  background-image: url("../images/file/tif.svg");
+}
+
+.page-file .file-wrapper .file-table .file-nbox .file-name.txt:before {
+  background-image: url("../images/file/txt.svg");
+}
+
+.page-file .file-wrapper .file-table .file-nbox .file-name.updir:before {
+  background-image: url("../images/file/updir.svg");
+}
+
+.page-file .file-wrapper .file-table .file-nbox .file-name.upload:before {
+  background-image: url("../images/file/upload.svg");
+}
+
+.page-file .file-wrapper .file-table .file-nbox .file-name.word:before {
+  background-image: url("../images/file/word.svg");
+}
+
+.page-file .file-wrapper .file-table .file-nbox .file-name.wps:before {
+  background-image: url("../images/file/wps.svg");
 }
 
 .page-file .file-wrapper .file-table .file-nbox .taskfont {
@@ -6069,6 +6082,7 @@ body .ivu-drawer-bottom .ivu-drawer-content .ivu-drawer-close .ivu-icon {
   background-size: contain;
   margin-top: 12px;
   position: relative;
+  background-image: url("../images/file/other.svg");
 }
 
 .page-file .file-wrapper .file-list > ul > li .file-icon .share-icon,
@@ -6096,72 +6110,84 @@ body .ivu-drawer-bottom .ivu-drawer-content .ivu-drawer-close .ivu-icon {
   opacity: 0.38;
 }
 
-.page-file .file-wrapper .file-list > ul > li.upload .file-icon {
-  background-image: url("../images/file/upload.svg");
-}
-
-.page-file .file-wrapper .file-list > ul > li.updir .file-icon {
-  background-image: url("../images/file/updir.svg");
-}
-
-.page-file .file-wrapper .file-list > ul > li.folder .file-icon {
-  background-image: url("../images/file/folder.svg");
-}
-
-.page-file .file-wrapper .file-list > ul > li.document .file-icon {
-  background-image: url("../images/file/document.svg");
-}
-
-.page-file .file-wrapper .file-list > ul > li.mind .file-icon {
-  background-image: url("../images/file/mind.svg");
-}
-
-.page-file .file-wrapper .file-list > ul > li.sheet .file-icon {
-  background-image: url("../images/file/sheet.svg");
-}
-
-.page-file .file-wrapper .file-list > ul > li.flow .file-icon {
-  background-image: url("../images/file/flow.svg");
-}
-
-.page-file .file-wrapper .file-list > ul > li.word .file-icon {
-  background-image: url("../images/file/word.svg");
-}
-
-.page-file .file-wrapper .file-list > ul > li.excel .file-icon {
-  background-image: url("../images/file/excel.svg");
-}
-
-.page-file .file-wrapper .file-list > ul > li.ppt .file-icon {
-  background-image: url("../images/file/ppt.svg");
-}
-
-.page-file .file-wrapper .file-list > ul > li.compress .file-icon {
-  background-image: url("../images/file/compress.svg");
-}
-
-.page-file .file-wrapper .file-list > ul > li.image .file-icon {
-  background-image: url("../images/file/image.svg");
-}
-
-.page-file .file-wrapper .file-list > ul > li.media .file-icon {
-  background-image: url("../images/file/media.svg");
-}
-
-.page-file .file-wrapper .file-list > ul > li.pdf .file-icon {
-  background-image: url("../images/file/pdf.svg");
-}
-
-.page-file .file-wrapper .file-list > ul > li.text .file-icon {
-  background-image: url("../images/file/text.svg");
+.page-file .file-wrapper .file-list > ul > li.archive .file-icon {
+  background-image: url("../images/file/archive.svg");
 }
 
 .page-file .file-wrapper .file-list > ul > li.cad .file-icon {
   background-image: url("../images/file/cad.svg");
 }
 
-.page-file .file-wrapper .file-list > ul > li.other .file-icon {
-  background-image: url("../images/file/other.svg");
+.page-file .file-wrapper .file-list > ul > li.code .file-icon {
+  background-image: url("../images/file/code.svg");
+}
+
+.page-file .file-wrapper .file-list > ul > li.document .file-icon {
+  background-image: url("../images/file/document.svg");
+}
+
+.page-file .file-wrapper .file-list > ul > li.excel .file-icon {
+  background-image: url("../images/file/excel.svg");
+}
+
+.page-file .file-wrapper .file-list > ul > li.flow .file-icon {
+  background-image: url("../images/file/flow.svg");
+}
+
+.page-file .file-wrapper .file-list > ul > li.folder .file-icon {
+  background-image: url("../images/file/folder.svg");
+}
+
+.page-file .file-wrapper .file-list > ul > li.media .file-icon {
+  background-image: url("../images/file/media.svg");
+}
+
+.page-file .file-wrapper .file-list > ul > li.mind .file-icon {
+  background-image: url("../images/file/mind.svg");
+}
+
+.page-file .file-wrapper .file-list > ul > li.ofd .file-icon {
+  background-image: url("../images/file/ofd.svg");
+}
+
+.page-file .file-wrapper .file-list > ul > li.pdf .file-icon {
+  background-image: url("../images/file/pdf.svg");
+}
+
+.page-file .file-wrapper .file-list > ul > li.picture .file-icon {
+  background-image: url("../images/file/picture.svg");
+}
+
+.page-file .file-wrapper .file-list > ul > li.ppt .file-icon {
+  background-image: url("../images/file/ppt.svg");
+}
+
+.page-file .file-wrapper .file-list > ul > li.sheet .file-icon {
+  background-image: url("../images/file/sheet.svg");
+}
+
+.page-file .file-wrapper .file-list > ul > li.tif .file-icon {
+  background-image: url("../images/file/tif.svg");
+}
+
+.page-file .file-wrapper .file-list > ul > li.txt .file-icon {
+  background-image: url("../images/file/txt.svg");
+}
+
+.page-file .file-wrapper .file-list > ul > li.updir .file-icon {
+  background-image: url("../images/file/updir.svg");
+}
+
+.page-file .file-wrapper .file-list > ul > li.upload .file-icon {
+  background-image: url("../images/file/upload.svg");
+}
+
+.page-file .file-wrapper .file-list > ul > li.word .file-icon {
+  background-image: url("../images/file/word.svg");
+}
+
+.page-file .file-wrapper .file-list > ul > li.wps .file-icon {
+  background-image: url("../images/file/wps.svg");
 }
 
 .page-file .file-wrapper .file-list > ul > li.highlight {
@@ -6210,74 +6236,87 @@ body .ivu-drawer-bottom .ivu-drawer-content .ivu-drawer-close .ivu-icon {
   background-repeat: no-repeat;
   background-size: contain;
   margin-right: 8px;
+  background-image: url("../images/file/other.svg");
 }
 
-.page-file-dropdown-menu .file-item.upload:before {
-  background-image: url("../images/file/upload.svg");
-}
-
-.page-file-dropdown-menu .file-item.updir:before {
-  background-image: url("../images/file/updir.svg");
-}
-
-.page-file-dropdown-menu .file-item.folder:before {
-  background-image: url("../images/file/folder.svg");
-}
-
-.page-file-dropdown-menu .file-item.document:before {
-  background-image: url("../images/file/document.svg");
-}
-
-.page-file-dropdown-menu .file-item.mind:before {
-  background-image: url("../images/file/mind.svg");
-}
-
-.page-file-dropdown-menu .file-item.sheet:before {
-  background-image: url("../images/file/sheet.svg");
-}
-
-.page-file-dropdown-menu .file-item.flow:before {
-  background-image: url("../images/file/flow.svg");
-}
-
-.page-file-dropdown-menu .file-item.word:before {
-  background-image: url("../images/file/word.svg");
-}
-
-.page-file-dropdown-menu .file-item.excel:before {
-  background-image: url("../images/file/excel.svg");
-}
-
-.page-file-dropdown-menu .file-item.ppt:before {
-  background-image: url("../images/file/ppt.svg");
-}
-
-.page-file-dropdown-menu .file-item.compress:before {
-  background-image: url("../images/file/compress.svg");
-}
-
-.page-file-dropdown-menu .file-item.image:before {
-  background-image: url("../images/file/image.svg");
-}
-
-.page-file-dropdown-menu .file-item.media:before {
-  background-image: url("../images/file/media.svg");
-}
-
-.page-file-dropdown-menu .file-item.pdf:before {
-  background-image: url("../images/file/pdf.svg");
-}
-
-.page-file-dropdown-menu .file-item.text:before {
-  background-image: url("../images/file/text.svg");
+.page-file-dropdown-menu .file-item.archive:before {
+  background-image: url("../images/file/archive.svg");
 }
 
 .page-file-dropdown-menu .file-item.cad:before {
   background-image: url("../images/file/cad.svg");
 }
 
-.page-file-dropdown-menu .file-item.other:before {
-  background-image: url("../images/file/other.svg");
+.page-file-dropdown-menu .file-item.code:before {
+  background-image: url("../images/file/code.svg");
+}
+
+.page-file-dropdown-menu .file-item.document:before {
+  background-image: url("../images/file/document.svg");
+}
+
+.page-file-dropdown-menu .file-item.excel:before {
+  background-image: url("../images/file/excel.svg");
+}
+
+.page-file-dropdown-menu .file-item.flow:before {
+  background-image: url("../images/file/flow.svg");
+}
+
+.page-file-dropdown-menu .file-item.folder:before {
+  background-image: url("../images/file/folder.svg");
+}
+
+.page-file-dropdown-menu .file-item.media:before {
+  background-image: url("../images/file/media.svg");
+}
+
+.page-file-dropdown-menu .file-item.mind:before {
+  background-image: url("../images/file/mind.svg");
+}
+
+.page-file-dropdown-menu .file-item.ofd:before {
+  background-image: url("../images/file/ofd.svg");
+}
+
+.page-file-dropdown-menu .file-item.pdf:before {
+  background-image: url("../images/file/pdf.svg");
+}
+
+.page-file-dropdown-menu .file-item.picture:before {
+  background-image: url("../images/file/picture.svg");
+}
+
+.page-file-dropdown-menu .file-item.ppt:before {
+  background-image: url("../images/file/ppt.svg");
+}
+
+.page-file-dropdown-menu .file-item.sheet:before {
+  background-image: url("../images/file/sheet.svg");
+}
+
+.page-file-dropdown-menu .file-item.tif:before {
+  background-image: url("../images/file/tif.svg");
+}
+
+.page-file-dropdown-menu .file-item.txt:before {
+  background-image: url("../images/file/txt.svg");
+}
+
+.page-file-dropdown-menu .file-item.updir:before {
+  background-image: url("../images/file/updir.svg");
+}
+
+.page-file-dropdown-menu .file-item.upload:before {
+  background-image: url("../images/file/upload.svg");
+}
+
+.page-file-dropdown-menu .file-item.word:before {
+  background-image: url("../images/file/word.svg");
+}
+
+.page-file-dropdown-menu .file-item.wps:before {
+  background-image: url("../images/file/wps.svg");
 }
 
 .page-file-drawer .overlay-content {
@@ -6714,6 +6753,33 @@ body .ivu-drawer-bottom .ivu-drawer-content .ivu-drawer-close .ivu-icon {
   background-color: #ffffff;
 }
 
+.page-manage .manage-box-menu .manage-project-search {
+  width: 80%;
+  padding: 0 3px;
+  margin: 12px 0 -2px;
+  border-radius: 12px;
+  background-color: #ffffff;
+  overflow: hidden;
+}
+
+.page-manage .manage-box-menu .manage-project-search .ivu-input {
+  padding-left: 30px;
+  border-color: transparent;
+  background-color: transparent;
+}
+
+.page-manage .manage-box-menu .manage-project-search .ivu-input:hover, .page-manage .manage-box-menu .manage-project-search .ivu-input:focus {
+  box-shadow: none;
+}
+
+.page-manage .manage-box-menu .manage-project-search.loading .ivu-icon-ios-search {
+  animation: icon-loading-load 0.6s infinite linear;
+}
+
+.page-manage .manage-box-menu .manage-project-search.loading .ivu-icon-ios-search:before {
+  content: "\F45B";
+}
+
 .page-manage .manage-box-menu .manage-box-new {
   width: 80%;
   height: 38px;
@@ -6993,7 +7059,7 @@ body .ivu-drawer-bottom .ivu-drawer-content .ivu-drawer-close .ivu-icon {
   border-bottom: 1px solid #efefef;
 }
 
-.page-messenger .messenger-wrapper .messenger-select .messenger-list > ul.contacts > li.loading {
+.page-messenger .messenger-wrapper .messenger-select .messenger-list > ul.contacts > li.loading, .page-messenger .messenger-wrapper .messenger-select .messenger-list > ul.contacts > li.loaded {
   margin: 0;
   height: 52px;
   display: flex;
@@ -7001,7 +7067,7 @@ body .ivu-drawer-bottom .ivu-drawer-content .ivu-drawer-close .ivu-icon {
   justify-content: center;
 }
 
-.page-messenger .messenger-wrapper .messenger-select .messenger-list > ul.contacts > li.loading .common-loading {
+.page-messenger .messenger-wrapper .messenger-select .messenger-list > ul.contacts > li.loading .common-loading, .page-messenger .messenger-wrapper .messenger-select .messenger-list > ul.contacts > li.loaded .common-loading {
   width: 20px;
   height: 20px;
   margin: 0;
@@ -9934,6 +10000,10 @@ body .ivu-drawer-bottom .ivu-drawer-content .ivu-drawer-close .ivu-icon {
 
 .task-detail .task-info .scroller .add-input {
   margin-top: 6px;
+}
+
+.task-detail .task-info .scroller .add-input.loading .ivu-icon-ios-loading {
+  animation: icon-loading-load 0.6s infinite linear;
 }
 
 .task-detail .task-info .scroller .add-button {

@@ -322,6 +322,7 @@
                                     class="add-input"
                                     :placeholder="$L('+ 输入子任务，回车添加子任务')"
                                     :icon="addsubLoad > 0 ? 'ios-loading' : ''"
+                                    :class="{loading: addsubLoad > 0}"
                                     @on-blur="addsubChackClose"
                                     @on-keydown="addsubKeydown"/>
                                 <div v-else class="add-button" @click="addsubOpen">

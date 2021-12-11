@@ -180,6 +180,7 @@ export default {
             state.userToken = userInfo.token;
             state.userIsAdmin = state.method.inArray('admin', userInfo.identity);
             state.method.setStorage("userInfo", state.userInfo);
+            state.projects = [];
             dispatch("getProjects");
             dispatch("getDialogs");
             dispatch("websocketConnection");
@@ -419,22 +420,30 @@ export default {
      * 获取项目
      * @param state
      * @param dispatch
+     * @param data
+     * @returns {Promise<unknown>}
      */
-    getProjects({state, dispatch}) {
-        if (state.userId === 0) {
-            state.projects = [];
-            return;
-        }
-        if (state.cacheProjects.length > 0) {
-            state.projects = state.cacheProjects;
-        }
-        dispatch("call", {
-            url: 'project/lists',
-        }).then(result => {
-            state.projects = [];
-            dispatch("saveProject", result.data.data);
-        }).catch(e => {
-            console.error(e);
+    getProjects({state, dispatch}, data) {
+        return new Promise(function (resolve, reject) {
+            if (state.userId === 0) {
+                state.projects = [];
+                reject({msg: 'Parameter error'});
+                return;
+            }
+            if (state.cacheProjects.length > 0) {
+                state.projects = state.cacheProjects;
+            }
+            dispatch("call", {
+                url: 'project/lists',
+                data: data || {}
+            }).then(result => {
+                state.projectTotal = result.data.total_all;
+                dispatch("saveProject", result.data.data);
+                resolve(result)
+            }).catch(e => {
+                console.error(e);
+                reject(e)
+            });
         });
     },
 

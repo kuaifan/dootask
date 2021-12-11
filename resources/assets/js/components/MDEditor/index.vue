@@ -35,7 +35,7 @@
                 :before-upload="handleBeforeUpload"/>
         </div>
         <Spin fix v-if="uploadIng > 0">
-            <Icon type="ios-loading" class="upload-control-spin-icon-load"></Icon>
+            <Icon type="ios-loading" class="icon-loading"></Icon>
             <div>{{$L('正在上传文件...')}}</div>
         </Spin>
         <Modal v-model="transfer" class="mdeditor-transfer" footer-hide fullscreen transfer :closable="false">
@@ -52,7 +52,7 @@
                     @on-upload-image="handleUploadImageUpload"/>
             </div>
             <Spin fix v-if="uploadIng > 0">
-                <Icon type="ios-loading" class="upload-control-spin-icon-load"></Icon>
+                <Icon type="ios-loading" class="icon-loading"></Icon>
                 <div>{{$L('正在上传文件...')}}</div>
             </Spin>
         </Modal>

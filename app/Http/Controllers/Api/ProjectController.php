@@ -69,7 +69,7 @@ class ProjectController extends AbstractController
      * - keys.name              项目名称
      *
      * @apiParam {Number} [page]        当前页，默认:1
-     * @apiParam {Number} [pagesize]    每页显示数量，默认:100，最大:200
+     * @apiParam {Number} [pagesize]    每页显示数量，默认:50，最大:100
      */
     public function lists()
     {
@@ -93,13 +93,21 @@ class ProjectController extends AbstractController
         //
         $keys = Request::input('keys');
         if (is_array($keys)) {
+            $buildClone = $builder->clone();
             if ($keys['name']) {
                 $builder->where("projects.name", "like", "%{$keys['name']}%");
             }
         }
-        $list = $builder->orderByDesc('projects.id')->paginate(Base::getPaginate(200, 100));
+        $list = $builder->orderByDesc('projects.id')->paginate(Base::getPaginate(100, 50));
         //
-        return Base::retSuccess('success', $list);
+        $data = $list->toArray();
+        if (isset($buildClone)) {
+            $data['total_all'] = $buildClone->count();
+        } else {
+            $data['total_all'] = $data['total'];
+        }
+        //
+        return Base::retSuccess('success', $data);
     }
 
     /**

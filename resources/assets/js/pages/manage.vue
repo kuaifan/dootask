@@ -83,6 +83,12 @@
                     <Loading v-if="loadIng > 0"/>
                 </li>
             </ul>
+            <div
+                v-if="projectTotal > 100"
+                class="manage-project-search"
+                :class="{loading:projectKeyLoading > 0}">
+                <Input prefix="ios-search" v-model="projectKeyValue" :placeholder="$L('共' + projectTotal + '个项目，搜索...')" clearable />
+            </div>
             <Button class="manage-box-new" type="primary" icon="md-add" @click="onAddShow">{{$L('新建项目')}}</Button>
         </div>
 
@@ -192,6 +198,10 @@ export default {
 
             columns: [],
 
+            projectKeyValue: '',
+            projectKeyAlready: {},
+            projectKeyLoading: 0,
+
             openMenu: {},
             visibleMenu: false,
             show768Menu: false,
@@ -232,6 +242,7 @@ export default {
             'userIsAdmin',
             'dialogs',
             'projects',
+            'projectTotal',
             'taskId',
             'dialogMsgPush',
         ]),
@@ -276,9 +287,14 @@ export default {
         },
 
         projectLists() {
-            return this.projects.sort((a, b) => {
+            const {projectKeyValue, projects} = this;
+            const data = projects.sort((a, b) => {
                 return b.id - a.id;
             });
+            if (projectKeyValue) {
+                return data.filter(({name}) => name.toLowerCase().indexOf(projectKeyValue.toLowerCase()) > -1);
+            }
+            return data;
         }
     },
 
@@ -337,6 +353,17 @@ export default {
                     })
                 }
             }
+        },
+
+        projectKeyValue(val) {
+            if (val == '') {
+                return;
+            }
+            setTimeout(() => {
+                if (this.projectKeyValue == val) {
+                    this.searchProject();
+                }
+            }, 600);
         },
 
         natificationHidden(val) {
@@ -452,6 +479,26 @@ export default {
                         this.loadIng--;
                     });
                 }
+            });
+        },
+
+        searchProject() {
+            if (this.projectKeyAlready[this.projectKeyValue] === true) {
+                return;
+            }
+            this.projectKeyAlready[this.projectKeyValue] = true;
+            //
+            setTimeout(() => {
+                this.projectKeyLoading++;
+            }, 1000)
+            this.$store.dispatch("getProjects", {
+                keys: {
+                    name: this.projectKeyValue
+                }
+            }).then(() => {
+                this.projectKeyLoading--;
+            }).catch(() => {
+                this.projectKeyLoading--;
             });
         },
 
