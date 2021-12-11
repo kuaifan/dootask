@@ -146,7 +146,11 @@ export default {
                 scrollY: wScrollY,                          //滚动的距离
                 scrollE: bScrollH - wInnerH - wScrollY,     //与底部距离
             }
-        }
+        },
+
+        querySelector(el) {
+            return this.$refs.scrollerView && this.$refs.scrollerView.querySelector(el)
+        },
     }
 }
 </script>

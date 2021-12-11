@@ -55,6 +55,8 @@ export default {
                 {
                     title: this.$L('ID'),
                     key: 'id',
+                    minWidth: 50,
+                    maxWidth: 70,
                 },
                 {
                     title: this.$L('项目名称'),
