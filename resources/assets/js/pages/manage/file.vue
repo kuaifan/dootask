@@ -540,7 +540,7 @@ export default {
                         if (type) {
                             return h('AutoTip', type.name);
                         } else {
-                            return h('div', '-')
+                            return h('div', (row.ext || row.type).replace(/^\S/, s => s.toUpperCase()))
                         }
                     }
                 },
