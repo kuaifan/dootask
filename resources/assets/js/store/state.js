@@ -266,15 +266,13 @@ state.cacheLoading = {};
 // User
 state.cacheUserActive = {};
 state.cacheUserWait = [];
-state.cacheUserBasic = [];
+state.cacheUserBasic = state.method.getStorageArray("cacheUserBasic");
 // Dialog
-state.cacheDialogs = [];
-state.cacheDialogMsgs = [];
+state.cacheDialogs = state.method.getStorageArray("cacheDialogs");
 // Project
-state.cacheProjects = [];
-state.cacheColumns = [];
-state.cacheTasks = [];
-state.cacheTaskSubs = [];
+state.cacheProjects = state.method.getStorageArray("cacheProjects");
+state.cacheColumns = state.method.getStorageArray("cacheColumns");
+state.cacheTasks = state.method.getStorageArray("cacheTasks");
 // TablePanel
 state.cacheTablePanel = state.method.getStorageArray("cacheTablePanel");
 
