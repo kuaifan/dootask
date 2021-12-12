@@ -736,7 +736,7 @@ class ProjectTask extends AbstractModel
     }
 
     /**
-     * 根据会员ID获取任务、项目信息（用于判断会员是否存在项目内）
+     * 根据会员ID获取任务、项目信息（会员有任务权限 或 会员存在项目内）
      * @param int $task_id
      * @param array $with
      * @param bool $ignoreArchived 排除已归档
@@ -753,7 +753,14 @@ class ProjectTask extends AbstractModel
             throw new ApiException('任务不存在');
         }
         //
-        $project = Project::userProject($task->project_id, $ignoreArchived);
+        if (ProjectTaskUser::whereUserid(User::userid())->whereTaskPid($task->id)->exists()) {
+            $project = Project::find($task->project_id);
+            if (empty($project)) {
+                throw new ApiException('项目不存在或已被删除');
+            }
+        } else {
+            $project = Project::userProject($task->project_id, $ignoreArchived);
+        }
         //
         return $task;
     }
