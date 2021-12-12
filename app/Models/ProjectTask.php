@@ -12,9 +12,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Request;
 
 /**
- * Class ProjectTask
+ * App\Models\ProjectTask
  *
- * @package App\Models
  * @property int $id
  * @property int|null $parent_id 父级任务ID
  * @property int|null $project_id 项目ID
@@ -27,6 +26,7 @@ use Request;
  * @property string|null $end_at 计划结束时间
  * @property string|null $archived_at 归档时间
  * @property int|null $archived_userid 归档会员
+ * @property int|null $archived_follow 跟随项目归档（项目取消归档时任务也取消归档）
  * @property string|null $complete_at 完成时间
  * @property int|null $userid 创建人
  * @property int|null $p_level 优先级
@@ -58,6 +58,7 @@ use Request;
  * @method static \Illuminate\Database\Query\Builder|ProjectTask onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask query()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereArchivedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereArchivedFollow($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereArchivedUserid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereColor($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereColumnId($value)
@@ -639,6 +640,7 @@ class ProjectTask extends AbstractModel
             if ($archived_at === null) {
                 // 取消归档
                 $this->archived_at = null;
+                $this->archived_follow = 0;
                 $this->addLog("任务取消归档：" . $this->name);
                 $this->pushMsg('add', [
                     'new_column' => null,
@@ -648,6 +650,7 @@ class ProjectTask extends AbstractModel
                 // 归档任务
                 $this->archived_at = $archived_at;
                 $this->archived_userid = User::userid();
+                $this->archived_follow = 0;
                 $this->addLog("任务归档：" . $this->name);
                 $this->pushMsg('archived');
             }

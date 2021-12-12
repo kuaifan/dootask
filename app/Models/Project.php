@@ -267,7 +267,7 @@ class Project extends AbstractModel
     }
 
     /**
-     * 归档任务、取消归档
+     * 归档项目、取消归档
      * @param Carbon|null $archived_at 归档时间
      * @return bool
      */
@@ -279,12 +279,20 @@ class Project extends AbstractModel
                 $this->archived_at = null;
                 $this->addLog("项目取消归档");
                 $this->pushMsg('add', $this);
+                ProjectTask::whereProjectId($this->id)->whereArchivedFollow(1)->update([
+                    'archived_at' => null,
+                    'archived_follow' => 0
+                ]);
             } else {
-                // 归档任务
+                // 归档项目
                 $this->archived_at = $archived_at;
                 $this->archived_userid = User::userid();
                 $this->addLog("项目归档");
                 $this->pushMsg('archived');
+                ProjectTask::whereProjectId($this->id)->whereArchivedAt(null)->update([
+                    'archived_at' => Carbon::now(),
+                    'archived_follow' => 1
+                ]);
             }
             $this->save();
         });
@@ -299,9 +307,7 @@ class Project extends AbstractModel
     {
         AbstractModel::transaction(function () {
             $dialog = WebSocketDialog::find($this->dialog_id);
-            if ($dialog) {
-                $dialog->deleteDialog();
-            }
+            $dialog?->deleteDialog();
             $columns = ProjectColumn::whereProjectId($this->id)->get();
             foreach ($columns as $column) {
                 $column->deleteColumn(false);
