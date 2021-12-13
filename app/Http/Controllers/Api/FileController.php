@@ -143,6 +143,14 @@ class FileController extends AbstractController
             ])) {
                 return Base::retError('类型错误');
             }
+            $ext = '';
+            if (in_array($type, [
+                'word',
+                'excel',
+                'ppt',
+            ])) {
+                $ext = str_replace(['word', 'excel', 'ppt'], ['docx', 'xlsx', 'pptx'], $type);
+            }
             //
             $userid = $user->userid;
             if ($pid > 0) {
@@ -161,6 +169,7 @@ class FileController extends AbstractController
                 'pid' => $pid,
                 'name' => $name,
                 'type' => $type,
+                'ext' => $ext,
                 'userid' => $userid,
                 'created_id' => $user->userid,
             ]);
@@ -201,6 +210,7 @@ class FileController extends AbstractController
             'pid' => $row->pid,
             'name' => $name,
             'type' => $row->type,
+            'ext' => $row->ext,
             'userid' => $userid,
             'created_id' => $user->userid,
         ]);
