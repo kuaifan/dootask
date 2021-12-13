@@ -744,17 +744,17 @@ class ProjectTask extends AbstractModel
      * @param int $task_id
      * @param array $with
      * @param bool $ignoreArchived 排除已归档
+     * @param null $project
      * @return self
      */
     public static function userTask($task_id, $with = [], $ignoreArchived = true, &$project = null)
     {
-        $builder = self::with($with)->whereId(intval($task_id));
-        if ($ignoreArchived) {
-            $builder->whereNull('archived_at');
-        }
-        $task = $builder->first();
+        $task = self::with($with)->whereId(intval($task_id))->first();
         if (empty($task)) {
             throw new ApiException('任务不存在', [ 'task_id' => $task_id ], -4002);
+        }
+        if ($ignoreArchived && $task->archived_at != null) {
+            throw new ApiException('任务已归档', [ 'task_id' => $task_id ], -4002);
         }
         //
         try {

@@ -290,7 +290,7 @@ class Project extends AbstractModel
                 $this->addLog("项目归档");
                 $this->pushMsg('archived');
                 ProjectTask::whereProjectId($this->id)->whereArchivedAt(null)->update([
-                    'archived_at' => Carbon::now(),
+                    'archived_at' => $archived_at,
                     'archived_follow' => 1
                 ]);
             }
@@ -373,13 +373,12 @@ class Project extends AbstractModel
      */
     public static function userProject($project_id, $ignoreArchived = true)
     {
-        $builder = self::select(self::projectSelect)->authData()->where('projects.id', intval($project_id));
-        if ($ignoreArchived) {
-            $builder->whereNull('projects.archived_at');
-        }
-        $project = $builder->first();
+        $project = self::select(self::projectSelect)->authData()->where('projects.id', intval($project_id))->first();
         if (empty($project)) {
             throw new ApiException('项目不存在或不在成员列表内', [ 'project_id' => $project_id ], -4001);
+        }
+        if ($ignoreArchived && $project->archived_at != null) {
+            throw new ApiException('项目已归档', [ 'project_id' => $project_id ], -4001);
         }
         return $project;
     }
