@@ -379,7 +379,7 @@ class Project extends AbstractModel
         }
         $project = $builder->first();
         if (empty($project)) {
-            throw new ApiException('项目不存在或不在成员列表内');
+            throw new ApiException('项目不存在或不在成员列表内', [ 'project_id' => $project_id ], -4001);
         }
         return $project;
     }

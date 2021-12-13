@@ -61,6 +61,14 @@ export default {
                     resolve({data, msg});
                 } else {
                     reject({data, msg: msg || "Unknown error"})
+                    //
+                    if (ret === -4001) {
+                        dispatch("forgetProject", data.project_id);
+                    } else if (ret === -4002) {
+                        dispatch("forgetTask", data.task_id);
+                    } else if (ret === -4003) {
+                        dispatch("forgetDialog", data.dialog_id);
+                    }
                 }
             };
             params.error = () => {
@@ -1285,6 +1293,24 @@ export default {
             state.dialogs.splice(index, 1);
             state.dialogs.unshift(tmp);
         }
+    },
+
+    /**
+     * 忘记对话数据
+     * @param state
+     * @param dialog_id
+     */
+    forgetDialog({state}, dialog_id) {
+        let index = state.dialogs.findIndex(({id}) => id == dialog_id);
+        if (index > -1) {
+            state.dialogs.splice(index, 1);
+        }
+        if (dialog_id == state.method.getStorageInt("messenger::dialogId")) {
+            state.method.setStorage("messenger::dialogId", 0)
+        }
+        setTimeout(() => {
+            state.method.setStorage("cacheDialogs", state.cacheDialogs = state.dialogs);
+        })
     },
 
     /** *****************************************************************************************/

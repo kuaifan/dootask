@@ -7,6 +7,7 @@ use App\Module\Base;
 use App\Tasks\PushTask;
 use Arr;
 use Carbon\Carbon;
+use Exception;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Request;
@@ -753,16 +754,20 @@ class ProjectTask extends AbstractModel
         }
         $task = $builder->first();
         if (empty($task)) {
-            throw new ApiException('任务不存在');
+            throw new ApiException('任务不存在', [ 'task_id' => $task_id ], -4002);
         }
         //
-        if (ProjectTaskUser::whereUserid(User::userid())->whereTaskPid($task->id)->exists()) {
-            $project = Project::find($task->project_id);
-            if (empty($project)) {
-                throw new ApiException('项目不存在或已被删除');
-            }
-        } else {
+        try {
             $project = Project::userProject($task->project_id, $ignoreArchived);
+        } catch (Exception $e) {
+            if (ProjectTaskUser::whereUserid(User::userid())->whereTaskPid($task->id)->exists()) {
+                $project = Project::find($task->project_id);
+                if (empty($project)) {
+                    throw new ApiException('项目不存在或已被删除', [ 'task_id' => $task_id ], -4002);
+                }
+            } else {
+                throw new ApiException($e->getMessage(), [ 'task_id' => $task_id ], -4002);
+            }
         }
         //
         return $task;

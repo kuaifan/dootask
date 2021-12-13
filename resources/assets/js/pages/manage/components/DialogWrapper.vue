@@ -1,5 +1,6 @@
 <template>
     <div
+        v-if="dialogData && dialogData.id"
         class="dialog-wrapper"
         @drop.prevent="chatPasteDrag($event, 'drag')"
         @dragover.prevent="chatDragOver(true, $event)"

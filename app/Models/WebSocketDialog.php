@@ -65,14 +65,14 @@ class WebSocketDialog extends AbstractModel
 
     /**
      * 获取对话（同时检验对话身份）
-     * @param $id
+     * @param $dialog_id
      * @return self
      */
-    public static function checkDialog($id)
+    public static function checkDialog($dialog_id)
     {
-        $dialog = WebSocketDialog::whereId($id)->first();
+        $dialog = WebSocketDialog::find($dialog_id);
         if (empty($dialog)) {
-            throw new ApiException('对话不存在或已被删除');
+            throw new ApiException('对话不存在或已被删除', ['dialog_id' => $dialog_id], -4003);
         }
         //
         $userid = User::userid();

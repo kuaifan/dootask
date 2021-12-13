@@ -69,15 +69,15 @@
             </div>
 
             <div class="messenger-msg">
+                <div class="msg-dialog-bg">
+                    <div class="msg-dialog-bg-icon"><Icon type="ios-chatbubbles" /></div>
+                    <div class="msg-dialog-bg-text">{{$L('选择一个会话开始聊天')}}</div>
+                </div>
                 <DialogWrapper v-if="dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive">
                     <div slot="inputBefore" class="dialog-back" @click="closeDialog">
                         <Icon type="md-arrow-back" />
                     </div>
                 </DialogWrapper>
-                <div v-else class="dialog-no">
-                    <div class="dialog-no-icon"><Icon type="ios-chatbubbles" /></div>
-                    <div class="dialog-no-text">{{$L('选择一个会话开始聊天')}}</div>
-                </div>
             </div>
         </div>
     </div>
