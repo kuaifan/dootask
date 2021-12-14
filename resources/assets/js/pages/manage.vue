@@ -84,7 +84,7 @@
                 </li>
             </ul>
             <div
-                v-if="projectTotal > 100"
+                v-if="projectTotal > 50"
                 class="manage-project-search"
                 :class="{loading:projectKeyLoading > 0}">
                 <Input prefix="ios-search" v-model="projectKeyValue" :placeholder="$L('共' + projectTotal + '个项目，搜索...')" clearable />
