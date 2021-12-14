@@ -1,10 +1,14 @@
 #!/bin/sh
 
+new_password=$1
+
 GreenBG="\033[42;37m"
 Font="\033[0m"
 
 new_encrypt=$(date +%s%N | md5sum | awk '{print $1}' | cut -c 1-6)
-new_password=$(date +%s%N | md5sum | awk '{print $1}' | cut -c 1-16)
+if [ -z "$new_password" ]; then
+    new_password=$(date +%s%N | md5sum | awk '{print $1}' | cut -c 1-16)
+fi
 md5_password=$(echo -n `echo -n $new_password | md5sum | awk '{print $1}'`$new_encrypt | md5sum | awk '{print $1}')
 
 content=$(echo "select \`email\` from ${MYSQL_PREFIX}users where \`userid\`=1;" | mysql -u$MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE)
