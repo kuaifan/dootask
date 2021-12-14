@@ -1,4 +1,5 @@
 const fs = require('fs');
+const fse = require('fs-extra')
 const path = require('path')
 const inquirer = require('inquirer');
 const child_process = require('child_process');
@@ -73,10 +74,20 @@ function formatUrl(str) {
 }
 
 /**
+ * 正则提取域名
+ * @param weburl
+ * @returns {string|string}
+ */
+function getDomain(weburl) {
+    let urlReg = /http(s)?:\/\/([^\/]+)/i;
+    let domain = weburl.match(urlReg);
+    return ((domain != null && domain.length > 0) ? domain[2] : "");
+}
+
+/**
  * 右边是否包含
  * @param string
  * @param find
- * @param lower
  * @returns {boolean}
  */
 function rightExists(string, find) {
@@ -157,7 +168,21 @@ if (argv[2] === "--build") {
         //
         child_process.spawnSync("mix", ["--production", "--", "--env", "--electron"], {stdio: "inherit"});
         answers.platform.forEach(arg => {
-            child_process.spawn("npm", ["run", arg], {stdio: "inherit", cwd: "electron"});
+            child_process.spawnSync("npm", ["run", arg], {stdio: "inherit", cwd: "electron"});
+            let name = ""
+            if (arg == "build-mac-intel") {
+                name = config.name + "-" + config.version + ".dmg"
+            } else if (arg == "build-mac-m1") {
+                name = config.name + "-" + config.version + "-arm64.dmg"
+            } else if (arg == "build-win") {
+                name = config.name + " Setup " + config.version + ".exe"
+            }
+            if (name != "") {
+                fse.copySync(
+                    path.resolve(__dirname, "dist", name),
+                    path.resolve(__dirname, "build", getDomain(answers.targetUrl), config.version, name)
+                )
+            }
         })
     });
 } else {

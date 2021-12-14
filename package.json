@@ -5,8 +5,6 @@
     "scripts": {
         "start": "./cmd dev",
         "build": "./cmd prod",
-        "electron-start": "node ./electron/build.js",
-        "electron-build": "node ./electron/build.js --build",
         "version": "node ./version.js"
     },
     "devDependencies": {

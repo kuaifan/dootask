@@ -86,6 +86,24 @@ run_compile() {
     fi
 }
 
+run_electron() {
+    local type=$1
+    check_node
+    if [ ! -d "./electron/node_modules" ]; then
+        pushd electron
+        npm install
+        popd
+    fi
+    if [ -d "./electron/dist" ]; then
+        rm -rf "./electron/dist"
+    fi
+    if [ "$type" = "prod" ]; then
+        node ./electron/build.js --build
+    else
+        node ./electron/build.js
+    fi
+}
+
 run_exec() {
     local container=$1
     local cmd=$2
@@ -240,6 +258,13 @@ if [ $# -gt 0 ]; then
     elif [[ "$1" == "prod" ]] || [[ "$1" == "production" ]]; then
         shift 1
         run_compile prod
+    elif [[ "$1" == "electron" ]]; then
+        shift 1
+        if [[ "$@" == "dev" ]]; then
+            run_electron dev
+        else
+            run_electron prod
+        fi
     elif [[ "$1" == "doc" ]]; then
         shift 1
         run_exec php "php app/Http/Controllers/Api/apidoc.php"
