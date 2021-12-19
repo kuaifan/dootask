@@ -298,10 +298,20 @@ export default {
      */
     logout({state, dispatch}) {
         state.method.clearLocal();
-        dispatch("saveUserInfo", {}).then(() => {
-            const from = window.location.pathname == '/' ? '' : encodeURIComponent(window.location.href);
-            $A.goForward({path: '/login', query: from ? {from: from} : {}}, true);
-        });
+        dispatch("saveUserInfo", {});
+        const from = ["/", "/login"].includes(window.location.pathname) ? "" : encodeURIComponent(window.location.href);
+        window.location.href = $A.urlAddParams(window.systemInformation.origin + "login", from ? {from: from} : {})
+    },
+
+    /**
+     * 清除缓存
+     * @param state
+     * @param dispatch
+     */
+    clearCache({state, dispatch}) {
+        state.method.clearLocal();
+        dispatch("saveUserInfo", state.userInfo);
+        window.location.href = $A.urlAddParams(window.location.href, {'_cc': $A.randomString(6)})
     },
 
     /** *****************************************************************************************/

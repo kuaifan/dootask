@@ -742,7 +742,10 @@
          * @returns {*}
          */
         urlAddParams(url, params) {
-            if (typeof params === "object" && params !== null) {
+            if ($A.isJson(params)) {
+                if (url) {
+                    url = this.removeURLParameter(url, Object.keys(params))
+                }
                 url+= "";
                 url+= url.indexOf("?") === -1 ? '?' : '';
                 for (var key in params) {

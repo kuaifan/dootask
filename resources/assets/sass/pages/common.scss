@@ -15,6 +15,7 @@ body {
                     flex: 1;
                 }
                 .ivu-tag {
+                    flex-shrink: 0;
                     margin-left: 18px;
                     margin-right: 0;
                     transform: scale(0.9);

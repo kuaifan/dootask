@@ -217,6 +217,12 @@ export default {
     },
 
     mounted() {
+        if ($A.getObject(this.$route.query, '_cc')) {
+            this.$store.state.method.clearLocal();
+            this.$store.dispatch("saveUserInfo", this.userInfo);
+            $A.messageSuccess("清除成功");
+        }
+        //
         this.$store.dispatch("getUserInfo");
         this.$store.dispatch("getTaskPriority");
         //
@@ -420,9 +426,7 @@ export default {
                     this.archivedProjectShow = true;
                     return;
                 case 'clearCache':
-                    this.$store.state.method.clearLocal();
-                    this.$store.dispatch("saveUserInfo", this.userInfo);
-                    $A.messageSuccess("清除成功");
+                    this.$store.dispatch("clearCache");
                     return;
                 case 'signout':
                     $A.modalConfirm({
