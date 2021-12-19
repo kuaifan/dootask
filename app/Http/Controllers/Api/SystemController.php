@@ -237,36 +237,44 @@ class SystemController extends AbstractController
             'list' => [],
         ];
         //
-        $file = base_path("electron/package.json");
+        $files = [
+            base_path("package.json"),
+            base_path("electron/package.json")
+        ];
         $dist = base_path("electron/dist");
-        if (file_exists($file)) {
-            $packageArray = json_decode(file_get_contents($file), true);
-            $array['name'] = $packageArray['name'] ?? 'No app';
-            $array['version'] = $packageArray['version'] ?? '';
-            //
-            $list = [
-                [
-                    'icon' => 'logo-apple',
-                    'name' => 'macOS Intel',
-                    'file' => "{$array['name']}-{$array['version']}.dmg"
-                ],
-                [
-                    'icon' => 'logo-apple',
-                    'name' => 'macOS M1',
-                    'file' => "{$array['name']}-{$array['version']}-arm64.dmg"
-                ],
-                [
-                    'icon' => 'logo-windows',
-                    'name' => 'Windows x64',
-                    'file' => "{$array['name']} Setup {$array['version']}.exe"
-                ]
-            ];
-            foreach ($list as $item) {
-                if (file_exists("{$dist}/{$item['file']}")) {
-                    $item['url'] = Base::fillUrl('api/system/get/appdown?file=' . urlencode($item['file']));
-                    $item['size'] = filesize("{$dist}/{$item['file']}");
-                    $array['list'][] = $item;
+        foreach ($files as $file) {
+            if (file_exists($file)) {
+                $packageArray = json_decode(file_get_contents($file), true);
+                $array['name'] = $packageArray['name'] ?? 'No app';
+                $array['version'] = $packageArray['version'] ?? '';
+                //
+                $list = [
+                    [
+                        'icon' => 'logo-apple',
+                        'name' => 'macOS Intel',
+                        'file' => "{$array['name']}-{$array['version']}.dmg"
+                    ],
+                    [
+                        'icon' => 'logo-apple',
+                        'name' => 'macOS M1',
+                        'file' => "{$array['name']}-{$array['version']}-arm64.dmg"
+                    ],
+                    [
+                        'icon' => 'logo-windows',
+                        'name' => 'Windows x64',
+                        'file' => "{$array['name']} Setup {$array['version']}.exe"
+                    ]
+                ];
+                foreach ($list as $item) {
+                    if (file_exists("{$dist}/{$item['file']}")) {
+                        $item['url'] = Base::fillUrl('api/system/get/appdown?file=' . urlencode($item['file']));
+                        $item['size'] = filesize("{$dist}/{$item['file']}");
+                        $array['list'][] = $item;
+                    }
                 }
+            }
+            if (count($array['list']) > 0) {
+                break;
             }
         }
         //
