@@ -298,9 +298,10 @@ export default {
      */
     logout({state, dispatch}) {
         state.method.clearLocal();
-        dispatch("saveUserInfo", {});
-        const from = ["/", "/login"].includes(window.location.pathname) ? "" : encodeURIComponent(window.location.href);
-        window.location.href = $A.urlAddParams(window.systemInformation.origin + "login", from ? {from: from} : {})
+        dispatch("saveUserInfo", {}).then(() => {
+            const from = ["/", "/login"].includes(window.location.pathname) ? "" : encodeURIComponent(window.location.href);
+            $A.goForward({name: 'login', query: from ? {from: from} : {}}, true);
+        });
     },
 
     /**
@@ -310,8 +311,9 @@ export default {
      */
     clearCache({state, dispatch}) {
         state.method.clearLocal();
+        state.method.setStorage("clearCache", $A.randomString(6))
         dispatch("saveUserInfo", state.userInfo);
-        window.location.href = $A.urlAddParams(window.location.href, {'_cc': $A.randomString(6)})
+        window.location.reload()
     },
 
     /** *****************************************************************************************/

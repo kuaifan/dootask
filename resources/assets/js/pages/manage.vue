@@ -217,9 +217,8 @@ export default {
     },
 
     mounted() {
-        if ($A.getObject(this.$route.query, '_cc')) {
-            this.$store.state.method.clearLocal();
-            this.$store.dispatch("saveUserInfo", this.userInfo);
+        if (this.$store.state.method.getStorageString("clearCache")) {
+            this.$store.state.method.setStorage("clearCache", "")
             $A.messageSuccess("清除成功");
         }
         //
