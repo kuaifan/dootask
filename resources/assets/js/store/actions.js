@@ -135,22 +135,38 @@ export default {
     /**
      * 切换面板变量
      * @param state
-     * @param key
+     * @param data|{key, project_id}
      */
-    toggleTablePanel({state}, key) {
-        if (state.projectId) {
-            let index = state.cacheTablePanel.findIndex(({project_id}) => project_id == state.projectId)
+    toggleTablePanel({state}, data) {
+        let key = data;
+        let project_id = state.projectId;
+        if (state.method.isJson(data)) {
+            key = data.key;
+            project_id = data.project_id;
+        }
+        if (project_id) {
+            let index = state.cacheTablePanel.findIndex(item => item.project_id == project_id)
             if (index === -1) {
                 state.cacheTablePanel.push({
-                    project_id: state.projectId,
+                    project_id,
+                    card: true,
+                    cardInit: false,
+                    chat: false,
+                    showMy: true,
+                    showUndone: true,
+                    showCompleted: false,
+                    completedTask: false,
                 });
-                index = state.cacheTablePanel.findIndex(({project_id}) => project_id == state.projectId)
+                index = state.cacheTablePanel.findIndex(item => item.project_id == project_id)
             }
             const cache = state.cacheTablePanel[index];
-            state.cacheTablePanel.splice(index, 1, Object.assign(cache, {
-                [key]: !cache[key]
-            }))
-            state.method.setStorage("cacheTablePanel", state.cacheTablePanel);
+            if (!state.method.isJson(key)) {
+                key = {[key]: !cache[key]};
+            }
+            state.cacheTablePanel.splice(index, 1, Object.assign(cache, key))
+            setTimeout(() => {
+                state.method.setStorage("cacheTablePanel", state.cacheTablePanel);
+            });
         }
     },
 
@@ -688,6 +704,19 @@ export default {
                 state.columns = state.columns.filter((item) => item.project_id != project_id || ids.includes(item.id));
             }
             dispatch("saveColumn", result.data.data);
+            // 判断只有1列的时候默认版面为表格模式
+            if (state.columns.filter(item => item.project_id == project_id).length === 1) {
+                const cache = state.cacheTablePanel.find(item => item.project_id == project_id) || {};
+                if (typeof cache.cardInit === "undefined") {
+                    dispatch("toggleTablePanel", {
+                        project_id,
+                        key: {
+                            card: false,
+                            cardInit: true,
+                        }
+                    });
+                }
+            }
         }).catch(e => {
             console.error(e);
             state.projectLoad--;

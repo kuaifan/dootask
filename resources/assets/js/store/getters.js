@@ -60,6 +60,7 @@ export default {
                 cache = {
                     project_id: state.projectId,
                     card: true,
+                    cardInit: false,
                     chat: false,
                     showMy: true,
                     showUndone: true,
