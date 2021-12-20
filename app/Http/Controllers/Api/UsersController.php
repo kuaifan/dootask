@@ -272,14 +272,10 @@ class UsersController extends AbstractController
         //
         $oldpass = trim(Request::input('oldpass'));
         $newpass = trim(Request::input('newpass'));
-        if (strlen($newpass) < 6) {
-            return Base::retError('密码设置不能小于6位数');
-        } elseif (strlen($newpass) > 32) {
-            return Base::retError('密码最多只能设置32位数');
-        }
         if ($oldpass == $newpass) {
             return Base::retError('新旧密码一致');
         }
+        User::passwordPolicy($newpass);
         //
         $verify = User::whereUserid($user->userid)->wherePassword(Base::md52($oldpass, User::token2encrypt()))->count();
         if (empty($verify)) {
@@ -487,11 +483,7 @@ class UsersController extends AbstractController
         // 密码
         if (Arr::exists($data, 'password')) {
             $password = trim($data['password']);
-            if (strlen($password) < 6) {
-                return Base::retError('密码设置不能小于6位数');
-            } elseif (strlen($password) > 32) {
-                return Base::retError('密码最多只能设置32位数');
-            }
+            User::passwordPolicy($password);
             $upArray['encrypt'] = Base::generatePassword(6);
             $upArray['password'] = Base::md52($password, $upArray['encrypt']);
             $upArray['changepass'] = 1;

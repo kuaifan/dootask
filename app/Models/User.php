@@ -185,11 +185,7 @@ class User extends AbstractModel
             throw new ApiException('邮箱地址已存在');
         }
         //密码
-        if (strlen($password) < 6) {
-            throw new ApiException('密码设置不能小于6位数');
-        } elseif (strlen($password) > 32) {
-            throw new ApiException('密码最多只能设置32位数');
-        }
+        self::passwordPolicy($password);
         //开始注册
         $encrypt = Base::generatePassword(6);
         $inArray = [
@@ -457,6 +453,37 @@ class User extends AbstractModel
                 } else {
                     return Base::retError('no');
                 }
+        }
+    }
+
+    /**
+     * 检测密码策略是否符合
+     * @param $password
+     * @return void
+     */
+    public static function passwordPolicy($password)
+    {
+        if (strlen($password) < 6) {
+            throw new ApiException('密码设置不能小于6位数');
+        }
+        if (strlen($password) > 32) {
+            throw new ApiException('密码最多只能设置32位数');
+        }
+        // 复杂密码
+        $password_policy = Base::settingFind('system', 'password_policy');
+        if ($password_policy == 'complex') {
+            if (preg_match("/^[0-9]+$/", $password)) {
+                throw new ApiException('密码不能全是数字，请包含数字，字母大小写或者特殊字符');
+            }
+            if (preg_match("/^[a-zA-Z]+$/", $password)) {
+                throw new ApiException('密码不能全是字母，请包含数字，字母大小写或者特殊字符');
+            }
+            if (preg_match("/^[0-9A-Z]+$/", $password)) {
+                throw new ApiException('密码不能全是数字+大写字母，密码包含数字，字母大小写或者特殊字符');
+            }
+            if (preg_match("/^[0-9a-z]+$/", $password)) {
+                throw new ApiException('密码不能全是数字+小写字母，密码包含数字，字母大小写或者特殊字符');
+            }
         }
     }
 }

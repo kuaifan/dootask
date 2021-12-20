@@ -14,6 +14,14 @@
                     <Radio label="close">{{$L('关闭')}}</Radio>
                 </RadioGroup>
             </FormItem>
+            <FormItem :label="$L('密码策略')" prop="passwordPolicy">
+                <RadioGroup v-model="formDatum.password_policy">
+                    <Radio label="simple">{{$L('简单')}}</Radio>
+                    <Radio label="complex">{{$L('复杂')}}</Radio>
+                </RadioGroup>
+                <div v-if="formDatum.password_policy == 'simple'" class="form-tip">{{$L('简单：大于或等于6个字符。')}}</div>
+                <div v-else-if="formDatum.password_policy == 'complex'" class="form-tip">{{$L('复杂：大于或等于6个字符，包含数字、字母大小写或者特殊字符。')}}</div>
+            </FormItem>
         </Form>
         <div class="setting-footer">
             <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{$L('提交')}}</Button>

@@ -323,7 +323,7 @@ export default {
                     that.getLists();
                     resolve()
                 }).catch(({msg}) => {
-                    $A.modalError(msg);
+                    $A.modalError(msg, 301);
                     that.loadIng--;
                     that.getLists();
                     resolve()

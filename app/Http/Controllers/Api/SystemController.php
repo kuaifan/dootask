@@ -24,7 +24,7 @@ class SystemController extends AbstractController
      *
      * @apiParam {String} type
      * - get: 获取（默认）
-     * - save: 保存设置（参数：reg、login_code）
+     * - save: 保存设置（参数：reg、login_code、password_policy）
 
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -40,7 +40,7 @@ class SystemController extends AbstractController
             User::auth('admin');
             $all = Request::input();
             foreach ($all AS $key => $value) {
-                if (!in_array($key, ['reg', 'login_code'])) {
+                if (!in_array($key, ['reg', 'login_code', 'password_policy'])) {
                     unset($all[$key]);
                 }
             }
@@ -51,6 +51,7 @@ class SystemController extends AbstractController
         //
         $setting['reg'] = $setting['reg'] ?: 'open';
         $setting['login_code'] = $setting['login_code'] ?: 'auto';
+        $setting['password_policy'] = $setting['password_policy'] ?: 'simple';
         //
         return Base::retSuccess('success', $setting ?: json_decode('{}'));
     }
