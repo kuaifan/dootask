@@ -103,6 +103,7 @@ export default {
     data() {
         return {
             addData: {
+                name: "",
                 owner: 0,
                 column_id: 0,
                 times: [],
@@ -206,6 +207,7 @@ export default {
                 this.loadIng--;
                 this.active = false;
                 this.addData = {
+                    name: "",
                     owner: 0,
                     column_id: 0,
                     times: [],

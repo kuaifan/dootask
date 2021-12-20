@@ -297,6 +297,7 @@
             <div slot="footer">
                 <Button type="default" @click="addShow=false">{{$L('取消')}}</Button>
                 <Button type="primary" :loading="addLoad > 0" @click="onAddTask">{{$L('添加')}}</Button>
+                <Button type="primary" :loading="addLoad > 0" @click="onAddTask(true)">{{$L('添加并继续')}}</Button>
             </div>
         </Modal>
 
@@ -638,14 +639,14 @@ export default {
             });
         },
 
-        onAddTask() {
+        onAddTask(again) {
             this.addLoad++;
             this.$refs.add.onAdd((success) => {
                 this.addLoad--;
-                if (success) {
+                if (success && again !== true) {
                     this.addShow = false;
                 }
-            })
+            }, again)
         },
 
         addTopShow(id, show) {

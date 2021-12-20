@@ -125,6 +125,8 @@ export default {
     data() {
         return {
             addData: {
+                name: "",
+                content: "",
                 owner: 0,
                 column_id: 0,
                 times: [],
@@ -283,7 +285,7 @@ export default {
         setData(data) {
             this.addData = Object.assign({}, this.addData, data);
         },
-        onAdd(callback) {
+        onAdd(callback, again) {
             if (!this.addData.name) {
                 $A.messageError("任务描述不能为空");
                 callback(false)
@@ -293,15 +295,25 @@ export default {
                 project_id: this.projectId
             })).then(({msg}) => {
                 $A.messageSuccess(msg);
-                this.addData = {
-                    owner: 0,
-                    column_id: 0,
-                    times: [],
-                    subtasks: [],
-                    p_level: 0,
-                    p_name: '',
-                    p_color: '',
-                };
+                if (again === true) {
+                    this.addData = Object.assign({}, this.addData, {
+                        name: "",
+                        content: "",
+                        subtasks: [],
+                    });
+                } else {
+                    this.addData = {
+                        name: "",
+                        content: "",
+                        owner: 0,
+                        column_id: 0,
+                        times: [],
+                        subtasks: [],
+                        p_level: 0,
+                        p_name: '',
+                        p_color: '',
+                    };
+                }
                 callback(true)
             }).catch(({msg}) => {
                 $A.modalError(msg);
