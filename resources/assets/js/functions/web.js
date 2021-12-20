@@ -54,7 +54,6 @@
                         })
                     ])
                 },
-                loading: true,
                 onOk: () => {
                     if (typeof config.onOk === "function") {
                         if (config.onOk(config.value, () => {
@@ -66,6 +65,14 @@
                         $A.Modal.remove();
                     }
                 },
+                onCancel: () => {
+                    if (typeof config.onCancel === "function") {
+                        config.onCancel();
+                    }
+                },
+                loading: true,
+                okText: $A.L(config.okText || '确定'),
+                cancelText: $A.L(config.cancelText || '取消'),
             });
             setTimeout(() => {
                 document.getElementById(inputId) && document.getElementById(inputId).focus();

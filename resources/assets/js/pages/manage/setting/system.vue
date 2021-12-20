@@ -13,6 +13,7 @@
                     <Radio label="open">{{$L('开启')}}</Radio>
                     <Radio label="close">{{$L('关闭')}}</Radio>
                 </RadioGroup>
+                <div v-if="formDatum.login_code == 'auto'" class="form-tip">{{$L('自动：密码输入错误后必须添加验证码。')}}</div>
             </FormItem>
             <FormItem :label="$L('密码策略')" prop="passwordPolicy">
                 <RadioGroup v-model="formDatum.password_policy">
@@ -21,6 +22,13 @@
                 </RadioGroup>
                 <div v-if="formDatum.password_policy == 'simple'" class="form-tip">{{$L('简单：大于或等于6个字符。')}}</div>
                 <div v-else-if="formDatum.password_policy == 'complex'" class="form-tip">{{$L('复杂：大于或等于6个字符，包含数字、字母大小写或者特殊字符。')}}</div>
+            </FormItem>
+            <FormItem :label="$L('聊天昵称')" prop="chatNickname">
+                <RadioGroup v-model="formDatum.chat_nickname">
+                    <Radio label="optional">{{$L('可选')}}</Radio>
+                    <Radio label="required">{{$L('必填')}}</Radio>
+                </RadioGroup>
+                <div v-if="formDatum.chat_nickname == 'required'" class="form-tip">{{$L('必填：发送聊天内容前必须设置昵称。')}}</div>
             </FormItem>
         </Form>
         <div class="setting-footer">

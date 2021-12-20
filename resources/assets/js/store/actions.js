@@ -18,24 +18,21 @@ export default {
         params.header['token'] = state.userToken;
         params.header['fd'] = state.method.getStorageString("userWsFd");
         //
+        const cloneParams = state.method.cloneJSON(params);
         return new Promise(function (resolve, reject) {
             if (params.spinner === true) {
                 const spinner = document.getElementById("common-spinner");
                 if (spinner) {
-                    const beforeCall = params.before;
                     params.before = () => {
                         state.ajaxLoadNum++;
                         spinner.style.display = "block"
-                        typeof beforeCall == "function" && beforeCall();
                     };
                     //
-                    const completeCall = params.complete;
                     params.complete = () => {
                         state.ajaxLoadNum--;
                         if (state.ajaxLoadNum <= 0) {
                             spinner.style.display = "none"
                         }
-                        typeof completeCall == "function" && completeCall();
                     };
                 }
             }
@@ -54,6 +51,17 @@ export default {
                         onOk: () => {
                             dispatch("logout")
                         }
+                    });
+                    return;
+                }
+                if (ret === -2 && params.checkNick !== false) {
+                    // 需要昵称
+                    dispatch("userNickNameInput").then(() => {
+                        dispatch("call", Object.assign(cloneParams, {
+                            checkNick: false
+                        })).then(resolve).catch(reject);
+                    }).catch(() => {
+                        reject({data, msg: $A.L('请设置昵称！')})
                     });
                     return;
                 }
@@ -305,6 +313,56 @@ export default {
         setTimeout(() => {
             state.method.setStorage("cacheUserBasic", state.cacheUserBasic);
         })
+    },
+
+    /**
+     * 设置用户昵称
+     * @param dispatch
+     * @returns {Promise<unknown>}
+     */
+    userNickNameInput({dispatch}) {
+        return new Promise(function (resolve, reject) {
+            let callback = (cb, success) => {
+                if (typeof cb === "function") {
+                    cb();
+                }
+                if (success === true) {
+                    setTimeout(resolve, 301)
+                } else {
+                    setTimeout(reject, 301)
+                }
+            }
+            $A.modalInput({
+                title: "设置昵称",
+                placeholder: "请输入昵称",
+                okText: "保存",
+                onOk: (value, cb) => {
+                    if (value) {
+                        dispatch("call", {
+                            url: 'users/editdata',
+                            data: {
+                                nickname: value,
+                            },
+                            checkNick: false,
+                        }).then(() => {
+                            dispatch('getUserInfo').then(() => {
+                                callback(cb, true);
+                            }).catch(() => {
+                                callback(cb, false);
+                            });
+                        }).catch(({msg}) => {
+                            $A.modalError(msg, 301);
+                            callback(cb, false);
+                        });
+                    } else {
+                        callback(cb, false);
+                    }
+                },
+                onCancel: () => {
+                    callback(null, false);
+                }
+            });
+        });
     },
 
     /**

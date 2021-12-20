@@ -144,6 +144,14 @@ class DialogController extends AbstractController
     {
         $user = User::auth();
         //
+        $chat_nickname = Base::settingFind('system', 'chat_nickname');
+        if ($chat_nickname == 'required') {
+            $nickname = User::select(['nickname as nickname_original'])->whereUserid($user->userid)->value('nickname_original');
+            if (empty($nickname)) {
+                return Base::retError('请设置昵称', [], -2);
+            }
+        }
+        //
         $dialog_id = intval(Request::input('dialog_id'));
         $text = trim(Request::input('text'));
         //
