@@ -138,6 +138,9 @@ export default {
                         "id": this.userInfo.userid,
                         "name": this.userInfo.nickname
                     },
+                    "customization": {
+                        "uiTheme": "theme-classic-light",
+                    },
                     "callbackUrl": 'http://nginx/api/file/content/office?id=' + this.value.id + '&token=' + this.userToken,
                 }
             };
