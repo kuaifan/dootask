@@ -2,36 +2,9 @@ name: Build
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [ build ]
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
-    if: startsWith(github.event.ref, 'refs/tags/v')
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Changelog
-        uses: scottbrenner/generate-changelog-action@master
-        id: Changelog
-        env:
-          REPO: ${{ github.repository }}
-
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          body: |
-            ${{ steps.Changelog.outputs.changelog }}
-          draft: false
-          prerelease: false
-
   build:
     runs-on: ${{ matrix.os }}
     environment: build
@@ -45,7 +18,6 @@ jobs:
             build-win
         ]
 
-    if: startsWith(github.event.ref, 'refs/tags/v')
     steps:
       - name: Checkout
         uses: actions/checkout@v2
