@@ -131,7 +131,7 @@ function step2(data, publish) {
     packageString = packageString.replace(/"name":\s*"(.*?)"/, `"name": "${data.name}"`);
     packageString = packageString.replace(/"appId":\s*"(.*?)"/, `"appId": "${data.id}"`);
     packageString = packageString.replace(/"version":\s*"(.*?)"/, `"version": "${config.version}"`);
-    packageString = packageString.replace(/"artifactName":\s*"(.*?)"/g, '"artifactName": "' + getDomain(data.url) + '-${version}-${os}-${arch}.${ext}"');
+    packageString = packageString.replace(/"artifactName":\s*"(.*?)"/g, '"artifactName": "' + getDomain(data.url) + '-v${version}-${os}-${arch}.${ext}"');
     fs.writeFileSync(packageFile, packageString, 'utf8');
     //
     child_process.spawnSync("npm", ["run", data.platform + (publish === true ? "-publish" : "")], {stdio: "inherit", cwd: "electron"});
@@ -143,7 +143,7 @@ function step3() {
     let packageString = fs.readFileSync(packageFile, 'utf8');
     packageString = packageString.replace(/"name":\s*"(.*?)"/, `"name": "${config.name}"`);
     packageString = packageString.replace(/"appId":\s*"(.*?)"/, `"appId": "${config.app.id}"`);
-    packageString = packageString.replace(/"artifactName":\s*"(.*?)"/g, '"artifactName": "${productName}-${version}-${os}-${arch}.${ext}"');
+    packageString = packageString.replace(/"artifactName":\s*"(.*?)"/g, '"artifactName": "${productName}-v${version}-${os}-${arch}.${ext}"');
     fs.writeFileSync(packageFile, packageString, 'utf8');
 }
 
@@ -188,26 +188,30 @@ if (["build", "prod"].includes(argv[2])) {
     ];
     inquirer.prompt(questions).then(answers => {
         step1();
-        answers.platform.forEach(platform => {
-            step2({
-                "name": config.name,
-                "id": config.app.id,
-                "url": answers.website,
-                "platform": platform
-            }, false)
-        });
-        step3();
+        setTimeout(() => {
+            answers.platform.forEach(platform => {
+                step2({
+                    "name": config.name,
+                    "id": config.app.id,
+                    "url": answers.website,
+                    "platform": platform
+                }, false)
+            });
+            step3();
+        }, 3000)
     });
 } else if (platform.includes(argv[2])) {
     // 自动编译
     step1();
-    config.app.sites.forEach((data) => {
-        if (data.name && data.id && data.url) {
-            data.platform = argv[2];
-            step2(data, true)
-        }
-    })
-    step3();
+    setTimeout(() => {
+        config.app.sites.forEach((data) => {
+            if (data.name && data.id && data.url) {
+                data.platform = argv[2];
+                step2(data)
+            }
+        })
+        step3();
+    }, 3000);
 } else {
     // 开发模式
     fs.writeFileSync(devloadCachePath, formatUrl("127.0.0.1:" + env.parsed.APP_PORT), 'utf8');

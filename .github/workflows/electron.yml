@@ -38,7 +38,8 @@ jobs:
         os: [macos-11]
         platform: [
             build-mac,
-            build-mac-arm
+            build-mac-arm,
+            build-win
         ]
 
     if: startsWith(github.event.ref, 'refs/tags/v')

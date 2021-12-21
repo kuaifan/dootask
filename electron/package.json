@@ -1,6 +1,6 @@
 {
     "name": "DooTask",
-    "version": "0.4.0",
+    "version": "0.4.2",
     "description": "DooTask is task management system.",
     "main": "main.js",
     "license": "MIT",
@@ -45,9 +45,9 @@
     },
     "build": {
         "appId": "com.dootask.task",
-        "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+        "artifactName": "${productName}-v${version}-${os}-${arch}.${ext}",
         "files": [
-            "public/**/*",
+            "public",
             "main.js",
             "preload.js"
         ],
@@ -63,7 +63,7 @@
         },
         "nsis": {
             "oneClick": false,
-            "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+            "artifactName": "${productName}-v${version}-${os}-${arch}.${ext}",
             "allowToChangeInstallationDirectory": true
         }
     },
