@@ -1,6 +1,6 @@
 {
     "name": "DooTask",
-    "version": "0.3.99",
+    "version": "0.4.0",
     "description": "DooTask is task management system.",
     "main": "main.js",
     "license": "MIT",
@@ -8,12 +8,21 @@
         "start": "electron-forge start",
         "start-quiet": "sleep 3 && electron-forge start &> /dev/null",
         "build": "electron-builder",
-        "build-mac-intel": "electron-builder --mac",
-        "build-mac-m1": "electron-builder --mac --arm64",
+        "build-mac": "electron-builder --mac",
+        "build-mac-arm": "electron-builder --mac --arm64",
         "build-win": "electron-builder --win",
         "package": "electron-forge package",
         "make": "electron-forge make",
         "publish": "electron-forge publish"
+    },
+    "author": {
+        "name": "KuaiFan",
+        "email": "aipaw@live.cn",
+        "url": "https://github.com/kuaifan"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/kuaifan/dootask.git"
     },
     "devDependencies": {
         "@electron-forge/cli": "^6.0.0-beta.61",
@@ -32,16 +41,27 @@
         "xlsx": "^0.17.2"
     },
     "build": {
+        "appId": "com.dootask.task",
+        "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
         "files": [
             "public",
             "main.js",
             "preload.js"
         ],
         "mac": {
-            "icon": "../resources/assets/statics/public/images/logo-app.png"
+            "icon": "../resources/assets/statics/public/images/logo-app.png",
+            "target": "dmg",
+            "publish": ["github"]
         },
         "win": {
-            "icon": "../resources/assets/statics/public/images/logo-app.ico"
+            "icon": "../resources/assets/statics/public/images/logo-app.ico",
+            "target": ["tar.gz", "nsis"],
+            "publish": ["github"]
+        },
+        "nsis": {
+            "oneClick": false,
+            "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+            "allowToChangeInstallationDirectory": true
         }
     },
     "config": {

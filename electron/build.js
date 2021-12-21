@@ -1,5 +1,4 @@
 const fs = require('fs');
-const fse = require('fs-extra')
 const path = require('path')
 const inquirer = require('inquirer');
 const child_process = require('child_process');
@@ -103,19 +102,57 @@ function rightExists(string, find) {
 const electronDir = path.resolve(__dirname, "public");
 const nativeCachePath = path.resolve(__dirname, ".native");
 const devloadCachePath = path.resolve(__dirname, ".devload");
+const platform = ["build-mac", "build-mac-arm", "build-win"];
 
-if (argv[2] === "--build") {
+// 编译网站
+function step1() {
     if (fs.existsSync(electronDir)) {
         deleteFile(electronDir);
     }
     fs.mkdirSync(electronDir);
     copyFile(path.resolve(__dirname, "index.html"), electronDir + "/index.html")
+    //
+    child_process.spawnSync("mix", ["--production", "--", "--env", "--electron"], {stdio: "inherit"});
+}
 
-    const platform = ["build-mac-intel", "build-mac-m1", "build-win"];
+// 生成配置、编译应用
+function step2(data) {
+    let systemInfo = `window.systemInformation = {
+    version: "${config.version}",
+    origin: "./",
+    apiUrl: "${formatUrl(data.url)}api/"
+}`;
+    fs.writeFileSync(electronDir + "/config.js", systemInfo, 'utf8');
+    fs.writeFileSync(nativeCachePath, formatUrl(data.url));
+    fs.writeFileSync(devloadCachePath, "", 'utf8');
+    //
+    let packageFile = path.resolve(__dirname, "package.json");
+    let packageString = fs.readFileSync(packageFile, 'utf8');
+    packageString = packageString.replace(/"name":\s*"(.*?)"/, `"name": "${data.name}"`);
+    packageString = packageString.replace(/"appId":\s*"(.*?)"/, `"appId": "${data.id}"`);
+    packageString = packageString.replace(/"version":\s*"(.*?)"/, `"version": "${config.version}"`);
+    packageString = packageString.replace(/"artifactName":\s*"(.*?)"/g, '"artifactName": "' + getDomain(data.url) + '-${version}-${os}-${arch}.${ext}"');
+    fs.writeFileSync(packageFile, packageString, 'utf8');
+    //
+    child_process.spawnSync("npm", ["run", data.platform], {stdio: "inherit", cwd: "electron"});
+}
+
+// 还原配置
+function step3() {
+    let packageFile = path.resolve(__dirname, "package.json");
+    let packageString = fs.readFileSync(packageFile, 'utf8');
+    packageString = packageString.replace(/"name":\s*"(.*?)"/, `"name": "${config.name}"`);
+    packageString = packageString.replace(/"appId":\s*"(.*?)"/, `"appId": "${config.app.id}"`);
+    packageString = packageString.replace(/"artifactName":\s*"(.*?)"/g, '"artifactName": "${productName}-${version}-${os}-${arch}.${ext}"');
+    fs.writeFileSync(packageFile, packageString, 'utf8');
+}
+
+if (["build", "prod"].includes(argv[2])) {
+    // 自定义编译
     const questions = [
         {
             type: 'input',
-            name: 'targetUrl',
+            name: 'website',
             message: "请输入网站地址",
             default: () => {
                 if (fs.existsSync(nativeCachePath)) {
@@ -135,10 +172,10 @@ if (argv[2] === "--build") {
             name: 'platform',
             message: "选择编译系统平台",
             choices: [{
-                name: "MacOS Intel",
+                name: "MacOS",
                 value: [platform[0]]
             }, {
-                name: "MacOS M1",
+                name: "MacOS arm64",
                 value: [platform[1]]
             }, {
                 name: "Window x86_64",
@@ -149,43 +186,30 @@ if (argv[2] === "--build") {
             }]
         }
     ];
-
     inquirer.prompt(questions).then(answers => {
-        let data = `window.systemInformation = {
-        version: "${config.version}",
-        origin: "./",
-        apiUrl: "${formatUrl(answers.targetUrl)}api/"
-    }`;
-        fs.writeFileSync(nativeCachePath, formatUrl(answers.targetUrl));
-        fs.writeFileSync(electronDir + "/config.js", data, 'utf8');
-        //
-        fs.writeFileSync(devloadCachePath, "", 'utf8');
-        let packageFile = path.resolve(__dirname, "package.json");
-        let packageString = fs.readFileSync(packageFile, 'utf8');
-        packageString = packageString.replace(/"version":\s*"(.*?)"/, `"version": "${config.version}"`);
-        packageString = packageString.replace(/"name":\s*"(.*?)"/, `"name": "${config.name}"`);
-        fs.writeFileSync(packageFile, packageString, 'utf8');
-        //
-        child_process.spawnSync("mix", ["--production", "--", "--env", "--electron"], {stdio: "inherit"});
-        answers.platform.forEach(arg => {
-            child_process.spawnSync("npm", ["run", arg], {stdio: "inherit", cwd: "electron"});
-            let name = ""
-            if (arg == "build-mac-intel") {
-                name = config.name + "-" + config.version + ".dmg"
-            } else if (arg == "build-mac-m1") {
-                name = config.name + "-" + config.version + "-arm64.dmg"
-            } else if (arg == "build-win") {
-                name = config.name + " Setup " + config.version + ".exe"
-            }
-            if (name != "") {
-                fse.copySync(
-                    path.resolve(__dirname, "dist", name),
-                    path.resolve(__dirname, "build", getDomain(answers.targetUrl), config.version, name)
-                )
-            }
-        })
+        step1();
+        answers.platform.forEach(platform => {
+            step2({
+                "name": config.name,
+                "id": config.app.id,
+                "url": answers.website,
+                "platform": platform
+            })
+        });
+        step3();
     });
+} else if (platform.includes(argv[2])) {
+    // 自动编译
+    step1();
+    config.app.sites.forEach((data) => {
+        if (data.name && data.id && data.url) {
+            data.platform = argv[2];
+            step2(data)
+        }
+    })
+    step3();
 } else {
+    // 开发模式
     fs.writeFileSync(devloadCachePath, formatUrl("127.0.0.1:" + env.parsed.APP_PORT), 'utf8');
     child_process.spawn("mix", ["watch", "--hot", "--", "--env", "--electron"], {stdio: "inherit"});
     child_process.spawn("npm", ["run", "start-quiet"], {stdio: "inherit", cwd: "electron"});
