@@ -87,7 +87,7 @@ run_compile() {
 }
 
 run_electron() {
-    local type=$1
+    local argv=$@
     check_node
     if [ ! -d "./electron/node_modules" ]; then
         pushd electron
@@ -97,11 +97,7 @@ run_electron() {
     if [ -d "./electron/dist" ]; then
         rm -rf "./electron/dist"
     fi
-    if [ "$type" = "prod" ]; then
-        node ./electron/build.js --build
-    else
-        node ./electron/build.js
-    fi
+    node ./electron/build.js $argv
 }
 
 run_exec() {
@@ -200,8 +196,10 @@ env_init() {
 ####################################################################################
 ####################################################################################
 
-check_docker
-env_init
+if [[ "$1" != "electron" ]]; then
+    check_docker
+    env_init
+fi
 
 if [ $# -gt 0 ]; then
     if [[ "$1" == "init" ]] || [[ "$1" == "install" ]]; then
@@ -260,11 +258,7 @@ if [ $# -gt 0 ]; then
         run_compile prod
     elif [[ "$1" == "electron" ]]; then
         shift 1
-        if [[ "$@" == "dev" ]]; then
-            run_electron dev
-        else
-            run_electron prod
-        fi
+        run_electron $@
     elif [[ "$1" == "doc" ]]; then
         shift 1
         run_exec php "php app/Http/Controllers/Api/apidoc.php"

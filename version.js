@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require("path");
 const exec = require('child_process').exec;
 const packageFile = path.resolve(process.cwd(), "package.json");
+const packageElectronFile = path.resolve(process.cwd(), "electron/package.json");
 
 function runExec(command, cb) {
     exec(command, function (err, stdout, stderr) {
@@ -26,7 +27,12 @@ runExec("git rev-list --all --count", function (err, response) {
         return;
     }
     let ver = Math.floor(num / 10000) + "." + Math.floor(num / 100) + "." + Math.floor(num % 100)
+    //
     let newResult = fs.readFileSync(packageFile, 'utf8').replace(/"version":\s*"(.*?)"/, `"version": "${ver}"`);
     fs.writeFileSync(packageFile, newResult, 'utf8');
+    //
+    let newElectronResult = fs.readFileSync(packageElectronFile, 'utf8').replace(/"version":\s*"(.*?)"/, `"version": "${ver}"`);
+    fs.writeFileSync(packageElectronFile, newElectronResult, 'utf8');
+    //
     console.log("new version: " + ver);
 });
