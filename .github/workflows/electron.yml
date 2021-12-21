@@ -6,28 +6,12 @@ on:
       - 'v*'
 
 jobs:
-  build:
-
-    runs-on: ${{ matrix.os }}
-    environment: build
-
-    strategy:
-      matrix:
-        os: [macos-11]
-        platform: [
-            build-mac,
-            build-mac-arm,
-            build-win
-        ]
-
+  release:
+    runs-on: ubuntu-latest
+    if: startsWith(github.event.ref, 'refs/tags/v')
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
-      - name: Use Node.js 14.x
-        uses: actions/setup-node@v1
-        with:
-          node-version: 14.x
 
       - name: Changelog
         uses: scottbrenner/generate-changelog-action@master
@@ -47,6 +31,29 @@ jobs:
             ${{ steps.Changelog.outputs.changelog }}
           draft: false
           prerelease: false
+
+  build:
+    runs-on: ${{ matrix.os }}
+    environment: build
+
+    strategy:
+      matrix:
+        os: [macos-11]
+        platform: [
+            build-mac,
+            build-mac-arm,
+            build-win
+        ]
+
+    if: startsWith(github.event.ref, 'refs/tags/v')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
 
       - name: Build
         env:
