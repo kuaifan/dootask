@@ -66,7 +66,6 @@ docker_name() {
 
 run_compile() {
     local type=$1
-    local npxcmd=""
     check_node
     if [ ! -d "./node_modules" ]; then
         npm install
@@ -74,28 +73,37 @@ run_compile() {
     run_exec php "php bin/run --mode=$type"
     supervisorctl_restart php
     #
-    mix -V &> /dev/null
-    if [ $? -ne  0 ]; then
-        npxcmd="npx"
-    fi
     if [ "$type" = "prod" ]; then
         rm -rf "./public/js/build"
-        $npxcmd mix --production
+        npx mix --production
     else
-        $npxcmd mix watch --hot
+        npx mix watch --hot
     fi
 }
 
 run_electron() {
     local argv=$@
     check_node
+    if [ ! -d "./node_modules" ]; then
+        npm install
+    fi
     if [ ! -d "./electron/node_modules" ]; then
         pushd electron
         npm install
         popd
     fi
+    #
     if [ -d "./electron/dist" ]; then
         rm -rf "./electron/dist"
+    fi
+    if [ -d "./electron/public" ]; then
+        rm -rf "./electron/public"
+    fi
+    mkdir -p ./electron/public
+    cp ./electron/index.html ./electron/public/index.html
+    #
+    if [ "$argv" != "dev" ]; then
+        npx mix --production -- --env --electron
     fi
     node ./electron/build.js $argv
 }

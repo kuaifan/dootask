@@ -47,7 +47,7 @@
         "appId": "com.dootask.task",
         "artifactName": "${productName}-v${version}-${os}-${arch}.${ext}",
         "files": [
-            "public",
+            "public/**/*",
             "main.js",
             "preload.js"
         ],

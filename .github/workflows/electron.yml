@@ -14,20 +14,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Build Changelog
-        id: github_release
-        uses: mikepenz/release-changelog-builder-action@v1
+      - name: Create changelog text
+        id: changelog
+        uses: loopwerk/tag-changelog@v1
+        with:
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Create release
+        uses: actions/create-release@latest
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-
-      - name: Create Release
-        uses: actions/create-release@v1
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
-          body: ${{steps.github_release.outputs.changelog}}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          body: ${{ steps.changelog.outputs.changes }}
 
   build:
     runs-on: ${{ matrix.os }}

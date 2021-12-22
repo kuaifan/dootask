@@ -104,19 +104,8 @@ const nativeCachePath = path.resolve(__dirname, ".native");
 const devloadCachePath = path.resolve(__dirname, ".devload");
 const platform = ["build-mac", "build-mac-arm", "build-win"];
 
-// 编译网站
-function step1() {
-    if (fs.existsSync(electronDir)) {
-        deleteFile(electronDir);
-    }
-    fs.mkdirSync(electronDir);
-    copyFile(path.resolve(__dirname, "index.html"), electronDir + "/index.html")
-    //
-    child_process.spawnSync("mix", ["--production", "--", "--env", "--electron"], {stdio: "inherit"});
-}
-
 // 生成配置、编译应用
-function step2(data, publish) {
+function step1(data, publish) {
     let systemInfo = `window.systemInformation = {
     version: "${config.version}",
     origin: "./",
@@ -138,7 +127,7 @@ function step2(data, publish) {
 }
 
 // 还原配置
-function step3() {
+function step2() {
     let packageFile = path.resolve(__dirname, "package.json");
     let packageString = fs.readFileSync(packageFile, 'utf8');
     packageString = packageString.replace(/"name":\s*"(.*?)"/, `"name": "${config.name}"`);
@@ -147,7 +136,21 @@ function step3() {
     fs.writeFileSync(packageFile, packageString, 'utf8');
 }
 
-if (["build", "prod"].includes(argv[2])) {
+if (["dev"].includes(argv[2])) {
+    // 开发模式
+    fs.writeFileSync(devloadCachePath, formatUrl("127.0.0.1:" + env.parsed.APP_PORT), 'utf8');
+    child_process.spawn("npx", ["mix", "watch", "--hot", "--", "--env", "--electron"], {stdio: "inherit"});
+    child_process.spawn("npm", ["run", "start-quiet"], {stdio: "inherit", cwd: "electron"});
+} else if (platform.includes(argv[2])) {
+    // 自动编译
+    config.app.sites.forEach((data) => {
+        if (data.name && data.id && data.url) {
+            data.platform = argv[2];
+            step1(data, true)
+        }
+    })
+    step2();
+} else {
     // 自定义编译
     const questions = [
         {
@@ -187,36 +190,16 @@ if (["build", "prod"].includes(argv[2])) {
         }
     ];
     inquirer.prompt(questions).then(answers => {
-        step1();
-        setTimeout(() => {
-            answers.platform.forEach(platform => {
-                step2({
-                    "name": config.name,
-                    "id": config.app.id,
-                    "url": answers.website,
-                    "platform": platform
-                }, false)
-            });
-            step3();
-        }, 3000)
+        answers.platform.forEach(platform => {
+            step1({
+                "name": config.name,
+                "id": config.app.id,
+                "url": answers.website,
+                "platform": platform
+            }, false)
+        });
+        step2();
     });
-} else if (platform.includes(argv[2])) {
-    // 自动编译
-    step1();
-    setTimeout(() => {
-        config.app.sites.forEach((data) => {
-            if (data.name && data.id && data.url) {
-                data.platform = argv[2];
-                step2(data)
-            }
-        })
-        step3();
-    }, 3000);
-} else {
-    // 开发模式
-    fs.writeFileSync(devloadCachePath, formatUrl("127.0.0.1:" + env.parsed.APP_PORT), 'utf8');
-    child_process.spawn("mix", ["watch", "--hot", "--", "--env", "--electron"], {stdio: "inherit"});
-    child_process.spawn("npm", ["run", "start-quiet"], {stdio: "inherit", cwd: "electron"});
 }
 
 
