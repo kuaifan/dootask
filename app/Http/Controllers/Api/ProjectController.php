@@ -34,16 +34,10 @@ class ProjectController extends AbstractController
         $data = [];
 
         // 今日待完成
-        $between = [
-            Carbon::today()->startOfDay(),
-            Carbon::today()->endOfDay()
-        ];
         $data['today'] = ProjectTask::authData(null, true)->whereParentId(0)
             ->whereNull('archived_at')
             ->whereNull('complete_at')
-            ->where(function ($query) use ($between) {
-                $query->whereBetween('start_at', $between)->orWhereBetween('end_at', $between);
-            })
+            ->betweenTime(Carbon::today()->startOfDay(), Carbon::today()->endOfDay())
             ->count();
 
         // 超期未完成
@@ -610,13 +604,7 @@ class ProjectController extends AbstractController
             $builder->whereNotNull('end_at')->where('end_at', '<', Carbon::parse($time_before));
         } elseif (is_array($time)) {
             if (Base::isDateOrTime($time[0]) && Base::isDateOrTime($time[1])) {
-                $between = [
-                    Carbon::parse($time[0])->startOfDay(),
-                    Carbon::parse($time[1])->endOfDay()
-                ];
-                $builder->where(function ($query) use ($between) {
-                    $query->whereBetween('start_at', $between)->orWhereBetween('end_at', $between);
-                });
+                $builder->betweenTime(Carbon::parse($time[0])->startOfDay(), Carbon::parse($time[1])->endOfDay());
             }
         }
         //

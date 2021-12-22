@@ -54,6 +54,7 @@ use Request;
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectTaskUser[] $taskUser
  * @property-read int|null $task_user_count
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask authData($userid = null, $owner = false)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask betweenTime($start, $end)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask newQuery()
  * @method static \Illuminate\Database\Query\Builder|ProjectTask onlyTrashed()
@@ -279,6 +280,27 @@ class ProjectTask extends AbstractModel
             if ($owner) {
                 $qy->where('owner', 1);
             }
+        });
+        return $query;
+    }
+
+    /**
+     * 指定范围内的任务
+     * @param $query
+     * @param $start
+     * @param $end
+     * @return mixed
+     */
+    public function scopeBetweenTime($query, $start, $end)
+    {
+        $query->where(function ($q1) use ($start, $end) {
+            $q1->where(function ($q2) use ($start) {
+                $q2->where('start_at', '<=', $start)->where('end_at', '>=', $start);
+            })->orWhere(function ($q2) use ($end) {
+                $q2->where('start_at', '<=', $end)->where('end_at', '>=', $end);
+            })->orWhere(function ($q2) use ($start, $end) {
+                $q2->where('start_at', '>', $start)->where('end_at', '<', $end);
+            });
         });
         return $query;
     }

@@ -172,7 +172,7 @@ export default {
                 data._end_time = end;
                 switch (dashboard) {
                     case 'today':
-                        return (start >= todayStart && start <= todayEnd) || (end >= todayStart && end <= todayEnd);
+                        return (start <= todayStart && todayStart <= end) || (start <= todayEnd && todayEnd <= end) || (start > todayStart && todayEnd > end);
                     case 'overdue':
                         return end <= todayStart;
                     default:
