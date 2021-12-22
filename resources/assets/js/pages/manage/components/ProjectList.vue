@@ -511,7 +511,7 @@ export default {
                         return false;
                     }
                 }
-                return task.task_user && task.task_user.find(({userid}) => userid == userId);
+                return task.task_user && task.task_user.find(({userid, owner}) => userid == userId && owner == 1);
             });
             return array.sort((a, b) => {
                 if (a.p_level != b.p_level) {

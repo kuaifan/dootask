@@ -38,7 +38,7 @@ class ProjectController extends AbstractController
             Carbon::today()->startOfDay(),
             Carbon::today()->endOfDay()
         ];
-        $data['today'] = ProjectTask::authData()->whereParentId(0)
+        $data['today'] = ProjectTask::authData(null, true)->whereParentId(0)
             ->whereNull('archived_at')
             ->whereNull('complete_at')
             ->where(function ($query) use ($between) {
@@ -47,7 +47,7 @@ class ProjectController extends AbstractController
             ->count();
 
         // 超期未完成
-        $data['overdue'] = ProjectTask::authData()->whereParentId(0)
+        $data['overdue'] = ProjectTask::authData(null, true)->whereParentId(0)
             ->whereNull('archived_at')
             ->whereNull('complete_at')
             ->whereNotNull('end_at')
