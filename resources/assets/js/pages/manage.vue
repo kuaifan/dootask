@@ -40,6 +40,11 @@
                 <li @click="toggleRoute('dashboard')" :class="classNameRoute('dashboard')">
                     <i class="taskfont">&#xe6fb;</i>
                     <div class="menu-title">{{$L('仪表盘')}}</div>
+                    <Badge
+                        v-if="projectStatistics.today > 0 || projectStatistics.overdue > 0"
+                        class="menu-badge"
+                        :type="projectStatistics.overdue > 0 ? '' : 'primary'"
+                        :count="projectStatistics.today + projectStatistics.overdue"></Badge>
                 </li>
                 <li @click="toggleRoute('calendar')" :class="classNameRoute('calendar')">
                     <i class="taskfont">&#xe6f5;</i>
@@ -224,6 +229,7 @@ export default {
         //
         this.$store.dispatch("getUserInfo");
         this.$store.dispatch("getTaskPriority");
+        this.$store.dispatch("getProjectStatistics");
         //
         this.notificationInit();
         this.onVisibilityChange();
@@ -245,6 +251,7 @@ export default {
             'dialogs',
             'projects',
             'projectTotal',
+            'projectStatistics',
             'taskId',
             'dialogMsgPush',
         ]),
