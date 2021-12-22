@@ -30,6 +30,7 @@
                 :template="calendarTemplate"
                 :calendars="calendarList"
                 :schedules="list"
+                :taskView="false"
                 @beforeCreateSchedule="onBeforeCreateSchedule"
                 @beforeClickSchedule="onBeforeClickSchedule"
                 @beforeUpdateSchedule="onBeforeUpdateSchedule"
@@ -87,12 +88,14 @@ export default {
                 return data.owner;
             })
             return datas.map(data => {
+                let isAllday = $A.rightExists(data.start_at, "00:00:00") && $A.rightExists(data.end_at, "23:59:59")
                 let task = {
                     id: data.id,
                     calendarId: String(data.project_id),
                     title: data.name,
                     body: data.desc,
-                    category: 'allday',
+                    isAllDay: isAllday,
+                    category: isAllday ? 'allday' : 'time',
                     start: $A.Date(data.start_at).toISOString(),
                     end: $A.Date(data.end_at).toISOString(),
                     color: "#515a6e",
