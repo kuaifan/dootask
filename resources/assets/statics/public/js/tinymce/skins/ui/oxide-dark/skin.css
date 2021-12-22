@@ -5,6 +5,7 @@
  * For commercial licenses see https://www.tiny.cloud/
  */
 .tox {
+  box-shadow: none;
   box-sizing: content-box;
   color: #2A3746;
   cursor: auto;
@@ -42,6 +43,7 @@
   /* stylelint-disable-line no-duplicate-selectors */
   background: transparent;
   border: 0;
+  box-shadow: none;
   float: none;
   height: auto;
   margin: 0;
@@ -76,6 +78,7 @@
   box-shadow: none;
 }
 .tox-tinymce-inline .tox-editor-header {
+  background-color: transparent;
   border: 1px solid #000000;
   border-radius: 0;
   box-shadow: none;
@@ -90,6 +93,9 @@
 }
 button::-moz-focus-inner {
   border: 0;
+}
+.tox[dir=rtl] .tox-icon--flip svg {
+  transform: rotateY(180deg);
 }
 .tox .accessibility-issue__header {
   align-items: center;
@@ -118,101 +124,101 @@ button::-moz-focus-inner {
 .tox .accessibility-issue__repair {
   margin-top: 16px;
 }
-.tox .accessibility-issue--info .accessibility-issue__description {
+.tox .tox-dialog__body-content .accessibility-issue--info .accessibility-issue__description {
   background-color: rgba(32, 122, 183, 0.5);
   border-color: #207ab7;
   color: #fff;
 }
-.tox .accessibility-issue--info .accessibility-issue__description > *:last-child {
+.tox .tox-dialog__body-content .accessibility-issue--info .accessibility-issue__description > *:last-child {
   border-color: #207ab7;
 }
-.tox .accessibility-issue--info h2 {
+.tox .tox-dialog__body-content .accessibility-issue--info .tox-form__group h2 {
   color: #fff;
 }
-.tox .accessibility-issue--info .tox-icon svg {
+.tox .tox-dialog__body-content .accessibility-issue--info .tox-icon svg {
   fill: #fff;
 }
-.tox .accessibility-issue--info a .tox-icon {
+.tox .tox-dialog__body-content .accessibility-issue--info a .tox-icon {
   color: #fff;
 }
-.tox .accessibility-issue--warn .accessibility-issue__description {
+.tox .tox-dialog__body-content .accessibility-issue--warn .accessibility-issue__description {
   background-color: rgba(255, 165, 0, 0.5);
   border-color: rgba(255, 165, 0, 0.8);
   color: #fff;
 }
-.tox .accessibility-issue--warn .accessibility-issue__description > *:last-child {
+.tox .tox-dialog__body-content .accessibility-issue--warn .accessibility-issue__description > *:last-child {
   border-color: rgba(255, 165, 0, 0.8);
 }
-.tox .accessibility-issue--warn h2 {
+.tox .tox-dialog__body-content .accessibility-issue--warn .tox-form__group h2 {
   color: #fff;
 }
-.tox .accessibility-issue--warn .tox-icon svg {
+.tox .tox-dialog__body-content .accessibility-issue--warn .tox-icon svg {
   fill: #fff;
 }
-.tox .accessibility-issue--warn a .tox-icon {
+.tox .tox-dialog__body-content .accessibility-issue--warn a .tox-icon {
   color: #fff;
 }
-.tox .accessibility-issue--error .accessibility-issue__description {
+.tox .tox-dialog__body-content .accessibility-issue--error .accessibility-issue__description {
   background-color: rgba(204, 0, 0, 0.5);
   border-color: rgba(204, 0, 0, 0.8);
   color: #fff;
 }
-.tox .accessibility-issue--error .accessibility-issue__description > *:last-child {
+.tox .tox-dialog__body-content .accessibility-issue--error .accessibility-issue__description > *:last-child {
   border-color: rgba(204, 0, 0, 0.8);
 }
-.tox .accessibility-issue--error h2 {
+.tox .tox-dialog__body-content .accessibility-issue--error .tox-form__group h2 {
   color: #fff;
 }
-.tox .accessibility-issue--error .tox-icon svg {
+.tox .tox-dialog__body-content .accessibility-issue--error .tox-icon svg {
   fill: #fff;
 }
-.tox .accessibility-issue--error a .tox-icon {
+.tox .tox-dialog__body-content .accessibility-issue--error a .tox-icon {
   color: #fff;
 }
-.tox .accessibility-issue--success .accessibility-issue__description {
+.tox .tox-dialog__body-content .accessibility-issue--success .accessibility-issue__description {
   background-color: rgba(120, 171, 70, 0.5);
   border-color: rgba(120, 171, 70, 0.8);
   color: #fff;
 }
-.tox .accessibility-issue--success .accessibility-issue__description > *:last-child {
+.tox .tox-dialog__body-content .accessibility-issue--success .accessibility-issue__description > *:last-child {
   border-color: rgba(120, 171, 70, 0.8);
 }
-.tox .accessibility-issue--success h2 {
+.tox .tox-dialog__body-content .accessibility-issue--success .tox-form__group h2 {
   color: #fff;
 }
-.tox .accessibility-issue--success .tox-icon svg {
+.tox .tox-dialog__body-content .accessibility-issue--success .tox-icon svg {
   fill: #fff;
 }
-.tox .accessibility-issue--success a .tox-icon {
+.tox .tox-dialog__body-content .accessibility-issue--success a .tox-icon {
   color: #fff;
 }
 .tox .tox-dialog__body-content .accessibility-issue__header h1,
 .tox .tox-dialog__body-content .tox-form__group .accessibility-issue__description h2 {
   margin-top: 0;
 }
-.tox:not([dir=rtl]) .accessibility-issue__header .tox-button {
+.tox:not([dir=rtl]) .tox-dialog__body-content .accessibility-issue__header .tox-button {
   margin-left: 4px;
 }
-.tox:not([dir=rtl]) .accessibility-issue__header > *:nth-last-child(2) {
+.tox:not([dir=rtl]) .tox-dialog__body-content .accessibility-issue__header > *:nth-last-child(2) {
   margin-left: auto;
 }
-.tox:not([dir=rtl]) .accessibility-issue__description {
+.tox:not([dir=rtl]) .tox-dialog__body-content .accessibility-issue__description {
   padding: 4px 4px 4px 8px;
 }
-.tox:not([dir=rtl]) .accessibility-issue__description > *:last-child {
+.tox:not([dir=rtl]) .tox-dialog__body-content .accessibility-issue__description > *:last-child {
   border-left-width: 1px;
   padding-left: 4px;
 }
-.tox[dir=rtl] .accessibility-issue__header .tox-button {
+.tox[dir=rtl] .tox-dialog__body-content .accessibility-issue__header .tox-button {
   margin-right: 4px;
 }
-.tox[dir=rtl] .accessibility-issue__header > *:nth-last-child(2) {
+.tox[dir=rtl] .tox-dialog__body-content .accessibility-issue__header > *:nth-last-child(2) {
   margin-right: auto;
 }
-.tox[dir=rtl] .accessibility-issue__description {
+.tox[dir=rtl] .tox-dialog__body-content .accessibility-issue__description {
   padding: 4px 8px 4px 4px;
 }
-.tox[dir=rtl] .accessibility-issue__description > *:last-child {
+.tox[dir=rtl] .tox-dialog__body-content .accessibility-issue__description > *:last-child {
   border-right-width: 1px;
   padding-right: 4px;
 }
@@ -240,6 +246,7 @@ button::-moz-focus-inner {
   display: inline-block;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
   font-size: 14px;
+  font-style: normal;
   font-weight: bold;
   letter-spacing: normal;
   line-height: 24px;
@@ -248,7 +255,7 @@ button::-moz-focus-inner {
   padding: 4px 16px;
   text-align: center;
   text-decoration: none;
-  text-transform: capitalize;
+  text-transform: none;
   white-space: nowrap;
 }
 .tox .tox-button[disabled] {
@@ -291,10 +298,14 @@ button::-moz-focus-inner {
   border-width: 1px;
   box-shadow: none;
   color: #fff;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: bold;
+  letter-spacing: normal;
   outline: none;
   padding: 4px 16px;
   text-decoration: none;
-  text-transform: capitalize;
+  text-transform: none;
 }
 .tox .tox-button--secondary[disabled] {
   background-color: #3d546f;
@@ -569,11 +580,6 @@ button::-moz-focus-inner {
 .tox .tox-collection--toolbar .tox-collection__item--active:not(.tox-collection__item--state-disabled) {
   color: #fff;
 }
-.tox .tox-collection__item--state-disabled {
-  background-color: transparent;
-  color: rgba(255, 255, 255, 0.5);
-  cursor: not-allowed;
-}
 .tox .tox-collection__item-icon,
 .tox .tox-collection__item-checkmark {
   align-items: center;
@@ -623,6 +629,14 @@ button::-moz-focus-inner {
 .tox .tox-collection__item-caret svg {
   fill: #fff;
 }
+.tox .tox-collection__item--state-disabled {
+  background-color: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: not-allowed;
+}
+.tox .tox-collection__item--state-disabled .tox-collection__item-caret svg {
+  fill: rgba(255, 255, 255, 0.5);
+}
 .tox .tox-collection--list .tox-collection__item:not(.tox-collection__item--enabled) .tox-collection__item-checkmark svg {
   display: none;
 }
@@ -660,13 +674,61 @@ button::-moz-focus-inner {
 .tox .tox-collection--horizontal .tox-collection__item-caret {
   margin-left: 4px;
 }
+.tox .tox-collection__item-container {
+  display: flex;
+}
+.tox .tox-collection__item-container--row {
+  align-items: center;
+  flex: 1 1 auto;
+  flex-direction: row;
+}
+.tox .tox-collection__item-container--row.tox-collection__item-container--align-left {
+  margin-right: auto;
+}
+.tox .tox-collection__item-container--row.tox-collection__item-container--align-right {
+  justify-content: flex-end;
+  margin-left: auto;
+}
+.tox .tox-collection__item-container--row.tox-collection__item-container--valign-top {
+  align-items: flex-start;
+  margin-bottom: auto;
+}
+.tox .tox-collection__item-container--row.tox-collection__item-container--valign-middle {
+  align-items: center;
+}
+.tox .tox-collection__item-container--row.tox-collection__item-container--valign-bottom {
+  align-items: flex-end;
+  margin-top: auto;
+}
+.tox .tox-collection__item-container--column {
+  -ms-grid-row-align: center;
+      align-self: center;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+.tox .tox-collection__item-container--column.tox-collection__item-container--align-left {
+  align-items: flex-start;
+}
+.tox .tox-collection__item-container--column.tox-collection__item-container--align-right {
+  align-items: flex-end;
+}
+.tox .tox-collection__item-container--column.tox-collection__item-container--valign-top {
+  align-self: flex-start;
+}
+.tox .tox-collection__item-container--column.tox-collection__item-container--valign-middle {
+  -ms-grid-row-align: center;
+      align-self: center;
+}
+.tox .tox-collection__item-container--column.tox-collection__item-container--valign-bottom {
+  align-self: flex-end;
+}
 .tox:not([dir=rtl]) .tox-collection--horizontal .tox-collection__group:not(:last-of-type) {
   border-right: 1px solid #000000;
 }
 .tox:not([dir=rtl]) .tox-collection--list .tox-collection__item > *:not(:first-child) {
   margin-left: 8px;
 }
-.tox:not([dir=rtl]) .tox-collection--list .tox-collection__item-label:first-child {
+.tox:not([dir=rtl]) .tox-collection--list .tox-collection__item > .tox-collection__item-label:first-child {
   margin-left: 4px;
 }
 .tox:not([dir=rtl]) .tox-collection__item-accessory {
@@ -682,14 +744,8 @@ button::-moz-focus-inner {
 .tox[dir=rtl] .tox-collection--list .tox-collection__item > *:not(:first-child) {
   margin-right: 8px;
 }
-.tox[dir=rtl] .tox-collection--list .tox-collection__item-label:first-child {
+.tox[dir=rtl] .tox-collection--list .tox-collection__item > .tox-collection__item-label:first-child {
   margin-right: 4px;
-}
-.tox[dir=rtl] .tox-collection__item-icon-rtl {
-  /* stylelint-disable-next-line no-descending-specificity */
-}
-.tox[dir=rtl] .tox-collection__item-icon-rtl .tox-collection__item-icon svg {
-  transform: rotateY(180deg);
 }
 .tox[dir=rtl] .tox-collection__item-accessory {
   margin-right: 16px;
@@ -1250,16 +1306,24 @@ button::-moz-focus-inner {
           padding-inline-start: 2.5rem;
 }
 .tox .tox-dialog__body-content .tox-form__group h1 {
+  color: #fff;
   font-size: 20px;
+  font-style: normal;
   font-weight: bold;
+  letter-spacing: normal;
   margin-bottom: 16px;
   margin-top: 2rem;
+  text-transform: none;
 }
 .tox .tox-dialog__body-content .tox-form__group h2 {
+  color: #fff;
   font-size: 16px;
+  font-style: normal;
   font-weight: bold;
+  letter-spacing: normal;
   margin-bottom: 16px;
   margin-top: 2rem;
+  text-transform: none;
 }
 .tox .tox-dialog__body-content .tox-form__group p {
   margin-bottom: 16px;
@@ -1370,9 +1434,6 @@ button::-moz-focus-inner {
 .tox .tox-dialog-dock-transition.tox-dialog-dock-fadein {
   transition-delay: 0s;
 }
-body.tox-dialog__disable-scroll {
-  overflow: hidden;
-}
 .tox.tox-platform-ie {
   /* IE11 CSS styles go here */
 }
@@ -1409,6 +1470,9 @@ body.tox-dialog__disable-scroll {
 .tox[dir=rtl] .tox-dialog__footer .tox-dialog__footer-start > *,
 .tox[dir=rtl] .tox-dialog__footer .tox-dialog__footer-end > * {
   margin-right: 8px;
+}
+body.tox-dialog__disable-scroll {
+  overflow: hidden;
 }
 .tox .tox-dropzone-container {
   display: flex;
@@ -1469,6 +1533,7 @@ body.tox-dialog__disable-scroll {
   margin-bottom: -1px;
 }
 .tox.tox-tinymce--toolbar-sticky-on .tox-editor-header {
+  background-color: transparent;
   box-shadow: 0 4px 4px -3px rgba(0, 0, 0, 0.25);
 }
 .tox-editor-dock-fadeout {
@@ -1689,7 +1754,7 @@ body.tox-dialog__disable-scroll {
 }
 .tox .tox-textfield,
 .tox .tox-toolbar-textfield,
-.tox .tox-selectfield select,
+.tox .tox-listboxfield .tox-listbox--select,
 .tox .tox-textarea {
   -webkit-appearance: none;
      -moz-appearance: none;
@@ -1719,8 +1784,9 @@ body.tox-dialog__disable-scroll {
   cursor: not-allowed;
 }
 .tox .tox-textfield:focus,
-.tox .tox-selectfield select:focus,
+.tox .tox-listboxfield .tox-listbox--select:focus,
 .tox .tox-textarea:focus {
+  background-color: #2b3b4e;
   border-color: #207ab7;
   box-shadow: none;
   outline: none;
@@ -1752,9 +1818,64 @@ body.tox-dialog__disable-scroll {
 .tox[dir=rtl] .tox-toolbar-textfield + * {
   margin-right: 4px;
 }
+.tox .tox-listboxfield {
+  cursor: pointer;
+  position: relative;
+}
+.tox .tox-listboxfield .tox-listbox--select[disabled] {
+  background-color: #19232e;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: not-allowed;
+}
+.tox .tox-listbox__select-label {
+  cursor: default;
+  flex: 1;
+  margin: 0 4px;
+}
+.tox .tox-listbox__select-chevron {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  width: 16px;
+}
+.tox .tox-listbox__select-chevron svg {
+  fill: #fff;
+}
+.tox .tox-listboxfield .tox-listbox--select {
+  align-items: center;
+  display: flex;
+}
+.tox:not([dir=rtl]) .tox-listboxfield svg {
+  right: 8px;
+}
+.tox[dir=rtl] .tox-listboxfield svg {
+  left: 8px;
+}
 .tox .tox-selectfield {
   cursor: pointer;
   position: relative;
+}
+.tox .tox-selectfield select {
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  background-color: #2b3b4e;
+  border-color: #000000;
+  border-radius: 3px;
+  border-style: solid;
+  border-width: 1px;
+  box-shadow: none;
+  box-sizing: border-box;
+  color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  margin: 0;
+  min-height: 34px;
+  outline: none;
+  padding: 5px 4.75px;
+  resize: none;
+  width: 100%;
 }
 .tox .tox-selectfield select[disabled] {
   background-color: #19232e;
@@ -1763,6 +1884,12 @@ body.tox-dialog__disable-scroll {
 }
 .tox .tox-selectfield select::-ms-expand {
   display: none;
+}
+.tox .tox-selectfield select:focus {
+  background-color: #2b3b4e;
+  border-color: #207ab7;
+  box-shadow: none;
+  outline: none;
 }
 .tox .tox-selectfield svg {
   pointer-events: none;
@@ -1793,24 +1920,29 @@ body.tox-dialog__disable-scroll {
 .tox-fullscreen {
   border: 0;
   height: 100%;
-  left: 0;
   margin: 0;
   overflow: hidden;
   -ms-scroll-chaining: none;
       overscroll-behavior: none;
   padding: 0;
-  position: fixed;
-  top: 0;
   touch-action: pinch-zoom;
   width: 100%;
 }
-.tox-fullscreen .tox.tox-tinymce.tox-fullscreen .tox-statusbar__resize-handle {
+.tox.tox-tinymce.tox-fullscreen .tox-statusbar__resize-handle {
   display: none;
 }
-.tox-fullscreen .tox.tox-tinymce.tox-fullscreen {
+.tox.tox-tinymce.tox-fullscreen,
+.tox-shadowhost.tox-fullscreen {
+  left: 0;
+  position: fixed;
+  top: 0;
   z-index: 1200;
 }
-.tox-fullscreen .tox.tox-tinymce-aux {
+.tox.tox-tinymce.tox-fullscreen {
+  background-color: transparent;
+}
+.tox-fullscreen .tox.tox-tinymce-aux,
+.tox-fullscreen ~ .tox.tox-tinymce-aux {
   z-index: 1201;
 }
 .tox .tox-help__more-link {
@@ -2079,6 +2211,7 @@ body.tox-dialog__disable-scroll {
   font-weight: normal;
 }
 .tox .tox-notification a {
+  cursor: pointer;
   text-decoration: underline;
 }
 .tox .tox-notification--in {
@@ -2218,8 +2351,17 @@ body.tox-dialog__disable-scroll {
 .tox .tox-pop--resizing {
   transition: width 0.1s ease;
 }
-.tox .tox-pop--resizing .tox-toolbar {
+.tox .tox-pop--resizing .tox-toolbar,
+.tox .tox-pop--resizing .tox-toolbar__group {
   flex-wrap: nowrap;
+}
+.tox .tox-pop--transition {
+  transition: 0.15s ease;
+  transition-property: left, right, top, bottom;
+}
+.tox .tox-pop--transition::before,
+.tox .tox-pop--transition::after {
+  transition: all 0.15s, visibility 0s, opacity 0.075s ease 0.075s;
 }
 .tox .tox-pop__dialog {
   background-color: #222f3e;
@@ -2242,8 +2384,14 @@ body.tox-dialog__disable-scroll {
   content: '';
   display: block;
   height: 0;
+  opacity: 1;
   position: absolute;
   width: 0;
+}
+.tox .tox-pop.tox-pop--inset::before,
+.tox .tox-pop.tox-pop--inset::after {
+  opacity: 0;
+  transition: all 0s 0.15s, visibility 0s, opacity 0.075s ease;
 }
 .tox .tox-pop.tox-pop--bottom::before,
 .tox .tox-pop.tox-pop--bottom::after {
@@ -2497,6 +2645,11 @@ body.tox-dialog__disable-scroll {
   display: block;
   fill: #fff;
 }
+.tox .tox-statusbar__resize-handle:focus svg {
+  background-color: #4a5562;
+  border-radius: 1px;
+  box-shadow: 0 0 0 2px #4a5562;
+}
 .tox:not([dir=rtl]) .tox-statusbar__path > * {
   margin-right: 4px;
 }
@@ -2510,7 +2663,7 @@ body.tox-dialog__disable-scroll {
   margin-left: 4px;
 }
 .tox .tox-throbber {
-  z-index: 1400;
+  z-index: 1299;
 }
 .tox .tox-throbber__busy-spinner {
   align-items: center;
@@ -2763,9 +2916,6 @@ body.tox-dialog__disable-scroll {
   border: 1px solid #000000;
   border-radius: 3px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-}
-.tox[dir=rtl] .tox-tbtn__icon-rtl svg {
-  transform: rotateY(180deg);
 }
 .tox .tox-toolbar__group {
   align-items: center;

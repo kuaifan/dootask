@@ -4,16 +4,16 @@
  * For LGPL see License.txt in the project root for license information.
  * For commercial licenses see https://www.tiny.cloud/
  *
- * Version: 5.3.0 (2020-05-21)
+ * Version: 5.10.2 (2021-11-17)
  */
 (function () {
     'use strict';
 
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+    var global$2 = tinymce.util.Tools.resolve('tinymce.PluginManager');
 
     var global$1 = tinymce.util.Tools.resolve('tinymce.dom.DOMUtils');
 
-    var global$2 = tinymce.util.Tools.resolve('tinymce.util.Tools');
+    var global = tinymce.util.Tools.resolve('tinymce.util.Tools');
 
     var enableWhenDirty = function (editor) {
       return editor.getParam('save_enablewhendirty', true);
@@ -32,8 +32,7 @@
       });
     };
     var save = function (editor) {
-      var formObj;
-      formObj = global$1.DOM.getParent(editor.id, 'form');
+      var formObj = global$1.DOM.getParent(editor.id, 'form');
       if (enableWhenDirty(editor) && !editor.isDirty()) {
         return;
       }
@@ -58,7 +57,7 @@
       }
     };
     var cancel = function (editor) {
-      var h = global$2.trim(editor.startContent);
+      var h = global.trim(editor.startContent);
       if (hasOnCancelCallback(editor)) {
         editor.execCallback('save_oncancelcallback', editor);
         return;
@@ -66,7 +65,7 @@
       editor.resetContent(h);
     };
 
-    var register = function (editor) {
+    var register$1 = function (editor) {
       editor.addCommand('mceSave', function () {
         save(editor);
       });
@@ -80,13 +79,14 @@
         var handler = function () {
           api.setDisabled(enableWhenDirty(editor) && !editor.isDirty());
         };
+        handler();
         editor.on('NodeChange dirty', handler);
         return function () {
           return editor.off('NodeChange dirty', handler);
         };
       };
     };
-    var register$1 = function (editor) {
+    var register = function (editor) {
       editor.ui.registry.addButton('save', {
         icon: 'save',
         tooltip: 'Save',
@@ -109,9 +109,9 @@
     };
 
     function Plugin () {
-      global.add('save', function (editor) {
-        register$1(editor);
+      global$2.add('save', function (editor) {
         register(editor);
+        register$1(editor);
       });
     }
 

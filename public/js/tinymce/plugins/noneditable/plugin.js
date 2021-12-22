@@ -4,14 +4,14 @@
  * For LGPL see License.txt in the project root for license information.
  * For commercial licenses see https://www.tiny.cloud/
  *
- * Version: 5.3.0 (2020-05-21)
+ * Version: 5.10.2 (2021-11-17)
  */
 (function () {
     'use strict';
 
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+    var global$1 = tinymce.util.Tools.resolve('tinymce.PluginManager');
 
-    var global$1 = tinymce.util.Tools.resolve('tinymce.util.Tools');
+    var global = tinymce.util.Tools.resolve('tinymce.util.Tools');
 
     var getNonEditableClass = function (editor) {
       return editor.getParam('noneditable_noneditable_class', 'mceNonEditable');
@@ -63,10 +63,9 @@
       e.content = content;
     };
     var setup = function (editor) {
-      var editClass, nonEditClass;
       var contentEditableAttrName = 'contenteditable';
-      editClass = ' ' + global$1.trim(getEditableClass(editor)) + ' ';
-      nonEditClass = ' ' + global$1.trim(getNonEditableClass(editor)) + ' ';
+      var editClass = ' ' + global.trim(getEditableClass(editor)) + ' ';
+      var nonEditClass = ' ' + global.trim(getNonEditableClass(editor)) + ' ';
       var hasEditClass = hasClass(editClass);
       var hasNonEditClass = hasClass(nonEditClass);
       var nonEditableRegExps = getNonEditableRegExps(editor);
@@ -108,7 +107,7 @@
     };
 
     function Plugin () {
-      global.add('noneditable', function (editor) {
+      global$1.add('noneditable', function (editor) {
         setup(editor);
       });
     }

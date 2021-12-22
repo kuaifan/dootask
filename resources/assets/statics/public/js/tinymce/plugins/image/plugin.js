@@ -4,127 +4,24 @@
  * For LGPL see License.txt in the project root for license information.
  * For commercial licenses see https://www.tiny.cloud/
  *
- * Version: 5.3.0 (2020-05-21)
+ * Version: 5.10.2 (2021-11-17)
  */
-(function (domGlobals) {
+(function () {
     'use strict';
 
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+    var global$6 = tinymce.util.Tools.resolve('tinymce.PluginManager');
 
-    var noop = function () {
-    };
-    var constant = function (value) {
-      return function () {
-        return value;
-      };
-    };
-    var never = constant(false);
-    var always = constant(true);
-
-    var none = function () {
-      return NONE;
-    };
-    var NONE = function () {
-      var eq = function (o) {
-        return o.isNone();
-      };
-      var call = function (thunk) {
-        return thunk();
-      };
-      var id = function (n) {
-        return n;
-      };
-      var me = {
-        fold: function (n, _s) {
-          return n();
-        },
-        is: never,
-        isSome: never,
-        isNone: always,
-        getOr: id,
-        getOrThunk: call,
-        getOrDie: function (msg) {
-          throw new Error(msg || 'error: getOrDie called on none.');
-        },
-        getOrNull: constant(null),
-        getOrUndefined: constant(undefined),
-        or: id,
-        orThunk: call,
-        map: none,
-        each: noop,
-        bind: none,
-        exists: never,
-        forall: always,
-        filter: none,
-        equals: eq,
-        equals_: eq,
-        toArray: function () {
-          return [];
-        },
-        toString: constant('none()')
-      };
-      return me;
-    }();
-    var some = function (a) {
-      var constant_a = constant(a);
-      var self = function () {
-        return me;
-      };
-      var bind = function (f) {
-        return f(a);
-      };
-      var me = {
-        fold: function (n, s) {
-          return s(a);
-        },
-        is: function (v) {
-          return a === v;
-        },
-        isSome: always,
-        isNone: never,
-        getOr: constant_a,
-        getOrThunk: constant_a,
-        getOrDie: constant_a,
-        getOrNull: constant_a,
-        getOrUndefined: constant_a,
-        or: self,
-        orThunk: self,
-        map: function (f) {
-          return some(f(a));
-        },
-        each: function (f) {
-          f(a);
-        },
-        bind: bind,
-        exists: bind,
-        forall: bind,
-        filter: function (f) {
-          return f(a) ? me : NONE;
-        },
-        toArray: function () {
-          return [a];
-        },
-        toString: function () {
-          return 'some(' + a + ')';
-        },
-        equals: function (o) {
-          return o.is(a);
-        },
-        equals_: function (o, elementEq) {
-          return o.fold(never, function (b) {
-            return elementEq(a, b);
-          });
+    var __assign = function () {
+      __assign = Object.assign || function __assign(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+          s = arguments[i];
+          for (var p in s)
+            if (Object.prototype.hasOwnProperty.call(s, p))
+              t[p] = s[p];
         }
+        return t;
       };
-      return me;
-    };
-    var from = function (value) {
-      return value === null || value === undefined ? NONE : some(value);
-    };
-    var Option = {
-      some: some,
-      none: none,
-      from: from
+      return __assign.apply(this, arguments);
     };
 
     var typeOf = function (x) {
@@ -159,7 +56,150 @@
     var isArray = isType('array');
     var isNull = eq(null);
     var isBoolean = isSimpleType('boolean');
+    var isNullable = function (a) {
+      return a === null || a === undefined;
+    };
+    var isNonNullable = function (a) {
+      return !isNullable(a);
+    };
+    var isFunction = isSimpleType('function');
     var isNumber = isSimpleType('number');
+
+    var noop = function () {
+    };
+    var constant = function (value) {
+      return function () {
+        return value;
+      };
+    };
+    var identity = function (x) {
+      return x;
+    };
+    var never = constant(false);
+    var always = constant(true);
+
+    var none = function () {
+      return NONE;
+    };
+    var NONE = function () {
+      var call = function (thunk) {
+        return thunk();
+      };
+      var id = identity;
+      var me = {
+        fold: function (n, _s) {
+          return n();
+        },
+        isSome: never,
+        isNone: always,
+        getOr: id,
+        getOrThunk: call,
+        getOrDie: function (msg) {
+          throw new Error(msg || 'error: getOrDie called on none.');
+        },
+        getOrNull: constant(null),
+        getOrUndefined: constant(undefined),
+        or: id,
+        orThunk: call,
+        map: none,
+        each: noop,
+        bind: none,
+        exists: never,
+        forall: always,
+        filter: function () {
+          return none();
+        },
+        toArray: function () {
+          return [];
+        },
+        toString: constant('none()')
+      };
+      return me;
+    }();
+    var some = function (a) {
+      var constant_a = constant(a);
+      var self = function () {
+        return me;
+      };
+      var bind = function (f) {
+        return f(a);
+      };
+      var me = {
+        fold: function (n, s) {
+          return s(a);
+        },
+        isSome: always,
+        isNone: never,
+        getOr: constant_a,
+        getOrThunk: constant_a,
+        getOrDie: constant_a,
+        getOrNull: constant_a,
+        getOrUndefined: constant_a,
+        or: self,
+        orThunk: self,
+        map: function (f) {
+          return some(f(a));
+        },
+        each: function (f) {
+          f(a);
+        },
+        bind: bind,
+        exists: bind,
+        forall: bind,
+        filter: function (f) {
+          return f(a) ? me : NONE;
+        },
+        toArray: function () {
+          return [a];
+        },
+        toString: function () {
+          return 'some(' + a + ')';
+        }
+      };
+      return me;
+    };
+    var from = function (value) {
+      return value === null || value === undefined ? NONE : some(value);
+    };
+    var Optional = {
+      some: some,
+      none: none,
+      from: from
+    };
+
+    var keys = Object.keys;
+    var hasOwnProperty = Object.hasOwnProperty;
+    var each = function (obj, f) {
+      var props = keys(obj);
+      for (var k = 0, len = props.length; k < len; k++) {
+        var i = props[k];
+        var x = obj[i];
+        f(x, i);
+      }
+    };
+    var objAcc = function (r) {
+      return function (x, i) {
+        r[i] = x;
+      };
+    };
+    var internalFilter = function (obj, pred, onTrue, onFalse) {
+      var r = {};
+      each(obj, function (x, i) {
+        (pred(x, i) ? onTrue : onFalse)(x, i);
+      });
+      return r;
+    };
+    var filter = function (obj, pred) {
+      var t = {};
+      internalFilter(obj, pred, objAcc(t), noop);
+      return t;
+    };
+    var has = function (obj, key) {
+      return hasOwnProperty.call(obj, key);
+    };
+    var hasNonNullableKey = function (obj, key) {
+      return has(obj, key) && obj[key] !== undefined && obj[key] !== null;
+    };
 
     var nativePush = Array.prototype.push;
     var flatten = function (xs) {
@@ -172,8 +212,11 @@
       }
       return r;
     };
+    var get = function (xs, i) {
+      return i >= 0 && i < xs.length ? Optional.some(xs[i]) : Optional.none();
+    };
     var head = function (xs) {
-      return xs.length === 0 ? Option.none() : Option.some(xs[0]);
+      return get(xs, 0);
     };
     var findMap = function (arr, f) {
       for (var i = 0; i < arr.length; i++) {
@@ -182,84 +225,43 @@
           return r;
         }
       }
-      return Option.none();
+      return Optional.none();
     };
 
-    var hasOwnProperty = Object.prototype.hasOwnProperty;
-    var deep = function (old, nu) {
-      var bothObjects = isObject(old) && isObject(nu);
-      return bothObjects ? deepMerge(old, nu) : nu;
-    };
-    var baseMerge = function (merger) {
-      return function () {
-        var objects = new Array(arguments.length);
-        for (var i = 0; i < objects.length; i++) {
-          objects[i] = arguments[i];
-        }
-        if (objects.length === 0) {
-          throw new Error('Can\'t merge zero objects');
-        }
-        var ret = {};
-        for (var j = 0; j < objects.length; j++) {
-          var curObject = objects[j];
-          for (var key in curObject) {
-            if (hasOwnProperty.call(curObject, key)) {
-              ret[key] = merger(ret[key], curObject[key]);
-            }
-          }
-        }
-        return ret;
-      };
-    };
-    var deepMerge = baseMerge(deep);
-
-    var __assign = function () {
-      __assign = Object.assign || function __assign(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-          s = arguments[i];
-          for (var p in s)
-            if (Object.prototype.hasOwnProperty.call(s, p))
-              t[p] = s[p];
-        }
-        return t;
-      };
-      return __assign.apply(this, arguments);
-    };
-
-    var Global = typeof domGlobals.window !== 'undefined' ? domGlobals.window : Function('return this;')();
+    typeof window !== 'undefined' ? window : Function('return this;')();
 
     var rawSet = function (dom, key, value) {
       if (isString(value) || isBoolean(value) || isNumber(value)) {
         dom.setAttribute(key, value + '');
       } else {
-        domGlobals.console.error('Invalid call to Attr.set. Key ', key, ':: Value ', value, ':: Element ', dom);
+        console.error('Invalid call to Attribute.set. Key ', key, ':: Value ', value, ':: Element ', dom);
         throw new Error('Attribute value was not simple');
       }
     };
     var set = function (element, key, value) {
-      rawSet(element.dom(), key, value);
+      rawSet(element.dom, key, value);
     };
     var remove = function (element, key) {
-      element.dom().removeAttribute(key);
+      element.dom.removeAttribute(key);
     };
 
     var fromHtml = function (html, scope) {
-      var doc = scope || domGlobals.document;
+      var doc = scope || document;
       var div = doc.createElement('div');
       div.innerHTML = html;
       if (!div.hasChildNodes() || div.childNodes.length > 1) {
-        domGlobals.console.error('HTML does not have a single root node', html);
+        console.error('HTML does not have a single root node', html);
         throw new Error('HTML must have a single root node');
       }
       return fromDom(div.childNodes[0]);
     };
     var fromTag = function (tag, scope) {
-      var doc = scope || domGlobals.document;
+      var doc = scope || document;
       var node = doc.createElement(tag);
       return fromDom(node);
     };
     var fromText = function (text, scope) {
-      var doc = scope || domGlobals.document;
+      var doc = scope || document;
       var node = doc.createTextNode(text);
       return fromDom(node);
     };
@@ -267,13 +269,12 @@
       if (node === null || node === undefined) {
         throw new Error('Node cannot be null or undefined');
       }
-      return { dom: constant(node) };
+      return { dom: node };
     };
     var fromPoint = function (docElm, x, y) {
-      var doc = docElm.dom();
-      return Option.from(doc.elementFromPoint(x, y)).map(fromDom);
+      return Optional.from(docElm.dom.elementFromPoint(x, y)).map(fromDom);
     };
-    var Element = {
+    var SugarElement = {
       fromHtml: fromHtml,
       fromTag: fromTag,
       fromText: fromText,
@@ -281,11 +282,13 @@
       fromPoint: fromPoint
     };
 
-    var global$1 = tinymce.util.Tools.resolve('tinymce.dom.DOMUtils');
+    var global$5 = tinymce.util.Tools.resolve('tinymce.dom.DOMUtils');
 
-    var global$2 = tinymce.util.Tools.resolve('tinymce.util.Promise');
+    var global$4 = tinymce.util.Tools.resolve('tinymce.util.Promise');
 
-    var global$3 = tinymce.util.Tools.resolve('tinymce.util.XHR');
+    var global$3 = tinymce.util.Tools.resolve('tinymce.util.URI');
+
+    var global$2 = tinymce.util.Tools.resolve('tinymce.util.XHR');
 
     var hasDimensions = function (editor) {
       return editor.getParam('image_dimensions', true, 'boolean');
@@ -315,22 +318,10 @@
       return editor.getParam('image_list', false);
     };
     var hasUploadUrl = function (editor) {
-      return !!getUploadUrl(editor);
+      return isNonNullable(editor.getParam('images_upload_url'));
     };
     var hasUploadHandler = function (editor) {
-      return !!getUploadHandler(editor);
-    };
-    var getUploadUrl = function (editor) {
-      return editor.getParam('images_upload_url', '', 'string');
-    };
-    var getUploadHandler = function (editor) {
-      return editor.getParam('images_upload_handler', undefined, 'function');
-    };
-    var getUploadBasePath = function (editor) {
-      return editor.getParam('images_upload_base_path', undefined, 'string');
-    };
-    var getUploadCredentials = function (editor) {
-      return editor.getParam('images_upload_credentials', false, 'boolean');
+      return isNonNullable(editor.getParam('images_upload_handler'));
     };
     var showAccessibilityOptions = function (editor) {
       return editor.getParam('a11y_advanced_options', false, 'boolean');
@@ -343,9 +334,10 @@
       return Math.max(parseInt(val1, 10), parseInt(val2, 10));
     };
     var getImageSize = function (url) {
-      return new global$2(function (callback) {
-        var img = domGlobals.document.createElement('img');
+      return new global$4(function (callback) {
+        var img = document.createElement('img');
         var done = function (dimensions) {
+          img.onload = img.onerror = null;
           if (img.parentNode) {
             img.parentNode.removeChild(img);
           }
@@ -358,17 +350,17 @@
             width: width,
             height: height
           };
-          done(global$2.resolve(dimensions));
+          done(global$4.resolve(dimensions));
         };
         img.onerror = function () {
-          done(global$2.reject('Failed to get image dimensions for: ' + url));
+          done(global$4.reject('Failed to get image dimensions for: ' + url));
         };
         var style = img.style;
         style.visibility = 'hidden';
         style.position = 'fixed';
         style.bottom = style.left = '0px';
         style.width = style.height = 'auto';
-        domGlobals.document.body.appendChild(img);
+        document.body.appendChild(img);
         img.src = url;
       });
     };
@@ -418,14 +410,14 @@
     };
     var createImageList = function (editor, callback) {
       var imageList = getImageList(editor);
-      if (typeof imageList === 'string') {
-        global$3.send({
+      if (isString(imageList)) {
+        global$2.send({
           url: imageList,
           success: function (text) {
             callback(JSON.parse(text));
           }
         });
-      } else if (typeof imageList === 'function') {
+      } else if (isFunction(imageList)) {
         imageList(callback);
       } else {
         callback(imageList);
@@ -451,8 +443,8 @@
       imgElm.onerror = selectImage;
     };
     var blobToDataUri = function (blob) {
-      return new global$2(function (resolve, reject) {
-        var reader = new domGlobals.FileReader();
+      return new global$4(function (resolve, reject) {
+        var reader = new FileReader();
         reader.onload = function () {
           resolve(reader.result);
         };
@@ -465,8 +457,11 @@
     var isPlaceholderImage = function (imgElm) {
       return imgElm.nodeName === 'IMG' && (imgElm.hasAttribute('data-mce-object') || imgElm.hasAttribute('data-mce-placeholder'));
     };
+    var isSafeImageUrl = function (editor, src) {
+      return global$3.isDomSafe(src, 'img', editor.settings);
+    };
 
-    var DOM = global$1.DOM;
+    var DOM = global$5.DOM;
     var getHspace = function (image) {
       if (image.style.marginLeft && image.style.marginRight && image.style.marginLeft === image.style.marginRight) {
         return removePixelSuffix(image.style.marginLeft);
@@ -608,7 +603,7 @@
       };
     };
     var getStyleValue = function (normalizeCss, data) {
-      var image = domGlobals.document.createElement('img');
+      var image = document.createElement('img');
       updateAttrib(image, 'style', data.style);
       if (getHspace(image) || data.hspace !== '') {
         setHspace(image, data.hspace);
@@ -625,7 +620,7 @@
       return normalizeCss(image.getAttribute('style'));
     };
     var create = function (normalizeCss, data) {
-      var image = domGlobals.document.createElement('img');
+      var image = document.createElement('img');
       write(normalizeCss, __assign(__assign({}, data), { caption: false }), image);
       setAlt(image, data.alt, data.isDecorative);
       if (data.caption) {
@@ -663,14 +658,14 @@
     var setAlt = function (image, alt, isDecorative) {
       if (isDecorative) {
         DOM.setAttrib(image, 'role', 'presentation');
-        var sugarImage = Element.fromDom(image);
+        var sugarImage = SugarElement.fromDom(image);
         set(sugarImage, 'alt', '');
       } else {
         if (isNull(alt)) {
-          var sugarImage = Element.fromDom(image);
+          var sugarImage = SugarElement.fromDom(image);
           remove(sugarImage, 'alt');
         } else {
-          var sugarImage = Element.fromDom(image);
+          var sugarImage = SugarElement.fromDom(image);
           set(sugarImage, 'alt', alt);
         }
         if (DOM.getAttrib(image, 'role') === 'presentation') {
@@ -709,7 +704,7 @@
       updateAlt(image, oldData, newData);
     };
 
-    var normalizeCss = function (editor, cssText) {
+    var normalizeCss$1 = function (editor, cssText) {
       var css = editor.dom.styles.parse(cssText);
       var mergedCss = mergeMargins(css);
       var compressed = editor.dom.styles.parse(editor.dom.styles.serialize(mergedCss));
@@ -728,8 +723,11 @@
     };
     var splitTextBlock = function (editor, figure) {
       var dom = editor.dom;
+      var textBlockElements = filter(editor.schema.getTextBlockElements(), function (_, parentElm) {
+        return !editor.schema.isValidChild(parentElm, 'figure');
+      });
       var textBlock = dom.getParent(figure.parentNode, function (node) {
-        return !!editor.schema.getTextBlockElements()[node.nodeName];
+        return hasNonNullableKey(textBlockElements, node.nodeName);
       }, editor.getBody());
       if (textBlock) {
         return dom.split(textBlock, figure);
@@ -740,12 +738,12 @@
     var readImageDataFromSelection = function (editor) {
       var image = getSelectedImage(editor);
       return image ? read(function (css) {
-        return normalizeCss(editor, css);
+        return normalizeCss$1(editor, css);
       }, image) : defaultData();
     };
     var insertImageAtCaret = function (editor, data) {
       var elm = create(function (css) {
-        return normalizeCss(editor, css);
+        return normalizeCss$1(editor, css);
       }, data);
       editor.dom.setAttrib(elm, 'data-mce-id', '__mcenew');
       editor.focus();
@@ -777,7 +775,7 @@
     var writeImageDataToSelection = function (editor, data) {
       var image = getSelectedImage(editor);
       write(function (css) {
-        return normalizeCss(editor, css);
+        return normalizeCss$1(editor, css);
       }, data, image);
       syncSrcAttr(editor, image);
       if (isFigure(image.parentNode)) {
@@ -789,15 +787,20 @@
         waitLoadImage(editor, data, image);
       }
     };
+    var sanitizeImageData = function (editor, data) {
+      var src = data.src;
+      return __assign(__assign({}, data), { src: isSafeImageUrl(editor, src) ? src : '' });
+    };
     var insertOrUpdateImage = function (editor, partialData) {
       var image = getSelectedImage(editor);
       if (image) {
         var selectedImageData = read(function (css) {
-          return normalizeCss(editor, css);
+          return normalizeCss$1(editor, css);
         }, image);
         var data = __assign(__assign({}, selectedImageData), partialData);
+        var sanitizedData = sanitizeImageData(editor, data);
         if (data.src) {
-          writeImageDataToSelection(editor, data);
+          writeImageDataToSelection(editor, sanitizedData);
         } else {
           deleteImage(editor, image);
         }
@@ -806,15 +809,57 @@
       }
     };
 
-    var global$4 = tinymce.util.Tools.resolve('tinymce.util.Tools');
+    var deep = function (old, nu) {
+      var bothObjects = isObject(old) && isObject(nu);
+      return bothObjects ? deepMerge(old, nu) : nu;
+    };
+    var baseMerge = function (merger) {
+      return function () {
+        var objects = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+          objects[_i] = arguments[_i];
+        }
+        if (objects.length === 0) {
+          throw new Error('Can\'t merge zero objects');
+        }
+        var ret = {};
+        for (var j = 0; j < objects.length; j++) {
+          var curObject = objects[j];
+          for (var key in curObject) {
+            if (has(curObject, key)) {
+              ret[key] = merger(ret[key], curObject[key]);
+            }
+          }
+        }
+        return ret;
+      };
+    };
+    var deepMerge = baseMerge(deep);
+
+    var isNotEmpty = function (s) {
+      return s.length > 0;
+    };
+
+    var global$1 = tinymce.util.Tools.resolve('tinymce.util.ImageUploader');
+
+    var global = tinymce.util.Tools.resolve('tinymce.util.Tools');
 
     var getValue = function (item) {
       return isString(item.value) ? item.value : '';
     };
+    var getText = function (item) {
+      if (isString(item.text)) {
+        return item.text;
+      } else if (isString(item.title)) {
+        return item.title;
+      } else {
+        return '';
+      }
+    };
     var sanitizeList = function (list, extractValue) {
       var out = [];
-      global$4.each(list, function (item) {
-        var text = isString(item.text) ? item.text : isString(item.title) ? item.title : '';
+      global.each(list, function (item) {
+        var text = getText(item);
         if (item.menu !== undefined) {
           var items = sanitizeList(item.menu, extractValue);
           out.push({
@@ -831,17 +876,17 @@
       });
       return out;
     };
-    var sanitizer = function (extracter) {
-      if (extracter === void 0) {
-        extracter = getValue;
+    var sanitizer = function (extractor) {
+      if (extractor === void 0) {
+        extractor = getValue;
       }
       return function (list) {
         if (list) {
-          return Option.from(list).map(function (list) {
-            return sanitizeList(list, extracter);
+          return Optional.from(list).map(function (list) {
+            return sanitizeList(list, extractor);
           });
         } else {
-          return Option.none();
+          return Optional.none();
         }
       };
     };
@@ -849,16 +894,16 @@
       return sanitizer(getValue)(list);
     };
     var isGroup = function (item) {
-      return Object.prototype.hasOwnProperty.call(item, 'items');
+      return has(item, 'items');
     };
     var findEntryDelegate = function (list, value) {
       return findMap(list, function (item) {
         if (isGroup(item)) {
           return findEntryDelegate(item.items, value);
         } else if (item.value === value) {
-          return Option.some(item);
+          return Optional.some(item);
         } else {
-          return Option.none();
+          return Optional.none();
         }
       });
     };
@@ -873,64 +918,7 @@
       findEntry: findEntry
     };
 
-    var pathJoin = function (path1, path2) {
-      if (path1) {
-        return path1.replace(/\/$/, '') + '/' + path2.replace(/^\//, '');
-      }
-      return path2;
-    };
-    function Uploader (settings) {
-      var defaultHandler = function (blobInfo, success, failure, progress) {
-        var xhr, formData;
-        xhr = new domGlobals.XMLHttpRequest();
-        xhr.open('POST', settings.url);
-        xhr.withCredentials = settings.credentials;
-        xhr.upload.onprogress = function (e) {
-          progress(e.loaded / e.total * 100);
-        };
-        xhr.onerror = function () {
-          failure('Image upload failed due to a XHR Transport error. Code: ' + xhr.status);
-        };
-        xhr.onload = function () {
-          var json;
-          if (xhr.status < 200 || xhr.status >= 300) {
-            failure('HTTP Error: ' + xhr.status);
-            return;
-          }
-          json = JSON.parse(xhr.responseText);
-          if (!json || typeof json.location !== 'string') {
-            failure('Invalid JSON: ' + xhr.responseText);
-            return;
-          }
-          success(pathJoin(settings.basePath, json.location));
-        };
-        formData = new domGlobals.FormData();
-        formData.append('file', blobInfo.blob(), blobInfo.filename());
-        xhr.send(formData);
-      };
-      var uploadBlob = function (blobInfo, handler) {
-        return new global$2(function (resolve, reject) {
-          try {
-            handler(blobInfo, resolve, reject, noop);
-          } catch (ex) {
-            reject(ex.message);
-          }
-        });
-      };
-      var isDefaultHandler = function (handler) {
-        return handler === defaultHandler;
-      };
-      var upload = function (blobInfo) {
-        return !settings.url && isDefaultHandler(settings.handler) ? global$2.reject('Upload url missing from the settings.') : uploadBlob(blobInfo, settings.handler);
-      };
-      settings = global$4.extend({
-        credentials: false,
-        handler: defaultHandler
-      }, settings);
-      return { upload: upload };
-    }
-
-    var makeTab = function (_info) {
+    var makeTab$2 = function (_info) {
       return {
         title: 'Advanced',
         name: 'advanced',
@@ -963,7 +951,7 @@
                 inputMode: 'numeric'
               },
               {
-                type: 'selectbox',
+                type: 'listbox',
                 name: 'borderstyle',
                 label: 'Border style',
                 items: [
@@ -1018,13 +1006,13 @@
         ]
       };
     };
-    var AdvTab = { makeTab: makeTab };
+    var AdvTab = { makeTab: makeTab$2 };
 
     var collect = function (editor) {
       var urlListSanitizer = ListUtils.sanitizer(function (item) {
         return editor.convertURL(item.value || item.url, 'src');
       });
-      var futureImageList = new global$2(function (completer) {
+      var futureImageList = new global$4(function (completer) {
         createImageList(editor, function (imageList) {
           completer(urlListSanitizer(imageList).map(function (items) {
             return flatten([
@@ -1048,12 +1036,8 @@
       var hasDimensions$1 = hasDimensions(editor);
       var hasImageCaption$1 = hasImageCaption(editor);
       var hasAccessibilityOptions = showAccessibilityOptions(editor);
-      var url = getUploadUrl(editor);
-      var basePath = getUploadBasePath(editor);
-      var credentials = getUploadCredentials(editor);
-      var handler = getUploadHandler(editor);
       var automaticUploads = isAutomaticUploadsEnabled(editor);
-      var prependURL = Option.some(getPrependUrl(editor)).filter(function (preUrl) {
+      var prependURL = Optional.some(getPrependUrl(editor)).filter(function (preUrl) {
         return isString(preUrl) && preUrl.length > 0;
       });
       return futureImageList.then(function (imageList) {
@@ -1069,10 +1053,6 @@
           hasImageTitle: hasImageTitle$1,
           hasDimensions: hasDimensions$1,
           hasImageCaption: hasImageCaption$1,
-          url: url,
-          basePath: basePath,
-          credentials: credentials,
-          handler: handler,
           prependURL: prependURL,
           hasAccessibilityOptions: hasAccessibilityOptions,
           automaticUploads: automaticUploads
@@ -1090,7 +1070,7 @@
       var imageList = info.imageList.map(function (items) {
         return {
           name: 'images',
-          type: 'selectbox',
+          type: 'listbox',
           label: 'Image list',
           items: items
         };
@@ -1122,7 +1102,7 @@
       var classList = info.classList.map(function (items) {
         return {
           name: 'classes',
-          type: 'selectbox',
+          type: 'listbox',
           label: 'Class',
           items: items
         };
@@ -1136,6 +1116,12 @@
             label: 'Show caption'
           }]
       };
+      var getDialogContainerType = function (useColumns) {
+        return useColumns ? {
+          type: 'grid',
+          columns: 2
+        } : { type: 'panel' };
+      };
       return flatten([
         [imageUrl],
         imageList.toArray(),
@@ -1143,14 +1129,12 @@
         info.hasDescription ? [imageDescription] : [],
         info.hasImageTitle ? [imageTitle] : [],
         info.hasDimensions ? [imageDimensions] : [],
-        [{
-            type: 'grid',
-            columns: 2,
+        [__assign(__assign({}, getDialogContainerType(info.classList.isSome() && info.hasImageCaption)), {
             items: flatten([
               classList.toArray(),
               info.hasImageCaption ? [caption] : []
             ])
-          }]
+          })]
       ]);
     };
     var makeTab$1 = function (info) {
@@ -1165,7 +1149,7 @@
       makeItems: makeItems
     };
 
-    var makeTab$2 = function (_info) {
+    var makeTab = function (_info) {
       var items = [{
           type: 'dropzone',
           name: 'fileinput'
@@ -1176,7 +1160,7 @@
         items: items
       };
     };
-    var UploadTab = { makeTab: makeTab$2 };
+    var UploadTab = { makeTab: makeTab };
 
     var createState = function (info) {
       return {
@@ -1230,12 +1214,12 @@
       if (!/^(?:[a-zA-Z]+:)?\/\//.test(srcURL)) {
         return info.prependURL.bind(function (prependUrl) {
           if (srcURL.substring(0, prependUrl.length) !== prependUrl) {
-            return Option.some(prependUrl + srcURL);
+            return Optional.some(prependUrl + srcURL);
           }
-          return Option.none();
+          return Optional.none();
         });
       }
-      return Option.none();
+      return Optional.none();
     };
     var addPrependUrl = function (info, api) {
       var data = api.getData();
@@ -1308,11 +1292,22 @@
       var url = data.src.value;
       var meta = data.src.meta || {};
       if (!meta.width && !meta.height && info.hasDimensions) {
-        helpers.imageSize(url).then(function (size) {
-          if (state.open) {
-            api.setData({ dimensions: size });
-          }
-        });
+        if (isNotEmpty(url)) {
+          helpers.imageSize(url).then(function (size) {
+            if (state.open) {
+              api.setData({ dimensions: size });
+            }
+          }).catch(function (e) {
+            return console.error(e);
+          });
+        } else {
+          api.setData({
+            dimensions: {
+              width: '',
+              height: ''
+            }
+          });
+        }
       }
     };
     var updateImagesDropdown = function (info, state, api) {
@@ -1400,16 +1395,10 @@
       head(data.fileinput).fold(function () {
         api.unblock();
       }, function (file) {
-        var blobUri = domGlobals.URL.createObjectURL(file);
-        var uploader = Uploader({
-          url: info.url,
-          basePath: info.basePath,
-          credentials: info.credentials,
-          handler: info.handler
-        });
+        var blobUri = URL.createObjectURL(file);
         var finalize = function () {
           api.unblock();
-          domGlobals.URL.revokeObjectURL(blobUri);
+          URL.revokeObjectURL(blobUri);
         };
         var updateSrcAndSwitchTab = function (url) {
           api.setData({
@@ -1424,12 +1413,12 @@
         blobToDataUri(file).then(function (dataUrl) {
           var blobInfo = helpers.createBlobCache(file, blobUri, dataUrl);
           if (info.automaticUploads) {
-            uploader.upload(blobInfo).then(function (url) {
-              updateSrcAndSwitchTab(url);
+            helpers.uploadImage(blobInfo).then(function (result) {
+              updateSrcAndSwitchTab(result.url);
               finalize();
             }).catch(function (err) {
               finalize();
-              helpers.alertErr(api, err);
+              helpers.alertErr(err);
             });
           } else {
             helpers.addToBlobCache(blobInfo);
@@ -1525,12 +1514,19 @@
     };
     var imageSize = function (editor) {
       return function (url) {
-        return getImageSize(editor.documentBaseURI.toAbsolute(url)).then(function (dimensions) {
-          return {
-            width: String(dimensions.width),
-            height: String(dimensions.height)
-          };
-        });
+        if (!isSafeImageUrl(editor, url)) {
+          return global$4.resolve({
+            width: '',
+            height: ''
+          });
+        } else {
+          return getImageSize(editor.documentBaseURI.toAbsolute(url)).then(function (dimensions) {
+            return {
+              width: String(dimensions.width),
+              height: String(dimensions.height)
+            };
+          });
+        }
       };
     };
     var createBlobCache = function (editor) {
@@ -1539,6 +1535,7 @@
           blob: file,
           blobUri: blobUri,
           name: file.name ? file.name.replace(/\.[^\.]+$/, '') : null,
+          filename: file.name,
           base64: dataUrl.split(',')[1]
         });
       };
@@ -1549,13 +1546,13 @@
       };
     };
     var alertErr = function (editor) {
-      return function (api, message) {
-        editor.windowManager.alert(message, api.close);
+      return function (message) {
+        editor.windowManager.alert(message);
       };
     };
-    var normalizeCss$1 = function (editor) {
+    var normalizeCss = function (editor) {
       return function (cssText) {
-        return normalizeCss(editor, cssText);
+        return normalizeCss$1(editor, cssText);
       };
     };
     var parseStyle = function (editor) {
@@ -1568,6 +1565,19 @@
         return editor.dom.serializeStyle(stylesArg, name);
       };
     };
+    var uploadImage = function (editor) {
+      return function (blobInfo) {
+        return global$1(editor).upload([blobInfo], false).then(function (results) {
+          if (results.length === 0) {
+            return global$4.reject('Failed to upload image');
+          } else if (results[0].status === false) {
+            return global$4.reject(results[0].error.message);
+          } else {
+            return results[0];
+          }
+        });
+      };
+    };
     var Dialog = function (editor) {
       var helpers = {
         onSubmit: submitHandler(editor),
@@ -1575,26 +1585,19 @@
         addToBlobCache: addToBlobCache(editor),
         createBlobCache: createBlobCache(editor),
         alertErr: alertErr(editor),
-        normalizeCss: normalizeCss$1(editor),
+        normalizeCss: normalizeCss(editor),
         parseStyle: parseStyle(editor),
-        serializeStyle: serializeStyle(editor)
+        serializeStyle: serializeStyle(editor),
+        uploadImage: uploadImage(editor)
       };
       var open = function () {
-        return collect(editor).then(makeDialog(helpers)).then(function (spec) {
-          return editor.windowManager.open(spec);
-        });
+        collect(editor).then(makeDialog(helpers)).then(editor.windowManager.open);
       };
-      var openLater = function () {
-        open();
-      };
-      return {
-        open: open,
-        openLater: openLater
-      };
+      return { open: open };
     };
 
-    var register = function (editor) {
-      editor.addCommand('mceImage', Dialog(editor).openLater);
+    var register$1 = function (editor) {
+      editor.addCommand('mceImage', Dialog(editor).open);
       editor.addCommand('mceUpdateImage', function (_ui, data) {
         editor.undoManager.transact(function () {
           return insertOrUpdateImage(editor, data);
@@ -1616,7 +1619,7 @@
           var node = nodes[i];
           if (hasImageClass(node)) {
             node.attr('contenteditable', state ? 'false' : null);
-            global$4.each(node.getAll('figcaption'), toggleContentEditable);
+            global.each(node.getAll('figcaption'), toggleContentEditable);
           }
         }
       };
@@ -1628,19 +1631,20 @@
       });
     };
 
-    var register$1 = function (editor) {
+    var register = function (editor) {
       editor.ui.registry.addToggleButton('image', {
         icon: 'image',
         tooltip: 'Insert/edit image',
-        onAction: Dialog(editor).openLater,
+        onAction: Dialog(editor).open,
         onSetup: function (buttonApi) {
+          buttonApi.setActive(isNonNullable(getSelectedImage(editor)));
           return editor.selection.selectorChangedWithUnbind('img:not([data-mce-object],[data-mce-placeholder]),figure.image', buttonApi.setActive).unbind;
         }
       });
       editor.ui.registry.addMenuItem('image', {
         icon: 'image',
         text: 'Image...',
-        onAction: Dialog(editor).openLater
+        onAction: Dialog(editor).open
       });
       editor.ui.registry.addContextMenu('image', {
         update: function (element) {
@@ -1650,13 +1654,13 @@
     };
 
     function Plugin () {
-      global.add('image', function (editor) {
+      global$6.add('image', function (editor) {
         setup(editor);
-        register$1(editor);
         register(editor);
+        register$1(editor);
       });
     }
 
     Plugin();
 
-}(window));
+}());

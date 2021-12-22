@@ -4,7 +4,7 @@
  * For LGPL see License.txt in the project root for license information.
  * For commercial licenses see https://www.tiny.cloud/
  *
- * Version: 5.3.0 (2020-05-21)
+ * Version: 5.10.2 (2021-11-17)
  */
 (function () {
     'use strict';
@@ -56,33 +56,32 @@
       });
     };
 
-    var register = function (editor) {
+    var register$1 = function (editor) {
       editor.addCommand('mceCodeEditor', function () {
         open(editor);
       });
     };
 
-    var register$1 = function (editor) {
+    var register = function (editor) {
+      var onAction = function () {
+        return editor.execCommand('mceCodeEditor');
+      };
       editor.ui.registry.addButton('code', {
         icon: 'sourcecode',
         tooltip: 'Source code',
-        onAction: function () {
-          return open(editor);
-        }
+        onAction: onAction
       });
       editor.ui.registry.addMenuItem('code', {
         icon: 'sourcecode',
         text: 'Source code',
-        onAction: function () {
-          return open(editor);
-        }
+        onAction: onAction
       });
     };
 
     function Plugin () {
       global.add('code', function (editor) {
-        register(editor);
         register$1(editor);
+        register(editor);
         return {};
       });
     }

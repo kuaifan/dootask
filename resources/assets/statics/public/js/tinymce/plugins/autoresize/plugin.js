@@ -4,7 +4,7 @@
  * For LGPL see License.txt in the project root for license information.
  * For commercial licenses see https://www.tiny.cloud/
  *
- * Version: 5.3.0 (2020-05-21)
+ * Version: 5.10.2 (2021-11-17)
  */
 (function () {
     'use strict';
@@ -23,11 +23,16 @@
       };
     };
 
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+    var hasOwnProperty = Object.hasOwnProperty;
+    var has = function (obj, key) {
+      return hasOwnProperty.call(obj, key);
+    };
+
+    var global$2 = tinymce.util.Tools.resolve('tinymce.PluginManager');
 
     var global$1 = tinymce.util.Tools.resolve('tinymce.Env');
 
-    var global$2 = tinymce.util.Tools.resolve('tinymce.util.Delay');
+    var global = tinymce.util.Tools.resolve('tinymce.util.Delay');
 
     var fireResizeEditor = function (editor) {
       return editor.fire('ResizeEditor');
@@ -53,7 +58,7 @@
       return editor.plugins.fullscreen && editor.plugins.fullscreen.isFullscreen();
     };
     var wait = function (editor, oldSize, times, interval, callback) {
-      global$2.setEditorTimeout(editor, function () {
+      global.setEditorTimeout(editor, function () {
         resize(editor, oldSize);
         if (times--) {
           wait(editor, oldSize, times, interval, callback);
@@ -75,8 +80,15 @@
       var value = parseInt(dom.getStyle(elm, name, computed), 10);
       return isNaN(value) ? 0 : value;
     };
-    var resize = function (editor, oldSize) {
-      var deltaSize, resizeHeight, contentHeight;
+    var shouldScrollIntoView = function (trigger) {
+      if ((trigger === null || trigger === void 0 ? void 0 : trigger.type.toLowerCase()) === 'setcontent') {
+        var setContentEvent = trigger;
+        return setContentEvent.selection === true || setContentEvent.paste === true;
+      } else {
+        return false;
+      }
+    };
+    var resize = function (editor, oldSize, trigger) {
       var dom = editor.dom;
       var doc = editor.getDoc();
       if (!doc) {
@@ -88,10 +100,10 @@
       }
       var docEle = doc.documentElement;
       var resizeBottomMargin = getAutoResizeBottomMargin(editor);
-      resizeHeight = getAutoResizeMinHeight(editor);
+      var resizeHeight = getAutoResizeMinHeight(editor);
       var marginTop = parseCssValueToInt(dom, docEle, 'margin-top', true);
       var marginBottom = parseCssValueToInt(dom, docEle, 'margin-bottom', true);
-      contentHeight = docEle.offsetHeight + marginTop + marginBottom + resizeBottomMargin;
+      var contentHeight = docEle.offsetHeight + marginTop + marginBottom + resizeBottomMargin;
       if (contentHeight < 0) {
         contentHeight = 0;
       }
@@ -109,7 +121,7 @@
         toggleScrolling(editor, false);
       }
       if (resizeHeight !== oldSize.get()) {
-        deltaSize = resizeHeight - oldSize.get();
+        var deltaSize = resizeHeight - oldSize.get();
         dom.setStyle(editor.getContainer(), 'height', resizeHeight + 'px');
         oldSize.set(resizeHeight);
         fireResizeEditor(editor);
@@ -117,11 +129,11 @@
           var win = editor.getWin();
           win.scrollTo(win.pageXOffset, win.pageYOffset);
         }
-        if (editor.hasFocus()) {
-          editor.selection.scrollIntoView(editor.selection.getNode());
+        if (editor.hasFocus() && shouldScrollIntoView(trigger)) {
+          editor.selection.scrollIntoView();
         }
         if (global$1.webkit && deltaSize < 0) {
-          resize(editor, oldSize);
+          resize(editor, oldSize, trigger);
         }
       }
     };
@@ -136,8 +148,8 @@
           'min-height': 0
         });
       });
-      editor.on('NodeChange SetContent keyup FullscreenStateChanged ResizeContent', function () {
-        resize(editor, oldSize);
+      editor.on('NodeChange SetContent keyup FullscreenStateChanged ResizeContent', function (e) {
+        resize(editor, oldSize, e);
       });
       if (shouldAutoResizeOnInit(editor)) {
         editor.on('init', function () {
@@ -155,8 +167,8 @@
     };
 
     function Plugin () {
-      global.add('autoresize', function (editor) {
-        if (!editor.settings.hasOwnProperty('resize')) {
+      global$2.add('autoresize', function (editor) {
+        if (!has(editor.settings, 'resize')) {
           editor.settings.resize = false;
         }
         if (!editor.inline) {

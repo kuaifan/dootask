@@ -4,9 +4,9 @@
  * For LGPL see License.txt in the project root for license information.
  * For commercial licenses see https://www.tiny.cloud/
  *
- * Version: 5.3.0 (2020-05-21)
+ * Version: 5.10.2 (2021-11-17)
  */
-(function (domGlobals) {
+(function () {
     'use strict';
 
     var Cell = function (initial) {
@@ -23,7 +23,7 @@
       };
     };
 
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+    var global$3 = tinymce.util.Tools.resolve('tinymce.PluginManager');
 
     var __assign = function () {
       __assign = Object.assign || function __assign(t) {
@@ -38,6 +38,33 @@
       return __assign.apply(this, arguments);
     };
 
+    var typeOf = function (x) {
+      var t = typeof x;
+      if (x === null) {
+        return 'null';
+      } else if (t === 'object' && (Array.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'Array')) {
+        return 'array';
+      } else if (t === 'object' && (String.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'String')) {
+        return 'string';
+      } else {
+        return t;
+      }
+    };
+    var isType$1 = function (type) {
+      return function (value) {
+        return typeOf(value) === type;
+      };
+    };
+    var isSimpleType = function (type) {
+      return function (value) {
+        return typeof value === type;
+      };
+    };
+    var isString = isType$1('string');
+    var isArray = isType$1('array');
+    var isBoolean = isSimpleType('boolean');
+    var isNumber = isSimpleType('number');
+
     var noop = function () {
     };
     var constant = function (value) {
@@ -45,31 +72,28 @@
         return value;
       };
     };
+    var identity = function (x) {
+      return x;
+    };
     var never = constant(false);
     var always = constant(true);
 
     var punctuationStr = '[!-#%-*,-\\/:;?@\\[-\\]_{}\xA1\xAB\xB7\xBB\xBF;\xB7\u055A-\u055F\u0589\u058A\u05BE\u05C0\u05C3\u05C6\u05F3\u05F4\u0609\u060A\u060C\u060D\u061B\u061E\u061F\u066A-\u066D\u06D4\u0700-\u070D\u07F7-\u07F9\u0830-\u083E\u085E\u0964\u0965\u0970\u0DF4\u0E4F\u0E5A\u0E5B\u0F04-\u0F12\u0F3A-\u0F3D\u0F85\u0FD0-\u0FD4\u0FD9\u0FDA\u104A-\u104F\u10FB\u1361-\u1368\u1400\u166D\u166E\u169B\u169C\u16EB-\u16ED\u1735\u1736\u17D4-\u17D6\u17D8-\u17DA\u1800-\u180A\u1944\u1945\u1A1E\u1A1F\u1AA0-\u1AA6\u1AA8-\u1AAD\u1B5A-\u1B60\u1BFC-\u1BFF\u1C3B-\u1C3F\u1C7E\u1C7F\u1CD3\u2010-\u2027\u2030-\u2043\u2045-\u2051\u2053-\u205E\u207D\u207E\u208D\u208E\u3008\u3009\u2768-\u2775\u27C5\u27C6\u27E6-\u27EF\u2983-\u2998\u29D8-\u29DB\u29FC\u29FD\u2CF9-\u2CFC\u2CFE\u2CFF\u2D70\u2E00-\u2E2E\u2E30\u2E31\u3001-\u3003\u3008-\u3011\u3014-\u301F\u3030\u303D\u30A0\u30FB\uA4FE\uA4FF\uA60D-\uA60F\uA673\uA67E\uA6F2-\uA6F7\uA874-\uA877\uA8CE\uA8CF\uA8F8-\uA8FA\uA92E\uA92F\uA95F\uA9C1-\uA9CD\uA9DE\uA9DF\uAA5C-\uAA5F\uAADE\uAADF\uABEB\uFD3E\uFD3F\uFE10-\uFE19\uFE30-\uFE52\uFE54-\uFE61\uFE63\uFE68\uFE6A\uFE6B\uFF01-\uFF03\uFF05-\uFF0A\uFF0C-\uFF0F\uFF1A\uFF1B\uFF1F\uFF20\uFF3B-\uFF3D\uff3f\uFF5B\uFF5D\uFF5F-\uFF65]';
 
-    var punctuation = constant(punctuationStr);
+    var punctuation$1 = constant(punctuationStr);
 
     var none = function () {
       return NONE;
     };
     var NONE = function () {
-      var eq = function (o) {
-        return o.isNone();
-      };
       var call = function (thunk) {
         return thunk();
       };
-      var id = function (n) {
-        return n;
-      };
+      var id = identity;
       var me = {
         fold: function (n, _s) {
           return n();
         },
-        is: never,
         isSome: never,
         isNone: always,
         getOr: id,
@@ -86,9 +110,9 @@
         bind: none,
         exists: never,
         forall: always,
-        filter: none,
-        equals: eq,
-        equals_: eq,
+        filter: function () {
+          return none();
+        },
         toArray: function () {
           return [];
         },
@@ -107,9 +131,6 @@
       var me = {
         fold: function (n, s) {
           return s(a);
-        },
-        is: function (v) {
-          return a === v;
         },
         isSome: always,
         isNone: never,
@@ -137,14 +158,6 @@
         },
         toString: function () {
           return 'some(' + a + ')';
-        },
-        equals: function (o) {
-          return o.is(a);
-        },
-        equals_: function (o, elementEq) {
-          return o.fold(never, function (b) {
-            return elementEq(a, b);
-          });
         }
       };
       return me;
@@ -152,42 +165,17 @@
     var from = function (value) {
       return value === null || value === undefined ? NONE : some(value);
     };
-    var Option = {
+    var Optional = {
       some: some,
       none: none,
       from: from
     };
 
-    var punctuation$1 = punctuation;
+    var punctuation = punctuation$1;
+
+    var global$2 = tinymce.util.Tools.resolve('tinymce.Env');
 
     var global$1 = tinymce.util.Tools.resolve('tinymce.util.Tools');
-
-    var typeOf = function (x) {
-      var t = typeof x;
-      if (x === null) {
-        return 'null';
-      } else if (t === 'object' && (Array.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'Array')) {
-        return 'array';
-      } else if (t === 'object' && (String.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'String')) {
-        return 'string';
-      } else {
-        return t;
-      }
-    };
-    var isType = function (type) {
-      return function (value) {
-        return typeOf(value) === type;
-      };
-    };
-    var isSimpleType = function (type) {
-      return function (value) {
-        return typeof value === type;
-      };
-    };
-    var isString = isType('string');
-    var isArray = isType('array');
-    var isBoolean = isSimpleType('boolean');
-    var isNumber = isSimpleType('number');
 
     var nativeSlice = Array.prototype.slice;
     var nativePush = Array.prototype.push;
@@ -236,8 +224,8 @@
       }
     };
     var foldl = function (xs, f, acc) {
-      each(xs, function (x) {
-        acc = f(acc, x);
+      each(xs, function (x, i) {
+        acc = f(acc, x, i);
       });
       return acc;
     };
@@ -265,51 +253,59 @@
       return hasOwnProperty.call(obj, key);
     };
 
-    var Global = typeof domGlobals.window !== 'undefined' ? domGlobals.window : Function('return this;')();
+    typeof window !== 'undefined' ? window : Function('return this;')();
 
     var DOCUMENT = 9;
+    var DOCUMENT_FRAGMENT = 11;
     var ELEMENT = 1;
     var TEXT = 3;
 
     var type = function (element) {
-      return element.dom().nodeType;
+      return element.dom.nodeType;
     };
-    var isType$1 = function (t) {
+    var isType = function (t) {
       return function (element) {
         return type(element) === t;
       };
     };
-    var isText = isType$1(TEXT);
+    var isText$1 = isType(TEXT);
 
     var rawSet = function (dom, key, value) {
       if (isString(value) || isBoolean(value) || isNumber(value)) {
         dom.setAttribute(key, value + '');
       } else {
-        domGlobals.console.error('Invalid call to Attr.set. Key ', key, ':: Value ', value, ':: Element ', dom);
+        console.error('Invalid call to Attribute.set. Key ', key, ':: Value ', value, ':: Element ', dom);
         throw new Error('Attribute value was not simple');
       }
     };
     var set = function (element, key, value) {
-      rawSet(element.dom(), key, value);
+      rawSet(element.dom, key, value);
+    };
+
+    var compareDocumentPosition = function (a, b, match) {
+      return (a.compareDocumentPosition(b) & match) !== 0;
+    };
+    var documentPositionPreceding = function (a, b) {
+      return compareDocumentPosition(a, b, Node.DOCUMENT_POSITION_PRECEDING);
     };
 
     var fromHtml = function (html, scope) {
-      var doc = scope || domGlobals.document;
+      var doc = scope || document;
       var div = doc.createElement('div');
       div.innerHTML = html;
       if (!div.hasChildNodes() || div.childNodes.length > 1) {
-        domGlobals.console.error('HTML does not have a single root node', html);
+        console.error('HTML does not have a single root node', html);
         throw new Error('HTML must have a single root node');
       }
       return fromDom(div.childNodes[0]);
     };
     var fromTag = function (tag, scope) {
-      var doc = scope || domGlobals.document;
+      var doc = scope || document;
       var node = doc.createElement(tag);
       return fromDom(node);
     };
     var fromText = function (text, scope) {
-      var doc = scope || domGlobals.document;
+      var doc = scope || document;
       var node = doc.createTextNode(text);
       return fromDom(node);
     };
@@ -317,13 +313,12 @@
       if (node === null || node === undefined) {
         throw new Error('Node cannot be null or undefined');
       }
-      return { dom: constant(node) };
+      return { dom: node };
     };
     var fromPoint = function (docElm, x, y) {
-      var doc = docElm.dom();
-      return Option.from(doc.elementFromPoint(x, y)).map(fromDom);
+      return Optional.from(docElm.dom.elementFromPoint(x, y)).map(fromDom);
     };
-    var Element = {
+    var SugarElement = {
       fromHtml: fromHtml,
       fromTag: fromTag,
       fromText: fromText,
@@ -331,33 +326,24 @@
       fromPoint: fromPoint
     };
 
-    var compareDocumentPosition = function (a, b, match) {
-      return (a.compareDocumentPosition(b) & match) !== 0;
-    };
-    var documentPositionPreceding = function (a, b) {
-      return compareDocumentPosition(a, b, domGlobals.Node.DOCUMENT_POSITION_PRECEDING);
-    };
-
-    var ELEMENT$1 = ELEMENT;
-    var DOCUMENT$1 = DOCUMENT;
     var bypassSelector = function (dom) {
-      return dom.nodeType !== ELEMENT$1 && dom.nodeType !== DOCUMENT$1 || dom.childElementCount === 0;
+      return dom.nodeType !== ELEMENT && dom.nodeType !== DOCUMENT && dom.nodeType !== DOCUMENT_FRAGMENT || dom.childElementCount === 0;
     };
     var all = function (selector, scope) {
-      var base = scope === undefined ? domGlobals.document : scope.dom();
-      return bypassSelector(base) ? [] : map(base.querySelectorAll(selector), Element.fromDom);
+      var base = scope === undefined ? document : scope.dom;
+      return bypassSelector(base) ? [] : map(base.querySelectorAll(selector), SugarElement.fromDom);
     };
 
     var parent = function (element) {
-      return Option.from(element.dom().parentNode).map(Element.fromDom);
+      return Optional.from(element.dom.parentNode).map(SugarElement.fromDom);
     };
     var children = function (element) {
-      return map(element.dom().childNodes, Element.fromDom);
+      return map(element.dom.childNodes, SugarElement.fromDom);
     };
     var spot = function (element, offset) {
       return {
-        element: constant(element),
-        offset: constant(offset)
+        element: element,
+        offset: offset
       };
     };
     var leaf = function (element, offset) {
@@ -368,18 +354,18 @@
     var before = function (marker, element) {
       var parent$1 = parent(marker);
       parent$1.each(function (v) {
-        v.dom().insertBefore(element.dom(), marker.dom());
+        v.dom.insertBefore(element.dom, marker.dom);
       });
     };
     var append = function (parent, element) {
-      parent.dom().appendChild(element.dom());
+      parent.dom.appendChild(element.dom);
     };
     var wrap = function (element, wrapper) {
       before(element, wrapper);
       append(wrapper, element);
     };
 
-    function NodeValue (is, name) {
+    var NodeValue = function (is, name) {
       var get = function (element) {
         if (!is(element)) {
           throw new Error('Can only get ' + name + ' value of a ' + name + ' node');
@@ -387,23 +373,23 @@
         return getOption(element).getOr('');
       };
       var getOption = function (element) {
-        return is(element) ? Option.from(element.dom().nodeValue) : Option.none();
+        return is(element) ? Optional.from(element.dom.nodeValue) : Optional.none();
       };
       var set = function (element, value) {
         if (!is(element)) {
           throw new Error('Can only set raw ' + name + ' value of a ' + name + ' node');
         }
-        element.dom().nodeValue = value;
+        element.dom.nodeValue = value;
       };
       return {
         get: get,
         getOption: getOption,
         set: set
       };
-    }
+    };
 
-    var api = NodeValue(isText, 'text');
-    var get = function (element) {
+    var api = NodeValue(isText$1, 'text');
+    var get$1 = function (element) {
       return api.get(element);
     };
 
@@ -411,7 +397,7 @@
       return all(selector, scope);
     };
 
-    var global$2 = tinymce.util.Tools.resolve('tinymce.dom.TreeWalker');
+    var global = tinymce.util.Tools.resolve('tinymce.dom.TreeWalker');
 
     var isSimpleBoundary = function (dom, node) {
       return dom.isBlock(node) || has(dom.schema.getShortEndedElements(), node.nodeName);
@@ -428,7 +414,7 @@
     var isBoundary = function (dom, node) {
       return isSimpleBoundary(dom, node) || isContentEditableFalse(dom, node) || isHidden(dom, node) || isContentEditableTrueInCef(dom, node);
     };
-    var isText$1 = function (node) {
+    var isText = function (node) {
       return node.nodeType === 3;
     };
     var nuSection = function () {
@@ -439,7 +425,7 @@
       };
     };
     var toLeaf = function (node, offset) {
-      return leaf(Element.fromDom(node), offset);
+      return leaf(SugarElement.fromDom(node), offset);
     };
     var walk = function (dom, walkerFn, startNode, callbacks, endNode, skipStart) {
       if (skipStart === void 0) {
@@ -460,7 +446,7 @@
           if (callbacks.boundary(next)) {
             break;
           }
-        } else if (isText$1(next)) {
+        } else if (isText(next)) {
           callbacks.text(next);
         }
         if (next === endNode) {
@@ -475,8 +461,8 @@
         return;
       }
       var rootBlock = dom.getParent(rootNode, dom.isBlock);
-      var walker = new global$2(node, rootBlock);
-      var walkerFn = forwards ? walker.next : walker.prev;
+      var walker = new global(node, rootBlock);
+      var walkerFn = forwards ? walker.next.bind(walker) : walker.prev.bind(walker);
       walk(dom, walkerFn, node, {
         boundary: always,
         cef: always,
@@ -486,7 +472,7 @@
           } else {
             section.sOffset += next.length;
           }
-          section.elements.push(Element.fromDom(next));
+          section.elements.push(SugarElement.fromDom(next));
         }
       });
     };
@@ -494,7 +480,7 @@
       if (skipStart === void 0) {
         skipStart = true;
       }
-      var walker = new global$2(startNode, rootNode);
+      var walker = new global(startNode, rootNode);
       var sections = [];
       var current = nuSection();
       collectTextToBoundary(dom, current, startNode, rootNode, false);
@@ -505,7 +491,7 @@
         }
         return false;
       };
-      walk(dom, walker.next, startNode, {
+      walk(dom, walker.next.bind(walker), startNode, {
         boundary: finishSection,
         cef: function (node) {
           finishSection();
@@ -515,7 +501,7 @@
           return false;
         },
         text: function (next) {
-          current.elements.push(Element.fromDom(next));
+          current.elements.push(SugarElement.fromDom(next));
           if (callbacks) {
             callbacks.text(next, current);
           }
@@ -529,24 +515,24 @@
     };
     var collectRangeSections = function (dom, rng) {
       var start = toLeaf(rng.startContainer, rng.startOffset);
-      var startNode = start.element().dom();
+      var startNode = start.element.dom;
       var end = toLeaf(rng.endContainer, rng.endOffset);
-      var endNode = end.element().dom();
+      var endNode = end.element.dom;
       return collect(dom, rng.commonAncestorContainer, startNode, endNode, {
         text: function (node, section) {
           if (node === endNode) {
-            section.fOffset += node.length - end.offset();
+            section.fOffset += node.length - end.offset;
           } else if (node === startNode) {
-            section.sOffset += start.offset();
+            section.sOffset += start.offset;
           }
         },
         cef: function (node) {
-          var sections = bind(descendants(Element.fromDom(node), '*[contenteditable=true]'), function (e) {
-            var ceTrueNode = e.dom();
+          var sections = bind(descendants(SugarElement.fromDom(node), '*[contenteditable=true]'), function (e) {
+            var ceTrueNode = e.dom;
             return collect(dom, ceTrueNode, ceTrueNode);
           });
           return sort(sections, function (a, b) {
-            return documentPositionPreceding(a.elements[0].dom(), b.elements[0].dom()) ? 1 : -1;
+            return documentPositionPreceding(a.elements[0].dom, b.elements[0].dom) ? 1 : -1;
           });
         }
       }, false);
@@ -565,7 +551,7 @@
       });
     };
 
-    var find = function (text, pattern, start, finish) {
+    var find$2 = function (text, pattern, start, finish) {
       if (start === void 0) {
         start = 0;
       }
@@ -593,7 +579,7 @@
     };
     var extract = function (elements, matches) {
       var nodePositions = foldl(elements, function (acc, element) {
-        var content = get(element);
+        var content = get$1(element);
         var start = acc.last;
         var finish = start + content.length;
         var positions = bind(matches, function (match, matchIdx) {
@@ -624,17 +610,17 @@
     var find$1 = function (pattern, sections) {
       return bind(sections, function (section) {
         var elements = section.elements;
-        var content = map(elements, get).join('');
-        var positions = find(content, pattern, section.sOffset, content.length - section.fOffset);
+        var content = map(elements, get$1).join('');
+        var positions = find$2(content, pattern, section.sOffset, content.length - section.fOffset);
         return extract(elements, positions);
       });
     };
     var mark = function (matches, replacementNode) {
       eachr(matches, function (match, idx) {
         eachr(match, function (pos) {
-          var wrapper = Element.fromDom(replacementNode.cloneNode(false));
+          var wrapper = SugarElement.fromDom(replacementNode.cloneNode(false));
           set(wrapper, 'data-mce-index', idx);
-          var textNode = pos.element.dom();
+          var textNode = pos.element.dom;
           if (textNode.length === pos.finish && pos.start === 0) {
             wrap(pos.element, wrapper);
           } else {
@@ -642,7 +628,7 @@
               textNode.splitText(pos.finish);
             }
             var matchNode = textNode.splitText(pos.start);
-            wrap(Element.fromDom(matchNode), wrapper);
+            wrap(SugarElement.fromDom(matchNode), wrapper);
           }
         });
       });
@@ -671,10 +657,9 @@
       return value;
     };
     var markAllMatches = function (editor, currentSearchState, pattern, inSelection) {
-      var node, marker;
-      marker = editor.dom.create('span', { 'data-mce-bogus': 1 });
+      var marker = editor.dom.create('span', { 'data-mce-bogus': 1 });
       marker.className = 'mce-match-marker';
-      node = editor.getBody();
+      var node = editor.getBody();
       done(editor, currentSearchState, false);
       if (inSelection) {
         return findAndMarkInSelection(editor.dom, pattern, editor.selection, marker);
@@ -690,9 +675,8 @@
       node.parentNode.removeChild(node);
     };
     var findSpansByIndex = function (editor, index) {
-      var nodes;
       var spans = [];
-      nodes = global$1.toArray(editor.getBody().getElementsByTagName('span'));
+      var nodes = global$1.toArray(editor.getBody().getElementsByTagName('span'));
       if (nodes.length) {
         for (var i = 0; i < nodes.length; i++) {
           var nodeIndex = getElmIndex(nodes[i]);
@@ -741,17 +725,22 @@
       }
     };
     var escapeSearchText = function (text, wholeWord) {
-      var escapedText = text.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&').replace(/\s/g, '[^\\S\\r\\n]');
+      var escapedText = text.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&').replace(/\s/g, '[^\\S\\r\\n\\uFEFF]');
       var wordRegex = '(' + escapedText + ')';
-      return wholeWord ? '(?:^|\\s|' + punctuation$1() + ')' + wordRegex + ('(?=$|\\s|' + punctuation$1() + ')') : wordRegex;
+      return wholeWord ? '(?:^|\\s|' + punctuation() + ')' + wordRegex + ('(?=$|\\s|' + punctuation() + ')') : wordRegex;
     };
-    var find$2 = function (editor, currentSearchState, text, matchCase, wholeWord, inSelection) {
+    var find = function (editor, currentSearchState, text, matchCase, wholeWord, inSelection) {
+      var selection = editor.selection;
       var escapedText = escapeSearchText(text, wholeWord);
+      var isForwardSelection = selection.isForward();
       var pattern = {
         regex: new RegExp(escapedText, matchCase ? 'g' : 'gi'),
         matchIndex: 1
       };
       var count = markAllMatches(editor, currentSearchState, pattern, inSelection);
+      if (global$2.browser.isSafari()) {
+        selection.setRng(selection.getRng(), isForwardSelection);
+      }
       if (count) {
         var newIndex = moveSelection(editor, currentSearchState, true);
         currentSearchState.set({
@@ -780,13 +769,13 @@
     var replace = function (editor, currentSearchState, text, forward, all) {
       var searchState = currentSearchState.get();
       var currentIndex = searchState.index;
-      var i, nodes, node, matchIndex, currentMatchIndex, nextIndex = currentIndex;
+      var currentMatchIndex, nextIndex = currentIndex;
       forward = forward !== false;
-      node = editor.getBody();
-      nodes = global$1.grep(global$1.toArray(node.getElementsByTagName('span')), isMatchSpan);
-      for (i = 0; i < nodes.length; i++) {
+      var node = editor.getBody();
+      var nodes = global$1.grep(global$1.toArray(node.getElementsByTagName('span')), isMatchSpan);
+      for (var i = 0; i < nodes.length; i++) {
         var nodeIndex = getElmIndex(nodes[i]);
-        matchIndex = currentMatchIndex = parseInt(nodeIndex, 10);
+        var matchIndex = currentMatchIndex = parseInt(nodeIndex, 10);
         if (all || matchIndex === searchState.index) {
           if (text.length) {
             nodes[i].firstChild.nodeValue = text;
@@ -822,10 +811,10 @@
       return !all && currentSearchState.get().count > 0;
     };
     var done = function (editor, currentSearchState, keepEditorSelection) {
-      var i, nodes, startContainer, endContainer;
+      var startContainer, endContainer;
       var searchState = currentSearchState.get();
-      nodes = global$1.toArray(editor.getBody().getElementsByTagName('span'));
-      for (i = 0; i < nodes.length; i++) {
+      var nodes = global$1.toArray(editor.getBody().getElementsByTagName('span'));
+      for (var i = 0; i < nodes.length; i++) {
         var nodeIndex = getElmIndex(nodes[i]);
         if (nodeIndex !== null && nodeIndex.length) {
           if (nodeIndex === searchState.index.toString()) {
@@ -859,15 +848,15 @@
       return currentSearchState.get().count > 1;
     };
 
-    var get$1 = function (editor, currentState) {
+    var get = function (editor, currentState) {
       var done$1 = function (keepEditorSelection) {
         return done(editor, currentState, keepEditorSelection);
       };
-      var find = function (text, matchCase, wholeWord, inSelection) {
+      var find$1 = function (text, matchCase, wholeWord, inSelection) {
         if (inSelection === void 0) {
           inSelection = false;
         }
-        return find$2(editor, currentState, text, matchCase, wholeWord, inSelection);
+        return find(editor, currentState, text, matchCase, wholeWord, inSelection);
       };
       var next$1 = function () {
         return next(editor, currentState);
@@ -880,47 +869,57 @@
       };
       return {
         done: done$1,
-        find: find,
+        find: find$1,
         next: next$1,
         prev: prev$1,
         replace: replace$1
       };
     };
 
-    var value = function () {
-      var subject = Cell(Option.none());
+    var singleton = function (doRevoke) {
+      var subject = Cell(Optional.none());
+      var revoke = function () {
+        return subject.get().each(doRevoke);
+      };
       var clear = function () {
-        subject.set(Option.none());
-      };
-      var set = function (s) {
-        subject.set(Option.some(s));
-      };
-      var on = function (f) {
-        subject.get().each(f);
+        revoke();
+        subject.set(Optional.none());
       };
       var isSet = function () {
         return subject.get().isSome();
       };
+      var get = function () {
+        return subject.get();
+      };
+      var set = function (s) {
+        revoke();
+        subject.set(Optional.some(s));
+      };
       return {
         clear: clear,
-        set: set,
         isSet: isSet,
-        on: on
+        get: get,
+        set: set
       };
     };
-
-    var global$3 = tinymce.util.Tools.resolve('tinymce.Env');
+    var value = function () {
+      var subject = singleton(noop);
+      var on = function (f) {
+        return subject.get().each(f);
+      };
+      return __assign(__assign({}, subject), { on: on });
+    };
 
     var open = function (editor, currentSearchState) {
       var dialogApi = value();
       editor.undoManager.add();
       var selectedText = global$1.trim(editor.selection.getContent({ format: 'text' }));
-      function updateButtonStates(api) {
+      var updateButtonStates = function (api) {
         var updateNext = hasNext(editor, currentSearchState) ? api.enable : api.disable;
         updateNext('next');
         var updatePrev = hasPrev(editor, currentSearchState) ? api.enable : api.disable;
         updatePrev('prev');
-      }
+      };
       var updateSearchState = function (api) {
         var data = api.getData();
         var current = currentSearchState.get();
@@ -940,13 +939,13 @@
         var toggle = disable ? api.disable : api.enable;
         each(buttons, toggle);
       };
-      function notFoundAlert(api) {
+      var notFoundAlert = function (api) {
         editor.windowManager.alert('Could not find the specified string.', function () {
           api.focus('findtext');
         });
-      }
+      };
       var focusButtonIfRequired = function (api, name) {
-        if (global$3.browser.isSafari() && global$3.deviceType.isTouch() && (name === 'find' || name === 'replace' || name === 'replaceall')) {
+        if (global$2.browser.isSafari() && global$2.deviceType.isTouch() && (name === 'find' || name === 'replace' || name === 'replaceall')) {
           api.focus(name);
         }
       };
@@ -965,7 +964,7 @@
         if (last.text === data.findtext && last.matchCase === data.matchcase && last.wholeWord === data.wholewords) {
           next(editor, currentSearchState);
         } else {
-          var count = find$2(editor, currentSearchState, data.findtext, data.matchcase, data.wholewords, data.inselection);
+          var count = find(editor, currentSearchState, data.findtext, data.matchcase, data.wholewords, data.inselection);
           if (count <= 0) {
             notFoundAlert(api);
           }
@@ -1063,7 +1062,7 @@
           {
             type: 'custom',
             name: 'replaceall',
-            text: 'Replace All',
+            text: 'Replace all',
             disabled: true
           }
         ],
@@ -1120,7 +1119,7 @@
       dialogApi.set(editor.windowManager.open(spec, { inline: 'toolbar' }));
     };
 
-    var register = function (editor, currentSearchState) {
+    var register$1 = function (editor, currentSearchState) {
       editor.addCommand('SearchReplace', function () {
         open(editor, currentSearchState);
       });
@@ -1131,7 +1130,7 @@
         open(editor, currentSearchState);
       };
     };
-    var register$1 = function (editor, currentSearchState) {
+    var register = function (editor, currentSearchState) {
       editor.ui.registry.addMenuItem('searchreplace', {
         text: 'Find and replace...',
         shortcut: 'Meta+F',
@@ -1147,7 +1146,7 @@
     };
 
     function Plugin () {
-      global.add('searchreplace', function (editor) {
+      global$3.add('searchreplace', function (editor) {
         var currentSearchState = Cell({
           index: -1,
           count: 0,
@@ -1156,12 +1155,12 @@
           wholeWord: false,
           inSelection: false
         });
-        register(editor, currentSearchState);
         register$1(editor, currentSearchState);
-        return get$1(editor, currentSearchState);
+        register(editor, currentSearchState);
+        return get(editor, currentSearchState);
       });
     }
 
     Plugin();
 
-}(window));
+}());

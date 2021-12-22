@@ -4,19 +4,18 @@
  * For LGPL see License.txt in the project root for license information.
  * For commercial licenses see https://www.tiny.cloud/
  *
- * Version: 5.3.0 (2020-05-21)
+ * Version: 5.10.2 (2021-11-17)
  */
-(function (domGlobals) {
+(function () {
     'use strict';
 
     var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
 
     function Plugin () {
       global.add('contextmenu', function () {
-        domGlobals.console.warn('Context menu plugin is now built in to the core editor, please remove it from your editor configuration');
       });
     }
 
     Plugin();
 
-}(window));
+}());

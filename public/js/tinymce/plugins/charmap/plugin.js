@@ -4,12 +4,12 @@
  * For LGPL see License.txt in the project root for license information.
  * For commercial licenses see https://www.tiny.cloud/
  *
- * Version: 5.3.0 (2020-05-21)
+ * Version: 5.10.2 (2021-11-17)
  */
-(function (domGlobals) {
+(function () {
     'use strict';
 
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+    var global$2 = tinymce.util.Tools.resolve('tinymce.PluginManager');
 
     var fireInsertCustomChar = function (editor, chr) {
       return editor.fire('insertCustomChar', { chr: chr });
@@ -20,14 +20,30 @@
       editor.execCommand('mceInsertContent', false, evtChr);
     };
 
-    var global$1 = tinymce.util.Tools.resolve('tinymce.util.Tools');
-
-    var getCharMap = function (editor) {
-      return editor.settings.charmap;
+    var typeOf = function (x) {
+      var t = typeof x;
+      if (x === null) {
+        return 'null';
+      } else if (t === 'object' && (Array.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'Array')) {
+        return 'array';
+      } else if (t === 'object' && (String.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'String')) {
+        return 'string';
+      } else {
+        return t;
+      }
     };
-    var getCharMapAppend = function (editor) {
-      return editor.settings.charmap_append;
+    var isType = function (type) {
+      return function (value) {
+        return typeOf(value) === type;
+      };
     };
+    var eq = function (t) {
+      return function (a) {
+        return t === a;
+      };
+    };
+    var isArray$1 = isType('array');
+    var isNull = eq(null);
 
     var noop = function () {
     };
@@ -36,6 +52,9 @@
         return value;
       };
     };
+    var identity = function (x) {
+      return x;
+    };
     var never = constant(false);
     var always = constant(true);
 
@@ -43,20 +62,14 @@
       return NONE;
     };
     var NONE = function () {
-      var eq = function (o) {
-        return o.isNone();
-      };
       var call = function (thunk) {
         return thunk();
       };
-      var id = function (n) {
-        return n;
-      };
+      var id = identity;
       var me = {
         fold: function (n, _s) {
           return n();
         },
-        is: never,
         isSome: never,
         isNone: always,
         getOr: id,
@@ -73,9 +86,9 @@
         bind: none,
         exists: never,
         forall: always,
-        filter: none,
-        equals: eq,
-        equals_: eq,
+        filter: function () {
+          return none();
+        },
         toArray: function () {
           return [];
         },
@@ -94,9 +107,6 @@
       var me = {
         fold: function (n, s) {
           return s(a);
-        },
-        is: function (v) {
-          return a === v;
         },
         isSome: always,
         isNone: never,
@@ -124,14 +134,6 @@
         },
         toString: function () {
           return 'some(' + a + ')';
-        },
-        equals: function (o) {
-          return o.is(a);
-        },
-        equals_: function (o, elementEq) {
-          return o.fold(never, function (b) {
-            return elementEq(a, b);
-          });
         }
       };
       return me;
@@ -139,30 +141,11 @@
     var from = function (value) {
       return value === null || value === undefined ? NONE : some(value);
     };
-    var Option = {
+    var Optional = {
       some: some,
       none: none,
       from: from
     };
-
-    var typeOf = function (x) {
-      var t = typeof x;
-      if (x === null) {
-        return 'null';
-      } else if (t === 'object' && (Array.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'Array')) {
-        return 'array';
-      } else if (t === 'object' && (String.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'String')) {
-        return 'string';
-      } else {
-        return t;
-      }
-    };
-    var isType = function (type) {
-      return function (value) {
-        return typeOf(value) === type;
-      };
-    };
-    var isArray = isType('array');
 
     var nativePush = Array.prototype.push;
     var map = function (xs, f) {
@@ -184,12 +167,12 @@
       for (var i = 0, len = xs.length; i < len; i++) {
         var x = xs[i];
         if (pred(x, i)) {
-          return Option.some(x);
+          return Optional.some(x);
         } else if (until(x, i)) {
           break;
         }
       }
-      return Option.none();
+      return Optional.none();
     };
     var find = function (xs, pred) {
       return findUntil(xs, pred, never);
@@ -197,7 +180,7 @@
     var flatten = function (xs) {
       var r = [];
       for (var i = 0, len = xs.length; i < len; ++i) {
-        if (!isArray(xs[i])) {
+        if (!isArray$1(xs[i])) {
           throw new Error('Arr.flatten item ' + i + ' was not an array, input: ' + xs);
         }
         nativePush.apply(r, xs[i]);
@@ -208,7 +191,16 @@
       return flatten(map(xs, f));
     };
 
-    var isArray$1 = global$1.isArray;
+    var global$1 = tinymce.util.Tools.resolve('tinymce.util.Tools');
+
+    var getCharMap$1 = function (editor) {
+      return editor.getParam('charmap');
+    };
+    var getCharMapAppend = function (editor) {
+      return editor.getParam('charmap_append');
+    };
+
+    var isArray = global$1.isArray;
     var UserDefined = 'User Defined';
     var getDefaultCharMap = function () {
       return [
@@ -1403,12 +1395,12 @@
     };
     var charmapFilter = function (charmap) {
       return global$1.grep(charmap, function (item) {
-        return isArray$1(item) && item.length === 2;
+        return isArray(item) && item.length === 2;
       });
     };
     var getCharsFromSetting = function (settingValue) {
-      if (isArray$1(settingValue)) {
-        return [].concat(charmapFilter(settingValue));
+      if (isArray(settingValue)) {
+        return charmapFilter(settingValue);
       }
       if (typeof settingValue === 'function') {
         return settingValue();
@@ -1416,7 +1408,7 @@
       return [];
     };
     var extendCharMap = function (editor, charmap) {
-      var userCharMap = getCharMap(editor);
+      var userCharMap = getCharMap$1(editor);
       if (userCharMap) {
         charmap = [{
             name: UserDefined,
@@ -1432,14 +1424,14 @@
           userDefinedGroup[0].characters = [].concat(userDefinedGroup[0].characters).concat(getCharsFromSetting(userCharMapAppend));
           return charmap;
         }
-        return [].concat(charmap).concat({
+        return charmap.concat({
           name: UserDefined,
           characters: getCharsFromSetting(userCharMapAppend)
         });
       }
       return charmap;
     };
-    var getCharMap$1 = function (editor) {
+    var getCharMap = function (editor) {
       var groups = extendCharMap(editor, getDefaultCharMap());
       return groups.length > 1 ? [{
           name: 'All',
@@ -1450,14 +1442,14 @@
     };
 
     var get = function (editor) {
-      var getCharMap = function () {
-        return getCharMap$1(editor);
+      var getCharMap$1 = function () {
+        return getCharMap(editor);
       };
       var insertChar$1 = function (chr) {
         insertChar(editor, chr);
       };
       return {
-        getCharMap: getCharMap,
+        getCharMap: getCharMap$1,
         insertChar: insertChar$1
       };
     };
@@ -1479,8 +1471,8 @@
     var last = function (fn, rate) {
       var timer = null;
       var cancel = function () {
-        if (timer !== null) {
-          domGlobals.clearTimeout(timer);
+        if (!isNull(timer)) {
+          clearTimeout(timer);
           timer = null;
         }
       };
@@ -1489,12 +1481,10 @@
         for (var _i = 0; _i < arguments.length; _i++) {
           args[_i] = arguments[_i];
         }
-        if (timer !== null) {
-          domGlobals.clearTimeout(timer);
-        }
-        timer = domGlobals.setTimeout(function () {
-          fn.apply(null, args);
+        cancel();
+        timer = setTimeout(function () {
           timer = null;
+          fn.apply(null, args);
         }, rate);
       };
       return {
@@ -1648,13 +1638,13 @@
       dialogApi.focus(patternName);
     };
 
-    var register = function (editor, charMap) {
+    var register$1 = function (editor, charMap) {
       editor.addCommand('mceShowCharmap', function () {
         open(editor, charMap);
       });
     };
 
-    var global$2 = tinymce.util.Tools.resolve('tinymce.util.Promise');
+    var global = tinymce.util.Tools.resolve('tinymce.util.Promise');
 
     var init = function (editor, all) {
       editor.ui.registry.addAutocompleter('charmap', {
@@ -1662,7 +1652,7 @@
         columns: 'auto',
         minChars: 2,
         fetch: function (pattern, _maxResults) {
-          return new global$2(function (resolve, _reject) {
+          return new global(function (resolve, _reject) {
             resolve(scan(all, pattern));
           });
         },
@@ -1674,7 +1664,7 @@
       });
     };
 
-    var register$1 = function (editor) {
+    var register = function (editor) {
       editor.ui.registry.addButton('charmap', {
         icon: 'insert-character',
         tooltip: 'Special character',
@@ -1692,10 +1682,10 @@
     };
 
     function Plugin () {
-      global.add('charmap', function (editor) {
-        var charMap = getCharMap$1(editor);
-        register(editor, charMap);
-        register$1(editor);
+      global$2.add('charmap', function (editor) {
+        var charMap = getCharMap(editor);
+        register$1(editor, charMap);
+        register(editor);
         init(editor, charMap[0]);
         return get(editor);
       });
@@ -1703,4 +1693,4 @@
 
     Plugin();
 
-}(window));
+}());

@@ -4,9 +4,9 @@
  * For LGPL see License.txt in the project root for license information.
  * For commercial licenses see https://www.tiny.cloud/
  *
- * Version: 5.3.0 (2020-05-21)
+ * Version: 5.10.2 (2021-11-17)
  */
-(function (domGlobals) {
+(function () {
     'use strict';
 
     var Cell = function (initial) {
@@ -23,7 +23,7 @@
       };
     };
 
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+    var global$5 = tinymce.util.Tools.resolve('tinymce.PluginManager');
 
     var __assign = function () {
       __assign = Object.assign || function __assign(t) {
@@ -37,14 +37,38 @@
       };
       return __assign.apply(this, arguments);
     };
-    function __spreadArrays() {
-      for (var s = 0, i = 0, il = arguments.length; i < il; i++)
-        s += arguments[i].length;
-      for (var r = Array(s), k = 0, i = 0; i < il; i++)
-        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
-          r[k] = a[j];
-      return r;
+    function __spreadArray(to, from, pack) {
+      if (pack || arguments.length === 2)
+        for (var i = 0, l = from.length, ar; i < l; i++) {
+          if (ar || !(i in from)) {
+            if (!ar)
+              ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+          }
+        }
+      return to.concat(ar || Array.prototype.slice.call(from));
     }
+
+    var typeOf = function (x) {
+      var t = typeof x;
+      if (x === null) {
+        return 'null';
+      } else if (t === 'object' && (Array.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'Array')) {
+        return 'array';
+      } else if (t === 'object' && (String.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'String')) {
+        return 'string';
+      } else {
+        return t;
+      }
+    };
+    var isType = function (type) {
+      return function (value) {
+        return typeOf(value) === type;
+      };
+    };
+    var isString = isType('string');
+    var isObject = isType('object');
+    var isArray = isType('array');
 
     var noop = function () {
     };
@@ -68,20 +92,14 @@
       return NONE;
     };
     var NONE = function () {
-      var eq = function (o) {
-        return o.isNone();
-      };
       var call = function (thunk) {
         return thunk();
       };
-      var id = function (n) {
-        return n;
-      };
+      var id = identity;
       var me = {
         fold: function (n, _s) {
           return n();
         },
-        is: never,
         isSome: never,
         isNone: always,
         getOr: id,
@@ -98,9 +116,9 @@
         bind: none,
         exists: never,
         forall: always,
-        filter: none,
-        equals: eq,
-        equals_: eq,
+        filter: function () {
+          return none();
+        },
         toArray: function () {
           return [];
         },
@@ -119,9 +137,6 @@
       var me = {
         fold: function (n, s) {
           return s(a);
-        },
-        is: function (v) {
-          return a === v;
         },
         isSome: always,
         isNone: never,
@@ -149,14 +164,6 @@
         },
         toString: function () {
           return 'some(' + a + ')';
-        },
-        equals: function (o) {
-          return o.is(a);
-        },
-        equals_: function (o, elementEq) {
-          return o.fold(never, function (b) {
-            return elementEq(a, b);
-          });
         }
       };
       return me;
@@ -164,32 +171,11 @@
     var from = function (value) {
       return value === null || value === undefined ? NONE : some(value);
     };
-    var Option = {
+    var Optional = {
       some: some,
       none: none,
       from: from
     };
-
-    var typeOf = function (x) {
-      var t = typeof x;
-      if (x === null) {
-        return 'null';
-      } else if (t === 'object' && (Array.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'Array')) {
-        return 'array';
-      } else if (t === 'object' && (String.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'String')) {
-        return 'string';
-      } else {
-        return t;
-      }
-    };
-    var isType = function (type) {
-      return function (value) {
-        return typeOf(value) === type;
-      };
-    };
-    var isString = isType('string');
-    var isObject = isType('object');
-    var isArray = isType('array');
 
     var nativeSlice = Array.prototype.slice;
     var nativeIndexOf = Array.prototype.indexOf;
@@ -231,14 +217,14 @@
       return r;
     };
     var foldr = function (xs, f, acc) {
-      eachr(xs, function (x) {
-        acc = f(acc, x);
+      eachr(xs, function (x, i) {
+        acc = f(acc, x, i);
       });
       return acc;
     };
     var foldl = function (xs, f, acc) {
-      each(xs, function (x) {
-        acc = f(acc, x);
+      each(xs, function (x, i) {
+        acc = f(acc, x, i);
       });
       return acc;
     };
@@ -246,12 +232,12 @@
       for (var i = 0, len = xs.length; i < len; i++) {
         var x = xs[i];
         if (pred(x, i)) {
-          return Option.some(x);
+          return Optional.some(x);
         } else if (until(x, i)) {
           break;
         }
       }
-      return Option.none();
+      return Optional.none();
     };
     var find = function (xs, pred) {
       return findUntil(xs, pred, never);
@@ -270,20 +256,20 @@
       copy.sort(comparator);
       return copy;
     };
+    var get$1 = function (xs, i) {
+      return i >= 0 && i < xs.length ? Optional.some(xs[i]) : Optional.none();
+    };
     var head = function (xs) {
-      return xs.length === 0 ? Option.none() : Option.some(xs[0]);
+      return get$1(xs, 0);
     };
 
     var keys = Object.keys;
     var hasOwnProperty = Object.hasOwnProperty;
-    var get = function (obj, key) {
-      return has(obj, key) ? Option.from(obj[key]) : Option.none();
-    };
     var has = function (obj, key) {
       return hasOwnProperty.call(obj, key);
     };
 
-    var generate = function (cases) {
+    var generate$1 = function (cases) {
       if (!isArray(cases)) {
         throw new Error('cases must be an array');
       }
@@ -308,13 +294,13 @@
         }
         constructors.push(key);
         adt[key] = function () {
-          var argLength = arguments.length;
+          var args = [];
+          for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+          }
+          var argLength = args.length;
           if (argLength !== value.length) {
             throw new Error('Wrong number of arguments to case ' + key + '. Expected ' + value.length + ' (' + value + '), got ' + argLength);
-          }
-          var args = new Array(argLength);
-          for (var i = 0; i < args.length; i++) {
-            args[i] = arguments[i];
           }
           var match = function (branches) {
             var branchKeys = keys(branches);
@@ -331,15 +317,19 @@
           };
           return {
             fold: function () {
-              if (arguments.length !== cases.length) {
-                throw new Error('Wrong number of arguments to fold. Expected ' + cases.length + ', got ' + arguments.length);
+              var foldArgs = [];
+              for (var _i = 0; _i < arguments.length; _i++) {
+                foldArgs[_i] = arguments[_i];
               }
-              var target = arguments[count];
+              if (foldArgs.length !== cases.length) {
+                throw new Error('Wrong number of arguments to fold. Expected ' + cases.length + ', got ' + foldArgs.length);
+              }
+              var target = foldArgs[count];
               return target.apply(null, args);
             },
             match: match,
             log: function (label) {
-              domGlobals.console.log(label, {
+              console.log(label, {
                 constructors: constructors,
                 constructor: key,
                 params: args
@@ -350,9 +340,9 @@
       });
       return adt;
     };
-    var Adt = { generate: generate };
+    var Adt = { generate: generate$1 };
 
-    var comparison = Adt.generate([
+    Adt.generate([
       {
         bothErrors: [
           'error1',
@@ -395,9 +385,6 @@
     };
 
     var value = function (o) {
-      var is = function (v) {
-        return o === v;
-      };
       var or = function (_opt) {
         return value(o);
       };
@@ -425,11 +412,10 @@
       var forall = function (f) {
         return f(o);
       };
-      var toOption = function () {
-        return Option.some(o);
+      var toOptional = function () {
+        return Optional.some(o);
       };
       return {
-        is: is,
         isValue: always,
         isError: never,
         getOr: constant(o),
@@ -444,36 +430,33 @@
         bind: bind,
         exists: exists,
         forall: forall,
-        toOption: toOption
+        toOptional: toOptional
       };
     };
-    var error = function (message) {
+    var error$1 = function (message) {
       var getOrThunk = function (f) {
         return f();
       };
       var getOrDie = function () {
         return die(String(message))();
       };
-      var or = function (opt) {
-        return opt;
-      };
+      var or = identity;
       var orThunk = function (f) {
         return f();
       };
       var map = function (_f) {
-        return error(message);
+        return error$1(message);
       };
       var mapError = function (f) {
-        return error(f(message));
+        return error$1(f(message));
       };
       var bind = function (_f) {
-        return error(message);
+        return error$1(message);
       };
       var fold = function (onError, _) {
         return onError(message);
       };
       return {
-        is: never,
         isValue: never,
         isError: always,
         getOr: identity,
@@ -488,17 +471,17 @@
         bind: bind,
         exists: never,
         forall: always,
-        toOption: Option.none
+        toOptional: Optional.none
       };
     };
     var fromOption = function (opt, err) {
       return opt.fold(function () {
-        return error(err);
+        return error$1(err);
       }, value);
     };
     var Result = {
       value: value,
-      error: error,
+      error: error$1,
       fromOption: fromOption
     };
 
@@ -656,7 +639,7 @@
       };
     };
 
-    var get$1 = function (patternsState) {
+    var get = function (patternsState) {
       var setPatterns = function (newPatterns) {
         var normalized = partition(map(newPatterns, normalizePattern));
         if (normalized.errors.length > 0) {
@@ -666,7 +649,7 @@
         patternsState.set(createPatternSet(normalized.values));
       };
       var getPatterns = function () {
-        return __spreadArrays(map(patternsState.get().inlinePatterns, denormalizePattern), map(patternsState.get().blockPatterns, denormalizePattern));
+        return __spreadArray(__spreadArray([], map(patternsState.get().inlinePatterns, denormalizePattern), true), map(patternsState.get().blockPatterns, denormalizePattern), true);
       };
       return {
         setPatterns: setPatterns,
@@ -674,9 +657,9 @@
       };
     };
 
-    var Global = typeof domGlobals.window !== 'undefined' ? domGlobals.window : Function('return this;')();
+    var Global = typeof window !== 'undefined' ? window : Function('return this;')();
 
-    var error$1 = function () {
+    var error = function () {
       var args = [];
       for (var _i = 0; _i < arguments.length; _i++) {
         args[_i] = arguments[_i];
@@ -738,10 +721,10 @@
         cmd: 'InsertUnorderedList'
       }
     ];
-    var getPatternSet = function (editorSettings) {
-      var patterns = get(editorSettings, 'textpattern_patterns').getOr(defaultPatterns);
+    var getPatternSet = function (editor) {
+      var patterns = editor.getParam('textpattern_patterns', defaultPatterns, 'array');
       if (!isArray(patterns)) {
-        error$1('The setting textpattern_patterns should be an array');
+        error('The setting textpattern_patterns should be an array');
         return {
           inlinePatterns: [],
           blockPatterns: []
@@ -749,7 +732,7 @@
       }
       var normalized = partition(map(patterns, normalizePattern));
       each(normalized.errors, function (err) {
-        return error$1(err.message, err.pattern);
+        return error(err.message, err.pattern);
       });
       return createPatternSet(normalized.values);
     };
@@ -764,18 +747,18 @@
       }
     };
 
-    var global$1 = tinymce.util.Tools.resolve('tinymce.util.Delay');
+    var global$4 = tinymce.util.Tools.resolve('tinymce.util.Delay');
 
-    var global$2 = tinymce.util.Tools.resolve('tinymce.util.VK');
+    var global$3 = tinymce.util.Tools.resolve('tinymce.util.VK');
 
     var zeroWidth = '\uFEFF';
     var nbsp = '\xA0';
 
-    var global$3 = tinymce.util.Tools.resolve('tinymce.util.Tools');
+    var global$2 = tinymce.util.Tools.resolve('tinymce.util.Tools');
 
-    var global$4 = tinymce.util.Tools.resolve('tinymce.dom.DOMUtils');
+    var global$1 = tinymce.util.Tools.resolve('tinymce.dom.DOMUtils');
 
-    var global$5 = tinymce.util.Tools.resolve('tinymce.dom.TextSeeker');
+    var global = tinymce.util.Tools.resolve('tinymce.dom.TextSeeker');
 
     var point = function (container, offset) {
       return {
@@ -785,7 +768,7 @@
     };
 
     var isText = function (node) {
-      return node.nodeType === domGlobals.Node.TEXT_NODE;
+      return node.nodeType === Node.TEXT_NODE;
     };
     var cleanEmptyNodes = function (dom, node, isRoot) {
       if (node && dom.isEmpty(node) && !isRoot(node)) {
@@ -824,17 +807,17 @@
       return pattern.start.length === 0;
     };
     var getParentBlock = function (editor, rng) {
-      var parentBlockOpt = Option.from(editor.dom.getParent(rng.startContainer, editor.dom.isBlock));
+      var parentBlockOpt = Optional.from(editor.dom.getParent(rng.startContainer, editor.dom.isBlock));
       if (getForcedRootBlock(editor) === '') {
         return parentBlockOpt.orThunk(function () {
-          return Option.some(editor.getBody());
+          return Optional.some(editor.getBody());
         });
       } else {
         return parentBlockOpt;
       }
     };
 
-    var DOM = global$4.DOM;
+    var DOM = global$1.DOM;
     var alwaysNext = function (startNode) {
       return function (node) {
         return startNode === node ? -1 : 0;
@@ -852,34 +835,34 @@
     };
     var textBefore = function (node, offset, rootNode) {
       if (isText(node) && offset >= 0) {
-        return Option.some(point(node, offset));
+        return Optional.some(point(node, offset));
       } else {
-        var textSeeker = global$5(DOM);
-        return Option.from(textSeeker.backwards(node, offset, alwaysNext(node), rootNode)).map(function (prev) {
+        var textSeeker = global(DOM);
+        return Optional.from(textSeeker.backwards(node, offset, alwaysNext(node), rootNode)).map(function (prev) {
           return point(prev.container, prev.container.data.length);
         });
       }
     };
     var textAfter = function (node, offset, rootNode) {
       if (isText(node) && offset >= node.length) {
-        return Option.some(point(node, offset));
+        return Optional.some(point(node, offset));
       } else {
-        var textSeeker = global$5(DOM);
-        return Option.from(textSeeker.forwards(node, offset, alwaysNext(node), rootNode)).map(function (prev) {
+        var textSeeker = global(DOM);
+        return Optional.from(textSeeker.forwards(node, offset, alwaysNext(node), rootNode)).map(function (prev) {
           return point(prev.container, 0);
         });
       }
     };
     var scanLeft = function (node, offset, rootNode) {
       if (!isText(node)) {
-        return Option.none();
+        return Optional.none();
       }
       var text = node.textContent;
       if (offset >= 0 && offset <= text.length) {
-        return Option.some(point(node, offset));
+        return Optional.some(point(node, offset));
       } else {
-        var textSeeker = global$5(DOM);
-        return Option.from(textSeeker.backwards(node, offset, alwaysNext(node), rootNode)).bind(function (prev) {
+        var textSeeker = global(DOM);
+        return Optional.from(textSeeker.backwards(node, offset, alwaysNext(node), rootNode)).bind(function (prev) {
           var prevText = prev.container.data;
           return scanLeft(prev.container, offset + prevText.length, rootNode);
         });
@@ -887,21 +870,21 @@
     };
     var scanRight = function (node, offset, rootNode) {
       if (!isText(node)) {
-        return Option.none();
+        return Optional.none();
       }
       var text = node.textContent;
       if (offset <= text.length) {
-        return Option.some(point(node, offset));
+        return Optional.some(point(node, offset));
       } else {
-        var textSeeker = global$5(DOM);
-        return Option.from(textSeeker.forwards(node, offset, alwaysNext(node), rootNode)).bind(function (next) {
+        var textSeeker = global(DOM);
+        return Optional.from(textSeeker.forwards(node, offset, alwaysNext(node), rootNode)).bind(function (next) {
           return scanRight(next.container, offset - text.length, rootNode);
         });
       }
     };
     var repeatLeft = function (dom, node, offset, process, rootNode) {
-      var search = global$5(dom, isBoundary(dom));
-      return Option.from(search.backwards(node, offset, process, rootNode));
+      var search = global(dom, isBoundary(dom));
+      return Optional.from(search.backwards(node, offset, process, rootNode));
     };
 
     var generatePath = function (root, node, offset) {
@@ -933,18 +916,16 @@
     var resolvePath = function (root, path) {
       var nodePath = path.slice();
       var offset = nodePath.pop();
-      return foldl(nodePath, function (optNode, index) {
+      var resolvedNode = foldl(nodePath, function (optNode, index) {
         return optNode.bind(function (node) {
-          return Option.from(node.childNodes[index]);
+          return Optional.from(node.childNodes[index]);
         });
-      }, Option.some(root)).bind(function (node) {
-        if (isText(node) && offset >= 0 && offset <= node.data.length) {
-          return Option.some({
-            node: node,
-            offset: offset
-          });
+      }, Optional.some(root));
+      return resolvedNode.bind(function (node) {
+        if (isText(node) && (offset < 0 || offset > node.data.length)) {
+          return Optional.none();
         } else {
-          return Option.some({
+          return Optional.some({
             node: node,
             offset: offset
           });
@@ -956,7 +937,7 @@
         var startNode = _a.node, startOffset = _a.offset;
         return resolvePath(root, range.end).map(function (_a) {
           var endNode = _a.node, endOffset = _a.offset;
-          var rng = domGlobals.document.createRange();
+          var rng = document.createRange();
           rng.setStart(startNode, startOffset);
           rng.setEnd(endNode, endOffset);
           return rng;
@@ -981,7 +962,7 @@
         });
       });
     };
-    var applyPattern = function (editor, match) {
+    var applyPattern$1 = function (editor, match) {
       var dom = editor.dom;
       var pattern = match.pattern;
       var rng = resolvePathRange(dom.getRoot(), match.range).getOrDie('Unable to resolve path range');
@@ -1002,16 +983,13 @@
       });
       return true;
     };
-    var findPattern = function (patterns, text) {
+    var findPattern$1 = function (patterns, text) {
       var nuText = text.replace(nbsp, ' ');
       return find(patterns, function (pattern) {
-        if (text.indexOf(pattern.start) !== 0 && nuText.indexOf(pattern.start) !== 0) {
-          return false;
-        }
-        return true;
+        return text.indexOf(pattern.start) === 0 || nuText.indexOf(pattern.start) === 0;
       });
     };
-    var findPatterns = function (editor, patterns) {
+    var findPatterns$1 = function (editor, patterns) {
       var dom = editor.dom;
       var rng = editor.selection.getRng();
       return getParentBlock(editor, rng).filter(function (block) {
@@ -1020,9 +998,9 @@
         return block !== null && matchesForcedRootBlock;
       }).bind(function (block) {
         var blockText = block.textContent;
-        var matchedPattern = findPattern(patterns, blockText);
+        var matchedPattern = findPattern$1(patterns, blockText);
         return matchedPattern.map(function (pattern) {
-          if (global$3.trim(blockText).length === pattern.start.length) {
+          if (global$2.trim(blockText).length === pattern.start.length) {
             return [];
           }
           return [{
@@ -1032,19 +1010,19 @@
         });
       }).getOr([]);
     };
-    var applyMatches = function (editor, matches) {
+    var applyMatches$1 = function (editor, matches) {
       if (matches.length === 0) {
         return;
       }
       var bookmark = editor.selection.getBookmark();
       each(matches, function (match) {
-        return applyPattern(editor, match);
+        return applyPattern$1(editor, match);
       });
       editor.selection.moveToBookmark(bookmark);
     };
 
     var unique = 0;
-    var generate$1 = function (prefix) {
+    var generate = function (prefix) {
       var date = new Date();
       var time = date.getTime();
       var random = Math.floor(Math.random() * 1000000000);
@@ -1111,7 +1089,7 @@
           var rng = dom.createRng();
           rng.setStart(spot.container, spot.offset - startPattern.length);
           rng.setEnd(spot.container, spot.offset);
-          return Option.some(rng);
+          return Optional.some(rng);
         } else {
           var offset = spot.offset - startPattern.length;
           return scanLeft(spot.container, offset, block).map(function (nextSpot) {
@@ -1135,23 +1113,23 @@
         var rng = dom.createRng();
         rng.setStart(node, offset);
         rng.setEnd(node, offset);
-        return Option.some(rng);
+        return Optional.some(rng);
       }
       return textBefore(node, offset, block).bind(function (spot) {
         var start = findPatternStartFromSpot(dom, pattern, block, spot);
         return start.bind(function (startRange) {
           if (requireGap) {
             if (startRange.endContainer === spot.container && startRange.endOffset === spot.offset) {
-              return Option.none();
+              return Optional.none();
             } else if (spot.offset === 0 && startRange.endContainer.textContent.length === startRange.endOffset) {
-              return Option.none();
+              return Optional.none();
             }
           }
-          return Option.some(startRange);
+          return Optional.some(startRange);
         });
       });
     };
-    var findPattern$1 = function (editor, block, details) {
+    var findPattern = function (editor, block, details) {
       var dom = editor.dom;
       var root = dom.getRoot();
       var pattern = details.pattern;
@@ -1160,7 +1138,7 @@
       return scanLeft(endNode, endOffset - details.pattern.end.length, block).bind(function (spot) {
         var endPathRng = generatePathRange(root, spot.container, spot.offset, endNode, endOffset);
         if (isReplacementPattern(pattern)) {
-          return Option.some({
+          return Optional.some({
             matches: [{
                 pattern: pattern,
                 startRng: endPathRng,
@@ -1204,7 +1182,7 @@
           }
           var patternsWithoutCurrent = patterns.slice();
           patternsWithoutCurrent.splice(i, 1);
-          var result = findPattern$1(editor, block, {
+          var result = findPattern(editor, block, {
             pattern: pattern,
             remainingPatterns: patternsWithoutCurrent,
             position: endSpot
@@ -1213,10 +1191,10 @@
             return result;
           }
         }
-        return Option.none();
+        return Optional.none();
       });
     };
-    var applyPattern$1 = function (editor, pattern, patternRange) {
+    var applyPattern = function (editor, pattern, patternRange) {
       editor.selection.setRng(patternRange);
       if (pattern.type === 'inline-format') {
         each(pattern.format, function (format) {
@@ -1229,7 +1207,7 @@
     var applyReplacementPattern = function (editor, pattern, marker, isRoot) {
       var markerRange = rangeFromMarker(editor.dom, marker);
       deleteRng(editor.dom, markerRange, isRoot);
-      applyPattern$1(editor, pattern, markerRange);
+      applyPattern(editor, pattern, markerRange);
     };
     var applyPatternWithContent = function (editor, pattern, startMarker, endMarker, isRoot) {
       var dom = editor.dom;
@@ -1243,10 +1221,10 @@
         end: endMarker.start
       };
       var patternRange = rangeFromMarker(dom, patternMarker);
-      applyPattern$1(editor, pattern, patternRange);
+      applyPattern(editor, pattern, patternRange);
     };
     var addMarkers = function (dom, matches) {
-      var markerPrefix = generate$1('mce_textpattern');
+      var markerPrefix = generate('mce_textpattern');
       var matchesWithEnds = foldr(matches, function (acc, match) {
         var endMarker = createMarker(dom, markerPrefix + ('_end' + acc.length), match.endRng);
         return acc.concat([__assign(__assign({}, match), { endMarker: endMarker })]);
@@ -1257,7 +1235,7 @@
         return acc.concat([__assign(__assign({}, match), { startMarker: startMarker })]);
       }, []);
     };
-    var findPatterns$1 = function (editor, patterns, space) {
+    var findPatterns = function (editor, patterns, space) {
       var rng = editor.selection.getRng();
       if (rng.collapsed === false) {
         return [];
@@ -1271,7 +1249,7 @@
         return result.matches;
       });
     };
-    var applyMatches$1 = function (editor, matches) {
+    var applyMatches = function (editor, matches) {
       if (matches.length === 0) {
         return;
       }
@@ -1298,16 +1276,16 @@
       if (!editor.selection.isCollapsed()) {
         return false;
       }
-      var inlineMatches = findPatterns$1(editor, patternSet.inlinePatterns, false);
-      var blockMatches = findPatterns(editor, patternSet.blockPatterns);
+      var inlineMatches = findPatterns(editor, patternSet.inlinePatterns, false);
+      var blockMatches = findPatterns$1(editor, patternSet.blockPatterns);
       if (blockMatches.length > 0 || inlineMatches.length > 0) {
         editor.undoManager.add();
         editor.undoManager.extra(function () {
           editor.execCommand('mceInsertNewLine');
         }, function () {
           editor.insertContent(zeroWidth);
-          applyMatches$1(editor, inlineMatches);
-          applyMatches(editor, blockMatches);
+          applyMatches(editor, inlineMatches);
+          applyMatches$1(editor, blockMatches);
           var range = editor.selection.getRng();
           var spot = textBefore(range.startContainer, range.startOffset, editor.dom.getRoot());
           editor.execCommand('mceInsertNewLine');
@@ -1326,10 +1304,10 @@
       return false;
     };
     var handleInlineKey = function (editor, patternSet) {
-      var inlineMatches = findPatterns$1(editor, patternSet.inlinePatterns, true);
+      var inlineMatches = findPatterns(editor, patternSet.inlinePatterns, true);
       if (inlineMatches.length > 0) {
         editor.undoManager.transact(function () {
-          applyMatches$1(editor, inlineMatches);
+          applyMatches(editor, inlineMatches);
         });
       }
     };
@@ -1339,10 +1317,11 @@
           return true;
         }
       }
+      return false;
     };
     var checkKeyCode = function (codes, event) {
       return checkKeyEvent(codes, event, function (code, event) {
-        return code === event.keyCode && global$2.modifierPressed(event) === false;
+        return code === event.keyCode && global$3.modifierPressed(event) === false;
       });
     };
     var checkCharCode = function (chars, event) {
@@ -1362,7 +1341,7 @@
       ];
       var keyCodes = [32];
       editor.on('keydown', function (e) {
-        if (e.keyCode === 13 && !global$2.modifierPressed(e)) {
+        if (e.keyCode === 13 && !global$3.modifierPressed(e)) {
           if (handleEnter(editor, patternsState.get())) {
             e.preventDefault();
           }
@@ -1375,7 +1354,7 @@
       });
       editor.on('keypress', function (e) {
         if (checkCharCode(charCodes, e)) {
-          global$1.setEditorTimeout(editor, function () {
+          global$4.setEditorTimeout(editor, function () {
             handleInlineKey(editor, patternsState.get());
           });
         }
@@ -1383,13 +1362,13 @@
     };
 
     function Plugin () {
-      global.add('textpattern', function (editor) {
-        var patternsState = Cell(getPatternSet(editor.settings));
+      global$5.add('textpattern', function (editor) {
+        var patternsState = Cell(getPatternSet(editor));
         setup(editor, patternsState);
-        return get$1(patternsState);
+        return get(patternsState);
       });
     }
 
     Plugin();
 
-}(window));
+}());

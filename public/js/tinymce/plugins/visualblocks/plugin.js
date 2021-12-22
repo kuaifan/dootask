@@ -4,7 +4,7 @@
  * For LGPL see License.txt in the project root for license information.
  * For commercial licenses see https://www.tiny.cloud/
  *
- * Version: 5.3.0 (2020-05-21)
+ * Version: 5.10.2 (2021-11-17)
  */
 (function () {
     'use strict';
@@ -36,7 +36,7 @@
       fireVisualBlocks(editor, enabledState.get());
     };
 
-    var register = function (editor, pluginUrl, enabledState) {
+    var register$1 = function (editor, pluginUrl, enabledState) {
       editor.addCommand('mceVisualBlocks', function () {
         toggleVisualBlocks(editor, pluginUrl, enabledState);
       });
@@ -57,9 +57,6 @@
           toggleVisualBlocks(editor, pluginUrl, enabledState);
         }
       });
-      editor.on('remove', function () {
-        editor.dom.removeClass(editor.getBody(), 'mce-visualblocks');
-      });
     };
 
     var toggleActiveState = function (editor, enabledState) {
@@ -74,21 +71,20 @@
         };
       };
     };
-    var register$1 = function (editor, enabledState) {
+    var register = function (editor, enabledState) {
+      var onAction = function () {
+        return editor.execCommand('mceVisualBlocks');
+      };
       editor.ui.registry.addToggleButton('visualblocks', {
         icon: 'visualblocks',
         tooltip: 'Show blocks',
-        onAction: function () {
-          return editor.execCommand('mceVisualBlocks');
-        },
+        onAction: onAction,
         onSetup: toggleActiveState(editor, enabledState)
       });
       editor.ui.registry.addToggleMenuItem('visualblocks', {
         text: 'Show blocks',
         icon: 'visualblocks',
-        onAction: function () {
-          return editor.execCommand('mceVisualBlocks');
-        },
+        onAction: onAction,
         onSetup: toggleActiveState(editor, enabledState)
       });
     };
@@ -96,8 +92,8 @@
     function Plugin () {
       global.add('visualblocks', function (editor, pluginUrl) {
         var enabledState = Cell(false);
-        register(editor, pluginUrl, enabledState);
-        register$1(editor, enabledState);
+        register$1(editor, pluginUrl, enabledState);
+        register(editor, enabledState);
         setup(editor, pluginUrl, enabledState);
       });
     }
