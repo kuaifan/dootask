@@ -1,4 +1,5 @@
 import {Store} from 'le5le-store';
+import state from "./state";
 
 export default {
     /**
@@ -371,8 +372,7 @@ export default {
      * @param dispatch
      */
     logout({state, dispatch}) {
-        state.method.clearLocal();
-        dispatch("saveUserInfo", {}).then(() => {
+        dispatch("handleClearCache", {}).then(() => {
             const from = ["/", "/login"].includes(window.location.pathname) ? "" : encodeURIComponent(window.location.href);
             $A.goForward({name: 'login', query: from ? {from: from} : {}}, true);
         });
@@ -382,12 +382,28 @@ export default {
      * 清除缓存
      * @param state
      * @param dispatch
+     * @param userInfo
+     * @returns {Promise<unknown>}
      */
-    clearCache({state, dispatch}) {
-        state.method.clearLocal();
-        state.method.setStorage("clearCache", $A.randomString(6))
-        dispatch("saveUserInfo", state.userInfo);
-        window.location.reload()
+    handleClearCache({state, dispatch}, userInfo) {
+        return new Promise(function (resolve, reject) {
+            try {
+                window.localStorage.clear();
+                //
+                state.cacheUserBasic = [];
+                state.cacheDialogs = state.dialogs = [];
+                state.cacheProjects = state.projects = [];
+                state.cacheColumns = state.columns = [];
+                state.cacheTasks = state.tasks = state.taskSubs = [];
+                //
+                state.method.setStorage("cacheTablePanel", state.cacheTablePanel);
+                dispatch("saveUserInfo", state.method.isJson(userInfo) ? userInfo : state.userInfo);
+                //
+                resolve()
+            } catch (e) {
+                reject(e)
+            }
+        });
     },
 
     /** *****************************************************************************************/

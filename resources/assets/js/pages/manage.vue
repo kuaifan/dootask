@@ -425,7 +425,12 @@ export default {
                     this.archivedProjectShow = true;
                     return;
                 case 'clearCache':
-                    this.$store.dispatch("clearCache");
+                    this.$store.dispatch("handleClearCache", null).then(() => {
+                        this.$store.state.method.setStorage("clearCache", $A.randomString(6))
+                        window.location.reload()
+                    }).catch(() => {
+                        window.location.reload()
+                    });
                     return;
                 case 'signout':
                     $A.modalConfirm({

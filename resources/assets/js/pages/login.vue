@@ -143,9 +143,11 @@ export default {
                 },
             }).then(({data}) => {
                 this.loadIng--;
-                this.$store.state.method.clearLocal();
-                this.$store.dispatch("saveUserInfo", data);
-                this.goNext();
+                this.$store.dispatch("handleClearCache", data).then(() => {
+                    this.goNext();
+                }).catch(() => {
+                    this.goNext();
+                });
             }).catch(({data, msg}) => {
                 this.loadIng--;
                 $A.noticeError(msg);

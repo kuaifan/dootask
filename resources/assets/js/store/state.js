@@ -197,14 +197,6 @@ const method = {
         }
     },
 
-    clearLocal() {
-        try {
-            window.localStorage.clear();
-        } catch (e) {
-            //
-        }
-    },
-
     runNum(str, fixed) {
         let _s = Number(str);
         if (_s + "" === "NaN") {
