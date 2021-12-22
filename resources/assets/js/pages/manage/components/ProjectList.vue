@@ -252,6 +252,21 @@
                 </Row>
                 <TaskRow v-if="tablePanel('showMy')" :list="myList" open-key="my" @command="dropTask" @on-priority="addTaskOpen" fast-add-task/>
             </div>
+            <!--协助的任务-->
+            <div v-if="helpList.length" :class="['project-table-body', !tablePanel('showHelp') ? 'project-table-hide' : '']">
+                <Row class="task-row">
+                    <Col span="12" class="row-title">
+                        <i class="taskfont" @click="$store.dispatch('toggleTablePanel', 'showHelp')">&#xe689;</i>
+                        <div class="row-h1">{{$L('协助的任务')}}</div>
+                        <div class="row-num">({{helpList.length}})</div>
+                    </Col>
+                    <Col span="3"></Col>
+                    <Col span="3"></Col>
+                    <Col span="3"></Col>
+                    <Col span="3"></Col>
+                </Row>
+                <TaskRow v-if="tablePanel('showHelp')" :list="helpList" open-key="help" @command="dropTask" @on-priority="addTaskOpen"/>
+            </div>
             <!--未完成任务-->
             <div v-if="projectData.task_num > 0" :class="['project-table-body', !tablePanel('showUndone') ? 'project-table-hide' : '']">
                 <Row class="task-row">
@@ -512,6 +527,34 @@ export default {
                     }
                 }
                 return task.task_user && task.task_user.find(({userid, owner}) => userid == userId && owner == 1);
+            });
+            return array.sort((a, b) => {
+                if (a.p_level != b.p_level) {
+                    return a.p_level - b.p_level;
+                }
+                let at1 = $A.Date(a.end_at),
+                    at2 = $A.Date(b.end_at);
+                return at1 - at2;
+            });
+        },
+
+        helpList() {
+            const {projectId, tasks, searchText, userId} = this;
+            const array = tasks.filter((task) => {
+                if (task.project_id != projectId) {
+                    return false;
+                }
+                if (!this.tablePanel('completedTask')) {
+                    if (task.complete_at) {
+                        return false;
+                    }
+                }
+                if (searchText) {
+                    if (!$A.strExists(task.name, searchText) && !$A.strExists(task.desc, searchText)) {
+                        return false;
+                    }
+                }
+                return task.task_user && task.task_user.find(({userid, owner}) => userid == userId && owner == 0);
             });
             return array.sort((a, b) => {
                 if (a.p_level != b.p_level) {

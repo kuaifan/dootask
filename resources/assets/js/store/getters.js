@@ -63,6 +63,7 @@ export default {
                     cardInit: false,
                     chat: false,
                     showMy: true,
+                    showHelp: true,
                     showUndone: true,
                     showCompleted: false,
                     completedTask: false,
