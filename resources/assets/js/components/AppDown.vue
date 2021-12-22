@@ -15,6 +15,7 @@ import MarkdownPreview from "./MDEditor/components/preview";
 Vue.component('MarkdownPreview', MarkdownPreview)
 
 import axios from "axios";
+import { Notification } from 'element-ui';
 
 export default {
     name: 'AppDown',
@@ -50,54 +51,50 @@ export default {
                 let latestVersion = $A.leftDelete(data.tag_name.toLowerCase(), "v")
                 if (this.compareVersion(latestVersion, currentVersion) === 1) {
                     // 有新版本
-                    this.$Notice.close("app-down");
-                    this.$nextTick(() => {
-                        this.$Notice.info({
-                            name: "app-down",
-                            title: this.$L("更新提示"),
-                            duration: 0,
-                            onClose: () => {
-                                // 关闭提示后显示更新按钮
-                                this.repoStatus = 2;
-                            },
-                            render: h => {
-                                return h('span', [
-                                    h('span', [
-                                        h('span', this.$L('发现新版本') + ": "),
-                                        h('Tag', {
-                                            props: {
-                                                color: 'volcano'
-                                            }
-                                        }, data.tag_name)
-                                    ]),
-                                    h('MarkdownPreview', {
-                                        class: 'common-app-down-body',
-                                        props: {
-                                            initialValue: data.body
-                                        }
-                                    }),
-                                    h('div', {
-                                        class: 'common-app-down-link',
-                                        on: {
-                                            click: () => {
-                                                this.openExternal(data.html_url);
-                                            }
-                                        },
-                                    }, [
-                                        h('Icon', {
-                                            props: {
-                                                type: 'md-download'
-                                            },
-                                            style: {
-                                                marginRight: '5px'
-                                            }
-                                        }),
-                                        h('span', this.$L('立即升级'))
-                                    ]),
-                                ])
-                            }
-                        });
-                    })
+                    const h = this.$createElement;
+                    window.__appNotification && window.__appNotification.close();
+                    window.__appNotification = Notification({
+                        title: this.$L("更新提示"),
+                        duration: 0,
+                        position: "bottom-right",
+                        onClose: () => {
+                            this.repoStatus = 2;
+                        },
+                        message: h('span', [
+                            h('span', [
+                                h('span', this.$L('发现新版本') + ": "),
+                                h('Tag', {
+                                    props: {
+                                        color: 'volcano'
+                                    }
+                                }, data.tag_name)
+                            ]),
+                            h('MarkdownPreview', {
+                                class: 'common-app-down-body',
+                                props: {
+                                    initialValue: data.body
+                                }
+                            }),
+                            h('div', {
+                                class: 'common-app-down-link',
+                                on: {
+                                    click: () => {
+                                        this.openExternal(data.html_url);
+                                    }
+                                },
+                            }, [
+                                h('Icon', {
+                                    props: {
+                                        type: 'md-download'
+                                    },
+                                    style: {
+                                        marginRight: '5px'
+                                    }
+                                }),
+                                h('span', this.$L('立即升级'))
+                            ]),
+                        ])
+                    });
                 }
             },
             deep: true
