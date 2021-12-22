@@ -59,7 +59,7 @@ export default {
             codeUrl: this.$store.state.method.apiUrl('users/login/codeimg'),
 
             loginType: 'login',
-            email: '',
+            email: this.$store.state.method.getStorageString("cacheLoginEmail") || '',
             password: '',
             password2: '',
             code: '',
@@ -143,6 +143,7 @@ export default {
                 },
             }).then(({data}) => {
                 this.loadIng--;
+                this.$store.state.method.setStorage("cacheLoginEmail", this.email)
                 this.$store.dispatch("handleClearCache", data).then(() => {
                     this.goNext();
                 }).catch(() => {

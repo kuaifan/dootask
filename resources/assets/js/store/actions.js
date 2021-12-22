@@ -388,6 +388,8 @@ export default {
     handleClearCache({state, dispatch}, userInfo) {
         return new Promise(function (resolve, reject) {
             try {
+                const cacheLoginEmail = state.method.getStorageString("cacheLoginEmail");
+                //
                 window.localStorage.clear();
                 //
                 state.cacheUserBasic = [];
@@ -397,6 +399,7 @@ export default {
                 state.cacheTasks = state.tasks = state.taskSubs = [];
                 //
                 state.method.setStorage("cacheTablePanel", state.cacheTablePanel);
+                state.method.setStorage("cacheLoginEmail", cacheLoginEmail);
                 dispatch("saveUserInfo", state.method.isJson(userInfo) ? userInfo : state.userInfo);
                 //
                 resolve()
