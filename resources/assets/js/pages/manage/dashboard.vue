@@ -91,16 +91,16 @@
                 </ul>
             </template>
         </div>
-        <div v-if="downList.length > 0" class="download-app">
-            <Button icon="md-download" type="primary" @click="goDownApp">{{$L('客户端下载')}}</Button>
-        </div>
+        <AppDown/>
     </div>
 </template>
 
 <script>
 import {mapState} from "vuex";
+import AppDown from "../../components/AppDown";
 
 export default {
+    components: {AppDown},
     data() {
         return {
             nowTime: $A.Time(),
@@ -120,9 +120,6 @@ export default {
         this.nowInterval = setInterval(() => {
             this.nowTime = $A.Time();
         }, 1000)
-        if (!this.isElectron) {
-            this.getAppInfo();
-        }
     },
 
     destroyed() {
@@ -214,20 +211,6 @@ export default {
     },
 
     methods: {
-        getAppInfo() {
-            this.$store.dispatch("call", {
-                url: 'system/get/appinfo',
-            }).then(({data}) => {
-                this.downList = data.list;
-            }).catch(() => {
-                this.downList = [];
-            });
-        },
-
-        goDownApp() {
-            this.goForward({path: '/manage/download'});
-        },
-
         getTask() {
             let data = {complete: "no"};
             switch (this.dashboard) {

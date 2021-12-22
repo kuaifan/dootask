@@ -1,0 +1,48 @@
+.common-app-down {
+    position: absolute;
+    bottom: 26px;
+    right: 26px;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+}
+
+.common-app-down-link {
+    display: inline-block;
+    cursor: pointer;
+    line-height: 32px;
+    height: 32px;
+    padding: 0 15px;
+    font-size: 14px;
+    border-radius: 4px;
+    color: #fff;
+    background-color: #8bcf70;
+    border-color: #8bcf70;
+    &:hover {
+        color: #fff;
+        opacity: 0.9;
+    }
+}
+
+.common-app-down-body {
+    max-height: 168px;
+    overflow: auto;
+    margin: 18px 0;
+    .markdown-preview {
+        margin: -20px -12px;
+        h2 {
+            font-size: 18px !important;
+            padding-top: 2px !important;
+        }
+        ul {
+            li {
+                padding: 2px 0 2px 2px !important;
+                &:after {
+                    top: 10px !important;
+                    width: 6px !important;
+                    height: 6px !important;
+                }
+            }
+        }
+    }
+}

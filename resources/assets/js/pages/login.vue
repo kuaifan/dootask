@@ -43,14 +43,14 @@
                 <div class="login-forgot">{{$L('忘记密码了？')}}<a href="javascript:void(0)" @click="forgotPassword">{{$L('重置密码')}}</a></div>
             </div>
         </div>
-        <div v-if="downList.length > 0" class="download-app">
-            <Button icon="md-download" type="primary" to="./download" target="_blank">{{$L('客户端下载')}}</Button>
-        </div>
+        <AppDown/>
     </div>
 </template>
 
 <script>
+import AppDown from "../components/AppDown";
 export default {
+    components: {AppDown},
     data() {
         return {
             loadIng: 0,
@@ -65,15 +65,10 @@ export default {
             code: '',
 
             demoAccount: {},
-
-            downList: [],
         }
     },
     mounted() {
         this.getDemoAccount();
-        if (!this.isElectron) {
-            this.getAppInfo();
-        }
     },
     computed: {
         currentLanguage() {
@@ -92,16 +87,6 @@ export default {
                 }
             }).catch(() => {
                 this.demoAccount = {};
-            });
-        },
-
-        getAppInfo() {
-            this.$store.dispatch("call", {
-                url: 'system/get/appinfo',
-            }).then(({data}) => {
-                this.downList = data.list;
-            }).catch(() => {
-                this.downList = [];
             });
         },
 
