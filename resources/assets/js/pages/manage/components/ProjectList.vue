@@ -232,9 +232,25 @@
                 <Row class="task-row">
                     <Col span="12"># {{$L('任务名称')}}</Col>
                     <Col span="3">{{$L('列表')}}</Col>
-                    <Col span="3">{{$L('优先级')}}</Col>
+                    <Col span="3">
+                        <div class="sort" @click="onSort('level')">
+                            {{$L('优先级')}}
+                            <div class="task-sort">
+                                <Icon :class="{on:sortField=='level' && sortType=='asc'}" type="md-arrow-dropup" />
+                                <Icon :class="{on:sortField=='level' && sortType=='desc'}" type="md-arrow-dropdown" />
+                            </div>
+                        </div>
+                    </Col>
                     <Col span="3">{{$L('负责人')}}</Col>
-                    <Col span="3">{{$L('到期时间')}}</Col>
+                    <Col span="3">
+                        <div class="sort" @click="onSort('end_at')">
+                            {{$L('到期时间')}}
+                            <div class="task-sort">
+                                <Icon :class="{on:sortField=='end_at' && sortType=='asc'}" type="md-arrow-dropup" />
+                                <Icon :class="{on:sortField=='end_at' && sortType=='desc'}" type="md-arrow-dropdown" />
+                            </div>
+                        </div>
+                    </Col>
                 </Row>
             </div>
             <!--我的任务-->
@@ -425,6 +441,9 @@ export default {
 
             completeJust: [],
 
+            sortField: 'end_at',
+            sortType: 'desc',
+
             searchText: '',
 
             addShow: false,
@@ -513,7 +532,7 @@ export default {
         },
 
         myList() {
-            const {projectId, tasks, searchText, userId, completeJust} = this;
+            const {projectId, tasks, searchText, userId, completeJust, sortField, sortType} = this;
             const array = tasks.filter((task) => {
                 if (task.project_id != projectId) {
                     return false;
@@ -531,17 +550,19 @@ export default {
                 return task.task_user && task.task_user.find(({userid, owner}) => userid == userId && owner == 1);
             });
             return array.sort((a, b) => {
-                if (a.p_level != b.p_level) {
-                    return a.p_level - b.p_level;
+                if (sortType == 'asc') {
+                    [a, b] = [b, a];
                 }
-                let at1 = $A.Date(a.end_at),
-                    at2 = $A.Date(b.end_at);
-                return at1 - at2;
+                if (sortField == 'level') {
+                    return a.p_level - b.p_level;
+                } else if (sortField == 'end_at') {
+                    return $A.Date(a.end_at) - $A.Date(b.end_at);
+                }
             });
         },
 
         helpList() {
-            const {projectId, tasks, searchText, userId, completeJust} = this;
+            const {projectId, tasks, searchText, userId, completeJust, sortField, sortType} = this;
             const array = tasks.filter((task) => {
                 if (task.project_id != projectId) {
                     return false;
@@ -559,17 +580,19 @@ export default {
                 return task.task_user && task.task_user.find(({userid, owner}) => userid == userId && owner == 0);
             });
             return array.sort((a, b) => {
-                if (a.p_level != b.p_level) {
-                    return a.p_level - b.p_level;
+                if (sortType == 'asc') {
+                    [a, b] = [b, a];
                 }
-                let at1 = $A.Date(a.end_at),
-                    at2 = $A.Date(b.end_at);
-                return at1 - at2;
+                if (sortField == 'level') {
+                    return a.p_level - b.p_level;
+                } else if (sortField == 'end_at') {
+                    return $A.Date(a.end_at) - $A.Date(b.end_at);
+                }
             });
         },
 
         undoneList() {
-            const {projectId, tasks, searchText, completeJust} = this;
+            const {projectId, tasks, searchText, completeJust, sortField, sortType} = this;
             const array = tasks.filter((task) => {
                 if (task.project_id != projectId) {
                     return false;
@@ -587,12 +610,14 @@ export default {
                 return !task.complete_at || completeJust.find(id => id == task.id);
             });
             return array.sort((a, b) => {
-                if (a.p_level != b.p_level) {
-                    return a.p_level - b.p_level;
+                if (sortType == 'asc') {
+                    [a, b] = [b, a];
                 }
-                let at1 = $A.Date(a.end_at),
-                    at2 = $A.Date(b.end_at);
-                return at1 - at2;
+                if (sortField == 'level') {
+                    return a.p_level - b.p_level;
+                } else if (sortField == 'end_at') {
+                    return $A.Date(a.end_at) - $A.Date(b.end_at);
+                }
             });
         },
 
@@ -929,6 +954,11 @@ export default {
                     });
                 }
             });
+        },
+
+        onSort(field) {
+            this.sortField = field;
+            this.sortType = this.sortType == 'desc' ? 'asc' : 'desc';
         },
 
         onSetting() {
