@@ -797,6 +797,19 @@
     }
 }
 
+.project-list-wait-remove {
+    margin-top: 6px;
+    > li {
+        display: flex;
+        align-items: center;
+        list-style: none;
+        line-height: 26px;
+        &:first-child {
+            font-weight: 600;
+        }
+    }
+}
+
 @media (max-width: 768px) {
     .project-list {
         .project-head {

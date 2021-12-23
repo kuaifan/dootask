@@ -364,6 +364,7 @@
             <div slot="footer">
                 <Button type="default" @click="userShow=false">{{$L('取消')}}</Button>
                 <Poptip
+                    v-if="userWaitRemove.length > 0"
                     confirm
                     placement="bottom"
                     style="margin-left:8px"
@@ -372,9 +373,16 @@
                     <div slot="title">
                         <p><strong>{{$L('移除成员负责的任务将变成无负责人，')}}</strong></p>
                         <p>{{$L('注意此操作不可逆！')}}</p>
+                        <ul class="project-list-wait-remove">
+                            <li>{{$L('即将移除')}}：</li>
+                            <li v-for="id in userWaitRemove" :key="id">
+                                <UserAvatar :userid="id" :size="20" showName tooltipDisabled/>
+                            </li>
+                        </ul>
                     </div>
                     <Button type="primary" :loading="userLoad > 0">{{$L('保存')}}</Button>
                 </Poptip>
+                <Button v-else type="primary" :loading="userLoad > 0" @click="onUser">{{$L('保存')}}</Button>
             </div>
         </Modal>
 
@@ -482,6 +490,12 @@ export default {
         this.projectDialogsubscribe = Store.subscribe('onProjectDialogBack', () => {
             this.$store.dispatch('toggleTablePanel', 'chat');
         });
+        //
+        document.addEventListener('keydown', this.shortcutAdd);
+    },
+
+    beforeDestroy () {
+        document.removeEventListener('keydown', this.shortcutAdd);
     },
 
     destroyed() {
@@ -507,6 +521,20 @@ export default {
         ]),
 
         ...mapGetters(['projectData', 'tablePanel']),
+
+        userWaitRemove() {
+            const {userids, useridbak} = this.userData;
+            if (!userids) {
+                return [];
+            }
+            let wait = [];
+            useridbak.some(id => {
+                if (!userids.includes(id)) {
+                    wait.push(id)
+                }
+            })
+            return wait;
+        },
 
         msgUnread() {
             const {dialogs, projectData} = this;
@@ -1082,7 +1110,9 @@ export default {
                     break;
 
                 case "user":
-                    this.$set(this.userData, 'userids', this.projectData.project_user.map(({userid}) => userid));
+                    const userids = this.projectData.project_user.map(({userid}) => userid);
+                    this.$set(this.userData, 'userids', userids);
+                    this.$set(this.userData, 'useridbak', userids);
                     this.$set(this.userData, 'uncancelable', [this.projectData.owner_userid]);
                     this.userShow = true;
                     break;
@@ -1147,6 +1177,17 @@ export default {
         toggleCompleted() {
             this.$store.dispatch('toggleTablePanel', 'completedTask');
             this.completeJust = [];
+        },
+
+        shortcutAdd(e) {
+            if (this.projectId && this.projectId == this.$route.params.id) {
+                if (e.keyCode === 75 || e.keyCode === 78) {
+                    if (e.metaKey || e.ctrlKey) {
+                        e.preventDefault();
+                        this.addTaskOpen(0);
+                    }
+                }
+            }
         },
 
         formatTime(date) {
