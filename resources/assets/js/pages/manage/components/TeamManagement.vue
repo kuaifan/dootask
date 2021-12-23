@@ -49,14 +49,18 @@
             class="page-container"
             :total="total"
             :current="page"
+            :pageSize="pageSize"
             :disabled="loadIng > 0"
-            simple
+            :simple="windowMax768"
+            showTotal
             @on-change="setPage"
             @on-page-size-change="setPageSize"/>
     </div>
 </template>
 
 <script>
+import {mapState} from "vuex";
+
 export default {
     name: "TeamManagement",
     data() {
@@ -76,6 +80,9 @@ export default {
     },
     mounted() {
         this.getLists();
+    },
+    computed: {
+        ...mapState(['windowMax768'])
     },
     methods: {
         initLanguage() {
