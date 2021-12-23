@@ -52,7 +52,7 @@
             <div v-if="projectData.desc" class="project-subtitle">{{projectData.desc}}</div>
             <div class="project-switch">
                 <div v-if="completedCount > 0" class="project-checkbox">
-                    <Checkbox :value="tablePanel('completedTask')" @on-change="$store.dispatch('toggleTablePanel', 'completedTask')">{{$L('显示已完成')}}</Checkbox>
+                    <Checkbox :value="tablePanel('completedTask')" @on-change="toggleCompleted">{{$L('显示已完成')}}</Checkbox>
                 </div>
                 <div :class="['project-switch-button', !tablePanel('card') ? 'menu' : '']" @click="$store.dispatch('toggleTablePanel', 'card')">
                     <div><i class="taskfont">&#xe60c;</i></div>
@@ -423,6 +423,8 @@ export default {
             columnTopShow: {},
             taskLoad: {},
 
+            completeJust: [],
+
             searchText: '',
 
             addShow: false,
@@ -511,13 +513,13 @@ export default {
         },
 
         myList() {
-            const {projectId, tasks, searchText, userId} = this;
+            const {projectId, tasks, searchText, userId, completeJust} = this;
             const array = tasks.filter((task) => {
                 if (task.project_id != projectId) {
                     return false;
                 }
                 if (!this.tablePanel('completedTask')) {
-                    if (task.complete_at) {
+                    if (task.complete_at && !completeJust.find(id => id == task.id)) {
                         return false;
                     }
                 }
@@ -539,13 +541,13 @@ export default {
         },
 
         helpList() {
-            const {projectId, tasks, searchText, userId} = this;
+            const {projectId, tasks, searchText, userId, completeJust} = this;
             const array = tasks.filter((task) => {
                 if (task.project_id != projectId) {
                     return false;
                 }
                 if (!this.tablePanel('completedTask')) {
-                    if (task.complete_at) {
+                    if (task.complete_at && !completeJust.find(id => id == task.id)) {
                         return false;
                     }
                 }
@@ -567,13 +569,13 @@ export default {
         },
 
         undoneList() {
-            const {projectId, tasks, searchText} = this;
+            const {projectId, tasks, searchText, completeJust} = this;
             const array = tasks.filter((task) => {
                 if (task.project_id != projectId) {
                     return false;
                 }
                 if (!this.tablePanel('completedTask')) {
-                    if (task.complete_at) {
+                    if (task.complete_at && !completeJust.find(id => id == task.id)) {
                         return false;
                     }
                 }
@@ -582,7 +584,7 @@ export default {
                         return false;
                     }
                 }
-                return !task.complete_at;
+                return !task.complete_at || completeJust.find(id => id == task.id);
             });
             return array.sort((a, b) => {
                 if (a.p_level != b.p_level) {
@@ -641,6 +643,9 @@ export default {
     watch: {
         projectData() {
             this.sortData = this.getSort();
+        },
+        '$route'() {
+            this.completeJust = [];
         }
     },
 
@@ -863,6 +868,7 @@ export default {
                     this.updateTask(task, {
                         complete_at: $A.formatDate("Y-m-d H:i:s")
                     })
+                    this.completeJust.push(task.id)
                     break;
 
                 case 'uncomplete':
@@ -1106,6 +1112,11 @@ export default {
             return list.filter(({owner}) => owner == 1).sort((a, b) => {
                 return a.id - b.id;
             });
+        },
+
+        toggleCompleted() {
+            this.$store.dispatch('toggleTablePanel', 'completedTask');
+            this.completeJust = [];
         },
 
         formatTime(date) {
