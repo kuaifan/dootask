@@ -216,9 +216,9 @@ export default {
             state.userToken = userInfo.token;
             state.userIsAdmin = state.method.inArray('admin', userInfo.identity);
             state.method.setStorage("userInfo", state.userInfo);
-            state.projects = [];
             dispatch("getProjects");
             dispatch("getDialogs");
+            dispatch("getDashboardTasks");
             dispatch("websocketConnection");
             resolve()
         });
@@ -697,19 +697,6 @@ export default {
         });
     },
 
-    /**
-     * 获取项目统计
-     * @param state
-     * @param dispatch
-     */
-    getProjectStatistics({state, dispatch}) {
-        dispatch("call", {
-            url: 'project/statistics',
-        }).then(({data}) => {
-            state.projectStatistics = data;
-        });
-    },
-
     /** *****************************************************************************************/
     /** ************************************** 列表 **********************************************/
     /** *****************************************************************************************/
@@ -997,6 +984,52 @@ export default {
                 reject(e)
             });
         });
+    },
+
+    /**
+     * 获取Dashboard相关任务
+     * @param state
+     * @param dispatch
+     */
+    getDashboardTasks({state, dispatch}) {
+        return new Promise(function (resolve, reject) {
+            let loadIng = 2;
+            let error = 0;
+            let call = (err) => {
+                if (err) {
+                    error++;
+                }
+                loadIng--;
+                if (loadIng == 0) {
+                    if (error > 0) {
+                        reject()
+                    } else {
+                        resolve()
+                    }
+                }
+            }
+            //
+            dispatch("getTasks", {
+                complete: "no",
+                time: [
+                    $A.formatDate("Y-m-d 00:00:00"),
+                    $A.formatDate("Y-m-d 23:59:59")
+                ]
+            }).then(() => {
+                call();
+            }).catch(() => {
+                call(true);
+            })
+            //
+            dispatch("getTasks", {
+                complete: "no",
+                time_before: $A.formatDate("Y-m-d H:i:s")
+            }).then(() => {
+                call();
+            }).catch(() => {
+                call(true);
+            })
+        })
     },
 
     /**

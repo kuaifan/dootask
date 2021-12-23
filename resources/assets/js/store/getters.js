@@ -72,5 +72,41 @@ export default {
             }
             return cache && !!cache[key];
         }
+    },
+
+    dashboardData(state) {
+        const todayStart = $A.Date($A.formatDate("Y-m-d 00:00:00")),
+            todayEnd = $A.Date($A.formatDate("Y-m-d 23:59:59")),
+            todayNow = $A.Date($A.formatDate("Y-m-d H:i:s"));
+        const todayTasks = state.tasks.filter(data => {
+            if (data.complete_at) {
+                return false;
+            }
+            if (!data.end_at) {
+                return false;
+            }
+            if (!data.owner) {
+                return false;
+            }
+            const start = $A.Date(data.start_at),
+                end = $A.Date(data.end_at);
+            return (start <= todayStart && todayStart <= end) || (start <= todayEnd && todayEnd <= end) || (start > todayStart && todayEnd > end);
+        })
+        const overdueTasks = state.tasks.filter(data => {
+            if (data.complete_at) {
+                return false;
+            }
+            if (!data.end_at) {
+                return false;
+            }
+            if (!data.owner) {
+                return false;
+            }
+            return $A.Date(data.end_at) <= todayNow;
+        })
+        return {
+            today: todayTasks,
+            overdue: overdueTasks,
+        }
     }
 }

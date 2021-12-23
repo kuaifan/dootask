@@ -25,33 +25,6 @@ use Request;
 class ProjectController extends AbstractController
 {
     /**
-     * 任务统计
-     */
-    public function statistics()
-    {
-        User::auth();
-
-        $data = [];
-
-        // 今日待完成
-        $data['today'] = ProjectTask::authData(null, true)->whereParentId(0)
-            ->whereNull('archived_at')
-            ->whereNull('complete_at')
-            ->betweenTime(Carbon::today()->startOfDay(), Carbon::today()->endOfDay())
-            ->count();
-
-        // 超期未完成
-        $data['overdue'] = ProjectTask::authData(null, true)->whereParentId(0)
-            ->whereNull('archived_at')
-            ->whereNull('complete_at')
-            ->whereNotNull('end_at')
-            ->where('end_at', '<', Carbon::now())
-            ->count();
-
-        return Base::retSuccess('success', $data);
-    }
-
-    /**
      * 获取项目列表
      *
      * @apiParam {String} [all]              是否查看所有项目（限制管理员）

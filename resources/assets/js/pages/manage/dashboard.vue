@@ -8,14 +8,14 @@
                 <li @click="dashboard='today'">
                     <div class="block-title">{{$L('今日待完成')}}</div>
                     <div class="block-data">
-                        <div class="block-num">{{projectStatistics.today || 0}}</div>
+                        <div class="block-num">{{dashboardData.today.length}}</div>
                         <i class="taskfont">&#xe6f4;</i>
                     </div>
                 </li>
                 <li @click="dashboard='overdue'">
                     <div class="block-title">{{$L('超期未完成')}}</div>
                     <div class="block-data">
-                        <div class="block-num">{{projectStatistics.overdue || 0}}</div>
+                        <div class="block-num">{{dashboardData.overdue.length}}</div>
                         <i class="taskfont">&#xe603;</i>
                     </div>
                 </li>
@@ -96,7 +96,7 @@
 </template>
 
 <script>
-import {mapState} from "vuex";
+import {mapGetters, mapState} from "vuex";
 import AppDown from "../../components/AppDown";
 
 export default {
@@ -107,7 +107,6 @@ export default {
             nowInterval: null,
 
             loadIng: 0,
-            active: false,
             dashboard: 'today',
 
             taskLoad: {},
@@ -127,17 +126,13 @@ export default {
     },
 
     activated() {
-        this.getTask();
-        this.active = true;
-        this.$store.dispatch("getProjectStatistics");
-    },
-
-    deactivated() {
-        this.active = false;
+        this.$store.dispatch("getDashboardTasks");
     },
 
     computed: {
-        ...mapState(['userInfo', 'projects', 'projectStatistics', 'tasks', 'taskId']),
+        ...mapState(['userInfo', 'projects', 'tasks', 'taskId']),
+
+        ...mapGetters(['dashboardData']),
 
         title() {
             const {dashboard} = this;
@@ -153,34 +148,17 @@ export default {
 
         list() {
             const {dashboard} = this;
-            const todayStart = $A.Date($A.formatDate("Y-m-d 00:00:00")),
-                todayEnd = $A.Date($A.formatDate("Y-m-d 23:59:59"));
-            let datas = $A.cloneJSON(this.tasks);
-            datas = datas.filter((data) => {
-                if (data.complete_at) {
-                    return false;
-                }
-                if (!data.end_at) {
-                    return false;
-                }
-                if (!data.owner) {
-                    return false;
-                }
-                const start = $A.Date(data.start_at),
-                    end = $A.Date(data.end_at);
-                data._start_time = start;
-                data._end_time = end;
-                switch (dashboard) {
-                    case 'today':
-                        return (start <= todayStart && todayStart <= end) || (start <= todayEnd && todayEnd <= end) || (start > todayStart && todayEnd > end);
-                    case 'overdue':
-                        return end <= todayStart;
-                    default:
-                        return false;
-                }
-            })
-            return datas.sort((a, b) => {
-                return a._end_time - b._end_time;
+            let data = [];
+            switch (dashboard) {
+                case 'today':
+                    data = this.dashboardData.today;
+                    break
+                case 'overdue':
+                    data = this.dashboardData.overdue;
+                    break
+            }
+            return data.sort((a, b) => {
+                return $A.Date(a.end_at) - $A.Date(b.end_at);
             });
         },
 
@@ -198,43 +176,7 @@ export default {
         },
     },
 
-    watch: {
-        dashboard() {
-            this.getTask();
-        },
-
-        taskId(id) {
-            if (id == 0 && this.active) {
-                this.$store.dispatch("getProjectStatistics");
-            }
-        }
-    },
-
     methods: {
-        getTask() {
-            let data = {complete: "no"};
-            switch (this.dashboard) {
-                case 'today':
-                    data.time = [
-                        $A.formatDate("Y-m-d 00:00:00"),
-                        $A.formatDate("Y-m-d 23:59:59")
-                    ]
-                    break;
-                case 'overdue':
-                    data.time_before = $A.formatDate("Y-m-d 00:00:00")
-                    break;
-                default:
-                    return;
-            }
-            //
-            this.loadIng++;
-            this.$store.dispatch("getTasks", data).then(() => {
-                this.loadIng--;
-            }).catch(() => {
-                this.loadIng--;
-            })
-        },
-
         dropTask(task, command) {
             switch (command) {
                 case 'complete':
@@ -275,7 +217,6 @@ export default {
                 task_id: task.id,
             })).then(() => {
                 this.$set(this.taskLoad, task.id, false);
-                this.$store.dispatch("getProjectStatistics");
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.$set(this.taskLoad, task.id, false);
@@ -301,7 +242,6 @@ export default {
                         $A.messageSuccess(msg);
                         this.$Modal.remove();
                         this.$set(this.taskLoad, task.id, false);
-                        this.$store.dispatch("getProjectStatistics");
                     }).catch(({msg}) => {
                         $A.modalError(msg, 301);
                         this.$Modal.remove();

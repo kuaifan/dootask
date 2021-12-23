@@ -304,7 +304,6 @@ state.projectId = 0;
 state.projects = [];
 state.projectTotal = 0;
 state.projectLoad = 0;
-state.projectStatistics = {};
 state.columns = [];
 state.taskId = 0;
 state.tasks = [];
