@@ -584,7 +584,10 @@ export default {
                 if (sortField == 'level') {
                     return a.p_level - b.p_level;
                 } else if (sortField == 'end_at') {
-                    return $A.Date(a.end_at) - $A.Date(b.end_at);
+                    if (a.end_at == b.end_at) {
+                        return a.p_level - b.p_level;
+                    }
+                    return $A.Date(a.end_at || "2099-12-31 23:59:59") - $A.Date(b.end_at || "2099-12-31 23:59:59");
                 }
             });
         },
@@ -614,7 +617,10 @@ export default {
                 if (sortField == 'level') {
                     return a.p_level - b.p_level;
                 } else if (sortField == 'end_at') {
-                    return $A.Date(a.end_at) - $A.Date(b.end_at);
+                    if (a.end_at == b.end_at) {
+                        return a.p_level - b.p_level;
+                    }
+                    return $A.Date(a.end_at || "2099-12-31 23:59:59") - $A.Date(b.end_at || "2099-12-31 23:59:59");
                 }
             });
         },
@@ -644,7 +650,10 @@ export default {
                 if (sortField == 'level') {
                     return a.p_level - b.p_level;
                 } else if (sortField == 'end_at') {
-                    return $A.Date(a.end_at) - $A.Date(b.end_at);
+                    if (a.end_at == b.end_at) {
+                        return a.p_level - b.p_level;
+                    }
+                    return $A.Date(a.end_at || "2099-12-31 23:59:59") - $A.Date(b.end_at || "2099-12-31 23:59:59");
                 }
             });
         },

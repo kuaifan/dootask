@@ -698,8 +698,10 @@
                         > ul {
                             height: 32px;
                             overflow: hidden;
-                            text-overflow:ellipsis;
+                            text-overflow: ellipsis;
                             white-space: nowrap;
+                            display: flex;
+                            align-items: center;
                             > li {
                                 list-style: none;
                                 display: inline-block;
