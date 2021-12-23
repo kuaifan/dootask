@@ -10,154 +10,182 @@
 </template>
 
 <script>
-    import Spinner from "./components/Spinner";
-    export default {
-        components: {Spinner},
-        data () {
-            return {
-                transitionName: null,
+import Spinner from "./components/Spinner";
+import {mapState} from "vuex";
+
+export default {
+    components: {Spinner},
+
+    data() {
+        return {
+            transitionName: null,
+        }
+    },
+
+    created() {
+        this.electronEvents();
+    },
+
+    mounted() {
+        let hash = window.location.hash;
+        if (hash.indexOf("#") === 0) {
+            hash = hash.substr(1);
+            if (hash) {
+                this.$nextTick(() => {
+                    hash = $A.removeURLParameter(hash, 'token');
+                    this.goForward({path: hash});
+                });
             }
-        },
-        mounted() {
-            let hash = window.location.hash;
-            if (hash.indexOf("#") === 0) {
-                hash = hash.substr(1);
-                if (hash) {
-                    this.$nextTick(() => {
-                        hash = $A.removeURLParameter(hash, 'token');
-                        this.goForward({path: hash});
-                    });
-                }
+        }
+        this.sessionStorage('/', 1);
+        let pathname = window.location.pathname;
+        if (pathname && this.sessionStorage(pathname) === 0) {
+            this.sessionStorage(pathname, this.sessionStorage('::count') + 1);
+        }
+        //
+        setInterval(this.searchEnter, 1000);
+        //
+        window.addEventListener('resize', this.windowMax768Listener);
+    },
+
+    beforeDestroy() {
+        window.removeEventListener('resize', this.windowMax768Listener);
+    },
+
+    computed: {
+        ...mapState(['taskId']),
+    },
+
+    watch: {
+        '$route'(To, From) {
+            if (this.transitionName === null) {
+                this.transitionName = 'app-slide-no';
+                return;
             }
-            this.sessionStorage('/', 1);
-            let pathname = window.location.pathname;
-            if (pathname && this.sessionStorage(pathname) === 0) {
-                this.sessionStorage(pathname, this.sessionStorage('::count') + 1);
+            if (typeof To.name === 'undefined' || typeof From.name === 'undefined') {
+                return;
+            }
+            this.slideType(To, From);
+        }
+    },
+
+    methods: {
+        slideType(To, From) {
+            let isBack = this.$router.isBack;
+            this.$router.isBack = false;
+            //
+            let ToIndex = this.sessionStorage(To.path);
+            let FromIndex = this.sessionStorage(From.path);
+            if (ToIndex && ToIndex < FromIndex) {
+                isBack = true;      //后退
+                this.sessionStorage(true, ToIndex);
+            } else {
+                isBack = false;     //前进
+                this.sessionStorage(To.path, this.sessionStorage('::count') + 1);
             }
             //
-            setInterval(this.searchEnter, 1000);
-            //
-            window.addEventListener('resize', this.windowMax768Listener);
-        },
-        beforeDestroy() {
-            window.removeEventListener('resize', this.windowMax768Listener);
-        },
-        watch: {
-            '$route' (To, From) {
-                if (this.transitionName === null) {
-                    this.transitionName = 'app-slide-no';
-                    return;
+            if (To.meta.slide === false || From.meta.slide === false) {
+                //取消动画
+                this.transitionName = 'app-slide-no'
+            } else if (To.meta.slide === 'up' || From.meta.slide === 'up' || To.meta.slide === 'down' || From.meta.slide === 'down') {
+                //上下动画
+                if (isBack) {
+                    this.transitionName = 'app-slide-down'
+                } else {
+                    this.transitionName = 'app-slide-up'
                 }
-                if (typeof To.name === 'undefined' || typeof From.name === 'undefined') {
-                    return;
+            } else {
+                //左右动画（默认）
+                if (isBack) {
+                    this.transitionName = 'app-slide-right'
+                } else {
+                    this.transitionName = 'app-slide-left'
                 }
-                this.slideType(To, From);
             }
         },
-        methods: {
-            slideType(To, From) {
-                let isBack = this.$router.isBack;
-                this.$router.isBack = false;
-                //
-                let ToIndex = this.sessionStorage(To.path);
-                let FromIndex = this.sessionStorage(From.path);
-                if (ToIndex && ToIndex < FromIndex) {
-                    isBack = true;      //后退
-                    this.sessionStorage(true, ToIndex);
-                }else{
-                    isBack = false;     //前进
-                    this.sessionStorage(To.path, this.sessionStorage('::count') + 1);
-                }
-                //
-                if (To.meta.slide === false || From.meta.slide === false)
-                {
-                    //取消动画
-                    this.transitionName = 'app-slide-no'
-                }
-                else if (To.meta.slide === 'up' || From.meta.slide === 'up' || To.meta.slide === 'down' || From.meta.slide === 'down')
-                {
-                    //上下动画
-                    if (isBack) {
-                        this.transitionName = 'app-slide-down'
-                    } else {
-                        this.transitionName = 'app-slide-up'
-                    }
-                }
-                else
-                {
-                    //左右动画（默认）
-                    if (isBack) {
-                        this.transitionName = 'app-slide-right'
-                    } else {
-                        this.transitionName = 'app-slide-left'
-                    }
-                }
-            },
-            sessionStorage(path, num) {
-                let conut = 0;
-                let history = JSON.parse(window.sessionStorage['__history__'] || '{}');
-                if (path === true) {
-                    let items = {};
-                    for(let i in history){
-                        if (history.hasOwnProperty(i)) {
-                            if (parseInt(history[i]) <= num) {
-                                items[i] = history[i];
-                                conut++;
-                            }
+
+        sessionStorage(path, num) {
+            let conut = 0;
+            let history = JSON.parse(window.sessionStorage['__history__'] || '{}');
+            if (path === true) {
+                let items = {};
+                for (let i in history) {
+                    if (history.hasOwnProperty(i)) {
+                        if (parseInt(history[i]) <= num) {
+                            items[i] = history[i];
+                            conut++;
                         }
                     }
-                    history = items;
-                    history['::count'] = Math.max(num, conut);
-                    window.sessionStorage['__history__'] = JSON.stringify(history);
-                    return history;
                 }
-                if (typeof num === 'undefined') {
-                    return parseInt(history[path] || 0);
-                }
-                if (path === "/") num = 1;
-                history[path] = num;
-                for(let key in history){ if (history.hasOwnProperty(key) && key !== '::count') { conut++; } }
+                history = items;
                 history['::count'] = Math.max(num, conut);
                 window.sessionStorage['__history__'] = JSON.stringify(history);
-            },
+                return history;
+            }
+            if (typeof num === 'undefined') {
+                return parseInt(history[path] || 0);
+            }
+            if (path === "/") num = 1;
+            history[path] = num;
+            for (let key in history) {
+                if (history.hasOwnProperty(key) && key !== '::count') {
+                    conut++;
+                }
+            }
+            history['::count'] = Math.max(num, conut);
+            window.sessionStorage['__history__'] = JSON.stringify(history);
+        },
 
-            searchEnter() {
-                let row = $A(".sreachBox");
-                if (row.length === 0) {
-                    return;
+        searchEnter() {
+            let row = $A(".sreachBox");
+            if (row.length === 0) {
+                return;
+            }
+            if (row.attr("data-enter-init") === "init") {
+                return;
+            }
+            row.attr("data-enter-init", "init");
+            //
+            let buttons = row.find("button[type='button']");
+            let button = null;
+            if (buttons.length === 0) {
+                return;
+            }
+            buttons.each((index, item) => {
+                if ($A(item).text().indexOf("搜索")) {
+                    button = $A(item);
                 }
-                if (row.attr("data-enter-init") === "init") {
-                    return;
-                }
-                row.attr("data-enter-init", "init");
-                //
-                let buttons = row.find("button[type='button']");
-                let button = null;
-                if (buttons.length === 0) {
-                    return;
-                }
-                buttons.each((index, item) => {
-                    if ($A(item).text().indexOf("搜索")) {
-                        button = $A(item);
+            });
+            if (button === null) {
+                return;
+            }
+            row.find("input.ivu-input").keydown(function (e) {
+                if (e.keyCode == 13) {
+                    if (!button.hasClass("ivu-btn-loading")) {
+                        button.click();
                     }
-                });
-                if (button === null) {
-                    return;
                 }
-                row.find("input.ivu-input").keydown(function(e) {
-                    if (e.keyCode == 13) {
-                        if (!button.hasClass("ivu-btn-loading") ) {
-                            button.click();
-                        }
-                    }
-                });
-            },
+            });
+        },
 
-            windowMax768Listener() {
-                this.$store.state.windowMax768 = window.innerWidth <= 768
-            },
+        windowMax768Listener() {
+            this.$store.state.windowMax768 = window.innerWidth <= 768
+        },
+
+        electronEvents() {
+            if (!this.isElectron) {
+                return;
+            }
+            const {ipcRenderer} = this.$electron;
+            ipcRenderer.on('windowClose', () => {
+                if (this.$Modal.removeLast()) {
+                    return;
+                }
+                ipcRenderer.send('windowHidden');
+            })
         }
     }
+}
 </script>
 
 <style lang="scss" scoped>

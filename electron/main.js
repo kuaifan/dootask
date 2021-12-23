@@ -3,6 +3,7 @@ const path = require('path')
 const XLSX = require('xlsx');
 const {app, BrowserWindow, ipcMain, dialog} = require('electron')
 
+let mainWindow = null;
 let willQuitApp = false,
     devloadCachePath = path.resolve(__dirname, ".devload"),
     devloadUrl = "";
@@ -29,7 +30,7 @@ function runNum(str, fixed) {
 }
 
 function createWindow() {
-    const mainWindow = new BrowserWindow({
+    mainWindow = new BrowserWindow({
         width: 1280,
         height: 800,
         webPreferences: {
@@ -52,7 +53,7 @@ function createWindow() {
     mainWindow.on('close', function (e) {
         if (!willQuitApp) {
             e.preventDefault();
-            app.hide();
+            mainWindow.webContents.send("windowClose", {})
         }
     })
 }
@@ -71,7 +72,7 @@ app.on('window-all-closed', function () {
 
 app.on('before-quit', () => {
     willQuitApp = true
-});
+})
 
 ipcMain.on('setDockBadge', (event, arg) => {
     if (runNum(arg) > 0) {
@@ -79,6 +80,22 @@ ipcMain.on('setDockBadge', (event, arg) => {
     } else {
         app.dock.setBadge("")
     }
+})
+
+ipcMain.on('windowMax', function () {
+    if (mainWindow.isMaximized()) {
+        mainWindow.restore();
+    } else {
+        mainWindow.maximize();
+    }
+})
+
+ipcMain.on('windowHidden', () => {
+    app.hide();
+})
+
+ipcMain.on('windowClose', () => {
+    mainWindow.close()
 });
 
 ipcMain.on('saveSheet', (event, data, filename, opts) => {
@@ -93,4 +110,4 @@ ipcMain.on('saveSheet', (event, data, filename, opts) => {
     }).then(o => {
         XLSX.writeFile(data, o.filePath, opts);
     });
-});
+})
