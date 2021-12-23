@@ -3,8 +3,9 @@ const path = require('path')
 const XLSX = require('xlsx');
 const {app, BrowserWindow, ipcMain, dialog} = require('electron')
 
-let mainWindow = null;
-let willQuitApp = false,
+let mainWindow = null,
+    willQuitApp = false,
+    inheritClose = false,
     devloadCachePath = path.resolve(__dirname, ".devload"),
     devloadUrl = "";
 if (fs.existsSync(devloadCachePath)) {
@@ -53,7 +54,11 @@ function createWindow() {
     mainWindow.on('close', function (e) {
         if (!willQuitApp) {
             e.preventDefault();
-            mainWindow.webContents.send("windowClose", {})
+            if (inheritClose) {
+                mainWindow.webContents.send("windowClose", {})
+            } else {
+                app.hide();
+            }
         }
     })
 }
@@ -74,12 +79,16 @@ app.on('before-quit', () => {
     willQuitApp = true
 })
 
-ipcMain.on('setDockBadge', (event, arg) => {
-    if (runNum(arg) > 0) {
-        app.dock.setBadge(String(arg))
-    } else {
-        app.dock.setBadge("")
-    }
+ipcMain.on('inheritClose', () => {
+    inheritClose = true
+})
+
+ipcMain.on('windowHidden', () => {
+    app.hide();
+})
+
+ipcMain.on('windowClose', () => {
+    mainWindow.close()
 })
 
 ipcMain.on('windowMax', function () {
@@ -90,13 +99,13 @@ ipcMain.on('windowMax', function () {
     }
 })
 
-ipcMain.on('windowHidden', () => {
-    app.hide();
+ipcMain.on('setDockBadge', (event, arg) => {
+    if (runNum(arg) > 0) {
+        app.dock.setBadge(String(arg))
+    } else {
+        app.dock.setBadge("")
+    }
 })
-
-ipcMain.on('windowClose', () => {
-    mainWindow.close()
-});
 
 ipcMain.on('saveSheet', (event, data, filename, opts) => {
     const EXTENSIONS = "xls|xlsx|xlsm|xlsb|xml|csv|txt|dif|sylk|slk|prn|ods|fods|htm|html".split("|");

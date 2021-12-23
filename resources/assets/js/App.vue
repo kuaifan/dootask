@@ -177,6 +177,7 @@ export default {
                 return;
             }
             const {ipcRenderer} = this.$electron;
+            ipcRenderer.send('inheritClose');
             ipcRenderer.on('windowClose', () => {
                 if (this.$Modal.removeLast()) {
                     return;
