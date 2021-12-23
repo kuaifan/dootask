@@ -53,7 +53,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['taskId']),
+        ...mapState(['taskId', 'cacheDrawerOverlay']),
     },
 
     watch: {
@@ -179,6 +179,10 @@ export default {
             const {ipcRenderer} = this.$electron;
             ipcRenderer.on('windowClose', () => {
                 if (this.$Modal.removeLast()) {
+                    return;
+                }
+                if (this.cacheDrawerOverlay.length > 0) {
+                    this.cacheDrawerOverlay[this.cacheDrawerOverlay.length - 1].close();
                     return;
                 }
                 ipcRenderer.send('windowHidden');

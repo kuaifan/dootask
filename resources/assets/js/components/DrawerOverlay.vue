@@ -15,6 +15,8 @@
 </template>
 
 <script>
+    import state from "../store/state";
+
     export default {
         name: 'DrawerOverlay',
         props: {
@@ -69,6 +71,23 @@
                     return {
                         width: "100%",
                         height: size,
+                    }
+                }
+            }
+        },
+
+        watch: {
+            value(val) {
+                if (this._uid) {
+                    const index =  this.$store.state.cacheDrawerOverlay.findIndex(({_uid}) => _uid === this._uid);
+                    if (val && index === -1) {
+                        this.$store.state.cacheDrawerOverlay.push({
+                            _uid: this._uid,
+                            close: this.close
+                        });
+                    }
+                    if (!val && index > -1) {
+                        this.$store.state.cacheDrawerOverlay.splice(index, 1);
                     }
                 }
             }
