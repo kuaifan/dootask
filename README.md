@@ -98,3 +98,7 @@ git pull
 # Enter directory and run command
 ./cmd uninstall
 ```
+
+## Contact us
+
+QQ Group: 546574618
