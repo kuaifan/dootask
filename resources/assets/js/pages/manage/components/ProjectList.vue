@@ -172,7 +172,7 @@
                                         </EDropdown>
                                     </div>
                                 </div>
-                                <div v-if="item.desc" class="task-desc" v-html="item.desc"></div>
+                                <div v-if="item.desc" class="task-desc"><pre v-html="item.desc"></pre></div>
                                 <div v-if="item.task_tag.length > 0" class="task-tags">
                                     <Tag v-for="(tag, keyt) in item.task_tag" :key="keyt" :color="tag.color">{{tag.name}}</Tag>
                                 </div>

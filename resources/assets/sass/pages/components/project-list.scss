@@ -359,10 +359,13 @@
                             }
                         }
                         .task-desc {
-                            color: #999999;
-                            margin-top: 10px;
-                            line-height: 20px;
-                            word-break: break-all;
+                            > pre {
+                                color: #999999;
+                                padding: 0;
+                                margin: 10px 0 0 0;
+                                line-height: 20px;
+                                word-break: break-all;
+                            }
                         }
                         .task-tags {
                             margin-top: 10px;

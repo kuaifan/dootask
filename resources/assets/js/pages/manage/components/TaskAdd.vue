@@ -1,25 +1,27 @@
 <template>
     <div class="task-add">
-        <Form class="task-add-form" label-position="top" @submit.native.prevent>
-            <FormItem :label="$L('任务描述')">
+        <div class="task-add-form">
+            <div class="title">
                 <Input
                     v-model="addData.name"
                     ref="input"
                     type="textarea"
                     :rows="1"
-                    :autosize="{ minRows: 1, maxRows: 3 }"
+                    :autosize="{ minRows: 1, maxRows: 8 }"
                     :maxlength="255"
-                    :placeholder="$L('必填')"
+                    :placeholder="$L('任务描述')"
                     @on-keydown="onKeydown"/>
-            </FormItem>
-            <FormItem :label="$L('任务详情')">
+            </div>
+            <div class="desc">
                 <TEditor
                     v-model="addData.content"
                     :plugins="taskPlugins"
                     :options="taskOptions"
                     :option-full="taskOptionFull"
-                    :placeholder="$L('选填...')"/>
-            </FormItem>
+                    :placeholder="$L('详细描述，选填...（点击右键使用工具栏）')"
+                    :placeholderFull="$L('详细描述...')"
+                    inline/>
+            </div>
             <div class="advanced-option">
                 <Button :class="{advanced: advanced}" @click="advanced=!advanced">{{$L('高级选项')}}</Button>
                 <ul class="advanced-priority">
@@ -34,7 +36,7 @@
                     </li>
                 </ul>
             </div>
-        </Form>
+        </div>
         <Form v-if="advanced" class="task-add-advanced" label-width="auto" @submit.native.prevent>
             <FormItem :label="$L('任务列表')">
                 <Select
@@ -141,28 +143,25 @@ export default {
             columnAdd: [],
 
             taskPlugins: [
-                'advlist autolink lists link image charmap print preview hr anchor pagebreak imagetools',
+                'advlist autolink lists link image charmap print preview hr anchor pagebreak',
                 'searchreplace visualblocks visualchars code',
                 'insertdatetime media nonbreaking save table directionality',
-                'emoticons paste imagetools codesample',
+                'emoticons paste codesample',
                 'autoresize'
             ],
             taskOptions: {
                 statusbar: false,
                 menubar: false,
-                forced_root_block : false,
-                remove_trailing_brs: false,
                 autoresize_bottom_margin: 2,
                 min_height: 200,
                 max_height: 380,
-                valid_elements : 'a[href|target=_blank],em,strong/b,div[align],span[style],a,br,img[src|alt|witdh|height],pre[class],code',
-                toolbar: 'uploadImages | uploadFiles | bold italic underline forecolor backcolor | codesample | preview screenload'
+                contextmenu: 'bold italic underline forecolor backcolor | codesample | uploadImages uploadFiles | preview screenload',
+                valid_elements : 'a[href|target=_blank],em,strong/b,div[align],span[style],a,br,p,img[src|alt|witdh|height],pre[class],code',
+                toolbar: false
             },
             taskOptionFull: {
                 menubar: 'file edit view',
-                forced_root_block : false,
-                remove_trailing_brs: false,
-                valid_elements : 'a[href|target=_blank],em,strong/b,div[align],span[style],a,br,img[src|alt|witdh|height],pre[class],code',
+                valid_elements : 'a[href|target=_blank],em,strong/b,div[align],span[style],a,br,p,img[src|alt|witdh|height],pre[class],code',
                 toolbar: 'uploadImages | uploadFiles | bold italic underline forecolor backcolor | codesample | preview screenload'
             },
 
@@ -170,6 +169,9 @@ export default {
                 shortcuts: []
             },
         }
+    },
+    mounted() {
+        this.$refs.input.focus();
     },
     computed: {
         ...mapState(['userId', 'projectId', 'columns', 'taskPriority']),
@@ -301,6 +303,7 @@ export default {
                         content: "",
                         subtasks: [],
                     });
+                    this.$refs.input.focus();
                 } else {
                     this.addData = {
                         name: "",

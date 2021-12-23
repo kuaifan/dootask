@@ -85,10 +85,10 @@
                 type: Array,
                 default: () => {
                     return [
-                        'advlist autolink lists link image charmap print preview hr anchor pagebreak imagetools',
+                        'advlist autolink lists link image charmap print preview hr anchor pagebreak',
                         'searchreplace visualblocks visualchars code',
-                        'insertdatetime media nonbreaking save table contextmenu directionality',
-                        'emoticons paste textcolor colorpicker imagetools codesample'
+                        'insertdatetime media nonbreaking save table directionality',
+                        'emoticons paste codesample'
                     ];
                 }
             },
@@ -117,6 +117,10 @@
                 default: false
             },
             placeholder: {
+                type: String,
+                default: ''
+            },
+            placeholderFull: {
                 type: String,
                 default: ''
             },
@@ -216,7 +220,7 @@
                     language: "zh_CN",
                     toolbar: this.toolbar,
                     plugins: this.plugin(isFull),
-                    placeholder: this.placeholder,
+                    placeholder: isFull && this.placeholderFull ? this.placeholderFull : this.placeholder,
                     save_onsavecallback: (e) => {
                         this.$emit('editorSave', e);
                     },
@@ -247,7 +251,6 @@
                     resize: !isFull,
                     convert_urls:false,
                     toolbar_mode: 'sliding',
-                    toolbar_drawer: 'floating',
                     setup: (editor) => {
                         editor.ui.registry.addMenuButton('uploadImages', {
                             text: this.$L('图片'),

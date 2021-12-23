@@ -456,28 +456,25 @@ export default {
             sendLoad: false,
 
             taskPlugins: [
-                'advlist autolink lists link image charmap print preview hr anchor pagebreak imagetools',
+                'advlist autolink lists link image charmap print preview hr anchor pagebreak',
                 'searchreplace visualblocks visualchars code',
                 'insertdatetime media nonbreaking save table directionality',
-                'emoticons paste imagetools codesample',
+                'emoticons paste codesample',
                 'autoresize'
             ],
             taskOptions: {
                 statusbar: false,
                 menubar: false,
-                forced_root_block : false,
-                remove_trailing_brs: false,
                 autoresize_bottom_margin: 2,
                 min_height: 200,
                 max_height: 380,
-                valid_elements : 'a[href|target=_blank],em,strong/b,div[align],span[style],a,br,img[src|alt|witdh|height],pre[class],code',
-                toolbar: 'uploadImages | uploadFiles | bold italic underline forecolor backcolor | codesample | preview screenload'
+                contextmenu: 'bold italic underline forecolor backcolor | codesample | uploadImages uploadFiles | preview screenload',
+                valid_elements : 'a[href|target=_blank],em,strong/b,div[align],span[style],a,br,p,img[src|alt|witdh|height],pre[class],code',
+                toolbar: false
             },
             taskOptionFull: {
                 menubar: 'file edit view',
-                forced_root_block : false,
-                remove_trailing_brs: false,
-                valid_elements : 'a[href|target=_blank],em,strong/b,div[align],span[style],a,br,img[src|alt|witdh|height],pre[class],code',
+                valid_elements : 'a[href|target=_blank],em,strong/b,div[align],span[style],a,br,p,img[src|alt|witdh|height],pre[class],code',
                 toolbar: 'uploadImages | uploadFiles | bold italic underline forecolor backcolor | codesample | preview screenload'
             },
         }

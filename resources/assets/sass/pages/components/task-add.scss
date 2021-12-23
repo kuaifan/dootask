@@ -1,36 +1,38 @@
 .task-add {
+    margin-bottom: 6px;
     .task-add-form,
     .task-add-advanced {
-        margin: 0 0 -18px;
-        .ivu-form-item-label {
-            font-weight: 600;
+        .title {
+            .ivu-input {
+                font-weight: 500;
+                font-size: 24px;
+                padding: 4px 0;
+                line-height: 1.4;
+                resize: none;
+                border-color: transparent;
+                &:focus {
+                    box-shadow: none
+                }
+            }
         }
-        .teditor-box {
-            .tox-tinymce {
-                border-color: #e8e8e8;
+        .desc {
+            margin-top: 24px;
+            div[contenteditable="true"] {
+                outline: none
             }
-            .tox .tox-statusbar,
-            .tox .tox-menubar+.tox-toolbar,
-            .tox .tox-menubar+.tox-toolbar-overlord .tox-toolbar__primary,
-            .tox:not([dir=rtl]) .tox-toolbar__group:not(:last-of-type) {
-                border-color: #e8e8e8;
-            }
-            .tox .tox-toolbar,
-            .tox .tox-toolbar__overflow,
-            .tox .tox-toolbar__primary {
-                background-image: none;
-                border-bottom: 1px solid #e8e8e8;
+            .mce-content-body[data-mce-placeholder]:not(.mce-visualblocks)::before {
+                color: #bbbbbb;
             }
         }
         .advanced-option {
-            margin-top: -6px;
+            margin-top: 24px;
             z-index: 1;
             display: flex;
             align-items: center;
             > button {
                 transition: margin 0.2s;
                 &.advanced {
-                    margin-left: 22px;
+                    margin-left: 24px;
                 }
                 &:focus {
                     box-shadow: none;
@@ -53,7 +55,7 @@
         }
     }
     .task-add-advanced {
-        margin: 1px 0 0;
+        margin: -16px 0 0;
         padding: 34px 32px 6px;
         border-radius: 8px;
         border: 1px solid #e8e8e8;
