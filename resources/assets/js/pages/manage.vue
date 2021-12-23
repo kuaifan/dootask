@@ -40,11 +40,7 @@
                 <li @click="toggleRoute('dashboard')" :class="classNameRoute('dashboard')">
                     <i class="taskfont">&#xe6fb;</i>
                     <div class="menu-title">{{$L('仪表盘')}}</div>
-                    <Badge
-                        v-if="dashboardData.today.length > 0 || dashboardData.overdue.length > 0"
-                        class="menu-badge"
-                        :type="dashboardData.overdue.length > 0 ? 'error' : 'primary'"
-                        :count="dashboardData.today.length + dashboardData.overdue.length"></Badge>
+                    <Badge class="menu-badge" :type="dashboardData.overdue.length > 0 ? 'error' : 'primary'" :count="dashboardTotal"></Badge>
                 </li>
                 <li @click="toggleRoute('calendar')" :class="classNameRoute('calendar')">
                     <i class="taskfont">&#xe6f5;</i>
@@ -266,6 +262,10 @@ export default {
             return num;
         },
 
+        dashboardTotal() {
+            return this.dashboardData.today.length + this.dashboardData.overdue.length
+        },
+
         currentLanguage() {
             return this.languageList[this.languageType] || 'Language'
         },
@@ -316,12 +316,20 @@ export default {
         },
 
         taskId(id) {
-            id > 0 && this.$Modal.resetIndex();
+            if (id > 0) {
+                this.$Modal.resetIndex();
+            }
         },
 
-        msgAllUnread(val) {
+        msgAllUnread() {
             if (this.isElectron) {
-                this.$electron.ipcRenderer.send('setDockBadge', val);
+                this.$electron.ipcRenderer.send('setDockBadge', this.msgAllUnread + this.dashboardTotal);
+            }
+        },
+
+        dashboardTotal() {
+            if (this.isElectron) {
+                this.$electron.ipcRenderer.send('setDockBadge', this.msgAllUnread + this.dashboardTotal);
             }
         },
 
