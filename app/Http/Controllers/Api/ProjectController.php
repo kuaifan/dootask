@@ -666,7 +666,7 @@ class ProjectController extends AbstractController
         }
         //
         $task = ProjectTask::userTask($file->task_id, [], true, $project);
-        if (!$task->owner && !$project->owner) {
+        if (!$task->isOwnerParent() && !$project->owner) {
             return Base::retError('仅限项目或任务负责人操作');
         }
         //
@@ -751,7 +751,7 @@ class ProjectController extends AbstractController
         $name = Request::input('name');
         //
         $task = ProjectTask::userTask($task_id, [], true, $project);
-        if (!$task->owner && !$project->owner) {
+        if (!$task->isOwnerParent() && !$project->owner) {
             return Base::retError('仅限项目或任务负责人添加');
         }
         //
@@ -795,7 +795,7 @@ class ProjectController extends AbstractController
         $task_id = intval($data['task_id']);
         //
         $task = ProjectTask::userTask($task_id, [], true, $project);
-        if (!$task->owner && !$project->owner) {
+        if (!$task->isOwnerParent() && !$project->owner) {
             return Base::retError('仅限项目或任务负责人修改');
         }
         //
@@ -841,7 +841,7 @@ class ProjectController extends AbstractController
         $task_id = Base::getPostInt('task_id');
         //
         $task = ProjectTask::userTask($task_id, [], true, $project);
-        if (!$task->owner && !$project->owner) {
+        if (!$task->isOwnerParent() && !$project->owner) {
             return Base::retError('仅限项目或任务负责人上传');
         }
         //
@@ -940,7 +940,7 @@ class ProjectController extends AbstractController
         $type = Request::input('type', 'add');
         //
         $task = ProjectTask::userTask($task_id, [], false, $project);
-        if (!$task->owner && !$project->owner) {
+        if (!$task->isOwnerParent() && !$project->owner) {
             return Base::retError('仅限项目或任务负责人操作');
         }
         //
@@ -968,7 +968,7 @@ class ProjectController extends AbstractController
         $task_id = intval(Request::input('task_id'));
         //
         $task = ProjectTask::userTask($task_id, [], true, $project);
-        if (!$task->owner && !$project->owner) {
+        if (!$task->isOwnerParent() && !$project->owner) {
             return Base::retError('仅限项目或任务负责人删除');
         }
         //

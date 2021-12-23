@@ -630,6 +630,24 @@ class ProjectTask extends AbstractModel
     }
 
     /**
+     * 是否负责人
+     * @param bool $isParent 是父级任务的负责人也算
+     * @return bool
+     */
+    public function isOwnerParent($isParent = true) {
+        if ($this->owner) {
+            return true;
+        }
+        if ($isParent && $this->parent_id > 0) {
+            $parentTask = self::find($this->parent_id);
+            if ($parentTask?->owner) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * 标记已完成、未完成
      * @param Carbon|null $complete_at 完成时间
      * @return bool
