@@ -1,5 +1,5 @@
 <template>
-    <div v-if="repoStatus" class="common-app-down">
+    <div v-if="repoStatus && !$store.state.windowMax768" class="common-app-down">
         <div v-if="isElectron" class="common-app-down-link" @click="openExternal(repoData.html_url)">
             <Icon type="md-download"/> {{$L(repoTitle)}}
         </div>
