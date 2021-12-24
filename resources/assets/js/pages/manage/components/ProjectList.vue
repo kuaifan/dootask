@@ -430,7 +430,7 @@ export default {
             columnTopShow: {},
             taskLoad: {},
 
-            completeJust: [],
+            completeTask: [],
 
             sortField: 'end_at',
             sortType: 'desc',
@@ -534,13 +534,13 @@ export default {
         },
 
         myList() {
-            const {projectId, tasks, searchText, userId, completeJust, sortField, sortType} = this;
+            const {projectId, tasks, searchText, userId, completeTask, sortField, sortType} = this;
             const array = tasks.filter((task) => {
                 if (task.project_id != projectId) {
                     return false;
                 }
                 if (!this.tablePanel('completedTask')) {
-                    if (task.complete_at && !completeJust.find(id => id == task.id)) {
+                    if (task.complete_at && !completeTask.find(id => id == task.id)) {
                         return false;
                     }
                 }
@@ -567,13 +567,13 @@ export default {
         },
 
         helpList() {
-            const {projectId, tasks, searchText, userId, completeJust, sortField, sortType} = this;
+            const {projectId, tasks, searchText, userId, completeTask, sortField, sortType} = this;
             const array = tasks.filter((task) => {
                 if (task.project_id != projectId) {
                     return false;
                 }
                 if (!this.tablePanel('completedTask')) {
-                    if (task.complete_at && !completeJust.find(id => id == task.id)) {
+                    if (task.complete_at && !completeTask.find(id => id == task.id)) {
                         return false;
                     }
                 }
@@ -600,13 +600,13 @@ export default {
         },
 
         undoneList() {
-            const {projectId, tasks, searchText, completeJust, sortField, sortType} = this;
+            const {projectId, tasks, searchText, completeTask, sortField, sortType} = this;
             const array = tasks.filter((task) => {
                 if (task.project_id != projectId) {
                     return false;
                 }
                 if (!this.tablePanel('completedTask')) {
-                    if (task.complete_at && !completeJust.find(id => id == task.id)) {
+                    if (task.complete_at && !completeTask.find(id => id == task.id)) {
                         return false;
                     }
                 }
@@ -615,7 +615,7 @@ export default {
                         return false;
                     }
                 }
-                return !task.complete_at || completeJust.find(id => id == task.id);
+                return !task.complete_at || completeTask.find(id => id == task.id);
             });
             return array.sort((a, b) => {
                 if (sortType == 'asc') {
@@ -681,7 +681,7 @@ export default {
             this.sortData = this.getSort();
         },
         '$route'() {
-            this.completeJust = [];
+            this.completeTask = [];
         }
     },
 
@@ -885,7 +885,7 @@ export default {
                     this.updateTask(task, {
                         complete_at: $A.formatDate("Y-m-d H:i:s")
                     })
-                    this.completeJust.push(task.id)
+                    this.completeTask.push(task.id)
                     break;
 
                 case 'uncomplete':
@@ -893,6 +893,10 @@ export default {
                     this.updateTask(task, {
                         complete_at: false
                     })
+                    let index = this.completeTask.findIndex(id => id == task.id)
+                    if (index > -1) {
+                        this.completeTask.splice(index, 1)
+                    }
                     break;
 
                 case 'archived':
@@ -903,21 +907,26 @@ export default {
         },
 
         updateTask(task, updata) {
-            if (this.taskLoad[task.id] === true) {
-                return;
-            }
-            this.$set(this.taskLoad, task.id, true);
-            //
-            Object.keys(updata).forEach(key => this.$set(task, key, updata[key]));
-            //
-            this.$store.dispatch("taskUpdate", Object.assign(updata, {
-                task_id: task.id,
-            })).then(() => {
-                this.$set(this.taskLoad, task.id, false);
-            }).catch(({msg}) => {
-                $A.modalError(msg);
-                this.$set(this.taskLoad, task.id, false);
-                this.$store.dispatch("getTaskOne", task.id);
+            return new Promise((resolve, reject) => {
+                if (this.taskLoad[task.id] === true) {
+                    reject()
+                    return;
+                }
+                this.$set(this.taskLoad, task.id, true);
+                //
+                Object.keys(updata).forEach(key => this.$set(task, key, updata[key]));
+                //
+                this.$store.dispatch("taskUpdate", Object.assign(updata, {
+                    task_id: task.id,
+                })).then(() => {
+                    this.$set(this.taskLoad, task.id, false);
+                    resolve()
+                }).catch(({msg}) => {
+                    $A.modalError(msg);
+                    this.$set(this.taskLoad, task.id, false);
+                    this.$store.dispatch("getTaskOne", task.id);
+                    reject()
+                });
             });
         },
 
@@ -1140,7 +1149,7 @@ export default {
 
         toggleCompleted() {
             this.$store.dispatch('toggleTablePanel', 'completedTask');
-            this.completeJust = [];
+            this.completeTask = [];
         },
 
         formatTime(date) {

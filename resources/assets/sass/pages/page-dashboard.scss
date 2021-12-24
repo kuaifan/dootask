@@ -102,6 +102,15 @@
                 &:last-child {
                     margin-bottom: 12px;
                 }
+                &.complete {
+                    .item-title {
+                        opacity: 0.5;
+                        text-decoration: line-through;
+                    }
+                    .item-icon {
+                        display: none;
+                    }
+                }
                 .priority-color {
                     position: absolute;
                     top: 50%;

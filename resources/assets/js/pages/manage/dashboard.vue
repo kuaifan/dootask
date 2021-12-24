@@ -33,16 +33,20 @@
                     <li
                         v-for="item in list"
                         :key="item.id"
+                        :class="{complete: item.complete_at}"
                         :style="item.color ? {backgroundColor: item.color} : {}"
                         @click="$store.dispatch('openTask', item.id)">
-                        <em v-if="item.p_name && item.parent_id === 0" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
+                        <em
+                            v-if="item.p_name && item.parent_id === 0"
+                            class="priority-color"
+                            :style="{backgroundColor:item.p_color}"></em>
                         <EDropdown
                             trigger="click"
                             size="small"
                             placement="bottom"
                             @command="dropTask(item, $event)">
                             <div class="drop-icon" @click.stop="">
-                                <i class="taskfont">&#xe625;</i>
+                                <i class="taskfont" v-html="item.complete_at ? '&#xe627;' : '&#xe625;'"></i>
                             </div>
                             <EDropdownMenu slot="dropdown" class="project-list-more-dropdown-menu">
                                 <EDropdownItem v-if="item.complete_at" command="uncomplete">
@@ -111,7 +115,7 @@ export default {
 
             taskLoad: {},
 
-            downList: []
+            completeTask: [],
         }
     },
 
@@ -147,15 +151,22 @@ export default {
         },
 
         list() {
-            const {dashboard} = this;
+            const {dashboard, completeTask} = this;
             let data = [];
             switch (dashboard) {
                 case 'today':
-                    data = this.dashboardData.today;
+                    data = $A.cloneJSON(this.dashboardData.today);
                     break
                 case 'overdue':
-                    data = this.dashboardData.overdue;
+                    data = $A.cloneJSON(this.dashboardData.overdue);
                     break
+            }
+            if (completeTask.length > 0) {
+                completeTask.forEach(task => {
+                    if (!data.find(({id}) => id == task.id)) {
+                        data.push(task);
+                    }
+                })
             }
             return data.sort((a, b) => {
                 return $A.Date(a.end_at) - $A.Date(b.end_at);
@@ -176,6 +187,15 @@ export default {
         },
     },
 
+    watch: {
+        '$route'() {
+            this.completeTask = [];
+        },
+        dashboard() {
+            this.completeTask = [];
+        }
+    },
+
     methods: {
         dropTask(task, command) {
             switch (command) {
@@ -183,12 +203,19 @@ export default {
                     if (task.complete_at) return;
                     this.updateTask(task, {
                         complete_at: $A.formatDate("Y-m-d H:i:s")
+                    }).then(() => {
+                        this.completeTask.push(task)
                     })
                     break;
                 case 'uncomplete':
                     if (!task.complete_at) return;
                     this.updateTask(task, {
                         complete_at: false
+                    }).then(() => {
+                        let index = this.completeTask.findIndex(({id}) => id == task.id)
+                        if (index > -1) {
+                            this.completeTask.splice(index, 1)
+                        }
                     })
                     break;
                 case 'archived':
@@ -206,22 +233,27 @@ export default {
         },
 
         updateTask(task, updata) {
-            if (this.taskLoad[task.id] === true) {
-                return;
-            }
-            this.$set(this.taskLoad, task.id, true);
-            //
-            Object.keys(updata).forEach(key => this.$set(task, key, updata[key]));
-            //
-            this.$store.dispatch("taskUpdate", Object.assign(updata, {
-                task_id: task.id,
-            })).then(() => {
-                this.$set(this.taskLoad, task.id, false);
-            }).catch(({msg}) => {
-                $A.modalError(msg);
-                this.$set(this.taskLoad, task.id, false);
-                this.$store.dispatch("getTaskOne", task.id);
-            });
+            return new Promise((resolve, reject) => {
+                if (this.taskLoad[task.id] === true) {
+                    reject()
+                    return;
+                }
+                this.$set(this.taskLoad, task.id, true);
+                //
+                Object.keys(updata).forEach(key => this.$set(task, key, updata[key]));
+                //
+                this.$store.dispatch("taskUpdate", Object.assign(updata, {
+                    task_id: task.id,
+                })).then(() => {
+                    this.$set(this.taskLoad, task.id, false);
+                    resolve()
+                }).catch(({msg}) => {
+                    $A.modalError(msg);
+                    this.$set(this.taskLoad, task.id, false);
+                    this.$store.dispatch("getTaskOne", task.id);
+                    reject();
+                });
+            })
         },
 
         archivedOrRemoveTask(task, type) {
