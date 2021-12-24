@@ -173,6 +173,30 @@ body {
                     line-height: 32px;
                     min-width: 94px;
                 }
+                @media (max-width: 576px) {
+                    .adaption {
+                        display: flex;
+                        align-items: center;
+                        .ivu-btn,
+                        .ivu-btn-group,
+                        .ivu-poptip {
+                            flex: 1;
+                        }
+                        .ivu-btn-group {
+                            display: flex;
+                            align-items: center;
+                        }
+                        .ivu-poptip {
+                            display: flex;
+                            align-items: center;
+                            .ivu-poptip-rel {
+                                flex: 1;
+                                display: flex;
+                                align-items: center;
+                            }
+                        }
+                    }
+                }
             }
             .ivu-modal-content {
                 border-radius: 18px;

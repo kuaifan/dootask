@@ -111,18 +111,20 @@
         </Form>
 
         <div class="ivu-modal-footer">
-            <Button type="default" @click="close">{{$L('取消')}}</Button>
-            <ButtonGroup class="page-manage-add-task-button-group">
-                <Button type="primary" :loading="loadIng > 0" @click="onAdd">{{$L('添加任务')}}</Button>
-                <Dropdown @on-click="onAdd(true)">
-                    <Button type="primary" :loading="loadIng > 0">
-                        <Icon type="ios-arrow-down"></Icon>
-                    </Button>
-                    <DropdownMenu slot="list">
-                        <DropdownItem>{{$L('提交继续添加')}}</DropdownItem>
-                    </DropdownMenu>
-                </Dropdown>
-            </ButtonGroup>
+            <div class="adaption">
+                <Button type="default" @click="close">{{$L('取消')}}</Button>
+                <ButtonGroup class="page-manage-add-task-button-group">
+                    <Button type="primary" :loading="loadIng > 0" @click="onAdd">{{$L('添加任务')}}</Button>
+                    <Dropdown @on-click="onAdd(true)">
+                        <Button type="primary" :loading="loadIng > 0">
+                            <Icon type="ios-arrow-down"></Icon>
+                        </Button>
+                        <DropdownMenu slot="list">
+                            <DropdownItem>{{$L('提交继续添加')}}</DropdownItem>
+                        </DropdownMenu>
+                    </Dropdown>
+                </ButtonGroup>
+            </div>
         </div>
     </div>
 </template>

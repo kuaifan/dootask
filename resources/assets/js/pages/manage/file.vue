@@ -188,7 +188,7 @@
                     <UserInput v-if="!shareInfo.userTmpHide" v-model="shareInfo.userids" :disabledChoice="[shareInfo.userid]" :multiple-max="100" :placeholder="$L('选择共享成员')"/>
                 </FormItem>
             </Form>
-            <div slot="footer">
+            <div slot="footer" class="adaption">
                 <Button type="default" :loading="shareLoad > 0" @click="onShare(false)">{{$L('取消共享')}}</Button>
                 <Button type="primary" :loading="shareLoad > 0" @click="onShare(true)">{{$L('设置共享')}}</Button>
             </div>

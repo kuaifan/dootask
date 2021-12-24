@@ -328,7 +328,7 @@
                     <Input type="textarea" :autosize="{ minRows: 3, maxRows: 5 }" v-model="settingData.desc" :maxlength="255" :placeholder="$L('选填')"></Input>
                 </FormItem>
             </Form>
-            <div slot="footer">
+            <div slot="footer" class="adaption">
                 <Button type="default" @click="settingShow=false">{{$L('取消')}}</Button>
                 <Button type="primary" :loading="settingLoad > 0" @click="onSetting">{{$L('修改')}}</Button>
             </div>
@@ -344,7 +344,7 @@
                     <UserInput v-if="userShow" v-model="userData.userids" :uncancelable="userData.uncancelable" :multiple-max="100" :placeholder="$L('选择项目成员')"/>
                 </FormItem>
             </Form>
-            <div slot="footer">
+            <div slot="footer" class="adaption">
                 <Button type="default" @click="userShow=false">{{$L('取消')}}</Button>
                 <Poptip
                     v-if="userWaitRemove.length > 0"
@@ -379,7 +379,7 @@
                     <UserInput v-if="transferShow" v-model="transferData.owner_userid" :multiple-max="1" :placeholder="$L('选择项目负责人')"/>
                 </FormItem>
             </Form>
-            <div slot="footer">
+            <div slot="footer" class="adaption">
                 <Button type="default" @click="transferShow=false">{{$L('取消')}}</Button>
                 <Button type="primary" :loading="transferLoad > 0" @click="onTransfer">{{$L('移交')}}</Button>
             </div>

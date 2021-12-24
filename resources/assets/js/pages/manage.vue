@@ -117,7 +117,7 @@
                     </Select>
                 </FormItem>
             </Form>
-            <div slot="footer">
+            <div slot="footer" class="adaption">
                 <Button type="default" @click="addShow=false">{{$L('取消')}}</Button>
                 <Button type="primary" :loading="loadIng > 0" @click="onAddProject">{{$L('添加')}}</Button>
             </div>
