@@ -177,6 +177,11 @@ body {
                     .adaption {
                         display: flex;
                         align-items: center;
+                        .ivu-btn {
+                            height: 38px;
+                            line-height: 36px;
+                            min-width: auto;
+                        }
                         .ivu-btn,
                         .ivu-btn-group,
                         .ivu-poptip {
