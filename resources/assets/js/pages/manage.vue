@@ -126,12 +126,11 @@
         <!--添加任务-->
         <Modal
             v-model="addTaskShow"
-            :title="$L('添加任务')"
+            :mask-closable="false"
             :styles="{
                 width: '90%',
                 maxWidth: '640px'
             }"
-            :mask-closable="false"
             footer-hide>
             <TaskAdd ref="addTask" v-model="addTaskShow"/>
         </Modal>
@@ -256,9 +255,6 @@ export default {
                 'column_id': data,
             });
             this.addTaskShow = true;
-            this.$nextTick(() => {
-                this.$refs.addTask.$refs.input.focus();
-            })
         });
         //
         document.addEventListener('keydown', this.shortcutEvent);

@@ -32,6 +32,9 @@ class ProjectController extends AbstractController
      * - all：全部
      * - no：未归档（默认）
      * - yes：已归档
+     * @apiParam {String} [andcolumn]       同时取项目列表
+     * - no：不取（默认）
+     * - yes：取列表
      * @apiParam {Object} [keys]            搜索条件
      * - keys.name              项目名称
      *
@@ -44,12 +47,17 @@ class ProjectController extends AbstractController
         //
         $all = Request::input('all');
         $archived = Request::input('archived', 'no');
+        $andcolumn = Request::input('andcolumn', 'no');
         //
         if ($all) {
             $user->identity('admin');
             $builder = Project::select('projects.*');
         } else {
             $builder = Project::select(Project::projectSelect)->authData();
+        }
+        //
+        if ($andcolumn == 'yes') {
+            $builder->with(['projectColumn']);
         }
         //
         if ($archived == 'yes') {

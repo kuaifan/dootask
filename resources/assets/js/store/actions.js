@@ -516,6 +516,10 @@ export default {
                 dispatch("saveProject", project)
             });
         } else if (state.method.isJson(data)) {
+            if (typeof data.project_column !== "undefined") {
+                dispatch("saveColumn", data.project_column)
+                delete data.project_column;
+            }
             let index = state.projects.findIndex(({id}) => id == data.id);
             if (index > -1) {
                 state.projects.splice(index, 1, Object.assign(state.projects[index], data));
@@ -571,10 +575,10 @@ export default {
             dispatch("call", {
                 url: 'project/lists',
                 data: data || {}
-            }).then(result => {
-                state.projectTotal = result.data.total_all;
-                dispatch("saveProject", result.data.data);
-                resolve(result)
+            }).then(({data}) => {
+                state.projectTotal = data.total_all;
+                dispatch("saveProject", data.data);
+                resolve(data)
             }).catch(e => {
                 console.error(e);
                 reject(e)
@@ -747,45 +751,51 @@ export default {
      * @param state
      * @param dispatch
      * @param project_id
+     * @returns {Promise<unknown>}
      */
     getColumns({state, dispatch}, project_id) {
-        if (state.userId === 0) {
-            state.columns = [];
-            return;
-        }
-        if (state.cacheColumns.length > 0) {
-            state.columns = state.cacheColumns;
-        }
-        state.projectLoad++;
-        dispatch("call", {
-            url: 'project/column/lists',
-            data: {
-                project_id
+        return new Promise(function (resolve, reject) {
+            if (state.userId === 0) {
+                state.columns = [];
+                reject({msg: 'Parameter error'})
+                return;
             }
-        }).then(result => {
-            state.projectLoad--;
-            const ids = result.data.data.map(({id}) => id)
-            if (ids.length > 0) {
-                state.columns = state.columns.filter((item) => item.project_id != project_id || ids.includes(item.id));
+            if (state.cacheColumns.length > 0) {
+                state.columns = state.cacheColumns;
             }
-            dispatch("saveColumn", result.data.data);
-            // 判断只有1列的时候默认版面为表格模式
-            if (state.columns.filter(item => item.project_id == project_id).length === 1) {
-                const cache = state.cacheTablePanel.find(item => item.project_id == project_id) || {};
-                if (typeof cache.cardInit === "undefined" || cache.cardInit === false) {
-                    dispatch("toggleTablePanel", {
-                        project_id,
-                        key: {
-                            card: false,
-                            cardInit: true,
-                        }
-                    });
+            state.projectLoad++;
+            dispatch("call", {
+                url: 'project/column/lists',
+                data: {
+                    project_id
                 }
-            }
-        }).catch(e => {
-            console.error(e);
-            state.projectLoad--;
-        });
+            }).then(({data}) => {
+                state.projectLoad--;
+                const ids = data.data.map(({id}) => id)
+                if (ids.length > 0) {
+                    state.columns = state.columns.filter((item) => item.project_id != project_id || ids.includes(item.id));
+                }
+                dispatch("saveColumn", data.data);
+                // 判断只有1列的时候默认版面为表格模式
+                if (state.columns.filter(item => item.project_id == project_id).length === 1) {
+                    const cache = state.cacheTablePanel.find(item => item.project_id == project_id) || {};
+                    if (typeof cache.cardInit === "undefined" || cache.cardInit === false) {
+                        dispatch("toggleTablePanel", {
+                            project_id,
+                            key: {
+                                card: false,
+                                cardInit: true,
+                            }
+                        });
+                    }
+                }
+                resolve(data.data)
+            }).catch(e => {
+                console.error(e);
+                state.projectLoad--;
+                reject(e);
+            });
+        })
     },
 
     /**

@@ -1,4 +1,57 @@
 .task-add {
+    .head {
+        display: flex;
+        align-items: center;
+        padding: 8px 0;
+        margin-bottom: 20px;
+        position: relative;
+        .ivu-cascader {
+            .ivu-cascader-label {
+                width: auto;
+                padding: 0;
+                font-size: 15px;
+                display: flex;
+                align-items: center;
+                &:after {
+                    transition: all 0.2s;
+                    padding: 6px;
+                    font-family: Ionicons, serif;
+                    content: "\f116";
+                    opacity: 1;
+                }
+            }
+            .ivu-cascader-arrow {
+                display: none;
+            }
+            .ivu-input {
+                padding: 4px 0;
+                border: 0;
+                box-shadow: none;
+                font-size: 15px;
+            }
+            .ivu-cascader-not-found-tip {
+                padding: 6px 12px;
+            }
+        }
+        &.empty {
+            .ivu-cascader {
+                .ivu-cascader-label {
+                    &:after {
+                        opacity: 0;
+                    }
+                }
+            }
+        }
+        &.visible {
+            .ivu-cascader {
+                .ivu-cascader-label {
+                    &:after {
+                        transform: rotate(180deg);
+                    }
+                }
+            }
+        }
+    }
     .task-add-form,
     .task-add-advanced {
         .title {
@@ -93,16 +146,5 @@
     }
     .ivu-modal-footer {
         padding: 26px 0 22px !important;
-    }
-}
-.task-add-advanced-transfer {
-    .task-drop-prepend {
-        text-align: center;
-        color: #c5c8ce;
-        line-height: 20px;
-        padding-bottom: 5px;
-        font-size: 12px;
-        border-bottom: 1px solid #f1f1f1;
-        margin-bottom: 5px;
     }
 }

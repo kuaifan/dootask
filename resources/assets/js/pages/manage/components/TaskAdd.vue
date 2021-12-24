@@ -1,5 +1,16 @@
 <template>
     <div class="task-add">
+        <div class="head" :class="{empty:addData.cascader.length == 0,visible:cascaderShow}">
+            <Cascader
+                v-model="addData.cascader"
+                :data="cascaderData"
+                :clearable="false"
+                :placeholder="$L('请选择项目')"
+                :load-data="cascaderLoadData"
+                @on-input-change="cascaderInputChange"
+                @on-visible-change="cascaderShow=!cascaderShow"
+                filterable/>
+        </div>
         <div class="task-add-form">
             <div class="title">
                 <Input
@@ -39,22 +50,6 @@
         </div>
 
         <Form v-if="advanced" class="task-add-advanced" label-width="auto" @submit.native.prevent>
-            <FormItem :label="$L('任务列表')">
-                <Select
-                    v-model="addData.column_id"
-                    :placeholder="$L('选择任务列表')"
-                    :multipleMax="1"
-                    multiple
-                    filterable
-                    transfer
-                    allowCreate
-                    transfer-class-name="task-add-advanced-transfer"
-                    @on-create="columnCreate">
-                    <div slot="drop-prepend" class="task-drop-prepend">{{$L('最多只能选择1项')}}</div>
-                    <Option v-for="(item, key) in columnList" :value="item.id" :key="key">{{ item.name }}</Option>
-                    <Option v-for="(item, key) in columnAdd" :value="item.id" :key="'_' + key">{{ item.name }}</Option>
-                </Select>
-            </FormItem>
             <FormItem :label="$L('计划时间')">
                 <DatePicker
                     v-model="addData.times"
@@ -70,7 +65,7 @@
                     v-model="addData.owner"
                     :multiple-max="10"
                     :placeholder="$L('选择任务负责人')"
-                    :project-id="projectId"/>
+                    :project-id="addData.project_id"/>
             </FormItem>
             <div class="subtasks">
                 <div v-if="addData.subtasks.length > 0" class="sublist">
@@ -102,7 +97,7 @@
                                 v-model="item.owner"
                                 :multiple-max="1"
                                 :placeholder="$L('选择负责人')"
-                                :project-id="projectId"/>
+                                :project-id="addData.project_id"/>
                         </Col>
                     </Row>
                 </div>
@@ -118,13 +113,13 @@
         <div class="ivu-modal-footer">
             <Button type="default" @click="close">{{$L('取消')}}</Button>
             <ButtonGroup class="page-manage-add-task-button-group">
-                <Button type="primary" :loading="loadIng > 0" @click="onAdd">{{$L('添加')}}</Button>
+                <Button type="primary" :loading="loadIng > 0" @click="onAdd">{{$L('添加任务')}}</Button>
                 <Dropdown @on-click="onAdd(true)">
                     <Button type="primary" :loading="loadIng > 0">
                         <Icon type="ios-arrow-down"></Icon>
                     </Button>
                     <DropdownMenu slot="list">
-                        <DropdownItem>{{$L('添加并继续')}}</DropdownItem>
+                        <DropdownItem>{{$L('提交继续添加')}}</DropdownItem>
                     </DropdownMenu>
                 </Dropdown>
             </ButtonGroup>
@@ -149,9 +144,11 @@ export default {
     data() {
         return {
             addData: {
+                cascader: [],
                 name: "",
                 content: "",
                 owner: 0,
+                project_id: 0,
                 column_id: 0,
                 times: [],
                 subtasks: [],
@@ -160,9 +157,14 @@ export default {
                 p_color: '',
             },
 
+            cascaderShow: false,
+            cascaderData: [],
+            cascaderValue: '',
+            cascaderLoading: 0,
+            cascaderAlready: [],
+
             advanced: false,
             subName: '',
-            columnAdd: [],
 
             taskPlugins: [
                 'advlist autolink lists link image charmap print preview hr anchor pagebreak',
@@ -195,14 +197,29 @@ export default {
         }
     },
     mounted() {
-        //
+
     },
     computed: {
-        ...mapState(['userId', 'projectId', 'columns', 'taskPriority']),
-
-        columnList() {
-            return this.columns.filter(({project_id}) => project_id == this.projectId)
+        ...mapState(['userId', 'projects', 'projectId', 'columns', 'taskPriority']),
+    },
+    watch: {
+        value(val) {
+            if (val) {
+                this.initCascaderData();
+                this.initProjectData();
+                this.$nextTick(this.$refs.input.focus)
+            }
         },
+        'addData.column_id' () {
+            const {project_id, column_id} = this.addData;
+            this.$nextTick(() => {
+                if (project_id && column_id) {
+                    this.$set(this.addData, 'cascader', [project_id, column_id]);
+                } else {
+                    this.$set(this.addData, 'cascader', []);
+                }
+            })
+        }
     },
     methods: {
         initLanguage() {
@@ -256,17 +273,55 @@ export default {
                 }]
             };
         },
-        close() {
-            this.$emit("input", !this.value)
-        },
-        columnCreate(val) {
-            if (!this.columnAdd.find(({id}) => id == val)) {
-                this.columnAdd.push({
-                    id: val,
-                    name: val
+
+        initCascaderData() {
+            this.cascaderData = this.projects.map(project => {
+                const children = this.columns.filter(({project_id}) => project_id == project.id).map(column => {
+                    return {
+                        value: column.id,
+                        label: column.name
+                    }
                 });
+                let data = {
+                    value: project.id,
+                    label: project.name,
+                    children,
+                };
+                if (children.length == 0) {
+                    data.loading = false;
+                }
+                return data
+            });
+        },
+
+        initProjectData() {
+            let column_id = this.addData.column_id;
+            if (column_id) {
+                let column = this.columns.find(({id}) => id == column_id);
+                if (column) {
+                    this.addData.project_id = column.project_id;
+                    this.addData.column_id = column.id;
+                }
+            } else {
+                let project = this.projects.find(({id}) => id == this.projectId) || this.projects.find(({id}) => id > 0);
+                if (project) {
+                    let column = this.columns.find(({project_id}) => project_id == project.id);
+                    if (column) {
+                        this.addData.project_id = column.project_id;
+                        this.addData.column_id = column.id;
+                    } else {
+                        this.$store.dispatch("getColumns", project.id).then((data) => {
+                            column = data.find(({id}) => id > 0);
+                            if (column) {
+                                this.addData.project_id = column.project_id;
+                                this.addData.column_id = column.id;
+                            }
+                        });
+                    }
+                }
             }
         },
+
         taskTimeChange(times) {
             let tempc = $A.date2string(times, "Y-m-d H:i");
             if (tempc[0] && tempc[1]) {
@@ -275,6 +330,7 @@ export default {
                 }
             }
         },
+
         onKeydown(e) {
             if (e.keyCode === 13) {
                 if (e.shiftKey) {
@@ -284,6 +340,7 @@ export default {
                 this.onAdd();
             }
         },
+
         addSubTask() {
             if (this.subName.trim() !== '') {
                 this.addData.subtasks.push({
@@ -294,6 +351,7 @@ export default {
                 this.subName = '';
             }
         },
+
         choosePriority(item) {
             let start = new Date();
             let end = new Date(new Date().setDate(start.getDate() + $A.runNum(item.days)));
@@ -302,6 +360,7 @@ export default {
             this.$set(this.addData, 'p_name', item.name)
             this.$set(this.addData, 'p_color', item.color)
         },
+
         defaultPriority() {
             if (this.taskPriority.length === 0) {
                 return;
@@ -311,18 +370,59 @@ export default {
             }
             this.choosePriority(this.taskPriority[0]);
         },
+
+        cascaderLoadData(item, callback) {
+            item.loading = true;
+            this.$store.dispatch("getColumns", item.value).then((data) => {
+                item.children = data.map(column => {
+                    return {
+                        value: column.id,
+                        label: column.name
+                    }
+                });
+                item.loading = false;
+                callback();
+            }).catch(() => {
+                item.loading = false;
+                callback();
+            });
+        },
+
+        cascaderInputChange(key) {
+            this.cascaderValue = key || "";
+            //
+            if (this.cascaderAlready[this.cascaderValue] === true) {
+                return;
+            }
+            this.cascaderAlready[this.cascaderValue] = true;
+            //
+            setTimeout(() => {
+                this.cascaderLoading++;
+            }, 1000)
+            this.$store.dispatch("getProjects", {
+                keys: {
+                    name: this.cascaderValue,
+                },
+                andcolumn: 'yes'
+            }).then(() => {
+                this.cascaderLoading--;
+                this.initCascaderData();
+            }).catch(() => {
+                this.cascaderLoading--;
+            });
+        },
+
         setData(data) {
             this.addData = Object.assign({}, this.addData, data);
         },
+
         onAdd(again) {
             if (!this.addData.name) {
                 $A.messageError("任务描述不能为空");
                 return;
             }
             this.loadIng++;
-            this.$store.dispatch("taskAdd", Object.assign(this.addData, {
-                project_id: this.projectId
-            })).then(({msg}) => {
+            this.$store.dispatch("taskAdd", this.addData).then(({msg}) => {
                 this.loadIng--;
                 $A.messageSuccess(msg);
                 if (again === true) {
@@ -334,6 +434,7 @@ export default {
                     this.$refs.input.focus();
                 } else {
                     this.addData = {
+                        cascader: [],
                         name: "",
                         content: "",
                         owner: 0,
@@ -350,7 +451,11 @@ export default {
                 this.loadIng--;
                 $A.modalError(msg);
             });
-        }
+        },
+
+        close() {
+            this.$emit("input", !this.value)
+        },
     }
 }
 </script>

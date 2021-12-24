@@ -815,7 +815,7 @@ export default {
                 this.$store.dispatch("saveColumn", data);
             }).catch(({msg}) => {
                 this.$set(this.columnLoad, column.id, false);
-                this.$store.dispatch("getColumns", {project_id: this.projectId})
+                this.$store.dispatch("getColumns", this.projectId)
                 $A.modalError(msg);
             });
         },
