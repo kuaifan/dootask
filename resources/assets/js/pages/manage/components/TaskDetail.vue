@@ -590,7 +590,7 @@ export default {
             const {nowTime} = this;
             return function (date) {
                 let time = Math.round($A.Date(date).getTime() / 1000) - nowTime;
-                if (time < 86400 * 4 && time > 0 ) {
+                if (time < 86400 * 7 && time > 0 ) {
                     return this.formatSeconds(time);
                 } else if (time <= 0) {
                     return '-' + this.formatSeconds(time * -1);
