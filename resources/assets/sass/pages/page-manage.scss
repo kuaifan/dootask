@@ -271,6 +271,17 @@
     }
 }
 
+.page-manage-add-task-button-group {
+    margin-left: 8px !important;
+    .ivu-dropdown {
+        .ivu-btn {
+            min-width: auto !important;
+            padding: 0 4px;
+            border-radius: 0 4px 4px 0;
+        }
+    }
+}
+
 
 @media (max-width: 768px) {
     .page-manage {

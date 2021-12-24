@@ -123,6 +123,19 @@
             </div>
         </Modal>
 
+        <!--添加任务-->
+        <Modal
+            v-model="addTaskShow"
+            :title="$L('添加任务')"
+            :styles="{
+                width: '90%',
+                maxWidth: '640px'
+            }"
+            :mask-closable="false"
+            footer-hide>
+            <TaskAdd ref="addTask" v-model="addTaskShow"/>
+        </Modal>
+
         <!--任务详情-->
         <Modal
             :value="taskId > 0"
@@ -181,9 +194,13 @@ import TeamManagement from "./manage/components/TeamManagement";
 import ProjectManagement from "./manage/components/ProjectManagement";
 import DrawerOverlay from "../components/DrawerOverlay";
 import DragBallComponent from "../components/DragBallComponent";
+import TaskAdd from "./manage/components/TaskAdd";
+import {Store} from "le5le-store";
 
 export default {
-    components: {DragBallComponent, DrawerOverlay, ProjectManagement, TeamManagement, ProjectArchived, TaskDetail},
+    components: {
+        TaskAdd,
+        DragBallComponent, DrawerOverlay, ProjectManagement, TeamManagement, ProjectArchived, TaskDetail},
     data() {
         return {
             loadIng: 0,
@@ -196,6 +213,9 @@ export default {
                 columns: '',
             },
             addRule: {},
+
+            addTaskShow: false,
+            addTaskSubscribe: null,
 
             columns: [],
 
@@ -229,9 +249,32 @@ export default {
         this.notificationInit();
         this.onVisibilityChange();
         //
+        this.addTaskSubscribe = Store.subscribe('addTask', (data) => {
+            this.$refs.addTask.defaultPriority();
+            this.$refs.addTask.setData($A.isJson(data) ? data : {
+                'owner': this.userId,
+                'column_id': data,
+            });
+            this.addTaskShow = true;
+            this.$nextTick(() => {
+                this.$refs.addTask.$refs.input.focus();
+            })
+        });
+        //
+        document.addEventListener('keydown', this.shortcutEvent);
+        //
         if (this.isElectron) {
             this.$electron.ipcRenderer.send('setDockBadge', 0);
         }
+    },
+
+    beforeDestroy() {
+        if (this.addTaskSubscribe) {
+            this.addTaskSubscribe.unsubscribe();
+            this.addTaskSubscribe = null;
+        }
+        //
+        document.removeEventListener('keydown', this.shortcutEvent);
     },
 
     deactivated() {
@@ -524,6 +567,15 @@ export default {
             this.$nextTick(() => {
                 this.$set(this.addData, 'columns', this.columns[index].value.join(','));
             })
+        },
+
+        shortcutEvent(e) {
+            if (e.keyCode === 75 || e.keyCode === 78) {
+                if (e.metaKey || e.ctrlKey) {
+                    e.preventDefault();
+                    Store.set('addTask', 0);
+                }
+            }
         },
 
         taskVisibleChange(visible) {

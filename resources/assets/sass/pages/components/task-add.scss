@@ -1,5 +1,4 @@
 .task-add {
-    margin-bottom: 6px;
     .task-add-form,
     .task-add-advanced {
         .title {
@@ -25,7 +24,7 @@
             }
         }
         .advanced-option {
-            margin-top: 24px;
+            margin-top: 42px;
             z-index: 1;
             display: flex;
             align-items: center;
@@ -56,7 +55,7 @@
     }
     .task-add-advanced {
         margin: -16px 0 0;
-        padding: 34px 32px 6px;
+        padding: 46px 32px 6px;
         border-radius: 8px;
         border: 1px solid #e8e8e8;
         .subtasks {
@@ -91,6 +90,9 @@
         .ivu-date-picker {
             width: 100%;
         }
+    }
+    .ivu-modal-footer {
+        padding: 26px 0 22px !important;
     }
 }
 .task-add-advanced-transfer {

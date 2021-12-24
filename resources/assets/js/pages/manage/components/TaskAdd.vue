@@ -37,6 +37,7 @@
                 </ul>
             </div>
         </div>
+
         <Form v-if="advanced" class="task-add-advanced" label-width="auto" @submit.native.prevent>
             <FormItem :label="$L('任务列表')">
                 <Select
@@ -113,6 +114,21 @@
                     :placeholder="$L('+ 输入子任务，回车添加子任务')"/>
             </div>
         </Form>
+
+        <div class="ivu-modal-footer">
+            <Button type="default" @click="close">{{$L('取消')}}</Button>
+            <ButtonGroup class="page-manage-add-task-button-group">
+                <Button type="primary" :loading="loadIng > 0" @click="onAdd">{{$L('添加')}}</Button>
+                <Dropdown @on-click="onAdd(true)">
+                    <Button type="primary" :loading="loadIng > 0">
+                        <Icon type="ios-arrow-down"></Icon>
+                    </Button>
+                    <DropdownMenu slot="list">
+                        <DropdownItem>{{$L('添加并继续')}}</DropdownItem>
+                    </DropdownMenu>
+                </Dropdown>
+            </ButtonGroup>
+        </div>
     </div>
 </template>
 
@@ -124,6 +140,12 @@ import UserInput from "../../../components/UserInput";
 export default {
     name: "TaskAdd",
     components: {UserInput, TEditor},
+    props: {
+        value: {
+            type: Boolean,
+            default: false
+        },
+    },
     data() {
         return {
             addData: {
@@ -168,10 +190,12 @@ export default {
             timeOptions: {
                 shortcuts: []
             },
+
+            loadIng: 0,
         }
     },
     mounted() {
-        this.$refs.input.focus();
+        //
     },
     computed: {
         ...mapState(['userId', 'projectId', 'columns', 'taskPriority']),
@@ -232,6 +256,9 @@ export default {
                 }]
             };
         },
+        close() {
+            this.$emit("input", !this.value)
+        },
         columnCreate(val) {
             if (!this.columnAdd.find(({id}) => id == val)) {
                 this.columnAdd.push({
@@ -254,7 +281,7 @@ export default {
                     return;
                 }
                 e.preventDefault();
-                this.$emit("on-add")
+                this.onAdd();
             }
         },
         addSubTask() {
@@ -287,15 +314,16 @@ export default {
         setData(data) {
             this.addData = Object.assign({}, this.addData, data);
         },
-        onAdd(callback, again) {
+        onAdd(again) {
             if (!this.addData.name) {
                 $A.messageError("任务描述不能为空");
-                callback(false)
                 return;
             }
+            this.loadIng++;
             this.$store.dispatch("taskAdd", Object.assign(this.addData, {
                 project_id: this.projectId
             })).then(({msg}) => {
+                this.loadIng--;
                 $A.messageSuccess(msg);
                 if (again === true) {
                     this.addData = Object.assign({}, this.addData, {
@@ -316,11 +344,11 @@ export default {
                         p_name: '',
                         p_color: '',
                     };
+                    this.close()
                 }
-                callback(true)
             }).catch(({msg}) => {
+                this.loadIng--;
                 $A.modalError(msg);
-                callback(false)
             });
         }
     }

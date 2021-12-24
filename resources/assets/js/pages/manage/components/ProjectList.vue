@@ -315,23 +315,6 @@
             </div>
         </div>
 
-        <!--添加任务-->
-        <Modal
-            v-model="addShow"
-            :title="$L('添加任务')"
-            :styles="{
-                width: '90%',
-                maxWidth: '640px'
-            }"
-            :mask-closable="false">
-            <TaskAdd ref="add" @on-add="onAddTask"/>
-            <div slot="footer">
-                <Button type="default" @click="addShow=false">{{$L('取消')}}</Button>
-                <Button type="primary" :loading="addLoad > 0" @click="onAddTask">{{$L('添加')}}</Button>
-                <Button type="primary" :loading="addLoad > 0" @click="onAddTask(true)">{{$L('添加并继续')}}</Button>
-            </div>
-        </Modal>
-
         <!--项目设置-->
         <Modal
             v-model="settingShow"
@@ -454,9 +437,6 @@ export default {
 
             searchText: '',
 
-            addShow: false,
-            addLoad: 0,
-
             addColumnShow: false,
             addColumnName: '',
 
@@ -490,12 +470,6 @@ export default {
         this.projectDialogsubscribe = Store.subscribe('onProjectDialogBack', () => {
             this.$store.dispatch('toggleTablePanel', 'chat');
         });
-        //
-        document.addEventListener('keydown', this.shortcutAdd);
-    },
-
-    beforeDestroy () {
-        document.removeEventListener('keydown', this.shortcutAdd);
     },
 
     destroyed() {
@@ -749,16 +723,6 @@ export default {
             });
         },
 
-        onAddTask(again) {
-            this.addLoad++;
-            this.$refs.add.onAdd((success) => {
-                this.addLoad--;
-                if (success && again !== true) {
-                    this.addShow = false;
-                }
-            }, again)
-        },
-
         addTopShow(id, show) {
             this.$set(this.columnTopShow, id, show);
             if (show) {
@@ -767,16 +731,7 @@ export default {
         },
 
         addTaskOpen(column_id) {
-            this.$refs.add.defaultPriority();
-            this.$refs.add.setData($A.isJson(column_id) ? column_id : {
-                'owner': this.userId,
-                'column_id': column_id,
-            });
-            this.$Modal.resetIndex();
-            this.addShow = true;
-            this.$nextTick(() => {
-                this.$refs.add.$refs.input.focus();
-            })
+            Store.set('addTask', column_id);
         },
 
         addColumnOpen() {
@@ -1186,17 +1141,6 @@ export default {
         toggleCompleted() {
             this.$store.dispatch('toggleTablePanel', 'completedTask');
             this.completeJust = [];
-        },
-
-        shortcutAdd(e) {
-            if (this.projectId && this.projectId == this.$route.params.id) {
-                if (e.keyCode === 75 || e.keyCode === 78) {
-                    if (e.metaKey || e.ctrlKey) {
-                        e.preventDefault();
-                        this.addTaskOpen(0);
-                    }
-                }
-            }
         },
 
         formatTime(date) {
