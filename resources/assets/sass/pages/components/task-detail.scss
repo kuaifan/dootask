@@ -91,11 +91,17 @@
             }
             .desc {
                 margin-top: 10px;
+                overflow: auto;
                 div[contenteditable="true"] {
                     outline: none
                 }
-                .mce-content-body[data-mce-placeholder]:not(.mce-visualblocks)::before {
-                    color: #bbbbbb;
+                .mce-content-body {
+                    img {
+                        max-width: 100%;
+                    }
+                    &[data-mce-placeholder]:not(.mce-visualblocks)::before {
+                        color: #bbbbbb;
+                    }
                 }
             }
             .items {
