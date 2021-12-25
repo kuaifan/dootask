@@ -10,6 +10,9 @@
 .electron-file {
     display: flex;
     align-items: center;
+    .file-content {
+        border-radius: 0;
+    }
 }
 </style>
 <script>
