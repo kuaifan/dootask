@@ -1,5 +1,4 @@
 import {Store} from 'le5le-store';
-import state from "./state";
 
 export default {
     /**

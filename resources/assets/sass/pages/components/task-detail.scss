@@ -161,6 +161,8 @@
                         margin-top: 1px;
                         cursor: pointer;
                         .user-list {
+                            display: flex;
+                            align-items: center;
                             > div {
                                 display: inline-block;
                                 margin-right: 6px;

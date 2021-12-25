@@ -679,18 +679,19 @@
                             }
                         }
                     }
-                    &.row-column {
-                        .task-column {
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                            white-space: nowrap;
-                        }
-                    }
+                    &.row-column,
                     &.row-priority {
                         .el-dropdown {
                             display: flex;
                             align-items: center;
                             overflow: hidden;
+                        }
+                    }
+                    &.row-column {
+                        .task-column {
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
                         }
                     }
                     &.row-user {

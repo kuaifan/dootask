@@ -109,7 +109,7 @@
                             <UserAvatar :userid="user.userid" size="32" :borderWitdh="2" :borderColor="item.color"/>
                         </li>
                         <li v-if="ownerUser(item.task_user).length === 0" class="no-owner">
-                            <Button type="primary" size="small" @click="openTask(item)">{{$L('领取任务')}}</Button>
+                            <Button type="primary" size="small" @click.stop="openTask(item, true)">{{$L('领取任务')}}</Button>
                         </li>
                     </ul>
                 </Col>
@@ -139,6 +139,7 @@
 import TaskPriority from "./TaskPriority";
 import TaskAddSimple from "./TaskAddSimple";
 import {mapState} from "vuex";
+import {Store} from "le5le-store";
 
 export default {
     name: "TaskRow",
@@ -247,11 +248,17 @@ export default {
             return this.columns.filter(({project_id}) => project_id == id);
         },
 
-        openTask(task) {
+        openTask(task, receive) {
             if (task.parent_id > 0) {
                 this.$store.dispatch("openTask", task.parent_id)
             } else {
                 this.$store.dispatch("openTask", task.id)
+            }
+            if (receive === true) {
+                // 向任务窗口发送领取任务请求
+                setTimeout(() => {
+                    Store.set('receiveTask', true);
+                }, 300)
             }
         },
 

@@ -103,7 +103,7 @@
                 <Poptip
                     v-if="getOwner.length === 0"
                     confirm
-                    ref="owner"
+                    ref="receive"
                     class="pick"
                     :title="$L('你确认领取任务吗？')"
                     placement="bottom"
@@ -407,6 +407,7 @@ import UserInput from "../../../components/UserInput";
 import TaskUpload from "./TaskUpload";
 import DialogWrapper from "./DialogWrapper";
 import ProjectLog from "./ProjectLog";
+import {Store} from "le5le-store";
 
 export default {
     name: "TaskDetail",
@@ -477,6 +478,8 @@ export default {
                 valid_elements : 'a[href|target=_blank],em,strong/b,div[align],span[style],a,br,p,img[src|alt|witdh|height],pre[class],code',
                 toolbar: 'uploadImages | uploadFiles | bold italic underline forecolor backcolor | codesample | preview screenload'
             },
+
+            receiveTaskSubscribe: null,
         }
     },
 
@@ -485,11 +488,20 @@ export default {
             this.nowTime = $A.Time();
         }, 1000);
         window.addEventListener('resize', this.innerHeightListener);
+        //
+        this.receiveTaskSubscribe = Store.subscribe('receiveTask', () => {
+            this.$refs.receive && this.$refs.receive.handleClick();
+        });
     },
 
     destroyed() {
         clearInterval(this.nowInterval);
         window.removeEventListener('resize', this.innerHeightListener);
+        //
+        if (this.receiveTaskSubscribe) {
+            this.receiveTaskSubscribe.unsubscribe();
+            this.receiveTaskSubscribe = null;
+        }
     },
 
     computed: {

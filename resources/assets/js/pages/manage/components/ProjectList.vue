@@ -182,7 +182,7 @@
                                             <UserAvatar :userid="user.userid" size="32" :borderWitdh="2" :borderColor="item.color"/>
                                         </li>
                                         <li v-if="ownerUser(item.task_user).length === 0" class="no-owner">
-                                            <Button type="primary" size="small" ghost>{{$L('领取任务')}}</Button>
+                                            <Button type="primary" size="small" ghost @click.stop="openTask(item, true)">{{$L('领取任务')}}</Button>
                                         </li>
                                     </ul>
                                     <div v-if="item.file_num > 0" class="task-icon">{{item.file_num}}<Icon type="ios-link-outline" /></div>
@@ -458,7 +458,7 @@ export default {
             logShow: false,
             archivedTaskShow: false,
 
-            projectDialogsubscribe: null,
+            projectDialogSubscribe: null,
         }
     },
 
@@ -467,7 +467,7 @@ export default {
             this.nowTime = $A.Time();
         }, 1000);
         //
-        this.projectDialogsubscribe = Store.subscribe('onProjectDialogBack', () => {
+        this.projectDialogSubscribe = Store.subscribe('onProjectDialogBack', () => {
             this.$store.dispatch('toggleTablePanel', 'chat');
         });
     },
@@ -475,9 +475,9 @@ export default {
     destroyed() {
         clearInterval(this.nowInterval);
         //
-        if (this.projectDialogsubscribe) {
-            this.projectDialogsubscribe.unsubscribe();
-            this.projectDialogsubscribe = null;
+        if (this.projectDialogSubscribe) {
+            this.projectDialogSubscribe.unsubscribe();
+            this.projectDialogSubscribe = null;
         }
     },
 
@@ -1117,11 +1117,17 @@ export default {
             }
         },
 
-        openTask(task) {
+        openTask(task, receive) {
             if (task.parent_id > 0) {
                 this.$store.dispatch("openTask", task.parent_id)
             } else {
                 this.$store.dispatch("openTask", task.id)
+            }
+            if (receive === true) {
+                // 向任务窗口发送领取任务请求
+                setTimeout(() => {
+                    Store.set('receiveTask', true);
+                }, 300)
             }
         },
 
