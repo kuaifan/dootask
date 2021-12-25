@@ -270,7 +270,6 @@ state.cacheTasks = state.method.getStorageArray("cacheTasks");
 state.cacheTablePanel = state.method.getStorageArray("cacheTablePanel");
 
 // Ajax
-state.ajaxLoadNum = 0;
 state.ajaxWsReady = false;
 state.ajaxWsListener = [];
 

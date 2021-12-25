@@ -70,11 +70,9 @@ ViewUI.LoadingBar.config({
 router.beforeEach((to, from, next) => {
     ViewUI.LoadingBar.start();
     next();
-    setTimeout($A.spinnerShow, 1000);
 });
 router.afterEach(() => {
     ViewUI.LoadingBar.finish();
-    $A.spinnerHide();
 });
 
 // 加载函数

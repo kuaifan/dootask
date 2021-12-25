@@ -20,6 +20,16 @@ export default {
         //
         const cloneParams = state.method.cloneJSON(params);
         return new Promise(function (resolve, reject) {
+            if (params.spinner === true) {
+                params.before = () => {
+                    $A.spinnerShow();
+                };
+                //
+                params.complete = () => {
+                    $A.spinnerHide();
+                };
+            }
+            //
             params.success = (result, status, xhr) => {
                 if (!state.method.isJson(result)) {
                     console.log(result, status, xhr);
