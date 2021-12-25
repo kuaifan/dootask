@@ -156,9 +156,9 @@ export default {
                 this.loadIng--;
                 this.$store.state.method.setStorage("cacheLoginEmail", this.email)
                 this.$store.dispatch("handleClearCache", data).then(() => {
-                    this.goNext();
+                    this.goNext1();
                 }).catch(() => {
-                    this.goNext();
+                    this.goNext1();
                 });
             }).catch(({data, msg}) => {
                 this.loadIng--;
@@ -170,15 +170,34 @@ export default {
             });
         },
 
-        goNext() {
+        goNext1() {
             this.loginJump = true;
+            if (this.loginType == 'login') {
+                this.goNext2();
+            } else {
+                // 新注册自动创建项目
+                this.$store.dispatch("call", {
+                    url: 'project/add',
+                    data: {
+                        name: this.$L('个人项目'),
+                        desc: this.$L('注册时系统自动创建项目，你可以自由删除。')
+                    },
+                }).then(() => {
+                    this.goNext2();
+                }).catch(() => {
+                    this.goNext2();
+                });
+            }
+        },
+
+        goNext2() {
             let fromUrl = decodeURIComponent($A.getObject(this.$route.query, 'from'));
             if (fromUrl) {
                 window.location.replace(fromUrl);
             } else {
                 this.goForward({path: '/manage/dashboard'}, true);
             }
-        },
+        }
     }
 }
 </script>
