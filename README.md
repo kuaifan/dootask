@@ -7,7 +7,7 @@ English | **[中文文档](./README_CN.md)**
 
 ## Setup
 
-> `Docker` & `Docker Compose` must be installed
+> `Docker` & `Docker Compose v2.0+` must be installed
 
 
 ### Deployment project

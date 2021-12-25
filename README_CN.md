@@ -7,7 +7,7 @@
 
 ## 安装程序
 
-> 必须安装 `Docker` 和 `Docker Compose`
+> 必须安装 `Docker` 和 `Docker Compose v2.0+`
 
 
 ### 部署项目
