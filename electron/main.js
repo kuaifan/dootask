@@ -100,6 +100,10 @@ ipcMain.on('windowMax', function () {
 })
 
 ipcMain.on('setDockBadge', (event, arg) => {
+    if(process.platform !== 'darwin'){
+        console.log('Mac only');
+        return;
+    }
     if (runNum(arg) > 0) {
         app.dock.setBadge(String(arg))
     } else {
