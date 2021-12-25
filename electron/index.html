@@ -9,12 +9,68 @@
     <meta name="format-detection" content="telephone=no" />
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <title>Dootask</title>
+    <title></title>
     <link rel="stylesheet" type="text/css" href="./css/app.css">
     <link rel="stylesheet" type="text/css" href="./css/iview.css">
     <script src="./js/language.all.js"></script>
     <script src="./js/scroll-into-view.min.js"></script>
     <script src="./config.js"></script>
+    <script>
+        window.$B = {
+            ishave: function (set) {
+                return !!(set !== null && set !== "null" && set !== undefined && set !== "undefined" && set);
+            },
+
+            strExists: function (string, find, lower = false) {
+                string += "";
+                find += "";
+                if (lower !== true) {
+                    string = string.toLowerCase();
+                    find = find.toLowerCase();
+                }
+                return (string.indexOf(find) !== -1);
+            },
+
+            getMiddle: function (string, start, end) {
+                string = string.toString();
+                if (this.ishave(start) && this.strExists(string, start)) {
+                    string = string.substring(string.indexOf(start) + start.length);
+                }
+                if (this.ishave(end) && this.strExists(string, end)) {
+                    string = string.substring(0, string.indexOf(end));
+                }
+                return string;
+            },
+
+            urlParameter: function(key) {
+                let params = this.urlParameterAll();
+                return typeof key === "undefined" ? params : params[key];
+            },
+
+            urlParameterAll: function() {
+                let search = window.location.search || window.location.hash;
+                let arr = [];
+                if (this.strExists(search, "?")) {
+                    arr = this.getMiddle(search, "?").split("&");
+                }
+                let params = {};
+                for (let i = 0; i < arr.length; i++) {
+                    let data = arr[i].split("=");
+                    if (data.length === 2) {
+                        params[data[0]] = data[1];
+                    }
+                }
+                return params;
+            }
+        };
+        (function(){
+            let title = $B.urlParameter("title");
+            if (title) {
+                title = decodeURIComponent(title);
+            }
+            window.setTitle(title || window.systemInformation.title);
+        })();
+    </script>
 </head>
 <body>
 

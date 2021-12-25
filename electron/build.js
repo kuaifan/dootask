@@ -106,12 +106,13 @@ const platform = ["build-mac", "build-mac-arm", "build-win"];
 
 // 生成配置、编译应用
 function step1(data, publish) {
-    let systemInfo = `window.systemInformation = {
-    version: "${config.version}",
-    origin: "./",
-    apiUrl: "${formatUrl(data.url)}api/"
-}`;
-    fs.writeFileSync(electronDir + "/config.js", systemInfo, 'utf8');
+    let systemInfo = {
+        title: data.name,
+        version: config.version,
+        origin: "./",
+        apiUrl:  formatUrl(data.url) + "api/",
+    }
+    fs.writeFileSync(electronDir + "/config.js", "window.systemInformation = " + JSON.stringify(systemInfo), 'utf8');
     fs.writeFileSync(nativeCachePath, formatUrl(data.url));
     fs.writeFileSync(devloadCachePath, "", 'utf8');
     //

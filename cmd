@@ -96,13 +96,13 @@ run_electron() {
     if [ -d "./electron/dist" ]; then
         rm -rf "./electron/dist"
     fi
-    if [ -d "./electron/public" ]; then
+    if [ -d "./electron/public" ] && [ "$argv" != "--nobuild" ]; then
         rm -rf "./electron/public"
     fi
     mkdir -p ./electron/public
     cp ./electron/index.html ./electron/public/index.html
     #
-    if [ "$argv" != "dev" ]; then
+    if [ "$argv" != "dev" ] && [ "$argv" != "--nobuild" ]; then
         npx mix --production -- --env --electron
     fi
     node ./electron/build.js $argv
