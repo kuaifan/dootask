@@ -20,23 +20,6 @@ export default {
         //
         const cloneParams = state.method.cloneJSON(params);
         return new Promise(function (resolve, reject) {
-            if (params.spinner === true) {
-                const spinner = document.getElementById("common-spinner");
-                if (spinner) {
-                    params.before = () => {
-                        state.ajaxLoadNum++;
-                        spinner.style.display = "block"
-                    };
-                    //
-                    params.complete = () => {
-                        state.ajaxLoadNum--;
-                        if (state.ajaxLoadNum <= 0) {
-                            spinner.style.display = "none"
-                        }
-                    };
-                }
-            }
-            //
             params.success = (result, status, xhr) => {
                 if (!state.method.isJson(result)) {
                     console.log(result, status, xhr);

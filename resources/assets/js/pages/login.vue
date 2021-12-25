@@ -24,7 +24,7 @@
                         <Icon type="ios-checkmark-circle-outline" class="login-icon" slot="prepend"></Icon>
                         <div slot="append" class="login-code-end" @click="reCode"><img :src="codeUrl"/></div>
                     </Input>
-                    <Button type="primary" :loading="loadIng > 0" size="large" long @click="onLogin">{{$L(loginType=='login'?'登录':'注册')}}</Button>
+                    <Button type="primary" :loading="loadIng > 0 || loginJump" size="large" long @click="onLogin">{{$L(loginText)}}</Button>
 
                     <div v-if="loginType=='reg'" class="login-switch">{{$L('已经有帐号？')}}<a href="javascript:void(0)" @click="loginType='login'">{{$L('登录帐号')}}</a></div>
                     <div v-else class="login-switch">{{$L('还没有帐号？')}}<a href="javascript:void(0)" @click="loginType='reg'">{{$L('注册帐号')}}</a></div>
@@ -59,6 +59,7 @@ export default {
             codeUrl: this.$store.state.method.apiUrl('users/login/codeimg'),
 
             loginType: 'login',
+            loginJump: false,
             email: this.$store.state.method.getStorageString("cacheLoginEmail") || '',
             password: '',
             password2: '',
@@ -70,9 +71,19 @@ export default {
     mounted() {
         this.getDemoAccount();
     },
+    deactivated() {
+        this.loginJump = false;
+    },
     computed: {
         currentLanguage() {
             return this.languageList[this.languageType] || 'Language'
+        },
+        loginText() {
+            let text = this.loginType == 'login' ? '登录' : '注册';
+            if (this.loginJump) {
+                text += "成功..."
+            }
+            return text
         }
     },
     methods: {
@@ -160,6 +171,7 @@ export default {
         },
 
         goNext() {
+            this.loginJump = true;
             let fromUrl = decodeURIComponent($A.getObject(this.$route.query, 'from'));
             if (fromUrl) {
                 window.location.replace(fromUrl);
