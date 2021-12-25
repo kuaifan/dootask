@@ -106,6 +106,7 @@ const platform = ["build-mac", "build-mac-arm", "build-win"];
 
 // 生成配置、编译应用
 function step1(data, publish) {
+    // config.js
     let systemInfo = {
         title: data.name,
         version: config.version,
@@ -115,7 +116,12 @@ function step1(data, publish) {
     fs.writeFileSync(electronDir + "/config.js", "window.systemInformation = " + JSON.stringify(systemInfo), 'utf8');
     fs.writeFileSync(nativeCachePath, formatUrl(data.url));
     fs.writeFileSync(devloadCachePath, "", 'utf8');
-    //
+    // index.html
+    let indexFile = path.resolve(electronDir, "index.html");
+    let indexString = fs.readFileSync(indexFile, 'utf8');
+    indexString = indexString.replace(`<title></title>`, `<title>${data.name}</title>`);
+    fs.writeFileSync(indexFile, indexString, 'utf8');
+    // package.json
     let packageFile = path.resolve(__dirname, "package.json");
     let packageString = fs.readFileSync(packageFile, 'utf8');
     packageString = packageString.replace(/"name":\s*"(.*?)"/, `"name": "${data.name}"`);

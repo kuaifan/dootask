@@ -654,7 +654,7 @@ export default {
         },
 
         openSingle(item) {
-            let url = $A.originUrl("index.html/#/single/file/" + item.id + "?title=" + encodeURIComponent(item.name)),
+            let url = $A.originUrl("index.html#/single/file/" + item.id),
                 name = 'file-' + item.id,
                 width = Math.min(window.screen.availWidth, 1280),
                 height = Math.min(window.screen.availHeight, 800);
