@@ -74,7 +74,7 @@ class FileContent extends AbstractModel
             $content['preview'] = false;
             if ($content['ext'] && !in_array($content['ext'], ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'])) {
                 $url = 'http://' . env('APP_IPPR') . '.3/' . $content['url'];
-                if ($type == 'image') {
+                if (in_array($type, ['picture', 'image', 'tif', 'media'])) {
                     $url = Base::fillUrl($content['url']);
                 }
                 $content['url'] = base64_encode($url);
