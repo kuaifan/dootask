@@ -219,6 +219,10 @@ if [ $# -gt 0 ]; then
         docker-compose up -d
         docker-compose restart php
         run_exec php "composer install"
+        if [ ! -f "${cur_path}/vendor/autoload.php" ]; then
+            run_exec php "composer config -g repo.packagist composer https://mirrors.aliyun.com/composer/"
+            run_exec php "composer install"
+        fi
         [ -z "$(env_get APP_KEY)" ] && run_exec php "php artisan key:generate"
         run_exec php "php artisan migrate --seed"
         run_exec php "php bin/run --mode=prod"
