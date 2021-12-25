@@ -654,11 +654,16 @@ export default {
         },
 
         openSingle(item) {
-            let url = $A.originUrl("index.html#/single/file/" + item.id),
-                name = 'file-' + item.id,
-                width = Math.min(window.screen.availWidth, 1280),
-                height = Math.min(window.screen.availHeight, 800);
-            window.open(url, name, 'height=' + height + ',innerHeight=' + height + ',width=' + width + ',innerWidth=' + width);
+            this.$electron.ipcRenderer.send('windowRouter', {
+                name: 'file-' + item.id,
+                path: "/single/file/" + item.id,
+                force: false, // 如果窗口已存在不重新加载
+                config: {
+                    parent: null,
+                    width: Math.min(window.screen.availWidth, 1280),
+                    height: Math.min(window.screen.availHeight, 800),
+                }
+            });
         },
 
         clickRow(row) {

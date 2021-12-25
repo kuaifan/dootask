@@ -54,12 +54,19 @@
         "mac": {
             "icon": "../resources/assets/statics/public/images/logo-app.png",
             "target": "dmg",
-            "publish": ["github"]
+            "publish": [
+                "github"
+            ]
         },
         "win": {
             "icon": "../resources/assets/statics/public/images/logo-app.ico",
-            "target": ["tar.gz", "nsis"],
-            "publish": ["github"]
+            "target": [
+                "tar.gz",
+                "nsis"
+            ],
+            "publish": [
+                "github"
+            ]
         },
         "nsis": {
             "oneClick": false,

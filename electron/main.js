@@ -4,6 +4,7 @@ const XLSX = require('xlsx');
 const {app, BrowserWindow, ipcMain, dialog} = require('electron')
 
 let mainWindow = null,
+    subWindow = [],
     willQuitApp = false,
     inheritClose = false,
     devloadCachePath = path.resolve(__dirname, ".devload"),
@@ -30,10 +31,22 @@ function runNum(str, fixed) {
     return _s;
 }
 
+function randomString(len) {
+    len = len || 32;
+    let $chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678oOLl9gqVvUuI1';
+    let maxPos = $chars.length;
+    let pwd = '';
+    for (let i = 0; i < len; i++) {
+        pwd += $chars.charAt(Math.floor(Math.random() * maxPos));
+    }
+    return pwd;
+}
+
 function createWindow() {
     mainWindow = new BrowserWindow({
         width: 1280,
         height: 800,
+        center: true,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: true,
@@ -63,6 +76,60 @@ function createWindow() {
     })
 }
 
+function createRouter(arg) {
+    if (!arg) {
+        return;
+    }
+
+    if (typeof arg !== "object") {
+        arg = {
+            path: arg,
+            config: {},
+        }
+    }
+
+    let name = arg.name || "auto_" + randomString(6);
+    let item = subWindow.find(item => item.name == name);
+    let browser = item ? item.browser : null;
+    if (browser) {
+        browser.focus();
+        if (arg.force === false) {
+            return;
+        }
+    } else {
+        browser = new BrowserWindow(Object.assign({
+            width: 1280,
+            height: 800,
+            center: true,
+            parent: mainWindow,
+            webPreferences: {
+                preload: path.join(__dirname, 'preload.js'),
+                nodeIntegration: true,
+                contextIsolation: false
+            }
+        }, arg.config || {}))
+        browser.on('close', function () {
+            let index = subWindow.findIndex(item => item.name == name);
+            if (index > -1) {
+                subWindow.splice(index, 1)
+            }
+        })
+        subWindow.push({ name, browser })
+    }
+
+    if (devloadUrl) {
+        browser.loadURL(devloadUrl + '#' + (arg.hash || arg.path)).then(r => {
+
+        })
+    } else {
+        browser.loadFile('./public/index.html', {
+            hash: arg.hash || arg.path
+        }).then(r => {
+
+        })
+    }
+}
+
 app.whenReady().then(() => {
     createWindow()
 
@@ -83,6 +150,10 @@ ipcMain.on('inheritClose', () => {
     inheritClose = true
 })
 
+ipcMain.on('windowRouter', (event, arg) => {
+    createRouter(arg)
+})
+
 ipcMain.on('windowHidden', () => {
     app.hide();
 })
@@ -101,7 +172,7 @@ ipcMain.on('windowMax', function () {
 
 ipcMain.on('setDockBadge', (event, arg) => {
     if(process.platform !== 'darwin'){
-        console.log('Mac only');
+        // Mac only
         return;
     }
     if (runNum(arg) > 0) {
