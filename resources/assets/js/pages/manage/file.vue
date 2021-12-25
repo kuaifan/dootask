@@ -199,7 +199,7 @@
             v-model="editShow"
             class="page-file-drawer"
             :mask-closable="false">
-            <FileContent v-if="editNum > 0" :parent-show="editShow" :file="editInfo"/>
+            <FileContent v-if="editNum > 0" v-model="editShow" :file="editInfo"/>
         </DrawerOverlay>
 
     </div>
@@ -289,8 +289,8 @@ export default {
             shareInfo: {},
             shareLoad: 0,
 
+            editNum: 0, // 此参数是为了判断首次打开文件再加载文件组件
             editShow: false,
-            editNum: 0,
             editInfo: {},
 
             uploadDir: false,
@@ -644,9 +644,21 @@ export default {
                 this.searchKey = '';
                 this.pid = item.id;
             } else {
-                this.editInfo = item;
-                this.editShow = true;
+                if (this.isElectron) {
+                    this.openSingle(item);
+                } else {
+                    this.editInfo = item;
+                    this.editShow = true;
+                }
             }
+        },
+
+        openSingle(item) {
+            let url = $A.originUrl("index.html/#/single/file/" + item.id + "?title=" + encodeURIComponent(item.name)),
+                name = 'file-' + item.id,
+                width = Math.min(window.screen.availWidth, 1280),
+                height = Math.min(window.screen.availHeight, 800);
+            window.open(url, name, 'height=' + height + ',innerHeight=' + height + ',width=' + width + ',innerWidth=' + width);
         },
 
         clickRow(row) {

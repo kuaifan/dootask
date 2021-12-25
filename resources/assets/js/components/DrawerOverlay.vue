@@ -15,8 +15,6 @@
 </template>
 
 <script>
-    import state from "../store/state";
-
     export default {
         name: 'DrawerOverlay',
         props: {

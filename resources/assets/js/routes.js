@@ -71,6 +71,11 @@ export default [
         ]
     },
     {
+        name: 'single-file',
+        path: '/single/file/:id',
+        component: () => import('./pages/single/file.vue'),
+    },
+    {
         name: 'login',
         path: '/login',
         component: () => import('./pages/login.vue'),

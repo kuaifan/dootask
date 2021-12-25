@@ -82,15 +82,15 @@ export default {
     name: "FileContent",
     components: {TEditor, MDEditor, LuckySheet, Flow, OnlyOffice},
     props: {
+        value: {
+            type: Boolean,
+            default: false
+        },
         file: {
             type: Object,
             default: () => {
                 return {};
             }
-        },
-        parentShow: {
-            type: Boolean,
-            default: true
         },
     },
 
@@ -144,7 +144,7 @@ export default {
 
                     case 'file':
                         if (data.action == 'content') {
-                            if (this.parentShow && data.id == this.fileId) {
+                            if (this.value && data.id == this.fileId) {
                                 $A.modalConfirm({
                                     title: "更新提示",
                                     content: '团队成员（' + info.nickname + '）更新了内容，<br/>更新时间：' + $A.formatDate("Y-m-d H:i:s", info.time) + '。<br/><br/>点击【确定】加载最新内容。',
@@ -160,7 +160,7 @@ export default {
             deep: true,
         },
 
-        parentShow: {
+        value: {
             handler(val) {
                 if (!val) {
                     this.fileContent[this.fileId] = this.contentDetail;

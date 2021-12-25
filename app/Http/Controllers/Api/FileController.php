@@ -80,6 +80,20 @@ class FileController extends AbstractController
     }
 
     /**
+     * 获取单条数据
+     * @return array
+     */
+    public function one()
+    {
+        User::auth();
+        //
+        $id = intval(Request::input('id'));
+        //
+        $file = File::allowFind($id);
+        return Base::retSuccess('success', $file);
+    }
+
+    /**
      * 搜索文件列表
      *
      * @apiParam {String} [key]         关键词
