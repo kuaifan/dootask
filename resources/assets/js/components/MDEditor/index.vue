@@ -227,8 +227,8 @@
                 }
             },
             htmlOk() {
-                $A.loadScript('js/html2md.js', () => {
-                    if (typeof toMarkdown !== 'function') {
+                $A.loadScript('js/html2md.js', (e) => {
+                    if (e !== null || typeof toMarkdown !== 'function') {
                         $A.modalAlert("组件加载失败！");
                         return;
                     }

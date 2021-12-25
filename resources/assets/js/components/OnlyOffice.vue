@@ -1,6 +1,7 @@
 <template>
     <div class="component-only-office">
         <div :id="this.id" class="placeholder"></div>
+        <div class="office-loading"><Loading v-if="loadIng > 0"/></div>
     </div>
 </template>
 
@@ -18,6 +19,17 @@
         flex: 1;
         width: 100%;
         height: 100%;
+    }
+    .office-loading {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
     }
 }
 </style>
@@ -44,6 +56,8 @@ export default {
 
     data() {
         return {
+            loadIng: 0,
+
             fileName: null,
             fileType: null,
             fileUrl: null,
@@ -83,7 +97,13 @@ export default {
                 if (!url) {
                     return;
                 }
-                $A.loadScript(this.$store.state.method.apiUrl("../office/web-apps/apps/api/documents/api.js"), () => {
+                this.loadIng++;
+                $A.loadScript(this.$store.state.method.apiUrl("../office/web-apps/apps/api/documents/api.js"), (e) => {
+                    this.loadIng--;
+                    if (e !== null) {
+                        $A.modalAlert("组件加载失败！");
+                        return;
+                    }
                     this.loadFile()
                 })
             },

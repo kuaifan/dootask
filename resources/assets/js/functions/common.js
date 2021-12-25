@@ -923,7 +923,7 @@
                 return;
             }
             if (this.__loadScript[url] === true) {
-                typeof callback === "function" && callback();
+                typeof callback === "function" && callback(null);
                 return;
             }
             let script = document.createElement("script");
@@ -933,13 +933,16 @@
                     if (script.readyState === "loaded" || script.readyState === "complete") {
                         script.onreadystatechange = null;
                         this.__loadScript[url] = true;
-                        typeof callback === "function" && callback();
+                        typeof callback === "function" && callback(null);
                     }
                 };
             } else {
                 script.onload = () => {
                     this.__loadScript[url] = true;
-                    typeof callback === "function" && callback();
+                    typeof callback === "function" && callback(null);
+                };
+                script.onerror = (e) => {
+                    typeof callback === "function" && callback(e);
                 };
             }
             if (this.rightExists(url, '.js')) {
@@ -955,7 +958,7 @@
                 if (++i < urls.length) {
                     this.loadScript(urls[i], recursiveCallback)
                 } else {
-                    typeof callback === "function" && callback();
+                    typeof callback === "function" && callback(null);
                 }
             }
             this.loadScript(urls[0], recursiveCallback);
@@ -974,7 +977,7 @@
                 return;
             }
             if (this.__loadCss[url] === true) {
-                typeof callback === "function" && callback();
+                typeof callback === "function" && callback(null);
                 return;
             }
             let script = document.createElement('link');
@@ -983,15 +986,18 @@
                     if (script.readyState == 'loaded' || script.readyState == 'complete') {
                         script.onreadystatechange = null;
                         this.__loadCss[url] = true;
-                        typeof callback === "function" && callback();
+                        typeof callback === "function" && callback(null);
 
                     }
                 };
             } else {
                 script.onload = () => {
                     this.__loadCss[url] = true;
-                    typeof callback === "function" && callback();
+                    typeof callback === "function" && callback(null);
 
+                };
+                script.onerror = (e) => {
+                    typeof callback === "function" && callback(e);
                 };
             }
             script.rel = 'stylesheet';
@@ -1008,7 +1014,7 @@
                 if (++i < urls.length) {
                     this.loadCss(urls[i], recursiveCallback)
                 } else {
-                    typeof callback === "function" && callback();
+                    typeof callback === "function" && callback(null);
                 }
             }
             this.loadCss(urls[0], recursiveCallback);
