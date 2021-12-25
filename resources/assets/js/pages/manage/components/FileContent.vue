@@ -1,5 +1,5 @@
 <template>
-    <div class="file-content">
+    <div v-if="ready" class="file-content">
         <iframe v-if="isPreview" ref="myPreview" class="preview-iframe" :src="previewUrl"></iframe>
         <template v-else>
             <div v-show="!['word', 'excel', 'ppt'].includes(file.type)" class="edit-header">
@@ -96,6 +96,8 @@ export default {
 
     data() {
         return {
+            ready: false,
+
             loadContent: 0,
             loadIng: 0,
 
@@ -162,10 +164,11 @@ export default {
 
         value: {
             handler(val) {
-                if (!val) {
-                    this.fileContent[this.fileId] = this.contentDetail;
-                } else {
+                if (val) {
+                    this.ready = true;
                     this.editUser = [this.userId];
+                } else {
+                    this.fileContent[this.fileId] = this.contentDetail;
                 }
             },
             immediate: true,

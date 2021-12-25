@@ -1,6 +1,6 @@
 <template>
     <!--子任务-->
-    <li v-if="taskDetail.parent_id > 0">
+    <li v-if="ready && taskDetail.parent_id > 0">
         <div class="subtask-icon">
             <div v-if="taskDetail.loading === true" class="loading"><Loading /></div>
             <EDropdown
@@ -90,7 +90,7 @@
         </Poptip>
     </li>
     <!--主任务-->
-    <div v-else v-show="taskDetail.id > 0" :class="{'task-detail':true, 'open-dialog': hasOpenDialog, 'completed': taskDetail.complete_at}">
+    <div v-else-if="ready" v-show="taskDetail.id > 0" :class="{'task-detail':true, 'open-dialog': hasOpenDialog, 'completed': taskDetail.complete_at}">
         <div class="task-info">
             <div class="head">
                 <Icon v-if="taskDetail.complete_at" class="icon completed" type="md-checkmark-circle" @click="updateData('uncomplete')"/>
@@ -154,7 +154,6 @@
                 <div class="desc">
                     <TEditor
                         ref="desc"
-                        v-if="loadEditor"
                         :value="taskContent"
                         :plugins="taskPlugins"
                         :options="taskOptions"
@@ -422,8 +421,9 @@ export default {
     },
     data() {
         return {
+            ready: false,
+
             taskDetail: {},
-            loadEditor: false,
 
             ownerShow: false,
             ownerData: {},
@@ -695,9 +695,7 @@ export default {
         },
         taskId (id) {
             if (id > 0) {
-                this.$nextTick(() => {
-                    this.loadEditor = true;
-                });
+                this.ready = true;
             } else {
                 this.timeOpen = false;
                 this.timeForce = false;

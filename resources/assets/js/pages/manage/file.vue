@@ -199,7 +199,7 @@
             v-model="editShow"
             class="page-file-drawer"
             :mask-closable="false">
-            <FileContent v-if="editNum > 0" v-model="editShow" :file="editInfo"/>
+            <FileContent v-model="editShow" :file="editInfo"/>
         </DrawerOverlay>
 
     </div>
@@ -289,7 +289,6 @@ export default {
             shareInfo: {},
             shareLoad: 0,
 
-            editNum: 0, // 此参数是为了判断首次打开文件再加载文件组件
             editShow: false,
             editInfo: {},
 
@@ -397,7 +396,6 @@ export default {
 
         editShow(val) {
             if (val) {
-                this.editNum++;
                 this.$store.dispatch("websocketPath", "file/content/" + this.editInfo.id);
             } else {
                 this.$store.dispatch("websocketPath", "file");

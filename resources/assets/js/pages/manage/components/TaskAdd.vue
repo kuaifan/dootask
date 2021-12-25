@@ -1,5 +1,5 @@
 <template>
-    <div class="task-add">
+    <div v-if="ready" class="task-add">
         <div class="head" :class="{empty:addData.cascader.length == 0,visible:cascaderShow}">
             <Cascader
                 v-model="addData.cascader"
@@ -116,11 +116,11 @@
                 <ButtonGroup class="page-manage-add-task-button-group">
                     <Button type="primary" :loading="loadIng > 0" @click="onAdd">{{$L('添加任务')}}</Button>
                     <Dropdown @on-click="onAdd(true)">
-                        <Button type="primary" :loading="loadIng > 0">
+                        <Button type="primary">
                             <Icon type="ios-arrow-down"></Icon>
                         </Button>
                         <DropdownMenu slot="list">
-                            <DropdownItem>{{$L('提交继续添加')}}</DropdownItem>
+                            <DropdownItem :disabled="loadIng > 0">{{$L('提交继续添加')}}</DropdownItem>
                         </DropdownMenu>
                     </Dropdown>
                 </ButtonGroup>
@@ -145,6 +145,8 @@ export default {
     },
     data() {
         return {
+            ready: false,
+
             addData: {
                 cascader: [],
                 name: "",
@@ -207,9 +209,12 @@ export default {
     watch: {
         value(val) {
             if (val) {
+                this.ready = true;
                 this.initCascaderData();
                 this.initProjectData();
-                this.$nextTick(this.$refs.input.focus)
+                this.$nextTick(() => {
+                    this.$refs.input.focus()
+                })
             }
         },
         'addData.project_id'(id) {

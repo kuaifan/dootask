@@ -1,6 +1,5 @@
 <template>
     <div class="teditor-wrapper">
-        <input ref="input" class="teditor-bginput"/>
         <div class="teditor-box" :class="[!inline && spinShow ? 'teditor-loadstyle' : 'teditor-loadedstyle']">
             <template v-if="inline">
                 <div ref="myTextarea" :id="id" v-html="content"></div>
@@ -350,11 +349,6 @@
                                     this.editor.setMode('readonly');
                                 } else {
                                     this.editor.setMode('design');
-                                }
-                                if (this.inline) {
-                                    this.$nextTick(() => {
-                                        this.$refs.input.focus();
-                                    });
                                 }
                                 this.$emit('editorInit', this.editor);
                             });
