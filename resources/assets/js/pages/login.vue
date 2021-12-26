@@ -19,11 +19,13 @@
                     <Input v-model="password" prefix="ios-lock-outline" :placeholder="$L('输入您的密码')" type="password" size="large" @on-enter="onLogin" />
 
                     <Input v-if="loginType=='reg'" v-model="password2" prefix="ios-lock-outline" :placeholder="$L('输入确认密码')" type="password" size="large" @on-enter="onLogin" />
+                    <Input v-if="loginType=='reg' && regNeedInvite" v-model="invite" class="login-code" :placeholder="$L('请输入注册邀请码')" type="text" size="large" @on-enter="onLogin"><span slot="prepend">&nbsp;{{$L('邀请码')}}&nbsp;</span></Input>
 
-                    <Input v-if="codeNeed" v-model="code" class="login-code" :placeholder="$L('输入图形验证码')" size="large" @on-enter="onLogin">
+                    <Input v-if="loginType=='login' && codeNeed" v-model="code" class="login-code" :placeholder="$L('输入图形验证码')" size="large" @on-enter="onLogin">
                         <Icon type="ios-checkmark-circle-outline" class="login-icon" slot="prepend"></Icon>
                         <div slot="append" class="login-code-end" @click="reCode"><img :src="codeUrl"/></div>
                     </Input>
+
                     <Button type="primary" :loading="loadIng > 0 || loginJump" size="large" long @click="onLogin">{{$L(loginText)}}</Button>
 
                     <div v-if="loginType=='reg'" class="login-switch">{{$L('已经有帐号？')}}<a href="javascript:void(0)" @click="loginType='login'">{{$L('登录帐号')}}</a></div>
@@ -64,8 +66,11 @@ export default {
             password: '',
             password2: '',
             code: '',
+            invite: '',
 
             demoAccount: {},
+
+            regNeedInvite: false,
         }
     },
     mounted() {
@@ -86,6 +91,13 @@ export default {
             return text
         }
     },
+    watch: {
+        loginType(val) {
+            if (val == 'reg') {
+                this.getNeedInvite();
+            }
+        }
+    },
     methods: {
         getDemoAccount() {
             this.$store.dispatch("call", {
@@ -98,6 +110,16 @@ export default {
                 }
             }).catch(() => {
                 this.demoAccount = {};
+            });
+        },
+
+        getNeedInvite() {
+            this.$store.dispatch("call", {
+                url: 'users/reg/needinvite',
+            }).then(({data}) => {
+                this.regNeedInvite = !!data.need;
+            }).catch(() => {
+                this.regNeedInvite = false;
             });
         },
 
@@ -151,9 +173,13 @@ export default {
                     email: this.email,
                     password: this.password,
                     code: this.code,
+                    invite: this.invite,
                 },
             }).then(({data}) => {
                 this.loadIng--;
+                this.password = "";
+                this.code = "";
+                this.invite = "";
                 this.$store.state.method.setStorage("cacheLoginEmail", this.email)
                 this.$store.dispatch("handleClearCache", data).then(() => {
                     this.goNext1();

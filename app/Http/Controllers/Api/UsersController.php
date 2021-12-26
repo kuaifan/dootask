@@ -31,7 +31,7 @@ class UsersController extends AbstractController
      * @apiParam {String} email          邮箱
      * @apiParam {String} password       密码
      * @apiParam {String} [code]         登录验证码
-     * @apiParam {String} [key]          登陆验证码key
+     * @apiParam {String} [invite]       注册邀请码
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -46,24 +46,22 @@ class UsersController extends AbstractController
             $setting = Base::setting('system');
             if ($setting['reg'] == 'close') {
                 return Base::retError('未开放注册');
+            } elseif ($setting['reg'] == 'invite') {
+                $invite = trim(Request::input('invite'));
+                if (empty($invite) || $invite != $setting['reg_invite']) {
+                    return Base::retError('请输入正确的邀请码');
+                }
             }
             $user = User::reg($email, $password);
         } else {
             $needCode = !Base::isError(User::needCode($email));
             if ($needCode) {
                 $code = trim(Request::input('code'));
-                $key = trim(Request::input('key'));
                 if (empty($code)) {
                     return Base::retError('请输入验证码', ['code' => 'need']);
                 }
-                if (empty($key)) {
-                    if (!Captcha::check($code)) {
-                        return Base::retError('请输入正确的验证码', ['code' => 'need']);
-                    }
-                } else {
-                    if (!Captcha::check_api($code, $key)) {
-                        return Base::retError('请输入正确的验证码', ['code' => 'need']);
-                    }
+                if (!Captcha::check($code)) {
+                    return Base::retError('请输入正确的验证码', ['code' => 'need']);
                 }
             }
             //
@@ -152,6 +150,25 @@ class UsersController extends AbstractController
     {
         $captcha = Captcha::create('default', true);
         return Base::retSuccess('请求成功', $captcha);
+    }
+
+    /**
+     * @api {get} api/users/reg/needinvite          04. 是否需要邀请码
+     *
+     * @apiDescription 用于判断注册是否需要邀请码
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName reg__needinvite
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function reg__needinvite()
+    {
+        return Base::retSuccess('success', [
+            'need' => Base::settingFind('system', 'reg') == 'invite'
+        ]);
     }
 
     /**
