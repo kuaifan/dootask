@@ -4,8 +4,16 @@
             <FormItem :label="$L('允许注册')" prop="reg">
                 <RadioGroup v-model="formDatum.reg">
                     <Radio label="open">{{$L('允许')}}</Radio>
+                    <Radio label="invite">{{$L('邀请码')}}</Radio>
                     <Radio label="close">{{$L('禁止')}}</Radio>
                 </RadioGroup>
+                <div v-if="formDatum.reg == 'open'" class="form-tip">{{$L('允许：开放注册功能。')}}</div>
+                <template v-else-if="formDatum.reg == 'invite'">
+                    <div class="form-tip">{{$L('邀请码：注册时需填写下方邀请码。')}}</div>
+                    <Input v-model="formDatum.reg_invite" style="width:200px;margin-top:6px">
+                        <span slot="prepend">{{$L('邀请码')}}</span>
+                    </Input>
+                </template>
             </FormItem>
             <FormItem :label="$L('登录验证码')" prop="loginCode">
                 <RadioGroup v-model="formDatum.login_code">
@@ -22,6 +30,13 @@
                 </RadioGroup>
                 <div v-if="formDatum.password_policy == 'simple'" class="form-tip">{{$L('简单：大于或等于6个字符。')}}</div>
                 <div v-else-if="formDatum.password_policy == 'complex'" class="form-tip">{{$L('复杂：大于或等于6个字符，包含数字、字母大小写或者特殊字符。')}}</div>
+            </FormItem>
+            <FormItem :label="$L('邀请项目')" prop="projectInvite">
+                <RadioGroup v-model="formDatum.project_invite">
+                    <Radio label="open">{{$L('开启')}}</Radio>
+                    <Radio label="close">{{$L('关闭')}}</Radio>
+                </RadioGroup>
+                <div v-if="formDatum.project_invite == 'open'" class="form-tip">{{$L('开启：项目管理员可生成链接邀请成员加入项目。')}}</div>
             </FormItem>
             <FormItem :label="$L('聊天昵称')" prop="chatNickname">
                 <RadioGroup v-model="formDatum.chat_nickname">
@@ -68,7 +83,7 @@ export default {
         systemSetting(save) {
             this.loadIng++;
             this.$store.dispatch("call", {
-                url: 'system/setting?type=' + (save ? 'save' : 'get'),
+                url: 'system/setting?type=' + (save ? 'save' : 'all'),
                 data: this.formDatum,
             }).then(({data}) => {
                 if (save) {

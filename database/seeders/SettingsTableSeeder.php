@@ -26,7 +26,7 @@ class SettingsTableSeeder extends Seeder
                 'id' => 1,
                 'name' => 'system',
                 'desc' => '',
-                'setting' => '{"reg":"open","login_code":"auto"}',
+                'setting' => '{"reg":"open","project_invite":"open","login_code":"auto"}',
                 'created_at' => seeders_at('2021-07-01 11:05:06'),
                 'updated_at' => seeders_at('2021-07-01 12:27:12'),
             ),

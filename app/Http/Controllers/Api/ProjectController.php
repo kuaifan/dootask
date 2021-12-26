@@ -6,6 +6,7 @@ use App\Exceptions\ApiException;
 use App\Models\AbstractModel;
 use App\Models\Project;
 use App\Models\ProjectColumn;
+use App\Models\ProjectInvite;
 use App\Models\ProjectLog;
 use App\Models\ProjectTask;
 use App\Models\ProjectTaskFile;
@@ -256,6 +257,110 @@ class ProjectController extends AbstractController
         $project->pushMsg('delete', null, $deleteUser);
         $project->pushMsg('detail');
         return Base::retSuccess('修改成功', ['id' => $project->id]);
+    }
+
+    /**
+     * 获取邀请链接（限：项目负责人）
+     *
+     * @apiParam {Number} project_id        项目ID
+     * @apiParam {String} refresh           刷新链接
+     * - no: 只获取（默认）
+     * - yes: 刷新链接，之前的将失效
+     */
+    public function invite()
+    {
+        User::auth();
+        //
+        $project_id = intval(Request::input('project_id'));
+        $refresh = Request::input('refresh', 'no');
+        //
+        $project = Project::userProject($project_id);
+        if (!$project->owner) {
+            return Base::retError('仅限项目负责人查看');
+        }
+        //
+        $invite = Base::settingFind('system', 'project_invite');
+        if ($invite == 'close') {
+            return Base::retError('未开放此功能');
+        }
+        //
+        $projectInvite = ProjectInvite::whereProjectId($project->id)->first();
+        if (empty($projectInvite)) {
+            $projectInvite = ProjectInvite::createInstance([
+                'project_id' => $project->id,
+                'code' => Base::generatePassword(64),
+            ]);
+            $projectInvite->save();
+        } else {
+            if ($refresh == 'yes') {
+                $projectInvite->code = Base::generatePassword(64);
+                $projectInvite->save();
+            }
+        }
+        return Base::retSuccess('success', [
+            'url' => Base::fillUrl('manage/project/invite?code=' . $projectInvite->code),
+            'num' => $projectInvite->num
+        ]);
+    }
+
+    /**
+     * 通过邀请链接code获取项目信息
+     *
+     * @apiParam {String} code
+     */
+    public function invite__info()
+    {
+        User::auth();
+        //
+        $code = Request::input('code');
+        //
+        $invite = Base::settingFind('system', 'project_invite');
+        if ($invite == 'close') {
+            return Base::retError('未开放此功能');
+        }
+        //
+        $projectInvite = ProjectInvite::with(['project'])->whereCode($code)->first();
+        if (empty($projectInvite)) {
+            return Base::retError('邀请code不存在');
+        }
+        return Base::retSuccess('success', $projectInvite);
+    }
+
+    /**
+     * 通过邀请链接code加入项目
+     *
+     * @apiParam {String} code
+     */
+    public function invite__join()
+    {
+        $user = User::auth();
+        //
+        $code = Request::input('code');
+        //
+        $invite = Base::settingFind('system', 'project_invite');
+        if ($invite == 'close') {
+            return Base::retError('未开放此功能');
+        }
+        //
+        $projectInvite = ProjectInvite::with(['project'])->whereCode($code)->first();
+        if (empty($projectInvite)) {
+            return Base::retError('邀请code不存在');
+        }
+        if ($projectInvite->already) {
+            return Base::retSuccess('已加入', $projectInvite);
+        }
+        if (!$projectInvite->project?->joinProject($user->userid)) {
+            return Base::retError('加入失败，请稍后再试');
+        }
+        $projectInvite->num++;
+        $projectInvite->save();
+        //
+        $projectInvite->project->syncDialogUser();
+        $projectInvite->project->addLog("会员ID：" . $user->userid . " 通过邀请链接加入项目");
+        //
+        $data = $projectInvite->toArray();
+        $data['already'] = true;
+        return Base::retSuccess('加入成功', $data);
     }
 
     /**

@@ -34,7 +34,8 @@
                             <EDropdownMenu v-if="projectData.owner_userid === userId" slot="dropdown">
                                 <EDropdownItem command="setting">{{$L('项目设置')}}</EDropdownItem>
                                 <EDropdownItem command="user">{{$L('成员管理')}}</EDropdownItem>
-                                <EDropdownItem command="log">{{$L('项目动态')}}</EDropdownItem>
+                                <EDropdownItem command="invite">{{$L('邀请链接')}}</EDropdownItem>
+                                <EDropdownItem command="log" divided>{{$L('项目动态')}}</EDropdownItem>
                                 <EDropdownItem command="archived_task">{{$L('已归档任务')}}</EDropdownItem>
                                 <EDropdownItem command="transfer" divided>{{$L('移交项目')}}</EDropdownItem>
                                 <EDropdownItem command="archived">{{$L('归档项目')}}</EDropdownItem>
@@ -320,7 +321,7 @@
             v-model="settingShow"
             :title="$L('项目设置')"
             :mask-closable="false">
-            <Form ref="addProject" :model="settingData" label-width="auto" @submit.native.prevent>
+            <Form :model="settingData" label-width="auto" @submit.native.prevent>
                 <FormItem prop="name" :label="$L('项目名称')">
                     <Input ref="projectName" type="text" v-model="settingData.name" :maxlength="32" :placeholder="$L('必填')"></Input>
                 </FormItem>
@@ -339,7 +340,7 @@
             v-model="userShow"
             :title="$L('成员管理')"
             :mask-closable="false">
-            <Form ref="addProject" :model="userData" label-width="auto" @submit.native.prevent>
+            <Form :model="userData" label-width="auto" @submit.native.prevent>
                 <FormItem prop="userids" :label="$L('项目成员')">
                     <UserInput v-if="userShow" v-model="userData.userids" :uncancelable="userData.uncancelable" :multiple-max="100" :placeholder="$L('选择项目成员')"/>
                 </FormItem>
@@ -369,12 +370,39 @@
             </div>
         </Modal>
 
+        <!--邀请链接-->
+        <Modal
+            v-model="inviteShow"
+            :title="$L('邀请链接')"
+            :mask-closable="false">
+            <Form :model="inviteData" label-width="auto" @submit.native.prevent>
+                <FormItem :label="$L('链接地址')">
+                    <Input ref="inviteInput" v-model="inviteData.url" type="textarea" :rows="3" @on-focus="inviteFocus" readonly/>
+                    <div class="form-tip">{{$L('可通过此链接注册、加入项目。')}}</div>
+                </FormItem>
+            </Form>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="inviteShow=false">{{$L('取消')}}</Button>
+                <Poptip
+                    confirm
+                    placement="bottom"
+                    style="margin-left:8px"
+                    @on-ok="inviteGet(true)"
+                    transfer>
+                    <div slot="title">
+                        <p><strong>{{$L('注意：刷新将导致原来的邀请链接失效！')}}</strong></p>
+                    </div>
+                    <Button type="primary" :loading="inviteLoad > 0">{{$L('刷新')}}</Button>
+                </Poptip>
+            </div>
+        </Modal>
+
         <!--移交项目-->
         <Modal
             v-model="transferShow"
             :title="$L('移交项目')"
             :mask-closable="false">
-            <Form ref="addProject" :model="transferData" label-width="auto" @submit.native.prevent>
+            <Form :model="transferData" label-width="auto" @submit.native.prevent>
                 <FormItem prop="owner_userid" :label="$L('项目负责人')">
                     <UserInput v-if="transferShow" v-model="transferData.owner_userid" :multiple-max="1" :placeholder="$L('选择项目负责人')"/>
                 </FormItem>
@@ -404,6 +432,10 @@
 </template>
 
 <script>
+import Vue from 'vue'
+import VueClipboard from 'vue-clipboard2'
+Vue.use(VueClipboard)
+
 import Draggable from 'vuedraggable'
 import TaskPriority from "./TaskPriority";
 import TaskAdd from "./TaskAdd";
@@ -450,6 +482,10 @@ export default {
             userShow: false,
             userData: {},
             userLoad: 0,
+
+            inviteShow: false,
+            inviteData: {},
+            inviteLoad: 0,
 
             transferShow: false,
             transferData: {},
@@ -1090,6 +1126,12 @@ export default {
                     this.userShow = true;
                     break;
 
+                case "invite":
+                    this.inviteData = {};
+                    this.inviteShow = true;
+                    this.inviteGet()
+                    break;
+
                 case "log":
                     this.logShow = true;
                     break;
@@ -1151,6 +1193,39 @@ export default {
             return list.filter(({owner}) => owner == 1).sort((a, b) => {
                 return a.id - b.id;
             });
+        },
+
+        inviteGet(refresh) {
+            this.inviteLoad++;
+            this.$store.dispatch("call", {
+                url: 'project/invite',
+                data: {
+                    project_id: this.projectId,
+                    refresh: refresh === true ? 'yes' : 'no'
+                },
+            }).then(({data}) => {
+                this.inviteLoad--;
+                this.inviteData = data;
+                this.inviteCopy();
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+                this.inviteLoad--;
+            });
+        },
+
+        inviteCopy() {
+            if (!this.inviteData.url) {
+                return;
+            }
+            this.$copyText(this.inviteData.url).then(() => {
+                $A.messageSuccess(this.$L('复制成功！'));
+            }, () => {
+                $A.messageError(this.$L('复制失败！'));
+            });
+        },
+
+        inviteFocus() {
+            this.$refs.inviteInput.focus({cursor:'all'});
         },
 
         toggleCompleted() {

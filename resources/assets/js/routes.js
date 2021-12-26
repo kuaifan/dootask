@@ -59,6 +59,11 @@ export default [
                 ]
             },
             {
+                name: 'manage-project-invite',
+                path: 'project/invite',
+                component: () => import('./pages/manage/projectInvite.vue'),
+            },
+            {
                 name: 'manage-project',
                 path: 'project/:id',
                 component: () => import('./pages/manage/project.vue'),
