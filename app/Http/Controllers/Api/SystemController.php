@@ -50,7 +50,7 @@ class SystemController extends AbstractController
             $setting = Base::setting('system');
         }
         //
-        if ($type == 'all') {
+        if ($type == 'all' || $type == 'save') {
             User::auth('admin');
             $setting['reg_invite'] = $setting['reg_invite'] ?: Base::generatePassword(8);
         } else {
