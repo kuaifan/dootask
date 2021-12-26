@@ -693,17 +693,20 @@ export default {
             immediate: true,
             deep: true
         },
-        taskId (id) {
-            if (id > 0) {
-                this.ready = true;
-            } else {
-                this.timeOpen = false;
-                this.timeForce = false;
-                this.assistForce = false;
-                this.addsubForce = false;
-                this.$refs.owner && this.$refs.owner.handleClose();
-                this.$refs.assist && this.$refs.assist.handleClose();
-            }
+        taskId: {
+            handler(id) {
+                if (id > 0) {
+                    this.ready = true;
+                } else {
+                    this.timeOpen = false;
+                    this.timeForce = false;
+                    this.assistForce = false;
+                    this.addsubForce = false;
+                    this.$refs.owner && this.$refs.owner.handleClose();
+                    this.$refs.assist && this.$refs.assist.handleClose();
+                }
+            },
+            immediate: true
         }
     },
 
