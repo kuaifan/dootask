@@ -9,6 +9,10 @@
                     <h1>{{$L('文件')}}</h1>
                     <div v-if="loadIng == 0" class="file-refresh" @click="getFileList"><i class="taskfont">&#xe6ae;</i></div>
                 </div>
+                <div v-if="uploadList.length > 0" class="file-status" @click="uploadShow=true">
+                    <Loading v-if="uploadList.find(({status}) => status !== 'finished')"/>
+                    <Button v-else shape="circle" icon="md-checkmark"></Button>
+                </div>
                 <div :class="['file-search', searchKey ? 'has-value' : '']" @click="onSearchFocus" @mouseenter="onSearchFocus">
                     <Input v-model="searchKey" ref="searchInput" suffix="ios-search" @on-change="onSearchChange" :placeholder="$L('搜索名称')"/>
                 </div>
@@ -129,6 +133,24 @@
                         </template>
                     </DropdownMenu>
                 </Dropdown>
+            </div>
+        </div>
+
+        <div v-if="uploadShow && uploadList.length > 0" class="file-upload-list">
+            <div class="upload-wrap">
+                <div class="title">
+                    {{$L('上传列表')}}
+                    <em v-if="uploadList.find(({status}) => status === 'finished')" @click="uploadClear">{{$L('清空已完成')}}</em>
+                </div>
+                <ul class="content">
+                    <li v-for="(item, index) in uploadList">
+                        <AutoTip class="file-name">{{item.name}}</AutoTip>
+                        <AutoTip v-if="item.status === 'finished' && item.response && item.response.ret !== 1" class="file-error">{{item.response.msg}}</AutoTip>
+                        <Progress v-else :percent="uploadPercentageParse(item.percentage)" :stroke-width="5" />
+                        <Icon class="file-close" type="ios-close-circle-outline" @click="uploadList.splice(index, 1)"/>
+                    </li>
+                </ul>
+                <Icon class="close" type="md-close" @click="uploadShow=false"/>
             </div>
         </div>
 
@@ -294,6 +316,8 @@ export default {
 
             uploadDir: false,
             uploadIng: 0,
+            uploadShow: false,
+            uploadList: [],
             uploadFormat: [
                 'docx', 'wps', 'doc', 'xls', 'xlsx', 'ppt', 'pptx',
                 'jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'raw',
@@ -915,14 +939,35 @@ export default {
 
         /********************文件上传部分************************/
 
-        handleProgress() {
-            //开始上传
-            this.uploadIng++;
+        uploadUpdate(fileList) {
+            fileList.forEach(file => {
+                let index = this.uploadList.findIndex(({uid}) => uid == file.uid)
+                if (index > -1) {
+                    this.uploadList.splice(index, 1, file)
+                } else {
+                    this.uploadList.unshift(file)
+                }
+            })
         },
 
-        handleSuccess(res, file) {
+        uploadClear() {
+            this.uploadList = this.uploadList.filter(({status}) => status !== 'finished')
+        },
+
+        uploadPercentageParse(val) {
+            return parseInt(val, 10);
+        },
+
+        handleProgress(event, file, fileList) {
+            //开始上传
+            this.uploadIng++;
+            this.uploadUpdate(fileList);
+        },
+
+        handleSuccess(res, file, fileList) {
             //上传完成
             this.uploadIng--;
+            this.uploadUpdate(fileList);
             if (res.ret === 1) {
                 this.$store.dispatch("saveFile", res.data);
             } else {
@@ -933,9 +978,10 @@ export default {
             }
         },
 
-        handleError() {
+        handleError(error, file, fileList) {
             //上传错误
             this.uploadIng--;
+            this.uploadUpdate(fileList);
         },
 
         handleFormatError(file) {
@@ -959,6 +1005,7 @@ export default {
 
         handleBeforeUpload() {
             //上传前判断
+            this.uploadShow = true;
             return true;
         },
     }
