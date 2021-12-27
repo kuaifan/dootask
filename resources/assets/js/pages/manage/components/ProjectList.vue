@@ -378,7 +378,7 @@
             <Form :model="inviteData" label-width="auto" @submit.native.prevent>
                 <FormItem :label="$L('链接地址')">
                     <Input ref="inviteInput" v-model="inviteData.url" type="textarea" :rows="3" @on-focus="inviteFocus" readonly/>
-                    <div class="form-tip">{{$L('可通过此链接注册、加入项目。')}}</div>
+                    <div class="form-tip">{{$L('可通过此链接直接加入项目。')}}</div>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
