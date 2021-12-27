@@ -57,6 +57,7 @@ export default {
                         title: this.$L("更新提示"),
                         duration: 0,
                         position: "bottom-right",
+                        customClass: "common-app-down-notification",
                         onClose: () => {
                             this.repoStatus = 2;
                         },

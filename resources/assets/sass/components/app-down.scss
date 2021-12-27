@@ -7,6 +7,12 @@
     align-items: center;
 }
 
+.common-app-down-notification {
+    .el-notification__group {
+        width: 100%;
+    }
+}
+
 .common-app-down-link {
     display: inline-block;
     cursor: pointer;
