@@ -10,7 +10,7 @@
                 <div v-else class="login-subtitle">{{$L('输入您的凭证以访问您的帐户。')}}</div>
 
                 <div class="login-input">
-                    <Input v-if="isElectron && cacheServerUrl" :value="cacheServerUrl" prefix="ios-globe-outline" size="large" readonly clearable @on-clear="onServerUrlClear"/>
+                    <Input v-if="$Electron && cacheServerUrl" :value="cacheServerUrl" prefix="ios-globe-outline" size="large" readonly clearable @on-clear="onServerUrlClear"/>
 
                     <Input v-model="email" prefix="ios-mail-outline" :placeholder="$L('输入您的电子邮件')" size="large" @on-enter="onLogin" @on-blur="onBlur" />
                     <Input v-model="password" prefix="ios-lock-outline" :placeholder="$L('输入您的密码')" type="password" size="large" @on-enter="onLogin" />
@@ -43,7 +43,7 @@
             </div>
         </div>
         <div class="login-right-bottom">
-            <Button v-if="isElectron" icon="ios-globe-outline" type="primary" @click="onServerUrlInput">{{$L('自定义服务器')}}</Button>
+            <Button v-if="$Electron" icon="ios-globe-outline" type="primary" @click="onServerUrlInput">{{$L('自定义服务器')}}</Button>
             <AppDown/>
         </div>
     </div>
@@ -78,7 +78,7 @@ export default {
     mounted() {
         this.getDemoAccount();
         //
-        if (!this.isElectron && this.cacheServerUrl) {
+        if (!this.$Electron && this.cacheServerUrl) {
             this.onServerUrlClear();
         }
     },

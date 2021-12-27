@@ -259,8 +259,8 @@ export default {
         //
         document.addEventListener('keydown', this.shortcutEvent);
         //
-        if (this.isElectron) {
-            this.$electron.ipcRenderer.send('setDockBadge', 0);
+        if (this.$Electron) {
+            this.$Electron.ipcRenderer.send('setDockBadge', 0);
         }
     },
 
@@ -361,14 +361,14 @@ export default {
         },
 
         msgAllUnread() {
-            if (this.isElectron) {
-                this.$electron.ipcRenderer.send('setDockBadge', this.msgAllUnread + this.dashboardTotal);
+            if (this.$Electron) {
+                this.$Electron.ipcRenderer.send('setDockBadge', this.msgAllUnread + this.dashboardTotal);
             }
         },
 
         dashboardTotal() {
-            if (this.isElectron) {
-                this.$electron.ipcRenderer.send('setDockBadge', this.msgAllUnread + this.dashboardTotal);
+            if (this.$Electron) {
+                this.$Electron.ipcRenderer.send('setDockBadge', this.msgAllUnread + this.dashboardTotal);
             }
         },
 

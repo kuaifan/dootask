@@ -112,7 +112,7 @@
                         transfer>
                         <Button type="primary">{{$L('我要领取任务')}}</Button>
                     </Poptip>
-                    <ETooltip v-if="isElectron" :content="$L('新窗口打开')">
+                    <ETooltip v-if="$Electron" :content="$L('新窗口打开')">
                         <i class="taskfont open" @click="openNewWin">&#xe776;</i>
                     </ETooltip>
                     <EDropdown
@@ -1122,7 +1122,7 @@ export default {
             }).then(({data}) => {
                 this.$store.dispatch("saveTask", data);
                 this.$store.dispatch("getDialogOne", data.dialog_id);
-                if (this.isElectron) {
+                if (this.$Electron) {
                     this.resizeDialog();
                     return;
                 }
@@ -1156,7 +1156,7 @@ export default {
                 this.sendLoad = false;
                 this.$store.dispatch("saveTask", data);
                 this.$store.dispatch("getDialogOne", data.dialog_id);
-                if (this.isElectron) {
+                if (this.$Electron) {
                     this.resizeDialog();
                     return;
                 }
@@ -1188,7 +1188,7 @@ export default {
         },
 
         openNewWin() {
-            if (!this.isElectron) {
+            if (!this.$Electron) {
                 return;
             }
             let config = {
@@ -1202,25 +1202,27 @@ export default {
                 config.minWidth = 800;
                 config.minHeight = 600;
             }
-            this.$electron.ipcRenderer.send('windowRouter', {
+            this.$Electron.ipcRenderer.send('windowRouter', {
                 name: 'task-' + this.taskDetail.id,
                 path: "/single/task/" + this.taskDetail.id,
-                force: false, // 如果窗口已存在不重新加载
+                force: false,
                 devTools: false,
+                userAgent: "ElectronSubwindow",
                 config
             });
             this.$store.dispatch('openTask', 0);
         },
 
         resizeDialog() {
-            if (!this.isElectron) {
+            if (!this.$Electron) {
                 return;
             }
-            this.$electron.ipcRenderer.sendSync('windowSize', {
+            this.$Electron.ipcRenderer.sendSync('windowSize', {
                 width: Math.max(1100, window.innerWidth),
                 height: Math.max(720, window.innerHeight),
                 minWidth: 800,
-                minHeight: 600
+                minHeight: 600,
+                center: true,
             });
             if (this.msgText) {
                 let num = 0;

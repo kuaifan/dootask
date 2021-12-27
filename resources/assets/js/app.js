@@ -46,12 +46,6 @@ Vue.component('EDropdown', Dropdown);
 Vue.component('EDropdownMenu', DropdownMenu);
 Vue.component('EDropdownItem', DropdownItem);
 
-Vue.prototype.isElectron = false;
-if (!!__IS_ELECTRON) {
-    Vue.prototype.isElectron = true;
-    Vue.prototype.$electron = require('electron')
-}
-
 const originalPush = VueRouter.prototype.push
 VueRouter.prototype.push = function push(location) {
     return originalPush.call(this, location).catch(err => err)
@@ -96,6 +90,8 @@ Vue.prototype.goBack = function (number) {
 };
 
 Vue.prototype.$A = $A;
+Vue.prototype.$Electron = !!__IS_ELECTRON ? require('electron') : null;
+
 Vue.config.productionTip = false;
 
 const app = new Vue({
@@ -115,3 +111,14 @@ $A.Notice = app.$Notice;
 $A.Modal = app.$Modal;
 $A.store = app.$store;
 $A.L = app.$L;
+
+$A.Electron = app.$Electron;
+$A.execMainDispatch = (action, data) => {
+    const navigator = window.navigator && window.navigator.userAgent
+    if ($A.Electron && navigator && /\s+SubTaskWindow\//.test(navigator)) {
+        $A.Electron.ipcRenderer.send('sendForwardMain', {
+            channel: 'dispatch',
+            data: {action, data},
+        });
+    }
+};

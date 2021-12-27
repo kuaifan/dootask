@@ -42,7 +42,7 @@ function randomString(len) {
     return pwd;
 }
 
-function createWindow() {
+function createMainWindow() {
     mainWindow = new BrowserWindow({
         width: 1280,
         height: 800,
@@ -53,6 +53,7 @@ function createWindow() {
             contextIsolation: false
         }
     })
+    mainWindow.webContents.setUserAgent(mainWindow.webContents.getUserAgent() + " MainTaksWindow/1.0");
 
     if (devloadUrl) {
         mainWindow.loadURL(devloadUrl).then(r => {
@@ -76,24 +77,24 @@ function createWindow() {
     })
 }
 
-function createRouter(arg) {
-    if (!arg) {
+function createSubWindow(args) {
+    if (!args) {
         return;
     }
 
-    if (typeof arg !== "object") {
-        arg = {
-            path: arg,
+    if (typeof args !== "object") {
+        args = {
+            path: args,
             config: {},
         }
     }
 
-    let name = arg.name || "auto_" + randomString(6);
+    let name = args.name || "auto_" + randomString(6);
     let item = subWindow.find(item => item.name == name);
     let browser = item ? item.browser : null;
     if (browser) {
         browser.focus();
-        if (arg.force === false) {
+        if (args.force === false) {
             return;
         }
     } else {
@@ -104,11 +105,11 @@ function createRouter(arg) {
             parent: mainWindow,
             webPreferences: {
                 preload: path.join(__dirname, 'preload.js'),
-                devTools: arg.devTools !== false,
+                devTools: args.devTools !== false,
                 nodeIntegration: true,
                 contextIsolation: false
             }
-        }, arg.config || {}))
+        }, args.config || {}))
         browser.on('close', function () {
             let index = subWindow.findIndex(item => item.name == name);
             if (index > -1) {
@@ -117,14 +118,15 @@ function createRouter(arg) {
         })
         subWindow.push({ name, browser })
     }
+    browser.webContents.setUserAgent(browser.webContents.getUserAgent() + " SubTaskWindow/1.0" + (args.userAgent ? (" " + args.userAgent) : ""));
 
     if (devloadUrl) {
-        browser.loadURL(devloadUrl + '#' + (arg.hash || arg.path)).then(r => {
+        browser.loadURL(devloadUrl + '#' + (args.hash || args.path)).then(r => {
 
         })
     } else {
         browser.loadFile('./public/index.html', {
-            hash: arg.hash || arg.path
+            hash: args.hash || args.path
         }).then(r => {
 
         })
@@ -132,10 +134,10 @@ function createRouter(arg) {
 }
 
 app.whenReady().then(() => {
-    createWindow()
+    createMainWindow()
 
     app.on('activate', () => {
-        if (BrowserWindow.getAllWindows().length === 0) createWindow()
+        if (BrowserWindow.getAllWindows().length === 0) createMainWindow()
     })
 })
 
@@ -154,8 +156,8 @@ ipcMain.on('inheritClose', (event) => {
     event.returnValue = "ok"
 })
 
-ipcMain.on('windowRouter', (event, arg) => {
-    createRouter(arg)
+ipcMain.on('windowRouter', (event, args) => {
+    createSubWindow(args)
     event.returnValue = "ok"
 })
 
@@ -170,34 +172,45 @@ ipcMain.on('windowClose', (event) => {
     event.returnValue = "ok"
 })
 
-ipcMain.on('windowSize', (event, arg) => {
+ipcMain.on('windowSize', (event, args) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     if (win) {
-        if (arg.width || arg.height) {
-            win.setSize(arg.width || win.getSize()[0], arg.height || win.getSize()[1])
+        if (args.width || args.height) {
+            win.setSize(args.width || win.getSize()[0], args.height || win.getSize()[1], args.animate === true)
         }
-        if (arg.minWidth || arg.minHeight) {
-            win.setMinimumSize(arg.minWidth || win.getMinimumSize()[0], arg.minHeight || win.getMinimumSize()[1])
+        if (args.minWidth || args.minHeight) {
+            win.setMinimumSize(args.minWidth || win.getMinimumSize()[0], args.minHeight || win.getMinimumSize()[1])
         }
-        if (arg.maxWidth || arg.maxHeight) {
-            win.setMaximumSize(arg.maxWidth || win.getMaximumSize()[0], arg.maxHeight || win.getMaximumSize()[1])
+        if (args.maxWidth || args.maxHeight) {
+            win.setMaximumSize(args.maxWidth || win.getMaximumSize()[0], args.maxHeight || win.getMaximumSize()[1])
+        }
+        if (args.center === true) {
+            win.center();
         }
     }
     event.returnValue = "ok"
 })
 
-ipcMain.on('windowMinSize', (event, arg) => {
+ipcMain.on('windowMinSize', (event, args) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     if (win) {
-        win.setMinimumSize(arg.width || win.getMinimumSize()[0], arg.height || win.getMinimumSize()[1])
+        win.setMinimumSize(args.width || win.getMinimumSize()[0], args.height || win.getMinimumSize()[1])
     }
     event.returnValue = "ok"
 })
 
-ipcMain.on('windowMaxSize', (event, arg) => {
+ipcMain.on('windowMaxSize', (event, args) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     if (win) {
-        win.setMaximumSize(arg.width || win.getMaximumSize()[0], arg.height || win.getMaximumSize()[1])
+        win.setMaximumSize(args.width || win.getMaximumSize()[0], args.height || win.getMaximumSize()[1])
+    }
+    event.returnValue = "ok"
+})
+
+ipcMain.on('windowCenter', (event, args) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (win) {
+        win.center();
     }
     event.returnValue = "ok"
 })
@@ -212,13 +225,20 @@ ipcMain.on('windowMax', (event) => {
     event.returnValue = "ok"
 })
 
-ipcMain.on('setDockBadge', (event, arg) => {
+ipcMain.on('sendForwardMain', (event, args) => {
+    if (mainWindow) {
+        mainWindow.webContents.send(args.channel, args.data)
+    }
+    event.returnValue = "ok"
+})
+
+ipcMain.on('setDockBadge', (event, args) => {
     if(process.platform !== 'darwin'){
         // Mac only
         return;
     }
-    if (runNum(arg) > 0) {
-        app.dock.setBadge(String(arg))
+    if (runNum(args) > 0) {
+        app.dock.setBadge(String(args))
     } else {
         app.dock.setBadge("")
     }

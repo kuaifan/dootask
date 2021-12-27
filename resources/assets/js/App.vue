@@ -173,10 +173,10 @@ export default {
         },
 
         electronEvents() {
-            if (!this.isElectron) {
+            if (!this.$Electron) {
                 return;
             }
-            const {ipcRenderer} = this.$electron;
+            const {ipcRenderer} = this.$Electron;
             ipcRenderer.send('inheritClose');
             ipcRenderer.on('windowClose', () => {
                 if (this.$Modal.removeLast()) {
@@ -187,6 +187,13 @@ export default {
                     return;
                 }
                 ipcRenderer.send('windowHidden');
+            })
+            ipcRenderer.on('dispatch', (event, args) => {
+                if (!this.$store.state.method.isJson(args)) {
+                    return;
+                }
+                let {action, data} = args;
+                this.$store.dispatch(action, data);
             })
         }
     }
