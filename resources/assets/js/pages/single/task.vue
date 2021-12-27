@@ -60,14 +60,17 @@ export default {
     },
     methods: {
         getInfo() {
-            let id = $A.runNum(this.$route.params.id);
-            if (id <= 0) {
+            let task_id = $A.runNum(this.$route.params.id);
+            if (task_id <= 0) {
                 return;
             }
             this.loadIng++;
-            this.$store.dispatch("getTaskOne", id).then(({data}) => {
+            this.$store.dispatch("getTaskOne", task_id).then(({data}) => {
                 this.loadIng--;
                 this.taskInfo = data;
+                this.$store.dispatch("getTaskContent", task_id);
+                this.$store.dispatch("getTaskFiles", task_id);
+                this.$store.dispatch("getTasks", {parent_id: task_id});
             }).catch(({msg}) => {
                 this.loadIng--;
                 $A.modalError({

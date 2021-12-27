@@ -1195,6 +1195,8 @@ export default {
                 parent: null,
                 width: Math.min(window.screen.availWidth, this.$el.clientWidth + 72),
                 height: Math.min(window.screen.availHeight, this.$el.clientHeight + 72),
+                minWidth: 600,
+                minHeight: 450,
             };
             if (this.hasOpenDialog) {
                 config.minWidth = 800;
