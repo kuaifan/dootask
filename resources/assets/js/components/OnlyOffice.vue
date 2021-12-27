@@ -1,7 +1,7 @@
 <template>
     <div class="component-only-office">
         <div :id="this.id" class="placeholder"></div>
-        <div class="office-loading"><Loading v-if="loadIng > 0"/></div>
+        <div v-if="loadIng > 0" class="office-loading"><Loading/></div>
     </div>
 </template>
 
