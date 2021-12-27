@@ -392,6 +392,7 @@ export default {
                 state.cacheTasks = state.tasks = state.taskSubs = [];
                 //
                 state.method.setStorage("cacheTablePanel", state.cacheTablePanel);
+                state.method.setStorage("cacheServerUrl", state.cacheServerUrl);
                 state.method.setStorage("cacheLoginEmail", cacheLoginEmail);
                 dispatch("saveUserInfo", state.method.isJson(userInfo) ? userInfo : state.userInfo);
                 //
