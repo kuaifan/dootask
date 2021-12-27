@@ -10,7 +10,7 @@
         .head {
             display: flex;
             align-items: center;
-            height: 40px;
+            height: 42px;
             padding-bottom: 10px;
             color: #888888;
             position: relative;
@@ -60,14 +60,25 @@
                     }
                 }
             }
-            .pick {
-                margin-left: 16px;
-                margin-right: -16px;
-            }
-            .menu {
-                font-size: 22px;
+            .function {
+                display: flex;
+                align-items: center;
                 margin: 0 32px;
-                cursor: pointer;
+                .pick {
+                    margin-left: 12px;
+                    margin-right: 10px;
+                }
+                .open {
+                    margin-top: -2px;
+                    margin-left: 12px;
+                    font-size: 22px;
+                    cursor: pointer;
+                }
+                .menu {
+                    margin-left: 12px;
+                    font-size: 22px;
+                    cursor: pointer;
+                }
             }
         }
         .scroller {
@@ -365,7 +376,7 @@
         }
     }
     .task-dialog {
-        flex: 1;
+        flex-shrink: 0;
         display: flex;
         flex-direction: column;
         margin-top: 22px;
@@ -481,11 +492,8 @@
         .task-info {
             overflow: auto;
             .head {
-                .menu {
-                    margin: 0 2px;
-                }
-                .pick {
-                    margin-right: 12px;
+                .function {
+                    margin-right: 2px;
                 }
             }
         }

@@ -145,7 +145,7 @@
             }"
             @on-visible-change="taskVisibleChange"
             footer-hide>
-            <TaskDetail :open-task="taskData"/>
+            <TaskDetail :task-id="taskId" :open-task="taskData"/>
         </Modal>
 
         <!--查看所有团队-->

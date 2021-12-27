@@ -104,6 +104,7 @@ function createRouter(arg) {
             parent: mainWindow,
             webPreferences: {
                 preload: path.join(__dirname, 'preload.js'),
+                devTools: arg.devTools !== false,
                 nodeIntegration: true,
                 contextIsolation: false
             }
@@ -133,41 +134,82 @@ function createRouter(arg) {
 app.whenReady().then(() => {
     createWindow()
 
-    app.on('activate', function () {
+    app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) createWindow()
     })
 })
 
-app.on('window-all-closed', function () {
-    if (process.platform !== 'darwin') app.quit()
+app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+        app.quit()
+    }
 })
 
 app.on('before-quit', () => {
     willQuitApp = true
 })
 
-ipcMain.on('inheritClose', () => {
+ipcMain.on('inheritClose', (event) => {
     inheritClose = true
+    event.returnValue = "ok"
 })
 
 ipcMain.on('windowRouter', (event, arg) => {
     createRouter(arg)
+    event.returnValue = "ok"
 })
 
-ipcMain.on('windowHidden', () => {
+ipcMain.on('windowHidden', (event) => {
     app.hide();
+    event.returnValue = "ok"
 })
 
-ipcMain.on('windowClose', () => {
-    mainWindow.close()
+ipcMain.on('windowClose', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    win.close()
+    event.returnValue = "ok"
 })
 
-ipcMain.on('windowMax', function () {
-    if (mainWindow.isMaximized()) {
-        mainWindow.restore();
-    } else {
-        mainWindow.maximize();
+ipcMain.on('windowSize', (event, arg) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (win) {
+        if (arg.width || arg.height) {
+            win.setSize(arg.width || win.getSize()[0], arg.height || win.getSize()[1])
+        }
+        if (arg.minWidth || arg.minHeight) {
+            win.setMinimumSize(arg.minWidth || win.getMinimumSize()[0], arg.minHeight || win.getMinimumSize()[1])
+        }
+        if (arg.maxWidth || arg.maxHeight) {
+            win.setMaximumSize(arg.maxWidth || win.getMaximumSize()[0], arg.maxHeight || win.getMaximumSize()[1])
+        }
     }
+    event.returnValue = "ok"
+})
+
+ipcMain.on('windowMinSize', (event, arg) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (win) {
+        win.setMinimumSize(arg.width || win.getMinimumSize()[0], arg.height || win.getMinimumSize()[1])
+    }
+    event.returnValue = "ok"
+})
+
+ipcMain.on('windowMaxSize', (event, arg) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (win) {
+        win.setMaximumSize(arg.width || win.getMaximumSize()[0], arg.height || win.getMaximumSize()[1])
+    }
+    event.returnValue = "ok"
+})
+
+ipcMain.on('windowMax', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (win.isMaximized()) {
+        win.restore();
+    } else {
+        win.maximize();
+    }
+    event.returnValue = "ok"
 })
 
 ipcMain.on('setDockBadge', (event, arg) => {
@@ -180,6 +222,7 @@ ipcMain.on('setDockBadge', (event, arg) => {
     } else {
         app.dock.setBadge("")
     }
+    event.returnValue = "ok"
 })
 
 ipcMain.on('saveSheet', (event, data, filename, opts) => {
@@ -194,4 +237,5 @@ ipcMain.on('saveSheet', (event, data, filename, opts) => {
     }).then(o => {
         XLSX.writeFile(data, o.filePath, opts);
     });
+    event.returnValue = "ok"
 })

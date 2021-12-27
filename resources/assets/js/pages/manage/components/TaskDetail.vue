@@ -100,45 +100,50 @@
                     <p v-if="columnName"><span>{{columnName}}</span></p>
                     <p v-if="taskDetail.id"><span>{{taskDetail.id}}</span></p>
                 </div>
-                <Poptip
-                    v-if="getOwner.length === 0"
-                    confirm
-                    ref="receive"
-                    class="pick"
-                    :title="$L('你确认领取任务吗？')"
-                    placement="bottom"
-                    @on-ok="onOwner(true)"
-                    transfer>
-                    <Button type="primary">{{$L('我要领取任务')}}</Button>
-                </Poptip>
-                <EDropdown
-                    trigger="click"
-                    placement="bottom"
-                    @command="dropTask">
-                    <Icon class="menu" type="ios-more"/>
-                    <EDropdownMenu slot="dropdown">
-                        <EDropdownItem v-if="taskDetail.complete_at" command="uncomplete">
-                            <div class="item red">
-                                <Icon type="md-checkmark-circle-outline" />{{$L('标记未完成')}}
-                            </div>
-                        </EDropdownItem>
-                        <EDropdownItem v-else command="complete">
-                            <div class="item">
-                                <Icon type="md-radio-button-off" />{{$L('完成')}}
-                            </div>
-                        </EDropdownItem>
-                        <EDropdownItem command="archived">
-                            <div class="item">
-                                <Icon type="ios-filing" />{{$L('归档')}}
-                            </div>
-                        </EDropdownItem>
-                        <EDropdownItem command="remove">
-                            <div class="item">
-                                <Icon type="md-trash" />{{$L('删除')}}
-                            </div>
-                        </EDropdownItem>
-                    </EDropdownMenu>
-                </EDropdown>
+                <div class="function">
+                    <Poptip
+                        v-if="getOwner.length === 0"
+                        confirm
+                        ref="receive"
+                        class="pick"
+                        :title="$L('你确认领取任务吗？')"
+                        placement="bottom"
+                        @on-ok="onOwner(true)"
+                        transfer>
+                        <Button type="primary">{{$L('我要领取任务')}}</Button>
+                    </Poptip>
+                    <ETooltip v-if="isElectron" :content="$L('新窗口打开')">
+                        <i class="taskfont open" @click="openNewWin">&#xe776;</i>
+                    </ETooltip>
+                    <EDropdown
+                        trigger="click"
+                        placement="bottom"
+                        @command="dropTask">
+                        <Icon class="menu" type="ios-more"/>
+                        <EDropdownMenu slot="dropdown">
+                            <EDropdownItem v-if="taskDetail.complete_at" command="uncomplete">
+                                <div class="item red">
+                                    <Icon type="md-checkmark-circle-outline" />{{$L('标记未完成')}}
+                                </div>
+                            </EDropdownItem>
+                            <EDropdownItem v-else command="complete">
+                                <div class="item">
+                                    <Icon type="md-radio-button-off" />{{$L('完成')}}
+                                </div>
+                            </EDropdownItem>
+                            <EDropdownItem command="archived">
+                                <div class="item">
+                                    <Icon type="ios-filing" />{{$L('归档')}}
+                                </div>
+                            </EDropdownItem>
+                            <EDropdownItem command="remove">
+                                <div class="item">
+                                    <Icon type="md-trash" />{{$L('删除')}}
+                                </div>
+                            </EDropdownItem>
+                        </EDropdownMenu>
+                    </EDropdown>
+                </div>
             </div>
             <div class="scroller overlay-y" :style="scrollerStyle">
                 <div class="title">
@@ -310,7 +315,7 @@
                             <i class="taskfont">&#xe6f0;</i>{{$L('子任务')}}
                         </div>
                         <ul class="item-content subtask">
-                            <TaskDetail v-for="(task, key) in subList" :key="key" :open-task="task"/>
+                            <TaskDetail v-for="(task, key) in subList" :key="key" :task-id="task.id" :open-task="task"/>
                         </ul>
                         <ul :class="['item-content', subList.length === 0 ? 'nosub' : '']">
                             <li>
@@ -412,6 +417,10 @@ export default {
     name: "TaskDetail",
     components: {ProjectLog, DialogWrapper, TaskUpload, UserInput, TaskPriority, TEditor},
     props: {
+        taskId: {
+            type: Number,
+            default: 0
+        },
         openTask: {
             type: Object,
             default: () => {
@@ -509,7 +518,6 @@ export default {
             'userId',
             'projects',
             'columns',
-            'taskId',
             'taskSubs',
             'taskContents',
             'taskFiles',
@@ -1114,6 +1122,10 @@ export default {
             }).then(({data}) => {
                 this.$store.dispatch("saveTask", data);
                 this.$store.dispatch("getDialogOne", data.dialog_id);
+                if (this.isElectron) {
+                    this.resizeDialog();
+                    return;
+                }
                 this.$nextTick(() => {
                     if (this.$store.state.windowMax768) {
                         this.goForward({path: '/manage/messenger', query: {sendmsg: this.msgText}});
@@ -1144,6 +1156,10 @@ export default {
                 this.sendLoad = false;
                 this.$store.dispatch("saveTask", data);
                 this.$store.dispatch("getDialogOne", data.dialog_id);
+                if (this.isElectron) {
+                    this.resizeDialog();
+                    return;
+                }
                 this.$nextTick(() => {
                     this.goForward({path: '/manage/messenger', query: {sendmsg: this.msgText}});
                     this.$store.state.method.setStorage("messenger::dialogId", data.dialog_id)
@@ -1169,6 +1185,54 @@ export default {
                 $A.modalError(msg);
                 this.$store.dispatch("getTaskFiles", this.taskDetail.id)
             });
+        },
+
+        openNewWin() {
+            if (!this.isElectron) {
+                return;
+            }
+            let config = {
+                parent: null,
+                width: Math.min(window.screen.availWidth, this.$el.clientWidth + 72),
+                height: Math.min(window.screen.availHeight, this.$el.clientHeight + 72),
+            };
+            if (this.hasOpenDialog) {
+                config.minWidth = 800;
+                config.minHeight = 600;
+            }
+            this.$electron.ipcRenderer.send('windowRouter', {
+                name: 'task-' + this.taskDetail.id,
+                path: "/single/task/" + this.taskDetail.id,
+                force: false, // 如果窗口已存在不重新加载
+                devTools: false,
+                config
+            });
+            this.$store.dispatch('openTask', 0);
+        },
+
+        resizeDialog() {
+            if (!this.isElectron) {
+                return;
+            }
+            this.$electron.ipcRenderer.sendSync('windowSize', {
+                width: Math.max(1100, window.innerWidth),
+                height: Math.max(720, window.innerHeight),
+                minWidth: 800,
+                minHeight: 600
+            });
+            if (this.msgText) {
+                let num = 0;
+                let interval = setInterval(() => {
+                    num++;
+                    if (this.$refs.dialog || num > 20) {
+                        clearInterval(interval);
+                        if (this.$refs.dialog) {
+                            this.$refs.dialog.sendMsg(this.msgText);
+                            this.msgText = "";
+                        }
+                    }
+                }, 100);
+            }
         }
     }
 }
