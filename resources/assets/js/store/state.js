@@ -268,6 +268,11 @@ state.cacheColumns = state.method.getStorageArray("cacheColumns");
 state.cacheTasks = state.method.getStorageArray("cacheTasks");
 // TablePanel
 state.cacheTablePanel = state.method.getStorageArray("cacheTablePanel");
+// ServerUrl
+state.cacheServerUrl = state.method.getStorageString("cacheServerUrl")
+if (state.cacheServerUrl && window.systemInformation) {
+    window.systemInformation.apiUrl = state.cacheServerUrl;
+}
 
 // Ajax
 state.ajaxWsReady = false;

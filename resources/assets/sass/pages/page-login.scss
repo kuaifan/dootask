@@ -42,27 +42,6 @@
                 padding: 0 12px;
                 color: #AAAAAA;
             }
-            .login-demo {
-                margin-top: 30px;
-                margin-bottom: -36px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: #888888;
-                > li {
-                    list-style: none;
-                    padding: 0;
-                    margin-right: 6px;
-                    &:last-child {
-                        margin-right: 0;
-                    }
-                    > em {
-                        font-style: normal;
-                        text-decoration: underline;
-                        margin-left: 2px;
-                    }
-                }
-            }
             .login-input {
                 margin: 32px 40px;
                 > * {
@@ -70,6 +49,9 @@
                 }
                 .ivu-input {
                     border-color: #f1f1f1;
+                    &[readonly="readonly"] {
+                        background-color: #f5f5f5;
+                    }
                 }
                 .ivu-input-large {
                     font-size: 15px;
@@ -123,6 +105,20 @@
                 color: #aaaaaa;
                 text-align: right;
             }
+        }
+    }
+    .login-right-bottom {
+        position: absolute;
+        bottom: 26px;
+        right: 26px;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        .common-app-down {
+            position: static;
+            bottom: auto;
+            right: auto;
+            margin-left: 12px;
         }
     }
 }

@@ -9,17 +9,14 @@
                 <div v-if="loginType=='reg'" class="login-subtitle">{{$L('输入您的信息以创建帐户。')}}</div>
                 <div v-else class="login-subtitle">{{$L('输入您的凭证以访问您的帐户。')}}</div>
 
-                <ul v-if="demoAccount.account" class="login-demo">
-                    <li>{{$L('演示账号')}}: <em>{{demoAccount.account}}</em></li>
-                    <li>{{$L('密码')}}: <em>{{demoAccount.password}}</em></li>
-                </ul>
-
                 <div class="login-input">
+                    <Input v-if="isElectron && cacheServerUrl" :value="cacheServerUrl" prefix="ios-globe-outline" size="large" readonly clearable @on-clear="onServerUrlClear"/>
+
                     <Input v-model="email" prefix="ios-mail-outline" :placeholder="$L('输入您的电子邮件')" size="large" @on-enter="onLogin" @on-blur="onBlur" />
                     <Input v-model="password" prefix="ios-lock-outline" :placeholder="$L('输入您的密码')" type="password" size="large" @on-enter="onLogin" />
 
                     <Input v-if="loginType=='reg'" v-model="password2" prefix="ios-lock-outline" :placeholder="$L('输入确认密码')" type="password" size="large" @on-enter="onLogin" />
-                    <Input v-if="loginType=='reg' && regNeedInvite" v-model="invite" class="login-code" :placeholder="$L('请输入注册邀请码')" type="text" size="large" @on-enter="onLogin"><span slot="prepend">&nbsp;{{$L('邀请码')}}&nbsp;</span></Input>
+                    <Input v-if="loginType=='reg' && needInvite" v-model="invite" class="login-code" :placeholder="$L('请输入注册邀请码')" type="text" size="large" @on-enter="onLogin"><span slot="prepend">&nbsp;{{$L('邀请码')}}&nbsp;</span></Input>
 
                     <Input v-if="loginType=='login' && codeNeed" v-model="code" class="login-code" :placeholder="$L('输入图形验证码')" size="large" @on-enter="onLogin">
                         <Icon type="ios-checkmark-circle-outline" class="login-icon" slot="prepend"></Icon>
@@ -45,12 +42,17 @@
                 <div class="login-forgot">{{$L('忘记密码了？')}}<a href="javascript:void(0)" @click="forgotPassword">{{$L('重置密码')}}</a></div>
             </div>
         </div>
-        <AppDown/>
+        <div class="login-right-bottom">
+            <Button v-if="isElectron" icon="ios-globe-outline" type="primary" @click="onServerUrlInput">{{$L('自定义服务器')}}</Button>
+            <AppDown/>
+        </div>
     </div>
 </template>
 
 <script>
 import AppDown from "../components/AppDown";
+import {mapState} from "vuex";
+
 export default {
     components: {AppDown},
     data() {
@@ -70,16 +72,22 @@ export default {
 
             demoAccount: {},
 
-            regNeedInvite: false,
+            needInvite: false,
         }
     },
     mounted() {
         this.getDemoAccount();
+        //
+        if (!this.isElectron && this.cacheServerUrl) {
+            this.onServerUrlClear();
+        }
     },
     deactivated() {
         this.loginJump = false;
     },
     computed: {
+        ...mapState(['cacheServerUrl']),
+
         currentLanguage() {
             return this.languageList[this.languageType] || 'Language'
         },
@@ -117,9 +125,9 @@ export default {
             this.$store.dispatch("call", {
                 url: 'users/reg/needinvite',
             }).then(({data}) => {
-                this.regNeedInvite = !!data.need;
+                this.needInvite = !!data.need;
             }).catch(() => {
-                this.regNeedInvite = false;
+                this.needInvite = false;
             });
         },
 
@@ -129,6 +137,41 @@ export default {
 
         reCode() {
             this.codeUrl = this.$store.state.method.apiUrl('users/login/codeimg?_=' + Math.random())
+        },
+
+        onServerUrlInput() {
+            $A.modalInput({
+                title: "自定义服务器",
+                value: this.cacheServerUrl,
+                placeholder: "请输入服务器地址",
+                onOk: (value, cb) => {
+                    if (value) {
+                        if (!$A.leftExists(value, "http://") && !$A.leftExists(value, "https://")) {
+                            value = "http://" + value;
+                        }
+                        if (!$A.rightExists(value, "/api/")) {
+                            value = value + ($A.rightExists(value, "/") ? "api/" : "/api/");
+                        }
+                        this.$store.dispatch("call", {
+                            url: value + 'system/setting',
+                        }).then(() => {
+                            this.$store.state.method.setStorage("cacheServerUrl", value)
+                            window.location.reload();
+                        }).catch(({msg}) => {
+                            $A.modalError(msg || "服务器地址无效", 301);
+                            cb()
+                        });
+                        return;
+                    }
+                    this.$store.state.method.setStorage("cacheServerUrl", "")
+                    window.location.reload();
+                }
+            });
+        },
+
+        onServerUrlClear() {
+            this.$store.state.method.setStorage("cacheServerUrl", "")
+            window.location.reload();
         },
 
         onBlur() {
