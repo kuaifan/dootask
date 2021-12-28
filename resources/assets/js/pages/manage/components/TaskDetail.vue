@@ -145,7 +145,7 @@
                     </EDropdown>
                 </div>
             </div>
-            <div class="scroller overlay-y" :style="scrollerStyle">
+            <div class="scroller overlay-y">
                 <div class="title">
                     <Input
                         v-model="taskDetail.name"
@@ -578,19 +578,6 @@ export default {
 
         hasOpenDialog() {
             return this.taskDetail.dialog_id > 0 && !this.$store.state.windowMax768;
-        },
-
-        scrollerStyle() {
-            const {innerHeight, hasOpenDialog} = this;
-            if (!innerHeight) {
-                return {};
-            }
-            if (!hasOpenDialog) {
-                return {};
-            }
-            return {
-                maxHeight: (innerHeight - (innerHeight > 900 ? 200 : 70) - 66 - 30) + 'px'
-            }
         },
 
         dialogStyle() {
@@ -1122,7 +1109,7 @@ export default {
             }).then(({data}) => {
                 this.$store.dispatch("saveTask", data);
                 this.$store.dispatch("getDialogOne", data.dialog_id);
-                if (this.$Electron) {
+                if ($A.isSubElectron) {
                     this.resizeDialog();
                     return;
                 }
@@ -1156,7 +1143,7 @@ export default {
                 this.sendLoad = false;
                 this.$store.dispatch("saveTask", data);
                 this.$store.dispatch("getDialogOne", data.dialog_id);
-                if (this.$Electron) {
+                if ($A.isSubElectron) {
                     this.resizeDialog();
                     return;
                 }
@@ -1188,9 +1175,6 @@ export default {
         },
 
         openNewWin() {
-            if (!this.$Electron) {
-                return;
-            }
             let config = {
                 parent: null,
                 width: Math.min(window.screen.availWidth, this.$el.clientWidth + 72),
@@ -1206,17 +1190,12 @@ export default {
                 name: 'task-' + this.taskDetail.id,
                 path: "/single/task/" + this.taskDetail.id,
                 force: false,
-                devTools: false,
-                userAgent: "ElectronSubwindow",
                 config
             });
             this.$store.dispatch('openTask', 0);
         },
 
         resizeDialog() {
-            if (!this.$Electron) {
-                return;
-            }
             this.$Electron.ipcRenderer.sendSync('windowSize', {
                 width: Math.max(1100, window.innerWidth),
                 height: Math.max(720, window.innerHeight),

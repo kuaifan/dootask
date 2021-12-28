@@ -1,7 +1,9 @@
 .task-detail {
     display: flex;
     flex-direction: column;
-    margin: 0 -10px 30px;
+    margin: 0 -32px 12px -10px;
+    padding: 0 22px 12px 0;
+    overflow: auto;
     .task-info {
         flex: 1;
         display: flex;
@@ -435,7 +437,7 @@
             .no-input {
                 display: flex;
                 align-items: center;
-                margin: 32px 0 0 36px;
+                margin: 22px 0 0 36px;
                 background-color: #F4F5F7;
                 padding: 10px 12px;
                 border-radius: 10px;

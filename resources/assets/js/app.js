@@ -91,6 +91,8 @@ Vue.prototype.goBack = function (number) {
 
 Vue.prototype.$A = $A;
 Vue.prototype.$Electron = !!__IS_ELECTRON ? require('electron') : null;
+Vue.prototype.$isMainElectron = !!__IS_ELECTRON && window.navigator && window.navigator.userAgent && /\s+MainTaskWindow\//.test(window.navigator.userAgent);
+Vue.prototype.$isSubElectron = !!__IS_ELECTRON && window.navigator && window.navigator.userAgent && /\s+SubTaskWindow\//.test(window.navigator.userAgent);
 
 Vue.config.productionTip = false;
 
@@ -113,9 +115,10 @@ $A.store = app.$store;
 $A.L = app.$L;
 
 $A.Electron = app.$Electron;
+$A.isMainElectron = app.$isMainElectron;
+$A.isSubElectron = app.$isSubElectron;
 $A.execMainDispatch = (action, data) => {
-    const navigator = window.navigator && window.navigator.userAgent
-    if ($A.Electron && navigator && /\s+SubTaskWindow\//.test(navigator)) {
+    if ($A.isSubElectron) {
         $A.Electron.ipcRenderer.send('sendForwardMain', {
             channel: 'dispatch',
             data: {action, data},

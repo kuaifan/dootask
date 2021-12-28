@@ -271,6 +271,11 @@
     }
 }
 
+.page-manage-task-modal {
+    display: flex;
+    flex-direction: column;
+}
+
 .page-manage-add-task-button-group {
     margin-left: 8px !important;
     .ivu-dropdown {
