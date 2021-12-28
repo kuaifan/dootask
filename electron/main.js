@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const XLSX = require('xlsx');
-const {app, BrowserWindow, ipcMain, dialog, screen} = require('electron')
+const {app, BrowserWindow, ipcMain, dialog} = require('electron')
 
 let mainWindow = null,
     subWindow = [],
@@ -47,6 +47,7 @@ function createMainWindow() {
         width: 1280,
         height: 800,
         center: true,
+        autoHideMenuBar: true,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: true,
@@ -71,7 +72,11 @@ function createMainWindow() {
             if (inheritClose) {
                 mainWindow.webContents.send("windowClose", {})
             } else {
-                app.hide();
+                if (process.platform === 'darwin') {
+                    app.hide();
+                } else {
+                    app.quit();
+                }
             }
         }
     })
@@ -103,6 +108,7 @@ function createSubWindow(args) {
             height: 800,
             center: true,
             parent: mainWindow,
+            autoHideMenuBar: true,
             webPreferences: {
                 preload: path.join(__dirname, 'preload.js'),
                 devTools: args.devTools !== false,
@@ -162,7 +168,11 @@ ipcMain.on('windowRouter', (event, args) => {
 })
 
 ipcMain.on('windowHidden', (event) => {
-    app.hide();
+    if (process.platform === 'darwin') {
+        app.hide();
+    } else {
+        app.quit();
+    }
     event.returnValue = "ok"
 })
 

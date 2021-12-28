@@ -1,5 +1,6 @@
 node_modules/
 public/
+package-bak.json
 package-lock.json
 
 build/

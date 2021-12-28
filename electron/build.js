@@ -1,4 +1,5 @@
 const fs = require('fs');
+const fse = require('fs-extra');
 const path = require('path')
 const inquirer = require('inquirer');
 const child_process = require('child_process');
@@ -102,10 +103,15 @@ function rightExists(string, find) {
 const electronDir = path.resolve(__dirname, "public");
 const nativeCachePath = path.resolve(__dirname, ".native");
 const devloadCachePath = path.resolve(__dirname, ".devload");
+const packageFile = path.resolve(__dirname, "package.json");
+const packageBakFile = path.resolve(__dirname, "package-bak.json");
 const platform = ["build-mac", "build-mac-arm", "build-win"];
 
 // 生成配置、编译应用
-function step1(data, publish) {
+function start(data, publish) {
+    console.log("Name: " + data.name);
+    console.log("AppId: " + data.id);
+    console.log("Version: " + config.version);
     // config.js
     let systemInfo = {
         title: data.name,
@@ -113,7 +119,7 @@ function step1(data, publish) {
         origin: "./",
         apiUrl:  formatUrl(data.url) + "api/",
     }
-    fs.writeFileSync(electronDir + "/config.js", "window.systemInformation = " + JSON.stringify(systemInfo), 'utf8');
+    fs.writeFileSync(electronDir + "/config.js", "window.systemInformation = " + JSON.stringify(systemInfo, null, 2), 'utf8');
     fs.writeFileSync(nativeCachePath, formatUrl(data.url));
     fs.writeFileSync(devloadCachePath, "", 'utf8');
     // index.html
@@ -121,26 +127,20 @@ function step1(data, publish) {
     let indexString = fs.readFileSync(indexFile, 'utf8');
     indexString = indexString.replace(`<title></title>`, `<title>${data.name}</title>`);
     fs.writeFileSync(indexFile, indexString, 'utf8');
-    // package.json
-    let packageFile = path.resolve(__dirname, "package.json");
-    let packageString = fs.readFileSync(packageFile, 'utf8');
-    packageString = packageString.replace(/"name":\s*"(.*?)"/, `"name": "${data.name}"`);
-    packageString = packageString.replace(/"appId":\s*"(.*?)"/, `"appId": "${data.id}"`);
-    packageString = packageString.replace(/"version":\s*"(.*?)"/, `"version": "${config.version}"`);
-    packageString = packageString.replace(/"artifactName":\s*"(.*?)"/g, '"artifactName": "' + getDomain(data.url) + '-v${version}-${os}-${arch}.${ext}"');
-    fs.writeFileSync(packageFile, packageString, 'utf8');
-    //
+    // package.json Backup
+    fse.copySync(packageFile, packageBakFile)
+    // package.json Generated
+    const econfig = require('./package.json')
+    econfig.name = data.name;
+    econfig.version = config.version;
+    econfig.build.appId = data.id;
+    econfig.build.artifactName = getDomain(data.url) + "-v${version}-${os}-${arch}.${ext}";
+    econfig.build.nsis.artifactName = getDomain(data.url) + "-v${version}-${os}-${arch}.${ext}";
+    fs.writeFileSync(packageFile, JSON.stringify(econfig, null, 2), 'utf8');
+    // build
     child_process.spawnSync("npm", ["run", data.platform + (publish === true ? "-publish" : "")], {stdio: "inherit", cwd: "electron"});
-}
-
-// 还原配置
-function step2() {
-    let packageFile = path.resolve(__dirname, "package.json");
-    let packageString = fs.readFileSync(packageFile, 'utf8');
-    packageString = packageString.replace(/"name":\s*"(.*?)"/, `"name": "${config.name}"`);
-    packageString = packageString.replace(/"appId":\s*"(.*?)"/, `"appId": "${config.app.id}"`);
-    packageString = packageString.replace(/"artifactName":\s*"(.*?)"/g, '"artifactName": "${productName}-v${version}-${os}-${arch}.${ext}"');
-    fs.writeFileSync(packageFile, packageString, 'utf8');
+    // package.json Recovery
+    fse.copySync(packageBakFile, packageFile)
 }
 
 if (["dev"].includes(argv[2])) {
@@ -153,10 +153,9 @@ if (["dev"].includes(argv[2])) {
     config.app.sites.forEach((data) => {
         if (data.name && data.id && data.url) {
             data.platform = argv[2];
-            step1(data, true)
+            start(data, true)
         }
     })
-    step2();
 } else {
     // 自定义编译
     const questions = [
@@ -198,14 +197,13 @@ if (["dev"].includes(argv[2])) {
     ];
     inquirer.prompt(questions).then(answers => {
         answers.platform.forEach(platform => {
-            step1({
+            start({
                 "name": config.name,
                 "id": config.app.id,
                 "url": answers.website,
                 "platform": platform
             }, false)
         });
-        step2();
     });
 }
 
