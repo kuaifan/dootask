@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const XLSX = require('xlsx');
-const {app, BrowserWindow, ipcMain, dialog} = require('electron')
+const {app, BrowserWindow, ipcMain, dialog, screen} = require('electron')
 
 let mainWindow = null,
     subWindow = [],
@@ -42,7 +42,7 @@ function randomString(len) {
     return pwd;
 }
 
-function createWindow() {
+function createMainWindow() {
     mainWindow = new BrowserWindow({
         width: 1280,
         height: 800,
@@ -53,6 +53,7 @@ function createWindow() {
             contextIsolation: false
         }
     })
+    mainWindow.webContents.setUserAgent(mainWindow.webContents.getUserAgent() + " MainTaksWindow/1.0");
 
     if (devloadUrl) {
         mainWindow.loadURL(devloadUrl).then(r => {
@@ -76,24 +77,24 @@ function createWindow() {
     })
 }
 
-function createRouter(arg) {
-    if (!arg) {
+function createSubWindow(args) {
+    if (!args) {
         return;
     }
 
-    if (typeof arg !== "object") {
-        arg = {
-            path: arg,
+    if (typeof args !== "object") {
+        args = {
+            path: args,
             config: {},
         }
     }
 
-    let name = arg.name || "auto_" + randomString(6);
+    let name = args.name || "auto_" + randomString(6);
     let item = subWindow.find(item => item.name == name);
     let browser = item ? item.browser : null;
     if (browser) {
         browser.focus();
-        if (arg.force === false) {
+        if (args.force === false) {
             return;
         }
     } else {
@@ -104,10 +105,11 @@ function createRouter(arg) {
             parent: mainWindow,
             webPreferences: {
                 preload: path.join(__dirname, 'preload.js'),
+                devTools: args.devTools !== false,
                 nodeIntegration: true,
                 contextIsolation: false
             }
-        }, arg.config || {}))
+        }, args.config || {}))
         browser.on('close', function () {
             let index = subWindow.findIndex(item => item.name == name);
             if (index > -1) {
@@ -116,14 +118,15 @@ function createRouter(arg) {
         })
         subWindow.push({ name, browser })
     }
+    browser.webContents.setUserAgent(browser.webContents.getUserAgent() + " SubTaskWindow/1.0" + (args.userAgent ? (" " + args.userAgent) : ""));
 
     if (devloadUrl) {
-        browser.loadURL(devloadUrl + '#' + (arg.hash || arg.path)).then(r => {
+        browser.loadURL(devloadUrl + '#' + (args.hash || args.path)).then(r => {
 
         })
     } else {
         browser.loadFile('./public/index.html', {
-            hash: arg.hash || arg.path
+            hash: args.hash || args.path
         }).then(r => {
 
         })
@@ -131,55 +134,131 @@ function createRouter(arg) {
 }
 
 app.whenReady().then(() => {
-    createWindow()
+    createMainWindow()
 
-    app.on('activate', function () {
-        if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    app.on('activate', () => {
+        if (BrowserWindow.getAllWindows().length === 0) createMainWindow()
     })
 })
 
-app.on('window-all-closed', function () {
-    if (process.platform !== 'darwin') app.quit()
+app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+        app.quit()
+    }
 })
 
 app.on('before-quit', () => {
     willQuitApp = true
 })
 
-ipcMain.on('inheritClose', () => {
+ipcMain.on('inheritClose', (event) => {
     inheritClose = true
+    event.returnValue = "ok"
 })
 
-ipcMain.on('windowRouter', (event, arg) => {
-    createRouter(arg)
+ipcMain.on('windowRouter', (event, args) => {
+    createSubWindow(args)
+    event.returnValue = "ok"
 })
 
-ipcMain.on('windowHidden', () => {
+ipcMain.on('windowHidden', (event) => {
     app.hide();
+    event.returnValue = "ok"
 })
 
-ipcMain.on('windowClose', () => {
-    mainWindow.close()
+ipcMain.on('windowClose', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    win.close()
+    event.returnValue = "ok"
 })
 
-ipcMain.on('windowMax', function () {
-    if (mainWindow.isMaximized()) {
-        mainWindow.restore();
-    } else {
-        mainWindow.maximize();
+ipcMain.on('windowSize', (event, args) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (win) {
+        if (args.width || args.height) {
+            let [w, h] = win.getSize()
+            const width = args.width || w
+            const height = args.height || h
+            win.setSize(width, height, args.animate === true)
+            //
+            if (args.autoZoom === true) {
+                let move = false
+                let [x, y] = win.getPosition()
+                if (Math.abs(width - w) > 10) {
+                    move = true
+                    x -= (width - w) / 2
+                }
+                if (Math.abs(height - h) > 10) {
+                    move = true
+                    y -= (height - h) / 2
+                }
+                if (move) {
+                    win.setPosition(Math.max(0, Math.floor(x)), Math.max(0, Math.floor(y)))
+                }
+            }
+        }
+        if (args.minWidth || args.minHeight) {
+            win.setMinimumSize(args.minWidth || win.getMinimumSize()[0], args.minHeight || win.getMinimumSize()[1])
+        }
+        if (args.maxWidth || args.maxHeight) {
+            win.setMaximumSize(args.maxWidth || win.getMaximumSize()[0], args.maxHeight || win.getMaximumSize()[1])
+        }
     }
+    event.returnValue = "ok"
 })
 
-ipcMain.on('setDockBadge', (event, arg) => {
+ipcMain.on('windowMinSize', (event, args) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (win) {
+        win.setMinimumSize(args.width || win.getMinimumSize()[0], args.height || win.getMinimumSize()[1])
+    }
+    event.returnValue = "ok"
+})
+
+ipcMain.on('windowMaxSize', (event, args) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (win) {
+        win.setMaximumSize(args.width || win.getMaximumSize()[0], args.height || win.getMaximumSize()[1])
+    }
+    event.returnValue = "ok"
+})
+
+ipcMain.on('windowCenter', (event, args) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (win) {
+        win.center();
+    }
+    event.returnValue = "ok"
+})
+
+ipcMain.on('windowMax', (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (win.isMaximized()) {
+        win.restore();
+    } else {
+        win.maximize();
+    }
+    event.returnValue = "ok"
+})
+
+ipcMain.on('sendForwardMain', (event, args) => {
+    if (mainWindow) {
+        mainWindow.webContents.send(args.channel, args.data)
+    }
+    event.returnValue = "ok"
+})
+
+ipcMain.on('setDockBadge', (event, args) => {
     if(process.platform !== 'darwin'){
         // Mac only
         return;
     }
-    if (runNum(arg) > 0) {
-        app.dock.setBadge(String(arg))
+    if (runNum(args) > 0) {
+        app.dock.setBadge(String(args))
     } else {
         app.dock.setBadge("")
     }
+    event.returnValue = "ok"
 })
 
 ipcMain.on('saveSheet', (event, data, filename, opts) => {
@@ -194,4 +273,5 @@ ipcMain.on('saveSheet', (event, data, filename, opts) => {
     }).then(o => {
         XLSX.writeFile(data, o.filePath, opts);
     });
+    event.returnValue = "ok"
 })

@@ -59,7 +59,7 @@ export default {
                 $A.modalError({
                     content: msg,
                     onOk: () => {
-                        if (this.isElectron) {
+                        if (this.$Electron) {
                             window.close();
                         }
                     }

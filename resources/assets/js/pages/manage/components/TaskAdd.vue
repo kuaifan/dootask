@@ -37,7 +37,7 @@
                 <Button :class="{advanced: advanced}" @click="advanced=!advanced">{{$L('高级选项')}}</Button>
                 <ul class="advanced-priority">
                     <li v-for="(item, key) in taskPriority" :key="key">
-                        <ETooltip :content="item.name + ' (' + item.days + $L('天') + ')'">
+                        <ETooltip :content="taskPriorityContent(item)">
                             <i
                                 class="taskfont"
                                 :style="{color:item.color}"
@@ -369,10 +369,23 @@ export default {
             }
         },
 
+        taskPriorityContent(item) {
+            let days = $A.runNum(item.days);
+            if (days <= 0) {
+                return item.name + ' (' + this.$L('无时间限制') + ')';
+            }
+            return item.name + ' (' + days + this.$L('天') + ')';
+        },
+
         choosePriority(item) {
             let start = new Date();
-            let end = new Date(new Date().setDate(start.getDate() + $A.runNum(item.days)));
-            this.$set(this.addData, 'times', $A.date2string([start, end]))
+            let days = $A.runNum(item.days);
+            if (days > 0) {
+                let end = new Date(new Date().setDate(start.getDate() + days));
+                this.$set(this.addData, 'times', $A.date2string([start, end]))
+            } else {
+                this.$set(this.addData, 'times', [])
+            }
             this.$set(this.addData, 'p_level', item.priority)
             this.$set(this.addData, 'p_name', item.name)
             this.$set(this.addData, 'p_color', item.color)

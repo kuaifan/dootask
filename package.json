@@ -1,6 +1,6 @@
 {
     "name": "DooTask",
-    "version": "0.4.78",
+    "version": "0.4.86",
     "description": "DooTask is task management system.",
     "scripts": {
         "start": "./cmd dev",
@@ -36,6 +36,7 @@
         "cross-env": "^7.0.3",
         "css-loader": "^6.5.1",
         "echarts": "^5.2.2",
+        "electron": "^16.0.5",
         "element-ui": "^2.15.6",
         "file-loader": "^6.2.0",
         "inquirer": "^8.2.0",

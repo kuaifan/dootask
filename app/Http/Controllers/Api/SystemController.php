@@ -114,7 +114,7 @@ class SystemController extends AbstractController
                 return Base::retError('参数错误');
             }
             foreach ($list AS $item) {
-                if (empty($item['name']) || empty($item['color']) || empty($item['days']) || empty($item['priority'])) {
+                if (empty($item['name']) || empty($item['color']) || empty($item['priority'])) {
                     continue;
                 }
                 $array[] = [
@@ -231,7 +231,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {post} api/system/imgupload          11. 上传图片
+     * @api {post} api/system/imgupload          09. 上传图片
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -281,7 +281,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/imgview          12. 浏览图片空间
+     * @api {get} api/system/get/imgview          10. 浏览图片空间
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -377,7 +377,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {post} api/system/fileupload          13. 上传文件
+     * @api {post} api/system/fileupload          11. 上传文件
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0

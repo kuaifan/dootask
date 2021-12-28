@@ -81,6 +81,11 @@ export default [
         component: () => import('./pages/single/file.vue'),
     },
     {
+        name: 'single-task',
+        path: '/single/task/:id',
+        component: () => import('./pages/single/task.vue'),
+    },
+    {
         name: 'login',
         path: '/login',
         component: () => import('./pages/login.vue'),

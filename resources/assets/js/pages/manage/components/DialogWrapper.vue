@@ -24,7 +24,7 @@
         <ScrollerY
             ref="scroller"
             class="dialog-scroller overlay-y"
-            :auto-bottom="autoBottom && !inputFocus"
+            :auto-bottom="autoBottom"
             @on-scroll="chatScroll"
             static>
             <div ref="manageList" class="dialog-list">
@@ -347,12 +347,10 @@ export default {
         },
 
         onEventFocus(e) {
-            this.inputFocus = true;
             this.$emit("on-focus", e)
         },
 
         onEventblur(e) {
-            this.inputFocus = false;
             this.$emit("on-blur", e)
         },
 

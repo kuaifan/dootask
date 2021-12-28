@@ -1,6 +1,6 @@
 <template>
     <div v-if="repoStatus && !$store.state.windowMax768" class="common-app-down">
-        <div v-if="isElectron" class="common-app-down-link" @click="openExternal(repoData.html_url)">
+        <div v-if="$Electron" class="common-app-down-link" @click="openExternal(repoData.html_url)">
             <Icon type="md-download"/> {{$L(repoTitle)}}
         </div>
         <a v-else class="common-app-down-link" :href="repoData.html_url" target="_blank">
@@ -41,7 +41,7 @@ export default {
                     this.repoStatus = 0;
                     return;
                 }
-                if (!this.isElectron) {
+                if (!this.$Electron) {
                     // 网页只提示有客户端下载
                     this.repoStatus = 1;
                     return;
@@ -183,7 +183,7 @@ export default {
 
         openExternal(url) {
             try {
-                this.$electron.shell.openExternal(url);
+                this.$Electron.shell.openExternal(url);
             } catch (e) {
                 window.location.href = url;
             }

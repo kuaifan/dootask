@@ -46,12 +46,6 @@ Vue.component('EDropdown', Dropdown);
 Vue.component('EDropdownMenu', DropdownMenu);
 Vue.component('EDropdownItem', DropdownItem);
 
-Vue.prototype.isElectron = false;
-if (!!__IS_ELECTRON) {
-    Vue.prototype.isElectron = true;
-    Vue.prototype.$electron = require('electron')
-}
-
 const originalPush = VueRouter.prototype.push
 VueRouter.prototype.push = function push(location) {
     return originalPush.call(this, location).catch(err => err)
@@ -96,6 +90,10 @@ Vue.prototype.goBack = function (number) {
 };
 
 Vue.prototype.$A = $A;
+Vue.prototype.$Electron = !!__IS_ELECTRON ? require('electron') : null;
+Vue.prototype.$isMainElectron = !!__IS_ELECTRON && window.navigator && window.navigator.userAgent && /\s+MainTaskWindow\//.test(window.navigator.userAgent);
+Vue.prototype.$isSubElectron = !!__IS_ELECTRON && window.navigator && window.navigator.userAgent && /\s+SubTaskWindow\//.test(window.navigator.userAgent);
+
 Vue.config.productionTip = false;
 
 const app = new Vue({
@@ -115,3 +113,15 @@ $A.Notice = app.$Notice;
 $A.Modal = app.$Modal;
 $A.store = app.$store;
 $A.L = app.$L;
+
+$A.Electron = app.$Electron;
+$A.isMainElectron = app.$isMainElectron;
+$A.isSubElectron = app.$isSubElectron;
+$A.execMainDispatch = (action, data) => {
+    if ($A.isSubElectron) {
+        $A.Electron.ipcRenderer.send('sendForwardMain', {
+            channel: 'dispatch',
+            data: {action, data},
+        });
+    }
+};

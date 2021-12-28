@@ -139,6 +139,8 @@ export default {
      * @param data|{key, project_id}
      */
     toggleTablePanel({state}, data) {
+        $A.execMainDispatch("toggleTablePanel", data)
+        //
         let key = data;
         let project_id = state.projectId;
         if (state.method.isJson(data)) {
@@ -295,6 +297,8 @@ export default {
      * @param data
      */
     saveUserBasic({state}, data) {
+        $A.execMainDispatch("saveUserBasic", data)
+        //
         let index = state.cacheUserBasic.findIndex(({userid}) => userid == data.userid);
         if (index > -1) {
             data = Object.assign(state.cacheUserBasic[index], data)
@@ -414,6 +418,8 @@ export default {
      * @param data
      */
     saveFile({state, dispatch}, data) {
+        $A.execMainDispatch("saveFile", data)
+        //
         if (state.method.isArray(data)) {
             data.forEach((file) => {
                 dispatch("saveFile", file);
@@ -435,6 +441,8 @@ export default {
      * @param file_id
      */
     forgetFile({state, dispatch}, file_id) {
+        $A.execMainDispatch("forgetFile", file_id)
+        //
         state.files = state.files.filter((file) => file.id != file_id);
         state.files.forEach((file) => {
             if (file.pid == file_id) {
@@ -504,6 +512,8 @@ export default {
      * @param data
      */
     saveProject({state, dispatch}, data) {
+        $A.execMainDispatch("saveProject", data)
+        //
         if (state.method.isArray(data)) {
             data.forEach((project) => {
                 dispatch("saveProject", project)
@@ -531,6 +541,8 @@ export default {
      * @param project_id
      */
     forgetProject({state}, project_id) {
+        $A.execMainDispatch("forgetProject", project_id)
+        //
         let index = state.projects.findIndex(({id}) => id == project_id);
         if (index > -1) {
             state.projects.splice(index, 1);
@@ -562,7 +574,7 @@ export default {
                 reject({msg: 'Parameter error'});
                 return;
             }
-            if (state.cacheProjects.length > 0) {
+            if (state.projects.length === 0 && state.cacheProjects.length > 0) {
                 state.projects = state.cacheProjects;
             }
             dispatch("call", {
@@ -705,6 +717,8 @@ export default {
      * @param data
      */
     saveColumn({state, dispatch}, data) {
+        $A.execMainDispatch("saveColumn", data)
+        //
         if (state.method.isArray(data)) {
             data.forEach((column) => {
                 dispatch("saveColumn", column)
@@ -729,6 +743,8 @@ export default {
      * @param column_id
      */
     forgetColumn({state, dispatch}, column_id) {
+        $A.execMainDispatch("forgetColumn", column_id)
+        //
         let index = state.columns.findIndex(({id}) => id == column_id);
         if (index > -1) {
             dispatch('getProjectOne', state.columns[index].project_id)
@@ -753,7 +769,7 @@ export default {
                 reject({msg: 'Parameter error'})
                 return;
             }
-            if (state.cacheColumns.length > 0) {
+            if (state.columns.length === 0 && state.cacheColumns.length > 0) {
                 state.columns = state.cacheColumns;
             }
             state.projectLoad++;
@@ -829,6 +845,8 @@ export default {
      * @param data
      */
     saveTask({state, dispatch}, data) {
+        $A.execMainDispatch("saveTask", data)
+        //
         if (state.method.isArray(data)) {
             data.forEach((task) => {
                 dispatch("saveTask", task)
@@ -867,6 +885,8 @@ export default {
      * @param task_id
      */
     forgetTask({state, dispatch}, task_id) {
+        $A.execMainDispatch("forgetTask", task_id)
+        //
         let index = state.tasks.findIndex(({id}) => id == task_id);
         let key = 'tasks';
         if (index === -1) {
@@ -898,6 +918,8 @@ export default {
      * @param dialog_id
      */
     increaseTaskMsgNum({state}, dialog_id) {
+        $A.execMainDispatch("increaseTaskMsgNum", dialog_id)
+        //
         const task = state.tasks.find((task) => task.dialog_id === dialog_id);
         if (task) task.msg_num++;
     },
@@ -913,7 +935,7 @@ export default {
             state.tasks = [];
             return;
         }
-        if (state.cacheTasks.length > 0) {
+        if (state.tasks.length == 0 && state.cacheTasks.length > 0) {
             state.tasks = state.cacheTasks;
         }
         if (data.project_id) {
@@ -1324,6 +1346,8 @@ export default {
      * @param data
      */
     saveDialog({state, dispatch}, data) {
+        $A.execMainDispatch("saveDialog", data)
+        //
         if (state.method.isArray(data)) {
             data.forEach((dialog) => {
                 dispatch("saveDialog", dialog)
@@ -1348,6 +1372,8 @@ export default {
      * @param data
      */
     updateDialogLastMsg({state, dispatch}, data) {
+        $A.execMainDispatch("updateDialogLastMsg", data)
+        //
         let dialog = state.dialogs.find(({id}) => id == data.dialog_id);
         if (dialog) {
             dispatch("saveDialog", {
@@ -1442,6 +1468,8 @@ export default {
      * @param dialog_id
      */
     moveDialogTop({state}, dialog_id) {
+        $A.execMainDispatch("moveDialogTop", dialog_id)
+        //
         const index = state.dialogs.findIndex(({id}) => id == dialog_id);
         if (index > -1) {
             const tmp = state.method.cloneJSON(state.dialogs[index]);
@@ -1456,6 +1484,8 @@ export default {
      * @param dialog_id
      */
     forgetDialog({state}, dialog_id) {
+        $A.execMainDispatch("forgetDialog", dialog_id)
+        //
         let index = state.dialogs.findIndex(({id}) => id == dialog_id);
         if (index > -1) {
             state.dialogs.splice(index, 1);
@@ -1479,6 +1509,8 @@ export default {
      * @param data
      */
     saveDialogMsg({state, dispatch}, data) {
+        $A.execMainDispatch("saveDialogMsg", data)
+        //
         if (state.method.isArray(data)) {
             data.forEach((msg) => {
                 dispatch("saveDialogMsg", msg)

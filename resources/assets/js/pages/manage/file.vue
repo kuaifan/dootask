@@ -666,7 +666,7 @@ export default {
                 this.searchKey = '';
                 this.pid = item.id;
             } else {
-                if (this.isElectron) {
+                if (this.$Electron) {
                     this.openSingle(item);
                 } else {
                     this.editInfo = item;
@@ -676,7 +676,7 @@ export default {
         },
 
         openSingle(item) {
-            this.$electron.ipcRenderer.send('windowRouter', {
+            this.$Electron.ipcRenderer.send('windowRouter', {
                 name: 'file-' + item.id,
                 path: "/single/file/" + item.id,
                 force: false, // 如果窗口已存在不重新加载

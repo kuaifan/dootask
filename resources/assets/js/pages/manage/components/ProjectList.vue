@@ -867,16 +867,10 @@ export default {
                     }
                     this.$set(this.columnLoad, column.id, true);
                     //
-                    this.$store.dispatch("call", {
-                        url: 'project/column/remove',
-                        data: {
-                            column_id: column.id,
-                        },
-                    }).then(({data, msg}) => {
+                    this.$store.dispatch("removeColumn", column.id).then(({data, msg}) => {
                         $A.messageSuccess(msg);
                         this.$set(this.columnLoad, column.id, false);
                         this.$Modal.remove();
-                        this.$store.dispatch("forgetColumn", data.id);
                     }).catch(({msg}) => {
                         $A.modalError(msg, 301);
                         this.$set(this.columnLoad, column.id, false);

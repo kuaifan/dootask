@@ -145,7 +145,9 @@
             }"
             @on-visible-change="taskVisibleChange"
             footer-hide>
-            <TaskDetail :open-task="taskData"/>
+            <div class="page-manage-task-modal" :style="taskStyle">
+                <TaskDetail :task-id="taskId" :open-task="taskData"/>
+            </div>
         </Modal>
 
         <!--查看所有团队-->
@@ -225,6 +227,7 @@ export default {
             openMenu: {},
             visibleMenu: false,
             show768Menu: false,
+            innerHeight: window.innerHeight,
 
             allUserShow: false,
             allProjectShow: false,
@@ -258,9 +261,10 @@ export default {
         });
         //
         document.addEventListener('keydown', this.shortcutEvent);
+        window.addEventListener('resize', this.innerHeightListener);
         //
-        if (this.isElectron) {
-            this.$electron.ipcRenderer.send('setDockBadge', 0);
+        if (this.$Electron) {
+            this.$Electron.ipcRenderer.send('setDockBadge', 0);
         }
     },
 
@@ -271,6 +275,7 @@ export default {
         }
         //
         document.removeEventListener('keydown', this.shortcutEvent);
+        window.removeEventListener('resize', this.innerHeightListener);
     },
 
     deactivated() {
@@ -341,6 +346,13 @@ export default {
                 return data.filter(({name}) => name.toLowerCase().indexOf(projectKeyValue.toLowerCase()) > -1);
             }
             return data;
+        },
+
+        taskStyle() {
+            const {innerHeight} = this;
+            return {
+                maxHeight: (innerHeight - (innerHeight > 900 ? 200 : 70) - 20) + 'px'
+            }
         }
     },
 
@@ -361,14 +373,14 @@ export default {
         },
 
         msgAllUnread() {
-            if (this.isElectron) {
-                this.$electron.ipcRenderer.send('setDockBadge', this.msgAllUnread + this.dashboardTotal);
+            if (this.$Electron) {
+                this.$Electron.ipcRenderer.send('setDockBadge', this.msgAllUnread + this.dashboardTotal);
             }
         },
 
         dashboardTotal() {
-            if (this.isElectron) {
-                this.$electron.ipcRenderer.send('setDockBadge', this.msgAllUnread + this.dashboardTotal);
+            if (this.$Electron) {
+                this.$Electron.ipcRenderer.send('setDockBadge', this.msgAllUnread + this.dashboardTotal);
             }
         },
 
@@ -448,6 +460,10 @@ export default {
                     { type: 'string', min: 2, message: this.$L('项目名称至少2个字！'), trigger: 'change' }
                 ]
             };
+        },
+
+        innerHeightListener() {
+            this.innerHeight = window.innerHeight;
         },
 
         chackPass() {

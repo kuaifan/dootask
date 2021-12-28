@@ -178,14 +178,12 @@ export default {
     mounted() {
         this.getDemoAccount();
         //
-        console.log(this.$route);
         if (!this.isElectron && this.cacheServerUrl) {
             this.onServerUrlClear();
         }
         this.$route.query.type == "reg"
             ? (this.loginType = "reg")
             : (this.loginType = "login");
-        console.log(this.$route);
     },
     deactivated() {
         this.loginJump = false;

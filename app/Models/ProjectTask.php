@@ -335,7 +335,7 @@ class ProjectTask extends AbstractModel
             'p_color' => $p_color,
         ]);
         if ($content) {
-            $task->desc = Base::getHtml($content);
+            $task->desc = Base::getHtml($content, 100);
         }
         // 标题
         if (empty($name)) {
@@ -531,7 +531,7 @@ class ProjectTask extends AbstractModel
                     ], [
                         'content' => $data['content'],
                     ]);
-                    $this->desc = Base::getHtml($data['content']);
+                    $this->desc = Base::getHtml($data['content'], 100);
                     $this->addLog("修改{任务}详细描述");
                     $updateContent = true;
                 }

@@ -272,8 +272,8 @@ export default {
                 bookType: bookType || "xlsx"
             }
             const filename = bookName + "." + (bookType == 'xlml' ? 'xls' : bookType);
-            if (this.isElectron) {
-                this.$electron.ipcRenderer.send('saveSheet', data, filename, opts);
+            if (this.$Electron) {
+                this.$Electron.ipcRenderer.send('saveSheet', data, filename, opts);
             } else {
                 XLSX.writeFile(data, filename, opts);
             }
