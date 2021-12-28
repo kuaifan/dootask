@@ -114,7 +114,7 @@ class SystemController extends AbstractController
                 return Base::retError('参数错误');
             }
             foreach ($list AS $item) {
-                if (empty($item['name']) || empty($item['color']) || empty($item['days']) || empty($item['priority'])) {
+                if (empty($item['name']) || empty($item['color']) || empty($item['priority'])) {
                     continue;
                 }
                 $array[] = [
