@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const XLSX = require('xlsx');
-const {app, BrowserWindow, ipcMain, dialog} = require('electron')
+const {app, BrowserWindow, ipcMain, dialog, screen} = require('electron')
 
 let mainWindow = null,
     subWindow = [],
@@ -176,16 +176,32 @@ ipcMain.on('windowSize', (event, args) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     if (win) {
         if (args.width || args.height) {
-            win.setSize(args.width || win.getSize()[0], args.height || win.getSize()[1], args.animate === true)
+            let [w, h] = win.getSize()
+            const width = args.width || w
+            const height = args.height || h
+            win.setSize(width, height, args.animate === true)
+            //
+            if (args.autoZoom === true) {
+                let move = false
+                let [x, y] = win.getPosition()
+                if (Math.abs(width - w) > 10) {
+                    move = true
+                    x -= (width - w) / 2
+                }
+                if (Math.abs(height - h) > 10) {
+                    move = true
+                    y -= (height - h) / 2
+                }
+                if (move) {
+                    win.setPosition(Math.max(0, Math.floor(x)), Math.max(0, Math.floor(y)))
+                }
+            }
         }
         if (args.minWidth || args.minHeight) {
             win.setMinimumSize(args.minWidth || win.getMinimumSize()[0], args.minHeight || win.getMinimumSize()[1])
         }
         if (args.maxWidth || args.maxHeight) {
             win.setMaximumSize(args.maxWidth || win.getMaximumSize()[0], args.maxHeight || win.getMaximumSize()[1])
-        }
-        if (args.center === true) {
-            win.center();
         }
     }
     event.returnValue = "ok"

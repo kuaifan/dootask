@@ -1201,7 +1201,7 @@ export default {
                 height: Math.max(720, window.innerHeight),
                 minWidth: 800,
                 minHeight: 600,
-                center: true,
+                autoZoom: true,
             });
             if (this.msgText) {
                 let num = 0;
