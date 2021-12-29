@@ -590,4 +590,35 @@ class FileController extends AbstractController
         $file->pushMsg($action, $action == "delete" ? null : $file, $array);
         return Base::retSuccess($action == "delete" ? "删除成功" : "设置成功", $file);
     }
+
+    /**
+     * 退出共享
+     *
+     * @apiParam {Number} id            文件ID
+     */
+    public function share__out()
+    {
+        $user = User::auth();
+        //
+        $id = intval(Request::input('id'));
+        //
+        $file = File::allowFind($id);
+        //
+        if ($file->userid == $user->userid) {
+            return Base::retError('不能退出自己共享的文件');
+        }
+        if (FileUser::where([
+            'file_id' => $file->id,
+            'userid' => 0,
+        ])->exists()) {
+            return Base::retError('无法退出共享所有人的文件或文件夹');
+        }
+        FileUser::where([
+            'file_id' => $file->id,
+            'userid' => $user->userid,
+        ])->delete();
+        //
+        $file->setShare();
+        return Base::retSuccess("退出成功");
+    }
 }

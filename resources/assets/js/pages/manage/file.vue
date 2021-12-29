@@ -119,7 +119,13 @@
                             <DropdownItem @click.native="handleContextClick('rename')" divided>{{$L('重命名')}}</DropdownItem>
                             <DropdownItem @click.native="handleContextClick('copy')" :disabled="contextMenuItem.type=='folder'">{{$L('复制')}}</DropdownItem>
                             <DropdownItem @click.native="handleContextClick('shear')" :disabled="contextMenuItem.userid != userId">{{$L('剪切')}}</DropdownItem>
-                            <DropdownItem @click.native="handleContextClick('share')" :disabled="contextMenuItem.userid != userId" divided>{{$L('共享')}}</DropdownItem>
+                            <template v-if="contextMenuItem.userid == userId">
+                                <DropdownItem @click.native="handleContextClick('share')" divided>{{$L('共享')}}</DropdownItem>
+                                <DropdownItem @click.native="handleContextClick('share')">{{$L('链接')}}</DropdownItem>
+                            </template>
+                            <template v-else-if="contextMenuItem.share">
+                                <DropdownItem @click.native="handleContextClick('outshare')" divided>{{$L('退出共享')}}</DropdownItem>
+                            </template>
                             <DropdownItem @click.native="handleContextClick('delete')" divided style="color:red">{{$L('删除')}}</DropdownItem>
                         </template>
                         <template v-else>
@@ -797,6 +803,28 @@ export default {
                     this.getShare();
                     break;
 
+                case 'outshare':
+                    $A.modalConfirm({
+                        content: '你确定要退出【' + item.name + '】共享成员吗？',
+                        loading: true,
+                        onOk: () => {
+                            this.$store.dispatch("call", {
+                                url: 'file/share/out',
+                                data: {
+                                    id: item.id,
+                                },
+                            }).then(({msg}) => {
+                                $A.messageSuccess(msg);
+                                this.$Modal.remove();
+                                this.$store.dispatch("forgetFile", item.id);
+                            }).catch(({msg}) => {
+                                this.$Modal.remove();
+                                $A.modalError(msg, 301);
+                            });
+                        }
+                    });
+                    break;
+
                 case 'delete':
                     let typeName = item.type == 'folder' ? '文件夹' : '文件';
                     $A.modalConfirm({
@@ -814,7 +842,7 @@ export default {
                                 this.$Modal.remove();
                                 this.$store.dispatch("forgetFile", item.id);
                             }).catch(({msg}) => {
-                                $A.modalError(msg);
+                                $A.modalError(msg, 301);
                                 this.$Modal.remove();
                             });
                         }
