@@ -21,36 +21,37 @@
                     font-family: PingFangSC-Regular, PingFang SC;
                     font-weight: 400;
                     position: relative;
+                    .logo {
+                        width: 65px;
+                        height: 36px;
+                        background: url("../images/index/indexlogo.png")
+                            no-repeat center center;
+                        background-size: contain;
+                        margin: 0 20px 0 20px;
+                    }
+                    .header-right-one {
+                        display: flex;
+                        align-items: center;
+                        justify-content: end;
+                        font-size: 12px;
+                        min-width: 75px;
+                        .header-right-one-language {
+                            margin-right: 4px;
+                        }
+                        .header-right-one-dropdown {
+                            color: #ffffff;
+                        }
+                    }
+                    .header-right-two {
+                        font-size: 12px;
+                        margin: 0 20px 0 20px;
+                        cursor: pointer;
+                        overflow: hidden;
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                    }
                     @media(max-width:414px){
-                        .logo {
-                            width: 65px;
-                            height: 36px;
-                            background: url("../images/index/indexlogo.png")
-                                no-repeat center center;
-                            background-size: contain;
-                            margin: 0 20px 0 20px;
-                        }
-                        .header-right-one {
-                            display: flex;
-                            align-items: center;
-                            justify-content: end;
-                            font-size: 12px;
-                            min-width: 75px;
-                            .header-right-one-language {
-                                margin-right: 4px;
-                            }
-                            .header-right-one-dropdown {
-                                color: #ffffff;
-                            }
-                        }
-                        .header-right-two {
-                            font-size: 12px;
-                            margin: 0 20px 0 20px;
-                            cursor: pointer;
-                            overflow: hidden;
-                            white-space: nowrap;
-                            text-overflow: ellipsis;
-                        }
+                       
                         .header-right-three {
                             max-width: 50px;
                             font-size: 12px;
@@ -68,35 +69,7 @@
                         }
                     }
                     @media(min-width:414px){
-                        .logo {
-                            width: 65px;
-                            height: 36px;
-                            background: url("../images/index/indexlogo.png")
-                                no-repeat center center;
-                            background-size: contain;
-                            margin: 0 20px 0 20px;
-                        }
-                        .header-right-one {
-                            display: flex;
-                            align-items: center;
-                            justify-content: end;
-                            font-size: 12px;
-                            min-width: 75px;
-                            .header-right-one-language {
-                                margin-right: 4px;
-                            }
-                            .header-right-one-dropdown {
-                                color: #ffffff;
-                            }
-                        }
-                        .header-right-two {
-                            font-size: 12px;
-                            margin: 0 20px 0 20px;
-                            cursor: pointer;
-                            overflow: hidden;
-                            white-space: nowrap;
-                            text-overflow: ellipsis;
-                        }
+                       
                         .header-right-three {
                             font-size: 12px;
                             height: 36px;
