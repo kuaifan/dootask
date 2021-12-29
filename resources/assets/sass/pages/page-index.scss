@@ -378,6 +378,7 @@
                         text-align: center;
                         line-height: 36px;
                         cursor: pointer;
+                        padding: 0 10px 0 10px;
                     }
                 }
             }
@@ -430,7 +431,7 @@
                     center center;
                 background-size: contain;
                 position: absolute;
-                bottom: 0;
+                bottom: -40px;
             }
             .header-pic {
                 width: 920px;
@@ -440,8 +441,8 @@
                 background-size: contain;
                 position: absolute;
                 left: 50%;
-                margin-left: -460px;
-                bottom: -202px;
+                margin-left: -471px;
+                bottom: -236px;
             }
         }
         .page-main {
