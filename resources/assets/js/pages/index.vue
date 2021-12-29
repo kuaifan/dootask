@@ -36,7 +36,7 @@
                             {{ $L("注册账号") }}
                         </div>
                         <div class="header-right-three" @click="login">
-                            {{ $L("立即登录") }}
+                            {{ $L("登录") }}
                         </div>
                     </div>
                 </div>
@@ -61,7 +61,12 @@
             <div class="page-main">
                 <div class="main-box-one">
                     <div class="box-one-square"></div>
-                    <div class="box-one-pic1"></div>
+                    <div class="box-pic" v-if="screenWidth<1920">
+                           <img  class="box-img"  :src="$store.state.method.apiUrl('../images/index/box-pic1.png')" />
+                    </div>
+                    <div class="box-one-pic1" v-else>
+                          
+                    </div>
                     <div class="box-one-tips">
                         <div class="box-square"></div>
                         <div class="box-title">
@@ -91,7 +96,9 @@
                 </div>
                 <div class="main-box-two" v-else>
                     <div class="box-two-tips">
-                        <div class="box-two-pic2"></div>
+                        <div class="box-pic">
+                           <img  class="box-img"  :src="$store.state.method.apiUrl('../images/index/box-pic2.png')" />
+                        </div>
                         <div class="box-square"></div>
                         <div class="box-title">
                             {{ $L("强大易用的协同创作云文档") }}
@@ -108,7 +115,12 @@
                 </div>
                 <div class="main-box-one">
                     <div class="box-one-square"></div>
-                    <div class="box-one-pic3"></div>
+                    <div class="box-pic" v-if="screenWidth<1920" >
+                           <img  class="box-img"  :src="$store.state.method.apiUrl('../images/index/box-pic3.png')" />
+                    </div>
+                    <div class="box-one-pic3" v-else >
+                          
+                    </div> 
                     <div class="box-one-tips">
                         <div class="box-square"></div>
                         <div class="box-title">
@@ -138,7 +150,9 @@
                 </div>
                 <div class="main-box-two" v-else>
                     <div class="box-two-tips">
-                        <div class="box-two-pic4"></div>
+                        <div class="box-pic">
+                           <img  class="box-img"  :src="$store.state.method.apiUrl('../images/index/box-pic4.png')" />
+                        </div>
                         <div class="box-square"></div>
                         <div class="box-title">
                             {{ $L("清晰直观的任务日历") }}
@@ -182,11 +196,12 @@ export default {
     data() {
         return {
             screenWidth: document.body.clientWidth,
+            
         };
     },
     watch: {
         screenWidth(nVal) {
-            console.log(nVal);
+            // console.log(nVal)
         },
     },
     computed: {
@@ -205,7 +220,7 @@ export default {
             window.screenWidth=document.body.clientWidth
             that.screenWidth=window.screenWidth
         }
-        console.log(this.screenWidth)
+       
     },
 
     methods: {

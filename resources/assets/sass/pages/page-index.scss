@@ -197,58 +197,53 @@
             width: 62.5%;
             margin: 0 auto;
             margin-top: 200px;
+            .box-img{
+                height: auto;
+                max-width: 100%;
+                max-height: 100%;
+                vertical-align: bottom;
+                bottom: 0;
+                -o-object-fit: fill;
+                object-fit: fill;
+            }
+            .box-pic {
+                -webkit-box-shadow: 0px 0px 10px #a9a4a4;
+                -moz-box-shadow: 0px 0px 10px #a9a4a4;
+                box-shadow: 0px 0px 10px #a9a4a4;
+                border-radius: 10px;
+                padding: 10px;
+            }
+            .box-square {
+                width: 24px;
+                height: 24px;
+                background: url("../images/index/square.png") no-repeat
+                    center center;
+                background-size: contain;
+                margin-top: 20px;
+            }
+            .box-title {
+                font-size: 16px;
+                font-family: PingFangSC-Medium, PingFang SC;
+                font-weight: 500;
+                color: #333333;
+                line-height: 45px;
+                margin: 6px 0 18px 0;
+            }
+            .box-tips {
+                font-size: 12px;
+                font-family: PingFangSC-Regular, PingFang SC;
+                font-weight: 400;
+                color: #828282;
+                line-height: 28px;
+            }
             .main-box-one {
                 position: relative;
                 margin-bottom: 70px;
-                .box-one-pic1 {
-                    width: 100%;
-                    height: 188px;
-                    background: url("../images/index/box-pic1.png") no-repeat
-                        center center;
-                    background-size: contain;
-
-                    -webkit-box-shadow: 0px 0px 10px #a9a4a4;
-                    -moz-box-shadow: 0px 0px 10px #a9a4a4;
-                    box-shadow: 0px 0px 10px #a9a4a4;
-                    border-radius: 10px;
-                }
-                .box-one-pic3 {
-                    width: 100%;
-                    height: 188px;
-                    background: url("../images/index/box-pic3.png") no-repeat
-                        center center;
-                    background-size: contain;
-                    -webkit-box-shadow: 0px 0px 10px #a9a4a4;
-                    -moz-box-shadow: 0px 0px 10px #a9a4a4;
-                    box-shadow: 0px 0px 10px #a9a4a4;
-                    border-radius: 10px;
-                }
+                
                 .box-one-tips {
                     width: 100%;
                 }
-                .box-square {
-                    width: 24px;
-                    height: 24px;
-                    background: url("../images/index/square.png") no-repeat
-                        center center;
-                    background-size: contain;
-                    margin-top: 20px;
-                }
-                .box-title {
-                    font-size: 16px;
-                    font-family: PingFangSC-Medium, PingFang SC;
-                    font-weight: 500;
-                    color: #333333;
-                    line-height: 45px;
-                    margin: 6px 0 18px 0;
-                }
-                .box-tips {
-                    font-size: 12px;
-                    font-family: PingFangSC-Regular, PingFang SC;
-                    font-weight: 400;
-                    color: #828282;
-                    line-height: 28px;
-                }
+            
             }
             .main-box-two {
                 width: 100%;
@@ -256,54 +251,11 @@
                 margin-bottom: 70px;
                 .box-two-square {
                 }
-                .box-two-pic2 {
-                    width: 100%;
-                    height: 188px;
-                    background: url("../images/index/box-pic2.png") no-repeat
-                        center center;
-                    background-size: contain;
-                    -webkit-box-shadow: 0px 0px 10px #a9a4a4;
-                    -moz-box-shadow: 0px 0px 10px #a9a4a4;
-                    box-shadow: 0px 0px 10px #a9a4a4;
-                    border-radius: 10px;
-                }
-                .box-two-pic4 {
-                    width: 100%;
-                    height: 188px;
-                    background: url("../images/index/box-pic4.png") no-repeat
-                        center center;
-                    background-size: contain;
-                    -webkit-box-shadow: 0px 0px 10px #a9a4a4;
-                    -moz-box-shadow: 0px 0px 10px #a9a4a4;
-                    box-shadow: 0px 0px 10px #a9a4a4;
-                    border-radius: 10px;
-                }
+              
                 .box-two-tips {
                     width: 100%;
                 }
-                .box-square {
-                    width: 24px;
-                    height: 24px;
-                    background: url("../images/index/square.png") no-repeat
-                        center center;
-                    background-size: contain;
-                    margin-top: 20px;
-                }
-                .box-title {
-                    font-size: 16px;
-                    font-family: PingFangSC-Medium, PingFang SC;
-                    font-weight: 500;
-                    color: #333333;
-                    line-height: 45px;
-                    margin: 6px 0 18px 0;
-                }
-                .box-tips {
-                    font-size: 12px;
-                    font-family: PingFangSC-Regular, PingFang SC;
-                    font-weight: 400;
-                    color: #828282;
-                    line-height: 28px;
-                }
+               
             }
         }
         .page-footer {
