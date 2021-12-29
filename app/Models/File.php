@@ -51,7 +51,7 @@ class File extends AbstractModel
     use SoftDeletes;
 
     /**
-     * 是否有访问权限（没有时抛出异常）
+     * 是否有访问权限
      * @param $userid
      */
     public function exceAllow($userid)
@@ -64,8 +64,7 @@ class File extends AbstractModel
     /**
      * 是否有访问权限
      *  ① 自己的文件夹
-     *  ② 共享所有人的文件夹
-     *  ③ 在指定共享人员内
+     *  ② 在指定共享成员内
      * @param $userid
      * @return bool
      */
@@ -77,14 +76,9 @@ class File extends AbstractModel
         }
         $row = $this->getShareInfo();
         if ($row) {
-            if ($row->share == 1) {
-                // ② 共享所有人的文件夹
+            if (FileUser::whereFileId($row->id)->whereUserid($userid)->exists()) {
+                // ② 在指定共享成员内
                 return true;
-            } elseif ($row->share == 2) {
-                // ③ 在指定共享人员内
-                if (FileUser::whereFileId($row->id)->whereUserid($userid)->exists()) {
-                    return true;
-                }
             }
         }
         return false;
@@ -96,7 +90,7 @@ class File extends AbstractModel
      */
     public function getShareInfo()
     {
-        if ($this->share > 0) {
+        if ($this->share) {
             return $this;
         }
         $pid = $this->pid;
@@ -105,7 +99,7 @@ class File extends AbstractModel
             if (empty($row)) {
                 break;
             }
-            if ($row->share > 0) {
+            if ($row->share) {
                 return $row;
             }
             $pid = $row->pid;
@@ -125,7 +119,7 @@ class File extends AbstractModel
             if (empty($row)) {
                 break;
             }
-            if ($row->share > 0) {
+            if ($row->share) {
                 return true;
             }
             $pid = $row->pid;
@@ -138,18 +132,23 @@ class File extends AbstractModel
      * @param $share
      * @return bool
      */
-    public function setShare($share)
+    public function setShare($share = null)
     {
-        AbstractModel::transaction(function () use ($share) {
-            $this->share = $share;
-            $this->save();
-            $list = self::wherePid($this->id)->get();
-            if ($list->isNotEmpty()) {
-                foreach ($list as $item) {
-                    $item->setShare(0);
+        if ($share === null) {
+            $share = FileUser::whereFileId($this->id)->count() == 0 ? 0 : 1;
+        }
+        if ($this->share != $share) {
+            AbstractModel::transaction(function () use ($share) {
+                $this->share = $share;
+                $this->save();
+                $list = self::wherePid($this->id)->get();
+                if ($list->isNotEmpty()) {
+                    foreach ($list as $item) {
+                        $item->setShare(0);
+                    }
                 }
-            }
-        });
+            });
+        }
         return true;
     }
 

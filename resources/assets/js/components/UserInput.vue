@@ -5,6 +5,7 @@
             :transfer="transfer"
             :remote-method="searchUser"
             :placeholder="placeholder"
+            :size="size"
             :loading="loading"
             :loading-text="$L('加载中...')"
             :default-label="value"
@@ -17,6 +18,7 @@
             @on-open-change="openChange"
             @on-set-default-options="setDefaultOptions">
             <div v-if="multipleMax" slot="drop-prepend" class="user-drop-prepend">{{$L('最多只能选择' + multipleMax + '个')}}</div>
+            <slot name="option-prepend"></slot>
             <Option
                 v-for="(item, key) in list"
                 :value="item.userid"
@@ -59,6 +61,9 @@
             },
             placeholder: {
                 default: ''
+            },
+            size: {
+                default: 'default'
             },
             transfer: {
                 type: Boolean,

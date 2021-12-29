@@ -703,6 +703,44 @@
     }
 }
 
+.page-file-share-form {
+    display: flex;
+    margin-bottom: 12px;
+    .share-userid {
+        flex: 1;
+    }
+    > div {
+        flex-shrink: 0;
+        &:last-child {
+            margin-right: 0;
+        }
+    }
+}
+.page-file-share-title {
+    margin-top: -8px;
+    margin-bottom: 14px;
+    padding: 0 2px;
+}
+.page-file-share-list {
+    max-height: 500px;
+    margin-bottom: 24px;
+    > li {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+        .common-avatar {
+            flex: 1;
+        }
+        .ivu-select {
+            width: auto;
+            flex-shrink: 0;
+        }
+        .delete {
+            color: #ff0000;
+        }
+    }
+}
+
 .page-file-drawer {
     .overlay-content {
         border-radius: 20px 20px 0 0 !important;

@@ -198,21 +198,46 @@
         <Modal
             v-model="shareShow"
             :title="$L('共享设置')"
-            :mask-closable="false">
-            <Form ref="addProject" :model="shareInfo" label-width="auto" @submit.native.prevent>
-                <FormItem prop="type" :label="$L('共享对象')">
-                    <RadioGroup v-model="shareInfo.share">
-                        <Radio v-if="userIsAdmin" :label="1">{{$L('所有人')}}</Radio>
-                        <Radio :label="2">{{$L('指定成员')}}</Radio>
-                    </RadioGroup>
+            :mask-closable="false"
+            footer-hide>
+            <Form class="page-file-share-form" :model="shareInfo" @submit.native.prevent inline>
+                <FormItem prop="userids" class="share-userid">
+                    <UserInput
+                        v-model="shareInfo.userids"
+                        :disabledChoice="shareAlready"
+                        :multiple-max="100"
+                        :placeholder="$L('选择共享成员')">
+                        <Option slot="option-prepend" :value="0" :label="$L('所有人')">
+                            <div class="user-input-option">
+                                <div class="user-input-avatar"><EAvatar class="avatar" style="line-height:26px" icon="el-icon-s-custom"/></div>
+                                <div class="user-input-nickname">{{ $L('所有人') }}</div>
+                                <div class="user-input-userid">All</div>
+                            </div>
+                        </Option>
+                    </UserInput>
                 </FormItem>
-                <FormItem v-if="shareInfo.share === 2" prop="userids" :label="$L('共享成员')">
-                    <UserInput v-if="!shareInfo.userTmpHide" v-model="shareInfo.userids" :disabledChoice="[shareInfo.userid]" :multiple-max="100" :placeholder="$L('选择共享成员')"/>
+                <FormItem>
+                    <Select v-model="shareInfo.permission" :placeholder="$L('权限')">
+                        <Option :value="1">{{$L('读/写')}}</Option>
+                        <Option :value="0">{{$L('只读')}}</Option>
+                    </Select>
+                </FormItem>
+                <FormItem>
+                    <Button type="primary" :loading="shareLoad > 0" @click="onShare">{{$L('共享')}}</Button>
                 </FormItem>
             </Form>
-            <div slot="footer" class="adaption">
-                <Button type="default" :loading="shareLoad > 0" @click="onShare(false)">{{$L('取消共享')}}</Button>
-                <Button type="primary" :loading="shareLoad > 0" @click="onShare(true)">{{$L('设置共享')}}</Button>
+            <div v-if="shareList.length > 0">
+                <div class="page-file-share-title">{{ $L('已共享成员') }}:</div>
+                <ul class="page-file-share-list">
+                    <li v-for="item in shareList">
+                        <UserAvatar :size="32" :userid="item.userid" show-name tooltip-disabled/>
+                        <Select v-model="item.permission" :placeholder="$L('权限')" @on-change="upShare(item)">
+                            <Option :value="1">{{ $L('读/写') }}</Option>
+                            <Option :value="0">{{ $L('只读') }}</Option>
+                            <Option :value="-1" class="delete">{{ $L('删除') }}</Option>
+                        </Select>
+                    </li>
+                </ul>
             </div>
         </Modal>
 
@@ -308,7 +333,8 @@ export default {
             columns: [],
 
             shareShow: false,
-            shareInfo: {},
+            shareInfo: {id: 0, userid: 0, permission: 1},
+            shareList: [],
             shareLoad: 0,
 
             editShow: false,
@@ -379,6 +405,14 @@ export default {
                 }
             }
             return null;
+        },
+
+        shareAlready() {
+            let data = this.shareList ? this.shareList.map(({userid}) => userid) : [];
+            if (this.shareInfo.userid) {
+                data.push(this.shareInfo.userid);
+            }
+            return data
         },
 
         fileList() {
@@ -747,15 +781,10 @@ export default {
                 case 'share':
                     this.shareInfo = {
                         id: item.id,
-                        name: item.name,
                         userid: item.userid,
-                        share: item.share,
-                        _share: item.share,
+                        permission: 1,
                     };
-                    if (!this.userIsAdmin) {
-                        // 不是管理员只能共享给指定人
-                        this.shareInfo.share = 2;
-                    }
+                    this.shareList = [];
                     this.shareShow = true;
                     this.getShare();
                     break;
@@ -899,10 +928,10 @@ export default {
             }).then(({data}) => {
                 this.shareLoad--;
                 if (data.id == this.shareInfo.id) {
-                    this.shareInfo = Object.assign({userTmpHide: true}, this.shareInfo, data);
-                    this.$nextTick(() => {
-                        this.$set(this.shareInfo, 'userTmpHide', false);
-                    })
+                    this.shareList = data.list.map(item => {
+                        item._permission = item.permission;
+                        return item;
+                    });
                 }
             }).catch(({msg}) => {
                 this.shareLoad--;
@@ -911,28 +940,54 @@ export default {
             })
         },
 
-        onShare(share) {
-            if (!share && !this.shareInfo._share) {
-                this.shareShow = false;
-                return;
-            }
-            if (![1, 2].includes(this.shareInfo.share)) {
-                $A.messageWarning("请选择共享对象")
+        onShare() {
+            if (this.shareInfo.userids.length == 0) {
+                $A.messageWarning("请选择共享成员")
                 return;
             }
             this.shareLoad++;
             this.$store.dispatch("call", {
                 url: 'file/share/update',
-                data: Object.assign(this.shareInfo, {
-                    action: share ? 'share' : 'unshare'
-                }),
+                data: this.shareInfo,
             }).then(({data, msg}) => {
                 this.shareLoad--;
-                this.shareShow = false;
                 $A.messageSuccess(msg)
                 this.$store.dispatch("saveFile", data);
+                this.$set(this.shareInfo, 'userids', []);
+                this.getShare();
             }).catch(({msg}) => {
                 this.shareLoad--;
+                $A.modalError(msg)
+            })
+        },
+
+        upShare(item) {
+            if (item.loading === true) {
+                return;
+            }
+            item.loading = true;
+            //
+            this.$store.dispatch("call", {
+                url: 'file/share/update',
+                data: {
+                    id: this.shareInfo.id,
+                    userids: [item.userid],
+                    permission: item.permission,
+                },
+            }).then(({data, msg}) => {
+                item.loading = false;
+                item._permission = item.permission;
+                $A.messageSuccess(msg);
+                this.$store.dispatch("saveFile", data);
+                if (item.permission === -1) {
+                    let index = this.shareList.findIndex(({userid}) => userid == item.userid);
+                    if (index > -1) {
+                        this.shareList.splice(index, 1)
+                    }
+                }
+            }).catch(({msg}) => {
+                item.loading = false;
+                item.permission = item._permission;
                 $A.modalError(msg)
             })
         },

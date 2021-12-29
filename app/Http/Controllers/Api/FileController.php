@@ -35,12 +35,7 @@ class FileController extends AbstractController
         $pid = intval($data['pid']);
         //
         if ($pid > 0) {
-            $file = File::find($pid);
-            if (empty($file)) {
-                return Base::retError('Not exist');
-            }
-            $file->exceAllow($user->userid);
-            //
+            File::allowFind($pid);
             $builder = File::wherePid($pid);
         } else {
             $builder = File::whereUserid($user->userid);
@@ -61,13 +56,11 @@ class FileController extends AbstractController
             }
         } else {
             // 获取共享相关
-            $list = File::where('userid', '!=', $user->userid)->where(function ($query) use ($user) {
-                $query->where('share', 1)->orWhere(function ($q2) use ($user) {
-                    $q2->where('share', 2)->whereIn('id', function ($q3) use ($user) {
-                        $q3->select('file_id')->from('file_users')->where('userid', $user->userid);
-                    });
-                });
-            })->get();
+            $list = File::select(['files.*', 'file_users.permission'])
+                ->join('file_users', 'files.id', '=', 'file_users.file_id')
+                ->where('files.userid', '!=', $user->userid)
+                ->where('file_users.userid', $user->userid)
+                ->get();
             if ($list->isNotEmpty()) {
                 foreach ($list as $file) {
                     $temp = $file->toArray();
@@ -512,34 +505,35 @@ class FileController extends AbstractController
             return Base::retError('仅限所有者操作');
         }
         //
-        $userids = FileUser::whereFileId($file->id)->pluck('userid')->toArray();
+        $list = FileUser::whereFileId($file->id)->get();
         //
         return Base::retSuccess('success', [
             'id' => $file->id,
-            'userids' => $userids
+            'list' => $list
         ]);
     }
 
     /**
-     * 获取共享信息
+     * 设置共享
      *
      * @apiParam {Number} id            文件ID
-     * @apiParam {String} action        动作
-     * - share: 设置共享
-     * - unshare: 取消共享
-     * @apiParam {Number} [share]       共享对象
-     * - 1: 共享给所有人（限管理员）
-     * - 2: 共享给指定成员
      * @apiParam {Array} [userids]      共享成员，格式: [userid1, userid2, userid3]
+     * @apiParam {Number} [permission]  共享方式
+     * - 0：只读
+     * - 1：读写
+     * - -1: 删除
      */
     public function share__update()
     {
         $user = User::auth();
         //
         $id = intval(Request::input('id'));
-        $action = Request::input('action');
-        $share = intval(Request::input('share'));
         $userids = Request::input('userids');
+        $permission = intval(Request::input('permission'));
+        //
+        if (!in_array($permission, [-1, 0, 1])) {
+            return Base::retError('参数错误');
+        }
         //
         $file = File::whereId($id)->first();
         if (empty($file)) {
@@ -553,56 +547,45 @@ class FileController extends AbstractController
             return Base::retError('已经处于共享文件夹中');
         }
         //
-        if ($action == 'unshare') {
-            // 取消共享
-            if ($file->share == 1) {
-                $uids = WebSocket::select(['userid'])->pluck('userid')->toArray();
-            } else {
-                $uids = FileUser::whereFileId($file->id)->pluck('userid')->toArray();
-            }
-            $uids = array_values(array_diff($uids, [$user->userid]));
-            //
-            $file->setShare(0);
-            $message = '取消成功';
-        } else {
-            // 设置共享
-            switch ($share) {
-                case 1:
-                    $user->isAdmin();
-                    break;
-
-                case 2:
-                    $array = [];
-                    if (is_array($userids)) {
-                        foreach ($userids as $userid) {
-                            if (!intval($userid)) continue;
-                            if (!User::whereUserid($userid)->exists()) continue;
-                            FileUser::updateInsert([
-                                'file_id' => $file->id,
-                                'userid' => $userid,
-                            ]);
-                            $array[] = $userid;
-                        }
-                    }
-                    if (empty($array)) {
-                        return Base::retError('请选择共享成员');
-                    }
-                    $builder = FileUser::whereFileId($file->id)->whereNotIn('userid', $array);
-                    $uids = (clone $builder)->pluck('userid')->toArray();
-                    $builder->delete();
-                    break;
-
-                default:
-                    return Base::retError('请选择共享对象');
-            }
-            $file->setShare($share);
-            $message = '设置成功';
+        if (!is_array($userids) || empty($userids)) {
+            return Base::retError('请选择共享对象');
         }
         //
-        $file->pushMsg('update', $file);
-        if (isset($uids)) {
-            $file->pushMsg('delete', null, $uids);
+        $array = [];
+        if ($permission === -1) {
+            // 取消共享
+            $action = "delete";
+            foreach ($userids as $userid) {
+                if (!intval($userid)) continue;
+                if (FileUser::where([
+                    'file_id' => $file->id,
+                    'userid' => $userid,
+                ])->delete()) {
+                    $array[] = $userid;
+                }
+            }
+        } else {
+            // 设置共享
+            $action = "update";
+            if (FileUser::whereFileId($file->id)->count() + count($userids) > 100) {
+                return Base::retError('共享人数上限100个成员');
+            }
+            foreach ($userids as $userid) {
+                if (!intval($userid)) continue;
+                if (!User::whereUserid($userid)->exists()) continue;
+                if (FileUser::updateInsert([
+                    'file_id' => $file->id,
+                    'userid' => $userid,
+                ], [
+                    'permission' => $permission,
+                ])) {
+                    $array[] = $userid;
+                }
+            }
         }
-        return Base::retSuccess($message, $file);
+        //
+        $file->setShare();
+        $file->pushMsg($action, $action == "delete" ? null : $file, $array);
+        return Base::retSuccess($action == "delete" ? "删除成功" : "设置成功", $file);
     }
 }
