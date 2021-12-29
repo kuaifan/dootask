@@ -8,7 +8,6 @@
             background: #8bcf70;
             border-radius: 0px 0px 300px 300px;
             position: relative;
-
             .header-nav {
                 width: 100%;
                 height: 72px;
@@ -22,50 +21,143 @@
                     font-family: PingFangSC-Regular, PingFang SC;
                     font-weight: 400;
                     position: relative;
-                    .logo {
-                        width: 65px;
-                        height: 36px;
-                        background: url("../images/index/indexlogo.png")
-                            no-repeat center center;
-                        background-size: contain;
-                        margin: 0 20px 0 20px;
+                    @media(max-width:414px){
+                        .logo {
+                            width: 65px;
+                            height: 36px;
+                            background: url("../images/index/indexlogo.png")
+                                no-repeat center center;
+                            background-size: contain;
+                            margin: 0 20px 0 20px;
+                        }
+                        .header-right-one {
+                            display: flex;
+                            align-items: center;
+                            justify-content: end;
+                            font-size: 12px;
+                            min-width: 75px;
+                            .header-right-one-language {
+                                margin-right: 4px;
+                            }
+                            .header-right-one-dropdown {
+                                color: #ffffff;
+                            }
+                        }
+                        .header-right-two {
+                            font-size: 12px;
+                            margin: 0 20px 0 20px;
+                            cursor: pointer;
+                            overflow: hidden;
+                            white-space: nowrap;
+                            text-overflow: ellipsis;
+                        }
+                        .header-right-three {
+                            max-width: 50px;
+                            font-size: 12px;
+                            height: 36px;
+                            background: #ffa25a;
+                            border-radius: 4px;
+                            text-align: center;
+                            line-height: 36px;
+                            cursor: pointer;
+                            margin-right: 10px;
+                            padding: 0 5px 0 5px;
+                            overflow: hidden;
+                            white-space: nowrap;
+                            text-overflow: ellipsis;
+                        }
+                    }
+                    @media(min-width:414px){
+                        .logo {
+                            width: 65px;
+                            height: 36px;
+                            background: url("../images/index/indexlogo.png")
+                                no-repeat center center;
+                            background-size: contain;
+                            margin: 0 20px 0 20px;
+                        }
+                        .header-right-one {
+                            display: flex;
+                            align-items: center;
+                            justify-content: end;
+                            font-size: 12px;
+                            min-width: 75px;
+                            .header-right-one-language {
+                                margin-right: 4px;
+                            }
+                            .header-right-one-dropdown {
+                                color: #ffffff;
+                            }
+                        }
+                        .header-right-two {
+                            font-size: 12px;
+                            margin: 0 20px 0 20px;
+                            cursor: pointer;
+                            overflow: hidden;
+                            white-space: nowrap;
+                            text-overflow: ellipsis;
+                        }
+                        .header-right-three {
+                            font-size: 12px;
+                            height: 36px;
+                            background: #ffa25a;
+                            border-radius: 4px;
+                            text-align: center;
+                            line-height: 36px;
+                            cursor: pointer;
+                            margin-right: 10px;
+                            padding: 0 5px 0 5px;
+                            overflow: hidden;
+                            white-space: nowrap;
+                            text-overflow: ellipsis;
+                        }
+                    }
+                    @media(min-width:660px){
+                        .logo {
+                            width: 143px;
+                            height: 36px;
+                            background: url("../images/index/indexlogo.png")
+                                no-repeat center center;
+                            background-size: contain;
+                            margin: 0 20px 0 20px;
+                        }
+                        .header-right-one {
+                            display: flex;
+                            align-items: center;
+                            font-size: 16px;
+                            min-width: 75px;
+                            .header-right-one-language {
+                                margin-right: 4px;
+                            }
+                            .header-right-one-dropdown {
+                                color: #ffffff;
+                            }
+                        }
+                        .header-right-two {
+                            font-size: 16px;
+                            margin: 0 40px 0 40px;
+                            cursor: pointer;
+                            overflow: hidden;
+                            white-space: nowrap;
+                            text-overflow: ellipsis;
+                        }
+                        .header-right-three {
+                            font-size: 16px;
+                            height: 36px;
+                            background: #ffa25a;
+                            border-radius: 4px;
+                            text-align: center;
+                            line-height: 36px;
+                            cursor: pointer;
+                            margin-right: 10px;
+                            padding: 0 10px 0 10px;
+                            overflow: hidden;
+                            white-space: nowrap;
+                            text-overflow: ellipsis;
+                        }
                     }
 
-                    .header-right-one {
-                        display: flex;
-                        align-items: center;
-                        font-size: 12px;
-                        min-width: 75px;
-                        .header-right-one-language {
-                            margin-right: 4px;
-                        }
-                        .header-right-one-dropdown {
-                            color: #ffffff;
-                        }
-                    }
-                    .header-right-two {
-                        font-size: 12px;
-                        margin: 0 5px 0 5px;
-                        cursor: pointer;
-                        overflow: hidden;
-                        white-space: nowrap;
-                        text-overflow: ellipsis;
-                    }
-                    .header-right-three {
-                        max-width: 85px;
-                        font-size: 12px;
-                        height: 36px;
-                        background: #ffa25a;
-                        border-radius: 4px;
-                        text-align: center;
-                        line-height: 36px;
-                        cursor: pointer;
-                        margin-right: 10px;
-                        padding: 0 5px 0 5px;
-                        overflow: hidden;
-                        white-space: nowrap;
-                        text-overflow: ellipsis;
-                    }
+                    
                 }
             }
             .header-content {
@@ -134,7 +226,7 @@
             margin-top: 200px;
             .main-box-one {
                 position: relative;
-                margin-bottom: 130px;
+                margin-bottom: 70px;
                 .box-one-pic1 {
                     width: 100%;
                     height: 188px;
@@ -188,13 +280,10 @@
             .main-box-two {
                 width: 100%;
                 position: relative;
-                margin-bottom: 130px;
-                height: 500px;
+                margin-bottom: 70px;
                 .box-two-square {
                 }
                 .box-two-pic2 {
-                    position: absolute;
-                    top: 0;
                     width: 100%;
                     height: 188px;
                     background: url("../images/index/box-pic2.png") no-repeat
@@ -206,8 +295,6 @@
                     border-radius: 10px;
                 }
                 .box-two-pic4 {
-                    position: absolute;
-                    top: 0;
                     width: 100%;
                     height: 188px;
                     background: url("../images/index/box-pic4.png") no-repeat
@@ -219,9 +306,6 @@
                     border-radius: 10px;
                 }
                 .box-two-tips {
-                    position: absolute;
-                    bottom: 10px;
-                    height: 300px;
                     width: 100%;
                 }
                 .box-square {
