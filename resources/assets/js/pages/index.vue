@@ -23,8 +23,8 @@
                                         :key="key"
                                         :name="key"
                                         :selected="getLanguage() === key"
-                                        >{{ item }}</Dropdown-item
-                                    >
+                                        >{{ item }}
+                                    </Dropdown-item>
                                 </DropdownMenu>
                             </Dropdown>
                         </div>
