@@ -475,7 +475,7 @@ export default {
             let {pid, files} = this;
             let array = [];
             while (pid > 0) {
-                let file = files.find(({id, allow}) => id == pid && allow !== -1);
+                let file = files.find(({id, allow}) => id == pid && allow > -1);
                 if (file) {
                     array.unshift(file);
                     pid = file.pid;

@@ -146,7 +146,7 @@ class FileController extends AbstractController
         //
         if ($id > 0) {
             // 修改
-            $file = File::allowFind($id);
+            $file = File::allowFind($id, 1);
             //
             $file->name = $name;
             $file->save();
@@ -180,7 +180,7 @@ class FileController extends AbstractController
                 if (File::wherePid($pid)->count() >= 300) {
                     return Base::retError('每个文件夹里最多只能创建300个文件或文件夹');
                 }
-                $row = File::allowFind($pid, '主文件不存在');
+                $row = File::allowFind($pid, 1, '主文件不存在');
                 $userid = $row->userid;
             } else {
                 if (File::whereUserid($user->userid)->wherePid(0)->count() >= 300) {
@@ -257,13 +257,7 @@ class FileController extends AbstractController
         $id = intval(Request::input('id'));
         $pid = intval(Request::input('pid'));
         //
-        $file = File::whereId($id)->first();
-        if (empty($file)) {
-            return Base::retError('文件不存在或已被删除');
-        }
-        if ($file->userid != $user->userid) {
-            return Base::retError('仅限所有者操作');
-        }
+        $file = File::allowFind($id, 1000);
         //
         if ($pid > 0) {
             if (!File::whereUserid($user->userid)->whereId($pid)->exists()) {
@@ -293,9 +287,12 @@ class FileController extends AbstractController
      */
     public function remove()
     {
+        User::auth();
+        //
         $id = intval(Request::input('id'));
         //
-        $file = File::allowFind($id);
+        $file = File::allowFind($id, 1000);
+        //
         $file->deleteFile();
         return Base::retSuccess('删除成功', $file);
     }
@@ -337,7 +334,7 @@ class FileController extends AbstractController
         $id = Base::getPostInt('id');
         $content = Base::getPostValue('content');
         //
-        $file = File::allowFind($id);
+        $file = File::allowFind($id, 1);
         //
         $text = '';
         if ($file->type == 'document') {
@@ -390,7 +387,7 @@ class FileController extends AbstractController
         $key = Request::input('key');
         $url = Request::input('url');
         //
-        $file = File::allowFind($id);
+        $file = File::allowFind($id, 1);
         //
         if ($status === 2) {
             $parse = parse_url($url);
@@ -437,7 +434,7 @@ class FileController extends AbstractController
             if (File::wherePid($pid)->count() >= 300) {
                 return Base::retError('每个文件夹里最多只能创建300个文件或文件夹');
             }
-            $row = File::allowFind($pid, '主文件不存在');
+            $row = File::allowFind($pid, 1, '主文件不存在');
             $userid = $row->userid;
         } else {
             if (File::whereUserid($user->userid)->wherePid(0)->count() >= 300) {
@@ -651,16 +648,12 @@ class FileController extends AbstractController
      */
     public function link()
     {
-        $user = User::auth();
+        User::auth();
         //
         $id = intval(Request::input('id'));
         $refresh = Request::input('refresh', 'no');
         //
-        $file = File::allowFind($id);
-        //
-        if ($file->userid != $user->userid) {
-            return Base::retError('仅限所有者操作');
-        }
+        $file = File::allowFind($id, 1000);
         if ($file->type == 'folder') {
             return Base::retError('文件夹暂不支持此功能');
         }
