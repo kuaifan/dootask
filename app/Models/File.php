@@ -53,30 +53,9 @@ class File extends AbstractModel
     /**
      * 是否有访问权限
      * @param $userid
-     * @param int $permission 要求权限: 0-访问权限、1-读写权限、1000-所有者
-     */
-    public function exceAllow($userid, $permission = 0)
-    {
-        if ($this->chackAllow($userid) < $permission) {
-            if ($permission == 1000) {
-                $msg = '仅限所有者操作';
-            } elseif ($permission == 1) {
-                $msg = '没有读写权限';
-            } else {
-                $msg = '没有访问权限';
-            }
-            throw new ApiException($msg);
-        }
-    }
-
-    /**
-     * 是否有访问权限
-     *  ① 自己的文件夹
-     *  ② 在指定共享成员内
-     * @param $userid
      * @return int -1:没有权限，0:访问权限，1:读写权限，1000:所有者
      */
-    public function chackAllow($userid)
+    public function getPermission($userid)
     {
         if ($userid == $this->userid) {
             // ① 自己的文件夹
@@ -238,17 +217,26 @@ class File extends AbstractModel
     /**
      * 获取文件并检测权限
      * @param $id
-     * @param int $permission 要求权限: 0-访问权限、1-读写权限、1000-所有者
-     * @param null $noExistTis  文件不存在的描述
+     * @param int $limit 要求权限: 0-访问权限、1-读写权限、1000-所有者
+     * @param $permission
      * @return File
      */
-    public static function allowFind($id, $permission = 0, $noExistTis = null)
+    public static function permissionFind($id, $limit = 0, &$permission = -1)
     {
         $file = File::find($id);
         if (empty($file)) {
-            throw new ApiException($noExistTis ?: '文件不存在或已被删除');
+            throw new ApiException('文件不存在或已被删除');
         }
-        $file->exceAllow(User::userid(), $permission);
+        //
+        $permission = $file->getPermission(User::userid());
+        if ($permission < $limit) {
+            $msg = match ($limit) {
+                1000 => '仅限所有者操作',
+                1 => '没有读写权限',
+                default => '没有访问权限',
+            };
+            throw new ApiException($msg);
+        }
         return $file;
     }
 }

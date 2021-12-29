@@ -46,15 +46,19 @@ export default {
                 return "office_" + Math.round(Math.random() * 10000);
             }
         },
+        code: {
+            type: String,
+            default: ''
+        },
         value: {
             type: [Object, Array],
             default: function () {
                 return {}
             }
         },
-        code: {
-            type: String,
-            default: ''
+        readOnly: {
+            type: Boolean,
+            default: false
         },
     },
 
@@ -80,18 +84,6 @@ export default {
     computed: {
         ...mapState(['userToken', 'userInfo']),
 
-        isPreview() {
-            return !!this.code
-        },
-
-        fileUrl() {
-            if (this.isPreview) {
-                return 'http://nginx/api/file/content/?code=' + this.code;
-            } else {
-                return 'http://nginx/api/file/content/?id=' + this.value.id + '&token=' + this.userToken;
-            }
-        },
-
         fileType() {
             return this.getType(this.value.type);
         },
@@ -102,9 +94,9 @@ export default {
     },
 
     watch: {
-        fileUrl: {
-            handler(url)  {
-                if (!url) {
+        'value.id': {
+            handler(id)  {
+                if (!id) {
                     return;
                 }
                 this.loadIng++;
@@ -112,9 +104,9 @@ export default {
                     this.loadIng--;
                     if (e !== null) {
                         $A.modalAlert("组件加载失败！");
-                        return;
+                    } else {
+                        this.loadFile()
                     }
-                    this.loadFile()
                 })
             },
             immediate: true,
@@ -135,9 +127,6 @@ export default {
         },
 
         loadFile() {
-            if (!this.fileUrl) {
-                return;
-            }
             if (this.docEditor !== null) {
                 this.docEditor.destroyEditor();
                 this.docEditor = null;
@@ -154,12 +143,13 @@ export default {
                     break;
             }
             //
+            let fileKey = this.code || this.value.id;
             const config = {
                 "document": {
                     "fileType": this.fileType,
-                    "key": this.fileType + '-' + this.value.id,
+                    "key": this.fileType + '-' + fileKey,
                     "title": this.fileName + '.' + this.fileType,
-                    "url": this.fileUrl,
+                    "url": 'http://nginx/api/file/content/?id=' + fileKey + '&token=' + this.userToken,
                 },
                 "editorConfig": {
                     "mode": "edit",
@@ -171,7 +161,7 @@ export default {
                     "customization": {
                         "uiTheme": "theme-classic-light",
                     },
-                    "callbackUrl": 'http://nginx/api/file/content/office?id=' + this.value.id + '&token=' + this.userToken,
+                    "callbackUrl": 'http://nginx/api/file/content/office?id=' + fileKey + '&token=' + this.userToken,
                 }
             };
             if (this.isPreview) {

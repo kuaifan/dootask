@@ -28,6 +28,7 @@
                     <li v-else v-for="item in navigator" @click="pid=item.id">
                         <i v-if="item.share" class="taskfont">&#xe63f;</i>
                         <span :title="item.name">{{item.name}}</span>
+                        <span v-if="item.share && item.permission == 0" class="readonly">{{$L('只读')}}</span>
                     </li>
                 </ul>
                 <Button v-if="shearFile" :disabled="shearFile.pid == pid" size="small" type="primary" @click="shearTo">
@@ -282,7 +283,8 @@
             v-model="editShow"
             class="page-file-drawer"
             :mask-closable="false">
-            <FileContent v-model="editShow" :file="editInfo"/>
+            <FileContent v-if="editInfo.permission > 0" v-model="editShow" :file="editInfo"/>
+            <FilePreview v-else-if="editInfo.permission > -1" :file="editInfo"/>
         </DrawerOverlay>
 
     </div>
@@ -298,11 +300,12 @@ import {sortBy} from "lodash";
 import UserInput from "../../components/UserInput";
 import DrawerOverlay from "../../components/DrawerOverlay";
 
+const FilePreview = () => import('./components/FilePreview');
 const FileContent = () => import('./components/FileContent');
 
 
 export default {
-    components: {DrawerOverlay, UserInput, FileContent},
+    components: {FilePreview, DrawerOverlay, UserInput, FileContent},
     data() {
         return {
             loadIng: 0,
@@ -382,7 +385,7 @@ export default {
             linkLoad: 0,
 
             editShow: false,
-            editInfo: {},
+            editInfo: {permission: -1},
 
             uploadDir: false,
             uploadIng: 0,
@@ -475,7 +478,7 @@ export default {
             let {pid, files} = this;
             let array = [];
             while (pid > 0) {
-                let file = files.find(({id, allow}) => id == pid && allow > -1);
+                let file = files.find(({id, permission}) => id == pid && permission > -1);
                 if (file) {
                     array.unshift(file);
                     pid = file.pid;
@@ -674,7 +677,8 @@ export default {
             ]
         },
 
-        formatName({name, ext}) {
+        formatName(file) {
+            let {name, ext} = file;
             if (ext != '') {
                 name += "." + ext;
             }

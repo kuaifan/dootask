@@ -3,7 +3,7 @@
         <PageTitle :title="fileInfo.name"/>
         <Loading v-if="loadIng > 0"/>
         <template v-else>
-            <FilePreview v-if="fileCode" :code="fileCode" :file="fileInfo"/>
+            <FilePreview v-if="code" :code="code" :file="fileInfo"/>
             <FileContent v-else v-model="fileShow" :file="fileInfo"/>
         </template>
     </div>
@@ -28,9 +28,10 @@ export default {
         return {
             loadIng: 0,
 
+            code: null,
+
             fileShow: true,
             fileInfo: {},
-            fileCode: null,
         }
     },
     mounted() {
@@ -47,13 +48,13 @@ export default {
     methods: {
         getInfo() {
             let id = this.$route.params.id;
-            let data = {};
-            if (id > 0) {
-                data.id = id;
-                this.fileCode = null;
-            } else if (id != '') {
-                data.code = id;
-                this.fileCode = id;
+            let data = {id};
+            if (/^\d+$/.test(id)) {
+                this.code = null;
+            } else if (id) {
+                this.code = id;
+            } else {
+                return;
             }
             this.loadIng++;
             this.$store.dispatch("call", {

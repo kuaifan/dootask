@@ -149,6 +149,17 @@
                         overflow: hidden;
                         white-space: nowrap;
                         text-overflow: ellipsis;
+                        &.readonly {
+                            transform: scale(0.8);
+                            transform-origin: right center;
+                            border-radius: 2px;
+                            line-height: 20px;
+                            font-size: 12px;
+                            padding: 0 5px;
+                            color: #515a6e;
+                            background: #f7f7f7;
+                            border: 1px solid #e8eaec;
+                        }
                     }
                 }
             }

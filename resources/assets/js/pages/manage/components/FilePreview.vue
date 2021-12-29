@@ -5,6 +5,7 @@
             <div v-show="!['word', 'excel', 'ppt'].includes(file.type)" class="edit-header">
                 <div class="header-title">
                     {{formatName(file)}}
+                    <Tag color="default">{{$L('只读')}}</Tag>
                 </div>
                 <Dropdown v-if="file.type=='mind' || file.type=='flow' || file.type=='sheet'"
                           trigger="click"
@@ -26,12 +27,12 @@
             <div v-if="contentDetail" class="content-body">
                 <template v-if="file.type=='document'">
                     <MDPreview v-if="contentDetail.type=='md'" :initialValue="contentDetail.content"/>
-                    <TEditor v-else v-model="contentDetail.content" height="100%" readonly/>
+                    <TEditor v-else v-model="contentDetail.content" height="100%" readOnly/>
                 </template>
                 <Flow v-else-if="file.type=='flow'" ref="myFlow" v-model="contentDetail" readOnly/>
                 <Minder v-else-if="file.type=='mind'" ref="myMind" v-model="contentDetail" readOnly/>
                 <LuckySheet v-else-if="file.type=='sheet'" ref="mySheet" v-model="contentDetail" readOnly/>
-                <OnlyOffice v-else-if="['word', 'excel', 'ppt'].includes(file.type)" v-model="contentDetail" :code="code"/>
+                <OnlyOffice v-else-if="['word', 'excel', 'ppt'].includes(file.type)" v-model="contentDetail" :code="code" readOnly/>
             </div>
         </template>
         <div v-if="loadContent > 0 || previewLoad" class="content-load"><Loading/></div>
@@ -82,9 +83,9 @@ export default {
     },
 
     watch: {
-        code: {
-            handler(code) {
-                if (code) {
+        'file.id': {
+            handler(id) {
+                if (id) {
                     this.contentDetail = null;
                     this.getContent();
                 }
@@ -132,7 +133,7 @@ export default {
             this.$store.dispatch("call", {
                 url: 'file/content',
                 data: {
-                    code: this.code,
+                    id: this.code || this.file.id,
                 },
             }).then(({data}) => {
                 this.loadIng--;
@@ -161,7 +162,8 @@ export default {
             }
         },
 
-        formatName({name, ext}) {
+        formatName(file) {
+            let {name, ext} = file;
             if (ext != '') {
                 name += "." + ext;
             }

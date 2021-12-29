@@ -111,7 +111,7 @@
                 type: Boolean,
                 default: false
             },
-            readonly: {
+            readOnly: {
                 type: Boolean,
                 default: false
             },
@@ -180,7 +180,7 @@
                     }
                 }
             },
-            readonly(value) {
+            readOnly(value) {
                 if (this.editor !== null) {
                     if (value) {
                         this.editor.setMode('readonly');
@@ -317,7 +317,7 @@
                             editor.on('Init', (e) => {
                                 this.editorT = editor;
                                 this.editorT.setContent(this.content);
-                                if (this.readonly) {
+                                if (this.readOnly) {
                                     this.editorT.setMode('readonly');
                                 } else {
                                     this.editorT.setMode('design');
@@ -345,7 +345,7 @@
                                 this.spinShow = false;
                                 this.editor = editor;
                                 this.editor.setContent(this.content);
-                                if (this.readonly) {
+                                if (this.readOnly) {
                                     this.editor.setMode('readonly');
                                 } else {
                                     this.editor.setMode('design');

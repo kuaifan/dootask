@@ -312,7 +312,8 @@ export default {
             this.unsaveTip = false;
         },
 
-        formatName({name, ext}) {
+        formatName(file) {
+            let {name, ext} = file;
             if (ext != '') {
                 name += "." + ext;
             }
