@@ -8,7 +8,7 @@
                     </div>
                     <div class="header-nav-box">
                         <div class="header-right-one">
-                            <div class="header-right-one-language"></div>
+                            <Icon class="header-right-one-language" type="md-globe" />
                             <Dropdown trigger="click" @on-click="setLanguage">
                                 <a
                                     href="javascript:void(0)"

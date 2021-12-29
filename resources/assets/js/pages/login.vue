@@ -91,8 +91,9 @@
                         size="large"
                         long
                         @click="onLogin"
-                        >{{ $L(loginText) }}</Button
                     >
+                    {{ $L(loginText) }}
+                    </Button>
 
                     <div v-if="loginType == 'reg'" class="login-switch">
                         {{ $L("已经有帐号？")
@@ -124,8 +125,8 @@
                             :key="key"
                             :name="key"
                             :selected="getLanguage() === key"
-                            >{{ item }}</Dropdown-item
-                        >
+                            >{{ item }}
+                        </Dropdown-item>
                     </Dropdown-menu>
                 </Dropdown>
                 <div class="login-forgot">
@@ -207,7 +208,6 @@ export default {
             this.$route.query.type == "reg"
                 ? (this.loginType = "reg")
                 : (this.loginType = "login");
-            console.log(this.$route);
         },
         loginType(val) {
             if (val == "reg") {
