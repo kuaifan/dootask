@@ -8,12 +8,10 @@ use App\Models\File;
 use App\Models\FileContent;
 use App\Models\FileUser;
 use App\Models\User;
-use App\Models\WebSocket;
 use App\Module\Base;
 use App\Module\Ihttp;
-use Arr;
+use Illuminate\Support\Facades\DB;
 use Request;
-use Response;
 
 /**
  * @apiDefine file
@@ -56,10 +54,17 @@ class FileController extends AbstractController
             }
         } else {
             // 获取共享相关
-            $list = File::select(['files.*', 'file_users.permission'])
+            DB::statement("SET SQL_MODE=''");
+            $pre = DB::connection()->getTablePrefix();
+            $list = File::select(["files.*", DB::raw("MAX({$pre}file_users.permission) as permission")])
                 ->join('file_users', 'files.id', '=', 'file_users.file_id')
                 ->where('files.userid', '!=', $user->userid)
-                ->where('file_users.userid', $user->userid)
+                ->where(function ($query) use ($user) {
+                    $query->where('file_users.userid', 0);
+                    $query->orWhere('file_users.userid', $user->userid);
+                })
+                ->groupBy('files.id')
+                ->take(100)
                 ->get();
             if ($list->isNotEmpty()) {
                 foreach ($list as $file) {
@@ -556,7 +561,6 @@ class FileController extends AbstractController
             // 取消共享
             $action = "delete";
             foreach ($userids as $userid) {
-                if (!intval($userid)) continue;
                 if (FileUser::where([
                     'file_id' => $file->id,
                     'userid' => $userid,
@@ -571,8 +575,6 @@ class FileController extends AbstractController
                 return Base::retError('共享人数上限100个成员');
             }
             foreach ($userids as $userid) {
-                if (!intval($userid)) continue;
-                if (!User::whereUserid($userid)->exists()) continue;
                 if (FileUser::updateInsert([
                     'file_id' => $file->id,
                     'userid' => $userid,

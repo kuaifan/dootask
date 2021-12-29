@@ -351,6 +351,10 @@
                         background-image: url("../images/file/wps.svg");
                     }
                 }
+                .permission {
+                    padding-left: 6px;
+                    font-size: 13px;
+                }
                 .taskfont {
                     color: #aaaaaa;
                     font-size: 16px;
@@ -730,6 +734,22 @@
         margin-bottom: 12px;
         .common-avatar {
             flex: 1;
+        }
+        .all-avatar {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            .avatar-text {
+                width: 32px;
+                height: 32px;
+                line-height: 32px;
+            }
+            .avatar-name {
+                padding-left: 8px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
         }
         .ivu-select {
             width: auto;

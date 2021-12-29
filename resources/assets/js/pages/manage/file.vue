@@ -72,10 +72,11 @@
                             </div>
                             <div class="file-icon">
                                 <template v-if="item.share">
-                                    <UserAvatar v-if="item.userid != userId" :userid="item.userid" class="share-avatar" :size="20"/>
+                                    <UserAvatar v-if="item.userid != userId" :userid="item.userid" class="share-avatar" :size="20">
+                                        <p>{{$L('共享权限')}}: {{$L(item.permission == 1 ? '读/写' : '只读')}}</p>
+                                    </UserAvatar>
                                     <div v-else class="share-icon">
-                                        <i v-if="item.share == 1" class="taskfont" :title="$L('所有人')">&#xe75c;</i>
-                                        <i v-else class="taskfont" :title="$L('指定成员')">&#xe757;</i>
+                                        <i class="taskfont">&#xe757;</i>
                                     </div>
                                 </template>
                             </div>
@@ -207,9 +208,9 @@
                         :disabledChoice="shareAlready"
                         :multiple-max="100"
                         :placeholder="$L('选择共享成员')">
-                        <Option slot="option-prepend" :value="0" :label="$L('所有人')">
+                        <Option slot="option-prepend" :value="0" :label="$L('所有人')" :disabled="shareAlready.includes(0)">
                             <div class="user-input-option">
-                                <div class="user-input-avatar"><EAvatar class="avatar" style="line-height:26px" icon="el-icon-s-custom"/></div>
+                                <div class="user-input-avatar"><EAvatar class="avatar" icon="el-icon-s-custom"/></div>
                                 <div class="user-input-nickname">{{ $L('所有人') }}</div>
                                 <div class="user-input-userid">All</div>
                             </div>
@@ -230,7 +231,11 @@
                 <div class="page-file-share-title">{{ $L('已共享成员') }}:</div>
                 <ul class="page-file-share-list">
                     <li v-for="item in shareList">
-                        <UserAvatar :size="32" :userid="item.userid" show-name tooltip-disabled/>
+                        <div v-if="item.userid == 0" class="all-avatar">
+                            <EAvatar class="avatar-text" icon="el-icon-s-custom"/>
+                            <span class="avatar-name">{{$L('所有人')}}</span>
+                        </div>
+                        <UserAvatar v-else :size="32" :userid="item.userid" show-name tooltip-disabled/>
                         <Select v-model="item.permission" :placeholder="$L('权限')" @on-change="upShare(item)">
                             <Option :value="1">{{ $L('读/写') }}</Option>
                             <Option :value="0">{{ $L('只读') }}</Option>
@@ -431,7 +436,7 @@ export default {
             let {pid, files} = this;
             let array = [];
             while (pid > 0) {
-                let file = files.find(({id, allow}) => id == pid && allow !== false);
+                let file = files.find(({id, allow}) => id == pid && allow !== -1);
                 if (file) {
                     array.unshift(file);
                     pid = file.pid;
@@ -543,19 +548,22 @@ export default {
                             //
                             const iconArray = [];
                             if (row.share) {
-                                if (row.share == 1) {
-                                    iconArray.push(h('i', {
-                                        class: 'taskfont',
-                                        domProps: {
-                                            title: this.$L('所有人'),
-                                            innerHTML: '&#xe75c;'
+                                if (row.userid != this.userId) {
+                                    iconArray.push(h('UserAvatar', {
+                                        props: {
+                                            userid: row.userid,
+                                            size: 20
                                         },
                                     }))
+                                    if (row.permission == 0) {
+                                        iconArray.push(h('span', {
+                                            class: 'permission',
+                                        }, this.$L('只读')))
+                                    }
                                 } else {
                                     iconArray.push(h('i', {
                                         class: 'taskfont',
                                         domProps: {
-                                            title: this.$L('指定成员'),
                                             innerHTML: '&#xe757;'
                                         },
                                     }))

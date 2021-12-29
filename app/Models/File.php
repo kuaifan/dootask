@@ -56,7 +56,7 @@ class File extends AbstractModel
      */
     public function exceAllow($userid)
     {
-        if (!$this->chackAllow($userid)) {
+        if ($this->chackAllow($userid) === -1) {
             throw new ApiException('没有访问权限');
         }
     }
@@ -66,22 +66,26 @@ class File extends AbstractModel
      *  ① 自己的文件夹
      *  ② 在指定共享成员内
      * @param $userid
-     * @return bool
+     * @return int -1:没有权限，0:只读，1:读写
      */
     public function chackAllow($userid)
     {
         if ($userid == $this->userid) {
             // ① 自己的文件夹
-            return true;
+            return 1;
         }
         $row = $this->getShareInfo();
         if ($row) {
-            if (FileUser::whereFileId($row->id)->whereUserid($userid)->exists()) {
+            $fileUser = FileUser::whereFileId($row->id)->where(function ($query) use ($userid) {
+                $query->where('userid', 0);
+                $query->orWhere('userid', $userid);
+            })->orderByDesc('permission')->first();
+            if ($fileUser) {
                 // ② 在指定共享成员内
-                return true;
+                return $fileUser->permission;
             }
         }
-        return false;
+        return -1;
     }
 
     /**
