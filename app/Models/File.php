@@ -165,6 +165,8 @@ class File extends AbstractModel
         AbstractModel::transaction(function () {
             $this->delete();
             $this->pushMsg('delete');
+            FileLink::whereFileId($this->id)->delete();
+            FileUser::whereFileId($this->id)->delete();
             FileContent::whereFid($this->id)->delete();
             $list = self::wherePid($this->id)->get();
             if ($list->isNotEmpty()) {

@@ -52,15 +52,15 @@ export default {
                 return {}
             }
         },
+        code: {
+            type: String,
+            default: ''
+        },
     },
 
     data() {
         return {
             loadIng: 0,
-
-            fileName: null,
-            fileType: null,
-            fileUrl: null,
 
             docEditor: null,
         }
@@ -79,19 +79,29 @@ export default {
 
     computed: {
         ...mapState(['userToken', 'userInfo']),
+
+        isPreview() {
+            return !!this.code
+        },
+
+        fileUrl() {
+            if (this.isPreview) {
+                return 'http://nginx/api/file/content/?code=' + this.code;
+            } else {
+                return 'http://nginx/api/file/content/?id=' + this.value.id + '&token=' + this.userToken;
+            }
+        },
+
+        fileType() {
+            return this.getType(this.value.type);
+        },
+
+        fileName() {
+            return this.value.name;
+        }
     },
 
     watch: {
-        value: {
-            handler(val) {
-                this.fileUrl = 'http://nginx/api/file/content/?id=' + val.id + '&token=' + this.userToken;
-                this.fileType = this.getType(val.type);
-                this.fileName = val.name;
-            },
-            immediate: true,
-            deep: true,
-        },
-
         fileUrl: {
             handler(url)  {
                 if (!url) {
@@ -164,6 +174,19 @@ export default {
                     "callbackUrl": 'http://nginx/api/file/content/office?id=' + this.value.id + '&token=' + this.userToken,
                 }
             };
+            if (this.isPreview) {
+                config.editorConfig.mode = "view";
+                config.editorConfig.callbackUrl = null;
+                if (!config.editorConfig.user.id) {
+                    let viewer = this.$store.state.method.getStorageInt("viewer")
+                    if (!viewer) {
+                        viewer = $A.randNum(1000, 99999);
+                        this.$store.state.method.setStorage("viewer", viewer)
+                    }
+                    config.editorConfig.user.id = "viewer_" + viewer;
+                    config.editorConfig.user.name = "Viewer_" + viewer
+                }
+            }
             this.$nextTick(() => {
                 this.docEditor = new DocsAPI.DocEditor(this.id, config);
             })

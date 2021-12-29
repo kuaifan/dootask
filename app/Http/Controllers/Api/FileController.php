@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\AbstractModel;
 use App\Models\File;
 use App\Models\FileContent;
+use App\Models\FileLink;
 use App\Models\FileUser;
 use App\Models\User;
 use App\Module\Base;
@@ -79,15 +80,25 @@ class FileController extends AbstractController
 
     /**
      * 获取单条数据
+     *
+     * @apiParam {String} [code]         链接码（用于预览）
+     * @apiParam {Number} [id]           文件ID（需要权限，用于管理）
+     *
      * @return array
      */
     public function one()
     {
-        User::auth();
-        //
-        $id = intval(Request::input('id'));
-        //
-        $file = File::allowFind($id);
+        if (Request::exists("code")) {
+            $fileLink = FileLink::whereCode(Request::input('code'))->first();
+            $file = $fileLink?->file;
+            if (empty($file)) {
+                return Base::retError('链接不存在');
+            }
+        } else {
+            User::auth();
+            $id = intval(Request::input('id'));
+            $file = File::allowFind($id);
+        }
         return Base::retSuccess('success', $file);
     }
 
@@ -292,13 +303,21 @@ class FileController extends AbstractController
     /**
      * 获取文件内容
      *
-     * @apiParam {Number} id            文件ID
+     * @apiParam {String} [code]         链接码（用于预览）
+     * @apiParam {Number} [id]           文件ID（需要权限，用于管理）
      */
     public function content()
     {
-        $id = intval(Request::input('id'));
-        //
-        $file = File::allowFind($id);
+        if (Request::exists("code")) {
+            $fileLink = FileLink::whereCode(Request::input('code'))->first();
+            $file = $fileLink?->file;
+            if (empty($file)) {
+                return Base::retError('链接不存在');
+            }
+        } else {
+            $id = intval(Request::input('id'));
+            $file = File::allowFind($id);
+        }
         //
         $content = FileContent::whereFid($file->id)->orderByDesc('id')->first();
         return FileContent::formatContent($file->type, $content ? $content->content : []);
@@ -620,5 +639,49 @@ class FileController extends AbstractController
         //
         $file->setShare();
         return Base::retSuccess("退出成功");
+    }
+
+    /**
+     * 获取链接
+     *
+     * @apiParam {Number} id                文件ID
+     * @apiParam {String} refresh           刷新链接
+     * - no: 只获取（默认）
+     * - yes: 刷新链接，之前的将失效
+     */
+    public function link()
+    {
+        $user = User::auth();
+        //
+        $id = intval(Request::input('id'));
+        $refresh = Request::input('refresh', 'no');
+        //
+        $file = File::allowFind($id);
+        //
+        if ($file->userid != $user->userid) {
+            return Base::retError('仅限所有者操作');
+        }
+        if ($file->type == 'folder') {
+            return Base::retError('文件夹暂不支持此功能');
+        }
+        //
+        $fileLink = FileLink::whereFileId($file->id)->first();
+        if (empty($fileLink)) {
+            $fileLink = FileLink::createInstance([
+                'file_id' => $file->id,
+                'code' => Base::generatePassword(64),
+            ]);
+            $fileLink->save();
+        } else {
+            if ($refresh == 'yes') {
+                $fileLink->code = Base::generatePassword(64);
+                $fileLink->save();
+            }
+        }
+        return Base::retSuccess('success', [
+            'id' => $file->id,
+            'url' => Base::fillUrl('single/file/' . $fileLink->code),
+            'num' => $fileLink->num
+        ]);
     }
 }

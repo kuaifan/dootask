@@ -117,11 +117,11 @@
                                 </DropdownMenu>
                             </Dropdown>
                             <DropdownItem @click.native="handleContextClick('rename')" divided>{{$L('重命名')}}</DropdownItem>
-                            <DropdownItem @click.native="handleContextClick('copy')" :disabled="contextMenuItem.type=='folder'">{{$L('复制')}}</DropdownItem>
+                            <DropdownItem @click.native="handleContextClick('copy')" :disabled="contextMenuItem.type == 'folder'">{{$L('复制')}}</DropdownItem>
                             <DropdownItem @click.native="handleContextClick('shear')" :disabled="contextMenuItem.userid != userId">{{$L('剪切')}}</DropdownItem>
                             <template v-if="contextMenuItem.userid == userId">
                                 <DropdownItem @click.native="handleContextClick('share')" divided>{{$L('共享')}}</DropdownItem>
-                                <DropdownItem @click.native="handleContextClick('share')">{{$L('链接')}}</DropdownItem>
+                                <DropdownItem @click.native="handleContextClick('link')" :disabled="contextMenuItem.type == 'folder'">{{$L('链接')}}</DropdownItem>
                             </template>
                             <template v-else-if="contextMenuItem.share">
                                 <DropdownItem @click.native="handleContextClick('outshare')" divided>{{$L('退出共享')}}</DropdownItem>
@@ -252,6 +252,31 @@
             </div>
         </Modal>
 
+        <!--文件链接-->
+        <Modal
+            v-model="linkShow"
+            :title="$L('文件链接')"
+            :mask-closable="false">
+            <div>
+                <Input ref="linkInput" v-model="linkData.url" type="textarea" :rows="3" @on-focus="linkFocus" readonly/>
+                <div class="form-tip" style="padding-top:6px">{{$L('可通过此链接浏览文件。')}}</div>
+            </div>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="linkShow=false">{{$L('取消')}}</Button>
+                <Poptip
+                    confirm
+                    placement="bottom"
+                    style="margin-left:8px"
+                    @on-ok="linkGet(true)"
+                    transfer>
+                    <div slot="title">
+                        <p><strong>{{$L('注意：刷新将导致原来的链接失效！')}}</strong></p>
+                    </div>
+                    <Button type="primary" :loading="linkLoad > 0">{{$L('刷新')}}</Button>
+                </Poptip>
+            </div>
+        </Modal>
+
         <!--查看/修改文件-->
         <DrawerOverlay
             v-model="editShow"
@@ -264,6 +289,10 @@
 </template>
 
 <script>
+import Vue from 'vue'
+import VueClipboard from 'vue-clipboard2'
+Vue.use(VueClipboard)
+
 import {mapState} from "vuex";
 import {sortBy} from "lodash";
 import UserInput from "../../components/UserInput";
@@ -347,6 +376,10 @@ export default {
             shareInfo: {id: 0, userid: 0, permission: 1},
             shareList: [],
             shareLoad: 0,
+
+            linkShow: false,
+            linkData: {},
+            linkLoad: 0,
 
             editShow: false,
             editInfo: {},
@@ -825,6 +858,14 @@ export default {
                     });
                     break;
 
+                case 'link':
+                    this.linkData = {
+                        id: item.id
+                    };
+                    this.linkShow = true;
+                    this.linkGet()
+                    break;
+
                 case 'delete':
                     let typeName = item.type == 'folder' ? '文件夹' : '文件';
                     $A.modalConfirm({
@@ -849,6 +890,42 @@ export default {
                     });
                     break;
             }
+        },
+
+        linkGet(refresh) {
+            this.linkLoad++;
+            this.$store.dispatch("call", {
+                url: 'file/link',
+                data: {
+                    id: this.linkData.id,
+                    refresh: refresh === true ? 'yes' : 'no'
+                },
+            }).then(({data}) => {
+                this.linkLoad--;
+                this.linkData = Object.assign(data, {
+                    id: this.linkData.id
+                });
+                this.linkCopy();
+            }).catch(({msg}) => {
+                this.linkLoad--;
+                this.linkShow = false
+                $A.modalError(msg);
+            });
+        },
+
+        linkCopy() {
+            if (!this.linkData.url) {
+                return;
+            }
+            this.$copyText(this.linkData.url).then(() => {
+                $A.messageSuccess(this.$L('复制成功！'));
+            }, () => {
+                $A.messageError(this.$L('复制失败！'));
+            });
+        },
+
+        linkFocus() {
+            this.$refs.linkInput.focus({cursor:'all'});
         },
 
         shearTo() {

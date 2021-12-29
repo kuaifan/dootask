@@ -1,8 +1,11 @@
 <template>
     <div class="electron-file">
-        <PageTitle :title="editInfo.name"/>
+        <PageTitle :title="fileInfo.name"/>
         <Loading v-if="loadIng > 0"/>
-        <FileContent v-else v-model="editShow" :file="editInfo"/>
+        <template v-else>
+            <FilePreview v-if="fileCode" :code="fileCode" :file="fileInfo"/>
+            <FileContent v-else v-model="fileShow" :file="fileInfo"/>
+        </template>
     </div>
 </template>
 
@@ -17,15 +20,17 @@
 </style>
 <script>
 import FileContent from "../manage/components/FileContent";
+import FilePreview from "../manage/components/FilePreview";
 
 export default {
-    components: {FileContent},
+    components: {FilePreview, FileContent},
     data() {
         return {
             loadIng: 0,
 
-            editShow: true,
-            editInfo: {},
+            fileShow: true,
+            fileInfo: {},
+            fileCode: null,
         }
     },
     mounted() {
@@ -41,27 +46,28 @@ export default {
     },
     methods: {
         getInfo() {
-            let id = $A.runNum(this.$route.params.id);
-            if (id <= 0) {
-                return;
+            let id = this.$route.params.id;
+            let data = {};
+            if (id > 0) {
+                data.id = id;
+                this.fileCode = null;
+            } else if (id != '') {
+                data.code = id;
+                this.fileCode = id;
             }
             this.loadIng++;
             this.$store.dispatch("call", {
                 url: 'file/one',
-                data: {
-                    id,
-                },
+                data,
             }).then(({data}) => {
                 this.loadIng--;
-                this.editInfo = data;
+                this.fileInfo = data;
             }).catch(({msg}) => {
                 this.loadIng--;
                 $A.modalError({
                     content: msg,
                     onOk: () => {
-                        if (this.$Electron) {
-                            window.close();
-                        }
+                        window.close();
                     }
                 });
             });
