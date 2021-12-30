@@ -908,8 +908,12 @@ class ProjectController extends AbstractController
         $task_id = intval($data['task_id']);
         //
         $task = ProjectTask::userTask($task_id, [], true, $project);
-        if (!$task->isOwnerParent() && !$project->owner) {
-            return Base::retError('仅限项目或任务负责人修改');
+        //
+        if (count($task->taskUser->where('owner', 1)) > 0) {
+            // 任务有负责人后仅限项目或任务负责人修改
+            if (!$task->isOwnerParent() && !$project->owner) {
+                return Base::retError('仅限项目或任务负责人修改');
+            }
         }
         //
         $updateComplete = false;
