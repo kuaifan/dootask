@@ -1,5 +1,5 @@
 <template>
-    <div ref="preview">
+    <div ref="preview" class="markdown-preview-warp">
         <div
             :class="`markdown-preview ${'markdown-theme-' + theme}`"
             v-html="html"

@@ -1,11 +1,15 @@
 <template>
-    <div class="file-content">
+    <div class="file-preview">
         <iframe v-if="isPreview" ref="myPreview" class="preview-iframe" :src="previewUrl"></iframe>
         <template v-else>
             <div v-show="!['word', 'excel', 'ppt'].includes(file.type)" class="edit-header">
                 <div class="header-title">
                     {{formatName(file)}}
                     <Tag color="default">{{$L('只读')}}</Tag>
+                    <div class="refresh">
+                        <Loading v-if="contentLoad"/>
+                        <Icon v-else type="ios-refresh" @click="getContent" />
+                    </div>
                 </div>
                 <Dropdown v-if="file.type=='mind' || file.type=='flow' || file.type=='sheet'"
                           trigger="click"
@@ -35,7 +39,7 @@
                 <OnlyOffice v-else-if="['word', 'excel', 'ppt'].includes(file.type)" v-model="contentDetail" :code="code" readOnly/>
             </div>
         </template>
-        <div v-if="loadContent > 0 || previewLoad" class="content-load"><Loading/></div>
+        <div v-if="contentLoad" class="content-load"><Loading/></div>
     </div>
 </template>
 
@@ -69,7 +73,6 @@ export default {
     data() {
         return {
             loadContent: 0,
-            loadIng: 0,
             contentDetail: null,
             loadPreview: true,
         }
@@ -96,6 +99,10 @@ export default {
     },
 
     computed: {
+        contentLoad() {
+            return this.loadContent > 0 || this.previewLoad;
+        },
+
         isPreview() {
             return this.contentDetail && this.contentDetail.preview === true;
         },
@@ -128,7 +135,6 @@ export default {
                 this.contentDetail = $A.cloneJSON(this.file);
                 return;
             }
-            this.loadIng++;
             this.loadContent++;
             this.$store.dispatch("call", {
                 url: 'file/content',
@@ -136,12 +142,10 @@ export default {
                     id: this.code || this.file.id,
                 },
             }).then(({data}) => {
-                this.loadIng--;
                 this.loadContent--;
                 this.contentDetail = data.content;
             }).catch(({msg}) => {
                 $A.modalError(msg);
-                this.loadIng--;
                 this.loadContent--;
             })
         },

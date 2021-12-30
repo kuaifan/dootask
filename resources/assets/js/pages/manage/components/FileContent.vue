@@ -62,7 +62,7 @@
                 <OnlyOffice v-else-if="['word', 'excel', 'ppt'].includes(file.type)" v-model="contentDetail"/>
             </div>
         </template>
-        <div v-if="loadContent > 0 || previewLoad" class="content-load"><Loading/></div>
+        <div v-if="contentLoad" class="content-load"><Loading/></div>
     </div>
 </template>
 
@@ -180,6 +180,10 @@ export default {
 
         equalContent() {
             return this.contentBak == $A.jsonStringify(this.contentDetail);
+        },
+
+        contentLoad() {
+            return this.loadContent > 0 || this.previewLoad;
         },
 
         isPreview() {

@@ -1,4 +1,5 @@
-.file-content {
+.file-content,
+.file-preview {
     position: absolute;
     top: 0;
     left: 0;
@@ -53,9 +54,6 @@
                 &:hover {
                     color: #000000;
                 }
-            }
-            .ivu-tag {
-                margin-left: 4px;
             }
         }
         .header-user {
@@ -206,6 +204,51 @@
         }
     }
 }
+
+.file-preview {
+    .edit-header {
+        .header-title {
+            display: flex;
+            align-items: center;
+
+            .ivu-tag {
+                margin-left: 6px;
+                padding: 0 6px;
+                line-height: 20px;
+            }
+
+            .refresh {
+                display: flex;
+                align-items: center;
+                margin-left: 6px;
+
+                .common-loading {
+                    margin: 2px;
+                    width: 16px;
+                    height: 16px;
+                }
+
+                > i {
+                    opacity: 0.6;
+                    font-size: 20px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    &:hover {
+                        opacity: 1;
+                    }
+                }
+            }
+        }
+    }
+    .content-body {
+        overflow: hidden;
+        .markdown-preview-warp {
+            flex: 1;
+            overflow: auto;
+        }
+    }
+}
+
 .luckysheet-input-box {
     z-index: 99999 !important;
 }
@@ -215,7 +258,7 @@
         overflow: auto;
         .edit-header,
         .content-body {
-            min-width: 1200px;
+            min-width: 900px;
         }
     }
 }
