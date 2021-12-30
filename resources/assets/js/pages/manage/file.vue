@@ -280,11 +280,11 @@
 
         <!--查看/修改文件-->
         <DrawerOverlay
-            v-model="editShow"
+            v-model="fileShow"
             class="page-file-drawer"
             :mask-closable="false">
-            <FileContent v-if="editInfo.permission > 0" v-model="editShow" :file="editInfo"/>
-            <FilePreview v-else-if="editInfo.permission > -1" :file="editInfo"/>
+            <FilePreview v-if="fileInfo.permission === 0" :file="fileInfo"/>
+            <FileContent v-else v-model="fileShow" :file="fileInfo"/>
         </DrawerOverlay>
 
     </div>
@@ -384,8 +384,8 @@ export default {
             linkData: {},
             linkLoad: 0,
 
-            editShow: false,
-            editInfo: {permission: -1},
+            fileShow: false,
+            fileInfo: {permission: -1},
 
             uploadDir: false,
             uploadIng: 0,
@@ -499,9 +499,9 @@ export default {
             this.$store.state.method.setStorage("fileTableMode", val)
         },
 
-        editShow(val) {
+        fileShow(val) {
             if (val) {
-                this.$store.dispatch("websocketPath", "file/content/" + this.editInfo.id);
+                this.$store.dispatch("websocketPath", "file/content/" + this.fileInfo.id);
             } else {
                 this.$store.dispatch("websocketPath", "file");
                 this.getFileList();
@@ -754,8 +754,8 @@ export default {
                 if (this.$Electron) {
                     this.openSingle(item);
                 } else {
-                    this.editInfo = item;
-                    this.editShow = true;
+                    this.fileInfo = item;
+                    this.fileShow = true;
                 }
             }
         },

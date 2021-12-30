@@ -1,19 +1,20 @@
 <template>
-    <div class="electron-file">
+    <div class="single-file">
         <PageTitle :title="fileInfo.name"/>
         <Loading v-if="loadIng > 0"/>
         <template v-else>
-            <FilePreview v-if="code" :code="code" :file="fileInfo"/>
+            <FilePreview v-if="code || fileInfo.permission === 0" :code="code" :file="fileInfo"/>
             <FileContent v-else v-model="fileShow" :file="fileInfo"/>
         </template>
     </div>
 </template>
 
 <style lang="scss" scoped>
-.electron-file {
+.single-file {
     display: flex;
     align-items: center;
-    .file-content {
+    .file-content,
+    .file-preview {
         border-radius: 0;
     }
 }

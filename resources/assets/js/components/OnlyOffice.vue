@@ -164,7 +164,7 @@ export default {
                     "callbackUrl": 'http://nginx/api/file/content/office?id=' + fileKey + '&token=' + this.userToken,
                 }
             };
-            if (this.isPreview) {
+            if (this.readOnly) {
                 config.editorConfig.mode = "view";
                 config.editorConfig.callbackUrl = null;
                 if (!config.editorConfig.user.id) {

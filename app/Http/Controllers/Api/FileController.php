@@ -96,9 +96,10 @@ class FileController extends AbstractController
     {
         $id = Request::input('id');
         //
+        $permission = 0;
         if (Base::isNumber($id)) {
             User::auth();
-            $file = File::permissionFind(intval($id));
+            $file = File::permissionFind(intval($id), 0, $permission);
         } elseif ($id) {
             $fileLink = FileLink::whereCode($id)->first();
             $file = $fileLink?->file;
@@ -108,7 +109,10 @@ class FileController extends AbstractController
         } else {
             return Base::retError('参数错误');
         }
-        return Base::retSuccess('success', $file);
+        //
+        $array = $file->toArray();
+        $array['permission'] = $permission;
+        return Base::retSuccess('success', $array);
     }
 
     /**
