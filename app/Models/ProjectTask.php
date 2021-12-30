@@ -666,6 +666,9 @@ class ProjectTask extends AbstractModel
                         throw new ApiException('子任务未完成');
                     }
                 }
+                if (count($this->taskUser->where('owner', 1)) == 0) {
+                    throw new ApiException('请先领取任务');
+                }
                 $this->complete_at = $complete_at;
                 $this->addLog("{任务}标记已完成：" . $this->name);
             }
