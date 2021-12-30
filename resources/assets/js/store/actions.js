@@ -393,7 +393,7 @@ export default {
                 state.cacheDialogs = state.dialogs = [];
                 state.cacheProjects = state.projects = [];
                 state.cacheColumns = state.columns = [];
-                state.cacheTasks = state.tasks = state.taskSubs = [];
+                state.cacheTasks = state.tasks = [];
                 //
                 state.method.setStorage("cacheTablePanel", state.cacheTablePanel);
                 state.method.setStorage("cacheServerUrl", state.cacheServerUrl);
@@ -852,12 +852,11 @@ export default {
                 dispatch("saveTask", task)
             });
         } else if (state.method.isJson(data)) {
-            let key = data.parent_id > 0 ? 'taskSubs' : 'tasks';
-            let index = state[key].findIndex(({id}) => id == data.id);
+            let index = state.tasks.findIndex(({id}) => id == data.id);
             if (index > -1) {
-                state[key].splice(index, 1, Object.assign(state[key][index], data));
+                state.tasks.splice(index, 1, Object.assign(state.tasks[index], data));
             } else {
-                state[key].push(data);
+                state.tasks.push(data);
             }
             //
             if (index > -1 && data.parent_id) {
@@ -870,11 +869,9 @@ export default {
                 dispatch("getTaskContent", data.id);
             }
             //
-            if (key == 'tasks') {
-                setTimeout(() => {
-                    state.method.setStorage("cacheTasks", state.cacheTasks = state[key]);
-                })
-            }
+            setTimeout(() => {
+                state.method.setStorage("cacheTasks", state.cacheTasks = state.tasks);
+            })
         }
     },
 
@@ -888,28 +885,19 @@ export default {
         $A.execMainDispatch("forgetTask", task_id)
         //
         let index = state.tasks.findIndex(({id}) => id == task_id);
-        let key = 'tasks';
-        if (index === -1) {
-            index = state.taskSubs.findIndex(({id}) => id == task_id);
-            key = 'taskSubs';
-        }
         if (index > -1) {
-            if (state[key][index].parent_id) {
-                dispatch("getTaskOne", state[key][index].parent_id)
+            if (state.tasks[index].parent_id) {
+                dispatch("getTaskOne", state.tasks[index].parent_id)
             }
-            if (key == 'tasks') {
-                dispatch('getProjectOne', state[key][index].project_id)
-            }
-            state[key].splice(index, 1);
+            dispatch('getProjectOne', state.tasks[index].project_id)
+            state.tasks.splice(index, 1);
         }
         if (state.taskId == task_id) {
             state.taskId = 0;
         }
-        if (key == 'tasks') {
-            setTimeout(() => {
-                state.method.setStorage("cacheTasks", state.cacheTasks = state[key]);
-            })
-        }
+        setTimeout(() => {
+            state.method.setStorage("cacheTasks", state.cacheTasks = state.tasks);
+        })
     },
 
     /**
@@ -953,9 +941,6 @@ export default {
             if (ids.length > 0) {
                 if (data.project_id) {
                     state.tasks = state.tasks.filter((item) => item.project_id != data.project_id || ids.includes(item.id));
-                }
-                if (data.parent_id) {
-                    state.taskSubs = state.taskSubs.filter((item) => item.parent_id != data.parent_id || ids.includes(item.id));
                 }
             }
             dispatch("saveTask", resData.data);

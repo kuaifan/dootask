@@ -518,7 +518,7 @@ export default {
             'userId',
             'projects',
             'columns',
-            'taskSubs',
+            'tasks',
             'taskContents',
             'taskFiles',
             'taskPriority',
@@ -569,8 +569,8 @@ export default {
             if (!this.taskId) {
                 return [];
             }
-            return this.taskSubs.filter(({parent_id}) => {
-                return parent_id == this.taskId
+            return this.tasks.filter(({parent_id}) => {
+                return parent_id > 0 && parent_id == this.taskId
             }).sort((a, b) => {
                 return a.id - b.id;
             });

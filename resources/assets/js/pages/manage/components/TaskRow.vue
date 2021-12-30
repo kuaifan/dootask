@@ -184,12 +184,12 @@ export default {
     },
 
     computed: {
-        ...mapState(['taskSubs', 'taskPriority', 'columns']),
+        ...mapState(['tasks', 'taskPriority', 'columns']),
 
         subTask() {
             return function(task_id) {
-                return this.taskSubs.filter(({parent_id}) => {
-                    return parent_id == task_id
+                return this.tasks.filter(({parent_id}) => {
+                    return parent_id > 0 && parent_id == task_id
                 }).sort((a, b) => {
                     return a.id - b.id;
                 });

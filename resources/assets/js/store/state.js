@@ -312,7 +312,6 @@ state.projectLoad = 0;
 state.columns = [];
 state.taskId = 0;
 state.tasks = [];
-state.taskSubs = [];
 state.taskContents = [];
 state.taskFiles = [];
 state.taskLogs = [];

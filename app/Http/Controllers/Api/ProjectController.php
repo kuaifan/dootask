@@ -660,7 +660,7 @@ class ProjectController extends AbstractController
     {
         User::auth();
         //
-        $builder = ProjectTask::with(['taskUser', 'taskTag']);
+        $builder = ProjectTask::select(ProjectTask::taskSelect)->with(['taskUser', 'taskTag']);
         //
         $parent_id = intval(Request::input('parent_id'));
         $project_id = intval(Request::input('project_id'));
@@ -672,22 +672,22 @@ class ProjectController extends AbstractController
         //
         if ($parent_id > 0) {
             ProjectTask::userTask($parent_id);
-            $builder->whereParentId($parent_id);
+            $builder->leftData()->where('project_tasks.parent_id', $parent_id);
         } elseif ($project_id > 0) {
             Project::userProject($project_id);
-            $builder->whereParentId(0)->whereProjectId($project_id);
+            $builder->leftData()->where('project_tasks.project_id', $project_id);
         } else {
-            $builder->whereParentId(0)->authData();
+            $builder->authData();
         }
         //
         if ($name) {
             $builder->where(function($query) use ($name) {
-                $query->where("name", "like", "%{$name}%");
+                $query->where("project_tasks.name", "like", "%{$name}%");
             });
         }
         //
         if (Base::isDateOrTime($time_before)) {
-            $builder->whereNotNull('end_at')->where('end_at', '<', Carbon::parse($time_before));
+            $builder->whereNotNull('project_tasks.end_at')->where('project_tasks.end_at', '<', Carbon::parse($time_before));
         } elseif (is_array($time)) {
             if (Base::isDateOrTime($time[0]) && Base::isDateOrTime($time[1])) {
                 $builder->betweenTime(Carbon::parse($time[0])->startOfDay(), Carbon::parse($time[1])->endOfDay());
@@ -695,18 +695,18 @@ class ProjectController extends AbstractController
         }
         //
         if ($complete === 'yes') {
-            $builder->whereNotNull('complete_at');
+            $builder->whereNotNull('project_tasks.complete_at');
         } elseif ($complete === 'no') {
-            $builder->whereNull('complete_at');
+            $builder->whereNull('project_tasks.complete_at');
         }
         //
         if ($archived == 'yes') {
-            $builder->whereNotNull('archived_at');
+            $builder->whereNotNull('project_tasks.archived_at');
         } elseif ($archived == 'no') {
-            $builder->whereNull('archived_at');
+            $builder->whereNull('project_tasks.archived_at');
         }
         //
-        $list = $builder->orderByDesc('id')->paginate(Base::getPaginate(200, 100));
+        $list = $builder->orderByDesc('project_tasks.id')->paginate(Base::getPaginate(200, 100));
         //
         return Base::retSuccess('success', $list);
     }

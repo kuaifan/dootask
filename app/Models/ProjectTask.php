@@ -7,6 +7,7 @@ use App\Module\Base;
 use App\Tasks\PushTask;
 use Arr;
 use Carbon\Carbon;
+use DB;
 use Exception;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -54,6 +55,7 @@ use Request;
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectTaskUser[] $taskUser
  * @property-read int|null $task_user_count
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask authData($userid = null, $owner = false)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask leftData($userid = null)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask betweenTime($start, $end)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask newQuery()
@@ -89,8 +91,12 @@ class ProjectTask extends AbstractModel
 {
     use SoftDeletes;
 
+    const taskSelect = [
+        'project_tasks.*',
+        'project_task_users.owner',
+    ];
+
     protected $appends = [
-        'owner',
         'file_num',
         'msg_num',
         'sub_num',
@@ -99,22 +105,6 @@ class ProjectTask extends AbstractModel
         'today',
         'overdue',
     ];
-
-    /**
-     * 是否我是负责人
-     * @return bool
-     */
-    public function getOwnerAttribute()
-    {
-        if (!isset($this->appendattrs['owner'])) {
-            if ($this->parent_id > 0) {
-                $this->appendattrs['owner'] = ProjectTaskUser::whereTaskId($this->id)->whereUserid(User::userid())->whereOwner(1)->exists();
-            } else {
-                $this->appendattrs['owner'] = ProjectTaskUser::whereTaskPid($this->id)->whereUserid(User::userid())->whereOwner(1)->exists();
-            }
-        }
-        return $this->appendattrs['owner'];
-    }
 
     /**
      * 附件数量
@@ -275,11 +265,27 @@ class ProjectTask extends AbstractModel
     public function scopeAuthData($query, $userid = null, $owner = false)
     {
         $userid = $userid ?: User::userid();
-        $query->whereIn('id', function ($qy) use ($owner, $userid) {
-            $qy->select('task_pid')->from('project_task_users')->where('userid', $userid);
-            if ($owner) {
-                $qy->where('owner', 1);
-            }
+        $query->join('project_task_users', 'project_tasks.id', '=', 'project_task_users.task_id')
+            ->where('project_task_users.userid', $userid);
+        if ($owner) {
+            $query->where('project_task_users.owner', 1);
+        }
+        return $query;
+    }
+
+    /**
+     * 查询自己的任务
+     * @param self $query
+     * @param null $userid
+     * @return self
+     */
+    public function scopeLeftData($query, $userid = null)
+    {
+        $userid = $userid ?: User::userid();
+        $query->leftJoin('project_task_users', function ($leftJoin) use ($userid) {
+            $leftJoin
+                ->on('project_task_users.userid', '=', DB::raw($userid))
+                ->on('project_tasks.id', '=', 'project_task_users.task_id');
         });
         return $query;
     }
@@ -295,11 +301,11 @@ class ProjectTask extends AbstractModel
     {
         $query->where(function ($q1) use ($start, $end) {
             $q1->where(function ($q2) use ($start) {
-                $q2->where('start_at', '<=', $start)->where('end_at', '>=', $start);
+                $q2->where('project_tasks.start_at', '<=', $start)->where('project_tasks.end_at', '>=', $start);
             })->orWhere(function ($q2) use ($end) {
-                $q2->where('start_at', '<=', $end)->where('end_at', '>=', $end);
+                $q2->where('project_tasks.start_at', '<=', $end)->where('project_tasks.end_at', '>=', $end);
             })->orWhere(function ($q2) use ($start, $end) {
-                $q2->where('start_at', '>', $start)->where('end_at', '<', $end);
+                $q2->where('project_tasks.start_at', '>', $start)->where('project_tasks.end_at', '<', $end);
             });
         });
         return $query;
