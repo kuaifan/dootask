@@ -66,7 +66,13 @@ function createMainWindow() {
         })
     }
 
-    mainWindow.on('close', function (e) {
+    mainWindow.on('page-title-updated', (event, title) => {
+        if (title == "index.html") {
+            event.preventDefault()
+        }
+    })
+
+    mainWindow.on('close', (e) => {
         if (!willQuitApp) {
             e.preventDefault();
             if (inheritClose) {
@@ -103,6 +109,10 @@ function createSubWindow(args) {
             return;
         }
     } else {
+        let config = args.config || {};
+        if (typeof args.title !== "undefined") {
+            config.title = args.title;
+        }
         browser = new BrowserWindow(Object.assign({
             width: 1280,
             height: 800,
@@ -115,8 +125,13 @@ function createSubWindow(args) {
                 nodeIntegration: true,
                 contextIsolation: false
             }
-        }, args.config || {}))
-        browser.on('close', function () {
+        }, config))
+        browser.on('page-title-updated', (event, title) => {
+            if (title == "index.html" || args.titleFixed === true) {
+                event.preventDefault()
+            }
+        })
+        browser.on('close', () => {
             let index = subWindow.findIndex(item => item.name == name);
             if (index > -1) {
                 subWindow.splice(index, 1)

@@ -1187,6 +1187,8 @@ export default {
                 config.minHeight = 600;
             }
             this.$Electron.ipcRenderer.send('windowRouter', {
+                title: this.taskDetail.name,
+                titleFixed: true,
                 name: 'task-' + this.taskDetail.id,
                 path: "/single/task/" + this.taskDetail.id,
                 force: false,

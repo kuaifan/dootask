@@ -762,13 +762,15 @@ export default {
 
         openSingle(item) {
             this.$Electron.ipcRenderer.send('windowRouter', {
+                title: item.name,
+                titleFixed: true,
                 name: 'file-' + item.id,
                 path: "/single/file/" + item.id,
                 force: false, // 如果窗口已存在不重新加载
                 config: {
                     parent: null,
-                    width: Math.min(window.screen.availWidth, 1280),
-                    height: Math.min(window.screen.availHeight, 800),
+                    width: Math.min(window.screen.availWidth, 1440),
+                    height: Math.min(window.screen.availHeight, 900),
                 }
             });
         },
