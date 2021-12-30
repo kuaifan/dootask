@@ -19,6 +19,7 @@ jobs:
         uses: loopwerk/tag-changelog@v1
         with:
           token: ${{ secrets.GH_PAT }}
+          exclude_types: other,chore
 
       - name: Create release
         uses: actions/create-release@latest

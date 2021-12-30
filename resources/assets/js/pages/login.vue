@@ -84,6 +84,10 @@ export default {
     },
     deactivated() {
         this.loginJump = false;
+        this.password = "";
+        this.password2 = "";
+        this.code = "";
+        this.invite = "";
     },
     computed: {
         ...mapState(['cacheServerUrl']),
@@ -220,9 +224,6 @@ export default {
                 },
             }).then(({data}) => {
                 this.loadIng--;
-                this.password = "";
-                this.code = "";
-                this.invite = "";
                 this.$store.state.method.setStorage("cacheLoginEmail", this.email)
                 this.$store.dispatch("handleClearCache", data).then(() => {
                     this.goNext1();
