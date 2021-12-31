@@ -20,7 +20,7 @@
                 </ButtonGroup>
             </div>
         </div>
-        <div class="calendar-box">
+        <div class="calendar-box" v-if="visible">
             <Calendar
                 ref="cal"
                 :view="calendarView"
@@ -47,7 +47,7 @@ import 'tui-calendar-hi/dist/tui-calendar-hi.css'
 import {mapState} from "vuex";
 import Calendar from "./components/Calendar";
 import moment from "moment";
-
+import {calendarColorList} from "../../skin"
 export default {
     components: {Calendar},
     data() {
@@ -65,16 +65,18 @@ export default {
             calendarList: [],
 
             loadIng: 0,
+            visible:true
         }
     },
 
     activated() {
         this.$refs.cal.resetRender();
         this.setRenderRange();
+       
     },
 
     computed: {
-        ...mapState(['userId', 'projects', 'tasks']),
+        ...mapState(['userId', 'projects', 'tasks','skinType']),
 
         list() {
             let datas = $A.cloneJSON(this.tasks);
@@ -142,6 +144,16 @@ export default {
             },
             immediate: true,
         },
+        skinType(nval,oval){
+            if(nval!==oval){
+                this.calendarTheme = calendarColorList[this.skinType]
+                this.visible=false
+                this.$nextTick(() => {
+                    this.visible=true
+                });
+            }
+           
+        }
     },
 
     methods: {
@@ -166,12 +178,7 @@ export default {
             ];
             this.calendarWeek = {daynames};
             this.calendarMonth = {daynames};
-            this.calendarTheme = {
-                'common.border': '1px solid #f4f5f5',
-                'month.dayname.fontSize': '14px',
-                'month.dayname.borderLeft': '1px solid #f4f5f5',
-                'month.dayname.height': '50px',
-            }
+            this.calendarTheme = calendarColorList[this.skinType]
             this.calendarTemplate = {
                 titlePlaceholder: () => {
                     return this.$L("任务描述")

@@ -1,6 +1,6 @@
 <template>
-    <div v-show="userId > 0" class="page-manage">
-        <div class="manage-box-menu" :class="{'show768-menu': show768Menu}">
+    <div v-show="userId > 0" class="page-manage" :class="skinType">
+        <div class="manage-box-menu" :class="{'show768-menu': show768Menu,}">
             <Dropdown
                 class="manage-box-dropdown"
                 trigger="click"
@@ -31,6 +31,17 @@
                         </DropdownItem>
                         <DropdownMenu slot="list">
                             <Dropdown-item v-for="(item, key) in languageList" :key="key" :name="key" :selected="getLanguage() === key">{{item}}</Dropdown-item>
+                        </DropdownMenu>
+                    </Dropdown>
+                     <Dropdown placement="right-start" @on-click="setSkin">
+                        <DropdownItem divided>
+                            <div class="mannage-menu-skin">
+                                {{$L('主题皮肤')}}
+                                <Icon type="ios-arrow-forward"></Icon>
+                            </div>
+                        </DropdownItem>
+                        <DropdownMenu slot="list" >
+                            <Dropdown-item v-for="(item,key) in skinOptionsList" :key="key" :name="key" :selected="skinType === item.key">{{item.lable}}</Dropdown-item>
                         </DropdownMenu>
                     </Dropdown>
                     <DropdownItem divided name="signout" style="color:#f40">{{$L('退出登录')}}</DropdownItem>
@@ -93,10 +104,10 @@
             <Button class="manage-box-new" type="primary" icon="md-add" @click="onAddShow">{{$L('新建项目')}}</Button>
         </div>
 
-        <div class="manage-box-main">
-            <keep-alive>
-                <router-view class="manage-box-view overlay"></router-view>
-            </keep-alive>
+        <div class="manage-box-main" >
+                <keep-alive>
+                    <router-view class="manage-box-view overlay"></router-view>
+                </keep-alive>
         </div>
 
         <!--新建项目-->
@@ -187,7 +198,7 @@
 </template>
 
 <script>
-import { mapState, mapGetters } from 'vuex'
+import { mapState, mapGetters,mapMutations} from 'vuex'
 import TaskDetail from "./manage/components/TaskDetail";
 import ProjectArchived from "./manage/components/ProjectArchived";
 import notificationKoro from "notification-koro1";
@@ -196,8 +207,8 @@ import ProjectManagement from "./manage/components/ProjectManagement";
 import DrawerOverlay from "../components/DrawerOverlay";
 import DragBallComponent from "../components/DragBallComponent";
 import TaskAdd from "./manage/components/TaskAdd";
+import {skinOptionsList} from "../skin/index"
 import {Store} from "le5le-store";
-
 export default {
     components: {
         TaskAdd,
@@ -236,6 +247,7 @@ export default {
             natificationHidden: false,
             natificationReady: false,
             notificationClass: null,
+            skinOptionsList:skinOptionsList
         }
     },
 
@@ -292,10 +304,10 @@ export default {
             'projectTotal',
             'taskId',
             'dialogMsgPush',
+            'skinType',
         ]),
-
         ...mapGetters(['taskData', 'dashboardData']),
-
+        ...mapMutations(['setSkinType']),
         msgAllUnread() {
             let num = 0;
             this.dialogs.map(({unread}) => {
@@ -443,6 +455,10 @@ export default {
     },
 
     methods: {
+        setSkin(e){
+            localStorage.setItem("skinType", this.skinOptionsList[e].key);
+            this.$store.commit('setSkinType', this.skinOptionsList[e].key)
+        },
         initLanguage() {
             this.columns = [{
                 label: this.$L('空白模板'),

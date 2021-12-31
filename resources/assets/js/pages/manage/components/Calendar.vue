@@ -1,9 +1,8 @@
 <template>
-    <div ref="tuiCalendar" class="calendar-wrapper"></div>
+    <div id="calendar" ref="tuiCalendar" class="calendar-wrapper"></div>
 </template>
 <script>
 import Calendar from 'tui-calendar-hi';
-
 export default {
     name: 'Calendar',
     props: {
@@ -151,31 +150,34 @@ export default {
         }
     },
     mounted() {
-        this.calendarInstance = new Calendar(this.$refs.tuiCalendar, {
-            defaultView: this.view,
-            taskView: this.taskView,
-            scheduleView: this.scheduleView,
-            theme: this.theme,
-            template: this.template,
-            week: this.week,
-            month: this.month,
-            calendars: this.calendars,
-            useCreationPopup: this.useCreationPopup,
-            useDetailPopup: this.useDetailPopup,
-            timezones: this.timezones,
-            disableDblClick: this.disableDblClick,
-            disableClick: this.disableClick,
-            isReadOnly: this.isReadOnly,
-            usageStatistics: this.usageStatistics
-        });
-        this.addEventListeners();
-        this.reflectSchedules();
+        this.init();
     },
     beforeDestroy() {
         this.calendarInstance.off();
         this.calendarInstance.destroy();
     },
     methods: {
+        init(){
+        this.calendarInstance = new Calendar(this.$refs.tuiCalendar, {
+                    defaultView: this.view,
+                    taskView: this.taskView,
+                    scheduleView: this.scheduleView,
+                    theme: this.theme,
+                    template: this.template,
+                    week: this.week,
+                    month: this.month,
+                    calendars: this.calendars,
+                    useCreationPopup: this.useCreationPopup,
+                    useDetailPopup: this.useDetailPopup,
+                    timezones: this.timezones,
+                    disableDblClick: this.disableDblClick,
+                    disableClick: this.disableClick,
+                    isReadOnly: this.isReadOnly,
+                    usageStatistics: this.usageStatistics,
+                });
+        this.addEventListeners();
+        this.reflectSchedules();
+        },
         cloneData(data) {
             return JSON.parse(JSON.stringify(data));
         },

@@ -344,5 +344,6 @@ state.taskColorList = [
     {name: '紫色', color: '#f6ecff'},
     {name: '灰色', color: '#f3f3f3'},
 ];
-
+//当前主题背景色
+state.skinType=window.localStorage.getItem("skinType")|| "white"
 export default state

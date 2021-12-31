@@ -453,5 +453,6 @@
         {"CN": "开启您的 Dootask 团队协作","EN": "Open your DOOTASK team collaboration","TC": "開啟您的 Dootask 團隊協作","KM": "បើកកិច្ចសហប្រតិបត្តិការក្រុមរបស់អ្នក","TH": "เปิดการทำงานร่วมกันของทีม DOOTASK ของคุณ","KO": "Dootask 팀 공동 작업을 엽니 다","JA": "あなたのdootaskチームコラボレーションを開く"},
         {"CN": "联系我们","EN": "Contact us","TC": "聯繫我們","KM": "ទាក់ទង​មក​ពួក​យើង","TH": "ติดต่อเรา","KO": "문의하기","JA": "お問い合わせ"},
         {"CN": "桂公网安备 31011002000058号 桂ICP备12020087号-3","EN": "Gui Gong Net Anni 31011002000058 Gui ICP No. 12020087 -3","TC": "桂公網安備 31011002000058號 桂ICP備12020087號-3","KM": "Gui Gong Net Net Ann 31011002000058 GUI ICP លេខ 12020087 -3","TH": "Gui Gong Net Anni 31011002000058 GUI ICP No. 12020087 -3","KO": "Gui Gong Net Anni 31011002000058 GUI ICP No. 12020087 -3","JA": "GUI GONG NET ANNI 31011002000058 GUI ICP No. 12020087 -3"},
+        {"CN": "主题皮肤","EN": "Topic skin","TC": "主題皮膚","KM": "ស្បែកប្រធានបទ","TH": "ผิวหนัง","KO": "주제 피부","JA": "トピックスキン"},
     ]
 })(window)

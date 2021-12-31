@@ -178,13 +178,12 @@ export default {
     },
     mounted() {
         this.getDemoAccount();
+        this.getLoginType()
         //
         if (!this.isElectron && this.cacheServerUrl) {
             this.onServerUrlClear();
         }
-        this.$route.query.type == "reg"
-            ? (this.loginType = "reg")
-            : (this.loginType = "login");
+       
     },
     deactivated() {
         this.loginJump = false;
@@ -205,9 +204,7 @@ export default {
     },
     watch: {
         $route(to, from) {
-            this.$route.query.type == "reg"
-                ? (this.loginType = "reg")
-                : (this.loginType = "login");
+           this.getLoginType();
         },
         loginType(val) {
             if (val == "reg") {
@@ -245,7 +242,11 @@ export default {
                     this.needInvite = false;
                 });
         },
-
+        getLoginType(){
+                this.$route.query.type == "reg"
+                ? (this.loginType = "reg")
+                : (this.loginType = "login");
+        },
         forgotPassword() {
             $A.modalWarning("请联系管理员！");
         },
