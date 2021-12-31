@@ -35,9 +35,9 @@
                         :key="item.id"
                         :class="{complete: item.complete_at}"
                         :style="item.color ? {backgroundColor: item.color} : {}"
-                        @click="$store.dispatch('openTask', item.id)">
+                        @click="openTask(item)">
                         <em
-                            v-if="item.p_name && item.parent_id === 0"
+                            v-if="item.p_name"
                             class="priority-color"
                             :style="{backgroundColor:item.p_color}"></em>
                         <EDropdown
@@ -79,7 +79,7 @@
                                 </template>
                             </EDropdownMenu>
                         </EDropdown>
-                        <div class="item-title">{{item.name}}</div>
+                        <div class="item-title"><span v-if="item.top_task === true">{{$L('子任务')}}</span>{{item.name}}</div>
                         <div v-if="item.desc" class="item-icon">
                             <i class="taskfont">&#xe71a;</i>
                         </div>
@@ -102,6 +102,7 @@
 <script>
 import {mapGetters, mapState} from "vuex";
 import AppDown from "../../components/AppDown";
+import {Store} from "le5le-store";
 
 export default {
     components: {AppDown},
@@ -230,6 +231,10 @@ export default {
                     }
                     break;
             }
+        },
+
+        openTask(task) {
+            this.$store.dispatch("openTask", task)
         },
 
         updateTask(task, updata) {

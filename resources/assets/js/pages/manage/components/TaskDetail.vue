@@ -108,8 +108,7 @@
                         class="pick"
                         :title="$L('你确认领取任务吗？')"
                         placement="bottom"
-                        @on-ok="onOwner(true)"
-                        transfer>
+                        @on-ok="onOwner(true)">
                         <Button type="primary">{{$L('我要领取任务')}}</Button>
                     </Poptip>
                     <ETooltip v-if="$Electron" :content="$L('新窗口打开')">

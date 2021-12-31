@@ -301,7 +301,7 @@ export default {
         //
         let index = state.cacheUserBasic.findIndex(({userid}) => userid == data.userid);
         if (index > -1) {
-            data = Object.assign(state.cacheUserBasic[index], data)
+            data = Object.assign({}, state.cacheUserBasic[index], data)
             state.cacheUserBasic.splice(index, 1, data);
         } else {
             state.cacheUserBasic.push(data)
@@ -427,7 +427,7 @@ export default {
         } else if (state.method.isJson(data)) {
             let index = state.files.findIndex(({id}) => id == data.id);
             if (index > -1) {
-                state.files.splice(index, 1, Object.assign(state.files[index], data));
+                state.files.splice(index, 1, Object.assign({}, state.files[index], data));
             } else {
                 state.files.push(data)
             }
@@ -525,7 +525,7 @@ export default {
             }
             let index = state.projects.findIndex(({id}) => id == data.id);
             if (index > -1) {
-                state.projects.splice(index, 1, Object.assign(state.projects[index], data));
+                state.projects.splice(index, 1, Object.assign({}, state.projects[index], data));
             } else {
                 state.projects.push(data);
             }
@@ -726,7 +726,7 @@ export default {
         } else if (state.method.isJson(data)) {
             let index = state.columns.findIndex(({id}) => id == data.id);
             if (index > -1) {
-                state.columns.splice(index, 1, Object.assign(state.columns[index], data));
+                state.columns.splice(index, 1, Object.assign({}, state.columns[index], data));
             } else {
                 state.columns.push(data);
             }
@@ -854,12 +854,12 @@ export default {
         } else if (state.method.isJson(data)) {
             let index = state.tasks.findIndex(({id}) => id == data.id);
             if (index > -1) {
-                state.tasks.splice(index, 1, Object.assign(state.tasks[index], data));
+                state.tasks.splice(index, 1, Object.assign({}, state.tasks[index], data));
             } else {
                 state.tasks.push(data);
             }
             //
-            if (index > -1 && data.parent_id) {
+            if (data.parent_id > 0 && state.tasks.findIndex(({id}) => id == data.parent_id) === -1) {
                 dispatch("getTaskOne", data.parent_id);
             }
             if (data.is_update_complete) {
@@ -1008,44 +1008,42 @@ export default {
      * @param dispatch
      */
     getDashboardTasks({state, dispatch}) {
-        return new Promise(function (resolve, reject) {
-            let loadIng = 2;
-            let error = 0;
-            let call = (err) => {
-                if (err) {
-                    error++;
-                }
-                loadIng--;
-                if (loadIng == 0) {
-                    if (error > 0) {
-                        reject()
-                    } else {
-                        resolve()
-                    }
-                }
+        if (state.cacheLoading["loadDashboardTasks"] === true) {
+            return;
+        }
+        state.cacheLoading["loadDashboardTasks"] = true;
+        //
+        let loadIng = 2;
+        let call = () => {
+            if (loadIng <= 0) {
+                state.cacheLoading["loadDashboardTasks"] = false;
+                return;
             }
-            //
-            dispatch("getTasks", {
-                complete: "no",
-                time: [
-                    $A.formatDate("Y-m-d 00:00:00"),
-                    $A.formatDate("Y-m-d 23:59:59")
-                ]
-            }).then(() => {
-                call();
-            }).catch(() => {
-                call(true);
-            })
-            //
-            dispatch("getTasks", {
-                complete: "no",
-                time_before: $A.formatDate("Y-m-d H:i:s")
-            }).then(() => {
-                call();
-            }).catch(() => {
-                call(true);
-            })
-        })
+            loadIng--;
+            if (loadIng == 1) {
+                dispatch("getTasks", {
+                    complete: "no",
+                    time: [
+                        $A.formatDate("Y-m-d 00:00:00"),
+                        $A.formatDate("Y-m-d 23:59:59")
+                    ]
+                }).then(() => {
+                    setTimeout(call);
+                }).catch(() => {
+                    setTimeout(call);
+                })
+            } else if (loadIng == 0) {
+                dispatch("getTasks", {
+                    complete: "no",
+                    time_before: $A.formatDate("Y-m-d H:i:s")
+                }).then(() => {
+                    setTimeout(call);
+                }).catch(() => {
+                    setTimeout(call);
+                })
+            }
+        }
+        call();
     },
 
     /**
@@ -1195,9 +1193,17 @@ export default {
      * 打开任务详情页
      * @param state
      * @param dispatch
-     * @param task_id
+     * @param task
      */
-    openTask({state, dispatch}, task_id) {
+    openTask({state, dispatch}, task) {
+        let task_id = task;
+        if (state.method.isJson(task)) {
+            if (task.parent_id > 0) {
+                task_id = task.parent_id;
+            } else {
+                task_id = task.id;
+            }
+        }
         state.taskId = task_id;
         if (task_id > 0) {
             dispatch("getTaskOne", task_id).then(() => {
@@ -1346,7 +1352,7 @@ export default {
         } else if (state.method.isJson(data)) {
             let index = state.dialogs.findIndex(({id}) => id == data.id);
             if (index > -1) {
-                state.dialogs.splice(index, 1, Object.assign(state.dialogs[index], data));
+                state.dialogs.splice(index, 1, Object.assign({}, state.dialogs[index], data));
             } else {
                 state.dialogs.push(data);
             }
@@ -1509,7 +1515,7 @@ export default {
         } else if (state.method.isJson(data)) {
             let index = state.dialogMsgs.findIndex(({id}) => id == data.id);
             if (index > -1) {
-                state.dialogMsgs.splice(index, 1, Object.assign(state.dialogMsgs[index], data));
+                state.dialogMsgs.splice(index, 1, Object.assign({}, state.dialogMsgs[index], data));
             } else {
                 state.dialogMsgs.push(data);
             }

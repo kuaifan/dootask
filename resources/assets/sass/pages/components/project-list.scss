@@ -659,6 +659,20 @@
                             flex: 1;
                             padding: 0 22px 0 8px;
                             cursor: pointer;
+                            > span {
+                                font-size: 12px;
+                                height: 18px;
+                                line-height: 16px;
+                                padding: 0 3px;
+                                border-radius: 3px;
+                                color: #8bcf70;
+                                background-color: rgba(139, 207, 112, 0);
+                                border: 1px solid #8bcf70;
+                                display: inline-block;
+                                vertical-align: top;
+                                margin-top: 3px;
+                                margin-right: 4px;
+                            }
                         }
                         .item-icons {
                             display: flex;

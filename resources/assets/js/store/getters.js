@@ -18,7 +18,7 @@ export default {
                 });
                 project.columns.forEach((column) => {
                     column.tasks = state.method.cloneJSON(state.tasks.filter((task) => {
-                        return task.column_id == column.id;
+                        return task.column_id == column.id && task.parent_id == 0;
                     })).sort((a, b) => {
                         if (a.sort != b.sort) {
                             return a.sort - b.sort;
@@ -74,35 +74,63 @@ export default {
         }
     },
 
-    dashboardData(state) {
+
+    ownerTask(state) {
+        return state.tasks.filter(({complete_at, parent_id, end_at, owner}) => {
+            if (parent_id > 0) {
+                const index = state.tasks.findIndex(data => {
+                    if (data.id != parent_id) {
+                        return false;
+                    }
+                    if (data.complete_at) {
+                        return false;
+                    }
+                    if (!data.end_at) {
+                        return false;
+                    }
+                    return data.owner;
+                });
+                if (index > -1) {
+                    return false;
+                }
+            }
+            if (complete_at) {
+                return false;
+            }
+            if (!end_at) {
+                return false;
+            }
+            return owner;
+        }).map(task => {
+            if (task.parent_id > 0) {
+                const tmp = state.tasks.find(({id}) => id == task.parent_id);
+                if (tmp) {
+                    return Object.assign({}, tmp, {
+                        id: task.id,
+                        parent_id: task.parent_id,
+                        name: task.name,
+                        start_at: task.start_at,
+                        end_at: task.end_at,
+                        sub_num: 0,
+                        top_task: true,
+                    });
+                }
+            }
+            return task;
+        })
+    },
+
+    dashboardData(state, getters) {
         const todayStart = $A.Date($A.formatDate("Y-m-d 00:00:00")),
             todayEnd = $A.Date($A.formatDate("Y-m-d 23:59:59")),
             todayNow = $A.Date($A.formatDate("Y-m-d H:i:s"));
-        const todayTasks = state.tasks.filter(data => {
-            if (data.complete_at) {
-                return false;
-            }
-            if (!data.end_at) {
-                return false;
-            }
-            if (!data.owner) {
-                return false;
-            }
-            const start = $A.Date(data.start_at),
-                end = $A.Date(data.end_at);
+        const todayTasks = getters.ownerTask.filter(task => {
+            const start = $A.Date(task.start_at),
+                end = $A.Date(task.end_at);
             return (start <= todayStart && todayStart <= end) || (start <= todayEnd && todayEnd <= end) || (start > todayStart && todayEnd > end);
         })
-        const overdueTasks = state.tasks.filter(data => {
-            if (data.complete_at) {
-                return false;
-            }
-            if (!data.end_at) {
-                return false;
-            }
-            if (!data.owner) {
-                return false;
-            }
-            return $A.Date(data.end_at) <= todayNow;
+        const overdueTasks = getters.ownerTask.filter(task => {
+            return $A.Date(task.end_at) <= todayNow;
         })
         return {
             today: todayTasks,

@@ -133,6 +133,20 @@
                     flex: 1;
                     padding-left: 6px;
                     line-height: 22px;
+                    > span {
+                        font-size: 12px;
+                        height: 18px;
+                        line-height: 16px;
+                        padding: 0 3px;
+                        border-radius: 3px;
+                        color: #8bcf70;
+                        background-color: rgba(139, 207, 112, 0);
+                        border: 1px solid #8bcf70;
+                        display: inline-block;
+                        vertical-align: top;
+                        margin-top: 2px;
+                        margin-right: 4px;
+                    }
                 }
                 .item-icon {
                     display: flex;

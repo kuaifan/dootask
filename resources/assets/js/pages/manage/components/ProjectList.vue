@@ -532,6 +532,8 @@ export default {
 
         ...mapGetters(['projectData', 'tablePanel']),
 
+        ...mapGetters(['ownerTask']),
+
         userWaitRemove() {
             const {userids, useridbak} = this.userData;
             if (!userids) {
@@ -570,8 +572,8 @@ export default {
         },
 
         myList() {
-            const {projectId, tasks, searchText, userId, completeTask, sortField, sortType} = this;
-            const array = tasks.filter((task) => {
+            const {projectId, ownerTask, searchText, completeTask, sortField, sortType} = this;
+            const array = ownerTask.filter((task) => {
                 if (task.project_id != projectId) {
                     return false;
                 }
@@ -585,7 +587,7 @@ export default {
                         return false;
                     }
                 }
-                return task.task_user && task.task_user.find(({userid, owner}) => userid == userId && owner == 1);
+                return true;
             });
             return array.sort((a, b) => {
                 if (sortType == 'asc') {
@@ -605,7 +607,7 @@ export default {
         helpList() {
             const {projectId, tasks, searchText, userId, completeTask, sortField, sortType} = this;
             const array = tasks.filter((task) => {
-                if (task.project_id != projectId) {
+                if (task.project_id != projectId || task.parent_id > 0) {
                     return false;
                 }
                 if (!this.tablePanel('completedTask')) {
@@ -638,7 +640,7 @@ export default {
         undoneList() {
             const {projectId, tasks, searchText, completeTask, sortField, sortType} = this;
             const array = tasks.filter((task) => {
-                if (task.project_id != projectId) {
+                if (task.project_id != projectId || task.parent_id > 0) {
                     return false;
                 }
                 if (!this.tablePanel('completedTask')) {
@@ -671,7 +673,7 @@ export default {
         completedCount() {
             const {projectId, tasks} = this;
             return tasks.filter((task) => {
-                if (task.project_id != projectId) {
+                if (task.project_id != projectId || task.parent_id > 0) {
                     return false;
                 }
                 return task.complete_at;
@@ -681,7 +683,7 @@ export default {
         completedList() {
             const {projectId, tasks, searchText} = this;
             const array = tasks.filter((task) => {
-                if (task.project_id != projectId) {
+                if (task.project_id != projectId || task.parent_id > 0) {
                     return false;
                 }
                 if (searchText) {
@@ -1154,11 +1156,7 @@ export default {
         },
 
         openTask(task, receive) {
-            if (task.parent_id > 0) {
-                this.$store.dispatch("openTask", task.parent_id)
-            } else {
-                this.$store.dispatch("openTask", task.id)
-            }
+            this.$store.dispatch("openTask", task)
             if (receive === true) {
                 // 向任务窗口发送领取任务请求
                 setTimeout(() => {

@@ -2,7 +2,7 @@
     <div class="task-rows">
         <div v-for="(item, key) in list" :key="key">
             <Row class="task-row" :style="item.color ? {backgroundColor: item.color, borderBottomColor: item.color} : {}">
-                <em v-if="item.p_name && item.parent_id === 0" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
+                <em v-if="item.p_name && isTopTask(item)" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
                 <Col span="12" :class="['row-name', item.complete_at ? 'complete' : '']">
                     <Icon
                         v-if="item.sub_num > 0 || (item.parent_id===0 && fastAddTask)"
@@ -50,7 +50,7 @@
                             </template>
                         </EDropdownMenu>
                     </EDropdown>
-                    <div class="item-title" @click="openTask(item)">{{item.name}}</div>
+                    <div class="item-title" @click="openTask(item)"><span v-if="item.top_task === true">{{$L('子任务')}}</span>{{item.name}}</div>
                     <div class="item-icons" @click="openTask(item)">
                         <div v-if="item.desc" class="item-icon">
                             <i class="taskfont">&#xe71a;</i>
@@ -71,10 +71,11 @@
                 </Col>
                 <Col span="3" class="row-column">
                     <EDropdown
-                        v-if="item.parent_id === 0"
+                        v-if="isTopTask(item)"
                         trigger="click"
                         size="small"
                         placement="bottom"
+                        :disabled="item.top_task === true"
                         @command="dropTask(item, $event)">
                         <div class="task-column">{{columnName(item.column_id)}}</div>
                         <EDropdownMenu slot="dropdown">
@@ -86,10 +87,11 @@
                 </Col>
                 <Col span="3" class="row-priority">
                     <EDropdown
-                        v-if="item.p_name && item.parent_id === 0"
+                        v-if="item.p_name && isTopTask(item)"
                         trigger="click"
                         size="small"
                         placement="bottom"
+                        :disabled="item.top_task === true"
                         @command="dropTask(item, $event)">
                         <TaskPriority :backgroundColor="item.p_color">{{item.p_name}}</TaskPriority>
                         <EDropdownMenu slot="dropdown">
@@ -210,6 +212,10 @@ export default {
         },
     },
     methods: {
+        isTopTask(item) {
+            return item.parent_id === 0 || item.top_task === true
+        },
+
         columnName(column_id) {
             const column = this.columns.find(({id}) => id == column_id)
             return column ? column.name : '';
@@ -249,11 +255,7 @@ export default {
         },
 
         openTask(task, receive) {
-            if (task.parent_id > 0) {
-                this.$store.dispatch("openTask", task.parent_id)
-            } else {
-                this.$store.dispatch("openTask", task.id)
-            }
+            this.$store.dispatch("openTask", task)
             if (receive === true) {
                 // 向任务窗口发送领取任务请求
                 setTimeout(() => {

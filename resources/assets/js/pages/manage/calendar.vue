@@ -44,7 +44,7 @@ import 'tui-date-picker/dist/tui-date-picker.css';
 import 'tui-time-picker/dist/tui-time-picker.css';
 import 'tui-calendar-hi/dist/tui-calendar-hi.css'
 
-import {mapState} from "vuex";
+import {mapState, mapGetters} from "vuex";
 import Calendar from "./components/Calendar";
 import moment from "moment";
 
@@ -76,17 +76,10 @@ export default {
     computed: {
         ...mapState(['userId', 'projects', 'tasks']),
 
+        ...mapGetters(['ownerTask']),
+
         list() {
-            let datas = $A.cloneJSON(this.tasks);
-            datas = datas.filter((data) => {
-                if (data.complete_at) {
-                    return false;
-                }
-                if (!data.end_at) {
-                    return false;
-                }
-                return data.owner;
-            })
+            const datas = $A.cloneJSON(this.ownerTask);
             return datas.map(data => {
                 let isAllday = $A.rightExists(data.start_at, "00:00:00") && $A.rightExists(data.end_at, "23:59:59")
                 let task = {
@@ -109,11 +102,14 @@ export default {
                 if (data.p_name) {
                     task.priority = '<span class="priority" style="background-color:' + data.p_color + '">' + data.p_name + '</span>';
                 }
+                if (data.top_task === true) {
+                    task.title = '[' + this.$L('子任务') + '] ' + task.title
+                }
                 if (data.overdue) {
-                    task.title = '[' + $A.L('超期') + '] ' + task.title
+                    task.title = '[' + this.$L('超期') + '] ' + task.title
                     task.color = "#f56c6c"
                     task.bgColor = "#fef0f0"
-                    task.priority+= '<span class="overdue">' + $A.L('超期未完成') + '</span>';
+                    task.priority+= '<span class="overdue">' + this.$L('超期未完成') + '</span>';
                 }
                 if (!task.borderColor) {
                     task.borderColor = task.bgColor;
@@ -286,7 +282,7 @@ export default {
                     break;
 
                 case "edit":
-                    this.$store.dispatch("openTask", data.id)
+                    this.$store.dispatch("openTask", data)
                     break;
 
                 case "delete":
