@@ -660,7 +660,7 @@ class ProjectController extends AbstractController
     {
         User::auth();
         //
-        $builder = ProjectTask::select(ProjectTask::taskSelect)->with(['taskUser', 'taskTag']);
+        $builder = ProjectTask::with(['taskUser', 'taskTag']);
         //
         $parent_id = intval(Request::input('parent_id'));
         $project_id = intval(Request::input('project_id'));
@@ -672,12 +672,12 @@ class ProjectController extends AbstractController
         //
         if ($parent_id > 0) {
             ProjectTask::userTask($parent_id);
-            $builder->leftData()->where('project_tasks.parent_id', $parent_id);
+            $builder->ownerData()->where('project_tasks.parent_id', $parent_id);
         } elseif ($project_id > 0) {
             Project::userProject($project_id);
-            $builder->leftData()->where('project_tasks.project_id', $project_id);
+            $builder->ownerData()->where('project_tasks.project_id', $project_id);
         } else {
-            $builder->authData();
+            $builder->joinData();
         }
         //
         if ($name) {

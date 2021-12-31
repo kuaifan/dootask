@@ -85,7 +85,7 @@ class Project extends AbstractModel
             $this->appendattrs['task_complete'] = $builder->whereNotNull('complete_at')->count();
             $this->appendattrs['task_percent'] = $this->appendattrs['task_num'] ? intval($this->appendattrs['task_complete'] / $this->appendattrs['task_num'] * 100) : 0;
             //
-            $builder = ProjectTask::whereProjectId($this->id)->whereParentId(0)->authData(User::userid(), true)->whereNull('archived_at');
+            $builder = ProjectTask::whereProjectId($this->id)->whereParentId(0)->authData(User::userid())->whereNull('archived_at');
             $this->appendattrs['task_my_num'] = $builder->count();
             $this->appendattrs['task_my_complete'] = $builder->whereNotNull('complete_at')->count();
             $this->appendattrs['task_my_percent'] = $this->appendattrs['task_my_num'] ? intval($this->appendattrs['task_my_complete'] / $this->appendattrs['task_my_num'] * 100) : 0;
