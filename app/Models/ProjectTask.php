@@ -381,11 +381,9 @@ class ProjectTask extends AbstractModel
         // 时间
         if ($times) {
             list($start, $end) = is_string($times) ? explode(",", $times) : (is_array($times) ? $times : []);
-            if (Base::isDate($start) && Base::isDate($end)) {
-                if ($start != $end) {
-                    $task->start_at = Carbon::parse($start);
-                    $task->end_at = Carbon::parse($end);
-                }
+            if (Base::isDate($start) && Base::isDate($end) && $start != $end) {
+                $task->start_at = Carbon::parse($start);
+                $task->end_at = Carbon::parse($end);
             }
         }
         // 负责人
@@ -408,7 +406,7 @@ class ProjectTask extends AbstractModel
             $task->sort = intval(self::whereColumnId($task->column_id)->orderByDesc('sort')->value('sort')) + 1;
         }
         //
-        return AbstractModel::transaction(function() use ($subtasks, $content, $owner, $task) {
+        return AbstractModel::transaction(function() use ($times, $subtasks, $content, $owner, $task) {
             $task->save();
             foreach ($owner as $uid) {
                 ProjectTaskUser::createInstance([
@@ -428,6 +426,17 @@ class ProjectTask extends AbstractModel
             }
             if ($task->parent_id == 0 && $subtasks && is_array($subtasks)) {
                 foreach ($subtasks as $subtask) {
+                    list($start, $end) = is_string($subtask['times']) ? explode(",", $subtask['times']) : (is_array($subtask['times']) ? $subtask['times'] : []);
+                    if (Base::isDate($start) && Base::isDate($end) && $start != $end) {
+                        if (Carbon::parse($start)->lt($task->start_at)) {
+                            throw new ApiException('子任务开始时间不能小于主任务开始时间');
+                        }
+                        if (Carbon::parse($end)->gt($task->end_at)) {
+                            throw new ApiException('子任务结束时间不能大于主任务结束时间');
+                        }
+                    } else {
+                        $subtask['times'] = $times;
+                    }
                     $subtask['parent_id'] = $task->id;
                     $subtask['project_id'] = $task->project_id;
                     $subtask['column_id'] = $task->column_id;
@@ -443,11 +452,12 @@ class ProjectTask extends AbstractModel
      * 修改任务
      * @param $data
      * @param $updateContent
+     * @param $updateSubTask
      * @return bool
      */
-    public function updateTask($data, &$updateContent)
+    public function updateTask($data, &$updateContent = false, &$updateSubTask = false)
     {
-        AbstractModel::transaction(function () use ($data, &$updateContent) {
+        AbstractModel::transaction(function () use ($data, &$updateContent, &$updateSubTask) {
             // 标题
             if (Arr::exists($data, 'name') && $this->name != $data['name']) {
                 if (empty($data['name'])) {
@@ -498,15 +508,37 @@ class ProjectTask extends AbstractModel
             }
             // 计划时间
             if (Arr::exists($data, 'times')) {
+                $originalWhere = [
+                    'parent_id' => $this->id,
+                    'start_at' => $this->start_at,
+                    'end_at' => $this->end_at,
+                ];
                 $this->start_at = null;
                 $this->end_at = null;
                 $times = $data['times'];
                 list($start, $end) = is_string($times) ? explode(",", $times) : (is_array($times) ? $times : []);
-                if (Base::isDate($start) && Base::isDate($end)) {
-                    if ($start != $end) {
-                        $this->start_at = Carbon::parse($start);
-                        $this->end_at = Carbon::parse($end);
+                if (Base::isDate($start) && Base::isDate($end) && $start != $end) {
+                    if ($this->parent_id > 0 && $data['skipTimesCheck'] !== true) {
+                        // 如果是子任务，则不能超过主任务时间
+                        $mainTask = self::find($this->parent_id);
+                        if (Carbon::parse($start)->lt($mainTask->start_at)) {
+                            throw new ApiException('子任务开始时间不能小于主任务开始时间');
+                        }
+                        if (Carbon::parse($end)->gt($mainTask->end_at)) {
+                            throw new ApiException('子任务结束时间不能大于主任务结束时间');
+                        }
                     }
+                    $this->start_at = Carbon::parse($start);
+                    $this->end_at = Carbon::parse($end);
+                }
+                if ($this->parent_id == 0) {
+                    // 如果是主任务，则同步跟主任务相同时间的子任务
+                    self::where($originalWhere)->chunk(100, function($list) use ($times, &$updateSubTask) {
+                        foreach ($list as $item) {
+                            $item->updateTask(['times' => $times, 'skipTimesCheck' => true]);
+                        }
+                        $updateSubTask = true;
+                    });
                 }
                 $this->addLog("修改{任务}时间");
             }
@@ -525,7 +557,7 @@ class ProjectTask extends AbstractModel
                             'userid' => $uid,
                         ], [
                             'project_id' => $this->project_id,
-                            'task_pid' => $this->parent_id ?: $this->id,
+                            'task_pid' => $this->id,
                             'owner' => 0,
                         ]);
                         $array[] = $uid;

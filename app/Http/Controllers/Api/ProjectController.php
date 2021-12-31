@@ -873,6 +873,8 @@ class ProjectController extends AbstractController
             'parent_id' => $task->id,
             'project_id' => $task->project_id,
             'column_id' => $task->column_id,
+            'start_at' => $task->start_at,
+            'end_at' => $task->end_at,
             'owner' => [User::userid()]
         ]);
         $data = [
@@ -918,6 +920,7 @@ class ProjectController extends AbstractController
         //
         $updateComplete = false;
         $updateContent = false;
+        $updateSubTask = false;
         if (Base::isDate($data['complete_at'])) {
             // 标记已完成
             if ($task->complete_at) {
@@ -934,11 +937,12 @@ class ProjectController extends AbstractController
             $updateComplete = true;
         } else {
             // 更新任务
-            $task->updateTask($data, $updateContent);
+            $task->updateTask($data, $updateContent, $updateSubTask);
         }
-        $data = ProjectTask::with(['taskUser', 'taskTag'])->find($task->id);
-        $data->is_update_complete = $task->parent_id == 0 && $updateComplete;
-        $data->is_update_content = $updateContent;
+        $data = ProjectTask::with(['taskUser', 'taskTag'])->find($task->id)->toArray();
+        $data['is_update_complete'] = $task->parent_id == 0 && $updateComplete;
+        $data['is_update_content'] = $updateContent;
+        $data['is_update_subtask'] = $updateSubTask;
         $task->pushMsg('update', $data);
         return Base::retSuccess('修改成功', $data);
     }

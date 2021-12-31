@@ -59,7 +59,7 @@
             @on-ok="timeOk"
             transfer>
             <div @click="openTime" :class="['time', taskDetail.today ? 'today' : '', taskDetail.overdue ? 'overdue' : '']">
-                {{taskDetail.end_at ? expiresFormat(taskDetail.end_at) : ' '}}
+                {{taskDetail.end_at && taskDetail.end_at != mainEndAt ? expiresFormat(taskDetail.end_at) : ' '}}
             </div>
         </DatePicker>
         <Poptip
@@ -315,7 +315,7 @@
                             <i class="taskfont">&#xe6f0;</i>{{$L('子任务')}}
                         </div>
                         <ul class="item-content subtask">
-                            <TaskDetail v-for="(task, key) in subList" :key="key" :task-id="task.id" :open-task="task"/>
+                            <TaskDetail v-for="(task, key) in subList" :key="key" :task-id="task.id" :open-task="task" :main-end-at="taskDetail.end_at"/>
                         </ul>
                         <ul :class="['item-content', subList.length === 0 ? 'nosub' : '']">
                             <li>
@@ -426,6 +426,9 @@ export default {
             default: () => {
                 return {};
             }
+        },
+        mainEndAt: {
+            default: null
         },
     },
     data() {

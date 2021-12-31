@@ -863,10 +863,16 @@ export default {
                 dispatch("getTaskOne", data.parent_id);
             }
             if (data.is_update_complete) {
+                data.is_update_complete = false;
                 dispatch("getProjectOne", data.project_id);
             }
             if (data.is_update_content) {
+                data.is_update_content = false;
                 dispatch("getTaskContent", data.id);
+            }
+            if (data.is_update_subtask) {
+                data.is_update_subtask = false;
+                dispatch("getTasks", {parent_id: data.id});
             }
             //
             setTimeout(() => {
