@@ -79,7 +79,9 @@ export default {
         ...mapGetters(['ownerTask']),
 
         list() {
-            const datas = $A.cloneJSON(this.ownerTask);
+            const datas = $A.cloneJSON(this.ownerTask.filter(({end_at}) => {
+                return end_at;
+            }));
             return datas.map(data => {
                 let isAllday = $A.rightExists(data.start_at, "00:00:00") && $A.rightExists(data.end_at, "23:59:59")
                 let task = {

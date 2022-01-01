@@ -74,7 +74,6 @@ export default {
         }
     },
 
-
     ownerTask(state) {
         return state.tasks.filter(({complete_at, parent_id, end_at, owner}) => {
             if (parent_id > 0) {
@@ -95,9 +94,6 @@ export default {
                 }
             }
             if (complete_at) {
-                return false;
-            }
-            if (!end_at) {
                 return false;
             }
             return owner;
@@ -125,11 +121,17 @@ export default {
             todayEnd = $A.Date($A.formatDate("Y-m-d 23:59:59")),
             todayNow = $A.Date($A.formatDate("Y-m-d H:i:s"));
         const todayTasks = getters.ownerTask.filter(task => {
+            if (!task.end_at) {
+                return false;
+            }
             const start = $A.Date(task.start_at),
                 end = $A.Date(task.end_at);
             return (start <= todayStart && todayStart <= end) || (start <= todayEnd && todayEnd <= end) || (start > todayStart && todayEnd > end);
         })
         const overdueTasks = getters.ownerTask.filter(task => {
+            if (!task.end_at) {
+                return false;
+            }
             return $A.Date(task.end_at) <= todayNow;
         })
         return {
