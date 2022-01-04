@@ -433,7 +433,7 @@ export default {
                 keys: {
                     name: this.cascaderValue,
                 },
-                andcolumn: 'yes'
+                getcolumn: 'yes'
             }).then(() => {
                 this.cascaderLoading--;
                 this.initCascaderData();

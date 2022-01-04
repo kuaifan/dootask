@@ -84,9 +84,6 @@ export default {
                     if (data.complete_at) {
                         return false;
                     }
-                    if (!data.end_at) {
-                        return false;
-                    }
                     return data.owner;
                 });
                 if (index > -1) {

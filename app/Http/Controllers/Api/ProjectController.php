@@ -26,21 +26,52 @@ use Request;
 class ProjectController extends AbstractController
 {
     /**
-     * 获取项目列表
+     * @api {get} api/project/lists          获取项目列表
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName lists
      *
      * @apiParam {String} [all]              是否查看所有项目（限制管理员）
      * @apiParam {String} [archived]         归档状态
      * - all：全部
      * - no：未归档（默认）
      * - yes：已归档
-     * @apiParam {String} [andcolumn]       同时取项目列表
+     * @apiParam {String} [getcolumn]        同时取项目列表
      * - no：不取（默认）
      * - yes：取列表
-     * @apiParam {Object} [keys]            搜索条件
-     * - keys.name              项目名称
+     * @apiParam {Object} [keys]             搜索条件
+     * - keys.name: 项目名称
      *
      * @apiParam {Number} [page]        当前页，默认:1
      * @apiParam {Number} [pagesize]    每页显示数量，默认:50，最大:100
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     * @apiSuccessExample {json} dataDemo:
+    {
+        "data": [
+            {
+                "id": 7,
+                "name": "🏢 产品官网项目",
+                "desc": "设置各小组成员的工作列表，各自领取或领导分配任务，将做好的任务分期归档，方便复盘！",
+                "userid": 1,
+                "dialog_id": 15,
+                "archived_at": null,
+                "archived_userid": 0,
+                "created_at": "2022-01-02 06:23:15",
+                "updated_at": "2022-01-02 07:12:33",
+                "owner": 1,         // 是否项目负责人
+                "owner_userid": 1   // 项目负责人ID
+            },
+        ],
+        "current_page": 1,  // 当前页数
+        "last_page": 1,     // 下一页数
+        "total": 6,         // 总计数（当前查询条件）
+        "total_all": 6      // 总计数（全部）
+    }
      */
     public function lists()
     {
@@ -48,16 +79,16 @@ class ProjectController extends AbstractController
         //
         $all = Request::input('all');
         $archived = Request::input('archived', 'no');
-        $andcolumn = Request::input('andcolumn', 'no');
+        $getcolumn = Request::input('getcolumn', 'no');
         //
         if ($all) {
             $user->identity('admin');
-            $builder = Project::select('projects.*');
+            $builder = Project::allData();
         } else {
-            $builder = Project::select(Project::projectSelect)->authData();
+            $builder = Project::authData();
         }
         //
-        if ($andcolumn == 'yes') {
+        if ($getcolumn == 'yes') {
             $builder->with(['projectColumn']);
         }
         //
@@ -74,7 +105,11 @@ class ProjectController extends AbstractController
                 $builder->where("projects.name", "like", "%{$keys['name']}%");
             }
         }
+        //
         $list = $builder->orderByDesc('projects.id')->paginate(Base::getPaginate(100, 50));
+        $list->transform(function (Project $project) {
+            return array_merge($project->toArray(), $project->getTaskStatistics());
+        });
         //
         $data = $list->toArray();
         if (isset($buildClone)) {
@@ -87,9 +122,32 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 获取一个项目信息
+     * @api {get} api/project/one          获取一个项目信息
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName one
      *
      * @apiParam {Number} project_id     项目ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     * @apiSuccessExample {json} dataDemo:
+    {
+        "id": 7,
+        "name": "🏢 产品官网项目",
+        "desc": "设置各小组成员的工作列表，各自领取或领导分配任务，将做好的任务分期归档，方便复盘！",
+        "userid": 1,
+        "dialog_id": 15,
+        "archived_at": null,
+        "archived_userid": 0,
+        "created_at": "2022-01-02 06:23:15",
+        "updated_at": "2022-01-02 07:12:33",
+        "owner": 1,         // 是否项目负责人
+        "owner_userid": 1   // 项目负责人ID
+    }
      */
     public function one()
     {
@@ -98,16 +156,26 @@ class ProjectController extends AbstractController
         $project_id = intval(Request::input('project_id'));
         //
         $project = Project::userProject($project_id);
+        $data = array_merge($project->toArray(), $project->getTaskStatistics());
         //
-        return Base::retSuccess('success', $project);
+        return Base::retSuccess('success', $data);
     }
 
     /**
-     * 添加项目
+     * @api {get} api/project/add          添加项目
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName add
      *
      * @apiParam {String} name          项目名称
      * @apiParam {String} [desc]        项目介绍
      * @apiParam {String} [columns]     列表，格式：列表名称1,列表名称2
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function add()
     {
@@ -177,11 +245,20 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 修改项目（限：项目负责人）
+     * @api {get} api/project/update          修改项目
+     *
+     * @apiDescription 需要token身份（限：项目负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName update
      *
      * @apiParam {Number} project_id        项目ID
      * @apiParam {String} name              项目名称
      * @apiParam {String} [desc]            项目介绍
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function update()
     {
@@ -199,10 +276,7 @@ class ProjectController extends AbstractController
             return Base::retError('项目介绍最多只能设置255个字');
         }
         //
-        $project = Project::userProject($project_id);
-        if (!$project->owner) {
-            return Base::retError('仅限项目负责人修改');
-        }
+        $project = Project::userProject($project_id, true, true);
         //
         if ($project->name != $name) {
             $project->addLog("修改项目名称：{$project->name} => {$name}");
@@ -219,10 +293,19 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 修改项目成员（限：项目负责人）
+     * @api {get} api/project/user          修改项目成员
+     *
+     * @apiDescription 需要token身份（限：项目负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName user
      *
      * @apiParam {Number} project_id        项目ID
      * @apiParam {Number} userid            成员ID 或 成员ID组
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function user()
     {
@@ -232,10 +315,7 @@ class ProjectController extends AbstractController
         $userid = Request::input('userid');
         $userid = is_array($userid) ? $userid : [$userid];
         //
-        $project = Project::userProject($project_id);
-        if (!$project->owner) {
-            return Base::retError('仅限项目负责人修改');
-        }
+        $project = Project::userProject($project_id, true, true);
         //
         $deleteUser = AbstractModel::transaction(function() use ($project, $userid) {
             $array = [];
@@ -260,12 +340,21 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 获取邀请链接（限：项目负责人）
+     * @api {get} api/project/invite          获取邀请链接
+     *
+     * @apiDescription 需要token身份（限：项目负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName invite
      *
      * @apiParam {Number} project_id        项目ID
      * @apiParam {String} refresh           刷新链接
      * - no: 只获取（默认）
      * - yes: 刷新链接，之前的将失效
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function invite()
     {
@@ -274,10 +363,7 @@ class ProjectController extends AbstractController
         $project_id = intval(Request::input('project_id'));
         $refresh = Request::input('refresh', 'no');
         //
-        $project = Project::userProject($project_id);
-        if (!$project->owner) {
-            return Base::retError('仅限项目负责人查看');
-        }
+        $project = Project::userProject($project_id, true, true);
         //
         $invite = Base::settingFind('system', 'project_invite');
         if ($invite == 'close') {
@@ -304,9 +390,18 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 通过邀请链接code获取项目信息
+     * @api {get} api/project/invite/info          通过邀请链接code获取项目信息
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName invite__info
      *
      * @apiParam {String} code
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function invite__info()
     {
@@ -327,9 +422,18 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 通过邀请链接code加入项目
+     * @api {get} api/project/invite/join          通过邀请链接code加入项目
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName invite__join
      *
      * @apiParam {String} code
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function invite__join()
     {
@@ -364,10 +468,19 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 移交项目（限：项目负责人）
+     * @api {get} api/project/transfer          移交项目
+     *
+     * @apiDescription 需要token身份（限：项目负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName transfer
      *
      * @apiParam {Number} project_id        项目ID
      * @apiParam {Number} owner_userid      新的项目负责人ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function transfer()
     {
@@ -376,10 +489,7 @@ class ProjectController extends AbstractController
         $project_id = intval(Request::input('project_id'));
         $owner_userid = intval(Request::input('owner_userid'));
         //
-        $project = Project::userProject($project_id);
-        if (!$project->owner) {
-            return Base::retError('你不是项目负责人');
-        }
+        $project = Project::userProject($project_id, true, true);
         //
         if (!User::whereUserid($owner_userid)->exists()) {
             return Base::retError('会员不存在');
@@ -402,11 +512,20 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 排序任务
+     * @api {get} api/project/sort          排序任务
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName sort
      *
      * @apiParam {Number} project_id        项目ID
      * @apiParam {Object} sort              排序数据
      * @apiParam {Number} [only_column]     仅更新列表
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function sort()
     {
@@ -455,9 +574,18 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 退出项目
+     * @api {get} api/project/exit          退出项目
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName exit
      *
      * @apiParam {Number} project_id        项目ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function exit()
     {
@@ -465,14 +593,11 @@ class ProjectController extends AbstractController
         //
         $project_id = intval(Request::input('project_id'));
         //
-        $project = Project::userProject($project_id);
-        if ($project->owner) {
-            return Base::retError('项目负责人无法退出项目');
-        }
+        $project = Project::userProject($project_id, true, false);
         //
         AbstractModel::transaction(function() use ($user, $project) {
             $row = ProjectUser::whereProjectId($project->id)->whereUserid($user->userid)->first();
-            $row && $row->exitProject();
+            $row?->exitProject();
             $project->syncDialogUser();
             $project->addLog("会员ID：" . $user->userid . " 退出项目");
             $project->pushMsg('delete', null, $user->userid);
@@ -481,12 +606,21 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 归档项目（限：项目负责人）
+     * @api {get} api/project/archived          归档项目
+     *
+     * @apiDescription 需要token身份（限：项目负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName archived
      *
      * @apiParam {Number} project_id            项目ID
      * @apiParam {String} [type]                类型
      * - add：归档（默认）
      * - recovery：还原归档
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function archived()
     {
@@ -495,10 +629,7 @@ class ProjectController extends AbstractController
         $project_id = intval(Request::input('project_id'));
         $type = Request::input('type', 'add');
         //
-        $project = Project::userProject($project_id, false);
-        if (!$project->owner) {
-            return Base::retError('仅限项目负责人操作');
-        }
+        $project = Project::userProject($project_id, false, true);
         //
         if ($type == 'recovery') {
             $project->archivedProject(null);
@@ -509,9 +640,18 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 删除项目（限：项目负责人）
+     * @api {get} api/project/remove          删除项目
+     *
+     * @apiDescription 需要token身份（限：项目负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName remove
      *
      * @apiParam {Number} project_id        项目ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function remove()
     {
@@ -519,22 +659,28 @@ class ProjectController extends AbstractController
         //
         $project_id = intval(Request::input('project_id'));
         //
-        $project = Project::userProject($project_id);
-        if (!$project->owner) {
-            return Base::retError('仅限项目负责人删除');
-        }
+        $project = Project::userProject($project_id, true, true);
         //
         $project->deleteProject();
         return Base::retSuccess('删除成功', ['id' => $project->id]);
     }
 
     /**
-     * 获取任务列表
+     * @api {get} api/project/column/lists          获取任务列表
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName column__lists
      *
      * @apiParam {Number} project_id        项目ID
      *
      * @apiParam {Number} [page]            当前页，默认:1
      * @apiParam {Number} [pagesize]        每页显示数量，默认:100，最大:200
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function column__lists()
     {
@@ -553,10 +699,19 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 添加任务列表
+     * @api {get} api/project/column/add          添加任务列表
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName column__add
      *
      * @apiParam {Number} project_id        项目ID
      * @apiParam {String} name              列表名称
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function column__add()
     {
@@ -585,11 +740,20 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 修改任务列表
+     * @api {get} api/project/column/update          修改任务列表
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName column__update
      *
      * @apiParam {Number} column_id         列表ID
      * @apiParam {String} [name]            列表名称
      * @apiParam {String} [color]           颜色
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function column__update()
     {
@@ -619,9 +783,18 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 删除任务列表
+     * @api {get} api/project/column/remove          删除任务列表
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName column__remove
      *
      * @apiParam {Number} column_id         列表ID（留空为添加列表）
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function column__remove()
     {
@@ -641,7 +814,12 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 任务列表
+     * @api {get} api/project/task/lists          任务列表
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__lists
      *
      * @apiParam {Number} [project_id]       项目ID
      * @apiParam {Number} [parent_id]        主任务ID（填写此项时 project_id 参数无效）
@@ -655,6 +833,10 @@ class ProjectController extends AbstractController
      * @apiParam {String} [archived]         归档状态
      * - yes：已归档
      * - no：未归档（默认）
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function task__lists()
     {
@@ -672,12 +854,12 @@ class ProjectController extends AbstractController
         //
         if ($parent_id > 0) {
             ProjectTask::userTask($parent_id);
-            $builder->ownerData()->where('project_tasks.parent_id', $parent_id);
+            $builder->allData()->where('project_tasks.parent_id', $parent_id);
         } elseif ($project_id > 0) {
             Project::userProject($project_id);
-            $builder->ownerData()->where('project_tasks.project_id', $project_id);
+            $builder->allData()->where('project_tasks.project_id', $project_id);
         } else {
-            $builder->joinData();
+            $builder->authData();
         }
         //
         if ($name) {
@@ -712,9 +894,18 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 获取单个任务信息
+     * @api {get} api/project/task/one          获取单个任务信息
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__one
      *
      * @apiParam {Number} task_id            任务ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function task__one()
     {
@@ -724,16 +915,26 @@ class ProjectController extends AbstractController
         //
         $task = ProjectTask::userTask($task_id, ['taskUser', 'taskTag'], true, $project);
         //
-        $task->project_name = $project?->name;
-        $task->column_name = ProjectColumn::whereId($task->column_id)->value('name');
+        $data = $task->toArray();
+        $data['project_name'] = $project?->name;
+        $data['column_name'] = ProjectColumn::whereId($task->column_id)->value('name');
         //
-        return Base::retSuccess('success', $task);
+        return Base::retSuccess('success', $data);
     }
 
     /**
-     * 获取任务详细描述
+     * @api {get} api/project/task/content          获取任务详细描述
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__content
      *
      * @apiParam {Number} task_id            任务ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function task__content()
     {
@@ -747,9 +948,18 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 获取任务文件列表
+     * @api {get} api/project/task/files          获取任务文件列表
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__files
      *
      * @apiParam {Number} task_id            任务ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function task__files()
     {
@@ -763,9 +973,18 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 删除任务文件（限：项目、任务负责人）
+     * @api {get} api/project/task/filedelete          删除任务文件
+     *
+     * @apiDescription 需要token身份（限：项目、任务负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__filedelete
      *
      * @apiParam {Number} file_id            文件ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function task__filedelete()
     {
@@ -790,7 +1009,12 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * {post} 添加任务
+     * @api {post} api/project/task/add           添加任务
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__add
      *
      * @apiParam {Number} project_id            项目ID
      * @apiParam {mixed} [column_id]            列表ID，任意值自动创建，留空取第一个
@@ -800,6 +1024,10 @@ class ProjectController extends AbstractController
      * @apiParam {Number} [owner]               负责人
      * @apiParam {Array} [subtasks]             子任务（格式：[{name,owner,times}]）
      * @apiParam {Number} [top]                 添加的任务排到列表最前面
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function task__add()
     {
@@ -830,8 +1058,8 @@ class ProjectController extends AbstractController
             $column->sort = intval(ProjectColumn::whereProjectId($project->id)->orderByDesc('sort')->value('sort')) + 1;
             $column->save();
             $column->addLog("创建列表：" . $column->name);
-            $newColumn = $column->find($column->id);
-            $newColumn->project_task = [];
+            $newColumn = $column->find($column->id)->toArray();
+            $newColumn['project_task'] = [];
         }
         if (empty($column)) {
             return Base::retError('任务列表不存在或已被删除');
@@ -851,10 +1079,19 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 添加子任务（限：项目、任务负责人）
+     * @api {get} api/project/task/addsub          添加子任务
+     *
+     * @apiDescription 需要token身份（限：项目、任务负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__addsub
      *
      * @apiParam {Number} task_id               任务ID
      * @apiParam {String} name                  任务描述
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function task__addsub()
     {
@@ -886,7 +1123,12 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * {post} 修改任务、子任务（限：项目、任务负责人）
+     * @api {post} api/project/task/update           修改任务、子任务
+     *
+     * @apiDescription 需要token身份（限：项目、任务负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__update
      *
      * @apiParam {Number} task_id               任务ID
      * @apiParam {String} [name]                任务描述
@@ -901,6 +1143,10 @@ class ProjectController extends AbstractController
      * @apiParam {String} [p_color]             优先级相关（子任务不支持）
      *
      * @apiParam {String|false} [complete_at]   完成时间（如：2020-01-01 00:00，false表示未完成）
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function task__update()
     {
@@ -948,12 +1194,21 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * {post} 上传文件（限：项目、任务负责人）
+     * @api {post} api/project/task/upload           上传文件
+     *
+     * @apiDescription 需要token身份（限：项目、任务负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__upload
      *
      * @apiParam {Number} task_id               任务ID
      * @apiParam {String} [filename]            post-文件名称
      * @apiParam {String} [image64]             post-base64图片（二选一）
      * @apiParam {File} [files]                 post-文件对象（二选一）
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function task__upload()
     {
@@ -1008,9 +1263,18 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 创建/获取聊天室
+     * @api {get} api/project/task/dialog          创建/获取聊天室
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__dialog
      *
      * @apiParam {Number} task_id               任务ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function task__dialog()
     {
@@ -1046,12 +1310,21 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 归档任务（限：项目、任务负责人）
+     * @api {get} api/project/task/archived          归档任务
+     *
+     * @apiDescription 需要token身份（限：项目、任务负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__archived
      *
      * @apiParam {Number} task_id               任务ID
      * @apiParam {String} [type]                类型
      * - add：归档（默认）
      * - recovery：还原归档
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function task__archived()
     {
@@ -1078,9 +1351,18 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 删除任务（限：项目、任务负责人）
+     * @api {get} api/project/task/remove          删除任务
+     *
+     * @apiDescription 需要token身份（限：项目、任务负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__remove
      *
      * @apiParam {Number} task_id               任务ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function task__remove()
     {
@@ -1098,13 +1380,22 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * 获取项目、任务日志
+     * @api {get} api/project/log/lists          获取项目、任务日志
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName log__lists
      *
      * @apiParam {Number} project_id            项目ID
      * @apiParam {Number} task_id               任务ID（与 项目ID 二选一，任务ID优先）
      *
      * @apiParam {Number} [page]                当前页，默认:1
      * @apiParam {Number} [pagesize]            每页显示数量，默认:20，最大:100
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function log__lists()
     {

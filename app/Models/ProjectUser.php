@@ -42,12 +42,21 @@ class ProjectUser extends AbstractModel
      */
     public function exitProject()
     {
-        $tasks = ProjectTask::whereProjectId($this->project_id)->authData($this->userid)->get();
-        foreach ($tasks as $task) {
-            if (ProjectTaskUser::whereTaskId($task->id)->whereUserid($this->userid)->delete()) {
-                $task->syncDialogUser();
-            }
-        }
+        ProjectTaskUser::whereProjectId($this->project_id)
+            ->whereUserid($this->userid)
+            ->chunk(100, function ($list) {
+                $tastIds = [];
+                foreach ($list as $item) {
+                    if (!in_array($item->task_pid, $tastIds)) {
+                        $tastIds[] = $item->task_pid;
+                    }
+                    $item->delete();
+                }
+                $tasks = ProjectTask::whereIn('id', $tastIds)->get();
+                foreach ($tasks as $task) {
+                    $task->syncDialogUser();
+                }
+            });
         $this->delete();
     }
 }

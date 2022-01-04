@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Exceptions\ApiException;
 use App\Tasks\PushTask;
 use Carbon\Carbon;
+use DB;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Request;
@@ -36,7 +37,9 @@ use Request;
  * @property-read int|null $project_log_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectUser[] $projectUser
  * @property-read int|null $project_user_count
+ * @method static \Illuminate\Database\Eloquent\Builder|Project allData($userid = null)
  * @method static \Illuminate\Database\Eloquent\Builder|Project authData($userid = null)
+ * @method static \Illuminate\Database\Eloquent\Builder|Project ownerData($userid = null)
  * @method static \Illuminate\Database\Eloquent\Builder|Project newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Project newQuery()
  * @method static \Illuminate\Database\Query\Builder|Project onlyTrashed()
@@ -59,98 +62,13 @@ class Project extends AbstractModel
 {
     use SoftDeletes;
 
-    const projectSelect = [
-        'projects.*',
-        'project_users.owner',
+    protected $hidden = [
+        'deleted_at',
     ];
 
     protected $appends = [
-        'task_num',
-        'task_complete',
-        'task_percent',
-        'task_my_num',
-        'task_my_complete',
-        'task_my_percent',
         'owner_userid',
     ];
-
-    /**
-     * 生成任务数据
-     */
-    private function generateTaskData()
-    {
-        if (!isset($this->appendattrs['task_num'])) {
-            $builder = ProjectTask::whereProjectId($this->id)->whereParentId(0)->whereNull('archived_at');
-            $this->appendattrs['task_num'] = $builder->count();
-            $this->appendattrs['task_complete'] = $builder->whereNotNull('complete_at')->count();
-            $this->appendattrs['task_percent'] = $this->appendattrs['task_num'] ? intval($this->appendattrs['task_complete'] / $this->appendattrs['task_num'] * 100) : 0;
-            //
-            $builder = ProjectTask::whereProjectId($this->id)->whereParentId(0)->authData(User::userid())->whereNull('archived_at');
-            $this->appendattrs['task_my_num'] = $builder->count();
-            $this->appendattrs['task_my_complete'] = $builder->whereNotNull('complete_at')->count();
-            $this->appendattrs['task_my_percent'] = $this->appendattrs['task_my_num'] ? intval($this->appendattrs['task_my_complete'] / $this->appendattrs['task_my_num'] * 100) : 0;
-        }
-    }
-
-    /**
-     * 任务数量
-     * @return int
-     */
-    public function getTaskNumAttribute()
-    {
-        $this->generateTaskData();
-        return $this->appendattrs['task_num'];
-    }
-
-    /**
-     * 任务完成数量
-     * @return int
-     */
-    public function getTaskCompleteAttribute()
-    {
-        $this->generateTaskData();
-        return $this->appendattrs['task_complete'];
-    }
-
-    /**
-     * 任务完成率
-     * @return int
-     */
-    public function getTaskPercentAttribute()
-    {
-        $this->generateTaskData();
-        return $this->appendattrs['task_percent'];
-    }
-
-    /**
-     * 任务数量（我的）
-     * @return int
-     */
-    public function getTaskMyNumAttribute()
-    {
-        $this->generateTaskData();
-        return $this->appendattrs['task_my_num'];
-    }
-
-    /**
-     * 任务完成数量（我的）
-     * @return int
-     */
-    public function getTaskMyCompleteAttribute()
-    {
-        $this->generateTaskData();
-        return $this->appendattrs['task_my_complete'];
-    }
-
-    /**
-     * 任务完成率（我的）
-     * @return int
-     */
-    public function getTaskMyPercentAttribute()
-    {
-        $this->generateTaskData();
-        return $this->appendattrs['task_my_percent'];
-    }
 
     /**
      * 负责人会员ID
@@ -159,7 +77,7 @@ class Project extends AbstractModel
     public function getOwnerUseridAttribute()
     {
         if (!isset($this->appendattrs['owner_userid'])) {
-            $ownerUser = $this->projectUser->where('owner', 1)->first();
+            $ownerUser = ProjectUser::whereProjectId($this->id)->whereOwner(1)->first();
             $this->appendattrs['owner_userid'] = $ownerUser ? $ownerUser->userid : 0;
         }
         return $this->appendattrs['owner_userid'];
@@ -190,7 +108,29 @@ class Project extends AbstractModel
     }
 
     /**
-     * 查询自己的项目
+     * 查询所有项目（与正常查询多返回owner字段）
+     * @param self $query
+     * @param null $userid
+     * @return self
+     */
+    public function scopeAllData($query, $userid = null)
+    {
+        $userid = $userid ?: User::userid();
+        $query
+            ->select([
+                'projects.*',
+                'project_users.owner',
+            ])
+            ->leftJoin('project_users', function ($leftJoin) use ($userid) {
+                $leftJoin
+                    ->on('project_users.userid', '=', DB::raw($userid))
+                    ->on('projects.id', '=', 'project_users.project_id');
+            });
+        return $query;
+    }
+
+    /**
+     * 查询自己参与的项目
      * @param self $query
      * @param null $userid
      * @return self
@@ -198,9 +138,49 @@ class Project extends AbstractModel
     public function scopeAuthData($query, $userid = null)
     {
         $userid = $userid ?: User::userid();
-        $query->join('project_users', 'projects.id', '=', 'project_users.project_id')
+        $query
+            ->select([
+                'projects.*',
+                'project_users.owner',
+            ])
+            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
             ->where('project_users.userid', $userid);
         return $query;
+    }
+
+    /**
+     * 查询自己负责的项目
+     * @param self $query
+     * @param null $userid
+     * @return self
+     */
+    public function scopeOwnerData($query, $userid = null)
+    {
+        $userid = $userid ?: User::userid();
+        $query
+            ->select([
+                'projects.*',
+                'project_users.owner',
+            ])
+            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
+            ->where('project_users.userid', $userid)
+            ->where('project_users.owner', 1);
+        return $query;
+    }
+
+    /**
+     * 获取任务统计
+     * @return array
+     */
+    public function getTaskStatistics()
+    {
+        $array = [];
+        $builder = ProjectTask::whereProjectId($this->id)->whereParentId(0)->whereNull('archived_at');
+        $array['task_num'] = $builder->count();
+        $array['task_complete'] = $builder->whereNotNull('complete_at')->count();
+        $array['task_percent'] = $array['task_num'] ? intval($array['task_complete'] / $array['task_num'] * 100) : 0;
+        //
+        return $array;
     }
 
     /**
@@ -368,17 +348,27 @@ class Project extends AbstractModel
     /**
      * 根据用户获取项目信息（用于判断会员是否存在项目内）
      * @param int $project_id
-     * @param bool $ignoreArchived 排除已归档
+     * @param null|bool $ignoreArchived 排除已归档
+     * @param null|bool $mustOwner 是否仅限项目负责人
      * @return self
      */
-    public static function userProject($project_id, $ignoreArchived = true)
+    public static function userProject($project_id, $ignoreArchived = true, $mustOwner = null)
     {
-        $project = self::select(self::projectSelect)->authData()->where('projects.id', intval($project_id))->first();
+        $project = self::authData()->where('projects.id', intval($project_id))->first();
         if (empty($project)) {
             throw new ApiException('项目不存在或不在成员列表内', [ 'project_id' => $project_id ], -4001);
         }
-        if ($ignoreArchived && $project->archived_at != null) {
+        if ($ignoreArchived === true && $project->archived_at != null) {
             throw new ApiException('项目已归档', [ 'project_id' => $project_id ], -4001);
+        }
+        if ($ignoreArchived === false && $project->archived_at == null) {
+            throw new ApiException('项目未归档', [ 'project_id' => $project_id ]);
+        }
+        if ($mustOwner === true && !$project->owner) {
+            throw new ApiException('仅限项目负责人操作', [ 'project_id' => $project_id ]);
+        }
+        if ($mustOwner === false && $project->owner) {
+            throw new ApiException('禁止项目负责人操作', [ 'project_id' => $project_id ]);
         }
         return $project;
     }
