@@ -76,10 +76,10 @@ export default {
     computed: {
         ...mapState(['userId', 'projects', 'tasks']),
 
-        ...mapGetters(['ownerTask']),
+        ...mapGetters(['myTask']),
 
         list() {
-            const datas = $A.cloneJSON(this.ownerTask.filter(({end_at}) => {
+            const datas = $A.cloneJSON(this.myTask.filter(({end_at}) => {
                 return end_at;
             }));
             return datas.map(data => {

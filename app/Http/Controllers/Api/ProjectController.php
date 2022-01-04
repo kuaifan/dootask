@@ -50,7 +50,7 @@ class ProjectController extends AbstractController
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
-     * @apiSuccessExample {json} dataDemo:
+     * @apiSuccessExample {json} sampleData:
     {
         "data": [
             {
@@ -64,7 +64,13 @@ class ProjectController extends AbstractController
                 "created_at": "2022-01-02 06:23:15",
                 "updated_at": "2022-01-02 07:12:33",
                 "owner": 1,         // 是否项目负责人
-                "owner_userid": 1   // 项目负责人ID
+                "owner_userid": 1,  // 项目负责人ID
+                "task_num": 9,
+                "task_complete": 0,
+                "task_percent": 0,
+                "task_my_num": 8,
+                "task_my_complete": 0,
+                "task_my_percent": 0
             },
         ],
         "current_page": 1,  // 当前页数
@@ -107,8 +113,8 @@ class ProjectController extends AbstractController
         }
         //
         $list = $builder->orderByDesc('projects.id')->paginate(Base::getPaginate(100, 50));
-        $list->transform(function (Project $project) {
-            return array_merge($project->toArray(), $project->getTaskStatistics());
+        $list->transform(function (Project $project) use ($user) {
+            return array_merge($project->toArray(), $project->getTaskStatistics($user->userid));
         });
         //
         $data = $list->toArray();
@@ -134,7 +140,7 @@ class ProjectController extends AbstractController
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
-     * @apiSuccessExample {json} dataDemo:
+     * @apiSuccessExample {json} sampleData:
     {
         "id": 7,
         "name": "🏢 产品官网项目",
@@ -146,17 +152,23 @@ class ProjectController extends AbstractController
         "created_at": "2022-01-02 06:23:15",
         "updated_at": "2022-01-02 07:12:33",
         "owner": 1,         // 是否项目负责人
-        "owner_userid": 1   // 项目负责人ID
+        "owner_userid": 1,  // 项目负责人ID
+        "task_num": 9,
+        "task_complete": 0,
+        "task_percent": 0,
+        "task_my_num": 8,
+        "task_my_complete": 0,
+        "task_my_percent": 0
     }
      */
     public function one()
     {
-        User::auth();
+        $user = User::auth();
         //
         $project_id = intval(Request::input('project_id'));
         //
         $project = Project::userProject($project_id);
-        $data = array_merge($project->toArray(), $project->getTaskStatistics());
+        $data = array_merge($project->toArray(), $project->getTaskStatistics($user->userid));
         //
         return Base::retSuccess('success', $data);
     }

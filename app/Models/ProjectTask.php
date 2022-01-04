@@ -55,8 +55,7 @@ use Request;
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectTaskUser[] $taskUser
  * @property-read int|null $task_user_count
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask allData($userid = null)
- * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask authData($userid = null)
- * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask ownerData($userid = null)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask authData($userid = null, $owner = null)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask betweenTime($start, $end)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask newQuery()
@@ -264,65 +263,40 @@ class ProjectTask extends AbstractModel
      */
     public function scopeAllData($query, $userid = null)
     {
-        DB::statement("SET SQL_MODE=''");
-        $pre = DB::connection()->getTablePrefix();
         $userid = $userid ?: User::userid();
         $query
             ->select([
                 'project_tasks.*',
-                DB::raw("MAX({$pre}project_task_users.owner) as owner")
+                'project_task_users.owner'
             ])
             ->leftJoin('project_task_users', function ($leftJoin) use ($userid) {
                 $leftJoin
                     ->on('project_task_users.userid', '=', DB::raw($userid))
                     ->on('project_tasks.id', '=', 'project_task_users.task_id');
-            })
-            ->groupBy('project_tasks.id');
+            });
         return $query;
     }
 
     /**
-     * 查询自己参与的任务
+     * 查询自己参与或负责的任务
      * @param self $query
      * @param null $userid
+     * @param null $owner
      * @return self
      */
-    public function scopeAuthData($query, $userid = null)
+    public function scopeAuthData($query, $userid = null, $owner = null)
     {
-        DB::statement("SET SQL_MODE=''");
-        $pre = DB::connection()->getTablePrefix();
         $userid = $userid ?: User::userid();
         $query
             ->select([
                 'project_tasks.*',
-                DB::raw("MAX({$pre}project_task_users.owner) as owner")
+                'project_task_users.owner'
             ])
             ->join('project_task_users', 'project_tasks.id', '=', 'project_task_users.task_id')
-            ->where('project_task_users.userid', $userid)
-            ->groupBy('project_tasks.id');
-        return $query;
-    }
-
-    /**
-     * 查询自己负责的任务
-     * @param self $query
-     * @param null $userid
-     * @return self
-     */
-    public function scopeOwnerData($query, $userid = null)
-    {
-        DB::statement("SET SQL_MODE=''");
-        $pre = DB::connection()->getTablePrefix();
-        $userid = $userid ?: User::userid();
-        $query
-            ->select([
-                'project_tasks.*',
-                DB::raw("MAX({$pre}project_task_users.owner) as owner")
-            ])
-            ->join('project_task_users', 'project_tasks.id', '=', 'project_task_users.task_id')
-            ->where('project_task_users.userid', $userid)
-            ->where('project_task_users.owner', 1)
-            ->groupBy('project_tasks.id');
+            ->where('project_task_users.userid', $userid);
+        if ($owner !== null) {
+            $query->where('project_task_users.owner', $owner);
+        }
         return $query;
     }
 

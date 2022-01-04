@@ -40,7 +40,7 @@
                 <li @click="toggleRoute('dashboard')" :class="classNameRoute('dashboard')">
                     <i class="taskfont">&#xe6fb;</i>
                     <div class="menu-title">{{$L('仪表盘')}}</div>
-                    <Badge class="menu-badge" :type="dashboardData.overdue.length > 0 ? 'error' : 'primary'" :count="dashboardTotal"></Badge>
+                    <Badge class="menu-badge" :type="dashboardTask.overdue.length > 0 ? 'error' : 'primary'" :count="dashboardTotal"></Badge>
                 </li>
                 <li @click="toggleRoute('calendar')" :class="classNameRoute('calendar')">
                     <i class="taskfont">&#xe6f5;</i>
@@ -294,7 +294,7 @@ export default {
             'dialogMsgPush',
         ]),
 
-        ...mapGetters(['taskData', 'dashboardData']),
+        ...mapGetters(['taskData', 'dashboardTask']),
 
         msgAllUnread() {
             let num = 0;
@@ -307,7 +307,7 @@ export default {
         },
 
         dashboardTotal() {
-            return this.dashboardData.today.length + this.dashboardData.overdue.length
+            return this.dashboardTask.today.length + this.dashboardTask.overdue.length
         },
 
         currentLanguage() {

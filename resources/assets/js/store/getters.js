@@ -1,4 +1,9 @@
 export default {
+    /**
+     * 当前打开的项目
+     * @param state
+     * @returns {unknown[]|{project_user: *[], columns: *[]}}
+     */
     projectData(state) {
         let projectId = state.projectId;
         if (projectId == 0) {
@@ -35,6 +40,11 @@ export default {
         };
     },
 
+    /**
+     * 当前打开的任务
+     * @param state
+     * @returns {{}|{readonly id?: *}}
+     */
     taskData(state) {
         let taskId = state.taskId;
         if (taskId == 0) {
@@ -50,6 +60,11 @@ export default {
         return {};
     },
 
+    /**
+     * 项目面板设置
+     * @param state
+     * @returns {(function(*): (boolean|*))|*}
+     */
     tablePanel(state) {
         return function (key) {
             if (!state.projectId) {
@@ -74,7 +89,12 @@ export default {
         }
     },
 
-    ownerTask(state) {
+    /**
+     * 我所有的任务（未完成）
+     * @param state
+     * @returns {unknown[]}
+     */
+    myTask(state) {
         return state.tasks.filter(({complete_at, parent_id, end_at, owner}) => {
             if (parent_id > 0) {
                 const index = state.tasks.findIndex(data => {
@@ -113,11 +133,17 @@ export default {
         })
     },
 
-    dashboardData(state, getters) {
+    /**
+     * 仪表盘任务数据
+     * @param state
+     * @param getters
+     * @returns {{overdue: *, today: *}}
+     */
+    dashboardTask(state, getters) {
         const todayStart = $A.Date($A.formatDate("Y-m-d 00:00:00")),
             todayEnd = $A.Date($A.formatDate("Y-m-d 23:59:59")),
             todayNow = $A.Date($A.formatDate("Y-m-d H:i:s"));
-        const todayTasks = getters.ownerTask.filter(task => {
+        const todayTasks = getters.myTask.filter(task => {
             if (!task.end_at) {
                 return false;
             }
@@ -125,7 +151,7 @@ export default {
                 end = $A.Date(task.end_at);
             return (start <= todayStart && todayStart <= end) || (start <= todayEnd && todayEnd <= end) || (start > todayStart && todayEnd > end);
         })
-        const overdueTasks = getters.ownerTask.filter(task => {
+        const overdueTasks = getters.myTask.filter(task => {
             if (!task.end_at) {
                 return false;
             }

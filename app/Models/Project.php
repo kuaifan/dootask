@@ -38,8 +38,7 @@ use Request;
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectUser[] $projectUser
  * @property-read int|null $project_user_count
  * @method static \Illuminate\Database\Eloquent\Builder|Project allData($userid = null)
- * @method static \Illuminate\Database\Eloquent\Builder|Project authData($userid = null)
- * @method static \Illuminate\Database\Eloquent\Builder|Project ownerData($userid = null)
+ * @method static \Illuminate\Database\Eloquent\Builder|Project authData($userid = null, $owner = null)
  * @method static \Illuminate\Database\Eloquent\Builder|Project newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Project newQuery()
  * @method static \Illuminate\Database\Query\Builder|Project onlyTrashed()
@@ -130,12 +129,13 @@ class Project extends AbstractModel
     }
 
     /**
-     * 查询自己参与的项目
+     * 查询自己参与或负责的项目
      * @param self $query
      * @param null $userid
+     * @param null $owner
      * @return self
      */
-    public function scopeAuthData($query, $userid = null)
+    public function scopeAuthData($query, $userid = null, $owner = null)
     {
         $userid = $userid ?: User::userid();
         $query
@@ -145,40 +145,29 @@ class Project extends AbstractModel
             ])
             ->join('project_users', 'projects.id', '=', 'project_users.project_id')
             ->where('project_users.userid', $userid);
-        return $query;
-    }
-
-    /**
-     * 查询自己负责的项目
-     * @param self $query
-     * @param null $userid
-     * @return self
-     */
-    public function scopeOwnerData($query, $userid = null)
-    {
-        $userid = $userid ?: User::userid();
-        $query
-            ->select([
-                'projects.*',
-                'project_users.owner',
-            ])
-            ->join('project_users', 'projects.id', '=', 'project_users.project_id')
-            ->where('project_users.userid', $userid)
-            ->where('project_users.owner', 1);
+        if ($owner !== null) {
+            $query->where('project_users.owner', $owner);
+        }
         return $query;
     }
 
     /**
      * 获取任务统计
+     * @param $userid
      * @return array
      */
-    public function getTaskStatistics()
+    public function getTaskStatistics($userid)
     {
         $array = [];
-        $builder = ProjectTask::whereProjectId($this->id)->whereParentId(0)->whereNull('archived_at');
+        $builder = ProjectTask::whereProjectId($this->id)->whereNull('archived_at');
         $array['task_num'] = $builder->count();
         $array['task_complete'] = $builder->whereNotNull('complete_at')->count();
         $array['task_percent'] = $array['task_num'] ? intval($array['task_complete'] / $array['task_num'] * 100) : 0;
+        //
+        $builder = ProjectTask::authData($userid, 1)->where('project_tasks.project_id', $this->id)->whereNull('project_tasks.archived_at');
+        $array['task_my_num'] = $builder->count();
+        $array['task_my_complete'] = $builder->whereNotNull('project_tasks.complete_at')->count();
+        $array['task_my_percent'] = $array['task_my_num'] ? intval($array['task_my_complete'] / $array['task_my_num'] * 100) : 0;
         //
         return $array;
     }

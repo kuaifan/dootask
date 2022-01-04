@@ -8,14 +8,14 @@
                 <li @click="dashboard='today'">
                     <div class="block-title">{{$L('今日待完成')}}</div>
                     <div class="block-data">
-                        <div class="block-num">{{dashboardData.today.length}}</div>
+                        <div class="block-num">{{dashboardTask.today.length}}</div>
                         <i class="taskfont">&#xe6f4;</i>
                     </div>
                 </li>
                 <li @click="dashboard='overdue'">
                     <div class="block-title">{{$L('超期未完成')}}</div>
                     <div class="block-data">
-                        <div class="block-num">{{dashboardData.overdue.length}}</div>
+                        <div class="block-num">{{dashboardTask.overdue.length}}</div>
                         <i class="taskfont">&#xe603;</i>
                     </div>
                 </li>
@@ -137,7 +137,7 @@ export default {
     computed: {
         ...mapState(['userInfo', 'projects', 'tasks', 'taskId']),
 
-        ...mapGetters(['dashboardData']),
+        ...mapGetters(['dashboardTask']),
 
         title() {
             const {dashboard} = this;
@@ -156,10 +156,10 @@ export default {
             let data = [];
             switch (dashboard) {
                 case 'today':
-                    data = $A.cloneJSON(this.dashboardData.today);
+                    data = $A.cloneJSON(this.dashboardTask.today);
                     break
                 case 'overdue':
-                    data = $A.cloneJSON(this.dashboardData.overdue);
+                    data = $A.cloneJSON(this.dashboardTask.overdue);
                     break
             }
             if (completeTask.length > 0) {

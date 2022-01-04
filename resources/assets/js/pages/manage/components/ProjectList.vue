@@ -532,7 +532,7 @@ export default {
 
         ...mapGetters(['projectData', 'tablePanel']),
 
-        ...mapGetters(['ownerTask']),
+        ...mapGetters(['myTask']),
 
         userWaitRemove() {
             const {userids, useridbak} = this.userData;
@@ -572,8 +572,8 @@ export default {
         },
 
         myList() {
-            const {projectId, ownerTask, searchText, completeTask, sortField, sortType} = this;
-            const array = ownerTask.filter((task) => {
+            const {projectId, myTask, searchText, completeTask, sortField, sortType} = this;
+            const array = myTask.filter((task) => {
                 if (task.project_id != projectId) {
                     return false;
                 }
