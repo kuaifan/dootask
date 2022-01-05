@@ -138,8 +138,8 @@ export default {
      * @param state
      * @param data|{key, project_id}
      */
-    toggleProjectParameters({state}, data) {
-        $A.execMainDispatch("toggleProjectParameters", data)
+    toggleProjectParameter({state}, data) {
+        $A.execMainDispatch("toggleProjectParameter", data)
         //
         let key = data;
         let project_id = state.projectId;
@@ -148,28 +148,18 @@ export default {
             project_id = data.project_id;
         }
         if (project_id) {
-            let index = state.cacheProjectParameters.findIndex(item => item.project_id == project_id)
+            let index = state.cacheProjectParameter.findIndex(item => item.project_id == project_id)
             if (index === -1) {
-                state.cacheProjectParameters.push({
-                    project_id,
-                    card: true,
-                    cardInit: false,
-                    chat: false,
-                    showMy: true,
-                    showHelp: true,
-                    showUndone: true,
-                    showCompleted: false,
-                    completedTask: false,
-                });
-                index = state.cacheProjectParameters.findIndex(item => item.project_id == project_id)
+                state.cacheProjectParameter.push(state.method.projectParameterTemplate(project_id));
+                index = state.cacheProjectParameter.findIndex(item => item.project_id == project_id)
             }
-            const cache = state.cacheProjectParameters[index];
+            const cache = state.cacheProjectParameter[index];
             if (!state.method.isJson(key)) {
                 key = {[key]: !cache[key]};
             }
-            state.cacheProjectParameters.splice(index, 1, Object.assign(cache, key))
+            state.cacheProjectParameter.splice(index, 1, Object.assign(cache, key))
             setTimeout(() => {
-                state.method.setStorage("cacheProjectParameters", state.cacheProjectParameters);
+                state.method.setStorage("cacheProjectParameter", state.cacheProjectParameter);
             });
         }
     },
@@ -395,7 +385,7 @@ export default {
                 state.cacheColumns = state.columns = [];
                 state.cacheTasks = state.tasks = [];
                 //
-                state.method.setStorage("cacheProjectParameters", state.cacheProjectParameters);
+                state.method.setStorage("cacheProjectParameter", state.cacheProjectParameter);
                 state.method.setStorage("cacheServerUrl", state.cacheServerUrl);
                 state.method.setStorage("cacheLoginEmail", cacheLoginEmail);
                 dispatch("saveUserInfo", state.method.isJson(userInfo) ? userInfo : state.userInfo);
@@ -787,9 +777,9 @@ export default {
                 dispatch("saveColumn", data.data);
                 // 判断只有1列的时候默认版面为表格模式
                 if (state.columns.filter(item => item.project_id == project_id).length === 1) {
-                    const cache = state.cacheProjectParameters.find(item => item.project_id == project_id) || {};
+                    const cache = state.cacheProjectParameter.find(item => item.project_id == project_id) || {};
                     if (typeof cache.cardInit === "undefined" || cache.cardInit === false) {
-                        dispatch("toggleProjectParameters", {
+                        dispatch("toggleProjectParameter", {
                             project_id,
                             key: {
                                 card: false,

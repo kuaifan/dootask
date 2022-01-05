@@ -1,7 +1,7 @@
 <template>
     <div class="page-project">
         <ProjectList/>
-        <ProjectDialog v-if="projectParameters('chat')"/>
+        <ProjectDialog v-if="projectParameter('chat')"/>
     </div>
 </template>
 
@@ -22,7 +22,7 @@ export default {
     },
 
     computed: {
-        ...mapGetters(['projectParameters']),
+        ...mapGetters(['projectParameter']),
     },
 
     watch: {

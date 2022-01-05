@@ -120,7 +120,7 @@ export default {
 
             taskLoad: {},
 
-            completeTask: [],
+            tempShowTasks: [],
         }
     },
 
@@ -156,7 +156,7 @@ export default {
         },
 
         list() {
-            const {dashboard, completeTask} = this;
+            const {dashboard, tempShowTasks} = this;
             let data = [];
             switch (dashboard) {
                 case 'today':
@@ -166,12 +166,8 @@ export default {
                     data = this.transforTasks(this.dashboardTask.overdue);
                     break
             }
-            if (completeTask.length > 0) {
-                completeTask.forEach(task => {
-                    if (!data.find(({id}) => id == task.id)) {
-                        data.push(task);
-                    }
-                })
+            if (tempShowTasks.length > 0) {
+                data.push(...tempShowTasks);
             }
             return data.sort((a, b) => {
                 return $A.Date(a.end_at) - $A.Date(b.end_at);
@@ -181,10 +177,10 @@ export default {
 
     watch: {
         '$route'() {
-            this.completeTask = [];
+            this.tempShowTasks = [];
         },
         dashboard() {
-            this.completeTask = [];
+            this.tempShowTasks = [];
         }
     },
 
@@ -196,7 +192,7 @@ export default {
                     this.updateTask(task, {
                         complete_at: $A.formatDate("Y-m-d H:i:s")
                     }).then(() => {
-                        this.completeTask.push(task)
+                        this.tempShowTasks.push(task)
                     })
                     break;
                 case 'uncomplete':
@@ -204,10 +200,7 @@ export default {
                     this.updateTask(task, {
                         complete_at: false
                     }).then(() => {
-                        let index = this.completeTask.findIndex(({id}) => id == task.id)
-                        if (index > -1) {
-                            this.completeTask.splice(index, 1)
-                        }
+                        this.tempShowTasks = this.tempShowTasks.filter(({id}) => id != task.id)
                     })
                     break;
                 case 'archived':

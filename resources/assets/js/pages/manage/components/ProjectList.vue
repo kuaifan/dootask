@@ -24,7 +24,7 @@
                             </div>
                         </Tooltip>
                     </li>
-                    <li :class="['project-icon', projectParameters('chat') ? 'active' : '']" @click="$store.dispatch('toggleProjectParameters', 'chat')">
+                    <li :class="['project-icon', projectParameter('chat') ? 'active' : '']" @click="$store.dispatch('toggleProjectParameter', 'chat')">
                         <Icon class="menu-icon" type="ios-chatbubbles" />
                         <Badge class="menu-badge" :count="msgUnread"></Badge>
                     </li>
@@ -53,15 +53,15 @@
             <div v-if="projectData.desc" class="project-subtitle">{{projectData.desc}}</div>
             <div class="project-switch">
                 <div v-if="completedCount > 0" class="project-checkbox">
-                    <Checkbox :value="projectParameters('completedTask')" @on-change="toggleCompleted">{{$L('显示已完成')}}</Checkbox>
+                    <Checkbox :value="projectParameter('completedTask')" @on-change="toggleCompleted">{{$L('显示已完成')}}</Checkbox>
                 </div>
-                <div :class="['project-switch-button', !projectParameters('card') ? 'menu' : '']" @click="$store.dispatch('toggleProjectParameters', 'card')">
+                <div :class="['project-switch-button', !projectParameter('card') ? 'menu' : '']" @click="$store.dispatch('toggleProjectParameter', 'card')">
                     <div><i class="taskfont">&#xe60c;</i></div>
                     <div><i class="taskfont">&#xe66a;</i></div>
                 </div>
             </div>
         </div>
-        <div v-if="projectParameters('card')" class="project-column">
+        <div v-if="projectParameter('card')" class="project-column">
             <Draggable
                 :list="columnList"
                 :animation="150"
@@ -255,10 +255,10 @@
                 </Row>
             </div>
             <!--我的任务-->
-            <div :class="['project-table-body', !projectParameters('showMy') ? 'project-table-hide' : '']">
+            <div :class="['project-table-body', !projectParameter('showMy') ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
-                        <i class="taskfont" @click="$store.dispatch('toggleProjectParameters', 'showMy')">&#xe689;</i>
+                        <i class="taskfont" @click="$store.dispatch('toggleProjectParameter', 'showMy')">&#xe689;</i>
                         <div class="row-h1">{{$L('我的任务')}}</div>
                         <div class="row-num">({{myList.length}})</div>
                     </Col>
@@ -267,13 +267,13 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow v-if="projectParameters('showMy')" :list="transforTasks(myList)" open-key="my" @command="dropTask" @on-priority="addTaskOpen" fast-add-task/>
+                <TaskRow v-if="projectParameter('showMy')" :list="transforTasks(myList)" open-key="my" @command="dropTask" @on-priority="addTaskOpen" fast-add-task/>
             </div>
             <!--协助的任务-->
-            <div v-if="helpList.length" :class="['project-table-body', !projectParameters('showHelp') ? 'project-table-hide' : '']">
+            <div v-if="helpList.length" :class="['project-table-body', !projectParameter('showHelp') ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
-                        <i class="taskfont" @click="$store.dispatch('toggleProjectParameters', 'showHelp')">&#xe689;</i>
+                        <i class="taskfont" @click="$store.dispatch('toggleProjectParameter', 'showHelp')">&#xe689;</i>
                         <div class="row-h1">{{$L('协助的任务')}}</div>
                         <div class="row-num">({{helpList.length}})</div>
                     </Col>
@@ -282,13 +282,13 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow v-if="projectParameters('showHelp')" :list="helpList" open-key="help" @command="dropTask" @on-priority="addTaskOpen"/>
+                <TaskRow v-if="projectParameter('showHelp')" :list="helpList" open-key="help" @command="dropTask" @on-priority="addTaskOpen"/>
             </div>
             <!--未完成任务-->
-            <div v-if="projectData.task_num > 0" :class="['project-table-body', !projectParameters('showUndone') ? 'project-table-hide' : '']">
+            <div v-if="projectData.task_num > 0" :class="['project-table-body', !projectParameter('showUndone') ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
-                        <i class="taskfont" @click="$store.dispatch('toggleProjectParameters', 'showUndone')">&#xe689;</i>
+                        <i class="taskfont" @click="$store.dispatch('toggleProjectParameter', 'showUndone')">&#xe689;</i>
                         <div class="row-h1">{{$L('未完成任务')}}</div>
                         <div class="row-num">({{unList.length}})</div>
                     </Col>
@@ -297,13 +297,13 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow v-if="projectParameters('showUndone')" :list="unList" open-key="undone" @command="dropTask" @on-priority="addTaskOpen"/>
+                <TaskRow v-if="projectParameter('showUndone')" :list="unList" open-key="undone" @command="dropTask" @on-priority="addTaskOpen"/>
             </div>
             <!--已完成任务-->
-            <div v-if="projectData.task_num > 0" :class="['project-table-body', !projectParameters('showCompleted') ? 'project-table-hide' : '']">
+            <div v-if="projectData.task_num > 0" :class="['project-table-body', !projectParameter('showCompleted') ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
-                        <i class="taskfont" @click="$store.dispatch('toggleProjectParameters', 'showCompleted')">&#xe689;</i>
+                        <i class="taskfont" @click="$store.dispatch('toggleProjectParameter', 'showCompleted')">&#xe689;</i>
                         <div class="row-h1">{{$L('已完成任务')}}</div>
                         <div class="row-num">({{completedList.length}})</div>
                     </Col>
@@ -312,7 +312,7 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow v-if="projectParameters('showCompleted')" :list="completedList" open-key="completed" @command="dropTask" @on-priority="addTaskOpen"/>
+                <TaskRow v-if="projectParameter('showCompleted')" :list="completedList" open-key="completed" @command="dropTask" @on-priority="addTaskOpen"/>
             </div>
         </div>
 
@@ -504,7 +504,7 @@ export default {
         }, 1000);
         //
         this.projectDialogSubscribe = Store.subscribe('onProjectDialogBack', () => {
-            this.$store.dispatch('toggleProjectParameters', 'chat');
+            this.$store.dispatch('toggleProjectParameter', 'chat');
         });
     },
 
@@ -530,7 +530,7 @@ export default {
             'columns',
         ]),
 
-        ...mapGetters(['projectData', 'projectParameters', 'myTasks', 'transforTasks']),
+        ...mapGetters(['projectData', 'projectParameter', 'ownerTasks', 'transforTasks']),
 
         userWaitRemove() {
             const {userids, useridbak} = this.userData;
@@ -555,7 +555,7 @@ export default {
         panelTask() {
             const {searchText} = this;
             return function (list) {
-                if (!this.projectParameters('completedTask')) {
+                if (!this.projectParameter('completedTask')) {
                     list = list.filter(({complete_at}) => {
                         return !complete_at;
                     });
@@ -593,12 +593,12 @@ export default {
         },
 
         myList() {
-            const {projectId, myTasks, searchText, completeTask, sortField, sortType} = this;
-            const array = myTasks.filter((task) => {
+            const {projectId, ownerTasks, searchText, completeTask, sortField, sortType} = this;
+            const array = ownerTasks.filter((task) => {
                 if (task.project_id != projectId) {
                     return false;
                 }
-                if (!this.projectParameters('completedTask')) {
+                if (!this.projectParameter('completedTask')) {
                     if (task.complete_at && !completeTask.find(id => id == task.id)) {
                         return false;
                     }
@@ -631,7 +631,7 @@ export default {
                 if (task.project_id != projectId || task.parent_id > 0) {
                     return false;
                 }
-                if (!this.projectParameters('completedTask')) {
+                if (!this.projectParameter('completedTask')) {
                     if (task.complete_at && !completeTask.find(id => id == task.id)) {
                         return false;
                     }
@@ -664,7 +664,7 @@ export default {
                 if (task.project_id != projectId || task.parent_id > 0) {
                     return false;
                 }
-                if (!this.projectParameters('completedTask')) {
+                if (!this.projectParameter('completedTask')) {
                     if (task.complete_at && !completeTask.find(id => id == task.id)) {
                         return false;
                     }
@@ -1201,7 +1201,7 @@ export default {
         taskIsHidden(task) {
             const {name, desc, complete_at} = task;
             const {searchText} = this;
-            if (!this.projectParameters('completedTask')) {
+            if (!this.projectParameter('completedTask')) {
                 if (complete_at) {
                     return true;
                 }
@@ -1254,7 +1254,7 @@ export default {
         },
 
         toggleCompleted() {
-            this.$store.dispatch('toggleProjectParameters', 'completedTask');
+            this.$store.dispatch('toggleProjectParameter', 'completedTask');
             this.completeTask = [];
         },
 

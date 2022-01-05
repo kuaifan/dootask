@@ -245,6 +245,20 @@ const method = {
             return defaultVal ? defaultVal : "";
         }
     },
+
+    projectParameterTemplate(project_id) {
+        return {
+            project_id,
+            card: true,
+            cardInit: false,
+            chat: false,
+            showMy: true,
+            showHelp: true,
+            showUndone: true,
+            showCompleted: false,
+            completedTask: false,
+        }
+    }
 };
 
 // 方法类
@@ -256,17 +270,21 @@ state.windowMax768 = window.innerWidth <= 768;
 // 数据缓存
 state.cacheLoading = {};
 state.cacheDrawerOverlay = [];
+
 // User
 state.cacheUserActive = {};
 state.cacheUserWait = [];
 state.cacheUserBasic = state.method.getStorageArray("cacheUserBasic");
+
 // Dialog
 state.cacheDialogs = state.method.getStorageArray("cacheDialogs");
+
 // Project
 state.cacheProjects = state.method.getStorageArray("cacheProjects");
 state.cacheColumns = state.method.getStorageArray("cacheColumns");
 state.cacheTasks = state.method.getStorageArray("cacheTasks");
-state.cacheProjectParameters = state.method.getStorageArray("cacheProjectParameters");
+state.cacheProjectParameter = state.method.getStorageArray("cacheProjectParameter");
+
 // ServerUrl
 state.cacheServerUrl = state.method.getStorageString("cacheServerUrl")
 if (state.cacheServerUrl && window.systemInformation) {

@@ -24,25 +24,15 @@ export default {
      * @param state
      * @returns {(function(*): (boolean|*))|*}
      */
-    projectParameters(state) {
+    projectParameter(state) {
         return function (key) {
             if (!state.projectId) {
                 return false;
             }
-            let cache = state.cacheProjectParameters.find(({project_id}) => project_id == state.projectId);
+            let cache = state.cacheProjectParameter.find(({project_id}) => project_id == state.projectId);
             if (!cache) {
-                cache = {
-                    project_id: state.projectId,
-                    card: true,
-                    cardInit: false,
-                    chat: false,
-                    showMy: true,
-                    showHelp: true,
-                    showUndone: true,
-                    showCompleted: false,
-                    completedTask: false,
-                }
-                state.cacheProjectParameters.push(cache);
+                cache = state.method.projectParameterTemplate(state.projectId)
+                state.cacheProjectParameter.push(cache);
             }
             return cache && !!cache[key];
         }
@@ -73,7 +63,7 @@ export default {
      * @param state
      * @returns {unknown[]}
      */
-    myTasks(state) {
+    ownerTasks(state) {
         return state.tasks.filter(({complete_at, owner}) => {
             if (complete_at) {
                 return false;
@@ -137,7 +127,7 @@ export default {
         const todayStart = $A.Date($A.formatDate("Y-m-d 00:00:00")),
             todayEnd = $A.Date($A.formatDate("Y-m-d 23:59:59")),
             todayNow = $A.Date($A.formatDate("Y-m-d H:i:s"));
-        const todayTasks = getters.myTasks.filter(task => {
+        const todayTasks = getters.ownerTasks.filter(task => {
             if (!task.end_at) {
                 return false;
             }
@@ -145,7 +135,7 @@ export default {
                 end = $A.Date(task.end_at);
             return (start <= todayStart && todayStart <= end) || (start <= todayEnd && todayEnd <= end) || (start > todayStart && todayEnd > end);
         })
-        const overdueTasks = getters.myTasks.filter(task => {
+        const overdueTasks = getters.ownerTasks.filter(task => {
             if (!task.end_at) {
                 return false;
             }

@@ -76,15 +76,15 @@ export default {
     computed: {
         ...mapState(['userId', 'projects', 'tasks']),
 
-        ...mapGetters(['myTasks', 'transforTasks']),
+        ...mapGetters(['ownerTasks', 'transforTasks']),
 
         list() {
-            const datas = this.transforTasks(this.myTasks.filter(({end_at}) => {
+            const datas = this.transforTasks(this.ownerTasks.filter(({end_at}) => {
                 return end_at;
             }));
             return datas.map(data => {
-                let isAllday = $A.rightExists(data.start_at, "00:00:00") && $A.rightExists(data.end_at, "23:59:59")
-                let task = {
+                const isAllday = $A.rightExists(data.start_at, "00:00:00") && $A.rightExists(data.end_at, "23:59:59")
+                const task = {
                     id: data.id,
                     calendarId: String(data.project_id),
                     title: data.name,
