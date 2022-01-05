@@ -1101,7 +1101,7 @@ class ProjectController extends AbstractController
         ]));
         $data = [
             'new_column' => $newColumn,
-            'task' => ProjectTask::with(['taskUser', 'taskTag'])->find($task->id),
+            'task' => ProjectTask::oneTask($task->id),
         ];
         $task->pushMsg('add', $data);
         return Base::retSuccess('添加成功', $data);
@@ -1141,7 +1141,7 @@ class ProjectController extends AbstractController
         ]);
         $data = [
             'new_column' => null,
-            'task' => ProjectTask::with(['taskUser', 'taskTag'])->find($task->id),
+            'task' => ProjectTask::oneTask($task->id),
         ];
         $task->pushMsg('add', $data);
         return Base::retSuccess('添加成功', $data);
@@ -1187,7 +1187,7 @@ class ProjectController extends AbstractController
         $updateSubTask = false;
         $task->updateTask($data, $updateProject, $updateContent, $updateSubTask);
         //
-        $data = ProjectTask::with(['taskUser', 'taskTag'])->find($task->id)->toArray();
+        $data = ProjectTask::oneTask($task->id)->toArray();
         $data['is_update_project'] = $updateProject;
         $data['is_update_content'] = $updateContent;
         $data['is_update_subtask'] = $updateSubTask;

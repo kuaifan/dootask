@@ -54,7 +54,7 @@ function createMainWindow() {
             contextIsolation: false
         }
     })
-    mainWindow.webContents.setUserAgent(mainWindow.webContents.getUserAgent() + " MainTaksWindow/1.0");
+    mainWindow.webContents.setUserAgent(mainWindow.webContents.getUserAgent() + " MainTaskWindow/1.0");
 
     if (devloadUrl) {
         mainWindow.loadURL(devloadUrl).then(r => {

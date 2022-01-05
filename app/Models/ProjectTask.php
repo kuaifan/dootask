@@ -870,7 +870,17 @@ class ProjectTask extends AbstractModel
     }
 
     /**
-     * 根据会员ID获取任务、项目信息（会员有任务权限 或 会员存在项目内）
+     * 获取任务
+     * @param $task_id
+     * @return ProjectTask|\Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Model|object|null
+     */
+    public static function oneTask($task_id)
+    {
+        return self::with(['taskUser', 'taskTag'])->allData()->where("project_tasks.id", intval($task_id))->first();
+    }
+
+    /**
+     * 获取任务（会员有任务权限 或 会员存在项目内）
      * @param int $task_id
      * @param bool $archived true:仅限未归档, false:不限制
      * @param int|bool $mustOwner 0|false:不限制, 1|true:限制任务或项目负责人, 2:已有负责人才限制任务或项目负责人
