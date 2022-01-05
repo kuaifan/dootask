@@ -35,7 +35,7 @@ export default {
     data() {
         return {
             uploadFormat: ['jpg', 'jpeg', 'png', 'gif', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'esp', 'pdf', 'rar', 'zip', 'gz', 'ai', 'avi', 'bmp', 'cdr', 'eps', 'mov', 'mp3', 'mp4', 'pr', 'psd', 'svg', 'tif'],
-            actionUrl: this.$store.state.method.apiUrl('dialog/msg/sendfile'),
+            actionUrl: $A.apiUrl('dialog/msg/sendfile'),
         }
     },
 
@@ -44,7 +44,7 @@ export default {
 
         headers() {
             return {
-                fd: this.$store.state.method.getStorageString("userWsFd"),
+                fd: $A.getStorageString("userWsFd"),
                 token: this.userToken,
             }
         },

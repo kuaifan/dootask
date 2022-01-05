@@ -221,17 +221,17 @@ export default {
 
         closeDialog() {
             this.dialogId = 0;
-            this.$store.state.method.setStorage("messenger::dialogId", 0)
+            $A.setStorage("messenger::dialogId", 0)
         },
 
         openDialog(dialog, smooth) {
-            this.$store.state.method.setStorage("messenger::dialogId", dialog.id)
+            $A.setStorage("messenger::dialogId", dialog.id)
             this.dialogId = dialog.id;
             this.scrollIntoActive(smooth);
         },
 
         openDialogStorage() {
-            this.dialogId = this.$store.state.method.getStorageInt("messenger::dialogId")
+            this.dialogId = $A.getStorageInt("messenger::dialogId")
             if (this.dialogId > 0) {
                 const dialog = this.dialogs.find(({id}) => id === this.dialogId);
                 dialog && this.openDialog(dialog, false);

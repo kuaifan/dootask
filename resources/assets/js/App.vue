@@ -189,7 +189,7 @@ export default {
                 ipcRenderer.send('windowHidden');
             })
             ipcRenderer.on('dispatch', (event, args) => {
-                if (!this.$store.state.method.isJson(args)) {
+                if (!$A.isJson(args)) {
                     return;
                 }
                 let {action, data} = args;

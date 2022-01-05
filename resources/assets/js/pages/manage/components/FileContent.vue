@@ -196,7 +196,7 @@ export default {
 
         previewUrl() {
             if (this.isPreview) {
-                return this.$store.state.method.apiUrl("../fileview/onlinePreview?url=" + encodeURIComponent(this.contentDetail.url))
+                return $A.apiUrl("../fileview/onlinePreview?url=" + encodeURIComponent(this.contentDetail.url))
             } else {
                 return '';
             }

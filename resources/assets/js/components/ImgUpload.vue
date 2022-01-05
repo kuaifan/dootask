@@ -108,7 +108,7 @@
         },
         data () {
             return {
-                actionUrl: this.$store.state.method.apiUrl('system/imgupload'),
+                actionUrl: $A.apiUrl('system/imgupload'),
                 params: {
                     width: this.width,
                     height: this.height
@@ -169,7 +169,7 @@
 
             uploadHeaders() {
                 return {
-                    fd: this.$store.state.method.getStorageString("userWsFd"),
+                    fd: $A.getStorageString("userWsFd"),
                     token: this.userToken,
                 }
             },

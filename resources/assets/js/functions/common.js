@@ -5,7 +5,7 @@
 
     /**
      * =============================================================================
-     * **************************   基础函数类   **************************
+     * *******************************   基础函数类   *******************************
      * =============================================================================
      */
     $.extend({
@@ -28,6 +28,19 @@
         },
 
         /**
+         * 是否在数组里
+         * @param key
+         * @param array
+         * @returns {boolean|*}
+         */
+        inArray(key, array) {
+            if (!this.isArray(array)) {
+                return false;
+            }
+            return array.includes(key);
+        },
+
+        /**
          * 随机获取范围
          * @param Min
          * @param Max
@@ -44,7 +57,7 @@
          * @param array
          * @returns {boolean}
          */
-        last: function (array) {
+        last(array) {
             let str = false;
             if (typeof array === 'object' && array.length > 0) {
                 str = array[array.length - 1];
@@ -60,7 +73,7 @@
          * @param lower
          * @returns {boolean}
          */
-        strExists: function (string, find, lower = false) {
+        strExists(string, find, lower = false) {
             string += "";
             find += "";
             if (lower !== true) {
@@ -77,7 +90,7 @@
          * @param lower
          * @returns {boolean}
          */
-        leftExists: function (string, find, lower = false) {
+        leftExists(string, find, lower = false) {
             string += "";
             find += "";
             if (lower !== true) {
@@ -94,7 +107,7 @@
          * @param lower
          * @returns {string}
          */
-        leftDelete: function (string, find, lower = false) {
+        leftDelete(string, find, lower = false) {
             string += "";
             find += "";
             if (this.leftExists(string, find, lower)) {
@@ -110,7 +123,7 @@
          * @param lower
          * @returns {boolean}
          */
-        rightExists: function (string, find, lower = false) {
+        rightExists(string, find, lower = false) {
             string += "";
             find += "";
             if (lower !== true) {
@@ -127,7 +140,7 @@
          * @param end
          * @returns {*}
          */
-        getMiddle: function (string, start, end) {
+        getMiddle(string, start, end) {
             string = string.toString();
             if (this.ishave(start) && this.strExists(string, start)) {
                 string = string.substring(string.indexOf(start) + start.length);
@@ -145,7 +158,7 @@
          * @param end
          * @returns {string}
          */
-        subString: function(string, start, end) {
+        subString(string, start, end) {
             string += "";
             if (!this.ishave(end)) {
                 end = string.length;
@@ -158,7 +171,7 @@
          * @param len
          * @returns {string}
          */
-        randomString: function (len) {
+        randomString(len) {
             len = len || 32;
             let $chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678oOLl9gqVvUuI1';
             let maxPos = $chars.length;
@@ -174,7 +187,7 @@
          * @param set
          * @returns {boolean}
          */
-        ishave: function (set) {
+        ishave(set) {
             return !!(set !== null && set !== "null" && set !== undefined && set !== "undefined" && set);
         },
 
@@ -184,7 +197,7 @@
          * @param fixed
          * @returns {number}
          */
-        runNum: function (str, fixed) {
+        runNum(str, fixed) {
             let _s = Number(str);
             if (_s + "" === "NaN") {
                 _s = 0;
@@ -203,102 +216,12 @@
         },
 
         /**
-         * 服务器地址
-         * @param str
-         * @returns {string}
-         */
-        originUrl: function (str) {
-            if (str.substring(0, 2) === "//" ||
-                str.substring(0, 7) === "http://" ||
-                str.substring(0, 8) === "https://" ||
-                str.substring(0, 6) === "ftp://" ||
-                str.substring(0, 1) === "/") {
-                return str;
-            }
-            if (window.systemInformation && typeof window.systemInformation.origin === "string") {
-                str = window.systemInformation.origin + str;
-            } else {
-                str = window.location.origin + "/" + str;
-            }
-            while (str.indexOf("/../") !== -1) {
-                str = str.replace(/\/(((?!\/).)*)\/\.\.\//, "/")
-            }
-            return str
-        },
-
-        /**
-         * 新增&&获取缓存数据
-         * @param key
-         * @param value
-         * @returns {*}
-         */
-        storage: function(key, value) {
-            let keyName = 'app';
-            switch (window.location.pathname) {
-                case "/admin":
-                    keyName+= ":" + window.location.pathname.substr(1);
-                    break;
-            }
-            if (typeof value === 'undefined') {
-                return this.loadFromlLocal('__::', key, '', '__' + keyName + '__');
-            }else{
-                this.savaToLocal('__::', key, value, '__' + keyName + '__');
-            }
-        },
-
-        /**
-         *  新增&&修改本地缓存
-         *  @param {string} id 唯一id
-         *  @param {string} key 标示
-         *  @param value 新增&修改的值
-         *  @param keyName 主键名称
-         */
-        savaToLocal: function(id, key, value, keyName) {
-            try {
-                if (typeof keyName === 'undefined') keyName = '__seller__';
-                let seller = window.localStorage[keyName];
-                if (!seller) {
-                    seller = {};
-                    seller[id] = {};
-                } else {
-                    seller = JSON.parse(seller);
-                    if (!seller[id]) {
-                        seller[id] = {};
-                    }
-                }
-                seller[id][key] = value;
-                window.localStorage[keyName] = JSON.stringify(seller);
-            } catch(e) { }
-        },
-
-        /**
-         *  查询本地缓存
-         *  @param {string} id 唯一id
-         *  @param {string} key 标示
-         *  @param def 如果查询不到显示的值
-         *  @param keyName 主键名称
-         */
-        loadFromlLocal: function(id, key, def, keyName) {
-            if (typeof keyName === 'undefined') keyName = '__seller__';
-            let seller = window.localStorage[keyName];
-            if (!seller) {
-                return def;
-            }
-            seller = JSON.parse(seller)[id];
-            if (!seller) {
-                return def;
-            }
-            let ret = seller[key];
-            return ret || def;
-        },
-
-        /**
          * 返回10位数时间戳
          * @param v
          * @returns {number}
          * @constructor
          */
-        Time: function (v) {
+        Time(v) {
             let time
             if (typeof v === "string" && this.strExists(v, "-")) {
                 v = v.replace(/-/g, '/');
@@ -315,7 +238,7 @@
          * @returns {Date}
          * @constructor
          */
-        Date: function (v) {
+        Date(v) {
             if (typeof v === "string" && this.strExists(v, "-")) {
                 v = v.replace(/-/g, '/');
             }
@@ -329,7 +252,7 @@
          * @param after
          * @returns {*}
          */
-        zeroFill: function(str, length, after) {
+        zeroFill(str, length, after) {
             str+= "";
             if (str.length >= length) {
                 return str;
@@ -352,7 +275,7 @@
          * @param v
          * @returns {string}
          */
-        formatDate: function(format, v) {
+        formatDate(format, v) {
             if (typeof format === 'undefined' || format === '') {
                 format = 'Y-m-d H:i:s';
             }
@@ -393,7 +316,7 @@
          * @param e
          * @returns {*}
          */
-        timeDiff: function(s, e) {
+        timeDiff(s, e) {
             if (typeof e === 'undefined') {
                 e = $A.Time();
             }
@@ -422,7 +345,7 @@
          * @param str
          * @returns {boolean}
          */
-        isMobile: function(str) {
+        isMobile(str) {
             return /^1([3456789])\d{9}$/.test(str);
         },
 
@@ -431,7 +354,7 @@
          * @param phone
          * @returns {boolean}
          */
-        isPhone: function (phone) {
+        isPhone(phone) {
             return this.isMobile(phone);
         },
 
@@ -443,7 +366,7 @@
          * @param lat2
          * @returns {string|*}
          */
-        getDistance: function (lng1, lat1, lng2, lat2) {
+        getDistance(lng1, lat1, lng2, lat2) {
             let DEF_PI = 3.14159265359;         // PI
             let DEF_2PI = 6.28318530712;        // 2*PI
             let DEF_PI180 = 0.01745329252;      // PI/180.0
@@ -716,14 +639,14 @@
                 });
                 return url;
             }
-            var urlparts = url.split('?');
+            let urlparts = url.split('?');
             if (urlparts.length >= 2) {
                 //参数名前缀
-                var prefix = encodeURIComponent(parameter) + '=';
-                var pars = urlparts[1].split(/[&;]/g);
+                let prefix = encodeURIComponent(parameter) + '=';
+                let pars = urlparts[1].split(/[&;]/g);
 
                 //循环查找匹配参数
-                for (var i = pars.length; i-- > 0;) {
+                for (let i = pars.length; i-- > 0;) {
                     if (pars[i].lastIndexOf(prefix, 0) !== -1) {
                         //存在则删除
                         pars.splice(i, 1);
@@ -748,7 +671,7 @@
                 }
                 url+= "";
                 url+= url.indexOf("?") === -1 ? '?' : '';
-                for (var key in params) {
+                for (let key in params) {
                     if (!params.hasOwnProperty(key)) {
                         continue;
                     }
@@ -857,58 +780,6 @@
             }
             document.body.scrollTop = document.body.scrollTop + 1;
             document.body.scrollTop = document.body.scrollTop - 1;
-        },
-
-        autoDevwid(width) {
-            let _width = width || 640;
-            new function () {
-                let _self = this;
-                _self.width = _width;           //设置默认最大宽度
-                _self.fontSize = 30;            //默认字体大小
-                _self.widthProportion = function () {
-                    let p = (document.body && document.body.clientWidth || document.getElementsByTagName("html")[0].offsetWidth) / _self.width;
-                    return p > 1 ? 1 : p < 0.38 ? 0.38 : p;
-                };
-                _self.changePage = function () {
-                    document.getElementsByTagName("html")[0].setAttribute("style", "font-size:" + _self.widthProportion() * _self.fontSize + "px !important");
-                };
-                _self.changePage();
-                window.addEventListener('resize', function () {
-                    _self.changePage();
-                }, false);
-            };
-            //
-            let scale = $A(window).width() / _width;
-            $A(".__auto").each(function () {
-                if ($A(this).attr("data-original") !== "1") {
-                    $A(this).attr("data-original-top", parseInt($A(this).css("top")));
-                    $A(this).attr("data-original-right", parseInt($A(this).css("right")));
-                    $A(this).attr("data-original-bottom", parseInt($A(this).css("bottom")));
-                    $A(this).attr("data-original-left", parseInt($A(this).css("left")));
-                    $A(this).attr("data-original-width", parseInt($A(this).css("width")));
-                    $A(this).attr("data-original-height", parseInt($A(this).css("height")));
-                    $A(this).attr("data-original-line-height", parseInt($A(this).css("line-height")));
-                    $A(this).attr("data-original", "1");
-                }
-                let _t = parseInt($A(this).attr("data-original-top"));
-                let _r = parseInt($A(this).attr("data-original-right"));
-                let _b = parseInt($A(this).attr("data-original-bottom"));
-                let _l = parseInt($A(this).attr("data-original-left"));
-                let _w = parseInt($A(this).attr("data-original-width"));
-                let _h = parseInt($A(this).attr("data-original-height"));
-                let _lh = parseInt($A(this).attr("data-original-line-height"));
-                //
-                let _css = {};
-                if (_t > 0) _css['top'] = _t * scale;
-                if (_r > 0) _css['right'] = _r * scale;
-                if (_b > 0) _css['bottom'] = _b * scale;
-                if (_l > 0) _css['left'] = _l * scale;
-                if (_w > 0) _css['width'] = _w * scale;
-                if (_h > 0) _css['height'] = _h * scale;
-                if (_lh > 0) _css['line-height'] = (_lh * scale) + 'px';
-                $A(this).css(_css);
-            });
-            return scale;
         },
 
         /**
@@ -1020,15 +891,160 @@
             this.loadCss(urls[0], recursiveCallback);
         },
         __loadCss: {},
+
+        /**
+         *  对象中有Date格式的转成指定格式
+         * @param params
+         * @param format  默认格式：Y-m-d H:i:s
+         * @returns {*}
+         */
+        date2string(params, format) {
+            if (params === null) {
+                return params;
+            }
+            if (typeof format === "undefined") {
+                format = "Y-m-d H:i:s";
+            }
+            if (params instanceof Date) {
+                params = $A.formatDate(format, params);
+            } else if ($A.isJson(params)) {
+                for (let key in params) {
+                    if (!params.hasOwnProperty(key)) continue;
+                    params[key] = $A.date2string(params[key], format);
+                }
+            } else if ($A.isArray(params)) {
+                params.forEach((val, index) => {
+                    params[index] = $A.date2string(val, format);
+                });
+            }
+            return params;
+        },
+
+        /**
+         * 字节转换
+         * @param bytes
+         * @returns {string}
+         */
+        bytesToSize(bytes) {
+            if (bytes === 0) return '0 B';
+            let k = 1024;
+            let sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+            let i = Math.floor(Math.log(bytes) / Math.log(k));
+            if (typeof sizes[i] === "undefined") {
+                return '0 B';
+            }
+            return $A.runNum((bytes / Math.pow(k, i)), 2) + ' ' + sizes[i];
+        },
+
+        /**
+         * html代码转义
+         * @param sHtml
+         * @returns {*}
+         */
+        html2Escape(sHtml) {
+            if (!sHtml || sHtml == '') {
+                return '';
+            }
+            return sHtml.replace(/[<>&"]/g, function (c) {
+                return {'<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;'}[c];
+            });
+        },
     });
 
     /**
      * =============================================================================
-     * ****************************   ihttp   ****************************
+     * ********************************   storage   ********************************
      * =============================================================================
      */
     $.extend({
+        setStorage(key, value) {
+            return this.storage(key, value);
+        },
 
+        getStorage(key, def = null) {
+            let value = this.storage(key);
+            return value || def;
+        },
+
+        getStorageString(key, def = '') {
+            let value = this.storage(key);
+            return typeof value === "string" || typeof value === "number" ? value : def;
+        },
+
+        getStorageInt(key, def = 0) {
+            let value = this.storage(key);
+            return typeof value === "number" ? value : def;
+        },
+
+        getStorageBoolean(key, def = false) {
+            let value = this.storage(key);
+            return typeof value === "boolean" ? value : def;
+        },
+
+        getStorageArray(key, def = []) {
+            let value = this.storage(key);
+            return this.isArray(value) ? value : def;
+        },
+
+        getStorageJson(key, def = {}) {
+            let value = this.storage(key);
+            return this.isJson(value) ? value : def;
+        },
+
+        storage(key, value) {
+            if (!key) {
+                return;
+            }
+            let keyName = '__state__';
+            if (key.substring(0, 5) === 'cache') {
+                keyName = '__state:' + key + '__';
+            }
+            if (typeof value === 'undefined') {
+                return this.loadFromlLocal(key, '', keyName);
+            } else {
+                this.savaToLocal(key, value, keyName);
+            }
+        },
+
+        savaToLocal(key, value, keyName) {
+            try {
+                if (typeof keyName === 'undefined') keyName = '__seller__';
+                let seller = window.localStorage[keyName];
+                if (!seller) {
+                    seller = {};
+                } else {
+                    seller = JSON.parse(seller);
+                }
+                seller[key] = value;
+                window.localStorage[keyName] = JSON.stringify(seller);
+            } catch (e) {
+            }
+        },
+
+        loadFromlLocal(key, def, keyName) {
+            try {
+                if (typeof keyName === 'undefined') keyName = '__seller__';
+                let seller = window.localStorage[keyName];
+                if (!seller) {
+                    return def;
+                }
+                seller = JSON.parse(seller);
+                if (!seller || typeof seller[key] === 'undefined') {
+                    return def;
+                }
+                return seller[key];
+            } catch (e) {
+                return def;
+            }
+        },
+    });
+
+    /**
+     * =============================================================================
+     * *********************************   ihttp   *********************************
+     * =============================================================================
+     */
+    $.extend({
         serializeObject (obj, parents) {
             if (typeof obj === 'string') return obj;
             let resultArray = [];
@@ -1373,7 +1389,6 @@
      * =============================================================================
      */
     $.extend({
-
         ajaxc(params) {
             if (!params) return false;
             if (typeof params.url === 'undefined') return false;
@@ -1412,192 +1427,6 @@
                 }
             });
         }
-    });
-
-
-    /**
-     * =============================================================================
-     * *****************************   manage assist   ****************************
-     * =============================================================================
-     */
-    $.extend({
-
-        /**
-         *  对象中有Date格式的转成指定格式
-         * @param params
-         * @param format  默认格式：Y-m-d H:i:s
-         * @returns {*}
-         */
-        date2string(params, format) {
-            if (params === null) {
-                return params;
-            }
-            if (typeof format === "undefined") {
-                format = "Y-m-d H:i:s";
-            }
-            if (params instanceof Date) {
-                params = $A.formatDate(format, params);
-            } else if ($A.isJson(params)) {
-                for (let key in params) {
-                    if (!params.hasOwnProperty(key)) continue;
-                    params[key] = $A.date2string(params[key], format);
-                }
-            } else if ($A.isArray(params)) {
-                params.forEach((val, index) => {
-                    params[index] = $A.date2string(val, format);
-                });
-            }
-            return params;
-        },
-
-        /**
-         * 获取一些指定时间
-         * @param str
-         * @param retInt
-         * @returns {*|string}
-         */
-        getData(str, retInt = false) {
-            let now = new Date();                   //当前日期
-            let nowDayOfWeek = now.getDay();        //今天本周的第几天
-            let nowDay = now.getDate();             //当前日
-            let nowMonth = now.getMonth();          //当前月
-            let nowYear = now.getYear();            //当前年
-            nowYear += (nowYear < 2000) ? 1900 : 0;
-            let lastMonthDate = new Date();         //上月日期
-            lastMonthDate.setDate(1);
-            lastMonthDate.setMonth(lastMonthDate.getMonth()-1);
-            let lastMonth = lastMonthDate.getMonth();
-            let getQuarterStartMonth = () => {
-                let quarterStartMonth = 0;
-                if(nowMonth < 3) {
-                    quarterStartMonth = 0;
-                }
-                if (2 < nowMonth && nowMonth < 6) {
-                    quarterStartMonth = 3;
-                }
-                if (5 < nowMonth && nowMonth < 9) {
-                    quarterStartMonth = 6;
-                }
-                if (nowMonth > 8) {
-                    quarterStartMonth = 9;
-                }
-                return quarterStartMonth;
-            };
-            let getMonthDays = (myMonth) => {
-                let monthStartDate = new Date(nowYear, myMonth, 1);
-                let monthEndDate = new Date(nowYear, myMonth + 1, 1);
-                return (monthEndDate - monthStartDate)/(1000 * 60 * 60 * 24);
-            };
-            //
-            let time = now.getTime();
-            switch (str) {
-                case '今天':
-                    time = now;
-                    break;
-                case '昨天':
-                    time = now - 86400000;
-                    break;
-                case '前天':
-                    time = now - 86400000 * 2;
-                    break;
-                case '本周':
-                    time = new Date(nowYear, nowMonth, nowDay - nowDayOfWeek);
-                    break;
-                case '本周结束':
-                    time = new Date(nowYear, nowMonth, nowDay + (6 - nowDayOfWeek));
-                    break;
-                case '上周':
-                    time = new Date(nowYear, nowMonth, nowDay - nowDayOfWeek - 7);
-                    break;
-                case '上周结束':
-                    time = new Date(nowYear, nowMonth, nowDay - nowDayOfWeek - 1);
-                    break;
-                case '本周2':
-                    time = new Date(nowYear, nowMonth, nowDay - nowDayOfWeek + 1);
-                    break;
-                case '本周结束2':
-                    time = new Date(nowYear, nowMonth, nowDay + (6 - nowDayOfWeek) + 1);
-                    break;
-                case '上周2':
-                    time = new Date(nowYear, nowMonth, nowDay - nowDayOfWeek - 7 + 1);
-                    break;
-                case '上周结束2':
-                    time = new Date(nowYear, nowMonth, nowDay - nowDayOfWeek - 1 + 1);
-                    break;
-                case '本月':
-                    time = new Date(nowYear, nowMonth, 1);
-                    break;
-                case '本月结束':
-                    time = new Date(nowYear, nowMonth, getMonthDays(nowMonth));
-                    break;
-                case '上个月':
-                    time = new Date(nowYear, lastMonth, 1);
-                    break;
-                case '上个月结束':
-                    time = new Date(nowYear, lastMonth, getMonthDays(lastMonth));
-                    break;
-                case '本季度':
-                    time = new Date(nowYear, getQuarterStartMonth(), 1);
-                    break;
-                case '本季度结束':
-                    let quarterEndMonth = getQuarterStartMonth() + 2;
-                    time = new Date(nowYear, quarterEndMonth, getMonthDays(quarterEndMonth));
-                    break;
-            }
-            if (retInt === true) {
-                return time;
-            }
-            return $A.formatDate("Y-m-d", parseInt(time / 1000))
-        },
-
-        /**
-         * 字节转换
-         * @param bytes
-         * @returns {string}
-         */
-        bytesToSize(bytes) {
-            if (bytes === 0) return '0 B';
-            let k = 1024;
-            let sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-            let i = Math.floor(Math.log(bytes) / Math.log(k));
-            if (typeof sizes[i] === "undefined") {
-                return '0 B';
-            }
-            return $A.runNum((bytes / Math.pow(k, i)), 2) + ' ' + sizes[i];
-        },
-
-        /**
-         * html代码转义
-         * @param sHtml
-         * @returns {*}
-         */
-        html2Escape(sHtml) {
-            if (!sHtml || sHtml == '') {
-                return '';
-            }
-            return sHtml.replace(/[<>&"]/g, function (c) {
-                return {'<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;'}[c];
-            });
-        },
-
-        /**
-         * 搜索高亮
-         * @param string
-         * @param key
-         * @returns {string|*}
-         */
-        sreachHighlight(string, key) {
-            if (!string || string == '') {
-                return '';
-            }
-            if (!key || key == '') {
-                return $A.html2Escape(string);
-            }
-            string = $A.html2Escape(string.replace(new RegExp(key, "g"), "[highlight]" + key + "[/highlight]"));
-            string = string.replace(/\[highlight\]/g, '<span class="sreach-highlight">');
-            string = string.replace(/\[\/highlight\]/g, '</span>');
-            return string;
-        },
     });
 
     window.$A = $;

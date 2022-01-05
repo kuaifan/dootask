@@ -7,7 +7,7 @@ export default {
     projectData(state) {
         let projectId = state.projectId;
         if (projectId == 0) {
-            projectId = state.method.runNum(window.__projectId);
+            projectId = $A.runNum(window.__projectId);
         }
         if (projectId > 0) {
             window.__projectId = projectId;
@@ -31,7 +31,7 @@ export default {
             }
             let cache = state.cacheProjectParameter.find(({project_id}) => project_id == state.projectId);
             if (!cache) {
-                cache = state.method.projectParameterTemplate(state.projectId)
+                cache = $A.projectParameterTemplate(state.projectId)
                 state.cacheProjectParameter.push(cache);
             }
             return cache && !!cache[key];
@@ -46,7 +46,7 @@ export default {
     taskData(state) {
         let taskId = state.taskId;
         if (taskId == 0) {
-            taskId = state.method.runNum(window.__taskId);
+            taskId = $A.runNum(window.__taskId);
         }
         if (taskId > 0) {
             window.__taskId = taskId;

@@ -312,7 +312,7 @@ export default {
             searchKey: '',
             searchTimeout: null,
 
-            pid: this.$store.state.method.getStorageInt("fileOpenPid"),
+            pid: $A.getStorageInt("fileOpenPid"),
             shearId: 0,
 
             types: [
@@ -372,7 +372,7 @@ export default {
             ],
 
             tableHeight: 500,
-            tableMode: this.$store.state.method.getStorageBoolean("fileTableMode"),
+            tableMode: $A.getStorageBoolean("fileTableMode"),
             columns: [],
 
             shareShow: false,
@@ -433,12 +433,12 @@ export default {
         ...mapState(['userId', 'userToken', 'userIsAdmin', 'userInfo', 'files']),
 
         actionUrl() {
-            return this.$store.state.method.apiUrl('file/content/upload?pid=' + this.pid)
+            return $A.apiUrl('file/content/upload?pid=' + this.pid)
         },
 
         headers() {
             return {
-                fd: this.$store.state.method.getStorageString("userWsFd"),
+                fd: $A.getStorageString("userWsFd"),
                 token: this.userToken,
             }
         },
@@ -496,7 +496,7 @@ export default {
         },
 
         tableMode(val) {
-            this.$store.state.method.setStorage("fileTableMode", val)
+            $A.setStorage("fileTableMode", val)
         },
 
         fileShow(val) {
@@ -689,7 +689,7 @@ export default {
             this.loadIng++;
             this.$store.dispatch("getFiles", this.pid).then(() => {
                 this.loadIng--;
-                this.$store.state.method.setStorage("fileOpenPid", this.pid)
+                $A.setStorage("fileOpenPid", this.pid)
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.loadIng--;

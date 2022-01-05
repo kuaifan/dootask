@@ -103,7 +103,7 @@ export default {
     },
     methods: {
         getReleases() {
-            let appdown = this.$store.state.method.getStorageJson("cacheAppdown");
+            let appdown = $A.getStorageJson("cacheAppdown");
             if (appdown.time && appdown.time + 3600 > Math.round(new Date().getTime() / 1000)) {
                 this.chackReleases(appdown.data)
                 return;
@@ -113,7 +113,7 @@ export default {
                     .get("https://api.github.com/repos/" + this.repoName + "/releases/latest")
                     .then(({status, data}) => {
                         if (status === 200) {
-                            this.$store.state.method.setStorage("cacheAppdown", {
+                            $A.setStorage("cacheAppdown", {
                                 time: Math.round(new Date().getTime() / 1000),
                                 data: data
                             });

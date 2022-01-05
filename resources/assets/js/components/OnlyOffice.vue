@@ -100,7 +100,7 @@ export default {
                     return;
                 }
                 this.loadIng++;
-                $A.loadScript(this.$store.state.method.apiUrl("../office/web-apps/apps/api/documents/api.js"), (e) => {
+                $A.loadScript($A.apiUrl("../office/web-apps/apps/api/documents/api.js"), (e) => {
                     this.loadIng--;
                     if (e !== null) {
                         $A.modalAlert("组件加载失败！");
@@ -168,10 +168,10 @@ export default {
                 config.editorConfig.mode = "view";
                 config.editorConfig.callbackUrl = null;
                 if (!config.editorConfig.user.id) {
-                    let viewer = this.$store.state.method.getStorageInt("viewer")
+                    let viewer = $A.getStorageInt("viewer")
                     if (!viewer) {
                         viewer = $A.randNum(1000, 99999);
-                        this.$store.state.method.setStorage("viewer", viewer)
+                        $A.setStorage("viewer", viewer)
                     }
                     config.editorConfig.user.id = "viewer_" + viewer;
                     config.editorConfig.user.name = "Viewer_" + viewer

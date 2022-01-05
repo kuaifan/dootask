@@ -9,16 +9,16 @@ export default {
      * @returns {Promise<unknown>}
      */
     call({state, dispatch}, params) {
-        if (!state.method.isJson(params)) params = {url: params}
-        if (!state.method.isJson(params.header)) params.header = {}
-        params.url = state.method.apiUrl(params.url);
-        params.data = state.method.date2string(params.data);
+        if (!$A.isJson(params)) params = {url: params}
+        if (!$A.isJson(params.header)) params.header = {}
+        params.url = $A.apiUrl(params.url);
+        params.data = $A.date2string(params.data);
         params.header['Content-Type'] = 'application/json';
         params.header['language'] = $A.getLanguage();
         params.header['token'] = state.userToken;
-        params.header['fd'] = state.method.getStorageString("userWsFd");
+        params.header['fd'] = $A.getStorageString("userWsFd");
         //
-        const cloneParams = state.method.cloneJSON(params);
+        const cloneParams = $A.cloneJSON(params);
         return new Promise(function (resolve, reject) {
             if (params.spinner === true) {
                 params.before = () => {
@@ -31,7 +31,7 @@ export default {
             }
             //
             params.success = (result, status, xhr) => {
-                if (!state.method.isJson(result)) {
+                if (!$A.isJson(result)) {
                     console.log(result, status, xhr);
                     reject({data: {}, msg: "Return error"})
                     return;
@@ -77,7 +77,7 @@ export default {
             };
             //
             if (params.websocket === true || params.ws === true) {
-                const apiWebsocket = state.method.randomString(16);
+                const apiWebsocket = $A.randomString(16);
                 const apiTimeout = setTimeout(() => {
                     const WListener = state.ajaxWsListener.find((item) => item.apiWebsocket == apiWebsocket);
                     if (WListener) {
@@ -143,23 +143,23 @@ export default {
         //
         let key = data;
         let project_id = state.projectId;
-        if (state.method.isJson(data)) {
+        if ($A.isJson(data)) {
             key = data.key;
             project_id = data.project_id;
         }
         if (project_id) {
             let index = state.cacheProjectParameter.findIndex(item => item.project_id == project_id)
             if (index === -1) {
-                state.cacheProjectParameter.push(state.method.projectParameterTemplate(project_id));
+                state.cacheProjectParameter.push($A.projectParameterTemplate(project_id));
                 index = state.cacheProjectParameter.findIndex(item => item.project_id == project_id)
             }
             const cache = state.cacheProjectParameter[index];
-            if (!state.method.isJson(key)) {
+            if (!$A.isJson(key)) {
                 key = {[key]: !cache[key]};
             }
             state.cacheProjectParameter.splice(index, 1, Object.assign(cache, key))
             setTimeout(() => {
-                state.method.setStorage("cacheProjectParameter", state.cacheProjectParameter);
+                $A.setStorage("cacheProjectParameter", state.cacheProjectParameter);
             });
         }
     },
@@ -192,14 +192,14 @@ export default {
      */
     saveUserInfo({state, dispatch}, info) {
         return new Promise(function (resolve) {
-            const userInfo = state.method.cloneJSON(info);
-            userInfo.userid = state.method.runNum(userInfo.userid);
+            const userInfo = $A.cloneJSON(info);
+            userInfo.userid = $A.runNum(userInfo.userid);
             userInfo.token = userInfo.userid > 0 ? (userInfo.token || state.userToken) : '';
             state.userInfo = userInfo;
             state.userId = userInfo.userid;
             state.userToken = userInfo.token;
-            state.userIsAdmin = state.method.inArray('admin', userInfo.identity);
-            state.method.setStorage("userInfo", state.userInfo);
+            state.userIsAdmin = $A.inArray('admin', userInfo.identity);
+            $A.setStorage("userInfo", state.userInfo);
             dispatch("getProjects");
             dispatch("getDialogs");
             dispatch("getTaskForDashboard");
@@ -233,7 +233,7 @@ export default {
         }
         //
         let time = $A.Time();
-        let list = state.method.cloneJSON(state.cacheUserWait);
+        let list = $A.cloneJSON(state.cacheUserWait);
         if (data && data.userid) {
             list.push(data)
         }
@@ -299,7 +299,7 @@ export default {
         state.cacheUserActive = Object.assign(data, {__:Math.random()});
         Store.set('cacheUserActive', data);
         setTimeout(() => {
-            state.method.setStorage("cacheUserBasic", state.cacheUserBasic);
+            $A.setStorage("cacheUserBasic", state.cacheUserBasic);
         })
     },
 
@@ -375,7 +375,7 @@ export default {
     handleClearCache({state, dispatch}, userInfo) {
         return new Promise(function (resolve, reject) {
             try {
-                const cacheLoginEmail = state.method.getStorageString("cacheLoginEmail");
+                const cacheLoginEmail = $A.getStorageString("cacheLoginEmail");
                 //
                 window.localStorage.clear();
                 //
@@ -385,10 +385,10 @@ export default {
                 state.cacheColumns = state.columns = [];
                 state.cacheTasks = state.tasks = [];
                 //
-                state.method.setStorage("cacheProjectParameter", state.cacheProjectParameter);
-                state.method.setStorage("cacheServerUrl", state.cacheServerUrl);
-                state.method.setStorage("cacheLoginEmail", cacheLoginEmail);
-                dispatch("saveUserInfo", state.method.isJson(userInfo) ? userInfo : state.userInfo);
+                $A.setStorage("cacheProjectParameter", state.cacheProjectParameter);
+                $A.setStorage("cacheServerUrl", state.cacheServerUrl);
+                $A.setStorage("cacheLoginEmail", cacheLoginEmail);
+                dispatch("saveUserInfo", $A.isJson(userInfo) ? userInfo : state.userInfo);
                 //
                 resolve()
             } catch (e) {
@@ -410,11 +410,11 @@ export default {
     saveFile({state, dispatch}, data) {
         $A.execMainDispatch("saveFile", data)
         //
-        if (state.method.isArray(data)) {
+        if ($A.isArray(data)) {
             data.forEach((file) => {
                 dispatch("saveFile", file);
             });
-        } else if (state.method.isJson(data)) {
+        } else if ($A.isJson(data)) {
             let index = state.files.findIndex(({id}) => id == data.id);
             if (index > -1) {
                 state.files.splice(index, 1, Object.assign({}, state.files[index], data));
@@ -508,11 +508,11 @@ export default {
     saveProject({state, dispatch}, data) {
         $A.execMainDispatch("saveProject", data)
         //
-        if (state.method.isArray(data)) {
+        if ($A.isArray(data)) {
             data.forEach((project) => {
                 dispatch("saveProject", project)
             });
-        } else if (state.method.isJson(data)) {
+        } else if ($A.isJson(data)) {
             if (typeof data.project_column !== "undefined") {
                 dispatch("saveColumn", data.project_column)
                 delete data.project_column;
@@ -524,7 +524,7 @@ export default {
                 state.projects.push(data);
             }
             setTimeout(() => {
-                state.method.setStorage("cacheProjects", state.cacheProjects = state.projects);
+                $A.setStorage("cacheProjects", state.cacheProjects = state.projects);
             })
         }
     },
@@ -553,7 +553,7 @@ export default {
             }
         }
         setTimeout(() => {
-            state.method.setStorage("cacheProjects", state.cacheProjects = state.projects);
+            $A.setStorage("cacheProjects", state.cacheProjects = state.projects);
         })
     },
 
@@ -597,7 +597,7 @@ export default {
      */
     getProjectOne({state, dispatch}, project_id) {
         return new Promise(function (resolve, reject) {
-            if (state.method.runNum(project_id) === 0) {
+            if ($A.runNum(project_id) === 0) {
                 reject({msg: 'Parameter error'});
                 return;
             }
@@ -627,7 +627,7 @@ export default {
      */
     archivedProject({state, dispatch}, project_id) {
         return new Promise(function (resolve, reject) {
-            if (state.method.runNum(project_id) === 0) {
+            if ($A.runNum(project_id) === 0) {
                 reject({msg: 'Parameter error'});
                 return;
             }
@@ -655,7 +655,7 @@ export default {
      */
     removeProject({state, dispatch}, project_id) {
         return new Promise(function (resolve, reject) {
-            if (state.method.runNum(project_id) === 0) {
+            if ($A.runNum(project_id) === 0) {
                 reject({msg: 'Parameter error'});
                 return;
             }
@@ -683,7 +683,7 @@ export default {
      */
     exitProject({state, dispatch}, project_id) {
         return new Promise(function (resolve, reject) {
-            if (state.method.runNum(project_id) === 0) {
+            if ($A.runNum(project_id) === 0) {
                 reject({msg: 'Parameter error'});
                 return;
             }
@@ -716,11 +716,11 @@ export default {
     saveColumn({state, dispatch}, data) {
         $A.execMainDispatch("saveColumn", data)
         //
-        if (state.method.isArray(data)) {
+        if ($A.isArray(data)) {
             data.forEach((column) => {
                 dispatch("saveColumn", column)
             });
-        } else if (state.method.isJson(data)) {
+        } else if ($A.isJson(data)) {
             let index = state.columns.findIndex(({id}) => id == data.id);
             if (index > -1) {
                 state.columns.splice(index, 1, Object.assign({}, state.columns[index], data));
@@ -728,7 +728,7 @@ export default {
                 state.columns.push(data);
             }
             setTimeout(() => {
-                state.method.setStorage("cacheColumns", state.cacheColumns = state.columns);
+                $A.setStorage("cacheColumns", state.cacheColumns = state.columns);
             })
         }
     },
@@ -755,7 +755,7 @@ export default {
         Array.from(new Set(project_ids)).some(id => dispatch("getProjectOne", id))
         //
         setTimeout(() => {
-            state.method.setStorage("cacheColumns", state.cacheColumns = state.columns);
+            $A.setStorage("cacheColumns", state.cacheColumns = state.columns);
         })
     },
 
@@ -819,7 +819,7 @@ export default {
      */
     removeColumn({state, dispatch}, column_id) {
         return new Promise(function (resolve, reject) {
-            if (state.method.runNum(column_id) === 0) {
+            if ($A.runNum(column_id) === 0) {
                 reject({msg: 'Parameter error'});
                 return;
             }
@@ -851,11 +851,11 @@ export default {
     saveTask({state, dispatch}, data) {
         $A.execMainDispatch("saveTask", data)
         //
-        if (state.method.isArray(data)) {
+        if ($A.isArray(data)) {
             data.forEach((task) => {
                 dispatch("saveTask", task)
             });
-        } else if (state.method.isJson(data)) {
+        } else if ($A.isJson(data)) {
             data._time = $A.Time();
             let index = state.tasks.findIndex(({id}) => id == data.id);
             if (index > -1) {
@@ -881,7 +881,7 @@ export default {
             }
             //
             setTimeout(() => {
-                state.method.setStorage("cacheTasks", state.cacheTasks = state.tasks);
+                $A.setStorage("cacheTasks", state.cacheTasks = state.tasks);
             })
         }
     },
@@ -915,7 +915,7 @@ export default {
             state.taskId = 0;
         }
         setTimeout(() => {
-            state.method.setStorage("cacheTasks", state.cacheTasks = state.tasks);
+            $A.setStorage("cacheTasks", state.cacheTasks = state.tasks);
         })
     },
 
@@ -1002,7 +1002,7 @@ export default {
      */
     getTaskOne({state, dispatch}, task_id) {
         return new Promise(function (resolve, reject) {
-            if (state.method.runNum(task_id) === 0) {
+            if ($A.runNum(task_id) === 0) {
                 reject({msg: 'Parameter error'});
                 return;
             }
@@ -1131,7 +1131,7 @@ export default {
      */
     removeTask({state, dispatch}, task_id) {
         return new Promise(function (resolve, reject) {
-            if (state.method.runNum(task_id) === 0) {
+            if ($A.runNum(task_id) === 0) {
                 reject({msg: 'Parameter error'});
                 return;
             }
@@ -1160,7 +1160,7 @@ export default {
      */
     archivedTask({state, dispatch}, task_id) {
         return new Promise(function (resolve, reject) {
-            if (state.method.runNum(task_id) === 0) {
+            if ($A.runNum(task_id) === 0) {
                 reject({msg: 'Parameter error'});
                 return;
             }
@@ -1189,7 +1189,7 @@ export default {
      */
     getTaskContent({state, dispatch}, task_id) {
         return new Promise(function (resolve, reject) {
-            if (state.method.runNum(task_id) === 0) {
+            if ($A.runNum(task_id) === 0) {
                 reject({msg: 'Parameter error'});
                 return;
             }
@@ -1222,7 +1222,7 @@ export default {
      */
     getTaskFiles({state, dispatch}, task_id) {
         return new Promise(function (resolve, reject) {
-            if (state.method.runNum(task_id) === 0) {
+            if ($A.runNum(task_id) === 0) {
                 reject({msg: 'Parameter error'});
                 return;
             }
@@ -1276,7 +1276,7 @@ export default {
      */
     openTask({state, dispatch}, task) {
         let task_id = task;
-        if (state.method.isJson(task)) {
+        if ($A.isJson(task)) {
             if (task.parent_id > 0) {
                 task_id = task.parent_id;
             } else {
@@ -1309,8 +1309,8 @@ export default {
      */
     taskAdd({state, dispatch}, data) {
         return new Promise(function (resolve, reject) {
-            const post = state.method.cloneJSON(state.method.date2string(data));
-            if (state.method.isArray(post.column_id)) post.column_id = post.column_id.find((val) => val)
+            const post = $A.cloneJSON($A.date2string(data));
+            if ($A.isArray(post.column_id)) post.column_id = post.column_id.find((val) => val)
             //
             dispatch("call", {
                 url: 'project/task/add',
@@ -1374,7 +1374,7 @@ export default {
      */
     taskUpdate({state, dispatch}, data) {
         return new Promise(function (resolve, reject) {
-            const post = state.method.cloneJSON(state.method.date2string(data));
+            const post = $A.cloneJSON($A.date2string(data));
             //
             dispatch("call", {
                 url: 'project/task/update',
@@ -1424,11 +1424,11 @@ export default {
     saveDialog({state, dispatch}, data) {
         $A.execMainDispatch("saveDialog", data)
         //
-        if (state.method.isArray(data)) {
+        if ($A.isArray(data)) {
             data.forEach((dialog) => {
                 dispatch("saveDialog", dialog)
             });
-        } else if (state.method.isJson(data)) {
+        } else if ($A.isJson(data)) {
             let index = state.dialogs.findIndex(({id}) => id == data.id);
             if (index > -1) {
                 state.dialogs.splice(index, 1, Object.assign({}, state.dialogs[index], data));
@@ -1436,7 +1436,7 @@ export default {
                 state.dialogs.push(data);
             }
             setTimeout(() => {
-                state.method.setStorage("cacheDialogs", state.cacheDialogs = state.dialogs);
+                $A.setStorage("cacheDialogs", state.cacheDialogs = state.dialogs);
             })
         }
     },
@@ -1455,7 +1455,7 @@ export default {
             dispatch("saveDialog", {
                 id: data.dialog_id,
                 last_msg: data,
-                last_at: state.method.formatDate("Y-m-d H:i:s")
+                last_at: $A.formatDate("Y-m-d H:i:s")
             });
         } else {
             dispatch("getDialogOne", data.dialog_id);
@@ -1490,7 +1490,7 @@ export default {
      */
     getDialogOne({state, dispatch}, dialog_id) {
         return new Promise(function (resolve, reject) {
-            if (state.method.runNum(dialog_id) === 0) {
+            if ($A.runNum(dialog_id) === 0) {
                 reject({msg: 'Parameter error'});
                 return;
             }
@@ -1528,7 +1528,7 @@ export default {
                 },
             }).then(result => {
                 dispatch("saveDialog", result.data);
-                state.method.setStorage("messenger::dialogId", result.data.id);
+                $A.setStorage("messenger::dialogId", result.data.id);
                 state.dialogOpenId = result.data.id;
                 resolve(result);
             }).catch(e => {
@@ -1548,7 +1548,7 @@ export default {
         //
         const index = state.dialogs.findIndex(({id}) => id == dialog_id);
         if (index > -1) {
-            const tmp = state.method.cloneJSON(state.dialogs[index]);
+            const tmp = $A.cloneJSON(state.dialogs[index]);
             state.dialogs.splice(index, 1);
             state.dialogs.unshift(tmp);
         }
@@ -1569,12 +1569,12 @@ export default {
                 state.dialogs.splice(index, 1);
             }
         })
-        if (ids.includes(state.method.getStorageInt("messenger::dialogId"))) {
-            state.method.setStorage("messenger::dialogId", 0)
+        if (ids.includes($A.getStorageInt("messenger::dialogId"))) {
+            $A.setStorage("messenger::dialogId", 0)
         }
         //
         setTimeout(() => {
-            state.method.setStorage("cacheDialogs", state.cacheDialogs = state.dialogs);
+            $A.setStorage("cacheDialogs", state.cacheDialogs = state.dialogs);
         })
     },
 
@@ -1591,11 +1591,11 @@ export default {
     saveDialogMsg({state, dispatch}, data) {
         $A.execMainDispatch("saveDialogMsg", data)
         //
-        if (state.method.isArray(data)) {
+        if ($A.isArray(data)) {
             data.forEach((msg) => {
                 dispatch("saveDialogMsg", msg)
             });
-        } else if (state.method.isJson(data)) {
+        } else if ($A.isJson(data)) {
             let index = state.dialogMsgs.findIndex(({id}) => id == data.id);
             if (index > -1) {
                 state.dialogMsgs.splice(index, 1, Object.assign({}, state.dialogMsgs[index], data));
@@ -1715,7 +1715,7 @@ export default {
             dispatch("websocketSend", {
                 type: 'readMsg',
                 data: {
-                    id: state.method.cloneJSON(state.wsReadWaitList)
+                    id: $A.cloneJSON(state.wsReadWaitList)
                 }
             });
             state.wsReadWaitList = [];
@@ -1738,7 +1738,7 @@ export default {
             return;
         }
         //
-        let url = state.method.apiUrl('../ws');
+        let url = $A.apiUrl('../ws');
         url = url.replace("https://", "wss://");
         url = url.replace("http://", "ws://");
         url += "?action=web&token=" + state.userToken;
@@ -1767,11 +1767,11 @@ export default {
         };
         state.ws.onmessage = (e) => {
             // console.log("[WS] Message", e);
-            const msgDetail = state.method.jsonParse(event.data);
+            const msgDetail = $A.jsonParse(event.data);
             const {type, msgId} = msgDetail;
             switch (type) {
                 case "open":
-                    state.method.setStorage("userWsFd", msgDetail.data.fd)
+                    $A.setStorage("userWsFd", msgDetail.data.fd)
                     break
 
                 case "receipt":
@@ -1932,7 +1932,7 @@ export default {
      * @param params {type, data, callback}
      */
     websocketSend({state}, params) {
-        if (!state.method.isJson(params)) {
+        if (!$A.isJson(params)) {
             typeof callback === "function" && callback(null, false)
             return;
         }
@@ -1943,7 +1943,7 @@ export default {
             return;
         }
         if (typeof callback === "function") {
-            msgId = state.method.randomString(16)
+            msgId = $A.randomString(16)
             state.wsCall[msgId] = callback;
         }
         try {

@@ -1,3 +1,6 @@
+import './functions/common'
+import './functions/web'
+
 import Vue from 'vue'
 import Vuex from 'vuex'
 import App from './App.vue'
@@ -6,9 +9,6 @@ import VueRouter from 'vue-router'
 import ViewUI from 'view-design-hi';
 import Language from './language/index'
 import store from './store/index'
-
-import './functions/common'
-import './functions/web'
 
 Vue.use(Vuex);
 Vue.use(ViewUI);

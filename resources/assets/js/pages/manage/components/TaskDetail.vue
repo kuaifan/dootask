@@ -1115,7 +1115,7 @@ export default {
                 this.$nextTick(() => {
                     if (this.$store.state.windowMax768) {
                         this.goForward({path: '/manage/messenger', query: {sendmsg: this.msgText}});
-                        this.$store.state.method.setStorage("messenger::dialogId", data.dialog_id)
+                        $A.setStorage("messenger::dialogId", data.dialog_id)
                         this.$store.state.dialogOpenId = data.dialog_id;
                         this.$store.dispatch('openTask', 0);
                     } else {
@@ -1148,7 +1148,7 @@ export default {
                 }
                 this.$nextTick(() => {
                     this.goForward({path: '/manage/messenger', query: {sendmsg: this.msgText}});
-                    this.$store.state.method.setStorage("messenger::dialogId", data.dialog_id)
+                    $A.setStorage("messenger::dialogId", data.dialog_id)
                     this.$store.state.dialogOpenId = data.dialog_id;
                     this.$store.dispatch('openTask', 0);
                 });

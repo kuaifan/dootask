@@ -138,7 +138,7 @@
 
                 uploadIng: 0,
                 uploadFormat: ['jpg', 'jpeg', 'png', 'gif', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'esp', 'pdf', 'rar', 'zip', 'gz'],
-                actionUrl: this.$store.state.method.apiUrl('system/fileupload'),
+                actionUrl: $A.apiUrl('system/fileupload'),
                 maxSize: 10240
             };
         },
@@ -162,7 +162,7 @@
 
             headers() {
                 return {
-                    fd: this.$store.state.method.getStorageString("userWsFd"),
+                    fd: $A.getStorageString("userWsFd"),
                     token: this.userToken,
                 }
             },

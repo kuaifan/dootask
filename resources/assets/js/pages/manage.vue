@@ -240,8 +240,8 @@ export default {
     },
 
     mounted() {
-        if (this.$store.state.method.getStorageString("clearCache")) {
-            this.$store.state.method.setStorage("clearCache", "")
+        if ($A.getStorageString("clearCache")) {
+            $A.setStorage("clearCache", "")
             $A.messageSuccess("清除成功");
         }
         //
@@ -494,7 +494,7 @@ export default {
                     return;
                 case 'clearCache':
                     this.$store.dispatch("handleClearCache", null).then(() => {
-                        this.$store.state.method.setStorage("clearCache", $A.randomString(6))
+                        $A.setStorage("clearCache", $A.randomString(6))
                         window.location.reload()
                     }).catch(() => {
                         window.location.reload()
@@ -612,7 +612,7 @@ export default {
                             }
                             this.goForward({path: '/manage/messenger'});
                             if (data.dialog_id) {
-                                this.$store.state.method.setStorage("messenger::dialogId", data.dialog_id)
+                                $A.setStorage("messenger::dialogId", data.dialog_id)
                                 this.$store.state.dialogOpenId = data.dialog_id;
                             }
                         }

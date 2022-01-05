@@ -60,11 +60,11 @@ export default {
             loadIng: 0,
 
             codeNeed: false,
-            codeUrl: this.$store.state.method.apiUrl('users/login/codeimg'),
+            codeUrl: $A.apiUrl('users/login/codeimg'),
 
             loginType: 'login',
             loginJump: false,
-            email: this.$store.state.method.getStorageString("cacheLoginEmail") || '',
+            email: $A.getStorageString("cacheLoginEmail") || '',
             password: '',
             password2: '',
             code: '',
@@ -140,7 +140,7 @@ export default {
         },
 
         reCode() {
-            this.codeUrl = this.$store.state.method.apiUrl('users/login/codeimg?_=' + Math.random())
+            this.codeUrl = $A.apiUrl('users/login/codeimg?_=' + Math.random())
         },
 
         onServerUrlInput() {
@@ -159,7 +159,7 @@ export default {
                         this.$store.dispatch("call", {
                             url: value + 'system/setting',
                         }).then(() => {
-                            this.$store.state.method.setStorage("cacheServerUrl", value)
+                            $A.setStorage("cacheServerUrl", value)
                             window.location.reload();
                         }).catch(({msg}) => {
                             $A.modalError(msg || "服务器地址无效", 301);
@@ -167,14 +167,14 @@ export default {
                         });
                         return;
                     }
-                    this.$store.state.method.setStorage("cacheServerUrl", "")
+                    $A.setStorage("cacheServerUrl", "")
                     window.location.reload();
                 }
             });
         },
 
         onServerUrlClear() {
-            this.$store.state.method.setStorage("cacheServerUrl", "")
+            $A.setStorage("cacheServerUrl", "")
             window.location.reload();
         },
 
@@ -224,7 +224,7 @@ export default {
                 },
             }).then(({data}) => {
                 this.loadIng--;
-                this.$store.state.method.setStorage("cacheLoginEmail", this.email)
+                $A.setStorage("cacheLoginEmail", this.email)
                 this.$store.dispatch("handleClearCache", data).then(() => {
                     this.goNext1();
                 }).catch(() => {

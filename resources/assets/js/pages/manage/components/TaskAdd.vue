@@ -218,7 +218,7 @@ export default {
             }
         },
         'addData.project_id'(id) {
-            this.$store.state.method.setStorage("cacheAddTaskProjectId", id);
+            $A.setStorage("cacheAddTaskProjectId", id);
         },
         'addData.column_id'(id) {
             const {project_id, column_id} = this.addData;
@@ -229,7 +229,7 @@ export default {
                     this.$set(this.addData, 'cascader', []);
                 }
             })
-            this.$store.state.method.setStorage("cacheAddTaskColumnId", id);
+            $A.setStorage("cacheAddTaskColumnId", id);
         }
     },
     methods: {
@@ -314,8 +314,8 @@ export default {
                     this.addData.column_id = column.id;
                 }
             } else {
-                let cacheAddTaskProjectId = this.$store.state.method.getStorageInt("cacheAddTaskProjectId");
-                let cacheAddTaskColumnId = this.$store.state.method.getStorageInt("cacheAddTaskColumnId");
+                let cacheAddTaskProjectId = $A.getStorageInt("cacheAddTaskProjectId");
+                let cacheAddTaskColumnId = $A.getStorageInt("cacheAddTaskColumnId");
                 let project = this.projects.find(({id}) => id == this.projectId)
                     || this.projects.find(({id}) => id == cacheAddTaskProjectId)
                     || this.projects.find(({id}) => id > 0);

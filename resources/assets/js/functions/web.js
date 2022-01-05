@@ -5,6 +5,180 @@
     const $ = window.$A;
     /**
      * =============================================================================
+     * *******************************   web extra   *******************************
+     * =============================================================================
+     */
+    $.extend({
+        /**
+         * 接口地址
+         * @param str
+         * @returns {string|string|*}
+         */
+        apiUrl(str) {
+            if (str.substring(0, 2) === "//" ||
+                str.substring(0, 7) === "http://" ||
+                str.substring(0, 8) === "https://" ||
+                str.substring(0, 6) === "ftp://" ||
+                str.substring(0, 1) === "/") {
+                return str;
+            }
+            if (window.systemInformation && typeof window.systemInformation.apiUrl === "string") {
+                str = window.systemInformation.apiUrl + str;
+            } else {
+                str = window.location.origin + "/api/" + str;
+            }
+            while (str.indexOf("/../") !== -1) {
+                str = str.replace(/\/(((?!\/).)*)\/\.\.\//, "/")
+            }
+            return str
+        },
+
+        /**
+         * 服务器地址
+         * @param str
+         * @returns {string}
+         */
+        originUrl(str) {
+            if (str.substring(0, 2) === "//" ||
+                str.substring(0, 7) === "http://" ||
+                str.substring(0, 8) === "https://" ||
+                str.substring(0, 6) === "ftp://" ||
+                str.substring(0, 1) === "/") {
+                return str;
+            }
+            if (window.systemInformation && typeof window.systemInformation.origin === "string") {
+                str = window.systemInformation.origin + str;
+            } else {
+                str = window.location.origin + "/" + str;
+            }
+            while (str.indexOf("/../") !== -1) {
+                str = str.replace(/\/(((?!\/).)*)\/\.\.\//, "/")
+            }
+            return str
+        },
+
+        /**
+         * 项目配置模板
+         * @param project_id
+         * @returns {{showMy: boolean, showUndone: boolean, project_id, chat: boolean, showHelp: boolean, showCompleted: boolean, cardInit: boolean, card: boolean, completedTask: boolean}}
+         */
+        projectParameterTemplate(project_id) {
+            return {
+                project_id,
+                card: true,
+                cardInit: false,
+                chat: false,
+                showMy: true,
+                showHelp: true,
+                showUndone: true,
+                showCompleted: false,
+                completedTask: false,
+            }
+        },
+
+        /**
+         * 获取一些指定时间
+         * @param str
+         * @param retInt
+         * @returns {*|string}
+         */
+        getData(str, retInt = false) {
+            let now = new Date();                   //当前日期
+            let nowDayOfWeek = now.getDay();        //今天本周的第几天
+            let nowDay = now.getDate();             //当前日
+            let nowMonth = now.getMonth();          //当前月
+            let nowYear = now.getYear();            //当前年
+            nowYear += (nowYear < 2000) ? 1900 : 0;
+            let lastMonthDate = new Date();         //上月日期
+            lastMonthDate.setDate(1);
+            lastMonthDate.setMonth(lastMonthDate.getMonth()-1);
+            let lastMonth = lastMonthDate.getMonth();
+            let getQuarterStartMonth = () => {
+                let quarterStartMonth = 0;
+                if(nowMonth < 3) {
+                    quarterStartMonth = 0;
+                }
+                if (2 < nowMonth && nowMonth < 6) {
+                    quarterStartMonth = 3;
+                }
+                if (5 < nowMonth && nowMonth < 9) {
+                    quarterStartMonth = 6;
+                }
+                if (nowMonth > 8) {
+                    quarterStartMonth = 9;
+                }
+                return quarterStartMonth;
+            };
+            let getMonthDays = (myMonth) => {
+                let monthStartDate = new Date(nowYear, myMonth, 1);
+                let monthEndDate = new Date(nowYear, myMonth + 1, 1);
+                return (monthEndDate - monthStartDate)/(1000 * 60 * 60 * 24);
+            };
+            //
+            let time = now.getTime();
+            switch (str) {
+                case '今天':
+                    time = now;
+                    break;
+                case '昨天':
+                    time = now - 86400000;
+                    break;
+                case '前天':
+                    time = now - 86400000 * 2;
+                    break;
+                case '本周':
+                    time = new Date(nowYear, nowMonth, nowDay - nowDayOfWeek);
+                    break;
+                case '本周结束':
+                    time = new Date(nowYear, nowMonth, nowDay + (6 - nowDayOfWeek));
+                    break;
+                case '上周':
+                    time = new Date(nowYear, nowMonth, nowDay - nowDayOfWeek - 7);
+                    break;
+                case '上周结束':
+                    time = new Date(nowYear, nowMonth, nowDay - nowDayOfWeek - 1);
+                    break;
+                case '本周2':
+                    time = new Date(nowYear, nowMonth, nowDay - nowDayOfWeek + 1);
+                    break;
+                case '本周结束2':
+                    time = new Date(nowYear, nowMonth, nowDay + (6 - nowDayOfWeek) + 1);
+                    break;
+                case '上周2':
+                    time = new Date(nowYear, nowMonth, nowDay - nowDayOfWeek - 7 + 1);
+                    break;
+                case '上周结束2':
+                    time = new Date(nowYear, nowMonth, nowDay - nowDayOfWeek - 1 + 1);
+                    break;
+                case '本月':
+                    time = new Date(nowYear, nowMonth, 1);
+                    break;
+                case '本月结束':
+                    time = new Date(nowYear, nowMonth, getMonthDays(nowMonth));
+                    break;
+                case '上个月':
+                    time = new Date(nowYear, lastMonth, 1);
+                    break;
+                case '上个月结束':
+                    time = new Date(nowYear, lastMonth, getMonthDays(lastMonth));
+                    break;
+                case '本季度':
+                    time = new Date(nowYear, getQuarterStartMonth(), 1);
+                    break;
+                case '本季度结束':
+                    let quarterEndMonth = getQuarterStartMonth() + 2;
+                    time = new Date(nowYear, quarterEndMonth, getMonthDays(quarterEndMonth));
+                    break;
+            }
+            if (retInt === true) {
+                return time;
+            }
+            return $A.formatDate("Y-m-d", parseInt(time / 1000))
+        },
+    });
+
+    /**
+     * =============================================================================
      * *****************************   iviewui assist   ****************************
      * =============================================================================
      */
