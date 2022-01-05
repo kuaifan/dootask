@@ -142,10 +142,10 @@
          */
         getMiddle(string, start, end) {
             string = string.toString();
-            if (this.ishave(start) && this.strExists(string, start)) {
+            if (this.isHave(start) && this.strExists(string, start)) {
                 string = string.substring(string.indexOf(start) + start.length);
             }
-            if (this.ishave(end) && this.strExists(string, end)) {
+            if (this.isHave(end) && this.strExists(string, end)) {
                 string = string.substring(0, string.indexOf(end));
             }
             return string;
@@ -160,7 +160,7 @@
          */
         subString(string, start, end) {
             string += "";
-            if (!this.ishave(end)) {
+            if (!this.isHave(end)) {
                 end = string.length;
             }
             return string.substring(start, end);
@@ -187,7 +187,7 @@
          * @param set
          * @returns {boolean}
          */
-        ishave(set) {
+        isHave(set) {
             return !!(set !== null && set !== "null" && set !== undefined && set !== "undefined" && set);
         },
 
@@ -197,12 +197,12 @@
          * @param fixed
          * @returns {number}
          */
-        runNum(str, fixed) {
+        runNum(str, fixed = null) {
             let _s = Number(str);
             if (_s + "" === "NaN") {
                 _s = 0;
             }
-            if (/^[0-9]*[1-9][0-9]*$/.test(fixed)) {
+            if (fixed && /^[0-9]*[1-9][0-9]*$/.test(fixed)) {
                 _s = _s.toFixed(fixed);
                 let rs = _s.indexOf('.');
                 if (rs < 0) {
@@ -350,15 +350,6 @@
         },
 
         /**
-         * 是否手机号码
-         * @param phone
-         * @returns {boolean}
-         */
-        isPhone(phone) {
-            return this.isMobile(phone);
-        },
-
-        /**
          * 根据两点间的经纬度计算距离
          * @param lng1
          * @param lat1
@@ -421,24 +412,6 @@
          * @param myObj
          * @returns {*}
          */
-        cloneData(myObj) {
-            if(typeof(myObj) !== 'object') return myObj;
-            if(myObj === null) return myObj;
-            //
-            if (typeof myObj.length === 'number') {
-                let [ ...myNewObj ] = myObj;
-                return myNewObj;
-            }else{
-                let { ...myNewObj } = myObj;
-                return myNewObj;
-            }
-        },
-
-        /**
-         * 克隆对象
-         * @param myObj
-         * @returns {*}
-         */
         cloneJSON(myObj) {
             if(typeof(myObj) !== 'object') return myObj;
             if(myObj === null) return myObj;
@@ -452,7 +425,7 @@
          * @param defaultVal
          * @returns {*}
          */
-        jsonParse(str, defaultVal) {
+        jsonParse(str, defaultVal = undefined) {
             if (str === null) {
                 return defaultVal ? defaultVal : {};
             }
@@ -472,7 +445,7 @@
          * @param defaultVal
          * @returns {string}
          */
-        jsonStringify(json, defaultVal) {
+        jsonStringify(json, defaultVal = undefined) {
             if (typeof json !== 'object') {
                 return json;
             }
@@ -544,10 +517,10 @@
             if (this.count(obj) === 0 || this.count(keys) === 0) {
                 return "";
             }
-            let arr = keys.replace(/,/g, "|").replace(/\./g, "|").split("|");
-            $A.each(arr, (index, key) => {
+            let array = keys.replace(/,/g, "|").replace(/\./g, "|").split("|");
+            array.some(key => {
                 object = typeof object[key] === "undefined" ? "" : object[key];
-            });
+            })
             return object;
         },
 
@@ -736,7 +709,7 @@
          * @param object
          * @param content
          */
-        insert2Input (object, content) {
+        insert2Input(object, content) {
             if (object === null || typeof object !== "object") return;
             if (typeof object.length === 'number' && object.length > 0) object = object[0];
 
@@ -1045,7 +1018,7 @@
      * =============================================================================
      */
     $.extend({
-        serializeObject (obj, parents) {
+        serializeObject(obj, parents) {
             if (typeof obj === 'string') return obj;
             let resultArray = [];
             let separator = '&';

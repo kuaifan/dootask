@@ -8,9 +8,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Response;
 
 /**
- * Class FileContent
+ * App\Models\FileContent
  *
- * @package App\Models
  * @property int $id
  * @property int|null $fid 文件ID
  * @property string|null $content 内容

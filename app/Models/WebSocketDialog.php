@@ -7,9 +7,8 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * Class WebSocketDialog
+ * App\Models\WebSocketDialog
  *
- * @package App\Models
  * @property int $id
  * @property string|null $type 对话类型
  * @property string|null $group_type 聊天室类型

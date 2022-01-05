@@ -42,12 +42,12 @@ use Request;
  * @property-read int $file_num
  * @property-read int $msg_num
  * @property-read bool $overdue
- * @property-read bool $owner
  * @property-read int $percent
  * @property-read int $sub_complete
  * @property-read int $sub_num
  * @property-read bool $today
  * @property-read \App\Models\Project|null $project
+ * @property-read \App\Models\ProjectColumn|null $projectColumn
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectTaskFile[] $taskFile
  * @property-read int|null $task_file_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectTaskTag[] $taskTag
@@ -90,11 +90,6 @@ use Request;
 class ProjectTask extends AbstractModel
 {
     use SoftDeletes;
-
-    const taskSelect = [
-        'project_tasks.*',
-        'project_task_users.owner',
-    ];
 
     protected $appends = [
         'file_num',
@@ -221,6 +216,14 @@ class ProjectTask extends AbstractModel
     public function project(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(Project::class, 'id', 'project_id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function projectColumn(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(ProjectColumn::class, 'id', 'column_id');
     }
 
     /**
@@ -869,32 +872,39 @@ class ProjectTask extends AbstractModel
     /**
      * 根据会员ID获取任务、项目信息（会员有任务权限 或 会员存在项目内）
      * @param int $task_id
+     * @param bool $archived true:仅限未归档, false:不限制
+     * @param int|bool $mustOwner 0|false:不限制, 1|true:限制任务或项目负责人, 2:已有负责人才限制任务或项目负责人
      * @param array $with
-     * @param bool $ignoreArchived 排除已归档
-     * @param null $project
      * @return self
      */
-    public static function userTask($task_id, $with = [], $ignoreArchived = true, &$project = null)
+    public static function userTask($task_id, $archived = true, $mustOwner = 0, $with = [])
     {
-        $task = self::with($with)->whereId(intval($task_id))->first();
+        $task = self::with($with)->allData()->where("project_tasks.id", intval($task_id))->first();
+        //
         if (empty($task)) {
             throw new ApiException('任务不存在', [ 'task_id' => $task_id ], -4002);
         }
-        if ($ignoreArchived && $task->archived_at != null) {
+        if ($archived === true && $task->archived_at != null) {
             throw new ApiException('任务已归档', [ 'task_id' => $task_id ], -4002);
         }
         //
         try {
-            $project = Project::userProject($task->project_id, $ignoreArchived);
+            $project = Project::userProject($task->project_id, $archived);
         } catch (Exception $e) {
-            if (ProjectTaskUser::whereUserid(User::userid())->whereTaskPid($task->id)->exists()) {
-                $project = Project::find($task->project_id);
-                if (empty($project)) {
-                    throw new ApiException('项目不存在或已被删除', [ 'task_id' => $task_id ], -4002);
-                }
-            } else {
+            if ($task->owner === null) {
                 throw new ApiException($e->getMessage(), [ 'task_id' => $task_id ], -4002);
             }
+            $project = Project::find($task->project_id);
+            if (empty($project)) {
+                throw new ApiException('项目不存在或已被删除', [ 'task_id' => $task_id ], -4002);
+            }
+        }
+        //
+        if ($mustOwner === 2) {
+            $mustOwner = $task->hasOwner() ? 1 : 0;
+        }
+        if (($mustOwner === 1 || $mustOwner === true) && !$task->owner && !$project->owner) {
+            throw new ApiException('仅限项目或任务负责人操作');
         }
         //
         return $task;

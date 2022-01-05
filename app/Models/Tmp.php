@@ -3,9 +3,8 @@
 namespace App\Models;
 
 /**
- * Class Tmp
+ * App\Models\Tmp
  *
- * @package App\Models
  * @property int $id
  * @property string|null $name
  * @property string|null $value

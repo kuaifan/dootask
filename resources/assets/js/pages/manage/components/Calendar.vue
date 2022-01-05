@@ -119,21 +119,21 @@ export default {
         },
         theme: {
             handler(newValue) {
-                this.calendarInstance.setTheme(this.cloneData(newValue));
+                this.calendarInstance.setTheme($A.cloneJSON(newValue));
             },
             deep: true
         },
         week: {
             handler(newValue) {
                 const silent = this.view !== 'week' && this.view !== 'day';
-                this.calendarInstance.setOptions({week: this.cloneData(newValue)}, silent);
+                this.calendarInstance.setOptions({week: $A.cloneJSON(newValue)}, silent);
             },
             deep: true
         },
         month: {
             handler(newValue) {
                 const silent = this.view !== 'month';
-                this.calendarInstance.setOptions({month: this.cloneData(newValue)}, silent);
+                this.calendarInstance.setOptions({month: $A.cloneJSON(newValue)}, silent);
             },
             deep: true
         },
@@ -176,9 +176,6 @@ export default {
         this.calendarInstance.destroy();
     },
     methods: {
-        cloneData(data) {
-            return JSON.parse(JSON.stringify(data));
-        },
         addEventListeners() {
             for (const eventName of Object.keys(this.$listeners)) {
                 this.calendarInstance.on(eventName, (...args) => this.$emit(eventName, ...args));

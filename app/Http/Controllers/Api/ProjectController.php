@@ -946,12 +946,11 @@ class ProjectController extends AbstractController
         //
         $task_id = intval(Request::input('task_id'));
         //
-        $task = ProjectTask::userTask($task_id, ['taskUser', 'taskTag'], true, $project);
+        $task = ProjectTask::userTask($task_id, true, false, ['taskUser', 'taskTag']);
         //
         $data = $task->toArray();
-        $data['project_name'] = $project?->name;
-        $data['column_name'] = ProjectColumn::whereId($task->column_id)->value('name');
-        //
+        $data['project_name'] = $task->project?->name;
+        $data['column_name'] = $task->projectColumn?->name;
         return Base::retSuccess('success', $data);
     }
 
@@ -1030,10 +1029,7 @@ class ProjectController extends AbstractController
             return Base::retError('文件不存在或已被删除');
         }
         //
-        $task = ProjectTask::userTask($file->task_id, [], true, $project);
-        if (!$task->isOwner() && !$project->owner) {
-            return Base::retError('仅限项目或任务负责人操作');
-        }
+        $task = ProjectTask::userTask($file->task_id, true, true);
         //
         $task->pushMsg('filedelete', $file);
         $file->delete();
@@ -1133,10 +1129,7 @@ class ProjectController extends AbstractController
         $task_id = intval(Request::input('task_id'));
         $name = Request::input('name');
         //
-        $task = ProjectTask::userTask($task_id, [], true, $project);
-        if (!$task->isOwner() && !$project->owner) {
-            return Base::retError('仅限项目或任务负责人添加');
-        }
+        $task = ProjectTask::userTask($task_id, true, true);
         //
         $task = ProjectTask::addTask([
             'name' => $name,
@@ -1187,14 +1180,7 @@ class ProjectController extends AbstractController
         parse_str(Request::getContent(), $data);
         $task_id = intval($data['task_id']);
         //
-        $task = ProjectTask::userTask($task_id, [], true, $project);
-        //
-        if ($task->hasOwner()) {
-            // 任务有负责人后仅限项目或任务负责人修改
-            if (!$task->isOwner() && !$project->owner) {
-                return Base::retError('仅限项目或任务负责人修改');
-            }
-        }
+        $task = ProjectTask::userTask($task_id, true, 2);
         // 更新任务
         $updateProject = false;
         $updateContent = false;
@@ -1233,10 +1219,7 @@ class ProjectController extends AbstractController
         //
         $task_id = Base::getPostInt('task_id');
         //
-        $task = ProjectTask::userTask($task_id, [], true, $project);
-        if (!$task->isOwner() && !$project->owner) {
-            return Base::retError('仅限项目或任务负责人上传');
-        }
+        $task = ProjectTask::userTask($task_id, true, true);
         //
         $path = "uploads/task/" . $task->id . "/";
         $image64 = Base::getPostValue('image64');
@@ -1350,10 +1333,7 @@ class ProjectController extends AbstractController
         $task_id = intval(Request::input('task_id'));
         $type = Request::input('type', 'add');
         //
-        $task = ProjectTask::userTask($task_id, [], false, $project);
-        if (!$task->isOwner() && !$project->owner) {
-            return Base::retError('仅限项目或任务负责人操作');
-        }
+        $task = ProjectTask::userTask($task_id, false, true);
         //
         if ($task->parent_id > 0) {
             return Base::retError('子任务不支持此功能');
@@ -1387,10 +1367,7 @@ class ProjectController extends AbstractController
         //
         $task_id = intval(Request::input('task_id'));
         //
-        $task = ProjectTask::userTask($task_id, [], true, $project);
-        if (!$task->isOwner() && !$project->owner) {
-            return Base::retError('仅限项目或任务负责人删除');
-        }
+        $task = ProjectTask::userTask($task_id, true, true);
         //
         $task->deleteTask();
         return Base::retSuccess('删除成功', ['id' => $task->id]);

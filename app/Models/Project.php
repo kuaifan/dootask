@@ -11,26 +11,19 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Request;
 
 /**
- * Class Project
+ * App\Models\Project
  *
- * @package App\Models
  * @property int $id
  * @property string|null $name 名称
  * @property string|null $desc 描述、备注
  * @property int|null $userid 创建人
- * @property int|mixed $dialog_id 聊天会话ID
+ * @property int|null $dialog_id 聊天会话ID
  * @property string|null $archived_at 归档时间
  * @property int|null $archived_userid 归档会员
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read int $owner_userid
- * @property-read int $task_complete
- * @property-read int $task_my_complete
- * @property-read int $task_my_num
- * @property-read int $task_my_percent
- * @property-read int $task_num
- * @property-read int $task_percent
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectColumn[] $projectColumn
  * @property-read int|null $project_column_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectLog[] $projectLog
@@ -337,20 +330,20 @@ class Project extends AbstractModel
     /**
      * 根据用户获取项目信息（用于判断会员是否存在项目内）
      * @param int $project_id
-     * @param null|bool $ignoreArchived 排除已归档
-     * @param null|bool $mustOwner 是否仅限项目负责人
+     * @param null|bool $archived true:仅限未归档, false:仅限已归档, null:不限制
+     * @param null|bool $mustOwner true:仅限项目负责人, false:仅限非项目负责人, null:不限制
      * @return self
      */
-    public static function userProject($project_id, $ignoreArchived = true, $mustOwner = null)
+    public static function userProject($project_id, $archived = true, $mustOwner = null)
     {
         $project = self::authData()->where('projects.id', intval($project_id))->first();
         if (empty($project)) {
             throw new ApiException('项目不存在或不在成员列表内', [ 'project_id' => $project_id ], -4001);
         }
-        if ($ignoreArchived === true && $project->archived_at != null) {
+        if ($archived === true && $project->archived_at != null) {
             throw new ApiException('项目已归档', [ 'project_id' => $project_id ], -4001);
         }
-        if ($ignoreArchived === false && $project->archived_at == null) {
+        if ($archived === false && $project->archived_at == null) {
             throw new ApiException('项目未归档', [ 'project_id' => $project_id ]);
         }
         if ($mustOwner === true && !$project->owner) {

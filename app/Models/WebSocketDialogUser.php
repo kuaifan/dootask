@@ -3,9 +3,8 @@
 namespace App\Models;
 
 /**
- * Class WebSocketDialogUser
+ * App\Models\WebSocketDialogUser
  *
- * @package App\Models
  * @property int $id
  * @property int|null $dialog_id 对话ID
  * @property int|null $userid 会员ID

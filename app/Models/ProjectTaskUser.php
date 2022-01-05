@@ -3,9 +3,8 @@
 namespace App\Models;
 
 /**
- * Class ProjectTaskUser
+ * App\Models\ProjectTaskUser
  *
- * @package App\Models
  * @property int $id
  * @property int|null $project_id 项目ID
  * @property int|null $task_id 任务ID

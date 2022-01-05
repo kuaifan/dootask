@@ -9,9 +9,8 @@ use Cache;
 use Carbon\Carbon;
 
 /**
- * Class User
+ * App\Models\User
  *
- * @package App\Models
  * @property int $userid
  * @property array $identity 身份
  * @property string|null $az A-Z

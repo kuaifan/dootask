@@ -5,17 +5,16 @@ namespace App\Models;
 use App\Module\Base;
 
 /**
- * Class ProjectTaskFile
+ * App\Models\ProjectTaskFile
  *
- * @package App\Models
  * @property int $id
  * @property int|null $project_id 项目ID
  * @property int|null $task_id 任务ID
  * @property string|null $name 文件名称
  * @property int|null $size 文件大小(B)
  * @property string|null $ext 文件格式
- * @property string|null $path 文件地址
- * @property string|null $thumb 缩略图
+ * @property string $path 文件地址
+ * @property string $thumb 缩略图
  * @property int|null $userid 上传用户ID
  * @property int|null $download 下载次数
  * @property \Illuminate\Support\Carbon|null $created_at

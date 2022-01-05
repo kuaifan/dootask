@@ -3,9 +3,8 @@
 namespace App\Models;
 
 /**
- * Class WebSocketDialogMsgRead
+ * App\Models\WebSocketDialogMsgRead
  *
- * @package App\Models
  * @property int $id
  * @property int|null $dialog_id 对话ID
  * @property int|null $msg_id 消息ID

@@ -3,9 +3,8 @@
 namespace App\Models;
 
 /**
- * Class Setting
+ * App\Models\Setting
  *
- * @package App\Models
  * @property int $id
  * @property string|null $name
  * @property string|null $desc 参数描述、备注

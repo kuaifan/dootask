@@ -9,9 +9,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Request;
 
 /**
- * Class ProjectColumn
+ * App\Models\ProjectColumn
  *
- * @package App\Models
  * @property int $id
  * @property int|null $project_id 项目ID
  * @property string|null $name 列表名称

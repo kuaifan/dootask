@@ -5,9 +5,8 @@ namespace App\Models;
 use App\Module\Base;
 
 /**
- * Class ProjectUser
+ * App\Models\ProjectUser
  *
- * @package App\Models
  * @property int $id
  * @property int|null $project_id 项目ID
  * @property int|null $userid 成员ID

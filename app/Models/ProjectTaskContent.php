@@ -3,9 +3,8 @@
 namespace App\Models;
 
 /**
- * Class ProjectTaskContent
+ * App\Models\ProjectTaskContent
  *
- * @package App\Models
  * @property int $id
  * @property int|null $project_id 项目ID
  * @property int|null $task_id 任务ID

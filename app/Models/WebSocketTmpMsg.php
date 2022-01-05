@@ -3,9 +3,8 @@
 namespace App\Models;
 
 /**
- * Class WebSocketTmpMsg
+ * App\Models\WebSocketTmpMsg
  *
- * @package App\Models
  * @property int $id
  * @property string|null $md5 MD5(会员ID-消息)
  * @property string|null $msg 详细消息

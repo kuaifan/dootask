@@ -10,9 +10,8 @@ use Carbon\Carbon;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 
 /**
- * Class WebSocketDialogMsg
+ * App\Models\WebSocketDialogMsg
  *
- * @package App\Models
  * @property int $id
  * @property int|null $dialog_id 对话ID
  * @property int|null $userid 发送会员ID

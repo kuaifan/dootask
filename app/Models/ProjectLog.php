@@ -3,9 +3,8 @@
 namespace App\Models;
 
 /**
- * Class ProjectLog
+ * App\Models\ProjectLog
  *
- * @package App\Models
  * @property int $id
  * @property int|null $project_id 项目ID
  * @property int|null $column_id 列表ID

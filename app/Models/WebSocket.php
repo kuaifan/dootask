@@ -4,14 +4,13 @@ namespace App\Models;
 
 
 /**
- * Class WebSocket
+ * App\Models\WebSocket
  *
- * @package App\Models
  * @property int $id
  * @property string $key
  * @property string|null $fd
- * @property int|null $userid
  * @property string|null $path
+ * @property int|null $userid
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocket newModelQuery()
