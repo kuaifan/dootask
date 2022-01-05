@@ -5,7 +5,7 @@
                 <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
                 <Col span="12" :class="['row-name', item.complete_at ? 'complete' : '']">
                     <Icon
-                        v-if="(item.sub_num > 0 && item.sub_top !== true) || (item.parent_id===0 && fastAddTask)"
+                        v-if="(item.sub_num > 0 && item.sub_top !== true) || (item.parent_id === 0 && fastAddTask)"
                         :class="['sub-icon', taskOpen[item.id] ? 'active' : '']"
                         type="ios-arrow-forward"
                         @click="getSublist(item)"/>
@@ -41,7 +41,7 @@
                                 </div>
                             </EDropdownItem>
                             <template v-if="item.parent_id === 0">
-                                <EDropdownItem v-if="item.parent_id === 0" divided disabled>{{$L('背景色')}}</EDropdownItem>
+                                <EDropdownItem divided disabled>{{$L('背景色')}}</EDropdownItem>
                                 <EDropdownItem v-for="(c, k) in $store.state.taskColorList" :key="k" :command="c">
                                     <div class="item">
                                         <i class="taskfont" :style="{color:c.color||'#f9f9f9'}" v-html="c.color == item.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
@@ -193,7 +193,7 @@ export default {
         subTask() {
             return function(task_id) {
                 return this.tasks.filter(({parent_id}) => {
-                    return parent_id > 0 && parent_id == task_id
+                    return parent_id == task_id
                 }).sort((a, b) => {
                     return a.id - b.id;
                 });

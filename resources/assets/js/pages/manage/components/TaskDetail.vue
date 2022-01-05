@@ -572,7 +572,7 @@ export default {
                 return [];
             }
             return this.tasks.filter(({parent_id}) => {
-                return parent_id > 0 && parent_id == this.taskId
+                return parent_id == this.taskId
             }).sort((a, b) => {
                 return a.id - b.id;
             });

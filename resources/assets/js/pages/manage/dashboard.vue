@@ -70,7 +70,7 @@
                                     </div>
                                 </EDropdownItem>
                                 <template v-if="item.parent_id === 0">
-                                    <EDropdownItem v-if="item.parent_id === 0" divided disabled>{{$L('背景色')}}</EDropdownItem>
+                                    <EDropdownItem divided disabled>{{$L('背景色')}}</EDropdownItem>
                                     <EDropdownItem v-for="(c, k) in $store.state.taskColorList" :key="k" :command="c">
                                         <div class="item">
                                             <i class="taskfont" :style="{color:c.color||'#f9f9f9'}" v-html="c.color == item.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}

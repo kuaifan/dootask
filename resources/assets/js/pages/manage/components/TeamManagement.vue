@@ -211,6 +211,9 @@ export default {
                                 props: {
                                     command: 'delete',
                                 },
+                                style: {
+                                    color: 'red'
+                                }
                             }, [h('div', this.$L('删除'))]),
                         ])
                         const dropdownMenu = h('EDropdown', {

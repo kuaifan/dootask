@@ -72,13 +72,7 @@ export default {
                 }
                 return true;
             }).map(task => {
-                if (task.parent_id <= 0) {
-                    // 主任务
-                    return Object.assign({}, task, {
-                        sub_top: false,
-                        sub_my: list.filter(({parent_id}) => parent_id == task.id),
-                    });
-                } else {
+                if (task.parent_id > 0) {
                     // 子任务
                     const data = state.tasks.find(({id}) => id == task.parent_id);
                     if (data) {
@@ -99,6 +93,12 @@ export default {
                             sub_my: [],
                         });
                     }
+                } else {
+                    // 主任务
+                    return Object.assign({}, task, {
+                        sub_top: false,
+                        sub_my: list.filter(({parent_id}) => parent_id == task.id),
+                    });
                 }
             })
         }
