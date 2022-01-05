@@ -59,20 +59,6 @@ export default {
     },
 
     /**
-     * 我所有的任务（未完成）
-     * @param state
-     * @returns {unknown[]}
-     */
-    ownerTasks(state) {
-        return state.tasks.filter(({complete_at, owner}) => {
-            if (complete_at) {
-                return false;
-            }
-            return owner;
-        })
-    },
-
-    /**
      * 转换任务列表
      * @returns {function(*): *}
      */
@@ -102,6 +88,7 @@ export default {
                             name: task.name,
                             start_at: task.start_at,
                             end_at: task.end_at,
+                            complete_at: task.complete_at,
 
                             sub_top: true,
                             sub_my: [],
@@ -115,6 +102,20 @@ export default {
                 }
             })
         }
+    },
+
+    /**
+     * 我所有的任务（未完成）
+     * @param state
+     * @returns {unknown[]}
+     */
+    ownerTasks(state) {
+        return state.tasks.filter(({complete_at, owner}) => {
+            if (complete_at) {
+                return false;
+            }
+            return owner;
+        })
     },
 
     /**

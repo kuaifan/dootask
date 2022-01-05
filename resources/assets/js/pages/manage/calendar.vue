@@ -76,11 +76,11 @@ export default {
     computed: {
         ...mapState(['userId', 'projects', 'tasks']),
 
-        ...mapGetters(['ownerTasks', 'transforTasks']),
+        ...mapGetters(['transforTasks']),
 
         list() {
-            const datas = this.transforTasks(this.ownerTasks.filter(({end_at}) => {
-                return end_at;
+            const datas = this.transforTasks(this.tasks.filter(({complete_at, owner, end_at}) => {
+                return !complete_at && owner && end_at;
             }));
             return datas.map(data => {
                 const isAllday = $A.rightExists(data.start_at, "00:00:00") && $A.rightExists(data.end_at, "23:59:59")

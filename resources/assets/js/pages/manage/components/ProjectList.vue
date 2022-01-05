@@ -462,7 +462,7 @@ export default {
             columnTopShow: {},
             taskLoad: {},
 
-            completeTask: [],
+            tempShowTasks: [],
 
             sortField: 'end_at',
             sortType: 'desc',
@@ -530,7 +530,7 @@ export default {
             'columns',
         ]),
 
-        ...mapGetters(['projectData', 'projectParameter', 'ownerTasks', 'transforTasks']),
+        ...mapGetters(['projectData', 'projectParameter', 'transforTasks']),
 
         userWaitRemove() {
             const {userids, useridbak} = this.userData;
@@ -593,13 +593,13 @@ export default {
         },
 
         myList() {
-            const {projectId, ownerTasks, searchText, completeTask, sortField, sortType} = this;
-            const array = ownerTasks.filter((task) => {
+            const {projectId, tasks, searchText, tempShowTasks, sortField, sortType} = this;
+            const array = tasks.filter((task) => {
                 if (task.project_id != projectId) {
                     return false;
                 }
                 if (!this.projectParameter('completedTask')) {
-                    if (task.complete_at && !completeTask.find(id => id == task.id)) {
+                    if (task.complete_at && !tempShowTasks.find(({id}) => id == task.id)) {
                         return false;
                     }
                 }
@@ -608,7 +608,7 @@ export default {
                         return false;
                     }
                 }
-                return true;
+                return task.owner;
             });
             return array.sort((a, b) => {
                 if (sortType == 'asc') {
@@ -626,13 +626,13 @@ export default {
         },
 
         helpList() {
-            const {projectId, tasks, searchText, userId, completeTask, sortField, sortType} = this;
+            const {projectId, tasks, searchText, tempShowTasks, userId, sortField, sortType} = this;
             const array = tasks.filter((task) => {
                 if (task.project_id != projectId || task.parent_id > 0) {
                     return false;
                 }
                 if (!this.projectParameter('completedTask')) {
-                    if (task.complete_at && !completeTask.find(id => id == task.id)) {
+                    if (task.complete_at && !tempShowTasks.find(({id}) => id == task.id)) {
                         return false;
                     }
                 }
@@ -659,22 +659,17 @@ export default {
         },
 
         unList() {
-            const {projectId, tasks, searchText, completeTask, sortField, sortType} = this;
+            const {projectId, tasks, searchText, sortField, sortType} = this;
             const array = tasks.filter((task) => {
                 if (task.project_id != projectId || task.parent_id > 0) {
                     return false;
-                }
-                if (!this.projectParameter('completedTask')) {
-                    if (task.complete_at && !completeTask.find(id => id == task.id)) {
-                        return false;
-                    }
                 }
                 if (searchText) {
                     if (!$A.strExists(task.name, searchText) && !$A.strExists(task.desc, searchText)) {
                         return false;
                     }
                 }
-                return !task.complete_at || completeTask.find(id => id == task.id);
+                return !task.complete_at;
             });
             return array.sort((a, b) => {
                 if (sortType == 'asc') {
@@ -727,7 +722,7 @@ export default {
             this.sortData = this.getSort();
         },
         '$route'() {
-            this.completeTask = [];
+            this.tempShowTasks = [];
         }
     },
 
@@ -949,19 +944,18 @@ export default {
                     if (task.complete_at) return;
                     this.updateTask(task, {
                         complete_at: $A.formatDate("Y-m-d H:i:s")
+                    }).then(() => {
+                        this.tempShowTasks.push(task)
                     })
-                    this.completeTask.push(task.id)
                     break;
 
                 case 'uncomplete':
                     if (!task.complete_at) return;
                     this.updateTask(task, {
                         complete_at: false
+                    }).then(() => {
+                        this.tempShowTasks = this.tempShowTasks.filter(({id}) => id != task.id)
                     })
-                    let index = this.completeTask.findIndex(id => id == task.id)
-                    if (index > -1) {
-                        this.completeTask.splice(index, 1)
-                    }
                     break;
 
                 case 'archived':
@@ -1255,7 +1249,7 @@ export default {
 
         toggleCompleted() {
             this.$store.dispatch('toggleProjectParameter', 'completedTask');
-            this.completeTask = [];
+            this.tempShowTasks = [];
         },
 
         formatTime(date) {
