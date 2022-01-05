@@ -79,7 +79,11 @@
                                 </template>
                             </EDropdownMenu>
                         </EDropdown>
-                        <div class="item-title"><span v-if="item.top_task === true">{{$L('子任务')}}</span>{{item.name}}</div>
+                        <div class="item-title">
+                            <span v-if="item.sub_top === true">{{$L('子任务')}}</span>
+                            <span v-if="item.sub_my && item.sub_my.length > 0">+{{item.sub_my.length}}</span>
+                            {{item.name}}
+                        </div>
                         <div v-if="item.desc" class="item-icon">
                             <i class="taskfont">&#xe71a;</i>
                         </div>
@@ -137,7 +141,7 @@ export default {
     computed: {
         ...mapState(['userInfo', 'projects', 'tasks', 'taskId']),
 
-        ...mapGetters(['dashboardTask']),
+        ...mapGetters(['dashboardTask', 'transforTasks']),
 
         title() {
             const {dashboard} = this;
@@ -156,10 +160,10 @@ export default {
             let data = [];
             switch (dashboard) {
                 case 'today':
-                    data = $A.cloneJSON(this.dashboardTask.today);
+                    data = this.transforTasks(this.dashboardTask.today);
                     break
                 case 'overdue':
-                    data = $A.cloneJSON(this.dashboardTask.overdue);
+                    data = this.transforTasks(this.dashboardTask.overdue);
                     break
             }
             if (completeTask.length > 0) {
@@ -172,19 +176,6 @@ export default {
             return data.sort((a, b) => {
                 return $A.Date(a.end_at) - $A.Date(b.end_at);
             });
-        },
-
-        expiresFormat() {
-            const {nowTime} = this;
-            return function (date) {
-                let time = Math.round($A.Date(date).getTime() / 1000) - nowTime;
-                if (time < 86400 * 7 && time > 0 ) {
-                    return this.formatSeconds(time);
-                } else if (time <= 0) {
-                    return '-' + this.formatSeconds(time * -1);
-                }
-                return this.formatTime(date)
-            }
         },
     },
 
@@ -323,6 +314,16 @@ export default {
             else if (seconds > 0) duration = this.formatBit(seconds) + "s";
             return duration;
         },
+
+        expiresFormat(date) {
+            let time = Math.round($A.Date(date).getTime() / 1000) - this.nowTime;
+            if (time < 86400 * 7 && time > 0 ) {
+                return this.formatSeconds(time);
+            } else if (time <= 0) {
+                return '-' + this.formatSeconds(time * -1);
+            }
+            return this.formatTime(date)
+        }
     }
 }
 </script>

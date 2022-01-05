@@ -266,8 +266,7 @@ state.cacheDialogs = state.method.getStorageArray("cacheDialogs");
 state.cacheProjects = state.method.getStorageArray("cacheProjects");
 state.cacheColumns = state.method.getStorageArray("cacheColumns");
 state.cacheTasks = state.method.getStorageArray("cacheTasks");
-// TablePanel
-state.cacheTablePanel = state.method.getStorageArray("cacheTablePanel");
+state.cacheProjectParameters = state.method.getStorageArray("cacheProjectParameters");
 // ServerUrl
 state.cacheServerUrl = state.method.getStorageString("cacheServerUrl")
 if (state.cacheServerUrl && window.systemInformation) {

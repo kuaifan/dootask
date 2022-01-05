@@ -138,8 +138,8 @@ export default {
      * @param state
      * @param data|{key, project_id}
      */
-    toggleTablePanel({state}, data) {
-        $A.execMainDispatch("toggleTablePanel", data)
+    toggleProjectParameters({state}, data) {
+        $A.execMainDispatch("toggleProjectParameters", data)
         //
         let key = data;
         let project_id = state.projectId;
@@ -148,9 +148,9 @@ export default {
             project_id = data.project_id;
         }
         if (project_id) {
-            let index = state.cacheTablePanel.findIndex(item => item.project_id == project_id)
+            let index = state.cacheProjectParameters.findIndex(item => item.project_id == project_id)
             if (index === -1) {
-                state.cacheTablePanel.push({
+                state.cacheProjectParameters.push({
                     project_id,
                     card: true,
                     cardInit: false,
@@ -161,15 +161,15 @@ export default {
                     showCompleted: false,
                     completedTask: false,
                 });
-                index = state.cacheTablePanel.findIndex(item => item.project_id == project_id)
+                index = state.cacheProjectParameters.findIndex(item => item.project_id == project_id)
             }
-            const cache = state.cacheTablePanel[index];
+            const cache = state.cacheProjectParameters[index];
             if (!state.method.isJson(key)) {
                 key = {[key]: !cache[key]};
             }
-            state.cacheTablePanel.splice(index, 1, Object.assign(cache, key))
+            state.cacheProjectParameters.splice(index, 1, Object.assign(cache, key))
             setTimeout(() => {
-                state.method.setStorage("cacheTablePanel", state.cacheTablePanel);
+                state.method.setStorage("cacheProjectParameters", state.cacheProjectParameters);
             });
         }
     },
@@ -395,7 +395,7 @@ export default {
                 state.cacheColumns = state.columns = [];
                 state.cacheTasks = state.tasks = [];
                 //
-                state.method.setStorage("cacheTablePanel", state.cacheTablePanel);
+                state.method.setStorage("cacheProjectParameters", state.cacheProjectParameters);
                 state.method.setStorage("cacheServerUrl", state.cacheServerUrl);
                 state.method.setStorage("cacheLoginEmail", cacheLoginEmail);
                 dispatch("saveUserInfo", state.method.isJson(userInfo) ? userInfo : state.userInfo);
@@ -787,9 +787,9 @@ export default {
                 dispatch("saveColumn", data.data);
                 // 判断只有1列的时候默认版面为表格模式
                 if (state.columns.filter(item => item.project_id == project_id).length === 1) {
-                    const cache = state.cacheTablePanel.find(item => item.project_id == project_id) || {};
+                    const cache = state.cacheProjectParameters.find(item => item.project_id == project_id) || {};
                     if (typeof cache.cardInit === "undefined" || cache.cardInit === false) {
-                        dispatch("toggleTablePanel", {
+                        dispatch("toggleProjectParameters", {
                             project_id,
                             key: {
                                 card: false,
@@ -942,14 +942,14 @@ export default {
             if (data.project_id) {
                 state.projectLoad--;
             }
+            //
             const resData = result.data;
-            const ids = resData.data.map(({id}) => id)
-            if (ids.length > 0) {
-                if (data.project_id) {
+            if (data.project_id && resData.current_page == 1) {
+                const ids = resData.data.map(({id}) => id)
+                if (ids.length > 0) {
                     state.tasks = state.tasks.filter((item) => item.project_id != data.project_id || ids.includes(item.id));
                 }
             }
-            dispatch("saveTask", resData.data);
             //
             if (resData.next_page_url) {
                 const nextData = Object.assign(data, {
@@ -966,6 +966,8 @@ export default {
                     dispatch("getTasks", nextData)
                 }
             }
+            //
+            dispatch("saveTask", resData.data);
         }).catch(e => {
             console.error(e);
             if (data.project_id) {
@@ -1559,6 +1561,7 @@ export default {
             if (ids.length > 0) {
                 state.dialogMsgs = state.dialogMsgs.filter((item) => item.dialog_id != dialog_id || ids.includes(item.id));
             }
+            //
             dispatch("saveDialog", result.data.dialog);
             dispatch("saveDialogMsg", result.data.data);
         }).catch(e => {
@@ -1568,12 +1571,12 @@ export default {
     },
 
     /**
-     * 获取下一页会话消息
+     * 获取更多(下一页)会话消息
      * @param state
      * @param dispatch
      * @param dialog_id
      */
-    getDialogMsgNextPage({state, dispatch}, dialog_id) {
+    getDialogMoreMsgs({state, dispatch}, dialog_id) {
         return new Promise(function (resolve, reject) {
             const dialog = state.dialogs.find(({id}) => id == dialog_id);
             if (!dialog) {

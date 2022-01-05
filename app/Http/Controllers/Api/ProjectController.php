@@ -63,14 +63,18 @@ class ProjectController extends AbstractController
                 "archived_userid": 0,
                 "created_at": "2022-01-02 06:23:15",
                 "updated_at": "2022-01-02 07:12:33",
+
                 "owner": 1,         // 是否项目负责人
                 "owner_userid": 1,  // 项目负责人ID
+
+                "project_user": [], // 为空，数据在one接口返回
+
                 "task_num": 9,
                 "task_complete": 0,
                 "task_percent": 0,
                 "task_my_num": 8,
                 "task_my_complete": 0,
-                "task_my_percent": 0
+                "task_my_percent": 0,
             },
         ],
         "current_page": 1,  // 当前页数
@@ -114,7 +118,9 @@ class ProjectController extends AbstractController
         //
         $list = $builder->orderByDesc('projects.id')->paginate(Base::getPaginate(100, 50));
         $list->transform(function (Project $project) use ($user) {
-            return array_merge($project->toArray(), $project->getTaskStatistics($user->userid));
+            return array_merge($project->toArray(), $project->getTaskStatistics($user->userid), [
+                'project_user' => []
+            ]);
         });
         //
         $data = $list->toArray();
@@ -151,14 +157,18 @@ class ProjectController extends AbstractController
         "archived_userid": 0,
         "created_at": "2022-01-02 06:23:15",
         "updated_at": "2022-01-02 07:12:33",
+
         "owner": 1,         // 是否项目负责人
         "owner_userid": 1,  // 项目负责人ID
+
+        "project_user": [], // 项目成员
+
         "task_num": 9,
         "task_complete": 0,
         "task_percent": 0,
         "task_my_num": 8,
         "task_my_complete": 0,
-        "task_my_percent": 0
+        "task_my_percent": 0,
     }
      */
     public function one()
@@ -168,7 +178,9 @@ class ProjectController extends AbstractController
         $project_id = intval(Request::input('project_id'));
         //
         $project = Project::userProject($project_id);
-        $data = array_merge($project->toArray(), $project->getTaskStatistics($user->userid));
+        $data = array_merge($project->toArray(), $project->getTaskStatistics($user->userid), [
+            'project_user' => $project->projectUser
+        ]);
         //
         return Base::retSuccess('success', $data);
     }
@@ -1122,8 +1134,7 @@ class ProjectController extends AbstractController
             'parent_id' => $task->id,
             'project_id' => $task->project_id,
             'column_id' => $task->column_id,
-            'start_at' => $task->start_at,
-            'end_at' => $task->end_at,
+            'times' => [$task->start_at, $task->end_at],
             'owner' => [User::userid()]
         ]);
         $data = [
@@ -1198,7 +1209,7 @@ class ProjectController extends AbstractController
             $task->updateTask($data, $updateContent, $updateSubTask);
         }
         $data = ProjectTask::with(['taskUser', 'taskTag'])->find($task->id)->toArray();
-        $data['is_update_complete'] = $task->parent_id == 0 && $updateComplete;
+        $data['is_update_complete'] = $updateComplete;
         $data['is_update_content'] = $updateContent;
         $data['is_update_subtask'] = $updateSubTask;
         $task->pushMsg('update', $data);

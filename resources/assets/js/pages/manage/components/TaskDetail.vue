@@ -595,19 +595,6 @@ export default {
             }
         },
 
-        expiresFormat() {
-            const {nowTime} = this;
-            return function (date) {
-                let time = Math.round($A.Date(date).getTime() / 1000) - nowTime;
-                if (time < 86400 * 7 && time > 0 ) {
-                    return this.formatSeconds(time);
-                } else if (time <= 0) {
-                    return '-' + this.formatSeconds(time * -1);
-                }
-                return this.formatTime(date)
-            }
-        },
-
         cutTime() {
             const {nowTime, taskDetail} = this;
             let string = "";
@@ -798,6 +785,16 @@ export default {
             else if (minutes > 0) duration = this.formatBit(minutes) + ":" + this.formatBit(seconds);
             else if (seconds > 0) duration = this.formatBit(seconds) + "s";
             return duration;
+        },
+
+        expiresFormat(date) {
+            let time = Math.round($A.Date(date).getTime() / 1000) - this.nowTime;
+            if (time < 86400 * 7 && time > 0 ) {
+                return this.formatSeconds(time);
+            } else if (time <= 0) {
+                return '-' + this.formatSeconds(time * -1);
+            }
+            return this.formatTime(date)
         },
 
         onNameKeydown(e) {

@@ -76,10 +76,10 @@ export default {
     computed: {
         ...mapState(['userId', 'projects', 'tasks']),
 
-        ...mapGetters(['myTask']),
+        ...mapGetters(['myTasks', 'transforTasks']),
 
         list() {
-            const datas = $A.cloneJSON(this.myTask.filter(({end_at}) => {
+            const datas = this.transforTasks(this.myTasks.filter(({end_at}) => {
                 return end_at;
             }));
             return datas.map(data => {
@@ -104,11 +104,14 @@ export default {
                 if (data.p_name) {
                     task.priority = '<span class="priority" style="background-color:' + data.p_color + '">' + data.p_name + '</span>';
                 }
-                if (data.top_task === true) {
-                    task.title = '[' + this.$L('子任务') + '] ' + task.title
+                if (data.sub_my && data.sub_my.length > 0) {
+                    task.title = `[+${data.sub_my.length}] ${task.title}`
+                }
+                if (data.sub_top === true) {
+                    task.title = `[${this.$L('子任务')}] ${task.title}`
                 }
                 if (data.overdue) {
-                    task.title = '[' + this.$L('超期') + '] ' + task.title
+                    task.title = `[${this.$L('超期')}] ${task.title}`
                     task.color = "#f56c6c"
                     task.bgColor = "#fef0f0"
                     task.priority+= '<span class="overdue">' + this.$L('超期未完成') + '</span>';

@@ -152,7 +152,7 @@ class Project extends AbstractModel
     }
 
     /**
-     * 获取任务统计
+     * 获取任务统计数据
      * @param $userid
      * @return array
      */

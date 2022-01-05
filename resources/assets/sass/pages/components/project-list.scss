@@ -671,7 +671,7 @@
                                 display: inline-block;
                                 vertical-align: top;
                                 margin-top: 3px;
-                                margin-right: 4px;
+                                margin-right: 3px;
                             }
                         }
                         .item-icons {
@@ -773,11 +773,20 @@
                     }
                     .task-row {
                         background-color: #fcfcfd;
+                        .priority-color {
+                            display: none;
+                        }
                         > div {
                             &.row-name {
                                 padding-left: 56px;
                                 .item-title {
                                     color: #6C7D8C;
+                                }
+                            }
+                            &.row-column,
+                            &.row-priority {
+                                > div {
+                                    display: none;
                                 }
                             }
                         }

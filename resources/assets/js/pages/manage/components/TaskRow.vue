@@ -2,10 +2,10 @@
     <div class="task-rows">
         <div v-for="(item, key) in list" :key="key">
             <Row class="task-row" :style="item.color ? {backgroundColor: item.color, borderBottomColor: item.color} : {}">
-                <em v-if="item.p_name && isTopTask(item)" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
+                <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
                 <Col span="12" :class="['row-name', item.complete_at ? 'complete' : '']">
                     <Icon
-                        v-if="item.sub_num > 0 || (item.parent_id===0 && fastAddTask)"
+                        v-if="(item.sub_num > 0 && item.sub_top !== true) || (item.parent_id===0 && fastAddTask)"
                         :class="['sub-icon', taskOpen[item.id] ? 'active' : '']"
                         type="ios-arrow-forward"
                         @click="getSublist(item)"/>
@@ -50,7 +50,11 @@
                             </template>
                         </EDropdownMenu>
                     </EDropdown>
-                    <div class="item-title" @click="openTask(item)"><span v-if="item.top_task === true">{{$L('子任务')}}</span>{{item.name}}</div>
+                    <div class="item-title" @click="openTask(item)">
+                        <span v-if="item.sub_top === true">{{$L('子任务')}}</span>
+                        <span v-if="item.sub_my && item.sub_my.length > 0">+{{item.sub_my.length}}</span>
+                        {{item.name}}
+                    </div>
                     <div class="item-icons" @click="openTask(item)">
                         <div v-if="item.desc" class="item-icon">
                             <i class="taskfont">&#xe71a;</i>
@@ -71,11 +75,10 @@
                 </Col>
                 <Col span="3" class="row-column">
                     <EDropdown
-                        v-if="isTopTask(item)"
                         trigger="click"
                         size="small"
                         placement="bottom"
-                        :disabled="item.top_task === true"
+                        :disabled="item.sub_top === true"
                         @command="dropTask(item, $event)">
                         <div class="task-column">{{columnName(item.column_id)}}</div>
                         <EDropdownMenu slot="dropdown">
@@ -87,11 +90,10 @@
                 </Col>
                 <Col span="3" class="row-priority">
                     <EDropdown
-                        v-if="item.p_name && isTopTask(item)"
                         trigger="click"
                         size="small"
                         placement="bottom"
-                        :disabled="item.top_task === true"
+                        :disabled="item.sub_top === true"
                         @command="dropTask(item, $event)">
                         <TaskPriority :backgroundColor="item.p_color">{{item.p_name}}</TaskPriority>
                         <EDropdownMenu slot="dropdown">
@@ -197,25 +199,8 @@ export default {
                 });
             }
         },
-
-        expiresFormat() {
-            const {nowTime} = this;
-            return function (date) {
-                let time = Math.round($A.Date(date).getTime() / 1000) - nowTime;
-                if (time < 86400 * 7 && time > 0 ) {
-                    return this.formatSeconds(time);
-                } else if (time <= 0) {
-                    return '-' + this.formatSeconds(time * -1);
-                }
-                return this.formatTime(date)
-            }
-        },
     },
     methods: {
-        isTopTask(item) {
-            return item.parent_id === 0 || item.top_task === true
-        },
-
         columnName(column_id) {
             const column = this.columns.find(({id}) => id == column_id)
             return column ? column.name : '';
@@ -230,6 +215,10 @@ export default {
         },
 
         getSublist(task) {
+            if (task.sub_top === true) {
+                this.openTask(task);
+                return;
+            }
             if (this.taskOpen[task.id] === true) {
                 this.$set(this.taskOpen, task.id, false);
                 return;
@@ -304,7 +293,17 @@ export default {
             else if (minutes > 0) duration = this.formatBit(minutes) + ":" + this.formatBit(seconds);
             else if (seconds > 0) duration = this.formatBit(seconds) + "s";
             return duration;
-        }
+        },
+
+        expiresFormat(date) {
+            let time = Math.round($A.Date(date).getTime() / 1000) - this.nowTime;
+            if (time < 86400 * 7 && time > 0 ) {
+                return this.formatSeconds(time);
+            } else if (time <= 0) {
+                return '-' + this.formatSeconds(time * -1);
+            }
+            return this.formatTime(date)
+        },
     }
 }
 </script>

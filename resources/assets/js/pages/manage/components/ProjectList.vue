@@ -24,7 +24,7 @@
                             </div>
                         </Tooltip>
                     </li>
-                    <li :class="['project-icon', tablePanel('chat') ? 'active' : '']" @click="$store.dispatch('toggleTablePanel', 'chat')">
+                    <li :class="['project-icon', projectParameters('chat') ? 'active' : '']" @click="$store.dispatch('toggleProjectParameters', 'chat')">
                         <Icon class="menu-icon" type="ios-chatbubbles" />
                         <Badge class="menu-badge" :count="msgUnread"></Badge>
                     </li>
@@ -53,24 +53,24 @@
             <div v-if="projectData.desc" class="project-subtitle">{{projectData.desc}}</div>
             <div class="project-switch">
                 <div v-if="completedCount > 0" class="project-checkbox">
-                    <Checkbox :value="tablePanel('completedTask')" @on-change="toggleCompleted">{{$L('显示已完成')}}</Checkbox>
+                    <Checkbox :value="projectParameters('completedTask')" @on-change="toggleCompleted">{{$L('显示已完成')}}</Checkbox>
                 </div>
-                <div :class="['project-switch-button', !tablePanel('card') ? 'menu' : '']" @click="$store.dispatch('toggleTablePanel', 'card')">
+                <div :class="['project-switch-button', !projectParameters('card') ? 'menu' : '']" @click="$store.dispatch('toggleProjectParameters', 'card')">
                     <div><i class="taskfont">&#xe60c;</i></div>
                     <div><i class="taskfont">&#xe66a;</i></div>
                 </div>
             </div>
         </div>
-        <div v-if="tablePanel('card')" class="project-column">
+        <div v-if="projectParameters('card')" class="project-column">
             <Draggable
-                :list="projectData.columns"
+                :list="columnList"
                 :animation="150"
                 :disabled="sortDisabled || $store.state.windowMax768"
                 class="column-list"
                 tag="ul"
                 draggable=".column-item"
                 @sort="sortUpdate(true)">
-                <li v-for="column in projectData.columns" class="column-item">
+                <li v-for="column in columnList" class="column-item">
                     <div
                         :class="['column-head', column.color ? 'custom-color' : '']"
                         :style="column.color ? {backgroundColor: column.color} : {}">
@@ -255,10 +255,10 @@
                 </Row>
             </div>
             <!--我的任务-->
-            <div :class="['project-table-body', !tablePanel('showMy') ? 'project-table-hide' : '']">
+            <div :class="['project-table-body', !projectParameters('showMy') ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
-                        <i class="taskfont" @click="$store.dispatch('toggleTablePanel', 'showMy')">&#xe689;</i>
+                        <i class="taskfont" @click="$store.dispatch('toggleProjectParameters', 'showMy')">&#xe689;</i>
                         <div class="row-h1">{{$L('我的任务')}}</div>
                         <div class="row-num">({{myList.length}})</div>
                     </Col>
@@ -267,13 +267,13 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow v-if="tablePanel('showMy')" :list="myList" open-key="my" @command="dropTask" @on-priority="addTaskOpen" fast-add-task/>
+                <TaskRow v-if="projectParameters('showMy')" :list="transforTasks(myList)" open-key="my" @command="dropTask" @on-priority="addTaskOpen" fast-add-task/>
             </div>
             <!--协助的任务-->
-            <div v-if="helpList.length" :class="['project-table-body', !tablePanel('showHelp') ? 'project-table-hide' : '']">
+            <div v-if="helpList.length" :class="['project-table-body', !projectParameters('showHelp') ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
-                        <i class="taskfont" @click="$store.dispatch('toggleTablePanel', 'showHelp')">&#xe689;</i>
+                        <i class="taskfont" @click="$store.dispatch('toggleProjectParameters', 'showHelp')">&#xe689;</i>
                         <div class="row-h1">{{$L('协助的任务')}}</div>
                         <div class="row-num">({{helpList.length}})</div>
                     </Col>
@@ -282,28 +282,28 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow v-if="tablePanel('showHelp')" :list="helpList" open-key="help" @command="dropTask" @on-priority="addTaskOpen"/>
+                <TaskRow v-if="projectParameters('showHelp')" :list="helpList" open-key="help" @command="dropTask" @on-priority="addTaskOpen"/>
             </div>
             <!--未完成任务-->
-            <div v-if="projectData.task_num > 0" :class="['project-table-body', !tablePanel('showUndone') ? 'project-table-hide' : '']">
+            <div v-if="projectData.task_num > 0" :class="['project-table-body', !projectParameters('showUndone') ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
-                        <i class="taskfont" @click="$store.dispatch('toggleTablePanel', 'showUndone')">&#xe689;</i>
+                        <i class="taskfont" @click="$store.dispatch('toggleProjectParameters', 'showUndone')">&#xe689;</i>
                         <div class="row-h1">{{$L('未完成任务')}}</div>
-                        <div class="row-num">({{undoneList.length}})</div>
+                        <div class="row-num">({{unList.length}})</div>
                     </Col>
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow v-if="tablePanel('showUndone')" :list="undoneList" open-key="undone" @command="dropTask" @on-priority="addTaskOpen"/>
+                <TaskRow v-if="projectParameters('showUndone')" :list="unList" open-key="undone" @command="dropTask" @on-priority="addTaskOpen"/>
             </div>
             <!--已完成任务-->
-            <div v-if="projectData.task_num > 0" :class="['project-table-body', !tablePanel('showCompleted') ? 'project-table-hide' : '']">
+            <div v-if="projectData.task_num > 0" :class="['project-table-body', !projectParameters('showCompleted') ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
-                        <i class="taskfont" @click="$store.dispatch('toggleTablePanel', 'showCompleted')">&#xe689;</i>
+                        <i class="taskfont" @click="$store.dispatch('toggleProjectParameters', 'showCompleted')">&#xe689;</i>
                         <div class="row-h1">{{$L('已完成任务')}}</div>
                         <div class="row-num">({{completedList.length}})</div>
                     </Col>
@@ -312,7 +312,7 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow v-if="tablePanel('showCompleted')" :list="completedList" open-key="completed" @command="dropTask" @on-priority="addTaskOpen"/>
+                <TaskRow v-if="projectParameters('showCompleted')" :list="completedList" open-key="completed" @command="dropTask" @on-priority="addTaskOpen"/>
             </div>
         </div>
 
@@ -504,7 +504,7 @@ export default {
         }, 1000);
         //
         this.projectDialogSubscribe = Store.subscribe('onProjectDialogBack', () => {
-            this.$store.dispatch('toggleTablePanel', 'chat');
+            this.$store.dispatch('toggleProjectParameters', 'chat');
         });
     },
 
@@ -530,9 +530,7 @@ export default {
             'columns',
         ]),
 
-        ...mapGetters(['projectData', 'tablePanel']),
-
-        ...mapGetters(['myTask']),
+        ...mapGetters(['projectData', 'projectParameters', 'myTasks', 'transforTasks']),
 
         userWaitRemove() {
             const {userids, useridbak} = this.userData;
@@ -557,7 +555,7 @@ export default {
         panelTask() {
             const {searchText} = this;
             return function (list) {
-                if (!this.tablePanel('completedTask')) {
+                if (!this.projectParameters('completedTask')) {
                     list = list.filter(({complete_at}) => {
                         return !complete_at;
                     });
@@ -571,13 +569,36 @@ export default {
             }
         },
 
+        columnList() {
+            const {projectId, columns, tasks} = this;
+            let list = $A.cloneJSON(columns.filter(({project_id}) => {
+                return project_id == projectId
+            })).sort((a, b) => {
+                if (a.sort != b.sort) {
+                    return a.sort - b.sort;
+                }
+                return a.id - b.id;
+            });
+            list.forEach((column) => {
+                column.tasks = this.transforTasks(tasks.filter((task) => {
+                    return task.column_id == column.id;
+                })).sort((a, b) => {
+                    if (a.sort != b.sort) {
+                        return a.sort - b.sort;
+                    }
+                    return a.id - b.id;
+                });
+            })
+            return Object.freeze(list);
+        },
+
         myList() {
-            const {projectId, myTask, searchText, completeTask, sortField, sortType} = this;
-            const array = myTask.filter((task) => {
+            const {projectId, myTasks, searchText, completeTask, sortField, sortType} = this;
+            const array = myTasks.filter((task) => {
                 if (task.project_id != projectId) {
                     return false;
                 }
-                if (!this.tablePanel('completedTask')) {
+                if (!this.projectParameters('completedTask')) {
                     if (task.complete_at && !completeTask.find(id => id == task.id)) {
                         return false;
                     }
@@ -610,7 +631,7 @@ export default {
                 if (task.project_id != projectId || task.parent_id > 0) {
                     return false;
                 }
-                if (!this.tablePanel('completedTask')) {
+                if (!this.projectParameters('completedTask')) {
                     if (task.complete_at && !completeTask.find(id => id == task.id)) {
                         return false;
                     }
@@ -637,13 +658,13 @@ export default {
             });
         },
 
-        undoneList() {
+        unList() {
             const {projectId, tasks, searchText, completeTask, sortField, sortType} = this;
             const array = tasks.filter((task) => {
                 if (task.project_id != projectId || task.parent_id > 0) {
                     return false;
                 }
-                if (!this.tablePanel('completedTask')) {
+                if (!this.projectParameters('completedTask')) {
                     if (task.complete_at && !completeTask.find(id => id == task.id)) {
                         return false;
                     }
@@ -670,16 +691,6 @@ export default {
             });
         },
 
-        completedCount() {
-            const {projectId, tasks} = this;
-            return tasks.filter((task) => {
-                if (task.project_id != projectId || task.parent_id > 0) {
-                    return false;
-                }
-                return task.complete_at;
-            }).length;
-        },
-
         completedList() {
             const {projectId, tasks, searchText} = this;
             const array = tasks.filter((task) => {
@@ -700,17 +711,14 @@ export default {
             });
         },
 
-        expiresFormat() {
-            const {nowTime} = this;
-            return function (date) {
-                let time = Math.round($A.Date(date).getTime() / 1000) - nowTime;
-                if (time < 86400 * 7 && time > 0 ) {
-                    return this.formatSeconds(time);
-                } else if (time <= 0) {
-                    return '-' + this.formatSeconds(time * -1);
+        completedCount() {
+            const {projectId, tasks} = this;
+            return tasks.filter((task) => {
+                if (task.project_id != projectId || task.parent_id > 0) {
+                    return false;
                 }
-                return this.formatTime(date)
-            }
+                return task.complete_at;
+            }).length;
         },
     },
 
@@ -726,7 +734,7 @@ export default {
     methods: {
         getSort() {
             const sortData = [];
-            this.projectData.columns.forEach((column) => {
+            this.columnList.forEach((column) => {
                 sortData.push({
                     id: column.id,
                     task: column.tasks.map(({id}) => id)
@@ -1168,7 +1176,7 @@ export default {
         taskIsHidden(task) {
             const {name, desc, complete_at} = task;
             const {searchText} = this;
-            if (!this.tablePanel('completedTask')) {
+            if (!this.projectParameters('completedTask')) {
                 if (complete_at) {
                     return true;
                 }
@@ -1221,7 +1229,7 @@ export default {
         },
 
         toggleCompleted() {
-            this.$store.dispatch('toggleTablePanel', 'completedTask');
+            this.$store.dispatch('toggleProjectParameters', 'completedTask');
             this.completeTask = [];
         },
 
@@ -1260,6 +1268,16 @@ export default {
             else if (seconds > 0) duration = this.formatBit(seconds) + "s";
             return duration;
         },
+
+        expiresFormat(date) {
+            let time = Math.round($A.Date(date).getTime() / 1000) - this.nowTime;
+            if (time < 86400 * 7 && time > 0 ) {
+                return this.formatSeconds(time);
+            } else if (time <= 0) {
+                return '-' + this.formatSeconds(time * -1);
+            }
+            return this.formatTime(date)
+        }
     }
 }
 </script>

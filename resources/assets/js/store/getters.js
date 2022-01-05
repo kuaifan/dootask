@@ -2,7 +2,7 @@ export default {
     /**
      * 当前打开的项目
      * @param state
-     * @returns {unknown[]|{project_user: *[], columns: *[]}}
+     * @returns {{}|{readonly id?: *}}
      */
     projectData(state) {
         let projectId = state.projectId;
@@ -11,33 +11,41 @@ export default {
         }
         if (projectId > 0) {
             window.__projectId = projectId;
-            const project = state.method.cloneJSON(state.projects.find(({id}) => id == projectId));
+            const project = state.projects.find(({id}) => id == projectId);
             if (project) {
-                project.columns = state.method.cloneJSON(state.columns.filter(({project_id}) => {
-                    return project_id == project.id
-                })).sort((a, b) => {
-                    if (a.sort != b.sort) {
-                        return a.sort - b.sort;
-                    }
-                    return a.id - b.id;
-                });
-                project.columns.forEach((column) => {
-                    column.tasks = state.method.cloneJSON(state.tasks.filter((task) => {
-                        return task.column_id == column.id && task.parent_id == 0;
-                    })).sort((a, b) => {
-                        if (a.sort != b.sort) {
-                            return a.sort - b.sort;
-                        }
-                        return a.id - b.id;
-                    });
-                })
-                return Object.freeze(project);
+                return project;
             }
         }
-        return {
-            columns: [],
-            project_user: []
-        };
+        return {};
+    },
+
+    /**
+     * 当前打开的项目面板参数
+     * @param state
+     * @returns {(function(*): (boolean|*))|*}
+     */
+    projectParameters(state) {
+        return function (key) {
+            if (!state.projectId) {
+                return false;
+            }
+            let cache = state.cacheProjectParameters.find(({project_id}) => project_id == state.projectId);
+            if (!cache) {
+                cache = {
+                    project_id: state.projectId,
+                    card: true,
+                    cardInit: false,
+                    chat: false,
+                    showMy: true,
+                    showHelp: true,
+                    showUndone: true,
+                    showCompleted: false,
+                    completedTask: false,
+                }
+                state.cacheProjectParameters.push(cache);
+            }
+            return cache && !!cache[key];
+        }
     },
 
     /**
@@ -61,76 +69,62 @@ export default {
     },
 
     /**
-     * 项目面板设置
-     * @param state
-     * @returns {(function(*): (boolean|*))|*}
-     */
-    tablePanel(state) {
-        return function (key) {
-            if (!state.projectId) {
-                return false;
-            }
-            let cache = state.cacheTablePanel.find(({project_id}) => project_id == state.projectId);
-            if (!cache) {
-                cache = {
-                    project_id: state.projectId,
-                    card: true,
-                    cardInit: false,
-                    chat: false,
-                    showMy: true,
-                    showHelp: true,
-                    showUndone: true,
-                    showCompleted: false,
-                    completedTask: false,
-                }
-                state.cacheTablePanel.push(cache);
-            }
-            return cache && !!cache[key];
-        }
-    },
-
-    /**
      * 我所有的任务（未完成）
      * @param state
      * @returns {unknown[]}
      */
-    myTask(state) {
-        return state.tasks.filter(({complete_at, parent_id, end_at, owner}) => {
-            if (parent_id > 0) {
-                const index = state.tasks.findIndex(data => {
-                    if (data.id != parent_id) {
-                        return false;
-                    }
-                    if (data.complete_at) {
-                        return false;
-                    }
-                    return data.owner;
-                });
-                if (index > -1) {
-                    return false;
-                }
-            }
+    myTasks(state) {
+        return state.tasks.filter(({complete_at, owner}) => {
             if (complete_at) {
                 return false;
             }
             return owner;
-        }).map(task => {
-            if (task.parent_id > 0) {
-                const tmp = state.tasks.find(({id}) => id == task.parent_id);
-                if (tmp) {
-                    return Object.assign({}, tmp, {
-                        id: task.id,
-                        parent_id: task.parent_id,
-                        name: task.name,
-                        start_at: task.start_at,
-                        end_at: task.end_at,
-                        sub_num: 0,
-                        top_task: true,
-                    });
-                }
-            }
-            return task;
         })
+    },
+
+    /**
+     * 转换任务列表
+     * @returns {function(*): *}
+     */
+    transforTasks(state) {
+        return function (list) {
+            return list.filter(({parent_id}) => {
+                if (parent_id > 0) {
+                    if (list.find(({id}) => id == parent_id)) {
+                        return false;
+                    }
+                }
+                return true;
+            }).map(task => {
+                if (task.parent_id <= 0) {
+                    // 主任务
+                    return Object.assign({}, task, {
+                        sub_top: false,
+                        sub_my: list.filter(({parent_id}) => parent_id == task.id),
+                    });
+                } else {
+                    // 子任务
+                    const data = state.tasks.find(({id}) => id == task.parent_id);
+                    if (data) {
+                        return Object.assign({}, data, {
+                            id: task.id,
+                            parent_id: task.parent_id,
+                            name: task.name,
+                            start_at: task.start_at,
+                            end_at: task.end_at,
+
+                            sub_top: true,
+                            sub_my: [],
+                        });
+                    } else {
+                        return Object.assign({}, task, {
+                            sub_top: true,
+                            sub_my: [],
+                        });
+                    }
+                }
+            })
+        }
     },
 
     /**
@@ -143,7 +137,7 @@ export default {
         const todayStart = $A.Date($A.formatDate("Y-m-d 00:00:00")),
             todayEnd = $A.Date($A.formatDate("Y-m-d 23:59:59")),
             todayNow = $A.Date($A.formatDate("Y-m-d H:i:s"));
-        const todayTasks = getters.myTask.filter(task => {
+        const todayTasks = getters.myTasks.filter(task => {
             if (!task.end_at) {
                 return false;
             }
@@ -151,7 +145,7 @@ export default {
                 end = $A.Date(task.end_at);
             return (start <= todayStart && todayStart <= end) || (start <= todayEnd && todayEnd <= end) || (start > todayStart && todayEnd > end);
         })
-        const overdueTasks = getters.myTask.filter(task => {
+        const overdueTasks = getters.myTasks.filter(task => {
             if (!task.end_at) {
                 return false;
             }
@@ -161,5 +155,5 @@ export default {
             today: todayTasks,
             overdue: overdueTasks,
         }
-    }
+    },
 }
