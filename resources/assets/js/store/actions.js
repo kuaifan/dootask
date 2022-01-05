@@ -202,7 +202,7 @@ export default {
             state.method.setStorage("userInfo", state.userInfo);
             dispatch("getProjects");
             dispatch("getDialogs");
-            dispatch("getDashboardTasks");
+            dispatch("getTaskForDashboard");
             dispatch("websocketConnection");
             resolve()
         });
@@ -433,12 +433,15 @@ export default {
     forgetFile({state, dispatch}, file_id) {
         $A.execMainDispatch("forgetFile", file_id)
         //
-        state.files = state.files.filter((file) => file.id != file_id);
-        state.files.forEach((file) => {
-            if (file.pid == file_id) {
-                dispatch("forgetFile", file.id);
-            }
-        });
+        let ids = $A.isArray(file_id) ? file_id : [file_id];
+        ids.some(id => {
+            state.files = state.files.filter(file => file.id != id);
+            state.files.some(file => {
+                if (file.pid == id) {
+                    dispatch("forgetFile", file.id);
+                }
+            });
+        })
     },
 
     /**
@@ -458,6 +461,7 @@ export default {
             }).then((result) => {
                 const ids = result.data.map(({id}) => id)
                 state.files = state.files.filter((item) => item.pid != pid || ids.includes(item.id));
+                //
                 dispatch("saveFile", result.data);
                 resolve(result)
             }).catch(e => {
@@ -533,11 +537,14 @@ export default {
     forgetProject({state}, project_id) {
         $A.execMainDispatch("forgetProject", project_id)
         //
-        let index = state.projects.findIndex(({id}) => id == project_id);
-        if (index > -1) {
-            state.projects.splice(index, 1);
-        }
-        if (state.projectId == project_id) {
+        let ids = $A.isArray(project_id) ? project_id : [project_id];
+        ids.some(id => {
+            let index = state.projects.findIndex(project => project.id == id);
+            if (index > -1) {
+                state.projects.splice(index, 1);
+            }
+        })
+        if (ids.includes(state.projectId)) {
             const project = state.projects.find(({id}) => id && id != project_id);
             if (project) {
                 $A.goForward({path: '/manage/project/' + project.id});
@@ -735,11 +742,18 @@ export default {
     forgetColumn({state, dispatch}, column_id) {
         $A.execMainDispatch("forgetColumn", column_id)
         //
-        let index = state.columns.findIndex(({id}) => id == column_id);
-        if (index > -1) {
-            dispatch('getProjectOne', state.columns[index].project_id)
-            state.columns.splice(index, 1);
-        }
+        let ids = $A.isArray(column_id) ? column_id : [column_id];
+        let project_ids = [];
+        ids.some(id => {
+            let index = state.columns.findIndex(column => column.id == id);
+            if (index > -1) {
+                project_ids.push(state.columns[index].project_id)
+                dispatch('getProjectOne', state.columns[index].project_id)
+                state.columns.splice(index, 1);
+            }
+        })
+        Array.from(new Set(project_ids)).some(id => dispatch("getProjectOne", id))
+        //
         setTimeout(() => {
             state.method.setStorage("cacheColumns", state.cacheColumns = state.columns);
         })
@@ -770,11 +784,12 @@ export default {
                 }
             }).then(({data}) => {
                 state.projectLoad--;
+                //
                 const ids = data.data.map(({id}) => id)
-                if (ids.length > 0) {
-                    state.columns = state.columns.filter((item) => item.project_id != project_id || ids.includes(item.id));
-                }
+                state.columns = state.columns.filter((item) => item.project_id != project_id || ids.includes(item.id));
+                //
                 dispatch("saveColumn", data.data);
+                resolve(data.data)
                 // 判断只有1列的时候默认版面为表格模式
                 if (state.columns.filter(item => item.project_id == project_id).length === 1) {
                     const cache = state.cacheProjectParameter.find(item => item.project_id == project_id) || {};
@@ -788,7 +803,6 @@ export default {
                         });
                     }
                 }
-                resolve(data.data)
             }).catch(e => {
                 console.error(e);
                 state.projectLoad--;
@@ -842,6 +856,7 @@ export default {
                 dispatch("saveTask", task)
             });
         } else if (state.method.isJson(data)) {
+            data._time = $A.Time();
             let index = state.tasks.findIndex(({id}) => id == data.id);
             if (index > -1) {
                 state.tasks.splice(index, 1, Object.assign({}, state.tasks[index], data));
@@ -862,7 +877,7 @@ export default {
             }
             if (data.is_update_subtask) {
                 data.is_update_subtask = false;
-                dispatch("getTasks", {parent_id: data.id});
+                dispatch("getTaskForParent", data.id);
             }
             //
             setTimeout(() => {
@@ -880,15 +895,23 @@ export default {
     forgetTask({state, dispatch}, task_id) {
         $A.execMainDispatch("forgetTask", task_id)
         //
-        let index = state.tasks.findIndex(({id}) => id == task_id);
-        if (index > -1) {
-            if (state.tasks[index].parent_id) {
-                dispatch("getTaskOne", state.tasks[index].parent_id)
+        let ids = $A.isArray(task_id) ? task_id : [task_id];
+        let parent_ids = [];
+        let project_ids = [];
+        ids.some(id => {
+            let index = state.tasks.findIndex(task => task.id == id);
+            if (index > -1) {
+                if (state.tasks[index].parent_id) {
+                    parent_ids.push(state.tasks[index].parent_id)
+                }
+                project_ids.push(state.tasks[index].project_id)
+                state.tasks.splice(index, 1);
             }
-            dispatch('getProjectOne', state.tasks[index].project_id)
-            state.tasks.splice(index, 1);
-        }
-        if (state.taskId == task_id) {
+        })
+        Array.from(new Set(parent_ids)).some(id => dispatch("getTaskOne", id))
+        Array.from(new Set(project_ids)).some(id => dispatch("getProjectOne", id))
+        //
+        if (ids.includes(state.taskId)) {
             state.taskId = 0;
         }
         setTimeout(() => {
@@ -904,7 +927,7 @@ export default {
     increaseTaskMsgNum({state}, dialog_id) {
         $A.execMainDispatch("increaseTaskMsgNum", dialog_id)
         //
-        const task = state.tasks.find((task) => task.dialog_id === dialog_id);
+        const task = state.tasks.find(task => task.dialog_id === dialog_id);
         if (task) task.msg_num++;
     },
 
@@ -913,56 +936,60 @@ export default {
      * @param state
      * @param dispatch
      * @param data
+     * @returns {Promise<unknown>}
      */
     getTasks({state, dispatch}, data) {
-        if (state.userId === 0) {
-            state.tasks = [];
-            return;
-        }
-        if (state.tasks.length == 0 && state.cacheTasks.length > 0) {
-            state.tasks = state.cacheTasks;
-        }
-        if (data.project_id) {
-            state.projectLoad++;
-        }
-        dispatch("call", {
-            url: 'project/task/lists',
-            data: data
-        }).then(result => {
+        return new Promise(function (resolve, reject) {
+            if (state.userId === 0) {
+                state.tasks = [];
+                reject({msg: 'Parameter error'});
+                return;
+            }
+            if (state.tasks.length == 0 && state.cacheTasks.length > 0) {
+                state.tasks = state.cacheTasks;
+            }
             if (data.project_id) {
-                state.projectLoad--;
+                state.projectLoad++;
             }
             //
-            const resData = result.data;
-            if (data.project_id && resData.current_page == 1) {
-                const ids = resData.data.map(({id}) => id)
-                if (ids.length > 0) {
-                    state.tasks = state.tasks.filter((item) => item.project_id != data.project_id || ids.includes(item.id));
+            dispatch("call", {
+                url: 'project/task/lists',
+                data: data
+            }).then(result => {
+                if (data.project_id) {
+                    state.projectLoad--;
                 }
-            }
-            //
-            if (resData.next_page_url) {
-                const nextData = Object.assign(data, {
-                    page: resData.current_page + 1,
-                });
-                if (resData.current_page % 5 === 0) {
-                    $A.modalWarning({
-                        content: "数据已超过" + resData.to + "条，是否继续加载？",
-                        onOk: () => {
-                            dispatch("getTasks", nextData)
-                        }
+                //
+                const resData = result.data;
+                dispatch("saveTask", resData.data);
+                //
+                if (resData.next_page_url) {
+                    const nextData = Object.assign(data, {
+                        page: resData.current_page + 1,
                     });
+                    if (resData.current_page % 5 === 0) {
+                        $A.modalWarning({
+                            content: "数据已超过" + resData.to + "条，是否继续加载？",
+                            onOk: () => {
+                                dispatch("getTasks", nextData).then(resolve).catch(reject)
+                            },
+                            onCancel: () => {
+                                resolve()
+                            }
+                        });
+                    } else {
+                        dispatch("getTasks", nextData).then(resolve).catch(reject)
+                    }
                 } else {
-                    dispatch("getTasks", nextData)
+                    resolve()
                 }
-            }
-            //
-            dispatch("saveTask", resData.data);
-        }).catch(e => {
-            console.error(e);
-            if (data.project_id) {
-                state.projectLoad--;
-            }
+            }).catch(e => {
+                console.error(e);
+                reject(e)
+                if (data.project_id) {
+                    state.projectLoad--;
+                }
+            });
         });
     },
 
@@ -998,44 +1025,101 @@ export default {
      * 获取Dashboard相关任务
      * @param state
      * @param dispatch
+     * @param getters
      */
-    getDashboardTasks({state, dispatch}) {
+    getTaskForDashboard({state, dispatch, getters}) {
         if (state.cacheLoading["loadDashboardTasks"] === true) {
             return;
         }
         state.cacheLoading["loadDashboardTasks"] = true;
         //
+        const time = $A.Time()
+        const {today, overdue} = getters.dashboardTask;
+        const currentIds = today.map(({id}) => id)
+        currentIds.push(...overdue.map(({id}) => id))
+        //
         let loadIng = 2;
         let call = () => {
             if (loadIng <= 0) {
                 state.cacheLoading["loadDashboardTasks"] = false;
+                //
+                const {today, overdue} = getters.dashboardTask;
+                const newIds = today.filter(task => task._time >= time).map(({id}) => id)
+                newIds.push(...overdue.filter(task => task._time >= time).map(({id}) => id))
+                dispatch("forgetTask", currentIds.filter(v => newIds.indexOf(v) == -1))
                 return;
             }
             loadIng--;
             if (loadIng == 1) {
+                // 获取今日任务
                 dispatch("getTasks", {
                     complete: "no",
                     time: [
                         $A.formatDate("Y-m-d 00:00:00"),
                         $A.formatDate("Y-m-d 23:59:59")
-                    ]
-                }).then(() => {
-                    setTimeout(call);
-                }).catch(() => {
-                    setTimeout(call);
-                })
+                    ],
+                }).then(call).catch(call)
             } else if (loadIng == 0) {
+                // 获取过期任务
                 dispatch("getTasks", {
                     complete: "no",
-                    time_before: $A.formatDate("Y-m-d H:i:s")
-                }).then(() => {
-                    setTimeout(call);
-                }).catch(() => {
-                    setTimeout(call);
-                })
+                    time_before: $A.formatDate("Y-m-d H:i:s"),
+                }).then(call).catch(call)
             }
         }
         call();
+    },
+
+    /**
+     * 获取项目任务
+     * @param state
+     * @param dispatch
+     * @param project_id
+     * @returns {Promise<unknown>}
+     */
+    getTaskForProject({state, dispatch}, project_id) {
+        return new Promise(function (resolve, reject) {
+            const time = $A.Time()
+            const currentIds = state.tasks.filter(task => task.project_id == project_id).map(({id}) => id)
+            //
+            let call = () => {
+                const newIds = state.tasks.filter(task => task.project_id == project_id && task._time >= time).map(({id}) => id)
+                dispatch("forgetTask", currentIds.filter(v => newIds.indexOf(v) == -1))
+            }
+            dispatch("getTasks", {project_id}).then(() => {
+                call()
+                resolve()
+            }).catch(() => {
+                call()
+                reject()
+            })
+        })
+    },
+
+    /**
+     * 获取子任务
+     * @param state
+     * @param dispatch
+     * @param parent_id
+     * @returns {Promise<unknown>}
+     */
+    getTaskForParent({state, dispatch}, parent_id) {
+        return new Promise(function (resolve, reject) {
+            const time = $A.Time()
+            const currentIds = state.tasks.filter(task => task.parent_id == parent_id).map(({id}) => id)
+            //
+            let call = () => {
+                const newIds = state.tasks.filter(task => task.parent_id == parent_id && task._time >= time).map(({id}) => id)
+                dispatch("forgetTask", currentIds.filter(v => newIds.indexOf(v) == -1))
+            }
+            dispatch("getTasks", {parent_id}).then(() => {
+                call()
+                resolve()
+            }).catch(() => {
+                call()
+                reject()
+            })
+        })
     },
 
     /**
@@ -1175,10 +1259,13 @@ export default {
      * @param file_id
      */
     forgetTaskFile({state, dispatch}, file_id) {
-        let index = state.taskFiles.findIndex(({id}) => id == file_id)
-        if (index > -1) {
-            state.taskFiles.splice(index, 1)
-        }
+        let ids = $A.isArray(file_id) ? file_id : [file_id];
+        ids.some(id => {
+            let index = state.taskFiles.findIndex(file => file.id == id)
+            if (index > -1) {
+                state.taskFiles.splice(index, 1)
+            }
+        })
     },
 
     /**
@@ -1201,7 +1288,7 @@ export default {
             dispatch("getTaskOne", task_id).then(() => {
                 dispatch("getTaskContent", task_id);
                 dispatch("getTaskFiles", task_id);
-                dispatch("getTasks", {parent_id: task_id});
+                dispatch("getTaskForParent", task_id);
             }).catch(({msg}) => {
                 $A.modalWarning({
                     content: msg,
@@ -1475,13 +1562,17 @@ export default {
     forgetDialog({state}, dialog_id) {
         $A.execMainDispatch("forgetDialog", dialog_id)
         //
-        let index = state.dialogs.findIndex(({id}) => id == dialog_id);
-        if (index > -1) {
-            state.dialogs.splice(index, 1);
-        }
-        if (dialog_id == state.method.getStorageInt("messenger::dialogId")) {
+        let ids = $A.isArray(dialog_id) ? dialog_id : [dialog_id];
+        ids.some(id => {
+            let index = state.dialogs.findIndex(dialog => dialog.id == id);
+            if (index > -1) {
+                state.dialogs.splice(index, 1);
+            }
+        })
+        if (ids.includes(state.method.getStorageInt("messenger::dialogId"))) {
             state.method.setStorage("messenger::dialogId", 0)
         }
+        //
         setTimeout(() => {
             state.method.setStorage("cacheDialogs", state.cacheDialogs = state.dialogs);
         })
@@ -1548,9 +1639,7 @@ export default {
             dispatch("saveDialog", dialog);
             //
             const ids = result.data.data.map(({id}) => id)
-            if (ids.length > 0) {
-                state.dialogMsgs = state.dialogMsgs.filter((item) => item.dialog_id != dialog_id || ids.includes(item.id));
-            }
+            state.dialogMsgs = state.dialogMsgs.filter((item) => item.dialog_id != dialog_id || ids.includes(item.id));
             //
             dispatch("saveDialog", result.data.dialog);
             dispatch("saveDialogMsg", result.data.data);
@@ -1752,14 +1841,14 @@ export default {
                                         break;
                                     case 'detail':
                                         dispatch("getProjectOne", data.id);
-                                        dispatch("getTasks", {project_id: data.id})
+                                        dispatch("getTaskForProject", data.id)
                                         break;
                                     case 'archived':
                                     case 'delete':
                                         dispatch("forgetProject", data.id);
                                         break;
                                     case 'sort':
-                                        dispatch("getTasks", {project_id: data.id})
+                                        dispatch("getTaskForProject", data.id)
                                         break;
                                 }
                             })(msgDetail);

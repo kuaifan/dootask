@@ -135,7 +135,7 @@ export default {
     },
 
     activated() {
-        this.$store.dispatch("getDashboardTasks");
+        this.$store.dispatch("getTaskForDashboard");
     },
 
     computed: {

@@ -785,7 +785,7 @@ export default {
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.sortDisabled = false;
-                this.$store.dispatch("getTasks", {project_id: this.projectId})
+                this.$store.dispatch("getTaskForProject", this.projectId)
             });
         },
 
@@ -1052,7 +1052,7 @@ export default {
                 this.userLoad--;
                 this.userShow = false;
                 this.$store.dispatch("getProjectOne", this.projectId);
-                this.$store.dispatch("getTasks", {project_id: this.projectId})
+                this.$store.dispatch("getTaskForProject", this.projectId)
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.userLoad--;
@@ -1072,7 +1072,7 @@ export default {
                 this.transferLoad--;
                 this.transferShow = false;
                 this.$store.dispatch("getProjectOne", this.projectId);
-                this.$store.dispatch("getTasks", {project_id: this.projectId})
+                this.$store.dispatch("getTaskForProject", this.projectId)
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.transferLoad--;

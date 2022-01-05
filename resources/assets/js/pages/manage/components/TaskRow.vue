@@ -228,14 +228,12 @@ export default {
             }
             this.$set(this.taskLoad, task.id, true);
             //
-            this.$store.dispatch("getTasks", {
-                parent_id: task.id
-            }).then(() => {
+            this.$store.dispatch("getTaskForParent", task.id).then(() => {
                 this.$set(this.taskLoad, task.id, false);
                 this.$set(this.taskOpen, task.id, true);
             }).catch(({msg}) => {
-                this.$set(this.taskLoad, task.id, false);
                 $A.modalError(msg);
+                this.$set(this.taskLoad, task.id, false);
             });
         },
 

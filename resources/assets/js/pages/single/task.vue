@@ -70,7 +70,7 @@ export default {
                 this.taskInfo = data;
                 this.$store.dispatch("getTaskContent", task_id);
                 this.$store.dispatch("getTaskFiles", task_id);
-                this.$store.dispatch("getTasks", {parent_id: task_id});
+                this.$store.dispatch("getTaskForParent", task_id);
             }).catch(({msg}) => {
                 this.loadIng--;
                 $A.modalError({

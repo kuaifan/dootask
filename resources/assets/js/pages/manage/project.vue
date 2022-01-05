@@ -35,7 +35,7 @@ export default {
                     this.$store.state.projectId = $A.runNum(id);
                     this.$store.dispatch("getProjectOne", id).then(() => {
                         this.$store.dispatch("getColumns", id);
-                        this.$store.dispatch("getTasks", {project_id: id});
+                        this.$store.dispatch("getTaskForProject", id);
                     }).catch(({msg}) => {
                         $A.modalWarning({
                             content: msg,
