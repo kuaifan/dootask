@@ -214,14 +214,21 @@ if [ $# -gt 0 ]; then
         shift 1
         rm -rf composer.lock
         rm -rf package-lock.json
+        mkdir -p ${cur_path}/docker/log/supervisor
         mkdir -p ${cur_path}/docker/mysql/data
-        chmod -R 777 ${cur_path}/docker/mysql/data
+        chmod -R 775 ${cur_path}/docker/log/supervisor
+        chmod -R 775 ${cur_path}/docker/mysql/data
         docker-compose up -d
         docker-compose restart php
         run_exec php "composer install"
         if [ ! -f "${cur_path}/vendor/autoload.php" ]; then
-            run_exec php "composer config -g repo.packagist composer https://mirrors.aliyun.com/composer/"
+            run_exec php "composer config repo.packagist composer https://packagist.phpcomposer.com"
             run_exec php "composer install"
+            run_exec php "composer config --unset repos.packagist"
+        fi
+        if [ ! -f "${cur_path}/vendor/autoload.php" ]; then
+            echo -e "${Error} ${RedBG}composer install 失败，请重试！ ${Font}"
+            exit 1
         fi
         [ -z "$(env_get APP_KEY)" ] && run_exec php "php artisan key:generate"
         run_exec php "php artisan migrate --seed"
@@ -259,6 +266,11 @@ if [ $# -gt 0 ]; then
         rm -rf "./docker/log/supervisor"
         find "./storage/logs" -name "*.log" | xargs rm -rf
         echo -e "${OK} ${GreenBG} 卸载完成 ${Font}"
+    elif [[ "$1" == "reinstall" ]]; then
+        shift 1
+        ./cmd uninstall
+        sleep 3
+        ./cmd install
     elif [[ "$1" == "repassword" ]]; then
         shift 1
         run_exec mariadb "sh /etc/mysql/repassword.sh \"$@\""
