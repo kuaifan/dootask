@@ -25,7 +25,7 @@ class SystemController extends AbstractController
      * @apiParam {String} type
      * - get: 获取（默认）
      * - all: 获取所有（需要管理员权限）
-     * - save: 保存设置（参数：reg、reg_invite、login_code、password_policy、project_invite、chat_nickname）
+     * - save: 保存设置（参数：reg、reg_invite、login_code、password_policy、project_invite、chat_nickname、auto_archived、archived_day）
 
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -41,8 +41,16 @@ class SystemController extends AbstractController
             User::auth('admin');
             $all = Request::input();
             foreach ($all AS $key => $value) {
-                if (!in_array($key, ['reg', 'reg_invite', 'login_code', 'password_policy', 'project_invite', 'chat_nickname'])) {
+                if (!in_array($key, ['reg', 'reg_invite', 'login_code', 'password_policy', 'project_invite', 'chat_nickname', 'auto_archived', 'archived_day'])) {
                     unset($all[$key]);
+                }
+            }
+            $all['archived_day'] = floatval($all['archived_day']);
+            if ($all['auto_archived'] == 'open') {
+                if ($all['archived_day'] <= 0) {
+                    return Base::retError('自动归档时间不可小于1天！');
+                } elseif ($all['archived_day'] > 100) {
+                    return Base::retError('自动归档时间不可大于100天！');
                 }
             }
             $setting = Base::setting('system', Base::newTrim($all));
@@ -62,6 +70,8 @@ class SystemController extends AbstractController
         $setting['password_policy'] = $setting['password_policy'] ?: 'simple';
         $setting['project_invite'] = $setting['project_invite'] ?: 'open';
         $setting['chat_nickname'] = $setting['chat_nickname'] ?: 'optional';
+        $setting['auto_archived'] = $setting['auto_archived'] ?: 'close';
+        $setting['archived_day'] = floatval($setting['archived_day']) ?: 7;
         //
         return Base::retSuccess('success', $setting ?: json_decode('{}'));
     }

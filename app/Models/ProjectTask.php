@@ -765,9 +765,9 @@ class ProjectTask extends AbstractModel
      * @param Carbon|null $archived_at 归档时间
      * @return bool
      */
-    public function archivedTask($archived_at)
+    public function archivedTask($archived_at, $isAuto = false)
     {
-        AbstractModel::transaction(function () use ($archived_at) {
+        AbstractModel::transaction(function () use ($isAuto, $archived_at) {
             if ($archived_at === null) {
                 // 取消归档
                 $this->archived_at = null;
@@ -775,14 +775,21 @@ class ProjectTask extends AbstractModel
                 $this->addLog("任务取消归档：" . $this->name);
                 $this->pushMsg('add', [
                     'new_column' => null,
-                    'task' => ProjectTask::with(['taskUser', 'taskTag'])->find($this->id),
+                    'task' => ProjectTask::oneTask($this->id),
                 ]);
             } else {
                 // 归档任务
+                if ($isAuto === true) {
+                    $logText = "自动任务归档：" . $this->name;
+                    $userid = 0;
+                } else {
+                    $logText = "任务归档：" . $this->name;
+                    $userid = User::userid();
+                }
                 $this->archived_at = $archived_at;
-                $this->archived_userid = User::userid();
+                $this->archived_userid = $userid;
                 $this->archived_follow = 0;
-                $this->addLog("任务归档：" . $this->name);
+                $this->addLog($logText, $userid);
                 $this->pushMsg('archived');
             }
             $this->save();

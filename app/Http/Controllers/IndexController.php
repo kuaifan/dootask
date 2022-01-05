@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Module\Base;
+use App\Tasks\AutoArchivedTask;
 use App\Tasks\DeleteTmpTask;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Redirect;
@@ -58,6 +59,8 @@ class IndexController extends InvokeController
         // 删除过期的临时表数据
         Task::deliver(new DeleteTmpTask('wg_tmp_msgs', 1));
         Task::deliver(new DeleteTmpTask('tmp', 24));
+        // 自动归档任务
+        Task::deliver(new AutoArchivedTask());
 
         return "success";
     }

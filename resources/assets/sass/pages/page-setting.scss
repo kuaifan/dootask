@@ -138,18 +138,30 @@
                 min-width: 94px;
             }
         }
+        .setting-auto-day {
+            display: block;
+            width: 110px;
+            margin-top: 12px;
+            line-height: 32px;
+            margin-bottom: -10px;
+        }
         &.submit {
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 0 !important;
+            .ivu-form {
+                flex: 1;
+                padding: 24px 40px;
+                overflow: auto;
+            }
             .setting-footer {
-                position: absolute;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                z-index: 1;
+                flex-shrink: 0;
+                position: static;
                 padding: 16px 24px 0;
                 border-top: 1px solid #F4F4F5;
             }

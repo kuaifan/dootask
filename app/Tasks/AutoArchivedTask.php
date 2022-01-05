@@ -1,0 +1,46 @@
+<?php
+namespace App\Tasks;
+
+@error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
+
+use App\Models\AbstractModel;
+use App\Models\ProjectTask;
+use App\Module\Base;
+use Carbon\Carbon;
+
+/**
+ * 完成的任务自动归档
+ * Class AutoArchivedTask
+ * @package App\Tasks
+ */
+class AutoArchivedTask extends AbstractTask
+{
+
+    public function __construct()
+    {
+        //
+    }
+
+    public function start()
+    {
+        $setting = Base::setting('system');
+        if ($setting['auto_archived'] === 'open') {
+            $archivedDay = floatval($setting['archived_day']);
+            if ($archivedDay > 0) {
+                $archivedDay = min(100, $archivedDay);
+                $archivedTime = Carbon::now()->subDays($archivedDay);
+                //获取已完成未归档的任务
+                AbstractModel::transaction(function() use ($archivedTime) {
+                    $taskLists = ProjectTask::whereNotNull('complete_at')
+                        ->where('complete_at', '<=', $archivedTime)
+                        ->whereNull('archived_at')
+                        ->take(100)
+                        ->get();
+                    foreach ($taskLists AS $task) {
+                        $task->archivedTask(Carbon::now(), true);
+                    }
+                });
+            }
+        }
+    }
+}

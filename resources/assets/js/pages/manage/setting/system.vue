@@ -45,6 +45,18 @@
                 </RadioGroup>
                 <div v-if="formDatum.chat_nickname == 'required'" class="form-tip">{{$L('必填：发送聊天内容前必须设置昵称。')}}</div>
             </FormItem>
+            <FormItem :label="$L('自动归档任务')" prop="autoArchived">
+                <RadioGroup :value="formDatum.auto_archived" @on-change="formArchived">
+                    <Radio label="open">{{$L('开启')}}</Radio>
+                    <Radio label="close">{{$L('关闭')}}</Radio>
+                </RadioGroup>
+                <Tooltip v-if="formDatum.auto_archived=='open'" class="setting-auto-day" placement="right">
+                    <Input v-model="formDatum.archived_day" type="number">
+                        <span slot="append">{{$L('天')}}</span>
+                    </Input>
+                    <div slot="content">{{$L('任务完成 % 天后自动归档。', formDatum.archived_day)}}</div>
+                </Tooltip>
+            </FormItem>
         </Form>
         <div class="setting-footer">
             <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{$L('提交')}}</Button>
@@ -78,6 +90,10 @@ export default {
 
         resetForm() {
             this.formDatum = $A.cloneJSON(this.formDatum_bak);
+        },
+
+        formArchived(value) {
+            this.formDatum = { ...this.formDatum, auto_archived: value };
         },
 
         systemSetting(save) {
