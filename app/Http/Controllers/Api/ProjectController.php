@@ -161,7 +161,16 @@ class ProjectController extends AbstractController
         "owner": 1,         // 是否项目负责人
         "owner_userid": 1,  // 项目负责人ID
 
-        "project_user": [], // 项目成员
+        "project_user": [   // 项目成员
+            {
+                "id": 2,
+                "project_id": 2,
+                "userid": 1,
+                "owner": 1,
+                "created_at": "2022-01-02 00:55:32",
+                "updated_at": "2022-01-02 00:55:32"
+            }
+        ],
 
         "task_num": 9,
         "task_complete": 0,
@@ -1022,7 +1031,7 @@ class ProjectController extends AbstractController
         }
         //
         $task = ProjectTask::userTask($file->task_id, [], true, $project);
-        if (!$task->isOwnerParent() && !$project->owner) {
+        if (!$task->isOwner() && !$project->owner) {
             return Base::retError('仅限项目或任务负责人操作');
         }
         //
@@ -1125,7 +1134,7 @@ class ProjectController extends AbstractController
         $name = Request::input('name');
         //
         $task = ProjectTask::userTask($task_id, [], true, $project);
-        if (!$task->isOwnerParent() && !$project->owner) {
+        if (!$task->isOwner() && !$project->owner) {
             return Base::retError('仅限项目或任务负责人添加');
         }
         //
@@ -1180,39 +1189,24 @@ class ProjectController extends AbstractController
         //
         $task = ProjectTask::userTask($task_id, [], true, $project);
         //
-        if (count($task->taskUser->where('owner', 1)) > 0) {
+        if ($task->hasOwner()) {
             // 任务有负责人后仅限项目或任务负责人修改
-            if (!$task->isOwnerParent() && !$project->owner) {
+            if (!$task->isOwner() && !$project->owner) {
                 return Base::retError('仅限项目或任务负责人修改');
             }
         }
-        //
-        $updateComplete = false;
+        // 更新任务
+        $updateProject = false;
         $updateContent = false;
         $updateSubTask = false;
-        if (Base::isDate($data['complete_at'])) {
-            // 标记已完成
-            if ($task->complete_at) {
-                return Base::retError('任务已完成');
-            }
-            $task->completeTask(Carbon::now());
-            $updateComplete = true;
-        } elseif (Arr::exists($data, 'complete_at')) {
-            // 标记未完成
-            if (!$task->complete_at) {
-                return Base::retError('未完成任务');
-            }
-            $task->completeTask(null);
-            $updateComplete = true;
-        } else {
-            // 更新任务
-            $task->updateTask($data, $updateContent, $updateSubTask);
-        }
+        $task->updateTask($data, $updateProject, $updateContent, $updateSubTask);
+        //
         $data = ProjectTask::with(['taskUser', 'taskTag'])->find($task->id)->toArray();
-        $data['is_update_complete'] = $updateComplete;
+        $data['is_update_project'] = $updateProject;
         $data['is_update_content'] = $updateContent;
         $data['is_update_subtask'] = $updateSubTask;
         $task->pushMsg('update', $data);
+        //
         return Base::retSuccess('修改成功', $data);
     }
 
@@ -1240,7 +1234,7 @@ class ProjectController extends AbstractController
         $task_id = Base::getPostInt('task_id');
         //
         $task = ProjectTask::userTask($task_id, [], true, $project);
-        if (!$task->isOwnerParent() && !$project->owner) {
+        if (!$task->isOwner() && !$project->owner) {
             return Base::retError('仅限项目或任务负责人上传');
         }
         //
@@ -1357,7 +1351,7 @@ class ProjectController extends AbstractController
         $type = Request::input('type', 'add');
         //
         $task = ProjectTask::userTask($task_id, [], false, $project);
-        if (!$task->isOwnerParent() && !$project->owner) {
+        if (!$task->isOwner() && !$project->owner) {
             return Base::retError('仅限项目或任务负责人操作');
         }
         //
@@ -1394,7 +1388,7 @@ class ProjectController extends AbstractController
         $task_id = intval(Request::input('task_id'));
         //
         $task = ProjectTask::userTask($task_id, [], true, $project);
-        if (!$task->isOwnerParent() && !$project->owner) {
+        if (!$task->isOwner() && !$project->owner) {
             return Base::retError('仅限项目或任务负责人删除');
         }
         //

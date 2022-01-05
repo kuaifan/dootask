@@ -862,8 +862,8 @@ export default {
             if (data.parent_id > 0 && state.tasks.findIndex(({id}) => id == data.parent_id) === -1) {
                 dispatch("getTaskOne", data.parent_id);
             }
-            if (data.is_update_complete) {
-                data.is_update_complete = false;
+            if (data.is_update_project) {
+                data.is_update_project = false;
                 dispatch("getProjectOne", data.project_id);
             }
             if (data.is_update_content) {

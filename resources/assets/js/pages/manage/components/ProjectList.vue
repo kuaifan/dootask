@@ -571,9 +571,9 @@ export default {
 
         columnList() {
             const {projectId, columns, tasks} = this;
-            let list = $A.cloneJSON(columns.filter(({project_id}) => {
+            const list = columns.filter(({project_id}) => {
                 return project_id == projectId
-            })).sort((a, b) => {
+            }).sort((a, b) => {
                 if (a.sort != b.sort) {
                     return a.sort - b.sort;
                 }
@@ -589,7 +589,7 @@ export default {
                     return a.id - b.id;
                 });
             })
-            return Object.freeze(list);
+            return list;
         },
 
         myList() {
@@ -751,17 +751,42 @@ export default {
             }
             this.sortData = newSort;
             //
+            const data = {
+                project_id: this.projectId,
+                sort: this.sortData,
+                only_column: only_column === true ? 1 : 0
+            };
             this.sortDisabled = true;
             this.$store.dispatch("call", {
                 url: 'project/sort',
-                data: {
-                    project_id: this.projectId,
-                    sort: this.sortData,
-                    only_column: only_column === true ? 1 : 0
-                },
+                data,
             }).then(({msg}) => {
                 $A.messageSuccess(msg);
                 this.sortDisabled = false;
+                //
+                if (!data.only_column) {
+                    let sort,
+                        upTask = [];
+                    data.sort.forEach((item) => {
+                        sort = -1;
+                        upTask.push(...item.task.map(id => {
+                            sort++;
+                            upTask.push(...this.tasks.filter(({parent_id}) => parent_id == id).map(({id}) => {
+                                return {
+                                    id,
+                                    sort,
+                                    column_id: item.id,
+                                }
+                            }))
+                            return {
+                                id,
+                                sort,
+                                column_id: item.id,
+                            }
+                        }))
+                    })
+                    this.$store.dispatch("saveTask", upTask)
+                }
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.sortDisabled = false;

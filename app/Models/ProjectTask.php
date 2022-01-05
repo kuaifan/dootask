@@ -433,13 +433,32 @@ class ProjectTask extends AbstractModel
     /**
      * 修改任务
      * @param $data
-     * @param $updateContent
-     * @param $updateSubTask
+     * @param bool $updateProject   是否更新项目数据（项目统计）
+     * @param bool $updateContent   是否更新任务详情
+     * @param bool $updateSubTask   是否更新子任务
      * @return bool
      */
-    public function updateTask($data, &$updateContent = false, &$updateSubTask = false)
+    public function updateTask($data, &$updateProject = false, &$updateContent = false, &$updateSubTask = false)
     {
-        AbstractModel::transaction(function () use ($data, &$updateContent, &$updateSubTask) {
+        AbstractModel::transaction(function () use ($data, &$updateProject, &$updateContent, &$updateSubTask) {
+            // 状态
+            if (Arr::exists($data, 'complete_at')) {
+                if (Base::isDate($data['complete_at'])) {
+                    // 标记已完成
+                    if ($this->complete_at) {
+                        throw new ApiException('任务已完成');
+                    }
+                    $this->completeTask(Carbon::now());
+                } else {
+                    // 标记未完成
+                    if (!$this->complete_at) {
+                        throw new ApiException('未完成任务');
+                    }
+                    $this->completeTask(null);
+                }
+                $updateProject = true;
+                return;
+            }
             // 标题
             if (Arr::exists($data, 'name') && $this->name != $data['name']) {
                 if (empty($data['name'])) {
@@ -486,6 +505,7 @@ class ProjectTask extends AbstractModel
                         $row->delete();
                     }
                 }
+                $updateProject = true;
                 $this->syncDialogUser();
             }
             // 计划时间
@@ -678,11 +698,23 @@ class ProjectTask extends AbstractModel
     }
 
     /**
+     * 是否有负责人
+     * @return bool
+     */
+    public function hasOwner()
+    {
+        if (!isset($this->appendattrs['has_owner'])) {
+            $this->appendattrs['has_owner'] = ProjectTaskUser::whereTaskId($this->id)->whereOwner(1)->exists();
+        }
+        return $this->appendattrs['has_owner'];
+    }
+
+    /**
      * 是否负责人
      * @param bool $isParent 是父级任务的负责人也算
      * @return bool
      */
-    public function isOwnerParent($isParent = true) {
+    public function isOwner($isParent = true) {
         if ($this->owner) {
             return true;
         }
@@ -714,7 +746,7 @@ class ProjectTask extends AbstractModel
                         throw new ApiException('子任务未完成');
                     }
                 }
-                if (count($this->taskUser->where('owner', 1)) == 0) {
+                if (!$this->hasOwner()) {
                     throw new ApiException('请先领取任务');
                 }
                 $this->complete_at = $complete_at;
