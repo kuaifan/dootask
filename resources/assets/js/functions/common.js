@@ -881,11 +881,13 @@
             if (params instanceof Date) {
                 params = $A.formatDate(format, params);
             } else if ($A.isJson(params)) {
+                params = Object.assign({}, params)
                 for (let key in params) {
                     if (!params.hasOwnProperty(key)) continue;
                     params[key] = $A.date2string(params[key], format);
                 }
             } else if ($A.isArray(params)) {
+                params = Object.assign([], params)
                 params.forEach((val, index) => {
                     params[index] = $A.date2string(val, format);
                 });

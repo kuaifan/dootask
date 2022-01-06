@@ -214,7 +214,7 @@ export default {
             const {times} = this.addData;
             let temp = $A.date2string(times, "Y-m-d H:i");
             if (temp[0] && temp[1]) {
-                let d = Math.floor(($A.Date(temp[1]).getTime() - $A.Date(temp[0]).getTime()) / 86400000);
+                let d = Math.ceil(($A.Date(temp[1]).getTime() - $A.Date(temp[0]).getTime()) / 86400000);
                 if (d > 0) {
                     return d;
                 }
