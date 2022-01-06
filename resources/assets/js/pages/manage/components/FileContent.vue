@@ -8,8 +8,8 @@
                         <div class="task-detail-delete-file-popover">
                             <p>{{$L('未保存当前修改内容？')}}</p>
                             <div class="buttons">
-                                <Button size="small" type="text" @click="unsaveGive">{{$L('放弃')}}</Button>
-                                <Button size="small" type="primary" @click="unsaveSave">{{$L('保存')}}</Button>
+                                <Button size="small" type="text" @click="unSaveGive">{{$L('放弃')}}</Button>
+                                <Button size="small" type="primary" @click="onSaveSave">{{$L('保存')}}</Button>
                             </div>
                         </div>
                         <span slot="reference">[{{$L('未保存')}}*]</span>
@@ -115,9 +115,11 @@ export default {
     },
 
     mounted() {
+        document.addEventListener('keydown', this.keySave);
         window.addEventListener('message', this.handleMessage)
     },
     beforeDestroy() {
+        document.removeEventListener('keydown', this.keySave);
         window.removeEventListener('message', this.handleMessage)
     },
 
@@ -213,6 +215,15 @@ export default {
             }
         },
 
+        keySave(e) {
+            if (this.value && e.keyCode === 83) {
+                if (e.metaKey || e.ctrlKey) {
+                    e.preventDefault();
+                    this.onSaveSave();
+                }
+            }
+        },
+
         getContent() {
             if (!this.fileId) {
                 this.contentDetail = {};
@@ -305,13 +316,13 @@ export default {
             }
         },
 
-        unsaveGive() {
+        unSaveGive() {
             delete this.fileContent[this.fileId];
             this.getContent();
             this.unsaveTip = false;
         },
 
-        unsaveSave() {
+        onSaveSave() {
             this.handleClick('save');
             this.unsaveTip = false;
         },
