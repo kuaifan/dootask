@@ -21,6 +21,9 @@
             height: 14px;
             margin-left: 4px;
             margin-top: 2px;
+            > i {
+                cursor: pointer;
+            }
         }
     }
 }
