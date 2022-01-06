@@ -344,6 +344,10 @@ class ProjectController extends AbstractController
         $userid = Request::input('userid');
         $userid = is_array($userid) ? $userid : [$userid];
         //
+        if (count($userid) > 100) {
+            return Base::retError('项目人数最多100个');
+        }
+        //
         $project = Project::userProject($project_id, true, true);
         //
         $deleteUser = AbstractModel::transaction(function() use ($project, $userid) {
