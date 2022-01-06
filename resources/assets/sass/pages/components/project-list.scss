@@ -64,38 +64,23 @@
                                 margin-left: -6px;
                                 transition: transform 0.2s;
                                 &:hover {
-                                    transform: scale(1.1);
+                                    transform: scale(1.05);
                                 }
                                 &:first-child {
                                     margin-left: 0;
                                 }
-                                &.more,
-                                &.add {
+                                &.more {
                                     display: flex;
                                     align-items: center;
                                     justify-content: center;
                                     font-size: 17px;
-                                    width: 32px;
+                                    width: 30px;
                                     height: 32px;
-                                    border-radius: 50%;
-                                    color: #b4bcce;
-                                    background-color: #fff;
-                                    font-weight: 700;
-                                    border: 2px dashed #8bcf70;
-                                    cursor: pointer;
-                                    z-index: 1;
-                                    > i {
-                                        color: #8bcf70
-                                    }
-                                }
-                                &.more {
-                                    width: 36px;
-                                    transform: translateX(-1px);
+                                    color: #888888;
                                     background-color: transparent;
                                     border-color: transparent;
-                                    &:hover {
-                                        transform: scale(1);
-                                    }
+                                    transform: scale(1) !important;
+                                    z-index: 1;
                                 }
                             }
                         }

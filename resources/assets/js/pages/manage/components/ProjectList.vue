@@ -16,17 +16,16 @@
                                 </UserAvatar>
                             </li>
                             <template v-if="projectUser.length > 0 && windowWidth > 980">
-                                <li v-for="(item, index) in projectUser" :key="index" v-if="index < projectUserShowNum">
-                                    <UserAvatar :userid="item.userid" :size="36" :borderWitdh="2" :openDelay="0"/>
-                                </li>
-                                <li v-if="projectUser.length > projectUserShowNum" class="more">
-                                    <ETooltip :content="$L('共' + (projectUser.length + 1) + '个成员')">
-                                        <Icon type="ios-more"/>
-                                    </ETooltip>
-                                </li>
-                                <li class="add">
-                                    <Icon type="md-person-add"/>
-                                </li>
+                                <template v-for="(item, index) in projectUser"  v-if="index < projectUserShowNum">
+                                    <li v-if="index + 1 == projectUserShowNum && projectUser.length > projectUserShowNum" class="more">
+                                        <ETooltip :content="$L('共' + (projectUser.length + 1) + '个成员')">
+                                            <Icon type="ios-more"/>
+                                        </ETooltip>
+                                    </li>
+                                    <li>
+                                        <UserAvatar :userid="item.userid" :size="36" :borderWitdh="2" :openDelay="0"/>
+                                    </li>
+                                </template>
                             </template>
                         </ul>
                     </li>
@@ -1176,6 +1175,9 @@ export default {
                     break;
 
                 case "user":
+                    if (this.projectData.owner_userid !== this.userId) {
+                        return;
+                    }
                     const userids = this.projectData.project_user.map(({userid}) => userid);
                     this.$set(this.userData, 'userids', userids);
                     this.$set(this.userData, 'useridbak', userids);
