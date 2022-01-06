@@ -164,6 +164,7 @@
                         :option-full="taskOptionFull"
                         :placeholder="$L('详细描述...')"
                         @on-blur="updateData('content')"
+                        @editorSave="updateData('content')"
                         inline/>
                 </div>
                 <Form class="items" label-position="left" label-width="auto" @submit.native.prevent>
@@ -798,12 +799,16 @@ export default {
         },
 
         onNameKeydown(e) {
-            if (e.keyCode === 13) {
-                if (e.shiftKey) {
-                    return;
+            if (e.keyCode === 83) {
+                if (e.metaKey || e.ctrlKey) {
+                    e.preventDefault();
+                    this.updateData('name');
                 }
-                e.preventDefault();
-                this.updateData('name');
+            } else if (e.keyCode === 13) {
+                if (!e.shiftKey) {
+                    e.preventDefault();
+                    this.updateData('name');
+                }
             }
         },
 
