@@ -235,13 +235,13 @@ class UsersController extends AbstractController
                 $userimg = is_array($userimg) ? $userimg[0]['path'] : $userimg;
                 $user->userimg = Base::unFillUrl($userimg);
             } else {
-                $user->userimg = '';
+                $user->userimg = $user->getUserimgAttribute(null);
             }
         }
         //昵称
         if (Arr::exists($data, 'nickname')) {
             $nickname = trim(Request::input('nickname'));
-            if (mb_strlen($nickname) < 2) {
+            if ($nickname && mb_strlen($nickname) < 2) {
                 return Base::retError('昵称不可以少于2个字');
             } elseif (mb_strlen($nickname) > 20) {
                 return Base::retError('昵称最多只能设置20个字');
@@ -252,7 +252,7 @@ class UsersController extends AbstractController
         //职位/职称
         if (Arr::exists($data, 'profession')) {
             $profession = trim(Request::input('profession'));
-            if (mb_strlen($profession) < 2) {
+            if ($profession && mb_strlen($profession) < 2) {
                 return Base::retError('职位/职称不可以少于2个字');
             } elseif (mb_strlen($profession) > 20) {
                 return Base::retError('职位/职称最多只能设置20个字');
@@ -515,7 +515,7 @@ class UsersController extends AbstractController
         // 昵称
         if (Arr::exists($data, 'nickname')) {
             $nickname = trim($data['nickname']);
-            if (mb_strlen($nickname) < 2) {
+            if ($nickname && mb_strlen($nickname) < 2) {
                 return Base::retError('昵称不可以少于2个字');
             } elseif (mb_strlen($nickname) > 20) {
                 return Base::retError('昵称最多只能设置20个字');
@@ -526,7 +526,7 @@ class UsersController extends AbstractController
         // 职位/职称
         if (Arr::exists($data, 'profession')) {
             $profession = trim($data['profession']);
-            if (mb_strlen($profession) < 2) {
+            if ($profession && mb_strlen($profession) < 2) {
                 return Base::retError('职位/职称不可以少于2个字');
             } elseif (mb_strlen($profession) > 20) {
                 return Base::retError('职位/职称最多只能设置20个字');
