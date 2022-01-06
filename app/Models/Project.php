@@ -122,7 +122,7 @@ class Project extends AbstractModel
     }
 
     /**
-     * 查询自己参与或负责的项目
+     * 查询自己负责或参与的项目
      * @param self $query
      * @param null $userid
      * @param null $owner
