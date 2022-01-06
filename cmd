@@ -273,6 +273,7 @@ if [ $# -gt 0 ]; then
         echo -e "$res"
     elif [[ "$1" == "update" ]]; then
         shift 1
+        run_mysql backup
         git fetch --all
         git reset --hard origin/$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
         git pull
