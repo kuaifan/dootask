@@ -281,9 +281,16 @@ export default {
             return currentDate.format(format);
         },
 
-        onBeforeCreateSchedule({start, end, guide}) {
+        onBeforeCreateSchedule({start, end, isAllDay, guide}) {
+            if (isAllDay || this.calendarView == 'month') {
+                start = $A.date2string(start.toDate(), "Y-m-d 00:00:00")
+                end = $A.date2string(end.toDate(), "Y-m-d 23:59:59")
+            } else {
+                start = $A.date2string(start.toDate(), "Y-m-d H:i:s")
+                end = $A.date2string(end.toDate(), "Y-m-d H:i:s")
+            }
             Store.set('addTask', {
-                times: [start.toDate(), end.toDate()],
+                times: [start, end],
                 owner: this.userId,
                 beforeClose: () => {
                     guide.clearGuideElement();
