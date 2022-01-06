@@ -20,10 +20,19 @@ use Request;
 class DialogController extends AbstractController
 {
     /**
-     * 对话列表
+     * @api {get} api/dialog/lists          01. 对话列表
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName lists
      *
      * @apiParam {Number} [page]            当前页，默认:1
      * @apiParam {Number} [pagesize]        每页显示数量，默认:100，最大:200
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function lists()
     {
@@ -42,9 +51,18 @@ class DialogController extends AbstractController
     }
 
     /**
-     * 获取单个会话信息
+     * @api {get} api/dialog/one          02. 获取单个会话信息
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName one
      *
      * @apiParam {Number} dialog_id         对话ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function one()
     {
@@ -65,9 +83,18 @@ class DialogController extends AbstractController
     }
 
     /**
-     * 打开会话
+     * @api {get} api/dialog/msg/user          03. 打开会话
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName open__user
      *
      * @apiParam {Number} userid         对话会员ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function open__user()
     {
@@ -90,12 +117,21 @@ class DialogController extends AbstractController
     }
 
     /**
-     * 获取消息列表
+     * @api {get} api/dialog/msg/lists          04. 获取消息列表
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__lists
      *
      * @apiParam {Number} dialog_id         对话ID
      *
      * @apiParam {Number} [page]            当前页，默认:1
      * @apiParam {Number} [pagesize]        每页显示数量，默认:50，最大:100
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function msg__lists()
     {
@@ -124,7 +160,12 @@ class DialogController extends AbstractController
     }
 
     /**
-     * 未读消息
+     * @api {get} api/dialog/msg/sendtext          05. 未读消息
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__sendtext
      */
     public function msg__unread()
     {
@@ -135,10 +176,19 @@ class DialogController extends AbstractController
     }
 
     /**
-     * 发送消息
+     * @api {get} api/dialog/msg/sendtext          06. 发送消息
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__sendtext
      *
      * @apiParam {Number} dialog_id         对话ID
      * @apiParam {String} text              消息内容
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function msg__sendtext()
     {
@@ -171,12 +221,21 @@ class DialogController extends AbstractController
     }
 
     /**
-     * {post}文件上传
+     * @api {post} api/dialog/msg/sendfile          07. 文件上传
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__sendfile
      *
      * @apiParam {Number} dialog_id         对话ID
      * @apiParam {String} [filename]        post-文件名称
      * @apiParam {String} [image64]         post-base64图片（二选一）
      * @apiParam {File} [files]             post-文件对象（二选一）
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function msg__sendfile()
     {
@@ -241,9 +300,18 @@ class DialogController extends AbstractController
     }
 
     /**
-     * 获取消息阅读情况
+     * @api {get} api/dialog/msg/readlist          08. 获取消息阅读情况
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__readlist
      *
      * @apiParam {Number} msg_id            消息ID（需要是消息的发送人）
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function msg__readlist()
     {

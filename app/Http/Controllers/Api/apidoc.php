@@ -4,7 +4,7 @@
  * 给apidoc项目增加顺序编号
  */
 
-error_reporting(E_ALL & ~E_NOTICE);
+@error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 
 $path = dirname(__FILE__). '/';
 $lists = scandir($path);

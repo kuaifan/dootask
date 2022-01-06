@@ -408,7 +408,12 @@ class UsersController extends AbstractController
     }
 
     /**
-     * 会员列表（限管理员）
+     * @api {get} api/users/lists          11. 会员列表（限管理员）
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName lists
      *
      * @apiParam {Object} [keys]        搜索条件
      * - keys.email             邮箱
@@ -416,6 +421,10 @@ class UsersController extends AbstractController
      * - keys.profession        职位
      * @apiParam {Number} [page]        当前页，默认:1
      * @apiParam {Number} [pagesize]    每页显示数量，默认:20，最大:50
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function lists()
     {
@@ -448,7 +457,12 @@ class UsersController extends AbstractController
     }
 
     /**
-     * 操作会员（限管理员）
+     * @api {get} api/users/operation          12. 操作会员（限管理员）
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName operation
      *
      * @apiParam {Number} userid          会员ID
      * @apiParam {String} [type]          操作
@@ -460,6 +474,10 @@ class UsersController extends AbstractController
      * @apiParam {String} [password]      新的密码
      * @apiParam {String} [nickname]      昵称
      * @apiParam {String} [profession]    职位
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function operation()
     {

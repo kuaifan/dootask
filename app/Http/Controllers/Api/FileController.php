@@ -22,9 +22,18 @@ use Request;
 class FileController extends AbstractController
 {
     /**
-     * 获取文件列表
+     * @api {get} api/file/lists          01. 获取文件列表
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup file
+     * @apiName lists
      *
      * @apiParam {Number} [pid]         父级ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function lists()
     {
@@ -84,13 +93,20 @@ class FileController extends AbstractController
     }
 
     /**
-     * 获取单条数据
+     * @api {get} api/file/one          02. 获取单条数据
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup file
+     * @apiName one
      *
      * @apiParam {Number|String} id
      * - Number 文件ID（需要登录）
      * - String 链接码（不需要登录，用于预览）
      *
-     * @return array
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function one()
     {
@@ -116,9 +132,18 @@ class FileController extends AbstractController
     }
 
     /**
-     * 搜索文件列表
+     * @api {get} api/file/search          03. 搜索文件列表
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup file
+     * @apiName search
      *
      * @apiParam {String} [key]         关键词
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function search()
     {
@@ -136,12 +161,21 @@ class FileController extends AbstractController
     }
 
     /**
-     * 添加、修改文件(夹)
+     * @api {get} api/file/add          04. 添加、修改文件(夹)
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup file
+     * @apiName add
      *
      * @apiParam {String} name          项目名称
      * @apiParam {String} type          文件类型
      * @apiParam {Number} [id]          文件ID（赋值修改文件名称）
      * @apiParam {Number} [pid]         父级ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function add()
     {
@@ -218,9 +252,18 @@ class FileController extends AbstractController
     }
 
     /**
-     * 复制文件(夹)
+     * @api {get} api/file/copy          05. 复制文件(夹)
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup file
+     * @apiName copy
      *
      * @apiParam {Number} id            文件ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function copy()
     {
@@ -258,10 +301,19 @@ class FileController extends AbstractController
     }
 
     /**
-     * 移动文件(夹)
+     * @api {get} api/file/move          06. 移动文件(夹)
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup file
+     * @apiName move
      *
      * @apiParam {Number} id            文件ID
      * @apiParam {Number} pid           移动到的文件夹ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function move()
     {
@@ -294,9 +346,18 @@ class FileController extends AbstractController
     }
 
     /**
-     * 删除文件(夹)
+     * @api {get} api/file/remove          07. 删除文件(夹)
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup file
+     * @apiName remove
      *
      * @apiParam {Number} id            文件ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function remove()
     {
@@ -311,11 +372,20 @@ class FileController extends AbstractController
     }
 
     /**
-     * 获取文件内容
+     * @api {get} api/file/content          08. 获取文件内容
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup file
+     * @apiName content
      *
      * @apiParam {Number|String} id
      * - Number 文件ID（需要登录）
      * - String 链接码（不需要登录，用于预览）
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function content()
     {
@@ -339,11 +409,20 @@ class FileController extends AbstractController
     }
 
     /**
-     * 保存文件内容
+     * @api {get} api/file/content/save          09. 保存文件内容
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup file
+     * @apiName content__save
      *
      * @apiParam {Number} id            文件ID
      * @apiParam {Object} [D]               Request Payload 提交
      * - content: 内容
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function content__save()
     {
@@ -392,9 +471,18 @@ class FileController extends AbstractController
     }
 
     /**
-     * 保存文件内容（office）
+     * @api {get} api/file/content/office          10. 保存文件内容（office）
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup file
+     * @apiName content__office
      *
      * @apiParam {Number} id            文件ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function content__office()
     {
@@ -436,10 +524,19 @@ class FileController extends AbstractController
     }
 
     /**
-     * 保存文件内容（上传文件）
+     * @api {get} api/file/content/upload          11. 保存文件内容（上传文件）
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup file
+     * @apiName content__upload
      *
      * @apiParam {Number} [pid]         父级ID
      * @apiParam {String} [files]           文件名
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function content__upload()
     {
@@ -526,9 +623,18 @@ class FileController extends AbstractController
     }
 
     /**
-     * 获取共享信息
+     * @api {get} api/file/share          12. 获取共享信息
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup file
+     * @apiName share
      *
      * @apiParam {Number} id            文件ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function share()
     {
@@ -553,7 +659,12 @@ class FileController extends AbstractController
     }
 
     /**
-     * 设置共享
+     * @api {get} api/file/share/update          13. 设置共享
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup file
+     * @apiName share__update
      *
      * @apiParam {Number} id            文件ID
      * @apiParam {Array} [userids]      共享成员，格式: [userid1, userid2, userid3]
@@ -561,6 +672,10 @@ class FileController extends AbstractController
      * - 0：只读
      * - 1：读写
      * - -1: 删除
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function share__update()
     {
@@ -626,9 +741,18 @@ class FileController extends AbstractController
     }
 
     /**
-     * 退出共享
+     * @api {get} api/file/share/out          14. 退出共享
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup file
+     * @apiName share__out
      *
      * @apiParam {Number} id            文件ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function share__out()
     {
@@ -657,12 +781,21 @@ class FileController extends AbstractController
     }
 
     /**
-     * 获取链接
+     * @api {get} api/file/link          15. 获取链接
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup file
+     * @apiName link
      *
      * @apiParam {Number} id                文件ID
      * @apiParam {String} refresh           刷新链接
      * - no: 只获取（默认）
      * - yes: 刷新链接，之前的将失效
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function link()
     {
