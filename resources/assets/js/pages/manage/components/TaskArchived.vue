@@ -74,6 +74,9 @@ export default {
                     key: 'archived_userid',
                     minWidth: 100,
                     render: (h, {row}) => {
+                        if (!row.archived_userid) {
+                            return h('Tag', this.$L('系统自动'));
+                        }
                         return h('UserAvatar', {
                             props: {
                                 userid: row.archived_userid,

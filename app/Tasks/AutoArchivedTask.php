@@ -30,16 +30,15 @@ class AutoArchivedTask extends AbstractTask
                 $archivedDay = min(100, $archivedDay);
                 $archivedTime = Carbon::now()->subDays($archivedDay);
                 //获取已完成未归档的任务
-                AbstractModel::transaction(function() use ($archivedTime) {
-                    $taskLists = ProjectTask::whereNotNull('complete_at')
-                        ->where('complete_at', '<=', $archivedTime)
-                        ->whereNull('archived_at')
-                        ->take(100)
-                        ->get();
-                    foreach ($taskLists AS $task) {
-                        $task->archivedTask(Carbon::now(), true);
-                    }
-                });
+                $taskLists = ProjectTask::whereNotNull('complete_at')
+                    ->where('complete_at', '<=', $archivedTime)
+                    ->where('archived_userid', 0)
+                    ->whereNull('archived_at')
+                    ->take(100)
+                    ->get();
+                foreach ($taskLists AS $task) {
+                    $task->archivedTask(Carbon::now(), true);
+                }
             }
         }
     }

@@ -239,6 +239,7 @@ class Project extends AbstractModel
             if ($archived_at === null) {
                 // 取消归档
                 $this->archived_at = null;
+                $this->archived_userid = User::userid();
                 $this->addLog("项目取消归档");
                 $this->pushMsg('add', $this);
                 ProjectTask::whereProjectId($this->id)->whereArchivedFollow(1)->update([
