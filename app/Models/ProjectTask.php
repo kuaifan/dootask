@@ -281,7 +281,7 @@ class ProjectTask extends AbstractModel
     }
 
     /**
-     * 查询自己参与或负责的任务
+     * 查询自己负责或参与的任务
      * @param self $query
      * @param null $userid
      * @param null $owner
@@ -378,6 +378,12 @@ class ProjectTask extends AbstractModel
             if (intval($uid) == 0) continue;
             if (!ProjectUser::whereProjectId($project_id)->whereUserid($uid)->exists()) {
                 throw new ApiException($retPre . '负责人填写错误');
+            }
+            if (ProjectTask::authData($uid)
+                    ->whereNull('project_tasks.complete_at')
+                    ->whereNull('project_tasks.archived_at')
+                    ->count() > 500) {
+                throw new ApiException(User::userid2nickname($uid) . '负责或参与的任务超过500个未完成');
             }
             $tmpArray[] = $uid;
         }
