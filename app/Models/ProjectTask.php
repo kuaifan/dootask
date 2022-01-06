@@ -799,6 +799,11 @@ class ProjectTask extends AbstractModel
                 $this->addLog($logText, $userid);
                 $this->pushMsg('archived');
             }
+            self::whereParentId($this->id)->update([
+                'archived_at' => $this->archived_at,
+                'archived_userid' => $this->archived_userid,
+                'archived_follow' => $this->archived_follow,
+            ]);
             $this->save();
         });
         return true;
@@ -814,12 +819,11 @@ class ProjectTask extends AbstractModel
         AbstractModel::transaction(function () {
             if ($this->dialog_id) {
                 $dialog = WebSocketDialog::find($this->dialog_id);
-                if ($dialog) {
-                    $dialog->deleteDialog();
-                }
+                $dialog?->deleteDialog();
             }
-            $this->delete();
+            self::whereParentId($this->id)->delete();
             $this->addLog("删除{任务}：" . $this->name);
+            $this->delete();
         });
         if ($pushMsg) {
             $this->pushMsg('delete');

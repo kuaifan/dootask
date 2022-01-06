@@ -6,7 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 class ProjectTasksUpdateSubtaskTime extends Migration
 {
     /**
-     * Run the migrations.
+     * 子任务同步主任务（任务时间）
      *
      * @return void
      */
