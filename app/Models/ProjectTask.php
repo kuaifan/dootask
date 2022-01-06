@@ -344,6 +344,25 @@ class ProjectTask extends AbstractModel
         $p_color    = $data['p_color'];
         $top        = intval($data['top']);
         //
+        if (ProjectTask::whereProjectId($project_id)
+                ->whereNull('project_tasks.complete_at')
+                ->whereNull('project_tasks.archived_at')
+                ->count() > 2000) {
+            throw new ApiException('项目内未完成任务最多不能超过2000个');
+        }
+        if (ProjectTask::whereColumnId($column_id)
+                ->whereNull('project_tasks.complete_at')
+                ->whereNull('project_tasks.archived_at')
+                ->count() > 500) {
+            throw new ApiException('单个列表未完成任务最多不能超过500个');
+        }
+        if ($parent_id > 0 && ProjectTask::whereParentId($parent_id)
+                ->whereNull('project_tasks.complete_at')
+                ->whereNull('project_tasks.archived_at')
+                ->count() > 50) {
+            throw new ApiException('每个任务的子任务最多不能超过50个');
+        }
+        //
         $retPre = $parent_id ? '子任务' : '任务';
         $task = self::createInstance([
             'parent_id' => $parent_id,
@@ -383,7 +402,7 @@ class ProjectTask extends AbstractModel
                     ->whereNull('project_tasks.complete_at')
                     ->whereNull('project_tasks.archived_at')
                     ->count() > 500) {
-                throw new ApiException(User::userid2nickname($uid) . '负责或参与的任务超过500个未完成');
+                throw new ApiException(User::userid2nickname($uid) . '负责或参与的未完成任务最多不能超过500个');
             }
             $tmpArray[] = $uid;
         }

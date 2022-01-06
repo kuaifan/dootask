@@ -758,6 +758,10 @@ class ProjectController extends AbstractController
         if (empty($name)) {
             return Base::retError('列表名称不能为空');
         }
+        if (ProjectColumn::whereProjectId($project->id)->count() > 50) {
+            return Base::retError('项目列表最多不能超过50个');
+        }
+        //
         $column = ProjectColumn::createInstance([
             'project_id' => $project->id,
             'name' => $name,
