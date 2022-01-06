@@ -11,13 +11,13 @@
                     <li class="project-avatar" @click="projectDropdown('user')">
                         <ul>
                             <li>
-                                <UserAvatar :userid="projectData.owner_userid" :size="36" :borderWitdh="2">
+                                <UserAvatar :userid="projectData.owner_userid" :size="36" :borderWitdh="2" :openDelay="0">
                                     <p>{{$L('项目负责人')}}</p>
                                 </UserAvatar>
                             </li>
                             <template v-if="projectUser.length > 0">
                                 <li v-for="(item, index) in projectUser" :key="index" v-if="index < projectUserShowNum">
-                                    <UserAvatar :userid="item.userid" :size="36" :borderWitdh="2"/>
+                                    <UserAvatar :userid="item.userid" :size="36" :borderWitdh="2" :openDelay="0"/>
                                 </li>
                                 <li v-if="projectUser.length > projectUserShowNum" class="more">
                                     <Icon type="ios-more"/>

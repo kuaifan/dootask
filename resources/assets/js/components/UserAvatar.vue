@@ -2,7 +2,7 @@
     <ETooltip
         v-if="user"
         class="common-avatar"
-        :open-delay="600"
+        :open-delay="openDelay"
         :disabled="tooltipDisabled"
         :placement="tooltipPlacement">
         <div slot="content" class="common-avatar-transfer">
@@ -68,6 +68,10 @@
             borderColor: {
                 type: String,
                 default: ''
+            },
+            openDelay: {
+                type: Number,
+                default: 600
             },
         },
         data() {
