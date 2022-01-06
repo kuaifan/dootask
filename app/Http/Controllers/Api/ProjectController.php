@@ -866,6 +866,10 @@ class ProjectController extends AbstractController
      * @apiParam {String} [archived]         归档状态
      * - yes：已归档
      * - no：未归档（默认）
+     * @apiParam {Object} sorts              排序方式
+     * - sorts.complete_at  完成时间：asc|desc
+     * - sorts.archived_at  归档时间：asc|desc
+     * - sorts.end_at  到期时间：asc|desc
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -884,6 +888,8 @@ class ProjectController extends AbstractController
         $time_before = Request::input('time_before');
         $complete = Request::input('complete', 'all');
         $archived = Request::input('archived', 'no');
+        $sorts = Request::input('sorts');
+        $sorts = is_array($sorts) ? $sorts : [];
         //
         if ($parent_id > 0) {
             ProjectTask::userTask($parent_id);
@@ -919,6 +925,12 @@ class ProjectController extends AbstractController
             $builder->whereNotNull('project_tasks.archived_at');
         } elseif ($archived == 'no') {
             $builder->whereNull('project_tasks.archived_at');
+        }
+        //
+        foreach ($sorts as $column => $direction) {
+            if (!in_array($column, ['complete_at', 'archived_at', 'end_at'])) continue;
+            if (!in_array($direction, ['asc', 'desc'])) continue;
+            $builder->orderBy('project_tasks.' . $column, $direction);
         }
         //
         $list = $builder->orderByDesc('project_tasks.id')->paginate(Base::getPaginate(200, 100));

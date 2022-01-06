@@ -65,6 +65,11 @@ export default {
                     }
                 },
                 {
+                    title: this.$L('完成时间'),
+                    key: 'complete_at',
+                    width: 168,
+                },
+                {
                     title: this.$L('归档时间'),
                     key: 'archived_at',
                     width: 168,
@@ -130,6 +135,9 @@ export default {
                 data: {
                     project_id: this.projectId,
                     archived: 'yes',
+                    sorts: {
+                        archived_at: 'desc'
+                    },
                     page: Math.max(this.page, 1),
                     pagesize: Math.max($A.runNum(this.pageSize), 20),
                 },

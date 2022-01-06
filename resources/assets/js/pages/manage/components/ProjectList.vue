@@ -444,7 +444,7 @@
         <DrawerOverlay
             v-model="archivedTaskShow"
             placement="right"
-            :size="768">
+            :size="900">
             <TaskArchived v-if="archivedTaskShow" :project-id="projectId"/>
         </DrawerOverlay>
     </div>
