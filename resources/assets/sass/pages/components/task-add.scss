@@ -110,6 +110,34 @@
                     }
                 }
             }
+            .advanced-time {
+                display: flex;
+                align-items: center;
+                margin-left: 20px;
+                position: relative;
+                .ivu-icon {
+                    font-size: 32px;
+                }
+                > em {
+                    position: absolute;
+                    top: -5px;
+                    left: 16px;
+                    font-family: "Monospaced Number", "serif";
+                    transform: scale(0.8);
+                    height: 20px;
+                    min-width: 20px;
+                    line-height: 20px;
+                    border-radius: 10px;
+                    background: #8bcf70;
+                    color: #fff;
+                    text-align: center;
+                    padding: 0 6px;
+                    font-size: 12px;
+                    font-style: normal;
+                    white-space: nowrap;
+                    box-shadow: 0 0 0 1px #fff;
+                }
+            }
         }
     }
     .task-add-advanced {

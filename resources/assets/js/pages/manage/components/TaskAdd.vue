@@ -46,6 +46,10 @@
                         </ETooltip>
                     </li>
                 </ul>
+                <div v-if="taskDays > 0" class="advanced-time">
+                    <Icon type="ios-clock-outline" />
+                    <em type="primary" :style="addData.p_color ? {backgroundColor:addData.p_color} : {}">{{taskDays}}</em>
+                </div>
             </div>
         </div>
 
@@ -205,6 +209,18 @@ export default {
     },
     computed: {
         ...mapState(['userId', 'projects', 'projectId', 'columns', 'taskPriority']),
+
+        taskDays() {
+            const {times} = this.addData;
+            let temp = $A.date2string(times, "Y-m-d H:i");
+            if (temp[0] && temp[1]) {
+                let d = Math.floor(($A.Date(temp[1]).getTime() - $A.Date(temp[0]).getTime()) / 86400000);
+                if (d > 0) {
+                    return d;
+                }
+            }
+            return 0;
+        }
     },
     watch: {
         value(val) {
