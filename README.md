@@ -17,13 +17,13 @@ English | **[中文文档](./README_CN.md)**
 
 # Clone projects on github
 git clone https://github.com/kuaifan/dootask.git
-# or you can use gitee
+# Or you can use gitee
 git clone https://gitee.com/aipaw/dootask.git
 
-# 2、enter directory
+# 2、Enter directory
 cd dootask
 
-# 3、Build project
+# 3、Installation（Custom port installation: ./cmd install --port 2222）
 ./cmd install
 ```
 
@@ -37,8 +37,7 @@ cd dootask
 ### Change port
 
 ```bash
-./cmd php bin/run --port=2222
-./cmd up -d
+./cmd port 2222
 ```
 
 ### Stop server

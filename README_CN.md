@@ -23,7 +23,7 @@ git clone https://gitee.com/aipaw/dootask.git
 # 2、进入目录
 cd dootask
 
-# 3、一键构建项目
+# 3、一键安装项目（自定义端口安装 ./cmd install --port 2222）
 ./cmd install
 ```
 
@@ -37,8 +37,7 @@ cd dootask
 ### 更换端口
 
 ```bash
-./cmd php bin/run --port=2222
-./cmd up -d
+./cmd port 2222
 ```
 
 ### 停止服务

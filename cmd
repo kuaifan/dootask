@@ -12,6 +12,7 @@ OK="${Green}[OK]${Font}"
 Error="${Red}[错误]${Font}"
 
 cur_path="$(pwd)"
+cur_arg=$@
 
 judge() {
     if [[ 0 -eq $? ]]; then
@@ -200,6 +201,21 @@ env_init() {
     fi
 }
 
+arg_get() {
+    local find="n"
+    local value=""
+    for var in $cur_arg; do
+        if [[ "$find" == "y" ]]; then
+            value=$var
+            break
+        fi
+        if [[ "--$1" == "$var" ]] || [[ "-$1" == "$var" ]]; then
+            find="y"
+        fi
+    done
+    echo $value
+}
+
 ####################################################################################
 ####################################################################################
 ####################################################################################
@@ -212,14 +228,18 @@ fi
 if [ $# -gt 0 ]; then
     if [[ "$1" == "init" ]] || [[ "$1" == "install" ]]; then
         shift 1
+        # 初始化文件
         rm -rf composer.lock
         rm -rf package-lock.json
-        mkdir -p ${cur_path}/docker/log/supervisor
-        mkdir -p ${cur_path}/docker/mysql/data
-        chmod -R 775 ${cur_path}/docker/log/supervisor
-        chmod -R 775 ${cur_path}/docker/mysql/data
+        mkdir -p "${cur_path}/docker/log/supervisor"
+        mkdir -p "${cur_path}/docker/mysql/data"
+        chmod -R 775 "${cur_path}/docker/log/supervisor"
+        chmod -R 775 "${cur_path}/docker/mysql/data"
+        # 启动容器
+        [ "$(arg_get port)" -gt 0 ] && env_set APP_PORT "$(arg_get port)"
         docker-compose up -d
         docker-compose restart php
+        # 安装composer依赖
         run_exec php "composer install"
         if [ ! -f "${cur_path}/vendor/autoload.php" ]; then
             run_exec php "composer config repo.packagist composer https://packagist.phpcomposer.com"
@@ -231,8 +251,20 @@ if [ $# -gt 0 ]; then
             exit 1
         fi
         [ -z "$(env_get APP_KEY)" ] && run_exec php "php artisan key:generate"
-        run_exec php "php artisan migrate --seed"
         run_exec php "php bin/run --mode=prod"
+        # 检查数据库
+        remaining=10
+        while [ ! -f "${cur_path}/docker/mysql/data/$(env_get DB_DATABASE)/db.opt" ]; do
+            ((remaining=$remaining-1))
+            if [ $remaining -lt 0 ]; then
+                echo -e "${Error} ${RedBG} 数据库安装失败! ${Font}"
+                exit 1
+            fi
+            chmod -R 775 "${cur_path}/docker/mysql/data"
+            sleep 3
+        done
+        run_exec php "php artisan migrate --seed"
+        # 设置初始化密码
         res=`run_exec mariadb "sh /etc/mysql/repassword.sh"`
         docker-compose stop
         docker-compose start
@@ -271,6 +303,12 @@ if [ $# -gt 0 ]; then
         ./cmd uninstall
         sleep 3
         ./cmd install
+    elif [[ "$1" == "port" ]]; then
+        shift 1
+        env_set APP_PORT "$1"
+        docker-compose up -d
+        echo -e "${OK} ${GreenBG} 修改成功 ${Font}"
+        echo -e "地址: http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
     elif [[ "$1" == "repassword" ]]; then
         shift 1
         run_exec mariadb "sh /etc/mysql/repassword.sh \"$@\""
