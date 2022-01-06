@@ -662,14 +662,14 @@ class ProjectController extends AbstractController
         $project_id = intval(Request::input('project_id'));
         $type = Request::input('type', 'add');
         //
-        $project = Project::userProject($project_id, false, true);
+        $project = Project::userProject($project_id, $type == 'add', true);
         //
         if ($type == 'recovery') {
             $project->archivedProject(null);
         } elseif ($type == 'add') {
             $project->archivedProject(Carbon::now());
         }
-        return Base::retSuccess('设置成功', ['id' => $project->id]);
+        return Base::retSuccess('操作成功', ['id' => $project->id]);
     }
 
     /**
@@ -692,7 +692,7 @@ class ProjectController extends AbstractController
         //
         $project_id = intval(Request::input('project_id'));
         //
-        $project = Project::userProject($project_id, true, true);
+        $project = Project::userProject($project_id, null, true);
         //
         $project->deleteProject();
         return Base::retSuccess('删除成功', ['id' => $project->id]);
@@ -854,8 +854,12 @@ class ProjectController extends AbstractController
      * @apiGroup project
      * @apiName task__lists
      *
+     * @apiParam {Object} [keys]             搜索条件
+     * - keys.name: 任务名称
      * @apiParam {Number} [project_id]       项目ID
-     * @apiParam {Number} [parent_id]        主任务ID（填写此项时 project_id 参数无效）
+     * @apiParam {Number} [parent_id]        主任务ID（project_id && parent_id ≤ 0 时 仅查询自己参与的任务）
+     * - 大于0：指定主任务下的子任务
+     * - 等于-1：表示仅主任务
      * @apiParam {String} [name]             任务描述关键词
      * @apiParam {Array} [time]              指定时间范围，如：['2020-12-12', '2020-12-30']
      * @apiParam {String} [time_before]      指定时间之前，如：2020-12-30 00:00:00（填写此项时 time 参数无效）
@@ -888,15 +892,30 @@ class ProjectController extends AbstractController
         $time_before = Request::input('time_before');
         $complete = Request::input('complete', 'all');
         $archived = Request::input('archived', 'no');
+        $keys = Request::input('keys');
         $sorts = Request::input('sorts');
+        $keys = is_array($keys) ? $keys : [];
         $sorts = is_array($sorts) ? $sorts : [];
         //
+        if ($keys['name']) {
+            $builder->where("project_tasks.name", "like", "%{$keys['name']}%");
+        }
+        //
+        $scopeAll = false;
         if ($parent_id > 0) {
             ProjectTask::userTask($parent_id);
-            $builder->allData()->where('project_tasks.parent_id', $parent_id);
-        } elseif ($project_id > 0) {
+            $scopeAll = true;
+            $builder->where('project_tasks.parent_id', $parent_id);
+        } elseif ($parent_id === -1) {
+            $builder->where('project_tasks.parent_id', 0);
+        }
+        if ($project_id > 0) {
             Project::userProject($project_id);
-            $builder->allData()->where('project_tasks.project_id', $project_id);
+            $scopeAll = true;
+            $builder->where('project_tasks.project_id', $project_id);
+        }
+        if ($scopeAll) {
+            $builder->allData();
         } else {
             $builder->authData();
         }
@@ -1345,7 +1364,7 @@ class ProjectController extends AbstractController
         $task_id = intval(Request::input('task_id'));
         $type = Request::input('type', 'add');
         //
-        $task = ProjectTask::userTask($task_id, false, true);
+        $task = ProjectTask::userTask($task_id, $type == 'add', true);
         //
         if ($task->parent_id > 0) {
             return Base::retError('子任务不支持此功能');
@@ -1356,7 +1375,7 @@ class ProjectController extends AbstractController
         } elseif ($type == 'add') {
             $task->archivedTask(Carbon::now());
         }
-        return Base::retSuccess('设置成功', ['id' => $task->id]);
+        return Base::retSuccess('操作成功', ['id' => $task->id]);
     }
 
     /**
@@ -1379,7 +1398,7 @@ class ProjectController extends AbstractController
         //
         $task_id = intval(Request::input('task_id'));
         //
-        $task = ProjectTask::userTask($task_id, true, true);
+        $task = ProjectTask::userTask($task_id, null, true);
         //
         $task->deleteTask();
         return Base::retSuccess('删除成功', ['id' => $task->id]);

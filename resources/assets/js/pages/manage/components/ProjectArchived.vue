@@ -1,6 +1,12 @@
 <template>
     <div class="project-archived">
-        <div class="archived-title">{{$L('归档的项目')}}</div>
+        <div class="archived-title">
+            {{$L('归档的项目')}}
+            <div class="title-icon">
+                <Loading v-if="loadIng > 0"/>
+                <Icon v-else type="ios-refresh" @click="refresh"/>
+            </div>
+        </div>
         <div class="search-container auto">
             <ul>
                 <li>
@@ -113,7 +119,7 @@ export default {
                     align: 'center',
                     width: 100,
                     render: (h, params) => {
-                        let show = h('Poptip', {
+                        const recoveryNode = h('Poptip', {
                             props: {
                                 title: this.$L('你确定要还原归档吗？'),
                                 confirm: true,
@@ -130,33 +136,50 @@ export default {
                                     this.recovery(params.row);
                                 }
                             },
-                        }, [
-                            h('Button', {
-                                props: {
-                                    type: 'primary',
-                                    size: 'small'
-                                },
-                                style: {
-                                    fontSize: '12px',
-                                },
-                            }, this.$L('还原')),
-                        ]);
+                        }, this.$L('还原'));
+                        const deleteNode = h('Poptip', {
+                            props: {
+                                title: this.$L('你确定要删除项目吗？'),
+                                confirm: true,
+                                transfer: true,
+                                placement: 'left',
+                            },
+                            style: {
+                                marginLeft: '6px',
+                                fontSize: '13px',
+                                cursor: 'pointer',
+                                color: '#f00',
+                            },
+                            on: {
+                                'on-ok': () => {
+                                    this.delete(params.row);
+                                }
+                            },
+                        }, this.$L('删除'));
                         return h('TableAction', {
                             props: {
                                 column: params.column
                             }
                         }, [
-                            show,
+                            recoveryNode,
+                            deleteNode,
                         ]);
-                    }
+                    },
                 }
             ]
         },
+
+        refresh() {
+            this.keys = [];
+            this.getLists();
+        },
+
         getLists() {
             this.loadIng++;
             this.$store.dispatch("call", {
                 url: 'project/lists',
                 data: {
+                    keys: this.keys,
                     archived: 'yes',
                     page: Math.max(this.page, 1),
                     pagesize: Math.max($A.runNum(this.pageSize), 20),
@@ -202,6 +225,20 @@ export default {
                 this.loadIng--;
                 this.getLists();
             })
+        },
+
+        delete(row) {
+            this.list = this.list.filter(({id}) => id != row.id);
+            this.loadIng++;
+            this.$store.dispatch("removeProject", row.id).then(({msg}) => {
+                $A.messageSuccess(msg);
+                this.loadIng--;
+                this.getLists();
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+                this.loadIng--;
+                this.getLists();
+            });
         }
     }
 }

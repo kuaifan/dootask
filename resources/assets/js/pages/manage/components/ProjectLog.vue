@@ -8,10 +8,11 @@
                     <Timeline>
                         <TimelineItem v-for="(item, index) in items.lists" :key="index">
                             <div slot="dot" class="logs-dot">
-                                <UserAvatar :userid="item.userid" :size="18"/>
+                                <UserAvatar v-if="item.userid" :userid="item.userid" :size="18"/>
+                                <EAvatar v-else :size="18">A</EAvatar>
                             </div>
                             <div class="log-summary">
-                                <span class="log-creator">{{item.user.nickname}}</span>
+                                <span class="log-creator">{{item.user ? item.user.nickname : $L('系统')}}</span>
                                 <span class="log-text">{{$L(item.detail)}}</span>
                                 <span class="log-time">{{item.time.ymd}} {{item.time.segment}} {{item.time.hi}}</span></div>
                         </TimelineItem>

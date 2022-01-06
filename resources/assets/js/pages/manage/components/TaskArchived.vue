@@ -1,7 +1,28 @@
 <template>
     <div class="task-archived">
-        <div class="archived-title">{{$L('归档的任务')}}</div>
-        <Table :columns="columns" :data="list" :no-data-text="$L(noText)"></Table>
+        <div class="archived-title">
+            {{$L('归档的任务')}}
+            <div class="title-icon">
+                <Loading v-if="loadIng > 0"/>
+                <Icon v-else type="ios-refresh" @click="refresh"/>
+            </div>
+        </div>
+        <div class="search-container auto">
+            <ul>
+                <li>
+                    <div class="search-label">
+                        {{$L("任务名")}}
+                    </div>
+                    <div class="search-content">
+                        <Input v-model="keys.name" clearable/>
+                    </div>
+                </li>
+                <li class="search-button">
+                    <Button :loading="loadIng > 0" type="primary" icon="ios-search" @click="getLists">{{$L('搜索')}}</Button>
+                </li>
+            </ul>
+        </div>
+        <Table :columns="columns" :data="list" :loading="loadIng > 0" :no-data-text="$L(noText)"></Table>
         <Page
             class="page-container"
             :total="total"
@@ -30,6 +51,8 @@ export default {
         return {
             loadIng: 0,
 
+            keys: {},
+
             columns: [],
             list: [],
 
@@ -56,6 +79,12 @@ export default {
     methods: {
         initLanguage() {
             this.columns = [
+                {
+                    title: this.$L('ID'),
+                    minWidth: 50,
+                    maxWidth: 70,
+                    key: 'id',
+                },
                 {
                     title: this.$L('任务名称'),
                     key: 'name',
@@ -96,7 +125,7 @@ export default {
                     align: 'center',
                     width: 100,
                     render: (h, params) => {
-                        let show = h('Poptip', {
+                        const recoveryNode = h('Poptip', {
                             props: {
                                 title: this.$L('你确定要还原归档吗？'),
                                 confirm: true,
@@ -114,17 +143,43 @@ export default {
                                 }
                             },
                         }, this.$L('还原'));
+                        const deleteNode = h('Poptip', {
+                            props: {
+                                title: this.$L('你确定要删除任务吗？'),
+                                confirm: true,
+                                transfer: true,
+                                placement: 'left',
+                            },
+                            style: {
+                                marginLeft: '6px',
+                                fontSize: '13px',
+                                cursor: 'pointer',
+                                color: '#f00',
+                            },
+                            on: {
+                                'on-ok': () => {
+                                    this.delete(params.row);
+                                }
+                            },
+                        }, this.$L('删除'));
                         return h('TableAction', {
                             props: {
                                 column: params.column
                             }
                         }, [
-                            show,
+                            recoveryNode,
+                            deleteNode,
                         ]);
                     }
                 }
             ]
         },
+
+        refresh() {
+            this.keys = {};
+            this.getLists()
+        },
+
         getLists() {
             if (!this.projectId) {
                 return;
@@ -133,7 +188,9 @@ export default {
             this.$store.dispatch("call", {
                 url: 'project/task/lists',
                 data: {
+                    keys: this.keys,
                     project_id: this.projectId,
+                    parent_id: -1,
                     archived: 'yes',
                     sorts: {
                         archived_at: 'desc'
@@ -173,15 +230,30 @@ export default {
                     task_id: row.id,
                     type: 'recovery'
                 },
-            }).then(() => {
+            }).then(({msg}) => {
+                $A.messageSuccess(msg);
                 this.loadIng--;
                 this.getLists();
-                this.$store.dispatch("getTaskOne", row.id);
+                this.$store.dispatch("openTask", row);
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.loadIng--;
                 this.getLists();
             })
+        },
+
+        delete(row) {
+            this.list = this.list.filter(({id}) => id != row.id);
+            this.loadIng++;
+            this.$store.dispatch("removeTask", row.id).then(({msg}) => {
+                $A.messageSuccess(msg);
+                this.loadIng--;
+                this.getLists();
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+                this.loadIng--;
+                this.getLists();
+            });
         }
     }
 }
