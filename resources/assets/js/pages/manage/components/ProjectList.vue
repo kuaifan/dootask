@@ -8,13 +8,30 @@
                     <div v-if="projectLoad > 0" class="project-load"><Loading/></div>
                 </div>
                 <ul class="project-icons">
-                    <li>
-                        <UserAvatar :userid="projectData.owner_userid" :size="36">
-                            <p>{{$L('项目负责人')}}</p>
-                        </UserAvatar>
+                    <li class="project-avatar" @click="projectDropdown('user')">
+                        <ul>
+                            <li>
+                                <UserAvatar :userid="projectData.owner_userid" :size="36" :borderWitdh="2">
+                                    <p>{{$L('项目负责人')}}</p>
+                                </UserAvatar>
+                            </li>
+                            <template v-if="projectUser.length > 0">
+                                <li v-for="(item, index) in projectUser" :key="index" v-if="index < projectUserShowNum">
+                                    <UserAvatar :userid="item.userid" :size="36" :borderWitdh="2"/>
+                                </li>
+                                <li v-if="projectUser.length > projectUserShowNum" class="more">
+                                    <Icon type="ios-more"/>
+                                </li>
+                                <li class="add">
+                                    <Icon type="md-person-add"/>
+                                </li>
+                            </template>
+                        </ul>
                     </li>
                     <li class="project-icon" @click="addTaskOpen(0)">
-                        <Icon class="menu-icon" type="md-add" />
+                        <ETooltip :content="$L('添加任务')">
+                            <Icon class="menu-icon" type="md-add" />
+                        </ETooltip>
                     </li>
                     <li :class="['project-icon', searchText!='' ? 'active' : '']">
                         <Tooltip :always="searchText!=''" theme="light">
@@ -65,7 +82,7 @@
             <Draggable
                 :list="columnList"
                 :animation="150"
-                :disabled="sortDisabled || $store.state.windowMax768"
+                :disabled="sortDisabled || windowMax768"
                 class="column-list"
                 tag="ul"
                 draggable=".column-item"
@@ -121,7 +138,7 @@
                         <Draggable
                             :list="column.tasks"
                             :animation="150"
-                            :disabled="sortDisabled || $store.state.windowMax768"
+                            :disabled="sortDisabled || windowMax768"
                             class="task-list"
                             draggable=".task-draggable"
                             group="task"
@@ -519,6 +536,8 @@ export default {
 
     computed: {
         ...mapState([
+            'windowMax768',
+
             'userId',
             'dialogs',
 
@@ -567,6 +586,18 @@ export default {
                 }
                 return list;
             }
+        },
+
+        projectUser() {
+            const {projectData} = this;
+            if (!projectData.project_user) {
+                return [];
+            }
+            return projectData.project_user.filter(({userid}) => userid != projectData.owner_userid)
+        },
+
+        projectUserShowNum() {
+            return this.windowMax768 ? 3 : 10;
         },
 
         columnList() {

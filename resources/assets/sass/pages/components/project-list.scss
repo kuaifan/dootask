@@ -50,6 +50,56 @@
                     &:hover {
                         box-shadow: 0 0 6px #cccccc;
                     }
+                    &.project-avatar {
+                        width: auto;
+                        min-width: 36px;
+                        &:hover {
+                            box-shadow: none;
+                        }
+                        > ul {
+                            display: flex;
+                            align-items: center;
+                            > li {
+                                list-style: none;
+                                margin-left: -6px;
+                                transition: transform 0.2s;
+                                &:hover {
+                                    transform: scale(1.1);
+                                }
+                                &:first-child {
+                                    margin-left: 0;
+                                }
+                                &.more,
+                                &.add {
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    font-size: 17px;
+                                    width: 32px;
+                                    height: 32px;
+                                    border-radius: 50%;
+                                    color: #b4bcce;
+                                    background-color: #fff;
+                                    font-weight: 700;
+                                    border: 2px dashed #8bcf70;
+                                    cursor: pointer;
+                                    z-index: 1;
+                                    > i {
+                                        color: #8bcf70
+                                    }
+                                }
+                                &.more {
+                                    width: 30px;
+                                    transform: translateX(-1px);
+                                    background-color: transparent;
+                                    border-color: transparent;
+                                    &:hover {
+                                        transform: scale(1);
+                                    }
+                                }
+                            }
+                        }
+                    }
                     &.project-icon {
                         border-radius: 50%;
                         background-color: #F2F3F5;

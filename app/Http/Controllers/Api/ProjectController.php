@@ -67,8 +67,6 @@ class ProjectController extends AbstractController
                 "owner": 1,         // 是否项目负责人
                 "owner_userid": 1,  // 项目负责人ID
 
-                "project_user": [], // 为空，数据在one接口返回
-
                 "task_num": 9,
                 "task_complete": 0,
                 "task_percent": 0,
@@ -118,9 +116,7 @@ class ProjectController extends AbstractController
         //
         $list = $builder->orderByDesc('projects.id')->paginate(Base::getPaginate(100, 50));
         $list->transform(function (Project $project) use ($user) {
-            return array_merge($project->toArray(), $project->getTaskStatistics($user->userid), [
-                'project_user' => []
-            ]);
+            return array_merge($project->toArray(), $project->getTaskStatistics($user->userid));
         });
         //
         $data = $list->toArray();

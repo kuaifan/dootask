@@ -521,6 +521,9 @@ export default {
             if (index > -1) {
                 state.projects.splice(index, 1, Object.assign({}, state.projects[index], data));
             } else {
+                if (typeof data.project_user === "undefined") {
+                    data.project_user = []
+                }
                 state.projects.push(data);
             }
             setTimeout(() => {
