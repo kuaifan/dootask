@@ -45,11 +45,11 @@ export default {
         //
         setInterval(this.searchEnter, 1000);
         //
-        window.addEventListener('resize', this.windowMax768Listener);
+        window.addEventListener('resize', this.windowSizeListener);
     },
 
     beforeDestroy() {
-        window.removeEventListener('resize', this.windowMax768Listener);
+        window.removeEventListener('resize', this.windowSizeListener);
     },
 
     computed: {
@@ -168,7 +168,8 @@ export default {
             });
         },
 
-        windowMax768Listener() {
+        windowSizeListener() {
+            this.$store.state.windowWidth = window.innerWidth
             this.$store.state.windowMax768 = window.innerWidth <= 768
         },
 

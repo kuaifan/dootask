@@ -15,12 +15,14 @@
                                     <p>{{$L('项目负责人')}}</p>
                                 </UserAvatar>
                             </li>
-                            <template v-if="projectUser.length > 0">
+                            <template v-if="projectUser.length > 0 && windowWidth > 980">
                                 <li v-for="(item, index) in projectUser" :key="index" v-if="index < projectUserShowNum">
                                     <UserAvatar :userid="item.userid" :size="36" :borderWitdh="2" :openDelay="0"/>
                                 </li>
                                 <li v-if="projectUser.length > projectUserShowNum" class="more">
-                                    <Icon type="ios-more"/>
+                                    <ETooltip :content="$L('共' + (projectUser.length + 1) + '个成员')">
+                                        <Icon type="ios-more"/>
+                                    </ETooltip>
                                 </li>
                                 <li class="add">
                                     <Icon type="md-person-add"/>
@@ -536,6 +538,7 @@ export default {
 
     computed: {
         ...mapState([
+            'windowWidth',
             'windowMax768',
 
             'userId',
@@ -597,7 +600,7 @@ export default {
         },
 
         projectUserShowNum() {
-            return this.windowMax768 ? 3 : 10;
+            return this.windowWidth > 1200 ? 8 : 3;
         },
 
         columnList() {

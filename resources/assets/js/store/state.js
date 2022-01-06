@@ -1,5 +1,8 @@
 const state = {};
 
+// 浏览器宽度
+state.windowWidth = window.innerWidth;
+
 // 浏览器宽度≤768返回true
 state.windowMax768 = window.innerWidth <= 768;
 
