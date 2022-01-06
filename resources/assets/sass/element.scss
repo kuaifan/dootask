@@ -39,10 +39,34 @@ $--dropdown-menuItem-hover-color: #606266;
     height: 5px;
 }
 
-.el-tooltip__popper.is-light[x-placement^="bottom"] {
-    border-width: 0;
-    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
-    .popper__arrow {
-        border-bottom-color: hsla(0, 0%, 85%, .5);
+.el-tooltip__popper {
+    &.is-light {
+        border-width: 0;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
+        &[x-placement^="top"] {
+            .popper__arrow {
+                border-top-color: hsla(0, 0%, 85%, .5);
+            }
+        }
+        &[x-placement^="bottom"] {
+            .popper__arrow {
+                border-bottom-color: hsla(0, 0%, 85%, .5);
+            }
+        }
+        &[x-placement^="left"] {
+            .popper__arrow {
+                border-left-color: hsla(0, 0%, 85%, .5);
+            }
+        }
+        &[x-placement^="right"] {
+            .popper__arrow {
+                border-right-color: hsla(0, 0%, 85%, .5);
+            }
+        }
     }
+}
+
+.el-popover {
+    border-width: 0;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
 }
