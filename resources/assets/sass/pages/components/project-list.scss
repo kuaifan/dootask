@@ -702,6 +702,10 @@
                             align-items: center;
                             overflow: hidden;
                         }
+                        .task-column,
+                        .task-priority {
+                            cursor: pointer;
+                        }
                     }
                     &.row-column {
                         .task-column {
