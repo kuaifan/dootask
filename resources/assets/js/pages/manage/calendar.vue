@@ -67,6 +67,7 @@ export default {
             calendarList: [],
 
             loadIng: 0,
+            loadTimeout: null,
         }
     },
 
@@ -95,6 +96,8 @@ export default {
                     category: isAllday ? 'allday' : 'time',
                     start: $A.Date(data.start_at).toISOString(),
                     end: $A.Date(data.end_at).toISOString(),
+                    start_at: data.start_at,
+                    end_at: data.end_at,
                     color: "#515a6e",
                     bgColor: data.color || '#E3EAFD',
                     borderColor: data.p_color,
@@ -102,6 +105,7 @@ export default {
                     priority: '',
                     preventClick: true,
                     isChecked: false,
+                    _time: data._time,
                 };
                 if (data.p_name) {
                     task.priority = '<span class="priority" style="background-color:' + data.p_color + '">' + data.p_name + '</span>';
@@ -193,19 +197,40 @@ export default {
 
         getTask(time) {
             if (this.loadIng > 0) {
-                setTimeout(() => {
+                clearTimeout(this.loadTimeout)
+                this.loadTimeout = setTimeout(() => {
                     this.getTask(time)
                 }, 100)
                 return;
             }
+            //
+            const timeStart = $A.Date($A.formatDate(time[0] + " 00:00:00")),
+                timeEnd = $A.Date($A.formatDate(time[1] + " 23:59:59")),
+                now = $A.Time();
+            const find = (item, n) => {
+                if (n === true && item._time < now) {
+                    return false
+                }
+                const start = $A.Date(item.start_at),
+                    end = $A.Date(item.end_at);
+                return (start <= timeStart && timeStart <= end) || (start <= timeEnd && timeEnd <= end) || (start > timeStart && timeEnd > end);
+            }
+            const currentIds = this.list.filter(item => find(item)).map(({id}) => id);
+            const call = () => {
+                const newIds = this.list.filter(item => find(item, true)).map(({id}) => id);
+                this.$store.dispatch("forgetTask", currentIds.filter(v => newIds.indexOf(v) == -1))
+            }
+            //
             this.loadIng++;
             this.$store.dispatch("getTasks", {
-                time: time,
+                time,
                 complete: "no"
             }).then(() => {
                 this.loadIng--;
+                call()
             }).catch(() => {
                 this.loadIng--;
+                call()
             })
         },
 

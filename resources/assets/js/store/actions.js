@@ -1085,7 +1085,7 @@ export default {
             const time = $A.Time()
             const currentIds = state.tasks.filter(task => task.project_id == project_id).map(({id}) => id)
             //
-            let call = () => {
+            const call = () => {
                 const newIds = state.tasks.filter(task => task.project_id == project_id && task._time >= time).map(({id}) => id)
                 dispatch("forgetTask", currentIds.filter(v => newIds.indexOf(v) == -1))
             }
