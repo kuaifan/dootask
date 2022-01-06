@@ -316,11 +316,12 @@ class UsersController extends AbstractController
      * @apiName searchinfo
      *
      * @apiParam {Object} keys          搜索条件
-     * - keys.key                           昵称、邮箱
+     * - keys.key                           昵称、邮箱关键字
+     * - keys.disable                       0-排除禁止（默认），1-含禁止，2-仅禁止
      * - keys.project_id                    在指定项目ID
      * - keys.no_project_id                 不在指定项目ID
      * @apiParam {Object} sorts         排序方式
-     * - sorts.az                           字母
+     * - sorts.az                           按字母：asc|desc
      *
      * @apiParam {Number} [take]        获取数量，10-100
      * @apiParam {Number} [page]        当前页，默认:1（赋值分页模式，take参数无效）
@@ -336,28 +337,32 @@ class UsersController extends AbstractController
         //
         $keys = Request::input('keys');
         $sorts = Request::input('sorts');
-        if (is_array($keys)) {
-            if ($keys['key']) {
-                $builder->where(function($query) use ($keys) {
-                    $query->where("email", "like", "%{$keys['key']}%")
-                        ->orWhere("nickname", "like", "%{$keys['key']}%");
-                });
-            }
-            if (intval($keys['project_id']) > 0) {
-                $builder->whereIn('userid', function ($query) use ($keys) {
-                    $query->select('userid')->from('project_users')->where('project_id', $keys['project_id']);
-                });
-            }
-            if (intval($keys['no_project_id']) > 0) {
-                $builder->whereNotIn('userid', function ($query) use ($keys) {
-                    $query->select('userid')->from('project_users')->where('project_id', $keys['no_project_id']);
-                });
-            }
+        $keys = is_array($keys) ? $keys : [];
+        $sorts = is_array($sorts) ? $sorts : [];
+        //
+        if ($keys['key']) {
+            $builder->where(function($query) use ($keys) {
+                $query->where("email", "like", "%{$keys['key']}%")
+                    ->orWhere("nickname", "like", "%{$keys['key']}%");
+            });
         }
-        if (is_array($sorts)) {
-            if (in_array($sorts['az'], ['asc', 'desc'])) {
-                $builder->orderBy('az', $sorts['az']);
-            }
+        if (intval($keys['disable']) == 0) {
+            $builder->whereNull("disable_at");
+        } elseif (intval($keys['disable']) == 2) {
+            $builder->whereNotNull("disable_at");
+        }
+        if (intval($keys['project_id']) > 0) {
+            $builder->whereIn('userid', function ($query) use ($keys) {
+                $query->select('userid')->from('project_users')->where('project_id', $keys['project_id']);
+            });
+        }
+        if (intval($keys['no_project_id']) > 0) {
+            $builder->whereNotIn('userid', function ($query) use ($keys) {
+                $query->select('userid')->from('project_users')->where('project_id', $keys['no_project_id']);
+            });
+        }
+        if (in_array($sorts['az'], ['asc', 'desc'])) {
+            $builder->orderBy('az', $sorts['az']);
         }
         //
         if (Request::exists('page')) {
@@ -484,10 +489,12 @@ class UsersController extends AbstractController
             case 'setdisable':
                 $upArray['identity'] = array_diff($userInfo->identity, ['disable']);
                 $upArray['identity'][] = 'disable';
+                $upArray['disable_at'] = Carbon::now();
                 break;
 
             case 'cleardisable':
                 $upArray['identity'] = array_diff($userInfo->identity, ['disable']);
+                $upArray['disable_at'] = null;
                 break;
 
             case 'delete':

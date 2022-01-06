@@ -49,7 +49,7 @@ class FileUsersAddPermission extends Migration
     public function down()
     {
         Schema::table('file_users', function (Blueprint $table) {
-            //
+            $table->dropColumn("permission");
         });
     }
 }

@@ -59,6 +59,7 @@ class User extends AbstractModel
     protected $primaryKey = 'userid';
 
     protected $hidden = [
+        'disable_at',
         'updated_at',
     ];
 
