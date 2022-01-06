@@ -46,10 +46,22 @@
                         </ETooltip>
                     </li>
                 </ul>
-                <div v-if="taskDays > 0" class="advanced-time">
-                    <Icon type="ios-clock-outline" />
-                    <em type="primary" :style="addData.p_color ? {backgroundColor:addData.p_color} : {}">{{taskDays}}</em>
-                </div>
+                <DatePicker
+                    v-if="taskDays > 0"
+                    :open="taskTimeOpen"
+                    v-model="addData.times"
+                    :options="timeOptions"
+                    :placeholder="$L('选择计划范围')"
+                    format="yyyy-MM-dd HH:mm"
+                    type="datetimerange"
+                    placement="bottom"
+                    @on-change="taskTimeChange(addData.times)"
+                    @on-open-change="taskTimeOpenChange">
+                    <div class="advanced-time" @click="taskTimeOpenChange(!taskTimeOpen)">
+                        <Icon type="ios-clock-outline" />
+                        <em type="primary" :style="addData.p_color ? {backgroundColor:addData.p_color} : {}">{{taskDays}}</em>
+                    </div>
+                </DatePicker>
             </div>
         </div>
 
@@ -197,6 +209,8 @@ export default {
                 toolbar: 'uploadImages | uploadFiles | bold italic underline forecolor backcolor | codesample | preview screenload'
             },
 
+            taskTimeOpen: false,
+
             timeOptions: {
                 shortcuts: []
             },
@@ -231,6 +245,8 @@ export default {
                 this.$nextTick(() => {
                     this.$refs.input.focus()
                 })
+            } else {
+                this.taskTimeOpen = false;
             }
         },
         'addData.project_id'(id) {
@@ -353,6 +369,10 @@ export default {
                     }
                 }
             }
+        },
+
+        taskTimeOpenChange(val) {
+            this.taskTimeOpen = val;
         },
 
         taskTimeChange(times) {
