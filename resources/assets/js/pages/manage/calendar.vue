@@ -31,6 +31,7 @@
                 :calendars="calendarList"
                 :schedules="list"
                 :taskView="false"
+                :useCreationPopup="false"
                 @beforeCreateSchedule="onBeforeCreateSchedule"
                 @beforeClickSchedule="onBeforeClickSchedule"
                 @beforeUpdateSchedule="onBeforeUpdateSchedule"
@@ -47,6 +48,7 @@ import 'tui-calendar-hi/dist/tui-calendar-hi.css'
 import {mapState, mapGetters} from "vuex";
 import Calendar from "./components/Calendar";
 import moment from "moment";
+import {Store} from "le5le-store";
 
 export default {
     components: {Calendar},
@@ -254,16 +256,13 @@ export default {
             return currentDate.format(format);
         },
 
-        onBeforeCreateSchedule(res) {
-            this.$store.dispatch("taskAdd", {
-                project_id: res.calendarId,
-                times: [res.start.toDate(), res.end.toDate()],
-                name: res.title,
+        onBeforeCreateSchedule({start, end, guide}) {
+            Store.set('addTask', {
+                times: [start.toDate(), end.toDate()],
                 owner: this.userId,
-            }).then(({msg}) => {
-                $A.messageSuccess(msg);
-            }).catch(({msg}) => {
-                $A.modalError(msg);
+                beforeClose: () => {
+                    guide.clearGuideElement();
+                }
             });
         },
 

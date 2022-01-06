@@ -216,6 +216,8 @@ export default {
             },
 
             loadIng: 0,
+
+            beforeClose: [],
         }
     },
     mounted() {
@@ -246,6 +248,10 @@ export default {
                     this.$refs.input.focus()
                 })
             } else {
+                this.beforeClose.some(func => {
+                    typeof func === "function" && func()
+                })
+                this.beforeClose = [];
                 this.taskTimeOpen = false;
             }
         },
@@ -479,6 +485,10 @@ export default {
         },
 
         setData(data) {
+            if (typeof data.beforeClose !== "undefined") {
+                this.beforeClose.push(data.beforeClose)
+                delete data.beforeClose;
+            }
             this.addData = Object.assign({}, this.addData, data);
         },
 
