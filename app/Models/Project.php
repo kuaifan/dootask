@@ -304,28 +304,45 @@ class Project extends AbstractModel
     /**
      * 推送消息
      * @param string $action
-     * @param array $data       发送内容，默认为[id=>项目ID]
-     * @param array $userid     指定会员，默认为项目所有成员
+     * @param array|self $data      发送内容，默认为[id=>项目ID]
+     * @param array $userid         指定会员，默认为项目所有成员
      */
     public function pushMsg($action, $data = null, $userid = null)
     {
         if ($data === null) {
             $data = ['id' => $this->id];
+        } elseif ($data instanceof self) {
+            $data = $data->toArray();
         }
+        //
+        $array = [$userid, []];
         if ($userid === null) {
-            $userid = $this->relationUserids();
+            $array[0] = $this->relationUserids();
+        } elseif (!is_array($userid)) {
+            $array[0] = [$userid];
         }
-        $params = [
-            'ignoreFd' => Request::header('fd'),
-            'userid' => $userid,
-            'msg' => [
-                'type' => 'project',
-                'action' => $action,
-                'data' => $data,
-            ]
-        ];
-        $task = new PushTask($params, false);
-        Task::deliver($task);
+        //
+        if (isset($data['owner'])) {
+            $owners = ProjectUser::whereProjectId($data['id'])->whereOwner(1)->pluck('userid')->toArray();
+            $array = [array_intersect($array[0], $owners), array_diff($array[0], $owners)];
+        }
+        //
+        foreach ($array as $index => $item) {
+            if ($index > 0) {
+                $data['owner'] = 0;
+            }
+            $params = [
+                'ignoreFd' => Request::header('fd'),
+                'userid' => array_values($item),
+                'msg' => [
+                    'type' => 'project',
+                    'action' => $action,
+                    'data' => $data,
+                ]
+            ];
+            $task = new PushTask($params, false);
+            Task::deliver($task);
+        }
     }
 
     /**

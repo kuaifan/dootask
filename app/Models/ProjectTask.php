@@ -799,10 +799,7 @@ class ProjectTask extends AbstractModel
                 $this->archived_userid = User::userid();
                 $this->archived_follow = 0;
                 $this->addLog("任务取消归档：" . $this->name);
-                $this->pushMsg('add', [
-                    'new_column' => null,
-                    'task' => ProjectTask::oneTask($this->id),
-                ]);
+                $this->pushMsg('add', ProjectTask::oneTask($this->id));
             } else {
                 // 归档任务
                 if ($isAuto === true) {
@@ -873,8 +870,8 @@ class ProjectTask extends AbstractModel
     /**
      * 推送消息
      * @param string $action
-     * @param array $data       发送内容，默认为[id, parent_id, project_id, column_id, dialog_id]
-     * @param array $userid     指定会员，默认为项目所有成员
+     * @param array|self $data      发送内容，默认为[id, parent_id, project_id, column_id, dialog_id]
+     * @param array $userid         指定会员，默认为项目所有成员
      */
     public function pushMsg($action, $data = null, $userid = null)
     {
@@ -889,21 +886,37 @@ class ProjectTask extends AbstractModel
                 'column_id' => $this->column_id,
                 'dialog_id' => $this->dialog_id,
             ];
+        } elseif ($data instanceof self) {
+            $data = $data->toArray();
         }
+        //
+        $array = [$userid, []];
         if ($userid === null) {
-            $userid = $this->project->relationUserids();
+            $array[0] = $this->project->relationUserids();
+        } elseif (!is_array($userid)) {
+            $array[0] = [$userid];
         }
-        $params = [
-            'ignoreFd' => Request::header('fd'),
-            'userid' => $userid,
-            'msg' => [
-                'type' => 'projectTask',
-                'action' => $action,
-                'data' => $data,
-            ]
-        ];
-        $task = new PushTask($params, false);
-        Task::deliver($task);
+        //
+        if (isset($data['owner'])) {
+            $owners = ProjectTaskUser::whereTaskId($data['id'])->whereOwner(1)->pluck('userid')->toArray();
+            $array = [array_intersect($array[0], $owners), array_diff($array[0], $owners)];
+        }
+        foreach ($array as $index => $item) {
+            if ($index > 0) {
+                $data['owner'] = 0;
+            }
+            $params = [
+                'ignoreFd' => Request::header('fd'),
+                'userid' => array_values($item),
+                'msg' => [
+                    'type' => 'projectTask',
+                    'action' => $action,
+                    'data' => $data,
+                ]
+            ];
+            $task = new PushTask($params, false);
+            Task::deliver($task);
+        }
     }
 
     /**

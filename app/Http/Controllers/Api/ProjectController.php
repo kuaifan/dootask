@@ -1134,10 +1134,11 @@ class ProjectController extends AbstractController
             'project_id' => $project->id,
             'column_id' => $column->id,
         ]));
-        $data = [
-            'new_column' => $newColumn,
-            'task' => ProjectTask::oneTask($task->id),
-        ];
+        $data = ProjectTask::oneTask($task->id);
+        if ($newColumn) {
+            $data = $data->toArray();
+            $data['new_column'] = $newColumn;
+        }
         $task->pushMsg('add', $data);
         return Base::retSuccess('添加成功', $data);
     }
@@ -1174,10 +1175,7 @@ class ProjectController extends AbstractController
             'times' => [$task->start_at, $task->end_at],
             'owner' => [User::userid()]
         ]);
-        $data = [
-            'new_column' => null,
-            'task' => ProjectTask::oneTask($task->id),
-        ];
+        $data = ProjectTask::oneTask($task->id);
         $task->pushMsg('add', $data);
         return Base::retSuccess('添加成功', $data);
     }

@@ -1353,19 +1353,15 @@ export default {
     /**
      * 添加任务成功
      * @param dispatch
-     * @param data
+     * @param task
      */
-    addTaskSuccess({dispatch}, data) {
-        const {new_column, task} = data;
-        if (new_column) {
-            dispatch("saveColumn", new_column)
+    addTaskSuccess({dispatch}, task) {
+        if (typeof task.new_column !== "undefined") {
+            dispatch("saveColumn", task.new_column)
+            delete task.new_column
         }
         dispatch("saveTask", task)
-        if (task.parent_id) {
-            dispatch("getTaskOne", task.parent_id);
-        } else {
-            dispatch("getProjectOne", task.project_id);
-        }
+        dispatch("getProjectOne", task.project_id);
     },
 
     /**
