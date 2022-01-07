@@ -328,7 +328,7 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                     <Col span="3"></Col>
-                    <Col span="3">{{$L('完成时间')}}</Col>
+                    <Col span="3">{{projectData.task_num > 0 && projectParameter('showCompleted') ? $L('完成时间') : ''}}</Col>
                 </Row>
                 <TaskRow v-if="projectParameter('showCompleted')" :list="completedList" open-key="completed" @command="dropTask" @on-priority="addTaskOpen" showCompleteAt/>
             </div>

@@ -758,7 +758,9 @@
                             white-space: nowrap;
                             display: flex;
                             align-items: center;
+                            cursor: pointer;
                             > li {
+                                max-width: 100%;
                                 list-style: none;
                                 display: inline-block;
                                 margin-left: -6px;
@@ -778,6 +780,7 @@
                             overflow: hidden;
                             text-overflow: ellipsis;
                             white-space: nowrap;
+                            cursor: pointer;
                             &.overdue,
                             &.today {
                                 color: #ffffff;

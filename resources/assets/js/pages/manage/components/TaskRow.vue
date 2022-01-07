@@ -110,7 +110,7 @@
                 <Col span="3" class="row-user">
                     <ul @click="openTask(item)">
                         <li v-for="(user, keyu) in ownerUser(item.task_user)" :key="keyu" v-if="keyu < 3">
-                            <UserAvatar :userid="user.userid" size="32" :borderWitdh="2" :borderColor="item.color"/>
+                            <UserAvatar :userid="user.userid" size="32" :borderWitdh="2" :borderColor="item.color" :showName="ownerUser(item.task_user).length === 1"/>
                         </li>
                         <li v-if="ownerUser(item.task_user).length === 0" class="no-owner">
                             <Button type="primary" size="small" @click.stop="openTask(item, true)">{{$L('领取任务')}}</Button>
