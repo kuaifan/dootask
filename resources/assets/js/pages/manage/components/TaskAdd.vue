@@ -224,7 +224,7 @@ export default {
 
     },
     computed: {
-        ...mapState(['userId', 'projects', 'projectId', 'columns', 'taskPriority']),
+        ...mapState(['userId', 'cacheProjects', 'projectId', 'cacheColumns', 'taskPriority']),
 
         taskDays() {
             const {times} = this.addData;
@@ -324,8 +324,8 @@ export default {
         },
 
         initCascaderData() {
-            this.cascaderData = this.projects.map(project => {
-                const children = this.columns.filter(({project_id}) => project_id == project.id).map(column => {
+            this.cascaderData = this.cacheProjects.map(project => {
+                const children = this.cacheColumns.filter(({project_id}) => project_id == project.id).map(column => {
                     return {
                         value: column.id,
                         label: column.name
@@ -346,7 +346,7 @@ export default {
         initProjectData() {
             let column_id = this.addData.column_id;
             if (column_id) {
-                let column = this.columns.find(({id}) => id == column_id);
+                let column = this.cacheColumns.find(({id}) => id == column_id);
                 if (column) {
                     this.addData.project_id = column.project_id;
                     this.addData.column_id = column.id;
@@ -354,19 +354,19 @@ export default {
             } else {
                 let cacheAddTaskProjectId = $A.getStorageInt("cacheAddTaskProjectId");
                 let cacheAddTaskColumnId = $A.getStorageInt("cacheAddTaskColumnId");
-                let project = this.projects.find(({id}) => id == this.projectId)
-                    || this.projects.find(({id}) => id == cacheAddTaskProjectId)
-                    || this.projects.find(({id}) => id > 0);
+                let project = this.cacheProjects.find(({id}) => id == this.projectId)
+                    || this.cacheProjects.find(({id}) => id == cacheAddTaskProjectId)
+                    || this.cacheProjects.find(({id}) => id > 0);
                 if (project) {
-                    let column = this.columns.find(({project_id, id}) => project_id == project.id && id == cacheAddTaskColumnId)
-                        || this.columns.find(({project_id}) => project_id == project.id);
+                    let column = this.cacheColumns.find(({project_id, id}) => project_id == project.id && id == cacheAddTaskColumnId)
+                        || this.cacheColumns.find(({project_id}) => project_id == project.id);
                     if (column) {
                         this.addData.project_id = column.project_id;
                         this.addData.column_id = column.id;
                     } else {
                         this.$store.dispatch("getColumns", project.id).then(() => {
-                            column = this.columns.find(({project_id, id}) => project_id == project.id && id == cacheAddTaskColumnId)
-                                || this.columns.find(({project_id}) => project_id == project.id);
+                            column = this.cacheColumns.find(({project_id, id}) => project_id == project.id && id == cacheAddTaskColumnId)
+                                || this.cacheColumns.find(({project_id}) => project_id == project.id);
                             if (column) {
                                 this.addData.project_id = column.project_id;
                                 this.addData.column_id = column.id;

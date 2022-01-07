@@ -28,7 +28,6 @@
                 :month="calendarMonth"
                 :theme="calendarTheme"
                 :template="calendarTemplate"
-                :calendars="calendarList"
                 :schedules="list"
                 :taskView="false"
                 :useCreationPopup="false"
@@ -64,7 +63,6 @@ export default {
             calendarMonth: {},
             calendarTheme: {},
             calendarTemplate: {},
-            calendarList: [],
 
             loadIng: 0,
             loadTimeout: null,
@@ -77,12 +75,12 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'projects', 'tasks']),
+        ...mapState(['userId', 'cacheTasks']),
 
         ...mapGetters(['transforTasks']),
 
         list() {
-            const datas = this.transforTasks(this.tasks.filter(({complete_at, owner, end_at}) => {
+            const datas = this.transforTasks(this.cacheTasks.filter(({complete_at, owner, end_at}) => {
                 return !complete_at && owner && end_at;
             }));
             return datas.map(data => {
@@ -133,21 +131,6 @@ export default {
     watch: {
         rangeTime(time) {
             this.getTask(time);
-        },
-
-        projects: {
-            handler(data) {
-                const list = data.map((project) => {
-                    return {
-                        id: String(project.id),
-                        name: project.name,
-                    }
-                });
-                if (JSON.stringify(list) != JSON.stringify(this.calendarList)) {
-                    this.calendarList = list;
-                }
-            },
-            immediate: true,
         },
     },
 
@@ -299,7 +282,7 @@ export default {
         },
 
         onBeforeClickSchedule({type, schedule}) {
-            let data = this.tasks.find(({id}) => id === schedule.id);
+            let data = this.cacheTasks.find(({id}) => id === schedule.id);
             if (!data) {
                 return;
             }
@@ -343,7 +326,7 @@ export default {
 
         onBeforeUpdateSchedule(res) {
             const {changes, schedule} = res;
-            let data = this.tasks.find(({id}) => id === schedule.id);
+            let data = this.cacheTasks.find(({id}) => id === schedule.id);
             if (!data) {
                 return;
             }

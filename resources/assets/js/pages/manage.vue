@@ -293,8 +293,8 @@ export default {
             'userId',
             'userInfo',
             'userIsAdmin',
-            'dialogs',
-            'projects',
+            'cacheDialogs',
+            'cacheProjects',
             'projectTotal',
             'taskId',
             'dialogMsgPush',
@@ -304,7 +304,7 @@ export default {
 
         msgAllUnread() {
             let num = 0;
-            this.dialogs.map(({unread}) => {
+            this.cacheDialogs.map(({unread}) => {
                 if (unread) {
                     num += unread;
                 }
@@ -344,8 +344,8 @@ export default {
         },
 
         projectLists() {
-            const {projectKeyValue, projects} = this;
-            const data = projects.sort((a, b) => {
+            const {projectKeyValue, cacheProjects} = this;
+            const data = cacheProjects.sort((a, b) => {
                 return b.id - a.id;
             });
             if (projectKeyValue) {
@@ -412,7 +412,7 @@ export default {
                     tag: "dialog",
                     requireInteraction: true
                 });
-                let dialog = this.dialogs.find((item) => item.id == dialog_id);
+                let dialog = this.cacheDialogs.find((item) => item.id == dialog_id);
                 if (dialog) {
                     this.notificationClass.replaceTitle(dialog.name);
                     this.notificationClass.userAgreed();

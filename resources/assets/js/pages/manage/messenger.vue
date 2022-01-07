@@ -118,14 +118,14 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'dialogs', 'dialogOpenId']),
+        ...mapState(['userId', 'cacheDialogs', 'dialogOpenId']),
 
         dialogList() {
             const {dialogActive, dialogKey} = this;
             if (dialogActive == '' && dialogKey == '') {
-                return this.dialogs.filter(({name}) => name !== undefined);
+                return this.cacheDialogs.filter(({name}) => name !== undefined);
             }
-            return this.dialogs.filter(({name, type, group_type, last_msg}) => {
+            return this.cacheDialogs.filter(({name, type, group_type, last_msg}) => {
                 if (name === undefined) {
                     return false;
                 }
@@ -160,7 +160,7 @@ export default {
         msgUnread() {
             return function (type) {
                 let num = 0;
-                this.dialogs.map((dialog) => {
+                this.cacheDialogs.map((dialog) => {
                     if (dialog.unread) {
                         switch (type) {
                             case 'project':
@@ -233,7 +233,7 @@ export default {
         openDialogStorage() {
             this.dialogId = $A.getStorageInt("messenger::dialogId")
             if (this.dialogId > 0) {
-                const dialog = this.dialogs.find(({id}) => id === this.dialogId);
+                const dialog = this.cacheDialogs.find(({id}) => id === this.dialogId);
                 dialog && this.openDialog(dialog, false);
             }
         },
@@ -324,7 +324,7 @@ export default {
                             scrollMode: 'if-needed',
                         });
                     } else {
-                        let dialog = this.dialogs.find(({id}) => id == this.dialogId)
+                        let dialog = this.cacheDialogs.find(({id}) => id == this.dialogId)
                         if (dialog && this.dialogActive) {
                             this.dialogActive = '';
                             this.$nextTick(() => {

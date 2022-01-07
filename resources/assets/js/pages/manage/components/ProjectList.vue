@@ -542,14 +542,14 @@ export default {
             'windowMax768',
 
             'userId',
-            'dialogs',
+            'cacheDialogs',
 
             'taskPriority',
 
             'projectId',
             'projectLoad',
-            'tasks',
-            'columns',
+            'cacheTasks',
+            'cacheColumns',
         ]),
 
         ...mapGetters(['projectData', 'projectParameter', 'transforTasks']),
@@ -569,8 +569,8 @@ export default {
         },
 
         msgUnread() {
-            const {dialogs, projectData} = this;
-            const dialog = dialogs.find(({id}) => id === projectData.dialog_id);
+            const {cacheDialogs, projectData} = this;
+            const dialog = cacheDialogs.find(({id}) => id === projectData.dialog_id);
             return dialog ? dialog.unread : 0;
         },
 
@@ -604,8 +604,8 @@ export default {
         },
 
         columnList() {
-            const {projectId, columns, tasks} = this;
-            const list = columns.filter(({project_id}) => {
+            const {projectId, cacheColumns, cacheTasks} = this;
+            const list = cacheColumns.filter(({project_id}) => {
                 return project_id == projectId
             }).sort((a, b) => {
                 if (a.sort != b.sort) {
@@ -614,7 +614,7 @@ export default {
                 return a.id - b.id;
             });
             list.forEach((column) => {
-                column.tasks = this.transforTasks(tasks.filter((task) => {
+                column.tasks = this.transforTasks(cacheTasks.filter((task) => {
                     return task.column_id == column.id;
                 })).sort((a, b) => {
                     if (a.sort != b.sort) {
@@ -627,8 +627,8 @@ export default {
         },
 
         myList() {
-            const {projectId, tasks, searchText, tempShowTasks, sortField, sortType} = this;
-            const array = tasks.filter((task) => {
+            const {projectId, cacheTasks, searchText, tempShowTasks, sortField, sortType} = this;
+            const array = cacheTasks.filter((task) => {
                 if (task.project_id != projectId) {
                     return false;
                 }
@@ -660,8 +660,8 @@ export default {
         },
 
         helpList() {
-            const {projectId, tasks, searchText, tempShowTasks, userId, sortField, sortType} = this;
-            const array = tasks.filter((task) => {
+            const {projectId, cacheTasks, searchText, tempShowTasks, userId, sortField, sortType} = this;
+            const array = cacheTasks.filter((task) => {
                 if (task.project_id != projectId || task.parent_id > 0) {
                     return false;
                 }
@@ -693,8 +693,8 @@ export default {
         },
 
         unList() {
-            const {projectId, tasks, searchText, sortField, sortType} = this;
-            const array = tasks.filter((task) => {
+            const {projectId, cacheTasks, searchText, sortField, sortType} = this;
+            const array = cacheTasks.filter((task) => {
                 if (task.project_id != projectId || task.parent_id > 0) {
                     return false;
                 }
@@ -721,8 +721,8 @@ export default {
         },
 
         completedList() {
-            const {projectId, tasks, searchText} = this;
-            const array = tasks.filter((task) => {
+            const {projectId, cacheTasks, searchText} = this;
+            const array = cacheTasks.filter((task) => {
                 if (task.project_id != projectId || task.parent_id > 0) {
                     return false;
                 }
@@ -741,8 +741,8 @@ export default {
         },
 
         completedCount() {
-            const {projectId, tasks} = this;
-            return tasks.filter((task) => {
+            const {projectId, cacheTasks} = this;
+            return cacheTasks.filter((task) => {
                 if (task.project_id != projectId || task.parent_id > 0) {
                     return false;
                 }
@@ -809,7 +809,7 @@ export default {
                         sort = -1;
                         upTask.push(...item.task.map(id => {
                             sort++;
-                            upTask.push(...this.tasks.filter(({parent_id}) => parent_id == id).map(({id}) => {
+                            upTask.push(...this.cacheTasks.filter(({parent_id}) => parent_id == id).map(({id}) => {
                                 return {
                                     id,
                                     sort,

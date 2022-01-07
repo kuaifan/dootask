@@ -380,10 +380,10 @@ export default {
                 window.localStorage.clear();
                 //
                 state.cacheUserBasic = [];
-                state.cacheDialogs = state.dialogs = [];
-                state.cacheProjects = state.projects = [];
-                state.cacheColumns = state.columns = [];
-                state.cacheTasks = state.tasks = [];
+                state.cacheDialogs = [];
+                state.cacheProjects = [];
+                state.cacheColumns = [];
+                state.cacheTasks = [];
                 //
                 $A.setStorage("cacheProjectParameter", state.cacheProjectParameter);
                 $A.setStorage("cacheServerUrl", state.cacheServerUrl);
@@ -517,17 +517,17 @@ export default {
                 dispatch("saveColumn", data.project_column)
                 delete data.project_column;
             }
-            let index = state.projects.findIndex(({id}) => id == data.id);
+            let index = state.cacheProjects.findIndex(({id}) => id == data.id);
             if (index > -1) {
-                state.projects.splice(index, 1, Object.assign({}, state.projects[index], data));
+                state.cacheProjects.splice(index, 1, Object.assign({}, state.cacheProjects[index], data));
             } else {
                 if (typeof data.project_user === "undefined") {
                     data.project_user = []
                 }
-                state.projects.push(data);
+                state.cacheProjects.push(data);
             }
             setTimeout(() => {
-                $A.setStorage("cacheProjects", state.cacheProjects = state.projects);
+                $A.setStorage("cacheProjects", state.cacheProjects);
             })
         }
     },
@@ -542,13 +542,13 @@ export default {
         //
         let ids = $A.isArray(project_id) ? project_id : [project_id];
         ids.some(id => {
-            let index = state.projects.findIndex(project => project.id == id);
+            let index = state.cacheProjects.findIndex(project => project.id == id);
             if (index > -1) {
-                state.projects.splice(index, 1);
+                state.cacheProjects.splice(index, 1);
             }
         })
         if (ids.includes(state.projectId)) {
-            const project = state.projects.find(({id}) => id && id != project_id);
+            const project = state.cacheProjects.find(({id}) => id && id != project_id);
             if (project) {
                 $A.goForward({path: '/manage/project/' + project.id});
             } else {
@@ -556,7 +556,7 @@ export default {
             }
         }
         setTimeout(() => {
-            $A.setStorage("cacheProjects", state.cacheProjects = state.projects);
+            $A.setStorage("cacheProjects", state.cacheProjects);
         })
     },
 
@@ -570,12 +570,9 @@ export default {
     getProjects({state, dispatch}, data) {
         return new Promise(function (resolve, reject) {
             if (state.userId === 0) {
-                state.projects = [];
+                state.cacheProjects = [];
                 reject({msg: 'Parameter error'});
                 return;
-            }
-            if (state.projects.length === 0 && state.cacheProjects.length > 0) {
-                state.projects = state.cacheProjects;
             }
             dispatch("call", {
                 url: 'project/lists',
@@ -724,14 +721,14 @@ export default {
                 dispatch("saveColumn", column)
             });
         } else if ($A.isJson(data)) {
-            let index = state.columns.findIndex(({id}) => id == data.id);
+            let index = state.cacheColumns.findIndex(({id}) => id == data.id);
             if (index > -1) {
-                state.columns.splice(index, 1, Object.assign({}, state.columns[index], data));
+                state.cacheColumns.splice(index, 1, Object.assign({}, state.cacheColumns[index], data));
             } else {
-                state.columns.push(data);
+                state.cacheColumns.push(data);
             }
             setTimeout(() => {
-                $A.setStorage("cacheColumns", state.cacheColumns = state.columns);
+                $A.setStorage("cacheColumns", state.cacheColumns);
             })
         }
     },
@@ -748,17 +745,17 @@ export default {
         let ids = $A.isArray(column_id) ? column_id : [column_id];
         let project_ids = [];
         ids.some(id => {
-            let index = state.columns.findIndex(column => column.id == id);
+            let index = state.cacheColumns.findIndex(column => column.id == id);
             if (index > -1) {
-                project_ids.push(state.columns[index].project_id)
-                dispatch('getProjectOne', state.columns[index].project_id)
-                state.columns.splice(index, 1);
+                project_ids.push(state.cacheColumns[index].project_id)
+                dispatch('getProjectOne', state.cacheColumns[index].project_id)
+                state.cacheColumns.splice(index, 1);
             }
         })
         Array.from(new Set(project_ids)).some(id => dispatch("getProjectOne", id))
         //
         setTimeout(() => {
-            $A.setStorage("cacheColumns", state.cacheColumns = state.columns);
+            $A.setStorage("cacheColumns", state.cacheColumns);
         })
     },
 
@@ -772,12 +769,9 @@ export default {
     getColumns({state, dispatch}, project_id) {
         return new Promise(function (resolve, reject) {
             if (state.userId === 0) {
-                state.columns = [];
+                state.cacheColumns = [];
                 reject({msg: 'Parameter error'})
                 return;
-            }
-            if (state.columns.length === 0 && state.cacheColumns.length > 0) {
-                state.columns = state.cacheColumns;
             }
             state.projectLoad++;
             dispatch("call", {
@@ -789,12 +783,12 @@ export default {
                 state.projectLoad--;
                 //
                 const ids = data.data.map(({id}) => id)
-                state.columns = state.columns.filter((item) => item.project_id != project_id || ids.includes(item.id));
+                state.cacheColumns = state.cacheColumns.filter((item) => item.project_id != project_id || ids.includes(item.id));
                 //
                 dispatch("saveColumn", data.data);
                 resolve(data.data)
                 // 判断只有1列的时候默认版面为表格模式
-                if (state.columns.filter(item => item.project_id == project_id).length === 1) {
+                if (state.cacheColumns.filter(item => item.project_id == project_id).length === 1) {
                     const cache = state.cacheProjectParameter.find(item => item.project_id == project_id) || {};
                     if (typeof cache.cardInit === "undefined" || cache.cardInit === false) {
                         dispatch("toggleProjectParameter", {
@@ -860,14 +854,14 @@ export default {
             });
         } else if ($A.isJson(data)) {
             data._time = $A.Time();
-            let index = state.tasks.findIndex(({id}) => id == data.id);
+            let index = state.cacheTasks.findIndex(({id}) => id == data.id);
             if (index > -1) {
-                state.tasks.splice(index, 1, Object.assign({}, state.tasks[index], data));
+                state.cacheTasks.splice(index, 1, Object.assign({}, state.cacheTasks[index], data));
             } else {
-                state.tasks.push(data);
+                state.cacheTasks.push(data);
             }
             //
-            if (data.parent_id > 0 && state.tasks.findIndex(({id}) => id == data.parent_id) === -1) {
+            if (data.parent_id > 0 && state.cacheTasks.findIndex(({id}) => id == data.parent_id) === -1) {
                 dispatch("getTaskOne", data.parent_id);
             }
             if (data.is_update_project) {
@@ -884,7 +878,7 @@ export default {
             }
             //
             setTimeout(() => {
-                $A.setStorage("cacheTasks", state.cacheTasks = state.tasks);
+                $A.setStorage("cacheTasks", state.cacheTasks);
             })
         }
     },
@@ -902,13 +896,13 @@ export default {
         let parent_ids = [];
         let project_ids = [];
         ids.some(id => {
-            let index = state.tasks.findIndex(task => task.id == id);
+            let index = state.cacheTasks.findIndex(task => task.id == id);
             if (index > -1) {
-                if (state.tasks[index].parent_id) {
-                    parent_ids.push(state.tasks[index].parent_id)
+                if (state.cacheTasks[index].parent_id) {
+                    parent_ids.push(state.cacheTasks[index].parent_id)
                 }
-                project_ids.push(state.tasks[index].project_id)
-                state.tasks.splice(index, 1);
+                project_ids.push(state.cacheTasks[index].project_id)
+                state.cacheTasks.splice(index, 1);
             }
         })
         Array.from(new Set(parent_ids)).some(id => dispatch("getTaskOne", id))
@@ -918,7 +912,7 @@ export default {
             state.taskId = 0;
         }
         setTimeout(() => {
-            $A.setStorage("cacheTasks", state.cacheTasks = state.tasks);
+            $A.setStorage("cacheTasks", state.cacheTasks);
         })
     },
 
@@ -930,7 +924,7 @@ export default {
     increaseTaskMsgNum({state}, dialog_id) {
         $A.execMainDispatch("increaseTaskMsgNum", dialog_id)
         //
-        const task = state.tasks.find(task => task.dialog_id === dialog_id);
+        const task = state.cacheTasks.find(task => task.dialog_id === dialog_id);
         if (task) task.msg_num++;
     },
 
@@ -944,12 +938,12 @@ export default {
     getTasks({state, dispatch}, data) {
         return new Promise(function (resolve, reject) {
             if (state.userId === 0) {
-                state.tasks = [];
+                state.cacheTasks = [];
                 reject({msg: 'Parameter error'});
                 return;
             }
-            if (state.tasks.length == 0 && state.cacheTasks.length > 0) {
-                state.tasks = state.cacheTasks;
+            if (state.cacheTasks.length == 0 && state.cacheTasks.length > 0) {
+                state.cacheTasks = state.cacheTasks;
             }
             if (data.project_id) {
                 state.projectLoad++;
@@ -1083,10 +1077,10 @@ export default {
     getTaskForProject({state, dispatch}, project_id) {
         return new Promise(function (resolve, reject) {
             const time = $A.Time()
-            const currentIds = state.tasks.filter(task => task.project_id == project_id).map(({id}) => id)
+            const currentIds = state.cacheTasks.filter(task => task.project_id == project_id).map(({id}) => id)
             //
             const call = () => {
-                const newIds = state.tasks.filter(task => task.project_id == project_id && task._time >= time).map(({id}) => id)
+                const newIds = state.cacheTasks.filter(task => task.project_id == project_id && task._time >= time).map(({id}) => id)
                 dispatch("forgetTask", currentIds.filter(v => newIds.indexOf(v) == -1))
             }
             dispatch("getTasks", {project_id}).then(() => {
@@ -1109,10 +1103,10 @@ export default {
     getTaskForParent({state, dispatch}, parent_id) {
         return new Promise(function (resolve, reject) {
             const time = $A.Time()
-            const currentIds = state.tasks.filter(task => task.parent_id == parent_id).map(({id}) => id)
+            const currentIds = state.cacheTasks.filter(task => task.parent_id == parent_id).map(({id}) => id)
             //
             let call = () => {
-                const newIds = state.tasks.filter(task => task.parent_id == parent_id && task._time >= time).map(({id}) => id)
+                const newIds = state.cacheTasks.filter(task => task.parent_id == parent_id && task._time >= time).map(({id}) => id)
                 dispatch("forgetTask", currentIds.filter(v => newIds.indexOf(v) == -1))
             }
             dispatch("getTasks", {parent_id}).then(() => {
@@ -1428,14 +1422,14 @@ export default {
                 dispatch("saveDialog", dialog)
             });
         } else if ($A.isJson(data)) {
-            let index = state.dialogs.findIndex(({id}) => id == data.id);
+            let index = state.cacheDialogs.findIndex(({id}) => id == data.id);
             if (index > -1) {
-                state.dialogs.splice(index, 1, Object.assign({}, state.dialogs[index], data));
+                state.cacheDialogs.splice(index, 1, Object.assign({}, state.cacheDialogs[index], data));
             } else {
-                state.dialogs.push(data);
+                state.cacheDialogs.push(data);
             }
             setTimeout(() => {
-                $A.setStorage("cacheDialogs", state.cacheDialogs = state.dialogs);
+                $A.setStorage("cacheDialogs", state.cacheDialogs);
             })
         }
     },
@@ -1449,7 +1443,7 @@ export default {
     updateDialogLastMsg({state, dispatch}, data) {
         $A.execMainDispatch("updateDialogLastMsg", data)
         //
-        let dialog = state.dialogs.find(({id}) => id == data.dialog_id);
+        let dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
         if (dialog) {
             dispatch("saveDialog", {
                 id: data.dialog_id,
@@ -1468,7 +1462,7 @@ export default {
      */
     getDialogs({state, dispatch}) {
         if (state.userId === 0) {
-            state.dialogs = [];
+            state.cacheDialogs = [];
             return;
         }
         dispatch("call", {
@@ -1545,11 +1539,11 @@ export default {
     moveDialogTop({state}, dialog_id) {
         $A.execMainDispatch("moveDialogTop", dialog_id)
         //
-        const index = state.dialogs.findIndex(({id}) => id == dialog_id);
+        const index = state.cacheDialogs.findIndex(({id}) => id == dialog_id);
         if (index > -1) {
-            const tmp = $A.cloneJSON(state.dialogs[index]);
-            state.dialogs.splice(index, 1);
-            state.dialogs.unshift(tmp);
+            const tmp = $A.cloneJSON(state.cacheDialogs[index]);
+            state.cacheDialogs.splice(index, 1);
+            state.cacheDialogs.unshift(tmp);
         }
     },
 
@@ -1563,9 +1557,9 @@ export default {
         //
         let ids = $A.isArray(dialog_id) ? dialog_id : [dialog_id];
         ids.some(id => {
-            let index = state.dialogs.findIndex(dialog => dialog.id == id);
+            let index = state.cacheDialogs.findIndex(dialog => dialog.id == id);
             if (index > -1) {
-                state.dialogs.splice(index, 1);
+                state.cacheDialogs.splice(index, 1);
             }
         })
         if (ids.includes($A.getStorageInt("messenger::dialogId"))) {
@@ -1573,7 +1567,7 @@ export default {
         }
         //
         setTimeout(() => {
-            $A.setStorage("cacheDialogs", state.cacheDialogs = state.dialogs);
+            $A.setStorage("cacheDialogs", state.cacheDialogs);
         })
     },
 
@@ -1611,12 +1605,12 @@ export default {
      * @param dialog_id
      */
     getDialogMsgs({state, dispatch}, dialog_id) {
-        let dialog = state.dialogs.find(({id}) => id == dialog_id);
+        let dialog = state.cacheDialogs.find(({id}) => id == dialog_id);
         if (!dialog) {
             dialog = {
                 id: dialog_id,
             };
-            state.dialogs.push(dialog);
+            state.cacheDialogs.push(dialog);
         }
         if (dialog.loading) {
             return;
@@ -1656,7 +1650,7 @@ export default {
      */
     getDialogMoreMsgs({state, dispatch}, dialog_id) {
         return new Promise(function (resolve, reject) {
-            const dialog = state.dialogs.find(({id}) => id == dialog_id);
+            const dialog = state.cacheDialogs.find(({id}) => id == dialog_id);
             if (!dialog) {
                 reject({msg: 'Parameter error'});
                 return;
@@ -1703,7 +1697,7 @@ export default {
         if (data.is_read === true) return;
         data.is_read = true;
         //
-        let dialog = state.dialogs.find(({id}) => id == data.dialog_id);
+        let dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
         if (dialog && dialog.unread > 0) {
             dialog.unread--
         }
@@ -1808,7 +1802,7 @@ export default {
                                     if (mode === "chat") {
                                         return;
                                     }
-                                    let dialog = state.dialogs.find(({id}) => id == data.dialog_id);
+                                    let dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
                                     // 更新对话列表
                                     if (dialog) {
                                         // 新增未读数

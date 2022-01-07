@@ -11,7 +11,7 @@ export default {
         }
         if (projectId > 0) {
             window.__projectId = projectId;
-            const project = state.projects.find(({id}) => id == projectId);
+            const project = state.cacheProjects.find(({id}) => id == projectId);
             if (project) {
                 return project;
             }
@@ -50,7 +50,7 @@ export default {
         }
         if (taskId > 0) {
             window.__taskId = taskId;
-            const task = state.tasks.find(({id}) => id == taskId);
+            const task = state.cacheTasks.find(({id}) => id == taskId);
             if (task) {
                 return task;
             }
@@ -74,7 +74,7 @@ export default {
             }).map(task => {
                 if (task.parent_id > 0) {
                     // 子任务
-                    const data = state.tasks.find(({id}) => id == task.parent_id);
+                    const data = state.cacheTasks.find(({id}) => id == task.parent_id);
                     if (data) {
                         return Object.assign({}, data, {
                             id: task.id,
@@ -110,7 +110,7 @@ export default {
      * @returns {unknown[]}
      */
     ownerTasks(state) {
-        return state.tasks.filter(({complete_at, owner}) => {
+        return state.cacheTasks.filter(({complete_at, owner}) => {
             if (complete_at) {
                 return false;
             }

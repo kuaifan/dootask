@@ -193,11 +193,11 @@ export default {
     },
 
     computed: {
-        ...mapState(['tasks', 'taskPriority', 'columns']),
+        ...mapState(['cacheTasks', 'taskPriority', 'cacheColumns']),
 
         subTask() {
             return function(task_id) {
-                return this.tasks.filter(({parent_id}) => {
+                return this.cacheTasks.filter(({parent_id}) => {
                     return parent_id == task_id
                 }).sort((a, b) => {
                     return a.id - b.id;
@@ -207,7 +207,7 @@ export default {
     },
     methods: {
         columnName(column_id) {
-            const column = this.columns.find(({id}) => id == column_id)
+            const column = this.cacheColumns.find(({id}) => id == column_id)
             return column ? column.name : '';
         },
 
@@ -243,7 +243,7 @@ export default {
         },
 
         columnList(id) {
-            return this.columns.filter(({project_id}) => project_id == id);
+            return this.cacheColumns.filter(({project_id}) => project_id == id);
         },
 
         openTask(task, receive) {

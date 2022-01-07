@@ -51,7 +51,6 @@ state.userIsAdmin = $A.inArray("admin", state.userInfo.identity);
 state.userOnline = {};
 
 // 会话聊天
-state.dialogs = [];
 state.dialogMsgs = [];
 state.dialogMsgPush = {};
 state.dialogOpenId = 0;
@@ -62,12 +61,9 @@ state.fileContent = {};
 
 // 项目任务
 state.projectId = 0;
-state.projects = [];
 state.projectTotal = 0;
 state.projectLoad = 0;
-state.columns = [];
 state.taskId = 0;
-state.tasks = [];
 state.taskContents = [];
 state.taskFiles = [];
 state.taskLogs = [];

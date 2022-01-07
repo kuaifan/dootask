@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import {mapGetters} from "vuex";
+import {mapState, mapGetters} from "vuex";
 import ProjectList from "./components/ProjectList";
 import ProjectDialog from "./components/ProjectDialog";
 export default {
@@ -22,6 +22,7 @@ export default {
     },
 
     computed: {
+        ...mapState(['cacheProjects']),
         ...mapGetters(['projectParameter']),
     },
 
@@ -40,7 +41,7 @@ export default {
                         $A.modalWarning({
                             content: msg,
                             onOk: () => {
-                                const project = this.$store.state.projects.find(({id}) => id);
+                                const project = this.cacheProjects.find(({id}) => id);
                                 if (project) {
                                     $A.goForward({path: '/manage/project/' + project.id});
                                 } else {

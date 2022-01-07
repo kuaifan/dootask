@@ -519,9 +519,9 @@ export default {
     computed: {
         ...mapState([
             'userId',
-            'projects',
-            'columns',
-            'tasks',
+            'cacheProjects',
+            'cacheColumns',
+            'cacheTasks',
             'taskContents',
             'taskFiles',
             'taskPriority',
@@ -534,7 +534,7 @@ export default {
             if (this.taskDetail.project_name) {
                 return this.taskDetail.project_name;
             }
-            const project = this.projects.find(({id}) => id == this.taskDetail.project_id)
+            const project = this.cacheProjects.find(({id}) => id == this.taskDetail.project_id)
             return project ? project.name : '';
         },
 
@@ -545,7 +545,7 @@ export default {
             if (this.taskDetail.column_name) {
                 return this.taskDetail.column_name;
             }
-            const column = this.columns.find(({id}) => id == this.taskDetail.column_id)
+            const column = this.cacheColumns.find(({id}) => id == this.taskDetail.column_id)
             return column ? column.name : '';
         },
 
@@ -572,7 +572,7 @@ export default {
             if (!this.taskId) {
                 return [];
             }
-            return this.tasks.filter(({parent_id}) => {
+            return this.cacheTasks.filter(({parent_id}) => {
                 return parent_id == this.taskId
             }).sort((a, b) => {
                 return a.id - b.id;

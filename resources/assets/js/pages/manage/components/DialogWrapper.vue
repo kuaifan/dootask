@@ -125,13 +125,13 @@ export default {
     computed: {
         ...mapState([
             'userId',
-            'dialogs',
+            'cacheDialogs',
             'dialogMsgs',
             'dialogMsgPush',
         ]),
 
         dialogData() {
-            return this.dialogs.find(({id}) => id == this.dialogId) || {};
+            return this.cacheDialogs.find(({id}) => id == this.dialogId) || {};
         },
 
         dialogMsgList() {

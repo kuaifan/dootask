@@ -22,7 +22,7 @@
                 <li>
                     <div class="block-title">{{$L('参与的项目')}}</div>
                     <div class="block-data">
-                        <div class="block-num">{{projects.length}}</div>
+                        <div class="block-num">{{cacheProjects.length}}</div>
                         <i class="taskfont">&#xe6f9;</i>
                     </div>
                 </li>
@@ -139,7 +139,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userInfo', 'projects', 'tasks', 'taskId']),
+        ...mapState(['userInfo', 'cacheProjects', 'taskId']),
 
         ...mapGetters(['dashboardTask', 'transforTasks']),
 
