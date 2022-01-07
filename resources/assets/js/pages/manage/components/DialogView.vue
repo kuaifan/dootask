@@ -23,7 +23,7 @@
 
         <!--时间/阅读-->
         <div v-if="msgData.created_at" class="dialog-foot">
-            <div class="time">{{formatTime(msgData.created_at)}}</div>
+            <div class="time">{{$A.formatTime(msgData.created_at)}}</div>
             <Poptip
                 v-if="msgData.send > 1 || dialogType == 'group'"
                 class="percent"
@@ -35,11 +35,11 @@
                 <div slot="content" class="dialog-wrapper-read-poptip-content">
                     <ul class="read">
                         <li class="read-title"><em>{{readList.length}}</em>{{$L('已读')}}</li>
-                        <li v-for="item in readList"><UserAvatar :userid="item.userid" :size="26" show-name/></li>
+                        <li v-for="item in readList"><UserAvatar :userid="item.userid" :size="26" showName/></li>
                     </ul>
                     <ul class="unread">
                         <li class="read-title"><em>{{unreadList.length}}</em>{{$L('未读')}}</li>
-                        <li v-for="item in unreadList"><UserAvatar :userid="item.userid" :size="26" show-name/></li>
+                        <li v-for="item in unreadList"><UserAvatar :userid="item.userid" :size="26" showName/></li>
                     </ul>
                 </div>
                 <WCircle :percent="msgData.percentage" :size="14"/>
@@ -127,19 +127,6 @@ export default {
             }).catch(() => {
                 this.read_list = [];
             });
-        },
-
-        formatTime(date) {
-            let time = Math.round($A.Date(date).getTime() / 1000),
-                string = '';
-            if ($A.formatDate('Ymd') === $A.formatDate('Ymd', time)) {
-                string = $A.formatDate('H:i', time)
-            } else if ($A.formatDate('Y') === $A.formatDate('Y', time)) {
-                string = $A.formatDate('m-d', time)
-            } else {
-                string = $A.formatDate('Y-m-d', time)
-            }
-            return string || '';
         },
 
         textMsg(text) {

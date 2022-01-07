@@ -77,6 +77,73 @@
         },
 
         /**
+         * 格式化时间
+         * @param date
+         * @returns {*|string}
+         */
+        formatTime(date) {
+            let time = Math.round($A.Date(date).getTime() / 1000),
+                string = '';
+            if ($A.formatDate('Ymd') === $A.formatDate('Ymd', time)) {
+                string = $A.formatDate('H:i', time)
+            } else if ($A.formatDate('Y') === $A.formatDate('Y', time)) {
+                string = $A.formatDate('m-d', time)
+            } else {
+                string = $A.formatDate('Y-m-d', time)
+            }
+            return string || '';
+        },
+
+        /**
+         * 小于9补0
+         * @param val
+         * @returns {number|string}
+         */
+        formatBit(val) {
+            val = +val
+            return val > 9 ? val : '0' + val
+        },
+
+        /**
+         * 秒转时间
+         * @param second
+         * @returns {string}
+         */
+        formatSeconds(second) {
+            let duration
+            let days = Math.floor(second / 86400);
+            let hours = Math.floor((second % 86400) / 3600);
+            let minutes = Math.floor(((second % 86400) % 3600) / 60);
+            let seconds = Math.floor(((second % 86400) % 3600) % 60);
+            if (days > 0) {
+                if (hours > 0) duration = days + "d," + this.formatBit(hours) + "h";
+                else if (minutes > 0) duration = days + "d," + this.formatBit(minutes) + "min";
+                else if (seconds > 0) duration = days + "d," + this.formatBit(seconds) + "s";
+                else duration = days + "d";
+            }
+            else if (hours > 0) duration = this.formatBit(hours) + ":" + this.formatBit(minutes) + ":" + this.formatBit(seconds);
+            else if (minutes > 0) duration = this.formatBit(minutes) + ":" + this.formatBit(seconds);
+            else if (seconds > 0) duration = this.formatBit(seconds) + "s";
+            return duration;
+        },
+
+        /**
+         * 倒计时格式
+         * @param date
+         * @param nowTime
+         * @returns {string|*}
+         */
+        countDownFormat(date, nowTime) {
+            let time = Math.round(this.Date(date).getTime() / 1000) - nowTime;
+            if (time < 86400 * 7 && time > 0 ) {
+                return this.formatSeconds(time);
+            } else if (time <= 0) {
+                return '-' + this.formatSeconds(time * -1);
+            }
+            return this.formatTime(date)
+        },
+
+        /**
          * 获取一些指定时间
          * @param str
          * @param retInt

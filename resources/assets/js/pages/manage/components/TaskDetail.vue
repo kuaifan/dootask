@@ -84,7 +84,7 @@
                 </div>
             </div>
             <template v-if="getOwner.length > 0">
-                <UserAvatar v-for="item in getOwner" :key="item.userid" :userid="item.userid" :size="20" tooltip-disabled/>
+                <UserAvatar v-for="item in getOwner" :key="item.userid" :userid="item.userid" :size="20" tooltipDisabled/>
             </template>
             <div v-else>--</div>
         </Poptip>
@@ -219,7 +219,7 @@
                                 </div>
                             </div>
                             <div class="user-list">
-                                <UserAvatar v-for="item in getOwner" :key="item.userid" :userid="item.userid" :size="28" :show-name="getOwner.length === 1" tooltip-disabled/>
+                                <UserAvatar v-for="item in getOwner" :key="item.userid" :userid="item.userid" :size="28" :showName="getOwner.length === 1" tooltipDisabled/>
                             </div>
                         </Poptip>
                     </FormItem>
@@ -250,7 +250,7 @@
                                 </div>
                             </div>
                             <div v-if="getAssist.length > 0" class="user-list">
-                                <UserAvatar v-for="item in getAssist" :key="item.userid" :userid="item.userid" :size="28" :show-name="getAssist.length === 1"/>
+                                <UserAvatar v-for="item in getAssist" :key="item.userid" :userid="item.userid" :size="28" :showName="getAssist.length === 1" tooltipDisabled/>
                             </div>
                             <div v-else>--</div>
                         </Poptip>
@@ -727,21 +727,21 @@ export default {
                     text: this.$L('3天'),
                     value() {
                         let e = new Date();
-                        e.setDate(e.getDate() + 3);
+                        e.setDate(e.getDate() + 2);
                         return [new Date(), lastSecond(e.getTime())];
                     }
                 }, {
                     text: this.$L('5天'),
                     value() {
                         let e = new Date();
-                        e.setDate(e.getDate() + 5);
+                        e.setDate(e.getDate() + 4);
                         return [new Date(), lastSecond(e.getTime())];
                     }
                 }, {
                     text: this.$L('7天'),
                     value() {
                         let e = new Date();
-                        e.setDate(e.getDate() + 7);
+                        e.setDate(e.getDate() + 6);
                         return [new Date(), lastSecond(e.getTime())];
                     }
                 }]
@@ -752,50 +752,8 @@ export default {
             this.innerHeight = Math.min(1100, window.innerHeight);
         },
 
-        formatTime(date) {
-            let time = Math.round($A.Date(date).getTime() / 1000),
-                string = '';
-            if ($A.formatDate('Ymd') === $A.formatDate('Ymd', time)) {
-                string = $A.formatDate('H:i', time)
-            } else if ($A.formatDate('Y') === $A.formatDate('Y', time)) {
-                string = $A.formatDate('m-d', time)
-            } else {
-                string = $A.formatDate('Y-m-d', time)
-            }
-            return string || '';
-        },
-
-        formatBit(val) {
-            val = +val
-            return val > 9 ? val : '0' + val
-        },
-
-        formatSeconds(second) {
-            let duration
-            let days = Math.floor(second / 86400);
-            let hours = Math.floor((second % 86400) / 3600);
-            let minutes = Math.floor(((second % 86400) % 3600) / 60);
-            let seconds = Math.floor(((second % 86400) % 3600) % 60);
-            if (days > 0) {
-                if (hours > 0) duration = days + "d," + this.formatBit(hours) + "h";
-                else if (minutes > 0) duration = days + "d," + this.formatBit(minutes) + "min";
-                else if (seconds > 0) duration = days + "d," + this.formatBit(seconds) + "s";
-                else duration = days + "d";
-            }
-            else if (hours > 0) duration = this.formatBit(hours) + ":" + this.formatBit(minutes) + ":" + this.formatBit(seconds);
-            else if (minutes > 0) duration = this.formatBit(minutes) + ":" + this.formatBit(seconds);
-            else if (seconds > 0) duration = this.formatBit(seconds) + "s";
-            return duration;
-        },
-
         expiresFormat(date) {
-            let time = Math.round($A.Date(date).getTime() / 1000) - this.nowTime;
-            if (time < 86400 * 7 && time > 0 ) {
-                return this.formatSeconds(time);
-            } else if (time <= 0) {
-                return '-' + this.formatSeconds(time * -1);
-            }
-            return this.formatTime(date)
+            return $A.countDownFormat(date, this.nowTime)
         },
 
         onNameKeydown(e) {

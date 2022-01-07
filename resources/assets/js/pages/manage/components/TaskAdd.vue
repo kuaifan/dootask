@@ -302,21 +302,21 @@ export default {
                     text: this.$L('3天'),
                     value() {
                         let e = new Date();
-                        e.setDate(e.getDate() + 3);
+                        e.setDate(e.getDate() + 2);
                         return [new Date(), lastSecond(e.getTime())];
                     }
                 }, {
                     text: this.$L('5天'),
                     value() {
                         let e = new Date();
-                        e.setDate(e.getDate() + 5);
+                        e.setDate(e.getDate() + 4);
                         return [new Date(), lastSecond(e.getTime())];
                     }
                 }, {
                     text: this.$L('7天'),
                     value() {
                         let e = new Date();
-                        e.setDate(e.getDate() + 7);
+                        e.setDate(e.getDate() + 6);
                         return [new Date(), lastSecond(e.getTime())];
                     }
                 }]

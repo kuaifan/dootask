@@ -39,7 +39,7 @@
                         :class="{self:item.userid == userId, 'history-tip': topId == item.id}">
                         <em v-if="topId == item.id" class="history-text">{{$L('历史消息')}}</em>
                         <div class="dialog-avatar">
-                            <UserAvatar :userid="item.userid" :tooltip-disabled="item.userid == userId" :size="30"/>
+                            <UserAvatar :userid="item.userid" :tooltipDisabled="item.userid == userId" :size="30"/>
                         </div>
                         <DialogView :msg-data="item" :dialog-type="dialogData.type"/>
                     </li>
@@ -49,7 +49,7 @@
                         :key="'tmp_' + item.id"
                         :class="{self:item.userid == userId}">
                         <div class="dialog-avatar">
-                            <UserAvatar :userid="item.userid" :tooltip-disabled="item.userid == userId" :size="30"/>
+                            <UserAvatar :userid="item.userid" :tooltipDisabled="item.userid == userId" :size="30"/>
                         </div>
                         <DialogView :msg-data="item" :dialog-type="dialogData.type"/>
                     </li>
@@ -356,19 +356,6 @@ export default {
 
         onActive() {
             this.$emit("on-active");
-        },
-
-        formatTime(date) {
-            let time = Math.round($A.Date(date).getTime() / 1000),
-                string = '';
-            if ($A.formatDate('Ymd') === $A.formatDate('Ymd', time)) {
-                string = $A.formatDate('H:i', time)
-            } else if ($A.formatDate('Y') === $A.formatDate('Y', time)) {
-                string = $A.formatDate('m-d', time)
-            } else {
-                string = $A.formatDate('Y-m-d', time)
-            }
-            return string || '';
         },
 
         openProject() {

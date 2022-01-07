@@ -242,7 +242,7 @@
                             <EAvatar class="avatar-text" icon="el-icon-s-custom"/>
                             <span class="avatar-name">{{$L('所有人')}}</span>
                         </div>
-                        <UserAvatar v-else :size="32" :userid="item.userid" show-name tooltip-disabled/>
+                        <UserAvatar v-else :size="32" :userid="item.userid" showName tooltipDisabled/>
                         <Select v-model="item.permission" :placeholder="$L('权限')" @on-change="upShare(item)">
                             <Option :value="1">{{ $L('读/写') }}</Option>
                             <Option :value="0">{{ $L('只读') }}</Option>

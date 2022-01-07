@@ -262,50 +262,8 @@ export default {
             });
         },
 
-        formatTime(date) {
-            let time = Math.round($A.Date(date).getTime() / 1000),
-                string = '';
-            if ($A.formatDate('Ymd') === $A.formatDate('Ymd', time)) {
-                string = $A.formatDate('H:i', time)
-            } else if ($A.formatDate('Y') === $A.formatDate('Y', time)) {
-                string = $A.formatDate('m-d', time)
-            } else {
-                string = $A.formatDate('Y-m-d', time)
-            }
-            return string || '';
-        },
-
-        formatBit(val) {
-            val = +val
-            return val > 9 ? val : '0' + val
-        },
-
-        formatSeconds(second) {
-            let duration
-            let days = Math.floor(second / 86400);
-            let hours = Math.floor((second % 86400) / 3600);
-            let minutes = Math.floor(((second % 86400) % 3600) / 60);
-            let seconds = Math.floor(((second % 86400) % 3600) % 60);
-            if (days > 0) {
-                if (hours > 0) duration = days + "d," + this.formatBit(hours) + "h";
-                else if (minutes > 0) duration = days + "d," + this.formatBit(minutes) + "min";
-                else if (seconds > 0) duration = days + "d," + this.formatBit(seconds) + "s";
-                else duration = days + "d";
-            }
-            else if (hours > 0) duration = this.formatBit(hours) + ":" + this.formatBit(minutes) + ":" + this.formatBit(seconds);
-            else if (minutes > 0) duration = this.formatBit(minutes) + ":" + this.formatBit(seconds);
-            else if (seconds > 0) duration = this.formatBit(seconds) + "s";
-            return duration;
-        },
-
         expiresFormat(date) {
-            let time = Math.round($A.Date(date).getTime() / 1000) - this.nowTime;
-            if (time < 86400 * 7 && time > 0 ) {
-                return this.formatSeconds(time);
-            } else if (time <= 0) {
-                return '-' + this.formatSeconds(time * -1);
-            }
-            return this.formatTime(date)
+            return $A.countDownFormat(date, this.nowTime)
         },
 
         completeAtFormat(date) {

@@ -8,7 +8,7 @@
                 @on-visible-change="menuVisibleChange">
                 <div :class="['manage-box-title', visibleMenu ? 'menu-visible' : '']">
                     <div class="manage-box-avatar">
-                        <UserAvatar :userid="userId" :size="36" tooltip-disabled/>
+                        <UserAvatar :userid="userId" :size="36" tooltipDisabled/>
                     </div>
                     <span>{{userInfo.nickname}}</span>
                     <div class="manage-box-arrow">

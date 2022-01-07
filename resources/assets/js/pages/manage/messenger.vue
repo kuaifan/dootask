@@ -41,7 +41,7 @@
                                 <div class="dialog-title">
                                     <span>{{dialog.name}}</span>
                                     <Icon v-if="dialog.type == 'user' && lastMsgReadDone(dialog.last_msg)" :type="lastMsgReadDone(dialog.last_msg)"/>
-                                    <em v-if="dialog.last_at">{{formatTime(dialog.last_at)}}</em>
+                                    <em v-if="dialog.last_at">{{$A.formatTime(dialog.last_at)}}</em>
                                 </div>
                                 <div class="dialog-text">{{formatLastMsg(dialog.last_msg)}}</div>
                             </div>
@@ -285,19 +285,6 @@ export default {
                 this.contactsLoad--;
                 this.contactsHasMorePages = false;
             });
-        },
-
-        formatTime(date) {
-            let time = Math.round($A.Date(date).getTime() / 1000),
-                string = '';
-            if ($A.formatDate('Ymd') === $A.formatDate('Ymd', time)) {
-                string = $A.formatDate('H:i', time)
-            } else if ($A.formatDate('Y') === $A.formatDate('Y', time)) {
-                string = $A.formatDate('m-d', time)
-            } else {
-                string = $A.formatDate('Y-m-d', time)
-            }
-            return string || '';
         },
 
         formatLastMsg(data) {
