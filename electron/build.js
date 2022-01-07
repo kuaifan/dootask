@@ -136,6 +136,7 @@ function start(data, publish) {
     econfig.build.appId = data.id;
     econfig.build.artifactName = getDomain(data.url) + "-v${version}-${os}-${arch}.${ext}";
     econfig.build.nsis.artifactName = getDomain(data.url) + "-v${version}-${os}-${arch}.${ext}";
+    econfig.build.pkg.mustClose = [data.id];
     fs.writeFileSync(packageFile, JSON.stringify(econfig, null, 2), 'utf8');
     // build
     child_process.spawnSync("npm", ["run", data.platform + (publish === true ? "-publish" : "")], {stdio: "inherit", cwd: "electron"});
