@@ -247,11 +247,25 @@
                 }
             }
         }
-        .manage-box-new {
+        .manage-box-new-group {
             width: 80%;
-            height: 38px;
             margin-top: 16px;
             margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            .manage-box-new {
+                flex: 1;
+            }
+            .ivu-btn {
+                height: 38px;
+            }
+            .ivu-dropdown {
+                .ivu-btn {
+                    min-width: auto !important;
+                    padding: 0 4px;
+                    border-radius: 0 4px 4px 0;
+                }
+            }
         }
     }
     .manage-box-main {

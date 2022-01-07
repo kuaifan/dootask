@@ -90,7 +90,17 @@
                 :class="{loading:projectKeyLoading > 0}">
                 <Input prefix="ios-search" v-model="projectKeyValue" :placeholder="$L('共' + projectTotal + '个项目，搜索...')" clearable />
             </div>
-            <Button class="manage-box-new" type="primary" icon="md-add" @click="onAddShow">{{$L('新建项目')}}</Button>
+            <ButtonGroup class="manage-box-new-group">
+                <Button class="manage-box-new" type="primary" icon="md-add" @click="onAddShow">{{$L('新建项目')}}</Button>
+                <Dropdown @on-click="onAddTask(0)">
+                    <Button type="primary">
+                        <Icon type="ios-arrow-down"></Icon>
+                    </Button>
+                    <DropdownMenu slot="list">
+                        <DropdownItem>{{$L('新建任务')}} ({{mateName}}+K)</DropdownItem>
+                    </DropdownMenu>
+                </Dropdown>
+            </ButtonGroup>
         </div>
 
         <div class="manage-box-main">
@@ -207,6 +217,7 @@ export default {
             loadIng: 0,
 
             curPath: this.$route.path,
+            mateName: /macintosh|mac os x/i.test(navigator.userAgent) ? '⌘' : 'Ctrl',
 
             addShow: false,
             addData: {
@@ -252,12 +263,7 @@ export default {
         this.onVisibilityChange();
         //
         this.addTaskSubscribe = Store.subscribe('addTask', (data) => {
-            this.$refs.addTask.defaultPriority();
-            this.$refs.addTask.setData($A.isJson(data) ? data : {
-                'owner': this.userId,
-                'column_id': data,
-            });
-            this.addTaskShow = true;
+            this.onAddTask(data)
         });
         //
         document.addEventListener('keydown', this.shortcutEvent);
@@ -585,9 +591,18 @@ export default {
             if (e.keyCode === 75 || e.keyCode === 78) {
                 if (e.metaKey || e.ctrlKey) {
                     e.preventDefault();
-                    Store.set('addTask', 0);
+                    this.onAddTask(0)
                 }
             }
+        },
+
+        onAddTask(data) {
+            this.$refs.addTask.defaultPriority();
+            this.$refs.addTask.setData($A.isJson(data) ? data : {
+                'owner': this.userId,
+                'column_id': data,
+            });
+            this.addTaskShow = true;
         },
 
         taskVisibleChange(visible) {
