@@ -50,12 +50,14 @@
                     <Radio label="open">{{$L('开启')}}</Radio>
                     <Radio label="close">{{$L('关闭')}}</Radio>
                 </RadioGroup>
-                <Tooltip v-if="formDatum.auto_archived=='open'" class="setting-auto-day" placement="right">
-                    <Input v-model="formDatum.archived_day" type="number">
-                        <span slot="append">{{$L('天')}}</span>
-                    </Input>
+                <ETooltip v-if="formDatum.auto_archived=='open'" placement="right">
+                    <div class="setting-auto-day">
+                        <Input v-model="formDatum.archived_day" type="number">
+                            <span slot="append">{{$L('天')}}</span>
+                        </Input>
+                    </div>
                     <div slot="content">{{$L('任务完成 % 天后自动归档。', formDatum.archived_day)}}</div>
-                </Tooltip>
+                </ETooltip>
             </FormItem>
         </Form>
         <div class="setting-footer">

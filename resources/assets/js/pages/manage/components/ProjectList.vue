@@ -35,12 +35,12 @@
                         </ETooltip>
                     </li>
                     <li :class="['project-icon', searchText!='' ? 'active' : '']">
-                        <Tooltip :always="searchText!=''" theme="light">
+                        <ETooltip v-model="searchShow" :manual="searchText!=''" effect="light">
                             <Icon class="menu-icon" type="ios-search" />
                             <div slot="content">
-                                <Input v-model="searchText" :placeholder="$L('名称、描述...')" class="search-input" clearable autofocus/>
+                                <Input v-model="searchText" ref="searchInput" :placeholder="$L('名称、描述...')" class="search-input" clearable/>
                             </div>
-                        </Tooltip>
+                        </ETooltip>
                     </li>
                     <li :class="['project-icon', projectParameter('chat') ? 'active' : '']" @click="$store.dispatch('toggleProjectParameter', 'chat')">
                         <Icon class="menu-icon" type="ios-chatbubbles" />
@@ -328,9 +328,9 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                     <Col span="3"></Col>
-                    <Col span="3"></Col>
+                    <Col span="3">{{$L('完成时间')}}</Col>
                 </Row>
-                <TaskRow v-if="projectParameter('showCompleted')" :list="completedList" open-key="completed" @command="dropTask" @on-priority="addTaskOpen"/>
+                <TaskRow v-if="projectParameter('showCompleted')" :list="completedList" open-key="completed" @command="dropTask" @on-priority="addTaskOpen" showCompleteAt/>
             </div>
         </div>
 
@@ -485,6 +485,7 @@ export default {
             sortField: 'end_at',
             sortType: 'desc',
 
+            searchShow: false,
             searchText: '',
 
             addColumnShow: false,
@@ -756,6 +757,15 @@ export default {
         },
         '$route'() {
             this.tempShowTasks = [];
+        },
+        searchShow(val) {
+            if (val) {
+                this.$nextTick(() => {
+                    this.$refs.searchInput.focus({
+                        cursor: "end"
+                    });
+                })
+            }
         }
     },
 
