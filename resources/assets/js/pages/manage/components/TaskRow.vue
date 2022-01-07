@@ -125,6 +125,7 @@
                         :content="item.end_at">
                         <div @click="openTask(item)">{{expiresFormat(item.end_at)}}</div>
                     </ETooltip>
+                    <div v-else-if="showCompleteAt && item.complete_at" :title="item.complete_at">{{completeAtFormat(item.complete_at)}}</div>
                 </Col>
             </Row>
             <TaskRow
@@ -166,6 +167,10 @@ export default {
         openKey: {
             type: String,
             default: 'default'
+        },
+        showCompleteAt: {
+            type: Boolean,
+            default: false
         },
     },
     data() {
@@ -302,6 +307,15 @@ export default {
             }
             return this.formatTime(date)
         },
+
+        completeAtFormat(date) {
+            let time = Math.round($A.Date(date).getTime() / 1000);
+            if ($A.formatDate('Y') === $A.formatDate('Y', time)) {
+                return $A.formatDate('m-d H:i', time)
+            } else {
+                return $A.formatDate('Y-m-d', time)
+            }
+        }
     }
 }
 </script>
