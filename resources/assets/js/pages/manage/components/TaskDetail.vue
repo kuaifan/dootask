@@ -219,7 +219,7 @@
                                 </div>
                             </div>
                             <div class="user-list">
-                                <UserAvatar v-for="item in getOwner" :key="item.userid" :userid="item.userid" :size="28" tooltip-disabled/>
+                                <UserAvatar v-for="item in getOwner" :key="item.userid" :userid="item.userid" :size="28" :show-name="getOwner.length === 1" tooltip-disabled/>
                             </div>
                         </Poptip>
                     </FormItem>
@@ -250,7 +250,7 @@
                                 </div>
                             </div>
                             <div v-if="getAssist.length > 0" class="user-list">
-                                <UserAvatar v-for="item in getAssist" :key="item.userid" :userid="item.userid" :size="28"/>
+                                <UserAvatar v-for="item in getAssist" :key="item.userid" :userid="item.userid" :size="28" :show-name="getAssist.length === 1"/>
                             </div>
                             <div v-else>--</div>
                         </Poptip>
