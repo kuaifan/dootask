@@ -502,6 +502,9 @@ class ProjectTask extends AbstractModel
                 $count = $this->taskUser->count();
                 $array = [];
                 $owner = is_array($data['owner']) ? $data['owner'] : [$data['owner']];
+                if (count($owner) > 10) {
+                    throw new ApiException('任务负责人最多不能超过10个');
+                }
                 foreach ($owner as $uid) {
                     if (intval($uid) == 0) continue;
                     if (!$this->project->useridInTheProject($uid)) continue;
@@ -578,6 +581,9 @@ class ProjectTask extends AbstractModel
                 if (Arr::exists($data, 'assist')) {
                     $array = [];
                     $assist = is_array($data['assist']) ? $data['assist'] : [$data['assist']];
+                    if (count($assist) > 10) {
+                        throw new ApiException('任务协助人员最多不能超过10个');
+                    }
                     foreach ($assist as $uid) {
                         if (intval($uid) == 0) continue;
                         if (!$this->project->useridInTheProject($uid)) continue;
