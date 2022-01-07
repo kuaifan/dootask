@@ -1,6 +1,6 @@
 {
     "name": "DooTask",
-    "version": "0.5.58",
+    "version": "0.5.74",
     "description": "DooTask is task management system.",
     "main": "main.js",
     "license": "MIT",
@@ -54,7 +54,10 @@
         ],
         "mac": {
             "icon": "../resources/assets/statics/public/images/logo-app.png",
-            "target": "dmg",
+            "target": [
+                "dmg",
+                "pkg"
+            ],
             "publish": [
                 "github"
             ]
@@ -73,6 +76,15 @@
             "oneClick": false,
             "artifactName": "${productName}-v${version}-${os}-${arch}.${ext}",
             "allowToChangeInstallationDirectory": true
+        },
+        "pkg": {
+            "installLocation": "/Applications",
+            "allowAnywhere": true,
+            "allowCurrentUserHome": true,
+            "allowRootDirectory": true,
+            "isVersionChecked": true,
+            "isRelocatable": false,
+            "overwriteAction": "upgrade"
         }
     },
     "config": {
