@@ -1135,6 +1135,7 @@ export default {
                 reject({msg: 'Parameter error'});
                 return;
             }
+            dispatch("taskLoadAdd", task_id)
             dispatch("call", {
                 url: 'project/task/remove',
                 data: {
@@ -1142,10 +1143,12 @@ export default {
                 },
             }).then(result => {
                 dispatch("forgetTask", task_id)
+                dispatch("taskLoadSub", task_id)
                 resolve(result)
             }).catch(e => {
                 console.error(e);
                 dispatch("getTaskOne", task_id);
+                dispatch("taskLoadSub", task_id)
                 reject(e)
             });
         });
@@ -1164,6 +1167,7 @@ export default {
                 reject({msg: 'Parameter error'});
                 return;
             }
+            dispatch("taskLoadAdd", task_id)
             dispatch("call", {
                 url: 'project/task/archived',
                 data: {
@@ -1171,10 +1175,12 @@ export default {
                 },
             }).then(result => {
                 dispatch("forgetTask", task_id)
+                dispatch("taskLoadSub", task_id)
                 resolve(result)
             }).catch(e => {
                 console.error(e);
-                dispatch("getTaskOne", task_id);
+                dispatch("getTaskOne", task_id)
+                dispatch("taskLoadSub", task_id)
                 reject(e)
             });
         });
@@ -1365,26 +1371,65 @@ export default {
      * 更新任务
      * @param state
      * @param dispatch
-     * @param data
+     * @param data {task_id, ?}
      * @returns {Promise<unknown>}
      */
     taskUpdate({state, dispatch}, data) {
         return new Promise(function (resolve, reject) {
             const post = $A.cloneJSON($A.date2string(data));
             //
+            dispatch("taskLoadAdd", post.task_id)
             dispatch("call", {
                 url: 'project/task/update',
                 data: post,
                 method: 'post',
             }).then(result => {
+                dispatch("taskLoadSub", post.task_id)
                 dispatch("saveTask", result.data)
                 resolve(result)
             }).catch(e => {
                 console.error(e);
+                dispatch("taskLoadSub", post.task_id)
                 dispatch("getTaskOne", post.task_id);
                 reject(e)
             });
         });
+    },
+
+    /**
+     * 任务增加等待
+     * @param state
+     * @param task_id
+     */
+    taskLoadAdd({state}, task_id) {
+        setTimeout(() => {
+            const load = state.taskLoading.find(({id}) => id == task_id)
+            if (!load) {
+                state.taskLoading.push({
+                    id: task_id,
+                    num: 1
+                })
+            } else {
+                load.num++;
+            }
+        }, 300)
+    },
+
+    /**
+     * 任务减少等待
+     * @param state
+     * @param task_id
+     */
+    taskLoadSub({state}, task_id) {
+        const load = state.taskLoading.find(({id}) => id == task_id)
+        if (!load) {
+            state.taskLoading.push({
+                id: task_id,
+                num: -1
+            })
+        } else {
+            load.num--;
+        }
     },
 
     /**

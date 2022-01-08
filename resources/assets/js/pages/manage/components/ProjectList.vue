@@ -116,8 +116,7 @@
                                             <Icon type="md-trash" />{{$L('删除')}}
                                         </div>
                                     </EDropdownItem>
-                                    <EDropdownItem divided disabled>{{$L('颜色')}}</EDropdownItem>
-                                    <EDropdownItem v-for="(c, k) in $store.state.columnColorList" :key="k" :command="c">
+                                    <EDropdownItem v-for="(c, k) in $store.state.columnColorList" :key="k" :divided="k==0" :command="c">
                                         <div class="item">
                                             <i class="taskfont" :style="{color:c.color}" v-html="c.color == column.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
                                         </div>
@@ -154,42 +153,7 @@
                                 <div :class="['task-head', item.desc ? 'has-desc' : '']">
                                     <div class="task-title"><pre>{{item.name}}</pre></div>
                                     <div class="task-menu" @click.stop="">
-                                        <div v-if="taskLoad[item.id] === true" class="loading"><Loading /></div>
-                                        <EDropdown
-                                            v-else
-                                            trigger="click"
-                                            size="small"
-                                            @command="dropTask(item, $event)">
-                                            <Icon type="ios-more" />
-                                            <EDropdownMenu slot="dropdown" class="project-list-more-dropdown-menu">
-                                                <EDropdownItem v-if="item.complete_at" command="uncomplete">
-                                                    <div class="item red">
-                                                        <Icon type="md-checkmark-circle-outline" />{{$L('标记未完成')}}
-                                                    </div>
-                                                </EDropdownItem>
-                                                <EDropdownItem v-else command="complete">
-                                                    <div class="item">
-                                                        <Icon type="md-radio-button-off" />{{$L('完成')}}
-                                                    </div>
-                                                </EDropdownItem>
-                                                <EDropdownItem command="archived">
-                                                    <div class="item">
-                                                        <Icon type="ios-filing" />{{$L('归档')}}
-                                                    </div>
-                                                </EDropdownItem>
-                                                <EDropdownItem command="remove">
-                                                    <div class="item">
-                                                        <Icon type="md-trash" />{{$L('删除')}}
-                                                    </div>
-                                                </EDropdownItem>
-                                                <EDropdownItem divided disabled>{{$L('背景色')}}</EDropdownItem>
-                                                <EDropdownItem v-for="(c, k) in $store.state.taskColorList" :key="k" :command="c">
-                                                    <div class="item">
-                                                        <i class="taskfont" :style="{color:c.color||'#f9f9f9'}" v-html="c.color == item.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
-                                                    </div>
-                                                </EDropdownItem>
-                                            </EDropdownMenu>
-                                        </EDropdown>
+                                        <TaskMenu :task="item" icon="ios-more"/>
                                     </div>
                                 </div>
                                 <div v-if="item.desc" class="task-desc"><pre v-html="item.desc"></pre></div>
@@ -286,7 +250,7 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow v-if="projectParameter('showMy')" :list="transforTasks(myList)" open-key="my" @command="dropTask" @on-priority="addTaskOpen" fast-add-task/>
+                <TaskRow v-if="projectParameter('showMy')" :list="transforTasks(myList)" open-key="my" @on-priority="addTaskOpen" fast-add-task/>
             </div>
             <!--协助的任务-->
             <div v-if="helpList.length" :class="['project-table-body', !projectParameter('showHelp') ? 'project-table-hide' : '']">
@@ -301,7 +265,7 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow v-if="projectParameter('showHelp')" :list="helpList" open-key="help" @command="dropTask" @on-priority="addTaskOpen"/>
+                <TaskRow v-if="projectParameter('showHelp')" :list="helpList" open-key="help" @on-priority="addTaskOpen"/>
             </div>
             <!--未完成任务-->
             <div v-if="projectData.task_num > 0" :class="['project-table-body', !projectParameter('showUndone') ? 'project-table-hide' : '']">
@@ -316,7 +280,7 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow v-if="projectParameter('showUndone')" :list="unList" open-key="undone" @command="dropTask" @on-priority="addTaskOpen"/>
+                <TaskRow v-if="projectParameter('showUndone')" :list="unList" open-key="undone" @on-priority="addTaskOpen"/>
             </div>
             <!--已完成任务-->
             <div v-if="projectData.task_num > 0" :class="['project-table-body', !projectParameter('showCompleted') ? 'project-table-hide' : '']">
@@ -331,7 +295,7 @@
                     <Col span="3"></Col>
                     <Col span="3">{{projectData.task_num > 0 && projectParameter('showCompleted') ? $L('完成时间') : ''}}</Col>
                 </Row>
-                <TaskRow v-if="projectParameter('showCompleted')" :list="completedList" open-key="completed" @command="dropTask" @on-priority="addTaskOpen" showCompleteAt/>
+                <TaskRow v-if="projectParameter('showCompleted')" :list="completedList" open-key="completed" @on-priority="addTaskOpen" showCompleteAt/>
             </div>
         </div>
 
@@ -475,10 +439,12 @@ import TaskArchived from "./TaskArchived";
 import ProjectLog from "./ProjectLog";
 import DrawerOverlay from "../../../components/DrawerOverlay";
 import ProjectWorkflow from "./ProjectWorkflow";
+import TaskMenu from "./TaskMenu";
 
 export default {
     name: "ProjectList",
     components: {
+        TaskMenu,
         ProjectWorkflow,
         DrawerOverlay,
         ProjectLog, TaskArchived, TaskRow, Draggable, TaskAddSimple, UserInput, TaskAdd, TaskPriority},
@@ -489,9 +455,6 @@ export default {
 
             columnLoad: {},
             columnTopShow: {},
-            taskLoad: {},
-
-            tempShowTasks: [],
 
             sortField: 'end_at',
             sortType: 'desc',
@@ -639,13 +602,13 @@ export default {
         },
 
         myList() {
-            const {projectId, cacheTasks, searchText, tempShowTasks, sortField, sortType} = this;
+            const {projectId, cacheTasks, searchText, sortField, sortType} = this;
             const array = cacheTasks.filter((task) => {
                 if (task.project_id != projectId) {
                     return false;
                 }
                 if (!this.projectParameter('completedTask')) {
-                    if (task.complete_at && !tempShowTasks.find(({id}) => id == task.id)) {
+                    if (task.complete_at) {
                         return false;
                     }
                 }
@@ -672,13 +635,13 @@ export default {
         },
 
         helpList() {
-            const {projectId, cacheTasks, searchText, tempShowTasks, userId, sortField, sortType} = this;
+            const {projectId, cacheTasks, searchText, userId, sortField, sortType} = this;
             const array = cacheTasks.filter((task) => {
                 if (task.project_id != projectId || task.parent_id > 0) {
                     return false;
                 }
                 if (!this.projectParameter('completedTask')) {
-                    if (task.complete_at && !tempShowTasks.find(({id}) => id == task.id)) {
+                    if (task.complete_at) {
                         return false;
                     }
                 }
@@ -766,9 +729,6 @@ export default {
     watch: {
         projectData() {
             this.sortData = this.getSort();
-        },
-        '$route'() {
-            this.tempShowTasks = [];
         },
         searchShow(val) {
             if (val) {
@@ -960,112 +920,6 @@ export default {
                         $A.modalError(msg, 301);
                         this.$set(this.columnLoad, column.id, false);
                         this.$Modal.remove();
-                    });
-                }
-            });
-        },
-
-        dropTask(task, command) {
-            if ($A.isJson(command)) {
-                if (command.name) {
-                    // 修改背景色
-                    this.updateTask(task, {
-                        color: command.color
-                    })
-                }
-                return;
-            }
-            if ($A.leftExists(command, 'column::')) {
-                // 修改列表
-                this.updateTask(task, {
-                    column_id: $A.leftDelete(command, 'column::')
-                })
-                return;
-            }
-            if ($A.leftExists(command, 'priority::')) {
-                // 修改优先级
-                let data = this.taskPriority[parseInt($A.leftDelete(command, 'priority::'))];
-                if (data) {
-                    this.updateTask(task, {
-                        p_level: data.priority,
-                        p_name: data.name,
-                        p_color: data.color,
-                    })
-                }
-                return;
-            }
-            switch (command) {
-                case 'complete':
-                    if (task.complete_at) return;
-                    this.updateTask(task, {
-                        complete_at: $A.formatDate("Y-m-d H:i:s")
-                    }).then(() => {
-                        this.tempShowTasks.push(task)
-                    })
-                    break;
-
-                case 'uncomplete':
-                    if (!task.complete_at) return;
-                    this.updateTask(task, {
-                        complete_at: false
-                    }).then(() => {
-                        this.tempShowTasks = this.tempShowTasks.filter(({id}) => id != task.id)
-                    })
-                    break;
-
-                case 'archived':
-                case 'remove':
-                    this.archivedOrRemoveTask(task, command);
-                    break;
-            }
-        },
-
-        updateTask(task, updata) {
-            return new Promise((resolve, reject) => {
-                if (this.taskLoad[task.id] === true) {
-                    reject()
-                    return;
-                }
-                this.$set(this.taskLoad, task.id, true);
-                //
-                Object.keys(updata).forEach(key => this.$set(task, key, updata[key]));
-                //
-                this.$store.dispatch("taskUpdate", Object.assign(updata, {
-                    task_id: task.id,
-                })).then(() => {
-                    this.$set(this.taskLoad, task.id, false);
-                    resolve()
-                }).catch(({msg}) => {
-                    $A.modalError(msg);
-                    this.$set(this.taskLoad, task.id, false);
-                    this.$store.dispatch("getTaskOne", task.id);
-                    reject()
-                });
-            });
-        },
-
-        archivedOrRemoveTask(task, type) {
-            let typeDispatch = type == 'remove' ? 'removeTask' : 'archivedTask';
-            let typeName = type == 'remove' ? '删除' : '归档';
-            let typeTask = task.parent_id > 0 ? '子任务' : '任务';
-            $A.modalConfirm({
-                title: typeName + typeTask,
-                content: '你确定要' + typeName + typeTask + '【' + task.name + '】吗？',
-                loading: true,
-                onOk: () => {
-                    if (this.taskLoad[task.id] === true) {
-                        this.$Modal.remove();
-                        return;
-                    }
-                    this.$set(this.taskLoad, task.id, true);
-                    this.$store.dispatch(typeDispatch, task.id).then(({msg}) => {
-                        $A.messageSuccess(msg);
-                        this.$Modal.remove();
-                        this.$set(this.taskLoad, task.id, false);
-                    }).catch(({msg}) => {
-                        $A.modalError(msg, 301);
-                        this.$Modal.remove();
-                        this.$set(this.taskLoad, task.id, false);
                     });
                 }
             });
@@ -1311,7 +1165,6 @@ export default {
 
         toggleCompleted() {
             this.$store.dispatch('toggleProjectParameter', 'completedTask');
-            this.tempShowTasks = [];
         },
 
         expiresFormat(date) {

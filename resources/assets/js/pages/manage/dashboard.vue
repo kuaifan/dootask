@@ -40,45 +40,11 @@
                             v-if="item.p_name"
                             class="priority-color"
                             :style="{backgroundColor:item.p_color}"></em>
-                        <EDropdown
-                            trigger="click"
-                            size="small"
-                            placement="bottom"
-                            @command="dropTask(item, $event)">
-                            <div class="drop-icon" @click.stop="">
+                        <TaskMenu :task="item">
+                            <div slot="icon" class="drop-icon" @click.stop="">
                                 <i class="taskfont" v-html="item.complete_at ? '&#xe627;' : '&#xe625;'"></i>
                             </div>
-                            <EDropdownMenu slot="dropdown" class="project-list-more-dropdown-menu">
-                                <EDropdownItem v-if="item.complete_at" command="uncomplete">
-                                    <div class="item red">
-                                        <Icon type="md-checkmark-circle-outline" />{{$L('标记未完成')}}
-                                    </div>
-                                </EDropdownItem>
-                                <EDropdownItem v-else command="complete">
-                                    <div class="item">
-                                        <Icon type="md-radio-button-off" />{{$L('完成')}}
-                                    </div>
-                                </EDropdownItem>
-                                <EDropdownItem v-if="item.parent_id === 0" command="archived">
-                                    <div class="item">
-                                        <Icon type="ios-filing" />{{$L('归档')}}
-                                    </div>
-                                </EDropdownItem>
-                                <EDropdownItem command="remove">
-                                    <div class="item">
-                                        <Icon type="md-trash" />{{$L('删除')}}
-                                    </div>
-                                </EDropdownItem>
-                                <template v-if="item.parent_id === 0">
-                                    <EDropdownItem divided disabled>{{$L('背景色')}}</EDropdownItem>
-                                    <EDropdownItem v-for="(c, k) in $store.state.taskColorList" :key="k" :command="c">
-                                        <div class="item">
-                                            <i class="taskfont" :style="{color:c.color||'#f9f9f9'}" v-html="c.color == item.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
-                                        </div>
-                                    </EDropdownItem>
-                                </template>
-                            </EDropdownMenu>
-                        </EDropdown>
+                        </TaskMenu>
                         <div class="item-title">
                             <span v-if="item.sub_top === true">{{$L('子任务')}}</span>
                             <span v-if="item.sub_my && item.sub_my.length > 0">+{{item.sub_my.length}}</span>
@@ -107,9 +73,10 @@
 import {mapGetters, mapState} from "vuex";
 import AppDown from "../../components/AppDown";
 import {Store} from "le5le-store";
+import TaskMenu from "./components/TaskMenu";
 
 export default {
-    components: {AppDown},
+    components: {TaskMenu, AppDown},
     data() {
         return {
             nowTime: $A.Time(),
@@ -117,10 +84,6 @@ export default {
 
             loadIng: 0,
             dashboard: 'today',
-
-            taskLoad: {},
-
-            tempShowTasks: [],
         }
     },
 
@@ -156,7 +119,7 @@ export default {
         },
 
         list() {
-            const {dashboard, tempShowTasks} = this;
+            const {dashboard} = this;
             let data = [];
             switch (dashboard) {
                 case 'today':
@@ -166,110 +129,15 @@ export default {
                     data = this.transforTasks(this.dashboardTask.overdue);
                     break
             }
-            if (tempShowTasks.length > 0) {
-                data.push(...tempShowTasks);
-            }
             return data.sort((a, b) => {
                 return $A.Date(a.end_at) - $A.Date(b.end_at);
             });
         },
     },
 
-    watch: {
-        '$route'() {
-            this.tempShowTasks = [];
-        },
-        dashboard() {
-            this.tempShowTasks = [];
-        }
-    },
-
     methods: {
-        dropTask(task, command) {
-            switch (command) {
-                case 'complete':
-                    if (task.complete_at) return;
-                    this.updateTask(task, {
-                        complete_at: $A.formatDate("Y-m-d H:i:s")
-                    }).then(() => {
-                        this.tempShowTasks.push(task)
-                    })
-                    break;
-                case 'uncomplete':
-                    if (!task.complete_at) return;
-                    this.updateTask(task, {
-                        complete_at: false
-                    }).then(() => {
-                        this.tempShowTasks = this.tempShowTasks.filter(({id}) => id != task.id)
-                    })
-                    break;
-                case 'archived':
-                case 'remove':
-                    this.archivedOrRemoveTask(task, command);
-                    break;
-                default:
-                    if (command.name) {
-                        this.updateTask(task, {
-                            color: command.color
-                        })
-                    }
-                    break;
-            }
-        },
-
         openTask(task) {
             this.$store.dispatch("openTask", task)
-        },
-
-        updateTask(task, updata) {
-            return new Promise((resolve, reject) => {
-                if (this.taskLoad[task.id] === true) {
-                    reject()
-                    return;
-                }
-                this.$set(this.taskLoad, task.id, true);
-                //
-                Object.keys(updata).forEach(key => this.$set(task, key, updata[key]));
-                //
-                this.$store.dispatch("taskUpdate", Object.assign(updata, {
-                    task_id: task.id,
-                })).then(() => {
-                    this.$set(this.taskLoad, task.id, false);
-                    resolve()
-                }).catch(({msg}) => {
-                    $A.modalError(msg);
-                    this.$set(this.taskLoad, task.id, false);
-                    this.$store.dispatch("getTaskOne", task.id);
-                    reject();
-                });
-            })
-        },
-
-        archivedOrRemoveTask(task, type) {
-            let typeDispatch = type == 'remove' ? 'removeTask' : 'archivedTask';
-            let typeName = type == 'remove' ? '删除' : '归档';
-            let typeTask = task.parent_id > 0 ? '子任务' : '任务';
-            $A.modalConfirm({
-                title: typeName + typeTask,
-                content: '你确定要' + typeName + typeTask + '【' + task.name + '】吗？',
-                loading: true,
-                onOk: () => {
-                    if (this.taskLoad[task.id] === true) {
-                        this.$Modal.remove();
-                        return;
-                    }
-                    this.$set(this.taskLoad, task.id, true);
-                    this.$store.dispatch(typeDispatch, task.id).then(({msg}) => {
-                        $A.messageSuccess(msg);
-                        this.$Modal.remove();
-                        this.$set(this.taskLoad, task.id, false);
-                    }).catch(({msg}) => {
-                        $A.modalError(msg, 301);
-                        this.$Modal.remove();
-                        this.$set(this.taskLoad, task.id, false);
-                    });
-                }
-            });
         },
 
         expiresFormat(date) {

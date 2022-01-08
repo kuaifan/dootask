@@ -97,6 +97,13 @@ export default {
                     title: this.$L('完成时间'),
                     key: 'complete_at',
                     width: 168,
+                    render: (h, {row}) => {
+                        return h('div', {
+                            style: {
+                                color: row.complete_at ? '' : '#f00'
+                            }
+                        }, row.complete_at || this.$L('未完成'));
+                    }
                 },
                 {
                     title: this.$L('归档时间'),

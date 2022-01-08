@@ -380,10 +380,11 @@
                                 }
                                 .ivu-icon {
                                     font-size: 22px;
-                                    color: #777777;
-                                    cursor: pointer;
-                                    &:hover {
-                                        color: #555555;
+                                    &.uncomplete {
+                                        color: #777777;
+                                        &:hover {
+                                            color: #555555;
+                                        }
                                     }
                                 }
                             }
@@ -651,31 +652,12 @@
                         align-items: flex-start;
                         padding: 12px 12px 12px 34px;
                         line-height: 24px;
-                        .drop-icon {
-                            position: relative;
-                        }
                         .loading {
-                            position: absolute;
-                            top: 0;
-                            left: 0;
-                            bottom: 0;
-                            width: 16px;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            .common-loading {
-                                margin: 0;
-                                width: 14px;
-                                height: 14px;
-                            }
+                            height: 24px;
                         }
                         .ivu-icon {
                             cursor: pointer;
                             font-size: 16px;
-                            color: #cccccc;
-                            &.completed {
-                                color: $primary-color;
-                            }
                             &.sub-icon {
                                 font-size: 16px;
                                 width: 16px;
@@ -688,6 +670,9 @@
                                 &.active {
                                     transform: rotate(90deg);
                                 }
+                            }
+                            &.uncomplete {
+                                color: #cccccc;
                             }
                         }
                         .item-title {

@@ -9,47 +9,7 @@
                         :class="['sub-icon', taskOpen[item.id] ? 'active' : '']"
                         type="ios-arrow-forward"
                         @click="getSublist(item)"/>
-                    <EDropdown
-                        trigger="click"
-                        size="small"
-                        placement="bottom"
-                        @command="dropTask(item, $event)">
-                        <div class="drop-icon">
-                            <Icon v-if="item.complete_at" class="completed" type="md-checkmark-circle" />
-                            <Icon v-else type="md-radio-button-off" />
-                            <div v-if="taskLoad[item.id] === true" class="loading"><Loading /></div>
-                        </div>
-                        <EDropdownMenu slot="dropdown" class="project-list-more-dropdown-menu">
-                            <EDropdownItem v-if="item.complete_at" command="uncomplete">
-                                <div class="item red">
-                                    <Icon type="md-checkmark-circle-outline" />{{$L('标记未完成')}}
-                                </div>
-                            </EDropdownItem>
-                            <EDropdownItem v-else command="complete">
-                                <div class="item">
-                                    <Icon type="md-radio-button-off" />{{$L('完成')}}
-                                </div>
-                            </EDropdownItem>
-                            <EDropdownItem v-if="item.parent_id === 0" command="archived">
-                                <div class="item">
-                                    <Icon type="ios-filing" />{{$L('归档')}}
-                                </div>
-                            </EDropdownItem>
-                            <EDropdownItem command="remove">
-                                <div class="item">
-                                    <Icon type="md-trash" />{{$L('删除')}}
-                                </div>
-                            </EDropdownItem>
-                            <template v-if="item.parent_id === 0">
-                                <EDropdownItem divided disabled>{{$L('背景色')}}</EDropdownItem>
-                                <EDropdownItem v-for="(c, k) in $store.state.taskColorList" :key="k" :command="c">
-                                    <div class="item">
-                                        <i class="taskfont" :style="{color:c.color||'#f9f9f9'}" v-html="c.color == item.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
-                                    </div>
-                                </EDropdownItem>
-                            </template>
-                        </EDropdownMenu>
-                    </EDropdown>
+                    <TaskMenu :ref="`taskMenu_${item.id}`" :task="item"/>
                     <div class="item-title" @click="openTask(item)">
                         <span v-if="item.sub_top === true">{{$L('子任务')}}</span>
                         <span v-if="item.sub_my && item.sub_my.length > 0">+{{item.sub_my.length}}</span>
@@ -145,10 +105,11 @@ import TaskPriority from "./TaskPriority";
 import TaskAddSimple from "./TaskAddSimple";
 import {mapState} from "vuex";
 import {Store} from "le5le-store";
+import TaskMenu from "./TaskMenu";
 
 export default {
     name: "TaskRow",
-    components: {TaskAddSimple, TaskPriority},
+    components: {TaskMenu, TaskAddSimple, TaskPriority},
     props: {
         list: {
             type: Array,
@@ -211,8 +172,31 @@ export default {
             return column ? column.name : '';
         },
 
+
         dropTask(task, command) {
-            this.$emit("command", task, command)
+            const el = this.$refs[`taskMenu_${task.id}`];
+            if (!el) {
+                return;
+            }
+            //
+            if ($A.leftExists(command, 'column::')) {
+                // 修改列表
+                el[0].updateTask({
+                    column_id: $A.leftDelete(command, 'column::')
+                })
+                return;
+            }
+            if ($A.leftExists(command, 'priority::')) {
+                // 修改优先级
+                let data = this.taskPriority[parseInt($A.leftDelete(command, 'priority::'))];
+                if (data) {
+                    el[0].updateTask({
+                        p_level: data.priority,
+                        p_name: data.name,
+                        p_color: data.color,
+                    })
+                }
+            }
         },
 
         onPriority(data) {

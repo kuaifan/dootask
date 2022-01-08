@@ -26,11 +26,23 @@
                 background-color: #f4f5f5;
             }
             .icon {
-                width: 18px;
-                font-size: 18px;
-                cursor: pointer;
-                &.completed {
-                    color: $primary-color;
+                .task-menu-icon {
+                    display: flex;
+                    align-items: center;
+                    .ivu-icon {
+                        font-size: 18px;
+                    }
+                    .loading {
+                        width: 18px;
+                        height: 18px;
+                        .common-loading {
+                            width: 16px;
+                            height: 16px;
+                        }
+                    }
+                    .uncomplete {
+                        color: #888888;
+                    }
                 }
             }
             .nav {
@@ -78,8 +90,12 @@
                 }
                 .menu {
                     margin-left: 12px;
-                    font-size: 22px;
-                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    .ivu-icon {
+                        font-size: 22px;
+                        color: #606266;
+                    }
                 }
             }
         }
@@ -243,37 +259,22 @@
                             &:last-child {
                                 margin-bottom: -6px;
                             }
+                            &:hover {
+                                .subtask-time {
+                                    .clock {
+                                        transform: translateX(0);
+                                        opacity: 0.8;
+                                    }
+                                }
+                            }
                             .subtask-icon {
                                 width: 16px;
                                 height: 26px;
                                 line-height: 26px;
                                 margin-right: 6px;
+                                display: flex;
+                                align-items: center;
                                 cursor: pointer;
-                                .loading {
-                                    width: 16px;
-                                    height: 16px;
-                                    margin: 0;
-                                    padding: 2px;
-                                }
-                                .ivu-icon {
-                                    font-size: 16px;
-                                    color: #cccccc;
-                                    &.completed {
-                                        color: $primary-color;
-                                    }
-                                }
-                                &.sub-icon {
-                                    font-size: 16px;
-                                    width: 16px;
-                                    height: 16px;
-                                    margin-left: -20px;
-                                    margin-right: 4px;
-                                    color: #cfcfcf;
-                                    transition: transform 0.2s;
-                                    &.active {
-                                        transform: rotate(90deg);
-                                    }
-                                }
                             }
                             .subtask-name {
                                 flex: 1;
@@ -308,6 +309,13 @@
                                         font-weight: 500;
                                         color: #ff9900;
                                     }
+                                }
+                                .clock {
+                                    margin: 3px 2px;
+                                    font-size: 20px;
+                                    transition: all 0.2s;
+                                    transform: translateX(50%);
+                                    opacity: 0;
                                 }
                             }
                             .subtask-avatar {

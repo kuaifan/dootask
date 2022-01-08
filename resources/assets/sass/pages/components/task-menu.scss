@@ -1,0 +1,50 @@
+.task-menu-icon {
+    position: relative;
+
+    .loading {
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .common-loading {
+            margin: 0;
+            width: 14px;
+            height: 14px;
+        }
+    }
+
+    .ivu-icon {
+        cursor: pointer;
+        font-size: 16px;
+        color: #cccccc;
+
+        &.completed {
+            color: $primary-color;
+        }
+    }
+}
+
+.task-menu-more-dropdown {
+    > li {
+        .item {
+            display: flex;
+            align-items: center;
+
+            > i {
+                width: 18px;
+                height: 18px;
+                line-height: 18px;
+                font-size: 18px;
+                margin-right: 8px;
+                padding: 0;
+                color: #bbbbbb;
+
+                &.ivu-icon {
+                    font-size: 16px;
+                }
+            }
+        }
+    }
+}

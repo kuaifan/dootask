@@ -67,6 +67,7 @@ state.taskId = 0;
 state.taskContents = [];
 state.taskFiles = [];
 state.taskLogs = [];
+state.taskLoading = [];
 
 // 任务优先级
 state.taskPriority = [];

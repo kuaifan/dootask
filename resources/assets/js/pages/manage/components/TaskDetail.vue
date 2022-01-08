@@ -2,40 +2,7 @@
     <!--子任务-->
     <li v-if="ready && taskDetail.parent_id > 0">
         <div class="subtask-icon">
-            <div v-if="taskDetail.loading === true" class="loading"><Loading /></div>
-            <EDropdown
-                v-else
-                trigger="click"
-                placement="bottom"
-                size="small"
-                @command="dropTask">
-                <div>
-                    <Icon v-if="taskDetail.complete_at" class="completed" type="md-checkmark-circle" />
-                    <Icon v-else type="md-radio-button-off" />
-                </div>
-                <EDropdownMenu slot="dropdown" class="project-list-more-dropdown-menu">
-                    <EDropdownItem v-if="taskDetail.complete_at" command="uncomplete">
-                        <div class="item red">
-                            <Icon type="md-checkmark-circle-outline" />{{$L('标记未完成')}}
-                        </div>
-                    </EDropdownItem>
-                    <EDropdownItem v-else command="complete">
-                        <div class="item">
-                            <Icon type="md-radio-button-off" />{{$L('完成')}}
-                        </div>
-                    </EDropdownItem>
-                    <EDropdownItem command="times">
-                        <div class="item">
-                            <Icon type="md-time" />{{$L('时间')}}
-                        </div>
-                    </EDropdownItem>
-                    <EDropdownItem command="remove">
-                        <div class="item">
-                            <Icon type="md-trash" />{{$L('删除')}}
-                        </div>
-                    </EDropdownItem>
-                </EDropdownMenu>
-            </EDropdown>
+            <TaskMenu :task="taskDetail" :load-status="taskDetail.loading === true"/>
         </div>
         <div class="subtask-name">
             <Input
@@ -58,9 +25,10 @@
             @on-clear="timeClear"
             @on-ok="timeOk"
             transfer>
-            <div @click="openTime" :class="['time', taskDetail.today ? 'today' : '', taskDetail.overdue ? 'overdue' : '']">
-                {{taskDetail.end_at && taskDetail.end_at != mainEndAt ? expiresFormat(taskDetail.end_at) : ' '}}
+            <div v-if="taskDetail.end_at && taskDetail.end_at != mainEndAt" @click="openTime" :class="['time', taskDetail.today ? 'today' : '', taskDetail.overdue ? 'overdue' : '']">
+                {{expiresFormat(taskDetail.end_at)}}
             </div>
+            <Icon v-else class="clock" type="ios-clock-outline" @click="openTime" />
         </DatePicker>
         <Poptip
             ref="owner"
@@ -93,8 +61,7 @@
     <div v-else-if="ready" v-show="taskDetail.id > 0" :class="{'task-detail':true, 'open-dialog': hasOpenDialog, 'completed': taskDetail.complete_at}">
         <div class="task-info">
             <div class="head">
-                <Icon v-if="taskDetail.complete_at" class="icon completed" type="md-checkmark-circle" @click="updateData('uncomplete')"/>
-                <Icon v-else class="icon" type="md-radio-button-off" @click="updateData('complete')"/>
+                <TaskMenu :task="taskDetail" class="icon" size="medium" :color-show="false" quick-completed/>
                 <div class="nav">
                     <p v-if="projectName"><span>{{projectName}}</span></p>
                     <p v-if="columnName"><span>{{columnName}}</span></p>
@@ -130,34 +97,9 @@
                     <ETooltip v-if="$Electron" :content="$L('新窗口打开')">
                         <i class="taskfont open" @click="openNewWin">&#xe776;</i>
                     </ETooltip>
-                    <EDropdown
-                        trigger="click"
-                        placement="bottom"
-                        @command="dropTask">
-                        <Icon class="menu" type="ios-more"/>
-                        <EDropdownMenu slot="dropdown">
-                            <EDropdownItem v-if="taskDetail.complete_at" command="uncomplete">
-                                <div class="item red">
-                                    <Icon type="md-checkmark-circle-outline" />{{$L('标记未完成')}}
-                                </div>
-                            </EDropdownItem>
-                            <EDropdownItem v-else command="complete">
-                                <div class="item">
-                                    <Icon type="md-radio-button-off" />{{$L('完成')}}
-                                </div>
-                            </EDropdownItem>
-                            <EDropdownItem command="archived">
-                                <div class="item">
-                                    <Icon type="ios-filing" />{{$L('归档')}}
-                                </div>
-                            </EDropdownItem>
-                            <EDropdownItem command="remove">
-                                <div class="item">
-                                    <Icon type="md-trash" />{{$L('删除')}}
-                                </div>
-                            </EDropdownItem>
-                        </EDropdownMenu>
-                    </EDropdown>
+                    <div class="menu">
+                        <TaskMenu :task="taskDetail" icon="ios-more" completed-icon="ios-more" size="medium" :color-show="false"/>
+                    </div>
                 </div>
             </div>
             <div class="scroller overlay-y">
@@ -428,10 +370,11 @@ import TaskUpload from "./TaskUpload";
 import DialogWrapper from "./DialogWrapper";
 import ProjectLog from "./ProjectLog";
 import {Store} from "le5le-store";
+import TaskMenu from "./TaskMenu";
 
 export default {
     name: "TaskDetail",
-    components: {ProjectLog, DialogWrapper, TaskUpload, UserInput, TaskPriority, TEditor},
+    components: {TaskMenu, ProjectLog, DialogWrapper, TaskUpload, UserInput, TaskPriority, TEditor},
     props: {
         taskId: {
             type: Number,
@@ -794,34 +737,8 @@ export default {
             }
         },
 
-        dropTask(command) {
-            switch (command) {
-                case 'complete':
-                    this.updateData('complete')
-                    break;
-                case 'uncomplete':
-                    this.updateData('uncomplete')
-                    break;
-                case 'times':
-                    this.openTime()
-                    break;
-                case 'archived':
-                case 'remove':
-                    this.archivedOrRemoveTask(command);
-                    break;
-            }
-        },
-
         updateData(action, params) {
             switch (action) {
-                case 'complete':
-                    this.$set(this.taskDetail, 'complete_at', $A.formatDate());
-                    action = 'complete_at';
-                    break;
-                case 'uncomplete':
-                    this.$set(this.taskDetail, 'complete_at', false);
-                    action = 'complete_at';
-                    break;
                 case 'priority':
                     this.$set(this.taskDetail, 'p_level', params.priority)
                     this.$set(this.taskDetail, 'p_name', params.name)
