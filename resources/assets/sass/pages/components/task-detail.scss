@@ -585,6 +585,31 @@
     }
 }
 
+.task-detail-receive {
+    padding: 6px 6px 3px;
+    .receive-title {
+        font-size: 14px;
+        .ivu-icon {
+            font-size: 16px;
+            color: #f90;
+            line-height: 18px;
+        }
+    }
+    .receive-time {
+        margin-top: 10px;
+        .ivu-date-picker {
+            width: 280px;
+        }
+    }
+    .receive-bottom {
+        text-align: right;
+        margin-top: 12px;
+        > button + button {
+            margin-left: 4px;
+        }
+    }
+}
+
 .task-detail-delete-file-popover {
     max-width: 200px;
     .buttons {

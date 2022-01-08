@@ -52,7 +52,7 @@
                     v-model="addData.times"
                     :options="timeOptions"
                     :placeholder="$L('选择计划范围')"
-                    format="yyyy-MM-dd HH:mm"
+                    format="yyyy/MM/dd HH:mm"
                     type="datetimerange"
                     placement="bottom"
                     @on-change="taskTimeChange(addData.times)"
@@ -72,7 +72,7 @@
                     :options="timeOptions"
                     :editable="false"
                     :placeholder="$L('选择计划范围')"
-                    format="yyyy-MM-dd HH:mm"
+                    format="yyyy/MM/dd HH:mm"
                     type="datetimerange"
                     @on-change="taskTimeChange(addData.times)"/>
             </FormItem>
@@ -104,7 +104,7 @@
                                 :options="timeOptions"
                                 :editable="false"
                                 :placeholder="$L('选择时间')"
-                                format="yyyy-MM-dd HH:mm"
+                                format="yyyy/MM/dd HH:mm"
                                 type="datetimerange"
                                 @on-change="taskTimeChange(item.times)"/>
                         </Col>

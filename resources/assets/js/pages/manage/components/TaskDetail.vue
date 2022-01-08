@@ -51,7 +51,7 @@
             v-model="timeValue"
             :open="timeOpen"
             :options="timeOptions"
-            format="yyyy-MM-dd HH:mm"
+            format="yyyy/MM/dd HH:mm"
             type="datetimerange"
             class="subtask-time"
             @on-open-change="timeChange"
@@ -101,16 +101,32 @@
                     <p v-if="taskDetail.id"><span>{{taskDetail.id}}</span></p>
                 </div>
                 <div class="function">
-                    <Poptip
+                    <EPopover
                         v-if="getOwner.length === 0"
-                        confirm
-                        ref="receive"
-                        class="pick"
-                        :title="$L('你确认领取任务吗？')"
-                        placement="bottom"
-                        @on-ok="onOwner(true)">
-                        <Button type="primary">{{$L('我要领取任务')}}</Button>
-                    </Poptip>
+                        v-model="receiveShow"
+                        placement="bottom">
+                        <div class="task-detail-receive">
+                            <div class="receive-title">
+                                <Icon type="ios-help-circle"/>
+                                {{$L('确认计划时间领取任务')}}
+                            </div>
+                            <div class="receive-time">
+                                <DatePicker
+                                    v-model="timeValue"
+                                    :options="timeOptions"
+                                    format="yyyy/MM/dd HH:mm"
+                                    type="datetimerange"
+                                    :placeholder="$L('请设置计划时间')"
+                                    :clearable="false"
+                                    :editable="false"/>
+                            </div>
+                            <div class="receive-bottom">
+                                <Button size="small" type="text" @click="receiveShow=false">取消</Button>
+                                <Button :loading="ownerLoad > 0" size="small" type="primary" @click="onOwner(true)">确定</Button>
+                            </div>
+                        </div>
+                        <Button slot="reference" :loading="ownerLoad > 0" class="pick" type="primary">{{$L('我要领取任务')}}</Button>
+                    </EPopover>
                     <ETooltip v-if="$Electron" :content="$L('新窗口打开')">
                         <i class="taskfont open" @click="openNewWin">&#xe776;</i>
                     </ETooltip>
@@ -265,7 +281,7 @@
                                     v-model="timeValue"
                                     :open="timeOpen"
                                     :options="timeOptions"
-                                    format="yyyy-MM-dd HH:mm"
+                                    format="yyyy/MM/dd HH:mm"
                                     type="datetimerange"
                                     @on-open-change="timeChange"
                                     @on-clear="timeClear"
@@ -441,6 +457,8 @@ export default {
             ownerData: {},
             ownerLoad: 0,
 
+            receiveShow: false,
+
             assistForce: false,
             assistShow: false,
             assistData: {},
@@ -502,7 +520,7 @@ export default {
         window.addEventListener('resize', this.innerHeightListener);
         //
         this.receiveTaskSubscribe = Store.subscribe('receiveTask', () => {
-            this.$refs.receive && this.$refs.receive.handleClick();
+            this.receiveShow = true;
         });
     },
 
@@ -687,11 +705,17 @@ export default {
                     this.timeForce = false;
                     this.assistForce = false;
                     this.addsubForce = false;
+                    this.receiveShow = false;
                     this.$refs.owner && this.$refs.owner.handleClose();
                     this.$refs.assist && this.$refs.assist.handleClose();
                 }
             },
             immediate: true
+        },
+        receiveShow(val) {
+            if (val) {
+                this.timeValue = this.taskDetail.end_at ? [this.taskDetail.start_at, this.taskDetail.end_at] : [];
+            }
         }
     },
 
@@ -867,27 +891,46 @@ export default {
         },
 
         onOwner(pick) {
-            if (pick === true && this.getOwner.length === 0) {
-                this.ownerData.owner_userid = [this.userId];
+            let data = {
+                task_id: this.taskDetail.id,
+                owner: this.ownerData.owner_userid
+            }
+            //
+            if (pick === true) {
+                if (this.getOwner.length > 0) {
+                    this.receiveShow = false;
+                    $A.messageError("任务已被领取");
+                    return;
+                }
+                let times = $A.date2string(this.timeValue, "Y-m-d H:i");
+                if (times[0] && times[1]) {
+                    if ($A.rightExists(times[0], '00:00') && $A.rightExists(times[1], '00:00')) {
+                        times[1] = times[1].replace("00:00", "23:59");
+                    }
+                } else {
+                    $A.messageError("请设置计划时间");
+                    return;
+                }
+                data.times = times;
+                data.owner = this.ownerData.owner_userid = [this.userId];
             }
             if ($A.jsonStringify(this.taskDetail.owner_userid) === $A.jsonStringify(this.ownerData.owner_userid)) {
                 return;
             }
-            let owner = this.ownerData.owner_userid;
-            if ($A.count(owner) == 0) owner = '';
+            //
+            if ($A.count(data.owner) == 0) data.owner = '';
             this.ownerLoad++;
-            this.$store.dispatch("taskUpdate", {
-                task_id: this.taskDetail.id,
-                owner: owner,
-            }).then(({msg}) => {
+            this.$store.dispatch("taskUpdate", data).then(({msg}) => {
                 $A.messageSuccess(msg);
                 this.ownerLoad--;
                 this.ownerShow = false;
+                this.receiveShow = false;
                 this.$store.dispatch("getTaskOne", this.taskDetail.id);
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.ownerLoad--;
                 this.ownerShow = false;
+                this.receiveShow = false;
             })
         },
 
