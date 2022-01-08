@@ -279,6 +279,7 @@ export default {
                 ]
             })
             this.openIndex = "index_" + id;
+            this.$nextTick(this.syncScroller);
         },
 
         onDelete(data) {
@@ -428,6 +429,7 @@ export default {
                     this.list.push(data)
                 }
                 this.openIndex = "index_" + data.id;
+                this.$nextTick(this.syncScroller);
             }).catch(({msg}) => {
                 this.loadIng--;
                 $A.modalError(msg);
