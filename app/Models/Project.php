@@ -26,12 +26,12 @@ use Request;
  * @property-read int $owner_userid
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectColumn[] $projectColumn
  * @property-read int|null $project_column_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectFlowItem[] $projectFlowItem
+ * @property-read int|null $project_flow_item_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectLog[] $projectLog
  * @property-read int|null $project_log_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectUser[] $projectUser
  * @property-read int|null $project_user_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectFlow[] $projectFlowItem
- * @property-read int|null $project_flow_item_count
  * @method static \Illuminate\Database\Eloquent\Builder|Project allData($userid = null)
  * @method static \Illuminate\Database\Eloquent\Builder|Project authData($userid = null, $owner = null)
  * @method static \Illuminate\Database\Eloquent\Builder|Project newModelQuery()

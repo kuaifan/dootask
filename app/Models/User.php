@@ -28,6 +28,7 @@ use Carbon\Carbon;
  * @property string|null $line_at 最后在线时间（接口）
  * @property int|null $task_dialog_id 最后打开的任务会话ID
  * @property string|null $created_ip 注册IP
+ * @property string|null $disable_at 禁用时间
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @method static \Illuminate\Database\Eloquent\Builder|User newModelQuery()
@@ -37,6 +38,7 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereChangepass($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereCreatedIp($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereDisableAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereEmail($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereEncrypt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereIdentity($value)
@@ -53,8 +55,6 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUserid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUserimg($value)
  * @mixin \Eloquent
- * @property string|null $disable_at 禁用时间
- * @method static \Illuminate\Database\Eloquent\Builder|User whereDisableAt($value)
  */
 class User extends AbstractModel
 {
