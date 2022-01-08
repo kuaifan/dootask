@@ -51,7 +51,8 @@
                             <Icon class="menu-icon" type="ios-more" />
                             <EDropdownMenu v-if="projectData.owner_userid === userId" slot="dropdown">
                                 <EDropdownItem command="setting">{{$L('项目设置')}}</EDropdownItem>
-                                <EDropdownItem command="user">{{$L('成员管理')}}</EDropdownItem>
+                                <EDropdownItem command="workflow">{{$L('工作流设置')}}</EDropdownItem>
+                                <EDropdownItem command="user" divided>{{$L('成员管理')}}</EDropdownItem>
                                 <EDropdownItem command="invite">{{$L('邀请链接')}}</EDropdownItem>
                                 <EDropdownItem command="log" divided>{{$L('项目动态')}}</EDropdownItem>
                                 <EDropdownItem command="archived_task">{{$L('已归档任务')}}</EDropdownItem>
@@ -431,6 +432,14 @@
             </div>
         </Modal>
 
+        <!--工作流程设置-->
+        <DrawerOverlay
+            v-model="workflowShow"
+            placement="right"
+            :size="1200">
+            <ProjectWorkflow v-if="workflowShow" :project-id="projectId"/>
+        </DrawerOverlay>
+
         <!--查看项目动态-->
         <DrawerOverlay
             v-model="logShow"
@@ -465,10 +474,12 @@ import TaskRow from "./TaskRow";
 import TaskArchived from "./TaskArchived";
 import ProjectLog from "./ProjectLog";
 import DrawerOverlay from "../../../components/DrawerOverlay";
+import ProjectWorkflow from "./ProjectWorkflow";
 
 export default {
     name: "ProjectList",
     components: {
+        ProjectWorkflow,
         DrawerOverlay,
         ProjectLog, TaskArchived, TaskRow, Draggable, TaskAddSimple, UserInput, TaskAdd, TaskPriority},
     data() {
@@ -510,6 +521,7 @@ export default {
             transferData: {},
             transferLoad: 0,
 
+            workflowShow: false,
             logShow: false,
             archivedTaskShow: false,
 
@@ -1199,6 +1211,10 @@ export default {
                     this.inviteData = {};
                     this.inviteShow = true;
                     this.inviteGet()
+                    break;
+
+                case "workflow":
+                    this.workflowShow = true;
                     break;
 
                 case "log":

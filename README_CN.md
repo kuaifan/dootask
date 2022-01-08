@@ -89,6 +89,7 @@ git pull
 ./cmd uninstall
 ./cmd install
 ./cmd mysql recovery
+./cmd artisan migrate
 ```
 
 ## 卸载项目

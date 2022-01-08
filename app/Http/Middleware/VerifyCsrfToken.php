@@ -24,6 +24,9 @@ class VerifyCsrfToken extends Middleware
         // 添加任务
         'api/project/task/add/',
 
+        // 保存工作流
+        'api/project/flow/save/',
+
         // 修改任务
         'api/project/task/update/',
 

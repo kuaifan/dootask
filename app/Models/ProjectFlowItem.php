@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Models;
+
+use App\Module\Base;
+
+/**
+ * App\Models\ProjectFlowItem
+ *
+ * @property int $id
+ * @property int|null $project_id 项目ID
+ * @property int|null $flow_id 流程ID
+ * @property string|null $name 名称
+ * @property string|null $status 状态
+ * @property array $turns 可流转
+ * @property array $userids 自动负责人ID
+ * @property int|null $sort 排序
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem query()
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem whereFlowId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem whereProjectId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem whereSort($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem whereTurns($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem whereUserids($value)
+ * @mixin \Eloquent
+ */
+class ProjectFlowItem extends AbstractModel
+{
+    /**
+     * @param $value
+     * @return array
+     */
+    public function getTurnsAttribute($value)
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+        return Base::json2array($value);
+    }
+
+    /**
+     * @param $value
+     * @return array
+     */
+    public function getUseridsAttribute($value)
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+        return Base::json2array($value);
+    }
+}

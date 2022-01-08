@@ -830,13 +830,16 @@ class Base
     /**
      * 数组只保留数字的
      * @param $array
+     * @param bool $int 是否格式化值
      * @return array
      */
-    public static function arrayRetainInt($array)
+    public static function arrayRetainInt($array, $int = false)
     {
         foreach ($array as $k => $v) {
             if (!is_numeric($v)) {
                 unset($array[$k]);
+            } elseif ($int === true) {
+                $array[$k] = intval($v);
             }
         }
         return array_values($array);

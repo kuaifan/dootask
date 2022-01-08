@@ -1,0 +1,431 @@
+.project-workflow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    .workflow-title {
+        color: #333333;
+        font-size: 20px;
+        font-weight: 500;
+        line-height: 1;
+        padding: 20px 20px 24px;
+        display: flex;
+        align-items: center;
+        .title-icon {
+            display: flex;
+            align-items: center;
+            width: 14px;
+            height: 14px;
+            margin-left: 4px;
+            margin-top: 2px;
+            > i {
+                cursor: pointer;
+            }
+        }
+    }
+    .workflow-content {
+        flex: 1;
+        padding: 0 20px;
+        overflow: auto;
+
+        .ivu-collapse-header {
+            display: flex;
+            align-items: center;
+        }
+
+        .workflow-item {
+            flex: 1;
+            display: flex;
+            align-items: center;
+
+            .workflow-name {
+                flex-shrink: 0;
+                margin-right: 24px;
+            }
+            .workflow-status {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                > div {
+                    height: 22px;
+                    line-height: 22px;
+                    margin-right: 8px;
+                    padding: 0 8px;
+                    border: 1px solid #e8eaec;
+                    border-radius: 3px;
+                    background: #f7f7f7;
+                    font-size: 12px;
+                    vertical-align: middle;
+                    overflow: hidden;
+                    &.start {
+                        background-color: rgba(38, 38, 38, 0.05);
+                        border-color: rgba(38, 38, 38, 0.05);
+                        color: #595959;
+                    }
+                    &.progress {
+                        background-color: rgba(27, 154, 238, 0.1);
+                        border-color: rgba(27, 154, 238, 0.1);
+                        color: #0171c2;
+                    }
+                    &.end {
+                        background-color: rgba(21, 173, 49, 0.1);
+                        border-color: rgba(21, 173, 49, 0.1);
+                        color: #038a24;
+                    }
+                }
+            }
+            .workflow-save {
+                margin: 0 8px;
+                flex-shrink: 0;
+                > button {
+                    height: 26px;
+                    line-height: 24px;
+                    padding: 0 13px;
+                    font-size: 13px;
+                    margin-right: 4px;
+                }
+            }
+        }
+    }
+
+    .workflow-no {
+        flex: 1;
+        padding: 0 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        > button {
+            margin-top: 18px;
+        }
+    }
+
+    .taskflow-config {
+        display: flex;
+        max-height: 580px;
+
+        .taskflow-config-table {
+            display: flex;
+            width: 100%;
+            border-radius: 4px;
+            box-shadow: 1px 0 3px rgba(0, 0, 0, 0.1);
+
+            .taskflow-config-table-left-container {
+                position: relative;
+                flex-shrink: 0;
+                width: 246px;
+                padding-top: 16px;
+                padding-bottom: 16px;
+                overflow-x: scroll;
+                -ms-overflow-style: none;
+                &:after {
+                    content: "";
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    bottom: 0;
+                    z-index: 1;
+                    border-right: 1px solid #f4f4f5;
+                }
+            }
+
+            .taskflow-config-table-column-header {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 58px;
+                padding: 0 20px;
+                font-size: 16px;
+                font-weight: 700;
+                line-height: 58px;
+
+                &.left-header {
+                    top: 16px
+                }
+            }
+
+            .taskflow-config-table-column-body {
+                margin-top: 58px;
+                height: calc(100% - 58px);
+            }
+
+            .taskflow-config-table-block {
+                width: 100%;
+                padding: 12px 0;
+
+
+                &.hr {
+                    position: relative;
+                    &:after {
+                        content: "";
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        z-index: 1;
+                        border-top: 1px solid #f4f4f5;
+                    }
+                }
+
+                .taskflow-config-table-block-title {
+                    padding: 0 20px;
+                    height: 40px;
+                    color: #8c8c8c;
+                    line-height: 40px
+                }
+
+                .ivu-radio-group {
+                    display: block;
+                    text-align: center;
+                    .ivu-radio-group-item {
+                        position: relative;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                        width: 100%;
+                        padding: 0 20px;
+                        height: 58px;
+                    }
+                }
+
+                .ivu-checkbox-group {
+                    display: block;
+                    text-align: center;
+                    .ivu-checkbox-group-item {
+                        position: relative;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                        width: 100%;
+                        padding: 0 20px;
+                        height: 58px;
+                    }
+                }
+
+                .taskflow-config-table-block-item {
+                    position: relative;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    width: 100%;
+                    padding: 0 20px;
+                    height: 58px;
+
+                    &.with-indicator:before {
+                        content: "";
+                        position: absolute;
+                        left: 0;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        height: 20px;
+                        width: 4px;
+                        border-radius: 4px
+                    }
+
+                    .title {
+                        font-weight: 700;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap
+                    }
+
+                    .subtitle {
+                        margin-top: 2px;
+                        font-size: 12px;
+                        color: #8c8c8c;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap
+                    }
+
+                    &.center {
+                        align-items: center
+                    }
+
+                    &.radio-item>span {
+                        display: none
+                    }
+
+                    .transform-status-name {
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap
+                    }
+                }
+            }
+
+            .taskflow-config-table-right-container {
+                flex-grow: 1;
+                flex-direction: row;
+                padding-top: 16px;
+                padding-bottom: 16px;
+                overflow-x: auto;
+                overflow-y: hidden;
+            }
+
+            .taskflow-config-table-list-wrapper,
+            .taskflow-config-table-right-container {
+                display: flex
+            }
+
+
+            .taskflow-config-table-status-column {
+                position: relative;
+                flex-shrink: 0;
+                width: 210px;
+                height: 100%;
+                margin-bottom: 16px;
+                margin-right: 16px;
+                border-radius: 4px;
+
+                &:first-child {
+                    margin-left: 20px
+                }
+
+                &:hover {
+                    .status-label-with-menu {
+                        .more {
+                            opacity: 1;
+                        }
+                    }
+                }
+
+                &.addnew {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    border: 1px dashed #d9d9d9;
+                    cursor: pointer;
+                    color: #8c8c8c;
+
+                    &:hover {
+                        color: #777777;
+                        border-color: #bfbfbf
+                    }
+                }
+
+                &.column-border {
+                    border-width: 1px;
+                    border-style: solid
+                }
+
+                &.start {
+                    border-color: #e5e5e5;
+                    &:hover {
+                        border-color: #bfbfbf
+                    }
+                }
+
+                &.progress {
+                    border-color: #ccecff;
+                    &:hover {
+                        border-color: #87d2ff
+                    }
+                }
+
+                &.end {
+                    border-color: #cafac8;
+                    &:hover {
+                        border-color: #64d16d
+                    }
+                }
+            }
+
+            .taskflow-config-table-status-item {
+                display: flex;
+                align-items: center;
+                padding: 8px;
+                height: 58px;
+                line-height: 58px;
+                cursor: move
+            }
+
+            .status-label-with-menu {
+                max-width: 100%;
+                display: inline-flex;
+                align-items: center;
+                border-radius: 4px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                position: relative;
+                padding: 0 32px;
+                width: 200px;
+                height: 36px;
+                line-height: 32px;
+                font-size: 14px;
+                font-weight: 400;
+                justify-content: center;
+
+                &:hover {
+                    font-weight: 700;
+                }
+
+                &.start {
+                    background: rgba(38,38,38,0.05);
+                    color: #595959
+                }
+
+                &.progress {
+                    background: rgba(27,154,238,0.1);
+                    color: #0171c2
+                }
+
+                &.end {
+                    background: rgba(21,173,49,0.1);
+                    color: #038a24
+                }
+
+                .name {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap
+                }
+
+                .more {
+                    cursor: pointer;
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    bottom: 0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 36px;
+                    font-size: 18px;
+                    opacity: 0;
+                    transition: opacity 0.2s;
+                    &.opacity {
+                        opacity: 1;
+                    }
+                }
+            }
+
+        }
+    }
+}
+.taskflow-config-more-dropdown-menu {
+    .users {
+        display: flex;
+        padding: 6px 0;
+        margin: 0 -8px;
+        overflow: auto;
+        .common-avatar {
+            max-width: 100%;
+            margin-right: -5px;
+        }
+    }
+    .item {
+        display: flex;
+        align-items: center;
+    }
+    .delete {
+        color: #f00;
+    }
+}

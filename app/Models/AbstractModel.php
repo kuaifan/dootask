@@ -140,7 +140,11 @@ class AbstractModel extends Model
         $row = static::where($where)->first();
         if (empty($row)) {
             $row = new static;
-            $row->updateInstance(array_merge($where, $insert ?: $update));
+            $array = array_merge($where, $insert ?: $update);
+            if (isset($array[$row->primaryKey])) {
+                unset($array[$row->primaryKey]);
+            }
+            $row->updateInstance($array);
         } elseif ($update) {
             $row->updateInstance($update);
         }

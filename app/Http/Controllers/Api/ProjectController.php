@@ -6,6 +6,8 @@ use App\Exceptions\ApiException;
 use App\Models\AbstractModel;
 use App\Models\Project;
 use App\Models\ProjectColumn;
+use App\Models\ProjectFlow;
+use App\Models\ProjectFlowItem;
 use App\Models\ProjectInvite;
 use App\Models\ProjectLog;
 use App\Models\ProjectTask;
@@ -1404,6 +1406,163 @@ class ProjectController extends AbstractController
         //
         $task->deleteTask();
         return Base::retSuccess('删除成功', ['id' => $task->id]);
+    }
+
+    /**
+     * @api {get} api/project/flow/list          29. 工作流列表
+     *
+     * @apiDescription 需要token身份（限：项目负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName flow__list
+     *
+     * @apiParam {Number} project_id               项目ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function flow__list()
+    {
+        User::auth();
+        //
+        $project_id = intval(Request::input('project_id'));
+        //
+        $project = Project::userProject($project_id, true, true);
+        //
+        $list = ProjectFlow::with(['ProjectFlowItem'])->whereProjectId($project->id)->get();
+        return Base::retSuccess('success', $list);
+    }
+
+    /**
+     * @api {post} api/project/flow/save          29. 保存工作流
+     *
+     * @apiDescription 需要token身份（限：项目负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName flow__save
+     *
+     * @apiParam {Number} project_id               项目ID
+     * @apiParam {Array} flows                     工作流数据
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function flow__save()
+    {
+        User::auth();
+        //
+        $project_id = intval(Base::getContentValue('project_id'));
+        $flows = Base::getContentValue('flows');
+        //
+        if (!is_array($flows)) {
+            return Base::retError('参数错误');
+        }
+        //
+        $project = Project::userProject($project_id, true, true);
+        //
+        return AbstractModel::transaction(function() use ($project, $flows) {
+            $projectFlow = ProjectFlow::whereProjectId($project->id)->first();
+            if (empty($projectFlow)) {
+                $projectFlow = ProjectFlow::createInstance([
+                    'project_id' => $project->id,
+                    'name' => 'Default'
+                ]);
+                if (!$projectFlow->save()) {
+                    throw new ApiException('工作流创建失败');
+                }
+            }
+            //
+            $ids = [];
+            $idc = [];
+            $hasStart = false;
+            $hasEnd = false;
+            foreach ($flows as $item) {
+                $id = intval($item['id']);
+                $turns = Base::arrayRetainInt($item['turns'] ?: [], true);
+                $userids = Base::arrayRetainInt($item['userids'] ?: [], true);
+                $flow = ProjectFlowItem::updateInsert([
+                    'id' => $id,
+                    'project_id' => $project->id,
+                    'flow_id' => $projectFlow->id,
+                ], [
+                    'name' => trim($item['name']),
+                    'status' => trim($item['status']),
+                    'sort' => intval($item['sort']),
+                    'turns' => $turns,
+                    'userids' => $userids,
+                ]);
+                if ($flow) {
+                    $ids[] = $flow->id;
+                    if ($flow->id != $id) {
+                        $idc[$id] = $flow->id;
+                    }
+                    if ($flow->status == 'start') {
+                        $hasStart = true;
+                    }
+                    if ($flow->status == 'end') {
+                        $hasEnd = true;
+                    }
+                }
+            }
+            if (!$hasStart) {
+                throw new ApiException('至少需要1个开始状态');
+            }
+            if (!$hasEnd) {
+                throw new ApiException('至少需要1个结束状态');
+            }
+            ProjectFlowItem::whereFlowId($projectFlow->id)->whereNotIn('id', $ids)->delete();
+            //
+            $projectFlow = ProjectFlow::with(['projectFlowItem'])->whereProjectId($project->id)->find($projectFlow->id);
+            $itemIds = $projectFlow->projectFlowItem->pluck('id')->toArray();
+            foreach ($projectFlow->projectFlowItem as $item) {
+                $turns = $item->turns;
+                foreach ($idc as $oid => $nid) {
+                    if (in_array($oid, $turns)) {
+                        $turns = array_diff($turns, [$oid]);
+                        $turns[] = $nid;
+                    }
+                }
+                if (!in_array($item->id, $turns)) {
+                    $turns[] = $item->id;
+                }
+                $turns = array_values(array_filter(array_unique(array_intersect($turns, $itemIds))));
+                sort($turns);
+                $item->turns = $turns;
+                ProjectFlowItem::whereId($item->id)->update([ 'turns' => Base::array2json($turns) ]);
+            }
+            return Base::retSuccess('保存成功', $projectFlow);
+        });
+    }
+
+    /**
+     * @api {get} api/project/flow/delete          29. 删除工作流
+     *
+     * @apiDescription 需要token身份（限：项目负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName flow__delete
+     *
+     * @apiParam {Number} project_id               项目ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function flow__delete()
+    {
+        User::auth();
+        //
+        $project_id = intval(Request::input('project_id'));
+        //
+        $project = Project::userProject($project_id, true, true);
+        //
+        return AbstractModel::transaction(function() use ($project) {
+            ProjectFlow::whereProjectId($project->id)->delete();
+            ProjectFlowItem::whereProjectId($project->id)->delete();
+            return Base::retSuccess('删除成功');
+        });
     }
 
     /**

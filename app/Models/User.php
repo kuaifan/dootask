@@ -53,6 +53,8 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUserid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUserimg($value)
  * @mixin \Eloquent
+ * @property string|null $disable_at 禁用时间
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereDisableAt($value)
  */
 class User extends AbstractModel
 {
