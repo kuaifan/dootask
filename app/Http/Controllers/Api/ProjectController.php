@@ -824,7 +824,7 @@ class ProjectController extends AbstractController
     /**
      * @api {get} api/project/column/remove          17. 删除任务列表
      *
-     * @apiDescription 需要token身份
+     * @apiDescription 需要token身份（限：项目负责人）
      * @apiVersion 1.0.0
      * @apiGroup project
      * @apiName column__remove
@@ -846,7 +846,7 @@ class ProjectController extends AbstractController
             return Base::retError('列表不存在');
         }
         // 项目
-        Project::userProject($column->project_id);
+        Project::userProject($column->project_id, true, true);
         //
         $column->deleteColumn();
         return Base::retSuccess('删除成功', ['id' => $column->id]);
