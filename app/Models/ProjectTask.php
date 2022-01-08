@@ -22,6 +22,7 @@ use Request;
  * @property int|null $column_id 列表ID
  * @property int|null $dialog_id 聊天会话ID
  * @property int|null $flow_item_id 工作流状态ID
+ * @property string|null $flow_item_name 工作流状态名称
  * @property string|null $name 标题
  * @property string|null $color 颜色
  * @property string|null $desc 描述
@@ -74,6 +75,7 @@ use Request;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereDialogId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereEndAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereFlowItemId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereFlowItemName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask wherePColor($value)

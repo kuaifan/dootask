@@ -34,6 +34,11 @@ use App\Module\Base;
  */
 class ProjectFlowItem extends AbstractModel
 {
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+    ];
+
     /**
      * @param $value
      * @return array
@@ -56,5 +61,17 @@ class ProjectFlowItem extends AbstractModel
             return $value;
         }
         return Base::json2array($value);
+    }
+
+    /**
+     * @return bool|null
+     */
+    public function deleteFlowItem()
+    {
+        ProjectTask::whereFlowItemId($this->id)->update([
+            'flow_item_id' => 0,
+            'flow_item_name' => "",
+        ]);
+        return $this->delete();
     }
 }

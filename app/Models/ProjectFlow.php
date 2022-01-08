@@ -34,60 +34,18 @@ class ProjectFlow extends AbstractModel
         return $this->hasMany(ProjectFlowItem::class, 'flow_id', 'id')->orderBy('sort');
     }
 
-    public static function addFlow()
+    /**
+     * @return mixed
+     */
+    public function deleteFlow()
     {
-        AbstractModel::transaction(function() {
-            $projectFlow = ProjectFlow::whereProjectId($project->id)->first();
-            if (empty($projectFlow)) {
-                $projectFlow = ProjectFlow::createInstance([
-                    'project_id' => $project->id,
-                    'name' => 'Default'
-                ]);
-                if (!$projectFlow->save()) {
-                    return Base::retError('工作流创建失败');
+        return AbstractModel::transaction(function() {
+            ProjectFlowItem::whereProjectId($this->project_id)->chunk(100, function($list) {
+                foreach ($list as $item) {
+                    $item->deleteFlowItem();
                 }
-            }
-            //
-            $ids = [];
-            $idc = [];
-            $hasStart = false;
-            $hasEnd = false;
-            foreach ($flows as $item) {
-                $id = intval($item['id']);
-                $turns = Base::arrayRetainInt($item['turns'] ?: [], true);
-                $userids = Base::arrayRetainInt($item['userids'] ?: [], true);
-                $flow = ProjectFlowItem::updateInsert([
-                    'id' => $id,
-                    'project_id' => $project->id,
-                    'flow_id' => $projectFlow->id,
-                ], [
-                    'name' => trim($item['name']),
-                    'status' => trim($item['status']),
-                    'sort' => intval($item['sort']),
-                    'turns' => $turns,
-                    'userids' => $userids,
-                ]);
-                if ($flow) {
-                    $ids[] = $flow->id;
-                    if ($flow->id != $id) {
-                        $idc[$id] = $flow->id;
-                    }
-                    if ($flow->status == 'start') {
-                        $hasStart = true;
-                    }
-                    if ($flow->status == 'end') {
-                        $hasEnd = true;
-                    }
-                }
-            }
-            if (!$hasStart) {
-                return Base::retError('至少需要1个开始状态');
-            }
-            if (!$hasEnd) {
-                return Base::retError('至少需要1个结束状态');
-            }
-            ProjectFlowItem::whereFlowId($projectFlow->id)->whereNotIn('id', $ids)->delete();
+            });
+            return $this->delete();
         });
-        return Base::retSuccess("success");
     }
 }

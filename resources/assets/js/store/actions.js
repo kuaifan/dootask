@@ -524,6 +524,9 @@ export default {
                 if (typeof data.project_user === "undefined") {
                     data.project_user = []
                 }
+                if (typeof data.project_flow_item === "undefined") {
+                    data.project_flow_item = []
+                }
                 state.cacheProjects.push(data);
             }
             setTimeout(() => {

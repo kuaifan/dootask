@@ -170,6 +170,19 @@ class ProjectController extends AbstractController
             }
         ],
 
+        "project_flow_item": [   // 工作流
+            {
+                "id": 9,
+                "project_id": 2,
+                "flow_id": 3,
+                "name": "待处理",
+                "status": "start",
+                "turns": [9,10,11,12],
+                "userids": [],
+                "sort": 0
+            }
+        ],
+
         "task_num": 9,
         "task_complete": 0,
         "task_percent": 0,
@@ -186,7 +199,8 @@ class ProjectController extends AbstractController
         //
         $project = Project::userProject($project_id);
         $data = array_merge($project->toArray(), $project->getTaskStatistics($user->userid), [
-            'project_user' => $project->projectUser
+            'project_user' => $project->projectUser,
+            'project_flow_item' => $project->projectFlowItem
         ]);
         //
         return Base::retSuccess('success', $data);
@@ -1409,6 +1423,49 @@ class ProjectController extends AbstractController
     }
 
     /**
+     * @api {get} api/project/task/flow          29. 任务工作流信息
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__flow
+     *
+     * @apiParam {Number} task_id               任务ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function task__flow()
+    {
+        User::auth();
+        //
+        $task_id = intval(Request::input('task_id'));
+        //
+        $projectTask = ProjectTask::select(['id', 'flow_item_id', 'flow_item_name', 'project_id'])->find($task_id);
+        if (empty($projectTask)) {
+            return Base::retError('任务不存在', [ 'task_id' => $task_id ], -4002);
+        }
+        //
+        $projectFlowItem = [];
+        $turnBuilder = ProjectFlowItem::select(['id', 'name']);
+        if ($projectTask->flow_item_id) {
+            $projectFlowItem = ProjectFlowItem::select(['id', 'name', 'turns'])->find($projectTask->flow_item_id);
+        }
+        if (empty($projectFlowItem)) {
+            $data = [
+                'id' => 0,
+                'name' => '',
+                'turns' => $turnBuilder->whereProjectId($projectTask->project_id)->get()
+            ];
+        } else {
+            $data = $projectFlowItem->toArray();
+            $data['turns'] = $turnBuilder->whereIn('id', $data['turns'])->get();
+        }
+        return Base::retSuccess('success', $data);
+    }
+
+    /**
      * @api {get} api/project/flow/list          29. 工作流列表
      *
      * @apiDescription 需要token身份（限：项目负责人）
@@ -1458,6 +1515,9 @@ class ProjectController extends AbstractController
         //
         if (!is_array($flows)) {
             return Base::retError('参数错误');
+        }
+        if (count($flows) > 10) {
+            return Base::retError('流程状态最多不能超过10个');
         }
         //
         $project = Project::userProject($project_id, true, true);
@@ -1512,7 +1572,11 @@ class ProjectController extends AbstractController
             if (!$hasEnd) {
                 throw new ApiException('至少需要1个结束状态');
             }
-            ProjectFlowItem::whereFlowId($projectFlow->id)->whereNotIn('id', $ids)->delete();
+            ProjectFlowItem::whereFlowId($projectFlow->id)->whereNotIn('id', $ids)->chunk(100, function($list) {
+                foreach ($list as $item) {
+                    $item->deleteFlowItem();
+                }
+            });
             //
             $projectFlow = ProjectFlow::with(['projectFlowItem'])->whereProjectId($project->id)->find($projectFlow->id);
             $itemIds = $projectFlow->projectFlowItem->pluck('id')->toArray();
@@ -1559,8 +1623,11 @@ class ProjectController extends AbstractController
         $project = Project::userProject($project_id, true, true);
         //
         return AbstractModel::transaction(function() use ($project) {
-            ProjectFlow::whereProjectId($project->id)->delete();
-            ProjectFlowItem::whereProjectId($project->id)->delete();
+            ProjectFlow::whereProjectId($project->id)->chunk(100, function($list) {
+                foreach ($list as $item) {
+                    $item->deleteFlow();
+                }
+            });
             return Base::retSuccess('删除成功');
         });
     }
