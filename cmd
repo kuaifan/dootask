@@ -236,7 +236,7 @@ if [ $# -gt 0 ]; then
         chmod -R 775 "${cur_path}/docker/log/supervisor"
         chmod -R 775 "${cur_path}/docker/mysql/data"
         # 启动容器
-        [ "$(arg_get port)" -gt 0 ] && env_set APP_PORT "$(arg_get port)"
+        [[ "$(arg_get port)" -gt 0 ]] && env_set APP_PORT "$(arg_get port)"
         docker-compose up -d
         docker-compose restart php
         # 安装composer依赖
@@ -250,7 +250,7 @@ if [ $# -gt 0 ]; then
             echo -e "${Error} ${RedBG}composer install 失败，请重试！ ${Font}"
             exit 1
         fi
-        [ -z "$(env_get APP_KEY)" ] && run_exec php "php artisan key:generate"
+        [[ -z "$(env_get APP_KEY)" ]] && run_exec php "php artisan key:generate"
         run_exec php "php bin/run --mode=prod"
         # 检查数据库
         remaining=10
