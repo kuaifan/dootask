@@ -28,21 +28,119 @@
 
 .task-menu-more-dropdown {
     > li {
-        .item {
-            display: flex;
-            align-items: center;
+        &.task-menu-more-warp {
+            list-style: none;
 
-            > i {
-                width: 18px;
-                height: 18px;
-                line-height: 18px;
-                font-size: 18px;
-                margin-right: 8px;
-                padding: 0;
-                color: #bbbbbb;
+            > ul {
+                max-height: 320px;
+                overflow: auto;
 
-                &.ivu-icon {
-                    font-size: 16px;
+                &::-webkit-scrollbar {
+                    display: none
+                }
+
+                > li {
+                    .item {
+                        display: flex;
+                        align-items: center;
+
+                        > i {
+                            flex-shrink: 0;
+                            width: 18px;
+                            height: 18px;
+                            line-height: 18px;
+                            font-size: 18px;
+                            margin-right: 8px;
+                            padding: 0;
+                            color: #bbbbbb;
+
+                            &.ivu-icon {
+                                font-size: 16px;
+                            }
+                        }
+                    }
+
+                    .flow {
+                        padding: 4px 0;
+
+                        > i {
+                            margin-right: 3px;
+
+                            &.check {
+                                color: $primary-color;
+                            }
+                        }
+
+                        .flow-name {
+                            border-radius: 4px;
+                            white-space: nowrap;
+                            padding: 0 5px;
+                            height: 20px;
+                            line-height: 20px;
+                            font-size: 12px;
+                            background: #f4f4f4;
+                            color: #595959;
+
+                            &.start {
+                                background-color: rgba(38, 38, 38, 0.05);
+                                border-color: rgba(38, 38, 38, 0.05);
+                                color: #595959;
+                            }
+
+                            &.progress {
+                                background-color: rgba(27, 154, 238, 0.1);
+                                border-color: rgba(27, 154, 238, 0.1);
+                                color: #0171c2;
+                            }
+
+                            &.end {
+                                background-color: rgba(21, 173, 49, 0.1);
+                                border-color: rgba(21, 173, 49, 0.1);
+                                color: #038a24;
+                            }
+                        }
+                    }
+
+                    &.load-flow {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        padding: 8px;
+
+                        .load-flow-warp {
+                            width: 20px;
+                            height: 20px;
+                        }
+                    }
+                }
+            }
+
+            &.medium {
+                > ul {
+                    > li {
+                        .flow {
+                            .flow-name {
+                                height: 24px;
+                                line-height: 24px;
+                                padding: 0 7px;
+                            }
+                        }
+                    }
+                }
+            }
+
+            &.large {
+                > ul {
+                    > li {
+                        .flow {
+                            .flow-name {
+                                font-size: 13px;
+                                height: 30px;
+                                line-height: 30px;
+                                padding: 0 8px;
+                            }
+                        }
+                    }
                 }
             }
         }

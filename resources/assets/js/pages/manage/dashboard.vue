@@ -40,14 +40,19 @@
                             v-if="item.p_name"
                             class="priority-color"
                             :style="{backgroundColor:item.p_color}"></em>
-                        <TaskMenu :task="item">
+                        <TaskMenu :ref="`taskMenu_${item.id}`" :task="item">
                             <div slot="icon" class="drop-icon" @click.stop="">
                                 <i class="taskfont" v-html="item.complete_at ? '&#xe627;' : '&#xe625;'"></i>
                             </div>
                         </TaskMenu>
                         <div class="item-title">
+                            <!--工作流状态-->
+                            <span v-if="item.flow_item_name" :class="item.flow_item_status" @click.stop="openMenu(item)">{{item.flow_item_name}}</span>
+                            <!--是否子任务-->
                             <span v-if="item.sub_top === true">{{$L('子任务')}}</span>
+                            <!--有多少个子任务-->
                             <span v-if="item.sub_my && item.sub_my.length > 0">+{{item.sub_my.length}}</span>
+                            <!--任务描述-->
                             {{item.name}}
                         </div>
                         <div v-if="item.desc" class="item-icon">
@@ -138,6 +143,13 @@ export default {
     methods: {
         openTask(task) {
             this.$store.dispatch("openTask", task)
+        },
+
+        openMenu(task) {
+            const el = this.$refs[`taskMenu_${task.id}`];
+            if (el) {
+                el[0].show()
+            }
         },
 
         expiresFormat(date) {

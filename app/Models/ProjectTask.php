@@ -473,6 +473,45 @@ class ProjectTask extends AbstractModel
     public function updateTask($data, &$updateProject = false, &$updateContent = false, &$updateSubTask = false)
     {
         AbstractModel::transaction(function () use ($data, &$updateProject, &$updateContent, &$updateSubTask) {
+            // 工作流
+            if (Arr::exists($data, 'flow_item_id')) {
+                if ($this->flow_item_id == $data['flow_item_id']) {
+                    throw new ApiException('任务状态未发生改变');
+                }
+                $currentFlowItem = null;
+                $newFlowItem = ProjectFlowItem::whereProjectId($this->project_id)->find(intval($data['flow_item_id']));
+                if (empty($newFlowItem) || empty($newFlowItem->projectFlow)) {
+                    throw new ApiException('任务状态不存在');
+                }
+                if ($this->flow_item_id) {
+                    // 判断符合流转
+                    $currentFlowItem = ProjectFlowItem::find($this->flow_item_id);
+                    if ($currentFlowItem && !in_array($currentFlowItem->id, $newFlowItem->turns)) {
+                        throw new ApiException("当前状态[{$currentFlowItem->name}]不可流转到[{$newFlowItem->name}]");
+                    }
+                }
+                if ($newFlowItem->status == 'end') {
+                    // 判断自动完成
+                    if (!$this->complete_at) {
+                        $data['complete_at'] = date("Y-m-d H:i");
+                    }
+                } else {
+                    // 判断自动打开
+                    if ($this->complete_at) {
+                        $data['complete_at'] = false;
+                    }
+                }
+                if ($newFlowItem->userids) {
+                    // 判断自动添加负责人
+                    if (!Arr::exists($data, 'owner')) {
+                        $data['owner'] = $this->taskUser->pluck('userid')->toArray();
+                    }
+                    $data['owner'] = array_values(array_unique(array_merge($data['owner'], $newFlowItem->userids)));
+                }
+                $this->flow_item_id = $newFlowItem->id;
+                $this->flow_item_name = $newFlowItem->status . "|" . $newFlowItem->name;
+                $this->addLog("修改{任务}状态：{$currentFlowItem?->name} => {$newFlowItem->name}");
+            }
             // 状态
             if (Arr::exists($data, 'complete_at')) {
                 if (Base::isDate($data['complete_at'])) {

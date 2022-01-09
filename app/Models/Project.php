@@ -26,8 +26,6 @@ use Request;
  * @property-read int $owner_userid
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectColumn[] $projectColumn
  * @property-read int|null $project_column_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectFlowItem[] $projectFlowItem
- * @property-read int|null $project_flow_item_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectLog[] $projectLog
  * @property-read int|null $project_log_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectUser[] $projectUser
@@ -99,14 +97,6 @@ class Project extends AbstractModel
     public function projectUser(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(ProjectUser::class, 'project_id', 'id')->orderBy('id');
-    }
-
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function projectFlowItem(): \Illuminate\Database\Eloquent\Relations\HasMany
-    {
-        return $this->hasMany(projectFlowItem::class, 'project_id', 'id')->orderBy('sort');
     }
 
     /**

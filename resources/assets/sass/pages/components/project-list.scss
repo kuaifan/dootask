@@ -352,7 +352,35 @@
                             .task-title {
                                 flex: 1;
                                 padding-top: 1px;
+                                > span {
+                                    float: left;
+                                    font-size: 12px;
+                                    height: 20px;
+                                    line-height: 18px;
+                                    padding: 0 3px;
+                                    border-radius: 3px;
+                                    color: #8bcf70;
+                                    border: 1px solid #8bcf70;
+                                    margin-right: 4px;
+                                    text-align: center;
+                                    &.start {
+                                        background-color: rgba(38, 38, 38, 0.05);
+                                        border-color: rgba(38, 38, 38, 0.05);
+                                        color: #595959;
+                                    }
+                                    &.progress {
+                                        background-color: rgba(27, 154, 238, 0.1);
+                                        border-color: rgba(27, 154, 238, 0.1);
+                                        color: #0171c2;
+                                    }
+                                    &.end {
+                                        background-color: rgba(21, 173, 49, 0.1);
+                                        border-color: rgba(21, 173, 49, 0.1);
+                                        color: #038a24;
+                                    }
+                                }
                                 > pre {
+                                    display: block;
                                     margin: 0;
                                     padding: 0;
                                     line-height: 1.5;
@@ -682,16 +710,32 @@
                             > span {
                                 font-size: 12px;
                                 height: 18px;
+                                min-width: 20px;
                                 line-height: 16px;
-                                padding: 0 3px;
+                                padding: 0 2px;
                                 border-radius: 3px;
                                 color: #8bcf70;
-                                background-color: rgba(139, 207, 112, 0);
                                 border: 1px solid #8bcf70;
                                 display: inline-block;
                                 vertical-align: top;
                                 margin-top: 3px;
                                 margin-right: 3px;
+                                text-align: center;
+                                &.start {
+                                    background-color: rgba(38, 38, 38, 0.05);
+                                    border-color: rgba(38, 38, 38, 0.05);
+                                    color: #595959;
+                                }
+                                &.progress {
+                                    background-color: rgba(27, 154, 238, 0.1);
+                                    border-color: rgba(27, 154, 238, 0.1);
+                                    color: #0171c2;
+                                }
+                                &.end {
+                                    background-color: rgba(21, 173, 49, 0.1);
+                                    border-color: rgba(21, 173, 49, 0.1);
+                                    color: #038a24;
+                                }
                             }
                         }
                         .item-icons {

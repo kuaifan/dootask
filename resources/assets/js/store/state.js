@@ -67,7 +67,13 @@ state.taskId = 0;
 state.taskContents = [];
 state.taskFiles = [];
 state.taskLogs = [];
+
+// 任务等待状态
 state.taskLoading = [];
+
+// 任务流程信息
+state.taskFlows = [];
+state.taskFlowItems = [];
 
 // 任务优先级
 state.taskPriority = [];

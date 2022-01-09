@@ -84,6 +84,10 @@ export default {
                             end_at: task.end_at,
                             complete_at: task.complete_at,
 
+                            flow_item_id: task.flow_item_id,
+                            flow_item_name: task.flow_item_name,
+                            flow_item_status: task.flow_item_status,
+
                             sub_top: true,
                             sub_my: [],
                         });

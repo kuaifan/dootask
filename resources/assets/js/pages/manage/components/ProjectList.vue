@@ -151,9 +151,14 @@
                                 :style="item.color ? {backgroundColor: item.color} : {}"
                                 @click="openTask(item)">
                                 <div :class="['task-head', item.desc ? 'has-desc' : '']">
-                                    <div class="task-title"><pre>{{item.name}}</pre></div>
+                                    <div class="task-title">
+                                        <!--工作流状态-->
+                                        <span v-if="item.flow_item_name" :class="item.flow_item_status" @click.stop="openMenu(item)">{{item.flow_item_name}}</span>
+                                        <!--任务描述-->
+                                        <pre>{{item.name}}</pre>
+                                    </div>
                                     <div class="task-menu" @click.stop="">
-                                        <TaskMenu :task="item" icon="ios-more"/>
+                                        <TaskMenu :ref="`taskMenu_${item.id}`" :task="item" icon="ios-more"/>
                                     </div>
                                 </div>
                                 <div v-if="item.desc" class="task-desc"><pre v-html="item.desc"></pre></div>
@@ -1105,6 +1110,13 @@ export default {
                 setTimeout(() => {
                     Store.set('receiveTask', true);
                 }, 300)
+            }
+        },
+
+        openMenu(task) {
+            const el = this.$refs[`taskMenu_${task.id}`];
+            if (el) {
+                el[0].show()
             }
         },
 

@@ -125,6 +125,9 @@ export default {
                 if (data.sub_top === true) {
                     task.title = `[${this.$L('子任务')}] ${task.title}`
                 }
+                if (data.flow_item_name) {
+                    task.title = `[${data.flow_item_name}] ${task.title}`
+                }
                 if (data.overdue) {
                     task.title = `[${this.$L('超期')}] ${task.title}`
                     task.color = "#f56c6c"

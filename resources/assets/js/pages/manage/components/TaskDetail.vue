@@ -2,7 +2,10 @@
     <!--子任务-->
     <li v-if="ready && taskDetail.parent_id > 0">
         <div class="subtask-icon">
-            <TaskMenu :task="taskDetail" :load-status="taskDetail.loading === true"/>
+            <TaskMenu :ref="`taskMenu_${taskDetail.id}`" :task="taskDetail" :load-status="taskDetail.loading === true"/>
+        </div>
+        <div v-if="taskDetail.flow_item_name" class="subtask-flow">
+            <span :class="taskDetail.flow_item_status" @click.stop="openMenu(taskDetail)">{{taskDetail.flow_item_name}}</span>
         </div>
         <div class="subtask-name">
             <Input
@@ -61,7 +64,10 @@
     <div v-else-if="ready" v-show="taskDetail.id > 0" :class="{'task-detail':true, 'open-dialog': hasOpenDialog, 'completed': taskDetail.complete_at}">
         <div class="task-info">
             <div class="head">
-                <TaskMenu :task="taskDetail" class="icon" size="medium" :color-show="false" quick-completed/>
+                <TaskMenu :ref="`taskMenu_${taskDetail.id}`" :task="taskDetail" class="icon" size="medium" :color-show="false"/>
+                <div v-if="taskDetail.flow_item_name" class="flow">
+                    <span :class="taskDetail.flow_item_status" @click.stop="openMenu(taskDetail)">{{taskDetail.flow_item_name}}</span>
+                </div>
                 <div class="nav">
                     <p v-if="projectName"><span>{{projectName}}</span></p>
                     <p v-if="columnName"><span>{{columnName}}</span></p>
@@ -1094,6 +1100,13 @@ export default {
                 $A.modalError(msg);
                 this.$store.dispatch("getTaskFiles", this.taskDetail.id)
             });
+        },
+
+        openMenu(task) {
+            const el = this.$refs[`taskMenu_${task.id}`];
+            if (el) {
+                el.show()
+            }
         },
 
         openNewWin() {

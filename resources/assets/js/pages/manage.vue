@@ -151,7 +151,7 @@
             :mask-closable="false"
             :styles="{
                 width: '90%',
-                maxWidth: taskData.dialog_id ? '1200px' : '640px'
+                maxWidth: taskData.dialog_id ? '1200px' : '700px'
             }"
             @on-visible-change="taskVisibleChange"
             footer-hide>

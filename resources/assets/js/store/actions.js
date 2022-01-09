@@ -524,9 +524,6 @@ export default {
                 if (typeof data.project_user === "undefined") {
                     data.project_user = []
                 }
-                if (typeof data.project_flow_item === "undefined") {
-                    data.project_flow_item = []
-                }
                 state.cacheProjects.push(data);
             }
             setTimeout(() => {
@@ -857,6 +854,9 @@ export default {
             });
         } else if ($A.isJson(data)) {
             data._time = $A.Time();
+            if (data.flow_item_name && data.flow_item_name.indexOf("|") !== -1) {
+                [data.flow_item_status, data.flow_item_name] = data.flow_item_name.split("|")
+            }
             let index = state.cacheTasks.findIndex(({id}) => id == data.id);
             if (index > -1) {
                 state.cacheTasks.splice(index, 1, Object.assign({}, state.cacheTasks[index], data));
@@ -1135,7 +1135,7 @@ export default {
                 reject({msg: 'Parameter error'});
                 return;
             }
-            dispatch("taskLoadAdd", task_id)
+            dispatch("taskLoadStart", task_id)
             dispatch("call", {
                 url: 'project/task/remove',
                 data: {
@@ -1143,12 +1143,12 @@ export default {
                 },
             }).then(result => {
                 dispatch("forgetTask", task_id)
-                dispatch("taskLoadSub", task_id)
+                dispatch("taskLoadEnd", task_id)
                 resolve(result)
             }).catch(e => {
                 console.error(e);
                 dispatch("getTaskOne", task_id);
-                dispatch("taskLoadSub", task_id)
+                dispatch("taskLoadEnd", task_id)
                 reject(e)
             });
         });
@@ -1167,7 +1167,7 @@ export default {
                 reject({msg: 'Parameter error'});
                 return;
             }
-            dispatch("taskLoadAdd", task_id)
+            dispatch("taskLoadStart", task_id)
             dispatch("call", {
                 url: 'project/task/archived',
                 data: {
@@ -1175,12 +1175,12 @@ export default {
                 },
             }).then(result => {
                 dispatch("forgetTask", task_id)
-                dispatch("taskLoadSub", task_id)
+                dispatch("taskLoadEnd", task_id)
                 resolve(result)
             }).catch(e => {
                 console.error(e);
                 dispatch("getTaskOne", task_id)
-                dispatch("taskLoadSub", task_id)
+                dispatch("taskLoadEnd", task_id)
                 reject(e)
             });
         });
@@ -1378,18 +1378,18 @@ export default {
         return new Promise(function (resolve, reject) {
             const post = $A.cloneJSON($A.date2string(data));
             //
-            dispatch("taskLoadAdd", post.task_id)
+            dispatch("taskLoadStart", post.task_id)
             dispatch("call", {
                 url: 'project/task/update',
                 data: post,
                 method: 'post',
             }).then(result => {
-                dispatch("taskLoadSub", post.task_id)
+                dispatch("taskLoadEnd", post.task_id)
                 dispatch("saveTask", result.data)
                 resolve(result)
             }).catch(e => {
                 console.error(e);
-                dispatch("taskLoadSub", post.task_id)
+                dispatch("taskLoadEnd", post.task_id)
                 dispatch("getTaskOne", post.task_id);
                 reject(e)
             });
@@ -1401,7 +1401,7 @@ export default {
      * @param state
      * @param task_id
      */
-    taskLoadAdd({state}, task_id) {
+    taskLoadStart({state}, task_id) {
         setTimeout(() => {
             const load = state.taskLoading.find(({id}) => id == task_id)
             if (!load) {
@@ -1420,7 +1420,7 @@ export default {
      * @param state
      * @param task_id
      */
-    taskLoadSub({state}, task_id) {
+    taskLoadEnd({state}, task_id) {
         const load = state.taskLoading.find(({id}) => id == task_id)
         if (!load) {
             state.taskLoading.push({
@@ -1430,6 +1430,46 @@ export default {
         } else {
             load.num--;
         }
+    },
+
+    /**
+     * 获取任务流程信息
+     * @param state
+     * @param dispatch
+     * @param task_id
+     * @returns {Promise<unknown>}
+     */
+    getTaskFlow({state, dispatch}, task_id) {
+        return new Promise(function (resolve, reject) {
+            dispatch("call", {
+                url: 'project/task/flow',
+                data: {
+                    task_id: task_id
+                },
+            }).then(result => {
+                let {data} = result
+                data.turns.some(item => {
+                    let index = state.taskFlowItems.findIndex(({id}) => id == item.id);
+                    if (index > -1) {
+                        state.taskFlowItems.splice(index, 1, item);
+                    } else {
+                        state.taskFlowItems.push(item);
+                    }
+                })
+                //
+                delete data.turns;
+                let index = state.taskFlows.findIndex(({task_id}) => task_id == data.task_id);
+                if (index > -1) {
+                    state.taskFlows.splice(index, 1, data);
+                } else {
+                    state.taskFlows.push(data);
+                }
+                resolve(result)
+            }).catch(e => {
+                console.error(e);
+                reject(e);
+            });
+        });
     },
 
     /**

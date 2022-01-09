@@ -45,6 +45,37 @@
                     }
                 }
             }
+            .flow {
+                margin-left: 18px;
+                margin-right: -3px;
+                > span {
+                    font-size: 14px;
+                    height: 26px;
+                    line-height: 24px;
+                    padding: 0 8px;
+                    border-radius: 4px;
+                    color: #8bcf70;
+                    border: 1px solid #8bcf70;
+                    display: inline-block;
+                    text-align: center;
+                    cursor: pointer;
+                    &.start {
+                        background-color: rgba(38, 38, 38, 0.05);
+                        border-color: rgba(38, 38, 38, 0.05);
+                        color: #595959;
+                    }
+                    &.progress {
+                        background-color: rgba(27, 154, 238, 0.1);
+                        border-color: rgba(27, 154, 238, 0.1);
+                        color: #0171c2;
+                    }
+                    &.end {
+                        background-color: rgba(21, 173, 49, 0.1);
+                        border-color: rgba(21, 173, 49, 0.1);
+                        color: #038a24;
+                    }
+                }
+            }
             .nav {
                 flex: 1;
                 display: flex;
@@ -54,6 +85,9 @@
                 width: 0;
                 height: 40px;
                 overflow: auto;
+                &::-webkit-scrollbar {
+                    display: none
+                }
                 > p {
                     display: flex;
                     align-items: center;
@@ -263,11 +297,12 @@
                                 .subtask-time {
                                     .clock {
                                         transform: translateX(0);
-                                        opacity: 0.8;
+                                        opacity: 0.7;
                                     }
                                 }
                             }
                             .subtask-icon {
+                                padding-top: 1px;
                                 width: 16px;
                                 height: 26px;
                                 line-height: 26px;
@@ -276,9 +311,39 @@
                                 align-items: center;
                                 cursor: pointer;
                             }
+                            .subtask-flow {
+                                > span {
+                                    font-size: 12px;
+                                    height: 18px;
+                                    min-width: 20px;
+                                    line-height: 16px;
+                                    padding: 0 2px;
+                                    border-radius: 3px;
+                                    color: #8bcf70;
+                                    border: 1px solid #8bcf70;
+                                    display: inline-block;
+                                    margin-right: 3px;
+                                    text-align: center;
+                                    &.start {
+                                        background-color: rgba(38, 38, 38, 0.05);
+                                        border-color: rgba(38, 38, 38, 0.05);
+                                        color: #595959;
+                                    }
+                                    &.progress {
+                                        background-color: rgba(27, 154, 238, 0.1);
+                                        border-color: rgba(27, 154, 238, 0.1);
+                                        color: #0171c2;
+                                    }
+                                    &.end {
+                                        background-color: rgba(21, 173, 49, 0.1);
+                                        border-color: rgba(21, 173, 49, 0.1);
+                                        color: #038a24;
+                                    }
+                                }
+                            }
                             .subtask-name {
                                 flex: 1;
-                                margin-right: 16px;
+                                margin-right: 8px;
                                 display: flex;
                                 .ivu-input {
                                     margin: -2px 0;

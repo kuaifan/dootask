@@ -170,19 +170,6 @@ class ProjectController extends AbstractController
             }
         ],
 
-        "project_flow_item": [   // 工作流
-            {
-                "id": 9,
-                "project_id": 2,
-                "flow_id": 3,
-                "name": "待处理",
-                "status": "start",
-                "turns": [9,10,11,12],
-                "userids": [],
-                "sort": 0
-            }
-        ],
-
         "task_num": 9,
         "task_complete": 0,
         "task_percent": 0,
@@ -200,7 +187,6 @@ class ProjectController extends AbstractController
         $project = Project::userProject($project_id);
         $data = array_merge($project->toArray(), $project->getTaskStatistics($user->userid), [
             'project_user' => $project->projectUser,
-            'project_flow_item' => $project->projectFlowItem
         ]);
         //
         return Base::retSuccess('success', $data);
@@ -1216,6 +1202,7 @@ class ProjectController extends AbstractController
      * @apiParam {String} [p_name]              优先级相关（子任务不支持）
      * @apiParam {String} [p_color]             优先级相关（子任务不支持）
      *
+     * @apiParam {Number} [flow_item_id]        任务状态，工作流状态ID
      * @apiParam {String|false} [complete_at]   完成时间（如：2020-01-01 00:00，false表示未完成）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
@@ -1442,26 +1429,73 @@ class ProjectController extends AbstractController
         //
         $task_id = intval(Request::input('task_id'));
         //
-        $projectTask = ProjectTask::select(['id', 'flow_item_id', 'flow_item_name', 'project_id'])->find($task_id);
+        $projectTask = ProjectTask::select(['id', 'project_id', 'complete_at', 'flow_item_id', 'flow_item_name'])->find($task_id);
         if (empty($projectTask)) {
             return Base::retError('任务不存在', [ 'task_id' => $task_id ], -4002);
         }
         //
-        $projectFlowItem = [];
-        $turnBuilder = ProjectFlowItem::select(['id', 'name']);
-        if ($projectTask->flow_item_id) {
-            $projectFlowItem = ProjectFlowItem::select(['id', 'name', 'turns'])->find($projectTask->flow_item_id);
+        $projectFlowItem = $projectTask->flow_item_id ? ProjectFlowItem::with(['projectFlow'])->find($projectTask->flow_item_id) : null;
+        if ($projectFlowItem?->projectFlow) {
+            $projectFlow = $projectFlowItem->projectFlow;
+        } else {
+            $projectFlow = ProjectFlow::whereProjectId($projectTask->project_id)->first();
         }
+        if (empty($projectFlow)) {
+            return Base::retSuccess('success', [
+                'task_id' => $projectTask->id,
+                'flow_item_id' => 0,
+                'flow_item_name' => '',
+                'turns' => [],
+            ]);
+        }
+        //
+        $turns = ProjectFlowItem::select(['id', 'name', 'status', 'turns'])->whereFlowId($projectFlow->id)->orderBy('sort')->get();
         if (empty($projectFlowItem)) {
             $data = [
-                'id' => 0,
-                'name' => '',
-                'turns' => $turnBuilder->whereProjectId($projectTask->project_id)->get()
+                'task_id' => $projectTask->id,
+                'flow_item_id' => 0,
+                'flow_item_name' => '',
+                'turns' => $turns,
             ];
+            $assign = null;
+            if ($projectTask->complete_at) {
+                // 赋一个结束状态
+                foreach ($turns as $turn) {
+                    if ($turn->status == 'end' || preg_match("/complete|done|完成/i", $turn->name)) {
+                        $assign = $turn;
+                        break;
+                    }
+                }
+                if (empty($data['flow_item_id'])) {
+                    foreach ($turns as $turn) {
+                        if ($turn->status == 'end') {
+                            $assign = $turn;
+                            break;
+                        }
+                    }
+                }
+            } else {
+                // 赋一个开始状态
+                foreach ($turns as $turn) {
+                    if ($turn->status == 'start') {
+                        $assign = $turn;
+                        break;
+                    }
+                }
+            }
+            if ($assign) {
+                $data['flow_item_id'] = $assign->id;
+                $data['flow_item_name'] = $assign->name;
+            }
         } else {
-            $data = $projectFlowItem->toArray();
-            $data['turns'] = $turnBuilder->whereIn('id', $data['turns'])->get();
+            $data = [
+                'task_id' => $projectTask->id,
+                'flow_item_id' => $projectFlowItem->id,
+                'flow_item_name' => $projectFlowItem->name,
+                'turns' => $turns,
+            ];
         }
+        //
         return Base::retSuccess('success', $data);
     }
 

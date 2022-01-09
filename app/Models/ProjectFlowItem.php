@@ -17,6 +17,7 @@ use App\Module\Base;
  * @property int|null $sort 排序
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\ProjectFlow|null $projectFlow
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem query()
@@ -61,6 +62,14 @@ class ProjectFlowItem extends AbstractModel
             return $value;
         }
         return Base::json2array($value);
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function projectFlow(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(ProjectFlow::class, 'id', 'flow_id');
     }
 
     /**
