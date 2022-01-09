@@ -597,13 +597,8 @@ class ProjectTask extends AbstractModel
                 $updateMarking['is_update_project'] = true;
                 $this->syncDialogUser();
             }
-            // 计划时间
+            // 计划时间（原则：子任务时间在主任务时间内）
             if (Arr::exists($data, 'times')) {
-                $originalWhere = [
-                    'parent_id' => $this->id,
-                    'start_at' => $this->start_at,
-                    'end_at' => $this->end_at,
-                ];
                 $this->start_at = null;
                 $this->end_at = null;
                 $times = $data['times'];
@@ -611,21 +606,24 @@ class ProjectTask extends AbstractModel
                 if (Base::isDate($start) && Base::isDate($end) && $start != $end) {
                     $start_at = Carbon::parse($start);
                     $end_at = Carbon::parse($end);
-                    if ($this->parent_id > 0 && $data['skipTimesCheck'] !== true) {
+                    if ($this->parent_id > 0) {
                         // 子任务时间处理
                         $mainTask = self::find($this->parent_id);
+                        $isUp = false;
                         if ($mainTask) {
                             // 超过主任务时间自动同步主任务
                             if (empty($mainTask->start_at) || $start_at->lt($mainTask->start_at)) {
                                 $mainTask->start_at = $start_at;
-                                $updateMarking['is_update_maintask'] = true;
+                                $isUp = true;
                             }
                             if (empty($mainTask->end_at) || $end_at->gt($mainTask->end_at)) {
                                 $mainTask->end_at = $end_at;
-                                $updateMarking['is_update_maintask'] = true;
+                                $isUp = true;
                             }
                         }
-                        if ($updateMarking['is_update_maintask']) {
+                        if ($isUp) {
+                            $updateMarking['is_update_maintask'] = true;
+                            $mainTask->addLog("同步修改{任务}时间");
                             $mainTask->save();
                         }
                     }
@@ -633,12 +631,36 @@ class ProjectTask extends AbstractModel
                     $this->end_at = $end_at;
                 }
                 if ($this->parent_id == 0) {
-                    // 如果是主任务，则同步跟主任务相同时间的子任务
-                    self::where($originalWhere)->chunk(100, function($list) use ($times, &$updateMarking) {
-                        foreach ($list as $item) {
-                            $item->updateTask(['times' => $times, 'skipTimesCheck' => true]);
+                    // 主任务时间处理
+                    self::whereParentId($this->id)->chunk(100, function($list) use (&$updateMarking) {
+                        /** @var self $subTask */
+                        foreach ($list as $subTask) {
+                            $isUp = false;
+                            if ($subTask->start_at) {
+                                $subTask->start_at = Carbon::parse($subTask->start_at);
+                                if (empty($this->start_at) || $subTask->start_at->lt($this->start_at)) {
+                                    $subTask->start_at = $this->start_at;
+                                    $isUp = true;
+                                }
+                            }
+                            if ($subTask->end_at) {
+                                $subTask->end_at = Carbon::parse($subTask->end_at);
+                                if (empty($this->end_at) || $subTask->end_at->gt($this->end_at)) {
+                                    $subTask->end_at = $this->end_at;
+                                    $isUp = true;
+                                }
+                            }
+                            if ($subTask->start_at && $subTask->end_at && $subTask->start_at->gt($subTask->end_at)) {
+                                $subTask->start_at = $this->start_at;
+                                $subTask->end_at = $this->end_at;
+                                $isUp = true;
+                            }
+                            if ($isUp) {
+                                $updateMarking['is_update_subtask'] = true;
+                                $subTask->addLog("同步修改{任务}时间");
+                                $subTask->save();
+                            }
                         }
-                        $updateMarking['is_update_subtask'] = true;
                     });
                 }
                 $this->addLog("修改{任务}时间");
