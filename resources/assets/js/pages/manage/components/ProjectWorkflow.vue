@@ -73,8 +73,13 @@
                                                 <EDropdown
                                                     trigger="click"
                                                     class="more"
+                                                    :class="{opacity: item.userids.length > 0}"
                                                     @command="onMore($event, item)">
-                                                    <Icon type="ios-more" />
+                                                    <div class="more-icon">
+                                                        <EAvatar v-if="item.userids.length > 1" :size="20">{{item.userids.length}}</EAvatar>
+                                                        <UserAvatar v-else-if="item.userids.length > 0" :userid="item.userids[0]" :size="20" tooltipDisabled/>
+                                                        <Icon v-else type="ios-more" />
+                                                    </div>
                                                     <EDropdownMenu slot="dropdown" class="taskflow-config-more-dropdown-menu">
                                                         <EDropdownItem v-if="item.userids.length > 0" command="user">
                                                             <div class="users">
@@ -84,7 +89,7 @@
                                                         <EDropdownItem command="user">
                                                             <div class="item">
                                                                 <Icon type="md-person" />
-                                                                {{$L('自动添加负责人')}}
+                                                                {{$L('自动负责人')}}
                                                             </div>
                                                         </EDropdownItem>
                                                         <EDropdownItem command="name">

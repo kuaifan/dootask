@@ -397,6 +397,9 @@
         },
 
         modalConfirm(config, millisecond = 0) {
+            if (config === false) {
+                return;
+            }
             if (millisecond > 0) {
                 setTimeout(() => { $A.modalConfirm(config) }, millisecond);
                 return;
@@ -405,6 +408,9 @@
         },
 
         modalSuccess(config, millisecond = 0) {
+            if (config === false) {
+                return;
+            }
             if (millisecond > 0) {
                 setTimeout(() => { $A.modalSuccess(config) }, millisecond);
                 return;
@@ -413,6 +419,9 @@
         },
 
         modalInfo(config, millisecond = 0) {
+            if (config === false) {
+                return;
+            }
             if (millisecond > 0) {
                 setTimeout(() => { $A.modalInfo(config) }, millisecond);
                 return;
@@ -421,6 +430,9 @@
         },
 
         modalWarning(config, millisecond = 0) {
+            if (config === false) {
+                return;
+            }
             if (millisecond > 0) {
                 setTimeout(() => { $A.modalWarning(config) }, millisecond);
                 return;
@@ -429,6 +441,9 @@
         },
 
         modalError(config, millisecond = 0) {
+            if (config === false) {
+                return;
+            }
             if (millisecond > 0) {
                 setTimeout(() => { $A.modalError(config) }, millisecond);
                 return;
@@ -437,6 +452,9 @@
         },
 
         modalAlert(msg) {
+            if (msg === false) {
+                return;
+            }
             alert($A.L(msg));
         },
 

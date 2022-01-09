@@ -563,15 +563,16 @@ export default {
         },
 
         cutTime() {
-            const {nowTime, taskDetail} = this;
-            let string = "";
+            const {taskDetail} = this;
             let start_at = Math.round($A.Date(taskDetail.start_at).getTime() / 1000);
-            if (start_at > nowTime) {
-                string = $A.formatDate('Y/m/d H:i', start_at) + " ~ "
-            }
             let end_at = Math.round($A.Date(taskDetail.end_at).getTime() / 1000);
-            string+= $A.formatDate('Y/m/d H:i', end_at);
-            return string;
+            let string = "";
+            if ($A.formatDate('Y/m/d', start_at) == $A.formatDate('Y/m/d', end_at)) {
+                string = $A.formatDate('Y/m/d H:i', start_at) + " ~ " + $A.formatDate('H:i', end_at)
+            } else {
+                string = $A.formatDate('Y/m/d H:i', start_at) + " ~ " + $A.formatDate('Y/m/d H:i', end_at)
+            }
+            return string.replace(/( 00:00| 23:59)/g, "")
         },
 
         getOwner() {
@@ -724,10 +725,8 @@ export default {
             if (Object.keys(dataJson).length <= 1) return;
             //
             this.$store.dispatch("taskUpdate", dataJson).then(({msg}) => {
-                // 更新成功
                 $A.messageSuccess(msg);
             }).catch(({msg}) => {
-                // 更新失败
                 $A.modalError(msg);
             })
         },
@@ -852,17 +851,11 @@ export default {
         },
 
         timeClear() {
-            $A.modalConfirm({
-                content: '你确定要取消任务时间吗？',
-                cancelText: '不是',
-                onOk: () => {
-                    this.updateData('times', {
-                        start_at: false,
-                        end_at: false,
-                    });
-                    this.timeOpen = false;
-                }
+            this.updateData('times', {
+                start_at: false,
+                end_at: false,
             });
+            this.timeOpen = false;
         },
 
         timeOk() {
@@ -1056,7 +1049,7 @@ export default {
         openMenu(task) {
             const el = this.$refs[`taskMenu_${task.id}`];
             if (el) {
-                el.show()
+                el.handleClick()
             }
         },
 

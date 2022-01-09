@@ -148,6 +148,10 @@ export default {
             this.$refs.dropdown.hide()
         },
 
+        handleClick() {
+            this.$refs.dropdown.handleClick()
+        },
+
         dropTask(command) {
             if ($A.isJson(command)) {
                 if (command.name) {
@@ -196,23 +200,19 @@ export default {
         },
 
         updateTask(updata) {
-            return new Promise((resolve, reject) => {
-                if (this.loadIng) {
-                    reject()
-                    return;
-                }
-                //
-                Object.keys(updata).forEach(key => this.$set(this.task, key, updata[key]));
-                //
-                this.$store.dispatch("taskUpdate", Object.assign(updata, {
-                    task_id: this.task.id,
-                })).then(() => {
-                    resolve()
-                }).catch(({msg}) => {
-                    $A.modalError(msg);
-                    this.$store.dispatch("getTaskOne", this.task.id);
-                    reject()
-                });
+            if (this.loadIng) {
+                return;
+            }
+            //
+            Object.keys(updata).forEach(key => this.$set(this.task, key, updata[key]));
+            //
+            this.$store.dispatch("taskUpdate", Object.assign(updata, {
+                task_id: this.task.id,
+            })).then(({msg}) => {
+                $A.messageSuccess(msg);
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+                this.$store.dispatch("getTaskOne", this.task.id);
             });
         },
 

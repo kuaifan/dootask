@@ -422,12 +422,13 @@ class ProjectTask extends AbstractModel
         // 工作流
         $projectFlow = ProjectFlow::whereProjectId($project_id)->orderByDesc('id')->first();
         if ($projectFlow) {
-            $turns = ProjectFlowItem::select(['id', 'name', 'status', 'turns'])->whereFlowId($projectFlow->id)->orderBy('sort')->get();
+            $projectFlowItem = ProjectFlowItem::whereFlowId($projectFlow->id)->orderBy('sort')->get();
             // 赋一个开始状态
-            foreach ($turns as $turn) {
-                if ($turn->status == 'start') {
-                    $task->flow_item_id = $turn->id;
-                    $task->flow_item_name = $turn->status . "|" . $turn->name;
+            foreach ($projectFlowItem as $item) {
+                if ($item->status == 'start') {
+                    $task->flow_item_id = $item->id;
+                    $task->flow_item_name = $item->status . "|" . $item->name;
+                    $owner = array_merge($owner, $item->userids);
                     break;
                 }
             }
@@ -435,6 +436,7 @@ class ProjectTask extends AbstractModel
         //
         return AbstractModel::transaction(function() use ($times, $subtasks, $content, $owner, $task) {
             $task->save();
+            $owner = array_values(array_unique($owner));
             foreach ($owner as $uid) {
                 ProjectTaskUser::createInstance([
                     'project_id' => $task->project_id,
@@ -599,6 +601,7 @@ class ProjectTask extends AbstractModel
             }
             // 计划时间（原则：子任务时间在主任务时间内）
             if (Arr::exists($data, 'times')) {
+                $oldAt = [Carbon::parse($this->start_at), Carbon::parse($this->end_at)];
                 $this->start_at = null;
                 $this->end_at = null;
                 $times = $data['times'];
@@ -607,51 +610,48 @@ class ProjectTask extends AbstractModel
                     $start_at = Carbon::parse($start);
                     $end_at = Carbon::parse($end);
                     if ($this->parent_id > 0) {
-                        // 子任务时间处理
+                        // 判断同步主任务时间（子任务时间 超出 主任务）
                         $mainTask = self::find($this->parent_id);
-                        $isUp = false;
                         if ($mainTask) {
-                            // 超过主任务时间自动同步主任务
-                            if (empty($mainTask->start_at) || $start_at->lt($mainTask->start_at)) {
+                            $isUp = false;
+                            if ($start_at->lt(Carbon::parse($mainTask->start_at))) {
                                 $mainTask->start_at = $start_at;
                                 $isUp = true;
                             }
-                            if (empty($mainTask->end_at) || $end_at->gt($mainTask->end_at)) {
+                            if ($end_at->gt(Carbon::parse($mainTask->end_at))) {
                                 $mainTask->end_at = $end_at;
                                 $isUp = true;
                             }
-                        }
-                        if ($isUp) {
-                            $updateMarking['is_update_maintask'] = true;
-                            $mainTask->addLog("同步修改{任务}时间");
-                            $mainTask->save();
+                            if ($isUp) {
+                                $updateMarking['is_update_maintask'] = true;
+                                $mainTask->addLog("同步修改{任务}时间");
+                                $mainTask->save();
+                            }
                         }
                     }
                     $this->start_at = $start_at;
                     $this->end_at = $end_at;
+                } else {
+                    if ($this->parent_id > 0) {
+                        // 清空子任务时间（子任务时间等于主任务时间）
+                        $mainTask = self::find($this->parent_id);
+                        $this->start_at = $mainTask->start_at;
+                        $this->end_at = $mainTask->end_at;
+                    }
                 }
                 if ($this->parent_id == 0) {
-                    // 主任务时间处理
-                    self::whereParentId($this->id)->chunk(100, function($list) use (&$updateMarking) {
+                    // 判断同步子任务时间（主任务时间 不在 子任务时间 之外）
+                    self::whereParentId($this->id)->chunk(100, function($list) use ($oldAt, &$updateMarking) {
                         /** @var self $subTask */
                         foreach ($list as $subTask) {
+                            $start_at = Carbon::parse($subTask->start_at);
+                            $end_at = Carbon::parse($subTask->end_at);
                             $isUp = false;
-                            if ($subTask->start_at) {
-                                $subTask->start_at = Carbon::parse($subTask->start_at);
-                                if (empty($this->start_at) || $subTask->start_at->lt($this->start_at)) {
-                                    $subTask->start_at = $this->start_at;
-                                    $isUp = true;
-                                }
-                            }
-                            if ($subTask->end_at) {
-                                $subTask->end_at = Carbon::parse($subTask->end_at);
-                                if (empty($this->end_at) || $subTask->end_at->gt($this->end_at)) {
-                                    $subTask->end_at = $this->end_at;
-                                    $isUp = true;
-                                }
-                            }
-                            if ($subTask->start_at && $subTask->end_at && $subTask->start_at->gt($subTask->end_at)) {
+                            if ($start_at->eq($oldAt[0]) || $start_at->lt(Carbon::parse($this->start_at))) {
                                 $subTask->start_at = $this->start_at;
+                                $isUp = true;
+                            }
+                            if ($end_at->eq($oldAt[1]) || $end_at->gt(Carbon::parse($this->end_at))) {
                                 $subTask->end_at = $this->end_at;
                                 $isUp = true;
                             }

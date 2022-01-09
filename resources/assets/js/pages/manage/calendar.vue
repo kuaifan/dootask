@@ -355,6 +355,7 @@ export default {
                     $A.messageSuccess(msg);
                 }).catch(({msg}) => {
                     $A.modalError(msg);
+                    this.setRenderRange();
                 });
             }
         },

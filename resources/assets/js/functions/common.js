@@ -233,14 +233,18 @@
         },
 
         /**
-         * 返回时间对象
+         * 返回 时间对象|时间戳
          * @param v
-         * @returns {Date}
+         * @param stamp 是否返回时间戳
+         * @returns {Date|number}
          * @constructor
          */
-        Date(v) {
+        Date(v, stamp = false) {
             if (typeof v === "string" && this.strExists(v, "-")) {
                 v = v.replace(/-/g, '/');
+            }
+            if (stamp === true) {
+                return Math.round(new Date(v).getTime() / 1000)
             }
             return new Date(v);
         },

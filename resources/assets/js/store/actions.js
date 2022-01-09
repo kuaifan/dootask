@@ -1380,22 +1380,119 @@ export default {
      */
     taskUpdate({state, dispatch}, data) {
         return new Promise(function (resolve, reject) {
-            const post = $A.cloneJSON($A.date2string(data));
+            dispatch("taskBeforeUpdate", data).then(post => {
+                dispatch("taskLoadStart", post.task_id)
+                dispatch("call", {
+                    url: 'project/task/update',
+                    data: post,
+                    method: 'post',
+                }).then(result => {
+                    dispatch("taskLoadEnd", post.task_id)
+                    dispatch("saveTask", result.data)
+                    resolve(result)
+                }).catch(e => {
+                    console.error(e);
+                    dispatch("taskLoadEnd", post.task_id)
+                    dispatch("getTaskOne", post.task_id);
+                    reject(e)
+                });
+            }).catch(reject)
+        });
+    },
+
+    /**
+     * 更新任务之前判断
+     * @param state
+     * @param dispatch
+     * @param data
+     * @returns {Promise<unknown>}
+     */
+    taskBeforeUpdate({state, dispatch}, data) {
+        return new Promise(function (resolve, reject) {
+            let post = $A.cloneJSON($A.date2string(data));
+            let title = "温馨提示";
+            let content = null;
+            // 修改时间前置判断
+            if (typeof post.times !== "undefined") {
+                if (data.times[0] === false) {
+                    content = "你确定要取消任务时间吗？"
+                }
+                const currentTask = state.cacheTasks.find(({id}) => id == post.task_id);
+                title = currentTask.parent_id > 0 ? "更新子任务" : "更新主任务"
+                if (currentTask) {
+                    if (currentTask.parent_id > 0) {
+                        // 修改子任务，判断主任务
+                        if (post.times[0]) {
+                            state.cacheTasks.some(parentTask => {
+                                if (parentTask.id != currentTask.parent_id) {
+                                    return false;
+                                }
+                                if (!parentTask.end_at) {
+                                    content = "主任务没有设置时间，设置子任务将同步设置主任务"
+                                    return true;
+                                }
+                                let n1 = $A.Date(post.times[0], true),
+                                    n2 = $A.Date(post.times[1], true),
+                                    o1 = $A.Date(parentTask.start_at, true),
+                                    o2 = $A.Date(parentTask.end_at, true);
+                                if (n1 < o1) {
+                                    content = "新设置的子任务开始时间在主任务时间之外，修改后将同步修改主任务" // 子任务开始时间 < 主任务开始时间
+                                    return true;
+                                }
+                                if (n2 > o2) {
+                                    content = "新设置的子任务结束时间在主任务时间之外，修改后将同步修改主任务" // 子任务结束时间 > 主任务结束时间
+                                    return true;
+                                }
+                            })
+                        }
+                    } else {
+                        // 修改主任务，判断子任务
+                        state.cacheTasks.some(subTask => {
+                            if (subTask.parent_id != currentTask.id) {
+                                return false;
+                            }
+                            if (!subTask.end_at) {
+                                return false;
+                            }
+                            let n1 = $A.Date(post.times[0], true),
+                                n2 = $A.Date(post.times[1], true),
+                                c1 = $A.Date(currentTask.start_at, true),
+                                c2 = $A.Date(currentTask.end_at, true),
+                                o1 = $A.Date(subTask.start_at, true),
+                                o2 = $A.Date(subTask.end_at, true);
+                            if (c1 == o1 && c2 == o2) {
+                                return false;
+                            }
+                            if (!post.times[0]) {
+                                content = `子任务（${subTask.name}）已设置时间，清除主任务时间后将同步清除子任务的时间`
+                                return true;
+                            }
+                            if (n1 > o1) {
+                                content = `新设置的开始时间在子任务（${subTask.name}）时间之内，修改后将同步修改子任务` // 主任务开始时间 > 子任务开始时间
+                                return true;
+                            }
+                            if (n2 < o2) {
+                                content = `新设置的结束时间在子任务（${subTask.name}）时间之内，修改后将同步修改子任务` // 主任务结束时间 < 子任务结束时间
+                                return true;
+                            }
+                        })
+                    }
+                }
+            }
             //
-            dispatch("taskLoadStart", post.task_id)
-            dispatch("call", {
-                url: 'project/task/update',
-                data: post,
-                method: 'post',
-            }).then(result => {
-                dispatch("taskLoadEnd", post.task_id)
-                dispatch("saveTask", result.data)
-                resolve(result)
-            }).catch(e => {
-                console.error(e);
-                dispatch("taskLoadEnd", post.task_id)
-                dispatch("getTaskOne", post.task_id);
-                reject(e)
+            if (content === null) {
+                resolve(post);
+                return
+            }
+            $A.modalConfirm({
+                title,
+                content,
+                onOk: () => {
+                    resolve(post);
+                },
+                onCancel: () => {
+                    reject({msg: false})
+                }
             });
         });
     },

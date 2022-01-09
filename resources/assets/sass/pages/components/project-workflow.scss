@@ -397,12 +397,17 @@
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    width: 36px;
+                    width: 38px;
                     font-size: 18px;
-                    opacity: 0;
-                    transition: opacity 0.2s;
+                    font-weight: normal !important;
+                    opacity: 0.2;
+                    transition: opacity 0.3s;
                     &.opacity {
                         opacity: 1;
+                    }
+                    .more-icon {
+                        display: flex;
+                        align-items: center;
                     }
                 }
             }

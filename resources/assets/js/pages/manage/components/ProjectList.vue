@@ -1116,7 +1116,7 @@ export default {
         openMenu(task) {
             const el = this.$refs[`taskMenu_${task.id}`];
             if (el) {
-                el[0].show()
+                el[0].handleClick()
             }
         },
 
