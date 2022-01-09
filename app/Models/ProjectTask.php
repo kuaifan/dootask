@@ -609,27 +609,28 @@ class ProjectTask extends AbstractModel
                 $times = $data['times'];
                 list($start, $end) = is_string($times) ? explode(",", $times) : (is_array($times) ? $times : []);
                 if (Base::isDate($start) && Base::isDate($end) && $start != $end) {
+                    $start_at = Carbon::parse($start);
+                    $end_at = Carbon::parse($end);
                     if ($this->parent_id > 0 && $data['skipTimesCheck'] !== true) {
-                        // 子任务时间判断
+                        // 子任务时间处理
                         $mainTask = self::find($this->parent_id);
-                        if (empty($mainTask->end_at)) {
-                            // 如果主任务没有时间则自动设置
-                            $mainTask->start_at = Carbon::parse($start);
-                            $mainTask->end_at = Carbon::parse($end);
-                            $mainTask->save();
-                            $updateMarking['is_update_maintask'] = true;
-                        } else {
-                            // 限制不能超过主任务时间
-                            if (Carbon::parse($start)->lt($mainTask->start_at)) {
-                                throw new ApiException('子任务开始时间不能小于主任务开始时间');
+                        if ($mainTask) {
+                            // 超过主任务时间自动同步主任务
+                            if (empty($mainTask->start_at) || $start_at->lt($mainTask->start_at)) {
+                                $mainTask->start_at = $start_at;
+                                $updateMarking['is_update_maintask'] = true;
                             }
-                            if (Carbon::parse($end)->gt($mainTask->end_at)) {
-                                throw new ApiException('子任务结束时间不能大于主任务结束时间');
+                            if (empty($mainTask->end_at) || $end_at->gt($mainTask->end_at)) {
+                                $mainTask->end_at = $end_at;
+                                $updateMarking['is_update_maintask'] = true;
                             }
                         }
+                        if ($updateMarking['is_update_maintask']) {
+                            $mainTask->save();
+                        }
                     }
-                    $this->start_at = Carbon::parse($start);
-                    $this->end_at = Carbon::parse($end);
+                    $this->start_at = $start_at;
+                    $this->end_at = $end_at;
                 }
                 if ($this->parent_id == 0) {
                     // 如果是主任务，则同步跟主任务相同时间的子任务
