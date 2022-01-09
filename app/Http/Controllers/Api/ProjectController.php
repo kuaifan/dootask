@@ -1438,13 +1438,12 @@ class ProjectController extends AbstractController
         if ($projectFlowItem?->projectFlow) {
             $projectFlow = $projectFlowItem->projectFlow;
         } else {
-            $projectFlow = ProjectFlow::whereProjectId($projectTask->project_id)->first();
+            $projectFlow = ProjectFlow::whereProjectId($projectTask->project_id)->orderByDesc('id')->first();
         }
         if (empty($projectFlow)) {
             return Base::retSuccess('success', [
                 'task_id' => $projectTask->id,
                 'flow_item_id' => 0,
-                'flow_item_name' => '',
                 'turns' => [],
             ]);
         }
@@ -1454,22 +1453,20 @@ class ProjectController extends AbstractController
             $data = [
                 'task_id' => $projectTask->id,
                 'flow_item_id' => 0,
-                'flow_item_name' => '',
                 'turns' => $turns,
             ];
-            $assign = null;
             if ($projectTask->complete_at) {
                 // 赋一个结束状态
                 foreach ($turns as $turn) {
                     if ($turn->status == 'end' || preg_match("/complete|done|完成/i", $turn->name)) {
-                        $assign = $turn;
+                        $data['flow_item_id'] = $turn->id;
                         break;
                     }
                 }
                 if (empty($data['flow_item_id'])) {
                     foreach ($turns as $turn) {
                         if ($turn->status == 'end') {
-                            $assign = $turn;
+                            $data['flow_item_id'] = $turn->id;
                             break;
                         }
                     }
@@ -1478,20 +1475,15 @@ class ProjectController extends AbstractController
                 // 赋一个开始状态
                 foreach ($turns as $turn) {
                     if ($turn->status == 'start') {
-                        $assign = $turn;
+                        $data['flow_item_id'] = $turn->id;
                         break;
                     }
                 }
-            }
-            if ($assign) {
-                $data['flow_item_id'] = $assign->id;
-                $data['flow_item_name'] = $assign->name;
             }
         } else {
             $data = [
                 'task_id' => $projectTask->id,
                 'flow_item_id' => $projectFlowItem->id,
-                'flow_item_name' => $projectFlowItem->name,
                 'turns' => $turns,
             ];
         }

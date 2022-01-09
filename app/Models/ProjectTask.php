@@ -419,6 +419,19 @@ class ProjectTask extends AbstractModel
         } else {
             $task->sort = intval(self::whereColumnId($task->column_id)->orderByDesc('sort')->value('sort')) + 1;
         }
+        // 工作流
+        $projectFlow = ProjectFlow::whereProjectId($project_id)->orderByDesc('id')->first();
+        if ($projectFlow) {
+            $turns = ProjectFlowItem::select(['id', 'name', 'status', 'turns'])->whereFlowId($projectFlow->id)->orderBy('sort')->get();
+            // 赋一个开始状态
+            foreach ($turns as $turn) {
+                if ($turn->status == 'start') {
+                    $task->flow_item_id = $turn->id;
+                    $task->flow_item_name = $turn->status . "|" . $turn->name;
+                    break;
+                }
+            }
+        }
         //
         return AbstractModel::transaction(function() use ($times, $subtasks, $content, $owner, $task) {
             $task->save();
