@@ -1,5 +1,6 @@
 <template>
     <EDropdown
+        ref="dropdown"
         trigger="click"
         :size="size"
         placement="bottom"
@@ -30,7 +31,7 @@
                 </div>
             </EDropdownItem>
             <EDropdownItem command="remove">
-                <div class="item">
+                <div class="item hover-del">
                     <Icon type="md-trash" />{{$L('删除')}}
                 </div>
             </EDropdownItem>
@@ -99,6 +100,14 @@ export default {
         }
     },
     methods: {
+        show() {
+            this.$refs.dropdown.show()
+        },
+
+        hide() {
+            this.$refs.dropdown.hide()
+        },
+
         dropTask(command) {
             if ($A.isJson(command)) {
                 if (command.name) {

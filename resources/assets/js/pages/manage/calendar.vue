@@ -36,6 +36,9 @@
                 @beforeUpdateSchedule="onBeforeUpdateSchedule"
                 disable-click/>
         </div>
+        <div class="calendar-menu" :style="calendarMenuStyles">
+            <TaskMenu ref="calendarTaskMenu" :task="calendarTask"/>
+        </div>
     </div>
 </template>
 
@@ -48,9 +51,10 @@ import {mapState, mapGetters} from "vuex";
 import Calendar from "./components/Calendar";
 import moment from "moment";
 import {Store} from "le5le-store";
+import TaskMenu from "./components/TaskMenu";
 
 export default {
-    components: {Calendar},
+    components: {TaskMenu, Calendar},
     data() {
         return {
             lists: [],
@@ -63,6 +67,11 @@ export default {
             calendarMonth: {},
             calendarTheme: {},
             calendarTemplate: {},
+            calendarTask: {},
+            calendarMenuStyles: {
+                top: 0,
+                left: 0
+            },
 
             loadIng: 0,
             loadTimeout: null,
@@ -94,15 +103,17 @@ export default {
                     category: isAllday ? 'allday' : 'time',
                     start: $A.Date(data.start_at).toISOString(),
                     end: $A.Date(data.end_at).toISOString(),
-                    start_at: data.start_at,
-                    end_at: data.end_at,
                     color: "#515a6e",
                     bgColor: data.color || '#E3EAFD',
                     borderColor: data.p_color,
                     complete_at: data.complete_at,
                     priority: '',
                     preventClick: true,
+                    preventCheckHide: true,
                     isChecked: false,
+                    //
+                    start_at: data.start_at,
+                    end_at: data.end_at,
                     _time: data._time,
                 };
                 if (data.p_name) {
@@ -117,7 +128,7 @@ export default {
                 if (data.overdue) {
                     task.title = `[${this.$L('超期')}] ${task.title}`
                     task.color = "#f56c6c"
-                    task.bgColor = "#fef0f0"
+                    task.bgColor = data.color || "#fef0f0"
                     task.priority+= '<span class="overdue">' + this.$L('超期未完成') + '</span>';
                 }
                 if (!task.borderColor) {
@@ -281,23 +292,20 @@ export default {
             });
         },
 
-        onBeforeClickSchedule({type, schedule}) {
+        onBeforeClickSchedule(event) {
+            const {type, schedule} = event;
             let data = this.cacheTasks.find(({id}) => id === schedule.id);
             if (!data) {
                 return;
             }
             switch (type) {
                 case "check":
-                    this.$set(data, 'complete_at', $A.formatDate("Y-m-d H:i:s"))
-                    this.$store.dispatch("taskUpdate", {
-                        task_id: data.id,
-                        complete_at: $A.formatDate("Y-m-d H:i:s"),
-                    }).then(({msg}) => {
-                        $A.messageSuccess(msg);
-                    }).catch(({msg}) => {
-                        this.$set(data, 'complete_at', null)
-                        $A.modalError(msg);
-                    });
+                    this.calendarMenuStyles = {
+                        left: `${this.getElementLeft(event.target)}px`,
+                        top: `${this.getElementTop(event.target) - 8}px`
+                    }
+                    this.calendarTask = data;
+                    this.$nextTick(this.$refs.calendarTaskMenu.show);
                     break;
 
                 case "edit":
@@ -346,6 +354,28 @@ export default {
                     $A.modalError(msg);
                 });
             }
+        },
+
+        getElementLeft(element) {
+            let actualLeft = element.offsetLeft;
+            let current = element.offsetParent;
+            while (current !== null) {
+                if (current == this.$el) break;
+                actualLeft += (current.offsetLeft + current.clientLeft);
+                current = current.offsetParent;
+            }
+            return actualLeft;
+        },
+
+        getElementTop(element) {
+            let actualTop = element.offsetTop;
+            let current = element.offsetParent;
+            while (current !== null) {
+                if (current == this.$el) break;
+                actualTop += (current.offsetTop + current.clientTop);
+                current = current.offsetParent;
+            }
+            return actualTop;
         }
     }
 }

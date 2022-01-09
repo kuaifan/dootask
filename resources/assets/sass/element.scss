@@ -31,6 +31,12 @@ $--dropdown-menuItem-hover-color: #606266;
                     color: #f00;
                 }
             }
+            &.hover-del {
+                color: #f00;
+                > i {
+                    color: #f00;
+                }
+            }
         }
     }
 }
