@@ -857,6 +857,13 @@ export default {
             if (data.flow_item_name && data.flow_item_name.indexOf("|") !== -1) {
                 [data.flow_item_status, data.flow_item_name] = data.flow_item_name.split("|")
             }
+            //
+            let updateMarking = {};
+            if (typeof data.update_marking !== "undefined") {
+                updateMarking = $A.isJson(data.update_marking) ? data.update_marking : {};
+                delete data.update_marking;
+            }
+            //
             let index = state.cacheTasks.findIndex(({id}) => id == data.id);
             if (index > -1) {
                 state.cacheTasks.splice(index, 1, Object.assign({}, state.cacheTasks[index], data));
@@ -864,19 +871,16 @@ export default {
                 state.cacheTasks.push(data);
             }
             //
-            if (data.parent_id > 0 && state.cacheTasks.findIndex(({id}) => id == data.parent_id) === -1) {
+            if (updateMarking.is_update_maintask === true || (data.parent_id > 0 && state.cacheTasks.findIndex(({id}) => id == data.parent_id) === -1)) {
                 dispatch("getTaskOne", data.parent_id);
             }
-            if (data.is_update_project) {
-                data.is_update_project = false;
+            if (updateMarking.is_update_project === true) {
                 dispatch("getProjectOne", data.project_id);
             }
-            if (data.is_update_content) {
-                data.is_update_content = false;
+            if (updateMarking.is_update_content === true) {
                 dispatch("getTaskContent", data.id);
             }
-            if (data.is_update_subtask) {
-                data.is_update_subtask = false;
+            if (updateMarking.is_update_subtask === true) {
                 dispatch("getTaskForParent", data.id);
             }
             //

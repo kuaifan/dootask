@@ -478,14 +478,16 @@ class ProjectTask extends AbstractModel
     /**
      * 修改任务
      * @param $data
-     * @param bool $updateProject   是否更新项目数据（项目统计）
-     * @param bool $updateContent   是否更新任务详情
-     * @param bool $updateSubTask   是否更新子任务
+     * @param array $updateMarking    更新的标记
+     * - is_update_project  是否更新项目数据（项目统计）
+     * - is_update_content  是否更新任务详情
+     * - is_update_maintask 是否更新主任务
+     * - is_update_subtask  是否更新子任务
      * @return bool
      */
-    public function updateTask($data, &$updateProject = false, &$updateContent = false, &$updateSubTask = false)
+    public function updateTask($data, &$updateMarking = [])
     {
-        AbstractModel::transaction(function () use ($data, &$updateProject, &$updateContent, &$updateSubTask) {
+        AbstractModel::transaction(function () use ($data, &$updateMarking) {
             // 工作流
             if (Arr::exists($data, 'flow_item_id')) {
                 if ($this->flow_item_id == $data['flow_item_id']) {
@@ -540,7 +542,7 @@ class ProjectTask extends AbstractModel
                     }
                     $this->completeTask(null);
                 }
-                $updateProject = true;
+                $updateMarking['is_update_project'] = true;
                 return;
             }
             // 标题
@@ -592,7 +594,7 @@ class ProjectTask extends AbstractModel
                         $row->delete();
                     }
                 }
-                $updateProject = true;
+                $updateMarking['is_update_project'] = true;
                 $this->syncDialogUser();
             }
             // 计划时间
@@ -608,13 +610,22 @@ class ProjectTask extends AbstractModel
                 list($start, $end) = is_string($times) ? explode(",", $times) : (is_array($times) ? $times : []);
                 if (Base::isDate($start) && Base::isDate($end) && $start != $end) {
                     if ($this->parent_id > 0 && $data['skipTimesCheck'] !== true) {
-                        // 如果是子任务，则不能超过主任务时间
+                        // 子任务时间判断
                         $mainTask = self::find($this->parent_id);
-                        if (Carbon::parse($start)->lt($mainTask->start_at)) {
-                            throw new ApiException('子任务开始时间不能小于主任务开始时间');
-                        }
-                        if (Carbon::parse($end)->gt($mainTask->end_at)) {
-                            throw new ApiException('子任务结束时间不能大于主任务结束时间');
+                        if (empty($mainTask->end_at)) {
+                            // 如果主任务没有时间则自动设置
+                            $mainTask->start_at = Carbon::parse($start);
+                            $mainTask->end_at = Carbon::parse($end);
+                            $mainTask->save();
+                            $updateMarking['is_update_maintask'] = true;
+                        } else {
+                            // 限制不能超过主任务时间
+                            if (Carbon::parse($start)->lt($mainTask->start_at)) {
+                                throw new ApiException('子任务开始时间不能小于主任务开始时间');
+                            }
+                            if (Carbon::parse($end)->gt($mainTask->end_at)) {
+                                throw new ApiException('子任务结束时间不能大于主任务结束时间');
+                            }
                         }
                     }
                     $this->start_at = Carbon::parse($start);
@@ -622,11 +633,11 @@ class ProjectTask extends AbstractModel
                 }
                 if ($this->parent_id == 0) {
                     // 如果是主任务，则同步跟主任务相同时间的子任务
-                    self::where($originalWhere)->chunk(100, function($list) use ($times, &$updateSubTask) {
+                    self::where($originalWhere)->chunk(100, function($list) use ($times, &$updateMarking) {
                         foreach ($list as $item) {
                             $item->updateTask(['times' => $times, 'skipTimesCheck' => true]);
                         }
-                        $updateSubTask = true;
+                        $updateMarking['is_update_subtask'] = true;
                     });
                 }
                 $this->addLog("修改{任务}时间");
@@ -691,7 +702,7 @@ class ProjectTask extends AbstractModel
                     ]);
                     $this->desc = Base::getHtml($data['content'], 100);
                     $this->addLog("修改{任务}详细描述");
-                    $updateContent = true;
+                    $updateMarking['is_update_content'] = true;
                 }
                 // 优先级
                 $p = false;

@@ -1218,15 +1218,11 @@ class ProjectController extends AbstractController
         //
         $task = ProjectTask::userTask($task_id, true, 2);
         // 更新任务
-        $updateProject = false;
-        $updateContent = false;
-        $updateSubTask = false;
-        $task->updateTask($data, $updateProject, $updateContent, $updateSubTask);
+        $updateMarking = [];
+        $task->updateTask($data, $updateMarking);
         //
         $data = ProjectTask::oneTask($task->id)->toArray();
-        $data['is_update_project'] = $updateProject;
-        $data['is_update_content'] = $updateContent;
-        $data['is_update_subtask'] = $updateSubTask;
+        $data['update_marking'] = $updateMarking ?: json_decode('{}');
         $task->pushMsg('update', $data);
         //
         return Base::retSuccess('修改成功', $data);
