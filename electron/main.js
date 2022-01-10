@@ -4,18 +4,23 @@ const path = require('path')
 const XLSX = require('xlsx');
 const {app, BrowserWindow, ipcMain, dialog} = require('electron')
 const utils = require('./utils');
+const config = require('./package.json');
 const log = require("electron-log");
 
 let mainWindow = null,
     subWindow = [],
-    downloadList = [],
     willQuitApp = false,
     inheritClose = false,
+    devloadUrl = "",
     devloadCachePath = path.resolve(__dirname, ".devload"),
-    devloadUrl = "";
+    downloadList = [],
+    downloadCacheFile = path.join(app.getPath('cache'), config.name + '.downloadCache');
 
 if (fs.existsSync(devloadCachePath)) {
     devloadUrl = fs.readFileSync(devloadCachePath, 'utf8')
+}
+if (fs.existsSync(downloadCacheFile)) {
+    downloadList = utils.jsonParse(fs.readFileSync(downloadCacheFile, 'utf8'), [])
 }
 
 function createMainWindow() {
@@ -64,7 +69,7 @@ function createMainWindow() {
     })
 
     mainWindow.webContents.session.on('will-download', (event, item) => {
-        item.setSavePath(path.join(app.getPath('temp'), item.getFilename()));
+        item.setSavePath(path.join(app.getPath('cache'), item.getFilename()));
         item.on('done', (event, state) => {
             try {
                 const info = {
@@ -87,15 +92,14 @@ function createMainWindow() {
                             download.info = info
                         }
                     })
+                    fs.writeFileSync(downloadCacheFile, utils.jsonStringify(downloadList), 'utf8');
                 } else {
                     // 下载失败
                     info.chain.some(url => {
                         downloadList = downloadList.filter(item => item.url != url)
                     })
                 }
-            } catch (e) {
-                //
-            }
+            } catch (e) { }
         })
     })
 }
@@ -184,12 +188,19 @@ app.on('before-quit', () => {
     willQuitApp = true
 })
 
+/**
+ * 继承关闭窗口事件
+ */
 ipcMain.on('inheritClose', (event) => {
     inheritClose = true
     event.returnValue = "ok"
 })
 
-ipcMain.on('downloadURL', (event, args) => {
+/**
+ * 下载文件
+ * @param args {url}
+ */
+ipcMain.on('downloadFile', (event, args) => {
     const download = downloadList.find(({url}) => url == args.url);
     if (download) {
         if (download.status == "completed") {
@@ -212,21 +223,35 @@ ipcMain.on('downloadURL', (event, args) => {
     event.returnValue = "ok"
 })
 
+/**
+ * 打开文件
+ * @param args {path}
+ */
 ipcMain.on('openFile', (event, args) => {
     utils.openFile(args.path)
     event.returnValue = "ok"
 })
 
+/**
+ * 退出客户端
+ */
 ipcMain.on('windowQuit', (event) => {
     event.returnValue = "ok"
     app.quit();
 })
 
+/**
+ * 创建路由窗口
+ * @param args {path, ?}
+ */
 ipcMain.on('windowRouter', (event, args) => {
     createSubWindow(args)
     event.returnValue = "ok"
 })
 
+/**
+ * 隐藏窗口（mac隐藏，其他关闭）
+ */
 ipcMain.on('windowHidden', (event) => {
     if (process.platform === 'darwin') {
         app.hide();
@@ -236,12 +261,19 @@ ipcMain.on('windowHidden', (event) => {
     event.returnValue = "ok"
 })
 
+/**
+ * 关闭窗口
+ */
 ipcMain.on('windowClose', (event) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     win.close()
     event.returnValue = "ok"
 })
 
+/**
+ * 设置窗口尺寸
+ * @param args {width, height, autoZoom, minWidth, minHeight, maxWidth, maxHeight}
+ */
 ipcMain.on('windowSize', (event, args) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     if (win) {
@@ -277,23 +309,34 @@ ipcMain.on('windowSize', (event, args) => {
     event.returnValue = "ok"
 })
 
+/**
+ * 设置窗口最小尺寸
+ * @param args {minWidth, minHeight}
+ */
 ipcMain.on('windowMinSize', (event, args) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     if (win) {
-        win.setMinimumSize(args.width || win.getMinimumSize()[0], args.height || win.getMinimumSize()[1])
+        win.setMinimumSize(args.minWidth || win.getMinimumSize()[0], args.minHeight || win.getMinimumSize()[1])
     }
     event.returnValue = "ok"
 })
 
+/**
+ * 设置窗口最大尺寸
+ * @param args {maxWidth, maxHeight}
+ */
 ipcMain.on('windowMaxSize', (event, args) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     if (win) {
-        win.setMaximumSize(args.width || win.getMaximumSize()[0], args.height || win.getMaximumSize()[1])
+        win.setMaximumSize(args.maxWidth || win.getMaximumSize()[0], args.maxHeight || win.getMaximumSize()[1])
     }
     event.returnValue = "ok"
 })
 
-ipcMain.on('windowCenter', (event, args) => {
+/**
+ * 窗口居中
+ */
+ipcMain.on('windowCenter', (event) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     if (win) {
         win.center();
@@ -301,6 +344,9 @@ ipcMain.on('windowCenter', (event, args) => {
     event.returnValue = "ok"
 })
 
+/**
+ * 窗口最大化或恢复
+ */
 ipcMain.on('windowMax', (event) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     if (win.isMaximized()) {
@@ -311,6 +357,10 @@ ipcMain.on('windowMax', (event) => {
     event.returnValue = "ok"
 })
 
+/**
+ * 给主窗口发送信息
+ * @param args {channel, data}
+ */
 ipcMain.on('sendForwardMain', (event, args) => {
     if (mainWindow) {
         mainWindow.webContents.send(args.channel, args.data)
@@ -318,6 +368,10 @@ ipcMain.on('sendForwardMain', (event, args) => {
     event.returnValue = "ok"
 })
 
+/**
+ * 设置Dock标记
+ * @param args
+ */
 ipcMain.on('setDockBadge', (event, args) => {
     if(process.platform !== 'darwin'){
         // Mac only
@@ -331,6 +385,9 @@ ipcMain.on('setDockBadge', (event, args) => {
     event.returnValue = "ok"
 })
 
+/**
+ * 保存sheets
+ */
 ipcMain.on('saveSheet', (event, data, filename, opts) => {
     const EXTENSIONS = "xls|xlsx|xlsm|xlsb|xml|csv|txt|dif|sylk|slk|prn|ods|fods|htm|html".split("|");
     dialog.showSaveDialog({

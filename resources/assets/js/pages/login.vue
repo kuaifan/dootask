@@ -42,8 +42,8 @@
                 <div class="login-forgot">{{$L('忘记密码了？')}}<a href="javascript:void(0)" @click="forgotPassword">{{$L('重置密码')}}</a></div>
             </div>
         </div>
-        <div class="login-right-bottom">
-            <Button v-if="$Electron" icon="ios-globe-outline" type="primary" @click="onServerUrlInput">{{$L('自定义服务器')}}</Button>
+        <div v-if="$Electron" class="login-right-bottom">
+            <Button icon="ios-globe-outline" type="primary" @click="onServerUrlInput">{{$L('自定义服务器')}}</Button>
         </div>
     </div>
 </template>
