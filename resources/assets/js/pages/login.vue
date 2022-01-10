@@ -44,17 +44,14 @@
         </div>
         <div class="login-right-bottom">
             <Button v-if="$Electron" icon="ios-globe-outline" type="primary" @click="onServerUrlInput">{{$L('自定义服务器')}}</Button>
-            <AppDown/>
         </div>
     </div>
 </template>
 
 <script>
-import AppDown from "../components/AppDown";
 import {mapState} from "vuex";
 
 export default {
-    components: {AppDown},
     data() {
         return {
             loadIng: 0,

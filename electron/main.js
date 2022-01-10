@@ -1,45 +1,21 @@
 const fs = require('fs')
+const os = require("os");
 const path = require('path')
 const XLSX = require('xlsx');
 const {app, BrowserWindow, ipcMain, dialog} = require('electron')
+const utils = require('./utils');
+const log = require("electron-log");
 
 let mainWindow = null,
     subWindow = [],
+    downloadList = [],
     willQuitApp = false,
     inheritClose = false,
     devloadCachePath = path.resolve(__dirname, ".devload"),
     devloadUrl = "";
+
 if (fs.existsSync(devloadCachePath)) {
     devloadUrl = fs.readFileSync(devloadCachePath, 'utf8')
-}
-
-function runNum(str, fixed) {
-    let _s = Number(str);
-    if (_s + "" === "NaN") {
-        _s = 0;
-    }
-    if (/^[0-9]*[1-9][0-9]*$/.test(fixed)) {
-        _s = _s.toFixed(fixed);
-        let rs = _s.indexOf('.');
-        if (rs < 0) {
-            _s += ".";
-            for (let i = 0; i < fixed; i++) {
-                _s += "0";
-            }
-        }
-    }
-    return _s;
-}
-
-function randomString(len) {
-    len = len || 32;
-    let $chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678oOLl9gqVvUuI1';
-    let maxPos = $chars.length;
-    let pwd = '';
-    for (let i = 0; i < len; i++) {
-        pwd += $chars.charAt(Math.floor(Math.random() * maxPos));
-    }
-    return pwd;
 }
 
 function createMainWindow() {
@@ -54,7 +30,7 @@ function createMainWindow() {
             contextIsolation: false
         }
     })
-    mainWindow.webContents.setUserAgent(mainWindow.webContents.getUserAgent() + " MainTaskWindow/1.0");
+    mainWindow.webContents.setUserAgent(mainWindow.webContents.getUserAgent() + " MainTaskWindow/" + process.platform + "/" + os.arch() + "/1.0");
 
     if (devloadUrl) {
         mainWindow.loadURL(devloadUrl).then(r => {
@@ -86,6 +62,42 @@ function createMainWindow() {
             }
         }
     })
+
+    mainWindow.webContents.session.on('will-download', (event, item) => {
+        item.setSavePath(path.join(app.getPath('temp'), item.getFilename()));
+        item.on('done', (event, state) => {
+            try {
+                const info = {
+                    state,
+                    name: item.getFilename(),
+                    url: item.getURL(),
+                    chain: item.getURLChain(),
+                    savePath: item.getSavePath(),
+                    mimeType: item.getMimeType(),
+                    totalBytes: item.getTotalBytes(),
+                };
+                mainWindow.webContents.send("downloadDone", info)
+                //
+                if (info.state == "completed") {
+                    // 下载完成
+                    info.chain.some(url => {
+                        let download = downloadList.find(item => item.url == url)
+                        if (download) {
+                            download.status = "completed"
+                            download.info = info
+                        }
+                    })
+                } else {
+                    // 下载失败
+                    info.chain.some(url => {
+                        downloadList = downloadList.filter(item => item.url != url)
+                    })
+                }
+            } catch (e) {
+                //
+            }
+        })
+    })
 }
 
 function createSubWindow(args) {
@@ -100,7 +112,7 @@ function createSubWindow(args) {
         }
     }
 
-    let name = args.name || "auto_" + randomString(6);
+    let name = args.name || "auto_" + utils.randomString(6);
     let item = subWindow.find(item => item.name == name);
     let browser = item ? item.browser : null;
     if (browser) {
@@ -139,7 +151,7 @@ function createSubWindow(args) {
         })
         subWindow.push({ name, browser })
     }
-    browser.webContents.setUserAgent(browser.webContents.getUserAgent() + " SubTaskWindow/1.0" + (args.userAgent ? (" " + args.userAgent) : ""));
+    browser.webContents.setUserAgent(browser.webContents.getUserAgent() + " SubTaskWindow/" + process.platform + "/" + os.arch() + "/1.0" + (args.userAgent ? (" " + args.userAgent) : ""));
 
     if (devloadUrl) {
         browser.loadURL(devloadUrl + '#' + (args.hash || args.path)).then(r => {
@@ -175,6 +187,39 @@ app.on('before-quit', () => {
 ipcMain.on('inheritClose', (event) => {
     inheritClose = true
     event.returnValue = "ok"
+})
+
+ipcMain.on('downloadURL', (event, args) => {
+    const download = downloadList.find(({url}) => url == args.url);
+    if (download) {
+        if (download.status == "completed") {
+            if (fs.existsSync(download.info.savePath)) {
+                log.warn("已下载完成", args)
+                mainWindow.webContents.send("downloadDone", download.info)
+            } else {
+                log.info("开始重新下载", args)
+                download.status = "progressing"
+                mainWindow.webContents.downloadURL(args.url);
+            }
+        } else {
+            log.warn("已在下载列表中", args)
+        }
+    } else {
+        log.info("开始下载", args)
+        downloadList.push(Object.assign(args, { status: "progressing" }))
+        mainWindow.webContents.downloadURL(args.url);
+    }
+    event.returnValue = "ok"
+})
+
+ipcMain.on('openFile', (event, args) => {
+    utils.openFile(args.path)
+    event.returnValue = "ok"
+})
+
+ipcMain.on('windowQuit', (event) => {
+    event.returnValue = "ok"
+    app.quit();
 })
 
 ipcMain.on('windowRouter', (event, args) => {
@@ -278,7 +323,7 @@ ipcMain.on('setDockBadge', (event, args) => {
         // Mac only
         return;
     }
-    if (runNum(args) > 0) {
+    if (utils.runNum(args) > 0) {
         app.dock.setBadge(String(args))
     } else {
         app.dock.setBadge("")

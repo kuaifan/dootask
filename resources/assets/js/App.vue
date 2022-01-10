@@ -6,15 +6,17 @@
             </keep-alive>
         </transition>
         <Spinner/>
+        <AppDown/>
     </div>
 </template>
 
 <script>
 import Spinner from "./components/Spinner";
+import AppDown from "./components/AppDown";
 import {mapState} from "vuex";
 
 export default {
-    components: {Spinner},
+    components: {AppDown, Spinner},
 
     data() {
         return {

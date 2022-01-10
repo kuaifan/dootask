@@ -70,18 +70,15 @@
                 </ul>
             </template>
         </div>
-        <AppDown/>
     </div>
 </template>
 
 <script>
 import {mapGetters, mapState} from "vuex";
-import AppDown from "../../components/AppDown";
-import {Store} from "le5le-store";
 import TaskMenu from "./components/TaskMenu";
 
 export default {
-    components: {TaskMenu, AppDown},
+    components: {TaskMenu},
     data() {
         return {
             nowTime: $A.Time(),

@@ -1,9 +1,9 @@
 <template>
-    <div v-if="repoStatus && !$store.state.windowMax768" class="common-app-down">
-        <div v-if="$Electron" class="common-app-down-link" @click="openExternal(repoData.html_url)">
+    <div v-if="status && !$store.state.windowMax768" class="common-app-down">
+        <div v-if="$Electron" class="common-app-down-link" @click="installApplication">
             <Icon type="md-download"/> {{$L(repoTitle)}}
         </div>
-        <a v-else class="common-app-down-link" :href="repoData.html_url" target="_blank">
+        <a v-else class="common-app-down-link" :href="releases.html_url" target="_blank">
             <Icon type="md-download"/> {{$L(repoTitle)}}
         </a>
     </div>
@@ -12,9 +12,9 @@
 <script>
 import Vue from 'vue'
 import MarkdownPreview from "./MDEditor/components/preview";
+import axios from "axios";
 Vue.component('MarkdownPreview', MarkdownPreview)
 
-import axios from "axios";
 import { Notification } from 'element-ui';
 
 export default {
@@ -23,34 +23,19 @@ export default {
         return {
             repoName: 'kuaifan/dootask',
             repoData: {},
-            repoStatus: 0, // 0 没有，1有客户端，2客户端有新版本
+
+            status: 0, // 0 没有，1有客户端，2客户端有新版本
+            releases: {},
+            downInfo: {}
         }
     },
     mounted() {
         this.getReleases();
-    },
-    computed: {
-        repoTitle() {
-            return this.repoStatus == 2 ? '更新客户端' : '客户端下载';
-        }
-    },
-    watch: {
-        repoData: {
-            handler(data) {
-                if (!data.tag_name) {
-                    this.repoStatus = 0;
-                    return;
-                }
-                if (!this.$Electron) {
-                    // 网页只提示有客户端下载
-                    this.repoStatus = 1;
-                    return;
-                }
-                // 客户端提示更新
-                let currentVersion = window.systemInformation.version;
-                let latestVersion = $A.leftDelete(data.tag_name.toLowerCase(), "v")
-                if (this.compareVersion(latestVersion, currentVersion) === 1) {
-                    // 有新版本
+        //
+        if (this.$Electron) {
+            this.$Electron.ipcRenderer.on('downloadDone', (event, args) => {
+                if (args.name == this.repoData.name) {
+                    this.downInfo = args;
                     const h = this.$createElement;
                     window.__appNotification && window.__appNotification.close();
                     window.__appNotification = Notification({
@@ -59,7 +44,7 @@ export default {
                         position: "bottom-right",
                         customClass: "common-app-down-notification",
                         onClose: () => {
-                            this.repoStatus = 2;
+                            this.status = 2;
                         },
                         message: h('span', [
                             h('span', [
@@ -68,19 +53,19 @@ export default {
                                     props: {
                                         color: 'volcano'
                                     }
-                                }, data.tag_name)
+                                }, this.releases.tag_name)
                             ]),
                             h('MarkdownPreview', {
                                 class: 'common-app-down-body',
                                 props: {
-                                    initialValue: data.body
+                                    initialValue: this.releases.body
                                 }
                             }),
                             h('div', {
                                 class: 'common-app-down-link',
                                 on: {
                                     click: () => {
-                                        this.openExternal(data.html_url);
+                                        this.installApplication();
                                     }
                                 },
                             }, [
@@ -92,20 +77,25 @@ export default {
                                         marginRight: '5px'
                                     }
                                 }),
-                                h('span', this.$L('立即升级'))
+                                h('span', this.$L('立即安装'))
                             ]),
                         ])
                     });
                 }
-            },
-            deep: true
+            })
+        }
+    },
+    computed: {
+        repoTitle() {
+            return this.status == 2 ? '更新客户端' : '客户端下载';
         }
     },
     methods: {
         getReleases() {
-            let appdown = $A.getStorageJson("cacheAppdown");
-            if (appdown.time && appdown.time + 3600 > Math.round(new Date().getTime() / 1000)) {
-                this.chackReleases(appdown.data)
+            let cache = $A.getStorageJson("cacheAppdown");
+            if (cache.time && cache.time + 3600 > Math.round(new Date().getTime() / 1000)) {
+                this.releases = cache.data;
+                this.chackReleases()
                 return;
             }
             ;(() => {
@@ -117,23 +107,52 @@ export default {
                                 time: Math.round(new Date().getTime() / 1000),
                                 data: data
                             });
-                            this.chackReleases(data)
+                            this.releases = data;
+                            this.chackReleases()
                         }
                     });
             })();
         },
 
-        chackReleases(data) {
-            let hostname = window.location.hostname;
-            if (hostname == '127.0.0.1') {
-                hostname = "www.dootask.com"
+        chackReleases() {
+            let hostName = window.location.hostname;
+            if (hostName == '127.0.0.1') {
+                hostName = "www.dootask.com"
             }
-            let assets = data.assets || [];
-            let asset = assets.find(({browser_download_url}) => {
-                return $A.strExists(browser_download_url, hostname)
-            });
-            if (asset) {
-                this.repoData = data;
+            if (this.$Electron) {
+                // 客户端（更新）
+                let match = (window.navigator.userAgent + "").match(/\s+(Main|Sub)TaskWindow\/(.*?)\/(.*?)\//)
+                if (!match) {
+                    return;
+                }
+                let artifactName = null;
+                if (match[2] === 'darwin') {
+                    artifactName = `${hostName}-${this.releases.tag_name}-mac-${match[3]}.pkg`;
+                } else if (match[2] === 'win32') {
+                    artifactName = `${hostName}-${this.releases.tag_name}-win-${match[3]}.exe`;
+                } else {
+                    return;
+                }
+                this.repoData = (this.releases.assets || []).find(({name}) => name == artifactName);
+                if (!this.repoData) {
+                    return;
+                }
+                let currentVersion = window.systemInformation.version;
+                let latestVersion = $A.leftDelete(this.releases.tag_name.toLowerCase(), "v")
+                if (this.compareVersion(latestVersion, currentVersion) === 1) {
+                    // 有新版本
+                    console.log("有新版本");
+                    this.$Electron.ipcRenderer.send('downloadURL', {
+                        url: this.repoData.browser_download_url
+                    });
+                }
+            } else {
+                // 网页版（提示有客户端下载）
+                this.repoData = (this.releases.assets || []).find(({name}) => $A.strExists(name, hostName));
+                if (this.repoData) {
+                    console.log("有客户端");
+                    this.status = 1;
+                }
             }
         },
 
@@ -181,12 +200,14 @@ export default {
             return 0;
         },
 
-        openExternal(url) {
-            try {
-                this.$Electron.shell.openExternal(url);
-            } catch (e) {
-                window.location.href = url;
+        installApplication() {
+            if (!this.$Electron) {
+                return;
             }
+            this.$Electron.ipcRenderer.send('openFile', {
+                path: this.downInfo.savePath
+            });
+            this.$Electron.ipcRenderer.send('windowQuit');
         }
     }
 };
