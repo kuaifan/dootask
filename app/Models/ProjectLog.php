@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Module\Base;
+
 /**
  * App\Models\ProjectLog
  *
@@ -11,6 +13,7 @@ namespace App\Models;
  * @property int|null $task_id 项目ID
  * @property int|null $userid 会员ID
  * @property string|null $detail 详细信息
+ * @property string|null $record 记录数据
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\User|null $user
@@ -22,6 +25,7 @@ namespace App\Models;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectLog whereDetail($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectLog whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectLog whereProjectId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectLog whereRecord($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectLog whereTaskId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectLog whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectLog whereUserid($value)
@@ -29,6 +33,18 @@ namespace App\Models;
  */
 class ProjectLog extends AbstractModel
 {
+
+    /**
+     * @param $value
+     * @return array
+     */
+    public function getRecordAttribute($value)
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+        return Base::json2array($value);
+    }
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasOne

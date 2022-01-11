@@ -144,7 +144,14 @@
             <Form :model="userData" label-width="auto" @submit.native.prevent>
                 <FormItem prop="userids" :label="userData.name">
                     <UserInput v-if="userShow" v-model="userData.userids" :project-id="projectId" :multiple-max="5" :placeholder="$L('选择成员')"/>
-                    <div class="form-tip">{{$L('任务流转到此流程时自动添加负责人')}}</div>
+                </FormItem>
+                <FormItem prop="usertype" :label="$L('流转模式')">
+                    <RadioGroup v-model="userData.usertype">
+                        <Radio label="add">{{$L('添加模式')}}</Radio>
+                        <Radio label="replace">{{$L('流转模式')}}</Radio>
+                    </RadioGroup>
+                    <div v-if="userData.usertype=='replace'" class="form-tip">{{$L('流转到此流程时改变负责人，原本的负责人移至协助人员。')}}</div>
+                    <div v-else class="form-tip">{{$L('流转到此流程时添加负责人。')}}</div>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
@@ -259,6 +266,7 @@ export default {
                         "status": "start",
                         "turns": [-10, -11, -12, -13],
                         "userids": [],
+                        "usertype": 'add',
                     },
                     {
                         "id": -11,
@@ -266,6 +274,7 @@ export default {
                         "status": "progress",
                         "turns": [-10, -11, -12, -13],
                         "userids": [],
+                        "usertype": 'add',
                     },
                     {
                         "id": -12,
@@ -273,6 +282,7 @@ export default {
                         "status": "end",
                         "turns": [-10, -11, -12, -13],
                         "userids": [],
+                        "usertype": 'add',
                     },
                     {
                         "id": -13,
@@ -280,6 +290,7 @@ export default {
                         "status": "end",
                         "turns": [-10, -11, -12, -13],
                         "userids": [],
+                        "usertype": 'add',
                     }
                 ]
             })
@@ -331,6 +342,7 @@ export default {
                     this.$set(this.userData, 'id', item.id);
                     this.$set(this.userData, 'name', item.name);
                     this.$set(this.userData, 'userids', item.userids);
+                    this.$set(this.userData, 'usertype', item.usertype);
                     this.userShow = true;
                     break;
 
@@ -350,6 +362,7 @@ export default {
                 let item = data.project_flow_item.find(item => item.id == this.userData.id)
                 if (item) {
                     this.$set(item, 'userids', this.userData.userids)
+                    this.$set(item, 'usertype', this.userData.usertype)
                 }
             })
         },
@@ -395,6 +408,7 @@ export default {
                             status: 'end',
                             turns,
                             userids: [],
+                            usertype: 'add',
                         })
                         data.project_flow_item.some(item => {
                             item.turns.push(id)

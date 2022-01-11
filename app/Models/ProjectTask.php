@@ -495,6 +495,11 @@ class ProjectTask extends AbstractModel
                 if ($this->flow_item_id == $data['flow_item_id']) {
                     throw new ApiException('任务状态未发生改变');
                 }
+                $recordData = [
+                    'type' => 'flow',
+                    'flow_item_id' => $this->flow_item_id,
+                    'flow_item_name' => $this->flow_item_name,
+                ];
                 $currentFlowItem = null;
                 $newFlowItem = ProjectFlowItem::whereProjectId($this->project_id)->find(intval($data['flow_item_id']));
                 if (empty($newFlowItem) || empty($newFlowItem->projectFlow)) {
@@ -510,24 +515,38 @@ class ProjectTask extends AbstractModel
                 if ($newFlowItem->status == 'end') {
                     // 判断自动完成
                     if (!$this->complete_at) {
+                        $recordData['complete_at'] = $this->complete_at;
                         $data['complete_at'] = date("Y-m-d H:i");
                     }
                 } else {
                     // 判断自动打开
                     if ($this->complete_at) {
+                        $recordData['complete_at'] = $this->complete_at;
                         $data['complete_at'] = false;
                     }
                 }
                 if ($newFlowItem->userids) {
                     // 判断自动添加负责人
-                    if (!Arr::exists($data, 'owner')) {
-                        $data['owner'] = $this->taskUser->pluck('userid')->toArray();
+                    $recordData['owner'] = $data['owner'] = $this->taskUser->where('owner', 1)->pluck('userid')->toArray();
+                    if ($newFlowItem->usertype == "replace") {
+                        // 流转模式
+                        if ($this->parent_id === 0) {
+                            $recordData['assist'] = $data['assist'] = $this->taskUser->where('owner', 0)->pluck('userid')->toArray();
+                            $data['assist'] = array_merge($data['assist'], $data['owner']);
+                        }
+                        $data['owner'] = $newFlowItem->userids;
+                    } else {
+                        // 添加模式
+                        $data['owner'] = array_merge($data['owner'], $newFlowItem->userids);
                     }
-                    $data['owner'] = array_values(array_unique(array_merge($data['owner'], $newFlowItem->userids)));
+                    $data['owner'] = array_values(array_unique($data['owner']));
+                    if (isset($data['assist'])) {
+                        $data['assist'] = array_values(array_unique(array_diff($data['assist'], $data['owner'])));
+                    }
                 }
                 $this->flow_item_id = $newFlowItem->id;
                 $this->flow_item_name = $newFlowItem->status . "|" . $newFlowItem->name;
-                $this->addLog("修改{任务}状态：{$currentFlowItem?->name} => {$newFlowItem->name}");
+                $this->addLog("修改{任务}状态：{$currentFlowItem?->name} => {$newFlowItem->name}", 0, $recordData);
             }
             // 状态
             if (Arr::exists($data, 'complete_at')) {
@@ -559,7 +578,7 @@ class ProjectTask extends AbstractModel
             }
             // 负责人
             if (Arr::exists($data, 'owner')) {
-                $count = $this->taskUser->count();
+                $count = $this->taskUser->where('owner', 1)->count();
                 $array = [];
                 $owner = is_array($data['owner']) ? $data['owner'] : [$data['owner']];
                 if (count($owner) > 10) {
@@ -947,18 +966,23 @@ class ProjectTask extends AbstractModel
      * 添加任务日志
      * @param string $detail
      * @param int $userid
+     * @param $record
      * @return ProjectLog
      */
-    public function addLog($detail, $userid = 0)
+    public function addLog($detail, $userid = 0, $record = null)
     {
         $detail = str_replace("{任务}", $this->parent_id > 0 ? "子任务" : "任务", $detail);
-        $log = ProjectLog::createInstance([
+        $array = [
             'project_id' => $this->project_id,
             'column_id' => $this->column_id,
             'task_id' => $this->parent_id ?: $this->id,
             'userid' => $userid ?: User::userid(),
             'detail' => $detail,
-        ]);
+        ];
+        if ($record) {
+            $array['record'] = $record;
+        }
+        $log = ProjectLog::createInstance($array);
         $log->save();
         return $log;
     }

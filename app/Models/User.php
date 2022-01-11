@@ -55,6 +55,7 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUserid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUserimg($value)
  * @mixin \Eloquent
+ * @method static \Database\Factories\UserFactory factory(...$parameters)
  */
 class User extends AbstractModel
 {

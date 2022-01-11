@@ -14,6 +14,7 @@ use App\Module\Base;
  * @property string|null $status 状态
  * @property array $turns 可流转
  * @property array $userids 自动负责人ID
+ * @property string|null $usertype 流转模式
  * @property int|null $sort 排序
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -31,6 +32,7 @@ use App\Module\Base;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem whereTurns($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem whereUserids($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem whereUsertype($value)
  * @mixin \Eloquent
  */
 class ProjectFlowItem extends AbstractModel

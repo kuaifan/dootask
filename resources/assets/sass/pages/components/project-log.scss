@@ -88,6 +88,14 @@
                 .log-text {
                     color: rgba(0,0,0,.54);
                 }
+                .log-operation {
+                    > button {
+                        font-size: 12px;
+                    }
+                    > button + button {
+                        margin-left: 4px;
+                    }
+                }
                 .log-time {
                     color: rgba(0,0,0,.3);
                     font-size: 12px;

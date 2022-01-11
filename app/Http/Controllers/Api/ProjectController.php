@@ -1406,6 +1406,60 @@ class ProjectController extends AbstractController
     }
 
     /**
+     * @api {get} api/project/task/resetfromlog          29. 根据日志重置任务
+     *
+     * @apiDescription 需要token身份（限：项目、任务负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__resetfromlog
+     *
+     * @apiParam {Number} task_id               任务ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function task__resetfromlog()
+    {
+        User::auth();
+        //
+        $id = intval(Request::input('id'));
+        //
+        $projectLog = ProjectLog::find($id);
+        if (empty($projectLog) || empty($projectLog->task_id)) {
+            return Base::retError('记录不存在');
+        }
+        $record = $projectLog->record;
+        //
+        $task = ProjectTask::userTask($projectLog->task_id, null, true);
+        //
+        if ($record['type'] == 'flow') {
+            $newFlowItem = ProjectFlowItem::find(intval($record['flow_item_id']));
+            if (empty($newFlowItem)) {
+                return Base::retError('流程不存在或已被删除');
+            }
+            return AbstractModel::transaction(function() use ($record, $task, $newFlowItem) {
+                $data = array_intersect_key($record, array_flip(['complete_at', 'owner', 'assist']));
+                $currentFlowItem = $task->flow_item_id ? ProjectFlowItem::find($task->flow_item_id) : null;
+                // 更新任务
+                $task->flow_item_id = $newFlowItem->id;
+                $task->flow_item_name = $newFlowItem->name;
+                $updateMarking = [];
+                $task->addLog("重置{任务}状态：{$currentFlowItem?->name} => {$newFlowItem->name}");
+                $task->updateTask($data, $updateMarking);
+                //
+                $data = ProjectTask::oneTask($task->id)->toArray();
+                $data['update_marking'] = $updateMarking ?: json_decode('{}');
+                $task->pushMsg('update', $data);
+                //
+                return Base::retSuccess('重置成功', $data);
+            });
+        } else {
+            return Base::retError('暂不支持此操作');
+        }
+    }
+
+    /**
      * @api {get} api/project/task/flow          29. 任务工作流信息
      *
      * @apiDescription 需要token身份
@@ -1574,6 +1628,7 @@ class ProjectController extends AbstractController
                     'sort' => intval($item['sort']),
                     'turns' => $turns,
                     'userids' => $userids,
+                    'usertype' => $item['usertype'],
                 ]);
                 if ($flow) {
                     $ids[] = $flow->id;

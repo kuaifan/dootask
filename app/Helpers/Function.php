@@ -10,7 +10,7 @@ if (!function_exists('asset_main')) {
 if (!function_exists('seeders_at')) {
     function seeders_at($data)
     {
-        $diff = time() - strtotime("2021-07-01");
+        $diff = time() - strtotime("2021-07-02");
         $time = strtotime($data) + $diff;
         return date("Y-m-d H:i:s", $time);
     }

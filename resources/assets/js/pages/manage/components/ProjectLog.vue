@@ -14,6 +14,9 @@
                             <div class="log-summary">
                                 <span class="log-creator">{{item.user ? item.user.nickname : $L('系统')}}</span>
                                 <span class="log-text">{{$L(item.detail)}}</span>
+                                <span v-if="operationList(item).length > 0" class="log-operation">
+                                    <Button v-for="(op, oi) in operationList(item)" :key="oi" size="small" @click="onOperation(op)">{{op.button}}</Button>
+                                </span>
                                 <span class="log-time">{{item.time.ymd}} {{item.time.segment}} {{item.time.hi}}</span></div>
                         </TimelineItem>
                     </Timeline>
@@ -123,6 +126,44 @@ export default {
             this.listPage++;
             this.getLists();
         },
+
+        operationList({id, record}) {
+            let list = [];
+            if (!$A.isJson(record)) {
+                return list
+            }
+            if (this.taskId > 0 && record.type === 'flow') {
+                list.push({
+                    id,
+                    button: '重置',
+                    content: `确定重置为【${record.flow_item_name}】吗？`,
+                })
+            }
+            return list;
+        },
+
+        onOperation(item) {
+            $A.modalConfirm({
+                content: item.content,
+                loading: true,
+                onOk: () => {
+                    this.$store.dispatch("call", {
+                        url: 'project/task/resetfromlog',
+                        data: {
+                            id: item.id
+                        }
+                    }).then(({data, msg}) => {
+                        $A.messageSuccess(msg);
+                        this.$Modal.remove();
+                        this.$store.dispatch("saveTask", data);
+                        this.getLists(true);
+                    }).catch(({msg}) => {
+                        $A.modalError(msg, 301);
+                        this.$Modal.remove();
+                    });
+                }
+            });
+        }
     }
 }
 </script>
