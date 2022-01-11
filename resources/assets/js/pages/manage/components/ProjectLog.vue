@@ -70,6 +70,9 @@ export default {
             this.lists = {};
             this.getLists(true);
         },
+        loadIng(num) {
+            this.$emit("on-load-change", num > 0)
+        }
     },
 
     methods: {

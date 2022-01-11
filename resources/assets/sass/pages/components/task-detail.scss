@@ -495,6 +495,25 @@
                         cursor: default;
                     }
                 }
+                .refresh {
+                    display: flex;
+                    align-items: center;
+                    margin-left: -18px;
+                    > i {
+                        font-size: 18px;
+                        cursor: pointer;
+                        opacity: 0.8;
+                        transition: opacity 0.2s;
+                        &:hover {
+                            opacity: 1;
+                        }
+                    }
+                    .common-loading {
+                        margin: 3px;
+                        width: 12px;
+                        height: 12px;
+                    }
+                }
             }
         }
         .no-dialog {

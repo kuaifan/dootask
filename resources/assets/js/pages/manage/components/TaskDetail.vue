@@ -329,22 +329,30 @@
                     <div slot="head" class="head">
                         <Icon class="icon" type="ios-chatbubbles-outline" />
                         <div class="nav">
-                            <p :class="{active:navActive=='dialog'}" @click="setNavActive('dialog')">{{$L('聊天')}}</p>
-                            <p :class="{active:navActive=='log'}" @click="setNavActive('log')">{{$L('动态')}}</p>
+                            <p :class="{active:navActive=='dialog'}" @click="navActive='dialog'">{{$L('聊天')}}</p>
+                            <p :class="{active:navActive=='log'}" @click="navActive='log'">{{$L('动态')}}</p>
+                            <div v-if="navActive=='log'" class="refresh">
+                                <Loading v-if="logLoadIng"/>
+                                <Icon v-else type="ios-refresh" @click="getLogLists"></Icon>
+                            </div>
                         </div>
                     </div>
                 </DialogWrapper>
-                <ProjectLog v-if="navActive=='log'" ref="log" :task-id="taskDetail.id"/>
+                <ProjectLog v-if="navActive=='log' && taskId > 0" ref="log" :task-id="taskDetail.id" @on-load-change="logLoadChange"/>
             </template>
             <div v-else>
                 <div class="head">
                     <Icon class="icon" type="ios-chatbubbles-outline" />
                     <div class="nav">
-                        <p :class="{active:navActive=='dialog'}" @click="setNavActive('dialog')">{{$L('聊天')}}</p>
-                        <p :class="{active:navActive=='log'}" @click="setNavActive('log')">{{$L('动态')}}</p>
+                        <p :class="{active:navActive=='dialog'}" @click="navActive='dialog'">{{$L('聊天')}}</p>
+                        <p :class="{active:navActive=='log'}" @click="navActive='log'">{{$L('动态')}}</p>
+                        <div v-if="navActive=='log'" class="refresh">
+                            <Loading v-if="logLoadIng"/>
+                            <Icon v-else type="ios-refresh" @click="getLogLists"></Icon>
+                        </div>
                     </div>
                 </div>
-                <ProjectLog v-if="navActive=='log'" ref="log" :task-id="taskDetail.id"/>
+                <ProjectLog v-if="navActive=='log' && taskId > 0" ref="log" :task-id="taskDetail.id" @on-load-change="logLoadChange"/>
                 <div v-else class="no-dialog">
                     <div class="no-tip">{{$L('暂无消息')}}</div>
                     <div class="no-input">
@@ -431,6 +439,7 @@ export default {
 
             msgText: '',
             navActive: 'dialog',
+            logLoadIng: false,
 
             sendLoad: false,
 
@@ -917,11 +926,15 @@ export default {
             });
         },
 
-        setNavActive(act) {
-            if (act == 'log' && this.navActive == act) {
-                this.$refs.log.getLists(true);
+        getLogLists() {
+            if (this.navActive != 'log') {
+                return;
             }
-            this.navActive = act;
+            this.$refs.log.getLists(true);
+        },
+
+        logLoadChange(load) {
+            this.logLoadIng = load
         },
 
         dropAdd(command) {
