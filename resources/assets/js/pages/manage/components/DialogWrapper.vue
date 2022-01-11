@@ -24,7 +24,7 @@
         <ScrollerY
             ref="scroller"
             class="dialog-scroller overlay-y"
-            :auto-bottom="autoBottom"
+            :auto-bottom="isAutoBottom"
             @on-scroll="chatScroll"
             static>
             <div ref="manageList" class="dialog-list">
@@ -57,7 +57,7 @@
             </div>
         </ScrollerY>
         <div :class="['dialog-footer', msgNew > 0 && dialogMsgList.length > 0 ? 'newmsg' : '']" @click="onActive">
-            <div class="dialog-newmsg" @click="goNewBottom">{{$L('有' + msgNew + '条新消息')}}</div>
+            <div class="dialog-newmsg" @click="autoToBottom">{{$L('有' + msgNew + '条新消息')}}</div>
             <slot name="inputBefore"/>
             <DragInput
                 ref="input"
@@ -95,6 +95,7 @@ import ScrollerY from "../../../components/ScrollerY";
 import {mapState} from "vuex";
 import DialogView from "./DialogView";
 import DialogUpload from "./DialogUpload";
+import {Store} from "le5le-store";
 
 export default {
     name: "DialogWrapper",
@@ -118,7 +119,22 @@ export default {
             msgNew: 0,
             topId: 0,
 
-            tempMsgs: []
+            tempMsgs: [],
+
+            dialogMsgSubscribe: null,
+        }
+    },
+
+    mounted() {
+        this.dialogMsgSubscribe = Store.subscribe('dialogMsgPush', (data) => {
+            this.addDialogMsg(data)
+        });
+    },
+
+    beforeDestroy() {
+        if (this.dialogMsgSubscribe) {
+            this.dialogMsgSubscribe.unsubscribe();
+            this.dialogMsgSubscribe = null;
         }
     },
 
@@ -127,7 +143,7 @@ export default {
             'userId',
             'cacheDialogs',
             'dialogMsgs',
-            'dialogMsgPush',
+            'windowMax768',
         ]),
 
         dialogData() {
@@ -143,6 +159,13 @@ export default {
             })).sort((a, b) => {
                 return a.id - b.id;
             });
+        },
+
+        isAutoBottom() {
+            if (this.windowMax768 && this.inputFocus) {
+                return false;
+            }
+            return this.autoBottom
         },
 
         tempMsgList() {
@@ -171,14 +194,6 @@ export default {
                 }
             },
             immediate: true
-        },
-
-        dialogMsgPush() {
-            if (this.autoBottom) {
-                this.$nextTick(this.goBottom);
-            } else {
-                this.msgNew++;
-            }
         },
 
         dialogId: {
@@ -213,10 +228,10 @@ export default {
                     text: this.msgText,
                 },
             });
-            if (this.$store.state.windowMax768) {
+            if (this.windowMax768) {
                 this.$refs.input.blur();
             }
-            this.autoBottom = true;
+            this.autoToBottom();
             this.onActive();
             //
             this.$store.dispatch("call", {
@@ -295,7 +310,10 @@ export default {
                         userid: this.userId,
                         msg: { },
                     });
-                    this.autoBottom = true;
+                    if (this.windowMax768) {
+                        this.$refs.input.blur();
+                    }
+                    this.autoToBottom();
                     this.onActive();
                     break;
 
@@ -322,6 +340,7 @@ export default {
             switch (res.directionreal) {
                 case 'up':
                     if (res.scrollE < 10) {
+                        this.msgNew = 0;
                         this.autoBottom = true;
                     }
                     break;
@@ -330,32 +349,27 @@ export default {
                     break;
             }
             if (res.scale === 1) {
+                this.msgNew = 0;
                 this.autoBottom = true;
             }
         },
 
-        goBottom() {
-            if (this.autoBottom) {
-                this.msgNew = 0;
-                this.$refs.scroller.autoToBottom();
-            }
-        },
-
-        goNewBottom() {
-            this.autoBottom = true;
-            this.goBottom();
-        },
-
         onEventFocus(e) {
+            this.inputFocus = true;
             this.$emit("on-focus", e)
         },
 
         onEventblur(e) {
+            this.inputFocus = false;
             this.$emit("on-blur", e)
         },
 
         onActive() {
             this.$emit("on-active");
+        },
+
+        autoToBottom() {
+            this.$refs.scroller && this.$refs.scroller.autoToBottom();
         },
 
         openProject() {
@@ -390,6 +404,18 @@ export default {
                     }
                 });
             });
+        },
+
+        addDialogMsg() {
+            if (this.isAutoBottom) {
+                this.$nextTick(this.autoToBottom);
+            } else {
+                this.$nextTick(() => {
+                    if (this.$refs.scroller && this.$refs.scroller.scrollInfo().scrollE > 10) {
+                        this.msgNew++;
+                    }
+                })
+            }
         }
     }
 }

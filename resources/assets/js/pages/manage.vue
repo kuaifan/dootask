@@ -229,6 +229,8 @@ export default {
             addTaskShow: false,
             addTaskSubscribe: null,
 
+            dialogMsgSubscribe: null,
+
             columns: [],
 
             projectKeyValue: '',
@@ -265,6 +267,9 @@ export default {
         this.addTaskSubscribe = Store.subscribe('addTask', (data) => {
             this.onAddTask(data)
         });
+        this.dialogMsgSubscribe = Store.subscribe('dialogMsgPush', (data) => {
+            this.addDialogMsg(data)
+        });
         //
         document.addEventListener('keydown', this.shortcutEvent);
         window.addEventListener('resize', this.innerHeightListener);
@@ -278,6 +283,10 @@ export default {
         if (this.addTaskSubscribe) {
             this.addTaskSubscribe.unsubscribe();
             this.addTaskSubscribe = null;
+        }
+        if (this.dialogMsgSubscribe) {
+            this.dialogMsgSubscribe.unsubscribe();
+            this.dialogMsgSubscribe = null;
         }
         //
         document.removeEventListener('keydown', this.shortcutEvent);
@@ -297,7 +306,6 @@ export default {
             'cacheProjects',
             'projectTotal',
             'taskId',
-            'dialogMsgPush',
         ]),
 
         ...mapGetters(['taskData', 'dashboardTask']),
@@ -387,43 +395,6 @@ export default {
         dashboardTotal() {
             if (this.$Electron) {
                 this.$Electron.ipcRenderer.send('setDockBadge', this.msgAllUnread + this.dashboardTotal);
-            }
-        },
-
-        dialogMsgPush(data) {
-            if (this.natificationHidden && this.natificationReady) {
-                const {id, dialog_id, type, msg} = data;
-                let body = '';
-                switch (type) {
-                    case 'text':
-                        body = msg.text;
-                        break;
-                    case 'file':
-                        body = '[' + this.$L(msg.type == 'img' ? '图片信息' : '文件信息') + ']'
-                        break;
-                    default:
-                        return;
-                }
-                this._notificationId = id;
-                this.notificationClass.replaceOptions({
-                    icon: $A.originUrl('images/logo.png'),
-                    body: body,
-                    data: data,
-                    tag: "dialog",
-                    requireInteraction: true
-                });
-                let dialog = this.cacheDialogs.find((item) => item.id == dialog_id);
-                if (dialog) {
-                    this.notificationClass.replaceTitle(dialog.name);
-                    this.notificationClass.userAgreed();
-                } else {
-                    this.$store.dispatch("getDialogOne", dialog_id).then(({data}) => {
-                        if (this._notificationId === id) {
-                            this.notificationClass.replaceTitle(data.name);
-                            this.notificationClass.userAgreed();
-                        }
-                    })
-                }
             }
         },
 
@@ -603,6 +574,43 @@ export default {
                 'column_id': data,
             });
             this.addTaskShow = true;
+        },
+
+        addDialogMsg(data) {
+            if (this.natificationHidden && this.natificationReady) {
+                const {id, dialog_id, type, msg} = data;
+                let body = '';
+                switch (type) {
+                    case 'text':
+                        body = msg.text;
+                        break;
+                    case 'file':
+                        body = '[' + this.$L(msg.type == 'img' ? '图片信息' : '文件信息') + ']'
+                        break;
+                    default:
+                        return;
+                }
+                this._notificationId = id;
+                this.notificationClass.replaceOptions({
+                    icon: $A.originUrl('images/logo.png'),
+                    body: body,
+                    data: data,
+                    tag: "dialog",
+                    requireInteraction: true
+                });
+                let dialog = this.cacheDialogs.find((item) => item.id == dialog_id);
+                if (dialog) {
+                    this.notificationClass.replaceTitle(dialog.name);
+                    this.notificationClass.userAgreed();
+                } else {
+                    this.$store.dispatch("getDialogOne", dialog_id).then(({data}) => {
+                        if (this._notificationId === id) {
+                            this.notificationClass.replaceTitle(data.name);
+                            this.notificationClass.userAgreed();
+                        }
+                    })
+                }
+            }
         },
 
         taskVisibleChange(visible) {

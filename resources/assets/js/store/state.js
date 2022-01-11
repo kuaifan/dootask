@@ -52,7 +52,6 @@ state.userOnline = {};
 
 // 会话聊天
 state.dialogMsgs = [];
-state.dialogMsgPush = {};
 state.dialogOpenId = 0;
 
 // 文件

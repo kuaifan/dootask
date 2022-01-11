@@ -2014,7 +2014,7 @@ export default {
                             (function (msg) {
                                 const {mode, data} = msg;
                                 const {dialog_id} = data;
-                                if (mode === "add" || mode === "chat") {
+                                if (["add", "chat"].includes(mode) && !state.dialogMsgs.find(({id}) => id == data.id)) {
                                     // 新增任务消息数量
                                     dispatch("increaseTaskMsgNum", dialog_id);
                                     if (mode === "chat") {
@@ -2024,13 +2024,11 @@ export default {
                                     // 更新对话列表
                                     if (dialog) {
                                         // 新增未读数
-                                        if (data.userid !== state.userId && state.dialogMsgs.findIndex(({id}) => id == data.id) === -1) {
-                                            dialog.unread++;
-                                        }
+                                        dialog.unread++;
                                         // 移动到首位
                                         dispatch("moveDialogTop", dialog_id);
                                     }
-                                    state.dialogMsgPush = data;
+                                    Store.set('dialogMsgPush', data);
                                 }
                                 // 更新消息列表
                                 dispatch("saveDialogMsg", data)
