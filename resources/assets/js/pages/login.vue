@@ -4,7 +4,7 @@
         <div class="login-body">
             <div class="login-logo"></div>
             <div class="login-box">
-                <div class="login-title">Welcome {{welcomeTitle}}</div>
+                <div class="login-title">{{welcomeTitle}}</div>
 
                 <div v-if="loginType=='reg'" class="login-subtitle">{{$L('输入您的信息以创建帐户。')}}</div>
                 <div v-else class="login-subtitle">{{$L('输入您的凭证以访问您的帐户。')}}</div>
@@ -56,8 +56,6 @@ export default {
         return {
             loadIng: 0,
 
-            welcomeTitle: window.systemInfo.title || "Dootask",
-
             codeNeed: false,
             codeUrl: $A.apiUrl('users/login/codeimg'),
 
@@ -96,6 +94,16 @@ export default {
         currentLanguage() {
             return this.languageList[this.languageType] || 'Language'
         },
+        
+        welcomeTitle() {
+            let title = window.systemInfo.title || "Dootask";
+            if (title == "PublicDooTask") {
+                return "Public DooTask"
+            } else {
+                return "Welcome " + title
+            }
+        },
+
         loginText() {
             let text = this.loginType == 'login' ? '登录' : '注册';
             if (this.loginJump) {
@@ -175,10 +183,12 @@ export default {
             });
         },
 
-        chackServerUrl() {
+        chackServerUrl(tip) {
             return new Promise((resolve, reject) => {
                 if (this.isNotServer()) {
-                    $A.messageWarning("请设置服务器")
+                    if (tip === true) {
+                        $A.messageWarning("请设置服务器")
+                    }
                     this.inputServerUrl()
                     reject()
                 } else {
@@ -225,7 +235,7 @@ export default {
         },
 
         onLogin() {
-            this.chackServerUrl().then(() => {
+            this.chackServerUrl(true).then(() => {
                 if (!this.email) {
                     return;
                 }
