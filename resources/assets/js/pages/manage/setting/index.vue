@@ -19,6 +19,7 @@
                         :key="key"
                         :class="classNameRoute(item.path, item.divided)"
                         @click="toggleRoute(item.path)">{{$L(item.name)}}</li>
+                    <li class="version divided"><AutoTip>{{$L('版本')}}: {{version}}</AutoTip></li>
                 </ul>
             </div>
             <div class="setting-content">
@@ -37,6 +38,8 @@ export default {
         return {
             curPath: this.$route.path,
             show768Menu: true,
+
+            version: window.systemInfo.version
         }
     },
     mounted() {
