@@ -1603,7 +1603,7 @@ class ProjectController extends AbstractController
             if (empty($projectFlow)) {
                 $projectFlow = ProjectFlow::createInstance([
                     'project_id' => $project->id,
-                    'name' => 'Default workflow'
+                    'name' => 'Default'
                 ]);
                 if (!$projectFlow->save()) {
                     throw new ApiException('工作流创建失败');

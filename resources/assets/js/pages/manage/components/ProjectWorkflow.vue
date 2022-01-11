@@ -258,7 +258,7 @@ export default {
             let id = -1 * $A.randNum(1000, 10000);
             this.list.push({
                 "id": id,
-                "name": "Default workflow",
+                "name": "Default",
                 "project_flow_item": [
                     {
                         "id": -10,

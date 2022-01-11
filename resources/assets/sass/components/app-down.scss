@@ -6,8 +6,10 @@
     display: flex;
     align-items: center;
     transition: bottom 0.3s;
-    &[data-route=login] {
-        bottom: 75px;
+    &.on-client {
+        &[data-route=login] {
+            bottom: 75px;
+        }
     }
 }
 

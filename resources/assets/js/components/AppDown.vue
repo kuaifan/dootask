@@ -1,5 +1,5 @@
 <template>
-    <div v-if="showButton" class="common-app-down" :data-route="$route.name">
+    <div v-if="showButton" class="common-app-down" :class="{'on-client': $Electron}" :data-route="$route.name">
         <div v-if="$Electron" class="common-app-down-link" @click="releasesNotification">
             <Icon type="md-download"/> {{$L(repoTitle)}}
         </div>
