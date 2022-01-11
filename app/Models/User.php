@@ -31,6 +31,7 @@ use Carbon\Carbon;
  * @property string|null $disable_at 禁用时间
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @method static \Database\Factories\UserFactory factory(...$parameters)
  * @method static \Illuminate\Database\Eloquent\Builder|User newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|User newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|User query()
@@ -55,7 +56,6 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUserid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUserimg($value)
  * @mixin \Eloquent
- * @method static \Database\Factories\UserFactory factory(...$parameters)
  */
 class User extends AbstractModel
 {
