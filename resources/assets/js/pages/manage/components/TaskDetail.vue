@@ -569,6 +569,8 @@ export default {
             let string = "";
             if ($A.formatDate('Y/m/d', start_at) == $A.formatDate('Y/m/d', end_at)) {
                 string = $A.formatDate('Y/m/d H:i', start_at) + " ~ " + $A.formatDate('H:i', end_at)
+            } else if ($A.formatDate('Y', start_at) == $A.formatDate('Y', end_at)) {
+                string = $A.formatDate('Y/m/d H:i', start_at) + " ~ " + $A.formatDate('m/d H:i', end_at)
             } else {
                 string = $A.formatDate('Y/m/d H:i', start_at) + " ~ " + $A.formatDate('Y/m/d H:i', end_at)
             }

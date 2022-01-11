@@ -26,6 +26,10 @@ body {
                 }
             }
         }
+        &.ivu-date-picker-transfer {
+            max-width: 98%;
+            overflow: auto;
+        }
     }
     .ivu-tooltip-popper {
         .ivu-tooltip-inner {
