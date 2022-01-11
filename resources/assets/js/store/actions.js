@@ -177,7 +177,7 @@ export default {
                 dispatch("saveUserInfo", result.data);
                 resolve(result)
             }).catch(e => {
-                console.error(e);
+                console.warn(e);
                 reject(e)
             });
         });
@@ -275,7 +275,7 @@ export default {
             state.cacheLoading["loadUserBasic"] = false;
             dispatch("getUserBasic");
         }).catch(e => {
-            console.error(e);
+            console.warn(e);
             state.cacheLoading["loadUserBasic"] = false;
             dispatch("getUserBasic");
         });
@@ -465,7 +465,7 @@ export default {
                 dispatch("saveFile", result.data);
                 resolve(result)
             }).catch(e => {
-                console.error(e);
+                console.warn(e);
                 reject(e)
             });
         });
@@ -489,7 +489,7 @@ export default {
                 dispatch("saveFile", result.data);
                 resolve(result)
             }).catch(e => {
-                console.error(e);
+                console.warn(e);
                 reject(e)
             });
         });
@@ -582,7 +582,7 @@ export default {
                 dispatch("saveProject", data.data);
                 resolve(data)
             }).catch(e => {
-                console.error(e);
+                console.warn(e);
                 reject(e)
             });
         });
@@ -612,7 +612,7 @@ export default {
                 dispatch("saveProject", result.data);
                 resolve(result)
             }).catch(e => {
-                console.error(e);
+                console.warn(e);
                 state.projectLoad--;
                 reject(e)
             });
@@ -640,7 +640,7 @@ export default {
                 dispatch("forgetProject", project_id)
                 resolve(result)
             }).catch(e => {
-                console.error(e);
+                console.warn(e);
                 dispatch("getProjectOne", project_id);
                 reject(e)
             });
@@ -668,7 +668,7 @@ export default {
                 dispatch("forgetProject", project_id)
                 resolve(result)
             }).catch(e => {
-                console.error(e);
+                console.warn(e);
                 dispatch("getProjectOne", project_id);
                 reject(e)
             });
@@ -696,7 +696,7 @@ export default {
                 dispatch("forgetProject", project_id)
                 resolve(result)
             }).catch(e => {
-                console.error(e);
+                console.warn(e);
                 dispatch("getProjectOne", project_id);
                 reject(e)
             });
@@ -801,7 +801,7 @@ export default {
                     }
                 }
             }).catch(e => {
-                console.error(e);
+                console.warn(e);
                 state.projectLoad--;
                 reject(e);
             });
@@ -829,7 +829,7 @@ export default {
                 dispatch("forgetColumn", column_id)
                 resolve(result)
             }).catch(e => {
-                console.error(e);
+                console.warn(e);
                 reject(e);
             });
         });
@@ -985,7 +985,7 @@ export default {
                     resolve()
                 }
             }).catch(e => {
-                console.error(e);
+                console.warn(e);
                 reject(e)
                 if (data.project_id) {
                     state.projectLoad--;
@@ -1016,7 +1016,7 @@ export default {
                 dispatch("saveTask", result.data);
                 resolve(result)
             }).catch(e => {
-                console.error(e);
+                console.warn(e);
                 reject(e)
             });
         });
@@ -1147,7 +1147,7 @@ export default {
                 dispatch("taskLoadEnd", task_id)
                 resolve(result)
             }).catch(e => {
-                console.error(e);
+                console.warn(e);
                 dispatch("getTaskOne", task_id);
                 dispatch("taskLoadEnd", task_id)
                 reject(e)
@@ -1179,7 +1179,7 @@ export default {
                 dispatch("taskLoadEnd", task_id)
                 resolve(result)
             }).catch(e => {
-                console.error(e);
+                console.warn(e);
                 dispatch("getTaskOne", task_id)
                 dispatch("taskLoadEnd", task_id)
                 reject(e)
@@ -1214,7 +1214,7 @@ export default {
                 }
                 resolve(result)
             }).catch(e => {
-                console.error(e);
+                console.warn(e);
                 reject(e);
             });
         });
@@ -1253,7 +1253,7 @@ export default {
                 });
                 resolve(result)
             }).catch(e => {
-                console.error(e);
+                console.warn(e);
                 reject(e);
             });
         });
@@ -1327,7 +1327,7 @@ export default {
                 dispatch("addTaskSuccess", result.data)
                 resolve(result)
             }).catch(e => {
-                console.error(e);
+                console.warn(e);
                 reject(e);
             });
         });
@@ -1348,7 +1348,7 @@ export default {
                 dispatch("addTaskSuccess", result.data)
                 resolve(result)
             }).catch(e => {
-                console.error(e);
+                console.warn(e);
                 reject(e);
             });
         });
@@ -1388,7 +1388,7 @@ export default {
                     dispatch("saveTask", result.data)
                     resolve(result)
                 }).catch(e => {
-                    console.error(e);
+                    console.warn(e);
                     dispatch("taskLoadEnd", post.task_id)
                     dispatch("getTaskOne", post.task_id);
                     reject(e)
@@ -1564,7 +1564,7 @@ export default {
                 }
                 resolve(result)
             }).catch(e => {
-                console.error(e);
+                console.warn(e);
                 reject(e);
             });
         });
@@ -1584,7 +1584,7 @@ export default {
                 state.taskPriority = result.data;
                 resolve(result)
             }).catch(e => {
-                console.error(e);
+                console.warn(e);
                 reject(e);
             });
         });
@@ -1688,7 +1688,7 @@ export default {
         }).then(result => {
             dispatch("saveDialog", result.data.data.reverse());
         }).catch(e => {
-            console.error(e);
+            console.warn(e);
         });
     },
 
@@ -1714,7 +1714,7 @@ export default {
                 dispatch("saveDialog", result.data);
                 resolve(result);
             }).catch(e => {
-                console.error(e);
+                console.warn(e);
                 reject(e);
             });
         });
@@ -1743,7 +1743,7 @@ export default {
                 state.dialogOpenId = result.data.id;
                 resolve(result);
             }).catch(e => {
-                console.error(e);
+                console.warn(e);
                 reject(e);
             });
         });
@@ -1855,7 +1855,7 @@ export default {
             dispatch("saveDialog", result.data.dialog);
             dispatch("saveDialogMsg", result.data.data);
         }).catch(e => {
-            console.error(e);
+            console.warn(e);
             dialog.loading = false;
         });
     },
@@ -1897,7 +1897,7 @@ export default {
                 dispatch("saveDialogMsg", result.data.data);
                 resolve(result)
             }).catch(e => {
-                console.error(e);
+                console.warn(e);
                 dialog.loading = false;
                 reject(e)
             });
