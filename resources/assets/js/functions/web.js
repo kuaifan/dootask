@@ -22,8 +22,8 @@
                 str.substring(0, 1) === "/") {
                 return str;
             }
-            if (window.systemInformation && typeof window.systemInformation.apiUrl === "string") {
-                str = window.systemInformation.apiUrl + str;
+            if (typeof window.systemInfo.apiUrl === "string") {
+                str = window.systemInfo.apiUrl + str;
             } else {
                 str = window.location.origin + "/api/" + str;
             }
@@ -34,7 +34,7 @@
         },
 
         /**
-         * 服务器地址
+         * 服务地址
          * @param str
          * @returns {string}
          */
@@ -46,8 +46,8 @@
                 str.substring(0, 1) === "/") {
                 return str;
             }
-            if (window.systemInformation && typeof window.systemInformation.origin === "string") {
-                str = window.systemInformation.origin + str;
+            if (typeof window.systemInfo.origin === "string") {
+                str = window.systemInfo.origin + str;
             } else {
                 str = window.location.origin + "/" + str;
             }

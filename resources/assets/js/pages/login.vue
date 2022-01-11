@@ -4,13 +4,13 @@
         <div class="login-body">
             <div class="login-logo"></div>
             <div class="login-box">
-                <div class="login-title">Welcome Dootask</div>
+                <div class="login-title">Welcome {{welcomeTitle}}</div>
 
                 <div v-if="loginType=='reg'" class="login-subtitle">{{$L('输入您的信息以创建帐户。')}}</div>
                 <div v-else class="login-subtitle">{{$L('输入您的凭证以访问您的帐户。')}}</div>
 
                 <div class="login-input">
-                    <Input v-if="$Electron && cacheServerUrl" :value="cacheServerUrl" prefix="ios-globe-outline" size="large" readonly clearable @on-clear="onServerUrlClear"/>
+                    <Input v-if="$Electron && cacheServerUrl" :value="cacheServerUrl" prefix="ios-globe-outline" size="large" readonly clearable @on-clear="clearServerUrl"/>
 
                     <Input v-model="email" prefix="ios-mail-outline" :placeholder="$L('输入您的电子邮件')" size="large" @on-enter="onLogin" @on-blur="onBlur" />
                     <Input v-model="password" prefix="ios-lock-outline" :placeholder="$L('输入您的密码')" type="password" size="large" @on-enter="onLogin" />
@@ -43,7 +43,7 @@
             </div>
         </div>
         <div v-if="$Electron" class="login-right-bottom">
-            <Button icon="ios-globe-outline" type="primary" @click="onServerUrlInput">{{$L('自定义服务器')}}</Button>
+            <Button icon="ios-globe-outline" type="primary" @click="inputServerUrl">{{$L('自定义服务器')}}</Button>
         </div>
     </div>
 </template>
@@ -55,6 +55,8 @@ export default {
     data() {
         return {
             loadIng: 0,
+
+            welcomeTitle: window.systemInfo.title || "Dootask",
 
             codeNeed: false,
             codeUrl: $A.apiUrl('users/login/codeimg'),
@@ -75,8 +77,10 @@ export default {
     mounted() {
         this.getDemoAccount();
         //
-        if (!this.$Electron && this.cacheServerUrl) {
-            this.onServerUrlClear();
+        if (this.$Electron) {
+            this.chackServerUrl();
+        } else {
+            this.clearServerUrl();
         }
     },
     deactivated() {
@@ -109,6 +113,9 @@ export default {
     },
     methods: {
         getDemoAccount() {
+            if (this.isNotServer()) {
+                return;
+            }
             this.$store.dispatch("call", {
                 url: 'system/demo',
             }).then(({data}) => {
@@ -140,7 +147,7 @@ export default {
             this.codeUrl = $A.apiUrl('users/login/codeimg?_=' + Math.random())
         },
 
-        onServerUrlInput() {
+        inputServerUrl() {
             $A.modalInput({
                 title: "自定义服务器",
                 value: this.cacheServerUrl,
@@ -156,23 +163,44 @@ export default {
                         this.$store.dispatch("call", {
                             url: value + 'system/setting',
                         }).then(() => {
-                            $A.setStorage("cacheServerUrl", value)
-                            window.location.reload();
+                            this.setServerUrl(value)
                         }).catch(({msg}) => {
                             $A.modalError(msg || "服务器地址无效", 301);
                             cb()
                         });
                         return;
                     }
-                    $A.setStorage("cacheServerUrl", "")
-                    window.location.reload();
+                    this.clearServerUrl();
                 }
             });
         },
 
-        onServerUrlClear() {
-            $A.setStorage("cacheServerUrl", "")
-            window.location.reload();
+        chackServerUrl() {
+            return new Promise((resolve, reject) => {
+                if (this.isNotServer()) {
+                    $A.messageWarning("请设置服务器")
+                    this.inputServerUrl()
+                    reject()
+                } else {
+                    resolve()
+                }
+            })
+        },
+
+        setServerUrl(value) {
+            if (value != this.cacheServerUrl) {
+                $A.setStorage("cacheServerUrl", value)
+                window.location.reload();
+            }
+        },
+
+        clearServerUrl() {
+            this.setServerUrl("")
+        },
+
+        isNotServer() {
+            let apiHome = $A.getDomain(window.systemInfo.apiUrl)
+            return apiHome == "" || apiHome == "public"
         },
 
         onBlur() {
@@ -197,44 +225,46 @@ export default {
         },
 
         onLogin() {
-            if (!this.email) {
-                return;
-            }
-            if (!this.password) {
-                return;
-            }
-            if (this.loginType == 'reg') {
-                if (this.password != this.password2) {
-                    $A.noticeError("确认密码输入不一致");
+            this.chackServerUrl().then(() => {
+                if (!this.email) {
                     return;
                 }
-            }
-            this.loadIng++;
-            this.$store.dispatch("call", {
-                url: 'users/login',
-                data: {
-                    type: this.loginType,
-                    email: this.email,
-                    password: this.password,
-                    code: this.code,
-                    invite: this.invite,
-                },
-            }).then(({data}) => {
-                this.loadIng--;
-                $A.setStorage("cacheLoginEmail", this.email)
-                this.$store.dispatch("handleClearCache", data).then(() => {
-                    this.goNext1();
-                }).catch(() => {
-                    this.goNext1();
-                });
-            }).catch(({data, msg}) => {
-                this.loadIng--;
-                $A.noticeError(msg);
-                if (data.code === 'need') {
-                    this.reCode();
-                    this.codeNeed = true;
+                if (!this.password) {
+                    return;
                 }
-            });
+                if (this.loginType == 'reg') {
+                    if (this.password != this.password2) {
+                        $A.noticeError("确认密码输入不一致");
+                        return;
+                    }
+                }
+                this.loadIng++;
+                this.$store.dispatch("call", {
+                    url: 'users/login',
+                    data: {
+                        type: this.loginType,
+                        email: this.email,
+                        password: this.password,
+                        code: this.code,
+                        invite: this.invite,
+                    },
+                }).then(({data}) => {
+                    this.loadIng--;
+                    $A.setStorage("cacheLoginEmail", this.email)
+                    this.$store.dispatch("handleClearCache", data).then(() => {
+                        this.goNext1();
+                    }).catch(() => {
+                        this.goNext1();
+                    });
+                }).catch(({data, msg}) => {
+                    this.loadIng--;
+                    $A.noticeError(msg);
+                    if (data.code === 'need') {
+                        this.reCode();
+                        this.codeNeed = true;
+                    }
+                });
+            })
         },
 
         goNext1() {

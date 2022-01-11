@@ -249,7 +249,7 @@ module.exports = {
      */
     getDomain(weburl) {
         let urlReg = /http(s)?:\/\/([^\/]+)/i;
-        let domain = weburl.match(urlReg);
+        let domain = (weburl + "").match(urlReg);
         return ((domain != null && domain.length > 0) ? domain[2] : "");
     },
 }

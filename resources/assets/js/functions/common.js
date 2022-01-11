@@ -2,6 +2,7 @@
  * 基础函数
  */
 (function (window, $, undefined) {
+    window.systemInfo = window.systemInfo || {};
 
     /**
      * =============================================================================
@@ -794,7 +795,7 @@
                 };
             }
             if (this.rightExists(url, '.js')) {
-                script.src = url + "?hash=" + window.systemInformation.version;
+                script.src = url + "?hash=" + window.systemInfo.version;
             } else {
                 script.src = url;
             }
@@ -850,7 +851,7 @@
             }
             script.rel = 'stylesheet';
             if (this.rightExists(url, '.css')) {
-                script.href = url + "?hash=" + window.systemInformation.version;
+                script.href = url + "?hash=" + window.systemInfo.version;
             } else {
                 script.href = url;
             }
@@ -927,6 +928,17 @@
             return sHtml.replace(/[<>&"]/g, function (c) {
                 return {'<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;'}[c];
             });
+        },
+
+        /**
+         * 正则提取域名
+         * @param weburl
+         * @returns {string|string}
+         */
+        getDomain(weburl) {
+            let urlReg = /http(s)?:\/\/([^\/]+)/i;
+            let domain = (weburl + "").match(urlReg);
+            return ((domain != null && domain.length > 0) ? domain[2] : "");
         },
     });
 

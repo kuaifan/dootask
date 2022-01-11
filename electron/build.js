@@ -27,7 +27,7 @@ function startBuild(data, publish) {
         origin: "./",
         apiUrl:  utils.formatUrl(data.url) + "api/",
     }
-    fs.writeFileSync(electronDir + "/config.js", "window.systemInformation = " + JSON.stringify(systemInfo, null, 2), 'utf8');
+    fs.writeFileSync(electronDir + "/config.js", "window.systemInfo = " + JSON.stringify(systemInfo, null, 2), 'utf8');
     fs.writeFileSync(nativeCachePath, utils.formatUrl(data.url));
     fs.writeFileSync(devloadCachePath, "", 'utf8');
     // index.html

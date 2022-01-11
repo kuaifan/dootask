@@ -19,6 +19,11 @@
                 "name": "HitoseaTask",
                 "id": "com.hitosea.task",
                 "url": "https://t.hitosea.com/"
+            },
+            {
+                "name": "Public DooTask",
+                "id": "com.dootask.public",
+                "url": "https://public/"
             }
         ]
     },

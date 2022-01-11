@@ -17,7 +17,7 @@
     <script src="{{ asset_main('js/scroll-into-view.min.js') }}"></script>
     <script>
         window.csrfToken = { csrfToken : "{{ csrf_token() }}" };
-        window.systemInformation = { version : "{{ $version }}", origin: window.location.origin + "/", apiUrl: null };
+        window.systemInfo = { title: "{{config('app.name', 'WebPage')}}", version : "{{ $version }}", origin: window.location.origin + "/", apiUrl: null };
     </script>
 </head>
 <body>

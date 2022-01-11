@@ -160,6 +160,7 @@ run_mysql() {
         fi
         docker cp $filename $container_name:/
         run_exec mariadb "gunzip < /$inputname | mysql -u$username -p$password $database"
+        run_exec php "php artisan migrate"
         judge "还原数据库"
     fi
 }

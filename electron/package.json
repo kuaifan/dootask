@@ -51,7 +51,8 @@
         "files": [
             "public/**/*",
             "main.js",
-            "preload.js"
+            "preload.js",
+            "utils.js"
         ],
         "mac": {
             "icon": "../resources/assets/statics/public/images/logo-app.png",

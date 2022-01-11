@@ -125,9 +125,9 @@ export default {
         },
 
         chackReleases() {
-            let hostName = window.location.hostname;
-            if (hostName == '127.0.0.1') {
-                hostName = "www.dootask.com"
+            let hostName = $A.getDomain(window.systemInfo.apiUrl);
+            if (hostName == "" || hostName == '127.0.0.1') {
+                hostName = "public"
             }
             if (this.$Electron) {
                 // 客户端（更新）
@@ -147,7 +147,7 @@ export default {
                 if (!this.repoData) {
                     return;
                 }
-                let currentVersion = window.systemInformation.version;
+                let currentVersion = window.systemInfo.version;
                 let latestVersion = $A.leftDelete(this.releases.tag_name.toLowerCase(), "v")
                 if (this.compareVersion(latestVersion, currentVersion) === 1) {
                     // 有新版本

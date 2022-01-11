@@ -26,8 +26,8 @@ state.cacheProjectParameter = $A.getStorageArray("cacheProjectParameter");
 
 // ServerUrl
 state.cacheServerUrl = $A.getStorageString("cacheServerUrl")
-if (state.cacheServerUrl && window.systemInformation) {
-    window.systemInformation.apiUrl = state.cacheServerUrl;
+if (state.cacheServerUrl) {
+    window.systemInfo.apiUrl = state.cacheServerUrl;
 }
 
 // Ajax
