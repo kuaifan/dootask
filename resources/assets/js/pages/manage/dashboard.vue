@@ -31,8 +31,8 @@
                 <div class="dashboard-title">{{title}}</div>
                 <ul class="dashboard-list overlay-y">
                     <li
-                        v-for="item in list"
-                        :key="item.id"
+                        v-for="(item, index) in list"
+                        :key="index"
                         :class="{complete: item.complete_at}"
                         :style="item.color ? {backgroundColor: item.color} : {}"
                         @click="openTask(item)">
@@ -101,6 +101,10 @@ export default {
 
     activated() {
         this.$store.dispatch("getTaskForDashboard");
+    },
+
+    deactivated() {
+        this.$store.dispatch("forgetTaskCompleteTemp", true);
     },
 
     computed: {

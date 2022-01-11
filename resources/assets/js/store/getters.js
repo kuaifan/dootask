@@ -132,7 +132,12 @@ export default {
         const todayStart = $A.Date($A.formatDate("Y-m-d 00:00:00")),
             todayEnd = $A.Date($A.formatDate("Y-m-d 23:59:59")),
             todayNow = $A.Date($A.formatDate("Y-m-d H:i:s"));
-        const todayTasks = getters.ownerTasks.filter(task => {
+        let {ownerTasks} = getters;
+        if (state.taskCompleteTemps.length > 0) {
+            ownerTasks = $A.cloneJSON(ownerTasks)
+            ownerTasks.push(...state.taskCompleteTemps);
+        }
+        const todayTasks = ownerTasks.filter(task => {
             if (!task.end_at) {
                 return false;
             }
@@ -140,7 +145,7 @@ export default {
                 end = $A.Date(task.end_at);
             return (start <= todayStart && todayStart <= end) || (start <= todayEnd && todayEnd <= end) || (start > todayStart && todayEnd > end);
         })
-        const overdueTasks = getters.ownerTasks.filter(task => {
+        const overdueTasks = ownerTasks.filter(task => {
             if (!task.end_at) {
                 return false;
             }

@@ -10,7 +10,7 @@
                 <div v-else class="login-subtitle">{{$L('输入您的凭证以访问您的帐户。')}}</div>
 
                 <div class="login-input">
-                    <Input v-if="$Electron && cacheServerUrl" :value="cacheServerUrl" prefix="ios-globe-outline" size="large" readonly clearable @on-clear="clearServerUrl"/>
+                    <Input v-if="$Electron && cacheServerUrl" :value="$A.getDomain(cacheServerUrl)" prefix="ios-globe-outline" size="large" readonly clearable @on-clear="clearServerUrl"/>
 
                     <Input v-model="email" prefix="ios-mail-outline" :placeholder="$L('输入您的电子邮件')" size="large" @on-enter="onLogin" @on-blur="onBlur" />
                     <Input v-model="password" prefix="ios-lock-outline" :placeholder="$L('输入您的密码')" type="password" size="large" @on-enter="onLogin" />
@@ -94,7 +94,7 @@ export default {
         currentLanguage() {
             return this.languageList[this.languageType] || 'Language'
         },
-        
+
         welcomeTitle() {
             let title = window.systemInfo.title || "Dootask";
             if (title == "PublicDooTask") {
@@ -185,7 +185,7 @@ export default {
 
         chackServerUrl(tip) {
             return new Promise((resolve, reject) => {
-                if (this.isNotServer()) {
+                if (this.$Electron && this.isNotServer()) {
                     if (tip === true) {
                         $A.messageWarning("请设置服务器")
                     }

@@ -530,6 +530,8 @@ export default {
             'projectLoad',
             'cacheTasks',
             'cacheColumns',
+
+            'taskCompleteTemps',
         ]),
 
         ...mapGetters(['projectData', 'projectParameter', 'transforTasks']),
@@ -607,23 +609,12 @@ export default {
         },
 
         myList() {
-            const {projectId, cacheTasks, searchText, sortField, sortType} = this;
-            const array = cacheTasks.filter((task) => {
-                if (task.project_id != projectId) {
-                    return false;
-                }
-                if (!this.projectParameter('completedTask')) {
-                    if (task.complete_at) {
-                        return false;
-                    }
-                }
-                if (searchText) {
-                    if (!$A.strExists(task.name, searchText) && !$A.strExists(task.desc, searchText)) {
-                        return false;
-                    }
-                }
-                return task.owner;
-            });
+            const {cacheTasks, taskCompleteTemps, sortField, sortType} = this;
+            let array = cacheTasks.filter(task => this.myFilter(task));
+            if (taskCompleteTemps.length > 0) {
+                array = $A.cloneJSON(array)
+                array.push(...taskCompleteTemps.filter(task => this.myFilter(task, false)));
+            }
             return array.sort((a, b) => {
                 if (sortType == 'asc') {
                     [a, b] = [b, a];
@@ -640,23 +631,12 @@ export default {
         },
 
         helpList() {
-            const {projectId, cacheTasks, searchText, userId, sortField, sortType} = this;
-            const array = cacheTasks.filter((task) => {
-                if (task.project_id != projectId || task.parent_id > 0) {
-                    return false;
-                }
-                if (!this.projectParameter('completedTask')) {
-                    if (task.complete_at) {
-                        return false;
-                    }
-                }
-                if (searchText) {
-                    if (!$A.strExists(task.name, searchText) && !$A.strExists(task.desc, searchText)) {
-                        return false;
-                    }
-                }
-                return task.task_user && task.task_user.find(({userid, owner}) => userid == userId && owner == 0);
-            });
+            const {cacheTasks, taskCompleteTemps, sortField, sortType} = this;
+            let array = cacheTasks.filter(task => this.helpFilter(task));
+            if (taskCompleteTemps.length > 0) {
+                array = $A.cloneJSON(array)
+                array.push(...taskCompleteTemps.filter(task => this.helpFilter(task, false)));
+            }
             return array.sort((a, b) => {
                 if (sortType == 'asc') {
                     [a, b] = [b, a];
@@ -1176,7 +1156,42 @@ export default {
         },
 
         toggleCompleted() {
+            this.$store.dispatch("forgetTaskCompleteTemp", true);
             this.$store.dispatch('toggleProjectParameter', 'completedTask');
+        },
+
+        myFilter(task, chackCompleted = true) {
+            if (task.project_id != this.projectId) {
+                return false;
+            }
+            if (!this.projectParameter('completedTask') && chackCompleted === true) {
+                if (task.complete_at) {
+                    return false;
+                }
+            }
+            if (this.searchText) {
+                if (!$A.strExists(task.name, this.searchText) && !$A.strExists(task.desc, this.searchText)) {
+                    return false;
+                }
+            }
+            return task.owner;
+        },
+
+        helpFilter(task, chackCompleted = true) {
+            if (task.project_id != this.projectId || task.parent_id > 0) {
+                return false;
+            }
+            if (!this.projectParameter('completedTask') && chackCompleted === true) {
+                if (task.complete_at) {
+                    return false;
+                }
+            }
+            if (this.searchText) {
+                if (!$A.strExists(task.name, this.searchText) && !$A.strExists(task.desc, this.searchText)) {
+                    return false;
+                }
+            }
+            return task.task_user && task.task_user.find(({userid, owner}) => userid == this.userId && owner == 0);
         },
 
         expiresFormat(date) {

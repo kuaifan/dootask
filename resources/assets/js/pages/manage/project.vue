@@ -21,6 +21,10 @@ export default {
         this.project_id = this.$route.params.id;
     },
 
+    deactivated() {
+        this.$store.dispatch("forgetTaskCompleteTemp", true);
+    },
+
     computed: {
         ...mapState(['cacheProjects']),
         ...mapGetters(['projectParameter']),

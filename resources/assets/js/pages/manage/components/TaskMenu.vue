@@ -171,11 +171,14 @@ export default {
                 })
                 return;
             }
+            const cacheTask = this.task;
             switch (command) {
                 case 'complete':
                     if (this.task.complete_at) return;
                     this.updateTask({
                         complete_at: $A.formatDate("Y-m-d H:i:s")
+                    }).then(() => {
+                        this.$store.dispatch("saveTaskCompleteTemp", cacheTask)
                     })
                     break;
 
@@ -183,6 +186,8 @@ export default {
                     if (!this.task.complete_at) return;
                     this.updateTask({
                         complete_at: false
+                    }).then(() => {
+                        this.$store.dispatch("forgetTaskCompleteTemp", cacheTask.id)
                     })
                     break;
 
@@ -200,20 +205,23 @@ export default {
         },
 
         updateTask(updata) {
-            if (this.loadIng) {
-                return;
-            }
-            //
-            Object.keys(updata).forEach(key => this.$set(this.task, key, updata[key]));
-            //
-            this.$store.dispatch("taskUpdate", Object.assign(updata, {
-                task_id: this.task.id,
-            })).then(({msg}) => {
-                $A.messageSuccess(msg);
-            }).catch(({msg}) => {
-                $A.modalError(msg);
-                this.$store.dispatch("getTaskOne", this.task.id);
-            });
+            return new Promise(resolve => {
+                if (this.loadIng) {
+                    return;
+                }
+                //
+                Object.keys(updata).forEach(key => this.$set(this.task, key, updata[key]));
+                //
+                this.$store.dispatch("taskUpdate", Object.assign(updata, {
+                    task_id: this.task.id,
+                })).then(({msg}) => {
+                    $A.messageSuccess(msg);
+                    resolve()
+                }).catch(({msg}) => {
+                    $A.modalError(msg);
+                    this.$store.dispatch("getTaskOne", this.task.id);
+                });
+            })
         },
 
         archivedOrRemoveTask(type) {

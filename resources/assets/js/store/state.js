@@ -64,6 +64,7 @@ state.projectId = 0;
 state.projectTotal = 0;
 state.projectLoad = 0;
 state.taskId = 0;
+state.taskCompleteTemps = [];
 state.taskContents = [];
 state.taskFiles = [];
 state.taskLogs = [];

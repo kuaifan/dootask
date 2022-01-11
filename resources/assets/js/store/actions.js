@@ -949,9 +949,6 @@ export default {
                 reject({msg: 'Parameter error'});
                 return;
             }
-            if (state.cacheTasks.length == 0 && state.cacheTasks.length > 0) {
-                state.cacheTasks = state.cacheTasks;
-            }
             if (data.project_id) {
                 state.projectLoad++;
             }
@@ -1591,6 +1588,38 @@ export default {
                 reject(e);
             });
         });
+    },
+
+    /**
+     * 保存完成任务临时表
+     * @param state
+     * @param data
+     */
+    saveTaskCompleteTemp({state}, data) {
+        if ($A.isJson(data)) {
+            let index = state.taskCompleteTemps.findIndex(({id}) => id == data.id);
+            if (index > -1) {
+                state.taskCompleteTemps.splice(index, 1, data);
+            } else {
+                state.taskCompleteTemps.push(data);
+            }
+        }
+    },
+
+    /**
+     * 忘记完成任务临时表
+     * @param state
+     * @param task_id 任务ID 或 true标识忘记全部
+     */
+    forgetTaskCompleteTemp({state}, task_id) {
+        if (task_id === true) {
+            state.taskCompleteTemps = [];
+            return;
+        }
+        let index = state.taskCompleteTemps.findIndex(({id}) => id == task_id);
+        if (index > -1) {
+            state.taskCompleteTemps.splice(index, 1);
+        }
     },
 
     /** *****************************************************************************************/
