@@ -611,9 +611,10 @@ export default {
         myList() {
             const {cacheTasks, taskCompleteTemps, sortField, sortType} = this;
             let array = cacheTasks.filter(task => this.myFilter(task));
-            if (taskCompleteTemps.length > 0) {
+            let tmps = taskCompleteTemps.filter(task => this.myFilter(task, false));
+            if (tmps.length > 0) {
                 array = $A.cloneJSON(array)
-                array.push(...taskCompleteTemps.filter(task => this.myFilter(task, false)));
+                array.push(...tmps);
             }
             return array.sort((a, b) => {
                 if (sortType == 'asc') {
@@ -633,9 +634,10 @@ export default {
         helpList() {
             const {cacheTasks, taskCompleteTemps, sortField, sortType} = this;
             let array = cacheTasks.filter(task => this.helpFilter(task));
-            if (taskCompleteTemps.length > 0) {
+            let tmps = taskCompleteTemps.filter(task => this.helpFilter(task, false));
+            if (tmps.length > 0) {
                 array = $A.cloneJSON(array)
-                array.push(...taskCompleteTemps.filter(task => this.helpFilter(task, false)));
+                array.push(...tmps);
             }
             return array.sort((a, b) => {
                 if (sortType == 'asc') {

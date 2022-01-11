@@ -109,46 +109,35 @@ export default {
     },
 
     /**
-     * 我所有的任务（未完成）
-     * @param state
-     * @returns {unknown[]}
-     */
-    ownerTasks(state) {
-        return state.cacheTasks.filter(({complete_at, owner}) => {
-            if (complete_at) {
-                return false;
-            }
-            return owner;
-        })
-    },
-
-    /**
      * 仪表盘任务数据
      * @param state
-     * @param getters
      * @returns {{overdue: *, today: *}}
      */
-    dashboardTask(state, getters) {
+    dashboardTask(state) {
         const todayStart = $A.Date($A.formatDate("Y-m-d 00:00:00")),
             todayEnd = $A.Date($A.formatDate("Y-m-d 23:59:59")),
             todayNow = $A.Date($A.formatDate("Y-m-d H:i:s"));
-        let {ownerTasks} = getters;
-        if (state.taskCompleteTemps.length > 0) {
-            ownerTasks = $A.cloneJSON(ownerTasks)
-            ownerTasks.push(...state.taskCompleteTemps);
-        }
-        const todayTasks = ownerTasks.filter(task => {
+        const filterTask = (task, chackCompleted = true) => {
+            if (task.complete_at && chackCompleted === true) {
+                return false;
+            }
             if (!task.end_at) {
                 return false;
             }
+            return task.owner;
+        }
+        let array = state.cacheTasks.filter(task => filterTask(task));
+        let tmps = state.taskCompleteTemps.filter(task => filterTask(task, false));
+        if (tmps.length > 0) {
+            array = $A.cloneJSON(array)
+            array.push(...tmps);
+        }
+        const todayTasks = array.filter(task => {
             const start = $A.Date(task.start_at),
                 end = $A.Date(task.end_at);
             return (start <= todayStart && todayStart <= end) || (start <= todayEnd && todayEnd <= end) || (start > todayStart && todayEnd > end);
         })
-        const overdueTasks = ownerTasks.filter(task => {
-            if (!task.end_at) {
-                return false;
-            }
+        const overdueTasks = array.filter(task => {
             return $A.Date(task.end_at) <= todayNow;
         })
         return {

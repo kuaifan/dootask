@@ -160,7 +160,8 @@ export default {
                 // 网页版（提示有客户端下载）
                 this.repoData = (this.releases.assets || []).find(({name}) => $A.strExists(name, hostName));
                 if (this.repoData) {
-                    console.log("有客户端");
+                    let latestVersion = $A.leftDelete(this.releases.tag_name.toLowerCase(), "v")
+                    console.log("Exist client: " + latestVersion);
                     this.status = 1;
                 }
             }

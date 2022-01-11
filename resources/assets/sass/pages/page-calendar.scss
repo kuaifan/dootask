@@ -65,6 +65,11 @@
             }
             .tui-full-calendar-popup {
                 box-shadow: none;
+                .tui-full-calendar-section-header {
+                    .tui-full-calendar-ic-checkbox-checked {
+                        background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAMAAAD04JH5AAAAhFBMVEUAAACLz3CLz3CLz3CKzm6Gy2+Lz3CLz3CL0HCLz3CLz3CLz3CLz3CMz3GLz3CKz3CLz3CL0HCJ0G+KznCN0HCL0HCLz3CKz3CLz3CLz3CLz3CMz3CLz3CLz3GL0XCL0HCN0XKLz3CLz3CMz3CLz3CM0HCM0G+FzHCLz3CKz3CMz3CLz3Bod5CFAAAAK3RSTlMA18RAOQ3s8+Pc0rmyq3tpiUwTgBnovyDMjmNSRjUvJQX5yKB0WisKppuUFLaY7gAAAotJREFUeNrtm+FymkAUhc8KqIAgSkyUtkmsmqa97/9+HWeSudpCd8qZ7E0m+73A9/1gxmXx4IK0nbipvDFTN2lT9JDVToLh6gx/sHQSFLfEFZUEp8IFczFgrv5CTChe/TsxYvfy/IkZy7M/c2KGywDUYkgNIBdDciARUxI0YkqDiZgygRNTHKZiyhRiTAyIATEgBsSAGBADYsAnCJgdmtIywKUAOrsA94QzJyKA95/pbALcPV7piADGryzDB+Rnv3IkAhi/UhMBjF9pQwbk3/A3JRXA+7GjAng/DqEC5v3+dMYE8P6nQsIEzFOPnw7g/QpC+R8K4QJ4f5iAzaA/TMAm6fdvZQgY+wW2fn9A0a66Bee/2xLH8kp/Rr1MB/3jAxaP0ALCPzagzPBCM9r/XcYH3K4BLfD4vw75xwdMbqB4CmaD/vEB2ztc0RD+MQHFg+c85fffDPv9AbPUd6Lz+ydCBDyjh1//6WcCGngK1L8a8lMBJTwFfj8XIC16+SnX7Af9bIDUngLSrwFEwaD/VogA5YheDj7/Wv1MgL9g/8XjpwNk+c8Cyq8BYwqePX46QOkGCmi/BowrqFi/Bvg4wYv6y7e4Kz4Rfj5AnzY/WSlcwHAB5+cD9ivKzwfIbEX4qQA99RB+NkDfO4b5sRAigHjzpP0C6u6D9wuo2z/eL+DvXx8Zv4C4gVd/qABxCeFnApQT5+cDpOP8fICcLv2VxbfjlQZUNh+vU/XbBIj6jQLm9wDWlZgFyOaYHJ3Ix/gDQwyIATEgBsSAGODBfuBgPvEwH7m0YkqLVExJYfsQuPcwdjOf+5kPHoFKjKio0e3Hn90WUCyGt7v3Nf0GsjqXYOR1hh6SJsz8v0mg/AZRXmaRKXtJBwAAAABJRU5ErkJggg==);
+                    }
+                }
                 .tui-full-calendar-popup-container {
                     border: 0;
                     box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);

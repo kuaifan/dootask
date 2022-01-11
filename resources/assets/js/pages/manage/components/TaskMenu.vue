@@ -95,6 +95,10 @@ export default {
             type: Boolean,
             default: true
         },
+        updateBefore: {
+            type: Boolean,
+            default: false
+        },
         size: {
             type: String,
             default: 'small'
@@ -174,20 +178,34 @@ export default {
             const cacheTask = this.task;
             switch (command) {
                 case 'complete':
-                    if (this.task.complete_at) return;
+                    if (this.task.complete_at) {
+                        return;
+                    }
+                    if (this.updateBefore) {
+                        this.$store.dispatch("saveTaskCompleteTemp", cacheTask)
+                    }
                     this.updateTask({
                         complete_at: $A.formatDate("Y-m-d H:i:s")
                     }).then(() => {
                         this.$store.dispatch("saveTaskCompleteTemp", cacheTask)
+                    }).catch(() => {
+                        this.$store.dispatch("forgetTaskCompleteTemp", cacheTask.id)
                     })
                     break;
 
                 case 'uncomplete':
-                    if (!this.task.complete_at) return;
+                    if (!this.task.complete_at) {
+                        return;
+                    }
+                    if (this.updateBefore) {
+                        this.$store.dispatch("forgetTaskCompleteTemp", cacheTask.id)
+                    }
                     this.updateTask({
                         complete_at: false
                     }).then(() => {
                         this.$store.dispatch("forgetTaskCompleteTemp", cacheTask.id)
+                    }).catch(() => {
+                        this.$store.dispatch("saveTaskCompleteTemp", cacheTask)
                     })
                     break;
 
@@ -205,8 +223,9 @@ export default {
         },
 
         updateTask(updata) {
-            return new Promise(resolve => {
+            return new Promise((resolve, reject) => {
                 if (this.loadIng) {
+                    reject()
                     return;
                 }
                 //
@@ -220,6 +239,7 @@ export default {
                 }).catch(({msg}) => {
                     $A.modalError(msg);
                     this.$store.dispatch("getTaskOne", this.task.id);
+                    reject()
                 });
             })
         },

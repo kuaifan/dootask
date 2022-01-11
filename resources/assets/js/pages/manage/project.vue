@@ -54,6 +54,7 @@ export default {
                             }
                         });
                     });
+                    this.$store.dispatch("forgetTaskCompleteTemp", true);
                 });
             }
         }

@@ -37,7 +37,7 @@
                 disable-click/>
         </div>
         <div class="calendar-menu" :style="calendarMenuStyles">
-            <TaskMenu ref="calendarTaskMenu" :task="calendarTask"/>
+            <TaskMenu ref="calendarTaskMenu" :task="calendarTask" updateBefore/>
         </div>
     </div>
 </template>
@@ -83,16 +83,33 @@ export default {
         this.setRenderRange();
     },
 
+    deactivated() {
+        this.$store.dispatch("forgetTaskCompleteTemp", true);
+    },
+
     computed: {
-        ...mapState(['userId', 'cacheTasks']),
+        ...mapState(['userId', 'cacheTasks', 'taskCompleteTemps']),
 
         ...mapGetters(['transforTasks']),
 
         list() {
-            const datas = this.transforTasks(this.cacheTasks.filter(({complete_at, owner, end_at}) => {
-                return !complete_at && owner && end_at;
-            }));
-            return datas.map(data => {
+            const {cacheTasks, taskCompleteTemps} = this;
+            const filterTask = (task, chackCompleted = true) => {
+                if (task.complete_at && chackCompleted === true) {
+                    return false;
+                }
+                if (!task.end_at) {
+                    return false;
+                }
+                return task.owner;
+            }
+            let array = cacheTasks.filter(task => filterTask(task));
+            let tmps = taskCompleteTemps.filter(task => filterTask(task, false));
+            if (tmps.length > 0) {
+                array = $A.cloneJSON(array)
+                array.push(...tmps);
+            }
+            return this.transforTasks(array).map(data => {
                 const isAllday = $A.rightExists(data.start_at, "00:00:00") && $A.rightExists(data.end_at, "23:59:59")
                 const task = {
                     id: data.id,
@@ -106,12 +123,12 @@ export default {
                     color: "#515a6e",
                     bgColor: data.color || '#E3EAFD',
                     borderColor: data.p_color,
-                    complete_at: data.complete_at,
                     priority: '',
                     preventClick: true,
                     preventCheckHide: true,
-                    isChecked: false,
+                    isChecked: !!data.complete_at,
                     //
+                    complete_at: data.complete_at,
                     start_at: data.start_at,
                     end_at: data.end_at,
                     _time: data._time,
@@ -128,7 +145,11 @@ export default {
                 if (data.flow_item_name) {
                     task.title = `[${data.flow_item_name}] ${task.title}`
                 }
-                if (data.overdue) {
+                if (data.complete_at) {
+                    task.color = "#c3c2c2"
+                    task.bgColor = "#f3f3f3"
+                    task.borderColor = "#e3e3e3"
+                } else if (data.overdue) {
                     task.title = `[${this.$L('超期')}] ${task.title}`
                     task.color = "#f56c6c"
                     task.bgColor = data.color || "#fef0f0"

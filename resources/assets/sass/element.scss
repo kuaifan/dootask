@@ -20,16 +20,9 @@ $--dropdown-menuItem-hover-color: #606266;
     min-width: 100px;
     .item {
         &.red {
-            color: #f00;
+            color: #f00 !important;
             > i {
-                color: #f00;
-            }
-        }
-        &:hover {
-            &.red {
-                > i {
-                    color: #f00;
-                }
+                color: #f00 !important;
             }
         }
     }
