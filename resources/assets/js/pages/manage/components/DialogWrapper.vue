@@ -35,17 +35,13 @@
                     <li v-if="dialogData.hasMorePages" class="history" @click="loadNextPage">{{$L('加载历史消息')}}</li>
                     <li v-else-if="dialogData.loading > 0 && dialogMsgList.length === 0" class="loading"><Loading/></li>
                     <li v-else-if="dialogMsgList.length === 0" class="nothing">{{$L('暂无消息')}}</li>
-                    <li
+                    <DialogList
                         v-for="item in dialogMsgList"
-                        :id="'view_' + item.id"
+                        :dialogMsg="item"
+                        :topId="topId"
                         :key="item.id"
-                        :class="{self:item.userid == userId, 'history-tip': topId == item.id}">
-                        <em v-if="topId == item.id" class="history-text">{{$L('历史消息')}}</em>
-                        <div class="dialog-avatar">
-                            <UserAvatar :userid="item.userid" :tooltipDisabled="item.userid == userId" :size="30"/>
-                        </div>
-                        <DialogView :msg-data="item" :dialog-type="dialogData.type"/>
-                    </li>
+                        :dialogData="dialogData"
+                    />
                     <li
                         v-for="item in tempMsgList"
                         :id="'tmp_' + item.id"
@@ -112,11 +108,12 @@ import ScrollerY from "../../../components/ScrollerY";
 import {mapState} from "vuex";
 import DialogView from "./DialogView";
 import DialogUpload from "./DialogUpload";
+import DialogList from "./DialogList";
 import {Store} from "le5le-store";
 
 export default {
     name: "DialogWrapper",
-    components: {DialogUpload, DialogView, ScrollerY, DragInput},
+    components: {DialogList, DialogUpload, DialogView, ScrollerY, DragInput},
     props: {
         dialogId: {
             type: Number,
