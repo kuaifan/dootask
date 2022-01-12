@@ -472,7 +472,7 @@ class ProjectTask extends AbstractModel
                     self::addTask($subtask);
                 }
             }
-            $task->addLog("创建{任务}：" . $task->name);
+            $task->addLog("创建{任务}");
             return $task;
         });
     }
@@ -495,8 +495,7 @@ class ProjectTask extends AbstractModel
                 if ($this->flow_item_id == $data['flow_item_id']) {
                     throw new ApiException('任务状态未发生改变');
                 }
-                $recordData = [
-                    'type' => 'flow',
+                $flowData = [
                     'flow_item_id' => $this->flow_item_id,
                     'flow_item_name' => $this->flow_item_name,
                 ];
@@ -526,23 +525,23 @@ class ProjectTask extends AbstractModel
                 if ($newFlowItem->status == 'end') {
                     // 判断自动完成
                     if (!$this->complete_at) {
-                        $recordData['complete_at'] = $this->complete_at;
+                        $flowData['complete_at'] = $this->complete_at;
                         $data['complete_at'] = date("Y-m-d H:i");
                     }
                 } else {
                     // 判断自动打开
                     if ($this->complete_at) {
-                        $recordData['complete_at'] = $this->complete_at;
+                        $flowData['complete_at'] = $this->complete_at;
                         $data['complete_at'] = false;
                     }
                 }
                 if ($newFlowItem->userids) {
                     // 判断自动添加负责人
-                    $recordData['owner'] = $data['owner'] = $this->taskUser->where('owner', 1)->pluck('userid')->toArray();
+                    $flowData['owner'] = $data['owner'] = $this->taskUser->where('owner', 1)->pluck('userid')->toArray();
                     if ($newFlowItem->usertype == "replace") {
                         // 流转模式
                         if ($this->parent_id === 0) {
-                            $recordData['assist'] = $data['assist'] = $this->taskUser->where('owner', 0)->pluck('userid')->toArray();
+                            $flowData['assist'] = $data['assist'] = $this->taskUser->where('owner', 0)->pluck('userid')->toArray();
                             $data['assist'] = array_merge($data['assist'], $data['owner']);
                         }
                         $data['owner'] = $newFlowItem->userids;
@@ -557,7 +556,10 @@ class ProjectTask extends AbstractModel
                 }
                 $this->flow_item_id = $newFlowItem->id;
                 $this->flow_item_name = $newFlowItem->status . "|" . $newFlowItem->name;
-                $this->addLog("修改{任务}状态：{$currentFlowItem?->name} => {$newFlowItem->name}", 0, $recordData);
+                $this->addLog("修改{任务}状态", [
+                    'flow' => $flowData,
+                    'change' => [$currentFlowItem?->name, $newFlowItem->name]
+                ]);
             }
             // 状态
             if (Arr::exists($data, 'complete_at')) {
@@ -584,7 +586,9 @@ class ProjectTask extends AbstractModel
                 } elseif (mb_strlen($data['name']) > 255) {
                     throw new ApiException('任务描述最多只能设置255个字');
                 }
-                $this->addLog("修改{任务}标题：{$this->name} => {$data['name']}");
+                $this->addLog("修改{任务}标题", [
+                    'change' => [$this->name, $data['name']]
+                ]);
                 $this->name = $data['name'];
             }
             // 负责人
@@ -616,12 +620,12 @@ class ProjectTask extends AbstractModel
                     if ($count == 0 && count($array) == 1 && $array[0] == User::userid()) {
                         $this->addLog("认领{任务}");
                     } else {
-                        $this->addLog("修改{任务}负责人：" . implode(",", $array));
+                        $this->addLog("修改{任务}负责人", ['userid' => $array]);
                     }
                 }
                 $rows = ProjectTaskUser::whereTaskId($this->id)->whereOwner(1)->whereNotIn('userid', $array)->get();
                 if ($rows->isNotEmpty()) {
-                    $this->addLog("删除{任务}负责人：" . $rows->implode('userid', ','));
+                    $this->addLog("删除{任务}负责人", ['userid' => $rows->implode('userid', ',')]);
                     foreach ($rows as $row) {
                         $row->delete();
                     }
@@ -719,11 +723,11 @@ class ProjectTask extends AbstractModel
                         $array[] = $uid;
                     }
                     if ($array) {
-                        $this->addLog("修改{任务}协助人员：" . implode(",", $array));
+                        $this->addLog("修改{任务}协助人员", ['userid' => $array]);
                     }
                     $rows = ProjectTaskUser::whereTaskId($this->id)->whereOwner(0)->whereNotIn('userid', $array)->get();
                     if ($rows->isNotEmpty()) {
-                        $this->addLog("删除{任务}协助人员：" . $rows->implode('userid', ','));
+                        $this->addLog("删除{任务}协助人员", ['userid' => $rows->implode('userid', ',')]);
                         foreach ($rows as $row) {
                             $row->delete();
                         }
@@ -732,7 +736,9 @@ class ProjectTask extends AbstractModel
                 }
                 // 背景色
                 if (Arr::exists($data, 'color') && $this->color != $data['color']) {
-                    $this->addLog("修改{任务}背景色：{$this->color} => {$data['color']}");
+                    $this->addLog("修改{任务}背景色", [
+                        'change' => [$this->color, $data['color']]
+                    ]);
                     $this->color = $data['color'];
                 }
                 // 列表
@@ -742,7 +748,9 @@ class ProjectTask extends AbstractModel
                     if (empty($column)) {
                         throw new ApiException('请选择正确的列表');
                     }
-                    $this->addLog("修改{任务}列表：{$oldName} => {$column->name}");
+                    $this->addLog("修改{任务}列表", [
+                        'change' => [$oldName, $column->name]
+                    ]);
                     $this->column_id = $column->id;
                 }
                 // 内容
@@ -892,7 +900,7 @@ class ProjectTask extends AbstractModel
             if ($complete_at === null) {
                 // 标记未完成
                 $this->complete_at = null;
-                $this->addLog("{任务}标记未完成：" . $this->name);
+                $this->addLog("{任务}标记未完成");
             } else {
                 // 标记已完成
                 if ($this->parent_id == 0) {
@@ -904,7 +912,7 @@ class ProjectTask extends AbstractModel
                     throw new ApiException('请先领取任务');
                 }
                 $this->complete_at = $complete_at;
-                $this->addLog("{任务}标记已完成：" . $this->name);
+                $this->addLog("{任务}标记已完成");
             }
             $this->save();
         });
@@ -924,21 +932,21 @@ class ProjectTask extends AbstractModel
                 $this->archived_at = null;
                 $this->archived_userid = User::userid();
                 $this->archived_follow = 0;
-                $this->addLog("任务取消归档：" . $this->name);
+                $this->addLog("任务取消归档");
                 $this->pushMsg('add', ProjectTask::oneTask($this->id));
             } else {
                 // 归档任务
                 if ($isAuto === true) {
-                    $logText = "自动任务归档：" . $this->name;
+                    $logText = "自动任务归档";
                     $userid = 0;
                 } else {
-                    $logText = "任务归档：" . $this->name;
+                    $logText = "任务归档";
                     $userid = User::userid();
                 }
                 $this->archived_at = $archived_at;
                 $this->archived_userid = $userid;
                 $this->archived_follow = 0;
-                $this->addLog($logText, $userid);
+                $this->addLog($logText, [], $userid);
                 $this->pushMsg('archived');
             }
             self::whereParentId($this->id)->update([
@@ -964,7 +972,7 @@ class ProjectTask extends AbstractModel
                 $dialog?->deleteDialog();
             }
             self::whereParentId($this->id)->delete();
-            $this->addLog("删除{任务}：" . $this->name);
+            $this->addLog("删除{任务}");
             $this->delete();
         });
         if ($pushMsg) {
@@ -976,13 +984,13 @@ class ProjectTask extends AbstractModel
     /**
      * 添加任务日志
      * @param string $detail
+     * @param array $record
      * @param int $userid
-     * @param $record
      * @return ProjectLog
      */
-    public function addLog($detail, $userid = 0, $record = null)
+    public function addLog($detail, $record = [], $userid = 0)
     {
-        $detail = str_replace("{任务}", $this->parent_id > 0 ? "子任务" : "任务", $detail);
+        $detail = str_replace("{任务}", $this->parent_id ? "子任务" : "任务", $detail);
         $array = [
             'project_id' => $this->project_id,
             'column_id' => $this->column_id,
@@ -990,6 +998,9 @@ class ProjectTask extends AbstractModel
             'userid' => $userid ?: User::userid(),
             'detail' => $detail,
         ];
+        if ($this->parent_id) {
+            $record['subtitle'] = $this->name;
+        }
         if ($record) {
             $array['record'] = $record;
         }

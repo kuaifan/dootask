@@ -310,7 +310,9 @@ class ProjectController extends AbstractController
         $project = Project::userProject($project_id, true, true);
         //
         if ($project->name != $name) {
-            $project->addLog("修改项目名称：{$project->name} => {$name}");
+            $project->addLog("修改项目名称", [
+                'change' => [$project->name, $name]
+            ]);
             $project->name = $name;
         }
         if ($project->desc != $desc) {
@@ -495,7 +497,7 @@ class ProjectController extends AbstractController
         $projectInvite->save();
         //
         $projectInvite->project->syncDialogUser();
-        $projectInvite->project->addLog("会员ID：" . $user->userid . " 通过邀请链接加入项目");
+        $projectInvite->project->addLog("通过邀请链接加入项目");
         //
         $data = $projectInvite->toArray();
         $data['already'] = true;
@@ -539,7 +541,7 @@ class ProjectController extends AbstractController
                 'owner' => 1,
             ]);
             $project->syncDialogUser();
-            $project->addLog("移交项目给会员ID：" . $owner_userid);
+            $project->addLog("移交项目给", ['userid' => $owner_userid]);
         });
         //
         $project->pushMsg('detail');
@@ -634,7 +636,7 @@ class ProjectController extends AbstractController
             $row = ProjectUser::whereProjectId($project->id)->whereUserid($user->userid)->first();
             $row?->exitProject();
             $project->syncDialogUser();
-            $project->addLog("会员ID：" . $user->userid . " 退出项目");
+            $project->addLog("退出项目");
             $project->pushMsg('delete', null, $user->userid);
         });
         return Base::retSuccess('退出成功', ['id' => $project->id]);
@@ -1429,23 +1431,27 @@ class ProjectController extends AbstractController
         if (empty($projectLog) || empty($projectLog->task_id)) {
             return Base::retError('记录不存在');
         }
-        $record = $projectLog->record;
         //
         $task = ProjectTask::userTask($projectLog->task_id, null, true);
         //
-        if ($record['type'] == 'flow') {
-            $newFlowItem = ProjectFlowItem::find(intval($record['flow_item_id']));
+        $record = $projectLog->record;
+        if ($record['flow'] && is_array($record['flow'])) {
+            $rawData = $record['flow'];
+            $newFlowItem = ProjectFlowItem::find(intval($rawData['flow_item_id']));
             if (empty($newFlowItem)) {
                 return Base::retError('流程不存在或已被删除');
             }
-            return AbstractModel::transaction(function() use ($record, $task, $newFlowItem) {
-                $data = array_intersect_key($record, array_flip(['complete_at', 'owner', 'assist']));
+            return AbstractModel::transaction(function() use ($rawData, $task, $newFlowItem) {
                 $currentFlowItem = $task->flow_item_id ? ProjectFlowItem::find($task->flow_item_id) : null;
-                // 更新任务
+                //
                 $task->flow_item_id = $newFlowItem->id;
                 $task->flow_item_name = $newFlowItem->name;
+                $task->addLog("重置{任务}状态", [
+                    'change' => [$currentFlowItem?->name, $newFlowItem->name]
+                ]);
+                //
                 $updateMarking = [];
-                $task->addLog("重置{任务}状态：{$currentFlowItem?->name} => {$newFlowItem->name}");
+                $data = array_intersect_key($rawData, array_flip(['complete_at', 'owner', 'assist']));
                 $task->updateTask($data, $updateMarking);
                 //
                 $data = ProjectTask::oneTask($task->id)->toArray();

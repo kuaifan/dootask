@@ -233,9 +233,10 @@ export default {
                 //
                 this.$store.dispatch("taskUpdate", Object.assign(updata, {
                     task_id: this.task.id,
-                })).then(({msg}) => {
+                })).then(({data, msg}) => {
                     $A.messageSuccess(msg);
                     resolve()
+                    this.$emit("on-update", data)
                 }).catch(({msg}) => {
                     $A.modalError(msg);
                     this.$store.dispatch("getTaskOne", this.task.id);

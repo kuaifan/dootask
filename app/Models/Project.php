@@ -285,18 +285,23 @@ class Project extends AbstractModel
     /**
      * 添加项目日志
      * @param string $detail
+     * @param array $record
      * @param int $userid
      * @return ProjectLog
      */
-    public function addLog($detail, $userid = 0)
+    public function addLog($detail, $record = [], $userid = 0)
     {
-        $log = ProjectLog::createInstance([
+        $array = [
             'project_id' => $this->id,
             'column_id' => 0,
             'task_id' => 0,
             'userid' => $userid ?: User::userid(),
             'detail' => $detail,
-        ]);
+        ];
+        if ($record) {
+            $array['record'] = $record;
+        }
+        $log = ProjectLog::createInstance($array);
         $log->save();
         return $log;
     }

@@ -13,7 +13,7 @@
                             </div>
                             <div class="log-summary">
                                 <span class="log-creator">{{item.user ? item.user.nickname : $L('系统')}}</span>
-                                <span class="log-text">{{$L(item.detail)}}</span>
+                                <ProjectLogDetail class="log-text" :render="logDetail" :item="item"/>
                                 <span v-if="operationList(item).length > 0" class="log-operation">
                                     <Button v-for="(op, oi) in operationList(item)" :key="oi" size="small" @click="onOperation(op)">{{op.button}}</Button>
                                 </span>
@@ -30,8 +30,12 @@
 </template>
 
 <script>
+import {VNode} from "vue";
+import ProjectLogDetail from "./ProjectLogDetail";
+
 export default {
     name: "ProjectLog",
+    components: {ProjectLogDetail},
     props: {
         projectId: {
             type: Number,
@@ -130,21 +134,77 @@ export default {
             this.getLists();
         },
 
+        /**
+         * 日志详情
+         * @param h
+         * @param detail
+         * @param record
+         * @returns {*[]}
+         */
+        logDetail(h, {detail, record}) {
+            let vNode = [h('span', this.$L(detail))];
+            if ($A.isJson(record)) {
+                if ($A.isArray(record.change)) {
+                    let [before, now] = record.change
+                    vNode.push(h('span', ': '))
+                    if (before) {
+                        vNode.push(h('span', `${before} => ${now}`))
+                    } else {
+                        vNode.push(h('span', now))
+                    }
+                }
+                if (record.userid) {
+                    let userids = $A.isArray(record.userid) ? record.userid : [record.userid]
+                    let userNode = [];
+                    userids.some(userid => {
+                        userNode.push(h('UserAvatar', {
+                            props: {
+                                size: 18,
+                                userid
+                            }
+                        }))
+                    })
+                    if (userNode.length > 0) {
+                        vNode.push(h('div', {
+                            class: 'detail-user'
+                        }, [
+                            h('div', {
+                                class: 'detail-user-wrap'
+                            }, userNode)
+                        ]))
+                    }
+                }
+            }
+            return h('span', {
+                class: 'log-text'
+            }, vNode)
+        },
+
+        /**
+         * 可操作事件
+         * @param id
+         * @param record
+         * @returns {*[]}
+         */
         operationList({id, record}) {
             let list = [];
             if (!$A.isJson(record)) {
                 return list
             }
-            if (this.taskId > 0 && record.type === 'flow') {
+            if (this.taskId > 0 && $A.isJson(record.flow)) {
                 list.push({
                     id,
                     button: '重置',
-                    content: `确定重置为【${record.flow_item_name}】吗？`,
+                    content: `确定重置为【${$A.getMiddle(record.flow.flow_item_name, "|")}】吗？`,
                 })
             }
             return list;
         },
 
+        /**
+         * 执行操作
+         * @param item
+         */
         onOperation(item) {
             $A.modalConfirm({
                 content: item.content,

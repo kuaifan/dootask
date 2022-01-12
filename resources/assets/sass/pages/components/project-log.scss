@@ -86,7 +86,17 @@
                     color:rgba(0, 0, 0, 0.85)
                 }
                 .log-text {
+                    display: inline-block;
                     color: rgba(0,0,0,.54);
+                    .detail-user {
+                        display: inline-block;
+                        .detail-user-wrap {
+                            display: flex;
+                            .common-avatar {
+                                margin: 0 2px;
+                            }
+                        }
+                    }
                 }
                 .log-operation {
                     > button {
