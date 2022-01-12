@@ -10,6 +10,7 @@ use App\Models\WebSocketDialogMsg;
 use App\Models\WebSocketDialogMsgRead;
 use App\Models\WebSocketDialogUser;
 use App\Module\Base;
+use Carbon\Carbon;
 use Request;
 
 /**
@@ -326,5 +327,44 @@ class DialogController extends AbstractController
         //
         $read = WebSocketDialogMsgRead::whereMsgId($msg_id)->get();
         return Base::retSuccess('success', $read ?: []);
+    }
+
+    /**
+     * 聊天消息撤回
+     * @return array
+     */
+    public function msg__withdraw()
+    {
+        $user = User::auth();
+        $msg_id = intval(Request::input("msg_id"));
+        $msg = WebSocketDialogMsg::whereId($msg_id)->whereUserid($user->userid)->first();
+        if (empty($msg)) {
+            return Base::retError("此消息不可撤回");
+        }
+        $send_dt = Carbon::parse($msg->created_at)->addMinutes(5);
+        if ( $send_dt->lt( Carbon::now() ) )
+            return Base::retError("已超过5分钟，此消息不能撤回");
+
+
+        // 删除文件、图片
+        if ( $msg->type == WebSocketDialogMsg::MSG_TYPE_FILE) {
+            if (is_array($msg->msg)) {
+                // 删除本体
+                if ( !empty( $msg->msg["file"] ) )
+                    @unlink( $msg->msg["file"] );
+                // 删除缩略图
+                if ( !empty( $msg->msg["thumb"] ) )
+                    @unlink( $msg->msg["thumb"] );
+            }
+        }
+
+        // 直接删除消息
+        $msg->delete();
+
+        // 发送撤回指令
+        WebSocketDialogMsg::sendMsg($msg->dialog_id, 'withdraw', [
+            "msg_id" => $msg->id, // 被撤回的消息Id
+        ], $user->userid);
+        return Base::retSuccess("success");
     }
 }

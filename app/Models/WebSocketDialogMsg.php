@@ -46,6 +46,9 @@ class WebSocketDialogMsg extends AbstractModel
         'updated_at',
     ];
 
+    const MSG_TYPE_TEXT = "text";
+    const MSG_TYPE_FILE = "file";
+
     /**
      * 阅读占比
      * @return int|mixed
