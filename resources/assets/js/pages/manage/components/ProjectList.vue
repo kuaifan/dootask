@@ -35,12 +35,12 @@
                         </ETooltip>
                     </li>
                     <li :class="['project-icon', searchText!='' ? 'active' : '']">
-                        <ETooltip v-model="searchShow" :manual="searchText!=''" effect="light">
-                            <Icon class="menu-icon" type="ios-search" />
+                        <Tooltip :always="searchText!=''" @on-popper-show="searchFocus" theme="light">
+                            <Icon class="menu-icon" type="ios-search" @click="searchFocus" />
                             <div slot="content">
                                 <Input v-model="searchText" ref="searchInput" :placeholder="$L('名称、描述...')" class="search-input" clearable/>
                             </div>
-                        </ETooltip>
+                        </Tooltip>
                     </li>
                     <li :class="['project-icon', projectParameter('chat') ? 'active' : '']" @click="$store.dispatch('toggleProjectParameter', 'chat')">
                         <Icon class="menu-icon" type="ios-chatbubbles" />
@@ -464,7 +464,6 @@ export default {
             sortField: 'end_at',
             sortType: 'desc',
 
-            searchShow: false,
             searchText: '',
 
             addColumnShow: false,
@@ -716,19 +715,18 @@ export default {
     watch: {
         projectData() {
             this.sortData = this.getSort();
-        },
-        searchShow(val) {
-            if (val) {
-                this.$nextTick(() => {
-                    this.$refs.searchInput.focus({
-                        cursor: "end"
-                    });
-                })
-            }
         }
     },
 
     methods: {
+        searchFocus() {
+            this.$nextTick(() => {
+                this.$refs.searchInput.focus({
+                    cursor: "end"
+                });
+            })
+        },
+
         getSort() {
             const sortData = [];
             this.columnList.forEach((column) => {
