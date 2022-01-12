@@ -9,14 +9,17 @@
                     </svg>
                 </a>
             </div>
+            <ResizeLine v-if="resize" class="overlay-resize" v-model="width" :max-width="0"/>
             <div class="overlay-content"><slot/></div>
         </div>
     </div>
 </template>
 
 <script>
+    import ResizeLine from "./ResizeLine";
     export default {
         name: 'DrawerOverlay',
+        components: {ResizeLine},
         props: {
             value: {
                 type: Boolean,
@@ -40,11 +43,15 @@
                 type: [Number, String],
                 default: "100%"
             },
+            resize: {
+                type: Boolean,
+                default: true
+            },
         },
 
         data() {
             return {
-
+                width: 0
             }
         },
 
@@ -58,7 +65,7 @@
 
         computed: {
             bodyStyle() {
-                let size = parseInt(this.size);
+                let size = this.width;
                 size = size <= 100 ? `${size}%` : `${size}px`
                 if (this.placement == 'right') {
                     return {
@@ -88,6 +95,12 @@
                         this.$store.state.cacheDrawerOverlay.splice(index, 1);
                     }
                 }
+            },
+            size: {
+                handler(val) {
+                    this.width = parseInt(val);
+                },
+                immediate: true
             }
         },
 

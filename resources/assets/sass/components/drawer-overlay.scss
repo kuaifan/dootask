@@ -54,6 +54,13 @@
             }
         }
 
+        .overlay-resize {
+            width: 100%;
+            height: 5px;
+            margin-bottom: -5px;
+            z-index: 1;
+        }
+
         .overlay-content {
             flex: 1;
             position: relative;
@@ -99,6 +106,12 @@
             flex-direction: row;
             .overlay-close {
                 align-items: flex-start;
+            }
+            .overlay-resize {
+                width: 5px;
+                height: 100%;
+                margin-right: -5px;
+                z-index: 1;
             }
             .overlay-content {
                 transform: translate(15%, 0) scale(0.98);
