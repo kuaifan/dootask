@@ -141,7 +141,7 @@
          * @param end
          * @returns {*}
          */
-        getMiddle(string, start, end) {
+        getMiddle(string, start = null, end = null) {
             string = string.toString();
             if (this.isHave(start) && this.strExists(string, start)) {
                 string = string.substring(string.indexOf(start) + start.length);
