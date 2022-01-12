@@ -405,7 +405,7 @@
         <DrawerOverlay
             v-model="workflowShow"
             placement="right"
-            :size="1200">
+            :size="1280">
             <ProjectWorkflow v-if="workflowShow" :project-id="projectId"/>
         </DrawerOverlay>
 

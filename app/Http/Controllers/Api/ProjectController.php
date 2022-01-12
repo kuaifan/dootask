@@ -1618,6 +1618,14 @@ class ProjectController extends AbstractController
                 $id = intval($item['id']);
                 $turns = Base::arrayRetainInt($item['turns'] ?: [], true);
                 $userids = Base::arrayRetainInt($item['userids'] ?: [], true);
+                $usertype = trim($item['usertype']);
+                $userlimit = intval($item['userlimit']);
+                if ($usertype == 'replace' && empty($userids)) {
+                    throw new ApiException("状态[{$item['name']}]设置错误，设置流转模式时必须填写状态负责人");
+                }
+                if ($userlimit && empty($userids)) {
+                    throw new ApiException("状态[{$item['name']}]设置错误，设置限制负责人时必须填写状态负责人");
+                }
                 $flow = ProjectFlowItem::updateInsert([
                     'id' => $id,
                     'project_id' => $project->id,
@@ -1628,7 +1636,8 @@ class ProjectController extends AbstractController
                     'sort' => intval($item['sort']),
                     'turns' => $turns,
                     'userids' => $userids,
-                    'usertype' => $item['usertype'],
+                    'usertype' => trim($item['usertype']),
+                    'userlimit' => $userlimit,
                 ]);
                 if ($flow) {
                     $ids[] = $flow->id;

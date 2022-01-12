@@ -20,7 +20,7 @@ class CreateProjectFlowItemsTable extends Migration
             $table->string('name', 50)->nullable()->default('')->comment('名称');
             $table->string('status', 20)->nullable()->default('')->comment('状态');
             $table->string('turns')->nullable()->default('')->comment('可流转');
-            $table->string('userids')->nullable()->default('')->comment('自动负责人ID');
+            $table->string('userids')->nullable()->default('')->comment('状态负责人ID');
             $table->integer('sort')->nullable()->comment('排序');
             $table->timestamps();
         });

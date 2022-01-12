@@ -89,7 +89,7 @@
                                                         <EDropdownItem command="user">
                                                             <div class="item">
                                                                 <Icon type="md-person" />
-                                                                {{$L('自动负责人')}}
+                                                                {{$L('状态负责人')}}
                                                             </div>
                                                         </EDropdownItem>
                                                         <EDropdownItem command="name">
@@ -136,22 +136,27 @@
             <Button type="primary" @click="onCreate">{{$L('创建工作流')}}</Button>
         </div>
 
-        <!--成员管理-->
+        <!--状态负责人-->
         <Modal
             v-model="userShow"
-            :title="$L('自动负责人')"
+            :title="`${$L('状态负责人')} (${userData.name})`"
             :mask-closable="false">
             <Form :model="userData" label-width="auto" @submit.native.prevent>
-                <FormItem prop="userids" :label="userData.name">
-                    <UserInput v-if="userShow" v-model="userData.userids" :project-id="projectId" :multiple-max="5" :placeholder="$L('选择成员')"/>
+                <FormItem prop="userids" :label="$L('状态负责人')">
+                    <UserInput v-if="userShow" v-model="userData.userids" :project-id="projectId" :multiple-max="5" :placeholder="$L('选择状态负责人')"/>
                 </FormItem>
                 <FormItem prop="usertype" :label="$L('流转模式')">
                     <RadioGroup v-model="userData.usertype">
                         <Radio label="add">{{$L('添加模式')}}</Radio>
                         <Radio label="replace">{{$L('流转模式')}}</Radio>
                     </RadioGroup>
-                    <div v-if="userData.usertype=='replace'" class="form-tip">{{$L('流转到此流程时改变负责人，原本的负责人移至协助人员。')}}</div>
-                    <div v-else class="form-tip">{{$L('流转到此流程时添加负责人。')}}</div>
+                    <div v-if="userData.usertype=='replace'" class="form-tip">{{$L('流转到此状态时改变任务负责人为状态负责人，原本的任务负责人移至协助人员。')}}</div>
+                    <div v-else class="form-tip">{{$L('流转到此状态时添加状态负责人至任务负责人。')}}</div>
+                </FormItem>
+                <FormItem prop="userlimit" :label="$L('限制负责人')">
+                    <iSwitch v-model="userData.userlimit" :true-value="1" :false-value="0"/>
+                    <div v-if="userData.userlimit===1" class="form-tip">{{$L('在此状态的任务仅状态负责人可以修改状态。')}}</div>
+                    <div v-else class="form-tip">{{$L('任务负责人和项目管理员都可以修改状态。')}}</div>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
@@ -267,6 +272,7 @@ export default {
                         "turns": [-10, -11, -12, -13],
                         "userids": [],
                         "usertype": 'add',
+                        "userlimit": 0,
                     },
                     {
                         "id": -11,
@@ -275,6 +281,7 @@ export default {
                         "turns": [-10, -11, -12, -13],
                         "userids": [],
                         "usertype": 'add',
+                        "userlimit": 0,
                     },
                     {
                         "id": -12,
@@ -283,6 +290,7 @@ export default {
                         "turns": [-10, -11, -12, -13],
                         "userids": [],
                         "usertype": 'add',
+                        "userlimit": 0,
                     },
                     {
                         "id": -13,
@@ -291,6 +299,7 @@ export default {
                         "turns": [-10, -11, -12, -13],
                         "userids": [],
                         "usertype": 'add',
+                        "userlimit": 0,
                     }
                 ]
             })
@@ -343,6 +352,7 @@ export default {
                     this.$set(this.userData, 'name', item.name);
                     this.$set(this.userData, 'userids', item.userids);
                     this.$set(this.userData, 'usertype', item.usertype);
+                    this.$set(this.userData, 'userlimit', item.userlimit);
                     this.userShow = true;
                     break;
 
@@ -363,6 +373,7 @@ export default {
                 if (item) {
                     this.$set(item, 'userids', this.userData.userids)
                     this.$set(item, 'usertype', this.userData.usertype)
+                    this.$set(item, 'userlimit', this.userData.userlimit)
                 }
             })
         },
@@ -409,6 +420,7 @@ export default {
                             turns,
                             userids: [],
                             usertype: 'add',
+                            userlimit: 0,
                         })
                         data.project_flow_item.some(item => {
                             item.turns.push(id)
