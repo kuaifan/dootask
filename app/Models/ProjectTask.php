@@ -512,12 +512,9 @@ class ProjectTask extends AbstractModel
                             throw new ApiException("当前状态[{$currentFlowItem->name}]不可流转到[{$newFlowItem->name}]");
                         }
                         if ($currentFlowItem->userlimit) {
-                            if (!in_array(User::userid(), $currentFlowItem->userids)) {
-                                try {
-                                    Project::userProject($this->project_id, true, true);
-                                } catch (Exception) {
-                                    throw new ApiException("当前状态[{$currentFlowItem->name}]仅限状态负责人或项目负责人修改");
-                                }
+                            if (!in_array(User::userid(), $currentFlowItem->userids)
+                                && !ProjectUser::whereProjectId($this->project_id)->whereOwner(1)->exists()) {
+                                throw new ApiException("当前状态[{$currentFlowItem->name}]仅限状态负责人或项目负责人修改");
                             }
                         }
                     }
