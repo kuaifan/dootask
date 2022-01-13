@@ -160,6 +160,31 @@
                     font-size: 12px;
                 }
             }
+
+            .log-task {
+                margin-left: 12px;
+                margin-bottom: 3px;
+                opacity: 0.8;
+                cursor: pointer;
+                &:hover {
+                    opacity: 1;
+                }
+                > em {
+                    display: inline-block;
+                    font-style: normal;
+                    font-size: 12px;
+                    padding: 0 4px;
+                    line-height: 18px;
+                    height: 18px;
+                    max-width: 100%;
+                    background: #f1f1f1;
+                    color: #9f9f9f;
+                    border-radius: 5px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
+            }
         }
     }
 }

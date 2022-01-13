@@ -14,13 +14,18 @@
                                     <div class="avatar-name auto">{{$L('系统')}}</div>
                                 </div>
                             </div>
-                            <div v-for="log in itemB.lists" class="log-summary">
-                                <ProjectLogDetail :render="logDetail" :item="log"/>
-                                <span v-if="operationList(log).length > 0" class="log-operation">
-                                    <Button v-for="(op, oi) in operationList(log)" :key="oi" size="small" @click="onOperation(op)">{{op.button}}</Button>
-                                </span>
-                                <span class="log-time">{{log.time.ymd}} {{log.time.segment}} {{log.time.hi}}</span>
-                            </div>
+                            <template v-for="log in itemB.lists">
+                                <div class="log-summary">
+                                    <ProjectLogDetail :render="logDetail" :item="log"/>
+                                    <span v-if="operationList(log).length > 0" class="log-operation">
+                                        <Button v-for="(op, oi) in operationList(log)" :key="oi" size="small" @click="onOperation(op)">{{op.button}}</Button>
+                                    </span>
+                                    <span class="log-time">{{log.time.ymd}} {{log.time.segment}} {{log.time.hi}}</span>
+                                </div>
+                                <div v-if="log.project_task" class="log-task">
+                                    <em @click="openTask(log.project_task)">{{$L('关联任务')}}: {{log.project_task.name}}</em>
+                                </div>
+                            </template>
                         </TimelineItem>
                     </Timeline>
                 </div>
@@ -241,6 +246,10 @@ export default {
                     });
                 }
             });
+        },
+
+        openTask(task) {
+            this.$store.dispatch("openTask", task)
         }
     }
 }
