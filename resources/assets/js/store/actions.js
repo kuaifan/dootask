@@ -17,6 +17,8 @@ export default {
         params.header['language'] = $A.getLanguage();
         params.header['token'] = state.userToken;
         params.header['fd'] = $A.getStorageString("userWsFd");
+        params.header['version'] = window.systemInfo.version || "0.0.1";
+        params.header['platform'] = $A.Platform;
         //
         const cloneParams = $A.cloneJSON(params);
         return new Promise(function (resolve, reject) {

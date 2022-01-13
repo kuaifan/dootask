@@ -90,9 +90,16 @@ Vue.prototype.goBack = function (number) {
 };
 
 Vue.prototype.$A = $A;
-Vue.prototype.$Electron = !!__IS_ELECTRON ? require('electron') : null;
-Vue.prototype.$isMainElectron = !!__IS_ELECTRON && window.navigator && window.navigator.userAgent && /\s+MainTaskWindow\//.test(window.navigator.userAgent);
-Vue.prototype.$isSubElectron = !!__IS_ELECTRON && window.navigator && window.navigator.userAgent && /\s+SubTaskWindow\//.test(window.navigator.userAgent);
+Vue.prototype.$Electron = null;
+Vue.prototype.$Platform = "web";
+Vue.prototype.$isMainElectron = false;
+Vue.prototype.$isSubElectron = false;
+if (!!__IS_ELECTRON) {
+    Vue.prototype.$Electron = require('electron');
+    Vue.prototype.$Platform = /macintosh|mac os x/i.test(navigator.userAgent) ? "mac" : "win";
+    Vue.prototype.$isMainElectron = /\s+MainTaskWindow\//.test(window.navigator.userAgent);
+    Vue.prototype.$isSubElectron = /\s+SubTaskWindow\//.test(window.navigator.userAgent);
+}
 
 Vue.config.productionTip = false;
 
@@ -115,6 +122,7 @@ $A.store = app.$store;
 $A.L = app.$L;
 
 $A.Electron = app.$Electron;
+$A.Platform = app.$Platform;
 $A.isMainElectron = app.$isMainElectron;
 $A.isSubElectron = app.$isSubElectron;
 $A.execMainDispatch = (action, data) => {
