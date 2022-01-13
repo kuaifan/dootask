@@ -66,8 +66,8 @@
         </Poptip>
     </li>
     <!--主任务-->
-    <div v-else-if="ready" v-show="taskDetail.id > 0" :class="{'task-detail':true, 'open-dialog': hasOpenDialog, 'completed': taskDetail.complete_at}">
-        <div class="task-info">
+    <div v-else-if="ready" :class="{'task-detail':true, 'open-dialog': hasOpenDialog, 'completed': taskDetail.complete_at}">
+        <div v-show="taskDetail.id > 0" class="task-info">
             <div class="head">
                 <TaskMenu
                     :ref="`taskMenu_${taskDetail.id}`"
@@ -339,7 +339,7 @@
             </div>
             <TaskUpload ref="upload" class="upload"/>
         </div>
-        <div class="task-dialog" :style="dialogStyle">
+        <div v-show="taskDetail.id > 0" class="task-dialog" :style="dialogStyle">
             <template v-if="hasOpenDialog">
                 <DialogWrapper v-if="taskId > 0" ref="dialog" :dialog-id="taskDetail.dialog_id">
                     <div slot="head" class="head">
@@ -389,6 +389,7 @@
                 </div>
             </div>
         </div>
+        <div v-if="!taskDetail.id" class="task-load"><Loading/></div>
     </div>
 </template>
 

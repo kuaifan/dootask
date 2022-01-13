@@ -3,6 +3,7 @@
     flex-direction: column;
     margin: 0 -32px 12px -10px;
     padding: 0 22px 12px 0;
+    min-height: 120px;
     overflow: auto;
     .task-info {
         flex: 1;
@@ -577,6 +578,18 @@
             .dialog-footer {
                 padding: 0 14px 0 28px;
             }
+        }
+    }
+    .task-load {
+        margin-top: 6px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        .common-loading {
+            width: 32px;
+            height: 32px;
         }
     }
 

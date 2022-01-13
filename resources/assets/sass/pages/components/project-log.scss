@@ -109,17 +109,6 @@
                 position: relative;
                 padding: 4px 0 4px 12px;
 
-                &:before {
-                    content: "";
-                    position: absolute;
-                    top: 11px;
-                    left: 0;
-                    width: 5px;
-                    height: 5px;
-                    border-radius: 50%;
-                    background-color: rgba(0, 0, 0, 0.4);
-                }
-
                 > span,
                 > a {
                     padding-right: 6px;
@@ -129,7 +118,7 @@
 
                 .log-text {
                     display: inline-block;
-                    color: rgba(0, 0, 0, .5);
+                    color: rgba(0, 0, 0, .8);
 
                     .detail-user {
                         display: inline-block;
@@ -163,22 +152,23 @@
 
             .log-task {
                 margin-left: 12px;
-                margin-bottom: 3px;
-                opacity: 0.8;
+                margin-bottom: 6px;
+                opacity: 0.6;
                 cursor: pointer;
                 &:hover {
                     opacity: 1;
+                    > em {
+                        color: #8bcf70;
+                    }
                 }
                 > em {
                     display: inline-block;
                     font-style: normal;
                     font-size: 12px;
-                    padding: 0 4px;
                     line-height: 18px;
                     height: 18px;
                     max-width: 100%;
-                    background: #f1f1f1;
-                    color: #9f9f9f;
+                    color: #999999;
                     border-radius: 5px;
                     overflow: hidden;
                     text-overflow: ellipsis;
