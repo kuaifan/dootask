@@ -231,6 +231,8 @@ export default {
 
             dialogMsgSubscribe: null,
 
+            websocketOpenSubscribe: null,
+
             columns: [],
 
             projectKeyValue: '',
@@ -264,12 +266,9 @@ export default {
         this.notificationInit();
         this.onVisibilityChange();
         //
-        this.addTaskSubscribe = Store.subscribe('addTask', (data) => {
-            this.onAddTask(data)
-        });
-        this.dialogMsgSubscribe = Store.subscribe('dialogMsgPush', (data) => {
-            this.addDialogMsg(data)
-        });
+        this.addTaskSubscribe = Store.subscribe('addTask', this.onAddTask);
+        this.dialogMsgSubscribe = Store.subscribe('dialogMsgPush', this.addDialogMsg);
+        this.websocketOpenSubscribe = Store.subscribe('websocketOpen', this.refreshBasic);
         //
         document.addEventListener('keydown', this.shortcutEvent);
         window.addEventListener('resize', this.innerHeightListener);
@@ -287,6 +286,10 @@ export default {
         if (this.dialogMsgSubscribe) {
             this.dialogMsgSubscribe.unsubscribe();
             this.dialogMsgSubscribe = null;
+        }
+        if (this.websocketOpenSubscribe) {
+            this.websocketOpenSubscribe.unsubscribe();
+            this.websocketOpenSubscribe = null;
         }
         //
         document.removeEventListener('keydown', this.shortcutEvent);
@@ -616,6 +619,12 @@ export default {
         taskVisibleChange(visible) {
             if (!visible) {
                 this.$store.dispatch('openTask', 0)
+            }
+        },
+
+        refreshBasic(num) {
+            if (num > 1) {
+                this.$store.dispatch("refreshBasicData")
             }
         },
 

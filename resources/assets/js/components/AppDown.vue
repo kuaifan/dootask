@@ -211,7 +211,7 @@ export default {
                             }, this.releases.tag_name)
                         ]),
                         h('MarkdownPreview', {
-                            class: 'notification-body overlay-y',
+                            class: 'notification-body',
                             props: {
                                 initialValue: this.releases.body
                             }

@@ -167,6 +167,16 @@ export default {
     },
 
     /**
+     * 刷新基本数据（项目、对话、仪表盘任务）
+     * @param dispatch
+     */
+    refreshBasicData({dispatch}) {
+        dispatch("getProjects");
+        dispatch("getDialogs");
+        dispatch("getTaskForDashboard");
+    },
+
+    /**
      * 获取/更新会员信息
      * @param dispatch
      * @returns {Promise<unknown>}
@@ -202,9 +212,7 @@ export default {
             state.userToken = userInfo.token;
             state.userIsAdmin = $A.inArray('admin', userInfo.identity);
             $A.setStorage("userInfo", state.userInfo);
-            dispatch("getProjects");
-            dispatch("getDialogs");
-            dispatch("getTaskForDashboard");
+            dispatch("refreshBasicData");
             dispatch("websocketConnection");
             resolve()
         });
@@ -1688,7 +1696,7 @@ export default {
         dispatch("call", {
             url: 'dialog/lists',
         }).then(result => {
-            dispatch("saveDialog", result.data.data.reverse());
+            dispatch("saveDialog", result.data.data);
         }).catch(e => {
             console.warn(e);
         });
@@ -1959,6 +1967,7 @@ export default {
         state.ws = new WebSocket(url);
         state.ws.onopen = (e) => {
             // console.log("[WS] Open", e)
+            Store.set('websocketOpen', ++state.wsOpenNum);
         };
         state.ws.onclose = (e) => {
             // console.log("[WS] Close", e);
@@ -1980,7 +1989,7 @@ export default {
         };
         state.ws.onmessage = (e) => {
             // console.log("[WS] Message", e);
-            const msgDetail = $A.jsonParse(event.data);
+            const msgDetail = $A.jsonParse(e.data);
             const {type, msgId} = msgDetail;
             switch (type) {
                 case "open":
@@ -2004,7 +2013,7 @@ export default {
                             try {
                                 call(msgDetail);
                             } catch (err) {
-                                // console.log("[WS] Callerr", err);
+                                console.log("[WS] Callerr", err);
                             }
                         }
                     });

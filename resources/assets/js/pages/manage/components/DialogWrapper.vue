@@ -126,9 +126,7 @@ export default {
     },
 
     mounted() {
-        this.dialogMsgSubscribe = Store.subscribe('dialogMsgPush', (data) => {
-            this.addDialogMsg(data)
-        });
+        this.dialogMsgSubscribe = Store.subscribe('dialogMsgPush', this.addDialogMsg);
     },
 
     beforeDestroy() {

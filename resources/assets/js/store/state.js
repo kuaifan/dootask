@@ -39,6 +39,7 @@ state.ws = null;
 state.wsMsg = {};
 state.wsCall = {};
 state.wsTimeout = null;
+state.wsOpenNum = 0;
 state.wsListener = {};
 state.wsReadTimeout = null;
 state.wsReadWaitList = [];

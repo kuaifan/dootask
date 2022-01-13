@@ -14,11 +14,48 @@
 }
 
 .common-app-down-notification {
-    .el-notification__group {
-        width: 100%;
+    .notification-head {
+        display: flex;
+        align-items: center;
+        .notification-title {
+            display: inline-block;
+            vertical-align: middle;
+            font-size: 18px;
+            color: #17233d;
+            font-weight: 500;
+            margin-right: 6px;
+        }
+    }
+    .notification-body {
+        max-height: 210px;
+        overflow: auto;
+        margin: 18px 0;
+        .markdown-preview {
+            margin: -20px -12px;
+            h2 {
+                font-size: 18px !important;
+                padding-top: 2px !important;
+            }
+            ul {
+                li {
+                    padding: 2px 0 2px 2px !important;
+                    &:after {
+                        top: 10px !important;
+                        width: 6px !important;
+                        height: 6px !important;
+                    }
+                }
+            }
+        }
+    }
+    .notification-link {
+        margin-top: 20px;
+        text-align: right;
+        > button + button {
+            margin-left: 6px;
+        }
     }
 }
-
 .common-app-down-link {
     display: inline-block;
     cursor: pointer;
@@ -33,28 +70,5 @@
     &:hover {
         color: #fff;
         opacity: 0.9;
-    }
-}
-
-.common-app-down-body {
-    max-height: 175px;
-    overflow: auto;
-    margin: 18px 0;
-    .markdown-preview {
-        margin: -20px -12px;
-        h2 {
-            font-size: 18px !important;
-            padding-top: 2px !important;
-        }
-        ul {
-            li {
-                padding: 2px 0 2px 2px !important;
-                &:after {
-                    top: 10px !important;
-                    width: 6px !important;
-                    height: 6px !important;
-                }
-            }
-        }
     }
 }
