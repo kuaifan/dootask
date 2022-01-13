@@ -1,6 +1,6 @@
 /*!
  * TOAST UI Calendar
- * @version 1.15.1 | Wed Dec 22 2021
+ * @version 1.15.1-5 | Sun Jan 09 2022
  * @author NHN FE Development Lab <dl_javascript@nhn.com>
  * @license MIT
  */
@@ -304,7 +304,7 @@
 
 /*! ./weekdayInMonth */
 
-/*! @license DOMPurify 2.3.1 | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/2.3.1/LICENSE */
+/*! @license DOMPurify 2.3.4 | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/2.3.4/LICENSE */
 
 /*! dompurify */
 
