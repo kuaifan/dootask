@@ -490,6 +490,10 @@ class ProjectTask extends AbstractModel
     public function updateTask($data, &$updateMarking = [])
     {
         AbstractModel::transaction(function () use ($data, &$updateMarking) {
+            // 判断版本
+            if (version_compare(Base::getClientVersion(), '0.6.0', '<')) {
+                throw new ApiException('当前版本过低');
+            }
             // 工作流
             if (Arr::exists($data, 'flow_item_id')) {
                 if ($this->flow_item_id == $data['flow_item_id']) {

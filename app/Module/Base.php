@@ -75,6 +75,19 @@ class Base
     }
 
     /**
+     * 获取客户端版本号
+     * @return string
+     */
+    public static function getClientVersion()
+    {
+        global $_A;
+        if (!isset($_A["__static_client_version"])) {
+            $_A["__static_client_version"] = Request::header('version') ?: '0.0.1';
+        }
+        return $_A["__static_client_version"];
+    }
+
+    /**
      * 判断是否域名格式
      * @param $domain
      * @return bool
