@@ -1,5 +1,5 @@
 <template>
-    <div v-if="showButton" class="common-app-down" :class="{'on-client': $Electron}" :data-route="$route.name">
+    <div v-if="showButton" class="common-app-down" :class="{'on-client': !!$Electron}" :data-route="$route.name">
         <div v-if="$Electron" class="common-app-down-link" @click="releasesNotification">
             <Icon type="md-download"/> {{$L(repoTitle)}}
         </div>
@@ -15,18 +15,22 @@ import MarkdownPreview from "./MDEditor/components/preview";
 import axios from "axios";
 Vue.component('MarkdownPreview', MarkdownPreview)
 
-import { Notification } from 'element-ui';
+import {Store} from "le5le-store";
 
 export default {
     name: 'AppDown',
     data() {
         return {
+            loadIng: 0,
+
             repoName: 'kuaifan/dootask',
             repoData: {},
 
             status: 0, // 0 没有，1有客户端，2客户端有新版本
             releases: {},
-            downInfo: {}
+            downInfo: {},
+
+            websocketOpenSubscribe: null
         }
     },
     mounted() {
@@ -39,6 +43,14 @@ export default {
                     this.releasesNotification()
                 }
             })
+        }
+        //
+        this.websocketOpenSubscribe = Store.subscribe('websocketOpen', this.getReleases);
+    },
+    destroyed() {
+        if (this.websocketOpenSubscribe) {
+            this.websocketOpenSubscribe.unsubscribe();
+            this.websocketOpenSubscribe = null;
         }
     },
     computed: {
@@ -98,6 +110,9 @@ export default {
             if (this.status > 0) {
                 return;
             }
+            if (this.loadIng > 0) {
+                return;
+            }
             //
             let cache = $A.getStorageJson("cacheAppdown");
             let timeout = 1800;
@@ -107,21 +122,21 @@ export default {
                 return;
             }
             //
-            ;(() => {
-                axios
-                    .get("https://api.github.com/repos/" + this.repoName + "/releases/latest")
-                    .then(({status, data}) => {
-                        if (status === 200) {
-                            $A.setStorage("cacheAppdown", {
-                                time: Math.round(new Date().getTime() / 1000),
-                                data: data
-                            });
-                            this.releases = data;
-                            this.chackReleases();
-                            setTimeout(this.getReleases, timeout)
-                        }
+            this.loadIng++;
+            axios.get("https://api.github.com/repos/" + this.repoName + "/releases/latest").then(({status, data}) => {
+                this.loadIng--;
+                if (status === 200) {
+                    $A.setStorage("cacheAppdown", {
+                        time: Math.round(new Date().getTime() / 1000),
+                        data: data
                     });
-            })();
+                    this.releases = data;
+                    this.chackReleases();
+                    setTimeout(this.getReleases, timeout)
+                }
+            }).catch(() => {
+                this.loadIng--;
+            });
         },
 
         chackReleases() {
@@ -171,50 +186,38 @@ export default {
             if (this.downInfo.state != "completed") {
                 return;
             }
-            const h = this.$createElement;
-            window.__appNotification && window.__appNotification.close();
-            window.__appNotification = Notification({
-                title: this.$L("更新提示"),
-                duration: 0,
-                position: "bottom-right",
-                customClass: "common-app-down-notification",
-                onClose: () => {
+            $A.modalConfirm({
+                okText: this.$L('立即更新'),
+                onOk: () => {
+                    this.installApplication();
+                },
+                onCancel: () => {
                     this.status = 2;
                 },
-                message: h('span', [
-                    h('span', [
-                        h('span', this.$L('发现新版本') + ": "),
-                        h('Tag', {
-                            props: {
-                                color: 'volcano'
-                            }
-                        }, this.releases.tag_name)
-                    ]),
-                    h('MarkdownPreview', {
-                        class: 'common-app-down-body',
-                        props: {
-                            initialValue: this.releases.body
-                        }
-                    }),
-                    h('div', {
-                        class: 'common-app-down-link',
-                        on: {
-                            click: () => {
-                                this.installApplication();
-                            }
-                        },
+                render: (h) => {
+                    return h('div', {
+                        class: 'common-app-down-notification'
                     }, [
-                        h('Icon', {
+                        h('div', {
+                            class: "notification-head"
+                        }, [
+                            h('div', {
+                                class: "notification-title"
+                            }, this.$L('发现新版本')),
+                            h('Tag', {
+                                props: {
+                                    color: 'volcano'
+                                }
+                            }, this.releases.tag_name)
+                        ]),
+                        h('MarkdownPreview', {
+                            class: 'notification-body overlay-y',
                             props: {
-                                type: 'md-checkmark-circle-outline'
-                            },
-                            style: {
-                                marginRight: '5px'
+                                initialValue: this.releases.body
                             }
                         }),
-                        h('span', this.$L('立即更新'))
-                    ]),
-                ])
+                    ])
+                }
             });
         },
 
