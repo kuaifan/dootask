@@ -512,7 +512,7 @@ class ProjectTask extends AbstractModel
                     // 判断符合流转
                     $currentFlowItem = ProjectFlowItem::find($this->flow_item_id);
                     if ($currentFlowItem) {
-                        if (!in_array($currentFlowItem->id, $newFlowItem->turns)) {
+                        if (!in_array($newFlowItem->id, $currentFlowItem->turns)) {
                             throw new ApiException("当前状态[{$currentFlowItem->name}]不可流转到[{$newFlowItem->name}]");
                         }
                         if ($currentFlowItem->userlimit) {
