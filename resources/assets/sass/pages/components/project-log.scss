@@ -2,6 +2,7 @@
     .log-title {
         display: none;
     }
+
     &.is-drawer {
         position: absolute;
         top: 0;
@@ -10,6 +11,7 @@
         bottom: 0;
         padding: 20px;
         overflow: auto;
+
         .log-title {
             color: #333333;
             font-size: 20px;
@@ -18,96 +20,143 @@
             margin-bottom: 24px;
         }
     }
+
     .logs-activity {
         position: relative;
         word-break: break-all;
         padding: 12px 12px;
+
         > li {
             list-style: none;
             padding-top: 0;
+
             &.logs-loading,
             &.logs-more,
             &.logs-none {
                 height: 22px;
                 line-height: 22px;
             }
+
             &.logs-loading {
                 display: flex;
+
                 .common-loading {
                     margin: 0;
                 }
             }
+
             &.logs-more {
                 cursor: pointer;
+
                 &:hover {
                     color: #048be0;
                 }
             }
+
             &.logs-none {
                 cursor: pointer;
                 color: #bbbbbb;
             }
+
             .logs-date {
                 color: rgba(0, 0, 0, .36);
                 padding-bottom: 14px;
             }
+
             .logs-section {
                 margin: 4px;
+
                 .ivu-timeline {
                     > li {
                         padding-bottom: 8px;
+
                         &:last-child {
                             padding-bottom: 0;
                         }
+
                         .ivu-timeline-item-head-custom {
+                            position: static;
+                            left: auto;
                             margin-top: 8px;
+                            margin-left: -13px;
+                            margin-right: 6px;
+                            width: auto;
+                            min-width: 40px;
+                        }
+
+                        .ivu-timeline-item-content {
+                            padding-left: 20px;
+                            margin-top: -5px;
                         }
                     }
                 }
             }
+
             .logs-dot {
-                width: 18px;
+                width: auto;
                 height: 18px;
                 margin-left: 10px;
-                .avatar-box {
-                    > em {
-                        transform-origin: bottom right;
+                display: flex;
+
+                .avatar-name {
+                    &.auto {
+                        color: #9599a1;
                     }
                 }
             }
+
             .log-summary {
+                position: relative;
+                padding: 4px 0 4px 12px;
+
+                &:before {
+                    content: "";
+                    position: absolute;
+                    top: 11px;
+                    left: 0;
+                    width: 5px;
+                    height: 5px;
+                    border-radius: 50%;
+                    background-color: rgba(0, 0, 0, 0.4);
+                }
+
                 > span,
                 > a {
                     padding-right: 6px;
                     word-wrap: break-word;
                     word-break: break-word;
                 }
-                .log-creator {
-                    color:rgba(0, 0, 0, 0.85)
-                }
+
                 .log-text {
                     display: inline-block;
-                    color: rgba(0,0,0,.54);
+                    color: rgba(0, 0, 0, .5);
+
                     .detail-user {
                         display: inline-block;
+                        vertical-align: top;
+
                         .detail-user-wrap {
                             display: flex;
+
                             .common-avatar {
                                 margin: 0 2px;
                             }
                         }
                     }
                 }
+
                 .log-operation {
                     > button {
                         font-size: 12px;
                     }
+
                     > button + button {
                         margin-left: 4px;
                     }
                 }
+
                 .log-time {
-                    color: rgba(0,0,0,.3);
+                    color: rgba(0, 0, 0, .3);
                     font-size: 12px;
                 }
             }

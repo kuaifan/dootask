@@ -897,7 +897,7 @@ class ProjectTask extends AbstractModel
             if ($complete_at === null) {
                 // 标记未完成
                 $this->complete_at = null;
-                $this->addLog("{任务}标记未完成");
+                $this->addLog("标记{任务}未完成");
             } else {
                 // 标记已完成
                 if ($this->parent_id == 0) {
@@ -909,7 +909,7 @@ class ProjectTask extends AbstractModel
                     throw new ApiException('请先领取任务');
                 }
                 $this->complete_at = $complete_at;
-                $this->addLog("{任务}标记已完成");
+                $this->addLog("标记{任务}已完成");
             }
             $this->save();
         });

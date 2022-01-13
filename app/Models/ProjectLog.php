@@ -13,9 +13,10 @@ use App\Module\Base;
  * @property int|null $task_id 项目ID
  * @property int|null $userid 会员ID
  * @property string|null $detail 详细信息
- * @property string|null $record 记录数据
+ * @property array $record 记录数据
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\ProjectTask|null $projectTask
  * @property-read \App\Models\User|null $user
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectLog newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectLog newQuery()
@@ -52,6 +53,14 @@ class ProjectLog extends AbstractModel
     public function user(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(User::class, 'userid', 'userid');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function projectTask(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(ProjectTask::class, 'id', 'task_id');
     }
 
 }

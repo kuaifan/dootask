@@ -2,22 +2,25 @@
     <div :class="['project-log', taskId == 0 ? 'is-drawer' : '']">
         <div class="log-title">{{$L('项目动态')}}</div>
         <ul class="logs-activity">
-            <li v-for="items in lists">
-                <div class="logs-date">{{logDate(items)}}</div>
+            <li v-for="itemA in lists">
+                <div class="logs-date">{{logDate(itemA)}}</div>
                 <div class="logs-section">
                     <Timeline>
-                        <TimelineItem v-for="(item, index) in items.lists" :key="index">
+                        <TimelineItem v-for="(itemB, index) in itemA.lists" :key="index">
                             <div slot="dot" class="logs-dot">
-                                <UserAvatar v-if="item.userid" :userid="item.userid" :size="18"/>
-                                <EAvatar v-else :size="18">A</EAvatar>
+                                <UserAvatar v-if="itemB.userid" :userid="itemB.userid" :size="18" showName/>
+                                <div v-else class="avatar-wrapper common-avatar">
+                                    <EAvatar :size="18">A</EAvatar>
+                                    <div class="avatar-name auto">{{$L('系统')}}</div>
+                                </div>
                             </div>
-                            <div class="log-summary">
-                                <span class="log-creator">{{item.user ? item.user.nickname : $L('系统')}}</span>
-                                <ProjectLogDetail class="log-text" :render="logDetail" :item="item"/>
-                                <span v-if="operationList(item).length > 0" class="log-operation">
-                                    <Button v-for="(op, oi) in operationList(item)" :key="oi" size="small" @click="onOperation(op)">{{op.button}}</Button>
+                            <div v-for="log in itemB.lists" class="log-summary">
+                                <ProjectLogDetail :render="logDetail" :item="log"/>
+                                <span v-if="operationList(log).length > 0" class="log-operation">
+                                    <Button v-for="(op, oi) in operationList(log)" :key="oi" size="small" @click="onOperation(op)">{{op.button}}</Button>
                                 </span>
-                                <span class="log-time">{{item.time.ymd}} {{item.time.segment}} {{item.time.hi}}</span></div>
+                                <span class="log-time">{{log.time.ymd}} {{log.time.segment}} {{log.time.hi}}</span>
+                            </div>
                         </TimelineItem>
                     </Timeline>
                 </div>
@@ -30,7 +33,6 @@
 </template>
 
 <script>
-import {VNode} from "vue";
 import ProjectLogDetail from "./ProjectLogDetail";
 
 export default {
@@ -50,7 +52,7 @@ export default {
         return {
             loadIng: 0,
 
-            lists: {},
+            lists: [],
             listPage: 1,
             hasMorePages: false,
             totalNum: -1,
@@ -67,11 +69,11 @@ export default {
 
     watch: {
         projectId() {
-            this.lists = {};
+            this.lists = [];
             this.getLists(true);
         },
         taskId() {
-            this.lists = {};
+            this.lists = [];
             this.getLists(true);
         },
         loadIng(num) {
@@ -80,9 +82,9 @@ export default {
     },
 
     methods: {
-        logDate(items) {
+        logDate(itemA) {
             let md = $A.formatDate("m-d");
-            return md == items.ymd ? (items.ymd + ' ' + this.$L('今天')) : items.key;
+            return md == itemA.ymd ? (itemA.ymd + ' ' + this.$L('今天')) : itemA.key;
         },
 
         getLists(resetLoad) {
@@ -101,25 +103,38 @@ export default {
             }).then(({data}) => {
                 this.loadIng--;
                 if (resetLoad === true) {
-                    this.lists = {};
+                    this.lists = [];
                 }
-                data.data.forEach((item) => {
-                    let time = item.time;
-                    let key = time.ymd + " " + time.week;
-                    if (typeof this.lists[key] !== "object") {
-                        this.$set(this.lists, key, {
-                            key: key,
-                            ymd: time.ymd,
-                            lists: [],
-                        });
+                data.data.some(log => {
+                    let tmpTime = log.time;
+                    let tmpKey = tmpTime.ymd + " " + tmpTime.week;
+                    let itemA = this.lists.find(({key}) => key == tmpKey)
+                    if (itemA) {
+                        let itemB = itemA.lists.find(({userid}) => userid == log.userid)
+                        if (itemB) {
+                            itemB.lists.push(log)
+                        } else {
+                            itemA.lists.push({
+                                userid: log.userid,
+                                lists: [log]
+                            })
+                        }
+                    } else {
+                        this.lists.push({
+                            key: tmpKey,
+                            ymd: log.ymd,
+                            lists: [{
+                                userid: log.userid,
+                                lists: [log]
+                            }]
+                        })
                     }
-                    this.lists[key].lists.push(item);
-                });
+                })
                 this.hasMorePages = data.current_page < data.last_page;
                 this.totalNum = data.total;
             }).catch(() => {
                 this.loadIng--;
-                this.lists = {};
+                this.lists = [];
                 this.hasMorePages = false;
                 this.totalNum = 0;
             });
