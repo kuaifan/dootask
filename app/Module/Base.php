@@ -743,11 +743,7 @@ class Base
         ) {
             return $str;
         } else {
-            try {
-                return url($str);
-            } catch (\Throwable $e) {
-                return self::getSchemeAndHost() . "/" . $str;
-            }
+            return Base::leftDelete(url($str), "http://localhost");
         }
     }
 
@@ -764,22 +760,8 @@ class Base
             }
             return $str;
         }
-        try {
-            $find = url('');
-        } catch (\Throwable $e) {
-            $find = self::getSchemeAndHost();
-        }
+        $find = url('');
         return Base::leftDelete($str, $find . '/');
-    }
-
-    /**
-     * 获取主地址
-     * @return string   如：http://127.0.0.1:8080
-     */
-    public static function getSchemeAndHost()
-    {
-        $scheme = isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == '443' ? 'https://' : 'http://';
-        return $scheme.($_SERVER['HTTP_HOST'] ?? '');
     }
 
     /**
