@@ -756,7 +756,11 @@ class Base
         ) {
             return $str;
         } else {
-            return Base::leftDelete(url($str), "http://localhost");
+            $url = url($str);
+            if (str_starts_with($url, "http://localhost/")) {
+                $url = self::localhostAndPort() . substr($url, 17);
+            }
+            return $url;
         }
     }
 
@@ -773,8 +777,16 @@ class Base
             }
             return $str;
         }
-        $find = url('');
-        return Base::leftDelete($str, $find . '/');
+        $str = Base::leftDelete($str, url('') . '/');
+        return Base::leftDelete($str, self::localhostAndPort());
+    }
+
+    /**
+     * 获取localhost和端口，如：http://localhost:8888/
+     * @return string
+     */
+    public static function localhostAndPort() {
+        return "http://localhost:" . env("APP_PORT", "80") . "/";
     }
 
     /**
