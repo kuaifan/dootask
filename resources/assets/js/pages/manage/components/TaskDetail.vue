@@ -1025,10 +1025,13 @@ export default {
                         $A.setStorage("messenger::dialogId", data.dialog_id)
                         this.$store.state.dialogOpenId = data.dialog_id;
                         this.$store.dispatch('openTask', 0);
+                        this.msgText = "";
                     } else {
-                        this.$refs.dialog.sendMsg(this.msgText);
+                        this.$nextTick(() => {
+                            this.$refs.dialog.sendMsg(this.msgText);
+                            this.msgText = "";
+                        })
                     }
-                    this.msgText = "";
                 });
             }).catch(({msg}) => {
                 $A.modalError(msg);
@@ -1125,8 +1128,10 @@ export default {
                     if (this.$refs.dialog || num > 20) {
                         clearInterval(interval);
                         if (this.$refs.dialog) {
-                            this.$refs.dialog.sendMsg(this.msgText);
-                            this.msgText = "";
+                            this.$nextTick(() => {
+                                this.$refs.dialog.sendMsg(this.msgText);
+                                this.msgText = "";
+                            })
                         }
                     }
                 }, 100);
