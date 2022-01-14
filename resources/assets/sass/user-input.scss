@@ -1,0 +1,70 @@
+.common-user {
+    position: relative;
+    white-space: normal;
+    .common-user-loading {
+        position: absolute;
+        top: 2px;
+        bottom: 0;
+        right: 10px;
+        display: flex;
+        align-items: center;
+        .common-loading {
+            width: 14px;
+            height: 14px;
+        }
+    }
+    &.hidden-input {
+        .ivu-select-selection {
+            padding: 0 4px;
+            .ivu-select-input {
+                display: none;
+            }
+        }
+    }
+}
+.common-user-transfer {
+    .user-input-option {
+        display: flex;
+        align-items: center;
+        .user-input-avatar {
+            display: flex;
+            align-items: center;
+            .avatar {
+                width: 26px;
+                height: 26px;
+                line-height: 26px;
+            }
+        }
+        .user-input-nickname {
+            margin-left: 10px;
+            flex: 1;
+        }
+        .user-input-userid {
+            margin-left: 10px;
+            font-size: 12px;
+            color: #cccccc;
+            transition: margin 0.1s;
+        }
+    }
+    .ivu-select-item {
+        &.ivu-select-item-selected {
+            &:after {
+                top: 8px;
+            }
+            .user-input-option {
+                .user-input-userid {
+                    margin-right: 16px;
+                }
+            }
+        }
+    }
+    .user-drop-prepend {
+        text-align: center;
+        color: #c5c8ce;
+        line-height: 20px;
+        padding-bottom: 5px;
+        font-size: 12px;
+        border-bottom: 1px solid #f1f1f1;
+        margin-bottom: 5px;
+    }
+}

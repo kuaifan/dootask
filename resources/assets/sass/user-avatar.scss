@@ -1,0 +1,73 @@
+.common-avatar {
+    position: relative;
+    &.avatar-wrapper {
+        display: flex;
+        align-items: center;
+        .avatar-box {
+            position: relative;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            .avatar-default {
+                background-color: transparent;
+            }
+            .avatar-text {
+                background-color: $primary-color;
+                > span {
+                    display: inline-block;
+                    font-size: 15px;
+                    line-height: 1;
+                }
+            }
+            > em {
+                position: absolute;
+                right: 0;
+                bottom: 0;
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background-color: #ff9900;
+                border: 1px solid #ffffff;
+                transform-origin: right bottom;
+                z-index: 1;
+            }
+            &.online {
+                > em {
+                    background-color: $primary-color;
+                }
+            }
+        }
+        .avatar-name {
+            padding-left: 6px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
+}
+.common-avatar-transfer {
+    padding: 4px 2px;
+    line-height: 1.5;
+    > p {
+        padding: 1px 2px;
+    }
+    .avatar-icons {
+        margin-top: 12px;
+        border-top: 1px solid rgba(244, 244, 245, 0.5);
+        padding: 8px 0 2px;
+        display: flex;
+        align-items: center;
+        > i {
+            cursor: pointer;
+            font-size: 22px;
+            margin-right: 12px;
+            color: #F4F4F5;
+            &:last-child {
+                margin-right: 0;
+            }
+            &:hover {
+                color: #ffffff;
+            }
+        }
+    }
+}

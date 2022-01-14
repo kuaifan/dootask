@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\DialogController;
 use App\Http\Controllers\Api\FileController;
 use App\Http\Controllers\Api\ProjectController;
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SystemController;
 use App\Http\Controllers\Api\UsersController;
 use App\Http\Controllers\IndexController;
@@ -39,6 +40,9 @@ Route::prefix('api')->middleware(['webapi'])->group(function () {
     // 文件
     Route::any('file/{method}',                     FileController::class);
     Route::any('file/{method}/{action}',            FileController::class);
+    // 报告
+    Route::any('report/{method}',                     ReportController::class);
+    Route::any('report/{method}/{action}',            ReportController::class);
 });
 
 /**

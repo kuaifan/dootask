@@ -1,0 +1,14 @@
+.common-circle {
+    border-radius: 50%;
+    .common-circle-path {
+        fill: transparent;
+    }
+    .common-circle-g-path-ring {
+        stroke: $primary-color;
+    }
+    .common-circle-g-path-core {
+        fill: $primary-color;
+        transform: scale(0.56);
+        transform-origin: 50%;
+    }
+}

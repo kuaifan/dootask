@@ -1,0 +1,379 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Exceptions\ApiException;
+use App\Models\ProjectTask;
+use App\Models\Report;
+use App\Models\ReportReceive;
+use App\Models\User;
+use App\Module\Base;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Validation\Rule;
+use Request;
+use Illuminate\Support\Facades\Validator;
+
+/**
+ * @apiDefine report
+ *
+ * 汇报
+ */
+class ReportController extends AbstractController
+{
+    /**
+     * @api {get} api/report/my          01. 我发送的汇报
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup report
+     * @apiName my
+     *
+     * @apiParam {Number} [user]        会员ID
+     * @apiParam {String} [type]        汇报类型，weekly:周报，daily:日报
+     * @apiParam {Number} [page]        当前页，默认:1
+     * @apiParam {Number} [pagesize]    每页显示数量，默认:20，最大:50
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function my(): array
+    {
+        $user = User::auth();
+        // 搜索当前用户
+        $builder = Report::query()->whereUserid($user->userid);
+        $type = trim(Request::input('type'));
+        $createAt = Request::input('created_at');
+        in_array($type, [Report::WEEKLY, Report::DAILY]) && $builder->whereType($type);
+        $whereArray = [];
+        if (is_array($createAt)) {
+            if ($createAt[0] > 0) $whereArray[] = ['created_at', '>=', date('Y-m-d H:i:s', Base::dayTimeF($createAt[0]))];
+            if ($createAt[1] > 0) $whereArray[] = ['created_at', '<=', date('Y-m-d H:i:s', Base::dayTimeE($createAt[1]))];
+        }
+        $list = $builder->where($whereArray)->orderByDesc('created_at')->paginate(Base::getPaginate(50, 20));
+        if ($list->items()) {
+            foreach ($list->items() as $item) {
+                $item->receivesUser;
+                $item->receives = empty($item->receivesUser) ? [] : array_column($item->receivesUser->toArray(), "userid");
+            }
+        }
+
+        return Base::retSuccess('success', $list);
+    }
+
+    /**
+     * 我接收的汇报
+     * @return array
+     */
+    public function receive(): array
+    {
+        $user = User::auth();
+        $builder = Report::query();
+        $builder->whereHas("receivesUser", function ($query) use ($user) {
+            $query->where("report_receives.userid", $user->userid);
+        });
+        $type = trim(Request::input('type'));
+        $createAt = Request::input('created_at');
+        $username = trim(Request::input('username', ''));
+        $builder->whereHas('sendUser', function ($query) use ($username) {
+            if (!empty($username)) {
+                $query->where('users.email', 'LIKE', '%' . $username . '%');
+            }
+        });
+        in_array($type, [Report::WEEKLY, Report::DAILY]) && $builder->whereType($type);
+        $whereArray = [];
+        if (is_array($createAt)) {
+            if ($createAt[0] > 0) $whereArray[] = ['created_at', '>=', date('Y-m-d H:i:s', Base::dayTimeF($createAt[0]))];
+            if ($createAt[1] > 0) $whereArray[] = ['created_at', '<=', date('Y-m-d H:i:s', Base::dayTimeE($createAt[1]))];
+        }
+        $list = $builder->where($whereArray)->orderByDesc('created_at')->paginate(Base::getPaginate(50, 20));
+        if ($list->items()) {
+            foreach ($list->items() as $item) {
+                $item["receive_time"] = ReportReceive::query()->whereRid($item["id"])->whereUserid($user->userid)->value("receive_time");
+                $item->receivesUser;
+                $item->receives = empty($item->receivesUser) ? [] : array_column($item->receivesUser->toArray(), "userid");
+            }
+        }
+        return Base::retSuccess('success', $list);
+    }
+
+    /**
+     * 保存并发送工作汇报
+     * @return array
+     */
+    public function store(): array
+    {
+        $input = [
+            "id" => Base::getPostValue("id", 0),
+            "title" => Base::getPostValue("title"),
+            "type" => Base::getPostValue("type"),
+            "content" => Base::getPostValue("content"),
+            "receive" => Base::getPostValue("receive"),
+            // 以当前日期为基础的周期偏移量。例如选择了上一周那么就是 -1，上一天同理。
+            "offset" => Base::getPostValue("offset", 0),
+        ];
+        $validator = Validator::make($input, [
+            'id' => 'numeric',
+            'title' => 'required',
+            'type' => ['required', Rule::in([Report::WEEKLY, Report::DAILY])],
+            'content' => 'required',
+            'receive' => 'required',
+            'offset' => ['numeric', 'max:0'],
+        ], [
+            'id.numeric' => 'ID只能是数字',
+            'title.required' => '请填写标题',
+            'type.required' => '请选择汇报类型',
+            'type.in' => '汇报类型错误',
+            'content.required' => '请填写汇报内容',
+            'receive.required' => '请选择接收人',
+            'offset.numeric' => '工作汇报周期格式错误，只能是数字',
+            'offset.max' => '只能提交当天/本周或者之前的的工作汇报',
+        ]);
+        if ($validator->fails())
+            return Base::retError($validator->errors()->first());
+
+        $user = User::auth();
+        // 接收人
+        if ( is_array($input["receive"]) ) {
+            // 删除当前登录人
+            $input["receive"] = array_diff($input["receive"], [$user->userid]);
+
+            // 查询用户是否存在
+            if ( count($input["receive"]) !== User::whereIn("userid", $input["receive"])->count() )
+                return Base::retError("用户不存在");
+
+            foreach ($input["receive"] as $userid) {
+                $input["receive_content"][] = [
+                    "receive_time" => Carbon::now()->toDateTimeString(),
+                    "userid" => $userid,
+                    "read" => 0,
+                ];
+            }
+        }
+
+        // 在事务中运行
+        Report::transaction( function () use ($input, $user) {
+            $id = $input["id"];
+            if ($id) {
+                // 编辑
+                $report = Report::getOne($id);
+                $report->updateInstance([
+                    "title" => $input["title"],
+                    "type" => $input["type"],
+                    "content" => htmlspecialchars($input["content"]),
+                ]);
+            } else {
+                // 生成唯一标识
+                $sign = Report::generateSign($input["type"], $input["offset"]);
+                // 检查唯一标识是否存在
+                if (empty($input["id"])) {
+                    if (Report::query()->whereSign($sign)->count() > 0)
+                        throw new ApiException("请勿重复提交工作汇报");
+                }
+                $report = Report::createInstance([
+                    "title" => $input["title"],
+                    "type" => $input["type"],
+                    "content" => htmlspecialchars($input["content"]),
+                    "userid" => $user->userid,
+                    "sign" => $sign,
+                ]);
+            }
+
+            $report->save();
+            if (!empty($input["receive_content"])) {
+                // 删除关联
+                $report->Receives()->delete();
+                // 保存接收人
+                $report->Receives()->createMany($input["receive_content"]);
+            }
+
+        } );
+        return Base::retSuccess('success');
+    }
+
+    /**
+     * 生成汇报模板
+     * @return array
+     */
+    public function template(): array
+    {
+        $user = User::auth();
+        $type = trim( Request::input("type") );
+        $offset = abs( intval( Request::input("offset", 0) ) );
+        $now_dt = trim( Request::input("date") ) ? Carbon::parse( Request::input("date") ) : Carbon::now();
+        // 获取开始时间
+        if ($type === Report::DAILY) {
+            $start_time = Carbon::today();
+            if ( $offset > 0 ) {
+                // 将当前时间调整为偏移量当天结束
+                $now_dt->subDays( $offset )->endOfDay();
+                // 开始时间偏移量计算
+                $start_time->subDays( $offset );
+            }
+            $end_time = Carbon::instance($start_time)->endOfDay();
+        } else {
+            $start_time = Carbon::now();
+            if ( $offset > 0 ) {
+                // 将当前时间调整为偏移量当周结束
+                $now_dt->subWeeks( $offset )->endOfDay();
+                // 开始时间偏移量计算
+                $start_time->subWeeks( $offset );
+            }
+            $start_time->startOfWeek();
+            $end_time = Carbon::instance($start_time)->endOfWeek();
+        }
+        // 生成唯一标识
+        $sign = Report::generateSign($type, 0, Carbon::instance($start_time));
+        $one = Report::query()->whereSign($sign)->first();
+        // 如果已经提交了相关汇报
+        if ($one) {
+            return Base::retSuccess('success', [
+                "content" => $one->content,
+                "title" => $one->title,
+                "id" => $one->id,
+            ]);
+        }
+
+
+        // 已完成的任务
+        $completeContent = "";
+        $complete_task = ProjectTask::query()
+            ->whereNotNull("complete_at")
+            ->whereBetween("complete_at", [$start_time->toDateTimeString(), $end_time->toDateTimeString()])
+            ->whereHas("taskUser", function ($query) use ($user) {
+                $query->where("userid", $user->userid);
+            })
+            ->orderByDesc("id")
+            ->get();
+        if ($complete_task->isNotEmpty()) {
+            foreach ($complete_task as $task) {
+                $complete_at = Carbon::parse($task->complete_at);
+                $pre = $type == Report::WEEKLY ? ('<span>[' . Base::Lang('周' . ['日', '一', '二', '三', '四', '五', '六'][$complete_at->dayOfWeek]) . ']</span>&nbsp;') : '';
+                $completeContent .= '<li>' . $pre . $task->name . '</li>';
+            }
+        } else {
+            $completeContent = '<li>&nbsp;</li>';
+        }
+
+        // 未完成的任务
+        $unfinishedContent = "";
+        $unfinished_task = ProjectTask::query()
+            ->whereNull("complete_at")
+            ->whereNotNull("start_at")
+            ->where("end_at", "<", $end_time->toDateTimeString())
+            ->whereHas("taskUser", function ($query) use ($user) {
+                $query->where("userid", $user->userid);
+            })
+            ->orderByDesc("id")
+            ->get();
+        if ($unfinished_task->isNotEmpty()) {
+            foreach ($unfinished_task as $task) {
+                empty($task->end_at) || $end_at = Carbon::parse($task->end_at);
+                $pre = ( !empty( $end_at ) && $end_at->lt($now_dt) ) ? '<span style="color:#ff0000;">[' . Base::Lang('超期') . ']</span>&nbsp;' : '';
+                $unfinishedContent .= '<li>' . $pre . $task->name . '</li>';
+            }
+        } else {
+            $unfinishedContent = '<li>&nbsp;</li>';
+        }
+        // 生成标题
+        if ( $type === Report::WEEKLY ) {
+            $title = $user->nickname . "的周报[" . $start_time->format("m/d") . "-" . $end_time->format("m/d") . "]";
+            $title .= "[" . $start_time->month . "月第" . $start_time->weekOfMonth . "周]";
+        } else {
+            $title = $user->nickname . "的日报[" . $start_time->format("Y/m/d") . "]";
+        }
+        return Base::retSuccess('success', [
+            "time" => $start_time->toDateTimeString(),
+            "complete_task" => $complete_task,
+            "unfinished_task" => $unfinished_task,
+            "content" => '<h2>' . Base::Lang('已完成工作') . '</h2><ol>' .
+                $completeContent . '</ol><h2>' .
+                Base::Lang('未完成的工作') . '</h2><ol>' .
+                $unfinishedContent . '</ol>',
+            "title" => $title,
+        ]);
+    }
+
+    /**
+     * @return array
+     */
+    public function detail(): array
+    {
+        $id = intval( trim( Request::input("id") ) );
+        if (empty( $id ))
+            return Base::retError("缺少ID参数");
+
+        $one = Report::getOne($id);
+        $one["type_val"] = $one->getRawOriginal("type");
+
+        $user = User::auth();
+        // 标记为已读
+        if ( !empty( $one->receivesUser ) ) {
+            foreach ($one->receivesUser as $item) {
+                if ($item->userid === $user->userid && $item->pivot->read === 0) {
+                    $one->receivesUser()->updateExistingPivot($user->userid, [
+                        "read" => 1,
+                    ]);
+                }
+            }
+        }
+
+        return Base::retSuccess("success", $one);
+    }
+
+    /**
+     * 获取最后一次提交的接收人
+     * @return array
+     */
+    public function last_submitter(): array
+    {
+        $one = Report::getLastOne();
+        return Base::retSuccess("success", empty( $one["receives"] ) ? [] : $one["receives"]);
+    }
+
+    /**
+     * 获取未读
+     * @return array
+     */
+    public function unread(): array
+    {
+        $userid = intval( trim( Request::input("userid") ) );
+        $user = empty($userid) ? User::auth() : User::find($userid);
+
+        $data = Report::whereHas("Receives", function (Builder $query) use ($user) {
+            $query->where("userid", $user->userid)->where("read", 0);
+        })->orderByDesc('created_at')->paginate(Base::getPaginate(50, 20));
+        return Base::retSuccess("success", $data);
+    }
+
+    /**
+     * 标记汇报已读，可批量
+     * @return array
+     */
+    public function read(): array
+    {
+        $user = User::auth();
+        $ids = Request::input("ids");
+        if ( !is_array($ids) && !is_string($ids) ) {
+            return Base::retError("请传入正确的工作汇报Id");
+        }
+
+        if ( is_string($ids) ) {
+            $ids = explode(",", $ids);
+        }
+
+        $data = Report::with(["receivesUser" => function (BelongsToMany $query) use ($user) {
+            $query->where("report_receives.userid", $user->userid)->where("read", 0);
+        }])->whereIn("id", $ids)->get();
+
+        if ( $data->isNotEmpty() ) {
+            foreach ($data as $item) {
+                (!empty($item->receivesUser) && $item->receivesUser->isNotEmpty()) && $item->receivesUser()->updateExistingPivot($user->userid, [
+                    "read" => 1,
+                ]);
+            }
+        }
+        return Base::retSuccess("success", $data);
+    }
+}

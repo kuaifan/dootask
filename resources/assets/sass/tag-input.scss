@@ -1,0 +1,93 @@
+.common-tag-input {
+    display: inline-block;
+    width: 100%;
+    min-height: 32px;
+    padding: 2px 7px;
+    border: 1px solid #dddee1;
+    border-radius: 4px;
+    color: #495060;
+    background: #fff;
+    position: relative;
+    cursor: text;
+    vertical-align: middle;
+    line-height: normal;
+    transition: all .2s;
+
+    &:hover {
+        border-color: #a2d98d;
+    }
+
+    &.focus {
+        border-color: #a2d98d;
+        box-shadow: 0 0 0 2px rgba(139,207,112,.2)
+    }
+
+    .tags-item, .tags-input {
+        position: relative;
+        float: left;
+        color: #495060;
+        background-color: #f1f8ff;
+        border-radius: 3px;
+        line-height: 22px;
+        margin: 2px 6px 2px 0;
+        padding: 0 20px 0 6px;
+
+        .tags-content {
+            line-height: 22px;
+        }
+
+        .tags-del {
+            width: 20px;
+            height: 22px;
+            text-align: center;
+            cursor: pointer;
+            position: absolute;
+            top: -1px;
+            right: 0;
+        }
+    }
+
+    .tags-input {
+        max-width: 80%;
+        padding: 0;
+        background-color: inherit;
+        border: none;
+        color: inherit;
+        height: 22px;
+        line-height: 22px;
+        -webkit-appearance: none;
+        outline: none;
+        resize: none;
+        overflow: hidden;
+    }
+
+    .tags-input::placeholder {
+        color: #bbbbbb;
+    }
+
+    .tags-placeholder {
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: -1;
+        color: rgba(255, 255, 255, 0);
+    }
+}
+.common-tag-input::after {
+    content: "";
+    display: block;
+    height: 0;
+    clear: both;
+}
+.ivu-form-item-error {
+    .common-tag-input {
+        border-color: #ed4014;
+        &:hover {
+            border-color: #ed4014;
+        }
+        &.focus {
+            border-color: #ed4014;
+            box-shadow: 0 0 0 2px rgba(237,64,20,.2)
+        }
+    }
+}

@@ -180,6 +180,17 @@
                             }
                         }
                     }
+                    .dialog-action {
+                        align-self: flex-start;
+                        display: flex;
+                        align-items: flex-start;
+                        height: 100%;
+
+                        > * {
+                            margin: 0 5px;
+                        }
+
+                    }
                     &.history {
                         cursor: pointer;
                         justify-content: center;

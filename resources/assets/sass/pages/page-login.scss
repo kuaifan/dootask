@@ -79,6 +79,17 @@
                 .login-switch {
                     color: #aaaaaa;
                 }
+                .login-input-tips-box{
+                    position: relative;
+                    .login-input-tips{
+                        font-size: 12px;
+                        position: absolute;
+                        left: 0;
+                        bottom: -20px;
+                        color: #c7c7c7;
+                    }
+                }
+
             }
         }
         .login-bottom {

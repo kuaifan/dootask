@@ -1,0 +1,255 @@
+.img-upload-modal {
+    .ivu-modal-mask {
+        z-index: 1001;
+    }
+
+    .ivu-modal-no-mask {
+        background-color: rgba(55, 55, 55, .2);
+    }
+
+    .ivu-modal-wrap {
+        z-index: 1001;
+    }
+}
+
+.imgcomp-upload-list {
+    display: inline-block;
+    width: 60px;
+    height: 60px;
+    text-align: center;
+    line-height: 60px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #fff;
+    position: relative;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, .2);
+    margin-right: 4px;
+    vertical-align: top;
+
+    .imgcomp-upload-img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-position: center;
+        background-size: cover;
+    }
+
+    .imgcomp-upload-list-cover {
+        display: none;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, .6);
+    }
+
+    .imgcomp-upload-list-cover i {
+        color: #fff;
+        font-size: 24px;
+        cursor: pointer;
+        vertical-align: middle;
+        margin: 0;
+        transition: all .2s;
+    }
+
+    .imgcomp-upload-list-cover i:hover {
+        font-size: 28px;
+    }
+
+    .ivu-progress {
+        height: 100%;
+        .ivu-progress-outer {
+            background-color: rgba(0, 0, 0, 0.68);
+            height: 100%;
+            .ivu-progress-inner {
+                width: 88%;
+                margin: 0 auto;
+            }
+        }
+    }
+}
+
+.imgcomp-upload-list:hover .imgcomp-upload-list-cover {
+    display: block;
+}
+
+.img-upload-foot {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    .img-upload-foot-input {
+        flex: 1;
+        text-align: left;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+
+        .img-upload-foot-httptitle {
+            cursor: pointer;
+            padding-left: 3px;
+            margin-right: 22px;
+        }
+    }
+}
+
+.add-box {
+    width: 60px;
+    height: 60px;
+    line-height: 60px;
+    display: inline-block;
+    background: #fff;
+    border: 1px dashed #dddee1;
+    border-radius: 4px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    vertical-align: top;
+
+    .add-box-icon {
+        i {
+            vertical-align: middle;
+            padding-bottom: 2px;
+        }
+    }
+
+    .add-box-upload {
+        display: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        color: #ffffff;
+        padding-top: 9px;
+        background: rgba(0, 0, 0, 0.6);
+
+        .add-box-item {
+            height: 22px;
+            line-height: 22px;
+            cursor: pointer;
+
+            .ivu-upload-drag, .ivu-upload-drag:hover {
+                background: transparent;
+                border: 0;
+                border-radius: 0;
+            }
+
+            span {
+                transition: all .2s;
+                font-size: 12px;
+            }
+        }
+
+        .add-box-item:hover {
+            span {
+                font-size: 14px;
+            }
+        }
+    }
+
+    em {
+        font-style: normal;
+    }
+}
+
+.add-box:hover {
+    border-color: rgba(0, 0, 0, .6);
+
+    .add-box-upload {
+        display: block;
+    }
+}
+
+.callback-add-box {
+    display: block;
+    width: auto;
+    height: 25px;
+    line-height: 25px;
+    border: 0;
+    background: transparent;
+
+    .add-box-icon {
+        display: none;
+    }
+
+    .add-box-upload {
+        display: block;
+        width: auto;
+        background: transparent;
+        color: #333;
+        padding: 0;
+
+        > div {
+            display: inline-block;
+            padding-right: 10px;
+        }
+    }
+}
+
+.browse-load {
+    margin: 20px;
+    text-align: center;
+}
+
+.browse-list {
+    max-height: 540px;
+    overflow: auto;
+
+    .browse-item {
+        margin: 10px 15px;
+        display: inline-block;
+        text-align: center;
+        cursor: pointer;
+        position: relative;
+
+        .browse-img {
+            width: 64px;
+            height: 64px;
+            background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKoAAABxCAAAAABg5GeyAAACW0lEQVR4Ae3XVRLjMBAE0L3/rSwKM3OcSNPyLVYOLvM6UD0Bd03LVe9XH+RlhlRSSSWVVFJJJZVUUkkllVRSSSWVVFJJJZVUUkl9WyqppJJKKqmkkgpURP17xngOAR5NxW5wlJ9MaLQh83F4NHWmd/gZtdVBaOldfDB1bq5UpJFbFOC6LKnYrkRO209PAw+hIuzWB8Ep5es8HvYo4z4tE1X8UeRwlMM2D5Bzkc7kj6Bi3VTKDDwEeUcrMxrUvGDXTnHa6kK69SDN9sgq1clxKSbNHqqnYmdri81Q9QHf1JPt1Frncaib2XbiTKL2GkHaurnY9LOulMV0O7G6Kw+g9sw2ohhm62KezVJaaufjWC1TnOkr1exilJ7Ji0vxCCqO9V4UwV4PYr9+apouhGYLKfnahdpqegjmeoXOpXgANe70pKT6Zhu19qkY2nC0PZS527lQOyInqr8Uvc5jqfUb1X+PGh5IhW90S2quh3FQC2XRcF66TUkTXPcLKm5FtdR9RJq+2hWII7UpFtmsQLEyzsdJtkxxpr6gLotbUSlV9yeT0Trmzk2XPdUThLYarUbWOY9j04xXQ2u+pMZLYSumGmNUH3HbM9qOAwSHodN2Pks25F2j3aI7+IxqNsB+YLWb16ukSjiW4xNB0gMoMfApBS/XZQgi3p9/5RsiKNKZEOwYFVIF5VyTyD19sbyjIJiNJRZxpNbx2S8sGKvGZNHJBniBu9Wy5WxjGuQFqIAcBHiRGyt4ua5gSCWVVFJJJZVUUkkllVRSSSWVVFJJJZVUUkkllVRSSSWVVFI/AgO0SXIVYHeGAAAAAElFTkSuQmCC);
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+
+        .browse-title {
+            display: block;
+            width: 64px;
+            margin-top: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .browse-icon {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 64px;
+            font-size: 36px;
+            padding-top: 15px;
+            color: #ffffff;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+    }
+}
+
+.browse-list-disabled {
+    position: relative;
+}
+
+.browse-list-disabled:after {
+    position: absolute;
+    content: '';
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
+    z-index: 1;
+}

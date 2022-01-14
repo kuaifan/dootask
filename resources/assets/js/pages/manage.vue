@@ -21,7 +21,10 @@
                         v-for="(item, key) in menu"
                         :key="key"
                         :divided="!!item.divided"
-                        :name="item.path">{{$L(item.name)}}</DropdownItem>
+                        :name="item.path">
+                        {{$L(item.name)}}
+                        <Badge v-if="item.path === 'workReport'" :count="reportUnreadNumber"/>
+                    </DropdownItem>
                     <Dropdown placement="right-start" @on-click="setLanguage">
                         <DropdownItem divided>
                             <div class="manage-menu-language">
@@ -160,6 +163,14 @@
             </div>
         </Modal>
 
+        <!--工作报告-->
+        <DrawerOverlay
+            v-model="workReportShow"
+            placement="right"
+            :size="900">
+            <Report v-if="workReportShow" @read="reportUnread" />
+        </DrawerOverlay>
+
         <!--查看所有团队-->
         <DrawerOverlay
             v-model="allUserShow"
@@ -206,11 +217,13 @@ import ProjectManagement from "./manage/components/ProjectManagement";
 import DrawerOverlay from "../components/DrawerOverlay";
 import DragBallComponent from "../components/DragBallComponent";
 import TaskAdd from "./manage/components/TaskAdd";
+import Report from "./manage/components/Report";
 import {Store} from "le5le-store";
 
 export default {
     components: {
         TaskAdd,
+        Report,
         DragBallComponent, DrawerOverlay, ProjectManagement, TeamManagement, ProjectArchived, TaskDetail},
     data() {
         return {
@@ -242,6 +255,7 @@ export default {
             show768Menu: false,
             innerHeight: window.innerHeight,
 
+            workReportShow: false,
             allUserShow: false,
             allProjectShow: false,
             archivedProjectShow: false,
@@ -249,6 +263,7 @@ export default {
             natificationHidden: false,
             natificationReady: false,
             notificationClass: null,
+            reportUnreadNumber: 0,
         }
     },
 
@@ -273,6 +288,9 @@ export default {
         if (this.$Electron) {
             this.$Electron.ipcRenderer.send('setDockBadge', 0);
         }
+
+        // 工作汇报未读标记
+        this.reportUnread();
     },
 
     beforeDestroy() {
@@ -334,7 +352,8 @@ export default {
                     {path: 'clearCache', name: '清除缓存'},
                     {path: 'system', name: '系统设置', divided: true},
                     {path: 'priority', name: '任务等级'},
-                    {path: 'allUser', name: '团队管理', divided: true},
+                    {path: 'workReport', name: '工作报告', divided: true},
+                    {path: 'allUser', name: '团队管理'},
                     {path: 'allProject', name: '所有项目'},
                     {path: 'archivedProject', name: '已归档的项目'}
                 ]
@@ -343,7 +362,8 @@ export default {
                     {path: 'personal', name: '个人设置'},
                     {path: 'password', name: '密码设置'},
                     {path: 'clearCache', name: '清除缓存'},
-                    {path: 'archivedProject', name: '已归档的项目', divided: true}
+                    {path: 'workReport', name: '工作报告', divided: true},
+                    {path: 'archivedProject', name: '已归档的项目'}
                 ]
             }
         },
@@ -473,6 +493,9 @@ export default {
                     return;
                 case 'archivedProject':
                     this.archivedProjectShow = true;
+                    return;
+                case 'workReport':
+                    this.workReportShow = true;
                     return;
                 case 'clearCache':
                     this.$store.dispatch("handleClearCache", null).then(() => {
@@ -683,6 +706,17 @@ export default {
                 this.natificationHidden = !!document[hiddenProperty]
             }
             document.addEventListener(visibilityChangeEvent, visibilityChangeListener);
+        },
+
+        reportUnread() {
+            this.$store.dispatch("call", {
+                url: 'report/unread',
+                method: 'get',
+            }).then(({data, msg}) => {
+                // data 结果数据
+                this.reportUnreadNumber = data.total ? data.total : 0;
+                // msg 结果描述
+            });
         }
     }
 }

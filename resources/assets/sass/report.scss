@@ -1,0 +1,218 @@
+.report {
+    height: 100%;
+    padding: 10px 20px;
+    .report-list-wrap {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        top: 0;
+        padding-top: 53px;
+        flex-direction: column;
+        position: absolute;
+        .report-row-header,.report-row-foot{
+            flex: 0 0 auto;
+        }
+        .report-row-content{
+            flex:1 1 auto;
+            .ivu-table{
+                .ivu-table-body{
+                    height: 100%;
+                    overflow-y: auto;
+                    padding-bottom: 50px;
+                }
+            }
+        }
+    }
+
+    .page-box {
+        text-align: center;
+        margin-top: 15px;
+    }
+    .ivu-tabs{
+        height: 100%;
+        position: relative;
+        .ivu-tabs-bar{
+            position: relative;
+            z-index: 2;
+            background: #fff;
+        }
+        .ivu-tabs-content{
+            height: 100%;
+            width: 100%;
+            margin-top: -53px;
+            padding-top: 53px;
+        }
+        .ivu-tabs-tabpane{
+            overflow-y: auto;
+        }
+    }
+}
+
+.report-detail {
+    .report-title {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 12px;
+        padding-top: 20px;
+        .report-title-icon{
+            font-size: 22px;
+            cursor: pointer;
+            margin-right: 20px;
+        }
+    }
+
+    .report-profile {
+        font-size: 14px;
+    }
+
+    .report-submitter {
+        display: flex;
+        flex-wrap: wrap;
+        height: 28px;
+        line-height: 28px;
+        p{
+            display: block;
+            width: 100%;
+            text-align: justify;
+            padding-right: 12px;
+            &:after{
+                content: '';
+                display: inline-block;
+                width: 100%;
+            }
+        }
+        & > div {
+            margin-right: 8px;
+        }
+    }
+
+    .ivu-col{
+        margin-bottom: 12px;
+    }
+
+    .report-content {
+        margin-top: 12px;
+        width: 100%;
+        h2{
+            margin-bottom: 10px;
+        }
+        ol{
+            margin-bottom: 20px;
+            padding-left: 18px;
+            li{
+                font-size: 14px;
+                line-height: 24px;
+            }
+        }
+    }
+}
+.report-box{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    .report-row-header,.report-row-foot{
+        flex: 0 0 auto;
+    }
+    .report-row-content{
+        flex:1 1 auto;
+    }
+    .report-row-foot{
+        margin-bottom: 0;
+    }
+}
+.report-row{
+    margin-bottom: 20px;
+    .report-row-a{
+        float: right;
+        line-height: 32px;
+        .report-row-a-icon{
+            transform: rotate(-90deg);
+            font-size: 16px;
+            margin-right: 2px;
+        }
+    }
+    .report-bottom{
+        width: 120px;
+    }
+    .report-bottom-save{
+        width: 120px;
+        background: #F4F5F7 ;
+        color: #515A6E;
+        border-color:  #F4F5F7 ;
+    }
+}
+.report-titles{
+    line-height: 32px;
+}
+.report-radiogroup{
+    background: #F4F5F7 !important;
+    padding: 2px !important;
+    border-radius: 4px!important;
+    .ivu-radio-wrapper{
+        padding: 0 30px !important;
+        background: #F4F5F7 !important;
+        color: #515A6E !important;
+        box-shadow: none !important;
+        border: none!important;
+        &:before{
+            width: 0!important;
+        }
+        &:after{
+            width: 0!important;
+        }
+    }
+    .ivu-radio-focus{
+        box-shadow: none !important;
+        border: none!important;
+        &:after{
+            background: none!important;
+        }
+    }
+    .ivu-radio-wrapper-checked:not(.ivu-radio-wrapper-disabled){
+        background: #fff !important;
+        color: #8BCF70 !important;
+        box-shadow: none !important;
+        border: none!important;
+        border-radius: 4px!important;
+    }
+
+}
+.report-buttongroup{
+    margin-top: 2px;
+    background: #F4F5F7!important;
+    border-radius: 4px;
+    .report-buttongroup-shu{
+        position: absolute;
+        left: 47px;
+        width: 1px;
+        height: 23px;
+        background-color: #E5E5E5;
+        top: 5px;
+    }
+    .ivu-btn-primary{
+        background: #F4F5F7!important;
+        box-shadow: none !important;
+        border: none!important;
+        color: #8BCF70 !important;
+        &[disabled]{
+            color: #515A6E !important;
+        }
+    }
+}
+.report-poptip{
+    .ivu-tooltip-inner{
+        min-width: 60px !important;
+        font-size: 12px !important;
+    }
+}
+.reportmy-row{
+    margin-bottom: 20px;
+    .reportmy-titles{
+        line-height: 32px;
+    }
+}
+.report-main{
+    .report-submitter{
+        padding-top: 13px;
+    }
+}
