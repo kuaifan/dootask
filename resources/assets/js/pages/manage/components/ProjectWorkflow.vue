@@ -155,8 +155,8 @@
                 </FormItem>
                 <FormItem prop="userlimit" :label="$L('限制负责人')">
                     <iSwitch v-model="userData.userlimit" :true-value="1" :false-value="0"/>
-                    <div v-if="userData.userlimit===1" class="form-tip">{{$L('在此状态的任务仅状态负责人可以修改状态。')}}</div>
-                    <div v-else class="form-tip">{{$L('任务负责人和项目管理员都可以修改状态。')}}</div>
+                    <div v-if="userData.userlimit===1" class="form-tip">{{$L('在此状态的任务状态负责人、项目管理员可以修改状态。')}}</div>
+                    <div v-else class="form-tip">{{$L('在此状态的任务任务负责人、项目管理员可以修改状态。')}}</div>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
