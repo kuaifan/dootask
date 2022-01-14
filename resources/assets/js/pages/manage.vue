@@ -231,6 +231,8 @@ export default {
 
             dialogMsgSubscribe: null,
 
+            refreshTimeout: null,
+
             websocketOpenSubscribe: null,
 
             columns: [],
@@ -624,7 +626,10 @@ export default {
 
         refreshBasic(num) {
             if (num > 1) {
-                this.$store.dispatch("refreshBasicData")
+                clearTimeout(this.refreshTimeout)
+                this.refreshTimeout = setTimeout(() => {
+                    this.$store.dispatch("refreshBasicData")
+                }, 5000)
             }
         },
 

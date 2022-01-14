@@ -27,15 +27,14 @@ export default {
             repoData: {},
 
             status: 0, // 0 没有，1有客户端，2客户端有新版本
-            releases: {},
             downInfo: {},
+            releases: {},
+            releaseTimeout: null,
 
             websocketOpenSubscribe: null
         }
     },
     mounted() {
-        this.getReleases();
-        //
         if (this.$Electron) {
             this.$Electron.ipcRenderer.on('downloadDone', (event, args) => {
                 if (args.name == this.repoData.name) {
@@ -45,7 +44,8 @@ export default {
             })
         }
         //
-        this.websocketOpenSubscribe = Store.subscribe('websocketOpen', this.getReleases);
+        this.getReleases();
+        this.websocketOpenSubscribe = Store.subscribe('websocketOpen', this.getReleaseBefore);
     },
     destroyed() {
         if (this.websocketOpenSubscribe) {
@@ -104,6 +104,11 @@ export default {
             }
             // 版本号完全相同
             return 0;
+        },
+
+        getReleaseBefore() {
+            clearTimeout(this.releaseTimeout)
+            this.releaseTimeout = setTimeout(this.getReleases, 5000)
         },
 
         getReleases() {
