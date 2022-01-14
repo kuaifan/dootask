@@ -57,7 +57,7 @@
                             </div>
                         </EDropdownItem>
                         <template v-if="colorShow">
-                            <EDropdownItem v-for="(c, k) in taskColorList" :key="k" :divided="k==0" :command="c">
+                            <EDropdownItem v-for="(c, k) in taskColorList" :key="'c_' + k" :divided="k==0" :command="c">
                                 <div class="item">
                                     <i class="taskfont" :style="{color:c.color||'#f9f9f9'}" v-html="c.color == task.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
                                 </div>
@@ -162,7 +162,7 @@ export default {
                     // 修改背景色
                     this.updateTask({
                         color: command.color
-                    })
+                    }).catch(() => {})
                 }
                 return;
             }
@@ -172,7 +172,7 @@ export default {
                 if (flow_item_id == this.task.flow_item_id) return;
                 this.updateTask({
                     flow_item_id
-                })
+                }).catch(() => {})
                 return;
             }
             const cacheTask = this.task;
@@ -218,7 +218,7 @@ export default {
 
         visibleChange(visible) {
             if (visible) {
-                this.$store.dispatch("getTaskFlow", this.task.id);
+                this.$store.dispatch("getTaskFlow", this.task.id).catch(() => {})
             }
         },
 
@@ -239,7 +239,7 @@ export default {
                     this.$emit("on-update", data)
                 }).catch(({msg}) => {
                     $A.modalError(msg);
-                    this.$store.dispatch("getTaskOne", this.task.id);
+                    this.$store.dispatch("getTaskOne", this.task.id).catch(() => {})
                     reject()
                 });
             })

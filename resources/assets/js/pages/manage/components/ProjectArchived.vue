@@ -219,7 +219,7 @@ export default {
             }).then(() => {
                 this.loadIng--;
                 this.getLists();
-                this.$store.dispatch("getProjectOne", row.id);
+                this.$store.dispatch("getProjectOne", row.id).catch(() => {});
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.loadIng--;

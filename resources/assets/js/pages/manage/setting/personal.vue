@@ -82,7 +82,7 @@ export default {
                     }).then(() => {
                         $A.messageSuccess('修改成功');
                         this.loadIng--;
-                        this.$store.dispatch('getUserInfo');
+                        this.$store.dispatch('getUserInfo').catch(() => {});
                     }).catch(({msg}) => {
                         $A.modalError(msg);
                         this.loadIng--;

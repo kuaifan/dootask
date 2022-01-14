@@ -376,13 +376,14 @@
                             class="dialog-input"
                             v-model="msgText"
                             type="textarea"
+                            :disabled="sendLoad > 0"
                             :rows="1"
                             :autosize="{ minRows: 1, maxRows: 3 }"
                             :maxlength="255"
                             :placeholder="$L('输入消息...')"
                             @on-keydown="msgKeydown"/>
                         <div class="no-send" @click="openSend">
-                            <Loading v-if="sendLoad"/>
+                            <Loading v-if="sendLoad > 0"/>
                             <Icon v-else type="md-send" />
                         </div>
                     </div>
@@ -458,7 +459,7 @@ export default {
             navActive: 'dialog',
             logLoadIng: false,
 
-            sendLoad: false,
+            sendLoad: 0,
 
             taskPlugins: [
                 'advlist autolink lists link image charmap print preview hr anchor pagebreak',
@@ -828,7 +829,7 @@ export default {
                 this.ownerLoad--;
                 this.ownerShow = false;
                 this.receiveShow = false;
-                this.$store.dispatch("getTaskOne", this.taskDetail.id);
+                this.$store.dispatch("getTaskOne", this.taskDetail.id).catch(() => {})
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.ownerLoad--;
@@ -859,7 +860,7 @@ export default {
                 $A.messageSuccess(msg);
                 this.assistLoad--;
                 this.assistShow = false;
-                this.$store.dispatch("getTaskOne", this.taskDetail.id);
+                this.$store.dispatch("getTaskOne", this.taskDetail.id).catch(() => {})
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.assistLoad--;
@@ -1007,6 +1008,11 @@ export default {
             if (!this.msgText) {
                 return;
             }
+            if (this.sendLoad > 0) {
+                return;
+            }
+            this.sendLoad++;
+            //
             this.$store.dispatch("call", {
                 url: 'project/task/dialog',
                 data: {
@@ -1014,56 +1020,60 @@ export default {
                 },
             }).then(({data}) => {
                 this.$store.dispatch("saveTask", data);
-                this.$store.dispatch("getDialogOne", data.dialog_id);
-                if ($A.isSubElectron) {
-                    this.resizeDialog();
-                    return;
-                }
-                this.$nextTick(() => {
-                    if (this.$store.state.windowMax768) {
-                        this.goForward({path: '/manage/messenger', query: {sendmsg: this.msgText}});
-                        $A.setStorage("messenger::dialogId", data.dialog_id)
-                        this.$store.state.dialogOpenId = data.dialog_id;
-                        this.$store.dispatch('openTask', 0);
-                        this.msgText = "";
+                this.$store.dispatch("getDialogOne", data.dialog_id).then(() => {
+                    this.sendLoad--;
+                    if ($A.isSubElectron) {
+                        this.resizeDialog();
                     } else {
                         this.$nextTick(() => {
-                            this.$refs.dialog.sendMsg(this.msgText);
+                            if (this.$store.state.windowMax768) {
+                                this.goForward({path: '/manage/messenger', query: {sendmsg: this.msgText}});
+                                $A.setStorage("messenger::dialogId", data.dialog_id)
+                                this.$store.state.dialogOpenId = data.dialog_id;
+                                this.$store.dispatch('openTask', 0);
+                            } else {
+                                this.$refs.dialog.sendMsg(this.msgText);
+                            }
                             this.msgText = "";
-                        })
+                        });
                     }
+                }).catch(({msg}) => {
+                    this.sendLoad--;
+                    $A.modalError(msg);
                 });
             }).catch(({msg}) => {
+                this.sendLoad--;
                 $A.modalError(msg);
             });
         },
 
         openSend() {
-            if (this.sendLoad) {
+            if (this.sendLoad > 0) {
                 return;
             }
-            this.sendLoad = true;
+            this.sendLoad++;
+            //
             this.$store.dispatch("call", {
                 url: 'project/task/dialog',
                 data: {
                     task_id: this.taskDetail.id,
                 },
             }).then(({data}) => {
-                this.sendLoad = false;
+                this.sendLoad--;
                 this.$store.dispatch("saveTask", data);
-                this.$store.dispatch("getDialogOne", data.dialog_id);
+                this.$store.dispatch("getDialogOne", data.dialog_id).catch(() => {})
                 if ($A.isSubElectron) {
                     this.resizeDialog();
-                    return;
+                } else {
+                    this.$nextTick(() => {
+                        this.goForward({path: '/manage/messenger', query: {sendmsg: this.msgText}});
+                        $A.setStorage("messenger::dialogId", data.dialog_id)
+                        this.$store.state.dialogOpenId = data.dialog_id;
+                        this.$store.dispatch('openTask', 0);
+                    });
                 }
-                this.$nextTick(() => {
-                    this.goForward({path: '/manage/messenger', query: {sendmsg: this.msgText}});
-                    $A.setStorage("messenger::dialogId", data.dialog_id)
-                    this.$store.state.dialogOpenId = data.dialog_id;
-                    this.$store.dispatch('openTask', 0);
-                });
             }).catch(({msg}) => {
-                this.sendLoad = false;
+                this.sendLoad--;
                 $A.modalError(msg);
             });
         },
@@ -1128,10 +1138,8 @@ export default {
                     if (this.$refs.dialog || num > 20) {
                         clearInterval(interval);
                         if (this.$refs.dialog) {
-                            this.$nextTick(() => {
-                                this.$refs.dialog.sendMsg(this.msgText);
-                                this.msgText = "";
-                            })
+                            this.$refs.dialog.sendMsg(this.msgText);
+                            this.msgText = "";
                         }
                     }
                 }, 100);

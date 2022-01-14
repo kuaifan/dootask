@@ -76,7 +76,7 @@ export default {
         this.getDemoAccount();
         //
         if (this.$Electron) {
-            this.chackServerUrl();
+            this.chackServerUrl().catch(() => {});
         } else {
             this.clearServerUrl();
         }
