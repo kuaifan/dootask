@@ -36,6 +36,10 @@
                 type: Number,
                 default: 600,
             },
+            reverse: {
+                type: Boolean,
+                default: false
+            }
         },
 
         data() {
@@ -79,7 +83,7 @@
                 let diffX = (e.pageX || e.clientX + document.documentElement.scrollLeft) - this.mouseX;
                 let diffY = (e.pageY || e.clientY + document.documentElement.scrollTop) - this.mouseY;
                 if (typeof this.tmpWidth === 'number') {
-                    let value = this.tmpWidth + diffX;
+                    let value = this.reverse ? (this.tmpWidth - diffX) : (this.tmpWidth + diffX);
                     if (this.minWidth > 0) {
                         value = Math.max(this.minWidth, value);
                     }

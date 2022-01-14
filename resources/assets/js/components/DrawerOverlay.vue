@@ -1,5 +1,9 @@
 <template>
-    <div :class="['drawer-overlay', placement, value ? 'overlay-visible' : 'overlay-hide']">
+    <div
+        v-transfer-dom
+        :data-transfer="transfer"
+        :class="['drawer-overlay', placement, value ? 'overlay-visible' : 'overlay-hide']"
+        :style="overlayStyle">
         <div class="overlay-mask" @click="mask"></div>
         <div class="overlay-body" :style="bodyStyle">
             <div class="overlay-close">
@@ -9,7 +13,7 @@
                     </svg>
                 </a>
             </div>
-            <ResizeLine v-if="resize" class="overlay-resize" v-model="width" :max-width="0"/>
+            <ResizeLine v-if="resize && placement == 'right'" class="overlay-resize" v-model="width" :min-width="100" :max-width="0" reverse/>
             <div class="overlay-content"><slot/></div>
         </div>
     </div>
@@ -17,9 +21,13 @@
 
 <script>
     import ResizeLine from "./ResizeLine";
+    import TransferDom from '../directives/transfer-dom';
+    import {mapState} from "vuex";
+
     export default {
         name: 'DrawerOverlay',
         components: {ResizeLine},
+        directives: { TransferDom },
         props: {
             value: {
                 type: Boolean,
@@ -43,15 +51,20 @@
                 type: [Number, String],
                 default: "100%"
             },
-            resize: {
+            resize: {   // only placement:right
                 type: Boolean,
                 default: true
+            },
+            transfer: {
+                type: Boolean,
+                default: false
             },
         },
 
         data() {
             return {
-                width: 0
+                width: 0,
+                zIndex: 0,
             }
         },
 
@@ -64,6 +77,14 @@
         },
 
         computed: {
+            ...mapState(['cacheDrawerIndex']),
+
+            overlayStyle() {
+                return {
+                    zIndex: 1000 + this.zIndex
+                }
+            },
+
             bodyStyle() {
                 let size = this.width;
                 size = size <= 100 ? `${size}%` : `${size}px`
@@ -95,6 +116,12 @@
                         this.$store.state.cacheDrawerOverlay.splice(index, 1);
                     }
                 }
+                //
+                if (val) {
+                    this.zIndex = this.$store.state.cacheDrawerIndex++;
+                } else if (this.$store.state.cacheDrawerOverlay.length === 0) {
+                    this.$store.state.cacheDrawerIndex = 0;
+                }
             },
             size: {
                 handler(val) {
@@ -111,17 +138,19 @@
                 }
             },
             close() {
-                this.$emit("input", !this.value)
+                this.$emit("input", false)
             },
             escClose(e) {
                 if (this.value && this.escClosable) {
                     if (e.keyCode === 27) {
-                        let show = false;
-                        $A(".ivu-modal").each((i, e) => {
-                            show = $(e).is(":visible");
-                            return !show;
-                        })
-                        !show && this.close()
+                        if (this.$Modal.visibles().length > 0) {
+                            return;
+                        }
+                        const list = this.$store.state.cacheDrawerOverlay;
+                        if (list.length > 0) {
+                            const $Drawer = list[list.length - 1]
+                            $Drawer.close();
+                        }
                     }
                 }
             }
