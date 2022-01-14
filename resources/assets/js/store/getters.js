@@ -83,6 +83,7 @@ export default {
                             start_at: task.start_at,
                             end_at: task.end_at,
                             complete_at: task.complete_at,
+                            _time: task._time,
 
                             flow_item_id: task.flow_item_id,
                             flow_item_name: task.flow_item_name,

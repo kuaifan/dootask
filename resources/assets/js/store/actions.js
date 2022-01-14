@@ -1966,11 +1966,11 @@ export default {
         //
         state.ws = new WebSocket(url);
         state.ws.onopen = (e) => {
-            // console.log("[WS] Open", e)
+            console.log("[WS] Open", $A.formatDate())
             Store.set('websocketOpen', ++state.wsOpenNum);
         };
         state.ws.onclose = (e) => {
-            // console.log("[WS] Close", e);
+            console.log("[WS] Close", $A.formatDate())
             state.ws = null;
             //
             clearTimeout(state.wsTimeout);
@@ -1979,7 +1979,7 @@ export default {
             }, 3000);
         };
         state.ws.onerror = (e) => {
-            // console.log("[WS] Error", e);
+            console.log("[WS] Error", $A.formatDate())
             state.ws = null;
             //
             clearTimeout(state.wsTimeout);
