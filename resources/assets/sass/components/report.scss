@@ -14,6 +14,7 @@
         }
         .report-row-content{
             flex:1 1 auto;
+            overflow-y: auto;
             .ivu-table{
                 .ivu-table-body{
                     height: 100%;
@@ -43,7 +44,7 @@
             padding-top: 53px;
         }
         .ivu-tabs-tabpane{
-            overflow-y: auto;
+
         }
     }
 }
@@ -115,6 +116,7 @@
     }
     .report-row-content{
         flex:1 1 auto;
+        overflow-y:auto;
     }
     .report-row-foot{
         margin-bottom: 0;

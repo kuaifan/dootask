@@ -38,7 +38,7 @@
                     v-model="reportData.receive"
                     :placeholder="$L('选择接收人')" />
             </Col>
-            <Col  span="6"><a class="report-row-a" href="javascript:void(0);" @click="getLastSubmitter"><Icon class="report-row-a-icon" type="ios-share-outline" />{{ $L("使用上一次提交的接收人") }}</a></Col>
+            <Col  span="6"><a class="report-row-a" href="javascript:void(0);" @click="getLastSubmitter"><Icon class="report-row-a-icon" type="ios-share-outline" />{{ $L("使用我上次的汇报对象") }}</a></Col>
         </Row>
         <Row  class="report-row report-row-content">
             <Col  span="2"><p class="report-titles">{{ $L("汇报内容") }}</p></Col>
@@ -53,13 +53,6 @@
             <Col span="4">
                 <FormItem>
                     <Button type="primary" @click="handleSubmit" class="report-bottom">提交</Button>
-                    <!--            <Button type="primary" @click="prevCycle">{{ prevCycleText }}</Button>-->
-                    <!--            <Button type="primary" @click="nextCycle" :disabled="reportData.offset >= 0">{{ nextCycleText }}</Button>-->
-                </FormItem>
-            </Col>
-            <Col span="4">
-                <FormItem>
-                    <Button type="primary" class="report-bottom-save">保存</Button>
                     <!--            <Button type="primary" @click="prevCycle">{{ prevCycleText }}</Button>-->
                     <!--            <Button type="primary" @click="nextCycle" :disabled="reportData.offset >= 0">{{ nextCycleText }}</Button>-->
                 </FormItem>
@@ -118,8 +111,7 @@ export default {
                 method: 'post',
             }).then(({data, msg}) => {
                 // data 结果数据
-                this.reportData.content = "";
-                this.reportData.receive = [];
+                this.getTemplate();
                 this.disabledType = false;
                 // msg 结果描述
                 $A.messageSuccess(msg);
