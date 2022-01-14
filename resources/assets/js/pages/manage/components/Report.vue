@@ -1,19 +1,23 @@
 <template>
     <div class="report">
         <Tabs v-model="reportTabs">
-            <TabPane label="填写" name="edit" icon="md-create">
-                <ReportEdit :id="reportId" @saveSuccess="saveSuccess">填写</ReportEdit>
+            <TabPane :label="$L('填写汇报')" name="edit">
+                <ReportEdit :id="reportId" @saveSuccess="saveSuccess"></ReportEdit>
             </TabPane>
-            <TabPane label="我的汇报" name="my" icon="ios-paper-plane-outline">
-                <ReportMy v-if="reportTabs === 'my'" @detail="showDetail" @edit="editReport">我的汇报</ReportMy>
+            <TabPane :label="$L('我的汇报')" name="my">
+                <ReportMy v-if="reportTabs === 'my'" @detail="showDetail" @edit="editReport"></ReportMy>
             </TabPane>
-            <TabPane label="收到的汇报" name="receive" icon="ios-paper-outline">
-                <ReportReceive v-if="reportTabs === 'receive'" @detail="showDetail">收到的汇报</ReportReceive>
+            <TabPane :label="$L('收到的汇报')" name="receive">
+                <ReportReceive v-if="reportTabs === 'receive'" @detail="showDetail"></ReportReceive>
             </TabPane>
         </Tabs>
-        <Drawer v-model="showDetailDrawer"  width="900px"  :closable="false">
-            <ReportDetail :data="detailData" @closeDrawer="closeDrawer"/>
-        </Drawer>
+        <DrawerOverlay
+            v-model="showDetailDrawer"
+            placement="right"
+            :size="950"
+            transfer>
+            <ReportDetail :data="detailData"/>
+        </DrawerOverlay>
     </div>
 </template>
 
@@ -22,11 +26,13 @@ import ReportEdit from "./ReportEdit"
 import ReportMy from "./ReportMy"
 import ReportReceive from "./ReportReceive"
 import ReportDetail from "./ReportDetail"
+import DrawerOverlay from "../../../components/DrawerOverlay";
 
 export default {
     name: "Report",
     components: {
-        ReportEdit, ReportMy, ReportReceive,ReportDetail
+        DrawerOverlay,
+        ReportEdit, ReportMy, ReportReceive, ReportDetail
     },
     data() {
         return {
@@ -37,9 +43,6 @@ export default {
         }
     },
     methods: {
-        closeDrawer(){
-            this.showDetailDrawer = false
-        },
         showDetail(row) {
             this.showDetailDrawer = true;
             this.detailData = row;

@@ -2,13 +2,11 @@
     <Form class="report-box" label-position="top" @submit.native.prevent>
         <Row class="report-row report-row-header" >
             <Col span="2"><p class="report-titles">{{ $L("汇报类型") }}</p></Col>
-            <Col span="6">
+            <Col span="12">
                 <RadioGroup type="button" button-style="solid" v-model="reportData.type" @on-change="typeChange" class="report-radiogroup">
                     <Radio label="weekly">{{ $L("周报") }}</Radio>
                     <Radio label="daily">{{ $L("日报") }}</Radio>
                 </RadioGroup>
-            </Col>
-            <Col span="6">
                 <ButtonGroup class="report-buttongroup">
                     <Tooltip class="report-poptip" trigger="hover"  :content="prevCycleText" placement="bottom">
                         <Button  type="primary" @click="prevCycle">
@@ -16,7 +14,7 @@
                         </Button>
                     </Tooltip>
                     <div class="report-buttongroup-shu"></div>
-                    <Tooltip class="report-poptip" trigger="hover"  :content="nextCycleText" placement="bottom">
+                    <Tooltip class="report-poptip" trigger="hover" :disabled="reportData.offset >= 0" :content="nextCycleText" placement="bottom">
                         <Button  type="primary" @click="nextCycle" :disabled="reportData.offset >= 0">
                             <Icon type="ios-arrow-forward" />
                         </Button>
@@ -24,37 +22,38 @@
                 </ButtonGroup>
             </Col>
         </Row>
-        <Row  class="report-row report-row-header">
+        <Row class="report-row report-row-header">
             <Col span="2"><p class="report-titles">{{ $L("汇报名称") }}</p></Col>
             <Col span="22">
                 <Input v-model="reportData.title" disabled placeholder=""></Input>
             </Col>
         </Row>
-        <Row  class="report-row report-row-header">
-            <Col  span="2"><p class="report-titles">{{ $L("汇报对象") }}</p></Col>
-            <Col  span="16">
-                <UserInput
-                    v-if="userInputShow"
-                    v-model="reportData.receive"
-                    :placeholder="$L('选择接收人')" />
-            </Col>
-            <Col  span="6"><a class="report-row-a" href="javascript:void(0);" @click="getLastSubmitter"><Icon class="report-row-a-icon" type="ios-share-outline" />{{ $L("使用我上次的汇报对象") }}</a></Col>
-        </Row>
-        <Row  class="report-row report-row-content">
-            <Col  span="2"><p class="report-titles">{{ $L("汇报内容") }}</p></Col>
+        <Row class="report-row report-row-header">
+            <Col span="2"><p class="report-titles">{{ $L("汇报对象") }}</p></Col>
             <Col span="22">
-                <FormItem>
-                    <TEditor v-model="reportData.content" height="550px"/>
+                <div class="report-users">
+                    <UserInput
+                        v-if="userInputShow"
+                        v-model="reportData.receive"
+                        :disabledChoice="[userId]"
+                        :placeholder="$L('选择接收人')" />
+                    <a class="report-row-a" href="javascript:void(0);" @click="getLastSubmitter"><Icon class="report-row-a-icon" type="ios-share-outline" />{{ $L("使用我上次的汇报对象") }}</a>
+                </div>
+            </Col>
+        </Row>
+        <Row class="report-row report-row-content">
+            <Col span="2"><p class="report-titles">{{ $L("汇报内容") }}</p></Col>
+            <Col span="22">
+                <FormItem class="report-row-content-editor">
+                    <TEditor v-model="reportData.content" height="100%"/>
                 </FormItem>
             </Col>
         </Row>
-        <Row  class="report-row report-row-foot">
-            <Col  span="2"></Col>
+        <Row class="report-row report-row-foot">
+            <Col span="2"></Col>
             <Col span="4">
                 <FormItem>
                     <Button type="primary" @click="handleSubmit" class="report-bottom">提交</Button>
-                    <!--            <Button type="primary" @click="prevCycle">{{ prevCycleText }}</Button>-->
-                    <!--            <Button type="primary" @click="nextCycle" :disabled="reportData.offset >= 0">{{ nextCycleText }}</Button>-->
                 </FormItem>
             </Col>
         </Row>
@@ -63,6 +62,7 @@
 
 <script>
 import UserInput from "../../../components/UserInput"
+import {mapState} from "vuex";
 
 const TEditor = () => import('../../../components/TEditor');
 export default {
@@ -95,6 +95,9 @@ export default {
         id(val) {
             if (this.id > 0) this.getDetail(val);
         },
+    },
+    computed: {
+        ...mapState(["userId"])
     },
     mounted() {
         this.getTemplate();

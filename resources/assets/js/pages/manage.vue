@@ -23,7 +23,7 @@
                         :divided="!!item.divided"
                         :name="item.path">
                         {{$L(item.name)}}
-                        <Badge v-if="item.path === 'workReport'" :count="reportUnreadNumber"/>
+                        <Badge v-if="item.path === 'workReport'" class="manage-menu-report-badge" :count="reportUnreadNumber"/>
                     </DropdownItem>
                     <Dropdown placement="right-start" @on-click="setLanguage">
                         <DropdownItem divided>
@@ -167,7 +167,7 @@
         <DrawerOverlay
             v-model="workReportShow"
             placement="right"
-            :size="900">
+            :size="1100">
             <Report v-if="workReportShow" @read="reportUnread" />
         </DrawerOverlay>
 
@@ -263,6 +263,7 @@ export default {
             natificationHidden: false,
             natificationReady: false,
             notificationClass: null,
+
             reportUnreadNumber: 0,
         }
     },
@@ -278,6 +279,7 @@ export default {
         //
         this.notificationInit();
         this.onVisibilityChange();
+        this.reportUnread();    // 工作汇报未读标记
         //
         this.addTaskSubscribe = Store.subscribe('addTask', this.onAddTask);
         this.dialogMsgSubscribe = Store.subscribe('dialogMsgPush', this.addDialogMsg);
@@ -288,9 +290,6 @@ export default {
         if (this.$Electron) {
             this.$Electron.ipcRenderer.send('setDockBadge', 0);
         }
-
-        // 工作汇报未读标记
-        this.reportUnread();
     },
 
     beforeDestroy() {
@@ -712,11 +711,9 @@ export default {
             this.$store.dispatch("call", {
                 url: 'report/unread',
                 method: 'get',
-            }).then(({data, msg}) => {
-                // data 结果数据
+            }).then(({data}) => {
                 this.reportUnreadNumber = data.total ? data.total : 0;
-                // msg 结果描述
-            });
+            }).catch(() => {});
         }
     }
 }

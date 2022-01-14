@@ -1,46 +1,46 @@
 <template>
 
     <div class="report-detail">
-
-        <p class="report-title"><Icon type="ios-arrow-back" class="report-title-icon" @click="closeDrawer"/>  {{ data.title }}</p>
-        <Divider />
-        <div class="report-profile">
-            <Row>
+        <div class="report-title">{{ data.title }}</div>
+        <div class="report-detail-context">
+            <div class="report-profile">
+                <Row>
+                    <Col span="2">
+                        <div class="report-submitter"><p>{{ $L('汇报人') }} </p></div>
+                    </Col>
+                    <Col span="6">
+                        <div class="report-submitter">
+                            <UserAvatar :userid="data.userid" :size="28"/>
+                        </div>
+                    </Col>
+                    <Col span="2">
+                        <div class="report-submitter"> <p>{{ $L('提交时间') }}</p></div>
+                    </Col>
+                    <Col span="6">
+                        <div class="report-submitter">
+                            <div>{{ data.created_at }}</div>
+                        </div>
+                    </Col>
+                    <Col span="2">
+                        <div class="report-submitter"><p>{{ $L('汇报对象') }}</p></div>
+                    </Col>
+                    <Col span="6">
+                        <div class="report-submitter">
+                            <UserAvatar v-for="item in data.receives" :key="item" :userid="item" :size="28"/>
+                        </div>
+                    </Col>
+                </Row>
+            </div>
+            <Row class="report-main">
                 <Col span="2">
-                    <div class="report-submitter"><p>{{ $L('汇报人') }} </p></div>
+                    <div class="report-submitter"><p>{{ $L('汇报内容') }}</p></div>
                 </Col>
-                <Col span="6">
-                    <div class="report-submitter">
-                        <UserAvatar :userid="data.userid" :size="28"/>
-                    </div>
-                </Col>
-                <Col span="2">
-                    <div class="report-submitter"> <p>{{ $L('提交时间') }}</p></div>
-                </Col>
-                <Col span="6">
-                    <div class="report-submitter">
-                        <div>{{ data.created_at }}</div>
-                    </div>
-                </Col>
-                <Col span="2">
-                    <div class="report-submitter"><p>{{ $L('汇报对象') }}</p></div>
-                </Col>
-                <Col span="6">
-                    <div class="report-submitter">
-                        <UserAvatar v-for="item in data.receives" :key="item" :userid="item" :size="28"/>
+                <Col span="22">
+                    <div class="report-content" v-html="data.content">
                     </div>
                 </Col>
             </Row>
         </div>
-        <Row class="report-main">
-            <Col span="2">
-                <div class="report-submitter"><p>{{ $L('汇报内容') }}</p></div>
-            </Col>
-            <Col span="22">
-                <div class="report-content" v-html="data.content">
-                </div>
-            </Col>
-        </Row>
 
     </div>
 </template>
@@ -74,9 +74,6 @@ export default {
             }).catch(({msg}) => {
                 // msg 错误原因
             });
-        },
-        closeDrawer(){
-            this.$emit('closeDrawer')
         },
     }
 }

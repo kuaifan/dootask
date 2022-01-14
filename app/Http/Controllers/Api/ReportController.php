@@ -189,7 +189,7 @@ class ReportController extends AbstractController
             }
 
         } );
-        return Base::retSuccess('success');
+        return Base::retSuccess('保存成功');
     }
 
     /**

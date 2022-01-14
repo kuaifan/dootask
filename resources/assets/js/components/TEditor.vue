@@ -76,6 +76,10 @@
             height: {
                 default: 360,
             },
+            minHeight: {
+                type: Number,
+                default: 0,
+            },
             htmlClass: {
                 default: '',
                 type: String
@@ -112,6 +116,10 @@
                 default: false
             },
             readOnly: {
+                type: Boolean,
+                default: false
+            },
+            autoSize: {
                 type: Boolean,
                 default: false
             },
@@ -212,7 +220,7 @@
             },
 
             option(isFull) {
-                return {
+                let optionInfo = {
                     inline: isFull ? false : this.inline,
                     selector: (isFull ? '#T_' : '#') + this.id,
                     base_url: $A.originUrl('js/tinymce'),
@@ -374,6 +382,13 @@
                         }
                     },
                 };
+                if (this.autoSize) {
+                    optionInfo.plugins.push('autoresize')
+                }
+                if (this.minHeight > 0) {
+                    optionInfo.min_height = this.minHeight
+                }
+                return optionInfo;
             },
 
             closeFull() {
