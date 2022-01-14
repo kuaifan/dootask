@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\DB;
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel query()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
+ * @method static \Illuminate\Database\Eloquent\Model|object|static|null cancelAppend()
  * @method static \Illuminate\Database\Eloquent\Builder|static with($relations)
  * @method static \Illuminate\Database\Query\Builder|static select($columns = [])
  * @method static \Illuminate\Database\Query\Builder|static whereNotIn($column, $values, $boolean = 'and')
@@ -60,6 +61,15 @@ class AbstractModel extends Model
             $this->save();
         }
         return $this->$key;
+    }
+
+    /**
+     * 取消附加值
+     * @return static
+     */
+    protected function scopeCancelAppend()
+    {
+        return $this->setAppends([]);
     }
 
     /**

@@ -112,7 +112,7 @@ class ProjectTask extends AbstractModel
     public function getFileNumAttribute()
     {
         if (!isset($this->appendattrs['file_num'])) {
-            $this->appendattrs['file_num'] = ProjectTaskFile::whereTaskId($this->id)->count();
+            $this->appendattrs['file_num'] = $this->parent_id > 0 ? 0 : ProjectTaskFile::whereTaskId($this->id)->count();
         }
         return $this->appendattrs['file_num'];
     }
@@ -494,6 +494,8 @@ class ProjectTask extends AbstractModel
             if (version_compare(Base::getClientVersion(), '0.6.0', '<')) {
                 throw new ApiException('当前版本过低');
             }
+            // 主任务
+            $mainTask = $this->parent_id > 0 ? self::find($this->parent_id) : null;
             // 工作流
             if (Arr::exists($data, 'flow_item_id')) {
                 if ($this->flow_item_id == $data['flow_item_id']) {
@@ -564,6 +566,10 @@ class ProjectTask extends AbstractModel
             }
             // 状态
             if (Arr::exists($data, 'complete_at')) {
+                // 子任务：主任务已完成时无法修改
+                if ($mainTask?->complete_at) {
+                    throw new ApiException('主任务已完成，无法修改子任务状态');
+                }
                 if (Base::isDate($data['complete_at'])) {
                     // 标记已完成
                     if ($this->complete_at) {
@@ -646,7 +652,6 @@ class ProjectTask extends AbstractModel
                     $end_at = Carbon::parse($end);
                     if ($this->parent_id > 0) {
                         // 判断同步主任务时间（子任务时间 超出 主任务）
-                        $mainTask = self::find($this->parent_id);
                         if ($mainTask) {
                             $isUp = false;
                             if ($start_at->lt(Carbon::parse($mainTask->start_at))) {
@@ -669,7 +674,6 @@ class ProjectTask extends AbstractModel
                 } else {
                     if ($this->parent_id > 0) {
                         // 清空子任务时间（子任务时间等于主任务时间）
-                        $mainTask = self::find($this->parent_id);
                         $this->start_at = $mainTask->start_at;
                         $this->end_at = $mainTask->end_at;
                     }
@@ -798,9 +802,7 @@ class ProjectTask extends AbstractModel
     {
         if ($this->parent_id > 0) {
             $task = self::find($this->parent_id);
-            if ($task) {
-                $task->syncDialogUser();
-            }
+            $task?->syncDialogUser();
             return;
         }
         if (empty($this->dialog_id)) {
@@ -870,24 +872,6 @@ class ProjectTask extends AbstractModel
             $this->appendattrs['has_owner'] = ProjectTaskUser::whereTaskId($this->id)->whereOwner(1)->exists();
         }
         return $this->appendattrs['has_owner'];
-    }
-
-    /**
-     * 是否负责人
-     * @param bool $isParent 是父级任务的负责人也算
-     * @return bool
-     */
-    public function isOwner($isParent = true) {
-        if ($this->owner) {
-            return true;
-        }
-        if ($isParent && $this->parent_id > 0) {
-            $parentTask = self::find($this->parent_id);
-            if ($parentTask?->owner) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

@@ -1170,6 +1170,9 @@ class ProjectController extends AbstractController
         $name = Request::input('name');
         //
         $task = ProjectTask::userTask($task_id, true, true);
+        if ($task->complete_at) {
+            return Base::retError('主任务已完成无法添加子任务');
+        }
         //
         $task = ProjectTask::addTask([
             'name' => $name,
@@ -1761,6 +1764,9 @@ class ProjectController extends AbstractController
         $list = $builder->orderByDesc('created_at')->paginate(Base::getPaginate(100, 20));
         $list->transform(function (ProjectLog $log) use ($task_id) {
             $timestamp = Carbon::parse($log->created_at)->timestamp;
+            if ($task_id === 0) {
+                $log->projectTask?->cancelAppend();
+            }
             $log->time = [
                 'ymd' => date(date("Y", $timestamp) == date("Y", Base::time()) ? "m-d" : "Y-m-d", $timestamp),
                 'hi' => date("h:i", $timestamp) ,
