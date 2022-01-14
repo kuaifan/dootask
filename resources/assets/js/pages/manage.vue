@@ -231,10 +231,6 @@ export default {
 
             dialogMsgSubscribe: null,
 
-            refreshTimeout: null,
-
-            websocketOpenSubscribe: null,
-
             columns: [],
 
             projectKeyValue: '',
@@ -270,7 +266,6 @@ export default {
         //
         this.addTaskSubscribe = Store.subscribe('addTask', this.onAddTask);
         this.dialogMsgSubscribe = Store.subscribe('dialogMsgPush', this.addDialogMsg);
-        this.websocketOpenSubscribe = Store.subscribe('websocketOpen', this.refreshBasic);
         //
         document.addEventListener('keydown', this.shortcutEvent);
         window.addEventListener('resize', this.innerHeightListener);
@@ -288,10 +283,6 @@ export default {
         if (this.dialogMsgSubscribe) {
             this.dialogMsgSubscribe.unsubscribe();
             this.dialogMsgSubscribe = null;
-        }
-        if (this.websocketOpenSubscribe) {
-            this.websocketOpenSubscribe.unsubscribe();
-            this.websocketOpenSubscribe = null;
         }
         //
         document.removeEventListener('keydown', this.shortcutEvent);
@@ -311,6 +302,7 @@ export default {
             'cacheProjects',
             'projectTotal',
             'taskId',
+            'wsOpenNum'
         ]),
 
         ...mapGetters(['taskData', 'dashboardTask']),
@@ -421,6 +413,14 @@ export default {
                     this.notificationClass.close();
                 }, 6000);
             }
+        },
+
+        wsOpenNum(num) {
+            if (num <= 1) return
+            this.wsOpenTimeout && clearTimeout(this.wsOpenTimeout)
+            this.wsOpenTimeout = setTimeout(() => {
+                this.$store.dispatch("getBasicData")
+            }, 5000)
         }
     },
 
@@ -621,15 +621,6 @@ export default {
         taskVisibleChange(visible) {
             if (!visible) {
                 this.$store.dispatch('openTask', 0)
-            }
-        },
-
-        refreshBasic(num) {
-            if (num > 1) {
-                clearTimeout(this.refreshTimeout)
-                this.refreshTimeout = setTimeout(() => {
-                    this.$store.dispatch("refreshBasicData")
-                }, 5000)
             }
         },
 

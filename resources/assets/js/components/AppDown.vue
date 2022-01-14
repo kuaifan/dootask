@@ -16,6 +16,7 @@ import axios from "axios";
 Vue.component('MarkdownPreview', MarkdownPreview)
 
 import {Store} from "le5le-store";
+import {mapState} from "vuex";
 
 export default {
     name: 'AppDown',
@@ -27,14 +28,13 @@ export default {
             repoData: {},
 
             status: 0, // 0 没有，1有客户端，2客户端有新版本
-            downInfo: {},
             releases: {},
-            releaseTimeout: null,
-
-            websocketOpenSubscribe: null
+            downInfo: {},
         }
     },
     mounted() {
+        this.getReleases();
+        //
         if (this.$Electron) {
             this.$Electron.ipcRenderer.on('downloadDone', (event, args) => {
                 if (args.name == this.repoData.name) {
@@ -43,23 +43,24 @@ export default {
                 }
             })
         }
-        //
-        this.getReleases();
-        this.websocketOpenSubscribe = Store.subscribe('websocketOpen', this.getReleaseBefore);
-    },
-    destroyed() {
-        if (this.websocketOpenSubscribe) {
-            this.websocketOpenSubscribe.unsubscribe();
-            this.websocketOpenSubscribe = null;
-        }
     },
     computed: {
+        ...mapState([
+            'wsOpenNum',
+        ]),
         repoTitle() {
             return this.status == 2 ? '更新客户端' : '客户端下载';
         },
         showButton() {
             return this.status && !this.$store.state.windowMax768 && ['login', 'manage-dashboard'].includes(this.$route.name)
         }
+    },
+    watch: {
+        wsOpenNum(num) {
+            if (num <= 1) return
+            this.wsOpenTimeout && clearTimeout(this.wsOpenTimeout)
+            this.wsOpenTimeout = setTimeout(this.getReleases, 5000)
+        },
     },
     methods: {
         compareVersion(version1, version2) {
@@ -104,11 +105,6 @@ export default {
             }
             // 版本号完全相同
             return 0;
-        },
-
-        getReleaseBefore() {
-            clearTimeout(this.releaseTimeout)
-            this.releaseTimeout = setTimeout(this.getReleases, 5000)
         },
 
         getReleases() {

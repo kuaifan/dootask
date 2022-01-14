@@ -88,7 +88,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'cacheTasks', 'taskCompleteTemps']),
+        ...mapState(['userId', 'cacheTasks', 'taskCompleteTemps', 'wsOpenNum']),
 
         ...mapGetters(['transforTasks']),
 
@@ -167,6 +167,16 @@ export default {
         rangeTime(time) {
             this.getTask(time);
         },
+
+        wsOpenNum(num) {
+            if (num <= 1) return
+            this.wsOpenTimeout && clearTimeout(this.wsOpenTimeout)
+            this.wsOpenTimeout = setTimeout(() => {
+                if (this.$route.name == 'manage-calendar') {
+                    this.setRenderRange();
+                }
+            }, 5000)
+        }
     },
 
     methods: {

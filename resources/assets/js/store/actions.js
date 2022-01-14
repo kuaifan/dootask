@@ -167,10 +167,10 @@ export default {
     },
 
     /**
-     * 刷新基本数据（项目、对话、仪表盘任务）
+     * 获取基本数据（项目、对话、仪表盘任务）
      * @param dispatch
      */
-    refreshBasicData({dispatch}) {
+    getBasicData({dispatch}) {
         dispatch("getProjects");
         dispatch("getDialogs");
         dispatch("getTaskForDashboard");
@@ -212,7 +212,7 @@ export default {
             state.userToken = userInfo.token;
             state.userIsAdmin = $A.inArray('admin', userInfo.identity);
             $A.setStorage("userInfo", state.userInfo);
-            dispatch("refreshBasicData");
+            dispatch("getBasicData");
             dispatch("websocketConnection");
             resolve()
         });
@@ -1967,7 +1967,7 @@ export default {
         state.ws = new WebSocket(url);
         state.ws.onopen = (e) => {
             console.log("[WS] Open", $A.formatDate())
-            Store.set('websocketOpen', ++state.wsOpenNum);
+            state.wsOpenNum++;
         };
         state.ws.onclose = (e) => {
             console.log("[WS] Close", $A.formatDate())

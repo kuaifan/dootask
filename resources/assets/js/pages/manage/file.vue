@@ -430,7 +430,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'userToken', 'userIsAdmin', 'userInfo', 'files']),
+        ...mapState(['userId', 'userToken', 'userIsAdmin', 'userInfo', 'files', 'wsOpenNum']),
 
         actionUrl() {
             return $A.apiUrl('file/content/upload?pid=' + this.pid)
@@ -507,6 +507,16 @@ export default {
                 this.getFileList();
             }
         },
+
+        wsOpenNum(num) {
+            if (num <= 1) return
+            this.wsOpenTimeout && clearTimeout(this.wsOpenTimeout)
+            this.wsOpenTimeout = setTimeout(() => {
+                if (this.$route.name == 'manage-file') {
+                    this.getFileList();
+                }
+            }, 5000)
+        }
     },
 
     methods: {
