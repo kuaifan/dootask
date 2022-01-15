@@ -1,0 +1,388 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+
+class ProjectFlowItemsTableSeeder extends Seeder
+{
+
+    /**
+     * Auto generated seed file
+     *
+     * @return void
+     */
+    public function run()
+    {
+
+
+        if (\DB::table('project_flow_items')->count() > 0) {
+            return;
+        }
+
+        \DB::table('project_flow_items')->insert(array (
+            0 =>
+            array (
+                'id' => 1,
+                'project_id' => 2,
+                'flow_id' => 1,
+                'name' => '待处理',
+                'status' => 'start',
+                'turns' => '[1,2,3,4]',
+                'userids' => '[]',
+                'usertype' => 'add',
+                'userlimit' => 0,
+                'sort' => 0,
+                'created_at' => '2022-01-15 23:43:15',
+                'updated_at' => '2022-01-15 23:43:15',
+            ),
+            1 =>
+            array (
+                'id' => 2,
+                'project_id' => 2,
+                'flow_id' => 1,
+                'name' => '进行中',
+                'status' => 'progress',
+                'turns' => '[1,2,3,4]',
+                'userids' => '[]',
+                'usertype' => 'add',
+                'userlimit' => 0,
+                'sort' => 1,
+                'created_at' => '2022-01-15 23:43:15',
+                'updated_at' => '2022-01-15 23:43:15',
+            ),
+            2 =>
+            array (
+                'id' => 3,
+                'project_id' => 2,
+                'flow_id' => 1,
+                'name' => '已完成',
+                'status' => 'end',
+                'turns' => '[1,2,3,4]',
+                'userids' => '[]',
+                'usertype' => 'add',
+                'userlimit' => 0,
+                'sort' => 2,
+                'created_at' => '2022-01-15 23:43:15',
+                'updated_at' => '2022-01-15 23:43:15',
+            ),
+            3 =>
+            array (
+                'id' => 4,
+                'project_id' => 2,
+                'flow_id' => 1,
+                'name' => '已取消',
+                'status' => 'end',
+                'turns' => '[1,2,3,4]',
+                'userids' => '[]',
+                'usertype' => 'add',
+                'userlimit' => 0,
+                'sort' => 3,
+                'created_at' => '2022-01-15 23:43:15',
+                'updated_at' => '2022-01-15 23:43:15',
+            ),
+            4 =>
+            array (
+                'id' => 5,
+                'project_id' => 3,
+                'flow_id' => 2,
+                'name' => '待处理',
+                'status' => 'start',
+                'turns' => '[5,6,7,8]',
+                'userids' => '[]',
+                'usertype' => 'add',
+                'userlimit' => 0,
+                'sort' => 0,
+                'created_at' => '2022-01-15 23:43:23',
+                'updated_at' => '2022-01-15 23:43:23',
+            ),
+            5 =>
+            array (
+                'id' => 6,
+                'project_id' => 3,
+                'flow_id' => 2,
+                'name' => '进行中',
+                'status' => 'progress',
+                'turns' => '[5,6,7,8]',
+                'userids' => '[]',
+                'usertype' => 'add',
+                'userlimit' => 0,
+                'sort' => 1,
+                'created_at' => '2022-01-15 23:43:23',
+                'updated_at' => '2022-01-15 23:43:23',
+            ),
+            6 =>
+            array (
+                'id' => 7,
+                'project_id' => 3,
+                'flow_id' => 2,
+                'name' => '已完成',
+                'status' => 'end',
+                'turns' => '[5,6,7,8]',
+                'userids' => '[]',
+                'usertype' => 'add',
+                'userlimit' => 0,
+                'sort' => 2,
+                'created_at' => '2022-01-15 23:43:23',
+                'updated_at' => '2022-01-15 23:43:23',
+            ),
+            7 =>
+            array (
+                'id' => 8,
+                'project_id' => 3,
+                'flow_id' => 2,
+                'name' => '已取消',
+                'status' => 'end',
+                'turns' => '[5,6,7,8]',
+                'userids' => '[]',
+                'usertype' => 'add',
+                'userlimit' => 0,
+                'sort' => 3,
+                'created_at' => '2022-01-15 23:43:23',
+                'updated_at' => '2022-01-15 23:43:23',
+            ),
+            8 =>
+            array (
+                'id' => 9,
+                'project_id' => 4,
+                'flow_id' => 3,
+                'name' => '待处理',
+                'status' => 'start',
+                'turns' => '[9,10,11,12]',
+                'userids' => '[]',
+                'usertype' => 'add',
+                'userlimit' => 0,
+                'sort' => 0,
+                'created_at' => '2022-01-15 23:43:28',
+                'updated_at' => '2022-01-15 23:43:28',
+            ),
+            9 =>
+            array (
+                'id' => 10,
+                'project_id' => 4,
+                'flow_id' => 3,
+                'name' => '进行中',
+                'status' => 'progress',
+                'turns' => '[9,10,11,12]',
+                'userids' => '[]',
+                'usertype' => 'add',
+                'userlimit' => 0,
+                'sort' => 1,
+                'created_at' => '2022-01-15 23:43:28',
+                'updated_at' => '2022-01-15 23:43:28',
+            ),
+            10 =>
+            array (
+                'id' => 11,
+                'project_id' => 4,
+                'flow_id' => 3,
+                'name' => '已完成',
+                'status' => 'end',
+                'turns' => '[9,10,11,12]',
+                'userids' => '[]',
+                'usertype' => 'add',
+                'userlimit' => 0,
+                'sort' => 2,
+                'created_at' => '2022-01-15 23:43:28',
+                'updated_at' => '2022-01-15 23:43:28',
+            ),
+            11 =>
+            array (
+                'id' => 12,
+                'project_id' => 4,
+                'flow_id' => 3,
+                'name' => '已取消',
+                'status' => 'end',
+                'turns' => '[9,10,11,12]',
+                'userids' => '[]',
+                'usertype' => 'add',
+                'userlimit' => 0,
+                'sort' => 3,
+                'created_at' => '2022-01-15 23:43:28',
+                'updated_at' => '2022-01-15 23:43:28',
+            ),
+            12 =>
+            array (
+                'id' => 13,
+                'project_id' => 5,
+                'flow_id' => 4,
+                'name' => '待处理',
+                'status' => 'start',
+                'turns' => '[13,14,15,16]',
+                'userids' => '[]',
+                'usertype' => 'add',
+                'userlimit' => 0,
+                'sort' => 0,
+                'created_at' => '2022-01-15 23:43:34',
+                'updated_at' => '2022-01-15 23:43:34',
+            ),
+            13 =>
+            array (
+                'id' => 14,
+                'project_id' => 5,
+                'flow_id' => 4,
+                'name' => '进行中',
+                'status' => 'progress',
+                'turns' => '[13,14,15,16]',
+                'userids' => '[]',
+                'usertype' => 'add',
+                'userlimit' => 0,
+                'sort' => 1,
+                'created_at' => '2022-01-15 23:43:34',
+                'updated_at' => '2022-01-15 23:43:34',
+            ),
+            14 =>
+            array (
+                'id' => 15,
+                'project_id' => 5,
+                'flow_id' => 4,
+                'name' => '已完成',
+                'status' => 'end',
+                'turns' => '[13,14,15,16]',
+                'userids' => '[]',
+                'usertype' => 'add',
+                'userlimit' => 0,
+                'sort' => 2,
+                'created_at' => '2022-01-15 23:43:34',
+                'updated_at' => '2022-01-15 23:43:34',
+            ),
+            15 =>
+            array (
+                'id' => 16,
+                'project_id' => 5,
+                'flow_id' => 4,
+                'name' => '已取消',
+                'status' => 'end',
+                'turns' => '[13,14,15,16]',
+                'userids' => '[]',
+                'usertype' => 'add',
+                'userlimit' => 0,
+                'sort' => 3,
+                'created_at' => '2022-01-15 23:43:34',
+                'updated_at' => '2022-01-15 23:43:34',
+            ),
+            16 =>
+            array (
+                'id' => 17,
+                'project_id' => 6,
+                'flow_id' => 5,
+                'name' => '待处理',
+                'status' => 'start',
+                'turns' => '[17,18,19,20]',
+                'userids' => '[]',
+                'usertype' => 'add',
+                'userlimit' => 0,
+                'sort' => 0,
+                'created_at' => '2022-01-15 23:43:40',
+                'updated_at' => '2022-01-15 23:43:40',
+            ),
+            17 =>
+            array (
+                'id' => 18,
+                'project_id' => 6,
+                'flow_id' => 5,
+                'name' => '进行中',
+                'status' => 'progress',
+                'turns' => '[17,18,19,20]',
+                'userids' => '[]',
+                'usertype' => 'add',
+                'userlimit' => 0,
+                'sort' => 1,
+                'created_at' => '2022-01-15 23:43:40',
+                'updated_at' => '2022-01-15 23:43:40',
+            ),
+            18 =>
+            array (
+                'id' => 19,
+                'project_id' => 6,
+                'flow_id' => 5,
+                'name' => '已完成',
+                'status' => 'end',
+                'turns' => '[17,18,19,20]',
+                'userids' => '[]',
+                'usertype' => 'add',
+                'userlimit' => 0,
+                'sort' => 2,
+                'created_at' => '2022-01-15 23:43:40',
+                'updated_at' => '2022-01-15 23:43:40',
+            ),
+            19 =>
+            array (
+                'id' => 20,
+                'project_id' => 6,
+                'flow_id' => 5,
+                'name' => '已取消',
+                'status' => 'end',
+                'turns' => '[17,18,19,20]',
+                'userids' => '[]',
+                'usertype' => 'add',
+                'userlimit' => 0,
+                'sort' => 3,
+                'created_at' => '2022-01-15 23:43:40',
+                'updated_at' => '2022-01-15 23:43:40',
+            ),
+            20 =>
+            array (
+                'id' => 21,
+                'project_id' => 7,
+                'flow_id' => 6,
+                'name' => '待处理',
+                'status' => 'start',
+                'turns' => '[21,22,23,24]',
+                'userids' => '[]',
+                'usertype' => 'add',
+                'userlimit' => 0,
+                'sort' => 0,
+                'created_at' => '2022-01-15 23:43:45',
+                'updated_at' => '2022-01-15 23:43:45',
+            ),
+            21 =>
+            array (
+                'id' => 22,
+                'project_id' => 7,
+                'flow_id' => 6,
+                'name' => '进行中',
+                'status' => 'progress',
+                'turns' => '[21,22,23,24]',
+                'userids' => '[]',
+                'usertype' => 'add',
+                'userlimit' => 0,
+                'sort' => 1,
+                'created_at' => '2022-01-15 23:43:45',
+                'updated_at' => '2022-01-15 23:43:45',
+            ),
+            22 =>
+            array (
+                'id' => 23,
+                'project_id' => 7,
+                'flow_id' => 6,
+                'name' => '已完成',
+                'status' => 'end',
+                'turns' => '[21,22,23,24]',
+                'userids' => '[]',
+                'usertype' => 'add',
+                'userlimit' => 0,
+                'sort' => 2,
+                'created_at' => '2022-01-15 23:43:45',
+                'updated_at' => '2022-01-15 23:43:45',
+            ),
+            23 =>
+            array (
+                'id' => 24,
+                'project_id' => 7,
+                'flow_id' => 6,
+                'name' => '已取消',
+                'status' => 'end',
+                'turns' => '[21,22,23,24]',
+                'userids' => '[]',
+                'usertype' => 'add',
+                'userlimit' => 0,
+                'sort' => 3,
+                'created_at' => '2022-01-15 23:43:45',
+                'updated_at' => '2022-01-15 23:43:45',
+            ),
+        ));
+
+
+    }
+}
