@@ -1,4 +1,5 @@
 const fs = require('fs')
+const fse = require('fs-extra')
 const os = require("os");
 const path = require('path')
 const XLSX = require('xlsx');
@@ -19,8 +20,11 @@ let mainWindow = null,
 if (fs.existsSync(devloadCachePath)) {
     devloadUrl = fs.readFileSync(devloadCachePath, 'utf8')
 }
+
 if (fs.existsSync(downloadCacheFile)) {
     downloadList = utils.jsonParse(fs.readFileSync(downloadCacheFile, 'utf8'), [])
+} else {
+    fse.ensureDirSync(path.join(app.getPath('cache'), config.name))
 }
 
 function downloadUpdate(item) {
