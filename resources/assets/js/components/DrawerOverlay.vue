@@ -13,7 +13,7 @@
                     </svg>
                 </a>
             </div>
-            <ResizeLine v-if="resize && placement == 'right'" class="overlay-resize" v-model="width" :min-width="100" :max-width="0" reverse/>
+            <ResizeLine v-if="resize" class="overlay-resize" :placement="placement" v-model="dynamicSize" :min="minSize" :max="0" reverse/>
             <div class="overlay-content"><slot/></div>
         </div>
     </div>
@@ -51,7 +51,11 @@
                 type: [Number, String],
                 default: "100%"
             },
-            resize: {   // only placement:right
+            minSize: {
+                type: Number,
+                default: 300
+            },
+            resize: {
                 type: Boolean,
                 default: true
             },
@@ -63,7 +67,7 @@
 
         data() {
             return {
-                width: 0,
+                dynamicSize: 0,
                 zIndex: 0,
             }
         },
@@ -86,7 +90,7 @@
             },
 
             bodyStyle() {
-                let size = this.width;
+                let size = this.dynamicSize;
                 size = size <= 100 ? `${size}%` : `${size}px`
                 if (this.placement == 'right') {
                     return {
@@ -125,7 +129,7 @@
             },
             size: {
                 handler(val) {
-                    this.width = parseInt(val);
+                    this.dynamicSize = parseInt(val);
                 },
                 immediate: true
             }
