@@ -126,10 +126,10 @@ run_exec() {
         echo -e "${Error} ${RedBG} 没有找到 $container 容器! ${Font}"
         exit 1
     fi
-    if [ "$container" = "mariadb" ] || [ "$container" = "nginx" ] || [ "$container" = "redis" ]; then
-        docker exec -it "$name" /bin/sh -c "$cmd"
-    else
+    if [ "$container" = "php" ]; then
         docker exec -it "$name" /bin/bash -c "$cmd"
+    else
+        docker exec -it "$name" /bin/sh -c "$cmd"
     fi
 }
 
@@ -331,9 +331,9 @@ if [ $# -gt 0 ]; then
         echo -e "${OK} ${GreenBG} 卸载完成 ${Font}"
     elif [[ "$1" == "reinstall" ]]; then
         shift 1
-        ./cmd uninstall
+        ./cmd uninstall $@
         sleep 3
-        ./cmd install
+        ./cmd install $@
     elif [[ "$1" == "port" ]]; then
         shift 1
         env_set APP_PORT "$1"
@@ -396,10 +396,10 @@ if [ $# -gt 0 ]; then
     elif [[ "$1" == "composer" ]]; then
         shift 1
         e="composer $@" && run_exec php "$e"
-    elif [[ "$1" == "super" ]]; then
+    elif [[ "$1" == "service" ]]; then
         shift 1
-        supervisorctl_restart "$@"
-    elif [[ "$1" == "supervisorctl" ]]; then
+        e="service $@" && run_exec php "$e"
+    elif [[ "$1" == "super" ]] || [[ "$1" == "supervisorctl" ]]; then
         shift 1
         e="supervisorctl $@" && run_exec php "$e"
     elif [[ "$1" == "models" ]]; then
