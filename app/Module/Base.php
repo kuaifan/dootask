@@ -725,7 +725,7 @@ class Base
     public static function getHost($var = '')
     {
         if (empty($var)) {
-            $var = url("/");
+            $var = self::url();
         }
         $arr = parse_url($var);
         return $arr['host'];
@@ -756,7 +756,7 @@ class Base
         ) {
             return $str;
         } else {
-            return Base::leftDelete(url($str), "http://localhost");
+            return self::url($str);
         }
     }
 
@@ -773,8 +773,35 @@ class Base
             }
             return $str;
         }
-        $find = url('');
-        return Base::leftDelete($str, $find . '/');
+        return Base::leftDelete($str, self::url() . '/');
+    }
+
+    /**
+     * 获取url
+     * @param $path
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\UrlGenerator|string
+     */
+    public static function url($path = '')
+    {
+        try {
+            $url = url($path);
+            if (str_starts_with($url, "http://localhost/")) {
+                $url = "http://localhost:" . env("APP_PORT", "80") . "/" . substr($url, 17);
+            }
+        } catch (\Throwable) {
+            $url = self::getSchemeAndHost() . "/" . $path;
+        }
+        return $url;
+    }
+
+    /**
+     * 获取主地址
+     * @return string   如：http://127.0.0.1:8080
+     */
+    public static function getSchemeAndHost()
+    {
+        $scheme = isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == '443' ? 'https://' : 'http://';
+        return $scheme.($_SERVER['HTTP_HOST'] ?? '');
     }
 
     /**

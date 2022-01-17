@@ -171,7 +171,7 @@ export default {
      * @param dispatch
      */
     getBasicData({dispatch}) {
-        dispatch("getProjects");
+        dispatch("getProjects").catch(() => {});
         dispatch("getDialogs");
         dispatch("getTaskForDashboard");
     },
@@ -383,7 +383,7 @@ export default {
      * @returns {Promise<unknown>}
      */
     handleClearCache({state, dispatch}, userInfo) {
-        return new Promise(function (resolve, reject) {
+        return new Promise(function (resolve) {
             try {
                 const cacheLoginEmail = $A.getStorageString("cacheLoginEmail");
                 //
@@ -402,7 +402,7 @@ export default {
                 //
                 resolve()
             } catch (e) {
-                reject(e)
+                resolve()
             }
         });
     },
@@ -651,7 +651,7 @@ export default {
                 resolve(result)
             }).catch(e => {
                 console.warn(e);
-                dispatch("getProjectOne", project_id);
+                dispatch("getProjectOne", project_id).catch(() => {})
                 reject(e)
             });
         });
@@ -679,7 +679,7 @@ export default {
                 resolve(result)
             }).catch(e => {
                 console.warn(e);
-                dispatch("getProjectOne", project_id);
+                dispatch("getProjectOne", project_id).catch(() => {})
                 reject(e)
             });
         });
@@ -707,7 +707,7 @@ export default {
                 resolve(result)
             }).catch(e => {
                 console.warn(e);
-                dispatch("getProjectOne", project_id);
+                dispatch("getProjectOne", project_id).catch(() => {})
                 reject(e)
             });
         });
@@ -758,11 +758,11 @@ export default {
             let index = state.cacheColumns.findIndex(column => column.id == id);
             if (index > -1) {
                 project_ids.push(state.cacheColumns[index].project_id)
-                dispatch('getProjectOne', state.cacheColumns[index].project_id)
+                dispatch('getProjectOne', state.cacheColumns[index].project_id).catch(() => {})
                 state.cacheColumns.splice(index, 1);
             }
         })
-        Array.from(new Set(project_ids)).some(id => dispatch("getProjectOne", id))
+        Array.from(new Set(project_ids)).some(id => dispatch("getProjectOne", id).catch(() => {}))
         //
         setTimeout(() => {
             $A.setStorage("cacheColumns", state.cacheColumns);
@@ -882,16 +882,16 @@ export default {
             }
             //
             if (updateMarking.is_update_maintask === true || (data.parent_id > 0 && state.cacheTasks.findIndex(({id}) => id == data.parent_id) === -1)) {
-                dispatch("getTaskOne", data.parent_id);
+                dispatch("getTaskOne", data.parent_id).catch(() => {})
             }
             if (updateMarking.is_update_project === true) {
-                dispatch("getProjectOne", data.project_id);
+                dispatch("getProjectOne", data.project_id).catch(() => {})
             }
             if (updateMarking.is_update_content === true) {
                 dispatch("getTaskContent", data.id);
             }
             if (updateMarking.is_update_subtask === true) {
-                dispatch("getTaskForParent", data.id);
+                dispatch("getTaskForParent", data.id).catch(() => {})
             }
             //
             setTimeout(() => {
@@ -922,8 +922,8 @@ export default {
                 state.cacheTasks.splice(index, 1);
             }
         })
-        Array.from(new Set(parent_ids)).some(id => dispatch("getTaskOne", id))
-        Array.from(new Set(project_ids)).some(id => dispatch("getProjectOne", id))
+        Array.from(new Set(parent_ids)).some(id => dispatch("getTaskOne", id).catch(() => {}))
+        Array.from(new Set(project_ids)).some(id => dispatch("getProjectOne", id).catch(() => {}))
         //
         if (ids.includes(state.taskId)) {
             state.taskId = 0;
@@ -1158,7 +1158,7 @@ export default {
                 resolve(result)
             }).catch(e => {
                 console.warn(e);
-                dispatch("getTaskOne", task_id);
+                dispatch("getTaskOne", task_id).catch(() => {})
                 dispatch("taskLoadEnd", task_id)
                 reject(e)
             });
@@ -1190,7 +1190,7 @@ export default {
                 resolve(result)
             }).catch(e => {
                 console.warn(e);
-                dispatch("getTaskOne", task_id)
+                dispatch("getTaskOne", task_id).catch(() => {})
                 dispatch("taskLoadEnd", task_id)
                 reject(e)
             });
@@ -1202,31 +1202,25 @@ export default {
      * @param state
      * @param dispatch
      * @param task_id
-     * @returns {Promise<unknown>}
      */
     getTaskContent({state, dispatch}, task_id) {
-        return new Promise(function (resolve, reject) {
-            if ($A.runNum(task_id) === 0) {
-                reject({msg: 'Parameter error'});
-                return;
+        if ($A.runNum(task_id) === 0) {
+            return;
+        }
+        dispatch("call", {
+            url: 'project/task/content',
+            data: {
+                task_id,
+            },
+        }).then(result => {
+            let index = state.taskContents.findIndex(({id}) => id == result.data.id)
+            if (index > -1) {
+                state.taskContents.splice(index, 1, result.data)
+            } else {
+                state.taskContents.push(result.data)
             }
-            dispatch("call", {
-                url: 'project/task/content',
-                data: {
-                    task_id,
-                },
-            }).then(result => {
-                let index = state.taskContents.findIndex(({id}) => id == result.data.id)
-                if (index > -1) {
-                    state.taskContents.splice(index, 1, result.data)
-                } else {
-                    state.taskContents.push(result.data)
-                }
-                resolve(result)
-            }).catch(e => {
-                console.warn(e);
-                reject(e);
-            });
+        }).catch(e => {
+            console.warn(e);
         });
     },
 
@@ -1235,37 +1229,31 @@ export default {
      * @param state
      * @param dispatch
      * @param task_id
-     * @returns {Promise<unknown>}
      */
     getTaskFiles({state, dispatch}, task_id) {
-        return new Promise(function (resolve, reject) {
-            if ($A.runNum(task_id) === 0) {
-                reject({msg: 'Parameter error'});
-                return;
-            }
-            dispatch("call", {
-                url: 'project/task/files',
-                data: {
-                    task_id,
-                },
-            }).then(result => {
-                result.data.forEach((data) => {
-                    let index = state.taskFiles.findIndex(({id}) => id == data.id)
-                    if (index > -1) {
-                        state.taskFiles.splice(index, 1, data)
-                    } else {
-                        state.taskFiles.push(data)
-                    }
-                })
-                dispatch("saveTask", {
-                    id: task_id,
-                    file_num: result.data.length
-                });
-                resolve(result)
-            }).catch(e => {
-                console.warn(e);
-                reject(e);
+        if ($A.runNum(task_id) === 0) {
+            return;
+        }
+        dispatch("call", {
+            url: 'project/task/files',
+            data: {
+                task_id,
+            },
+        }).then(result => {
+            result.data.forEach((data) => {
+                let index = state.taskFiles.findIndex(({id}) => id == data.id)
+                if (index > -1) {
+                    state.taskFiles.splice(index, 1, data)
+                } else {
+                    state.taskFiles.push(data)
+                }
+            })
+            dispatch("saveTask", {
+                id: task_id,
+                file_num: result.data.length
             });
+        }).catch(e => {
+            console.warn(e);
         });
     },
 
@@ -1305,7 +1293,7 @@ export default {
             dispatch("getTaskOne", task_id).then(() => {
                 dispatch("getTaskContent", task_id);
                 dispatch("getTaskFiles", task_id);
-                dispatch("getTaskForParent", task_id);
+                dispatch("getTaskForParent", task_id).catch(() => {})
             }).catch(({msg}) => {
                 $A.modalWarning({
                     content: msg,
@@ -1375,7 +1363,7 @@ export default {
             delete task.new_column
         }
         dispatch("saveTask", task)
-        dispatch("getProjectOne", task.project_id);
+        dispatch("getProjectOne", task.project_id).catch(() => {})
     },
 
     /**
@@ -1400,7 +1388,7 @@ export default {
                 }).catch(e => {
                     console.warn(e);
                     dispatch("taskLoadEnd", post.task_id)
-                    dispatch("getTaskOne", post.task_id);
+                    dispatch("getTaskOne", post.task_id).catch(() => {})
                     reject(e)
                 });
             }).catch(reject)
@@ -1679,7 +1667,7 @@ export default {
                 last_at: $A.formatDate("Y-m-d H:i:s")
             });
         } else {
-            dispatch("getDialogOne", data.dialog_id);
+            dispatch("getDialogOne", data.dialog_id).catch(() => {})
         }
     },
 
@@ -2060,15 +2048,15 @@ export default {
                                         dispatch("saveProject", data)
                                         break;
                                     case 'detail':
-                                        dispatch("getProjectOne", data.id);
-                                        dispatch("getTaskForProject", data.id)
+                                        dispatch("getProjectOne", data.id).catch(() => {})
+                                        dispatch("getTaskForProject", data.id).catch(() => {})
                                         break;
                                     case 'archived':
                                     case 'delete':
                                         dispatch("forgetProject", data.id);
                                         break;
                                     case 'sort':
-                                        dispatch("getTaskForProject", data.id)
+                                        dispatch("getTaskForProject", data.id).catch(() => {})
                                         break;
                                 }
                             })(msgDetail);
@@ -2107,7 +2095,7 @@ export default {
                                         break;
                                     case 'dialog':
                                         dispatch("saveTask", data)
-                                        dispatch("getDialogOne", data.dialog_id)
+                                        dispatch("getDialogOne", data.dialog_id).catch(() => {})
                                         break;
                                     case 'upload':
                                         dispatch("getTaskFiles", data.task_id)

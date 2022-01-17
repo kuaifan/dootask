@@ -270,7 +270,7 @@ export default {
     },
     methods: {
         initLanguage() {
-            
+
         },
 
         initCascaderData() {
@@ -321,7 +321,7 @@ export default {
                                 this.addData.project_id = column.project_id;
                                 this.addData.column_id = column.id;
                             }
-                        });
+                        }).catch(() => {});
                     }
                 }
             }

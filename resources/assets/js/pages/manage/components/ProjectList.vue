@@ -785,7 +785,7 @@ export default {
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.sortDisabled = false;
-                this.$store.dispatch("getTaskForProject", this.projectId)
+                this.$store.dispatch("getTaskForProject", this.projectId).catch(() => {})
             });
         },
 
@@ -881,7 +881,7 @@ export default {
                 this.$store.dispatch("saveColumn", data);
             }).catch(({msg}) => {
                 this.$set(this.columnLoad, column.id, false);
-                this.$store.dispatch("getColumns", this.projectId)
+                this.$store.dispatch("getColumns", this.projectId).catch(() => {})
                 $A.modalError(msg);
             });
         },
@@ -945,8 +945,8 @@ export default {
                 $A.messageSuccess(msg);
                 this.userLoad--;
                 this.userShow = false;
-                this.$store.dispatch("getProjectOne", this.projectId);
-                this.$store.dispatch("getTaskForProject", this.projectId)
+                this.$store.dispatch("getProjectOne", this.projectId).catch(() => {});
+                this.$store.dispatch("getTaskForProject", this.projectId).catch(() => {})
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.userLoad--;
@@ -965,8 +965,8 @@ export default {
                 $A.messageSuccess(msg);
                 this.transferLoad--;
                 this.transferShow = false;
-                this.$store.dispatch("getProjectOne", this.projectId);
-                this.$store.dispatch("getTaskForProject", this.projectId)
+                this.$store.dispatch("getProjectOne", this.projectId).catch(() => {});
+                this.$store.dispatch("getTaskForProject", this.projectId).catch(() => {})
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.transferLoad--;

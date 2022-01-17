@@ -1,5 +1,5 @@
 <template>
-    <div class="component-resize-line" :class="{resizing}" @mousedown.left.stop.prevent="resizeDown"></div>
+    <div class="component-resize-line" :class="[resizing ? 'resizing' : '', placement]" @mousedown.left.stop.prevent="resizeDown"></div>
 </template>
 <style lang="scss" scoped>
     .component-resize-line {
@@ -19,6 +19,12 @@
                 cursor: col-resize;
             }
         }
+        &.bottom {
+            cursor: row-resize;
+            &:after {
+                cursor: row-resize;
+            }
+        }
     }
 </style>
 <script>
@@ -28,14 +34,24 @@
         props: {
             value: {
             },
-            minWidth: {
+            min: {
                 type: Number,
                 default: 100,
             },
-            maxWidth: {
+            max: {
                 type: Number,
                 default: 600,
             },
+            placement: {
+                validator (value) {
+                    return ['right', 'bottom'].includes(value)
+                },
+                default: 'bottom'
+            },
+            reverse: {
+                type: Boolean,
+                default: false
+            }
         },
 
         data() {
@@ -47,7 +63,7 @@
 
                 offset: {},
 
-                tmpWidth: undefined,
+                tmpSize: undefined,
             }
         },
 
@@ -66,7 +82,7 @@
                 };
                 this.resizing = true;
                 if (typeof this.value === 'number') {
-                    this.tmpWidth = this.value;
+                    this.tmpSize = this.value;
                 }
                 this.$emit('on-change', {
                     event: 'down',
@@ -78,13 +94,18 @@
                 }
                 let diffX = (e.pageX || e.clientX + document.documentElement.scrollLeft) - this.mouseX;
                 let diffY = (e.pageY || e.clientY + document.documentElement.scrollTop) - this.mouseY;
-                if (typeof this.tmpWidth === 'number') {
-                    let value = this.tmpWidth + diffX;
-                    if (this.minWidth > 0) {
-                        value = Math.max(this.minWidth, value);
+                if (typeof this.tmpSize === 'number') {
+                    let value;
+                    if (this.placement == 'bottom') {
+                        value = this.reverse ? (this.tmpSize - diffY) : (this.tmpSize + diffY);
+                    } else {
+                        value = this.reverse ? (this.tmpSize - diffX) : (this.tmpSize + diffX);
                     }
-                    if (this.maxWidth > 0) {
-                        value = Math.min(this.maxWidth, value);
+                    if (this.min > 0) {
+                        value = Math.max(this.min, value);
+                    }
+                    if (this.max > 0) {
+                        value = Math.min(this.max, value);
                     }
                     this.$emit("input", value);
                 }
@@ -99,7 +120,7 @@
             },
             handleUp() {
                 this.resizing = false;
-                this.tmpWidth = undefined;
+                this.tmpSize = undefined;
                 this.$emit('on-change', {
                     event: 'up',
                 });

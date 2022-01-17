@@ -274,8 +274,8 @@ export default {
             $A.messageSuccess("清除成功");
         }
         //
-        this.$store.dispatch("getUserInfo");
-        this.$store.dispatch("getTaskPriority");
+        this.$store.dispatch("getUserInfo").catch(() => {})
+        this.$store.dispatch("getTaskPriority").catch(() => {})
         //
         this.notificationInit();
         this.onVisibilityChange();
@@ -635,7 +635,7 @@ export default {
                             this.notificationClass.replaceTitle(data.name);
                             this.notificationClass.userAgreed();
                         }
-                    })
+                    }).catch(() => {})
                 }
             }
         },

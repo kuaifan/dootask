@@ -18,6 +18,8 @@ class DatabaseSeeder extends Seeder
         $this->call(FilesTableSeeder::class);
         $this->call(FileUsersTableSeeder::class);
         $this->call(ProjectColumnsTableSeeder::class);
+        $this->call(ProjectFlowItemsTableSeeder::class);
+        $this->call(ProjectFlowsTableSeeder::class);
         $this->call(ProjectLogsTableSeeder::class);
         $this->call(ProjectTaskContentsTableSeeder::class);
         $this->call(ProjectTaskUsersTableSeeder::class);

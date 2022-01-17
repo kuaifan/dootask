@@ -31,6 +31,15 @@ rand() {
     echo $(($num%$max+$min))
 }
 
+rand_string() {
+    local lan=$1
+    if [[ `uname` == 'Linux' ]]; then
+        echo "$(date +%s%N | md5sum | cut -c 1-${lan})"
+    else
+        echo "$(docker run -it --rm alpine sh -c "date +%s%N | md5sum | cut -c 1-${lan}")"
+    fi
+}
+
 supervisorctl_restart() {
     local RES=`run_exec php "supervisorctl update $1"`
     if [ -z "$RES" ]; then
@@ -117,10 +126,10 @@ run_exec() {
         echo -e "${Error} ${RedBG} 没有找到 $container 容器! ${Font}"
         exit 1
     fi
-    if [ "$container" = "mariadb" ] || [ "$container" = "nginx" ] || [ "$container" = "redis" ]; then
-        docker exec -it "$name" /bin/sh -c "$cmd"
-    else
+    if [ "$container" = "php" ]; then
         docker exec -it "$name" /bin/bash -c "$cmd"
+    else
+        docker exec -it "$name" /bin/sh -c "$cmd"
     fi
 }
 
@@ -178,8 +187,11 @@ env_set() {
     if [ -z "$exist" ]; then
         echo "$key=$val" >> $cur_path/.env
     else
-        command="sed -i '/^$key=/c\\$key=$val' /www/.env"
-        docker run -it --rm -v ${cur_path}:/www alpine sh -c "$command"
+        if [[ `uname` == 'Linux' ]]; then
+            sed -i "/^${key}=/c\\${key}=${val}" /www/.env
+        else
+            docker run -it --rm -v ${cur_path}:/www alpine sh -c "sed -i "/^${key}=/c\\${key}=${val}" /www/.env"
+        fi
         if [ $? -ne  0 ]; then
             echo -e "${Error} ${RedBG} 设置env参数失败！${Font}"
             exit 1
@@ -192,10 +204,10 @@ env_init() {
         cp .env.docker .env
     fi
     if [ -z "$(env_get DB_ROOT_PASSWORD)" ]; then
-        env_set DB_ROOT_PASSWORD "$(docker run -it --rm alpine sh -c "date +%s%N | md5sum | cut -c 1-16")"
+        env_set DB_ROOT_PASSWORD "$(rand_string 16)"
     fi
     if [ -z "$(env_get APP_ID)" ]; then
-        env_set APP_ID "$(docker run -it --rm alpine sh -c "date +%s%N | md5sum | cut -c 1-6")"
+        env_set APP_ID "$(rand_string 6)"
     fi
     if [ -z "$(env_get APP_IPPR)" ]; then
         env_set APP_IPPR "10.$(rand 50 100).$(rand 100 200)"
@@ -207,14 +219,26 @@ arg_get() {
     local value=""
     for var in $cur_arg; do
         if [[ "$find" == "y" ]]; then
-            value=$var
+            if [[ ! $var =~ "--" ]]; then
+                value=$var
+            fi
             break
         fi
         if [[ "--$1" == "$var" ]] || [[ "-$1" == "$var" ]]; then
             find="y"
+            value="yes"
         fi
     done
     echo $value
+}
+
+is_arm() {
+    local get_arch=`arch`
+    if [[ $get_arch =~ "aarch" ]] || [[ $get_arch =~ "arm" ]]; then
+        echo "yes"
+    else
+        echo "no"
+    fi
 }
 
 ####################################################################################
@@ -229,6 +253,11 @@ fi
 if [ $# -gt 0 ]; then
     if [[ "$1" == "init" ]] || [[ "$1" == "install" ]]; then
         shift 1
+        # 判断架构
+        if [[ "$(is_arm)" == "yes" ]] && [[ -z "$(arg_get force)" ]]; then
+            echo -e "${Error} ${RedBG}暂不支持arm架构，强制安装请使用：./cmd install --force${Font}"
+            exit 1
+        fi
         # 初始化文件
         rm -rf composer.lock
         rm -rf package-lock.json
@@ -302,9 +331,9 @@ if [ $# -gt 0 ]; then
         echo -e "${OK} ${GreenBG} 卸载完成 ${Font}"
     elif [[ "$1" == "reinstall" ]]; then
         shift 1
-        ./cmd uninstall
+        ./cmd uninstall $@
         sleep 3
-        ./cmd install
+        ./cmd install $@
     elif [[ "$1" == "port" ]]; then
         shift 1
         env_set APP_PORT "$1"
@@ -367,10 +396,10 @@ if [ $# -gt 0 ]; then
     elif [[ "$1" == "composer" ]]; then
         shift 1
         e="composer $@" && run_exec php "$e"
-    elif [[ "$1" == "super" ]]; then
+    elif [[ "$1" == "service" ]]; then
         shift 1
-        supervisorctl_restart "$@"
-    elif [[ "$1" == "supervisorctl" ]]; then
+        e="service $@" && run_exec php "$e"
+    elif [[ "$1" == "super" ]] || [[ "$1" == "supervisorctl" ]]; then
         shift 1
         e="supervisorctl $@" && run_exec php "$e"
     elif [[ "$1" == "models" ]]; then

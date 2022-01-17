@@ -16,7 +16,7 @@ function runExec(command, cb) {
     });
 }
 
-runExec("git rev-list --branches master --count", function (err, response) {
+runExec("git rev-list --count HEAD $(git branch | sed -n -e 's/^\* \(.*\)/\1/p')", function (err, response) {
     if (err) {
         console.error(err);
         return;

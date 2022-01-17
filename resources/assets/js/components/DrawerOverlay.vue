@@ -1,29 +1,28 @@
 <template>
-    <transition name="transition-drop">
-        <div
-            :data-transfer="transfer"
-            :transfer="transfer"
-            v-transfer-dom
-            :class="['drawer-overlay', placement, value ? 'overlay-visible' : 'overlay-hide']">
-            <div class="overlay-mask" @click="mask"></div>
-            <div class="overlay-body" :style="bodyStyle">
-                <div class="overlay-close">
-                    <a href="javascript:void(0)" @click.stop="close">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26" fill="none" role="img" class="icon fill-current">
-                            <path d="M8.28596 6.51819C7.7978 6.03003 7.00634 6.03003 6.51819 6.51819C6.03003 7.00634 6.03003 7.7978 6.51819 8.28596L11.2322 13L6.51819 17.714C6.03003 18.2022 6.03003 18.9937 6.51819 19.4818C7.00634 19.97 7.7978 19.97 8.28596 19.4818L13 14.7678L17.714 19.4818C18.2022 19.97 18.9937 19.97 19.4818 19.4818C19.97 18.9937 19.97 18.2022 19.4818 17.714L14.7678 13L19.4818 8.28596C19.97 7.7978 19.97 7.00634 19.4818 6.51819C18.9937 6.03003 18.2022 6.03003 17.714 6.51819L13 11.2322L8.28596 6.51819Z" fill="currentColor"></path>
-                        </svg>
-                    </a>
-                </div>
-                <ResizeLine v-if="resize" class="overlay-resize" v-model="width" :max-width="0"/>
-                <div class="overlay-content"><slot/></div>
+    <div
+        v-transfer-dom
+        :data-transfer="transfer"
+        :class="['drawer-overlay', placement, value ? 'overlay-visible' : 'overlay-hide']"
+        :style="overlayStyle">
+        <div class="overlay-mask" @click="mask"></div>
+        <div class="overlay-body" :style="bodyStyle">
+            <div class="overlay-close">
+                <a href="javascript:void(0)" @click.stop="close">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26" fill="none" role="img" class="icon fill-current">
+                        <path d="M8.28596 6.51819C7.7978 6.03003 7.00634 6.03003 6.51819 6.51819C6.03003 7.00634 6.03003 7.7978 6.51819 8.28596L11.2322 13L6.51819 17.714C6.03003 18.2022 6.03003 18.9937 6.51819 19.4818C7.00634 19.97 7.7978 19.97 8.28596 19.4818L13 14.7678L17.714 19.4818C18.2022 19.97 18.9937 19.97 19.4818 19.4818C19.97 18.9937 19.97 18.2022 19.4818 17.714L14.7678 13L19.4818 8.28596C19.97 7.7978 19.97 7.00634 19.4818 6.51819C18.9937 6.03003 18.2022 6.03003 17.714 6.51819L13 11.2322L8.28596 6.51819Z" fill="currentColor"></path>
+                    </svg>
+                </a>
             </div>
+            <ResizeLine v-if="resize" class="overlay-resize" :placement="placement" v-model="dynamicSize" :min="minSize" :max="0" reverse/>
+            <div class="overlay-content"><slot/></div>
         </div>
-    </transition>
+    </div>
 </template>
 
 <script>
     import ResizeLine from "./ResizeLine";
     import TransferDom from '../directives/transfer-dom';
+    import {mapState} from "vuex";
 
     export default {
         name: 'DrawerOverlay',
@@ -52,6 +51,10 @@
                 type: [Number, String],
                 default: "100%"
             },
+            minSize: {
+                type: Number,
+                default: 300
+            },
             resize: {
                 type: Boolean,
                 default: true
@@ -64,7 +67,8 @@
 
         data() {
             return {
-                width: 0
+                dynamicSize: 0,
+                zIndex: 0,
             }
         },
 
@@ -77,8 +81,16 @@
         },
 
         computed: {
+            ...mapState(['cacheDrawerIndex']),
+
+            overlayStyle() {
+                return {
+                    zIndex: 1000 + this.zIndex
+                }
+            },
+
             bodyStyle() {
-                let size = this.width;
+                let size = this.dynamicSize;
                 size = size <= 100 ? `${size}%` : `${size}px`
                 if (this.placement == 'right') {
                     return {
@@ -108,10 +120,16 @@
                         this.$store.state.cacheDrawerOverlay.splice(index, 1);
                     }
                 }
+                //
+                if (val) {
+                    this.zIndex = this.$store.state.cacheDrawerIndex++;
+                } else if (this.$store.state.cacheDrawerOverlay.length === 0) {
+                    this.$store.state.cacheDrawerIndex = 0;
+                }
             },
             size: {
                 handler(val) {
-                    this.width = parseInt(val);
+                    this.dynamicSize = parseInt(val);
                 },
                 immediate: true
             }
@@ -124,17 +142,19 @@
                 }
             },
             close() {
-                this.$emit("input", !this.value)
+                this.$emit("input", false)
             },
             escClose(e) {
                 if (this.value && this.escClosable) {
                     if (e.keyCode === 27) {
-                        let show = false;
-                        $A(".ivu-modal").each((i, e) => {
-                            show = $(e).is(":visible");
-                            return !show;
-                        })
-                        !show && this.close()
+                        if (this.$Modal.visibles().length > 0) {
+                            return;
+                        }
+                        const list = this.$store.state.cacheDrawerOverlay;
+                        if (list.length > 0) {
+                            const $Drawer = list[list.length - 1]
+                            $Drawer.close();
+                        }
                     }
                 }
             }

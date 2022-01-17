@@ -401,7 +401,7 @@ export default {
                         }
                     }
                 });
-            });
+            }).catch(() => {})
         },
 
         addDialogMsg() {

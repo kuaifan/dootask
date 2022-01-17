@@ -57,8 +57,8 @@ export default {
             setTimeout(() => {
                 this.$store.state.projectId = $A.runNum(id);
                 this.$store.dispatch("getProjectOne", id).then(() => {
-                    this.$store.dispatch("getColumns", id);
-                    this.$store.dispatch("getTaskForProject", id);
+                    this.$store.dispatch("getColumns", id).catch(() => {});
+                    this.$store.dispatch("getTaskForProject", id).catch(() => {})
                 }).catch(({msg}) => {
                     $A.modalWarning({
                         content: msg,

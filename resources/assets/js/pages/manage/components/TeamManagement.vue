@@ -321,21 +321,20 @@ export default {
         },
 
         operationUser(data) {
-            let that = this;
-            return new Promise(function (resolve) {
-                that.loadIng++;
-                that.$store.dispatch("call", {
+            return new Promise((resolve) => {
+                this.loadIng++;
+                this.$store.dispatch("call", {
                     url: 'users/operation',
                     data,
                 }).then(({msg}) => {
                     $A.messageSuccess(msg);
-                    that.loadIng--;
-                    that.getLists();
+                    this.loadIng--;
+                    this.getLists();
                     resolve()
                 }).catch(({msg}) => {
                     $A.modalError(msg, 301);
-                    that.loadIng--;
-                    that.getLists();
+                    this.loadIng--;
+                    this.getLists();
                     resolve()
                 })
             })

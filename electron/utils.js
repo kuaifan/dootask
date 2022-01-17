@@ -252,4 +252,21 @@ module.exports = {
         let domain = (weburl + "").match(urlReg);
         return ((domain != null && domain.length > 0) ? domain[2] : "");
     },
+
+    /**
+     * 返回10位数时间戳
+     * @param v
+     * @returns {number}
+     * @constructor
+     */
+    Time(v = undefined) {
+        let time
+        if (typeof v === "string" && this.strExists(v, "-")) {
+            v = v.replace(/-/g, '/');
+            time = new Date(v).getTime();
+        } else {
+            time = new Date().getTime();
+        }
+        return Math.round(time / 1000)
+    },
 }

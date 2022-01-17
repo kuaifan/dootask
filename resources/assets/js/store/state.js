@@ -8,6 +8,9 @@ state.windowMax768 = window.innerWidth <= 768;
 
 // 数据缓存
 state.cacheLoading = {};
+
+// DrawerOverlay
+state.cacheDrawerIndex = 0;
 state.cacheDrawerOverlay = [];
 
 // User

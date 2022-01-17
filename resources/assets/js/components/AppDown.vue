@@ -3,7 +3,7 @@
         <div v-if="$Electron" class="common-app-down-link" @click="releasesNotification">
             <Icon type="md-download"/> {{$L(repoTitle)}}
         </div>
-        <a v-else class="common-app-down-link" :href="releases.html_url" target="_blank">
+        <a v-else class="common-app-down-link" :href="repoReleases.html_url" target="_blank">
             <Icon type="md-download"/> {{$L(repoTitle)}}
         </a>
     </div>
@@ -15,7 +15,6 @@ import MarkdownPreview from "./MDEditor/components/preview";
 import axios from "axios";
 Vue.component('MarkdownPreview', MarkdownPreview)
 
-import {Store} from "le5le-store";
 import {mapState} from "vuex";
 
 export default {
@@ -26,19 +25,19 @@ export default {
 
             repoName: 'kuaifan/dootask',
             repoData: {},
+            repoStatus: 0,  // 0 没有，1有客户端，2客户端有新版本
+            repoReleases: {},
 
-            status: 0, // 0 没有，1有客户端，2客户端有新版本
-            releases: {},
-            downInfo: {},
+            downloadResult: {},
         }
     },
     mounted() {
         this.getReleases();
         //
         if (this.$Electron) {
-            this.$Electron.ipcRenderer.on('downloadDone', (event, args) => {
-                if (args.name == this.repoData.name) {
-                    this.downInfo = args;
+            this.$Electron.ipcRenderer.on('downloadDone', (event, {result}) => {
+                if (result.name == this.repoData.name) {
+                    this.downloadResult = result;
                     this.releasesNotification()
                 }
             })
@@ -49,10 +48,10 @@ export default {
             'wsOpenNum',
         ]),
         repoTitle() {
-            return this.status == 2 ? '更新客户端' : '客户端下载';
+            return this.repoStatus == 2 ? '更新客户端' : '客户端下载';
         },
         showButton() {
-            return this.status && !this.$store.state.windowMax768 && ['login', 'manage-dashboard'].includes(this.$route.name)
+            return this.repoStatus && !this.$store.state.windowMax768 && ['login', 'manage-dashboard'].includes(this.$route.name)
         }
     },
     watch: {
@@ -108,7 +107,7 @@ export default {
         },
 
         getReleases() {
-            if (this.status > 0) {
+            if (this.repoStatus > 0) {
                 return;
             }
             if (this.loadIng > 0) {
@@ -116,10 +115,11 @@ export default {
             }
             //
             let cache = $A.getStorageJson("cacheAppdown");
-            let timeout = 1800;
+            let timeout = 600;
             if (cache.time && cache.time + timeout > Math.round(new Date().getTime() / 1000)) {
-                this.releases = cache.data;
+                this.repoReleases = cache.data;
                 this.chackReleases()
+                setTimeout(this.getReleases, timeout * 1000)
                 return;
             }
             //
@@ -127,22 +127,24 @@ export default {
             axios.get("https://api.github.com/repos/" + this.repoName + "/releases/latest").then(({status, data}) => {
                 this.loadIng--;
                 if (status === 200) {
-                    $A.setStorage("cacheAppdown", {
+                    cache = {
                         time: Math.round(new Date().getTime() / 1000),
                         data: data
-                    });
-                    this.releases = data;
-                    this.chackReleases();
-                    setTimeout(this.getReleases, timeout)
+                    }
+                    $A.setStorage("cacheAppdown", cache);
+                    this.repoReleases = cache.data;
+                    this.chackReleases()
                 }
+                setTimeout(this.getReleases, timeout * 1000)
             }).catch(() => {
                 this.loadIng--;
+                setTimeout(this.getReleases, timeout * 1000)
             });
         },
 
         chackReleases() {
             let hostName = $A.getDomain(window.systemInfo.apiUrl);
-            if (hostName == "" || hostName == '127.0.0.1') {
+            if (hostName == "" || $A.leftExists(hostName, '127.0.0.1')) {
                 hostName = "public"
             }
             if (this.$Electron) {
@@ -153,18 +155,18 @@ export default {
                 }
                 let artifactName = null;
                 if (match[2] === 'darwin') {
-                    artifactName = `${hostName}-${this.releases.tag_name}-mac-${match[3]}.pkg`;
+                    artifactName = `${hostName}-${this.repoReleases.tag_name}-mac-${match[3]}.pkg`;
                 } else if (match[2] === 'win32') {
-                    artifactName = `${hostName}-${this.releases.tag_name}-win-${match[3]}.exe`;
+                    artifactName = `${hostName}-${this.repoReleases.tag_name}-win-${match[3]}.exe`;
                 } else {
                     return;
                 }
-                this.repoData = (this.releases.assets || []).find(({name}) => name == artifactName);
+                this.repoData = (this.repoReleases.assets || []).find(({name}) => name == artifactName);
                 if (!this.repoData) {
                     return;
                 }
                 let currentVersion = window.systemInfo.version;
-                let latestVersion = $A.leftDelete(this.releases.tag_name.toLowerCase(), "v")
+                let latestVersion = $A.leftDelete(this.repoReleases.tag_name.toLowerCase(), "v")
                 if (this.compareVersion(latestVersion, currentVersion) === 1) {
                     // 有新版本
                     console.log("New version: " + latestVersion);
@@ -174,26 +176,23 @@ export default {
                 }
             } else {
                 // 网页版（提示有客户端下载）
-                this.repoData = (this.releases.assets || []).find(({name}) => $A.strExists(name, hostName));
+                this.repoData = (this.repoReleases.assets || []).find(({name}) => $A.strExists(name, hostName));
                 if (this.repoData) {
-                    let latestVersion = $A.leftDelete(this.releases.tag_name.toLowerCase(), "v")
+                    let latestVersion = $A.leftDelete(this.repoReleases.tag_name.toLowerCase(), "v")
                     console.log("Exist client: " + latestVersion);
-                    this.status = 1;
+                    this.repoStatus = 1;
                 }
             }
         },
 
         releasesNotification() {
-            if (this.downInfo.state != "completed") {
-                return;
-            }
             $A.modalConfirm({
                 okText: this.$L('立即更新'),
                 onOk: () => {
                     this.installApplication();
                 },
                 onCancel: () => {
-                    this.status = 2;
+                    this.repoStatus = 2;
                 },
                 render: (h) => {
                     return h('div', {
@@ -209,12 +208,12 @@ export default {
                                 props: {
                                     color: 'volcano'
                                 }
-                            }, this.releases.tag_name)
+                            }, this.repoReleases.tag_name)
                         ]),
                         h('MarkdownPreview', {
                             class: 'notification-body',
                             props: {
-                                initialValue: this.releases.body
+                                initialValue: this.repoReleases.body
                             }
                         }),
                     ])
@@ -227,7 +226,7 @@ export default {
                 return;
             }
             this.$Electron.ipcRenderer.send('openFile', {
-                path: this.downInfo.savePath
+                path: this.downloadResult.savePath
             });
             this.$Electron.ipcRenderer.send('windowQuit');
         }
