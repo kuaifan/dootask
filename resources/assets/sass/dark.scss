@@ -1,0 +1,157 @@
+body.dark-mode-reverse {
+    .ivu-btn-primary,
+    .ivu-badge-count,
+    .common-app-down-link {
+        color: #000;
+    }
+
+    .ivu-select-dropdown {
+        box-shadow: rgba(255, 255, 255, 0.2) 0 1px 6px;
+    }
+
+    .ivu-modal-mask {
+        background-color: rgba(230, 230, 230, 0.6);
+    }
+
+    .ivu-modal-content {
+        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+    }
+
+    .ivu-tooltip-inner,
+    .ivu-poptip-inner {
+        border: 1px solid #e3e8ed;
+        box-shadow: none;
+    }
+
+    .el-dropdown-menu {
+        border-color: #e3e8ed;
+        box-shadow: 0 2px 12px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .el-tooltip__popper {
+        &.is-light {
+            border: 1px solid #e3e8ed;
+            box-shadow: 0 1px 6px rgba(255, 255, 255, 0.2);
+        }
+    }
+
+    .drawer-overlay {
+        background: rgba(240, 240, 240, 0.76);
+        .overlay-body {
+            .overlay-close {
+                > a {
+                    color: #323232;
+                }
+            }
+        }
+    }
+
+    .file-content,
+    .file-preview {
+        .content-body {
+            .tox {
+                .tox-edit-area__iframe {
+                    background-color: #000;
+                }
+            }
+            .teditor-loadedstyle {
+                .tox-sidebar-wrap {
+                    box-shadow: none
+                }
+            }
+        }
+    }
+
+    .minder-editor-container {
+        .quickbar {
+            border: 1px solid #e3e8ed !important;
+            box-shadow: 3px 3px 10px rgba(255, 255, 255, .2) !important;
+        }
+    }
+
+    .project-list {
+        .project-head {
+            .project-titbox {
+                .project-icons {
+                    > li {
+                        &.project-icon {
+                            &.active {
+                                color: #000000;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .page-manage {
+        .manage-box-menu {
+            .manage-box-dropdown {
+                .manage-box-title {
+                    &.menu-visible {
+                        box-shadow: 0 1px 6px rgba(255, 255, 255, 0.2);
+                    }
+                }
+            }
+        }
+    }
+
+    .page-dashboard {
+        .dashboard-wrapper {
+            .dashboard-block {
+                > li {
+                    .block-title {
+                        color: rgba(0, 0, 0, 0.6);
+                        font-size: 12px;
+                    }
+                    .block-data {
+                        .block-num {
+                            color: #000;
+                        }
+                        .taskfont {
+                            color: rgba(0, 0, 0, 0.7);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .page-messenger {
+        .messenger-wrapper {
+            .messenger-select {
+                .messenger-list {
+                    > ul {
+                        &.dialog {
+                            > li {
+                                .icon-avatar {
+                                    color: #1c1917;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .page-file {
+        .file-wrapper {
+            .file-list {
+                > ul {
+                    > li {
+                        .file-icon {
+                            .share-icon,
+                            .share-avatar {
+                                .taskfont {
+                                    color: #3a3a3a;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -386,6 +386,7 @@ export default {
         return new Promise(function (resolve) {
             try {
                 const cacheLoginEmail = $A.getStorageString("cacheLoginEmail");
+                const cacheThemeMode = $A.getStorageString("cacheThemeMode");
                 //
                 window.localStorage.clear();
                 //
@@ -398,6 +399,7 @@ export default {
                 $A.setStorage("cacheProjectParameter", state.cacheProjectParameter);
                 $A.setStorage("cacheServerUrl", state.cacheServerUrl);
                 $A.setStorage("cacheLoginEmail", cacheLoginEmail);
+                $A.setStorage("cacheThemeMode", cacheThemeMode);
                 dispatch("saveUserInfo", $A.isJson(userInfo) ? userInfo : state.userInfo);
                 //
                 resolve()

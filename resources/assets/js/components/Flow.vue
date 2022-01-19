@@ -114,7 +114,9 @@
                     language = 'zh'
                     break;
             }
-            this.url = $A.originUrl('js/grapheditor/' + (this.readOnly ? 'viewer' : 'index') + '.html?lang=' + language);
+            let route = this.readOnly ? 'viewer' : 'index';
+            let theme = $A.dark.isDarkEnabled() ? 'dark' : 'light'
+            this.url = $A.originUrl('js/grapheditor/' + route + '.html?lang=' + language + '&theme=' + theme);
         },
         mounted() {
             window.addEventListener('message', this.handleMessage)

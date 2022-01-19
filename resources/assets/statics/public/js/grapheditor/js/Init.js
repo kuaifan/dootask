@@ -27,3 +27,4 @@ window.OPEN_FORM = window.OPEN_FORM || 'open.html';
 window.mxBasePath = window.mxBasePath || '../../../src';
 window.mxLanguage = window.mxLanguage || urlParams['lang'] || 'zh';
 window.mxLanguages = window.mxLanguages || ['zh'];
+window.mxTheme = window.mxTheme || urlParams['theme'] || 'light';
