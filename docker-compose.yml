@@ -6,7 +6,6 @@ services:
     image: "kuaifan/php:swoole-8.0"
     shm_size: "1024m"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
       - ./docker/crontab/crontab.conf:/etc/supervisor/conf.d/crontab.conf
       - ./docker/php/php.conf:/etc/supervisor/conf.d/php.conf
       - ./docker/php/php.ini:/usr/local/etc/php/php.ini
