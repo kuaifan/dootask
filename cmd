@@ -188,7 +188,7 @@ env_set() {
         echo "$key=$val" >> $cur_path/.env
     else
         if [[ `uname` == 'Linux' ]]; then
-            sed -i "/^${key}=/c\\${key}=${val}" /www/.env
+            sed -i "/^${key}=/c\\${key}=${val}" ${cur_path}/.env
         else
             docker run -it --rm -v ${cur_path}:/www alpine sh -c "sed -i "/^${key}=/c\\${key}=${val}" /www/.env"
         fi

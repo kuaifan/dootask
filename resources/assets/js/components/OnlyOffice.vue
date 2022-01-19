@@ -159,7 +159,7 @@ export default {
                         "name": this.userInfo.nickname
                     },
                     "customization": {
-                        "uiTheme": "theme-classic-light",
+                        "uiTheme": $A.dark.isDarkEnabled() ? "theme-dark" : "theme-classic-light",
                     },
                     "callbackUrl": 'http://nginx/api/file/content/office?id=' + fileKey + '&token=' + this.userToken,
                 }

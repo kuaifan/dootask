@@ -25,6 +25,17 @@
                         {{$L(item.name)}}
                         <Badge v-if="item.path === 'workReport'" class="manage-menu-report-badge" :count="reportUnreadNumber"/>
                     </DropdownItem>
+                    <Dropdown placement="right-start" @on-click="setTheme">
+                        <DropdownItem divided>
+                            <div class="manage-menu-language">
+                                {{$L('主题皮肤')}}
+                                <Icon type="ios-arrow-forward"></Icon>
+                            </div>
+                        </DropdownItem>
+                        <DropdownMenu slot="list">
+                            <Dropdown-item v-for="(item, key) in themeList" :key="key" :name="item.value" :selected="themeMode === item.value">{{$L(item.name)}}</Dropdown-item>
+                        </DropdownMenu>
+                    </Dropdown>
                     <Dropdown placement="right-start" @on-click="setLanguage">
                         <DropdownItem divided>
                             <div class="manage-menu-language">
@@ -319,7 +330,10 @@ export default {
             'cacheProjects',
             'projectTotal',
             'taskId',
-            'wsOpenNum'
+            'wsOpenNum',
+
+            'themeMode',
+            'themeList'
         ]),
 
         ...mapGetters(['taskData', 'dashboardTask']),
@@ -471,6 +485,22 @@ export default {
             if (this.userInfo.changepass === 1) {
                 this.goForward({path: '/manage/setting/password'});
             }
+        },
+
+        setTheme(mode) {
+            switch (mode) {
+                case 'dark':
+                    $A.dark.enableDarkMode()
+                    break;
+                case 'light':
+                    $A.dark.disableDarkMode()
+                    break;
+                default:
+                    $A.dark.autoDarkMode()
+                    break;
+            }
+            this.$store.state.themeMode = mode;
+            $A.setStorage("cacheThemeMode", mode);
         },
 
         toggleRoute(path) {

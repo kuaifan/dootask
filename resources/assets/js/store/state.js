@@ -107,4 +107,23 @@ state.taskColorList = [
     {name: '灰色', color: '#f3f3f3'},
 ];
 
+// 主题皮肤
+state.themeMode = $A.getStorageString("cacheThemeMode", "auto");
+state.themeList = [
+    {name: '跟随系统', value: 'auto'},
+    {name: '明亮', value: 'light'},
+    {name: '暗黑', value: 'dark'},
+];
+switch (state.themeMode) {
+    case 'dark':
+        $A.dark.enableDarkMode()
+        break;
+    case 'light':
+        $A.dark.disableDarkMode()
+        break;
+    default:
+        $A.dark.autoDarkMode()
+        break;
+}
+
 export default state

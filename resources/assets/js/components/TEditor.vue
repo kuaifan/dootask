@@ -258,6 +258,7 @@
                     resize: !isFull,
                     convert_urls:false,
                     toolbar_mode: 'sliding',
+                    content_css: $A.dark.isDarkEnabled() ? 'dark' : 'default',
                     setup: (editor) => {
                         editor.ui.registry.addMenuButton('uploadImages', {
                             text: this.$L('图片'),
