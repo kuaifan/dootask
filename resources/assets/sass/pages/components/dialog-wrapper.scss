@@ -91,6 +91,15 @@
                             padding: 8px;
                             min-width: 32px;
                             border-radius: 6px 6px 6px 0;
+                            > pre {
+                                display: block;
+                                margin: 0;
+                                padding: 0;
+                                line-height: 1.5;
+                                white-space: pre-wrap;
+                                word-wrap: break-word;
+                                word-break: break-word;
+                            }
                             &.loading {
                                 display: flex;
                                 .common-loading {
