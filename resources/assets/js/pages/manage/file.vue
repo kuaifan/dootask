@@ -80,6 +80,12 @@
                                         <i class="taskfont">&#xe757;</i>
                                     </div>
                                 </template>
+                                <template v-else-if="isParentShare">
+                                    <UserAvatar :userid="item.created_id" class="share-avatar" :size="20">
+                                        <p v-if="item.created_id != item.userid"><strong>{{$L('成员创建于')}}: {{item.created_at}}</strong></p>
+                                        <p v-else>{{$L('所有者创建于')}}: {{item.created_at}}</p>
+                                    </UserAvatar>
+                                </template>
                             </div>
                             <div v-if="item._edit" class="file-input">
                                 <Input
@@ -487,7 +493,12 @@ export default {
                 }
             }
             return array;
-        }
+        },
+
+        isParentShare() {
+            const {navigator} = this;
+            return !!navigator.find(({share}) => share);
+        },
     },
 
     watch: {
@@ -620,6 +631,15 @@ export default {
                                         },
                                     }))
                                 }
+                            } else if (this.isParentShare) {
+                                iconArray.push(h('UserAvatar', {
+                                    props: {
+                                        userid: row.created_id,
+                                        size: 20
+                                    },
+                                }, [
+                                    row.created_id != row.userid ? h('p', [h('strong', this.$L('成员创建于') + ": " + row.created_at)]) : h('p', this.$L('所有者创建') + ": " + row.created_at)
+                                ]))
                             }
                             return h('div', {
                                 class: 'file-nbox'
