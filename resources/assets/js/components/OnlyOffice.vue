@@ -82,7 +82,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userToken', 'userInfo']),
+        ...mapState(['userToken', 'userInfo', 'themeIsDark']),
 
         fileType() {
             return this.getType(this.value.type);
@@ -159,7 +159,7 @@ export default {
                         "name": this.userInfo.nickname
                     },
                     "customization": {
-                        "uiTheme": $A.dark.isDarkEnabled() ? "theme-dark" : "theme-classic-light",
+                        "uiTheme": this.themeIsDark ? "theme-dark" : "theme-classic-light",
                     },
                     "callbackUrl": 'http://nginx/api/file/content/office?id=' + fileKey + '&token=' + this.userToken,
                 }

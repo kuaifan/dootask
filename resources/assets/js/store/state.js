@@ -125,5 +125,6 @@ switch (state.themeMode) {
         $A.dark.autoDarkMode()
         break;
 }
+state.themeIsDark = $A.dark.isDarkEnabled();
 
 export default state

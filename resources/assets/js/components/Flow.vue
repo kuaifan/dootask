@@ -79,6 +79,7 @@
 </style>
 <script>
     import JSPDF from "jspdf";
+    import {mapState} from "vuex";
 
     export default {
         name: "Flow",
@@ -115,7 +116,7 @@
                     break;
             }
             let route = this.readOnly ? 'viewer' : 'index';
-            let theme = $A.dark.isDarkEnabled() ? 'dark' : 'light'
+            let theme = this.themeIsDark ? 'dark' : 'light'
             this.url = $A.originUrl('js/grapheditor/' + route + '.html?lang=' + language + '&theme=' + theme);
         },
         mounted() {
@@ -143,6 +144,9 @@
                     }
                 }, '*')
             }
+        },
+        computed: {
+            ...mapState(['themeIsDark'])
         },
         methods: {
             formatZoom(val) {

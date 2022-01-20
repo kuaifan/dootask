@@ -1,10 +1,12 @@
 .task-priority {
     font-size: 13px;
     display: inline-block;
-    padding: 2px 6px;
+    padding: 2px 5px;
     border-radius: 3px;
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    background: transparent;
+    border: 1px solid transparent;
 }

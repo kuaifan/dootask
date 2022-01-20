@@ -489,21 +489,26 @@
                                 flex-shrink: 0;
                                 color: #777777;
                                 background-color: #EAEDF2;
-                                padding: 1px 4px;
+                                border: 1px solid #EAEDF2;
+                                padding: 0 3px;
                                 margin-left: 18px;
                                 font-size: 12px;
                                 border-radius: 3px;
                                 display: flex;
                                 align-items: center;
+                                &.overdue,
+                                &.today {
+                                    color: #ffffff;
+                                }
                                 &.overdue {
                                     font-weight: 600;
-                                    color: #ffffff;
                                     background-color: #ed4014;
+                                    border-color: #ed4014;
                                 }
                                 &.today {
                                     font-weight: 500;
-                                    color: #ffffff;
                                     background-color: #ff9900;
+                                    border-color: #ff9900;
                                 }
                                 .taskfont {
                                     margin-right: 3px;
@@ -813,17 +818,20 @@
                             &.overdue,
                             &.today {
                                 color: #ffffff;
-                                padding: 1px 5px;
+                                padding: 0 4px;
+                                border: 1px solid transparent;
                                 font-size: 13px;
                                 border-radius: 3px;
                             }
                             &.overdue {
                                 font-weight: 600;
                                 background-color: #ed4014;
+                                border-color: #ed4014;
                             }
                             &.today {
                                 font-weight: 500;
                                 background-color: #ff9900;
+                                border-color: #ff9900;
                             }
                         }
                     }

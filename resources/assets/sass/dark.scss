@@ -17,6 +17,11 @@ body.dark-mode-reverse {
         box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
     }
 
+    .ivu-message-notice-content {
+        box-shadow: 0 1px 6px rgba(255, 255, 255, 0.2);
+        border: 1px solid #e3e8ed;
+    }
+
     .ivu-tooltip-inner,
     .ivu-poptip-inner {
         border: 1px solid #e3e8ed;
@@ -83,6 +88,48 @@ body.dark-mode-reverse {
                 }
             }
         }
+        .project-column {
+            > ul {
+                > li {
+                    .column-task {
+                        .task-item {
+                            .task-progress {
+                                .task-time {
+                                    &.overdue {
+                                        color: #ed4014;
+                                        background-color: transparent;
+                                    }
+                                    &.today {
+                                        color: #ff9900;
+                                        background-color: transparent;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        .project-table {
+            .project-table-body {
+                .task-row {
+                    > div {
+                        &.row-time {
+                            .task-time {
+                                &.overdue {
+                                    color: #ed4014;
+                                    background-color: transparent;
+                                }
+                                &.today {
+                                    color: #ff9900;
+                                    background-color: transparent;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     .dialog-wrapper {
@@ -105,6 +152,14 @@ body.dark-mode-reverse {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    .page-login {
+        .login-body {
+            .login-box {
+                box-shadow: none;
             }
         }
     }
