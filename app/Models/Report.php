@@ -21,24 +21,26 @@ use JetBrains\PhpStorm\Pure;
  * @property string $title 标题
  * @property string $type 汇报类型
  * @property int $userid
- * @property string|null $content
+ * @property string $content
+ * @property string $sign 汇报唯一标识
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ReportReceive[] $Receives
+ * @property-read int|null $receives_count
+ * @property-read mixed $receives
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $receivesUser
+ * @property-read int|null $receives_user_count
+ * @property-read \App\Models\User|null $sendUser
  * @method static Builder|Report newModelQuery()
  * @method static Builder|Report newQuery()
  * @method static Builder|Report query()
  * @method static Builder|Report whereContent($value)
  * @method static Builder|Report whereCreatedAt($value)
  * @method static Builder|Report whereId($value)
+ * @method static Builder|Report whereSign($value)
  * @method static Builder|Report whereTitle($value)
  * @method static Builder|Report whereType($value)
  * @method static Builder|Report whereUpdatedAt($value)
  * @method static Builder|Report whereUserid($value)
  * @mixin \Eloquent
- * @property string $sign 汇报唯一标识
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ReportReceive[] $Receives
- * @property-read int|null $receives_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $receivesUser
- * @property-read int|null $receives_user_count
- * @method static Builder|Report whereSign($value)
  */
 class Report extends AbstractModel
 {

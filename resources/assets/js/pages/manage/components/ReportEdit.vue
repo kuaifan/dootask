@@ -78,12 +78,12 @@ export default {
     data() {
         return {
             reportData: {
-                title: ""
-                , content: ""
-                , type: "weekly"
-                , receive: []
-                , id: 0
-                , offset: 0 // 以当前日期为基础的周期偏移量。例如选择了上一周那么就是 -1，上一天同理。
+                title: "",
+                content: "",
+                type: "weekly",
+                receive: [],
+                id: 0,
+                offset: 0 // 以当前日期为基础的周期偏移量。例如选择了上一周那么就是 -1，上一天同理。
             },
             disabledType: false,
             userInputShow: true,
