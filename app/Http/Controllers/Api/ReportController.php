@@ -29,8 +29,8 @@ class ReportController extends AbstractController
      * @apiGroup report
      * @apiName my
      *
-     * @apiParam {Number} [user]        会员ID
      * @apiParam {String} [type]        汇报类型，weekly:周报，daily:日报
+     * @apiParam {Array} [created_at]   汇报时间
      * @apiParam {Number} [page]        当前页，默认:1
      * @apiParam {Number} [pagesize]    每页显示数量，默认:20，最大:50
      *
@@ -63,8 +63,21 @@ class ReportController extends AbstractController
     }
 
     /**
-     * 我接收的汇报
-     * @return array
+     * @api {get} api/report/receive          02. 我接收的汇报
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup report
+     * @apiName receive
+     *
+     * @apiParam {String} [username]    会员名
+     * @apiParam {String} [type]        汇报类型，weekly:周报，daily:日报
+     * @apiParam {Array} [created_at]   汇报时间
+     * @apiParam {Number} [page]        当前页，默认:1
+     * @apiParam {Number} [pagesize]    每页显示数量，默认:20，最大:50
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function receive(): array
     {
@@ -99,8 +112,22 @@ class ReportController extends AbstractController
     }
 
     /**
-     * 保存并发送工作汇报
-     * @return array
+     * @api {get} api/report/store          03. 保存并发送工作汇报
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup report
+     * @apiName store
+     *
+     * @apiParam {Number} [id]           汇报ID
+     * @apiParam {String} [title]        汇报标题
+     * @apiParam {Array}  [type]         汇报类型，weekly:周报，daily:日报
+     * @apiParam {Number} [content]      内容
+     * @apiParam {Number} [receive]      汇报对象
+     * @apiParam {Number} [offset]       偏移量
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function store(): array
     {
@@ -135,12 +162,12 @@ class ReportController extends AbstractController
 
         $user = User::auth();
         // 接收人
-        if ( is_array($input["receive"]) ) {
+        if (is_array($input["receive"])) {
             // 删除当前登录人
             $input["receive"] = array_diff($input["receive"], [$user->userid]);
 
             // 查询用户是否存在
-            if ( count($input["receive"]) !== User::whereIn("userid", $input["receive"])->count() )
+            if (count($input["receive"]) !== User::whereIn("userid", $input["receive"])->count())
                 return Base::retError("用户不存在");
 
             foreach ($input["receive"] as $userid) {
@@ -153,7 +180,7 @@ class ReportController extends AbstractController
         }
 
         // 在事务中运行
-        Report::transaction( function () use ($input, $user) {
+        Report::transaction(function () use ($input, $user) {
             $id = $input["id"];
             if ($id) {
                 // 编辑
@@ -188,37 +215,48 @@ class ReportController extends AbstractController
                 $report->Receives()->createMany($input["receive_content"]);
             }
 
-        } );
+        });
         return Base::retSuccess('保存成功');
     }
 
     /**
-     * 生成汇报模板
-     * @return array
+     * @api {get} api/report/template          04. 生成汇报模板
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup report
+     * @apiName template
+     *
+     * @apiParam {Array}  [type]         汇报类型，weekly:周报，daily:日报
+     * @apiParam {Number} [offset]       偏移量
+     * @apiParam {String} [date]         时间
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function template(): array
     {
         $user = User::auth();
-        $type = trim( Request::input("type") );
-        $offset = abs( intval( Request::input("offset", 0) ) );
-        $now_dt = trim( Request::input("date") ) ? Carbon::parse( Request::input("date") ) : Carbon::now();
+        $type = trim(Request::input("type"));
+        $offset = abs(intval(Request::input("offset", 0)));
+        $now_dt = trim(Request::input("date")) ? Carbon::parse(Request::input("date")) : Carbon::now();
         // 获取开始时间
         if ($type === Report::DAILY) {
             $start_time = Carbon::today();
-            if ( $offset > 0 ) {
+            if ($offset > 0) {
                 // 将当前时间调整为偏移量当天结束
-                $now_dt->subDays( $offset )->endOfDay();
+                $now_dt->subDays($offset)->endOfDay();
                 // 开始时间偏移量计算
-                $start_time->subDays( $offset );
+                $start_time->subDays($offset);
             }
             $end_time = Carbon::instance($start_time)->endOfDay();
         } else {
             $start_time = Carbon::now();
-            if ( $offset > 0 ) {
+            if ($offset > 0) {
                 // 将当前时间调整为偏移量当周结束
-                $now_dt->subWeeks( $offset )->endOfDay();
+                $now_dt->subWeeks($offset)->endOfDay();
                 // 开始时间偏移量计算
-                $start_time->subWeeks( $offset );
+                $start_time->subWeeks($offset);
             }
             $start_time->startOfWeek();
             $end_time = Carbon::instance($start_time)->endOfWeek();
@@ -270,14 +308,14 @@ class ReportController extends AbstractController
         if ($unfinished_task->isNotEmpty()) {
             foreach ($unfinished_task as $task) {
                 empty($task->end_at) || $end_at = Carbon::parse($task->end_at);
-                $pre = ( !empty( $end_at ) && $end_at->lt($now_dt) ) ? '<span style="color:#ff0000;">[' . Base::Lang('超期') . ']</span>&nbsp;' : '';
+                $pre = (!empty($end_at) && $end_at->lt($now_dt)) ? '<span style="color:#ff0000;">[' . Base::Lang('超期') . ']</span>&nbsp;' : '';
                 $unfinishedContent .= '<li>' . $pre . $task->name . '</li>';
             }
         } else {
             $unfinishedContent = '<li>&nbsp;</li>';
         }
         // 生成标题
-        if ( $type === Report::WEEKLY ) {
+        if ($type === Report::WEEKLY) {
             $title = $user->nickname . "的周报[" . $start_time->format("m/d") . "-" . $end_time->format("m/d") . "]";
             $title .= "[" . $start_time->month . "月第" . $start_time->weekOfMonth . "周]";
         } else {
@@ -296,12 +334,22 @@ class ReportController extends AbstractController
     }
 
     /**
-     * @return array
+     * @api {get} api/report/detail          05. 报告详情
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup report
+     * @apiName detail
+     *
+     * @apiParam {Number} [id]           报告id
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function detail(): array
     {
-        $id = intval( trim( Request::input("id") ) );
-        if (empty( $id ))
+        $id = intval(trim(Request::input("id")));
+        if (empty($id))
             return Base::retError("缺少ID参数");
 
         $one = Report::getOne($id);
@@ -309,7 +357,7 @@ class ReportController extends AbstractController
 
         $user = User::auth();
         // 标记为已读
-        if ( !empty( $one->receivesUser ) ) {
+        if (!empty($one->receivesUser)) {
             foreach ($one->receivesUser as $item) {
                 if ($item->userid === $user->userid && $item->pivot->read === 0) {
                     $one->receivesUser()->updateExistingPivot($user->userid, [
@@ -323,22 +371,38 @@ class ReportController extends AbstractController
     }
 
     /**
-     * 获取最后一次提交的接收人
-     * @return array
+     * @api {get} api/report/last_submitter          06. 获取最后一次提交的接收人
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup report
+     * @apiName last_submitter
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function last_submitter(): array
     {
         $one = Report::getLastOne();
-        return Base::retSuccess("success", empty( $one["receives"] ) ? [] : $one["receives"]);
+        return Base::retSuccess("success", empty($one["receives"]) ? [] : $one["receives"]);
     }
 
     /**
-     * 获取未读
-     * @return array
+     * @api {get} api/report/unread          07. 获取未读
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup report
+     * @apiName unread
+     *
+     * @apiParam {Number} [userid]          用户id
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function unread(): array
     {
-        $userid = intval( trim( Request::input("userid") ) );
+        $userid = intval(trim(Request::input("userid")));
         $user = empty($userid) ? User::auth() : User::find($userid);
 
         $data = Report::whereHas("Receives", function (Builder $query) use ($user) {
@@ -348,18 +412,27 @@ class ReportController extends AbstractController
     }
 
     /**
-     * 标记汇报已读，可批量
-     * @return array
+     * @api {get} api/report/read          08. 标记汇报已读，可批量
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup report
+     * @apiName read
+     *
+     * @apiParam {String} [ids]      报告id
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function read(): array
     {
         $user = User::auth();
         $ids = Request::input("ids");
-        if ( !is_array($ids) && !is_string($ids) ) {
+        if (!is_array($ids) && !is_string($ids)) {
             return Base::retError("请传入正确的工作汇报Id");
         }
 
-        if ( is_string($ids) ) {
+        if (is_string($ids)) {
             $ids = explode(",", $ids);
         }
 
@@ -367,7 +440,7 @@ class ReportController extends AbstractController
             $query->where("report_receives.userid", $user->userid)->where("read", 0);
         }])->whereIn("id", $ids)->get();
 
-        if ( $data->isNotEmpty() ) {
+        if ($data->isNotEmpty()) {
             foreach ($data as $item) {
                 (!empty($item->receivesUser) && $item->receivesUser->isNotEmpty()) && $item->receivesUser()->updateExistingPivot($user->userid, [
                     "read" => 1,
