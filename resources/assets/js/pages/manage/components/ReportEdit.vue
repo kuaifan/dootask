@@ -6,18 +6,18 @@
             </Col>
             <Col span="12">
                 <RadioGroup type="button" button-style="solid" v-model="reportData.type" @on-change="typeChange" class="report-radiogroup" :readonly="id > 0">
-                    <Radio label="weekly" :disabled="id > 0">{{ $L("周报") }}</Radio>
-                    <Radio label="daily" :disabled="id > 0">{{ $L("日报") }}</Radio>
+                    <Radio label="weekly" :disabled="id > 0 && reportData.type =='daily'">{{ $L("周报") }}</Radio>
+                    <Radio label="daily" :disabled="id > 0 && reportData.type =='weekly'">{{ $L("日报") }}</Radio>
                 </RadioGroup>
-                <ButtonGroup class="report-buttongroup">
-                    <Tooltip class="report-poptip" trigger="hover" :disabled="id > 0" :content="prevCycleText" placement="bottom">
-                        <Button type="primary" @click="prevCycle" :disabled="id > 0">
+                <ButtonGroup class="report-buttongroup" v-if="id === 0">
+                    <Tooltip class="report-poptip" trigger="hover" :content="prevCycleText" placement="bottom">
+                        <Button  type="primary" @click="prevCycle">
                             <Icon type="ios-arrow-back" />
                         </Button>
                     </Tooltip>
                     <div class="report-buttongroup-vertical"></div>
-                    <Tooltip class="report-poptip" trigger="hover" :disabled="reportData.offset >= 0 || id > 0" :content="nextCycleText" placement="bottom">
-                        <Button type="primary" @click="nextCycle" :disabled="reportData.offset >= 0 || id > 0">
+                    <Tooltip class="report-poptip" trigger="hover" :disabled="reportData.offset >= 0" :content="nextCycleText" placement="bottom">
+                        <Button  type="primary" @click="nextCycle" :disabled="reportData.offset >= 0">
                             <Icon type="ios-arrow-forward" />
                         </Button>
                     </Tooltip>
@@ -103,6 +103,11 @@ export default {
         id(val) {
             if (this.id > 0) {
                 this.getDetail(val);
+            }else{
+                this.reportData.offset = 0;
+                this.reportData.type = "weekly";
+                this.reportData.receive = [];
+                this.getTemplate();
             }
         },
     },
@@ -120,6 +125,10 @@ export default {
 
         handleSubmit: function () {
             let id = this.reportData.id;
+            if (this.reportData.receive.length === 0) {
+                $A.messageError(this.$L("请选择接收人"));
+                return false;
+            }
             if (this.id === 0 && id > 1) {
                 $A.modalConfirm({
                     title: '覆盖提交',
@@ -144,6 +153,8 @@ export default {
             }).then(({data, msg}) => {
                 // data 结果数据
                 this.reportData.offset = 0;
+                this.reportData.type = "weekly";
+                this.reportData.receive = [];
                 this.getTemplate();
                 this.disabledType = false;
                 this.$Modal.remove();
@@ -151,6 +162,7 @@ export default {
                 $A.messageSuccess(msg);
                 this.$emit("saveSuccess");
             }).catch(({msg}) => {
+                this.$Modal.remove();
                 // msg 错误原因
                 $A.messageError(msg);
             });
@@ -161,14 +173,22 @@ export default {
                 url: 'report/template',
                 data: {
                     type: this.reportData.type,
-                    offset: this.reportData.offset
+                    offset: this.reportData.offset,
+                    id: this.id
                 },
                 method: 'get',
             }).then(({data, msg}) => {
                 // data 结果数据
                 if (data.id) {
-                    this.getDetail(data.id);
+                    this.reportData.id = data.id;
+                    if(this.id > 0){
+                        this.getDetail(data.id);
+                    }else{
+                        this.reportData.title = data.title;
+                        this.reportData.content = data.content;
+                    }
                 } else {
+                    this.reportData.id = 0;
                     this.reportData.title = data.title;
                     this.reportData.content = data.content;
                 }
@@ -189,9 +209,7 @@ export default {
                 this.prevCycleText = this.$L("上一天");
                 this.nextCycleText = this.$L("下一天");
             }
-
-            if (this.id <= 0)
-                this.getTemplate();
+           this.getTemplate();
         },
 
         getDetail(reportId) {

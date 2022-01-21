@@ -230,6 +230,7 @@ class ReportController extends AbstractController
         $user = User::auth();
         $type = trim(Request::input("type"));
         $offset = abs(intval(Request::input("offset", 0)));
+        $id = intval(Request::input("offset", 0));
         $now_dt = trim(Request::input("date")) ? Carbon::parse(Request::input("date")) : Carbon::now();
         // 获取开始时间
         if ($type === Report::DAILY) {
@@ -256,7 +257,7 @@ class ReportController extends AbstractController
         $sign = Report::generateSign($type, 0, Carbon::instance($start_time));
         $one = Report::query()->whereSign($sign)->first();
         // 如果已经提交了相关汇报
-        if ($one) {
+        if ($one && $id > 0) {
             return Base::retSuccess('success', [
                 "content" => $one->content,
                 "title" => $one->title,
@@ -312,7 +313,7 @@ class ReportController extends AbstractController
         } else {
             $title = $user->nickname . "的日报[" . $start_time->format("Y/m/d") . "]";
         }
-        return Base::retSuccess('success', [
+        $data = [
             "time" => $start_time->toDateTimeString(),
             "complete_task" => $complete_task,
             "unfinished_task" => $unfinished_task,
@@ -321,7 +322,11 @@ class ReportController extends AbstractController
                 Base::Lang('未完成的工作') . '</h2><ol>' .
                 $unfinishedContent . '</ol>',
             "title" => $title,
-        ]);
+        ];
+        if ($one) {
+            $data['id'] = $one->id;
+        }
+        return Base::retSuccess('success', $data);
     }
 
     /**
