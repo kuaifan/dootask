@@ -11,11 +11,11 @@
                         <UserAvatar :userid="userId" :size="36" tooltipDisabled/>
                     </div>
                     <span>{{userInfo.nickname}}</span>
+                    <Badge v-if="reportUnreadNumber > 0" class="manage-box-top-report" :count="reportUnreadNumber"/>
                     <div class="manage-box-arrow">
                         <Icon type="ios-arrow-up" />
                         <Icon type="ios-arrow-down" />
                     </div>
-                    <Badge v-if="reportUnreadNumber > 0" class="manage-box-top-report" :count="reportUnreadNumber"/>
                 </div>
                 <DropdownMenu slot="list">
                     <DropdownItem
@@ -180,7 +180,7 @@
             v-model="workReportShow"
             placement="right"
             :size="1100">
-            <Report v-if="workReportShow" :reportType="reportTabs" :reportUnreadNumber="reportUnreadNumber" @read="reportUnread" />
+            <Report v-if="workReportShow" :reportType="reportTabs" :reportUnreadNumber="reportUnreadNumber" @read="getReportUnread" />
         </DrawerOverlay>
 
         <!--查看所有团队-->
@@ -293,7 +293,7 @@ export default {
         //
         this.notificationInit();
         this.onVisibilityChange();
-        this.reportUnread();    // 工作汇报未读标记
+        this.getReportUnread();    // 工作汇报未读标记
         //
         this.addTaskSubscribe = Store.subscribe('addTask', this.onAddTask);
         this.dialogMsgSubscribe = Store.subscribe('dialogMsgPush', this.addDialogMsg);
@@ -741,7 +741,7 @@ export default {
             document.addEventListener(visibilityChangeEvent, visibilityChangeListener);
         },
 
-        reportUnread() {
+        getReportUnread() {
             this.reportTabs = "my";
             this.$store.dispatch("call", {
                 url: 'report/unread',

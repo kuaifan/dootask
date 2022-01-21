@@ -48,27 +48,28 @@ export default {
             reportTabs: "my",
             showDetailDrawer: false,
             detailData: {},
-            reportId: 0,
-            tabRebder: data => {
-                return h => {
-                    if (data > 0) {
-                        return h('div', [
-                            h('span', {class: 'navbar-item-content'}, '收到的汇报'),
-                            h('Badge', {class: 'manage-box-report'}, data),
-                        ])
-                    } else {
-                        return h('div', [
-                            h('span', {class: 'navbar-item-content'}, '收到的汇报'),
-                        ])
-                    }
-                }
-            }
+            reportId: 0
         }
     },
     mounted() {
         this.reportTabs = this.reportType;
     },
     methods: {
+        tabRebder(data) {
+            return h => {
+                if (data > 0) {
+                    return h('div', [
+                        h('span', {class: 'navbar-item-content'}, this.$L('收到的汇报')),
+                        h('Badge', {class: 'manage-box-report'}, data),
+                    ])
+                } else {
+                    return h('div', [
+                        h('span', {class: 'navbar-item-content'},  this.$L('收到的汇报')),
+                    ])
+                }
+            }
+        },
+
         showDetail(row) {
             this.showDetailDrawer = true;
             this.detailData = row;
