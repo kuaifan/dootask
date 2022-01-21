@@ -10,17 +10,17 @@
                     <Radio label="daily" :disabled="id > 0 && reportData.type =='weekly'">{{ $L("日报") }}</Radio>
                 </RadioGroup>
                 <ButtonGroup class="report-buttongroup" v-if="id === 0">
-                    <Tooltip class="report-poptip" trigger="hover" :content="prevCycleText" placement="bottom">
-                        <Button  type="primary" @click="prevCycle">
+                    <ETooltip class="report-poptip" :content="prevCycleText" placement="bottom">
+                        <Button type="primary" @click="prevCycle">
                             <Icon type="ios-arrow-back" />
                         </Button>
-                    </Tooltip>
+                    </ETooltip>
                     <div class="report-buttongroup-vertical"></div>
-                    <Tooltip class="report-poptip" trigger="hover" :disabled="reportData.offset >= 0" :content="nextCycleText" placement="bottom">
-                        <Button  type="primary" @click="nextCycle" :disabled="reportData.offset >= 0">
+                    <ETooltip class="report-poptip" :disabled="reportData.offset >= 0" :content="nextCycleText" placement="bottom">
+                        <Button type="primary" @click="nextCycle" :disabled="reportData.offset >= 0">
                             <Icon type="ios-arrow-forward" />
                         </Button>
-                    </Tooltip>
+                    </ETooltip>
                 </ButtonGroup>
             </Col>
         </Row>
@@ -62,7 +62,7 @@
         <Row class="report-row report-row-foot">
             <Col span="2"></Col>
             <Col span="4">
-                <Button type="primary" @click="handleSubmit" class="report-bottom">提交</Button>
+                <Button type="primary" @click="handleSubmit" class="report-bottom">{{$L(id > 0 ? '修改' : '提交')}}</Button>
             </Col>
         </Row>
     </Form>
@@ -124,15 +124,14 @@ export default {
         },
 
         handleSubmit: function () {
-            let id = this.reportData.id;
             if (this.reportData.receive.length === 0) {
                 $A.messageError(this.$L("请选择接收人"));
                 return false;
             }
-            if (this.id === 0 && id > 1) {
+            if (this.id === 0 && this.reportData.id > 1) {
                 $A.modalConfirm({
                     title: '覆盖提交',
-                    content: '是否覆盖提交',
+                    content: '你已提交过此日期的报告，是否覆盖提交？',
                     loading: true,
                     zIndex: 2000,
                     onOk: () => {
@@ -142,7 +141,6 @@ export default {
             } else {
                 this.doSubmit();
             }
-
         },
 
         doSubmit() {

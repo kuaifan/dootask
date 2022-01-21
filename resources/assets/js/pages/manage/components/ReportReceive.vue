@@ -103,13 +103,13 @@ export default {
         initLanguage() {
             this.noDataText = this.noDataText || "数据加载中.....";
             this.columns = [{
-                "title": this.$L("标题"),
-                "key": 'title',
-                "sortable": true,
-                "minWidth": 120,
-                render: (h, params) => {
+                title: this.$L("标题"),
+                key: 'title',
+                sortable: true,
+                minWidth: 120,
+                render: (h, {row}) => {
                     let arr = []
-                    const myUser = params.row.receives_user.find(({userid}) => userid == this.userId)
+                    const myUser = row.receives_user.find(({userid}) => userid == this.userId)
                     if (myUser && myUser.pivot.read == 0) {
                         arr.push(
                             h('Tag', {
@@ -117,35 +117,35 @@ export default {
                                     color: "orange",
                                 }
                             }, this.$L("未读")),
-                            h('span', params.row.title)
+                            h('span', row.title)
                         )
                     } else {
                         arr.push(
-                            h('span', params.row.title)
+                            h('span', row.title)
                         )
                     }
 
                     return h('div', arr)
                 }
             }, {
-                "title": this.$L("类型"),
-                "key": 'type',
-                "align": 'center',
-                "sortable": true,
-                "maxWidth": 80,
+                title: this.$L("类型"),
+                key: 'type',
+                align: 'center',
+                sortable: true,
+                maxWidth: 80,
             }, {
-                "title": this.$L("接收时间"),
-                "key": 'receive_time',
-                "align": 'center',
-                "sortable": true,
-                "maxWidth": 180,
+                title: this.$L("接收时间"),
+                key: 'receive_time',
+                align: 'center',
+                sortable: true,
+                maxWidth: 180,
             }, {
                 title: this.$L("操作"),
                 align: 'center',
                 width: 100,
                 minWidth: 100,
-                render: (h, params) => {
-                    if (!params.row.id) {
+                render: (h, {column, row}) => {
+                    if (!row.id) {
                         return null;
                     }
                     const vNodes = [
@@ -157,10 +157,10 @@ export default {
                             style: {margin: '0 3px', cursor: 'pointer'},
                             on: {
                                 click: () => {
-                                    this.$emit("detail", params.row)
-                                    const myUser = params.row.receives_user.find(({userid}) => userid == this.userId)
+                                    this.$emit("detail", row)
+                                    const myUser = row.receives_user.find(({userid}) => userid == this.userId)
                                     if (myUser) {
-                                        this.$set(myUser, 'pivot.read', 1)
+                                        this.$set(myUser.pivot, 'read', 1)
                                     }
                                 }
                             }
@@ -168,7 +168,7 @@ export default {
                     ];
                     return h('TableAction', {
                         props: {
-                            column: params.column
+                            column: column
                         }
                     }, vNodes);
                 },

@@ -114,8 +114,8 @@ export default {
                 align: 'center',
                 width: 100,
                 minWidth: 100,
-                render: (h, params) => {
-                    if (!params.row.id) {
+                render: (h, {column, row}) => {
+                    if (!row.id) {
                         return null;
                     }
                     const vNodes = [
@@ -126,7 +126,7 @@ export default {
                             style: {margin: '0 3px', cursor: 'pointer'},
                             on: {
                                 click: () => {
-                                    this.$emit("edit", params.row.id);
+                                    this.$emit("edit", row.id);
                                 }
                             }
                         })]),
@@ -138,14 +138,14 @@ export default {
                             style: {margin: '0 3px', cursor: 'pointer'},
                             on: {
                                 click: () => {
-                                    this.$emit("detail", params.row);
+                                    this.$emit("detail", row);
                                 }
                             }
                         })]),
                     ];
                     return h('TableAction', {
                         props: {
-                            column: params.column
+                            column
                         }
                     }, vNodes);
                 },
