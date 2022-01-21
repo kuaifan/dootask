@@ -2,10 +2,10 @@
     <div class="report">
         <Tabs v-model="reportTabs">
             <TabPane :label="$L('我的汇报')" name="my">
-                <ReportMy ref="report" v-if="reportTabs === 'my'" @detail="showDetail" @edit="editReport"></ReportMy>
+                <ReportMy ref="report" v-if="reportTabs === 'my'" @on-view="onView" @on-edit="onEditReport"></ReportMy>
             </TabPane>
             <TabPane :label="tabRebder(reportUnreadNumber)" name="receive">
-                <ReportReceive v-if="reportTabs === 'receive'" @detail="showDetail"></ReportReceive>
+                <ReportReceive v-if="reportTabs === 'receive'" @on-view="onView"></ReportReceive>
             </TabPane>
         </Tabs>
         <DrawerOverlay
@@ -84,16 +84,13 @@ export default {
             }
         },
 
-        showDetail(row) {
+        onView(row) {
             this.showDetailDrawer = true;
             this.detailData = row;
-            //1.5秒后执行
-            setTimeout(() => {
-                this.$emit("read");
-            }, 1500);
+            this.$emit("on-read");
         },
 
-        editReport(id) {
+        onEditReport(id) {
             this.reportId = id;
             this.showEditDrawer = true;
         },
@@ -102,7 +99,7 @@ export default {
             this.reportId = 0;
             this.reportTabs = "my";
             this.showEditDrawer = false;
-            this.$refs.report.getLists();
+            this.$refs.report && this.$refs.report.getLists();
         }
     }
 }

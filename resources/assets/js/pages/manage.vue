@@ -180,7 +180,7 @@
             v-model="workReportShow"
             placement="right"
             :size="1100">
-            <Report v-if="workReportShow" :reportType="reportTabs" :reportUnreadNumber="reportUnreadNumber" @read="getReportUnread" />
+            <Report v-if="workReportShow" :reportType="reportTabs" :reportUnreadNumber="reportUnreadNumber" @on-read="getReportUnread" />
         </DrawerOverlay>
 
         <!--查看所有团队-->
