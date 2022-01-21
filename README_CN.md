@@ -5,10 +5,15 @@
 - [截图预览](README_PREVIEW.md)
 - [演示站点](http://www.dootask.com/)
 
+**QQ交流群**
+
+- QQ群号: `546574618`
+
 ## 安装程序
 
-> 必须安装 `Docker` 和 `Docker Compose v2.0+`
-
+- 必须安装：`Docker` 和 `Docker Compose v2.0+`
+- 支持环境：`Centos/Debian/Ubuntu/macOS`
+- 硬件建议：2核2G以上
 
 ### 部署项目
 
@@ -49,18 +54,29 @@ cd dootask
 ./cmd start
 ```
 
+### 开发编译
+
+```bash
+# 开发模式，仅限macOS
+./cmd dev
+   
+# 编译项目，仅限macOS
+./cmd prod  
+```
+
+
 ### 运行命令的快捷方式
 
 ```bash
 # 你可以使用以下命令来执行
-./cmd artisan "your command"          // 运行 artisan 命令
-./cmd php "your command"              // 运行 php 命令
-./cmd nginx "your command"            // 运行 nginx 命令
-./cmd redis "your command"            // 运行 redis 命令
-./cmd composer "your command"         // 运行 composer 命令
-./cmd supervisorctl "your command"    // 运行 supervisorctl 命令
-./cmd test "your command"             // 运行 phpunit 命令
-./cmd mysql "your command"            // 运行 mysql 命令 (backup: 备份数据库，recovery: 还原数据库)
+./cmd artisan "your command"          # 运行 artisan 命令
+./cmd php "your command"              # 运行 php 命令
+./cmd nginx "your command"            # 运行 nginx 命令
+./cmd redis "your command"            # 运行 redis 命令
+./cmd composer "your command"         # 运行 composer 命令
+./cmd supervisorctl "your command"    # 运行 supervisorctl 命令
+./cmd test "your command"             # 运行 phpunit 命令
+./cmd mysql "your command"            # 运行 mysql 命令 (backup: 备份数据库，recovery: 还原数据库)
 ```
 
 ### NGINX 代理 SSL
@@ -98,7 +114,3 @@ git pull
 # 进入项目所在目录，运行以下命令
 ./cmd uninstall
 ```
-
-## 联系我们
-
-QQ群号: 546574618

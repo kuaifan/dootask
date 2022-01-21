@@ -77,6 +77,26 @@
         },
 
         /**
+         * 格式化websocket的消息
+         * @param data
+         */
+        formatWebsocketMessageDetail(data) {
+            if ($A.isJson(data)) {
+                for (let key in data) {
+                    if (!data.hasOwnProperty(key)) continue;
+                    data[key] = $A.formatWebsocketMessageDetail(data[key]);
+                }
+            } else if ($A.isArray(data)) {
+                data.forEach((val, index) => {
+                    data[index] = $A.formatWebsocketMessageDetail(val);
+                });
+            } else if (typeof data === "string") {
+                data = data.replace(/\{\{RemoteURL\}\}/g, this.apiUrl('../'))
+            }
+            return data;
+        },
+
+        /**
          * 格式化时间
          * @param date
          * @returns {*|string}
@@ -596,6 +616,7 @@
                     twitterwidget,
                     .sr-reader,
                     .no-dark-mode,
+                    .no-dark-mode-before:before,
                     .sr-backdrop {
                         ${this.utils.reverseFilter}
                     }

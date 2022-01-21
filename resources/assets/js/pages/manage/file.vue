@@ -65,20 +65,26 @@
                     <ul class="clearfix">
                         <li
                             v-for="item in fileList"
-                            :class="[item.type, item.id && shearId == item.id ? 'shear' : '', !!item._highlight ? 'highlight' : '']"
+                            :class="[item.id && shearId == item.id ? 'shear' : '', !!item._highlight ? 'highlight' : '']"
                             @contextmenu.prevent.stop="handleRightClick($event, item)"
                             @click="openFile(item)">
                             <div class="file-menu" @click.stop="handleRightClick($event, item)">
                                 <Icon type="ios-more" />
                             </div>
-                            <div class="file-icon">
+                            <div :class="`no-dark-mode-before file-icon ${item.type}`">
                                 <template v-if="item.share">
                                     <UserAvatar v-if="item.userid != userId" :userid="item.userid" class="share-avatar" :size="20">
                                         <p>{{$L('共享权限')}}: {{$L(item.permission == 1 ? '读/写' : '只读')}}</p>
                                     </UserAvatar>
-                                    <div v-else class="share-icon">
+                                    <div v-else class="share-icon no-dark-mode">
                                         <i class="taskfont">&#xe757;</i>
                                     </div>
+                                </template>
+                                <template v-else-if="isParentShare">
+                                    <UserAvatar :userid="item.created_id" class="share-avatar" :size="20">
+                                        <p v-if="item.created_id != item.userid"><strong>{{$L('成员创建于')}}: {{item.created_at}}</strong></p>
+                                        <p v-else>{{$L('所有者创建于')}}: {{item.created_at}}</p>
+                                    </UserAvatar>
                                 </template>
                             </div>
                             <div v-if="item._edit" class="file-input">
@@ -113,7 +119,7 @@
                                         :key="key"
                                         :divided="!!type.divided"
                                         @click.native="addFile(type.value)">
-                                        <div :class="['file-item ' + type.value]">{{$L(type.label)}}</div>
+                                        <div :class="`no-dark-mode-before file-item file-icon ${type.value}`">{{$L(type.label)}}</div>
                                     </DropdownItem>
                                 </DropdownMenu>
                             </Dropdown>
@@ -136,7 +142,7 @@
                                 :key="key"
                                 :divided="!!type.divided"
                                 @click.native="addFile(type.value)">
-                                <div :class="['file-item ' + type.value]">{{$L(type.label)}}</div>
+                                <div :class="`no-dark-mode-before file-item file-icon ${type.value}`">{{$L(type.label)}}</div>
                             </DropdownItem>
                         </template>
                     </DropdownMenu>
@@ -487,7 +493,12 @@ export default {
                 }
             }
             return array;
-        }
+        },
+
+        isParentShare() {
+            const {navigator} = this;
+            return !!navigator.find(({share}) => share);
+        },
     },
 
     watch: {
@@ -566,7 +577,7 @@ export default {
                                 class: 'file-nbox'
                             }, [
                                 h('div', {
-                                    class: 'file-name ' + row.type,
+                                    class: `no-dark-mode-before file-name file-icon ${row.type}`,
                                 }, array),
                             ]);
                         } else {
@@ -620,12 +631,21 @@ export default {
                                         },
                                     }))
                                 }
+                            } else if (this.isParentShare) {
+                                iconArray.push(h('UserAvatar', {
+                                    props: {
+                                        userid: row.created_id,
+                                        size: 20
+                                    },
+                                }, [
+                                    row.created_id != row.userid ? h('p', [h('strong', this.$L('成员创建于') + ": " + row.created_at)]) : h('p', this.$L('所有者创建') + ": " + row.created_at)
+                                ]))
                             }
                             return h('div', {
                                 class: 'file-nbox'
                             }, [
                                 h('div', {
-                                    class: 'file-name ' + row.type,
+                                    class: `no-dark-mode-before file-name file-icon ${row.type}`,
                                 }, array),
                                 iconArray
                             ]);

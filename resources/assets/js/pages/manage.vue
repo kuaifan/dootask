@@ -231,6 +231,7 @@ import DragBallComponent from "../components/DragBallComponent";
 import TaskAdd from "./manage/components/TaskAdd";
 import Report from "./manage/components/Report";
 import {Store} from "le5le-store";
+import state from "../store/state";
 
 export default {
     components: {
@@ -502,6 +503,7 @@ export default {
                     break;
             }
             this.$store.state.themeMode = mode;
+            this.$store.state.themeIsDark = $A.dark.isDarkEnabled();
             $A.setStorage("cacheThemeMode", mode);
         },
 

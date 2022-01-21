@@ -1,0 +1,68 @@
+.file-icon {
+    &:before {
+        content: "";
+        background-repeat: no-repeat;
+        background-size: contain;
+        background-image: url("../images/file/light/other.svg");
+    }
+    &.archive:before {
+        background-image: url("../images/file/light/archive.svg");
+    }
+    &.cad:before {
+        background-image: url("../images/file/light/cad.svg");
+    }
+    &.code:before {
+        background-image: url("../images/file/light/code.svg");
+    }
+    &.document:before {
+        background-image: url("../images/file/light/document.svg");
+    }
+    &.excel:before {
+        background-image: url("../images/file/light/excel.svg");
+    }
+    &.flow:before {
+        background-image: url("../images/file/light/flow.svg");
+    }
+    &.folder:before {
+        background-image: url("../images/file/light/folder.svg");
+    }
+    &.media:before {
+        background-image: url("../images/file/light/media.svg");
+    }
+    &.mind:before {
+        background-image: url("../images/file/light/mind.svg");
+    }
+    &.ofd:before {
+        background-image: url("../images/file/light/ofd.svg");
+    }
+    &.pdf:before {
+        background-image: url("../images/file/light/pdf.svg");
+    }
+    &.picture:before {
+        background-image: url("../images/file/light/picture.svg");
+    }
+    &.ppt:before {
+        background-image: url("../images/file/light/ppt.svg");
+    }
+    &.sheet:before {
+        background-image: url("../images/file/light/sheet.svg");
+    }
+    &.tif:before {
+        background-image: url("../images/file/light/tif.svg");
+    }
+    &.txt:before {
+        background-image: url("../images/file/light/txt.svg");
+    }
+    &.updir:before {
+        background-image: url("../images/file/light/updir.svg");
+    }
+    &.upload:before {
+        background-image: url("../images/file/light/upload.svg");
+    }
+    &.word:before {
+        background-image: url("../images/file/light/word.svg");
+    }
+    &.wps:before {
+        background-image: url("../images/file/light/wps.svg");
+    }
+}

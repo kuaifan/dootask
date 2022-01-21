@@ -53,12 +53,12 @@ class File extends AbstractModel
     /**
      * 是否有访问权限
      * @param $userid
-     * @return int -1:没有权限，0:访问权限，1:读写权限，1000:所有者
+     * @return int -1:没有权限，0:访问权限，1:读写权限，1000:所有者或创建者
      */
     public function getPermission($userid)
     {
-        if ($userid == $this->userid) {
-            // ① 自己的文件夹
+        if ($userid == $this->userid || $userid == $this->created_id) {
+            // ① 自己的文件夹 或 自己创建的文件夹
             return 1000;
         }
         $row = $this->getShareInfo();
@@ -217,7 +217,7 @@ class File extends AbstractModel
     /**
      * 获取文件并检测权限
      * @param $id
-     * @param int $limit 要求权限: 0-访问权限、1-读写权限、1000-所有者
+     * @param int $limit 要求权限: 0-访问权限、1-读写权限、1000-所有者或创建者
      * @param $permission
      * @return File
      */
@@ -231,7 +231,7 @@ class File extends AbstractModel
         $permission = $file->getPermission(User::userid());
         if ($permission < $limit) {
             $msg = match ($limit) {
-                1000 => '仅限所有者操作',
+                1000 => '仅限所有者或创建者操作',
                 1 => '没有读写权限',
                 default => '没有访问权限',
             };

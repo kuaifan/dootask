@@ -725,7 +725,7 @@ class Base
     public static function getHost($var = '')
     {
         if (empty($var)) {
-            $var = self::url();
+            $var = url("/");
         }
         $arr = parse_url($var);
         return $arr['host'];
@@ -738,6 +738,7 @@ class Base
      */
     public static function fillUrl($str = '')
     {
+        global $_A;
         if (is_array($str)) {
             foreach ($str as $key => $item) {
                 $str[$key] = Base::fillUrl($item);
@@ -756,7 +757,14 @@ class Base
         ) {
             return $str;
         } else {
-            return self::url($str);
+            if ($_A['__fill_url_remote_url'] === true) {
+                return "{{RemoteURL}}" . $str;
+            }
+            try {
+                return url($str);
+            } catch (\Throwable) {
+                return self::getSchemeAndHost() . "/" . $str;
+            }
         }
     }
 
@@ -773,25 +781,12 @@ class Base
             }
             return $str;
         }
-        return Base::leftDelete($str, self::url() . '/');
-    }
-
-    /**
-     * 获取url
-     * @param $path
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\UrlGenerator|string
-     */
-    public static function url($path = '')
-    {
         try {
-            $url = url($path);
-            if (str_starts_with($url, "http://localhost/")) {
-                $url = "http://localhost:" . env("APP_PORT", "80") . "/" . substr($url, 17);
-            }
+            $find = url('');
         } catch (\Throwable) {
-            $url = self::getSchemeAndHost() . "/" . $path;
+            $find = self::getSchemeAndHost();
         }
-        return $url;
+        return Base::leftDelete($str, $find . '/');
     }
 
     /**
