@@ -157,6 +157,7 @@ export default {
                 if (data.id) {
                     this.getDetail(data.id);
                 } else {
+                    this.reportData.id = 0;
                     this.reportData.title = data.title;
                     this.reportData.content = data.content;
                 }
@@ -176,9 +177,7 @@ export default {
                 this.prevCycleText = this.$L("上一天");
                 this.nextCycleText = this.$L("下一天");
             }
-
-            if (this.id <= 0)
-                this.getTemplate();
+           this.getTemplate();
         },
         getDetail(reportId) {
             this.userInputShow = false;
