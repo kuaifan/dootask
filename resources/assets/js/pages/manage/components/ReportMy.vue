@@ -51,6 +51,7 @@ export default {
             createAt: [],
             reportType:'',
             reportTypeList:[
+                {value:"",label:'全部' },
                 {value:"weekly",label:'周报' },
                 {value:"daily",label:'日报' },
             ],
@@ -123,6 +124,7 @@ export default {
                 url: 'report/my',
                 data: {
                     page: this.listPage,
+                    pagesize: this.listPageSize,
                     created_at: this.createAt,
                     type: this.reportType
                 },

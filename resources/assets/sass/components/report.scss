@@ -28,6 +28,33 @@
             }
         }
     }
+    .manage-box-report{
+        font-family: "Monospaced Number";
+        line-height: 1;
+        vertical-align: middle;
+        position: absolute;
+        -webkit-transform: translateX(50%);
+        -ms-transform: translateX(50%);
+        transform: translateX(50%);
+        right: 0;
+        height: 20px;
+        border-radius: 10px;
+        min-width: 20px;
+        background: #ed4014;
+        border: 1px solid transparent;
+        color: #fff;
+        line-height: 18px;
+        text-align: center;
+        padding: 0 6px;
+        font-size: 12px;
+        white-space: nowrap;
+        -webkit-transform-origin: -10% center;
+        -ms-transform-origin: -10% center;
+        transform-origin: -10% center;
+        z-index: 10;
+        -webkit-box-shadow: 0 0 0 1px #fff;
+        box-shadow: 0 0 0 1px #fff;
+    }
 
     .page-box {
         text-align: center;

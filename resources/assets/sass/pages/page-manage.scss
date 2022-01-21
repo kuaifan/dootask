@@ -69,6 +69,16 @@
                         margin: -1px;
                     }
                 }
+                .manage-box-top-report {
+                    align-items: center;
+                    flex-direction: column;
+                    justify-content: center;
+                    flex: 0 0 auto;
+                    > i {
+                        font-size: 12px;
+                        margin: -1px;
+                    }
+                }
             }
             .manage-menu-report-badge {
                 margin-left: 6px;

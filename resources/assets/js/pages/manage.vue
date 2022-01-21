@@ -15,6 +15,7 @@
                         <Icon type="ios-arrow-up" />
                         <Icon type="ios-arrow-down" />
                     </div>
+                    <Badge v-if="reportUnreadNumber > 0" class="manage-box-top-report" :count="reportUnreadNumber"/>
                 </div>
                 <DropdownMenu slot="list">
                     <DropdownItem
@@ -23,7 +24,7 @@
                         :divided="!!item.divided"
                         :name="item.path">
                         {{$L(item.name)}}
-                        <Badge v-if="item.path === 'workReport'" class="manage-menu-report-badge" :count="reportUnreadNumber"/>
+                        <Badge v-if="item.path === 'workReport'"  @click.native="openReceiveReport"  class="manage-menu-report-badge" :count="reportUnreadNumber"/>
                     </DropdownItem>
                     <Dropdown placement="right-start" @on-click="setTheme">
                         <DropdownItem divided>
@@ -179,7 +180,7 @@
             v-model="workReportShow"
             placement="right"
             :size="1100">
-            <Report v-if="workReportShow" @read="reportUnread" />
+            <Report v-if="workReportShow" :reportType="reportTabs" :reportUnreadNumber="reportUnreadNumber" @read="reportUnread" />
         </DrawerOverlay>
 
         <!--查看所有团队-->
@@ -276,6 +277,7 @@ export default {
             notificationClass: null,
 
             reportUnreadNumber: 0,
+            reportTabs: "my"
         }
     },
 
@@ -738,12 +740,17 @@ export default {
         },
 
         reportUnread() {
+            this.reportTabs = "my";
             this.$store.dispatch("call", {
                 url: 'report/unread',
                 method: 'get',
             }).then(({data}) => {
                 this.reportUnreadNumber = data.total ? data.total : 0;
             }).catch(() => {});
+        },
+
+        openReceiveReport(){
+            this.reportTabs = "receive";
         }
     }
 }

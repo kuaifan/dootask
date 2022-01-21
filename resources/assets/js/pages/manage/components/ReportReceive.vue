@@ -58,6 +58,7 @@ export default {
             reportType:'',
             createAt: [],
             reportTypeList:[
+                {value:"",label:'全部' },
                 {value:"weekly",label:'周报' },
                 {value:"daily",label:'日报' },
             ],
@@ -87,11 +88,6 @@ export default {
                         )
                     }else {
                         arr.push(
-                            h('Tag', {
-                                props: {   //传递参数
-                                    color: "lime",
-                                }
-                            },  this.$L("已读")),
                             h('span',params.row.title)
                         )
                     }
@@ -145,6 +141,7 @@ export default {
                 url: 'report/receive',
                 data: {
                     page: this.listPage,
+                    pagesize: this.listPageSize,
                     username: this.username,
                     created_at: this.createAt,
                     type: this.reportType
