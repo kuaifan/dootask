@@ -1,8 +1,9 @@
 <template>
     <div class="report-list-wrap">
         <Row class="reportmy-row report-row-header">
+            <Col  span="3"><Button type="primary" @click="addReport">{{ $L("新增报告") }}</Button></Col>
             <Col  span="2"><p class="reportmy-titles">{{ $L("汇报类型") }}</p></Col>
-            <Col span="6">
+            <Col span="5">
                 <Select
                     v-model="reportType"
                     style="width:95%"
@@ -165,6 +166,10 @@ export default {
         searchTab() {
             this.getLists();
         },
+
+        addReport() {
+            this.$emit("edit", 0);
+        }
     }
 }
 </script>

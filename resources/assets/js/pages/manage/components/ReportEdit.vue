@@ -3,19 +3,19 @@
         <Row class="report-row report-row-header" >
             <Col span="2"><p class="report-titles">{{ $L("汇报类型") }}</p></Col>
             <Col span="12">
-                <RadioGroup type="button" button-style="solid" v-model="reportData.type" @on-change="typeChange" class="report-radiogroup">
-                    <Radio label="weekly">{{ $L("周报") }}</Radio>
-                    <Radio label="daily">{{ $L("日报") }}</Radio>
+                <RadioGroup type="button" button-style="solid" v-model="reportData.type" @on-change="typeChange" class="report-radiogroup" :readonly="id > 0">
+                    <Radio label="weekly" :disabled="id > 0">{{ $L("周报") }}</Radio>
+                    <Radio label="daily" :disabled="id > 0">{{ $L("日报") }}</Radio>
                 </RadioGroup>
                 <ButtonGroup class="report-buttongroup">
-                    <Tooltip class="report-poptip" trigger="hover"  :content="prevCycleText" placement="bottom">
-                        <Button  type="primary" @click="prevCycle">
+                    <Tooltip class="report-poptip" trigger="hover" :disabled="id > 0" :content="prevCycleText" placement="bottom">
+                        <Button  type="primary" @click="prevCycle" :disabled="id > 0">
                             <Icon type="ios-arrow-back" />
                         </Button>
                     </Tooltip>
                     <div class="report-buttongroup-shu"></div>
-                    <Tooltip class="report-poptip" trigger="hover" :disabled="reportData.offset >= 0" :content="nextCycleText" placement="bottom">
-                        <Button  type="primary" @click="nextCycle" :disabled="reportData.offset >= 0">
+                    <Tooltip class="report-poptip" trigger="hover" :disabled="reportData.offset >= 0 || id > 0" :content="nextCycleText" placement="bottom">
+                        <Button  type="primary" @click="nextCycle" :disabled="reportData.offset >= 0 || id > 0">
                             <Icon type="ios-arrow-forward" />
                         </Button>
                     </Tooltip>
@@ -93,7 +93,9 @@ export default {
     },
     watch: {
         id(val) {
-            if (this.id > 0) this.getDetail(val);
+            if (this.id > 0) {
+                this.getDetail(val);
+            }
         },
     },
     computed: {
@@ -108,14 +110,32 @@ export default {
             this.nextCycleText = this.$L("下一周");
         },
         handleSubmit: function () {
+            let id = this.reportData.id;
+            if (this.id === 0 && id > 1) {
+                $A.modalConfirm({
+                    title: '覆盖提交',
+                    content: '是否覆盖提交',
+                    loading: true,
+                    onOk: () => {
+                        this.doSubmit();
+                    }
+                });
+            } else {
+                this.doSubmit();
+            }
+
+        },
+        doSubmit() {
             this.$store.dispatch("call", {
                 url: 'report/store',
                 data: this.reportData,
                 method: 'post',
             }).then(({data, msg}) => {
                 // data 结果数据
+                this.reportData.offset = 0;
                 this.getTemplate();
                 this.disabledType = false;
+                this.$Modal.remove();
                 // msg 结果描述
                 $A.messageSuccess(msg);
                 this.$emit("saveSuccess");

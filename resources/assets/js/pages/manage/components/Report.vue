@@ -1,11 +1,8 @@
 <template>
     <div class="report">
         <Tabs v-model="reportTabs">
-            <TabPane :label="$L('填写汇报')" name="edit">
-                <ReportEdit :id="reportId" @saveSuccess="saveSuccess"></ReportEdit>
-            </TabPane>
             <TabPane :label="$L('我的汇报')" name="my">
-                <ReportMy v-if="reportTabs === 'my'" @detail="showDetail" @edit="editReport"></ReportMy>
+                <ReportMy ref="report" v-if="reportTabs === 'my'" @detail="showDetail" @edit="editReport"></ReportMy>
             </TabPane>
             <TabPane :label="tabRebder(reportUnreadNumber)" name="receive">
                 <ReportReceive v-if="reportTabs === 'receive'" @detail="showDetail"></ReportReceive>
@@ -17,6 +14,13 @@
             :size="950"
             transfer>
             <ReportDetail :data="detailData"/>
+        </DrawerOverlay>
+        <DrawerOverlay
+            v-model="showEditDrawer"
+            placement="right"
+            :size="1000"
+            transfer>
+            <ReportEdit :id="reportId" @saveSuccess="saveSuccess"/>
         </DrawerOverlay>
     </div>
 </template>
@@ -47,6 +51,7 @@ export default {
         return {
             reportTabs: "my",
             showDetailDrawer: false,
+            showEditDrawer: false,
             detailData: {},
             reportId: 0
         }
@@ -80,11 +85,13 @@ export default {
         },
         editReport(id) {
             this.reportId = id;
-            this.reportTabs = "edit";
+            this.showEditDrawer = true;
         },
         saveSuccess() {
             this.reportId = 0;
             this.reportTabs = "my";
+            this.showEditDrawer = false;
+            this.$refs.report.getLists();
         }
     }
 }
