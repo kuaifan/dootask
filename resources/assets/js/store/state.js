@@ -1,120 +1,125 @@
-const state = {};
+const stateData = {
+    // 浏览器宽度
+    windowWidth: window.innerWidth,
 
-// 浏览器宽度
-state.windowWidth = window.innerWidth;
+    // 浏览器宽度≤768返回true
+    windowMax768: window.innerWidth <= 768,
 
-// 浏览器宽度≤768返回true
-state.windowMax768 = window.innerWidth <= 768;
+    // 数据缓存
+    cacheLoading: {},
 
-// 数据缓存
-state.cacheLoading = {};
+    // DrawerOverlay
+    cacheDrawerIndex: 0,
+    cacheDrawerOverlay: [],
 
-// DrawerOverlay
-state.cacheDrawerIndex = 0;
-state.cacheDrawerOverlay = [];
+    // User
+    cacheUserActive: {},
+    cacheUserWait: [],
+    cacheUserBasic: $A.getStorageArray("cacheUserBasic"),
 
-// User
-state.cacheUserActive = {};
-state.cacheUserWait = [];
-state.cacheUserBasic = $A.getStorageArray("cacheUserBasic");
+    // Dialog
+    cacheDialogs: $A.getStorageArray("cacheDialogs"),
 
-// Dialog
-state.cacheDialogs = $A.getStorageArray("cacheDialogs");
+    // Project
+    cacheProjects: $A.getStorageArray("cacheProjects"),
+    cacheColumns: $A.getStorageArray("cacheColumns"),
+    cacheTasks: $A.getStorageArray("cacheTasks"),
+    cacheProjectParameter: $A.getStorageArray("cacheProjectParameter"),
 
-// Project
-state.cacheProjects = $A.getStorageArray("cacheProjects");
-state.cacheColumns = $A.getStorageArray("cacheColumns");
-state.cacheTasks = $A.getStorageArray("cacheTasks");
-state.cacheProjectParameter = $A.getStorageArray("cacheProjectParameter");
+    // ServerUrl
+    cacheServerUrl: $A.getStorageString("cacheServerUrl"),
+
+    // Ajax
+    ajaxWsReady: false,
+    ajaxWsListener: [],
+
+    // Websocket
+    ws: null,
+    wsMsg: {},
+    wsCall: {},
+    wsTimeout: null,
+    wsOpenNum: 0,
+    wsListener: {},
+    wsReadTimeout: null,
+    wsReadWaitList: [],
+
+    // 会员信息
+    userInfo: $A.getStorageJson("userInfo"),
+    userId: state.userInfo.userid = $A.runNum(state.userInfo.userid),
+    userToken: state.userInfo.token,
+    userIsAdmin: $A.inArray("admin", state.userInfo.identity),
+    userOnline: {},
+
+    // 会话聊天
+    dialogMsgs: [],
+    dialogOpenId: 0,
+
+    // 文件
+    files: [],
+    fileContent: {},
+
+    // 项目任务
+    projectId: 0,
+    projectTotal: 0,
+    projectLoad: 0,
+    taskId: 0,
+    taskCompleteTemps: [],
+    taskContents: [],
+    taskFiles: [],
+    taskLogs: [],
+
+    // 任务等待状态
+    taskLoading: [],
+
+    // 任务流程信息
+    taskFlows: [],
+    taskFlowItems: [],
+
+    // 任务优先级
+    taskPriority: [],
+
+    // 列表背景色
+    columnColorList: [
+        {name: '默认', color: ''},
+        {name: '灰色', color: '#444444'},
+        {name: '棕色', color: '#947364'},
+        {name: '橘色', color: '#faaa6c'},
+        {name: '黄色', color: '#f2d86d'},
+        {name: '绿色', color: '#73b45c'},
+        {name: '蓝色', color: '#51abea'},
+        {name: '紫色', color: '#b583e3'},
+        {name: '粉色', color: '#ff819c'},
+        {name: '红色', color: '#ff7070'},
+    ],
+
+    // 任务背景色
+    taskColorList: [
+        {name: '默认', color: ''},
+        {name: '黄色', color: '#fffae6'},
+        {name: '蓝色', color: '#e5f5ff'},
+        {name: '绿色', color: '#ecffe5'},
+        {name: '粉色', color: '#ffeaee'},
+        {name: '紫色', color: '#f6ecff'},
+        {name: '灰色', color: '#f3f3f3'},
+    ],
+
+    // 主题皮肤
+    themeMode: $A.getStorageString("cacheThemeMode", "auto"),
+    themeList: [
+        {name: '跟随系统', value: 'auto'},
+        {name: '明亮', value: 'light'},
+        {name: '暗黑', value: 'dark'},
+    ],
+    themeIsDark: false,
+};
 
 // ServerUrl
-state.cacheServerUrl = $A.getStorageString("cacheServerUrl")
-if (state.cacheServerUrl) {
-    window.systemInfo.apiUrl = state.cacheServerUrl;
+if (stateData.cacheServerUrl) {
+    window.systemInfo.apiUrl = stateData.cacheServerUrl;
 }
 
-// Ajax
-state.ajaxWsReady = false;
-state.ajaxWsListener = [];
-
-// Websocket
-state.ws = null;
-state.wsMsg = {};
-state.wsCall = {};
-state.wsTimeout = null;
-state.wsOpenNum = 0;
-state.wsListener = {};
-state.wsReadTimeout = null;
-state.wsReadWaitList = [];
-
-// 会员信息
-state.userInfo = $A.getStorageJson("userInfo");
-state.userId = state.userInfo.userid = $A.runNum(state.userInfo.userid);
-state.userToken = state.userInfo.token;
-state.userIsAdmin = $A.inArray("admin", state.userInfo.identity);
-state.userOnline = {};
-
-// 会话聊天
-state.dialogMsgs = [];
-state.dialogOpenId = 0;
-
-// 文件
-state.files = [];
-state.fileContent = {};
-
-// 项目任务
-state.projectId = 0;
-state.projectTotal = 0;
-state.projectLoad = 0;
-state.taskId = 0;
-state.taskCompleteTemps = [];
-state.taskContents = [];
-state.taskFiles = [];
-state.taskLogs = [];
-
-// 任务等待状态
-state.taskLoading = [];
-
-// 任务流程信息
-state.taskFlows = [];
-state.taskFlowItems = [];
-
-// 任务优先级
-state.taskPriority = [];
-
-// 列表背景色
-state.columnColorList = [
-    {name: '默认', color: ''},
-    {name: '灰色', color: '#444444'},
-    {name: '棕色', color: '#947364'},
-    {name: '橘色', color: '#faaa6c'},
-    {name: '黄色', color: '#f2d86d'},
-    {name: '绿色', color: '#73b45c'},
-    {name: '蓝色', color: '#51abea'},
-    {name: '紫色', color: '#b583e3'},
-    {name: '粉色', color: '#ff819c'},
-    {name: '红色', color: '#ff7070'},
-];
-
-// 任务背景色
-state.taskColorList = [
-    {name: '默认', color: ''},
-    {name: '黄色', color: '#fffae6'},
-    {name: '蓝色', color: '#e5f5ff'},
-    {name: '绿色', color: '#ecffe5'},
-    {name: '粉色', color: '#ffeaee'},
-    {name: '紫色', color: '#f6ecff'},
-    {name: '灰色', color: '#f3f3f3'},
-];
-
 // 主题皮肤
-state.themeMode = $A.getStorageString("cacheThemeMode", "auto");
-state.themeList = [
-    {name: '跟随系统', value: 'auto'},
-    {name: '明亮', value: 'light'},
-    {name: '暗黑', value: 'dark'},
-];
-switch (state.themeMode) {
+switch (stateData.themeMode) {
     case 'dark':
         $A.dark.enableDarkMode()
         break;
@@ -125,6 +130,6 @@ switch (state.themeMode) {
         $A.dark.autoDarkMode()
         break;
 }
-state.themeIsDark = $A.dark.isDarkEnabled();
+stateData.themeIsDark = $A.dark.isDarkEnabled();
 
-export default state
+export default stateData

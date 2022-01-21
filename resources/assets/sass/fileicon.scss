@@ -1,0 +1,68 @@
+.file-icon {
+    &:before {
+        content: "";
+        background-repeat: no-repeat;
+        background-size: contain;
+        background-image: url("../images/file/other.svg");
+    }
+    &.archive:before {
+        background-image: url("../images/file/archive.svg");
+    }
+    &.cad:before {
+        background-image: url("../images/file/cad.svg");
+    }
+    &.code:before {
+        background-image: url("../images/file/code.svg");
+    }
+    &.document:before {
+        background-image: url("../images/file/document.svg");
+    }
+    &.excel:before {
+        background-image: url("../images/file/excel.svg");
+    }
+    &.flow:before {
+        background-image: url("../images/file/flow.svg");
+    }
+    &.folder:before {
+        background-image: url("../images/file/folder.svg");
+    }
+    &.media:before {
+        background-image: url("../images/file/media.svg");
+    }
+    &.mind:before {
+        background-image: url("../images/file/mind.svg");
+    }
+    &.ofd:before {
+        background-image: url("../images/file/ofd.svg");
+    }
+    &.pdf:before {
+        background-image: url("../images/file/pdf.svg");
+    }
+    &.picture:before {
+        background-image: url("../images/file/picture.svg");
+    }
+    &.ppt:before {
+        background-image: url("../images/file/ppt.svg");
+    }
+    &.sheet:before {
+        background-image: url("../images/file/sheet.svg");
+    }
+    &.tif:before {
+        background-image: url("../images/file/tif.svg");
+    }
+    &.txt:before {
+        background-image: url("../images/file/txt.svg");
+    }
+    &.updir:before {
+        background-image: url("../images/file/updir.svg");
+    }
+    &.upload:before {
+        background-image: url("../images/file/upload.svg");
+    }
+    &.word:before {
+        background-image: url("../images/file/word.svg");
+    }
+    &.wps:before {
+        background-image: url("../images/file/wps.svg");
+    }
+}

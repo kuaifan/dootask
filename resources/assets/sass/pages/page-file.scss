@@ -296,70 +296,7 @@
                         content: "";
                         width: 22px;
                         height: 22px;
-                        background-repeat: no-repeat;
-                        background-size: contain;
                         margin-right: 8px;
-                        background-image: url("../images/file/other.svg");
-                    }
-                    &.archive:before {
-                        background-image: url("../images/file/archive.svg");
-                    }
-                    &.cad:before {
-                        background-image: url("../images/file/cad.svg");
-                    }
-                    &.code:before {
-                        background-image: url("../images/file/code.svg");
-                    }
-                    &.document:before {
-                        background-image: url("../images/file/document.svg");
-                    }
-                    &.excel:before {
-                        background-image: url("../images/file/excel.svg");
-                    }
-                    &.flow:before {
-                        background-image: url("../images/file/flow.svg");
-                    }
-                    &.folder:before {
-                        background-image: url("../images/file/folder.svg");
-                    }
-                    &.media:before {
-                        background-image: url("../images/file/media.svg");
-                    }
-                    &.mind:before {
-                        background-image: url("../images/file/mind.svg");
-                    }
-                    &.ofd:before {
-                        background-image: url("../images/file/ofd.svg");
-                    }
-                    &.pdf:before {
-                        background-image: url("../images/file/pdf.svg");
-                    }
-                    &.picture:before {
-                        background-image: url("../images/file/picture.svg");
-                    }
-                    &.ppt:before {
-                        background-image: url("../images/file/ppt.svg");
-                    }
-                    &.sheet:before {
-                        background-image: url("../images/file/sheet.svg");
-                    }
-                    &.tif:before {
-                        background-image: url("../images/file/tif.svg");
-                    }
-                    &.txt:before {
-                        background-image: url("../images/file/txt.svg");
-                    }
-                    &.updir:before {
-                        background-image: url("../images/file/updir.svg");
-                    }
-                    &.upload:before {
-                        background-image: url("../images/file/upload.svg");
-                    }
-                    &.word:before {
-                        background-image: url("../images/file/word.svg");
-                    }
-                    &.wps:before {
-                        background-image: url("../images/file/wps.svg");
                     }
                 }
                 .permission {
@@ -448,11 +385,15 @@
                         display: inline-block;
                         width: 64px;
                         height: 64px;
-                        background-repeat: no-repeat;
-                        background-size: contain;
                         margin-top: 12px;
                         position: relative;
-                        background-image: url("../images/file/other.svg");
+                        &:before {
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            right: 0;
+                            bottom: 0;
+                        }
                         .share-icon,
                         .share-avatar {
                             position: absolute;
@@ -475,66 +416,6 @@
                     }
                     &.shear {
                         opacity: 0.38;
-                    }
-                    &.archive .file-icon {
-                        background-image: url("../images/file/archive.svg");
-                    }
-                    &.cad .file-icon {
-                        background-image: url("../images/file/cad.svg");
-                    }
-                    &.code .file-icon {
-                        background-image: url("../images/file/code.svg");
-                    }
-                    &.document .file-icon {
-                        background-image: url("../images/file/document.svg");
-                    }
-                    &.excel .file-icon {
-                        background-image: url("../images/file/excel.svg");
-                    }
-                    &.flow .file-icon {
-                        background-image: url("../images/file/flow.svg");
-                    }
-                    &.folder .file-icon {
-                        background-image: url("../images/file/folder.svg");
-                    }
-                    &.media .file-icon {
-                        background-image: url("../images/file/media.svg");
-                    }
-                    &.mind .file-icon {
-                        background-image: url("../images/file/mind.svg");
-                    }
-                    &.ofd .file-icon {
-                        background-image: url("../images/file/ofd.svg");
-                    }
-                    &.pdf .file-icon {
-                        background-image: url("../images/file/pdf.svg");
-                    }
-                    &.picture .file-icon {
-                        background-image: url("../images/file/picture.svg");
-                    }
-                    &.ppt .file-icon {
-                        background-image: url("../images/file/ppt.svg");
-                    }
-                    &.sheet .file-icon {
-                        background-image: url("../images/file/sheet.svg");
-                    }
-                    &.tif .file-icon {
-                        background-image: url("../images/file/tif.svg");
-                    }
-                    &.txt .file-icon {
-                        background-image: url("../images/file/txt.svg");
-                    }
-                    &.updir .file-icon {
-                        background-image: url("../images/file/updir.svg");
-                    }
-                    &.upload .file-icon {
-                        background-image: url("../images/file/upload.svg");
-                    }
-                    &.word .file-icon {
-                        background-image: url("../images/file/word.svg");
-                    }
-                    &.wps .file-icon {
-                        background-image: url("../images/file/wps.svg");
                     }
                     &.highlight {
                         background-color: #f4f5f7;
@@ -650,70 +531,7 @@
             content: "";
             width: 20px;
             height: 20px;
-            background-repeat: no-repeat;
-            background-size: contain;
             margin-right: 8px;
-            background-image: url("../images/file/other.svg");
-        }
-        &.archive:before {
-            background-image: url("../images/file/archive.svg");
-        }
-        &.cad:before {
-            background-image: url("../images/file/cad.svg");
-        }
-        &.code:before {
-            background-image: url("../images/file/code.svg");
-        }
-        &.document:before {
-            background-image: url("../images/file/document.svg");
-        }
-        &.excel:before {
-            background-image: url("../images/file/excel.svg");
-        }
-        &.flow:before {
-            background-image: url("../images/file/flow.svg");
-        }
-        &.folder:before {
-            background-image: url("../images/file/folder.svg");
-        }
-        &.media:before {
-            background-image: url("../images/file/media.svg");
-        }
-        &.mind:before {
-            background-image: url("../images/file/mind.svg");
-        }
-        &.ofd:before {
-            background-image: url("../images/file/ofd.svg");
-        }
-        &.pdf:before {
-            background-image: url("../images/file/pdf.svg");
-        }
-        &.picture:before {
-            background-image: url("../images/file/picture.svg");
-        }
-        &.ppt:before {
-            background-image: url("../images/file/ppt.svg");
-        }
-        &.sheet:before {
-            background-image: url("../images/file/sheet.svg");
-        }
-        &.tif:before {
-            background-image: url("../images/file/tif.svg");
-        }
-        &.txt:before {
-            background-image: url("../images/file/txt.svg");
-        }
-        &.updir:before {
-            background-image: url("../images/file/updir.svg");
-        }
-        &.upload:before {
-            background-image: url("../images/file/upload.svg");
-        }
-        &.word:before {
-            background-image: url("../images/file/word.svg");
-        }
-        &.wps:before {
-            background-image: url("../images/file/wps.svg");
         }
     }
 }

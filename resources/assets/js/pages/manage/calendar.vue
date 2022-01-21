@@ -88,7 +88,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'cacheTasks', 'taskCompleteTemps', 'wsOpenNum']),
+        ...mapState(['userId', 'cacheTasks', 'taskCompleteTemps', 'wsOpenNum', 'themeIsDark']),
 
         ...mapGetters(['transforTasks']),
 
@@ -134,7 +134,11 @@ export default {
                     _time: data._time,
                 };
                 if (data.p_name) {
-                    task.priority = '<span class="priority" style="background-color:' + data.p_color + '">' + data.p_name + '</span>';
+                    let priorityStyle = `background-color:${data.p_color}`;
+                    if (this.themeIsDark) {
+                        priorityStyle = `color:${data.p_color};border:1px solid ${data.p_color};padding:1px 3px;`;
+                    }
+                    task.priority = `<span class="priority" style="${priorityStyle}">${data.p_name}</span>`;
                 }
                 if (data.sub_my && data.sub_my.length > 0) {
                     task.title = `[+${data.sub_my.length}] ${task.title}`
@@ -153,7 +157,7 @@ export default {
                     task.title = `[${this.$L('超期')}] ${task.title}`
                     task.color = "#f56c6c"
                     task.bgColor = data.color || "#fef0f0"
-                    task.priority+= '<span class="overdue">' + this.$L('超期未完成') + '</span>';
+                    task.priority+= `<span class="overdue">${this.$L('超期未完成')}</span>`;
                 }
                 if (!task.borderColor) {
                     task.borderColor = task.bgColor;

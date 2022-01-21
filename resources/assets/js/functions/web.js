@@ -596,6 +596,7 @@
                     twitterwidget,
                     .sr-reader,
                     .no-dark-mode,
+                    .no-dark-mode-before:before,
                     .sr-backdrop {
                         ${this.utils.reverseFilter}
                     }
