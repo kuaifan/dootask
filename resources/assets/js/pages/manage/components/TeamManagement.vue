@@ -1,6 +1,11 @@
 <template>
     <div class="team-management">
-        <div class="management-title">{{$L('团队管理')}}</div>
+        <div class="management-title">
+            {{$L('团队管理')}}
+            <div class="title-icon">
+                <Loading v-if="loadIng > 0"/>
+            </div>
+        </div>
         <div class="search-container lr">
             <ul>
                 <li>
@@ -40,7 +45,16 @@
                     </div>
                 </li>
                 <li class="search-button">
-                    <Button :loading="loadIng > 0" type="primary" icon="ios-search" @click="getLists">{{$L('搜索')}}</Button>
+                    <Tooltip
+                        theme="light"
+                        placement="bottom"
+                        transfer-class-name="search-button-clear"
+                        transfer>
+                        <Button :loading="loadIng > 0" type="primary" icon="ios-search" @click="getLists">{{$L('搜索')}}</Button>
+                        <div slot="content">
+                            <Button :loading="loadIng > 0" type="text" @click="getLists">{{$L('刷新')}}</Button>
+                        </div>
+                    </Tooltip>
                 </li>
             </ul>
         </div>

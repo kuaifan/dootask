@@ -4,7 +4,6 @@
             {{$L('归档的项目')}}
             <div class="title-icon">
                 <Loading v-if="loadIng > 0"/>
-                <Icon v-else type="ios-refresh" @click="refresh"/>
             </div>
         </div>
         <div class="search-container lr">
@@ -18,7 +17,16 @@
                     </div>
                 </li>
                 <li class="search-button">
-                    <Button :loading="loadIng > 0" type="primary" icon="ios-search" @click="getLists">{{$L('搜索')}}</Button>
+                    <Tooltip
+                        theme="light"
+                        placement="right"
+                        transfer-class-name="search-button-clear"
+                        transfer>
+                        <Button :loading="loadIng > 0" type="primary" icon="ios-search" @click="getLists">{{$L('搜索')}}</Button>
+                        <div slot="content">
+                            <Button :loading="loadIng > 0" type="text" @click="refresh">{{$L('刷新')}}</Button>
+                        </div>
+                    </Tooltip>
                 </li>
             </ul>
         </div>
