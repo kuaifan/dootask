@@ -66,19 +66,19 @@ export default {
             this.columns = [{
                 "title": this.$L("名称"),
                 "key": 'title',
-                sortable: true,
+                "sortable": true,
                 "minWidth": 120,
             }, {
                 "title": this.$L("类型"),
                 "key": 'type',
                 "align": 'center',
-                sortable: true,
+                "sortable": true,
                 "maxWidth": 80,
             }, {
                 "title": this.$L("汇报时间"),
                 "key": 'created_at',
                 "align": 'center',
-                sortable: true,
+                "sortable": true,
                 "maxWidth": 180,
             }, {
                 "title": "操作",

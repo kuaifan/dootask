@@ -172,7 +172,7 @@ export default {
                 // data 结果数据
                 this.reportData.title = data.title;
                 this.reportData.content = data.content;
-                this.reportData.receive = data.receives;
+                this.reportData.receive = data.receives_user.map(({userid}) => userid);
                 this.reportData.type = data.type_val;
                 this.reportData.id = reportId;
                 this.disabledType = true;

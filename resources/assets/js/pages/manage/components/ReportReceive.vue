@@ -54,13 +54,13 @@ export default {
             listPageSize: 10,
             noDataText: "",
 
-            username:'',
-            reportType:'',
+            username: '',
+            reportType: '',
             createAt: [],
-            reportTypeList:[
-                {value:"",label:'全部' },
-                {value:"weekly",label:'周报' },
-                {value:"daily",label:'日报' },
+            reportTypeList: [
+                {value: "", label: '全部'},
+                {value: "weekly", label: '周报'},
+                {value: "daily", label: '日报'},
             ],
         }
     },
@@ -77,22 +77,22 @@ export default {
                 "minWidth": 120,
                 render: (h, params) => {
                     let arr = []
-                    if(params.row.receives_user[0].pivot.read==0){
+                    if (params.row.receives_user[0].pivot.read == 0) {
                         arr.push(
                             h('Tag', {
                                 props: {   //传递参数
                                     color: "orange",
                                 }
-                            },  this.$L("未读")),
-                            h('span',params.row.title)
+                            }, this.$L("未读")),
+                            h('span', params.row.title)
                         )
-                    }else {
+                    } else {
                         arr.push(
-                            h('span',params.row.title)
+                            h('span', params.row.title)
                         )
                     }
 
-                    return h('div',arr)
+                    return h('div', arr)
                 }
             }, {
                 "title": this.$L("类型"),
@@ -117,11 +117,11 @@ export default {
                     }
                     let arr = [
                         h('ETooltip', {
-                            props: { content: this.$L('查看'), transfer: true, delay: 600 },
-                            style: { position: 'relative' },
+                            props: {content: this.$L('查看'), transfer: true, delay: 600},
+                            style: {position: 'relative'},
                         }, [h('Icon', {
-                            props: { type: 'md-eye', size: 16 },
-                            style: { margin: '0 3px', cursor: 'pointer' },
+                            props: {type: 'md-eye', size: 16},
+                            style: {margin: '0 3px', cursor: 'pointer'},
                             on: {
                                 click: () => {
                                     this.$emit("detail", params.row)
@@ -151,16 +151,16 @@ export default {
                 // data 结果数据
                 this.lists = data.data;
                 this.listTotal = data.total;
-                if ( this.lists.length <= 0 ) {
+                if (this.lists.length <= 0) {
                     this.noDataText = this.$L("无数据");
                 }
                 // msg 结果描述
             }).catch(({msg}) => {
                 // msg 错误原因
                 $A.messageError(msg);
-            }).finally( () => {
+            }).finally(() => {
                 this.loadIng = 0;
-            } );
+            });
         },
         setPage(page) {
             this.listPage = page;
@@ -173,10 +173,10 @@ export default {
             }
         },
 
-        timePick(e){
+        timePick(e) {
             this.createAt = e;
         },
-        typePick(e){
+        typePick(e) {
             // console.log(e)
         },
         searchTab() {

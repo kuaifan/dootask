@@ -42,7 +42,7 @@ class ReportController extends AbstractController
     {
         $user = User::auth();
         // 搜索当前用户
-        $builder = Report::query()->whereUserid($user->userid);
+        $builder = Report::with(['receivesUser'])->whereUserid($user->userid);
         $type = trim(Request::input('type'));
         $createAt = Request::input('created_at');
         in_array($type, [Report::WEEKLY, Report::DAILY]) && $builder->whereType($type);
@@ -52,13 +52,6 @@ class ReportController extends AbstractController
             if ($createAt[1] > 0) $whereArray[] = ['created_at', '<=', date('Y-m-d H:i:s', Base::dayTimeE($createAt[1]))];
         }
         $list = $builder->where($whereArray)->orderByDesc('created_at')->paginate(Base::getPaginate(50, 20));
-        if ($list->items()) {
-            foreach ($list->items() as $item) {
-                $item->receivesUser;
-                $item->receives = empty($item->receivesUser) ? [] : array_column($item->receivesUser->toArray(), "userid");
-            }
-        }
-
         return Base::retSuccess('success', $list);
     }
 
@@ -82,7 +75,7 @@ class ReportController extends AbstractController
     public function receive(): array
     {
         $user = User::auth();
-        $builder = Report::query();
+        $builder = Report::with(['receivesUser']);
         $builder->whereHas("receivesUser", function ($query) use ($user) {
             $query->where("report_receives.userid", $user->userid);
         });
@@ -103,9 +96,7 @@ class ReportController extends AbstractController
         $list = $builder->where($whereArray)->orderByDesc('created_at')->paginate(Base::getPaginate(50, 20));
         if ($list->items()) {
             foreach ($list->items() as $item) {
-                $item["receive_time"] = ReportReceive::query()->whereRid($item["id"])->whereUserid($user->userid)->value("receive_time");
-                $item->receivesUser;
-                $item->receives = empty($item->receivesUser) ? [] : array_column($item->receivesUser->toArray(), "userid");
+                $item->receive_time = ReportReceive::query()->whereRid($item["id"])->whereUserid($user->userid)->value("receive_time");
             }
         }
         return Base::retSuccess('success', $list);
@@ -353,7 +344,7 @@ class ReportController extends AbstractController
             return Base::retError("缺少ID参数");
 
         $one = Report::getOne($id);
-        $one["type_val"] = $one->getRawOriginal("type");
+        $one->type_val = $one->getRawOriginal("type");
 
         $user = User::auth();
         // 标记为已读
