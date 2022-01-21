@@ -26,7 +26,7 @@
                     </Col>
                     <Col span="6">
                         <div class="report-submitter">
-                            <UserAvatar v-for="item in data.receives_user" :key="item" :userid="item.userid" :size="28"/>
+                            <UserAvatar v-for="(item, key) in data.receives_user" :key="key" :userid="item.userid" :size="28"/>
                         </div>
                     </Col>
                 </Row>
