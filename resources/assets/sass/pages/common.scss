@@ -359,14 +359,16 @@ body {
 }
 
 .search-container {
-    margin-bottom: 24px;
+    margin-bottom: 12px;
     > ul {
         display: flex;
         align-items: flex-end;
+        flex-wrap: wrap;
         > li {
             flex: 1;
             flex-shrink: 0;
             margin-right: 12px;
+            margin-bottom: 12px;
             list-style: none;
             display: flex;
             flex-direction: column;
@@ -381,15 +383,74 @@ body {
             }
             &.search-button {
                 flex: none;
+                display: flex;
+                align-items: center;
+                flex-direction: row;
+                > button + button {
+                    margin-left: 8px;
+                }
+            }
+        }
+    }
+    &.lr {
+        > ul {
+            > li:not(.search-button) {
+                flex: none;
+                flex-direction: row;
+                align-items: center;
+                margin-right: 18px;
+                .search-label {
+                    flex-shrink: 0;
+                }
+                .search-content {
+                    margin-top: 0;
+                    margin-left: 6px;
+                    .ivu-input-wrapper,
+                    .ivu-select {
+                        width: 168px;
+                        max-width: 100%;
+                    }
+                }
             }
         }
     }
     &.auto {
-        display: flex;
         > ul {
             > li:not(.search-button) {
-                min-width: 180px;
+                flex: none;
+                .search-content {
+                    margin-top: 0;
+                    margin-left: 6px;
+                    .ivu-input-wrapper,
+                    .ivu-select {
+                        width: 150px;
+                        max-width: 100%;
+                    }
+                }
             }
+        }
+    }
+}
+.search-expand {
+    display: flex;
+    align-items: flex-end;
+    .search-container {
+        flex: 1;
+    }
+    .expand-button-group {
+        flex-shrink: 0;
+        margin-left: 24px;
+        margin-bottom: 24px;
+    }
+}
+.search-button-clear {
+    .ivu-tooltip-inner {
+        padding: 0;
+        display: flex;
+        align-items: center;
+        .ivu-btn {
+            min-width: 80px;
+            font-size: 13px;
         }
     }
 }

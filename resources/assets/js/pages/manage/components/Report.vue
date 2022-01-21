@@ -38,6 +38,7 @@ export default {
         DrawerOverlay,
         ReportEdit, ReportMy, ReportReceive, ReportDetail
     },
+
     props: {
         reportUnreadNumber: {
             type: Number,
@@ -47,6 +48,7 @@ export default {
             default: "my"
         }
     },
+
     data() {
         return {
             reportTabs: "my",
@@ -56,20 +58,27 @@ export default {
             reportId: 0
         }
     },
+
     mounted() {
         this.reportTabs = this.reportType;
     },
+
     methods: {
-        tabRebder(data) {
+        tabRebder(num) {
             return h => {
-                if (data > 0) {
+                if (num > 0) {
                     return h('div', [
                         h('span', {class: 'navbar-item-content'}, this.$L('收到的汇报')),
-                        h('Badge', {class: 'manage-box-report'}, data),
+                        h('Badge', {
+                            class: 'manage-box-report',
+                            props: {
+                                count: num
+                            }
+                        }),
                     ])
                 } else {
                     return h('div', [
-                        h('span', {class: 'navbar-item-content'},  this.$L('收到的汇报')),
+                        h('span', {class: 'navbar-item-content'}, this.$L('收到的汇报')),
                     ])
                 }
             }
@@ -83,10 +92,12 @@ export default {
                 this.$emit("read");
             }, 1500);
         },
+
         editReport(id) {
             this.reportId = id;
             this.showEditDrawer = true;
         },
+
         saveSuccess() {
             this.reportId = 0;
             this.reportTabs = "my";

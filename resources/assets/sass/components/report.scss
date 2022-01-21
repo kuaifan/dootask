@@ -11,7 +11,7 @@
         flex-direction: column;
         position: absolute;
 
-        .report-row-header, .report-row-foot {
+        .report-row-foot {
             flex: 0 0 auto;
         }
 
@@ -29,31 +29,9 @@
         }
     }
     .manage-box-report{
-        font-family: "Monospaced Number";
-        line-height: 1;
-        vertical-align: middle;
-        position: absolute;
-        -webkit-transform: translateX(50%);
-        -ms-transform: translateX(50%);
-        transform: translateX(50%);
-        right: 0;
-        height: 20px;
-        border-radius: 10px;
-        min-width: 20px;
-        background: #ed4014;
-        border: 1px solid transparent;
-        color: #fff;
-        line-height: 18px;
-        text-align: center;
-        padding: 0 6px;
-        font-size: 12px;
-        white-space: nowrap;
-        -webkit-transform-origin: -10% center;
-        -ms-transform-origin: -10% center;
-        transform-origin: -10% center;
-        z-index: 10;
-        -webkit-box-shadow: 0 0 0 1px #fff;
-        box-shadow: 0 0 0 1px #fff;
+        margin-left: 4px;
+        transform: scale(0.8);
+        vertical-align: top;
     }
 
     .page-box {
@@ -85,7 +63,12 @@
 }
 
 .report-detail {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
     .report-title {
+        flex-shrink: 0;
         font-size: 16px;
         font-weight: bold;
         margin-bottom: 12px;
@@ -94,11 +77,28 @@
     }
 
     .report-detail-context {
-        padding: 12px 24px;
+        flex: 1;
+        padding: 12px 0 12px 24px;
+        display: flex;
+        flex-direction: column;
+        height: 0;
+
+        .report-main {
+            flex: 1;
+            overflow: auto;
+            margin-top: 12px;
+        }
+
+        .report-submitter {
+            p {
+                opacity: 0.8;
+            }
+        }
     }
 
     .report-profile {
         font-size: 14px;
+        padding-right: 24px;
     }
 
     .report-submitter {
@@ -130,7 +130,6 @@
     }
 
     .report-content {
-        margin-top: 12px;
         width: 100%;
 
         h2 {
@@ -155,7 +154,7 @@
     height: 100%;
     padding: 24px;
 
-    .report-row-header, .report-row-foot {
+    .report-row-foot {
         flex: 0 0 auto;
     }
 
@@ -180,6 +179,98 @@
     .report-row-foot {
         margin-bottom: 0;
     }
+
+    .report-titles {
+        line-height: 32px;
+    }
+
+    .report-poptip {
+        .ivu-tooltip-inner {
+            min-width: 60px !important;
+            font-size: 12px !important;
+        }
+    }
+
+    .report-users {
+        display: flex;
+        align-items: center;
+
+        .common-user {
+            flex: 1;
+            margin-right: 12px;
+        }
+
+        .report-row-a {
+            flex-shrink: 0;
+        }
+    }
+
+    .report-radiogroup {
+        background: #F4F5F7 !important;
+        padding: 2px !important;
+        border-radius: 4px !important;
+
+        .ivu-radio-wrapper {
+            padding: 0 30px !important;
+            background: #F4F5F7 !important;
+            color: #515A6E !important;
+            box-shadow: none !important;
+            border: none !important;
+
+            &:before {
+                width: 0 !important;
+            }
+
+            &:after {
+                width: 0 !important;
+            }
+        }
+
+        .ivu-radio-focus {
+            box-shadow: none !important;
+            border: none !important;
+
+            &:after {
+                background: none !important;
+            }
+        }
+
+        .ivu-radio-wrapper-checked:not(.ivu-radio-wrapper-disabled) {
+            background: #fff !important;
+            color: #8BCF70 !important;
+            box-shadow: none !important;
+            border: none !important;
+            border-radius: 4px !important;
+        }
+
+    }
+    .report-buttongroup {
+        margin-left: 20px;
+        background: #F4F5F7 !important;
+        border-radius: 4px;
+
+        .report-buttongroup-vertical {
+            position: absolute;
+            left: 47px;
+            width: 1px;
+            height: 23px;
+            background-color: #E5E5E5;
+            top: 5px;
+        }
+
+        .ivu-btn-primary {
+            background: #F4F5F7 !important;
+            box-shadow: none !important;
+            border: none !important;
+            color: #8BCF70 !important;
+            height: 36px;
+            line-height: 34px;
+
+            &[disabled] {
+                color: #515A6E !important;
+            }
+        }
+    }
 }
 
 .report-row {
@@ -197,9 +288,9 @@
     }
 
     .report-bottom {
-        height: 36px;
-        line-height: 34px;
-        min-width: 110px;
+        height: 38px;
+        line-height: 36px;
+        min-width: 120px;
     }
 
     .ivu-input[disabled] {
@@ -207,109 +298,3 @@
     }
 }
 
-.report-titles {
-    line-height: 32px;
-}
-
-.report-users {
-    display: flex;
-    align-items: center;
-
-    .common-user {
-        flex: 1;
-        margin-right: 12px;
-    }
-
-    .report-row-a {
-        flex-shrink: 0;
-    }
-}
-
-.report-radiogroup {
-    background: #F4F5F7 !important;
-    padding: 2px !important;
-    border-radius: 4px !important;
-
-    .ivu-radio-wrapper {
-        padding: 0 30px !important;
-        background: #F4F5F7 !important;
-        color: #515A6E !important;
-        box-shadow: none !important;
-        border: none !important;
-
-        &:before {
-            width: 0 !important;
-        }
-
-        &:after {
-            width: 0 !important;
-        }
-    }
-
-    .ivu-radio-focus {
-        box-shadow: none !important;
-        border: none !important;
-
-        &:after {
-            background: none !important;
-        }
-    }
-
-    .ivu-radio-wrapper-checked:not(.ivu-radio-wrapper-disabled) {
-        background: #fff !important;
-        color: #8BCF70 !important;
-        box-shadow: none !important;
-        border: none !important;
-        border-radius: 4px !important;
-    }
-
-}
-
-.report-buttongroup {
-    margin-left: 20px;
-    background: #F4F5F7 !important;
-    border-radius: 4px;
-
-    .report-buttongroup-shu {
-        position: absolute;
-        left: 47px;
-        width: 1px;
-        height: 23px;
-        background-color: #E5E5E5;
-        top: 5px;
-    }
-
-    .ivu-btn-primary {
-        background: #F4F5F7 !important;
-        box-shadow: none !important;
-        border: none !important;
-        color: #8BCF70 !important;
-        height: 36px;
-        line-height: 34px;
-
-        &[disabled] {
-            color: #515A6E !important;
-        }
-    }
-}
-
-.report-poptip {
-    .ivu-tooltip-inner {
-        min-width: 60px !important;
-        font-size: 12px !important;
-    }
-}
-
-.reportmy-row {
-    margin-bottom: 20px;
-
-    .reportmy-titles {
-        line-height: 32px;
-    }
-}
-
-.report-main {
-    .report-submitter {
-        padding-top: 13px;
-    }
-}

@@ -1,7 +1,7 @@
 <template>
     <div class="team-management">
         <div class="management-title">{{$L('团队管理')}}</div>
-        <div class="search-container">
+        <div class="search-container lr">
             <ul>
                 <li>
                     <div class="search-label">

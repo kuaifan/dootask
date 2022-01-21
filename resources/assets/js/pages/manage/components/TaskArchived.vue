@@ -7,7 +7,7 @@
                 <Icon v-else type="ios-refresh" @click="refresh"/>
             </div>
         </div>
-        <div class="search-container auto">
+        <div class="search-container lr">
             <ul>
                 <li>
                     <div class="search-label">

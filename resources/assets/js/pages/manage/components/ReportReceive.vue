@@ -1,47 +1,80 @@
 <template>
     <div class="report-list-wrap">
-        <Row class="reportmy-row report-row-header">
-            <Col  span="2"><p class="reportmy-titles">{{ $L("汇报人") }}</p></Col>
-            <Col span="4">
-                <Input style="width:100%" v-model="username" :placeholder="$L('请输入用户名')"/>
-            </Col>
-            <Col  span="1"></Col>
-            <Col  span="2"><p class="reportmy-titles">{{ $L("汇报类型") }}</p></Col>
-            <Col span="4">
-                <Select
-                    v-model="reportType"
-                    style="width:100%"
-                    :placeholder="this.$L('全部')"
-                    @on-change="typePick"
-                >
-                    <Option v-for="item in reportTypeList" :value="item.value" :key="item.value">{{ item.label }}</Option>
-                </Select>
-            </Col>
-            <Col  span="1"></Col>
-            <Col  span="2"><p class="reportmy-titles">{{ $L("汇报时间") }}</p></Col>
-            <Col span='4'>
-                <DatePicker
-                    type="daterange"
-                    split-panels
-                    :placeholder="this.$L('请选择时间')"
-                    style="width: 100%;"
-                    @on-change="timePick"
-                ></DatePicker>
-            </Col>
-            <Col  span="1"></Col>
-            <Col  span="3"><Button type="primary" icon="ios-search" @click="searchTab">{{ $L("搜索") }}</Button></Col>
-        </Row>
-        <Table class="tableFill report-row-content" ref="tableRef"
-               :columns="columns" :data="lists"
-               :loading="loadIng > 0"
-               :no-data-text="$L(noDataText)" stripe></Table>
-        <Page class="page-box report-row-foot" :total="listTotal" :current="listPage" :disabled="loadIng > 0"
-              @on-change="setPage" @on-page-size-change="setPageSize" :page-size-opts="[10,20,30,50,100]"
-              placement="top" show-elevator show-sizer show-total transfer />
+        <div class="search-container lr">
+            <ul>
+                <li>
+                    <div class="search-label">
+                        {{ $L("汇报人") }}
+                    </div>
+                    <div class="search-content">
+                        <Input v-model="username" :placeholder="$L('请输入用户名')"/>
+                    </div>
+                </li>
+                <li>
+                    <div class="search-label">
+                        {{ $L("汇报类型") }}
+                    </div>
+                    <div class="search-content">
+                        <Select
+                            v-model="reportType"
+                            :placeholder="$L('全部')">
+                            <Option v-for="item in reportTypeList" :value="item.value" :key="item.value">{{ item.label }}</Option>
+                        </Select>
+                    </div>
+                </li>
+                <li>
+                    <div class="search-label">
+                        {{ $L("汇报时间") }}
+                    </div>
+                    <div class="search-content">
+                        <DatePicker
+                            v-model="createAt"
+                            type="daterange"
+                            split-panels
+                            :placeholder="$L('请选择时间')"/>
+                    </div>
+                </li>
+                <li class="search-button">
+                    <Tooltip
+                        theme="light"
+                        placement="right"
+                        transfer-class-name="search-button-clear"
+                        transfer>
+                        <Button :loading="loadIng > 0" type="primary" icon="ios-search" @click="searchTab">{{$L('搜索')}}</Button>
+                        <div slot="content">
+                            <Button :loading="loadIng > 0" type="text" @click="getLists">{{$L('刷新')}}</Button>
+                        </div>
+                    </Tooltip>
+                </li>
+            </ul>
+        </div>
+
+        <Table
+            class="tableFill report-row-content"
+            ref="tableRef"
+            :columns="columns" :data="lists"
+            :loading="loadIng > 0"
+            :no-data-text="$L(noDataText)"
+            stripe/>
+        <Page
+            class="page-box report-row-foot"
+            :total="listTotal"
+            :current="listPage"
+            :disabled="loadIng > 0"
+            @on-change="setPage"
+            @on-page-size-change="setPageSize"
+            :page-size-opts="[10,20,30,50,100]"
+            placement="top"
+            show-elevator
+            show-sizer
+            show-total
+            transfer/>
     </div>
 </template>
 
 <script>
+import {mapState} from "vuex";
+
 export default {
     name: "ReportReceive",
     data() {
@@ -57,15 +90,14 @@ export default {
             username: '',
             reportType: '',
             createAt: [],
-            reportTypeList: [
-                {value: "", label: '全部'},
-                {value: "weekly", label: '周报'},
-                {value: "daily", label: '日报'},
-            ],
+            reportTypeList: [],
         }
     },
     mounted() {
         this.getLists();
+    },
+    computed: {
+        ...mapState(['userId'])
     },
     methods: {
         initLanguage() {
@@ -77,7 +109,8 @@ export default {
                 "minWidth": 120,
                 render: (h, params) => {
                     let arr = []
-                    if (params.row.receives_user[0].pivot.read == 0) {
+                    const myUser = params.row.receives_user.find(({userid}) => userid == this.userId)
+                    if (myUser && myUser.pivot.read == 0) {
                         arr.push(
                             h('Tag', {
                                 props: {   //传递参数
@@ -107,15 +140,15 @@ export default {
                 "sortable": true,
                 "maxWidth": 180,
             }, {
-                "title": " ",
-                "key": 'action',
-                "align": 'right',
-                "width": 40,
+                title: this.$L("操作"),
+                align: 'center',
+                width: 100,
+                minWidth: 100,
                 render: (h, params) => {
                     if (!params.row.id) {
                         return null;
                     }
-                    let arr = [
+                    const vNodes = [
                         h('ETooltip', {
                             props: {content: this.$L('查看'), transfer: true, delay: 600},
                             style: {position: 'relative'},
@@ -125,14 +158,26 @@ export default {
                             on: {
                                 click: () => {
                                     this.$emit("detail", params.row)
-                                    this.lists[params.index].receives_user[0].pivot.read = 1
+                                    const myUser = params.row.receives_user.find(({userid}) => userid == this.userId)
+                                    if (myUser) {
+                                        this.$set(myUser, 'pivot.read', 1)
+                                    }
                                 }
                             }
                         })])
                     ];
-                    return h('div', arr);
+                    return h('TableAction', {
+                        props: {
+                            column: params.column
+                        }
+                    }, vNodes);
                 },
             }];
+            this.reportTypeList = [
+                {value: "", label: this.$L('全部')},
+                {value: "weekly", label: this.$L('周报')},
+                {value: "daily", label: this.$L('日报')},
+            ]
         },
 
         getLists() {
@@ -162,10 +207,12 @@ export default {
                 this.loadIng = 0;
             });
         },
+
         setPage(page) {
             this.listPage = page;
             this.getLists();
         },
+
         setPageSize(size) {
             if (Math.max($A.runNum(this.listPageSize), 10) !== size) {
                 this.listPageSize = size;
@@ -173,12 +220,6 @@ export default {
             }
         },
 
-        timePick(e) {
-            this.createAt = e;
-        },
-        typePick(e) {
-            // console.log(e)
-        },
         searchTab() {
             this.getLists();
         },

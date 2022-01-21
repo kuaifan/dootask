@@ -1,7 +1,9 @@
 <template>
     <Form class="report-box" label-position="top" @submit.native.prevent>
-        <Row class="report-row report-row-header" >
-            <Col span="2"><p class="report-titles">{{ $L("汇报类型") }}</p></Col>
+        <Row class="report-row">
+            <Col span="2">
+                <p class="report-titles">{{ $L("汇报类型") }}</p>
+            </Col>
             <Col span="12">
                 <RadioGroup type="button" button-style="solid" v-model="reportData.type" @on-change="typeChange" class="report-radiogroup" :readonly="id > 0">
                     <Radio label="weekly" :disabled="id > 0">{{ $L("周报") }}</Radio>
@@ -9,27 +11,31 @@
                 </RadioGroup>
                 <ButtonGroup class="report-buttongroup">
                     <Tooltip class="report-poptip" trigger="hover" :disabled="id > 0" :content="prevCycleText" placement="bottom">
-                        <Button  type="primary" @click="prevCycle" :disabled="id > 0">
+                        <Button type="primary" @click="prevCycle" :disabled="id > 0">
                             <Icon type="ios-arrow-back" />
                         </Button>
                     </Tooltip>
-                    <div class="report-buttongroup-shu"></div>
+                    <div class="report-buttongroup-vertical"></div>
                     <Tooltip class="report-poptip" trigger="hover" :disabled="reportData.offset >= 0 || id > 0" :content="nextCycleText" placement="bottom">
-                        <Button  type="primary" @click="nextCycle" :disabled="reportData.offset >= 0 || id > 0">
+                        <Button type="primary" @click="nextCycle" :disabled="reportData.offset >= 0 || id > 0">
                             <Icon type="ios-arrow-forward" />
                         </Button>
                     </Tooltip>
                 </ButtonGroup>
             </Col>
         </Row>
-        <Row class="report-row report-row-header">
-            <Col span="2"><p class="report-titles">{{ $L("汇报名称") }}</p></Col>
+        <Row class="report-row">
+            <Col span="2">
+                <p class="report-titles">{{ $L("汇报名称") }}</p>
+            </Col>
             <Col span="22">
-                <Input v-model="reportData.title" disabled placeholder=""></Input>
+                <Input v-model="reportData.title" disabled/>
             </Col>
         </Row>
-        <Row class="report-row report-row-header">
-            <Col span="2"><p class="report-titles">{{ $L("汇报对象") }}</p></Col>
+        <Row class="report-row">
+            <Col span="2">
+                <p class="report-titles">{{ $L("汇报对象") }}</p>
+            </Col>
             <Col span="22">
                 <div class="report-users">
                     <UserInput
@@ -37,12 +43,16 @@
                         v-model="reportData.receive"
                         :disabledChoice="[userId]"
                         :placeholder="$L('选择接收人')" />
-                    <a class="report-row-a" href="javascript:void(0);" @click="getLastSubmitter"><Icon class="report-row-a-icon" type="ios-share-outline" />{{ $L("使用我上次的汇报对象") }}</a>
+                    <a class="report-row-a" href="javascript:void(0);" @click="getLastSubmitter">
+                        <Icon class="report-row-a-icon" type="ios-share-outline" />{{ $L("使用我上次的汇报对象") }}
+                    </a>
                 </div>
             </Col>
         </Row>
         <Row class="report-row report-row-content">
-            <Col span="2"><p class="report-titles">{{ $L("汇报内容") }}</p></Col>
+            <Col span="2">
+                <p class="report-titles">{{ $L("汇报内容") }}</p>
+            </Col>
             <Col span="22">
                 <FormItem class="report-row-content-editor">
                     <TEditor v-model="reportData.content" height="100%"/>
@@ -52,9 +62,7 @@
         <Row class="report-row report-row-foot">
             <Col span="2"></Col>
             <Col span="4">
-                <FormItem>
-                    <Button type="primary" @click="handleSubmit" class="report-bottom">提交</Button>
-                </FormItem>
+                <Button type="primary" @click="handleSubmit" class="report-bottom">提交</Button>
             </Col>
         </Row>
     </Form>
@@ -109,6 +117,7 @@ export default {
             this.prevCycleText = this.$L("上一周");
             this.nextCycleText = this.$L("下一周");
         },
+
         handleSubmit: function () {
             let id = this.reportData.id;
             if (this.id === 0 && id > 1) {
@@ -116,6 +125,7 @@ export default {
                     title: '覆盖提交',
                     content: '是否覆盖提交',
                     loading: true,
+                    zIndex: 2000,
                     onOk: () => {
                         this.doSubmit();
                     }
@@ -125,6 +135,7 @@ export default {
             }
 
         },
+
         doSubmit() {
             this.$store.dispatch("call", {
                 url: 'report/store',
@@ -144,6 +155,7 @@ export default {
                 $A.messageError(msg);
             });
         },
+
         getTemplate() {
             this.$store.dispatch("call", {
                 url: 'report/template',
@@ -166,6 +178,7 @@ export default {
                 $A.messageError(msg);
             });
         },
+
         typeChange(value) {
             // 切换汇报类型后偏移量归零
             this.reportData.offset = 0;
@@ -180,6 +193,7 @@ export default {
             if (this.id <= 0)
                 this.getTemplate();
         },
+
         getDetail(reportId) {
             this.userInputShow = false;
             this.$store.dispatch("call", {
@@ -204,12 +218,14 @@ export default {
                 this.userInputShow = true;
             });
         },
+
         prevCycle() {
             this.reportData.offset -= 1;
             this.disabledType = false;
             this.reReportData();
             this.getTemplate();
         },
+
         nextCycle() {
             // 周期偏移量不允许大于0
             if ( this.reportData.offset < 0 ) {
@@ -219,6 +235,7 @@ export default {
             this.reReportData();
             this.getTemplate();
         },
+
         // 获取上一次接收人
         getLastSubmitter() {
             this.userInputShow = false;
@@ -236,6 +253,7 @@ export default {
                 this.userInputShow = true;
             });
         },
+
         reReportData() {
             this.reportData.title = "";
             this.reportData.content = "";

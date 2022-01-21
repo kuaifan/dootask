@@ -1,12 +1,13 @@
 <template>
-
     <div class="report-detail">
         <div class="report-title">{{ data.title }}</div>
         <div class="report-detail-context">
             <div class="report-profile">
                 <Row>
                     <Col span="2">
-                        <div class="report-submitter"><p>{{ $L('汇报人') }} </p></div>
+                        <div class="report-submitter">
+                            <p>{{ $L('汇报人') }}</p>
+                        </div>
                     </Col>
                     <Col span="6">
                         <div class="report-submitter">
@@ -14,7 +15,9 @@
                         </div>
                     </Col>
                     <Col span="2">
-                        <div class="report-submitter"> <p>{{ $L('提交时间') }}</p></div>
+                        <div class="report-submitter">
+                            <p>{{ $L('提交时间') }}</p>
+                        </div>
                     </Col>
                     <Col span="6">
                         <div class="report-submitter">
@@ -22,26 +25,28 @@
                         </div>
                     </Col>
                     <Col span="2">
-                        <div class="report-submitter"><p>{{ $L('汇报对象') }}</p></div>
+                        <div class="report-submitter">
+                            <p>{{ $L('汇报对象') }}</p>
+                        </div>
                     </Col>
                     <Col span="6">
                         <div class="report-submitter">
-                            <UserAvatar v-for="item in data.receives_user" :key="item" :userid="item.userid" :size="28"/>
+                            <UserAvatar v-for="item in data.receives_user" :key="item.userid" :userid="item.userid" :size="28"/>
                         </div>
                     </Col>
                 </Row>
             </div>
             <Row class="report-main">
                 <Col span="2">
-                    <div class="report-submitter"><p>{{ $L('汇报内容') }}</p></div>
+                    <div class="report-submitter">
+                        <p>{{ $L('汇报内容') }}</p>
+                    </div>
                 </Col>
                 <Col span="22">
-                    <div class="report-content" v-html="data.content">
-                    </div>
+                    <div class="report-content" v-html="data.content"></div>
                 </Col>
             </Row>
         </div>
-
     </div>
 </template>
 
@@ -55,7 +60,6 @@ export default {
     },
     mounted() {
         if (this.data.id > 0) this.sendRead();
-        // console.log(this.data)
     },
     watch: {
         data() {

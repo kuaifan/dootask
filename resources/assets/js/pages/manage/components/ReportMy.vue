@@ -1,39 +1,71 @@
 <template>
     <div class="report-list-wrap">
-        <Row class="reportmy-row report-row-header">
-            <Col  span="3"><Button type="primary" @click="addReport">{{ $L("新增报告") }}</Button></Col>
-            <Col  span="2"><p class="reportmy-titles">{{ $L("汇报类型") }}</p></Col>
-            <Col span="5">
-                <Select
-                    v-model="reportType"
-                    style="width:95%"
-                    :placeholder="this.$L('全部')"
-                    @on-change="typePick"
-                >
-                    <Option v-for="item in reportTypeList" :value="item.value" :key="item.value">{{ item.label }}</Option>
-                </Select>
-            </Col>
-            <Col  span="1"></Col>
-            <Col  span="2"><p class="reportmy-titles">{{ $L("汇报时间") }}</p></Col>
-            <Col span="6">
-                <DatePicker
-                    type="daterange"
-                    split-panels
-                    :placeholder="this.$L('请选择时间')"
-                    style="width: 95%;"
-                    @on-change="timePick"
-                ></DatePicker>
-            </Col>
-            <Col  span="1"></Col>
-            <Col  span="4"><Button type="primary" icon="ios-search" @click="searchTab">{{ $L("搜索") }}</Button></Col>
-        </Row>
-        <Table class="tableFill report-row-content" ref="tableRef"
-               :columns="columns" :data="lists"
-               :loading="loadIng > 0"
-               :no-data-text="$L(noDataText)" stripe></Table>
-        <Page class="page-box report-row-foot" :total="listTotal" :current="listPage" :disabled="loadIng > 0"
-              @on-change="setPage" @on-page-size-change="setPageSize" :page-size-opts="[10,20,30,50,100]"
-              placement="top" show-elevator show-sizer show-total transfer />
+        <div class="search-expand">
+            <div class="search-container lr">
+                <ul>
+                    <li>
+                        <div class="search-label">
+                            {{ $L("汇报类型") }}
+                        </div>
+                        <div class="search-content">
+                            <Select
+                                v-model="reportType"
+                                :placeholder="$L('全部')">
+                                <Option v-for="item in reportTypeList" :value="item.value" :key="item.value">{{ item.label }}</Option>
+                            </Select>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="search-label">
+                            {{ $L("汇报时间") }}
+                        </div>
+                        <div class="search-content">
+                            <DatePicker
+                                v-model="createAt"
+                                type="daterange"
+                                split-panels
+                                :placeholder="$L('请选择时间')"/>
+                        </div>
+                    </li>
+                    <li class="search-button">
+                        <Tooltip
+                            theme="light"
+                            placement="right"
+                            transfer-class-name="search-button-clear"
+                            transfer>
+                            <Button :loading="loadIng > 0" type="primary" icon="ios-search" @click="searchTab">{{$L('搜索')}}</Button>
+                            <div slot="content">
+                                <Button :loading="loadIng > 0" type="text" @click="getLists">{{$L('刷新')}}</Button>
+                            </div>
+                        </Tooltip>
+                    </li>
+                </ul>
+            </div>
+            <div class="expand-button-group">
+                <Button type="primary" icon="md-add" @click="addReport">{{ $L("新增报告") }}</Button>
+            </div>
+        </div>
+
+        <Table
+            class="tableFill report-row-content"
+            ref="tableRef"
+            :columns="columns" :data="lists"
+            :loading="loadIng > 0"
+            :no-data-text="$L(noDataText)"
+            stripe/>
+        <Page
+            class="page-box report-row-foot"
+            :total="listTotal"
+            :current="listPage"
+            :disabled="loadIng > 0"
+            @on-change="setPage"
+            @on-page-size-change="setPageSize"
+            :page-size-opts="[10,20,30,50,100]"
+            placement="top"
+            show-elevator
+            show-sizer
+            show-total
+            transfer/>
     </div>
 </template>
 
@@ -50,12 +82,8 @@ export default {
             listPageSize: 10,
             noDataText: "",
             createAt: [],
-            reportType:'',
-            reportTypeList:[
-                {value:"",label:'全部' },
-                {value:"weekly",label:'周报' },
-                {value:"daily",label:'日报' },
-            ],
+            reportType: '',
+            reportTypeList: [],
         }
     },
     mounted() {
@@ -65,37 +93,37 @@ export default {
         initLanguage() {
             this.noDataText = this.noDataText || "数据加载中.....";
             this.columns = [{
-                "title": this.$L("名称"),
-                "key": 'title',
-                "sortable": true,
-                "minWidth": 120,
+                title: this.$L("名称"),
+                key: 'title',
+                sortable: true,
+                minWidth: 120,
             }, {
-                "title": this.$L("类型"),
-                "key": 'type',
-                "align": 'center',
-                "sortable": true,
-                "maxWidth": 80,
+                title: this.$L("类型"),
+                key: 'type',
+                align: 'center',
+                sortable: true,
+                maxWidth: 80,
             }, {
-                "title": this.$L("汇报时间"),
-                "key": 'created_at',
-                "align": 'center',
-                "sortable": true,
-                "maxWidth": 180,
+                title: this.$L("汇报时间"),
+                key: 'created_at',
+                align: 'center',
+                sortable: true,
+                maxWidth: 180,
             }, {
-                "title": "操作",
-                "key": 'action',
-                "align": 'right',
-                "width": 80,
+                title: this.$L("操作"),
+                align: 'center',
+                width: 100,
+                minWidth: 100,
                 render: (h, params) => {
                     if (!params.row.id) {
                         return null;
                     }
-                    let arr = [
+                    const vNodes = [
                         h('ETooltip', {
-                            props: { content: this.$L('编辑'), transfer: true, delay: 600 }
+                            props: {content: this.$L('编辑'), transfer: true, delay: 600}
                         }, [h('Icon', {
-                            props: { type: 'md-create', size: 16 },
-                            style: { margin: '0 3px', cursor: 'pointer' },
+                            props: {type: 'md-create', size: 16},
+                            style: {margin: '0 3px', cursor: 'pointer'},
                             on: {
                                 click: () => {
                                     this.$emit("edit", params.row.id);
@@ -103,11 +131,11 @@ export default {
                             }
                         })]),
                         h('ETooltip', {
-                            props: { content: this.$L('查看'), transfer: true, delay: 600 },
-                            style: { position: 'relative' },
+                            props: {content: this.$L('查看'), transfer: true, delay: 600},
+                            style: {position: 'relative', marginLeft: '6px'},
                         }, [h('Icon', {
-                            props: { type: 'md-eye', size: 16 },
-                            style: { margin: '0 3px', cursor: 'pointer' },
+                            props: {type: 'md-eye', size: 16},
+                            style: {margin: '0 3px', cursor: 'pointer'},
                             on: {
                                 click: () => {
                                     this.$emit("detail", params.row);
@@ -115,10 +143,20 @@ export default {
                             }
                         })]),
                     ];
-                    return h('div', arr);
+                    return h('TableAction', {
+                        props: {
+                            column: params.column
+                        }
+                    }, vNodes);
                 },
             }];
+            this.reportTypeList = [
+                {value: "", label: this.$L('全部')},
+                {value: "weekly", label: this.$L('周报')},
+                {value: "daily", label: this.$L('日报')},
+            ]
         },
+
         getLists() {
             this.loadIng = 1;
             this.$store.dispatch("call", {
@@ -134,33 +172,28 @@ export default {
                 // data 结果数据
                 this.lists = data.data;
                 this.listTotal = data.total;
-                if ( this.lists.length <= 0 ) {
+                if (this.lists.length <= 0) {
                     this.noDataText = this.$L("无数据");
                 }
                 // msg 结果描述
             }).catch(({msg}) => {
                 // msg 错误原因
                 $A.messageError(msg);
-            }).finally( () => {
+            }).finally(() => {
                 this.loadIng = 0;
-            } );
+            });
         },
+
         setPage(page) {
             this.listPage = page;
             this.getLists();
         },
+
         setPageSize(size) {
             if (Math.max($A.runNum(this.listPageSize), 10) !== size) {
                 this.listPageSize = size;
                 this.getLists();
             }
-        },
-        timePick(e){
-            // console.log(e)
-            this.createAt = e;
-        },
-        typePick(e){
-            // console.log(e)
         },
 
         searchTab() {

@@ -187,7 +187,7 @@
         <DrawerOverlay
             v-model="allUserShow"
             placement="right"
-            :size="900">
+            :size="1100">
             <TeamManagement v-if="allUserShow"/>
         </DrawerOverlay>
 
@@ -195,7 +195,7 @@
         <DrawerOverlay
             v-model="allProjectShow"
             placement="right"
-            :size="900">
+            :size="1100">
             <ProjectManagement v-if="allProjectShow"/>
         </DrawerOverlay>
 
@@ -203,7 +203,7 @@
         <DrawerOverlay
             v-model="archivedProjectShow"
             placement="right"
-            :size="900">
+            :size="1100">
             <ProjectArchived v-if="archivedProjectShow"/>
         </DrawerOverlay>
 

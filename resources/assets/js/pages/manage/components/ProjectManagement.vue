@@ -1,7 +1,7 @@
 <template>
     <div class="project-management">
         <div class="management-title">{{$L('所有项目')}}</div>
-        <div class="search-container auto">
+        <div class="search-container lr">
             <ul>
                 <li>
                     <div class="search-label">
