@@ -8,7 +8,9 @@ use App\Models\Report;
 use App\Models\ReportReceive;
 use App\Models\User;
 use App\Module\Base;
+use App\Tasks\PushTask;
 use Carbon\Carbon;
+use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Validation\Rule;
@@ -206,6 +208,22 @@ class ReportController extends AbstractController
                 $report->Receives()->createMany($input["receive_content"]);
             }
 
+            // 推送消息
+            $userids = [];
+            foreach ($input["receive_content"] as $item) {
+                $userids[] = $item['userid'];
+            }
+            if ($userids) {
+                $params = [
+                    'ignoreFd' => Request::header('fd'),
+                    'userid' => $userids,
+                    'msg' => [
+                        'type' => 'report',
+                        'action' => 'unreadUpdate',
+                    ]
+                ];
+                Task::deliver(new PushTask($params, false));
+            }
         });
         return Base::retSuccess('保存成功');
     }

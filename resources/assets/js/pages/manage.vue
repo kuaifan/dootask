@@ -277,8 +277,8 @@ export default {
             natificationReady: false,
             notificationClass: null,
 
+            reportTabs: "my",
             reportUnreadNumber: 0,
-            reportTabs: "my"
         }
     },
 
@@ -291,9 +291,9 @@ export default {
         this.$store.dispatch("getUserInfo").catch(() => {})
         this.$store.dispatch("getTaskPriority").catch(() => {})
         //
+        this.getReportUnread(0);
         this.notificationInit();
         this.onVisibilityChange();
-        this.getReportUnread();    // 工作汇报未读标记
         //
         this.addTaskSubscribe = Store.subscribe('addTask', this.onAddTask);
         this.dialogMsgSubscribe = Store.subscribe('dialogMsgPush', this.addDialogMsg);
@@ -336,7 +336,9 @@ export default {
             'wsOpenNum',
 
             'themeMode',
-            'themeList'
+            'themeList',
+
+            'wsMsg'
         ]),
 
         ...mapGetters(['taskData', 'dashboardTask']),
@@ -421,13 +423,19 @@ export default {
 
         msgAllUnread() {
             if (this.$Electron) {
-                this.$Electron.ipcRenderer.send('setDockBadge', this.msgAllUnread + this.dashboardTotal);
+                this.$Electron.ipcRenderer.send('setDockBadge', this.msgAllUnread + this.dashboardTotal + this.reportUnreadNumber);
             }
         },
 
         dashboardTotal() {
             if (this.$Electron) {
-                this.$Electron.ipcRenderer.send('setDockBadge', this.msgAllUnread + this.dashboardTotal);
+                this.$Electron.ipcRenderer.send('setDockBadge', this.msgAllUnread + this.dashboardTotal + this.reportUnreadNumber);
+            }
+        },
+
+        reportUnreadNumber() {
+            if (this.$Electron) {
+                this.$Electron.ipcRenderer.send('setDockBadge', this.msgAllUnread + this.dashboardTotal + this.reportUnreadNumber);
             }
         },
 
@@ -456,8 +464,23 @@ export default {
             this.wsOpenTimeout && clearTimeout(this.wsOpenTimeout)
             this.wsOpenTimeout = setTimeout(() => {
                 this.$store.dispatch("getBasicData")
+                this.getReportUnread()
             }, 5000)
-        }
+        },
+
+        wsMsg: {
+            handler(info) {
+                const {type, action} = info;
+                switch (type) {
+                    case 'report':
+                        if (action == 'unreadUpdate') {
+                            this.getReportUnread()
+                        }
+                        break;
+                }
+            },
+            deep: true,
+        },
     },
 
     methods: {
@@ -683,6 +706,17 @@ export default {
             }
         },
 
+        getReportUnread(timeout) {
+            this.reportUnreadTimeout && clearTimeout(this.reportUnreadTimeout)
+            this.reportUnreadTimeout = setTimeout(() => {
+                this.$store.dispatch("call", {
+                    url: 'report/unread',
+                }).then(({data}) => {
+                    this.reportUnreadNumber = data.total ? data.total : 0;
+                }).catch(() => {});
+            }, typeof timeout === "number" ? timeout : 1000)
+        },
+
         notificationInit() {
             this.notificationClass = new notificationKoro(this.$L("打开通知成功"));
             if (this.notificationClass.support) {
@@ -742,15 +776,6 @@ export default {
                 this.natificationHidden = !!document[hiddenProperty]
             }
             document.addEventListener(visibilityChangeEvent, visibilityChangeListener);
-        },
-
-        getReportUnread() {
-            this.$store.dispatch("call", {
-                url: 'report/unread',
-                method: 'get',
-            }).then(({data}) => {
-                this.reportUnreadNumber = data.total ? data.total : 0;
-            }).catch(() => {});
         },
     }
 }

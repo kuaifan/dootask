@@ -70,8 +70,9 @@ export default {
         sendRead() {
             this.$store.dispatch("call", {
                 url: 'report/read',
-                data: {ids: [this.data.id]},
-                method: 'get',
+                data: {
+                    ids: [this.data.id]
+                },
             }).then(({data, msg}) => {
                 // data 结果数据
                 // msg 结果描述

@@ -191,7 +191,6 @@ export default {
                     created_at: this.createAt,
                     type: this.reportType
                 },
-                method: 'get',
             }).then(({data, msg}) => {
                 // data 结果数据
                 this.lists = data.data;

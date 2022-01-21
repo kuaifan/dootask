@@ -174,7 +174,6 @@ export default {
                     offset: this.reportData.offset,
                     id: this.id
                 },
-                method: 'get',
             }).then(({data, msg}) => {
                 // data 结果数据
                 if (data.id) {
@@ -217,7 +216,6 @@ export default {
                 data: {
                     id: reportId
                 },
-                method: 'get',
             }).then(({data, msg}) => {
                 // data 结果数据
                 this.reportData.title = data.title;
@@ -257,7 +255,6 @@ export default {
             this.userInputShow = false;
             this.$store.dispatch("call", {
                 url: 'report/last_submitter',
-                method: 'get',
             }).then(({data, msg}) => {
                 // data 结果数据
                 this.reportData.receive = data;
