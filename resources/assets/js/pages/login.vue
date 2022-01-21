@@ -2,7 +2,7 @@
     <div class="page-login">
         <PageTitle :title="$L('登录')"/>
         <div class="login-body">
-            <div class="login-logo"></div>
+            <div class="login-logo no-dark-mode"></div>
             <div class="login-box">
                 <div class="login-title">{{welcomeTitle}}</div>
 
