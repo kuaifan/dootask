@@ -33,6 +33,11 @@ class WebSocketDialogMsgTask extends AbstractTask
 
     public function start()
     {
+        global $_A;
+        $_A = [
+            '__fill_url_remote_url' => true,
+        ];
+        //
         $msg = WebSocketDialogMsg::find($this->id);
         if (empty($msg)) {
             return;
