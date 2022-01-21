@@ -45,9 +45,9 @@ const stateData = {
 
     // 会员信息
     userInfo: $A.getStorageJson("userInfo"),
-    userId: state.userInfo.userid = $A.runNum(state.userInfo.userid),
-    userToken: state.userInfo.token,
-    userIsAdmin: $A.inArray("admin", state.userInfo.identity),
+    userId: 0,
+    userToken: '',
+    userIsAdmin: false,
     userOnline: {},
 
     // 会话聊天
@@ -112,6 +112,13 @@ const stateData = {
     ],
     themeIsDark: false,
 };
+
+// 会员信息
+if (stateData.userInfo.userid) {
+    stateData.userId = stateData.userInfo.userid = $A.runNum(stateData.userInfo.userid);
+    stateData.userToken = stateData.userInfo.token;
+    stateData.userIsAdmin = $A.inArray("admin", stateData.userInfo.identity);
+}
 
 // ServerUrl
 if (stateData.cacheServerUrl) {

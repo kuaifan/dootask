@@ -5,10 +5,15 @@ English | **[中文文档](./README_CN.md)**
 - [Screenshot Preview](README_PREVIEW.md)
 - [Demo site](http://www.dootask.com/)
 
+**QQ Group**
+
+Group No.: `546574618`
+
 ## Setup
 
-> `Docker` & `Docker Compose v2.0+` must be installed
-
+- `Docker` & `Docker Compose v2.0+` must be installed
+- System: `Centos/Debian/Ubuntu/macOS`
+- Hardware suggestion: 2 cores and above 2G memory
 
 ### Deployment project
 
@@ -49,18 +54,28 @@ cd dootask
 ./cmd start
 ```
 
+### Development compilation
+
+```bash
+# Development mode, Mac OS only
+./cmd dev
+   
+# Production projects, macOS only
+./cmd prod  
+```
+
 ### Shortcuts for running command
 
 ```bash
 # You can do this using the following command
-./cmd artisan "your command"          // To run a artisan command
-./cmd php "your command"              // To run a php command
-./cmd nginx "your command"            // To run a nginx command
-./cmd redis "your command"            // To run a redis command
-./cmd composer "your command"         // To run a composer command
-./cmd supervisorctl "your command"    // To run a supervisorctl command
-./cmd test "your command"             // To run a phpunit command
-./cmd mysql "your command"            // To run a mysql command (backup: Backup database, recovery: Restore database)
+./cmd artisan "your command"          # To run a artisan command
+./cmd php "your command"              # To run a php command
+./cmd nginx "your command"            # To run a nginx command
+./cmd redis "your command"            # To run a redis command
+./cmd composer "your command"         # To run a composer command
+./cmd supervisorctl "your command"    # To run a supervisorctl command
+./cmd test "your command"             # To run a phpunit command
+./cmd mysql "your command"            # To run a mysql command (backup: Backup database, recovery: Restore database)
 ```
 
 ### NGINX PROXY SSL
@@ -98,7 +113,3 @@ git pull
 # Enter directory and run command
 ./cmd uninstall
 ```
-
-## Contact us
-
-QQ Group: 546574618
