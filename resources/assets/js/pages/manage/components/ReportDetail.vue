@@ -55,7 +55,7 @@ export default {
     },
     mounted() {
         if (this.data.id > 0) this.sendRead();
-        console.log(this.data)
+        // console.log(this.data)
     },
     watch: {
         data() {

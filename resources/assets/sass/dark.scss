@@ -5,10 +5,6 @@ body.dark-mode-reverse {
         color: #000;
     }
 
-    .ivu-select-dropdown {
-        box-shadow: rgba(255, 255, 255, 0.2) 0 1px 6px;
-    }
-
     .ivu-modal-mask {
         background-color: rgba(230, 230, 230, 0.6);
     }
@@ -17,6 +13,12 @@ body.dark-mode-reverse {
         box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
     }
 
+    .ivu-message-notice-content {
+        box-shadow: 0 1px 6px rgba(255, 255, 255, 0.2);
+        border: 1px solid #e3e8ed;
+    }
+
+    .ivu-select-dropdown,
     .ivu-tooltip-inner,
     .ivu-poptip-inner {
         border: 1px solid #e3e8ed;
@@ -36,11 +38,14 @@ body.dark-mode-reverse {
     }
 
     .drawer-overlay {
-        background: rgba(240, 240, 240, 0.76);
+        background: rgba(230, 230, 230, 0.6);
         .overlay-body {
             .overlay-close {
                 > a {
                     color: #323232;
+                    &:hover {
+                        color: #000;
+                    }
                 }
             }
         }
@@ -81,6 +86,146 @@ body.dark-mode-reverse {
                         }
                     }
                 }
+            }
+        }
+        .project-column {
+            > ul {
+                > li {
+                    .column-task {
+                        .task-item {
+                            .task-progress {
+                                .task-time {
+                                    &.overdue {
+                                        color: #ed4014;
+                                        background-color: transparent;
+                                    }
+                                    &.today {
+                                        color: #ff9900;
+                                        background-color: transparent;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        .project-table {
+            .project-table-body {
+                .task-row {
+                    > div {
+                        &.row-time {
+                            .task-time {
+                                &.overdue {
+                                    color: #ed4014;
+                                    background-color: transparent;
+                                }
+                                &.today {
+                                    color: #ff9900;
+                                    background-color: transparent;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .dialog-wrapper {
+        .dialog-scroller {
+            .dialog-list {
+                > ul {
+                    > li {
+                        .dialog-view {
+                            .dialog-content {
+                                color: #ffffff;
+                                background-color: #e1e1e1;
+                            }
+                        }
+                        &.self {
+                            .dialog-view {
+                                .dialog-content {
+                                    background-color: #8bcf70;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .file-icon {
+        &:before {
+            background-image: url("../images/file/dark/other.svg");
+        }
+        &.archive:before {
+            background-image: url("../images/file/dark/archive.svg");
+        }
+        &.cad:before {
+            background-image: url("../images/file/dark/cad.svg");
+        }
+        &.code:before {
+            background-image: url("../images/file/dark/code.svg");
+        }
+        &.document:before {
+            background-image: url("../images/file/dark/document.svg");
+        }
+        &.excel:before {
+            background-image: url("../images/file/dark/excel.svg");
+        }
+        &.flow:before {
+            background-image: url("../images/file/dark/flow.svg");
+        }
+        &.folder:before {
+            background-image: url("../images/file/dark/folder.svg");
+        }
+        &.media:before {
+            background-image: url("../images/file/dark/media.svg");
+        }
+        &.mind:before {
+            background-image: url("../images/file/dark/mind.svg");
+        }
+        &.ofd:before {
+            background-image: url("../images/file/dark/ofd.svg");
+        }
+        &.pdf:before {
+            background-image: url("../images/file/dark/pdf.svg");
+        }
+        &.picture:before {
+            background-image: url("../images/file/dark/picture.svg");
+        }
+        &.ppt:before {
+            background-image: url("../images/file/dark/ppt.svg");
+        }
+        &.sheet:before {
+            background-image: url("../images/file/dark/sheet.svg");
+        }
+        &.tif:before {
+            background-image: url("../images/file/dark/tif.svg");
+        }
+        &.txt:before {
+            background-image: url("../images/file/dark/txt.svg");
+        }
+        &.updir:before {
+            background-image: url("../images/file/dark/updir.svg");
+        }
+        &.upload:before {
+            background-image: url("../images/file/dark/upload.svg");
+        }
+        &.word:before {
+            background-image: url("../images/file/dark/word.svg");
+        }
+        &.wps:before {
+            background-image: url("../images/file/dark/wps.svg");
+        }
+    }
+
+    .page-login {
+        .login-body {
+            .login-box {
+                box-shadow: none;
             }
         }
     }
@@ -128,24 +273,10 @@ body.dark-mode-reverse {
                                 .icon-avatar {
                                     color: #1c1917;
                                 }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    .page-file {
-        .file-wrapper {
-            .file-list {
-                > ul {
-                    > li {
-                        .file-icon {
-                            .share-icon,
-                            .share-avatar {
-                                .taskfont {
-                                    color: #3a3a3a;
+                                .dialog-box {
+                                    .dialog-text {
+                                        color: #555;
+                                    }
                                 }
                             }
                         }

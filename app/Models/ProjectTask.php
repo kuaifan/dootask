@@ -1079,7 +1079,7 @@ class ProjectTask extends AbstractModel
         }
         //
         try {
-            $project = Project::userProject($task->project_id, $archived);
+            $project = Project::userProject($task->project_id);
         } catch (Exception $e) {
             if ($task->owner === null) {
                 throw new ApiException($e->getMessage(), [ 'task_id' => $task_id ], -4002);

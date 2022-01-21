@@ -1956,11 +1956,11 @@ export default {
         //
         state.ws = new WebSocket(url);
         state.ws.onopen = (e) => {
-            console.log("[WS] Open", $A.formatDate())
+            // console.log("[WS] Open", $A.formatDate())
             state.wsOpenNum++;
         };
         state.ws.onclose = (e) => {
-            console.log("[WS] Close", $A.formatDate())
+            // console.log("[WS] Close", $A.formatDate())
             state.ws = null;
             //
             clearTimeout(state.wsTimeout);
@@ -1969,7 +1969,7 @@ export default {
             }, 3000);
         };
         state.ws.onerror = (e) => {
-            console.log("[WS] Error", $A.formatDate())
+            // console.log("[WS] Error", $A.formatDate())
             state.ws = null;
             //
             clearTimeout(state.wsTimeout);
@@ -1979,7 +1979,7 @@ export default {
         };
         state.ws.onmessage = (e) => {
             // console.log("[WS] Message", e);
-            const msgDetail = $A.jsonParse(e.data);
+            const msgDetail = $A.formatWebsocketMessageDetail($A.jsonParse(e.data));
             const {type, msgId} = msgDetail;
             switch (type) {
                 case "open":
@@ -2003,7 +2003,7 @@ export default {
                             try {
                                 call(msgDetail);
                             } catch (err) {
-                                console.log("[WS] Callerr", err);
+                                // console.log("[WS] Callerr", err);
                             }
                         }
                     });

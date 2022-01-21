@@ -43,7 +43,7 @@
                                     <Icon v-if="dialog.type == 'user' && lastMsgReadDone(dialog.last_msg)" :type="lastMsgReadDone(dialog.last_msg)"/>
                                     <em v-if="dialog.last_at">{{$A.formatTime(dialog.last_at)}}</em>
                                 </div>
-                                <div class="dialog-text">{{formatLastMsg(dialog.last_msg)}}</div>
+                                <div class="dialog-text no-dark-mode">{{formatLastMsg(dialog.last_msg)}}</div>
                             </div>
                             <Badge class="dialog-num" :count="dialog.unread"/>
                         </li>

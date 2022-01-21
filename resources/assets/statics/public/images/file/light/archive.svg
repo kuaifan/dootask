@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 25.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="图层_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 1024 1024" style="enable-background:new 0 0 1024 1024;" xml:space="preserve">
+<style type="text/css">
+	.st0{clip-path:url(#SVGID_1_);}
+	.st1{clip-path:url(#SVGID_2_);}
+	.st2{fill:#989FA5;}
+	.st3{opacity:0.4;}
+	.st4{clip-path:url(#SVGID_3_);}
+	.st5{fill:#FFFFFF;}
+</style>
+<g>
+	<g>
+		<g>
+			<defs>
+				<rect id="SVGID_7_" x="96" y="96" width="832" height="832"/>
+			</defs>
+			<clipPath id="SVGID_1_">
+				<use xlink:href="#SVGID_7_"  style="overflow:visible;"/>
+			</clipPath>
+			<g id="组_294" class="st0">
+				<g id="组_293" transform="translate(8 2)">
+					<g>
+						<g>
+							<g>
+								<defs>
+									<rect id="SVGID_9_" x="192" y="120" width="624" height="780"/>
+								</defs>
+								<clipPath id="SVGID_2_">
+									<use xlink:href="#SVGID_9_"  style="overflow:visible;"/>
+								</clipPath>
+								<g id="组_292" class="st1">
+									<path id="路径_155" class="st2" d="M270,120c-43,0.1-77.9,35-78,78v624c0.1,43,35,77.9,78,78h468c43-0.1,77.9-35,78-78
+										V352.1L584,120H270z"/>
+									<g id="组_291" transform="translate(30.15)" class="st3">
+										<g id="组_290">
+											<g>
+												<g>
+													<g>
+														<defs>
+															<rect id="SVGID_11_" x="553.8" y="120" width="232.1" height="232.1"/>
+														</defs>
+														<clipPath id="SVGID_3_">
+															<use xlink:href="#SVGID_11_"  style="overflow:visible;"/>
+														</clipPath>
+														<g id="组_289" class="st4">
+															<path id="路径_156" class="st5" d="M631.8,352.1h154L553.8,120v154.1C553.9,317.1,588.8,351.9,631.8,352.1"/>
+														</g>
+													</g>
+												</g>
+											</g>
+										</g>
+									</g>
+									<path id="路径_157" class="st5" d="M521.7,522.8c1,3,1.6,6,1.8,9.1v102.2l12.1,21.5c1.6,2.9,2.5,6.2,2.5,9.5v61.8
+										c0,0.8-0.4,1.4-0.4,2.3c6.4-5.4,10.1-13.4,10.2-21.8v-156C547.7,536.6,536.4,524.3,521.7,522.8"/>
+									<path id="路径_158" class="st5" d="M504,639.2V531.9c0-10.8-8.7-19.5-19.5-19.5H421v27.3h-27.3v-27.3H343
+										c-10.8,0-19.5,8.7-19.5,19.5v195c0,10.8,8.7,19.5,19.5,19.5h156c10.8,0,19.5-8.7,19.5-19.5v-61.7L504,639.2z M448.3,567
+										H421v27.3h27.3v81.9h-54.6v-54.6H421v-27.3h-27.3V567H421v-27.3h27.3V567z"/>
+								</g>
+							</g>
+						</g>
+					</g>
+				</g>
+			</g>
+		</g>
+	</g>
+</g>
+</svg>

@@ -44,12 +44,18 @@
                 width: 40px;
                 height: 40px;
                 color: #dbdbde;
-                &:hover {
-                    color: #fff
-                }
                 .icon {
                     width: 24px;
                     height: 24px
+                }
+                > svg {
+                    transition: all 0.3s;
+                }
+                &:hover {
+                    color: #fff;
+                    > svg {
+                        transform: rotate(-90deg);
+                    }
                 }
             }
         }

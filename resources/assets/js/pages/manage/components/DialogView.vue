@@ -2,7 +2,9 @@
     <div class="dialog-view" :data-id="msgData.id">
 
         <!--文本-->
-        <div v-if="msgData.type === 'text'" class="dialog-content" v-html="textMsg(msgData.msg.text)"></div>
+        <div v-if="msgData.type === 'text'" class="dialog-content">
+            <pre class="no-dark-mode" v-html="textMsg(msgData.msg.text)"></pre>
+        </div>
         <!--等待-->
         <div v-else-if="msgData.type === 'loading'" class="dialog-content loading"><Loading/></div>
         <!--文件-->

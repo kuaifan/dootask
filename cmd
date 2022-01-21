@@ -126,11 +126,7 @@ run_exec() {
         echo -e "${Error} ${RedBG} 没有找到 $container 容器! ${Font}"
         exit 1
     fi
-    if [ "$container" = "php" ]; then
-        docker exec -it "$name" /bin/bash -c "$cmd"
-    else
-        docker exec -it "$name" /bin/sh -c "$cmd"
-    fi
+    docker exec -it "$name" /bin/sh -c "$cmd"
 }
 
 run_mysql() {

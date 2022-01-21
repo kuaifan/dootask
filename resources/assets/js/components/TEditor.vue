@@ -166,7 +166,7 @@
             $A(this.$refs.myTextarea).show();
         },
         computed: {
-            ...mapState(['userToken']),
+            ...mapState(['userToken', 'themeIsDark']),
 
             headers() {
                 return {
@@ -258,7 +258,7 @@
                     resize: !isFull,
                     convert_urls:false,
                     toolbar_mode: 'sliding',
-                    content_css: $A.dark.isDarkEnabled() ? 'dark' : 'default',
+                    content_css: this.themeIsDark ? 'dark' : 'default',
                     setup: (editor) => {
                         editor.ui.registry.addMenuButton('uploadImages', {
                             text: this.$L('图片'),
