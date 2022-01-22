@@ -42,7 +42,8 @@
                         v-if="userInputShow"
                         v-model="reportData.receive"
                         :disabledChoice="[userId]"
-                        :placeholder="$L('选择接收人')" />
+                        :placeholder="$L('选择接收人')"
+                        :transfer="false"/>
                     <a class="report-row-a" href="javascript:void(0);" @click="getLastSubmitter">
                         <Icon class="report-row-a-icon" type="ios-share-outline" />{{ $L("使用我上次的汇报对象") }}
                     </a>
