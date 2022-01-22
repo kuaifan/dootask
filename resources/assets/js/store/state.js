@@ -104,7 +104,7 @@ const stateData = {
     ],
 
     // 主题皮肤
-    themeMode: $A.getStorageString("cacheThemeMode", "auto"),
+    themeMode: $A.getStorageString("cacheThemeMode"),
     themeList: [
         {name: '跟随系统', value: 'auto'},
         {name: '明亮', value: 'light'},
@@ -134,6 +134,7 @@ switch (stateData.themeMode) {
         $A.dark.disableDarkMode()
         break;
     default:
+        stateData.themeMode = "auto"
         $A.dark.autoDarkMode()
         break;
 }

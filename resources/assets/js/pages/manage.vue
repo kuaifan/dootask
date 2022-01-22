@@ -514,6 +514,10 @@ export default {
         },
 
         setTheme(mode) {
+            if (!$A.isChrome()) {
+                $A.modalWarning("仅客户端或Chrome浏览器支持主题功能");
+                return;
+            }
             switch (mode) {
                 case 'dark':
                     $A.dark.enableDarkMode()
