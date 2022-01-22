@@ -157,7 +157,7 @@ export default {
                             style: {margin: '0 3px', cursor: 'pointer'},
                             on: {
                                 click: () => {
-                                    this.$emit("detail", row)
+                                    this.$emit("on-view", row)
                                     const myUser = row.receives_user.find(({userid}) => userid == this.userId)
                                     if (myUser) {
                                         this.$set(myUser.pivot, 'read', 1)

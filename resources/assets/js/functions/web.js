@@ -662,6 +662,9 @@
             },
 
             enableDarkMode() {
+                if (!$A.isChrome()) {
+                    return;
+                }
                 if (this.isDarkEnabled()) {
                     return
                 }

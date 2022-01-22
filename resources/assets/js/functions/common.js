@@ -512,6 +512,15 @@
         },
 
         /**
+         * 是否Chrome
+         * @returns {boolean}
+         */
+        isChrome() {
+            let ua = typeof window !== 'undefined' && window.navigator.userAgent.toLowerCase();
+            return (ua.match(/Chrome/i) + '' === 'chrome');
+        },
+
+        /**
          * 获取对象
          * @param obj
          * @param keys

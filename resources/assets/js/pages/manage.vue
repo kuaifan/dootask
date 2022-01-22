@@ -180,7 +180,7 @@
             v-model="workReportShow"
             placement="right"
             :size="1100">
-            <Report v-if="workReportShow" :reportType="reportTabs" :reportUnreadNumber="reportUnreadNumber" @read="getReportUnread" />
+            <Report v-if="workReportShow" :reportType="reportTabs" :reportUnreadNumber="reportUnreadNumber" @on-read="getReportUnread" />
         </DrawerOverlay>
 
         <!--查看所有团队-->
@@ -514,6 +514,10 @@ export default {
         },
 
         setTheme(mode) {
+            if (!$A.isChrome()) {
+                $A.modalWarning("仅客户端或Chrome浏览器支持主题功能");
+                return;
+            }
             switch (mode) {
                 case 'dark':
                     $A.dark.enableDarkMode()

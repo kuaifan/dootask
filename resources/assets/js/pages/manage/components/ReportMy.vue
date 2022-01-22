@@ -126,7 +126,7 @@ export default {
                             style: {margin: '0 3px', cursor: 'pointer'},
                             on: {
                                 click: () => {
-                                    this.$emit("edit", row.id);
+                                    this.$emit("on-edit", row.id);
                                 }
                             }
                         })]),
@@ -138,7 +138,7 @@ export default {
                             style: {margin: '0 3px', cursor: 'pointer'},
                             on: {
                                 click: () => {
-                                    this.$emit("detail", row);
+                                    this.$emit("on-view", row);
                                 }
                             }
                         })]),
@@ -200,7 +200,7 @@ export default {
         },
 
         addReport() {
-            this.$emit("edit", 0);
+            this.$emit("on-edit", 0);
         }
     }
 }
