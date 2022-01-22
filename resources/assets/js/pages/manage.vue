@@ -554,6 +554,7 @@ export default {
                     if (this.reportUnreadNumber > 0) {
                         this.reportTabs = "receive";
                     }
+                    this.getReportUnread(0);
                     this.workReportShow = true;
                     return;
                 case 'clearCache':
