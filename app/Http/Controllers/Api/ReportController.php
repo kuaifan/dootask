@@ -188,7 +188,7 @@ class ReportController extends AbstractController
                 $sign = Report::generateSign($input["type"], $input["offset"]);
                 // 检查唯一标识是否存在
                 if (empty($input["id"])) {
-                    if (Report::query()->whereSign($sign)->count() > 0)
+                    if (Report::query()->whereSign($sign)->whereType($input["type"])->count() > 0)
                         throw new ApiException("请勿重复提交工作汇报");
                 }
                 $report = Report::createInstance([
@@ -273,7 +273,7 @@ class ReportController extends AbstractController
         }
         // 生成唯一标识
         $sign = Report::generateSign($type, 0, Carbon::instance($start_time));
-        $one = Report::query()->whereSign($sign)->first();
+        $one = Report::query()->whereSign($sign)->whereType($type)->first();
         // 如果已经提交了相关汇报
         if ($one && $id > 0) {
             return Base::retSuccess('success', [
