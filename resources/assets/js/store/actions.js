@@ -1191,7 +1191,7 @@ export default {
                     task_id: task_id,
                 },
             }).then(result => {
-                dispatch("forgetTask", task_id)
+                dispatch("saveTask", result.data)
                 dispatch("taskLoadEnd", task_id)
                 resolve(result)
             }).catch(e => {
@@ -2094,7 +2094,6 @@ export default {
                                     case 'filedelete':
                                         dispatch("forgetTaskFile", data.id)
                                         break;
-                                    case 'archived':
                                     case 'delete':
                                         dispatch("forgetTask", data.id)
                                         break;

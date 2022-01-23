@@ -1387,7 +1387,11 @@ class ProjectController extends AbstractController
         } elseif ($type == 'add') {
             $task->archivedTask(Carbon::now());
         }
-        return Base::retSuccess('操作成功', ['id' => $task->id]);
+        return Base::retSuccess('操作成功', [
+            'id' => $task->id,
+            'archived_at' => $task->archived_at,
+            'archived_userid' => $task->archived_userid,
+        ]);
     }
 
     /**

@@ -918,7 +918,6 @@ class ProjectTask extends AbstractModel
                 $this->archived_userid = User::userid();
                 $this->archived_follow = 0;
                 $this->addLog("任务取消归档");
-                $this->pushMsg('add', ProjectTask::oneTask($this->id));
             } else {
                 // 归档任务
                 if ($isAuto === true) {
@@ -932,8 +931,12 @@ class ProjectTask extends AbstractModel
                 $this->archived_userid = $userid;
                 $this->archived_follow = 0;
                 $this->addLog($logText, [], $userid);
-                $this->pushMsg('archived');
             }
+            $this->pushMsg('update', [
+                'id' => $this->id,
+                'archived_at' => $this->archived_at,
+                'archived_userid' => $this->archived_userid,
+            ]);
             self::whereParentId($this->id)->update([
                 'archived_at' => $this->archived_at,
                 'archived_userid' => $this->archived_userid,
