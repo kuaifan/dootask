@@ -40,6 +40,7 @@
                             <Icon v-else class="icon-avatar" type="md-person" />
                             <div class="dialog-box">
                                 <div class="dialog-title">
+                                    <Tag v-for="(tag, ti) in $A.dialogTags(dialog)" :key="`tag_${ti}`" :color="tag.color">{{$L(tag.text)}}</Tag>
                                     <span>{{dialog.name}}</span>
                                     <Icon v-if="dialog.type == 'user' && lastMsgReadDone(dialog.last_msg)" :type="lastMsgReadDone(dialog.last_msg)"/>
                                     <em v-if="dialog.last_at">{{$A.formatTime(dialog.last_at)}}</em>
@@ -124,32 +125,24 @@ export default {
         dialogList() {
             const {dialogActive, dialogKey} = this;
             if (dialogActive == '' && dialogKey == '') {
-                return this.cacheDialogs.filter(({name, last_at}) => {
-                    if (name === undefined) {
-                        return false;
-                    }
-                    return last_at;
-                }).sort((a, b) => {
+                return this.cacheDialogs.filter(dialog => this.filterDialog(dialog)).sort((a, b) => {
                     return $A.Date(b.last_at) - $A.Date(a.last_at);
                 });
             }
-            return this.cacheDialogs.filter(({name, type, group_type, last_msg, last_at}) => {
-                if (name === undefined) {
-                    return false;
-                }
-                if (!last_at) {
+            return this.cacheDialogs.filter(dialog => {
+                if (!this.filterDialog(dialog)) {
                     return false;
                 }
                 if (dialogActive) {
                     switch (dialogActive) {
                         case 'project':
                         case 'task':
-                            if (group_type != dialogActive) {
+                            if (dialog.group_type != dialogActive) {
                                 return false;
                             }
                             break;
                         case 'user':
-                            if (type != 'user') {
+                            if (dialog.type != 'user') {
                                 return false;
                             }
                             break;
@@ -158,8 +151,8 @@ export default {
                     }
                 }
                 if (dialogKey) {
-                    let existName = $A.strExists(name, dialogKey);
-                    let existMsg = last_msg && last_msg.type === 'text' && $A.strExists(last_msg.msg.text, dialogKey);
+                    let existName = $A.strExists(dialog.name, dialogKey);
+                    let existMsg = dialog.last_msg && dialog.last_msg.type === 'text' && $A.strExists(dialog.last_msg.msg.text, dialogKey);
                     if (!existName && !existMsg) {
                         return false;
                     }
@@ -274,6 +267,44 @@ export default {
             this.$store.dispatch("openDialogUserid", user.userid).then(() => {
                 this.scrollIntoActive()
             });
+        },
+
+        filterDialog(dialog) {
+            if (dialog.unread > 0 || dialog.id == this.dialogId) {
+                return true
+            }
+            if (dialog.name === undefined) {
+                return false;
+            }
+            if (!dialog.last_at) {
+                return false;
+            }
+            if (dialog.type == 'group') {
+                if (['project', 'task'].includes(dialog.group_type) && $A.isJson(dialog.group_info)) {
+                    if (dialog.group_type == 'task' && dialog.group_info.complete_at) {
+                        // 已完成5天后隐藏对话
+                        let time = Math.max($A.Date(dialog.last_at, true), $A.Date(dialog.group_info.complete_at, true))
+                        if (5 * 86400 + time < $A.Time()) {
+                            return false
+                        }
+                    }
+                    if (dialog.group_info.deleted_at) {
+                        // 已删除3天后隐藏对话
+                        let time = Math.max($A.Date(dialog.last_at, true), $A.Date(dialog.group_info.deleted_at, true))
+                        if (3 * 86400 + time < $A.Time()) {
+                            return false
+                        }
+                    }
+                    if (dialog.group_info.archived_at) {
+                        // 已删除7天后隐藏对话
+                        let time = Math.max($A.Date(dialog.last_at, true), $A.Date(dialog.group_info.archived_at, true))
+                        if (7 * 86400 + time < $A.Time()) {
+                            return false
+                        }
+                    }
+                }
+            }
+            return true;
         },
 
         getContactsList(page) {

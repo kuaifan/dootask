@@ -124,6 +124,15 @@
                                     align-items: center;
                                     justify-content: space-between;
                                     line-height: 24px;
+                                    .ivu-tag {
+                                        padding: 0 5px;
+                                        &.ivu-tag-error,
+                                        &.ivu-tag-primary,
+                                        &.ivu-tag-success,
+                                        &.ivu-tag-warning {
+                                            padding: 0 6px;
+                                        }
+                                    }
                                     > span {
                                         flex: 1;
                                         color: #333333;
