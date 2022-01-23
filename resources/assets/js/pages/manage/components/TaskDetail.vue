@@ -257,8 +257,10 @@
                                     transfer>
                                     <div class="picker-time">
                                         <div @click="openTime" class="time">{{taskDetail.end_at ? cutTime : '--'}}</div>
-                                        <Tag v-if="!taskDetail.complete_at && taskDetail.today" color="blue"><i class="taskfont">&#xe71d;</i>{{expiresFormat(taskDetail.end_at)}}</Tag>
-                                        <Tag v-if="!taskDetail.complete_at && taskDetail.overdue" color="red">{{$L('超期未完成')}}</Tag>
+                                        <template v-if="!taskDetail.complete_at">
+                                            <Tag v-if="within24Hours(taskDetail.end_at)" color="blue"><i class="taskfont">&#xe71d;</i>{{expiresFormat(taskDetail.end_at)}}</Tag>
+                                            <Tag v-if="taskDetail.overdue" color="red">{{$L('超期未完成')}}</Tag>
+                                        </template>
                                     </div>
                                 </DatePicker>
                             </li>
@@ -712,6 +714,10 @@ export default {
 
         innerHeightListener() {
             this.innerHeight = Math.min(1100, window.innerHeight);
+        },
+
+        within24Hours(date) {
+            return Math.round($A.Date(date).getTime() / 1000) - this.nowTime < 86400
         },
 
         expiresFormat(date) {
