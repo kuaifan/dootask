@@ -373,7 +373,7 @@
                         </div>
                     </div>
                 </div>
-                <ProjectLog v-if="navActive=='log' && taskId > 0" ref="log" :task-id="taskDetail.id" @on-load-change="logLoadChange"/>
+                <ProjectLog v-if="navActive=='log' && taskId > 0" ref="log" :task-id="taskDetail.id" :show-load="false" @on-load-change="logLoadChange"/>
                 <div v-else class="no-dialog">
                     <div class="no-tip">{{$L('暂无消息')}}</div>
                     <div class="no-input">
