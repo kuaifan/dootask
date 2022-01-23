@@ -74,7 +74,7 @@ export default {
 
     },
     computed: {
-        ...mapState(['windowMax768'])
+        ...mapState(['cacheTasks', 'windowMax768'])
     },
     watch: {
         projectId: {
@@ -98,7 +98,13 @@ export default {
                     key: 'name',
                     minWidth: 200,
                     render: (h, {row}) => {
-                        return h('AutoTip', row.name);
+                        return h('AutoTip', {
+                            on: {
+                                'on-click': () => {
+                                    this.$store.dispatch("openTask", row);
+                                }
+                            }
+                        }, row.name);
                     }
                 },
                 {
@@ -140,6 +146,13 @@ export default {
                     align: 'center',
                     width: 100,
                     render: (h, params) => {
+                        if (this.cacheTasks.find(task => task.id == params.row.id && !task.archived_at)) {
+                            return h('div', {
+                                style: {
+                                    color: '#888',
+                                },
+                            }, this.$L('已还原'));
+                        }
                         const vNodes = [
                             h('span', {
                                 style: {
