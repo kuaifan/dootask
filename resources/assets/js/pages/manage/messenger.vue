@@ -14,7 +14,7 @@
                         v-for="(item, key) in dialogType"
                         :key="key"
                         :class="{active:dialogActive==item.type}"
-                        @click="dialogActive=item.type">
+                        @click="onActive(item.type)">
                         <Badge class="nav-num" :count="msgUnread(item.type)"/>
                         {{$L(item.name)}}
                     </p>
@@ -27,6 +27,7 @@
                     <ul v-if="tabActive==='dialog'" class="dialog">
                         <li
                             v-for="(dialog, key) in dialogList"
+                            :ref="`dialog_${dialog.id}`"
                             :key="key"
                             :class="{active: dialog.id == dialogId}"
                             @click="openDialog(dialog, true)">
@@ -154,6 +155,8 @@ export default {
                     }
                 }
                 return true;
+            }).sort((a, b) => {
+                return $A.Date(a.last_at) - $A.Date(b.last_at);
             })
         },
 
@@ -217,6 +220,24 @@ export default {
                     }
                     break;
             }
+        },
+
+        onActive(type) {
+            if (this.dialogActive == type) {
+                // 再次点击滚动到未读条目
+                const dialog = this.dialogList.find(({unread}) => unread > 0)
+                if (dialog) {
+                    try {
+                        this.$refs[`dialog_${dialog.id}`][0].scrollIntoView({behavior: "smooth"});
+                    } catch (e) {
+                        scrollIntoView(this.$refs[`dialog_${dialog.id}`][0], {
+                            behavior: 'smooth',
+                            inline: 'end',
+                        })
+                    }
+                }
+            }
+            this.dialogActive = type
         },
 
         closeDialog() {
