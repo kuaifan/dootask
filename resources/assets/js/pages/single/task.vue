@@ -65,7 +65,10 @@ export default {
                 return;
             }
             this.loadIng++;
-            this.$store.dispatch("getTaskOne", task_id).then(({data}) => {
+            this.$store.dispatch("getTaskOne", {
+                task_id,
+                archived: 'all'
+            }).then(({data}) => {
                 this.loadIng--;
                 this.taskInfo = data;
                 this.$store.dispatch("getTaskContent", task_id);

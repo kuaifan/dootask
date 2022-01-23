@@ -30,7 +30,7 @@
                     </Timeline>
                 </div>
             </li>
-            <li v-if="loadIng > 0" class="logs-loading"><Loading/></li>
+            <li v-if="loadIng > 0 && showLoad" class="logs-loading"><Loading/></li>
             <li v-else-if="hasMorePages" class="logs-more" @click="getMore">{{$L('加载更多')}}</li>
             <li v-else-if="totalNum == 0" class="logs-none" @click="getLists(true)">{{$L('没有任何动态')}}</li>
         </ul>
@@ -51,6 +51,10 @@ export default {
         taskId: {
             type: Number,
             default: 0
+        },
+        showLoad: {
+            type: Boolean,
+            default: true
         },
     },
     data() {

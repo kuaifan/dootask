@@ -315,6 +315,46 @@
                     return [new Date(), lastSecond(e.getTime())];
                 }
             }];
+        },
+
+        /**
+         * 对话标签
+         * @param dialog
+         * @returns {*[]}
+         */
+        dialogTags(dialog) {
+            let tags = [];
+            if (dialog.type == 'group') {
+                if (['project', 'task'].includes(dialog.group_type) && $A.isJson(dialog.group_info)) {
+                    if (dialog.group_type == 'task' && dialog.group_info.complete_at) {
+                        tags.push({
+                            color: 'success',
+                            text: '已完成'
+                        })
+                    }
+                    if (dialog.group_info.deleted_at) {
+                        tags.push({
+                            color: 'red',
+                            text: '已删除'
+                        })
+                    } else if (dialog.group_info.archived_at) {
+                        tags.push({
+                            color: 'default',
+                            text: '已归档'
+                        })
+                    }
+                }
+            }
+            return tags;
+        },
+
+        /**
+         * 对话完成
+         * @param dialog
+         * @returns {*[]}
+         */
+        dialogCompleted(dialog) {
+            return this.dialogTags(dialog).find(({color}) => color == 'success');
         }
     });
 

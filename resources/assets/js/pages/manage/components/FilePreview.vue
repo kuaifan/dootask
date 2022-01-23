@@ -51,7 +51,7 @@ Vue.use(Minder)
 const MDPreview = () => import('../../../components/MDEditor/preview');
 const TEditor = () => import('../../../components/TEditor');
 const LuckySheet = () => import('../../../components/LuckySheet');
-const Flow = () => import('../../../components/flow');
+const Flow = () => import('../../../components/Flow');
 const OnlyOffice = () => import('../../../components/OnlyOffice');
 
 export default {

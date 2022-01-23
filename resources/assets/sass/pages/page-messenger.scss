@@ -111,6 +111,20 @@
                                     background-color: #9B96DF;
                                     font-size: 24px;
                                 }
+                                &.completed {
+                                    &:after {
+                                        content: "\f373";
+                                        font-family: Ionicons, serif;
+                                        pointer-events: none;
+                                        position: absolute;
+                                        bottom: 0;
+                                        right: 12px;
+                                        font-size: 32px;
+                                        color: #19be6b;
+                                        opacity: .2;
+                                        z-index: 1;
+                                    }
+                                }
                             }
                             .dialog-box {
                                 flex: 1;
@@ -124,6 +138,13 @@
                                     align-items: center;
                                     justify-content: space-between;
                                     line-height: 24px;
+                                    .ivu-tag {
+                                        margin: 0 4px 0 0;
+                                        padding: 0 5px;
+                                        &.ivu-tag-success {
+                                            padding: 0 6px;
+                                        }
+                                    }
                                     > span {
                                         flex: 1;
                                         color: #333333;
@@ -138,6 +159,11 @@
                                         transform: scale(0.9);
                                         font-size: 12px;
                                         color: $primary-color;
+                                        &.completed {
+                                            font-size: 18px;
+                                            margin: 0 4px 0 0;
+                                            transform: scale(1);
+                                        }
                                     }
                                     > em {
                                         flex-shrink: 0;

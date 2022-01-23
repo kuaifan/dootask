@@ -686,11 +686,11 @@ class ProjectTask extends AbstractModel
                             $start_at = Carbon::parse($subTask->start_at);
                             $end_at = Carbon::parse($subTask->end_at);
                             $isUp = false;
-                            if ($start_at->eq($oldAt[0]) || $start_at->lt(Carbon::parse($this->start_at))) {
+                            if (empty($subTask->start_at) || $start_at->eq($oldAt[0]) || $start_at->lt(Carbon::parse($this->start_at))) {
                                 $subTask->start_at = $this->start_at;
                                 $isUp = true;
                             }
-                            if ($end_at->eq($oldAt[1]) || $end_at->gt(Carbon::parse($this->end_at))) {
+                            if (empty($subTask->end_at) || $end_at->eq($oldAt[1]) || $end_at->gt(Carbon::parse($this->end_at))) {
                                 $subTask->end_at = $this->end_at;
                                 $isUp = true;
                             }
@@ -918,7 +918,6 @@ class ProjectTask extends AbstractModel
                 $this->archived_userid = User::userid();
                 $this->archived_follow = 0;
                 $this->addLog("任务取消归档");
-                $this->pushMsg('add', ProjectTask::oneTask($this->id));
             } else {
                 // 归档任务
                 if ($isAuto === true) {
@@ -932,8 +931,12 @@ class ProjectTask extends AbstractModel
                 $this->archived_userid = $userid;
                 $this->archived_follow = 0;
                 $this->addLog($logText, [], $userid);
-                $this->pushMsg('archived');
             }
+            $this->pushMsg('update', [
+                'id' => $this->id,
+                'archived_at' => $this->archived_at,
+                'archived_userid' => $this->archived_userid,
+            ]);
             self::whereParentId($this->id)->update([
                 'archived_at' => $this->archived_at,
                 'archived_userid' => $this->archived_userid,
@@ -1059,7 +1062,7 @@ class ProjectTask extends AbstractModel
     /**
      * 获取任务（会员有任务权限 或 会员存在项目内）
      * @param int $task_id
-     * @param bool $archived true:仅限未归档, false:不限制, null:不限制
+     * @param bool $archived true:仅限未归档, false:仅限已归档, null:不限制
      * @param int|bool $mustOwner 0|false:不限制, 1|true:限制任务或项目负责人, 2:已有负责人才限制任务或项目负责人
      * @param array $with
      * @return self
@@ -1072,7 +1075,7 @@ class ProjectTask extends AbstractModel
             throw new ApiException('任务不存在', [ 'task_id' => $task_id ], -4002);
         }
         if ($archived === true && $task->archived_at != null) {
-            throw new ApiException('任务已归档', [ 'task_id' => $task_id ], -4002);
+            throw new ApiException('任务已归档', [ 'task_id' => $task_id ]);
         }
         if ($archived === false && $task->archived_at == null) {
             throw new ApiException('任务未归档', [ 'task_id' => $task_id ]);

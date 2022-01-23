@@ -538,6 +538,19 @@ export default {
                 }
                 state.cacheProjects.push(data);
             }
+            //
+            state.cacheDialogs.some(dialog => {
+                if (dialog.type == 'group' && dialog.group_type == 'project' && dialog.group_info.id == data.id) {
+                    if (data.name !== undefined) {
+                        dialog.name = data.name
+                    }
+                    for (let key in dialog.group_info) {
+                        if (!dialog.group_info.hasOwnProperty(key) || data[key] === undefined) continue;
+                        dialog.group_info[key] = data[key];
+                    }
+                }
+            })
+            //
             setTimeout(() => {
                 $A.setStorage("cacheProjects", state.cacheProjects);
             })
@@ -896,6 +909,18 @@ export default {
                 dispatch("getTaskForParent", data.id).catch(() => {})
             }
             //
+            state.cacheDialogs.some(dialog => {
+                if (dialog.type == 'group' && dialog.group_type == 'task' && dialog.group_info.id == data.id) {
+                    if (data.name !== undefined) {
+                        dialog.name = data.name
+                    }
+                    for (let key in dialog.group_info) {
+                        if (!dialog.group_info.hasOwnProperty(key) || data[key] === undefined) continue;
+                        dialog.group_info[key] = data[key];
+                    }
+                }
+            })
+            //
             setTimeout(() => {
                 $A.setStorage("cacheTasks", state.cacheTasks);
             })
@@ -1010,20 +1035,21 @@ export default {
      * 获取单个任务
      * @param state
      * @param dispatch
-     * @param task_id
+     * @param data Number|JSONObject{task_id, ?archived_at}
      * @returns {Promise<unknown>}
      */
-    getTaskOne({state, dispatch}, task_id) {
+    getTaskOne({state, dispatch}, data) {
         return new Promise(function (resolve, reject) {
-            if ($A.runNum(task_id) === 0) {
+            if (/^\d+$/.test(data)) {
+                data = {task_id: data}
+            }
+            if ($A.runNum(data.task_id) === 0) {
                 reject({msg: 'Parameter error'});
                 return;
             }
             dispatch("call", {
                 url: 'project/task/one',
-                data: {
-                    task_id,
-                },
+                data,
             }).then(result => {
                 dispatch("saveTask", result.data);
                 resolve(result)
@@ -1125,7 +1151,10 @@ export default {
                 const newIds = state.cacheTasks.filter(task => task.parent_id == parent_id && task._time >= time).map(({id}) => id)
                 dispatch("forgetTask", currentIds.filter(v => newIds.indexOf(v) == -1))
             }
-            dispatch("getTasks", {parent_id}).then(() => {
+            dispatch("getTasks", {
+                parent_id,
+                archived: 'all'
+            }).then(() => {
                 call()
                 resolve()
             }).catch(() => {
@@ -1168,32 +1197,33 @@ export default {
     },
 
     /**
-     * 归档任务
+     * 归档（还原）任务
      * @param state
      * @param dispatch
-     * @param task_id
+     * @param data Number|JSONObject{task_id, ?archived_at}
      * @returns {Promise<unknown>}
      */
-    archivedTask({state, dispatch}, task_id) {
+    archivedTask({state, dispatch}, data) {
         return new Promise(function (resolve, reject) {
-            if ($A.runNum(task_id) === 0) {
+            if (/^\d+$/.test(data)) {
+                data = {task_id: data}
+            }
+            if ($A.runNum(data.task_id) === 0) {
                 reject({msg: 'Parameter error'});
                 return;
             }
-            dispatch("taskLoadStart", task_id)
+            dispatch("taskLoadStart", data.task_id)
             dispatch("call", {
                 url: 'project/task/archived',
-                data: {
-                    task_id: task_id,
-                },
+                data,
             }).then(result => {
-                dispatch("forgetTask", task_id)
-                dispatch("taskLoadEnd", task_id)
+                dispatch("saveTask", result.data)
+                dispatch("taskLoadEnd", data.task_id)
                 resolve(result)
             }).catch(e => {
                 console.warn(e);
-                dispatch("getTaskOne", task_id).catch(() => {})
-                dispatch("taskLoadEnd", task_id)
+                dispatch("getTaskOne", data.task_id).catch(() => {})
+                dispatch("taskLoadEnd", data.task_id)
                 reject(e)
             });
         });
@@ -1292,7 +1322,10 @@ export default {
         }
         state.taskId = task_id;
         if (task_id > 0) {
-            dispatch("getTaskOne", task_id).then(() => {
+            dispatch("getTaskOne", {
+                task_id,
+                archived: 'all'
+            }).then(() => {
                 dispatch("getTaskContent", task_id);
                 dispatch("getTaskFiles", task_id);
                 dispatch("getTaskForParent", task_id).catch(() => {})
@@ -1750,22 +1783,6 @@ export default {
     },
 
     /**
-     * 将会话移动到首位
-     * @param state
-     * @param dialog_id
-     */
-    moveDialogTop({state}, dialog_id) {
-        $A.execMainDispatch("moveDialogTop", dialog_id)
-        //
-        const index = state.cacheDialogs.findIndex(({id}) => id == dialog_id);
-        if (index > -1) {
-            const tmp = $A.cloneJSON(state.cacheDialogs[index]);
-            state.cacheDialogs.splice(index, 1);
-            state.cacheDialogs.unshift(tmp);
-        }
-    },
-
-    /**
      * 忘记对话数据
      * @param state
      * @param dialog_id
@@ -2026,8 +2043,6 @@ export default {
                                     if (dialog) {
                                         // 新增未读数
                                         dialog.unread++;
-                                        // 移动到首位
-                                        dispatch("moveDialogTop", dialog_id);
                                     }
                                     Store.set('dialogMsgPush', data);
                                 }
@@ -2105,7 +2120,6 @@ export default {
                                     case 'filedelete':
                                         dispatch("forgetTaskFile", data.id)
                                         break;
-                                    case 'archived':
                                     case 'delete':
                                         dispatch("forgetTask", data.id)
                                         break;

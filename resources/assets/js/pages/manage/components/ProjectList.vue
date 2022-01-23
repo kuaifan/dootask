@@ -69,14 +69,16 @@
                     </li>
                 </ul>
             </div>
-            <div v-if="projectData.desc" class="project-subtitle">{{projectData.desc}}</div>
-            <div class="project-switch">
-                <div v-if="completedCount > 0" class="project-checkbox">
-                    <Checkbox :value="projectParameter('completedTask')" @on-change="toggleCompleted">{{$L('显示已完成')}}</Checkbox>
-                </div>
-                <div :class="['project-switch-button', !projectParameter('card') ? 'menu' : '']" @click="$store.dispatch('toggleProjectParameter', 'card')">
-                    <div><i class="taskfont">&#xe60c;</i></div>
-                    <div><i class="taskfont">&#xe66a;</i></div>
+            <div class="project-subbox">
+                <div class="project-subtitle">{{projectData.desc}}</div>
+                <div class="project-switch">
+                    <div v-if="completedCount > 0" class="project-checkbox">
+                        <Checkbox :value="projectParameter('completedTask')" @on-change="toggleCompleted">{{$L('显示已完成')}}</Checkbox>
+                    </div>
+                    <div :class="['project-switch-button', !projectParameter('card') ? 'menu' : '']" @click="$store.dispatch('toggleProjectParameter', 'card')">
+                        <div><i class="taskfont">&#xe60c;</i></div>
+                        <div><i class="taskfont">&#xe66a;</i></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -595,7 +597,10 @@ export default {
                 return a.id - b.id;
             });
             list.forEach((column) => {
-                column.tasks = this.transforTasks(cacheTasks.filter((task) => {
+                column.tasks = this.transforTasks(cacheTasks.filter(task => {
+                    if (task.archived_at) {
+                        return false;
+                    }
                     return task.column_id == column.id;
                 })).sort((a, b) => {
                     if (a.sort != b.sort) {
@@ -655,7 +660,10 @@ export default {
 
         unList() {
             const {projectId, cacheTasks, searchText, sortField, sortType} = this;
-            const array = cacheTasks.filter((task) => {
+            const array = cacheTasks.filter(task => {
+                if (task.archived_at) {
+                    return false;
+                }
                 if (task.project_id != projectId || task.parent_id > 0) {
                     return false;
                 }
@@ -683,7 +691,10 @@ export default {
 
         completedList() {
             const {projectId, cacheTasks, searchText} = this;
-            const array = cacheTasks.filter((task) => {
+            const array = cacheTasks.filter(task => {
+                if (task.archived_at) {
+                    return false;
+                }
                 if (task.project_id != projectId || task.parent_id > 0) {
                     return false;
                 }
@@ -703,7 +714,10 @@ export default {
 
         completedCount() {
             const {projectId, cacheTasks} = this;
-            return cacheTasks.filter((task) => {
+            return cacheTasks.filter(task => {
+                if (task.archived_at) {
+                    return false;
+                }
                 if (task.project_id != projectId || task.parent_id > 0) {
                     return false;
                 }
@@ -766,7 +780,12 @@ export default {
                         sort = -1;
                         upTask.push(...item.task.map(id => {
                             sort++;
-                            upTask.push(...this.cacheTasks.filter(({parent_id}) => parent_id == id).map(({id}) => {
+                            upTask.push(...this.cacheTasks.filter(task => {
+                                if (task.archived_at) {
+                                    return false;
+                                }
+                                return task.parent_id == id
+                            }).map(({id}) => {
                                 return {
                                     id,
                                     sort,
@@ -1161,6 +1180,9 @@ export default {
         },
 
         myFilter(task, chackCompleted = true) {
+            if (task.archived_at) {
+                return false;
+            }
             if (task.project_id != this.projectId) {
                 return false;
             }
@@ -1178,6 +1200,9 @@ export default {
         },
 
         helpFilter(task, chackCompleted = true) {
+            if (task.archived_at) {
+                return false;
+            }
             if (task.project_id != this.projectId || task.parent_id > 0) {
                 return false;
             }

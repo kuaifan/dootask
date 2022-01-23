@@ -74,7 +74,7 @@ export default {
 
     },
     computed: {
-        ...mapState(['windowMax768'])
+        ...mapState(['cacheTasks', 'windowMax768'])
     },
     watch: {
         projectId: {
@@ -98,7 +98,13 @@ export default {
                     key: 'name',
                     minWidth: 200,
                     render: (h, {row}) => {
-                        return h('AutoTip', row.name);
+                        return h('AutoTip', {
+                            on: {
+                                'on-click': () => {
+                                    this.$store.dispatch("openTask", row);
+                                }
+                            }
+                        }, row.name);
                     }
                 },
                 {
@@ -140,51 +146,70 @@ export default {
                     align: 'center',
                     width: 100,
                     render: (h, params) => {
-                        const recoveryNode = h('Poptip', {
-                            props: {
-                                title: this.$L('你确定要还原归档吗？'),
-                                confirm: true,
-                                transfer: true,
-                                placement: 'left',
-                            },
-                            style: {
-                                fontSize: '13px',
-                                cursor: 'pointer',
-                                color: '#8bcf70',
-                            },
-                            on: {
-                                'on-ok': () => {
-                                    this.recovery(params.row);
-                                }
-                            },
-                        }, this.$L('还原'));
-                        const deleteNode = h('Poptip', {
-                            props: {
-                                title: this.$L('你确定要删除任务吗？'),
-                                confirm: true,
-                                transfer: true,
-                                placement: 'left',
-                            },
-                            style: {
-                                marginLeft: '6px',
-                                fontSize: '13px',
-                                cursor: 'pointer',
-                                color: '#f00',
-                            },
-                            on: {
-                                'on-ok': () => {
-                                    this.delete(params.row);
-                                }
-                            },
-                        }, this.$L('删除'));
+                        if (this.cacheTasks.find(task => task.id == params.row.id && !task.archived_at)) {
+                            return h('div', {
+                                style: {
+                                    color: '#888',
+                                },
+                            }, this.$L('已还原'));
+                        }
+                        const vNodes = [
+                            h('span', {
+                                style: {
+                                    fontSize: '13px',
+                                    cursor: 'pointer',
+                                    color: '#8bcf70',
+                                },
+                                on: {
+                                    'click': () => {
+                                        this.$store.dispatch("openTask", params.row);
+                                    }
+                                },
+                            }, this.$L('查看')),
+                            h('Poptip', {
+                                props: {
+                                    title: this.$L('你确定要还原归档吗？'),
+                                    confirm: true,
+                                    transfer: true,
+                                    placement: 'left',
+                                },
+                                style: {
+                                    marginLeft: '6px',
+                                    fontSize: '13px',
+                                    cursor: 'pointer',
+                                    color: '#8bcf70',
+                                },
+                                on: {
+                                    'on-ok': () => {
+                                        this.recovery(params.row);
+                                    }
+                                },
+                            }, this.$L('还原')),
+                            h('Poptip', {
+                                props: {
+                                    title: this.$L('你确定要删除任务吗？'),
+                                    confirm: true,
+                                    transfer: true,
+                                    placement: 'left',
+                                },
+                                style: {
+                                    marginLeft: '6px',
+                                    fontSize: '13px',
+                                    cursor: 'pointer',
+                                    color: '#f00',
+                                },
+                                on: {
+                                    'on-ok': () => {
+                                        this.delete(params.row);
+                                    }
+                                },
+                            }, this.$L('删除'))
+                        ];
                         return h('TableAction', {
                             props: {
                                 column: params.column
                             }
-                        }, [
-                            recoveryNode,
-                            deleteNode,
-                        ]);
+                        }, vNodes);
                     }
                 }
             ]
@@ -239,12 +264,9 @@ export default {
         recovery(row) {
             this.list = this.list.filter(({id}) => id != row.id);
             this.loadIng++;
-            this.$store.dispatch("call", {
-                url: 'project/task/archived',
-                data: {
-                    task_id: row.id,
-                    type: 'recovery'
-                },
+            this.$store.dispatch("archivedTask", {
+                task_id: row.id,
+                type: 'recovery'
             }).then(({msg}) => {
                 $A.messageSuccess(msg);
                 this.loadIng--;

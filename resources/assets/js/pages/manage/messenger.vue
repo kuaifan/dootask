@@ -14,7 +14,7 @@
                         v-for="(item, key) in dialogType"
                         :key="key"
                         :class="{active:dialogActive==item.type}"
-                        @click="dialogActive=item.type">
+                        @click="onActive(item.type)">
                         <Badge class="nav-num" :count="msgUnread(item.type)"/>
                         {{$L(item.name)}}
                     </p>
@@ -27,18 +27,22 @@
                     <ul v-if="tabActive==='dialog'" class="dialog">
                         <li
                             v-for="(dialog, key) in dialogList"
+                            :ref="`dialog_${dialog.id}`"
                             :key="key"
                             :class="{active: dialog.id == dialogId}"
                             @click="openDialog(dialog, true)">
                             <template v-if="dialog.type=='group'">
                                 <i v-if="dialog.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
-                                <i v-else-if="dialog.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
+                                <i v-else-if="dialog.group_type=='task'" class="taskfont icon-avatar task" :class="{completed:$A.dialogCompleted(dialog)}">&#xe6f4;</i>
                                 <Icon v-else class="icon-avatar" type="ios-people" />
                             </template>
                             <div v-else-if="dialog.dialog_user" class="user-avatar"><UserAvatar :userid="dialog.dialog_user.userid" :size="42"/></div>
                             <Icon v-else class="icon-avatar" type="md-person" />
                             <div class="dialog-box">
                                 <div class="dialog-title">
+                                    <template v-for="tag in $A.dialogTags(dialog)" v-if="tag.color != 'success'">
+                                        <Tag :color="tag.color" :fade="false">{{$L(tag.text)}}</Tag>
+                                    </template>
                                     <span>{{dialog.name}}</span>
                                     <Icon v-if="dialog.type == 'user' && lastMsgReadDone(dialog.last_msg)" :type="lastMsgReadDone(dialog.last_msg)"/>
                                     <em v-if="dialog.last_at">{{$A.formatTime(dialog.last_at)}}</em>
@@ -123,22 +127,24 @@ export default {
         dialogList() {
             const {dialogActive, dialogKey} = this;
             if (dialogActive == '' && dialogKey == '') {
-                return this.cacheDialogs.filter(({name}) => name !== undefined);
+                return this.cacheDialogs.filter(dialog => this.filterDialog(dialog)).sort((a, b) => {
+                    return $A.Date(b.last_at) - $A.Date(a.last_at);
+                });
             }
-            return this.cacheDialogs.filter(({name, type, group_type, last_msg}) => {
-                if (name === undefined) {
+            return this.cacheDialogs.filter(dialog => {
+                if (!this.filterDialog(dialog)) {
                     return false;
                 }
                 if (dialogActive) {
                     switch (dialogActive) {
                         case 'project':
                         case 'task':
-                            if (group_type != dialogActive) {
+                            if (dialog.group_type != dialogActive) {
                                 return false;
                             }
                             break;
                         case 'user':
-                            if (type != 'user') {
+                            if (dialog.type != 'user') {
                                 return false;
                             }
                             break;
@@ -147,20 +153,22 @@ export default {
                     }
                 }
                 if (dialogKey) {
-                    let existName = $A.strExists(name, dialogKey);
-                    let existMsg = last_msg && last_msg.type === 'text' && $A.strExists(last_msg.msg.text, dialogKey);
+                    let existName = $A.strExists(dialog.name, dialogKey);
+                    let existMsg = dialog.last_msg && dialog.last_msg.type === 'text' && $A.strExists(dialog.last_msg.msg.text, dialogKey);
                     if (!existName && !existMsg) {
                         return false;
                     }
                 }
                 return true;
+            }).sort((a, b) => {
+                return $A.Date(b.last_at) - $A.Date(a.last_at);
             })
         },
 
         msgUnread() {
             return function (type) {
                 let num = 0;
-                this.cacheDialogs.map((dialog) => {
+                this.cacheDialogs.some((dialog) => {
                     if (dialog.unread) {
                         switch (type) {
                             case 'project':
@@ -219,6 +227,24 @@ export default {
             }
         },
 
+        onActive(type) {
+            if (this.dialogActive == type) {
+                // 再次点击滚动到未读条目
+                const dialog = this.dialogList.find(({unread}) => unread > 0)
+                if (dialog) {
+                    try {
+                        this.$refs[`dialog_${dialog.id}`][0].scrollIntoView();
+                    } catch (e) {
+                        scrollIntoView(this.$refs[`dialog_${dialog.id}`][0], {
+                            behavior: 'instant',
+                            inline: 'end',
+                        })
+                    }
+                }
+            }
+            this.dialogActive = type
+        },
+
         closeDialog() {
             this.dialogId = 0;
             $A.setStorage("messenger::dialogId", 0)
@@ -243,6 +269,44 @@ export default {
             this.$store.dispatch("openDialogUserid", user.userid).then(() => {
                 this.scrollIntoActive()
             });
+        },
+
+        filterDialog(dialog) {
+            if (dialog.unread > 0 || dialog.id == this.dialogId) {
+                return true
+            }
+            if (dialog.name === undefined) {
+                return false;
+            }
+            if (!dialog.last_at) {
+                return false;
+            }
+            if (dialog.type == 'group') {
+                if (['project', 'task'].includes(dialog.group_type) && $A.isJson(dialog.group_info)) {
+                    if (dialog.group_type == 'task' && dialog.group_info.complete_at) {
+                        // 已完成5天后隐藏对话
+                        let time = Math.max($A.Date(dialog.last_at, true), $A.Date(dialog.group_info.complete_at, true))
+                        if (5 * 86400 + time < $A.Time()) {
+                            return false
+                        }
+                    }
+                    if (dialog.group_info.deleted_at) {
+                        // 已删除2天后隐藏对话
+                        let time = Math.max($A.Date(dialog.last_at, true), $A.Date(dialog.group_info.deleted_at, true))
+                        if (2 * 86400 + time < $A.Time()) {
+                            return false
+                        }
+                    }
+                    if (dialog.group_info.archived_at) {
+                        // 已归档3天后隐藏对话
+                        let time = Math.max($A.Date(dialog.last_at, true), $A.Date(dialog.group_info.archived_at, true))
+                        if (3 * 86400 + time < $A.Time()) {
+                            return false
+                        }
+                    }
+                }
+            }
+            return true;
         },
 
         getContactsList(page) {

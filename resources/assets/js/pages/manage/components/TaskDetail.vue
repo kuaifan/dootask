@@ -79,6 +79,9 @@
                 <div v-if="taskDetail.flow_item_name" class="flow">
                     <span :class="taskDetail.flow_item_status" @click.stop="openMenu(taskDetail)">{{taskDetail.flow_item_name}}</span>
                 </div>
+                <div v-if="taskDetail.archived_at" class="flow">
+                    <span class="archived" @click.stop="openMenu(taskDetail)">{{$L('已归档')}}</span>
+                </div>
                 <div class="nav">
                     <p v-if="projectName"><span>{{projectName}}</span></p>
                     <p v-if="columnName"><span>{{columnName}}</span></p>
@@ -254,8 +257,10 @@
                                     transfer>
                                     <div class="picker-time">
                                         <div @click="openTime" class="time">{{taskDetail.end_at ? cutTime : '--'}}</div>
-                                        <Tag v-if="!taskDetail.complete_at && taskDetail.today" color="blue"><i class="taskfont">&#xe71d;</i>{{expiresFormat(taskDetail.end_at)}}</Tag>
-                                        <Tag v-if="!taskDetail.complete_at && taskDetail.overdue" color="red">{{$L('超期未完成')}}</Tag>
+                                        <template v-if="!taskDetail.complete_at">
+                                            <Tag v-if="within24Hours(taskDetail.end_at)" color="blue"><i class="taskfont">&#xe71d;</i>{{expiresFormat(taskDetail.end_at)}}</Tag>
+                                            <Tag v-if="taskDetail.overdue" color="red">{{$L('超期未完成')}}</Tag>
+                                        </template>
                                     </div>
                                 </DatePicker>
                             </li>
@@ -368,7 +373,7 @@
                         </div>
                     </div>
                 </div>
-                <ProjectLog v-if="navActive=='log' && taskId > 0" ref="log" :task-id="taskDetail.id" @on-load-change="logLoadChange"/>
+                <ProjectLog v-if="navActive=='log' && taskId > 0" ref="log" :task-id="taskDetail.id" :show-load="false" @on-load-change="logLoadChange"/>
                 <div v-else class="no-dialog">
                     <div class="no-tip">{{$L('暂无消息')}}</div>
                     <div class="no-input">
@@ -565,8 +570,11 @@ export default {
             if (!this.taskId) {
                 return [];
             }
-            return this.cacheTasks.filter(({parent_id}) => {
-                return parent_id == this.taskId
+            return this.cacheTasks.filter(task => {
+                if (task.archived_at) {
+                    return false;
+                }
+                return task.parent_id == this.taskId
             }).sort((a, b) => {
                 return a.id - b.id;
             });
@@ -708,6 +716,10 @@ export default {
             this.innerHeight = Math.min(1100, window.innerHeight);
         },
 
+        within24Hours(date) {
+            return Math.round($A.Date(date).getTime() / 1000) - this.nowTime < 86400
+        },
+
         expiresFormat(date) {
             return $A.countDownFormat(date, this.nowTime)
         },
@@ -760,31 +772,6 @@ export default {
             }).catch(({msg}) => {
                 $A.modalError(msg);
             })
-        },
-
-        archivedOrRemoveTask(type) {
-            let typeDispatch = type == 'remove' ? 'removeTask' : 'archivedTask';
-            let typeName = type == 'remove' ? '删除' : '归档';
-            let typeTask = this.taskDetail.parent_id > 0 ? '子任务' : '任务';
-            $A.modalConfirm({
-                title: typeName + typeTask,
-                content: '你确定要' + typeName + typeTask + '【' + this.taskDetail.name + '】吗？',
-                loading: true,
-                onOk: () => {
-                    if (this.taskDetail.loading === true) {
-                        this.$Modal.remove();
-                        return;
-                    }
-                    this.$set(this.taskDetail, 'loading', true);
-                    this.$store.dispatch(typeDispatch, this.taskDetail.id).then(({msg}) => {
-                        $A.messageSuccess(msg);
-                        this.$Modal.remove();
-                    }).catch(({msg}) => {
-                        $A.modalError(msg, 301);
-                        this.$Modal.remove();
-                    });
-                }
-            });
         },
 
         openOwner() {

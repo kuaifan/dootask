@@ -48,7 +48,7 @@
                     <template v-if="task.parent_id === 0">
                         <EDropdownItem :divided="turns.length > 0" command="archived">
                             <div class="item">
-                                <Icon type="ios-filing" />{{$L('归档')}}
+                                <Icon type="ios-filing" />{{$L(task.archived_at ? '还原归档' : '归档')}}
                             </div>
                         </EDropdownItem>
                         <EDropdownItem command="remove">
@@ -246,9 +246,21 @@ export default {
         },
 
         archivedOrRemoveTask(type) {
-            let typeDispatch = type == 'remove' ? 'removeTask' : 'archivedTask';
-            let typeName = type == 'remove' ? '删除' : '归档';
+            let typeDispatch = 'removeTask';
+            let typeName = '删除';
+            let typeData = this.task.id;
             let typeTask = this.task.parent_id > 0 ? '子任务' : '任务';
+            if (type == 'archived') {
+                typeDispatch = 'archivedTask'
+                typeName = '归档'
+                if (this.task.archived_at) {
+                    typeName = '还原归档'
+                    typeData = {
+                        task_id: this.task.id,
+                        type: 'recovery'
+                    }
+                }
+            }
             $A.modalConfirm({
                 title: typeName + typeTask,
                 content: '你确定要' + typeName + typeTask + '【' + this.task.name + '】吗？',
@@ -258,7 +270,7 @@ export default {
                         this.$Modal.remove();
                         return;
                     }
-                    this.$store.dispatch(typeDispatch, this.task.id).then(({msg}) => {
+                    this.$store.dispatch(typeDispatch, typeData).then(({msg}) => {
                         $A.messageSuccess(msg);
                         this.$Modal.remove();
                     }).catch(({msg}) => {

@@ -112,77 +112,82 @@
                 }
             }
         }
-        .project-subtitle {
-            width: 100%;
-            color: #999999;
-            line-height: 24px;
-            margin-top: -6px;
-            margin-bottom: -18px;
-            padding-right: 260px;
-        }
-        .project-switch {
+        .project-subbox {
             width: 100%;
             display: flex;
-            justify-content: flex-end;
-            .project-checkbox {
-                display: flex;
-                align-items: center;
-                margin-right: 14px;
-                opacity: 0.9;
-                .ivu-checkbox-focus {
-                    box-shadow: none;
-                }
+            justify-content: space-between;
+            .project-subtitle {
+                flex: 1;
+                color: #999999;
+                line-height: 24px;
             }
-            .project-switch-button {
+            .project-switch {
+                margin-left: 80px;
+                flex-shrink: 0;
                 display: flex;
-                align-items: center;
-                background-color: #ffffff;
-                border-radius: 6px;
-                position: relative;
-                transition: box-shadow 0.2s;
-                &:hover {
-                    box-shadow: 0 0 10px #e6ecfa;
-                }
-                &:before {
-                    content: "";
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 50%;
-                    height: 100%;
-                    z-index: 0;
-                    color: $primary-color;
-                    border-radius: 6px;
-                    border: 1px solid $primary-color;
-                    background-color: rgba($primary-color, 0.1);
-                    transition: left 0.2s;
-                }
-                > div {
-                    z-index: 1;
-                    width: 32px;
-                    height: 30px;
+                align-items: flex-end;
+                .project-checkbox {
                     display: flex;
                     align-items: center;
-                    justify-content: center;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    color: $primary-text-color;
-                    > i {
-                        font-size: 17px;
-                    }
-                    &:first-child {
-                        color: $primary-color;
+                    margin-right: 14px;
+                    opacity: 0.9;
+                    height: 30px;
+                    .ivu-checkbox-focus {
+                        box-shadow: none;
                     }
                 }
-                &.menu {
+                .project-switch-button {
+                    display: flex;
+                    align-items: center;
+                    background-color: #ffffff;
+                    border-radius: 6px;
+                    height: 30px;
+                    position: relative;
+                    transition: box-shadow 0.2s;
+                    &:hover {
+                        box-shadow: 0 0 10px #e6ecfa;
+                    }
                     &:before {
-                        left: 50%;
-                    }
-                    > div:first-child {
-                        color: $primary-text-color;
-                    }
-                    > div:last-child {
+                        content: "";
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 50%;
+                        height: 100%;
+                        z-index: 0;
                         color: $primary-color;
+                        border-radius: 6px;
+                        border: 1px solid $primary-color;
+                        background-color: rgba($primary-color, 0.1);
+                        transition: left 0.2s;
+                    }
+                    > div {
+                        z-index: 1;
+                        width: 32px;
+                        height: 30px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        color: $primary-text-color;
+                        > i {
+                            font-size: 17px;
+                        }
+                        &:first-child {
+                            color: $primary-color;
+                        }
+                    }
+                    &.menu {
+                        &:before {
+                            left: 50%;
+                        }
+                        > div:first-child {
+                            color: $primary-text-color;
+                        }
+                        > div:last-child {
+                            color: $primary-color;
+                        }
                     }
                 }
             }
@@ -934,9 +939,15 @@
                     justify-content: flex-end;
                 }
             }
-            .project-subtitle {
-                padding-right: 12px;
-                margin-bottom: 6px;
+            .project-subbox {
+                display: block;
+                .project-subtitle {
+                    margin-bottom: 6px;
+                }
+                .project-switch {
+                    margin-left: 0;
+                    justify-content: flex-end;
+                }
             }
         }
         .project-column {

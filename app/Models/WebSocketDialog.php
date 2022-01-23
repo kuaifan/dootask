@@ -120,10 +120,10 @@ class WebSocketDialog extends AbstractModel
                 break;
             case "group":
                 if ($dialog->group_type === 'project') {
-                    $dialog->group_info = Project::withTrashed()->select(['id', 'name'])->whereDialogId($dialog->id)->first();
+                    $dialog->group_info = Project::withTrashed()->select(['id', 'name', 'archived_at', 'deleted_at'])->whereDialogId($dialog->id)->first()?->cancelAppend()->cancelHidden();
                     $dialog->name = $dialog->group_info ? $dialog->group_info->name : '';
                 } elseif ($dialog->group_type === 'task') {
-                    $dialog->group_info = ProjectTask::withTrashed()->select(['id', 'name'])->whereDialogId($dialog->id)->first();
+                    $dialog->group_info = ProjectTask::withTrashed()->select(['id', 'name', 'complete_at', 'archived_at', 'deleted_at'])->whereDialogId($dialog->id)->first()?->cancelAppend()->cancelHidden();
                     $dialog->name = $dialog->group_info ? $dialog->group_info->name : '';
                 }
                 break;

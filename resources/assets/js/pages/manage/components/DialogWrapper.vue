@@ -6,8 +6,11 @@
         @dragover.prevent="chatDragOver(true, $event)"
         @dragleave.prevent="chatDragOver(false, $event)">
         <slot name="head">
-            <div class="dialog-title">
+            <div class="dialog-title" :class="{completed:$A.dialogCompleted(dialogData)}">
                 <div class="main-title">
+                    <template v-for="tag in $A.dialogTags(dialogData)" v-if="tag.color != 'success'">
+                        <Tag :color="tag.color" :fade="false">{{$L(tag.text)}}</Tag>
+                    </template>
                     <h2>{{dialogData.name}}</h2>
                     <em v-if="peopleNum > 0">({{peopleNum}})</em>
                 </div>
@@ -86,6 +89,20 @@
         <div v-if="dialogDrag" class="drag-over" @click="dialogDrag=false">
             <div class="drag-text">{{$L('拖动到这里发送')}}</div>
         </div>
+
+        <Modal
+            v-model="pasteShow"
+            :title="$L(pasteTitle)"
+            :cancel-text="$L('取消')"
+            :ok-text="$L('发送')"
+            @on-ok="pasteSend">
+            <div class="dialog-wrapper-paste">
+                <template v-for="item in pasteItem">
+                    <img v-if="item.type == 'image'" :src="item.result"/>
+                    <div v-else>{{$L('文件')}}: {{item.name}} ({{$A.bytesToSize(item.size)}})</div>
+                </template>
+            </div>
+        </Modal>
     </div>
 </template>
 
@@ -122,6 +139,10 @@ export default {
             tempMsgs: [],
 
             dialogMsgSubscribe: null,
+
+            pasteShow: false,
+            pasteFile: [],
+            pasteItem: [],
         }
     },
 
@@ -177,6 +198,18 @@ export default {
 
         peopleNum() {
             return this.dialogData.type === 'group' ? $A.runNum(this.dialogData.people) : 0;
+        },
+
+        pasteTitle() {
+            const {pasteItem} = this;
+            let hasImage = pasteItem.find(({type}) => type == 'image')
+            let hasFile = pasteItem.find(({type}) => type != 'image')
+            if (hasImage && hasFile) {
+                return '发送文件/图片'
+            } else if (hasImage) {
+                return '发送图片'
+            }
+            return '发送文件'
         }
     },
 
@@ -264,10 +297,29 @@ export default {
             const postFiles = Array.prototype.slice.call(files);
             if (postFiles.length > 0) {
                 e.preventDefault();
-                postFiles.forEach((file) => {
-                    this.$refs.chatUpload.upload(file);
+                this.pasteFile = [];
+                this.pasteItem = [];
+                postFiles.some(file => {
+                    let reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = ({target}) => {
+                        this.pasteFile.push(file)
+                        this.pasteItem.push({
+                            type: $A.getMiddle(file.type, null, '/'),
+                            name: file.name,
+                            size: file.size,
+                            result: target.result
+                        })
+                        this.pasteShow = true
+                    }
                 });
             }
+        },
+
+        pasteSend() {
+            this.pasteFile.some(file => {
+                this.$refs.chatUpload.upload(file)
+            });
         },
 
         chatDragOver(show, e) {
@@ -329,7 +381,6 @@ export default {
         sendSuccess(data) {
             this.$store.dispatch("saveDialogMsg", data);
             this.$store.dispatch("increaseTaskMsgNum", this.dialogId);
-            this.$store.dispatch("moveDialogTop", this.dialogId);
             this.$store.dispatch("updateDialogLastMsg", data);
             this.onActive();
         },
@@ -414,7 +465,7 @@ export default {
                     }
                 })
             }
-        }
+        },
     }
 }
 </script>

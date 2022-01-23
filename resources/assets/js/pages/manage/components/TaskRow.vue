@@ -163,8 +163,11 @@ export default {
 
         subTask() {
             return function(task_id) {
-                return this.cacheTasks.filter(({parent_id}) => {
-                    return parent_id == task_id
+                return this.cacheTasks.filter(task => {
+                    if (task.archived_at) {
+                        return false;
+                    }
+                    return task.parent_id == task_id
                 }).sort((a, b) => {
                     return a.id - b.id;
                 });

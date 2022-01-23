@@ -95,6 +95,9 @@ export default {
         list() {
             const {cacheTasks, taskCompleteTemps} = this;
             const filterTask = (task, chackCompleted = true) => {
+                if (task.archived_at) {
+                    return false;
+                }
                 if (task.complete_at && chackCompleted === true) {
                     return false;
                 }
