@@ -126,8 +126,11 @@ export default {
             if (dialogActive == '' && dialogKey == '') {
                 return this.cacheDialogs.filter(({name}) => name !== undefined);
             }
-            return this.cacheDialogs.filter(({name, type, group_type, last_msg}) => {
+            return this.cacheDialogs.filter(({name, type, group_type, last_msg, last_at}) => {
                 if (name === undefined) {
+                    return false;
+                }
+                if (!last_at) {
                     return false;
                 }
                 if (dialogActive) {
