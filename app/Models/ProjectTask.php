@@ -686,11 +686,11 @@ class ProjectTask extends AbstractModel
                             $start_at = Carbon::parse($subTask->start_at);
                             $end_at = Carbon::parse($subTask->end_at);
                             $isUp = false;
-                            if ($start_at->eq($oldAt[0]) || $start_at->lt(Carbon::parse($this->start_at))) {
+                            if (empty($subTask->start_at) || $start_at->eq($oldAt[0]) || $start_at->lt(Carbon::parse($this->start_at))) {
                                 $subTask->start_at = $this->start_at;
                                 $isUp = true;
                             }
-                            if ($end_at->eq($oldAt[1]) || $end_at->gt(Carbon::parse($this->end_at))) {
+                            if (empty($subTask->end_at) || $end_at->eq($oldAt[1]) || $end_at->gt(Carbon::parse($this->end_at))) {
                                 $subTask->end_at = $this->end_at;
                                 $isUp = true;
                             }
