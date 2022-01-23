@@ -441,6 +441,13 @@
     }
 }
 
+.dialog-wrapper-paste {
+    img {
+        max-width: 100%;
+        max-height: 1000px;
+    }
+}
+
 @media (max-width: 768px) {
     .dialog-wrapper {
         .dialog-footer {
