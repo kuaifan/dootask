@@ -568,8 +568,11 @@ export default {
             if (!this.taskId) {
                 return [];
             }
-            return this.cacheTasks.filter(({parent_id}) => {
-                return parent_id == this.taskId
+            return this.cacheTasks.filter(task => {
+                if (task.archived_at) {
+                    return false;
+                }
+                return task.parent_id == this.taskId
             }).sort((a, b) => {
                 return a.id - b.id;
             });

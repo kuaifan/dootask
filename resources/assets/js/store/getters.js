@@ -119,6 +119,9 @@ export default {
             todayEnd = $A.Date($A.formatDate("Y-m-d 23:59:59")),
             todayNow = $A.Date($A.formatDate("Y-m-d H:i:s"));
         const filterTask = (task, chackCompleted = true) => {
+            if (task.archived_at) {
+                return false;
+            }
             if (task.complete_at && chackCompleted === true) {
                 return false;
             }
