@@ -538,6 +538,19 @@ export default {
                 }
                 state.cacheProjects.push(data);
             }
+            //
+            state.cacheDialogs.some(dialog => {
+                if (dialog.type == 'group' && dialog.group_type == 'project' && dialog.group_info.id == data.id) {
+                    if (data.name !== undefined) {
+                        dialog.name = data.name
+                    }
+                    for (let key in dialog.group_info) {
+                        if (!dialog.group_info.hasOwnProperty(key) || data[key] === undefined) continue;
+                        dialog.group_info[key] = data[key];
+                    }
+                }
+            })
+            //
             setTimeout(() => {
                 $A.setStorage("cacheProjects", state.cacheProjects);
             })
@@ -895,6 +908,18 @@ export default {
             if (updateMarking.is_update_subtask === true) {
                 dispatch("getTaskForParent", data.id).catch(() => {})
             }
+            //
+            state.cacheDialogs.some(dialog => {
+                if (dialog.type == 'group' && dialog.group_type == 'task' && dialog.group_info.id == data.id) {
+                    if (data.name !== undefined) {
+                        dialog.name = data.name
+                    }
+                    for (let key in dialog.group_info) {
+                        if (!dialog.group_info.hasOwnProperty(key) || data[key] === undefined) continue;
+                        dialog.group_info[key] = data[key];
+                    }
+                }
+            })
             //
             setTimeout(() => {
                 $A.setStorage("cacheTasks", state.cacheTasks);
