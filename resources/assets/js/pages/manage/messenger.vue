@@ -124,7 +124,14 @@ export default {
         dialogList() {
             const {dialogActive, dialogKey} = this;
             if (dialogActive == '' && dialogKey == '') {
-                return this.cacheDialogs.filter(({name}) => name !== undefined);
+                return this.cacheDialogs.filter(({name, last_at}) => {
+                    if (name === undefined) {
+                        return false;
+                    }
+                    return last_at;
+                }).sort((a, b) => {
+                    return $A.Date(b.last_at) - $A.Date(a.last_at);
+                });
             }
             return this.cacheDialogs.filter(({name, type, group_type, last_msg, last_at}) => {
                 if (name === undefined) {
@@ -159,14 +166,14 @@ export default {
                 }
                 return true;
             }).sort((a, b) => {
-                return $A.Date(a.last_at) - $A.Date(b.last_at);
+                return $A.Date(b.last_at) - $A.Date(a.last_at);
             })
         },
 
         msgUnread() {
             return function (type) {
                 let num = 0;
-                this.cacheDialogs.map((dialog) => {
+                this.cacheDialogs.some((dialog) => {
                     if (dialog.unread) {
                         switch (type) {
                             case 'project':
@@ -231,10 +238,10 @@ export default {
                 const dialog = this.dialogList.find(({unread}) => unread > 0)
                 if (dialog) {
                     try {
-                        this.$refs[`dialog_${dialog.id}`][0].scrollIntoView({behavior: "smooth"});
+                        this.$refs[`dialog_${dialog.id}`][0].scrollIntoView();
                     } catch (e) {
                         scrollIntoView(this.$refs[`dialog_${dialog.id}`][0], {
-                            behavior: 'smooth',
+                            behavior: 'instant',
                             inline: 'end',
                         })
                     }

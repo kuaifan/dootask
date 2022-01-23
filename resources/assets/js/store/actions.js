@@ -1750,22 +1750,6 @@ export default {
     },
 
     /**
-     * 将会话移动到首位
-     * @param state
-     * @param dialog_id
-     */
-    moveDialogTop({state}, dialog_id) {
-        $A.execMainDispatch("moveDialogTop", dialog_id)
-        //
-        const index = state.cacheDialogs.findIndex(({id}) => id == dialog_id);
-        if (index > -1) {
-            const tmp = $A.cloneJSON(state.cacheDialogs[index]);
-            state.cacheDialogs.splice(index, 1);
-            state.cacheDialogs.unshift(tmp);
-        }
-    },
-
-    /**
      * 忘记对话数据
      * @param state
      * @param dialog_id
@@ -2026,8 +2010,6 @@ export default {
                                     if (dialog) {
                                         // 新增未读数
                                         dialog.unread++;
-                                        // 移动到首位
-                                        dispatch("moveDialogTop", dialog_id);
                                     }
                                     Store.set('dialogMsgPush', data);
                                 }

@@ -345,7 +345,7 @@ export default {
 
         msgAllUnread() {
             let num = 0;
-            this.cacheDialogs.map(({unread}) => {
+            this.cacheDialogs.some(({unread}) => {
                 if (unread) {
                     num += unread;
                 }
