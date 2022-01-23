@@ -1010,20 +1010,21 @@ export default {
      * 获取单个任务
      * @param state
      * @param dispatch
-     * @param task_id
+     * @param data Number|JSONObject{task_id, ?archived_at}
      * @returns {Promise<unknown>}
      */
-    getTaskOne({state, dispatch}, task_id) {
+    getTaskOne({state, dispatch}, data) {
         return new Promise(function (resolve, reject) {
-            if ($A.runNum(task_id) === 0) {
+            if (/^\d+$/.test(data)) {
+                data = {task_id: data}
+            }
+            if ($A.runNum(data.task_id) === 0) {
                 reject({msg: 'Parameter error'});
                 return;
             }
             dispatch("call", {
                 url: 'project/task/one',
-                data: {
-                    task_id,
-                },
+                data,
             }).then(result => {
                 dispatch("saveTask", result.data);
                 resolve(result)
@@ -1125,7 +1126,10 @@ export default {
                 const newIds = state.cacheTasks.filter(task => task.parent_id == parent_id && task._time >= time).map(({id}) => id)
                 dispatch("forgetTask", currentIds.filter(v => newIds.indexOf(v) == -1))
             }
-            dispatch("getTasks", {parent_id}).then(() => {
+            dispatch("getTasks", {
+                parent_id,
+                archived: 'all'
+            }).then(() => {
                 call()
                 resolve()
             }).catch(() => {
@@ -1292,7 +1296,10 @@ export default {
         }
         state.taskId = task_id;
         if (task_id > 0) {
-            dispatch("getTaskOne", task_id).then(() => {
+            dispatch("getTaskOne", {
+                task_id,
+                archived: 'all'
+            }).then(() => {
                 dispatch("getTaskContent", task_id);
                 dispatch("getTaskFiles", task_id);
                 dispatch("getTaskForParent", task_id).catch(() => {})

@@ -876,6 +876,7 @@ class ProjectController extends AbstractController
      * - yes：已完成
      * - no：未完成
      * @apiParam {String} [archived]         归档状态
+     * - all：所有
      * - yes：已归档
      * - no：未归档（默认）
      * @apiParam {Object} sorts              排序方式
@@ -911,7 +912,7 @@ class ProjectController extends AbstractController
         //
         $scopeAll = false;
         if ($parent_id > 0) {
-            ProjectTask::userTask($parent_id);
+            ProjectTask::userTask($parent_id, str_replace(['all', 'yes', 'no'], [null, false, true], $archived));
             $scopeAll = true;
             $builder->where('project_tasks.parent_id', $parent_id);
         } elseif ($parent_id === -1) {
@@ -974,6 +975,10 @@ class ProjectController extends AbstractController
      * @apiName task__one
      *
      * @apiParam {Number} task_id            任务ID
+     * @apiParam {String} [archived]         归档状态
+     * - all：所有
+     * - yes：已归档
+     * - no：未归档（默认）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -984,8 +989,9 @@ class ProjectController extends AbstractController
         User::auth();
         //
         $task_id = intval(Request::input('task_id'));
+        $archived = Request::input('archived', 'no');
         //
-        $task = ProjectTask::userTask($task_id, true, false, ['taskUser', 'taskTag']);
+        $task = ProjectTask::userTask($task_id, str_replace(['all', 'yes', 'no'], [null, false, true], $archived), false, ['taskUser', 'taskTag']);
         //
         $data = $task->toArray();
         $data['project_name'] = $task->project?->name;
@@ -1013,7 +1019,7 @@ class ProjectController extends AbstractController
         //
         $task_id = intval(Request::input('task_id'));
         //
-        $task = ProjectTask::userTask($task_id);
+        $task = ProjectTask::userTask($task_id, null);
         //
         return Base::retSuccess('success', $task->content ?: json_decode('{}'));
     }
@@ -1038,7 +1044,7 @@ class ProjectController extends AbstractController
         //
         $task_id = intval(Request::input('task_id'));
         //
-        $task = ProjectTask::userTask($task_id);
+        $task = ProjectTask::userTask($task_id, null);
         //
         return Base::retSuccess('success', $task->taskFile);
     }
@@ -1435,7 +1441,7 @@ class ProjectController extends AbstractController
             return Base::retError('记录不存在');
         }
         //
-        $task = ProjectTask::userTask($projectLog->task_id, null, true);
+        $task = ProjectTask::userTask($projectLog->task_id, true, true);
         //
         $record = $projectLog->record;
         if ($record['flow'] && is_array($record['flow'])) {
