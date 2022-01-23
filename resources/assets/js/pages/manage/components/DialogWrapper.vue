@@ -6,9 +6,11 @@
         @dragover.prevent="chatDragOver(true, $event)"
         @dragleave.prevent="chatDragOver(false, $event)">
         <slot name="head">
-            <div class="dialog-title">
+            <div class="dialog-title" :class="{completed:$A.dialogCompleted(dialogData)}">
                 <div class="main-title">
-                    <Tag v-for="(tag, ti) in $A.dialogTags(dialogData)" :key="`tag_${ti}`" :color="tag.color">{{$L(tag.text)}}</Tag>
+                    <template v-for="tag in $A.dialogTags(dialogData)" v-if="tag.color != 'success'">
+                        <Tag :color="tag.color" :fade="false">{{$L(tag.text)}}</Tag>
+                    </template>
                     <h2>{{dialogData.name}}</h2>
                     <em v-if="peopleNum > 0">({{peopleNum}})</em>
                 </div>

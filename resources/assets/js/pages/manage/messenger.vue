@@ -33,14 +33,16 @@
                             @click="openDialog(dialog, true)">
                             <template v-if="dialog.type=='group'">
                                 <i v-if="dialog.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
-                                <i v-else-if="dialog.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
+                                <i v-else-if="dialog.group_type=='task'" class="taskfont icon-avatar task" :class="{completed:$A.dialogCompleted(dialog)}">&#xe6f4;</i>
                                 <Icon v-else class="icon-avatar" type="ios-people" />
                             </template>
                             <div v-else-if="dialog.dialog_user" class="user-avatar"><UserAvatar :userid="dialog.dialog_user.userid" :size="42"/></div>
                             <Icon v-else class="icon-avatar" type="md-person" />
                             <div class="dialog-box">
                                 <div class="dialog-title">
-                                    <Tag v-for="(tag, ti) in $A.dialogTags(dialog)" :key="`tag_${ti}`" :color="tag.color">{{$L(tag.text)}}</Tag>
+                                    <template v-for="tag in $A.dialogTags(dialog)" v-if="tag.color != 'success'">
+                                        <Tag :color="tag.color" :fade="false">{{$L(tag.text)}}</Tag>
+                                    </template>
                                     <span>{{dialog.name}}</span>
                                     <Icon v-if="dialog.type == 'user' && lastMsgReadDone(dialog.last_msg)" :type="lastMsgReadDone(dialog.last_msg)"/>
                                     <em v-if="dialog.last_at">{{$A.formatTime(dialog.last_at)}}</em>
@@ -289,16 +291,16 @@ export default {
                         }
                     }
                     if (dialog.group_info.deleted_at) {
-                        // 已删除3天后隐藏对话
+                        // 已删除2天后隐藏对话
                         let time = Math.max($A.Date(dialog.last_at, true), $A.Date(dialog.group_info.deleted_at, true))
-                        if (3 * 86400 + time < $A.Time()) {
+                        if (2 * 86400 + time < $A.Time()) {
                             return false
                         }
                     }
                     if (dialog.group_info.archived_at) {
-                        // 已删除7天后隐藏对话
+                        // 已归档3天后隐藏对话
                         let time = Math.max($A.Date(dialog.last_at, true), $A.Date(dialog.group_info.archived_at, true))
-                        if (7 * 86400 + time < $A.Time()) {
+                        if (3 * 86400 + time < $A.Time()) {
                             return false
                         }
                     }

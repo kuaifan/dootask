@@ -1197,32 +1197,33 @@ export default {
     },
 
     /**
-     * 归档任务
+     * 归档（还原）任务
      * @param state
      * @param dispatch
-     * @param task_id
+     * @param data Number|JSONObject{task_id, ?archived_at}
      * @returns {Promise<unknown>}
      */
-    archivedTask({state, dispatch}, task_id) {
+    archivedTask({state, dispatch}, data) {
         return new Promise(function (resolve, reject) {
-            if ($A.runNum(task_id) === 0) {
+            if (/^\d+$/.test(data)) {
+                data = {task_id: data}
+            }
+            if ($A.runNum(data.task_id) === 0) {
                 reject({msg: 'Parameter error'});
                 return;
             }
-            dispatch("taskLoadStart", task_id)
+            dispatch("taskLoadStart", data.task_id)
             dispatch("call", {
                 url: 'project/task/archived',
-                data: {
-                    task_id: task_id,
-                },
+                data,
             }).then(result => {
                 dispatch("saveTask", result.data)
-                dispatch("taskLoadEnd", task_id)
+                dispatch("taskLoadEnd", data.task_id)
                 resolve(result)
             }).catch(e => {
                 console.warn(e);
-                dispatch("getTaskOne", task_id).catch(() => {})
-                dispatch("taskLoadEnd", task_id)
+                dispatch("getTaskOne", data.task_id).catch(() => {})
+                dispatch("taskLoadEnd", data.task_id)
                 reject(e)
             });
         });

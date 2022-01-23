@@ -334,7 +334,7 @@
                     }
                     if (dialog.group_info.deleted_at) {
                         tags.push({
-                            color: 'error',
+                            color: 'red',
                             text: '已删除'
                         })
                     } else if (dialog.group_info.archived_at) {
@@ -346,6 +346,15 @@
                 }
             }
             return tags;
+        },
+
+        /**
+         * 对话完成
+         * @param dialog
+         * @returns {*[]}
+         */
+        dialogCompleted(dialog) {
+            return this.dialogTags(dialog).find(({color}) => color == 'success');
         }
     });
 

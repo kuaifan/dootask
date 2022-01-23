@@ -79,6 +79,9 @@
                 <div v-if="taskDetail.flow_item_name" class="flow">
                     <span :class="taskDetail.flow_item_status" @click.stop="openMenu(taskDetail)">{{taskDetail.flow_item_name}}</span>
                 </div>
+                <div v-if="taskDetail.archived_at" class="flow">
+                    <span class="archived" @click.stop="openMenu(taskDetail)">{{$L('已归档')}}</span>
+                </div>
                 <div class="nav">
                     <p v-if="projectName"><span>{{projectName}}</span></p>
                     <p v-if="columnName"><span>{{columnName}}</span></p>
@@ -760,31 +763,6 @@ export default {
             }).catch(({msg}) => {
                 $A.modalError(msg);
             })
-        },
-
-        archivedOrRemoveTask(type) {
-            let typeDispatch = type == 'remove' ? 'removeTask' : 'archivedTask';
-            let typeName = type == 'remove' ? '删除' : '归档';
-            let typeTask = this.taskDetail.parent_id > 0 ? '子任务' : '任务';
-            $A.modalConfirm({
-                title: typeName + typeTask,
-                content: '你确定要' + typeName + typeTask + '【' + this.taskDetail.name + '】吗？',
-                loading: true,
-                onOk: () => {
-                    if (this.taskDetail.loading === true) {
-                        this.$Modal.remove();
-                        return;
-                    }
-                    this.$set(this.taskDetail, 'loading', true);
-                    this.$store.dispatch(typeDispatch, this.taskDetail.id).then(({msg}) => {
-                        $A.messageSuccess(msg);
-                        this.$Modal.remove();
-                    }).catch(({msg}) => {
-                        $A.modalError(msg, 301);
-                        this.$Modal.remove();
-                    });
-                }
-            });
         },
 
         openOwner() {
