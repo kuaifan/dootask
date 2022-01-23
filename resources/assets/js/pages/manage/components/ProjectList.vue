@@ -69,14 +69,16 @@
                     </li>
                 </ul>
             </div>
-            <div v-if="projectData.desc" class="project-subtitle">{{projectData.desc}}</div>
-            <div class="project-switch">
-                <div v-if="completedCount > 0" class="project-checkbox">
-                    <Checkbox :value="projectParameter('completedTask')" @on-change="toggleCompleted">{{$L('显示已完成')}}</Checkbox>
-                </div>
-                <div :class="['project-switch-button', !projectParameter('card') ? 'menu' : '']" @click="$store.dispatch('toggleProjectParameter', 'card')">
-                    <div><i class="taskfont">&#xe60c;</i></div>
-                    <div><i class="taskfont">&#xe66a;</i></div>
+            <div class="project-subbox">
+                <div class="project-subtitle">{{projectData.desc}}</div>
+                <div class="project-switch">
+                    <div v-if="completedCount > 0" class="project-checkbox">
+                        <Checkbox :value="projectParameter('completedTask')" @on-change="toggleCompleted">{{$L('显示已完成')}}</Checkbox>
+                    </div>
+                    <div :class="['project-switch-button', !projectParameter('card') ? 'menu' : '']" @click="$store.dispatch('toggleProjectParameter', 'card')">
+                        <div><i class="taskfont">&#xe60c;</i></div>
+                        <div><i class="taskfont">&#xe66a;</i></div>
+                    </div>
                 </div>
             </div>
         </div>
