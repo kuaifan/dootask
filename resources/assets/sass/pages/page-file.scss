@@ -509,6 +509,7 @@
 }
 
 .page-file-dropdown-menu {
+    max-height: none !important;
     .ivu-dropdown {
         width: 100%;
         .arrow-forward-item {

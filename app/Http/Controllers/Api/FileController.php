@@ -382,6 +382,9 @@ class FileController extends AbstractController
      * @apiParam {Number|String} id
      * - Number 文件ID（需要登录）
      * - String 链接码（不需要登录，用于预览）
+     * @apiParam {String} down          直接下载
+     * - no: 浏览（默认）
+     * - yes: 下载
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -390,6 +393,7 @@ class FileController extends AbstractController
     public function content()
     {
         $id = Request::input('id');
+        $down = Request::input('down', 'no');
         //
         if (Base::isNumber($id)) {
             User::auth();
@@ -405,7 +409,7 @@ class FileController extends AbstractController
         }
         //
         $content = FileContent::whereFid($file->id)->orderByDesc('id')->first();
-        return FileContent::formatContent($file->type, $content ? $content->content : []);
+        return FileContent::formatContent($file, $content?->content, $down == 'yes');
     }
 
     /**

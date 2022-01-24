@@ -104,8 +104,14 @@
             </template>
 
             <div class="file-menu" :style="contextMenuStyles">
-                <Dropdown trigger="custom" :visible="contextMenuVisible" transfer @on-clickoutside="handleClickContextMenuOutside" @on-visible-change="handleVisibleChangeMenu">
-                    <DropdownMenu slot="list" class="page-file-dropdown-menu">
+                <Dropdown
+                    trigger="custom"
+                    :visible="contextMenuVisible"
+                    transfer-class-name="page-file-dropdown-menu"
+                    @on-clickoutside="handleClickContextMenuOutside"
+                    @on-visible-change="handleVisibleChangeMenu"
+                    transfer>
+                    <DropdownMenu slot="list">
                         <template v-if="contextMenuItem.id">
                             <DropdownItem @click.native="handleContextClick('open')">{{$L('打开')}}</DropdownItem>
                             <Dropdown placement="right-start" transfer>
@@ -133,6 +139,7 @@
                             <template v-else-if="contextMenuItem.share">
                                 <DropdownItem @click.native="handleContextClick('outshare')" divided>{{$L('退出共享')}}</DropdownItem>
                             </template>
+                            <DropdownItem @click.native="handleContextClick('download')" :disabled="contextMenuItem.ext == ''">{{$L('下载')}}</DropdownItem>
                             <DropdownItem @click.native="handleContextClick('delete')" divided style="color:red">{{$L('删除')}}</DropdownItem>
                         </template>
                         <template v-else>
@@ -900,6 +907,30 @@ export default {
                     };
                     this.linkShow = true;
                     this.linkGet()
+                    break;
+
+                case 'download':
+                    if (!item.ext) {
+                        $A.modalError("此文件不支持下载");
+                        return;
+                    }
+                    $A.modalConfirm({
+                        title: '下载文件',
+                        content: `${item.name}.${item.ext} (${$A.bytesToSize(item.size)})`,
+                        okText: '立即下载',
+                        onOk: () => {
+                            let url = $A.apiUrl(`file/content?id=${item.id}&down=yes&token=${this.userToken}`);
+                            if (this.$Electron) {
+                                try {
+                                    this.$Electron.shell.openExternal(url);
+                                } catch (e) {
+                                    $A.modalError("下载失败");
+                                }
+                            } else {
+                                window.open(url)
+                            }
+                        }
+                    });
                     break;
 
                 case 'delete':
