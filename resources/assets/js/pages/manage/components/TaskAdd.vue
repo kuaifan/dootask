@@ -81,7 +81,8 @@
                     v-model="addData.owner"
                     :multiple-max="10"
                     :placeholder="$L('选择任务负责人')"
-                    :project-id="addData.project_id"/>
+                    :project-id="addData.project_id"
+                    :transfer="false"/>
             </FormItem>
             <div class="subtasks">
                 <div v-if="addData.subtasks.length > 0" class="sublist">
@@ -113,7 +114,8 @@
                                 v-model="item.owner"
                                 :multiple-max="1"
                                 :placeholder="$L('选择负责人')"
-                                :project-id="addData.project_id"/>
+                                :project-id="addData.project_id"
+                                :transfer="false"/>
                         </Col>
                     </Row>
                 </div>
