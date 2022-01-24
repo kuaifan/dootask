@@ -448,6 +448,10 @@ export default {
                 return;
             }
             this.loadIng++;
+            // 处理栏目变更
+            if ( this.addData.cascader.length > 0 ) {
+                this.addData.column_id = this.addData.cascader[1];
+            }
             this.$store.dispatch("taskAdd", this.addData).then(({msg}) => {
                 this.loadIng--;
                 $A.messageSuccess(msg);
