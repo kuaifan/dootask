@@ -361,10 +361,11 @@ class DialogController extends AbstractController
         // 直接删除消息
         $msg->delete();
 
+        /* 原始需求：消息直接删除，无需提示 */
         // 发送撤回指令
-        WebSocketDialogMsg::sendMsg($msg->dialog_id, 'withdraw', [
-            "msg_id" => $msg->id, // 被撤回的消息Id
-        ], $user->userid);
+//        WebSocketDialogMsg::sendMsg($msg->dialog_id, 'withdraw', [
+//            "msg_id" => $msg->id, // 被撤回的消息Id
+//        ], $user->userid);
         return Base::retSuccess("success");
     }
 }

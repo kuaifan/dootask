@@ -67,6 +67,8 @@ export default {
                 method: 'get',
             }).then(({data, msg}) => {
                 // data 结果数据
+                $A.messageSuccess("消息已撤回");
+                this.$store.dispatch("getDialogMsgs", this.dialogData.id);
                 // msg 结果描述
             }).catch(({msg}) => {
                 // msg 错误原因
