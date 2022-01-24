@@ -63,12 +63,6 @@ class FileContent extends AbstractModel
                     "type" => "md",
                     "content" => "",
                 ],
-                'sheet' => [
-                    [
-                        "name" => "Sheet1",
-                        "config" => json_decode('{}'),
-                    ]
-                ],
                 default => json_decode('{}'),
             };
             if ($download) {

@@ -33,18 +33,12 @@
                 <div v-if="file.type=='mind'" class="header-hint">
                     {{$L('选中节点，按enter键添加同级节点，tab键添加子节点')}}
                 </div>
-                <Dropdown v-if="file.type=='mind' || file.type=='flow' || file.type=='sheet'"
+                <Dropdown v-if="file.type=='mind' || file.type=='flow'"
                           trigger="click"
                           class="header-hint"
                           @on-click="exportMenu">
                     <a href="javascript:void(0)">{{$L('导出')}}<Icon type="ios-arrow-down"></Icon></a>
-                    <DropdownMenu v-if="file.type=='sheet'" slot="list">
-                        <DropdownItem name="xlsx">{{$L('导出XLSX')}}</DropdownItem>
-                        <DropdownItem name="xlml">{{$L('导出XLS')}}</DropdownItem>
-                        <DropdownItem name="csv">{{$L('导出CSV')}}</DropdownItem>
-                        <DropdownItem name="txt">{{$L('导出TXT')}}</DropdownItem>
-                    </DropdownMenu>
-                    <DropdownMenu v-else slot="list">
+                    <DropdownMenu slot="list">
                         <DropdownItem name="png">{{$L('导出PNG图片')}}</DropdownItem>
                         <DropdownItem name="pdf">{{$L('导出PDF文件')}}</DropdownItem>
                     </DropdownMenu>
@@ -58,7 +52,6 @@
                 </template>
                 <Flow v-else-if="file.type=='flow'" ref="myFlow" v-model="contentDetail" @saveData="handleClick('saveBefore')"/>
                 <Minder v-else-if="file.type=='mind'" ref="myMind" v-model="contentDetail" @saveData="handleClick('saveBefore')"/>
-                <LuckySheet v-else-if="file.type=='sheet'" ref="mySheet" v-model="contentDetail"/>
                 <OnlyOffice v-else-if="['word', 'excel', 'ppt'].includes(file.type)" v-model="contentDetail"/>
                 <AceEditor v-else-if="['code', 'txt'].includes(file.type)" class="no-dark-mode" v-model="contentDetail.content" :ext="file.ext" @saveData="handleClick('saveBefore')"/>
             </div>
@@ -75,14 +68,13 @@ Vue.use(Minder)
 
 const MDEditor = () => import('../../../components/MDEditor/index');
 const TEditor = () => import('../../../components/TEditor');
-const LuckySheet = () => import('../../../components/LuckySheet');
 const Flow = () => import('../../../components/Flow');
 const AceEditor = () => import('../../../components/AceEditor');
 const OnlyOffice = () => import('../../../components/OnlyOffice');
 
 export default {
     name: "FileContent",
-    components: {AceEditor, TEditor, MDEditor, LuckySheet, Flow, OnlyOffice},
+    components: {AceEditor, TEditor, MDEditor, Flow, OnlyOffice},
     props: {
         value: {
             type: Boolean,
@@ -312,10 +304,6 @@ export default {
 
                 case 'flow':
                     this.$refs.myFlow[act == 'pdf' ? 'exportPDF' : 'exportPNG'](this.file.name, 3);
-                    break;
-
-                case 'sheet':
-                    this.$refs.mySheet.exportExcel(this.file.name, act);
                     break;
             }
         },

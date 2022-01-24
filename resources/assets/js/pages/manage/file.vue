@@ -352,11 +352,6 @@ export default {
                     "divided": true
                 },
                 {
-                    "value": "sheet",
-                    "label": null,
-                    "name": "表格",
-                },
-                {
                     "value": "flow",
                     "label": "流程图",
                     "name": "流程图",
