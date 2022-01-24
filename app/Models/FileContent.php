@@ -76,19 +76,33 @@ class FileContent extends AbstractModel
             }
         } else {
             $content['preview'] = false;
-            if ($file->ext && !in_array($file->ext, ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'])) {
-                if ($download) {
-                    return Response::download(public_path($content['url']), $name);
+            if ($file->ext) {
+                $filePath = public_path($content['url']);
+                switch ($file->type) {
+                    // 支持编辑
+                    case 'txt':
+                    case 'code':
+                        $content['content'] = file_get_contents($filePath);
+                        break;
+
+                    // 支持预览
+                    default:
+                        if (in_array($file->type, ['picture', 'image', 'tif', 'media'])) {
+                            $url = Base::fillUrl($content['url']);
+                        } else {
+                            $url = 'http://' . env('APP_IPPR') . '.3/' . $content['url'];
+                        }
+                        $content['url'] = base64_encode($url);
+                        $content['preview'] = true;
+                        break;
                 }
-                if (in_array($file->type, ['picture', 'image', 'tif', 'media'])) {
-                    $url = Base::fillUrl($content['url']);
+            }
+            if ($download) {
+                if (isset($filePath)) {
+                    return Response::download($filePath, $name);
                 } else {
-                    $url = 'http://' . env('APP_IPPR') . '.3/' . $content['url'];
+                    abort(403, "This file not support download.");
                 }
-                $content['url'] = base64_encode($url);
-                $content['preview'] = true;
-            } elseif ($download) {
-                abort(403, "This file not support download.");
             }
         }
         return Base::retSuccess('success', [ 'content' => $content ]);

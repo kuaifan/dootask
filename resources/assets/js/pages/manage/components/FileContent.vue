@@ -60,6 +60,7 @@
                 <Minder v-else-if="file.type=='mind'" ref="myMind" v-model="contentDetail" @saveData="handleClick('saveBefore')"/>
                 <LuckySheet v-else-if="file.type=='sheet'" ref="mySheet" v-model="contentDetail"/>
                 <OnlyOffice v-else-if="['word', 'excel', 'ppt'].includes(file.type)" v-model="contentDetail"/>
+                <AceEditor v-else-if="['code', 'txt'].includes(file.type)" class="no-dark-mode" v-model="contentDetail.content" :ext="file.ext" @saveData="handleClick('saveBefore')"/>
             </div>
         </template>
         <div v-if="contentLoad" class="content-load"><Loading/></div>
@@ -76,11 +77,12 @@ const MDEditor = () => import('../../../components/MDEditor/index');
 const TEditor = () => import('../../../components/TEditor');
 const LuckySheet = () => import('../../../components/LuckySheet');
 const Flow = () => import('../../../components/Flow');
+const AceEditor = () => import('../../../components/AceEditor');
 const OnlyOffice = () => import('../../../components/OnlyOffice');
 
 export default {
     name: "FileContent",
-    components: {TEditor, MDEditor, LuckySheet, Flow, OnlyOffice},
+    components: {AceEditor, TEditor, MDEditor, LuckySheet, Flow, OnlyOffice},
     props: {
         value: {
             type: Boolean,
@@ -227,10 +229,12 @@ export default {
         getContent() {
             if (!this.fileId) {
                 this.contentDetail = {};
+                this.updateBak();
                 return;
             }
             if (typeof this.fileContent[this.fileId] !== "undefined") {
                 this.contentDetail = this.fileContent[this.fileId];
+                this.updateBak();
                 return;
             }
             if (['word', 'excel', 'ppt'].includes(this.file.type)) {

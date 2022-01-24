@@ -1,13 +1,10 @@
 <script>
+import {mapState} from "vuex";
+
 export default {
     name: 'AceEditor',
-    model: {
-        prop: 'code',
-        event: 'change'
-    },
     props: {
-        code: {
-            type: String,
+        value: {
             default: ''
         },
         options: {
@@ -16,11 +13,11 @@ export default {
         },
         theme: {
             type: String,
-            default: ''
+            default: 'auto'
         },
-        language: {
+        ext: {
             type: String,
-            default: 'json'
+            default: 'txt'
         },
         height: {
             type: Number || null,
@@ -29,17 +26,156 @@ export default {
         width: {
             type: Number || null,
             default: null
-        }
+        },
+        readOnly: {
+            type: Boolean,
+            default: false
+        },
     },
     render(createElement) {
         return createElement('div')
     },
     data: () => ({
+        code: '',
         editor: null,
         cursorPosition: {
             row: 0,
             column: 0
-        }
+        },
+        supportedModes: {
+            "Apache_Conf": [
+                "^htaccess|^htgroups|^htpasswd|^conf|htaccess|htgroups|htpasswd"
+            ],
+            "BatchFile": [
+                "bat|cmd"
+            ],
+            "C_Cpp": [
+                "cpp|c|cc|cxx|h|hh|hpp|ino"
+            ],
+            "CSharp": [
+                "cs"
+            ],
+            "CSS": [
+                "css"
+            ],
+            "Dockerfile": [
+                "^Dockerfile"
+            ],
+            "golang": [
+                "go"
+            ],
+            "HTML": [
+                "html|htm|xhtml|vue|we|wpy"
+            ],
+            "Java": [
+                "java"
+            ],
+            "JavaScript": [
+                "js|jsm|jsx"
+            ],
+            "JSON": [
+                "json"
+            ],
+            "JSP": [
+                "jsp"
+            ],
+            "LESS": [
+                "less"
+            ],
+            "Lua": [
+                "lua"
+            ],
+            "Makefile": [
+                "^Makefile|^GNUmakefile|^makefile|^OCamlMakefile|make"
+            ],
+            "Markdown": [
+                "md|markdown"
+            ],
+            "MySQL": [
+                "mysql"
+            ],
+            "Nginx": [
+                "nginx|conf"
+            ],
+            "INI": [
+                "ini|conf|cfg|prefs"
+            ],
+            "ObjectiveC": [
+                "m|mm"
+            ],
+            "Perl": [
+                "pl|pm"
+            ],
+            "Perl6": [
+                "p6|pl6|pm6"
+            ],
+            "pgSQL": [
+                "pgsql"
+            ],
+            "PHP_Laravel_blade": [
+                "blade.php"
+            ],
+            "PHP": [
+                "php|inc|phtml|shtml|php3|php4|php5|phps|phpt|aw|ctp|module"
+            ],
+            "Powershell": [
+                "ps1"
+            ],
+            "Python": [
+                "py"
+            ],
+            "R": [
+                "r"
+            ],
+            "Ruby": [
+                "rb|ru|gemspec|rake|^Guardfile|^Rakefile|^Gemfile"
+            ],
+            "Rust": [
+                "rs"
+            ],
+            "SASS": [
+                "sass"
+            ],
+            "SCSS": [
+                "scss"
+            ],
+            "SH": [
+                "sh|bash|^.bashrc"
+            ],
+            "SQL": [
+                "sql"
+            ],
+            "SQLServer": [
+                "sqlserver"
+            ],
+            "Swift": [
+                "swift"
+            ],
+            "Text": [
+                "txt"
+            ],
+            "Typescript": [
+                "ts|typescript|str"
+            ],
+            "VBScript": [
+                "vbs|vb"
+            ],
+            "Verilog": [
+                "v|vh|sv|svh"
+            ],
+            "XML": [
+                "xml|rdf|rss|wsdl|xslt|atom|mathml|mml|xul|xbl|xaml"
+            ],
+            "YAML": [
+                "yaml|yml"
+            ],
+            "Compress": [
+                "tar|zip|7z|rar|gz|arj|z"
+            ],
+            "images": [
+                "icon|jpg|jpeg|png|bmp|gif|tif|emf"
+            ]
+        },
     }),
     mounted() {
         $A.loadScriptS([
@@ -50,8 +186,13 @@ export default {
             this.setSize(this.$el, {height: this.height, width: this.width})
 
             // init ace editor
-            this.editor = window.ace.edit(this.$el)
-            this.editor.session.setMode(`ace/mode/${this.language || 'json'}`)
+            this.editor = window.ace.edit(this.$el, {
+                wrap: true,
+                showPrintMargin: false,
+                readOnly: this.readOnly,
+                keyboardHandler: 'vscode',
+            })
+            this.editor.session.setMode(`ace/mode/${this.getFileMode()}`)
 
             // emit 'mounted' event
             this.$emit('mounted', this.editor)
@@ -63,12 +204,31 @@ export default {
             }
 
             // set value and clear selection
-            this.editor.setValue(this.code)
+            this.editor.setValue(this.value)
             this.editor.clearSelection()
 
             // set ace editor options and theme
             this.editor.setOptions(this.options)
-            this.theme && this.editor.setTheme(`ace/theme/${this.theme}`)
+            this.editTheme && this.editor.setTheme(`ace/theme/${this.editTheme}`)
+
+            // 设置快捷键
+            this.editor.commands.addCommand({
+                name: '保存文件',
+                bindKey: {
+                    win: 'Ctrl-S',
+                    mac: 'Command-S'
+                },
+                exec: () => {
+                    this.$emit("saveData")
+                },
+                readOnly: false
+            });
+
+            // 触发修改内容
+            this.editor.getSession().on('change', () => {
+                this.code = this.editor.getValue()
+                this.$emit('input', this.code);
+            });
         });
     },
     methods: {
@@ -96,6 +256,39 @@ export default {
             dom.style.width = width && typeof width === 'number' ? `${width}px` : '100%'
             dom.style.height = height && typeof height === 'number' ? `${height}px` : '100%'
             this.$nextTick(() => this.editor && this.editor.resize())
+        },
+
+        /**
+         * 获取文件类型
+         * @returns {string}
+         */
+        getFileMode() {
+            var ext = this.ext || "text";
+            for (var name in this.supportedModes) {
+                var data = this.supportedModes[name],
+                    suffixs = data[0].split('|'),
+                    mode = name.toLowerCase();
+                for (var i = 0; i < suffixs.length; i++) {
+                    if (ext == suffixs[i]) {
+                        return mode;
+                    }
+                }
+            }
+            return 'text';
+        }
+    },
+    computed: {
+        ...mapState(['themeIsDark']),
+
+        editTheme() {
+            if (this.theme == 'auto') {
+                if (this.themeIsDark) {
+                    return "dracula-dark"
+                } else {
+                    return "chrome"
+                }
+            }
+            return this.theme
         }
     },
     watch: {
@@ -112,18 +305,18 @@ export default {
          * watching and set theme
          * @param newTheme
          */
-        theme(newTheme) {
+        editTheme(newTheme) {
             if (newTheme && typeof newTheme === 'string') {
-                this.editor && this.editor.setTheme(`ace/theme/${this.theme}`)
+                this.editor && this.editor.setTheme(`ace/theme/${newTheme}`)
             }
         },
         /**
-         * watching and set language
-         * @param newLanguage
+         * watching and set ext
+         * @param newExt
          */
-        language(newLanguage) {
-            if (newLanguage && typeof newLanguage === 'string') {
-                this.editor && this.editor.session.setMode(`ace/mode/${newLanguage}`)
+        ext(newExt) {
+            if (newExt && typeof newExt === 'string') {
+                this.editor && this.editor.session.setMode(`ace/mode/${this.getFileMode()}`)
             }
         },
         /**
@@ -141,12 +334,24 @@ export default {
             this.setSize(this.el, {height: newHeight})
         },
         /**
+         * watching and set readOnly
+         * @param only
+         */
+        readOnly(only) {
+            if (typeof only === 'boolean') {
+                this.editor && this.editor.setReadOnly(only)
+            }
+        },
+        /**
          * watching and set code
          * @param newCode
          */
-        code(newCode) {
+        value(newCode) {
             if (!this.editor) {
                 return
+            }
+            if (newCode == this.code) {
+                return;
             }
             this.editor.setValue(newCode)
             this.editor.clearSelection()

@@ -37,6 +37,7 @@
                 <Minder v-else-if="file.type=='mind'" ref="myMind" v-model="contentDetail" readOnly/>
                 <LuckySheet v-else-if="file.type=='sheet'" ref="mySheet" v-model="contentDetail" readOnly/>
                 <OnlyOffice v-else-if="['word', 'excel', 'ppt'].includes(file.type)" v-model="contentDetail" :code="code" readOnly/>
+                <AceEditor v-else-if="['code', 'txt'].includes(file.type)" class="no-dark-mode" v-model="contentDetail.content" :ext="file.ext" readOnly/>
             </div>
         </template>
         <div v-if="contentLoad" class="content-load"><Loading/></div>
@@ -52,11 +53,12 @@ const MDPreview = () => import('../../../components/MDEditor/preview');
 const TEditor = () => import('../../../components/TEditor');
 const LuckySheet = () => import('../../../components/LuckySheet');
 const Flow = () => import('../../../components/Flow');
+const AceEditor = () => import('../../../components/AceEditor');
 const OnlyOffice = () => import('../../../components/OnlyOffice');
 
 export default {
     name: "FilePreview",
-    components: {TEditor, MDPreview, LuckySheet, Flow, OnlyOffice},
+    components: {AceEditor, TEditor, MDPreview, LuckySheet, Flow, OnlyOffice},
     props: {
         code: {
             type: String,
