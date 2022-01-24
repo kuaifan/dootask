@@ -30,7 +30,7 @@
                 <Flow v-else-if="file.type=='flow'" ref="myFlow" v-model="contentDetail" readOnly/>
                 <Minder v-else-if="file.type=='mind'" ref="myMind" v-model="contentDetail" readOnly/>
                 <OnlyOffice v-else-if="['word', 'excel', 'ppt'].includes(file.type)" v-model="contentDetail" :code="code" readOnly/>
-                <AceEditor v-else-if="['code', 'txt'].includes(file.type)" class="no-dark-mode" v-model="contentDetail.content" :ext="file.ext" readOnly/>
+                <AceEditor v-else-if="['code', 'txt'].includes(file.type)" v-model="contentDetail.content" :ext="file.ext" readOnly/>
             </div>
         </template>
         <div v-if="contentLoad" class="content-load"><Loading/></div>

@@ -27,13 +27,19 @@ export default {
             type: Number || null,
             default: null
         },
+        wrap: {
+            type: Boolean,
+            default: false
+        },
         readOnly: {
             type: Boolean,
             default: false
         },
     },
     render(createElement) {
-        return createElement('div')
+        return createElement('div', {
+            class: "no-dark-mode"
+        })
     },
     data: () => ({
         code: '',
@@ -187,7 +193,7 @@ export default {
 
             // init ace editor
             this.editor = window.ace.edit(this.$el, {
-                wrap: true,
+                wrap: this.wrap,
                 showPrintMargin: false,
                 readOnly: this.readOnly,
                 keyboardHandler: 'vscode',

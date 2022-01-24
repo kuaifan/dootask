@@ -72,23 +72,18 @@ class FileContent extends AbstractModel
             $content['preview'] = false;
             if ($file->ext) {
                 $filePath = public_path($content['url']);
-                switch ($file->type) {
-                    // 支持编辑
-                    case 'txt':
-                    case 'code':
-                        $content['content'] = file_get_contents($filePath);
-                        break;
-
+                if (in_array($file->type, ['txt', 'code']) && $file->size < 2 * 1024 * 1024) {
+                    // 支持编辑，限制2M内的文件
+                    $content['content'] = file_get_contents($filePath);
+                } else {
                     // 支持预览
-                    default:
-                        if (in_array($file->type, ['picture', 'image', 'tif', 'media'])) {
-                            $url = Base::fillUrl($content['url']);
-                        } else {
-                            $url = 'http://' . env('APP_IPPR') . '.3/' . $content['url'];
-                        }
-                        $content['url'] = base64_encode($url);
-                        $content['preview'] = true;
-                        break;
+                    if (in_array($file->type, ['picture', 'image', 'tif', 'media'])) {
+                        $url = Base::fillUrl($content['url']);
+                    } else {
+                        $url = 'http://' . env('APP_IPPR') . '.3/' . $content['url'];
+                    }
+                    $content['url'] = base64_encode($url);
+                    $content['preview'] = true;
                 }
             }
             if ($download) {
