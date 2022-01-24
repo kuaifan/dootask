@@ -121,6 +121,9 @@
                             padding: 8px;
                             min-width: 32px;
                             border-radius: 6px 6px 6px 0;
+                            .dialog-file {
+                                cursor: pointer;
+                            }
                             > pre {
                                 display: block;
                                 margin: 0;

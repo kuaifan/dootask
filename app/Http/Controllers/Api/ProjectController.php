@@ -19,6 +19,7 @@ use App\Module\Base;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Request;
+use Response;
 
 /**
  * @apiDefine project
@@ -1080,6 +1081,40 @@ class ProjectController extends AbstractController
         $file->delete();
         //
         return Base::retSuccess('success', $file);
+    }
+
+    /**
+     * @api {get} api/project/task/filedown          22. 下载任务文件
+     *
+     * @apiDescription 需要token身份（限：项目、任务负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__filedown
+     *
+     * @apiParam {Number} file_id            文件ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function task__filedown()
+    {
+        User::auth();
+        //
+        $file_id = intval(Request::input('file_id'));
+        //
+        $file = ProjectTaskFile::find($file_id);
+        if (empty($file)) {
+            abort(403, "This file not exist.");
+        }
+        //
+        try {
+            ProjectTask::userTask($file->task_id, true, true);
+        } catch (\Exception $e) {
+            abort(403, $e->getMessage() ?: "This file not support download.");
+        }
+        //
+        return Response::download(public_path($file->getRawOriginal('path')), $file->name);
     }
 
     /**

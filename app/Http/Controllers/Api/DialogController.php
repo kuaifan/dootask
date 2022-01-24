@@ -11,6 +11,7 @@ use App\Models\WebSocketDialogMsgRead;
 use App\Models\WebSocketDialogUser;
 use App\Module\Base;
 use Request;
+use Response;
 
 /**
  * @apiDefine dialog
@@ -326,5 +327,37 @@ class DialogController extends AbstractController
         //
         $read = WebSocketDialogMsgRead::whereMsgId($msg_id)->get();
         return Base::retSuccess('success', $read ?: []);
+    }
+
+    /**
+     * @api {get} api/dialog/msg/download          08. 文件下载
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__download
+     *
+     * @apiParam {Number} msg_id            消息ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__download()
+    {
+        User::auth();
+        //
+        $msg_id = intval(Request::input('msg_id'));
+        //
+        $msg = WebSocketDialogMsg::whereId($msg_id)->first();
+        if (empty($msg)) {
+            abort(403, "This file not exist.");
+        }
+        if ($msg->type != 'file') {
+            abort(403, "This file not support download.");
+        }
+        $array = Base::json2array($msg->getRawOriginal('msg'));
+        //
+        return Response::download(public_path($array['path']), $array['name']);
     }
 }

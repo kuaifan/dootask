@@ -274,7 +274,7 @@
                             <li v-for="file in fileList">
                                 <img v-if="file.id" class="file-ext" :src="file.thumb"/>
                                 <Loading v-else class="file-load"/>
-                                <a class="file-name" :href="file.path||'javascript:;'" target="_blank">{{file.name}}</a>
+                                <div class="file-name" @click="downFile(file)">{{file.name}}</div>
                                 <div class="file-size">{{$A.bytesToSize(file.size)}}</div>
                                 <EPopover v-model="file._deling" class="file-delete">
                                     <div class="task-detail-delete-file-popover">
@@ -517,6 +517,7 @@ export default {
     computed: {
         ...mapState([
             'userId',
+            'userToken',
             'cacheProjects',
             'cacheColumns',
             'cacheTasks',
@@ -1131,6 +1132,17 @@ export default {
                     }
                 }, 100);
             }
+        },
+
+        downFile(file) {
+            $A.modalConfirm({
+                title: '下载文件',
+                content: `${file.name} (${$A.bytesToSize(file.size)})`,
+                okText: '立即下载',
+                onOk: () => {
+                    $A.downFile($A.apiUrl(`project/task/filedown?file_id=${file.id}&token=${this.userToken}`))
+                }
+            });
         }
     }
 }

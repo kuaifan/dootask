@@ -919,16 +919,7 @@ export default {
                         content: `${item.name}.${item.ext} (${$A.bytesToSize(item.size)})`,
                         okText: '立即下载',
                         onOk: () => {
-                            let url = $A.apiUrl(`file/content?id=${item.id}&down=yes&token=${this.userToken}`);
-                            if (this.$Electron) {
-                                try {
-                                    this.$Electron.shell.openExternal(url);
-                                } catch (e) {
-                                    $A.modalError("下载失败");
-                                }
-                            } else {
-                                window.open(url)
-                            }
+                            $A.downFile($A.apiUrl(`file/content?id=${item.id}&down=yes&token=${this.userToken}`))
                         }
                     });
                     break;
