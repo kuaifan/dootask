@@ -136,6 +136,16 @@
                         box-shadow: none;
                     }
                 }
+                .project-select{
+                    display: flex;
+                    align-items: center;
+                    margin-right: 14px;
+                    opacity: 0.9;
+                    z-index: 1000;
+                    .title{
+                        width:50px;
+                    }
+                }
                 .project-switch-button {
                     display: flex;
                     align-items: center;
@@ -947,6 +957,16 @@
                 .project-switch {
                     margin-left: 0;
                     justify-content: flex-end;
+                    .project-select{
+                        display: flex;
+                        align-items: center;
+                        margin-right: 14px;
+                        opacity: 0.9;
+                        z-index: 1000;
+                        .title{
+                            width:50px;
+                        }
+                    }
                 }
             }
         }

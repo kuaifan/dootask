@@ -1579,8 +1579,9 @@ class ProjectController extends AbstractController
         User::auth();
         //
         $project_id = intval(Request::input('project_id'));
+        $is_filter =  intval(Request::input('is_filter',0));
         //
-        $project = Project::userProject($project_id, true, true);
+        $project = Project::userProject($project_id, true, true, $is_filter);
         //
         $list = ProjectFlow::with(['ProjectFlowItem'])->whereProjectId($project->id)->get();
         return Base::retSuccess('success', $list);

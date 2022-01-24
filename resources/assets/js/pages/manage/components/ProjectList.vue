@@ -72,6 +72,17 @@
             <div class="project-subbox">
                 <div class="project-subtitle">{{projectData.desc}}</div>
                 <div class="project-switch">
+                    <div v-if="flowList && flowList.length > 0" class="project-select">
+                        <div class="title">{{$L('进度')}}</div>
+                        <Select
+                            v-model="flowId"
+                            style="width:100%"
+                            :placeholder="this.$L('全部')"
+                        >
+                            <Option value="0">{{this.$L('全部')}}</Option>
+                            <Option v-for="item in flowList" :value="item.id" :key="item.id">{{ item.name }}</Option>
+                        </Select>
+                    </div>
                     <div v-if="completedCount > 0" class="project-checkbox">
                         <Checkbox :value="projectParameter('completedTask')" @on-change="toggleCompleted">{{$L('显示已完成')}}</Checkbox>
                     </div>
@@ -495,6 +506,8 @@ export default {
             archivedTaskShow: false,
 
             projectDialogSubscribe: null,
+            flowList: [],
+            flowId: 0
         }
     },
 
@@ -558,7 +571,7 @@ export default {
         },
 
         panelTask() {
-            const {searchText} = this;
+            const {searchText,flowId} = this;
             return function (list) {
                 if (!this.projectParameter('completedTask')) {
                     list = list.filter(({complete_at}) => {
@@ -568,6 +581,11 @@ export default {
                 if (searchText) {
                     list = list.filter(({name, desc}) => {
                         return $A.strExists(name, searchText) || $A.strExists(desc, searchText);
+                    });
+                }
+                if(flowId > 0){
+                    list = list.filter(({flow_item_id}) => {
+                        return  flow_item_id === flowId;
                     });
                 }
                 return list;
@@ -603,6 +621,11 @@ export default {
                     }
                     return task.column_id == column.id;
                 })).sort((a, b) => {
+                    let at1 = $A.Date(a.complete_at),
+                        at2 = $A.Date(b.complete_at);
+                    if(at1 || at2){
+                        return at1 - at2;
+                    }
                     if (a.sort != b.sort) {
                         return a.sort - b.sort;
                     }
@@ -659,7 +682,7 @@ export default {
         },
 
         unList() {
-            const {projectId, cacheTasks, searchText, sortField, sortType} = this;
+            const {projectId, cacheTasks, searchText, sortField, sortType, flowId} = this;
             const array = cacheTasks.filter(task => {
                 if (task.archived_at) {
                     return false;
@@ -671,6 +694,9 @@ export default {
                     if (!$A.strExists(task.name, searchText) && !$A.strExists(task.desc, searchText)) {
                         return false;
                     }
+                }
+                if(task.flow_item_id !== flowId && flowId > 0){
+                    return false;
                 }
                 return !task.complete_at;
             });
@@ -690,7 +716,7 @@ export default {
         },
 
         completedList() {
-            const {projectId, cacheTasks, searchText} = this;
+            const {projectId, cacheTasks, searchText, flowId} = this;
             const array = cacheTasks.filter(task => {
                 if (task.archived_at) {
                     return false;
@@ -702,6 +728,9 @@ export default {
                     if (!$A.strExists(task.name, searchText) && !$A.strExists(task.desc, searchText)) {
                         return false;
                     }
+                }
+                if(task.flow_item_id !== flowId && flowId > 0){
+                    return false;
                 }
                 return task.complete_at;
             });
@@ -729,7 +758,14 @@ export default {
     watch: {
         projectData() {
             this.sortData = this.getSort();
-        }
+        },
+        projectId: {
+            handler(val) {
+                if (val) {
+                    this.getFlowData();
+                }
+            },
+        },
     },
 
     methods: {
@@ -1121,7 +1157,7 @@ export default {
 
         taskIsHidden(task) {
             const {name, desc, complete_at} = task;
-            const {searchText} = this;
+            const {searchText,flowId} = this;
             if (!this.projectParameter('completedTask')) {
                 if (complete_at) {
                     return true;
@@ -1131,6 +1167,10 @@ export default {
                 if (!($A.strExists(name, searchText) || $A.strExists(desc, searchText))) {
                     return true;
                 }
+            }
+
+            if(task.flow_item_id !== flowId && flowId > 0){
+                return true;
             }
             return false;
         },
@@ -1196,6 +1236,9 @@ export default {
                     return false;
                 }
             }
+            if(task.flow_item_id !== this.flowId && this.flowId > 0){
+                return false;
+            }
             return task.owner;
         },
 
@@ -1216,11 +1259,31 @@ export default {
                     return false;
                 }
             }
+            if(task.flow_item_id !== this.flowId && this.flowId > 0){
+                return false;
+            }
             return task.task_user && task.task_user.find(({userid, owner}) => userid == this.userId && owner == 0);
         },
 
         expiresFormat(date) {
             return $A.countDownFormat(date, this.nowTime)
+        },
+        getFlowData() {
+            this.$store.dispatch("call", {
+                url: 'project/flow/list',
+                data: {
+                    project_id: this.projectId,
+                    is_filter: 1
+                },
+            }).then(({data}) => {
+                let flowList = data.map(item => {
+                    return item.project_flow_item;
+                });
+                this.flowList = flowList[0];
+            }).catch(({msg}) => {
+                this.flowList = [];
+                return false;
+            });
         },
     }
 }
