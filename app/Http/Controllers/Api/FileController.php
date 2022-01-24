@@ -560,7 +560,7 @@ class FileController extends AbstractController
             }
         }
         //
-        $path = 'uploads/office/' . date("Ym") . '/u' . $user->userid . '/';
+        $path = 'uploads/file/' . date("Ym") . '/u' . $user->userid . '/';
         $data = Base::upload([
             "file" => Request::file('files'),
             "type" => 'more',
