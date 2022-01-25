@@ -355,10 +355,9 @@ class Project extends AbstractModel
      * @param int $project_id
      * @param null|bool $archived true:仅限未归档, false:仅限已归档, null:不限制
      * @param null $mustOwner true:仅限项目负责人, false:仅限非项目负责人, null:不限制
-     * @param int $is_filter 是否是用筛选列表
      * @return self
      */
-    public static function userProject($project_id, $archived = true, $mustOwner = null, $is_filter = 0)
+    public static function userProject($project_id, $archived = true, $mustOwner = null)
     {
         $project = self::authData()->where('projects.id', intval($project_id))->first();
         if (empty($project)) {
@@ -370,10 +369,10 @@ class Project extends AbstractModel
         if ($archived === false && $project->archived_at == null) {
             throw new ApiException('项目未归档', [ 'project_id' => $project_id ]);
         }
-        if ($mustOwner === true && !$project->owner && $is_filter === 0) {
+        if ($mustOwner === true && !$project->owner) {
             throw new ApiException('仅限项目负责人操作', [ 'project_id' => $project_id ]);
         }
-        if ($mustOwner === false && $project->owner && $is_filter === 0) {
+        if ($mustOwner === false && $project->owner) {
             throw new ApiException('禁止项目负责人操作', [ 'project_id' => $project_id ]);
         }
         return $project;
