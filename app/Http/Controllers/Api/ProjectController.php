@@ -1799,7 +1799,7 @@ class ProjectController extends AbstractController
         //
         $builder = ProjectLog::select(["*"]);
         if ($task_id > 0) {
-            $task = ProjectTask::userTask($task_id);
+            $task = ProjectTask::userTask($task_id, null);
             $builder->whereTaskId($task->id);
         } else {
             $project = Project::userProject($project_id);
