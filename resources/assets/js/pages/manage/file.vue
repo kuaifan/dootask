@@ -37,6 +37,8 @@
                         "<em>{{shearFile.name}}</em>"
                     </div>
                 </Button>
+                <Button v-if="selectFile.length > 0" size="small" type="info">剪切</Button>
+                <Button v-if="selectFile.length > 0" size="small" type="error" @click="deleteSelectFile">删除</Button>
                 <div v-if="loadIng > 0" class="nav-load"><Loading/></div>
                 <div class="flex-full"></div>
                 <div :class="['switch-button', tableMode ? 'table' : '']" @click="tableMode=!tableMode">
@@ -53,6 +55,10 @@
                     :no-data-text="$L('没有任何文件')"
                     @on-cell-click="clickRow"
                     @on-contextmenu="handleContextMenu"
+                    @on-select="handleTableSelect"
+                    @on-select-cancel="handleTableSelect"
+                    @on-select-all-cancel="handleTableSelect"
+                    @on-select-all="handleTableSelect"
                     context-menu
                     stripe/>
             </div>
@@ -428,6 +434,8 @@ export default {
                 top: 0,
                 left: 0
             },
+
+            selectFile: [],
         }
     },
 
@@ -541,6 +549,11 @@ export default {
     methods: {
         initLanguage() {
             this.columns = [
+                {
+                    type: 'selection',
+                    width: 60,
+                    align: 'center'
+                },
                 {
                     title: this.$L('文件名'),
                     key: 'name',
@@ -814,6 +827,8 @@ export default {
         },
 
         clickRow(row) {
+            // 清空已选择的行
+            this.selectFile = [];
             this.dropFile(row, 'open');
         },
 
@@ -1239,6 +1254,39 @@ export default {
             this.uploadShow = true;
             return true;
         },
+
+        handleTableSelect(selection, row) {
+            this.selectFile = selection;
+        },
+
+        deleteSelectFile() {
+            if ( this.selectFile.length <= 0 ) {
+                $A.messageError("未选择任何文件或文件夹");
+                return false;
+            }
+            let s_ids = this.selectFile.map( (item, index) => {
+                return item.id;
+            } );
+            $A.modalConfirm({
+                title: '批量删除',
+                content: '你确定要删除这些文件吗？',
+                loading: true,
+                onOk: () => {
+                    this.$store.dispatch("call", {
+                        url: 'file/batch/remove',
+                        data: {
+                            ids: s_ids,
+                        },
+                    }).then(({msg}) => {
+                        this.$Modal.remove();
+                        $A.messageSuccess("已提交至后台处理，请稍后再回来查看结果吧");
+                    }).catch(({msg}) => {
+                        $A.modalError(msg, 301);
+                        this.$Modal.remove();
+                    });
+                }
+            });
+        }
     }
 }
 </script>

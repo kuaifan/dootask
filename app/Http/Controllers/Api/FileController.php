@@ -12,6 +12,8 @@ use App\Models\FileUser;
 use App\Models\User;
 use App\Module\Base;
 use App\Module\Ihttp;
+use App\Tasks\BatchRemoveFileTask;
+use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Illuminate\Support\Facades\DB;
 use Request;
 
@@ -369,6 +371,33 @@ class FileController extends AbstractController
         //
         $file->deleteFile();
         return Base::retSuccess('删除成功', $file);
+    }
+
+    /**
+     * @api {get} api/file/batch/remove          批量删除文件
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup file
+     * @apiName batchRemove
+     *
+     * @apiParam {Array} ids           文件ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     *
+     * @return array
+     */
+    public function batch__remove(): array
+    {
+        $ids = Request::input('ids');
+        if ( empty($ids) || !is_array($ids) ) {
+            return Base::retError("请选择要删除的文件");
+        }
+        $task = new BatchRemoveFileTask($ids, User::userid());
+        Task::deliver($task);
+        return Base::retSuccess('success');
     }
 
     /**
