@@ -37,7 +37,6 @@
                         "<em>{{shearFile.name}}</em>"
                     </div>
                 </Button>
-                <Button v-if="selectFile.length > 0" size="small" type="info">剪切</Button>
                 <Button v-if="selectFile.length > 0" size="small" type="error" @click="deleteSelectFile">删除</Button>
                 <div v-if="loadIng > 0" class="nav-load"><Loading/></div>
                 <div class="flex-full"></div>
@@ -76,6 +75,9 @@
                             @click="openFile(item)">
                             <div class="file-menu" @click.stop="handleRightClick($event, item)">
                                 <Icon type="ios-more" />
+                            </div>
+                            <div class="file-check" @click.stop :class="fileChecked[item.id] ?'file-checked' : ''">
+                                <Checkbox v-model="fileChecked[item.id]" @on-change="onFileCheckClick(item)"/>
                             </div>
                             <div :class="`no-dark-mode-before file-icon ${item.type}`">
                                 <template v-if="item.share">
@@ -436,6 +438,7 @@ export default {
             },
 
             selectFile: [],
+            fileChecked: [],
         }
     },
 
@@ -524,6 +527,25 @@ export default {
 
         tableMode(val) {
             $A.setStorage("fileTableMode", val)
+            // 切换显示模式时把选中的数据转移
+            if ( val === true ) {
+                if ( this.fileChecked.length > 0 ) {
+                    for (let i = 0; i < this.fileList.length; i++) {
+                        if ( this.fileChecked[this.fileList[i].id] === true )
+                            this.fileList[i]["_checked"] = true;
+                        else
+                            this.fileList[i]["_checked"] = false;
+                    }
+                }
+            } else {
+                this.fileChecked = []; // 清空
+                if ( this.selectFile.length > 0 ) {
+                    for (let i = 0; i < this.selectFile.length; i++) {
+                        this.fileChecked[this.selectFile[i].id] = true;
+                    }
+                }
+            }
+
         },
 
         fileShow(val) {
@@ -1277,8 +1299,9 @@ export default {
                         data: {
                             ids: s_ids,
                         },
-                    }).then(({msg}) => {
+                    }).then(() => {
                         this.$Modal.remove();
+                        this.selectFile = [];
                         $A.messageSuccess("已提交至后台处理，请稍后再回来查看结果吧");
                     }).catch(({msg}) => {
                         $A.modalError(msg, 301);
@@ -1286,6 +1309,23 @@ export default {
                     });
                 }
             });
+        },
+
+        onFileCheckClick(file) {
+            if ( this.fileChecked[file.id] === true && !$A.inArray(file.id, this.selectFile) )
+                this.selectFile.push(file);
+            else if ( this.fileChecked[file.id] === false ) {
+                let index = -1;
+                for (let i = 0; i < this.selectFile.length; i++) {
+                    if (parseInt(this.selectFile[i].id) === parseInt(file.id)) {
+                        index = i;
+                        break;
+                    }
+                }
+                // 删除对应Id
+                if (index >= 0)
+                    this.selectFile.splice(index, 1);
+            }
         }
     }
 }
