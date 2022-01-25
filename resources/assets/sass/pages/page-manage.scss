@@ -298,6 +298,13 @@
     }
     .manage-mini-menu {
         display: none;
+        position: relative;
+        .ivu-badge {
+            position: absolute;
+            top: -6px;
+            left: 30px;
+            transform: scale(0.9);
+        }
     }
 }
 
