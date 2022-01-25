@@ -160,12 +160,12 @@
         <div v-if="uploadShow && uploadList.length > 0" class="file-upload-list">
             <div class="upload-wrap">
                 <div class="title">
-                    {{$L('上传列表')}}
+                    {{$L('上传列表')}} ({{uploadList.length}})
                     <em v-if="uploadList.find(({status}) => status === 'finished')" @click="uploadClear">{{$L('清空已完成')}}</em>
                 </div>
                 <ul class="content">
-                    <li v-for="(item, index) in uploadList">
-                        <AutoTip class="file-name">{{item.name}}</AutoTip>
+                    <li v-for="(item, index) in uploadList" :key="index" v-if="index < 100">
+                        <AutoTip class="file-name">{{uploadName(item)}}</AutoTip>
                         <AutoTip v-if="item.status === 'finished' && item.response && item.response.ret !== 1" class="file-error">{{item.response.msg}}</AutoTip>
                         <Progress v-else :percent="uploadPercentageParse(item.percentage)" :stroke-width="5" />
                         <Icon class="file-close" type="ios-close-circle-outline" @click="uploadList.splice(index, 1)"/>
@@ -409,7 +409,7 @@ export default {
                 'pdf',
                 'txt',
                 'htaccess', 'htgroups', 'htpasswd', 'conf', 'bat', 'cmd', 'cpp', 'c', 'cc', 'cxx', 'h', 'hh', 'hpp', 'ino', 'cs', 'css',
-                'dockerfile', 'go', 'html', 'htm', 'xhtml', 'vue', 'we', 'wpy', 'java', 'js', 'jsm', 'jsx', 'json', 'jsp', 'less', 'lua', 'makefile', 'gnumakefile', 'makefile',
+                'dockerfile', 'go', 'html', 'htm', 'xhtml', 'vue', 'we', 'wpy', 'java', 'js', 'jsm', 'jsx', 'json', 'jsp', 'less', 'lua', 'makefile', 'gnumakefile',
                 'ocamlmakefile', 'make', 'md', 'markdown', 'mysql', 'nginx', 'ini', 'cfg', 'prefs', 'm', 'mm', 'pl', 'pm', 'p6', 'pl6', 'pm6', 'pgsql', 'php',
                 'inc', 'phtml', 'shtml', 'php3', 'php4', 'php5', 'phps', 'phpt', 'aw', 'ctp', 'module', 'ps1', 'py', 'r', 'rb', 'ru', 'gemspec', 'rake', 'guardfile', 'rakefile',
                 'gemfile', 'rs', 'sass', 'scss', 'sh', 'bash', 'bashrc', 'sql', 'sqlserver', 'swift', 'ts', 'typescript', 'str', 'vbs', 'vb', 'v', 'vh', 'sv', 'svh', 'xml',
@@ -1161,6 +1161,10 @@ export default {
                 item.permission = item._permission;
                 $A.modalError(msg)
             })
+        },
+
+        uploadName(item) {
+            return $A.getObject(item, 'response.data.full_name') || item.name
         },
 
         /********************文件上传部分************************/

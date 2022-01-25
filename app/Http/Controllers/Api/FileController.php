@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 
+use App\Exceptions\ApiException;
 use App\Models\AbstractModel;
 use App\Models\File;
 use App\Models\FileContent;
@@ -546,6 +547,7 @@ class FileController extends AbstractController
         $user = User::auth();
         //
         $pid = intval(Request::input('pid'));
+        $webkitRelativePath = Request::input('webkitRelativePath');
         //
         $userid = $user->userid;
         if ($pid > 0) {
@@ -559,6 +561,33 @@ class FileController extends AbstractController
                 return Base::retError('每个文件夹里最多只能创建300个文件或文件夹');
             }
         }
+        //
+        $dirs = explode("/", $webkitRelativePath);
+        AbstractModel::transaction(function() use ($user, $userid, $dirs, &$pid) {
+            while (count($dirs) > 1) {
+                $dirName = array_shift($dirs);
+                if ($dirName) {
+                    $dirRow = File::wherePid($pid)->whereType('folder')->whereName($dirName)->lockForUpdate()->first();
+                    if (empty($dirRow)) {
+                        $dirRow = File::createInstance([
+                            'pid' => $pid,
+                            'type' => 'folder',
+                            'name' => $dirName,
+                            'userid' => $userid,
+                            'created_id' => $user->userid,
+                        ]);
+                        if ($dirRow->save()) {
+                            $tmpRow = File::find($dirRow->id);
+                            $tmpRow->pushMsg('add', $tmpRow);
+                        }
+                    }
+                    if (empty($dirRow)) {
+                        throw new ApiException('创建文件夹失败');
+                    }
+                    $pid = $dirRow->id;
+                }
+            }
+        });
         //
         $path = 'uploads/file/' . date("Ym") . '/u' . $user->userid . '/';
         $data = Base::upload([
@@ -585,7 +614,7 @@ class FileController extends AbstractController
             'pdf' => "pdf",
             'txt' => "txt",
             'htaccess', 'htgroups', 'htpasswd', 'conf', 'bat', 'cmd', 'cpp', 'c', 'cc', 'cxx', 'h', 'hh', 'hpp', 'ino', 'cs', 'css',
-            'dockerfile', 'go', 'html', 'htm', 'xhtml', 'vue', 'we', 'wpy', 'java', 'js', 'jsm', 'jsx', 'json', 'jsp', 'less', 'lua', 'makefile', 'gnumakefile', 'makefile',
+            'dockerfile', 'go', 'html', 'htm', 'xhtml', 'vue', 'we', 'wpy', 'java', 'js', 'jsm', 'jsx', 'json', 'jsp', 'less', 'lua', 'makefile', 'gnumakefile',
             'ocamlmakefile', 'make', 'md', 'markdown', 'mysql', 'nginx', 'ini', 'cfg', 'prefs', 'm', 'mm', 'pl', 'pm', 'p6', 'pl6', 'pm6', 'pgsql', 'php',
             'inc', 'phtml', 'shtml', 'php3', 'php4', 'php5', 'phps', 'phpt', 'aw', 'ctp', 'module', 'ps1', 'py', 'r', 'rb', 'ru', 'gemspec', 'rake', 'guardfile', 'rakefile',
             'gemfile', 'rs', 'sass', 'scss', 'sh', 'bash', 'bashrc', 'sql', 'sqlserver', 'swift', 'ts', 'typescript', 'str', 'vbs', 'vb', 'v', 'vh', 'sv', 'svh', 'xml',
@@ -604,7 +633,8 @@ class FileController extends AbstractController
             'created_id' => $user->userid,
         ]);
         // 开始创建
-        return AbstractModel::transaction(function () use ($type, $user, $data, $file) {
+        return AbstractModel::transaction(function () use ($webkitRelativePath, $type, $user, $data, $file) {
+            $file->size = $data['size'] * 1024;
             $file->save();
             //
             $content = FileContent::createInstance([
@@ -616,16 +646,16 @@ class FileController extends AbstractController
                     'url' => $data['path']
                 ],
                 'text' => '',
-                'size' => $data['size'] * 1024,
+                'size' => $file->size,
                 'userid' => $user->userid,
             ]);
             $content->save();
             //
-            $file->size = $content->size;
-            $file->save();
+            $tmpRow = File::find($file->id);
+            $tmpRow->pushMsg('add', $tmpRow);
             //
-            $data = File::find($file->id);
-            $data->pushMsg('add', $data);
+            $data = $tmpRow->toArray();
+            $data['full_name'] = $webkitRelativePath ?: $data['name'];
             return Base::retSuccess($data['name'] . ' 上传成功', $data);
         });
     }
