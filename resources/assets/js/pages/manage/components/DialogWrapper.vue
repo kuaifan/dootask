@@ -341,8 +341,21 @@ export default {
             const postFiles = Array.prototype.slice.call(files);
             if (postFiles.length > 0) {
                 e.preventDefault();
-                postFiles.forEach((file) => {
-                    this.$refs.chatUpload.upload(file);
+                this.pasteFile = [];
+                this.pasteItem = [];
+                postFiles.some(file => {
+                    let reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = ({target}) => {
+                        this.pasteFile.push(file)
+                        this.pasteItem.push({
+                            type: $A.getMiddle(file.type, null, '/'),
+                            name: file.name,
+                            size: file.size,
+                            result: target.result
+                        })
+                        this.pasteShow = true
+                    }
                 });
             }
         },

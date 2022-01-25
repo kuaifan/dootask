@@ -41,43 +41,57 @@ class FileContent extends AbstractModel
     use SoftDeletes;
 
     /**
-     * 获取格式内容
-     * @param $type
+     * 获取格式内容（或下载）
+     * @param File $file
      * @param $content
+     * @param $download
      * @return array|\Symfony\Component\HttpFoundation\BinaryFileResponse
      */
-    public static function formatContent($type, $content)
+    public static function formatContent($file, $content, $download = false)
     {
-        $content = Base::json2array($content);
-        if (in_array($type, ['word', 'excel', 'ppt'])) {
+        $name = $file->ext ? "{$file->name}.{$file->ext}" : null;
+        $content = Base::json2array($content ?: []);
+        if (in_array($file->type, ['word', 'excel', 'ppt'])) {
             if (empty($content)) {
-                return Response::download(resource_path('assets/statics/office/empty.' . str_replace(['word', 'excel', 'ppt'], ['docx', 'xlsx', 'pptx'], $type)));
+                return Response::download(resource_path('assets/statics/office/empty.' . str_replace(['word', 'excel', 'ppt'], ['docx', 'xlsx', 'pptx'], $file->type)), $name);
             }
-            return Response::download(public_path($content['url']));
+            return Response::download(public_path($content['url']), $name);
         }
         if (empty($content)) {
-            $content = match ($type) {
+            $content = match ($file->type) {
                 'document' => [
                     "type" => "md",
                     "content" => "",
                 ],
-                'sheet' => [
-                    [
-                        "name" => "Sheet1",
-                        "config" => json_decode('{}'),
-                    ]
-                ],
                 default => json_decode('{}'),
             };
+            if ($download) {
+                abort(403, "This file is empty.");
+            }
         } else {
             $content['preview'] = false;
-            if ($content['ext'] && !in_array($content['ext'], ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'])) {
-                $url = 'http://' . env('APP_IPPR') . '.3/' . $content['url'];
-                if (in_array($type, ['picture', 'image', 'tif', 'media'])) {
-                    $url = Base::fillUrl($content['url']);
+            if ($file->ext) {
+                $filePath = public_path($content['url']);
+                if (in_array($file->type, ['txt', 'code']) && $file->size < 2 * 1024 * 1024) {
+                    // 支持编辑，限制2M内的文件
+                    $content['content'] = file_get_contents($filePath);
+                } else {
+                    // 支持预览
+                    if (in_array($file->type, ['picture', 'image', 'tif', 'media'])) {
+                        $url = Base::fillUrl($content['url']);
+                    } else {
+                        $url = 'http://' . env('APP_IPPR') . '.3/' . $content['url'];
+                    }
+                    $content['url'] = base64_encode($url);
+                    $content['preview'] = true;
                 }
-                $content['url'] = base64_encode($url);
-                $content['preview'] = true;
+            }
+            if ($download) {
+                if (isset($filePath)) {
+                    return Response::download($filePath, $name);
+                } else {
+                    abort(403, "This file not support download.");
+                }
             }
         }
         return Base::retSuccess('success', [ 'content' => $content ]);

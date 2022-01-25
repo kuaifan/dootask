@@ -9,7 +9,7 @@
         <div v-else-if="msgData.type === 'loading'" class="dialog-content loading"><Loading/></div>
         <!--文件-->
         <div v-else-if="msgData.type === 'file'" :class="['dialog-content', msgData.msg.type]">
-            <a :href="msgData.msg.path" target="_blank">
+            <div class="dialog-file" @click="downFile">
                 <img v-if="msgData.msg.type === 'img'" class="file-img" :style="imageStyle(msgData.msg)" :src="msgData.msg.thumb"/>
                 <div v-else class="file-box">
                     <img class="file-thumb" :src="msgData.msg.thumb"/>
@@ -18,7 +18,7 @@
                         <div class="file-size">{{$A.bytesToSize(msgData.msg.size)}}</div>
                     </div>
                 </div>
-            </a>
+            </div>
         </div>
         <!--未知-->
         <div v-else class="dialog-content unknown">{{$L("未知的消息类型")}}</div>
@@ -56,6 +56,7 @@
 
 <script>
 import WCircle from "../../../components/WCircle";
+import {mapState} from "vuex";
 
 export default {
     name: "DialogView",
@@ -84,6 +85,8 @@ export default {
     },
 
     computed: {
+        ...mapState(['userToken']),
+
         readList() {
             return this.read_list.filter(({read_at}) => read_at)
         },
@@ -162,6 +165,17 @@ export default {
                 };
             }
             return {};
+        },
+
+        downFile() {
+            $A.modalConfirm({
+                title: '下载文件',
+                content: `${this.msgData.msg.name} (${$A.bytesToSize(this.msgData.msg.size)})`,
+                okText: '立即下载',
+                onOk: () => {
+                    $A.downFile($A.apiUrl(`dialog/msg/download?msg_id=${this.msgData.id}&token=${this.userToken}`))
+                }
+            });
         }
     }
 }

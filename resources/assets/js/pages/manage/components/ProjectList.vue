@@ -35,7 +35,7 @@
                         </ETooltip>
                     </li>
                     <li :class="['project-icon', searchText!='' ? 'active' : '']">
-                        <Tooltip :always="searchText!=''" @on-popper-show="searchFocus" theme="light">
+                        <Tooltip :always="searchAlways" @on-popper-show="searchFocus" theme="light">
                             <Icon class="menu-icon" type="ios-search" @click="searchFocus" />
                             <div slot="content">
                                 <Input v-model="searchText" ref="searchInput" :placeholder="$L('名称、描述...')" class="search-input" clearable/>
@@ -549,6 +549,17 @@ export default {
         ]),
 
         ...mapGetters(['projectData', 'projectParameter', 'transforTasks']),
+
+        searchAlways() {
+            return !(!this.searchText
+                || this.settingShow
+                || this.userShow
+                || this.inviteShow
+                || this.transferShow
+                || this.workflowShow
+                || this.logShow
+                || this.archivedTaskShow);
+        },
 
         userWaitRemove() {
             const {userids, useridbak} = this.userData;

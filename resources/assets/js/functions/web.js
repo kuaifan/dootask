@@ -355,6 +355,23 @@
          */
         dialogCompleted(dialog) {
             return this.dialogTags(dialog).find(({color}) => color == 'success');
+        },
+
+        /**
+         * 下载文件
+         * @param url
+         */
+        downFile(url) {
+            if (!url) {
+                return
+            }
+            if ($A.Electron) {
+                $A.Electron.shell.openExternal(url).catch(() => {
+                    $A.modalError("下载失败");
+                });
+            } else {
+                window.open(url)
+            }
         }
     });
 

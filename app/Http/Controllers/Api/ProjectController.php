@@ -19,6 +19,7 @@ use App\Module\Base;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Request;
+use Response;
 
 /**
  * @apiDefine project
@@ -1083,7 +1084,41 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {post} api/project/task/add          23. 添加任务
+     * @api {get} api/project/task/filedown          23. 下载任务文件
+     *
+     * @apiDescription 需要token身份（限：项目、任务负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__filedown
+     *
+     * @apiParam {Number} file_id            文件ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function task__filedown()
+    {
+        User::auth();
+        //
+        $file_id = intval(Request::input('file_id'));
+        //
+        $file = ProjectTaskFile::find($file_id);
+        if (empty($file)) {
+            abort(403, "This file not exist.");
+        }
+        //
+        try {
+            ProjectTask::userTask($file->task_id, true, true);
+        } catch (\Exception $e) {
+            abort(403, $e->getMessage() ?: "This file not support download.");
+        }
+        //
+        return Response::download(public_path($file->getRawOriginal('path')), $file->name);
+    }
+
+    /**
+     * @api {post} api/project/task/add          24. 添加任务
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1154,7 +1189,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/addsub          24. 添加子任务
+     * @api {get} api/project/task/addsub          25. 添加子任务
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -1194,7 +1229,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {post} api/project/task/update          25. 修改任务、子任务
+     * @api {post} api/project/task/update          26. 修改任务、子任务
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -1240,7 +1275,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {post} api/project/task/upload          26. 上传文件
+     * @api {post} api/project/task/upload          27. 上传文件
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -1306,7 +1341,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/dialog          27. 创建/获取聊天室
+     * @api {get} api/project/task/dialog          28. 创建/获取聊天室
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1353,7 +1388,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/archived          28. 归档任务
+     * @api {get} api/project/task/archived          29. 归档任务
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -1395,7 +1430,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/remove          29. 删除任务
+     * @api {get} api/project/task/remove          30. 删除任务
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -1421,7 +1456,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/resetfromlog          29. 根据日志重置任务
+     * @api {get} api/project/task/resetfromlog          31. 根据日志重置任务
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -1480,7 +1515,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/flow          29. 任务工作流信息
+     * @api {get} api/project/task/flow          32. 任务工作流信息
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1562,7 +1597,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/flow/list          29. 工作流列表
+     * @api {get} api/project/flow/list          33. 工作流列表
      *
      * @apiDescription 需要token身份（限：项目负责人）
      * @apiVersion 1.0.0
@@ -1589,7 +1624,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {post} api/project/flow/save          29. 保存工作流
+     * @api {post} api/project/flow/save          34. 保存工作流
      *
      * @apiDescription 需要token身份（限：项目负责人）
      * @apiVersion 1.0.0
@@ -1708,7 +1743,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/flow/delete          29. 删除工作流
+     * @api {get} api/project/flow/delete          35. 删除工作流
      *
      * @apiDescription 需要token身份（限：项目负责人）
      * @apiVersion 1.0.0
@@ -1740,7 +1775,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/log/lists          30. 获取项目、任务日志
+     * @api {get} api/project/log/lists          36. 获取项目、任务日志
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1766,7 +1801,7 @@ class ProjectController extends AbstractController
         //
         $builder = ProjectLog::select(["*"]);
         if ($task_id > 0) {
-            $task = ProjectTask::userTask($task_id);
+            $task = ProjectTask::userTask($task_id, null);
             $builder->whereTaskId($task->id);
         } else {
             $project = Project::userProject($project_id);

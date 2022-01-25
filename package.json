@@ -1,6 +1,6 @@
 {
     "name": "DooTask",
-    "version": "0.6.90",
+    "version": "0.7.41",
     "description": "DooTask is task management system.",
     "scripts": {
         "start": "./cmd dev",
@@ -64,7 +64,7 @@
         "stylus-loader": "^6.2.0",
         "tinymce": "^5.10.2",
         "tui-calendar-hi": "^1.15.1-5",
-        "view-design-hi": "^4.7.0-7",
+        "view-design-hi": "^4.7.0-8",
         "vue": "^2.6.14",
         "vue-clipboard2": "^0.3.3",
         "vue-emoji-picker": "^1.0.3",

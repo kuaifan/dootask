@@ -104,8 +104,14 @@
             </template>
 
             <div class="file-menu" :style="contextMenuStyles">
-                <Dropdown trigger="custom" :visible="contextMenuVisible" transfer @on-clickoutside="handleClickContextMenuOutside" @on-visible-change="handleVisibleChangeMenu">
-                    <DropdownMenu slot="list" class="page-file-dropdown-menu">
+                <Dropdown
+                    trigger="custom"
+                    :visible="contextMenuVisible"
+                    transfer-class-name="page-file-dropdown-menu"
+                    @on-clickoutside="handleClickContextMenuOutside"
+                    @on-visible-change="handleVisibleChangeMenu"
+                    transfer>
+                    <DropdownMenu slot="list">
                         <template v-if="contextMenuItem.id">
                             <DropdownItem @click.native="handleContextClick('open')">{{$L('打开')}}</DropdownItem>
                             <Dropdown placement="right-start" transfer>
@@ -133,6 +139,7 @@
                             <template v-else-if="contextMenuItem.share">
                                 <DropdownItem @click.native="handleContextClick('outshare')" divided>{{$L('退出共享')}}</DropdownItem>
                             </template>
+                            <DropdownItem @click.native="handleContextClick('download')" :disabled="contextMenuItem.ext == ''">{{$L('下载')}}</DropdownItem>
                             <DropdownItem @click.native="handleContextClick('delete')" divided style="color:red">{{$L('删除')}}</DropdownItem>
                         </template>
                         <template v-else>
@@ -153,12 +160,12 @@
         <div v-if="uploadShow && uploadList.length > 0" class="file-upload-list">
             <div class="upload-wrap">
                 <div class="title">
-                    {{$L('上传列表')}}
+                    {{$L('上传列表')}} ({{uploadList.length}})
                     <em v-if="uploadList.find(({status}) => status === 'finished')" @click="uploadClear">{{$L('清空已完成')}}</em>
                 </div>
                 <ul class="content">
-                    <li v-for="(item, index) in uploadList">
-                        <AutoTip class="file-name">{{item.name}}</AutoTip>
+                    <li v-for="(item, index) in uploadList" :key="index" v-if="index < 100">
+                        <AutoTip class="file-name">{{uploadName(item)}}</AutoTip>
                         <AutoTip v-if="item.status === 'finished' && item.response && item.response.ret !== 1" class="file-error">{{item.response.msg}}</AutoTip>
                         <Progress v-else :percent="uploadPercentageParse(item.percentage)" :stroke-width="5" />
                         <Icon class="file-close" type="ios-close-circle-outline" @click="uploadList.splice(index, 1)"/>
@@ -345,11 +352,6 @@ export default {
                     "divided": true
                 },
                 {
-                    "value": "sheet",
-                    "label": null,
-                    "name": "表格",
-                },
-                {
                     "value": "flow",
                     "label": "流程图",
                     "name": "流程图",
@@ -406,8 +408,13 @@ export default {
                 'ofd',
                 'pdf',
                 'txt',
-                'html', 'htm', 'asp', 'jsp', 'xml', 'json', 'properties', 'md', 'gitignore', 'log', 'java', 'py', 'c', 'cpp', 'sql', 'sh', 'bat', 'm', 'bas', 'prg', 'cmd',
-                'php', 'go', 'python', 'js', 'ftl', 'css', 'lua', 'rb', 'yaml', 'yml', 'h', 'cs', 'aspx',
+                'htaccess', 'htgroups', 'htpasswd', 'conf', 'bat', 'cmd', 'cpp', 'c', 'cc', 'cxx', 'h', 'hh', 'hpp', 'ino', 'cs', 'css',
+                'dockerfile', 'go', 'html', 'htm', 'xhtml', 'vue', 'we', 'wpy', 'java', 'js', 'jsm', 'jsx', 'json', 'jsp', 'less', 'lua', 'makefile', 'gnumakefile',
+                'ocamlmakefile', 'make', 'md', 'markdown', 'mysql', 'nginx', 'ini', 'cfg', 'prefs', 'm', 'mm', 'pl', 'pm', 'p6', 'pl6', 'pm6', 'pgsql', 'php',
+                'inc', 'phtml', 'shtml', 'php3', 'php4', 'php5', 'phps', 'phpt', 'aw', 'ctp', 'module', 'ps1', 'py', 'r', 'rb', 'ru', 'gemspec', 'rake', 'guardfile', 'rakefile',
+                'gemfile', 'rs', 'sass', 'scss', 'sh', 'bash', 'bashrc', 'sql', 'sqlserver', 'swift', 'ts', 'typescript', 'str', 'vbs', 'vb', 'v', 'vh', 'sv', 'svh', 'xml',
+                'rdf', 'rss', 'wsdl', 'xslt', 'atom', 'mathml', 'mml', 'xul', 'xbl', 'xaml', 'yaml', 'yml',
+                'asp', 'properties', 'gitignore', 'log', 'bas', 'prg', 'python', 'ftl', 'aspx',
                 'mp3', 'wav', 'mp4', 'flv',
                 'avi', 'mov', 'wmv', 'mkv', '3gp', 'rm',
                 'xmind', 'rp',
@@ -903,6 +910,21 @@ export default {
                     this.linkGet()
                     break;
 
+                case 'download':
+                    if (!item.ext) {
+                        $A.modalError("此文件不支持下载");
+                        return;
+                    }
+                    $A.modalConfirm({
+                        title: '下载文件',
+                        content: `${item.name}.${item.ext} (${$A.bytesToSize(item.size)})`,
+                        okText: '立即下载',
+                        onOk: () => {
+                            $A.downFile($A.apiUrl(`file/content?id=${item.id}&down=yes&token=${this.userToken}`))
+                        }
+                    });
+                    break;
+
                 case 'delete':
                     let typeName = item.type == 'folder' ? '文件夹' : '文件';
                     $A.modalConfirm({
@@ -1140,6 +1162,10 @@ export default {
                 item.permission = item._permission;
                 $A.modalError(msg)
             })
+        },
+
+        uploadName(item) {
+            return $A.getObject(item, 'response.data.full_name') || item.name
         },
 
         /********************文件上传部分************************/

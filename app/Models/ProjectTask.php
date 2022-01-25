@@ -694,6 +694,10 @@ class ProjectTask extends AbstractModel
                                 $subTask->end_at = $this->end_at;
                                 $isUp = true;
                             }
+                            if ($subTask->start_at && Carbon::parse($subTask->start_at)->gt($subTask->end_at)) {
+                                $subTask->start_at = $this->start_at;
+                                $isUp = true;
+                            }
                             if ($isUp) {
                                 $updateMarking['is_update_subtask'] = true;
                                 $subTask->addLog("同步修改{任务}时间");
@@ -860,6 +864,24 @@ class ProjectTask extends AbstractModel
             return 0;
         }
         return $user->owner ? 2 : 1;
+    }
+
+    /**
+     * 判断是否负责人（或者是主任务的负责人）
+     * @return bool
+     */
+    public function isOwner()
+    {
+        if ($this->owner) {
+            return true;
+        }
+        if ($this->parent_id > 0) {
+            $mainTask = self::allData()->find($this->parent_id);
+            if ($mainTask->owner) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -1063,7 +1085,7 @@ class ProjectTask extends AbstractModel
      * 获取任务（会员有任务权限 或 会员存在项目内）
      * @param int $task_id
      * @param bool $archived true:仅限未归档, false:仅限已归档, null:不限制
-     * @param int|bool $mustOwner 0|false:不限制, 1|true:限制任务或项目负责人, 2:已有负责人才限制任务或项目负责人
+     * @param int|bool $mustOwner 0|false:不限制, 1|true:限制任务或项目负责人, 2:已有负责人才限制任务或项目负责人(子任务时如果是主任务负责人也可以)
      * @param array $with
      * @return self
      */
@@ -1096,7 +1118,7 @@ class ProjectTask extends AbstractModel
         if ($mustOwner === 2) {
             $mustOwner = $task->hasOwner() ? 1 : 0;
         }
-        if (($mustOwner === 1 || $mustOwner === true) && !$task->owner && !$project->owner) {
+        if (($mustOwner === 1 || $mustOwner === true) && !$task->isOwner() && !$project->owner) {
             throw new ApiException('仅限项目或任务负责人操作');
         }
         //

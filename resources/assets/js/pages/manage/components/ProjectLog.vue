@@ -216,11 +216,14 @@ export default {
                 return list
             }
             if (this.taskId > 0 && $A.isJson(record.flow)) {
-                list.push({
-                    id,
-                    button: '重置',
-                    content: `确定重置为【${$A.getMiddle(record.flow.flow_item_name, "|")}】吗？`,
-                })
+                let name = $A.getMiddle(record.flow.flow_item_name, "|")
+                if (name) {
+                    list.push({
+                        id,
+                        button: '重置',
+                        content: `确定重置为【${name}】吗？`,
+                    })
+                }
             }
             return list;
         },

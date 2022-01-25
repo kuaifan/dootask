@@ -12,6 +12,7 @@ use App\Models\WebSocketDialogUser;
 use App\Module\Base;
 use Carbon\Carbon;
 use Request;
+use Response;
 
 /**
  * @apiDefine dialog
@@ -330,6 +331,38 @@ class DialogController extends AbstractController
     }
 
     /**
+     * @api {get} api/dialog/msg/download          09. 文件下载
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__download
+     *
+     * @apiParam {Number} msg_id            消息ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__download()
+    {
+        User::auth();
+        //
+        $msg_id = intval(Request::input('msg_id'));
+        //
+        $msg = WebSocketDialogMsg::whereId($msg_id)->first();
+        if (empty($msg)) {
+            abort(403, "This file not exist.");
+        }
+        if ($msg->type != 'file') {
+            abort(403, "This file not support download.");
+        }
+        $array = Base::json2array($msg->getRawOriginal('msg'));
+        //
+        return Response::download(public_path($array['path']), $array['name']);
+    }
+
+    /**
      * 聊天消息撤回
      * @return array
      */
@@ -342,19 +375,19 @@ class DialogController extends AbstractController
             return Base::retError("此消息不可撤回");
         }
         $send_dt = Carbon::parse($msg->created_at)->addMinutes(5);
-        if ( $send_dt->lt( Carbon::now() ) )
+        if ($send_dt->lt(Carbon::now()))
             return Base::retError("已超过5分钟，此消息不能撤回");
 
 
         // 删除文件、图片
-        if ( $msg->type == WebSocketDialogMsg::MSG_TYPE_FILE) {
+        if ($msg->type == WebSocketDialogMsg::MSG_TYPE_FILE) {
             if (is_array($msg->msg)) {
                 // 删除本体
-                if ( !empty( $msg->msg["file"] ) )
-                    @unlink( $msg->msg["file"] );
+                if (!empty($msg->msg["file"]))
+                    @unlink($msg->msg["file"]);
                 // 删除缩略图
-                if ( !empty( $msg->msg["thumb"] ) )
-                    @unlink( $msg->msg["thumb"] );
+                if (!empty($msg->msg["thumb"]))
+                    @unlink($msg->msg["thumb"]);
             }
         }
 
@@ -366,6 +399,7 @@ class DialogController extends AbstractController
 //        WebSocketDialogMsg::sendMsg($msg->dialog_id, 'withdraw', [
 //            "msg_id" => $msg->id, // 被撤回的消息Id
 //        ], $user->userid);
+
         return Base::retSuccess("success");
     }
 }
