@@ -541,13 +541,18 @@ class ProjectTask extends AbstractModel
                 if ($newFlowItem->userids) {
                     // 判断自动添加负责人
                     $flowData['owner'] = $data['owner'] = $this->taskUser->where('owner', 1)->pluck('userid')->toArray();
-                    if ($newFlowItem->usertype == "replace") {
-                        // 流转模式
+                    if (in_array($newFlowItem->usertype, ["replace", "merge"])) {
+                        // 流转模式、剔除模式
                         if ($this->parent_id === 0) {
                             $flowData['assist'] = $data['assist'] = $this->taskUser->where('owner', 0)->pluck('userid')->toArray();
                             $data['assist'] = array_merge($data['assist'], $data['owner']);
                         }
                         $data['owner'] = $newFlowItem->userids;
+                        // 判断剔除模式：保留操作状态的人员
+                        if ($newFlowItem->usertype == "merge") {
+                            $data['assist'] = array_diff($data['assist'], [User::userid()]);
+                            $data['owner'] = array_merge($data['owner'], [User::userid()]);
+                        }
                     } else {
                         // 添加模式
                         $data['owner'] = array_merge($data['owner'], $newFlowItem->userids);

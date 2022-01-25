@@ -149,8 +149,10 @@
                     <RadioGroup v-model="userData.usertype">
                         <Radio label="add">{{$L('添加模式')}}</Radio>
                         <Radio label="replace">{{$L('流转模式')}}</Radio>
+                        <Radio label="merge">{{$L('剔除模式')}}</Radio>
                     </RadioGroup>
                     <div v-if="userData.usertype=='replace'" class="form-tip">{{$L('流转到此状态时改变任务负责人为状态负责人，原本的任务负责人移至协助人员。')}}</div>
+                    <div v-else-if="userData.usertype=='merge'" class="form-tip">{{$L('流转到此状态时改变任务负责人为状态负责人（并保留操作状态的人员），原本的任务负责人移至协助人员。')}}</div>
                     <div v-else class="form-tip">{{$L('流转到此状态时添加状态负责人至任务负责人。')}}</div>
                 </FormItem>
                 <FormItem prop="userlimit" :label="$L('限制负责人')">
