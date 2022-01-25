@@ -1468,6 +1468,7 @@ class ProjectController extends AbstractController
                 $task->updateTask($data, $updateMarking);
                 //
                 $data = ProjectTask::oneTask($task->id)->toArray();
+                $data["flow_item_name"] = $newFlowItem->status . "|" . $newFlowItem->name;
                 $data['update_marking'] = $updateMarking ?: json_decode('{}');
                 $task->pushMsg('update', $data);
                 //
