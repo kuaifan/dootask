@@ -342,11 +342,13 @@ class ProjectTask extends AbstractModel
         $content    = $data['content'];
         $times      = $data['times'];
         $owner      = $data['owner'];
+        $add_assist = intval($data['add_assist']);
         $subtasks   = $data['subtasks'];
         $p_level    = intval($data['p_level']);
         $p_name     = $data['p_name'];
         $p_color    = $data['p_color'];
         $top        = intval($data['top']);
+        $userid     = User::userid();
         //
         if (ProjectTask::whereProjectId($project_id)
                 ->whereNull('project_tasks.complete_at')
@@ -411,8 +413,13 @@ class ProjectTask extends AbstractModel
             $tmpArray[] = $uid;
         }
         $owner = $tmpArray;
+        // 协助人员
+        $assist = [];
+        if (!in_array($userid, $owner) && $add_assist) {
+            $assist = [$userid];
+        }
         // 创建人
-        $task->userid = User::userid();
+        $task->userid = $userid;
         // 排序位置
         if ($top) {
             $task->sort = intval(self::whereColumnId($task->column_id)->orderBy('sort')->value('sort')) - 1;
@@ -434,7 +441,7 @@ class ProjectTask extends AbstractModel
             }
         }
         //
-        return AbstractModel::transaction(function() use ($times, $subtasks, $content, $owner, $task) {
+        return AbstractModel::transaction(function() use ($assist, $times, $subtasks, $content, $owner, $task) {
             $task->save();
             $owner = array_values(array_unique($owner));
             foreach ($owner as $uid) {
@@ -444,6 +451,16 @@ class ProjectTask extends AbstractModel
                     'task_pid' => $task->parent_id ?: $task->id,
                     'userid' => $uid,
                     'owner' => 1,
+                ])->save();
+            }
+            $assist = array_values(array_unique(array_diff($assist, $owner)));
+            foreach ($assist as $uid) {
+                ProjectTaskUser::createInstance([
+                    'project_id' => $task->project_id,
+                    'task_id' => $task->id,
+                    'task_pid' => $task->parent_id ?: $task->id,
+                    'userid' => $uid,
+                    'owner' => 0,
                 ])->save();
             }
             if ($content) {

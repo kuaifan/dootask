@@ -82,6 +82,12 @@
                     :multiple-max="10"
                     :placeholder="$L('选择任务负责人')"
                     :project-id="addData.project_id"/>
+                <div v-if="showAddAssist" class="task-add-assist">
+                    <Checkbox v-model="addData.add_assist" :true-value="1" :false-value="0">{{$L('加入任务协助人员列表')}}</Checkbox>
+                    <ETooltip :content="$L('你不是任务负责人时建议加入任务协助人员列表')">
+                        <Icon type="ios-alert-outline" />
+                    </ETooltip>
+                </div>
             </FormItem>
             <div class="subtasks">
                 <div v-if="addData.subtasks.length > 0" class="sublist">
@@ -168,6 +174,7 @@ export default {
                 name: "",
                 content: "",
                 owner: 0,
+                add_assist: 1,
                 project_id: 0,
                 column_id: 0,
                 times: [],
@@ -234,6 +241,14 @@ export default {
                 }
             }
             return 0;
+        },
+
+        showAddAssist() {
+            const {owner} = this.addData;
+            if ($A.isArray(owner) && owner.includes(this.userId)) {
+                return false;
+            }
+            return owner != this.userId;
         }
     },
     watch: {
@@ -464,6 +479,7 @@ export default {
                         name: "",
                         content: "",
                         owner: 0,
+                        add_assist: 1,
                         column_id: 0,
                         times: [],
                         subtasks: [],
