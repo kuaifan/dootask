@@ -917,7 +917,7 @@ export default {
 
         onAddsub() {
             if (this.addsubName == '') {
-                $A.messageSuccess('任务描述不能为空');
+                $A.messageError('任务描述不能为空');
                 return;
             }
             this.addsubLoad++;
