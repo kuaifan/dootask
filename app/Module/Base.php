@@ -2258,6 +2258,7 @@ class Base
                         'php', 'go', 'python', 'js', 'ftl', 'css', 'lua', 'rb', 'yaml', 'yml', 'h', 'cs', 'aspx',
                         'mp3', 'wav', 'mp4', 'flv',
                         'avi', 'mov', 'wmv', 'mkv', '3gp', 'rm',
+                        'xmind', 'rp',
                     ];
                     break;
                 default:
