@@ -445,9 +445,17 @@
 }
 
 .dialog-wrapper-paste {
+    margin-top: -4px;
     img {
         max-width: 100%;
         max-height: 1000px;
+    }
+    > div,
+    > img {
+        display: flex;
+        flex-direction: column;
+        padding: 0;
+        margin: 4px 0;
     }
 }
 
