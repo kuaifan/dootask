@@ -694,6 +694,10 @@ class ProjectTask extends AbstractModel
                                 $subTask->end_at = $this->end_at;
                                 $isUp = true;
                             }
+                            if ($subTask->start_at && Carbon::parse($subTask->start_at)->gt($subTask->end_at)) {
+                                $subTask->start_at = $this->start_at;
+                                $isUp = true;
+                            }
                             if ($isUp) {
                                 $updateMarking['is_update_subtask'] = true;
                                 $subTask->addLog("同步修改{任务}时间");
