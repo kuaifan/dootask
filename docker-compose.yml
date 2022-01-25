@@ -96,7 +96,7 @@ services:
 
   fileview:
     container_name: "dootask-fileview-${APP_ID}"
-    image: "kuaifan/fileview:4.1.0-SNAPSHOT"
+    image: "kuaifan/fileview:4.1.0-SNAPSHOT-RC2"
     environment:
       TZ: "Asia/Shanghai"
       KK_CONTEXT_PATH: "/fileview"
