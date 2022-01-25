@@ -550,8 +550,7 @@ class ProjectTask extends AbstractModel
                         $data['owner'] = $newFlowItem->userids;
                         // 判断剔除模式：保留操作状态的人员
                         if ($newFlowItem->usertype == "merge") {
-                            $data['assist'] = array_diff($data['assist'], [User::userid()]);
-                            $data['owner'] = array_merge($data['owner'], [User::userid()]);
+                            $data['owner'][] = User::userid();
                         }
                     } else {
                         // 添加模式
