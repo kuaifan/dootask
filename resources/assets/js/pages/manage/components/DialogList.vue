@@ -10,7 +10,7 @@
         </div>
         <DialogView :msg-data="dialogMsg" :dialog-type="dialogData.type"/>
         <div class="dialog-action" v-show="showAction">
-            <Tooltip v-if="parseInt(dialogMsg.userid) === parseInt(userId)" :content="$L('撤回')" :placement="msgIndex === 0 ? 'left' : 'top'">
+            <Tooltip v-if="parseInt(dialogMsg.userid) === parseInt(userId)" :content="$L('撤回')" :placement="msgIndex === 0 ? 'bottom' : 'top'">
                 <Button type="text" icon="md-undo" @click="messageWithdraw"/>
             </Tooltip>
         </div>
