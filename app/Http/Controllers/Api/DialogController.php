@@ -363,10 +363,22 @@ class DialogController extends AbstractController
     }
 
     /**
-     * 聊天消息撤回
+     * @api {get} api/dialog/msg/withdraw          聊天消息撤回
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__withdraw
+     *
+     * @apiParam {Number} msg_id            消息ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     *
      * @return array
      */
-    public function msg__withdraw()
+    public function msg__withdraw(): array
     {
         $user = User::auth();
         $msg_id = intval(Request::input("msg_id"));
