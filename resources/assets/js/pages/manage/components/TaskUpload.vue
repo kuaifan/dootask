@@ -2,23 +2,18 @@
     <Upload
         name="files"
         ref="upload"
-        :action="actionUrl"
-        :headers="headers"
-        :data="params"
+        action=""
         multiple
         :format="uploadFormat"
         :show-upload-list="false"
         :max-size="maxSize"
-        :on-progress="handleProgress"
-        :on-success="handleSuccess"
         :on-format-error="handleFormatError"
-        :on-exceeded-size="handleMaxSize">
+        :on-exceeded-size="handleMaxSize"
+        :before-upload="handleBeforeUpload">
     </Upload>
 </template>
 
 <script>
-import {mapState} from "vuex";
-
 export default {
     name: 'TaskUpload',
     props: {
@@ -31,54 +26,10 @@ export default {
     data() {
         return {
             uploadFormat: ['jpg', 'jpeg', 'png', 'gif', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'esp', 'pdf', 'rar', 'zip', 'gz', 'ai', 'avi', 'bmp', 'cdr', 'eps', 'mov', 'mp3', 'mp4', 'pr', 'psd', 'svg', 'tif'],
-            actionUrl: $A.apiUrl('project/task/upload'),
         }
     },
 
-    computed: {
-        ...mapState(['userToken', 'taskId', 'taskFiles']),
-
-        headers() {
-            return {
-                fd: $A.getStorageString("userWsFd"),
-                token: this.userToken,
-            }
-        },
-
-        params() {
-            return {
-                task_id: this.taskId,
-            }
-        },
-    },
-
     methods: {
-        handleProgress(event, file) {
-            //上传时
-            if (typeof file.tempId === "undefined") {
-                file.tempId = $A.randomString(8);
-                file.task_id = this.taskId;
-                this.taskFiles.push(file);
-            }
-        },
-
-        handleSuccess({ret, data, msg}, file) {
-            //上传完成
-            let index = this.taskFiles.findIndex(({tempId}) => tempId == file.tempId);
-            if (index > -1) {
-                this.taskFiles.splice(index, 1);
-            }
-            if (ret === 1) {
-                this.taskFiles.push(data);
-            } else {
-                this.$refs.upload.fileList.pop();
-                $A.modalWarning({
-                    title: '发送失败',
-                    content: '文件 ' + file.name + ' 发送失败，' + msg
-                });
-            }
-        },
-
         handleFormatError(file) {
             //上传类型错误
             $A.modalWarning({
@@ -95,14 +46,15 @@ export default {
             });
         },
 
+        handleBeforeUpload(file) {
+            // 拦截上传
+            this.$emit("on-select-file", file)
+            return false;
+        },
+
         handleClick() {
             //手动上传
             this.$refs.upload.handleClick()
-        },
-
-        upload(file) {
-            //手动传file
-            this.$refs.upload.upload(file);
         },
     }
 }

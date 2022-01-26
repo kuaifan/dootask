@@ -66,7 +66,12 @@
         </Poptip>
     </li>
     <!--主任务-->
-    <div v-else-if="ready" :class="{'task-detail':true, 'open-dialog': hasOpenDialog, 'completed': taskDetail.complete_at}">
+    <div
+        v-else-if="ready"
+        :class="{'task-detail':true, 'open-dialog': hasOpenDialog, 'completed': taskDetail.complete_at}"
+        @drop.prevent="taskPasteDrag($event, 'drag')"
+        @dragover.prevent="taskDragOver(true, $event)"
+        @dragleave.prevent="taskDragOver(false, $event)">
         <div v-show="taskDetail.id > 0" class="task-info">
             <div class="head">
                 <TaskMenu
@@ -377,7 +382,7 @@
                 <div v-else class="no-dialog">
                     <div class="no-tip">{{$L('暂无消息')}}</div>
                     <div class="no-input">
-                        <Input
+                        <DragInput
                             class="dialog-input"
                             v-model="msgText"
                             type="textarea"
@@ -386,8 +391,9 @@
                             :autosize="{ minRows: 1, maxRows: 3 }"
                             :maxlength="255"
                             :placeholder="$L('输入消息...')"
-                            @on-keydown="msgKeydown"/>
-                        <div class="no-send" @click="openSend">
+                            @on-keydown="msgKeydown"
+                            @on-input-paste="msgPasteDrag"/>
+                        <div class="no-send" @click="msgDialog">
                             <Loading v-if="sendLoad > 0"/>
                             <Icon v-else type="md-send" />
                         </div>
@@ -396,6 +402,9 @@
             </div>
         </div>
         <div v-if="!taskDetail.id" class="task-load"><Loading/></div>
+        <div v-if="dialogDrag" class="drag-over" @click="dialogDrag=false">
+            <div class="drag-text">{{$L('拖动到这里发送')}}</div>
+        </div>
     </div>
 </template>
 
@@ -409,10 +418,11 @@ import DialogWrapper from "./DialogWrapper";
 import ProjectLog from "./ProjectLog";
 import {Store} from "le5le-store";
 import TaskMenu from "./TaskMenu";
+import DragInput from "../../../components/DragInput";
 
 export default {
     name: "TaskDetail",
-    components: {TaskMenu, ProjectLog, DialogWrapper, TaskUpload, UserInput, TaskPriority, TEditor},
+    components: {DragInput, TaskMenu, ProjectLog, DialogWrapper, TaskUpload, UserInput, TaskPriority, TEditor},
     props: {
         taskId: {
             type: Number,
@@ -461,6 +471,7 @@ export default {
             innerHeight: Math.min(1100, window.innerHeight),
 
             msgText: '',
+            msgFile: [],
             navActive: 'dialog',
             logLoadIng: false,
 
@@ -489,6 +500,7 @@ export default {
                 toolbar: 'uploadImages | uploadFiles | bold italic underline forecolor backcolor | codesample | preview screenload'
             },
 
+            dialogDrag: false,
             receiveTaskSubscribe: null,
         }
     },
@@ -524,6 +536,8 @@ export default {
             'taskContents',
             'taskFiles',
             'taskPriority',
+
+            'windowMax768'
         ]),
 
         projectName() {
@@ -582,7 +596,7 @@ export default {
         },
 
         hasOpenDialog() {
-            return this.taskDetail.dialog_id > 0 && !this.$store.state.windowMax768;
+            return this.taskDetail.dialog_id > 0 && !this.windowMax768;
         },
 
         dialogStyle() {
@@ -988,14 +1002,13 @@ export default {
                     return;
                 }
                 e.preventDefault();
-                this.msgDialog();
+                if (this.msgText) {
+                    this.msgDialog();
+                }
             }
         },
 
         msgDialog() {
-            if (!this.msgText) {
-                return;
-            }
             if (this.sendLoad > 0) {
                 return;
             }
@@ -1011,18 +1024,20 @@ export default {
                 this.$store.dispatch("getDialogOne", data.dialog_id).then(() => {
                     this.sendLoad--;
                     if ($A.isSubElectron) {
-                        this.resizeDialog();
+                        this.resizeDialog().then(() => {
+                            this.sendDialogMsg();
+                        });
                     } else {
                         this.$nextTick(() => {
-                            if (this.$store.state.windowMax768) {
+                            if (this.windowMax768) {
                                 this.goForward({path: '/manage/messenger', query: {sendmsg: this.msgText}});
+                                this.msgText = "";
                                 $A.setStorage("messenger::dialogId", data.dialog_id)
                                 this.$store.state.dialogOpenId = data.dialog_id;
                                 this.$store.dispatch('openTask', 0);
                             } else {
-                                this.$refs.dialog.sendMsg(this.msgText);
+                                this.sendDialogMsg();
                             }
-                            this.msgText = "";
                         });
                     }
                 }).catch(({msg}) => {
@@ -1035,35 +1050,47 @@ export default {
             });
         },
 
-        openSend() {
-            if (this.sendLoad > 0) {
+        sendDialogMsg() {
+            if (this.msgFile.length > 0) {
+                this.$refs.dialog.sendFileMsg(this.msgFile);
+            } else if (this.msgText) {
+                this.$refs.dialog.sendMsg(this.msgText);
+            }
+            this.msgFile = [];
+            this.msgText = "";
+        },
+
+        msgPasteDrag(e, type) {
+            if (this.windowMax768) {
                 return;
             }
-            this.sendLoad++;
-            //
-            this.$store.dispatch("call", {
-                url: 'project/task/dialog',
-                data: {
-                    task_id: this.taskDetail.id,
-                },
-            }).then(({data}) => {
-                this.sendLoad--;
-                this.$store.dispatch("saveTask", data);
-                this.$store.dispatch("getDialogOne", data.dialog_id).catch(() => {})
-                if ($A.isSubElectron) {
-                    this.resizeDialog();
-                } else {
-                    this.$nextTick(() => {
-                        this.goForward({path: '/manage/messenger', query: {sendmsg: this.msgText}});
-                        $A.setStorage("messenger::dialogId", data.dialog_id)
-                        this.$store.state.dialogOpenId = data.dialog_id;
-                        this.$store.dispatch('openTask', 0);
-                    });
+            const files = type === 'drag' ? e.dataTransfer.files : e.clipboardData.files;
+            this.msgFile = Array.prototype.slice.call(files);
+            if (this.msgFile.length > 0) {
+                e.preventDefault();
+                this.msgDialog()
+            }
+        },
+
+        taskPasteDrag(e, type) {
+            this.dialogDrag = false;
+            this.msgPasteDrag(e, type);
+        },
+
+        taskDragOver(show, e) {
+            let random = (this.__dialogDrag = $A.randomString(8));
+            if (!show) {
+                setTimeout(() => {
+                    if (random === this.__dialogDrag) {
+                        this.dialogDrag = show;
+                    }
+                }, 150);
+            } else {
+                if (e.dataTransfer.effectAllowed === 'move') {
+                    return;
                 }
-            }).catch(({msg}) => {
-                this.sendLoad--;
-                $A.modalError(msg);
-            });
+                this.dialogDrag = true;
+            }
         },
 
         deleteFile(file) {
@@ -1112,26 +1139,25 @@ export default {
         },
 
         resizeDialog() {
-            this.$Electron.ipcRenderer.sendSync('windowSize', {
-                width: Math.max(1100, window.innerWidth),
-                height: Math.max(720, window.innerHeight),
-                minWidth: 800,
-                minHeight: 600,
-                autoZoom: true,
-            });
-            if (this.msgText) {
+            return new Promise(resolve => {
+                this.$Electron.ipcRenderer.sendSync('windowSize', {
+                    width: Math.max(1100, window.innerWidth),
+                    height: Math.max(720, window.innerHeight),
+                    minWidth: 800,
+                    minHeight: 600,
+                    autoZoom: true,
+                });
                 let num = 0;
                 let interval = setInterval(() => {
                     num++;
                     if (this.$refs.dialog || num > 20) {
                         clearInterval(interval);
                         if (this.$refs.dialog) {
-                            this.$refs.dialog.sendMsg(this.msgText);
-                            this.msgText = "";
+                            resolve()
                         }
                     }
                 }, 100);
-            }
+            })
         },
 
         downFile(file) {

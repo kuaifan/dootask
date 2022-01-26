@@ -282,24 +282,11 @@ export default {
             this.msgText = '';
         },
 
-        chatKeydown(e) {
-            if (e.keyCode === 13) {
-                if (e.shiftKey) {
-                    return;
-                }
-                e.preventDefault();
-                this.sendMsg();
-            }
-        },
-
-        pasteDrag(e, type) {
-            const files = type === 'drag' ? e.dataTransfer.files : e.clipboardData.files;
-            const postFiles = Array.prototype.slice.call(files);
-            if (postFiles.length > 0) {
-                e.preventDefault();
+        sendFileMsg(files) {
+            if (files.length > 0) {
                 this.pasteFile = [];
                 this.pasteItem = [];
-                postFiles.some(file => {
+                files.some(file => {
                     let reader = new FileReader();
                     reader.readAsDataURL(file);
                     reader.onload = ({target}) => {
@@ -316,10 +303,28 @@ export default {
             }
         },
 
-        pasteSend() {
-            this.pasteFile.some(file => {
-                this.$refs.chatUpload.upload(file)
-            });
+        chatKeydown(e) {
+            if (e.keyCode === 13) {
+                if (e.shiftKey) {
+                    return;
+                }
+                e.preventDefault();
+                this.sendMsg();
+            }
+        },
+
+        pasteDrag(e, type) {
+            const files = type === 'drag' ? e.dataTransfer.files : e.clipboardData.files;
+            const postFiles = Array.prototype.slice.call(files);
+            if (postFiles.length > 0) {
+                e.preventDefault();
+                this.sendFileMsg(postFiles);
+            }
+        },
+
+        chatPasteDrag(e, type) {
+            this.dialogDrag = false;
+            this.pasteDrag(e, type);
         },
 
         chatDragOver(show, e) {
@@ -338,29 +343,10 @@ export default {
             }
         },
 
-        chatPasteDrag(e, type) {
-            this.dialogDrag = false;
-            const files = type === 'drag' ? e.dataTransfer.files : e.clipboardData.files;
-            const postFiles = Array.prototype.slice.call(files);
-            if (postFiles.length > 0) {
-                e.preventDefault();
-                this.pasteFile = [];
-                this.pasteItem = [];
-                postFiles.some(file => {
-                    let reader = new FileReader();
-                    reader.readAsDataURL(file);
-                    reader.onload = ({target}) => {
-                        this.pasteFile.push(file)
-                        this.pasteItem.push({
-                            type: $A.getMiddle(file.type, null, '/'),
-                            name: file.name,
-                            size: file.size,
-                            result: target.result
-                        })
-                        this.pasteShow = true
-                    }
-                });
-            }
+        pasteSend() {
+            this.pasteFile.some(file => {
+                this.$refs.chatUpload.upload(file)
+            });
         },
 
         chatFile(type, file) {
