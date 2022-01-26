@@ -86,6 +86,11 @@ export default [
         component: () => import('./pages/single/task.vue'),
     },
     {
+        name: 'single-msgview',
+        path: '/single/msgview/:id',
+        component: () => import('./pages/single/msgview.vue'),
+    },
+    {
         name: 'login',
         path: '/login',
         component: () => import('./pages/login.vue'),

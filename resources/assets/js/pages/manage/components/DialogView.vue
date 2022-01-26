@@ -1,16 +1,18 @@
 <template>
-    <div class="dialog-view" :data-id="msgData.id">
+    <div :class="`dialog-view ${msgData.type}`" :data-id="msgData.id">
 
         <!--文本-->
         <div v-if="msgData.type === 'text'" class="dialog-content">
-            <pre class="no-dark-mode" v-html="textMsg(msgData.msg.text)"></pre>
+            <pre class="no-dark-mode">{{textMsg(msgData.msg.text)}}</pre>
         </div>
+
         <!--等待-->
         <div v-else-if="msgData.type === 'loading'" class="dialog-content loading"><Loading/></div>
+
         <!--文件-->
         <div v-else-if="msgData.type === 'file'" :class="['dialog-content', msgData.msg.type]">
-            <div class="dialog-file" @click="downFile">
-                <img v-if="msgData.msg.type === 'img'" class="file-img" :style="imageStyle(msgData.msg)" :src="msgData.msg.thumb"/>
+            <div class="dialog-file">
+                <img v-if="msgData.msg.type === 'img'" class="file-img" :style="imageStyle(msgData.msg)" :src="msgData.msg.thumb" @click="viewFile"/>
                 <div v-else class="file-box">
                     <img class="file-thumb" :src="msgData.msg.thumb"/>
                     <div class="file-info">
@@ -19,7 +21,15 @@
                     </div>
                 </div>
             </div>
+            <div class="dialog-file-menu">
+                <div class="file-menu-warp"></div>
+                <div class="file-menu-icon">
+                    <Icon @click="viewFile" type="md-eye" />
+                    <Icon @click="downFile" type="md-arrow-round-down" />
+                </div>
+            </div>
         </div>
+
         <!--未知-->
         <div v-else class="dialog-content unknown">{{$L("未知的消息类型")}}</div>
 
@@ -138,8 +148,7 @@ export default {
             if (!text) {
                 return ""
             }
-            text = text.trim().replace(/(\n\x20*){3,}/g, "<br/><br/>");
-            text = text.trim().replace(/\n/g, "<br/>");
+            text = text.trim().replace(/(\n\x20*){3,}/g, "\n\n");
             return text;
         },
 
@@ -165,6 +174,25 @@ export default {
                 };
             }
             return {};
+        },
+
+        viewFile() {
+            if (this.$Electron) {
+                this.$Electron.ipcRenderer.send('windowRouter', {
+                    title: `${this.msgData.msg.name} (${$A.bytesToSize(this.msgData.msg.size)})`,
+                    titleFixed: true,
+                    name: 'msgview-' + this.msgData.id,
+                    path: "/single/msgview/" + this.msgData.id,
+                    force: false,
+                    config: {
+                        parent: null,
+                        width: Math.min(window.screen.availWidth, 1440),
+                        height: Math.min(window.screen.availHeight, 900),
+                    }
+                });
+            } else {
+                window.open($A.apiUrl(`../single/msgview/${this.msgData.id}`))
+            }
         },
 
         downFile() {
