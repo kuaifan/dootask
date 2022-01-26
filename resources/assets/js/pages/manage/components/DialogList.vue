@@ -10,7 +10,7 @@
         </div>
         <DialogView :msg-data="dialogMsg" :dialog-type="dialogData.type"/>
         <div class="dialog-action" v-show="showAction">
-            <Tooltip v-if="parseInt(dialogMsg.userid) === parseInt(userId)" :content="$L('撤回')" placement="top">
+            <Tooltip v-if="parseInt(dialogMsg.userid) === parseInt(userId)" :content="$L('撤回')" :placement="msgIndex === 0 ? 'left' : 'top'">
                 <Button type="text" icon="md-undo" @click="messageWithdraw"/>
             </Tooltip>
         </div>
@@ -37,6 +37,10 @@ export default {
             type: Object,
             default: {}
         },
+        msgIndex: {
+            type: Number,
+            default: -1,
+        }
     },
 
     data() {

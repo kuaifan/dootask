@@ -36,11 +36,12 @@
                     <li v-else-if="dialogData.loading > 0 && dialogMsgList.length === 0" class="loading"><Loading/></li>
                     <li v-else-if="dialogMsgList.length === 0" class="nothing">{{$L('暂无消息')}}</li>
                     <DialogList
-                        v-for="item in dialogMsgList"
+                        v-for="(item, index) in dialogMsgList"
                         :dialogMsg="item"
                         :topId="topId"
                         :key="item.id"
                         :dialogData="dialogData"
+                        :msgIndex="index"
                     />
                     <li
                         v-for="item in tempMsgList"
