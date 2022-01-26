@@ -216,12 +216,21 @@ export default {
     watch: {
         '$route': {
             handler (route) {
-                if (route.query && route.query.sendmsg && this.msgText == '') {
+                if ($A.isJson(window.__sendDialogMsg) && window.__sendDialogMsg.time > $A.Time()) {
+                    const {msgFile, msgText} = window.__sendDialogMsg;
+                    window.__sendDialogMsg = null;
+                    this.$nextTick(() => {
+                        if ($A.isArray(msgFile) && msgFile.length > 0) {
+                            this.sendFileMsg(msgFile);
+                        } else if (msgText) {
+                            this.sendMsg(msgText);
+                        }
+                    });
+                }
+                if (route.query && route.query._) {
                     let query = $A.cloneJSON(route.query);
-                    delete query.sendmsg;
+                    delete query._;
                     this.goForward({query}, true);
-                    this.msgText = route.query.sendmsg;
-                    this.$nextTick(this.sendMsg);
                 }
             },
             immediate: true

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-
 use App\Exceptions\ApiException;
 use App\Models\AbstractModel;
 use App\Models\File;

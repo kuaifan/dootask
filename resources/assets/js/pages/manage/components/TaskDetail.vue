@@ -347,7 +347,7 @@
                     </EDropdown>
                 </div>
             </div>
-            <TaskUpload ref="upload" class="upload"/>
+            <TaskUpload ref="upload" class="upload" @on-select-file="onSelectFile"/>
         </div>
         <div v-show="taskDetail.id > 0" class="task-dialog" :style="dialogStyle">
             <template v-if="hasOpenDialog">
@@ -1030,8 +1030,14 @@ export default {
                     } else {
                         this.$nextTick(() => {
                             if (this.windowMax768) {
-                                this.goForward({path: '/manage/messenger', query: {sendmsg: this.msgText}});
+                                window.__sendDialogMsg = {
+                                    time: $A.Time() + 10,
+                                    msgText: this.msgText,
+                                    msgFile: this.msgFile
+                                };
+                                this.msgFile = [];
                                 this.msgText = "";
+                                this.goForward({path: '/manage/messenger', query: {_: $A.randomString(6)}});
                                 $A.setStorage("messenger::dialogId", data.dialog_id)
                                 this.$store.state.dialogOpenId = data.dialog_id;
                                 this.$store.dispatch('openTask', 0);
@@ -1061,9 +1067,6 @@ export default {
         },
 
         msgPasteDrag(e, type) {
-            if (this.windowMax768) {
-                return;
-            }
             const files = type === 'drag' ? e.dataTransfer.files : e.clipboardData.files;
             this.msgFile = Array.prototype.slice.call(files);
             if (this.msgFile.length > 0) {
@@ -1093,6 +1096,11 @@ export default {
             }
         },
 
+        onSelectFile(file) {
+            this.msgFile = [file];
+            this.msgDialog()
+        },
+
         deleteFile(file) {
             this.$set(file, '_deling', false);
             this.$store.dispatch("forgetTaskFile", file.id)
@@ -1110,9 +1118,7 @@ export default {
 
         openMenu(task) {
             const el = this.$refs[`taskMenu_${task.id}`];
-            if (el) {
-                el.handleClick()
-            }
+            el && el.handleClick()
         },
 
         openNewWin() {
