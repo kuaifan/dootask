@@ -200,7 +200,8 @@ export default {
             }
         },
         dialogOpenId(id) {
-            this.dialogId = id;
+            if ( id > 0 )
+                this.dialogId = id;
         },
         contactsKey(val) {
             setTimeout(() => {
