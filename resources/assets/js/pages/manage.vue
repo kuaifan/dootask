@@ -301,10 +301,6 @@ export default {
         //
         document.addEventListener('keydown', this.shortcutEvent);
         window.addEventListener('resize', this.innerHeightListener);
-        //
-        if (this.$Electron) {
-            this.$Electron.ipcRenderer.send('setDockBadge', 0);
-        }
     },
 
     beforeDestroy() {
