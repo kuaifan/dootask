@@ -146,8 +146,8 @@ export default {
         imageStyle(info) {
             const {width, height} = info;
             if (width && height) {
-                let maxW = 220,
-                    maxH = 220,
+                let maxW = 180,
+                    maxH = 180,
                     tempW = width,
                     tempH = height;
                 if (width > maxW || height > maxH) {
