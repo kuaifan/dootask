@@ -214,6 +214,7 @@
             @on-click="show768Menu=!show768Menu">
             <div class="manage-mini-menu">
                 <Icon :type="show768Menu ? 'md-close' : 'md-menu'" />
+                <Badge :count="unreadTotal"/>
             </div>
         </DragBallComponent>
     </div>
@@ -357,6 +358,10 @@ export default {
             return this.dashboardTask.today.length + this.dashboardTask.overdue.length
         },
 
+        unreadTotal() {
+            return this.msgAllUnread + this.dashboardTotal + this.reportUnreadNumber;
+        },
+
         currentLanguage() {
             return this.languageList[this.languageType] || 'Language'
         },
@@ -421,24 +426,6 @@ export default {
             }
         },
 
-        msgAllUnread() {
-            if (this.$Electron) {
-                this.$Electron.ipcRenderer.send('setDockBadge', this.msgAllUnread + this.dashboardTotal + this.reportUnreadNumber);
-            }
-        },
-
-        dashboardTotal() {
-            if (this.$Electron) {
-                this.$Electron.ipcRenderer.send('setDockBadge', this.msgAllUnread + this.dashboardTotal + this.reportUnreadNumber);
-            }
-        },
-
-        reportUnreadNumber() {
-            if (this.$Electron) {
-                this.$Electron.ipcRenderer.send('setDockBadge', this.msgAllUnread + this.dashboardTotal + this.reportUnreadNumber);
-            }
-        },
-
         projectKeyValue(val) {
             if (val == '') {
                 return;
@@ -466,6 +453,15 @@ export default {
                 this.$store.dispatch("getBasicData")
                 this.getReportUnread()
             }, 5000)
+        },
+
+        unreadTotal: {
+            handler(num) {
+                if (this.$Electron) {
+                    this.$Electron.ipcRenderer.send('setDockBadge', num);
+                }
+            },
+            immediate: true
         },
 
         wsMsg: {

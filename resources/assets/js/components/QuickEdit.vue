@@ -55,7 +55,7 @@ export default {
         },
         autoEdit(val) {
             if (val === true) {
-                this.onEdit();
+                setTimeout(this.onEdit, 0)
             }
         }
     },

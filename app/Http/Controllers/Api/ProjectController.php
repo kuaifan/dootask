@@ -1683,6 +1683,9 @@ class ProjectController extends AbstractController
                 if ($usertype == 'replace' && empty($userids)) {
                     throw new ApiException("状态[{$item['name']}]设置错误，设置流转模式时必须填写状态负责人");
                 }
+                if ($usertype == 'merge' && empty($userids)) {
+                    throw new ApiException("状态[{$item['name']}]设置错误，设置剔除模式时必须填写状态负责人");
+                }
                 if ($userlimit && empty($userids)) {
                     throw new ApiException("状态[{$item['name']}]设置错误，设置限制负责人时必须填写状态负责人");
                 }
