@@ -47,6 +47,7 @@
         <Modal :title="$L('浏览图片空间的图片')" v-model="browseVisible" class="img-upload-modal" width="710">
             <div class="browse-load" v-if="isLoading">{{$L('加载中...')}}</div>
             <div class="browse-list" :class="httpType==='input'?'browse-list-disabled':''" ref="browselistbox">
+                <div v-if="browseList.length <= 0">{{$L('无内容')}}</div>
                 <div class="browse-item" v-for="item in browseList" @click="browseItem(item)">
                     <Icon v-if="item.active" class="browse-icon" type="ios-checkmark-circle"></Icon>
                     <div class="browse-img" v-bind:style="{ 'background-image': 'url(' + item.thumb + ')' }"></div>
