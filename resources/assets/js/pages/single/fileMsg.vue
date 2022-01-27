@@ -1,17 +1,18 @@
 <template>
-    <div class="single-msgview">
+    <div class="single-file-msg">
         <PageTitle :title="title"/>
         <Loading v-if="loadIng > 0"/>
         <template v-else>
             <AceEditor v-if="isCode" v-model="codeContent" :ext="codeExt" class="view-editor" readOnly/>
-            <iframe v-else-if="isPreview" class="preview-iframe" :src="previewUrl"></iframe>
+            <OnlyOffice v-else-if="isOffice" v-model="officeContent" :code="officeCode" readOnly/>
+            <iframe v-else-if="isPreview" class="preview-iframe" :src="previewUrl"/>
             <div v-else class="no-support">{{$L('不支持单独查看此消息')}}</div>
         </template>
     </div>
 </template>
 
 <style lang="scss" scoped>
-.single-msgview {
+.single-file-msg {
     display: flex;
     align-items: center;
     .preview-iframe,
@@ -44,9 +45,10 @@
 </style>
 <script>
 import AceEditor from "../../components/AceEditor";
+import OnlyOffice from "../../components/OnlyOffice";
 
 export default {
-    components: {AceEditor},
+    components: {OnlyOffice, AceEditor},
     data() {
         return {
             loadIng: 0,
@@ -73,6 +75,7 @@ export default {
             }
             return "Loading..."
         },
+
         isCode() {
             return this.msgDetail.type == 'file' && this.msgDetail.file_mode == 1;
         },
@@ -88,8 +91,26 @@ export default {
             }
             return 'txt'
         },
-        isPreview() {
+
+        isOffice() {
             return this.msgDetail.type == 'file' && this.msgDetail.file_mode == 2;
+        },
+        officeContent() {
+            return {
+                id: this.isOffice ? this.msgDetail.id : 0,
+                type: this.msgDetail.msg.ext,
+                name: this.title
+            }
+        },
+        officeCode() {
+            if (this.isOffice) {
+                return "msgFile_" + this.msgDetail.id;
+            }
+            return ''
+        },
+
+        isPreview() {
+            return this.msgDetail.type == 'file' && this.msgDetail.file_mode == 3;
         },
         previewUrl() {
             if (this.isPreview) {

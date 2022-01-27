@@ -251,10 +251,6 @@
                                 overflow: hidden;
                                 text-overflow: ellipsis;
                                 white-space: nowrap;
-                                cursor: pointer;
-                                &:hover {
-                                    color: $primary-color;
-                                }
                             }
                             .file-size {
                                 flex-shrink: 0;
@@ -263,27 +259,38 @@
                                 font-size: 12px;
                                 color: #bbbbbb;
                             }
-                            .file-delete {
+                            .file-menu {
+                                display: flex;
+                                align-items: center;
+                                opacity: 0;
+                                transition: all 0.3s;
                                 padding-left: 12px;
-                                .taskfont {
-                                    display: none;
+                                &.show {
+                                    opacity: 1;
+                                }
+                                i {
                                     font-size: 14px;
                                     color: #aaaaaa;
                                     transition: color 0.3s;
                                     cursor: pointer;
+                                    padding: 0 4px;
                                     &:hover {
-                                        color: #ff0000;
+                                        color: #777777;
                                     }
-                                    &.deling {
-                                        display: inline-block;
+                                    &.del {
+                                        font-size: 13px;
+                                        &:hover {
+                                            color: #ff0000;
+                                        }
                                     }
                                 }
                             }
                             &:hover {
-                                .file-delete {
-                                    .taskfont {
-                                        display: inline-block;
-                                    }
+                                .file-name {
+                                    color: $primary-title-color;
+                                }
+                                .file-menu {
+                                    opacity: 1;
                                 }
                             }
                         }

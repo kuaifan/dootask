@@ -123,7 +123,7 @@ export default {
                 case 'ppt':
                     return 'pptx'
             }
-            return '';
+            return type;
         },
 
         loadFile() {
@@ -144,11 +144,12 @@ export default {
             }
             //
             let fileKey = this.code || this.value.id;
+            let fileName = $A.strExists(this.fileName, '.') ? this.fileName : (this.fileName + '.' + this.fileType);
             const config = {
                 "document": {
                     "fileType": this.fileType,
                     "key": this.fileType + '-' + fileKey,
-                    "title": this.fileName + '.' + this.fileType,
+                    "title": fileName,
                     "url": 'http://nginx/api/file/content/?id=' + fileKey + '&token=' + this.userToken,
                 },
                 "editorConfig": {
@@ -164,6 +165,11 @@ export default {
                     "callbackUrl": 'http://nginx/api/file/content/office?id=' + fileKey + '&token=' + this.userToken,
                 }
             };
+            if ($A.leftExists(fileKey, "msgFile_")) {
+                config.document.url = 'http://nginx/api/dialog/msg/download/?msg_id=' + $A.leftDelete(fileKey, "msgFile_") + '&token=' + this.userToken;
+            } else if ($A.leftExists(fileKey, "taskFile_")) {
+                config.document.url = 'http://nginx/api/project/task/filedown/?file_id=' + $A.leftDelete(fileKey, "taskFile_") + '&token=' + this.userToken;
+            }
             if (this.readOnly) {
                 config.editorConfig.mode = "view";
                 config.editorConfig.callbackUrl = null;

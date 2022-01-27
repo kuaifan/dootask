@@ -279,18 +279,22 @@
                             <li v-for="file in fileList">
                                 <img v-if="file.id" class="file-ext" :src="file.thumb"/>
                                 <Loading v-else class="file-load"/>
-                                <div class="file-name" @click="downFile(file)">{{file.name}}</div>
+                                <div class="file-name">{{file.name}}</div>
                                 <div class="file-size">{{$A.bytesToSize(file.size)}}</div>
-                                <EPopover v-model="file._deling" class="file-delete">
-                                    <div class="task-detail-delete-file-popover">
-                                        <p>{{$L('你确定要删除这个文件吗？')}}</p>
-                                        <div class="buttons">
-                                            <Button size="small" type="text" @click="file._deling=false">{{$L('取消')}}</Button>
-                                            <Button size="small" type="primary" @click="deleteFile(file)">{{$L('确定')}}</Button>
+                                <div class="file-menu" :class="{show:file._show_menu}">
+                                    <Icon @click="viewFile(file)" type="md-eye" />
+                                    <Icon @click="downFile(file)" type="md-arrow-round-down" />
+                                    <EPopover v-model="file._show_menu" class="file-delete">
+                                        <div class="task-detail-delete-file-popover">
+                                            <p>{{$L('你确定要删除这个文件吗？')}}</p>
+                                            <div class="buttons">
+                                                <Button size="small" type="text" @click="file._show_menu=false">{{$L('取消')}}</Button>
+                                                <Button size="small" type="primary" @click="deleteFile(file)">{{$L('确定')}}</Button>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <i slot="reference" :class="['taskfont', file._deling ? 'deling' : '']">&#xe6ea;</i>
-                                </EPopover>
+                                        <i slot="reference" class="taskfont del">&#xe6ea;</i>
+                                    </EPopover>
+                                </div>
                             </li>
                         </ul>
                         <ul class="item-content">
@@ -1102,7 +1106,7 @@ export default {
         },
 
         deleteFile(file) {
-            this.$set(file, '_deling', false);
+            this.$set(file, '_show_menu', false);
             this.$store.dispatch("forgetTaskFile", file.id)
             //
             this.$store.dispatch("call", {
@@ -1164,6 +1168,25 @@ export default {
                     }
                 }, 100);
             })
+        },
+
+        viewFile(file) {
+            if (this.$Electron) {
+                this.$Electron.ipcRenderer.send('windowRouter', {
+                    title: `${file.name} (${$A.bytesToSize(file.size)})`,
+                    titleFixed: true,
+                    name: 'file-task-' + file.id,
+                    path: "/single/file/task/" + file.id,
+                    force: false,
+                    config: {
+                        parent: null,
+                        width: Math.min(window.screen.availWidth, 1440),
+                        height: Math.min(window.screen.availHeight, 900),
+                    }
+                });
+            } else {
+                window.open($A.apiUrl(`../single/file/task/${file.id}`))
+            }
         },
 
         downFile(file) {

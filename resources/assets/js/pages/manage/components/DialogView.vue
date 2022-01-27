@@ -181,8 +181,8 @@ export default {
                 this.$Electron.ipcRenderer.send('windowRouter', {
                     title: `${this.msgData.msg.name} (${$A.bytesToSize(this.msgData.msg.size)})`,
                     titleFixed: true,
-                    name: 'msgview-' + this.msgData.id,
-                    path: "/single/msgview/" + this.msgData.id,
+                    name: 'file-msg-' + this.msgData.id,
+                    path: "/single/file/msg/" + this.msgData.id,
                     force: false,
                     config: {
                         parent: null,
@@ -191,7 +191,7 @@ export default {
                     }
                 });
             } else {
-                window.open($A.apiUrl(`../single/msgview/${this.msgData.id}`))
+                window.open($A.apiUrl(`../single/file/msg/${this.msgData.id}`))
             }
         },
 

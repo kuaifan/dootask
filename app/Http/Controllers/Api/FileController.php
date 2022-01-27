@@ -9,10 +9,12 @@ use App\Models\FileContent;
 use App\Models\FileLink;
 use App\Models\FileUser;
 use App\Models\User;
+use App\Models\WebSocketDialogMsg;
 use App\Module\Base;
 use App\Module\Ihttp;
 use Illuminate\Support\Facades\DB;
 use Request;
+use Response;
 
 /**
  * @apiDefine file
@@ -379,11 +381,11 @@ class FileController extends AbstractController
      * @apiName content
      *
      * @apiParam {Number|String} id
-     * - Number 文件ID（需要登录）
-     * - String 链接码（不需要登录，用于预览）
+     * - Number: 文件ID（需要登录）
+     * - String: 链接码（不需要登录，用于预览）
      * @apiParam {String} down          直接下载
      * - no: 浏览（默认）
-     * - yes: 下载
+     * - yes: 下载（office文件直接下载）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）

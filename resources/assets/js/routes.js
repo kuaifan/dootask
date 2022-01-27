@@ -76,6 +76,16 @@ export default [
         ]
     },
     {
+        name: 'single-file-msg',
+        path: '/single/file/msg/:id',
+        component: () => import('./pages/single/fileMsg.vue'),
+    },
+    {
+        name: 'single-file-task',
+        path: '/single/file/task/:id',
+        component: () => import('./pages/single/fileTask.vue'),
+    },
+    {
         name: 'single-file',
         path: '/single/file/:id',
         component: () => import('./pages/single/file.vue'),
@@ -84,11 +94,6 @@ export default [
         name: 'single-task',
         path: '/single/task/:id',
         component: () => import('./pages/single/task.vue'),
-    },
-    {
-        name: 'single-msgview',
-        path: '/single/msgview/:id',
-        component: () => import('./pages/single/msgview.vue'),
     },
     {
         name: 'login',

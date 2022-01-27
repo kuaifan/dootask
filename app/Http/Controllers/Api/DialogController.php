@@ -357,22 +357,26 @@ class DialogController extends AbstractController
         //
         if ($data['type'] == 'file') {
             $codeExt = ['txt'];
-            $fillExt = ['jpg', 'jpeg', 'png', 'gif'];
+            $officeExt = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'];
+            $localExt = ['jpg', 'jpeg', 'png', 'gif'];
             $msg = Base::json2array($dialogMsg->getRawOriginal('msg'));
             $filePath = public_path($msg['path']);
             if (in_array($msg['ext'], $codeExt) && $msg['size'] < 2 * 1024 * 1024) {
-                // 文本代码，限制2M内的文件
+                // 文本预览，限制2M内的文件
                 $data['content'] = file_get_contents($filePath);
                 $data['file_mode'] = 1;
+            } elseif (in_array($msg['ext'], $officeExt)) {
+                // office预览
+                $data['file_mode'] = 2;
             } else {
-                // 支持预览
-                if (in_array($msg['ext'], $fillExt)) {
+                // 其他预览
+                if (in_array($msg['ext'], $localExt)) {
                     $url = Base::fillUrl($msg['path']);
                 } else {
                     $url = 'http://' . env('APP_IPPR') . '.3/' . $msg['path'];
                 }
                 $data['url'] = base64_encode($url);
-                $data['file_mode'] = 2;
+                $data['file_mode'] = 3;
             }
         }
         //
