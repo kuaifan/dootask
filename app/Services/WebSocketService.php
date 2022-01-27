@@ -204,7 +204,19 @@ class WebSocketService implements WebSocketHandlerInterface
      */
     private function deleteUser($fd)
     {
-        WebSocket::whereFd($fd)->delete();
+        $array = [];
+        WebSocket::whereFd($fd)->chunk(10, function($list) use (&$array) {
+            /** @var WebSocket $item */
+            foreach ($list as $item) {
+                $item->delete();
+                if ($item->path && str_starts_with($item->path, "file/content/")) {
+                    $array[$item->path] = $item->path;
+                }
+            }
+        });
+        foreach ($array as $path) {
+            $this->pushPath($path);
+        }
     }
 
     /**
