@@ -774,8 +774,8 @@ export default {
             })
         },
 
-        openFile(item) {
-            if (this.contextMenuVisible) {
+        openFile(item, checkMenuVisible = true) {
+            if (checkMenuVisible && this.contextMenuVisible) {
                 return;
             }
             if (this.fileList.findIndex((file) => file._edit === true) > -1) {
@@ -841,7 +841,7 @@ export default {
         dropFile(item, command) {
             switch (command) {
                 case 'open':
-                    this.openFile(item);
+                    this.openFile(item, false);
                     break;
 
                 case 'rename':
@@ -911,7 +911,6 @@ export default {
 
                 case 'download':
                     if (!item.ext) {
-                        $A.modalError("此文件不支持下载");
                         return;
                     }
                     $A.modalConfirm({
