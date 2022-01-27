@@ -133,7 +133,7 @@ export default {
                     title: '覆盖提交',
                     content: '你已提交过此日期的报告，是否覆盖提交？',
                     loading: true,
-                    zIndex: 2000,
+                    append: this.$el,
                     onOk: () => {
                         this.doSubmit();
                     }
