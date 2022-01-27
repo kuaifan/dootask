@@ -932,7 +932,14 @@ export default {
                 case 'batchShear':
                     // 排除目录
                     for (const item of this.selectFile) {
-                        if (item.type !== 'folder')
+                        let selected = false;
+                        for (const shearFile of this.shearFiles) {
+                            if ( shearFile.id === item.id ) {
+                                selected = true;
+                                break;
+                            }
+                        }
+                        if (!selected)
                             this.shearFiles.push(item);
                     }
                     break;
