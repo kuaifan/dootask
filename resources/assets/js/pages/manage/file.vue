@@ -46,14 +46,14 @@
                 </Button>
                 <template v-if="selectFile.length > 0 && shearFiles.length <= 0">
                     <Tooltip :content="$L('仅支持移动文件')">
-                        <Button
-                            size="small" type="info"
-                            @click="handleContextClick('batchShear')">{{$L('剪切')}}
+                        <Button size="small" type="info" @click="handleContextClick('batchShear')">
+                            <Icon type="ios-cut" />
+                            {{$L('剪切')}}
                         </Button>
                     </Tooltip>
-                    <Button
-                        size="small" type="error"
-                        @click="deleteSelectFile">{{$L('删除')}}
+                    <Button size="small" type="error" @click="deleteSelectFile">
+                        <Icon type="ios-trash" />
+                        {{$L('删除')}}
                     </Button>
                 </template>
                 <Button v-if="selectFile.length > 0" type="primary" size="small" @click="clearSelect">{{$L('取消选择')}}</Button>
@@ -845,6 +845,8 @@ export default {
                 this.searchKey = '';
                 this.pid = item.id;
             } else {
+                // 清空已选项
+                this.clearSelect()
                 if (this.$Electron) {
                     this.openSingle(item);
                 } else {
@@ -871,7 +873,7 @@ export default {
 
         clickRow(row) {
             // 清空已选择的行
-            this.selectFile = [];
+            this.clearSelect();
             this.dropFile(row, 'open');
         },
 
