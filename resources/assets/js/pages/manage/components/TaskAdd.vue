@@ -7,6 +7,7 @@
                 :clearable="false"
                 :placeholder="$L('请选择项目')"
                 :load-data="cascaderLoadData"
+                @on-change="cascaderChange"
                 @on-input-change="cascaderInputChange"
                 @on-visible-change="cascaderShow=!cascaderShow"
                 filterable/>
@@ -269,18 +270,22 @@ export default {
             }
         },
         'addData.project_id'(id) {
-            $A.setStorage("cacheAddTaskProjectId", id);
+            if (id > 0) {
+                $A.setStorage("cacheAddTaskProjectId", id);
+            }
         },
         'addData.column_id'(id) {
-            const {project_id, column_id} = this.addData;
+            const {project_id} = this.addData;
             this.$nextTick(() => {
-                if (project_id && column_id) {
-                    this.$set(this.addData, 'cascader', [project_id, column_id]);
+                if (project_id && id) {
+                    this.$set(this.addData, 'cascader', [project_id, id]);
                 } else {
                     this.$set(this.addData, 'cascader', []);
                 }
             })
-            $A.setStorage("cacheAddTaskColumnId", id);
+            if (id > 0) {
+                $A.setStorage("cacheAddTaskColumnId", id);
+            }
         }
     },
     methods: {
@@ -423,6 +428,10 @@ export default {
                 item.loading = false;
                 callback();
             });
+        },
+
+        cascaderChange(value) {
+            value[1] && this.$set(this.addData, 'column_id', value[1])
         },
 
         cascaderInputChange(key) {
