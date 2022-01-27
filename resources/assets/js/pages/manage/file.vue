@@ -56,6 +56,7 @@
                         @click="deleteSelectFile">{{$L('删除')}}
                     </Button>
                 </template>
+                <Button v-if="selectFile.length > 0" type="primary" size="small" @click="clearSelect">{{$L('取消选择')}}</Button>
                 <div v-if="loadIng > 0" class="nav-load"><Loading/></div>
                 <div class="flex-full"></div>
                 <div :class="['switch-button', tableMode ? 'table' : '']" @click="tableMode=!tableMode">
@@ -66,6 +67,7 @@
 
             <div v-if="tableMode" class="file-table" @contextmenu.prevent="handleRightClick">
                 <Table
+                    ref="fileListTable"
                     :columns="columns"
                     :data="fileList"
                     :height="tableHeight"
@@ -1382,6 +1384,14 @@ export default {
             }).catch(({msg}) => {
                 $A.modalError(msg);
             });
+        },
+
+        clearSelect() {
+            this.shearFiles = [];
+            this.selectFile = [];
+            this.fileChecked = [];
+            if ( this.tableMode ) // 如果是表格模式，则将表格取消全选
+                this.$refs.fileListTable.selectAll(false);
         },
     }
 }
