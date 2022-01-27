@@ -317,11 +317,11 @@ class FileController extends AbstractController
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
      */
-    public function move()
+    public function move($id = 0)
     {
         $user = User::auth();
         //
-        $id = intval(Request::input('id'));
+        $id = empty($id) ? intval(Request::input('id')) : $id;
         $pid = intval(Request::input('pid'));
         //
         $file = File::permissionFind($id, 1000);
@@ -345,6 +345,44 @@ class FileController extends AbstractController
         $file->save();
         $file->pushMsg('update', $file);
         return Base::retSuccess('操作成功', $file);
+    }
+
+    /**
+     * @api {get} api/file/batch/move          批量移动文件
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup file
+     * @apiName batch__move
+     *
+     * @apiParam {Array} ids           文件ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     *
+     * @return array
+     */
+    public function batch__move(): array
+    {
+        $ids = Request::input('ids');
+        if ( empty($ids) || !is_array($ids) ) {
+            return Base::retError("请选择要移动的文件");
+        }
+        // 去重
+        $ids = array_unique($ids);
+        $data = [];
+        // 暂时不考虑异步
+        AbstractModel::transaction( function () use ($ids, &$data) {
+            foreach ($ids as $id) {
+                $res = $this->move($id);
+                if ( Base::isError($res) )
+                    throw new ApiException($res["msg"]);
+
+                $data[] = $res["data"];
+            }
+        } );
+        return Base::retSuccess('操作成功', $data);
     }
 
     /**
@@ -397,7 +435,7 @@ class FileController extends AbstractController
         }
         $task = new BatchRemoveFileTask($ids, User::userid());
         Task::deliver($task);
-        return Base::retSuccess('success');
+        return Base::retSuccess('操作成功');
     }
 
     /**

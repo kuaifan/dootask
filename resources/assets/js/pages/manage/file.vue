@@ -37,7 +37,25 @@
                         "<em>{{shearFile.name}}</em>"
                     </div>
                 </Button>
-                <Button v-if="selectFile.length > 0" size="small" type="error" @click="deleteSelectFile">删除</Button>
+                <Button v-if="shearFiles.length > 0" :disabled="shearFiles[0].pid == pid" size="small" type="primary" @click="batchShearTo">
+                    <div class="file-shear">
+                        <span>{{$L('粘贴')}}</span>
+                        "<em>{{shearFiles[0].name}}</em>"
+                        <span v-if="shearFiles.length > 1">{{$L('等')}}{{shearFiles.length}}{{$L('个文件')}}</span>
+                    </div>
+                </Button>
+                <template v-if="selectFile.length > 0 && shearFiles.length <= 0">
+                    <Tooltip :content="$L('仅支持移动文件')">
+                        <Button
+                            size="small" type="info"
+                            @click="handleContextClick('batchShear')">{{$L('剪切')}}
+                        </Button>
+                    </Tooltip>
+                    <Button
+                        size="small" type="error"
+                        @click="deleteSelectFile">{{$L('删除')}}
+                    </Button>
+                </template>
                 <div v-if="loadIng > 0" class="nav-load"><Loading/></div>
                 <div class="flex-full"></div>
                 <div :class="['switch-button', tableMode ? 'table' : '']" @click="tableMode=!tableMode">
@@ -439,6 +457,7 @@ export default {
 
             selectFile: [],
             fileChecked: [],
+            shearFiles: [],
         }
     },
 
@@ -906,6 +925,14 @@ export default {
                     this.shearId = item.id;
                     break;
 
+                case 'batchShear':
+                    // 排除目录
+                    for (const item of this.selectFile) {
+                        if (item.type !== 'folder')
+                            this.shearFiles.push(item);
+                    }
+                    break;
+
                 case 'share':
                     this.shareInfo = {
                         id: item.id,
@@ -1279,6 +1306,8 @@ export default {
 
         handleTableSelect(selection, row) {
             this.selectFile = selection;
+            // 需要清空剪切的文件
+            this.shearFiles = [];
         },
 
         deleteSelectFile() {
@@ -1302,6 +1331,7 @@ export default {
                     }).then(() => {
                         this.$Modal.remove();
                         this.selectFile = [];
+                        this.fileChecked = [];
                         $A.messageSuccess("已提交至后台处理，请稍后再回来查看结果吧");
                     }).catch(({msg}) => {
                         $A.modalError(msg, 301);
@@ -1326,7 +1356,33 @@ export default {
                 if (index >= 0)
                     this.selectFile.splice(index, 1);
             }
-        }
+            // 需要清空剪切的文件
+            this.shearFiles = [];
+        },
+        batchShearTo() {
+            if (!this.shearFiles) {
+                return;
+            }
+            this.$store.dispatch("call", {
+                url: 'file/batch/move',
+                data: {
+                    ids: this.shearFiles.map( (item,index) => item.id ),
+                    pid: this.pid,
+                },
+            }).then(({data, msg}) => {
+                $A.messageSuccess(msg);
+                // 清空数据
+                this.shearId = 0;
+                this.shearFiles = [];
+                this.selectFile = [];
+                this.fileChecked = [];
+                for (const item of data) {
+                    this.$store.dispatch("saveFile", item);
+                }
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            });
+        },
     }
 }
 </script>
