@@ -165,6 +165,9 @@ export default {
                     "callbackUrl": 'http://nginx/api/file/content/office?id=' + fileKey + '&token=' + this.userToken,
                 }
             };
+            if (/\/hideenOfficeTitle\//.test(window.navigator.userAgent)) {
+                config.document.title = " ";
+            }
             if ($A.leftExists(fileKey, "msgFile_")) {
                 config.document.url = 'http://nginx/api/dialog/msg/download/?msg_id=' + $A.leftDelete(fileKey, "msgFile_") + '&token=' + this.userToken;
             } else if ($A.leftExists(fileKey, "taskFile_")) {

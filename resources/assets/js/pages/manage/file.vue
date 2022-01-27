@@ -799,8 +799,9 @@ export default {
 
         openSingle(item) {
             this.$Electron.ipcRenderer.send('windowRouter', {
-                title: item.name,
+                title: this.formatName(item),
                 titleFixed: true,
+                userAgent: "/hideenOfficeTitle/",
                 name: 'file-' + item.id,
                 path: "/single/file/" + item.id,
                 force: false, // 如果窗口已存在不重新加载
