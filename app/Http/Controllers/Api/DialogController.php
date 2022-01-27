@@ -330,7 +330,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/detail          08. 消息详情
+     * @api {get} api/dialog/msg/detail          09. 消息详情
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -384,7 +384,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/download          08. 文件下载
+     * @api {get} api/dialog/msg/download          10. 文件下载
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
