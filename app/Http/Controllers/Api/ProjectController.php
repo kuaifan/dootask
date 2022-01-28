@@ -1084,7 +1084,61 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/filedown          23. 下载任务文件
+     * @api {get} api/project/task/filedetail          23. 获取任务文件详情
+     *
+     * @apiDescription 需要token身份（限：项目、任务负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__filedetail
+     *
+     * @apiParam {Number} file_id            文件ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function task__filedetail()
+    {
+        User::auth();
+        //
+        $file_id = intval(Request::input('file_id'));
+        //
+        $file = ProjectTaskFile::find($file_id);
+        if (empty($file)) {
+            return Base::retError("文件不存在");
+        }
+        $data = $file->toArray();
+        $data['path'] = $file->getRawOriginal('path');
+        //
+        ProjectTask::userTask($file->task_id, true, true);
+        //
+        $codeExt = ['txt'];
+        $officeExt = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'];
+        $localExt = ['jpg', 'jpeg', 'png', 'gif'];
+        $filePath = public_path($data['path']);
+        if (in_array($data['ext'], $codeExt) && $data['size'] < 2 * 1024 * 1024) {
+            // 文本预览，限制2M内的文件
+            $data['content'] = file_get_contents($filePath);
+            $data['file_mode'] = 1;
+        } elseif (in_array($data['ext'], $officeExt)) {
+            // office预览
+            $data['file_mode'] = 2;
+        } else {
+            // 其他预览
+            if (in_array($data['ext'], $localExt)) {
+                $url = Base::fillUrl($data['path']);
+            } else {
+                $url = 'http://' . env('APP_IPPR') . '.3/' . $data['path'];
+            }
+            $data['url'] = base64_encode($url);
+            $data['file_mode'] = 3;
+        }
+        //
+        return Base::retSuccess('success', $data);
+    }
+
+    /**
+     * @api {get} api/project/task/filedown          24. 下载任务文件
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -1118,7 +1172,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {post} api/project/task/add          24. 添加任务
+     * @api {post} api/project/task/add          25. 添加任务
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1189,7 +1243,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/addsub          25. 添加子任务
+     * @api {get} api/project/task/addsub          26. 添加子任务
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -1229,7 +1283,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {post} api/project/task/update          26. 修改任务、子任务
+     * @api {post} api/project/task/update          27. 修改任务、子任务
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -1678,6 +1732,9 @@ class ProjectController extends AbstractController
                 $userlimit = intval($item['userlimit']);
                 if ($usertype == 'replace' && empty($userids)) {
                     throw new ApiException("状态[{$item['name']}]设置错误，设置流转模式时必须填写状态负责人");
+                }
+                if ($usertype == 'merge' && empty($userids)) {
+                    throw new ApiException("状态[{$item['name']}]设置错误，设置剔除模式时必须填写状态负责人");
                 }
                 if ($userlimit && empty($userids)) {
                     throw new ApiException("状态[{$item['name']}]设置错误，设置限制负责人时必须填写状态负责人");

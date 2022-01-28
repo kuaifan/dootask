@@ -273,11 +273,11 @@ export default {
         dispatch("call", {
             url: 'users/basic',
             data: {
-                userid: array.map(({userid}) => userid)
+                userid: [...new Set(array.map(({userid}) => userid))]
             },
         }).then(result => {
             time = $A.Time();
-            array.forEach((value) => {
+            array.forEach(value => {
                 let data = result.data.find(({userid}) => userid == value.userid) || Object.assign(value, {email: ""});
                 data._time = time;
                 dispatch("saveUserBasic", data);

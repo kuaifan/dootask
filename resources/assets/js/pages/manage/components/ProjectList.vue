@@ -35,7 +35,7 @@
                         </ETooltip>
                     </li>
                     <li :class="['project-icon', searchText!='' ? 'active' : '']">
-                        <Tooltip :always="searchAlways" @on-popper-show="searchFocus" theme="light">
+                        <Tooltip :always="searchText!=''" @on-popper-show="searchFocus" theme="light" :rawIndex="10">
                             <Icon class="menu-icon" type="ios-search" @click="searchFocus" />
                             <div slot="content">
                                 <Input v-model="searchText" ref="searchInput" :placeholder="$L('名称、描述...')" class="search-input" clearable/>
@@ -343,7 +343,7 @@
             :mask-closable="false">
             <Form :model="userData" label-width="auto" @submit.native.prevent>
                 <FormItem prop="userids" :label="$L('项目成员')">
-                    <UserInput v-if="userShow" v-model="userData.userids" :uncancelable="userData.uncancelable" :multiple-max="100" :placeholder="$L('选择项目成员')"/>
+                    <UserInput v-model="userData.userids" :uncancelable="userData.uncancelable" :multiple-max="100" :placeholder="$L('选择项目成员')"/>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
@@ -405,7 +405,7 @@
             :mask-closable="false">
             <Form :model="transferData" label-width="auto" @submit.native.prevent>
                 <FormItem prop="owner_userid" :label="$L('项目负责人')">
-                    <UserInput v-if="transferShow" v-model="transferData.owner_userid" :multiple-max="1" :placeholder="$L('选择项目负责人')"/>
+                    <UserInput v-model="transferData.owner_userid" :multiple-max="1" :placeholder="$L('选择项目负责人')"/>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
@@ -418,8 +418,9 @@
         <DrawerOverlay
             v-model="workflowShow"
             placement="right"
+            :beforeClose="workflowBeforeClose"
             :size="1280">
-            <ProjectWorkflow v-if="workflowShow" :project-id="projectId"/>
+            <ProjectWorkflow ref="workflow" v-if="workflowShow" :project-id="projectId"/>
         </DrawerOverlay>
 
         <!--查看项目动态-->
@@ -549,17 +550,6 @@ export default {
         ]),
 
         ...mapGetters(['projectData', 'projectParameter', 'transforTasks']),
-
-        searchAlways() {
-            return !(!this.searchText
-                || this.settingShow
-                || this.userShow
-                || this.inviteShow
-                || this.transferShow
-                || this.workflowShow
-                || this.logShow
-                || this.archivedTaskShow);
-        },
 
         userWaitRemove() {
             const {userids, useridbak} = this.userData;
@@ -1228,6 +1218,27 @@ export default {
         toggleCompleted() {
             this.$store.dispatch("forgetTaskCompleteTemp", true);
             this.$store.dispatch('toggleProjectParameter', 'completedTask');
+        },
+
+        workflowBeforeClose() {
+            return new Promise(resolve => {
+                if (!this.$refs.workflow.existDiff()) {
+                    resolve()
+                    return
+                }
+                $A.modalConfirm({
+                    content: '设置尚未保存，是否放弃修改？',
+                    cancelText: '放弃',
+                    okText: '保存',
+                    onCancel: () => {
+                        resolve()
+                    },
+                    onOk: () => {
+                        this.$refs.workflow.saveAll()
+                        resolve()
+                    }
+                });
+            })
         },
 
         myFilter(task, chackCompleted = true) {

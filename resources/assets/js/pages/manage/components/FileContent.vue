@@ -112,6 +112,7 @@ export default {
         document.addEventListener('keydown', this.keySave);
         window.addEventListener('message', this.handleMessage)
     },
+
     beforeDestroy() {
         document.removeEventListener('keydown', this.keySave);
         window.removeEventListener('message', this.handleMessage)
@@ -128,6 +129,18 @@ export default {
             },
             immediate: true,
             deep: true,
+        },
+
+        value: {
+            handler(val) {
+                if (val) {
+                    this.ready = true;
+                    this.editUser = [this.userId];
+                } else {
+                    this.fileContent[this.fileId] = this.contentDetail;
+                }
+            },
+            immediate: true,
         },
 
         wsMsg: {
@@ -158,21 +171,15 @@ export default {
             deep: true,
         },
 
-        value: {
-            handler(val) {
-                if (val) {
-                    this.ready = true;
-                    this.editUser = [this.userId];
-                } else {
-                    this.fileContent[this.fileId] = this.contentDetail;
-                }
-            },
-            immediate: true,
+        wsOpenNum() {
+            if (this.$isSubElectron) {
+                this.$store.dispatch("websocketPath", "file/content/" + this.fileId);
+            }
         },
     },
 
     computed: {
-        ...mapState(['fileContent', 'wsMsg', 'userId']),
+        ...mapState(['fileContent', 'wsMsg', 'userId', 'wsOpenNum']),
 
         equalContent() {
             return this.contentBak == $A.jsonStringify(this.contentDetail);
@@ -246,6 +253,10 @@ export default {
                 this.loadContent--;
                 this.contentDetail = data.content;
                 this.updateBak();
+                //
+                if (this.$isSubElectron) {
+                    this.$store.dispatch("websocketConnection")
+                }
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.loadIng--;

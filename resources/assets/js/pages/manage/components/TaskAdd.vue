@@ -7,6 +7,7 @@
                 :clearable="false"
                 :placeholder="$L('请选择项目')"
                 :load-data="cascaderLoadData"
+                @on-change="cascaderChange"
                 @on-input-change="cascaderInputChange"
                 @on-visible-change="cascaderShow=!cascaderShow"
                 filterable/>
@@ -81,8 +82,13 @@
                     v-model="addData.owner"
                     :multiple-max="10"
                     :placeholder="$L('选择任务负责人')"
-                    :project-id="addData.project_id"
-                    :transfer="false"/>
+                    :project-id="addData.project_id"/>
+                <div v-if="showAddAssist" class="task-add-assist">
+                    <Checkbox v-model="addData.add_assist" :true-value="1" :false-value="0">{{$L('加入任务协助人员列表')}}</Checkbox>
+                    <ETooltip :content="$L('你不是任务负责人时建议加入任务协助人员列表')">
+                        <Icon type="ios-alert-outline" />
+                    </ETooltip>
+                </div>
             </FormItem>
             <div class="subtasks">
                 <div v-if="addData.subtasks.length > 0" class="sublist">
@@ -170,6 +176,7 @@ export default {
                 name: "",
                 content: "",
                 owner: 0,
+                add_assist: 1,
                 project_id: 0,
                 column_id: 0,
                 times: [],
@@ -236,6 +243,14 @@ export default {
                 }
             }
             return 0;
+        },
+
+        showAddAssist() {
+            const {owner} = this.addData;
+            if ($A.isArray(owner) && owner.includes(this.userId)) {
+                return false;
+            }
+            return owner != this.userId;
         }
     },
     watch: {
@@ -256,18 +271,22 @@ export default {
             }
         },
         'addData.project_id'(id) {
-            $A.setStorage("cacheAddTaskProjectId", id);
+            if (id > 0) {
+                $A.setStorage("cacheAddTaskProjectId", id);
+            }
         },
         'addData.column_id'(id) {
-            const {project_id, column_id} = this.addData;
+            const {project_id} = this.addData;
             this.$nextTick(() => {
-                if (project_id && column_id) {
-                    this.$set(this.addData, 'cascader', [project_id, column_id]);
+                if (project_id && id) {
+                    this.$set(this.addData, 'cascader', [project_id, id]);
                 } else {
                     this.$set(this.addData, 'cascader', []);
                 }
             })
-            $A.setStorage("cacheAddTaskColumnId", id);
+            if (id > 0) {
+                $A.setStorage("cacheAddTaskColumnId", id);
+            }
         }
     },
     methods: {
@@ -412,6 +431,10 @@ export default {
             });
         },
 
+        cascaderChange(value) {
+            value[1] && this.$set(this.addData, 'column_id', value[1])
+        },
+
         cascaderInputChange(key) {
             this.cascaderValue = key || "";
             //
@@ -470,6 +493,7 @@ export default {
                         name: "",
                         content: "",
                         owner: 0,
+                        add_assist: 1,
                         column_id: 0,
                         times: [],
                         subtasks: [],

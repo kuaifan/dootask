@@ -38,17 +38,24 @@
 </style>
 <script>
 import TaskDetail from "../manage/components/TaskDetail";
+import {mapState} from "vuex";
 export default {
     components: {TaskDetail},
     data() {
         return {
             loadIng: 0,
-
-            taskInfo: {},
+            taskId: 0,
         }
     },
     mounted() {
         //
+    },
+    computed: {
+        ...mapState(['cacheTasks']),
+
+        taskInfo() {
+            return this.cacheTasks.find(({id}) => id === this.taskId) || {}
+        }
     },
     watch: {
         '$route': {
@@ -60,20 +67,19 @@ export default {
     },
     methods: {
         getInfo() {
-            let task_id = $A.runNum(this.$route.params.id);
-            if (task_id <= 0) {
+            this.taskId = $A.runNum(this.$route.params.id);
+            if (this.taskId <= 0) {
                 return;
             }
             this.loadIng++;
             this.$store.dispatch("getTaskOne", {
-                task_id,
+                task_id: this.taskId,
                 archived: 'all'
-            }).then(({data}) => {
+            }).then(() => {
                 this.loadIng--;
-                this.taskInfo = data;
-                this.$store.dispatch("getTaskContent", task_id);
-                this.$store.dispatch("getTaskFiles", task_id);
-                this.$store.dispatch("getTaskForParent", task_id).catch(() => {})
+                this.$store.dispatch("getTaskContent", this.taskId);
+                this.$store.dispatch("getTaskFiles", this.taskId);
+                this.$store.dispatch("getTaskForParent", this.taskId).catch(() => {})
             }).catch(({msg}) => {
                 this.loadIng--;
                 $A.modalError({

@@ -45,12 +45,10 @@
             :width="240"
             placement="bottom"
             @on-popper-show="openOwner"
-            @on-popper-hide="ownerShow=false"
             @on-ok="onOwner"
             transfer>
             <div slot="content">
                 <UserInput
-                    v-if="ownerShow"
                     v-model="ownerData.owner_userid"
                     :multiple-max="1"
                     :project-id="taskDetail.project_id"
@@ -66,7 +64,12 @@
         </Poptip>
     </li>
     <!--主任务-->
-    <div v-else-if="ready" :class="{'task-detail':true, 'open-dialog': hasOpenDialog, 'completed': taskDetail.complete_at}">
+    <div
+        v-else-if="ready"
+        :class="{'task-detail':true, 'open-dialog': hasOpenDialog, 'completed': taskDetail.complete_at}"
+        @drop.prevent="taskPasteDrag($event, 'drag')"
+        @dragover.prevent="taskDragOver(true, $event)"
+        @dragleave.prevent="taskDragOver(false, $event)">
         <div v-show="taskDetail.id > 0" class="task-info">
             <div class="head">
                 <TaskMenu
@@ -188,12 +191,10 @@
                             class="item-content user"
                             placement="bottom"
                             @on-popper-show="openOwner"
-                            @on-popper-hide="ownerShow=false"
                             @on-ok="onOwner"
                             transfer>
                             <div slot="content">
                                 <UserInput
-                                    v-if="ownerShow"
                                     v-model="ownerData.owner_userid"
                                     :multiple-max="10"
                                     :project-id="taskDetail.project_id"
@@ -218,12 +219,10 @@
                             class="item-content user"
                             placement="bottom"
                             @on-popper-show="openAssist"
-                            @on-popper-hide="assistShow=false"
                             @on-ok="onAssist"
                             transfer>
                             <div slot="content">
                                 <UserInput
-                                    v-if="assistShow"
                                     v-model="assistData.assist_userid"
                                     :multiple-max="10"
                                     :project-id="taskDetail.project_id"
@@ -274,18 +273,22 @@
                             <li v-for="file in fileList">
                                 <img v-if="file.id" class="file-ext" :src="file.thumb"/>
                                 <Loading v-else class="file-load"/>
-                                <div class="file-name" @click="downFile(file)">{{file.name}}</div>
+                                <div class="file-name">{{file.name}}</div>
                                 <div class="file-size">{{$A.bytesToSize(file.size)}}</div>
-                                <EPopover v-model="file._deling" class="file-delete">
-                                    <div class="task-detail-delete-file-popover">
-                                        <p>{{$L('你确定要删除这个文件吗？')}}</p>
-                                        <div class="buttons">
-                                            <Button size="small" type="text" @click="file._deling=false">{{$L('取消')}}</Button>
-                                            <Button size="small" type="primary" @click="deleteFile(file)">{{$L('确定')}}</Button>
+                                <div class="file-menu" :class="{show:file._show_menu}">
+                                    <Icon @click="viewFile(file)" type="md-eye" />
+                                    <Icon @click="downFile(file)" type="md-arrow-round-down" />
+                                    <EPopover v-model="file._show_menu" class="file-delete">
+                                        <div class="task-detail-delete-file-popover">
+                                            <p>{{$L('你确定要删除这个文件吗？')}}</p>
+                                            <div class="buttons">
+                                                <Button size="small" type="text" @click="file._show_menu=false">{{$L('取消')}}</Button>
+                                                <Button size="small" type="primary" @click="deleteFile(file)">{{$L('确定')}}</Button>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <i slot="reference" :class="['taskfont', file._deling ? 'deling' : '']">&#xe6ea;</i>
-                                </EPopover>
+                                        <i slot="reference" class="taskfont del">&#xe6ea;</i>
+                                    </EPopover>
+                                </div>
                             </li>
                         </ul>
                         <ul class="item-content">
@@ -342,7 +345,7 @@
                     </EDropdown>
                 </div>
             </div>
-            <TaskUpload ref="upload" class="upload"/>
+            <TaskUpload ref="upload" class="upload" @on-select-file="onSelectFile"/>
         </div>
         <div v-show="taskDetail.id > 0" class="task-dialog" :style="dialogStyle">
             <template v-if="hasOpenDialog">
@@ -377,7 +380,7 @@
                 <div v-else class="no-dialog">
                     <div class="no-tip">{{$L('暂无消息')}}</div>
                     <div class="no-input">
-                        <Input
+                        <DragInput
                             class="dialog-input"
                             v-model="msgText"
                             type="textarea"
@@ -386,8 +389,9 @@
                             :autosize="{ minRows: 1, maxRows: 3 }"
                             :maxlength="255"
                             :placeholder="$L('输入消息...')"
-                            @on-keydown="msgKeydown"/>
-                        <div class="no-send" @click="openSend">
+                            @on-keydown="msgKeydown"
+                            @on-input-paste="msgPasteDrag"/>
+                        <div class="no-send" @click="msgDialog">
                             <Loading v-if="sendLoad > 0"/>
                             <Icon v-else type="md-send" />
                         </div>
@@ -396,6 +400,9 @@
             </div>
         </div>
         <div v-if="!taskDetail.id" class="task-load"><Loading/></div>
+        <div v-if="dialogDrag" class="drag-over" @click="dialogDrag=false">
+            <div class="drag-text">{{$L('拖动到这里发送')}}</div>
+        </div>
     </div>
 </template>
 
@@ -409,10 +416,11 @@ import DialogWrapper from "./DialogWrapper";
 import ProjectLog from "./ProjectLog";
 import {Store} from "le5le-store";
 import TaskMenu from "./TaskMenu";
+import DragInput from "../../../components/DragInput";
 
 export default {
     name: "TaskDetail",
-    components: {TaskMenu, ProjectLog, DialogWrapper, TaskUpload, UserInput, TaskPriority, TEditor},
+    components: {DragInput, TaskMenu, ProjectLog, DialogWrapper, TaskUpload, UserInput, TaskPriority, TEditor},
     props: {
         taskId: {
             type: Number,
@@ -434,14 +442,12 @@ export default {
 
             taskDetail: {},
 
-            ownerShow: false,
             ownerData: {},
             ownerLoad: 0,
 
             receiveShow: false,
 
             assistForce: false,
-            assistShow: false,
             assistData: {},
             assistLoad: 0,
 
@@ -461,6 +467,7 @@ export default {
             innerHeight: Math.min(1100, window.innerHeight),
 
             msgText: '',
+            msgFile: [],
             navActive: 'dialog',
             logLoadIng: false,
 
@@ -489,6 +496,7 @@ export default {
                 toolbar: 'uploadImages | uploadFiles | bold italic underline forecolor backcolor | codesample | preview screenload'
             },
 
+            dialogDrag: false,
             receiveTaskSubscribe: null,
         }
     },
@@ -524,6 +532,8 @@ export default {
             'taskContents',
             'taskFiles',
             'taskPriority',
+
+            'windowMax768'
         ]),
 
         projectName() {
@@ -582,7 +592,7 @@ export default {
         },
 
         hasOpenDialog() {
-            return this.taskDetail.dialog_id > 0 && !this.$store.state.windowMax768;
+            return this.taskDetail.dialog_id > 0 && !this.windowMax768;
         },
 
         dialogStyle() {
@@ -779,7 +789,6 @@ export default {
             const list = this.getOwner.map(({userid}) => userid)
             this.$set(this.taskDetail, 'owner_userid', list)
             this.$set(this.ownerData, 'owner_userid', list)
-            this.ownerShow = true;
         },
 
         onOwner(pick) {
@@ -815,13 +824,11 @@ export default {
             this.$store.dispatch("taskUpdate", data).then(({msg}) => {
                 $A.messageSuccess(msg);
                 this.ownerLoad--;
-                this.ownerShow = false;
                 this.receiveShow = false;
                 this.$store.dispatch("getTaskOne", this.taskDetail.id).catch(() => {})
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.ownerLoad--;
-                this.ownerShow = false;
                 this.receiveShow = false;
             })
         },
@@ -831,7 +838,6 @@ export default {
             this.$set(this.taskDetail, 'assist_userid', list)
             this.$set(this.assistData, 'assist_userid', list);
             this.$set(this.assistData, 'disabled', this.getOwner.map(({userid}) => userid))
-            this.assistShow = true;
         },
 
         onAssist() {
@@ -847,12 +853,10 @@ export default {
             }).then(({msg}) => {
                 $A.messageSuccess(msg);
                 this.assistLoad--;
-                this.assistShow = false;
                 this.$store.dispatch("getTaskOne", this.taskDetail.id).catch(() => {})
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.assistLoad--;
-                this.assistShow = false;
             })
         },
 
@@ -988,14 +992,13 @@ export default {
                     return;
                 }
                 e.preventDefault();
-                this.msgDialog();
+                if (this.msgText) {
+                    this.msgDialog();
+                }
             }
         },
 
         msgDialog() {
-            if (!this.msgText) {
-                return;
-            }
             if (this.sendLoad > 0) {
                 return;
             }
@@ -1011,18 +1014,26 @@ export default {
                 this.$store.dispatch("getDialogOne", data.dialog_id).then(() => {
                     this.sendLoad--;
                     if ($A.isSubElectron) {
-                        this.resizeDialog();
+                        this.resizeDialog().then(() => {
+                            this.sendDialogMsg();
+                        });
                     } else {
                         this.$nextTick(() => {
-                            if (this.$store.state.windowMax768) {
-                                this.goForward({path: '/manage/messenger', query: {sendmsg: this.msgText}});
+                            if (this.windowMax768) {
+                                window.__sendDialogMsg = {
+                                    time: $A.Time() + 10,
+                                    msgText: this.msgText,
+                                    msgFile: this.msgFile
+                                };
+                                this.msgFile = [];
+                                this.msgText = "";
+                                this.goForward({path: '/manage/messenger', query: {_: $A.randomString(6)}});
                                 $A.setStorage("messenger::dialogId", data.dialog_id)
                                 this.$store.state.dialogOpenId = data.dialog_id;
                                 this.$store.dispatch('openTask', 0);
                             } else {
-                                this.$refs.dialog.sendMsg(this.msgText);
+                                this.sendDialogMsg();
                             }
-                            this.msgText = "";
                         });
                     }
                 }).catch(({msg}) => {
@@ -1035,39 +1046,53 @@ export default {
             });
         },
 
-        openSend() {
-            if (this.sendLoad > 0) {
-                return;
+        sendDialogMsg() {
+            if (this.msgFile.length > 0) {
+                this.$refs.dialog.sendFileMsg(this.msgFile);
+            } else if (this.msgText) {
+                this.$refs.dialog.sendMsg(this.msgText);
             }
-            this.sendLoad++;
-            //
-            this.$store.dispatch("call", {
-                url: 'project/task/dialog',
-                data: {
-                    task_id: this.taskDetail.id,
-                },
-            }).then(({data}) => {
-                this.sendLoad--;
-                this.$store.dispatch("saveTask", data);
-                this.$store.dispatch("getDialogOne", data.dialog_id).catch(() => {})
-                if ($A.isSubElectron) {
-                    this.resizeDialog();
-                } else {
-                    this.$nextTick(() => {
-                        this.goForward({path: '/manage/messenger', query: {sendmsg: this.msgText}});
-                        $A.setStorage("messenger::dialogId", data.dialog_id)
-                        this.$store.state.dialogOpenId = data.dialog_id;
-                        this.$store.dispatch('openTask', 0);
-                    });
+            this.msgFile = [];
+            this.msgText = "";
+        },
+
+        msgPasteDrag(e, type) {
+            const files = type === 'drag' ? e.dataTransfer.files : e.clipboardData.files;
+            this.msgFile = Array.prototype.slice.call(files);
+            if (this.msgFile.length > 0) {
+                e.preventDefault();
+                this.msgDialog()
+            }
+        },
+
+        taskPasteDrag(e, type) {
+            this.dialogDrag = false;
+            this.msgPasteDrag(e, type);
+        },
+
+        taskDragOver(show, e) {
+            let random = (this.__dialogDrag = $A.randomString(8));
+            if (!show) {
+                setTimeout(() => {
+                    if (random === this.__dialogDrag) {
+                        this.dialogDrag = show;
+                    }
+                }, 150);
+            } else {
+                if (e.dataTransfer.effectAllowed === 'move') {
+                    return;
                 }
-            }).catch(({msg}) => {
-                this.sendLoad--;
-                $A.modalError(msg);
-            });
+                this.dialogDrag = true;
+            }
+        },
+
+        onSelectFile(file) {
+            this.msgFile = [file];
+            this.msgDialog()
         },
 
         deleteFile(file) {
-            this.$set(file, '_deling', false);
+            this.$set(file, '_show_menu', false);
             this.$store.dispatch("forgetTaskFile", file.id)
             //
             this.$store.dispatch("call", {
@@ -1083,9 +1108,7 @@ export default {
 
         openMenu(task) {
             const el = this.$refs[`taskMenu_${task.id}`];
-            if (el) {
-                el.handleClick()
-            }
+            el && el.handleClick()
         },
 
         openNewWin() {
@@ -1112,25 +1135,43 @@ export default {
         },
 
         resizeDialog() {
-            this.$Electron.ipcRenderer.sendSync('windowSize', {
-                width: Math.max(1100, window.innerWidth),
-                height: Math.max(720, window.innerHeight),
-                minWidth: 800,
-                minHeight: 600,
-                autoZoom: true,
-            });
-            if (this.msgText) {
+            return new Promise(resolve => {
+                this.$Electron.ipcRenderer.sendSync('windowSize', {
+                    width: Math.max(1100, window.innerWidth),
+                    height: Math.max(720, window.innerHeight),
+                    minWidth: 800,
+                    minHeight: 600,
+                    autoZoom: true,
+                });
                 let num = 0;
                 let interval = setInterval(() => {
                     num++;
                     if (this.$refs.dialog || num > 20) {
                         clearInterval(interval);
                         if (this.$refs.dialog) {
-                            this.$refs.dialog.sendMsg(this.msgText);
-                            this.msgText = "";
+                            resolve()
                         }
                     }
                 }, 100);
+            })
+        },
+
+        viewFile(file) {
+            if (this.$Electron) {
+                this.$Electron.ipcRenderer.send('windowRouter', {
+                    title: `${file.name} (${$A.bytesToSize(file.size)})`,
+                    titleFixed: true,
+                    name: 'file-task-' + file.id,
+                    path: "/single/file/task/" + file.id,
+                    force: false,
+                    config: {
+                        parent: null,
+                        width: Math.min(window.screen.availWidth, 1440),
+                        height: Math.min(window.screen.availHeight, 900),
+                    }
+                });
+            } else {
+                window.open($A.apiUrl(`../single/file/task/${file.id}`))
             }
         },
 

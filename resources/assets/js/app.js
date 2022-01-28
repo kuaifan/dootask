@@ -11,7 +11,11 @@ import Language from './language/index'
 import store from './store/index'
 
 Vue.use(Vuex);
-Vue.use(ViewUI);
+Vue.use(ViewUI, {
+    modal: {
+        checkEscClose: true
+    }
+});
 Vue.use(VueRouter);
 Vue.use(Language);
 

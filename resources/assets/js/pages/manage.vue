@@ -214,6 +214,7 @@
             @on-click="show768Menu=!show768Menu">
             <div class="manage-mini-menu">
                 <Icon :type="show768Menu ? 'md-close' : 'md-menu'" />
+                <Badge :count="unreadTotal"/>
             </div>
         </DragBallComponent>
     </div>
@@ -300,10 +301,6 @@ export default {
         //
         document.addEventListener('keydown', this.shortcutEvent);
         window.addEventListener('resize', this.innerHeightListener);
-        //
-        if (this.$Electron) {
-            this.$Electron.ipcRenderer.send('setDockBadge', 0);
-        }
     },
 
     beforeDestroy() {
@@ -355,6 +352,10 @@ export default {
 
         dashboardTotal() {
             return this.dashboardTask.today.length + this.dashboardTask.overdue.length
+        },
+
+        unreadTotal() {
+            return this.msgAllUnread + this.dashboardTotal + this.reportUnreadNumber;
         },
 
         currentLanguage() {
@@ -421,24 +422,6 @@ export default {
             }
         },
 
-        msgAllUnread() {
-            if (this.$Electron) {
-                this.$Electron.ipcRenderer.send('setDockBadge', this.msgAllUnread + this.dashboardTotal + this.reportUnreadNumber);
-            }
-        },
-
-        dashboardTotal() {
-            if (this.$Electron) {
-                this.$Electron.ipcRenderer.send('setDockBadge', this.msgAllUnread + this.dashboardTotal + this.reportUnreadNumber);
-            }
-        },
-
-        reportUnreadNumber() {
-            if (this.$Electron) {
-                this.$Electron.ipcRenderer.send('setDockBadge', this.msgAllUnread + this.dashboardTotal + this.reportUnreadNumber);
-            }
-        },
-
         projectKeyValue(val) {
             if (val == '') {
                 return;
@@ -466,6 +449,15 @@ export default {
                 this.$store.dispatch("getBasicData")
                 this.getReportUnread()
             }, 5000)
+        },
+
+        unreadTotal: {
+            handler(num) {
+                if (this.$Electron) {
+                    this.$Electron.ipcRenderer.send('setDockBadge', num);
+                }
+            },
+            immediate: true
         },
 
         wsMsg: {

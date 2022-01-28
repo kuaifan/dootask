@@ -775,8 +775,8 @@ export default {
             })
         },
 
-        openFile(item) {
-            if (this.contextMenuVisible) {
+        openFile(item, checkMenuVisible = true) {
+            if (checkMenuVisible && this.contextMenuVisible) {
                 return;
             }
             if (this.fileList.findIndex((file) => file._edit === true) > -1) {
@@ -800,8 +800,9 @@ export default {
 
         openSingle(item) {
             this.$Electron.ipcRenderer.send('windowRouter', {
-                title: item.name,
+                title: this.formatName(item),
                 titleFixed: true,
+                userAgent: "/hideenOfficeTitle/",
                 name: 'file-' + item.id,
                 path: "/single/file/" + item.id,
                 force: false, // 如果窗口已存在不重新加载
@@ -842,7 +843,7 @@ export default {
         dropFile(item, command) {
             switch (command) {
                 case 'open':
-                    this.openFile(item);
+                    this.openFile(item, false);
                     break;
 
                 case 'rename':
@@ -912,7 +913,6 @@ export default {
 
                 case 'download':
                     if (!item.ext) {
-                        $A.modalError("此文件不支持下载");
                         return;
                     }
                     $A.modalConfirm({

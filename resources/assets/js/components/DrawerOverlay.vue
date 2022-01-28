@@ -63,6 +63,7 @@
                 type: Boolean,
                 default: false
             },
+            beforeClose: Function
         },
 
         data() {
@@ -136,12 +137,25 @@
         },
 
         methods: {
-            mask () {
+            mask() {
                 if (this.maskClosable) {
                     this.close()
                 }
             },
             close() {
+                if (!this.beforeClose) {
+                    return this.handleClose();
+                }
+
+                const before = this.beforeClose();
+
+                if (before && before.then) {
+                    before.then(this.handleClose);
+                } else {
+                    this.handleClose();
+                }
+            },
+            handleClose () {
                 this.$emit("input", false)
             },
             escClose(e) {

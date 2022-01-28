@@ -45,6 +45,7 @@
             line-height: 22px;
             max-width: 100%;
             .ivu-tag {
+                flex-shrink: 0;
                 margin: 0 6px 0 0;
                 padding: 0 5px;
                 &.ivu-tag-success {
@@ -110,19 +111,50 @@
                         height: 30px;
                     }
                     .dialog-view {
-                        max-width: 70%;
                         display: flex;
                         flex-direction: column;
                         align-items: flex-start;
                         margin: 0 0 0 8px;
+                        position: relative;
+                        &.text {
+                            max-width: 70%;
+                        }
                         .dialog-content {
                             color: #333333;
                             background-color: #F4F5F7;
                             padding: 8px;
                             min-width: 32px;
                             border-radius: 6px 6px 6px 0;
-                            .dialog-file {
-                                cursor: pointer;
+                            .dialog-file-menu {
+                                opacity: 0;
+                                transition: all 0.3s;
+                                position: absolute;
+                                left: 0;
+                                bottom: -8px;
+                                .file-menu-warp {
+                                    width: 100%;
+                                    height: 12px;
+                                }
+                                .file-menu-icon {
+                                    display: flex;
+                                    align-items: center;
+                                    border-radius: 4px;
+                                    border: 1px solid #ddd;
+                                    > i {
+                                        flex: 1;
+                                        display: inline-block;
+                                        padding: 4px 6px;
+                                        color: #999;
+                                        font-size: 13px;
+                                        cursor: pointer;
+                                        &:hover {
+                                            color: #777;
+                                        }
+                                        &+i {
+                                            border-left: 1px solid #ddd;
+                                        }
+                                    }
+                                }
                             }
                             > pre {
                                 display: block;
@@ -132,6 +164,11 @@
                                 white-space: pre-wrap;
                                 word-wrap: break-word;
                                 word-break: break-word;
+                            }
+                            &:hover {
+                                .dialog-file-menu {
+                                    opacity: 1;
+                                }
                             }
                             &.loading {
                                 display: flex;
@@ -187,6 +224,7 @@
                                 overflow: hidden;
                                 .file-img {
                                     display: flex;
+                                    cursor: pointer;
                                 }
                             }
                             &.unknown {

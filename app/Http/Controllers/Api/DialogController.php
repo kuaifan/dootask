@@ -331,7 +331,61 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/download          09. 文件下载
+     * @api {get} api/dialog/msg/detail          09. 消息详情
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__detail
+     *
+     * @apiParam {Number} msg_id            消息ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__detail()
+    {
+        User::auth();
+        //
+        $msg_id = intval(Request::input('msg_id'));
+        //
+        $dialogMsg = WebSocketDialogMsg::whereId($msg_id)->first();
+        if (empty($dialogMsg)) {
+            return Base::retError("文件不存在");
+        }
+        $data = $dialogMsg->toArray();
+        //
+        if ($data['type'] == 'file') {
+            $codeExt = ['txt'];
+            $officeExt = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'];
+            $localExt = ['jpg', 'jpeg', 'png', 'gif'];
+            $msg = Base::json2array($dialogMsg->getRawOriginal('msg'));
+            $filePath = public_path($msg['path']);
+            if (in_array($msg['ext'], $codeExt) && $msg['size'] < 2 * 1024 * 1024) {
+                // 文本预览，限制2M内的文件
+                $data['content'] = file_get_contents($filePath);
+                $data['file_mode'] = 1;
+            } elseif (in_array($msg['ext'], $officeExt)) {
+                // office预览
+                $data['file_mode'] = 2;
+            } else {
+                // 其他预览
+                if (in_array($msg['ext'], $localExt)) {
+                    $url = Base::fillUrl($msg['path']);
+                } else {
+                    $url = 'http://' . env('APP_IPPR') . '.3/' . $msg['path'];
+                }
+                $data['url'] = base64_encode($url);
+                $data['file_mode'] = 3;
+            }
+        }
+        //
+        return Base::retSuccess("success", $data);
+    }
+
+    /**
+     * @api {get} api/dialog/msg/download          10. 文件下载
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
