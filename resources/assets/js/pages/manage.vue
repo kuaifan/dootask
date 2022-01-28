@@ -451,6 +451,12 @@ export default {
             }, 5000)
         },
 
+        workReportShow(show) {
+            if (show) {
+                this.getReportUnread(0);
+            }
+        },
+
         unreadTotal: {
             handler(num) {
                 if (this.$Electron) {
@@ -550,7 +556,6 @@ export default {
                     if (this.reportUnreadNumber > 0) {
                         this.reportTabs = "receive";
                     }
-                    this.getReportUnread(0);
                     this.workReportShow = true;
                     return;
                 case 'clearCache':

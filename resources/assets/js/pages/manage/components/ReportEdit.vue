@@ -103,16 +103,10 @@ export default {
             if (this.id > 0) {
                 this.getDetail(val);
             }else{
-                this.userInputShow = false;
                 this.reportData.offset = 0;
                 this.reportData.type = "weekly";
                 this.reportData.receive = [];
                 this.getTemplate();
-                setTimeout(() => {
-                    // 如果不做异步，直接重新赋值的话会导致组件无法重新加载
-                    // 组件不销毁重新渲染，会导致UserInput组件无法重新拉取所有人的列表
-                    this.userInputShow = true;
-                }, 50)
             }
         },
     },

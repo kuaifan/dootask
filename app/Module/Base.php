@@ -2263,7 +2263,8 @@ class Base
                         'asp', 'properties', 'gitignore', 'log', 'bas', 'prg', 'python', 'ftl', 'aspx',
                         'mp3', 'wav', 'mp4', 'flv',
                         'avi', 'mov', 'wmv', 'mkv', '3gp', 'rm',
-                        'xmind', 'rp',
+                        'xmind',
+                        'rp',
                     ];
                     break;
                 default:

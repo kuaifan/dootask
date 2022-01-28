@@ -1329,72 +1329,6 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {post} api/project/task/upload          27. 上传文件
-     *
-     * @apiDescription 需要token身份（限：项目、任务负责人）
-     * @apiVersion 1.0.0
-     * @apiGroup project
-     * @apiName task__upload
-     *
-     * @apiParam {Number} task_id               任务ID
-     * @apiParam {String} [filename]            post-文件名称
-     * @apiParam {String} [image64]             post-base64图片（二选一）
-     * @apiParam {File} [files]                 post-文件对象（二选一）
-     *
-     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据
-     */
-    public function task__upload()
-    {
-        $user = User::auth();
-        //
-        $task_id = Base::getPostInt('task_id');
-        //
-        $task = ProjectTask::userTask($task_id, true, true);
-        //
-        $path = "uploads/task/" . $task->id . "/";
-        $image64 = Base::getPostValue('image64');
-        $fileName = Base::getPostValue('filename');
-        if ($image64) {
-            $data = Base::image64save([
-                "image64" => $image64,
-                "path" => $path,
-                "fileName" => $fileName,
-            ]);
-        } else {
-            $data = Base::upload([
-                "file" => Request::file('files'),
-                "type" => 'file',
-                "path" => $path,
-                "fileName" => $fileName,
-            ]);
-        }
-        //
-        if (Base::isError($data)) {
-            return Base::retError($data['msg']);
-        } else {
-            $fileData = $data['data'];
-            $file = ProjectTaskFile::createInstance([
-                'project_id' => $task->project_id,
-                'task_id' => $task->id,
-                'name' => $fileData['name'],
-                'size' => $fileData['size'] * 1024,
-                'ext' => $fileData['ext'],
-                'path' => $fileData['path'],
-                'thumb' => Base::unFillUrl($fileData['thumb']),
-                'userid' => $user->userid,
-            ]);
-            $file->save();
-            //
-            $file = ProjectTaskFile::find($file->id);
-            $task->addLog("上传文件：" . $file->name);
-            $task->pushMsg('upload', $file);
-            return Base::retSuccess("上传成功", $file);
-        }
-    }
-
-    /**
      * @api {get} api/project/task/dialog          28. 创建/获取聊天室
      *
      * @apiDescription 需要token身份
@@ -1653,7 +1587,7 @@ class ProjectController extends AbstractController
     /**
      * @api {get} api/project/flow/list          33. 工作流列表
      *
-     * @apiDescription 需要token身份（限：项目负责人）
+     * @apiDescription 需要token身份
      * @apiVersion 1.0.0
      * @apiGroup project
      * @apiName flow__list
@@ -1669,9 +1603,8 @@ class ProjectController extends AbstractController
         User::auth();
         //
         $project_id = intval(Request::input('project_id'));
-        $is_filter =  intval(Request::input('is_filter',0));
         //
-        $project = Project::userProject($project_id, true, true, $is_filter);
+        $project = Project::userProject($project_id, true);
         //
         $list = ProjectFlow::with(['ProjectFlowItem'])->whereProjectId($project->id)->get();
         return Base::retSuccess('success', $list);

@@ -623,6 +623,8 @@ class FileController extends AbstractController
             'asp', 'properties', 'gitignore', 'log', 'bas', 'prg', 'python', 'ftl', 'aspx' => "code",
             'mp3', 'wav', 'mp4', 'flv',
             'avi', 'mov', 'wmv', 'mkv', '3gp', 'rm' => "media",
+            'xmind' => "xmind",
+            'rp' => "axure",
             default => "",
         };
         $file = File::createInstance([

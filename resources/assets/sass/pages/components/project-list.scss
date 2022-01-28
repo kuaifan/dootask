@@ -136,14 +136,18 @@
                         box-shadow: none;
                     }
                 }
-                .project-select{
+                .project-select {
                     display: flex;
                     align-items: center;
                     margin-right: 14px;
-                    opacity: 0.9;
-                    z-index: 1000;
-                    .title{
-                        width:50px;
+                    .ivu-select-single {
+                        .ivu-select-selection {
+                            height: 30px;
+                            .ivu-select-selected-value {
+                                height: 28px;
+                                line-height: 28px;
+                            }
+                        }
                     }
                 }
                 .project-switch-button {
@@ -957,16 +961,6 @@
                 .project-switch {
                     margin-left: 0;
                     justify-content: flex-end;
-                    .project-select{
-                        display: flex;
-                        align-items: center;
-                        margin-right: 14px;
-                        opacity: 0.9;
-                        z-index: 1000;
-                        .title{
-                            width:50px;
-                        }
-                    }
                 }
             }
         }
