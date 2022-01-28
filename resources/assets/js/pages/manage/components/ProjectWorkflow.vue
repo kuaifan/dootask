@@ -143,7 +143,7 @@
             :mask-closable="false">
             <Form :model="userData" label-width="auto" @submit.native.prevent>
                 <FormItem prop="userids" :label="$L('状态负责人')">
-                    <UserInput v-if="userShow" v-model="userData.userids" :project-id="projectId" :multiple-max="5" :placeholder="$L('选择状态负责人')"/>
+                    <UserInput v-model="userData.userids" :project-id="projectId" :multiple-max="5" :placeholder="$L('选择状态负责人')"/>
                 </FormItem>
                 <FormItem prop="usertype" :label="$L('流转模式')">
                     <RadioGroup v-model="userData.usertype">

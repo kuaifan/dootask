@@ -332,7 +332,7 @@
             :mask-closable="false">
             <Form :model="userData" label-width="auto" @submit.native.prevent>
                 <FormItem prop="userids" :label="$L('项目成员')">
-                    <UserInput v-if="userShow" v-model="userData.userids" :uncancelable="userData.uncancelable" :multiple-max="100" :placeholder="$L('选择项目成员')"/>
+                    <UserInput v-model="userData.userids" :uncancelable="userData.uncancelable" :multiple-max="100" :placeholder="$L('选择项目成员')"/>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
@@ -394,7 +394,7 @@
             :mask-closable="false">
             <Form :model="transferData" label-width="auto" @submit.native.prevent>
                 <FormItem prop="owner_userid" :label="$L('项目负责人')">
-                    <UserInput v-if="transferShow" v-model="transferData.owner_userid" :multiple-max="1" :placeholder="$L('选择项目负责人')"/>
+                    <UserInput v-model="transferData.owner_userid" :multiple-max="1" :placeholder="$L('选择项目负责人')"/>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">

@@ -1,22 +1,23 @@
 <template>
-    <div v-if="ready" :class="['common-user', maxHiddenClass]">
+    <div :class="['common-user', maxHiddenClass]">
         <Select
-            v-model="values"
+            ref="select"
+            v-model="selects"
             :transfer="transfer"
-            :remote-method="searchUser"
             :placeholder="placeholder"
             :size="size"
-            :loading="loading"
+            :loading="loadIng > 0"
             :loading-text="$L('加载中...')"
             :default-label="value"
             :default-event-object="true"
-            :multipleMax="multipleMax"
-            :multipleUncancelable="uncancelable"
+            :multiple-max="multipleMax"
+            :multiple-uncancelable="uncancelable"
+            :remote-method="searchUser"
+            @on-query-change="searchUser"
+            @on-open-change="openChange"
             multiple
             filterable
-            transfer-class-name="common-user-transfer"
-            @on-open-change="openChange"
-            @on-set-default-options="setDefaultOptions">
+            transfer-class-name="common-user-transfer">
             <div v-if="multipleMax" slot="drop-prepend" class="user-drop-prepend">{{$L('最多只能选择' + multipleMax + '个')}}</div>
             <slot name="option-prepend"></slot>
             <Option
@@ -33,7 +34,7 @@
                 </div>
             </Option>
         </Select>
-        <div v-if="!initialized" class="common-user-loading"><Loading/></div>
+        <div v-if="loadIng > 0" class="common-user-loading"><Loading/></div>
     </div>
 </template>
 
@@ -87,36 +88,23 @@
         },
         data() {
             return {
-                ready: false,
-                initialized: false,
-                loading: false,
-                openLoad: false,
-                values: [],
+                loadIng: 0,
 
+                selects: [],
                 list: [],
-                options: [],
+
+                searchKey: null,
+                searchHistory: [],
+
                 subscribe: null,
             }
         },
         mounted() {
-            if ($A.isArray(this.value)) {
-                this.values = $A.cloneJSON(this.value);
-            } else {
-                this.$emit('input', this.value ? [this.value] : []);
-            }
-            this.$nextTick(() => {
-                this.ready = true;
-            });
             this.subscribe = Store.subscribe('cacheUserActive', (data) => {
                 let index = this.list.findIndex(({userid}) => userid == data.userid);
                 if (index > -1) {
-                    this.initialized = true;
                     this.$set(this.list, index, Object.assign({}, this.list[index], data));
-                }
-                let option = this.options.find(({value}) => value == data.userid);
-                if (option) {
-                    this.$set(option, 'label', data.nickname)
-                    this.$set(option, 'avatar', data.userimg)
+                    this.handleSelectData();
                 }
             });
         },
@@ -128,9 +116,9 @@
         },
         computed: {
             maxHiddenClass() {
-                const {multipleMax, maxHiddenInput, values} = this;
+                const {multipleMax, maxHiddenInput, selects} = this;
                 if (multipleMax && maxHiddenInput) {
-                    if (values.length >= multipleMax) {
+                    if (selects.length >= multipleMax) {
                         return 'hidden-input'
                     }
                 }
@@ -138,61 +126,62 @@
             }
         },
         watch: {
-            value(val) {
-                this.values = val;
+            value: {
+                handler() {
+                    this.valueChange()
+                },
+                immediate: true,
             },
-            values(val) {
+            selects(val) {
                 this.$emit('input', val);
             }
         },
         methods: {
-            openChange(show) {
-                if (show && !this.openLoad) {
-                    this.openLoad = true;
-                    if (this.list.length == this.values.length || this.list.length <= 1) {
-                        this.$nextTick(this.searchUser);
+            searchUser(key) {
+                if (typeof key !== "string") key = "";
+                if (key == this.searchKey) return;
+                this.searchKey = key;
+                //
+                const history = this.searchHistory.find(item => item.key == key);
+                if (history) this.list = history.data;
+                //
+                if (!history) this.loadIng++;
+                setTimeout(() => {
+                    if (this.searchKey != key) {
+                        if (!history) this.loadIng--;
+                        return;
                     }
-                }
-            },
-
-            setDefaultOptions(options) {
-                this.options = options;
-                options.forEach(({value, label}) => {
-                    this.list.push({
-                        userid: value,
-                        nickname: label,
-                    });
-                    this.$store.dispatch("getUserBasic", {userid: value});
-                });
-                if (this.list.length == 0) {
-                    this.initialized = true;
-                }
-            },
-
-            searchUser(query) {
-                if (query !== '') {
-                    this.loading = true;
                     this.$store.dispatch("call", {
                         url: 'users/search',
                         data: {
                             keys: {
-                                key: query || '',
+                                key,
                                 project_id: this.projectId,
                                 no_project_id: this.noProjectId,
                             },
                             take: 30
                         },
                     }).then(({data}) => {
-                        this.loading = false;
+                        if (!history) this.loadIng--;
                         this.list = data;
+                        //
+                        const index = this.searchHistory.findIndex(item => item.key == key);
+                        const tmpData = {
+                            key,
+                            data,
+                            time: $A.Time()
+                        };
+                        if (index > -1) {
+                            this.searchHistory.splice(index, 1, tmpData)
+                        } else {
+                            this.searchHistory.push(tmpData)
+                        }
                     }).catch(({msg}) => {
-                        this.loading = false;
+                        if (!history) this.loadIng--;
                         this.list = [];
                         $A.messageWarning(msg);
                     });
-                } else {
-                    this.list = [];
-                }
+                }, this.searchHistory.length > 0 ? 300 : 0)
             },
 
             isDisabled(userid) {
@@ -200,6 +189,48 @@
                     return false;
                 }
                 return this.disabledChoice.includes(userid)
+            },
+
+            openChange(show) {
+                if (show) {
+                    this.$nextTick(this.searchUser);
+                }
+            },
+
+            valueChange() {
+                if (this.selects == this.value) {
+                    return
+                }
+                if ($A.isArray(this.value)) {
+                    this.selects = $A.cloneJSON(this.value);
+                } else if (this.value) {
+                    this.selects = [this.value]
+                } else {
+                    this.selects = [];
+                }
+                this.selects.some(userid => {
+                    if (!this.list.find(item => item.userid == userid)) {
+                        this.list.push({userid, nickname: userid});
+                        this.$store.dispatch("getUserBasic", {userid});
+                    }
+                })
+            },
+
+            handleSelectData() {
+                this.__handleSelectTimeout && clearTimeout(this.__handleSelectTimeout);
+                this.__handleSelectTimeout = setTimeout(() => {
+                    if (!this.$refs.select) {
+                        return;
+                    }
+                    const list = this.$refs.select.getValue();
+                    list && list.some(option => {
+                        const data = this.list.find(({userid}) => userid == option.value)
+                        if (data) {
+                            this.$set(option, 'label', data.nickname)
+                            this.$set(option, 'avatar', data.userimg)
+                        }
+                    })
+                }, 100);
             }
         }
     };

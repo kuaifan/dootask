@@ -39,7 +39,6 @@
             <Col span="22">
                 <div class="report-users">
                     <UserInput
-                        v-if="userInputShow"
                         v-model="reportData.receive"
                         :disabledChoice="[userId]"
                         :placeholder="$L('选择接收人')" />
@@ -94,7 +93,6 @@ export default {
                 offset: 0 // 以当前日期为基础的周期偏移量。例如选择了上一周那么就是 -1，上一天同理。
             },
             disabledType: false,
-            userInputShow: true,
             prevCycleText: "",
             nextCycleText: "",
         };
@@ -210,7 +208,6 @@ export default {
         },
 
         getDetail(reportId) {
-            this.userInputShow = false;
             this.$store.dispatch("call", {
                 url: 'report/detail',
                 data: {
@@ -224,12 +221,10 @@ export default {
                 this.reportData.type = data.type_val;
                 this.reportData.id = reportId;
                 this.disabledType = true;
-                this.userInputShow = true;
                 // msg 结果描述
             }).catch(({msg}) => {
                 // msg 错误原因
                 $A.messageError(msg);
-                this.userInputShow = true;
             });
         },
 
@@ -252,18 +247,15 @@ export default {
 
         // 获取上一次接收人
         getLastSubmitter() {
-            this.userInputShow = false;
             this.$store.dispatch("call", {
                 url: 'report/last_submitter',
             }).then(({data, msg}) => {
                 // data 结果数据
                 this.reportData.receive = data;
-                this.userInputShow = true;
                 // msg 结果描述
             }).catch(({msg}) => {
                 // msg 错误原因
                 $A.messageError(msg);
-                this.userInputShow = true;
             });
         },
 

@@ -45,12 +45,10 @@
             :width="240"
             placement="bottom"
             @on-popper-show="openOwner"
-            @on-popper-hide="ownerShow=false"
             @on-ok="onOwner"
             transfer>
             <div slot="content">
                 <UserInput
-                    v-if="ownerShow"
                     v-model="ownerData.owner_userid"
                     :multiple-max="1"
                     :project-id="taskDetail.project_id"
@@ -193,12 +191,10 @@
                             class="item-content user"
                             placement="bottom"
                             @on-popper-show="openOwner"
-                            @on-popper-hide="ownerShow=false"
                             @on-ok="onOwner"
                             transfer>
                             <div slot="content">
                                 <UserInput
-                                    v-if="ownerShow"
                                     v-model="ownerData.owner_userid"
                                     :multiple-max="10"
                                     :project-id="taskDetail.project_id"
@@ -223,12 +219,10 @@
                             class="item-content user"
                             placement="bottom"
                             @on-popper-show="openAssist"
-                            @on-popper-hide="assistShow=false"
                             @on-ok="onAssist"
                             transfer>
                             <div slot="content">
                                 <UserInput
-                                    v-if="assistShow"
                                     v-model="assistData.assist_userid"
                                     :multiple-max="10"
                                     :project-id="taskDetail.project_id"
@@ -448,14 +442,12 @@ export default {
 
             taskDetail: {},
 
-            ownerShow: false,
             ownerData: {},
             ownerLoad: 0,
 
             receiveShow: false,
 
             assistForce: false,
-            assistShow: false,
             assistData: {},
             assistLoad: 0,
 
@@ -797,7 +789,6 @@ export default {
             const list = this.getOwner.map(({userid}) => userid)
             this.$set(this.taskDetail, 'owner_userid', list)
             this.$set(this.ownerData, 'owner_userid', list)
-            this.ownerShow = true;
         },
 
         onOwner(pick) {
@@ -833,13 +824,11 @@ export default {
             this.$store.dispatch("taskUpdate", data).then(({msg}) => {
                 $A.messageSuccess(msg);
                 this.ownerLoad--;
-                this.ownerShow = false;
                 this.receiveShow = false;
                 this.$store.dispatch("getTaskOne", this.taskDetail.id).catch(() => {})
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.ownerLoad--;
-                this.ownerShow = false;
                 this.receiveShow = false;
             })
         },
@@ -849,7 +838,6 @@ export default {
             this.$set(this.taskDetail, 'assist_userid', list)
             this.$set(this.assistData, 'assist_userid', list);
             this.$set(this.assistData, 'disabled', this.getOwner.map(({userid}) => userid))
-            this.assistShow = true;
         },
 
         onAssist() {
@@ -865,12 +853,10 @@ export default {
             }).then(({msg}) => {
                 $A.messageSuccess(msg);
                 this.assistLoad--;
-                this.assistShow = false;
                 this.$store.dispatch("getTaskOne", this.taskDetail.id).catch(() => {})
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.assistLoad--;
-                this.assistShow = false;
             })
         },
 
