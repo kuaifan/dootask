@@ -128,6 +128,35 @@ class WebSocketDialogMsg extends AbstractModel
     }
 
     /**
+     * 删除消息
+     * @return void
+     */
+    public function deleteMsg()
+    {
+        $send_dt = Carbon::parse($this->created_at)->addMinutes(5);
+        if ($send_dt->lt(Carbon::now())) {
+            throw new ApiException('已超过5分钟，此消息不能撤回');
+        }
+        $this->delete();
+        //
+        $dialog = WebSocketDialog::find($this->dialog_id);
+        if ($dialog) {
+            $userids = $dialog->dialogUser->pluck('userid')->toArray();
+            PushTask::push([
+                'userid' => $userids,
+                'msg' => [
+                    'type' => 'dialog',
+                    'mode' => 'delete',
+                    'data' => [
+                        'id' => $this->id,
+                        'dialog_id' => $this->dialog_id
+                    ],
+                ]
+            ]);
+        }
+    }
+
+    /**
      * 发送消息
      * @param int $dialog_id    会话ID（即 聊天室ID）
      * @param string $type      消息类型
