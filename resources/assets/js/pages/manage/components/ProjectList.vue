@@ -407,8 +407,9 @@
         <DrawerOverlay
             v-model="workflowShow"
             placement="right"
+            :beforeClose="workflowBeforeClose"
             :size="1280">
-            <ProjectWorkflow v-if="workflowShow" :project-id="projectId"/>
+            <ProjectWorkflow ref="workflow" v-if="workflowShow" :project-id="projectId"/>
         </DrawerOverlay>
 
         <!--查看项目动态-->
@@ -1177,6 +1178,27 @@ export default {
         toggleCompleted() {
             this.$store.dispatch("forgetTaskCompleteTemp", true);
             this.$store.dispatch('toggleProjectParameter', 'completedTask');
+        },
+
+        workflowBeforeClose() {
+            return new Promise(resolve => {
+                if (!this.$refs.workflow.existDiff()) {
+                    resolve()
+                    return
+                }
+                $A.modalConfirm({
+                    content: '设置尚未保存，是否放弃修改？',
+                    cancelText: '放弃',
+                    okText: '保存',
+                    onCancel: () => {
+                        resolve()
+                    },
+                    onOk: () => {
+                        this.$refs.workflow.saveAll()
+                        resolve()
+                    }
+                });
+            })
         },
 
         myFilter(task, chackCompleted = true) {

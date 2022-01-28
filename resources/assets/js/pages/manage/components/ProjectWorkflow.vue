@@ -261,6 +261,12 @@ export default {
             return JSON.stringify(project_flow_item) != project_flow_bak
         },
 
+        existDiff() {
+            return !!this.list.find(data => {
+                return this.contrast(data.project_flow_item, data.project_flow_bak)
+            });
+        },
+
         onCreate() {
             let id = -1 * $A.randNum(1000, 10000);
             this.list.push({
@@ -466,6 +472,14 @@ export default {
             }).catch(({msg}) => {
                 this.loadIng--;
                 $A.modalError(msg);
+            });
+        },
+
+        saveAll() {
+            this.list.some(data => {
+                if (this.contrast(data.project_flow_item, data.project_flow_bak)) {
+                    this.onSave(data)
+                }
             });
         },
     }
