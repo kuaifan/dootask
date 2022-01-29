@@ -2053,6 +2053,22 @@ export default {
                                     case 'delete':
                                         // 删除消息
                                         dispatch("forgetDialogMsg", data.id)
+                                        //
+                                        let dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
+                                        if (dialog) {
+                                            // 更新最后消息
+                                            dialog.last_at = data.last_msg && data.last_msg.created_at;
+                                            dialog.last_msg = data.last_msg;
+                                            if (data.update_read) {
+                                                // 更新未读数量
+                                                dispatch("call", {
+                                                    url: 'dialog/msg/unread',
+                                                    dialog_id: data.dialog_id
+                                                }).then(result => {
+                                                    dialog.unread = result.data.unread
+                                                }).catch(() => {});
+                                            }
+                                        }
                                         break;
                                     case 'add':
                                     case 'chat':

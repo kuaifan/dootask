@@ -160,16 +160,28 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/sendtext          05. 未读消息
+     * @api {get} api/dialog/msg/unread          05. 获取未读消息数量
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
      * @apiGroup dialog
-     * @apiName msg__sendtext
+     * @apiName msg__unread
+     *
+     * @apiParam {Number} [dialog_id]         对话ID，留空获取总未读消息数量
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function msg__unread()
     {
-        $unread = WebSocketDialogMsgRead::whereUserid(User::userid())->whereReadAt(null)->count();
+        $dialog_id = intval(Request::input('dialog_id'));
+        //
+        $builder = WebSocketDialogMsgRead::whereUserid(User::userid())->whereReadAt(null);
+        if ($dialog_id > 0) {
+            $builder->whereDialogId($dialog_id);
+        }
+        $unread = $builder->count();
         return Base::retSuccess('success', [
             'unread' => $unread,
         ]);
@@ -417,7 +429,7 @@ class DialogController extends AbstractController
     /**
      * @api {get} api/dialog/msg/withdraw          11. 聊天消息撤回
      *
-     * @apiDescription 需要token身份
+     * @apiDescription 消息撤回限制24小时内，需要token身份
      * @apiVersion 1.0.0
      * @apiGroup dialog
      * @apiName msg__withdraw

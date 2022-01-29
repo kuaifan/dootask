@@ -8,6 +8,7 @@ use App\Tasks\PushTask;
 use App\Tasks\WebSocketDialogMsgTask;
 use Carbon\Carbon;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * App\Models\WebSocketDialogMsg
@@ -21,11 +22,15 @@ use Hhxsv5\LaravelS\Swoole\Task\Task;
  * @property int|null $send 发送数量
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read int|mixed $percentage
+ * @property-read \App\Models\WebSocketDialog|null $webSocketDialog
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg newQuery()
+ * @method static \Illuminate\Database\Query\Builder|WebSocketDialogMsg onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg query()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereDialogId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereMsg($value)
@@ -34,10 +39,14 @@ use Hhxsv5\LaravelS\Swoole\Task\Task;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereUserid($value)
+ * @method static \Illuminate\Database\Query\Builder|WebSocketDialogMsg withTrashed()
+ * @method static \Illuminate\Database\Query\Builder|WebSocketDialogMsg withoutTrashed()
  * @mixin \Eloquent
  */
 class WebSocketDialogMsg extends AbstractModel
 {
+    use SoftDeletes;
+
     protected $appends = [
         'percentage',
     ];
@@ -45,6 +54,14 @@ class WebSocketDialogMsg extends AbstractModel
     protected $hidden = [
         'updated_at',
     ];
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function webSocketDialog(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(WebSocketDialog::class, 'id', 'dialog_id');
+    }
 
     /**
      * 阅读占比
@@ -130,27 +147,39 @@ class WebSocketDialogMsg extends AbstractModel
      */
     public function deleteMsg()
     {
-        $send_dt = Carbon::parse($this->created_at)->addMinutes(5);
+        $send_dt = Carbon::parse($this->created_at)->addDay();
         if ($send_dt->lt(Carbon::now())) {
-            throw new ApiException('已超过5分钟，此消息不能撤回');
+            throw new ApiException('已超过24小时，此消息不能撤回');
         }
-        $this->delete();
-        //
-        $dialog = WebSocketDialog::find($this->dialog_id);
-        if ($dialog) {
-            $userids = $dialog->dialogUser->pluck('userid')->toArray();
-            PushTask::push([
-                'userid' => $userids,
-                'msg' => [
-                    'type' => 'dialog',
-                    'mode' => 'delete',
-                    'data' => [
-                        'id' => $this->id,
-                        'dialog_id' => $this->dialog_id
-                    ],
-                ]
-            ]);
-        }
+        AbstractModel::transaction(function() {
+            $deleteRead = WebSocketDialogMsgRead::whereMsgId($this->id)->whereNull('read_at')->delete();    // 未阅读记录不需要软删除，直接删除即可
+            $this->delete();
+            //
+            $last_msg = null;
+            if ($this->webSocketDialog) {
+                $last_msg = WebSocketDialogMsg::whereDialogId($this->dialog_id)->orderByDesc('id')->first();
+                $this->webSocketDialog->last_at = $last_msg->created_at;
+                $this->webSocketDialog->save();
+            }
+            //
+            $dialog = WebSocketDialog::find($this->dialog_id);
+            if ($dialog) {
+                $userids = $dialog->dialogUser->pluck('userid')->toArray();
+                PushTask::push([
+                    'userid' => $userids,
+                    'msg' => [
+                        'type' => 'dialog',
+                        'mode' => 'delete',
+                        'data' => [
+                            'id' => $this->id,
+                            'dialog_id' => $this->dialog_id,
+                            'last_msg' => $last_msg,
+                            'update_read' => $deleteRead ? 1 : 0
+                        ],
+                    ]
+                ]);
+            }
+        });
     }
 
     /**

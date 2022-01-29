@@ -140,8 +140,10 @@ body.dark-mode-reverse {
                     > li {
                         .dialog-view {
                             .dialog-content {
-                                color: #ffffff;
                                 background-color: #e1e1e1;
+                                .content-text {
+                                    color: #ffffff;
+                                }
                             }
                         }
                         &.self {

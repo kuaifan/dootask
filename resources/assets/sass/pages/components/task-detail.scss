@@ -6,7 +6,7 @@
     min-height: 120px;
     overflow: auto;
     .task-info {
-        flex: 1;
+        flex: 3;
         display: flex;
         flex-direction: column;
         position: relative;
@@ -459,6 +459,7 @@
         }
     }
     .task-dialog {
+        flex: 2;
         flex-shrink: 0;
         display: flex;
         flex-direction: column;
