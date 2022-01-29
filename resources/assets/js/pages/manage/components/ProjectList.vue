@@ -69,17 +69,16 @@
                     </li>
                 </ul>
             </div>
-            <div class="project-subbox">
+            <div class="project-subbox clearfix">
                 <div class="project-subtitle">{{projectData.desc}}</div>
                 <div class="project-switch">
                     <div v-if="completedCount > 0" class="project-checkbox">
                         <Checkbox :value="projectParameter('completedTask')" @on-change="toggleCompleted">{{$L('显示已完成')}}</Checkbox>
                     </div>
-                    <div v-if="flowList && flowList.length > 0" class="project-select">
-                        <Select v-model="flowId" :placeholder="this.$L('进度')">
-                            <Option value="0">{{this.$L('全部')}}</Option>
-                            <Option v-for="item in flowList" :value="item.id" :key="item.id">{{ item.name }}</Option>
-                        </Select>
+                    <div v-if="flowList.length > 0" class="project-select">
+                        <Cascader :data="flowData" @on-change="flowChange" transfer-class-name="project-list-flow-cascader" transfer>
+                            <span :class="`project-flow ${flowInfo.status}`">{{ flowTitle }}</span>
+                        </Cascader>
                     </div>
                     <div :class="['project-switch-button', !projectParameter('card') ? 'menu' : '']" @click="$store.dispatch('toggleProjectParameter', 'card')">
                         <div><i class="taskfont">&#xe60c;</i></div>
@@ -503,7 +502,7 @@ export default {
 
             projectDialogSubscribe: null,
 
-            flowId: 0,
+            flowInfo: {},
             flowList: [],
         }
     },
@@ -568,15 +567,15 @@ export default {
         },
 
         panelTask() {
-            const {searchText, flowId} = this;
+            const {searchText, flowInfo} = this;
             return function (list) {
                 if (!this.projectParameter('completedTask')) {
                     list = list.filter(({complete_at}) => {
                         return !complete_at;
                     });
                 }
-                if (flowId > 0) {
-                    list = list.filter(({flow_item_id}) => flow_item_id === flowId);
+                if (flowInfo.value > 0) {
+                    list = list.filter(({flow_item_id}) => flow_item_id === flowInfo.value);
                 }
                 if (searchText) {
                     list = list.filter(({name, desc}) => {
@@ -599,8 +598,18 @@ export default {
             return this.windowWidth > 1200 ? 8 : 3;
         },
 
+        allTask() {
+            const {cacheTasks, projectId} = this;
+            return cacheTasks.filter(task => {
+                if (task.archived_at) {
+                    return false;
+                }
+                return task.project_id == projectId
+            })
+        },
+
         columnList() {
-            const {projectId, cacheColumns, cacheTasks} = this;
+            const {projectId, cacheColumns, allTask} = this;
             const list = cacheColumns.filter(({project_id}) => {
                 return project_id == projectId
             }).sort((a, b) => {
@@ -610,10 +619,7 @@ export default {
                 return a.id - b.id;
             });
             list.forEach((column) => {
-                column.tasks = this.transforTasks(cacheTasks.filter(task => {
-                    if (task.archived_at) {
-                        return false;
-                    }
+                column.tasks = this.transforTasks(allTask.filter(task => {
                     return task.column_id == column.id;
                 })).sort((a, b) => {
                     let at1 = $A.Date(a.complete_at),
@@ -631,8 +637,8 @@ export default {
         },
 
         myList() {
-            const {cacheTasks, taskCompleteTemps, sortField, sortType} = this;
-            let array = cacheTasks.filter(task => this.myFilter(task));
+            const {allTask, taskCompleteTemps, sortField, sortType} = this;
+            let array = allTask.filter(task => this.myFilter(task));
             let tmps = taskCompleteTemps.filter(task => this.myFilter(task, false));
             if (tmps.length > 0) {
                 array = $A.cloneJSON(array)
@@ -654,8 +660,8 @@ export default {
         },
 
         helpList() {
-            const {cacheTasks, taskCompleteTemps, sortField, sortType} = this;
-            let array = cacheTasks.filter(task => this.helpFilter(task));
+            const {allTask, taskCompleteTemps, sortField, sortType} = this;
+            let array = allTask.filter(task => this.helpFilter(task));
             let tmps = taskCompleteTemps.filter(task => this.helpFilter(task, false));
             if (tmps.length > 0) {
                 array = $A.cloneJSON(array)
@@ -677,15 +683,12 @@ export default {
         },
 
         unList() {
-            const {projectId, cacheTasks, searchText, sortField, sortType, flowId} = this;
-            const array = cacheTasks.filter(task => {
-                if (task.archived_at) {
+            const {allTask, searchText, sortField, sortType, flowInfo} = this;
+            const array = allTask.filter(task => {
+                if (task.parent_id > 0) {
                     return false;
                 }
-                if (task.project_id != projectId || task.parent_id > 0) {
-                    return false;
-                }
-                if (flowId > 0 && task.flow_item_id !== flowId) {
+                if (flowInfo.value > 0 && task.flow_item_id !== flowInfo.value) {
                     return false;
                 }
                 if (searchText) {
@@ -711,15 +714,12 @@ export default {
         },
 
         completedList() {
-            const {projectId, cacheTasks, searchText, flowId} = this;
-            const array = cacheTasks.filter(task => {
-                if (task.archived_at) {
+            const {allTask, searchText, flowInfo} = this;
+            const array = allTask.filter(task => {
+                if (task.parent_id > 0) {
                     return false;
                 }
-                if (task.project_id != projectId || task.parent_id > 0) {
-                    return false;
-                }
-                if (flowId > 0 && task.flow_item_id !== flowId) {
+                if (flowInfo.value > 0 && task.flow_item_id !== flowInfo.value) {
                     return false;
                 }
                 if (searchText) {
@@ -737,16 +737,54 @@ export default {
         },
 
         completedCount() {
-            const {projectId, cacheTasks} = this;
-            return cacheTasks.filter(task => {
-                if (task.archived_at) {
-                    return false;
-                }
-                if (task.project_id != projectId || task.parent_id > 0) {
+            const {allTask} = this;
+            return allTask.filter(task => {
+                if (task.parent_id > 0) {
                     return false;
                 }
                 return task.complete_at;
             }).length;
+        },
+
+        flowTitle() {
+            const {flowInfo, allTask} = this;
+            if (flowInfo.value) {
+                return flowInfo.label;
+            }
+            return `${this.$L('全部')} (${allTask.length})`
+        },
+
+        flowData() {
+            const {flowList, allTask} = this;
+            let list = [{
+                value: 0,
+                label: `${this.$L('全部')} (${allTask.length})`,
+                children: []
+            }];
+            let flows = flowList.map(item1 => {
+                return {
+                    value: item1.id,
+                    label: item1.name,
+                    status: item1.status,
+                    children: item1.project_flow_item.map(item2 => {
+                        let length = allTask.filter(task => {
+                            return task.flow_item_id == item2.id;
+                        }).length
+                        return {
+                            value: item2.id,
+                            label: `${item2.name} (${length})`,
+                            status: item2.status,
+                            class: item2.status
+                        }
+                    })
+                }
+            });
+            if (flows.length === 1) {
+                list.push(...flows[0].children)
+            } else if (flows.length > 0) {
+                list.push(...flows)
+            }
+            return list
         },
     },
 
@@ -812,10 +850,7 @@ export default {
                         sort = -1;
                         upTask.push(...item.task.map(id => {
                             sort++;
-                            upTask.push(...this.cacheTasks.filter(task => {
-                                if (task.archived_at) {
-                                    return false;
-                                }
+                            upTask.push(...this.allTask.filter(task => {
                                 return task.parent_id == id
                             }).map(({id}) => {
                                 return {
@@ -1153,14 +1188,14 @@ export default {
 
         taskIsHidden(task) {
             const {name, desc, complete_at} = task;
-            const {searchText, flowId} = this;
+            const {searchText, flowInfo} = this;
             if (!this.projectParameter('completedTask')) {
                 if (complete_at) {
                     return true;
                 }
             }
-            if (flowId > 0 && task.flow_item_id !== flowId) {
-                return false;
+            if (flowInfo.value > 0 && task.flow_item_id !== flowInfo.value) {
+                return true;
             }
             if (searchText) {
                 if (!($A.strExists(name, searchText) || $A.strExists(desc, searchText))) {
@@ -1201,13 +1236,14 @@ export default {
                     project_id: this.projectId,
                 },
             }).then(({data}) => {
-                let flowList = data.map(({project_flow_item}) => project_flow_item);
-                if (flowList) {
-                    this.flowList = flowList[0];
-                }
+                this.flowList = data;
             }).catch(() => {
                 this.flowList = [];
             });
+        },
+
+        flowChange(value, data) {
+            this.flowInfo = data.pop();
         },
 
         inviteCopy() {
@@ -1252,18 +1288,12 @@ export default {
         },
 
         myFilter(task, chackCompleted = true) {
-            if (task.archived_at) {
-                return false;
-            }
-            if (task.project_id != this.projectId) {
-                return false;
-            }
             if (!this.projectParameter('completedTask') && chackCompleted === true) {
                 if (task.complete_at) {
                     return false;
                 }
             }
-            if (this.flowId > 0 && task.flow_item_id !== this.flowId) {
+            if (this.flowInfo.value > 0 && task.flow_item_id !== this.flowInfo.value) {
                 return false;
             }
             if (this.searchText) {
@@ -1275,10 +1305,7 @@ export default {
         },
 
         helpFilter(task, chackCompleted = true) {
-            if (task.archived_at) {
-                return false;
-            }
-            if (task.project_id != this.projectId || task.parent_id > 0) {
+            if (task.parent_id > 0) {
                 return false;
             }
             if (!this.projectParameter('completedTask') && chackCompleted === true) {
@@ -1286,7 +1313,7 @@ export default {
                     return false;
                 }
             }
-            if (this.flowId > 0 && task.flow_item_id !== this.flowId) {
+            if (this.flowInfo.value > 0 && task.flow_item_id !== this.flowInfo.value) {
                 return false;
             }
             if (this.searchText) {
