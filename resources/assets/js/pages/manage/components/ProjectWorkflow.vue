@@ -143,7 +143,7 @@
             :mask-closable="false">
             <Form :model="userData" label-width="auto" @submit.native.prevent>
                 <FormItem prop="userids" :label="$L('状态负责人')">
-                    <UserInput v-if="userShow" v-model="userData.userids" :project-id="projectId" :multiple-max="5" :placeholder="$L('选择状态负责人')"/>
+                    <UserInput v-model="userData.userids" :project-id="projectId" :multiple-max="5" :placeholder="$L('选择状态负责人')"/>
                 </FormItem>
                 <FormItem prop="usertype" :label="$L('流转模式')">
                     <RadioGroup v-model="userData.usertype">
@@ -259,6 +259,12 @@ export default {
 
         contrast(project_flow_item, project_flow_bak) {
             return JSON.stringify(project_flow_item) != project_flow_bak
+        },
+
+        existDiff() {
+            return !!this.list.find(data => {
+                return this.contrast(data.project_flow_item, data.project_flow_bak)
+            });
         },
 
         onCreate() {
@@ -466,6 +472,14 @@ export default {
             }).catch(({msg}) => {
                 this.loadIng--;
                 $A.modalError(msg);
+            });
+        },
+
+        saveAll() {
+            this.list.some(data => {
+                if (this.contrast(data.project_flow_item, data.project_flow_bak)) {
+                    this.onSave(data)
+                }
             });
         },
     }

@@ -8,9 +8,7 @@ use App\Models\User;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Models\WebSocketDialogMsgRead;
-use App\Models\WebSocketDialogUser;
 use App\Module\Base;
-use Carbon\Carbon;
 use Request;
 use Response;
 
@@ -162,16 +160,28 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/sendtext          05. 未读消息
+     * @api {get} api/dialog/msg/unread          05. 获取未读消息数量
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
      * @apiGroup dialog
-     * @apiName msg__sendtext
+     * @apiName msg__unread
+     *
+     * @apiParam {Number} [dialog_id]         对话ID，留空获取总未读消息数量
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function msg__unread()
     {
-        $unread = WebSocketDialogMsgRead::whereUserid(User::userid())->whereReadAt(null)->count();
+        $dialog_id = intval(Request::input('dialog_id'));
+        //
+        $builder = WebSocketDialogMsgRead::whereUserid(User::userid())->whereReadAt(null);
+        if ($dialog_id > 0) {
+            $builder->whereDialogId($dialog_id);
+        }
+        $unread = $builder->count();
         return Base::retSuccess('success', [
             'unread' => $unread,
         ]);
@@ -331,7 +341,61 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/download          09. 文件下载
+     * @api {get} api/dialog/msg/detail          09. 消息详情
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__detail
+     *
+     * @apiParam {Number} msg_id            消息ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__detail()
+    {
+        User::auth();
+        //
+        $msg_id = intval(Request::input('msg_id'));
+        //
+        $dialogMsg = WebSocketDialogMsg::whereId($msg_id)->first();
+        if (empty($dialogMsg)) {
+            return Base::retError("文件不存在");
+        }
+        $data = $dialogMsg->toArray();
+        //
+        if ($data['type'] == 'file') {
+            $codeExt = ['txt'];
+            $officeExt = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'];
+            $localExt = ['jpg', 'jpeg', 'png', 'gif'];
+            $msg = Base::json2array($dialogMsg->getRawOriginal('msg'));
+            $filePath = public_path($msg['path']);
+            if (in_array($msg['ext'], $codeExt) && $msg['size'] < 2 * 1024 * 1024) {
+                // 文本预览，限制2M内的文件
+                $data['content'] = file_get_contents($filePath);
+                $data['file_mode'] = 1;
+            } elseif (in_array($msg['ext'], $officeExt)) {
+                // office预览
+                $data['file_mode'] = 2;
+            } else {
+                // 其他预览
+                if (in_array($msg['ext'], $localExt)) {
+                    $url = Base::fillUrl($msg['path']);
+                } else {
+                    $url = 'http://' . env('APP_IPPR') . '.3/' . $msg['path'];
+                }
+                $data['url'] = base64_encode($url);
+                $data['file_mode'] = 3;
+            }
+        }
+        //
+        return Base::retSuccess("success", $data);
+    }
+
+    /**
+     * @api {get} api/dialog/msg/download          10. 文件下载
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -363,9 +427,9 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/withdraw          聊天消息撤回
+     * @api {get} api/dialog/msg/withdraw          11. 聊天消息撤回
      *
-     * @apiDescription 需要token身份
+     * @apiDescription 消息撤回限制24小时内，需要token身份
      * @apiVersion 1.0.0
      * @apiGroup dialog
      * @apiName msg__withdraw
@@ -375,43 +439,16 @@ class DialogController extends AbstractController
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
-     *
-     * @return array
      */
-    public function msg__withdraw(): array
+    public function msg__withdraw()
     {
         $user = User::auth();
         $msg_id = intval(Request::input("msg_id"));
         $msg = WebSocketDialogMsg::whereId($msg_id)->whereUserid($user->userid)->first();
         if (empty($msg)) {
-            return Base::retError("此消息不可撤回");
+            return Base::retError("消息不存在或已被删除");
         }
-        $send_dt = Carbon::parse($msg->created_at)->addMinutes(5);
-        if ($send_dt->lt(Carbon::now()))
-            return Base::retError("已超过5分钟，此消息不能撤回");
-
-
-        // 删除文件、图片
-        if ($msg->type == WebSocketDialogMsg::MSG_TYPE_FILE) {
-            if (is_array($msg->msg)) {
-                // 删除本体
-                if (!empty($msg->msg["file"]))
-                    @unlink($msg->msg["file"]);
-                // 删除缩略图
-                if (!empty($msg->msg["thumb"]))
-                    @unlink($msg->msg["thumb"]);
-            }
-        }
-
-        // 直接删除消息
-        $msg->delete();
-
-        /* 原始需求：消息直接删除，无需提示 */
-        // 发送撤回指令
-//        WebSocketDialogMsg::sendMsg($msg->dialog_id, 'withdraw', [
-//            "msg_id" => $msg->id, // 被撤回的消息Id
-//        ], $user->userid);
-
+        $msg->deleteMsg();
         return Base::retSuccess("success");
     }
 }

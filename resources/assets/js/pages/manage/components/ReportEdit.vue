@@ -39,7 +39,6 @@
             <Col span="22">
                 <div class="report-users">
                     <UserInput
-                        v-if="userInputShow"
                         v-model="reportData.receive"
                         :disabledChoice="[userId]"
                         :placeholder="$L('选择接收人')"
@@ -95,7 +94,6 @@ export default {
                 offset: 0 // 以当前日期为基础的周期偏移量。例如选择了上一周那么就是 -1，上一天同理。
             },
             disabledType: false,
-            userInputShow: true,
             prevCycleText: "",
             nextCycleText: "",
         };
@@ -105,16 +103,10 @@ export default {
             if (this.id > 0) {
                 this.getDetail(val);
             }else{
-                this.userInputShow = false;
                 this.reportData.offset = 0;
                 this.reportData.type = "weekly";
                 this.reportData.receive = [];
                 this.getTemplate();
-                setTimeout(() => {
-                    // 如果不做异步，直接重新赋值的话会导致组件无法重新加载
-                    // 组件不销毁重新渲染，会导致UserInput组件无法重新拉取所有人的列表
-                    this.userInputShow = true;
-                }, 50)
             }
         },
     },
@@ -140,7 +132,7 @@ export default {
                     title: '覆盖提交',
                     content: '你已提交过此日期的报告，是否覆盖提交？',
                     loading: true,
-                    zIndex: 2000,
+                    append: this.$el,
                     onOk: () => {
                         this.doSubmit();
                     }
@@ -217,7 +209,6 @@ export default {
         },
 
         getDetail(reportId) {
-            this.userInputShow = false;
             this.$store.dispatch("call", {
                 url: 'report/detail',
                 data: {
@@ -231,12 +222,10 @@ export default {
                 this.reportData.type = data.type_val;
                 this.reportData.id = reportId;
                 this.disabledType = true;
-                this.userInputShow = true;
                 // msg 结果描述
             }).catch(({msg}) => {
                 // msg 错误原因
                 $A.messageError(msg);
-                this.userInputShow = true;
             });
         },
 
@@ -259,18 +248,15 @@ export default {
 
         // 获取上一次接收人
         getLastSubmitter() {
-            this.userInputShow = false;
             this.$store.dispatch("call", {
                 url: 'report/last_submitter',
             }).then(({data, msg}) => {
                 // data 结果数据
                 this.reportData.receive = data;
-                this.userInputShow = true;
                 // msg 结果描述
             }).catch(({msg}) => {
                 // msg 错误原因
                 $A.messageError(msg);
-                this.userInputShow = true;
             });
         },
 

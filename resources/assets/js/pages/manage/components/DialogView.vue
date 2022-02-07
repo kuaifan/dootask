@@ -1,31 +1,49 @@
 <template>
-    <div class="dialog-view" :data-id="msgData.id">
+    <div :class="`dialog-view ${msgData.type}`" :data-id="msgData.id">
 
-        <!--文本-->
-        <div v-if="msgData.type === 'text'" class="dialog-content">
-            <pre class="no-dark-mode" v-html="textMsg(msgData.msg.text)"></pre>
-        </div>
-        <!--等待-->
-        <div v-else-if="msgData.type === 'loading'" class="dialog-content loading"><Loading/></div>
-        <!--文件-->
-        <div v-else-if="msgData.type === 'file'" :class="['dialog-content', msgData.msg.type]">
-            <div class="dialog-file" @click="downFile">
-                <img v-if="msgData.msg.type === 'img'" class="file-img" :style="imageStyle(msgData.msg)" :src="msgData.msg.thumb"/>
-                <div v-else class="file-box">
-                    <img class="file-thumb" :src="msgData.msg.thumb"/>
-                    <div class="file-info">
-                        <div class="file-name">{{msgData.msg.name}}</div>
-                        <div class="file-size">{{$A.bytesToSize(msgData.msg.size)}}</div>
+        <div class="dialog-head">
+            <!--详情-->
+            <div class="dialog-content">
+                <!--文本-->
+                <div v-if="msgData.type === 'text'" class="content-text">
+                    <pre class="no-dark-mode">{{textMsg(msgData.msg.text)}}</pre>
+                </div>
+                <!--文件-->
+                <div v-else-if="msgData.type === 'file'" :class="`content-file ${msgData.msg.type}`">
+                    <div class="dialog-file">
+                        <img v-if="msgData.msg.type === 'img'" class="file-img" :style="imageStyle(msgData.msg)" :src="msgData.msg.thumb" @click="viewFile"/>
+                        <div v-else class="file-box">
+                            <img class="file-thumb" :src="msgData.msg.thumb"/>
+                            <div class="file-info">
+                                <div class="file-name">{{msgData.msg.name}}</div>
+                                <div class="file-size">{{$A.bytesToSize(msgData.msg.size)}}</div>
+                            </div>
+                        </div>
                     </div>
+                </div>
+                <!--等待-->
+                <div v-else-if="msgData.type === 'loading'" class="content-loading">
+                    <Loading/>
+                </div>
+                <!--未知-->
+                <div v-else class="content-unknown">{{$L("未知的消息类型")}}</div>
+            </div>
+
+            <!--菜单-->
+            <div v-if="showMenu" class="dialog-menu">
+                <div class="menu-icon">
+                    <Icon v-if="msgData.userid == userId" @click="withdraw" type="md-undo" :title="$L('撤回')"/>
+                    <template v-if="msgData.type === 'file'">
+                        <Icon @click="viewFile" type="md-eye" :title="$L('查看')"/>
+                        <Icon @click="downFile" type="md-arrow-round-down" :title="$L('下载')"/>
+                    </template>
                 </div>
             </div>
         </div>
-        <!--未知-->
-        <div v-else class="dialog-content unknown">{{$L("未知的消息类型")}}</div>
 
         <!--时间/阅读-->
         <div v-if="msgData.created_at" class="dialog-foot">
-            <div class="time">{{$A.formatTime(msgData.created_at)}}</div>
+            <div class="time" :title="msgData.created_at">{{$A.formatTime(msgData.created_at)}}</div>
             <Poptip
                 v-if="msgData.send > 1 || dialogType == 'group'"
                 class="percent"
@@ -85,7 +103,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userToken']),
+        ...mapState(['userToken', 'userId']),
 
         readList() {
             return this.read_list.filter(({read_at}) => read_at)
@@ -93,6 +111,10 @@ export default {
 
         unreadList() {
             return this.read_list.filter(({read_at}) => !read_at)
+        },
+
+        showMenu() {
+            return this.msgData.userid == this.userId || this.msgData.type === 'file'
         }
     },
 
@@ -138,8 +160,7 @@ export default {
             if (!text) {
                 return ""
             }
-            text = text.trim().replace(/(\n\x20*){3,}/g, "<br/><br/>");
-            text = text.trim().replace(/\n/g, "<br/>");
+            text = text.trim().replace(/(\n\x20*){3,}/g, "\n\n");
             return text;
         },
 
@@ -165,6 +186,48 @@ export default {
                 };
             }
             return {};
+        },
+
+        withdraw() {
+            $A.modalConfirm({
+                content: `确定撤回此信息吗？`,
+                okText: '撤回',
+                loading: true,
+                onOk: () => {
+                    this.$store.dispatch("call", {
+                        url: 'dialog/msg/withdraw',
+                        data: {
+                            msg_id: this.msgData.id
+                        },
+                    }).then(() => {
+                        $A.messageSuccess("消息已撤回");
+                        this.$store.dispatch("forgetDialogMsg", this.msgData.id);
+                        this.$Modal.remove();
+                    }).catch(({msg}) => {
+                        $A.messageError(msg, 301);
+                        this.$Modal.remove();
+                    });
+                }
+            });
+        },
+
+        viewFile() {
+            if (this.$Electron) {
+                this.$Electron.ipcRenderer.send('windowRouter', {
+                    title: `${this.msgData.msg.name} (${$A.bytesToSize(this.msgData.msg.size)})`,
+                    titleFixed: true,
+                    name: 'file-msg-' + this.msgData.id,
+                    path: "/single/file/msg/" + this.msgData.id,
+                    force: false,
+                    config: {
+                        parent: null,
+                        width: Math.min(window.screen.availWidth, 1440),
+                        height: Math.min(window.screen.availHeight, 900),
+                    }
+                });
+            } else {
+                window.open($A.apiUrl(`../single/file/msg/${this.msgData.id}`))
+            }
         },
 
         downFile() {

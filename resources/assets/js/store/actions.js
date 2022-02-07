@@ -273,11 +273,11 @@ export default {
         dispatch("call", {
             url: 'users/basic',
             data: {
-                userid: array.map(({userid}) => userid)
+                userid: [...new Set(array.map(({userid}) => userid))]
             },
         }).then(result => {
             time = $A.Time();
-            array.forEach((value) => {
+            array.forEach(value => {
                 let data = result.data.find(({userid}) => userid == value.userid) || Object.assign(value, {email: ""});
                 data._time = time;
                 dispatch("saveUserBasic", data);
@@ -1836,6 +1836,23 @@ export default {
     },
 
     /**
+     * 忘记消息数据
+     * @param state
+     * @param msg_id
+     */
+    forgetDialogMsg({state}, msg_id) {
+        $A.execMainDispatch("forgetDialogMsg", msg_id)
+        //
+        let ids = $A.isArray(msg_id) ? msg_id : [msg_id];
+        ids.some(id => {
+            let index = state.dialogMsgs.findIndex(item => item.id == id);
+            if (index > -1) {
+                state.dialogMsgs.splice(index, 1);
+            }
+        })
+    },
+
+    /**
      * 获取会话消息
      * @param state
      * @param dispatch
@@ -2034,24 +2051,49 @@ export default {
                             (function (msg) {
                                 const {mode, data} = msg;
                                 const {dialog_id} = data;
-                                if (["add", "chat"].includes(mode) && !state.dialogMsgs.find(({id}) => id == data.id)) {
-                                    // 新增任务消息数量
-                                    dispatch("increaseTaskMsgNum", dialog_id);
-                                    if (mode === "chat") {
-                                        return;
-                                    }
-                                    let dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
-                                    // 更新对话列表
-                                    if (dialog) {
-                                        // 新增未读数
-                                        dialog.unread++;
-                                    }
-                                    Store.set('dialogMsgPush', data);
+                                switch (mode) {
+                                    case 'delete':
+                                        // 删除消息
+                                        dispatch("forgetDialogMsg", data.id)
+                                        //
+                                        let dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
+                                        if (dialog) {
+                                            // 更新最后消息
+                                            dialog.last_at = data.last_msg && data.last_msg.created_at;
+                                            dialog.last_msg = data.last_msg;
+                                            if (data.update_read) {
+                                                // 更新未读数量
+                                                dispatch("call", {
+                                                    url: 'dialog/msg/unread',
+                                                    dialog_id: data.dialog_id
+                                                }).then(result => {
+                                                    dialog.unread = result.data.unread
+                                                }).catch(() => {});
+                                            }
+                                        }
+                                        break;
+                                    case 'add':
+                                    case 'chat':
+                                        if (!state.dialogMsgs.find(({id}) => id == data.id)) {
+                                            // 新增任务消息数量
+                                            dispatch("increaseTaskMsgNum", dialog_id);
+                                            if (mode === "chat") {
+                                                return;
+                                            }
+                                            let dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
+                                            // 更新对话列表
+                                            if (dialog) {
+                                                // 新增未读数
+                                                dialog.unread++;
+                                            }
+                                            Store.set('dialogMsgPush', data);
+                                        }
+                                        // 更新消息列表
+                                        dispatch("saveDialogMsg", data)
+                                        // 更新最后消息
+                                        dispatch("updateDialogLastMsg", data);
+                                        break;
                                 }
-                                // 更新消息列表
-                                dispatch("saveDialogMsg", data)
-                                // 更新最后消息
-                                dispatch("updateDialogLastMsg", data);
                             })(msgDetail);
                             break;
 

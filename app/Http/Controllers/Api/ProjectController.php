@@ -1084,7 +1084,61 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/filedown          23. 下载任务文件
+     * @api {get} api/project/task/filedetail          23. 获取任务文件详情
+     *
+     * @apiDescription 需要token身份（限：项目、任务负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__filedetail
+     *
+     * @apiParam {Number} file_id            文件ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function task__filedetail()
+    {
+        User::auth();
+        //
+        $file_id = intval(Request::input('file_id'));
+        //
+        $file = ProjectTaskFile::find($file_id);
+        if (empty($file)) {
+            return Base::retError("文件不存在");
+        }
+        $data = $file->toArray();
+        $data['path'] = $file->getRawOriginal('path');
+        //
+        ProjectTask::userTask($file->task_id, true, true);
+        //
+        $codeExt = ['txt'];
+        $officeExt = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'];
+        $localExt = ['jpg', 'jpeg', 'png', 'gif'];
+        $filePath = public_path($data['path']);
+        if (in_array($data['ext'], $codeExt) && $data['size'] < 2 * 1024 * 1024) {
+            // 文本预览，限制2M内的文件
+            $data['content'] = file_get_contents($filePath);
+            $data['file_mode'] = 1;
+        } elseif (in_array($data['ext'], $officeExt)) {
+            // office预览
+            $data['file_mode'] = 2;
+        } else {
+            // 其他预览
+            if (in_array($data['ext'], $localExt)) {
+                $url = Base::fillUrl($data['path']);
+            } else {
+                $url = 'http://' . env('APP_IPPR') . '.3/' . $data['path'];
+            }
+            $data['url'] = base64_encode($url);
+            $data['file_mode'] = 3;
+        }
+        //
+        return Base::retSuccess('success', $data);
+    }
+
+    /**
+     * @api {get} api/project/task/filedown          24. 下载任务文件
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -1118,7 +1172,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {post} api/project/task/add          24. 添加任务
+     * @api {post} api/project/task/add          25. 添加任务
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1189,7 +1243,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/addsub          25. 添加子任务
+     * @api {get} api/project/task/addsub          26. 添加子任务
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -1229,7 +1283,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {post} api/project/task/update          26. 修改任务、子任务
+     * @api {post} api/project/task/update          27. 修改任务、子任务
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -1272,72 +1326,6 @@ class ProjectController extends AbstractController
         $task->pushMsg('update', $data);
         //
         return Base::retSuccess('修改成功', $data);
-    }
-
-    /**
-     * @api {post} api/project/task/upload          27. 上传文件
-     *
-     * @apiDescription 需要token身份（限：项目、任务负责人）
-     * @apiVersion 1.0.0
-     * @apiGroup project
-     * @apiName task__upload
-     *
-     * @apiParam {Number} task_id               任务ID
-     * @apiParam {String} [filename]            post-文件名称
-     * @apiParam {String} [image64]             post-base64图片（二选一）
-     * @apiParam {File} [files]                 post-文件对象（二选一）
-     *
-     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据
-     */
-    public function task__upload()
-    {
-        $user = User::auth();
-        //
-        $task_id = Base::getPostInt('task_id');
-        //
-        $task = ProjectTask::userTask($task_id, true, true);
-        //
-        $path = "uploads/task/" . $task->id . "/";
-        $image64 = Base::getPostValue('image64');
-        $fileName = Base::getPostValue('filename');
-        if ($image64) {
-            $data = Base::image64save([
-                "image64" => $image64,
-                "path" => $path,
-                "fileName" => $fileName,
-            ]);
-        } else {
-            $data = Base::upload([
-                "file" => Request::file('files'),
-                "type" => 'file',
-                "path" => $path,
-                "fileName" => $fileName,
-            ]);
-        }
-        //
-        if (Base::isError($data)) {
-            return Base::retError($data['msg']);
-        } else {
-            $fileData = $data['data'];
-            $file = ProjectTaskFile::createInstance([
-                'project_id' => $task->project_id,
-                'task_id' => $task->id,
-                'name' => $fileData['name'],
-                'size' => $fileData['size'] * 1024,
-                'ext' => $fileData['ext'],
-                'path' => $fileData['path'],
-                'thumb' => Base::unFillUrl($fileData['thumb']),
-                'userid' => $user->userid,
-            ]);
-            $file->save();
-            //
-            $file = ProjectTaskFile::find($file->id);
-            $task->addLog("上传文件：" . $file->name);
-            $task->pushMsg('upload', $file);
-            return Base::retSuccess("上传成功", $file);
-        }
     }
 
     /**
@@ -1599,7 +1587,7 @@ class ProjectController extends AbstractController
     /**
      * @api {get} api/project/flow/list          33. 工作流列表
      *
-     * @apiDescription 需要token身份（限：项目负责人）
+     * @apiDescription 需要token身份
      * @apiVersion 1.0.0
      * @apiGroup project
      * @apiName flow__list
@@ -1615,13 +1603,8 @@ class ProjectController extends AbstractController
         User::auth();
         //
         $project_id = intval(Request::input('project_id'));
-        $is_filter = intval(Request::input('is_filter', 0));
         //
-        if ($is_filter > 0) {
-            $project = Project::userProject($project_id, null);
-        } else {
-            $project = Project::userProject($project_id, true, true);
-        }
+        $project = Project::userProject($project_id, true);
         //
         $list = ProjectFlow::with(['ProjectFlowItem'])->whereProjectId($project->id)->get();
         return Base::retSuccess('success', $list);

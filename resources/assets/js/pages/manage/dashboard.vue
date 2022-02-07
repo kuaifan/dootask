@@ -62,10 +62,12 @@
                             <i class="taskfont">&#xe71f;</i>
                             <em>{{item.sub_complete}}/{{item.sub_num}}</em>
                         </div>
-                        <div :class="['item-icon', item.today ? 'today' : '', item.overdue ? 'overdue' : '']">
-                            <i class="taskfont">&#xe71d;</i>
-                            <em>{{expiresFormat(item.end_at)}}</em>
-                        </div>
+                        <ETooltip :content="item.end_at" placement="right">
+                            <div :class="['item-icon', item.today ? 'today' : '', item.overdue ? 'overdue' : '']">
+                                <i class="taskfont">&#xe71d;</i>
+                                <em>{{expiresFormat(item.end_at)}}</em>
+                            </div>
+                        </ETooltip>
                     </li>
                 </ul>
             </template>

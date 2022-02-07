@@ -35,7 +35,7 @@
                         </ETooltip>
                     </li>
                     <li :class="['project-icon', searchText!='' ? 'active' : '']">
-                        <Tooltip :always="searchAlways" @on-popper-show="searchFocus" theme="light">
+                        <Tooltip :always="searchText!=''" @on-popper-show="searchFocus" theme="light" :rawIndex="10">
                             <Icon class="menu-icon" type="ios-search" @click="searchFocus" />
                             <div slot="content">
                                 <Input v-model="searchText" ref="searchInput" :placeholder="$L('名称、描述...')" class="search-input" clearable/>
@@ -69,22 +69,16 @@
                     </li>
                 </ul>
             </div>
-            <div class="project-subbox">
+            <div class="project-subbox clearfix">
                 <div class="project-subtitle">{{projectData.desc}}</div>
                 <div class="project-switch">
-                    <div v-if="flowList && flowList.length > 0" class="project-select">
-                        <div class="title">{{$L('进度')}}</div>
-                        <Select
-                            v-model="flowId"
-                            style="width:100%"
-                            :placeholder="this.$L('全部')"
-                        >
-                            <Option value="0">{{this.$L('全部')}}</Option>
-                            <Option v-for="item in flowList" :value="item.id" :key="item.id">{{ item.name }}</Option>
-                        </Select>
-                    </div>
                     <div v-if="completedCount > 0" class="project-checkbox">
                         <Checkbox :value="projectParameter('completedTask')" @on-change="toggleCompleted">{{$L('显示已完成')}}</Checkbox>
+                    </div>
+                    <div v-if="flowList.length > 0" class="project-select">
+                        <Cascader :data="flowData" @on-change="flowChange" transfer-class-name="project-list-flow-cascader" transfer>
+                            <span :class="`project-flow ${flowInfo.status}`">{{ flowTitle }}</span>
+                        </Cascader>
                     </div>
                     <div :class="['project-switch-button', !projectParameter('card') ? 'menu' : '']" @click="$store.dispatch('toggleProjectParameter', 'card')">
                         <div><i class="taskfont">&#xe60c;</i></div>
@@ -343,7 +337,7 @@
             :mask-closable="false">
             <Form :model="userData" label-width="auto" @submit.native.prevent>
                 <FormItem prop="userids" :label="$L('项目成员')">
-                    <UserInput v-if="userShow" v-model="userData.userids" :uncancelable="userData.uncancelable" :multiple-max="100" :placeholder="$L('选择项目成员')"/>
+                    <UserInput v-model="userData.userids" :uncancelable="userData.uncancelable" :multiple-max="100" :placeholder="$L('选择项目成员')"/>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
@@ -405,7 +399,7 @@
             :mask-closable="false">
             <Form :model="transferData" label-width="auto" @submit.native.prevent>
                 <FormItem prop="owner_userid" :label="$L('项目负责人')">
-                    <UserInput v-if="transferShow" v-model="transferData.owner_userid" :multiple-max="1" :placeholder="$L('选择项目负责人')"/>
+                    <UserInput v-model="transferData.owner_userid" :multiple-max="1" :placeholder="$L('选择项目负责人')"/>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
@@ -418,8 +412,9 @@
         <DrawerOverlay
             v-model="workflowShow"
             placement="right"
+            :beforeClose="workflowBeforeClose"
             :size="1280">
-            <ProjectWorkflow v-if="workflowShow" :project-id="projectId"/>
+            <ProjectWorkflow ref="workflow" v-if="workflowShow" :project-id="projectId"/>
         </DrawerOverlay>
 
         <!--查看项目动态-->
@@ -506,8 +501,9 @@ export default {
             archivedTaskShow: false,
 
             projectDialogSubscribe: null,
+
+            flowInfo: {},
             flowList: [],
-            flowId: 0
         }
     },
 
@@ -550,17 +546,6 @@ export default {
 
         ...mapGetters(['projectData', 'projectParameter', 'transforTasks']),
 
-        searchAlways() {
-            return !(!this.searchText
-                || this.settingShow
-                || this.userShow
-                || this.inviteShow
-                || this.transferShow
-                || this.workflowShow
-                || this.logShow
-                || this.archivedTaskShow);
-        },
-
         userWaitRemove() {
             const {userids, useridbak} = this.userData;
             if (!userids) {
@@ -582,21 +567,19 @@ export default {
         },
 
         panelTask() {
-            const {searchText,flowId} = this;
+            const {searchText, flowInfo} = this;
             return function (list) {
                 if (!this.projectParameter('completedTask')) {
                     list = list.filter(({complete_at}) => {
                         return !complete_at;
                     });
                 }
+                if (flowInfo.value > 0) {
+                    list = list.filter(({flow_item_id}) => flow_item_id === flowInfo.value);
+                }
                 if (searchText) {
                     list = list.filter(({name, desc}) => {
                         return $A.strExists(name, searchText) || $A.strExists(desc, searchText);
-                    });
-                }
-                if(flowId > 0){
-                    list = list.filter(({flow_item_id}) => {
-                        return  flow_item_id === flowId;
                     });
                 }
                 return list;
@@ -615,8 +598,18 @@ export default {
             return this.windowWidth > 1200 ? 8 : 3;
         },
 
+        allTask() {
+            const {cacheTasks, projectId} = this;
+            return cacheTasks.filter(task => {
+                if (task.archived_at) {
+                    return false;
+                }
+                return task.project_id == projectId
+            })
+        },
+
         columnList() {
-            const {projectId, cacheColumns, cacheTasks} = this;
+            const {projectId, cacheColumns, allTask} = this;
             const list = cacheColumns.filter(({project_id}) => {
                 return project_id == projectId
             }).sort((a, b) => {
@@ -626,15 +619,12 @@ export default {
                 return a.id - b.id;
             });
             list.forEach((column) => {
-                column.tasks = this.transforTasks(cacheTasks.filter(task => {
-                    if (task.archived_at) {
-                        return false;
-                    }
+                column.tasks = this.transforTasks(allTask.filter(task => {
                     return task.column_id == column.id;
                 })).sort((a, b) => {
                     let at1 = $A.Date(a.complete_at),
                         at2 = $A.Date(b.complete_at);
-                    if(at1 || at2){
+                    if (at1 || at2) {
                         return at1 - at2;
                     }
                     if (a.sort != b.sort) {
@@ -647,8 +637,8 @@ export default {
         },
 
         myList() {
-            const {cacheTasks, taskCompleteTemps, sortField, sortType} = this;
-            let array = cacheTasks.filter(task => this.myFilter(task));
+            const {allTask, taskCompleteTemps, sortField, sortType} = this;
+            let array = allTask.filter(task => this.myFilter(task));
             let tmps = taskCompleteTemps.filter(task => this.myFilter(task, false));
             if (tmps.length > 0) {
                 array = $A.cloneJSON(array)
@@ -670,8 +660,8 @@ export default {
         },
 
         helpList() {
-            const {cacheTasks, taskCompleteTemps, sortField, sortType} = this;
-            let array = cacheTasks.filter(task => this.helpFilter(task));
+            const {allTask, taskCompleteTemps, sortField, sortType} = this;
+            let array = allTask.filter(task => this.helpFilter(task));
             let tmps = taskCompleteTemps.filter(task => this.helpFilter(task, false));
             if (tmps.length > 0) {
                 array = $A.cloneJSON(array)
@@ -693,21 +683,18 @@ export default {
         },
 
         unList() {
-            const {projectId, cacheTasks, searchText, sortField, sortType, flowId} = this;
-            const array = cacheTasks.filter(task => {
-                if (task.archived_at) {
+            const {allTask, searchText, sortField, sortType, flowInfo} = this;
+            const array = allTask.filter(task => {
+                if (task.parent_id > 0) {
                     return false;
                 }
-                if (task.project_id != projectId || task.parent_id > 0) {
+                if (flowInfo.value > 0 && task.flow_item_id !== flowInfo.value) {
                     return false;
                 }
                 if (searchText) {
                     if (!$A.strExists(task.name, searchText) && !$A.strExists(task.desc, searchText)) {
                         return false;
                     }
-                }
-                if(task.flow_item_id !== flowId && flowId > 0){
-                    return false;
                 }
                 return !task.complete_at;
             });
@@ -727,21 +714,18 @@ export default {
         },
 
         completedList() {
-            const {projectId, cacheTasks, searchText, flowId} = this;
-            const array = cacheTasks.filter(task => {
-                if (task.archived_at) {
+            const {allTask, searchText, flowInfo} = this;
+            const array = allTask.filter(task => {
+                if (task.parent_id > 0) {
                     return false;
                 }
-                if (task.project_id != projectId || task.parent_id > 0) {
+                if (flowInfo.value > 0 && task.flow_item_id !== flowInfo.value) {
                     return false;
                 }
                 if (searchText) {
                     if (!$A.strExists(task.name, searchText) && !$A.strExists(task.desc, searchText)) {
                         return false;
                     }
-                }
-                if(task.flow_item_id !== flowId && flowId > 0){
-                    return false;
                 }
                 return task.complete_at;
             });
@@ -753,16 +737,54 @@ export default {
         },
 
         completedCount() {
-            const {projectId, cacheTasks} = this;
-            return cacheTasks.filter(task => {
-                if (task.archived_at) {
-                    return false;
-                }
-                if (task.project_id != projectId || task.parent_id > 0) {
+            const {allTask} = this;
+            return allTask.filter(task => {
+                if (task.parent_id > 0) {
                     return false;
                 }
                 return task.complete_at;
             }).length;
+        },
+
+        flowTitle() {
+            const {flowInfo, allTask} = this;
+            if (flowInfo.value) {
+                return flowInfo.label;
+            }
+            return `${this.$L('全部')} (${allTask.length})`
+        },
+
+        flowData() {
+            const {flowList, allTask} = this;
+            let list = [{
+                value: 0,
+                label: `${this.$L('全部')} (${allTask.length})`,
+                children: []
+            }];
+            let flows = flowList.map(item1 => {
+                return {
+                    value: item1.id,
+                    label: item1.name,
+                    status: item1.status,
+                    children: item1.project_flow_item.map(item2 => {
+                        let length = allTask.filter(task => {
+                            return task.flow_item_id == item2.id;
+                        }).length
+                        return {
+                            value: item2.id,
+                            label: `${item2.name} (${length})`,
+                            status: item2.status,
+                            class: item2.status
+                        }
+                    })
+                }
+            });
+            if (flows.length === 1) {
+                list.push(...flows[0].children)
+            } else if (flows.length > 0) {
+                list.push(...flows)
+            }
+            return list
         },
     },
 
@@ -772,10 +794,11 @@ export default {
         },
         projectId: {
             handler(val) {
-                if (val) {
+                if (val > 0) {
                     this.getFlowData();
                 }
             },
+            immediate: true,
         },
     },
 
@@ -827,10 +850,7 @@ export default {
                         sort = -1;
                         upTask.push(...item.task.map(id => {
                             sort++;
-                            upTask.push(...this.cacheTasks.filter(task => {
-                                if (task.archived_at) {
-                                    return false;
-                                }
+                            upTask.push(...this.allTask.filter(task => {
                                 return task.parent_id == id
                             }).map(({id}) => {
                                 return {
@@ -1168,20 +1188,19 @@ export default {
 
         taskIsHidden(task) {
             const {name, desc, complete_at} = task;
-            const {searchText,flowId} = this;
+            const {searchText, flowInfo} = this;
             if (!this.projectParameter('completedTask')) {
                 if (complete_at) {
                     return true;
                 }
             }
+            if (flowInfo.value > 0 && task.flow_item_id !== flowInfo.value) {
+                return true;
+            }
             if (searchText) {
                 if (!($A.strExists(name, searchText) || $A.strExists(desc, searchText))) {
                     return true;
                 }
-            }
-
-            if(task.flow_item_id !== flowId && flowId > 0){
-                return true;
             }
             return false;
         },
@@ -1210,6 +1229,23 @@ export default {
             });
         },
 
+        getFlowData() {
+            this.$store.dispatch("call", {
+                url: 'project/flow/list',
+                data: {
+                    project_id: this.projectId,
+                },
+            }).then(({data}) => {
+                this.flowList = data;
+            }).catch(() => {
+                this.flowList = [];
+            });
+        },
+
+        flowChange(value, data) {
+            this.flowInfo = data.pop();
+        },
+
         inviteCopy() {
             if (!this.inviteData.url) {
                 return;
@@ -1230,34 +1266,46 @@ export default {
             this.$store.dispatch('toggleProjectParameter', 'completedTask');
         },
 
+        workflowBeforeClose() {
+            return new Promise(resolve => {
+                if (!this.$refs.workflow.existDiff()) {
+                    resolve()
+                    return
+                }
+                $A.modalConfirm({
+                    content: '设置尚未保存，是否放弃修改？',
+                    cancelText: '放弃',
+                    okText: '保存',
+                    onCancel: () => {
+                        resolve()
+                    },
+                    onOk: () => {
+                        this.$refs.workflow.saveAll()
+                        resolve()
+                    }
+                });
+            })
+        },
+
         myFilter(task, chackCompleted = true) {
-            if (task.archived_at) {
-                return false;
-            }
-            if (task.project_id != this.projectId) {
-                return false;
-            }
             if (!this.projectParameter('completedTask') && chackCompleted === true) {
                 if (task.complete_at) {
                     return false;
                 }
             }
+            if (this.flowInfo.value > 0 && task.flow_item_id !== this.flowInfo.value) {
+                return false;
+            }
             if (this.searchText) {
                 if (!$A.strExists(task.name, this.searchText) && !$A.strExists(task.desc, this.searchText)) {
                     return false;
                 }
-            }
-            if(task.flow_item_id !== this.flowId && this.flowId > 0){
-                return false;
             }
             return task.owner;
         },
 
         helpFilter(task, chackCompleted = true) {
-            if (task.archived_at) {
-                return false;
-            }
-            if (task.project_id != this.projectId || task.parent_id > 0) {
+            if (task.parent_id > 0) {
                 return false;
             }
             if (!this.projectParameter('completedTask') && chackCompleted === true) {
@@ -1265,36 +1313,19 @@ export default {
                     return false;
                 }
             }
+            if (this.flowInfo.value > 0 && task.flow_item_id !== this.flowInfo.value) {
+                return false;
+            }
             if (this.searchText) {
                 if (!$A.strExists(task.name, this.searchText) && !$A.strExists(task.desc, this.searchText)) {
                     return false;
                 }
-            }
-            if(task.flow_item_id !== this.flowId && this.flowId > 0){
-                return false;
             }
             return task.task_user && task.task_user.find(({userid, owner}) => userid == this.userId && owner == 0);
         },
 
         expiresFormat(date) {
             return $A.countDownFormat(date, this.nowTime)
-        },
-        getFlowData() {
-            this.$store.dispatch("call", {
-                url: 'project/flow/list',
-                data: {
-                    project_id: this.projectId,
-                    is_filter: 1
-                },
-            }).then(({data}) => {
-                let flowList = data.map(item => {
-                    return item.project_flow_item;
-                });
-                this.flowList = flowList[0];
-            }).catch(({msg}) => {
-                this.flowList = [];
-                return false;
-            });
         },
     }
 }

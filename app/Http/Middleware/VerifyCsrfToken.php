@@ -30,9 +30,6 @@ class VerifyCsrfToken extends Middleware
         // 修改任务
         'api/project/task/update/',
 
-        // 上传任务问题
-        'api/project/task/upload/',
-
         // 聊天发文件
         'api/dialog/msg/sendfile/',
 

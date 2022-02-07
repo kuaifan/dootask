@@ -13,15 +13,8 @@
                     <Input v-if="$Electron && cacheServerUrl" :value="$A.getDomain(cacheServerUrl)" prefix="ios-globe-outline" size="large" readonly clearable @on-clear="clearServerUrl"/>
 
                     <Input v-model="email" prefix="ios-mail-outline" :placeholder="$L('输入您的电子邮件')" size="large" @on-enter="onLogin" @on-blur="onBlur" />
-                    <Input v-if="loginType=='login'"
-                           v-model="password" prefix="ios-lock-outline" :placeholder="$L('输入您的密码')" type="password"
-                           size="large"
-                            @on-enter="onLogin" />
-                    <Poptip v-else :content="$L('密码必须包含数字，字母大小写或者特殊字符的组合，长度在6~32位之间')" :transfer="true">
-                        <Input v-model="password" prefix="ios-lock-outline" :placeholder="$L('输入您的密码')" type="password"
-                               size="large"
-                               @on-enter="onLogin" />
-                    </Poptip>
+
+                    <Input v-model="password" prefix="ios-lock-outline" :placeholder="$L('输入您的密码')" type="password" size="large" @on-enter="onLogin" />
 
                     <Input v-if="loginType=='reg'" v-model="password2" prefix="ios-lock-outline" :placeholder="$L('输入确认密码')" type="password" size="large" @on-enter="onLogin" />
                     <Input v-if="loginType=='reg' && needInvite" v-model="invite" class="login-code" :placeholder="$L('请输入注册邀请码')" type="text" size="large" @on-enter="onLogin"><span slot="prepend">&nbsp;{{$L('邀请码')}}&nbsp;</span></Input>
@@ -252,7 +245,7 @@ export default {
                 }
                 if (this.loginType == 'reg') {
                     if (this.password != this.password2) {
-                        $A.noticeError("确认密码输入不一致");
+                        $A.messageWarning("确认密码输入不一致");
                         return;
                     }
                 }
@@ -276,10 +269,7 @@ export default {
                     });
                 }).catch(({data, msg}) => {
                     this.loadIng--;
-                    $A.noticeError({
-                        desc: msg,
-                        duration: 10
-                    });
+                    $A.modalError(msg);
                     if (data.code === 'need') {
                         this.reCode();
                         this.codeNeed = true;

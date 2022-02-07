@@ -354,7 +354,7 @@ class Project extends AbstractModel
      * 获取项目信息（用于判断会员是否存在项目内）
      * @param int $project_id
      * @param null|bool $archived true:仅限未归档, false:仅限已归档, null:不限制
-     * @param null $mustOwner true:仅限项目负责人, false:仅限非项目负责人, null:不限制
+     * @param null|bool $mustOwner true:仅限项目负责人, false:仅限非项目负责人, null:不限制
      * @return self
      */
     public static function userProject($project_id, $archived = true, $mustOwner = null)
