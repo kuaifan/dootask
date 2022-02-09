@@ -99,6 +99,7 @@ export default {
             return {
                 id: this.isOffice ? this.fileDetail.id : 0,
                 type: this.fileDetail.ext,
+                updated_at: this.fileDetail.created_at,
                 name: this.title
             }
         },

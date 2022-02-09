@@ -99,7 +99,8 @@ export default {
             return {
                 id: this.isOffice ? this.msgDetail.id : 0,
                 type: this.msgDetail.msg.ext,
-                name: this.title
+                updated_at: this.msgDetail.created_at,
+                name: this.title,
             }
         },
         officeCode() {
