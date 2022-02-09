@@ -427,11 +427,12 @@ export default {
                 dispatch("saveFile", file);
             });
         } else if ($A.isJson(data)) {
+            let base = {_load: false, _edit: false};
             let index = state.files.findIndex(({id}) => id == data.id);
             if (index > -1) {
-                state.files.splice(index, 1, Object.assign({}, state.files[index], data));
+                state.files.splice(index, 1, Object.assign(base, state.files[index], data));
             } else {
-                state.files.push(data)
+                state.files.push(Object.assign(base, data))
             }
         }
     },
@@ -2100,8 +2101,9 @@ export default {
                                             }
                                             let dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
                                             // 更新对话列表
-                                            if (dialog) {
+                                            if (dialog && state.cacheUnreads[data.id] === undefined) {
                                                 // 新增未读数
+                                                state.cacheUnreads[data.id] = true;
                                                 dialog.unread++;
                                             }
                                             Store.set('dialogMsgPush', data);

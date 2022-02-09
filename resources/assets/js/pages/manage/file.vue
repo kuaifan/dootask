@@ -601,7 +601,7 @@ export default {
                                         const file = this.files.find(({id}) => id == row.id);
                                         if (file) {
                                             setTimeout(() => {
-                                                this.$set(file, '_edit', b);
+                                                this.setEdit(file.id, b)
                                             }, 100);
                                         }
                                     },
@@ -849,7 +849,7 @@ export default {
 
                 case 'rename':
                     this.$set(item, 'newname', item.name);
-                    this.$set(item, '_edit', true);
+                    this.setEdit(item.id, true)
                     this.autoBlur(item.id)
                     break;
 
@@ -1032,18 +1032,18 @@ export default {
                 if (isCreate) {
                     this.$store.dispatch("forgetFile", item.id);
                 } else {
-                    this.$set(item, '_edit', false);
+                    this.setEdit(item.id, false)
                 }
                 return;
             }
             if (item.newname == item.name) {
-                this.$set(item, '_edit', false);
+                this.setEdit(item.id, false)
                 return;
             }
             if (item._load) {
                 return;
             }
-            this.$set(item, '_load', true);
+            this.setLoad(item.id, true)
             this.$store.dispatch("call", {
                 url: 'file/add',
                 data: {
@@ -1054,19 +1054,33 @@ export default {
                 },
             }).then(({data, msg}) => {
                 $A.messageSuccess(msg)
-                this.$set(item, '_load', false);
-                this.$set(item, '_edit', false);
+                this.setLoad(item.id, false)
+                this.setEdit(item.id, false)
                 this.$store.dispatch("saveFile", data);
                 if (isCreate) {
                     this.$store.dispatch("forgetFile", item.id);
                 }
             }).catch(({msg}) => {
                 $A.modalError(msg)
-                this.$set(item, '_load', false);
+                this.setLoad(item.id, false)
                 if (isCreate) {
                     this.$store.dispatch("forgetFile", item.id);
                 }
             })
+        },
+
+        setEdit(fileId, is) {
+            let item = this.$store.state.files.find(({id}) => id == fileId)
+            if (item) {
+                this.$set(item, '_edit', is);
+            }
+        },
+
+        setLoad(fileId, is) {
+            let item = this.$store.state.files.find(({id}) => id == fileId)
+            if (item) {
+                this.$set(item, '_load', is);
+            }
         },
 
         onSearchFocus() {

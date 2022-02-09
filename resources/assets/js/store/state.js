@@ -19,6 +19,7 @@ const stateData = {
 
     // Dialog
     cacheDialogs: $A.getStorageArray("cacheDialogs"),
+    cacheUnreads: {},
 
     // Project
     cacheProjects: $A.getStorageArray("cacheProjects"),
