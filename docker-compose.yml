@@ -87,6 +87,9 @@ services:
       - ./docker/office/resources/documenteditor/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/documenteditor/main/resources/css/app.css
       - ./docker/office/resources/presentationeditor/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/presentationeditor/main/resources/css/app.css
       - ./docker/office/resources/spreadsheeteditor/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/spreadsheeteditor/main/resources/css/app.css
+      - ./docker/office/resources/documenteditor/mobile/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/documenteditor/mobile/css/app.css
+      - ./docker/office/resources/presentationeditor/mobile/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/presentationeditor/mobile/css/app.css
+      - ./docker/office/resources/spreadsheeteditor/mobile/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/spreadsheeteditor/mobile/css/app.css
     environment:
       TZ: "Asia/Shanghai"
     networks:
