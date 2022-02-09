@@ -376,7 +376,6 @@ export default {
                     {path: 'password', name: '密码设置'},
                     {path: 'clearCache', name: '清除缓存'},
                     {path: 'system', name: '系统设置', divided: true},
-                    {path: 'preference', name: '偏好设置'},
                     {path: 'workReport', name: '工作报告', divided: true},
                     {path: 'allUser', name: '团队管理'},
                     {path: 'allProject', name: '所有项目'},

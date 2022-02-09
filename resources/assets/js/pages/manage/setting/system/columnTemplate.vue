@@ -1,9 +1,9 @@
 <template>
-    <div class="preference-project-create">
+    <div class="setting-system-item">
         <Form ref="formDatum" label-width="auto" @submit.native.prevent>
             <Row class="setting-template">
                 <Col span="8">{{$L('名称')}}</Col>
-                <Col span="16">{{$L('列表模板')}}</Col>
+                <Col span="16">{{$L('项目模板')}}</Col>
             </Row>
             <Row v-for="(item, key) in formDatum" :key="key" class="setting-template">
                 <Col span="8">
@@ -31,7 +31,7 @@
 import {mapState} from "vuex";
 
 export default {
-    name: 'PreferenceColumnTemplate',
+    name: 'SystemColumnTemplate',
     data() {
         return {
             loadIng: 0,

@@ -1,5 +1,5 @@
 <template>
-    <div class="setting-item submit">
+    <div class="setting-system-item">
         <Form ref="formDatum" :model="formDatum" label-width="auto" @submit.native.prevent>
             <FormItem :label="$L('允许注册')" prop="reg">
                 <RadioGroup v-model="formDatum.reg">
@@ -69,6 +69,8 @@
 
 <script>
 export default {
+    name: 'SystemSetting',
+
     data() {
         return {
             loadIng: 0,

@@ -1,5 +1,5 @@
 <template>
-    <div class="preference-task-priority">
+    <div class="setting-system-item">
         <Form ref="formDatum" label-width="auto" @submit.native.prevent>
             <Row class="setting-color">
                 <Col span="12">{{$L('名称')}}</Col>
@@ -47,7 +47,7 @@
 import {mapState} from "vuex";
 
 export default {
-    name: 'PreferenceTaskPriority',
+    name: 'SystemTaskPriority',
     data() {
         return {
             loadIng: 0,

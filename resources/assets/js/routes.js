@@ -49,12 +49,7 @@ export default [
                     {
                         name: 'manage-setting-system',
                         path: 'system',
-                        component: () => import('./pages/manage/setting/system.vue'),
-                    },
-                    {
-                        name: 'manage-setting-preference',
-                        path: 'preference',
-                        component: () => import('./pages/manage/setting/preference/index.vue'),
+                        component: () => import('./pages/manage/setting/system/index.vue'),
                     },
                 ]
             },
