@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Exceptions\ApiException;
+use App\Module\Base;
 use App\Tasks\PushTask;
 use Carbon\Carbon;
 use DB;
@@ -348,6 +349,104 @@ class Project extends AbstractModel
             $task = new PushTask($params, false);
             Task::deliver($task);
         }
+    }
+
+    /**
+     * 添加工作流
+     * @param $flows
+     * @return mixed
+     */
+    public function addFlow($flows)
+    {
+        return AbstractModel::transaction(function() use ($flows) {
+            $projectFlow = ProjectFlow::whereProjectId($this->id)->first();
+            if (empty($projectFlow)) {
+                $projectFlow = ProjectFlow::createInstance([
+                    'project_id' => $this->id,
+                    'name' => 'Default'
+                ]);
+                if (!$projectFlow->save()) {
+                    throw new ApiException('工作流创建失败');
+                }
+            }
+            //
+            $ids = [];
+            $idc = [];
+            $hasStart = false;
+            $hasEnd = false;
+            foreach ($flows as $item) {
+                $id = intval($item['id']);
+                $turns = Base::arrayRetainInt($item['turns'] ?: [], true);
+                $userids = Base::arrayRetainInt($item['userids'] ?: [], true);
+                $usertype = trim($item['usertype']);
+                $userlimit = intval($item['userlimit']);
+                if ($usertype == 'replace' && empty($userids)) {
+                    throw new ApiException("状态[{$item['name']}]设置错误，设置流转模式时必须填写状态负责人");
+                }
+                if ($usertype == 'merge' && empty($userids)) {
+                    throw new ApiException("状态[{$item['name']}]设置错误，设置剔除模式时必须填写状态负责人");
+                }
+                if ($userlimit && empty($userids)) {
+                    throw new ApiException("状态[{$item['name']}]设置错误，设置限制负责人时必须填写状态负责人");
+                }
+                $flow = ProjectFlowItem::updateInsert([
+                    'id' => $id,
+                    'project_id' => $this->id,
+                    'flow_id' => $projectFlow->id,
+                ], [
+                    'name' => trim($item['name']),
+                    'status' => trim($item['status']),
+                    'sort' => intval($item['sort']),
+                    'turns' => $turns,
+                    'userids' => $userids,
+                    'usertype' => trim($item['usertype']),
+                    'userlimit' => $userlimit,
+                ]);
+                if ($flow) {
+                    $ids[] = $flow->id;
+                    if ($flow->id != $id) {
+                        $idc[$id] = $flow->id;
+                    }
+                    if ($flow->status == 'start') {
+                        $hasStart = true;
+                    }
+                    if ($flow->status == 'end') {
+                        $hasEnd = true;
+                    }
+                }
+            }
+            if (!$hasStart) {
+                throw new ApiException('至少需要1个开始状态');
+            }
+            if (!$hasEnd) {
+                throw new ApiException('至少需要1个结束状态');
+            }
+            ProjectFlowItem::whereFlowId($projectFlow->id)->whereNotIn('id', $ids)->chunk(100, function($list) {
+                foreach ($list as $item) {
+                    $item->deleteFlowItem();
+                }
+            });
+            //
+            $projectFlow = ProjectFlow::with(['projectFlowItem'])->whereProjectId($this->id)->find($projectFlow->id);
+            $itemIds = $projectFlow->projectFlowItem->pluck('id')->toArray();
+            foreach ($projectFlow->projectFlowItem as $item) {
+                $turns = $item->turns;
+                foreach ($idc as $oid => $nid) {
+                    if (in_array($oid, $turns)) {
+                        $turns = array_diff($turns, [$oid]);
+                        $turns[] = $nid;
+                    }
+                }
+                if (!in_array($item->id, $turns)) {
+                    $turns[] = $item->id;
+                }
+                $turns = array_values(array_filter(array_unique(array_intersect($turns, $itemIds))));
+                sort($turns);
+                $item->turns = $turns;
+                ProjectFlowItem::whereId($item->id)->update([ 'turns' => Base::array2json($turns) ]);
+            }
+            return $projectFlow;
+        });
     }
 
     /**
