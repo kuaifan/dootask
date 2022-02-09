@@ -1624,6 +1624,26 @@ export default {
     },
 
     /**
+     * 获取添加项目列表预设数据
+     * @param state
+     * @param dispatch
+     * @returns {Promise<unknown>}
+     */
+    getColumnTemplate({state, dispatch}) {
+        return new Promise(function (resolve, reject) {
+            dispatch("call", {
+                url: 'system/column/template',
+            }).then(result => {
+                state.columnTemplate = result.data;
+                resolve(result)
+            }).catch(e => {
+                console.warn(e);
+                reject(e);
+            });
+        });
+    },
+
+    /**
      * 保存完成任务临时表
      * @param state
      * @param data

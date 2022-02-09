@@ -113,7 +113,8 @@
         .ivu-form {
             overflow: auto;
         }
-        .setting-color {
+        .setting-color,
+        .setting-template {
             min-width: 400px;
             max-width: 600px;
             margin-bottom: 12px;
@@ -128,7 +129,6 @@
                     width: 60px;
                     flex: auto;
                     flex-shrink: 0;
-                    max-width: 60px;
                 }
                 .ivu-color-picker {
                     width: 100%;
@@ -136,6 +136,17 @@
             }
             .information {
                 color: #999999;
+            }
+        }
+        .setting-template {
+            > div {
+                flex-shrink: 0;
+                text-align: left;
+                &:last-child {
+                    flex: 1;
+                    width: auto;
+                    max-width: none;
+                }
             }
         }
         .setting-footer {
@@ -165,6 +176,36 @@
                 flex: 1;
                 padding: 24px 40px;
                 overflow: auto;
+            }
+            .ivu-tabs {
+                flex: 1;
+                padding: 16px 32px 0;
+                display: flex;
+                flex-direction: column;
+                .ivu-tabs-content {
+                    flex: 1;
+                    height: 0;
+                    .ivu-tabs-tabpane {
+                        position: relative;
+                        .preference-task-priority,
+                        .preference-project-create {
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            right: 0;
+                            bottom: 0;
+                            flex: 1;
+                            display: flex;
+                            flex-direction: column;
+                            .ivu-form {
+                                padding: 8px 12px;
+                            }
+                            .setting-footer {
+                                margin: 0 -32px;
+                            }
+                        }
+                    }
+                }
             }
             .setting-footer {
                 flex-shrink: 0;

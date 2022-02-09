@@ -78,6 +78,9 @@ const stateData = {
     // 任务优先级
     taskPriority: [],
 
+    // 项目创建列表模板
+    columnTemplate: [],
+
     // 列表背景色
     columnColorList: [
         {name: '默认', color: ''},

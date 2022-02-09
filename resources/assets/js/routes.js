@@ -52,9 +52,9 @@ export default [
                         component: () => import('./pages/manage/setting/system.vue'),
                     },
                     {
-                        name: 'manage-setting-priority',
-                        path: 'priority',
-                        component: () => import('./pages/manage/setting/priority.vue'),
+                        name: 'manage-setting-preference',
+                        path: 'preference',
+                        component: () => import('./pages/manage/setting/preference/index.vue'),
                     },
                 ]
             },
