@@ -269,7 +269,7 @@ class DialogController extends AbstractController
         } else {
             $data = Base::upload([
                 "file" => Request::file('files'),
-                "type" => 'file',
+                "type" => 'more',
                 "path" => $path,
                 "fileName" => $fileName,
             ]);
