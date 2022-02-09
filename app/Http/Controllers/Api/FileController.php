@@ -564,10 +564,11 @@ class FileController extends AbstractController
         }
         //
         $dirs = explode("/", $webkitRelativePath);
-        AbstractModel::transaction(function() use ($user, $userid, $dirs, &$pid) {
-            while (count($dirs) > 1) {
-                $dirName = array_shift($dirs);
-                if ($dirName) {
+        while (count($dirs) > 1) {
+            $dirName = array_shift($dirs);
+            if ($dirName) {
+                $pushMsg = [];
+                AbstractModel::transaction(function () use ($dirName, $user, $userid, &$pid, &$pushMsg) {
                     $dirRow = File::wherePid($pid)->whereType('folder')->whereName($dirName)->lockForUpdate()->first();
                     if (empty($dirRow)) {
                         $dirRow = File::createInstance([
@@ -578,17 +579,19 @@ class FileController extends AbstractController
                             'created_id' => $user->userid,
                         ]);
                         if ($dirRow->save()) {
-                            $tmpRow = File::find($dirRow->id);
-                            $tmpRow->pushMsg('add', $tmpRow);
+                            $pushMsg[] = File::find($dirRow->id);
                         }
                     }
                     if (empty($dirRow)) {
                         throw new ApiException('创建文件夹失败');
                     }
                     $pid = $dirRow->id;
+                });
+                foreach ($pushMsg as $tmpRow) {
+                    $tmpRow->pushMsg('add', $tmpRow);
                 }
             }
-        });
+        }
         //
         $path = 'uploads/file/' . date("Ym") . '/u' . $user->userid . '/';
         $data = Base::upload([
