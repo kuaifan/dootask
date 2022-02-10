@@ -60,6 +60,7 @@ export default {
             type: Boolean,
             default: false
         },
+        documentKey: Function
     },
 
     data() {
@@ -91,10 +92,6 @@ export default {
         fileName() {
             return this.value.name;
         },
-
-        fileUpdatedAt() {
-            return this.value.updated_at ? $A.Date(this.value.updated_at, true) : '';
-        }
     },
 
     watch: {
@@ -108,8 +105,17 @@ export default {
                     this.loadIng--;
                     if (e !== null) {
                         $A.modalAlert("组件加载失败！");
+                        return;
+                    }
+                    if (!this.documentKey) {
+                        this.handleClose();
+                        return
+                    }
+                    const documentKey = this.documentKey();
+                    if (documentKey && documentKey.then) {
+                        documentKey.then(this.loadFile);
                     } else {
-                        this.loadFile()
+                        this.loadFile();
                     }
                 })
             },
@@ -130,7 +136,7 @@ export default {
             return type;
         },
 
-        loadFile() {
+        loadFile(keyAppend = '') {
             if (this.docEditor !== null) {
                 this.docEditor.destroyEditor();
                 this.docEditor = null;
@@ -152,7 +158,7 @@ export default {
             const config = {
                 "document": {
                     "fileType": this.fileType,
-                    "key": `${this.fileType}-${fileKey}-${this.fileUpdatedAt}`,
+                    "key": `${this.fileType}-${fileKey}-${keyAppend}`,
                     "title": fileName,
                     "url": `http://nginx/api/file/content/?id=${fileKey}&token=${this.userToken}`,
                 },

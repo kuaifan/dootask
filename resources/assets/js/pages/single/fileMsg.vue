@@ -4,7 +4,7 @@
         <Loading v-if="loadIng > 0"/>
         <template v-else>
             <AceEditor v-if="isCode" v-model="codeContent" :ext="codeExt" class="view-editor" readOnly/>
-            <OnlyOffice v-else-if="isOffice" v-model="officeContent" :code="officeCode" readOnly/>
+            <OnlyOffice v-else-if="isOffice" v-model="officeContent" :code="officeCode" :documentKey="documentKey" readOnly/>
             <iframe v-else-if="isPreview" class="preview-iframe" :src="previewUrl"/>
             <div v-else class="no-support">{{$L('不支持单独查看此消息')}}</div>
         </template>
@@ -68,6 +68,10 @@ export default {
         },
     },
     computed: {
+        msgId() {
+            return $A.runNum(this.$route.params.id);
+        },
+
         title() {
             const {msg} = this.msgDetail;
             if (msg && msg.name) {
@@ -99,7 +103,6 @@ export default {
             return {
                 id: this.isOffice ? this.msgDetail.id : 0,
                 type: this.msgDetail.msg.ext,
-                updated_at: this.msgDetail.created_at,
                 name: this.title,
             }
         },
@@ -122,15 +125,14 @@ export default {
     },
     methods: {
         getInfo() {
-            let msg_id = $A.runNum(this.$route.params.id);
-            if (msg_id <= 0) {
+            if (this.msgId <= 0) {
                 return;
             }
             this.loadIng++;
             this.$store.dispatch("call", {
                 url: 'dialog/msg/detail',
                 data: {
-                    msg_id,
+                    msg_id: this.msgId,
                 },
             }).then(({data}) => {
                 this.loadIng--;
@@ -144,6 +146,21 @@ export default {
                             window.close();
                         }
                     }
+                });
+            });
+        },
+        documentKey() {
+            return new Promise(resolve => {
+                this.$store.dispatch("call", {
+                    url: 'dialog/msg/detail',
+                    data: {
+                        msg_id: this.msgId,
+                        only_update_at: 'yes'
+                    },
+                }).then(({data}) => {
+                    resolve($A.Date(data.update_at, true))
+                }).catch(() => {
+                    resolve(0)
                 });
             });
         }

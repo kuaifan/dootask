@@ -4,7 +4,7 @@
         <Loading v-if="loadIng > 0"/>
         <template v-else>
             <AceEditor v-if="isCode" v-model="codeContent" :ext="codeExt" class="view-editor" readOnly/>
-            <OnlyOffice v-else-if="isOffice" v-model="officeContent" :code="officeCode" readOnly/>
+            <OnlyOffice v-else-if="isOffice" v-model="officeContent" :code="officeCode" :documentKey="documentKey" readOnly/>
             <iframe v-else-if="isPreview" class="preview-iframe" :src="previewUrl"/>
             <div v-else class="no-support">{{$L('不支持单独查看此消息')}}</div>
         </template>
@@ -68,6 +68,10 @@ export default {
         },
     },
     computed: {
+        fileId() {
+            return $A.runNum(this.$route.params.id);
+        },
+
         title() {
             const {name} = this.fileDetail;
             if (name) {
@@ -99,8 +103,7 @@ export default {
             return {
                 id: this.isOffice ? this.fileDetail.id : 0,
                 type: this.fileDetail.ext,
-                updated_at: this.fileDetail.created_at,
-                name: this.title
+                name: this.title,
             }
         },
         officeCode() {
@@ -122,15 +125,14 @@ export default {
     },
     methods: {
         getInfo() {
-            let file_id = $A.runNum(this.$route.params.id);
-            if (file_id <= 0) {
+            if (this.fileId <= 0) {
                 return;
             }
             this.loadIng++;
             this.$store.dispatch("call", {
                 url: 'project/task/filedetail',
                 data: {
-                    file_id,
+                    file_id: this.fileId,
                 },
             }).then(({data}) => {
                 this.loadIng--;
@@ -146,6 +148,21 @@ export default {
                     }
                 });
             });
+        },
+        documentKey() {
+            return new Promise(resolve => {
+                this.$store.dispatch("call", {
+                    url: 'project/task/filedetail',
+                    data: {
+                        file_id: this.fileId,
+                        only_update_at: 'yes'
+                    },
+                }).then(({data}) => {
+                    resolve($A.Date(data.update_at, true))
+                }).catch(() => {
+                    resolve(0)
+                });
+            })
         }
     }
 }

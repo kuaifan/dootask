@@ -1099,7 +1099,10 @@ class ProjectController extends AbstractController
      * @apiGroup project
      * @apiName task__filedetail
      *
-     * @apiParam {Number} file_id            文件ID
+     * @apiParam {Number} file_id           文件ID
+     * @apiParam {String} only_update_at    仅获取update_at字段
+     * - no (默认)
+     * - yes
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -1110,11 +1113,20 @@ class ProjectController extends AbstractController
         User::auth();
         //
         $file_id = intval(Request::input('file_id'));
+        $only_update_at = Request::input('only_update_at', 'no');
         //
         $file = ProjectTaskFile::find($file_id);
         if (empty($file)) {
             return Base::retError("文件不存在");
         }
+        //
+        if ($only_update_at == 'yes') {
+            return Base::retSuccess('success', [
+                'id' => $file->id,
+                'update_at' => Carbon::parse($file->updated_at)->toDateTimeString()
+            ]);
+        }
+        //
         $data = $file->toArray();
         $data['path'] = $file->getRawOriginal('path');
         //

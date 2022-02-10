@@ -9,12 +9,11 @@ use App\Models\FileContent;
 use App\Models\FileLink;
 use App\Models\FileUser;
 use App\Models\User;
-use App\Models\WebSocketDialogMsg;
 use App\Module\Base;
 use App\Module\Ihttp;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Request;
-use Response;
 
 /**
  * @apiDefine file
@@ -383,7 +382,10 @@ class FileController extends AbstractController
      * @apiParam {Number|String} id
      * - Number: 文件ID（需要登录）
      * - String: 链接码（不需要登录，用于预览）
-     * @apiParam {String} down          直接下载
+     * @apiParam {String} only_update_at        仅获取update_at字段
+     * - no (默认)
+     * - yes
+     * @apiParam {String} down                  直接下载
      * - no: 浏览（默认）
      * - yes: 下载（office文件直接下载）
      *
@@ -395,6 +397,7 @@ class FileController extends AbstractController
     {
         $id = Request::input('id');
         $down = Request::input('down', 'no');
+        $only_update_at = Request::input('only_update_at', 'no');
         //
         if (Base::isNumber($id)) {
             User::auth();
@@ -407,6 +410,13 @@ class FileController extends AbstractController
             }
         } else {
             return Base::retError('参数错误');
+        }
+        //
+        if ($only_update_at == 'yes') {
+            return Base::retSuccess('success', [
+                'id' => $file->id,
+                'update_at' => Carbon::parse($file->updated_at)->toDateTimeString()
+            ]);
         }
         //
         $content = FileContent::whereFid($file->id)->orderByDesc('id')->first();
