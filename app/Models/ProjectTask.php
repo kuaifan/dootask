@@ -851,7 +851,7 @@ class ProjectTask extends AbstractModel
      */
     public function relationUserids()
     {
-        $userids = $this->taskUser->pluck('userid')->toArray();
+        $userids = ProjectTaskUser::whereTaskId($this->id)->orderByDesc('owner')->orderByDesc('id')->pluck('userid')->toArray();
         $items = ProjectTask::with(['taskUser'])->where('parent_id', $this->id)->whereNull('archived_at')->get();
         foreach ($items as $item) {
             $userids = array_merge($userids, $item->taskUser->pluck('userid')->toArray());

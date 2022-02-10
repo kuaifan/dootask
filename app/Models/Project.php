@@ -212,7 +212,7 @@ class Project extends AbstractModel
      */
     public function relationUserids()
     {
-        return $this->projectUser->pluck('userid')->toArray();
+        return ProjectUser::whereProjectId($this->id)->orderBy('id')->pluck('userid')->toArray();
     }
 
     /**
