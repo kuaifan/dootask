@@ -16,14 +16,13 @@ class SettingsTableSeeder extends Seeder
     {
 
 
-        if (\DB::table('settings')->count() > 0) {
+        if (\DB::table('settings')->where('name', 'system')->count() > 0) {
             return;
         }
 
         \DB::table('settings')->insert(array (
             0 =>
             array (
-                'id' => 1,
                 'name' => 'system',
                 'desc' => '',
                 'setting' => '{"reg":"open","project_invite":"open","login_code":"auto"}',
@@ -32,7 +31,6 @@ class SettingsTableSeeder extends Seeder
             ),
             1 =>
             array (
-                'id' => 2,
                 'name' => 'priority',
                 'desc' => '',
                 'setting' => '[{"name":"\\u91cd\\u8981\\u4e14\\u7d27\\u6025","color":"#ED4014","days":1,"priority":1},{"name":"\\u91cd\\u8981\\u4e0d\\u7d27\\u6025","color":"#F16B62","days":3,"priority":2},{"name":"\\u7d27\\u6025\\u4e0d\\u91cd\\u8981","color":"#19C919","days":5,"priority":3},{"name":"\\u4e0d\\u91cd\\u8981\\u4e0d\\u7d27\\u6025","color":"#2D8CF0","days":0,"priority":4}]',
