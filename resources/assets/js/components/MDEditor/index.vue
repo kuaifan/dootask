@@ -248,9 +248,12 @@
 
             /********************文件上传部分************************/
 
-            handleProgress() {
+            handleProgress(event, file) {
                 //开始上传
-                this.uploadIng++;
+                if (file._uploadIng === undefined) {
+                    file._uploadIng = true;
+                    this.uploadIng++;
+                }
             },
 
             handleSuccess(res, file) {

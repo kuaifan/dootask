@@ -224,9 +224,12 @@
                 this.$refs.upload.fileList.splice(fileList.indexOf(item), 1);
                 this.$emit('input', this.$refs.upload.fileList);
             },
-            handleProgress() {
+            handleProgress(event, file) {
                 //开始上传
-                this.$emit('update:uploadIng', this.uploadIng + 1);
+                if (file._uploadIng === undefined) {
+                    file._uploadIng = true;
+                    this.$emit('update:uploadIng', this.uploadIng + 1);
+                }
             },
             handleSuccess (res, file) {
                 //上传完成

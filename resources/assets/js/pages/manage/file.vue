@@ -1206,7 +1206,10 @@ export default {
 
         handleProgress(event, file, fileList) {
             //开始上传
-            this.uploadIng++;
+            if (file._uploadIng === undefined) {
+                file._uploadIng = true;
+                this.uploadIng++;
+            }
             this.uploadUpdate(fileList);
         },
 

@@ -79,7 +79,7 @@ export default {
     methods: {
         handleProgress(event, file) {
             //上传时
-            if (typeof file.tempId === "undefined") {
+            if (file.tempId === undefined) {
                 file.tempId = $A.randomString(8);
                 this.$emit('on-progress', file);
             }
