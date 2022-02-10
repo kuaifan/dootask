@@ -763,6 +763,12 @@
     }
 }
 
+.task-detail-user-popper {
+    .ivu-poptip-body-content {
+        overflow: visible;
+    }
+}
+
 .task-detail-avatar-buttons {
     margin-top: 12px;
     margin-bottom: 4px;
