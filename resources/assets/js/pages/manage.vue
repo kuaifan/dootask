@@ -516,6 +516,9 @@ export default {
         },
 
         setTheme(mode) {
+            if (mode === undefined) {
+                return;
+            }
             if (!$A.isChrome()) {
                 $A.modalWarning("仅客户端或Chrome浏览器支持主题功能");
                 return;
