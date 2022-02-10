@@ -1,4 +1,7 @@
 const stateData = {
+    // 是否桌面端
+    isDesktop: $A.isDesktop(),
+
     // 浏览器宽度
     windowWidth: window.innerWidth,
 

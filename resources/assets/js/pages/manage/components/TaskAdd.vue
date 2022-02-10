@@ -30,7 +30,7 @@
                     :plugins="taskPlugins"
                     :options="taskOptions"
                     :option-full="taskOptionFull"
-                    :placeholder="$L($store.state.windowMax768 ? '详细描述，选填...' : '详细描述，选填...（点击右键使用工具栏）')"
+                    :placeholder="$L(isDesktop ? '详细描述，选填...（点击右键使用工具栏）' : '详细描述，选填...')"
                     :placeholderFull="$L('详细描述...')"
                     inline/>
             </div>
@@ -232,7 +232,7 @@ export default {
 
     },
     computed: {
-        ...mapState(['userId', 'cacheProjects', 'projectId', 'cacheColumns', 'taskPriority']),
+        ...mapState(['isDesktop', 'userId', 'cacheProjects', 'projectId', 'cacheColumns', 'taskPriority']),
 
         taskDays() {
             const {times} = this.addData;

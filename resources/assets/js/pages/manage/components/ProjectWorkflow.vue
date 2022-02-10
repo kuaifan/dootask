@@ -61,6 +61,7 @@
                                 <Draggable
                                     :list="data.project_flow_item"
                                     :animation="150"
+                                    :disabled="!isDesktop"
                                     class="taskflow-config-table-list-wrapper"
                                     tag="div"
                                     draggable=".column-border"
@@ -172,6 +173,7 @@
 <script>
 import Draggable from "vuedraggable";
 import UserInput from "../../../components/UserInput";
+import {mapState} from "vuex";
 
 export default {
     name: "ProjectWorkflow",
@@ -199,7 +201,7 @@ export default {
     },
 
     computed: {
-
+        ...mapState(['isDesktop'])
     },
 
     watch: {
