@@ -578,7 +578,7 @@ export default {
                         title: '退出登录',
                         content: '你确定要登出系统？',
                         onOk: () => {
-                            this.$store.dispatch("logout")
+                            this.$store.dispatch("logout", false)
                         }
                     });
                     return;

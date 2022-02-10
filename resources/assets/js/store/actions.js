@@ -367,10 +367,14 @@ export default {
      * 登出（打开登录页面）
      * @param state
      * @param dispatch
+     * @param appendFrom
      */
-    logout({state, dispatch}) {
+    logout({state, dispatch}, appendFrom = true) {
         dispatch("handleClearCache", {}).then(() => {
-            const from = ["/", "/login"].includes(window.location.pathname) ? "" : encodeURIComponent(window.location.href);
+            let from = ["/", "/login"].includes(window.location.pathname) ? "" : encodeURIComponent(window.location.href);
+            if (appendFrom === false) {
+                from = null;
+            }
             $A.goForward({name: 'login', query: from ? {from: from} : {}}, true);
         });
     },
