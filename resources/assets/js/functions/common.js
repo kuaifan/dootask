@@ -521,6 +521,15 @@
         },
 
         /**
+         * 是否桌面端
+         * @returns {boolean}
+         */
+        isDesktop(){
+            let ua = typeof window !== 'undefined' && window.navigator.userAgent;
+            return !ua.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i);
+        },
+
+        /**
          * 获取对象
          * @param obj
          * @param keys

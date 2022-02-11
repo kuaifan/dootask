@@ -138,8 +138,14 @@
                 </FormItem>
                 <FormItem v-else :label="$L('项目模板')">
                     <Select :value="0" @on-change="selectChange" :placeholder="$L('请选择模板')">
-                        <Option v-for="(item, index) in columns" :value="index" :key="index">{{ item.label }}</Option>
+                        <Option v-for="(item, index) in columns" :value="index" :key="index">{{ item.name }}</Option>
                     </Select>
+                </FormItem>
+                <FormItem prop="flow" :label="$L('开启工作流')">
+                    <RadioGroup v-model="addData.flow">
+                        <Radio label="open">{{$L('开启')}}</Radio>
+                        <Radio label="close">{{$L('关闭')}}</Radio>
+                    </RadioGroup>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
@@ -250,6 +256,7 @@ export default {
             addData: {
                 name: '',
                 columns: '',
+                flow: 'open',
             },
             addRule: {},
 
@@ -257,8 +264,6 @@ export default {
             addTaskSubscribe: null,
 
             dialogMsgSubscribe: null,
-
-            columns: [],
 
             projectKeyValue: '',
             projectKeyAlready: {},
@@ -331,6 +336,7 @@ export default {
             'projectTotal',
             'taskId',
             'wsOpenNum',
+            'columnTemplate',
 
             'themeMode',
             'themeList',
@@ -370,7 +376,6 @@ export default {
                     {path: 'password', name: '密码设置'},
                     {path: 'clearCache', name: '清除缓存'},
                     {path: 'system', name: '系统设置', divided: true},
-                    {path: 'priority', name: '任务等级'},
                     {path: 'workReport', name: '工作报告', divided: true},
                     {path: 'allUser', name: '团队管理'},
                     {path: 'allProject', name: '所有项目'},
@@ -385,6 +390,15 @@ export default {
                     {path: 'archivedProject', name: '已归档的项目'}
                 ]
             }
+        },
+
+        columns() {
+            const array = $A.cloneJSON(this.columnTemplate);
+            array.unshift({
+                name: this.$L('空白模板'),
+                columns: [],
+            })
+            return array
         },
 
         projectLists() {
@@ -483,16 +497,6 @@ export default {
 
     methods: {
         initLanguage() {
-            this.columns = [{
-                label: this.$L('空白模板'),
-                value: [],
-            }, {
-                label: this.$L('软件开发'),
-                value: [this.$L('产品规划'), this.$L('前端开发'), this.$L('后端开发'), this.$L('测试'), this.$L('发布'), this.$L('其它')],
-            }, {
-                label: this.$L('产品开发'),
-                value: [this.$L('产品计划'), this.$L('正在设计'), this.$L('正在研发'), this.$L('测试'), this.$L('准备发布'), this.$L('发布成功')],
-            }];
             this.addRule = {
                 name: [
                     { required: true, message: this.$L('请填写项目名称！'), trigger: 'change' },
@@ -512,6 +516,9 @@ export default {
         },
 
         setTheme(mode) {
+            if (mode === undefined) {
+                return;
+            }
             if (!$A.isChrome()) {
                 $A.modalWarning("仅客户端或Chrome浏览器支持主题功能");
                 return;
@@ -571,7 +578,7 @@ export default {
                         title: '退出登录',
                         content: '你确定要登出系统？',
                         onOk: () => {
-                            this.$store.dispatch("logout")
+                            this.$store.dispatch("logout", false)
                         }
                     });
                     return;
@@ -593,6 +600,7 @@ export default {
         },
 
         onAddShow() {
+            this.$store.dispatch("getColumnTemplate").catch(() => {})
             this.addShow = true;
             this.$nextTick(() => {
                 this.$refs.projectName.focus();
@@ -643,7 +651,7 @@ export default {
 
         selectChange(index) {
             this.$nextTick(() => {
-                this.$set(this.addData, 'columns', this.columns[index].value.join(','));
+                this.$set(this.addData, 'columns', this.columns[index].columns.join(','));
             })
         },
 

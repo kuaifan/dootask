@@ -118,6 +118,9 @@ export default {
                  * @param language
                  */
                 setLanguage(language) {
+                    if (language === undefined) {
+                        return
+                    }
                     this.__initLanguageData();
                     setTimeout(() => {
                         window.localStorage['__language:type__'] = language;

@@ -56,7 +56,6 @@ export default {
             if (this.userIsAdmin) {
                 menu.push(...[
                     {path: 'system', name: '系统设置', divided: true},
-                    {path: 'priority', name: '任务等级'},
                 ])
             }
             return menu;

@@ -60,6 +60,7 @@ export default {
             type: Boolean,
             default: false
         },
+        documentKey: Function
     },
 
     data() {
@@ -90,7 +91,7 @@ export default {
 
         fileName() {
             return this.value.name;
-        }
+        },
     },
 
     watch: {
@@ -104,8 +105,17 @@ export default {
                     this.loadIng--;
                     if (e !== null) {
                         $A.modalAlert("组件加载失败！");
+                        return;
+                    }
+                    if (!this.documentKey) {
+                        this.handleClose();
+                        return
+                    }
+                    const documentKey = this.documentKey();
+                    if (documentKey && documentKey.then) {
+                        documentKey.then(this.loadFile);
                     } else {
-                        this.loadFile()
+                        this.loadFile();
                     }
                 })
             },
@@ -126,7 +136,7 @@ export default {
             return type;
         },
 
-        loadFile() {
+        loadFile(keyAppend = '') {
             if (this.docEditor !== null) {
                 this.docEditor.destroyEditor();
                 this.docEditor = null;
@@ -148,9 +158,9 @@ export default {
             const config = {
                 "document": {
                     "fileType": this.fileType,
-                    "key": this.fileType + '-' + fileKey,
+                    "key": `${this.fileType}-${fileKey}-${keyAppend}`,
                     "title": fileName,
-                    "url": 'http://nginx/api/file/content/?id=' + fileKey + '&token=' + this.userToken,
+                    "url": `http://nginx/api/file/content/?id=${fileKey}&token=${this.userToken}`,
                 },
                 "editorConfig": {
                     "mode": "edit",
@@ -162,16 +172,16 @@ export default {
                     "customization": {
                         "uiTheme": this.themeIsDark ? "theme-dark" : "theme-classic-light",
                     },
-                    "callbackUrl": 'http://nginx/api/file/content/office?id=' + fileKey + '&token=' + this.userToken,
+                    "callbackUrl": `http://nginx/api/file/content/office?id=${fileKey}&token=${this.userToken}`,
                 }
             };
             if (/\/hideenOfficeTitle\//.test(window.navigator.userAgent)) {
                 config.document.title = " ";
             }
             if ($A.leftExists(fileKey, "msgFile_")) {
-                config.document.url = 'http://nginx/api/dialog/msg/download/?msg_id=' + $A.leftDelete(fileKey, "msgFile_") + '&token=' + this.userToken;
+                config.document.url = `http://nginx/api/dialog/msg/download/?msg_id=${$A.leftDelete(fileKey, "msgFile_")}&token=${this.userToken}`;
             } else if ($A.leftExists(fileKey, "taskFile_")) {
-                config.document.url = 'http://nginx/api/project/task/filedown/?file_id=' + $A.leftDelete(fileKey, "taskFile_") + '&token=' + this.userToken;
+                config.document.url = `http://nginx/api/project/task/filedown/?file_id=${$A.leftDelete(fileKey, "taskFile_")}&token=${this.userToken}`;
             }
             if (this.readOnly) {
                 config.editorConfig.mode = "view";

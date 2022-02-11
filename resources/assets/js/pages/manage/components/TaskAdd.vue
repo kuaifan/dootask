@@ -30,7 +30,7 @@
                     :plugins="taskPlugins"
                     :options="taskOptions"
                     :option-full="taskOptionFull"
-                    :placeholder="$L($store.state.windowMax768 ? '详细描述，选填...' : '详细描述，选填...（点击右键使用工具栏）')"
+                    :placeholder="$L(isDesktop ? '详细描述，选填...（点击右键使用工具栏）' : '详细描述，选填...')"
                     :placeholderFull="$L('详细描述...')"
                     inline/>
             </div>
@@ -82,7 +82,8 @@
                     v-model="addData.owner"
                     :multiple-max="10"
                     :placeholder="$L('选择任务负责人')"
-                    :project-id="addData.project_id"/>
+                    :project-id="addData.project_id"
+                    :transfer="false"/>
                 <div v-if="showAddAssist" class="task-add-assist">
                     <Checkbox v-model="addData.add_assist" :true-value="1" :false-value="0">{{$L('加入任务协助人员列表')}}</Checkbox>
                     <ETooltip :content="$L('你不是任务负责人时建议加入任务协助人员列表')">
@@ -231,7 +232,7 @@ export default {
 
     },
     computed: {
-        ...mapState(['userId', 'cacheProjects', 'projectId', 'cacheColumns', 'taskPriority']),
+        ...mapState(['isDesktop', 'userId', 'cacheProjects', 'projectId', 'cacheColumns', 'taskPriority']),
 
         taskDays() {
             const {times} = this.addData;

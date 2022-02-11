@@ -145,7 +145,7 @@
                 transfer: false,
 
                 uploadIng: 0,
-                uploadFormat: ['jpg', 'jpeg', 'png', 'gif', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'esp', 'pdf', 'rar', 'zip', 'gz'],
+                uploadFormat: ['jpg', 'jpeg', 'png', 'gif', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'esp', 'pdf', 'rar', 'zip', 'gz', 'ai', 'avi', 'bmp', 'cdr', 'eps', 'mov', 'mp3', 'mp4', 'pr', 'psd', 'svg', 'tif'],
                 actionUrl: $A.apiUrl('system/fileupload'),
                 maxSize: 10240
             };
@@ -474,9 +474,12 @@
 
             /********************文件上传部分************************/
 
-            handleProgress() {
+            handleProgress(event, file) {
                 //开始上传
-                this.uploadIng++;
+                if (file._uploadIng === undefined) {
+                    file._uploadIng = true;
+                    this.uploadIng++;
+                }
             },
 
             handleSuccess(res, file) {

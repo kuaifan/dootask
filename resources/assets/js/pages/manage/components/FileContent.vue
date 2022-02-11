@@ -52,7 +52,7 @@
                 </template>
                 <Flow v-else-if="file.type=='flow'" ref="myFlow" v-model="contentDetail" @saveData="handleClick('saveBefore')"/>
                 <Minder v-else-if="file.type=='mind'" ref="myMind" v-model="contentDetail" @saveData="handleClick('saveBefore')"/>
-                <OnlyOffice v-else-if="['word', 'excel', 'ppt'].includes(file.type)" v-model="contentDetail"/>
+                <OnlyOffice v-else-if="['word', 'excel', 'ppt'].includes(file.type)" v-model="contentDetail" :documentKey="documentKey"/>
                 <AceEditor v-else-if="['code', 'txt'].includes(file.type)" v-model="contentDetail.content" :ext="file.ext" @saveData="handleClick('saveBefore')"/>
             </div>
         </template>
@@ -328,6 +328,22 @@ export default {
         onSaveSave() {
             this.handleClick('save');
             this.unsaveTip = false;
+        },
+
+        documentKey() {
+            return new Promise(resolve => {
+                this.$store.dispatch("call", {
+                    url: 'file/content',
+                    data: {
+                        id: this.fileId,
+                        only_update_at: 'yes'
+                    },
+                }).then(({data}) => {
+                    resolve($A.Date(data.update_at, true))
+                }).catch(() => {
+                    resolve(0)
+                });
+            })
         },
 
         formatName(file) {

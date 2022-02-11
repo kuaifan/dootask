@@ -1,4 +1,7 @@
 const stateData = {
+    // 是否桌面端
+    isDesktop: $A.isDesktop(),
+
     // 浏览器宽度
     windowWidth: window.innerWidth,
 
@@ -19,6 +22,7 @@ const stateData = {
 
     // Dialog
     cacheDialogs: $A.getStorageArray("cacheDialogs"),
+    cacheUnreads: {},
 
     // Project
     cacheProjects: $A.getStorageArray("cacheProjects"),
@@ -77,6 +81,9 @@ const stateData = {
 
     // 任务优先级
     taskPriority: [],
+
+    // 项目创建列表模板
+    columnTemplate: [],
 
     // 列表背景色
     columnColorList: [

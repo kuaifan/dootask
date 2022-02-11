@@ -21,6 +21,9 @@ class VerifyCsrfToken extends Middleware
         // 保存任务优先级
         'api/system/priority/',
 
+        // 保存创建项目列表模板
+        'api/system/column/template/',
+
         // 添加任务
         'api/project/task/add/',
 

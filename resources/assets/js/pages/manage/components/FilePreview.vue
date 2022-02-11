@@ -29,7 +29,7 @@
                 </template>
                 <Flow v-else-if="file.type=='flow'" ref="myFlow" v-model="contentDetail" readOnly/>
                 <Minder v-else-if="file.type=='mind'" ref="myMind" v-model="contentDetail" readOnly/>
-                <OnlyOffice v-else-if="['word', 'excel', 'ppt'].includes(file.type)" v-model="contentDetail" :code="code" readOnly/>
+                <OnlyOffice v-else-if="['word', 'excel', 'ppt'].includes(file.type)" v-model="contentDetail" :code="code" :documentKey="documentKey" readOnly/>
                 <AceEditor v-else-if="['code', 'txt'].includes(file.type)" v-model="contentDetail.content" :ext="file.ext" readOnly/>
             </div>
         </template>
@@ -141,6 +141,22 @@ export default {
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.loadContent--;
+            })
+        },
+
+        documentKey() {
+            return new Promise(resolve => {
+                this.$store.dispatch("call", {
+                    url: 'file/content',
+                    data: {
+                        id: this.code || this.file.id,
+                        only_update_at: 'yes'
+                    },
+                }).then(({data}) => {
+                    resolve($A.Date(data.update_at, true))
+                }).catch(() => {
+                    resolve(0)
+                });
             })
         },
 

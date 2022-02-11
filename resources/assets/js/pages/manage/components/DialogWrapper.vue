@@ -159,10 +159,10 @@ export default {
 
     computed: {
         ...mapState([
+            'isDesktop',
             'userId',
             'cacheDialogs',
             'dialogMsgs',
-            'windowMax768',
         ]),
 
         dialogData() {
@@ -181,7 +181,7 @@ export default {
         },
 
         isAutoBottom() {
-            if (this.windowMax768 && this.inputFocus) {
+            if (this.inputFocus && !this.isDesktop) {
                 return false;
             }
             return this.autoBottom
@@ -268,7 +268,7 @@ export default {
                     text: this.msgText,
                 },
             });
-            if (this.windowMax768) {
+            if (!this.isDesktop) {
                 this.$refs.input.blur();
             }
             this.autoToBottom();
@@ -368,7 +368,7 @@ export default {
                         userid: this.userId,
                         msg: { },
                     });
-                    if (this.windowMax768) {
+                    if (!this.isDesktop) {
                         this.$refs.input.blur();
                     }
                     this.autoToBottom();

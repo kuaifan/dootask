@@ -45,13 +45,14 @@ export default {
     },
     computed: {
         ...mapState([
+            'isDesktop',
             'wsOpenNum',
         ]),
         repoTitle() {
             return this.repoStatus == 2 ? '更新客户端' : '客户端下载';
         },
         showButton() {
-            return this.repoStatus && !this.$store.state.windowMax768 && ['login', 'manage-dashboard'].includes(this.$route.name)
+            return this.repoStatus && this.isDesktop && ['login', 'manage-dashboard'].includes(this.$route.name)
         }
     },
     watch: {

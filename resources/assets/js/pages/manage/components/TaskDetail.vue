@@ -41,6 +41,7 @@
         <Poptip
             ref="owner"
             class="subtask-avatar"
+            popper-class="task-detail-user-popper"
             :title="$L('修改负责人')"
             :width="240"
             placement="bottom"
@@ -52,7 +53,8 @@
                     v-model="ownerData.owner_userid"
                     :multiple-max="1"
                     :project-id="taskDetail.project_id"
-                    :placeholder="$L('选择任务负责人')"/>
+                    :placeholder="$L('选择任务负责人')"
+                    :transfer="false"/>
                 <div class="task-detail-avatar-buttons">
                     <Button size="small" type="primary" @click="$refs.owner.ok()">{{$L('确定')}}</Button>
                 </div>
@@ -189,6 +191,7 @@
                             :title="$L('修改负责人')"
                             :width="240"
                             class="item-content user"
+                            popper-class="task-detail-user-popper"
                             placement="bottom"
                             @on-popper-show="openOwner"
                             @on-ok="onOwner"
@@ -198,7 +201,8 @@
                                     v-model="ownerData.owner_userid"
                                     :multiple-max="10"
                                     :project-id="taskDetail.project_id"
-                                    :placeholder="$L('选择任务负责人')"/>
+                                    :placeholder="$L('选择任务负责人')"
+                                    :transfer="false"/>
                                 <div class="task-detail-avatar-buttons">
                                     <Button size="small" type="primary" @click="$refs.owner.ok()">{{$L('确定')}}</Button>
                                 </div>
@@ -217,6 +221,7 @@
                             :title="$L(getAssist.length > 0 ? '修改协助人员' : '添加协助人员')"
                             :width="280"
                             class="item-content user"
+                            popper-class="task-detail-user-popper"
                             placement="bottom"
                             @on-popper-show="openAssist"
                             @on-ok="onAssist"
@@ -227,7 +232,8 @@
                                     :multiple-max="10"
                                     :project-id="taskDetail.project_id"
                                     :disabled-choice="assistData.disabled"
-                                    :placeholder="$L('选择任务协助人员')"/>
+                                    :placeholder="$L('选择任务协助人员')"
+                                    :transfer="false"/>
                                 <div class="task-detail-avatar-buttons">
                                     <Button size="small" type="primary" @click="$refs.assist.ok()">{{$L('确定')}}</Button>
                                 </div>

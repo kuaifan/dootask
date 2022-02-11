@@ -101,12 +101,16 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {post} api/system/priority          03. 获取优先级、保存优先级
+     * @api {post} api/system/priority          03. 任务优先级
      *
+     * @apiDescription 获取任务优先级、保存任务优先级
      * @apiVersion 1.0.0
      * @apiGroup system
      * @apiName priority
      *
+     * @apiParam {String} type
+     * - get: 获取（默认）
+     * - save: 保存（限管理员）
      * @apiParam {Array} list   优先级数据，格式：[{name,color,days,priority}]
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
@@ -140,6 +144,53 @@ class SystemController extends AbstractController
             $setting = Base::setting('priority', $array);
         } else {
             $setting = Base::setting('priority');
+        }
+        //
+        return Base::retSuccess('success', $setting);
+    }
+
+    /**
+     * @api {post} api/system/column/template          03. 创建项目模板
+     *
+     * @apiDescription 获取创建项目模板、保存创建项目模板
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName column__template
+     *
+     * @apiParam {String} type
+     * - get: 获取（默认）
+     * - save: 保存（限管理员）
+     * @apiParam {Array} list   优先级数据，格式：[{name,columns}]
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function column__template()
+    {
+        $type = trim(Request::input('type'));
+        if ($type == 'save') {
+            User::auth('admin');
+            $list = Base::getPostValue('list');
+            $array = [];
+            if (empty($list) || !is_array($list)) {
+                return Base::retError('参数错误');
+            }
+            foreach ($list AS $item) {
+                if (empty($item['name']) || empty($item['columns'])) {
+                    continue;
+                }
+                $array[] = [
+                    'name' => $item['name'],
+                    'columns' => array_values(array_filter(array_unique(explode(",", $item['columns']))))
+                ];
+            }
+            if (empty($array)) {
+                return Base::retError('参数为空');
+            }
+            $setting = Base::setting('columnTemplate', $array);
+        } else {
+            $setting = Base::setting('columnTemplate');
         }
         //
         return Base::retSuccess('success', $setting);

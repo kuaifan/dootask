@@ -34,7 +34,27 @@ export default {
 
     data() {
         return {
-            uploadFormat: ['jpg', 'jpeg', 'png', 'gif', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'esp', 'pdf', 'rar', 'zip', 'gz', 'ai', 'avi', 'bmp', 'cdr', 'eps', 'mov', 'mp3', 'mp4', 'pr', 'psd', 'svg', 'tif'],
+            uploadFormat: [
+                'docx', 'wps', 'doc', 'xls', 'xlsx', 'ppt', 'pptx',
+                'jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'raw',
+                'rar', 'zip', 'jar', '7-zip', 'tar', 'gzip', '7z',
+                'tif', 'tiff',
+                'dwg', 'dxf',
+                'ofd',
+                'pdf',
+                'txt',
+                'htaccess', 'htgroups', 'htpasswd', 'conf', 'bat', 'cmd', 'cpp', 'c', 'cc', 'cxx', 'h', 'hh', 'hpp', 'ino', 'cs', 'css',
+                'dockerfile', 'go', 'html', 'htm', 'xhtml', 'vue', 'we', 'wpy', 'java', 'js', 'jsm', 'jsx', 'json', 'jsp', 'less', 'lua', 'makefile', 'gnumakefile',
+                'ocamlmakefile', 'make', 'md', 'markdown', 'mysql', 'nginx', 'ini', 'cfg', 'prefs', 'm', 'mm', 'pl', 'pm', 'p6', 'pl6', 'pm6', 'pgsql', 'php',
+                'inc', 'phtml', 'shtml', 'php3', 'php4', 'php5', 'phps', 'phpt', 'aw', 'ctp', 'module', 'ps1', 'py', 'r', 'rb', 'ru', 'gemspec', 'rake', 'guardfile', 'rakefile',
+                'gemfile', 'rs', 'sass', 'scss', 'sh', 'bash', 'bashrc', 'sql', 'sqlserver', 'swift', 'ts', 'typescript', 'str', 'vbs', 'vb', 'v', 'vh', 'sv', 'svh', 'xml',
+                'rdf', 'rss', 'wsdl', 'xslt', 'atom', 'mathml', 'mml', 'xul', 'xbl', 'xaml', 'yaml', 'yml',
+                'asp', 'properties', 'gitignore', 'log', 'bas', 'prg', 'python', 'ftl', 'aspx',
+                'mp3', 'wav', 'mp4', 'flv',
+                'avi', 'mov', 'wmv', 'mkv', '3gp', 'rm',
+                'xmind',
+                'rp',
+            ],
             actionUrl: $A.apiUrl('dialog/msg/sendfile'),
         }
     },
@@ -59,7 +79,7 @@ export default {
     methods: {
         handleProgress(event, file) {
             //上传时
-            if (typeof file.tempId === "undefined") {
+            if (file.tempId === undefined) {
                 file.tempId = $A.randomString(8);
                 this.$emit('on-progress', file);
             }

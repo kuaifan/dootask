@@ -9,14 +9,11 @@ use App\Models\FileContent;
 use App\Models\FileLink;
 use App\Models\FileUser;
 use App\Models\User;
-use App\Models\WebSocketDialogMsg;
 use App\Module\Base;
 use App\Module\Ihttp;
-use App\Tasks\BatchRemoveFileTask;
-use Hhxsv5\LaravelS\Swoole\Task\Task;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Request;
-use Response;
 
 /**
  * @apiDefine file
@@ -318,11 +315,11 @@ class FileController extends AbstractController
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
      */
-    public function move($id = 0)
+    public function move()
     {
         $user = User::auth();
         //
-        $id = empty($id) ? intval(Request::input('id')) : $id;
+        $id = intval(Request::input('id'));
         $pid = intval(Request::input('pid'));
         //
         $file = File::permissionFind($id, 1000);
@@ -346,44 +343,6 @@ class FileController extends AbstractController
         $file->save();
         $file->pushMsg('update', $file);
         return Base::retSuccess('操作成功', $file);
-    }
-
-    /**
-     * @api {get} api/file/batch/move          批量移动文件
-     *
-     * @apiDescription 需要token身份
-     * @apiVersion 1.0.0
-     * @apiGroup file
-     * @apiName batch__move
-     *
-     * @apiParam {Array} ids           文件ID
-     *
-     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据
-     *
-     * @return array
-     */
-    public function batch__move(): array
-    {
-        $ids = Request::input('ids');
-        if ( empty($ids) || !is_array($ids) ) {
-            return Base::retError("请选择要移动的文件");
-        }
-        // 去重
-        $ids = array_unique($ids);
-        $data = [];
-        // 暂时不考虑异步
-        AbstractModel::transaction( function () use ($ids, &$data) {
-            foreach ($ids as $id) {
-                $res = $this->move($id);
-                if ( Base::isError($res) )
-                    throw new ApiException($res["msg"]);
-
-                $data[] = $res["data"];
-            }
-        } );
-        return Base::retSuccess('操作成功', $data);
     }
 
     /**
@@ -413,33 +372,6 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/batch/remove          批量删除文件
-     *
-     * @apiDescription 需要token身份
-     * @apiVersion 1.0.0
-     * @apiGroup file
-     * @apiName batchRemove
-     *
-     * @apiParam {Array} ids           文件ID
-     *
-     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据
-     *
-     * @return array
-     */
-    public function batch__remove(): array
-    {
-        $ids = Request::input('ids');
-        if ( empty($ids) || !is_array($ids) ) {
-            return Base::retError("请选择要删除的文件");
-        }
-        $task = new BatchRemoveFileTask($ids, User::userid());
-        Task::deliver($task);
-        return Base::retSuccess('操作成功');
-    }
-
-    /**
      * @api {get} api/file/content          08. 获取文件内容
      *
      * @apiDescription 需要token身份
@@ -450,7 +382,10 @@ class FileController extends AbstractController
      * @apiParam {Number|String} id
      * - Number: 文件ID（需要登录）
      * - String: 链接码（不需要登录，用于预览）
-     * @apiParam {String} down          直接下载
+     * @apiParam {String} only_update_at        仅获取update_at字段
+     * - no (默认)
+     * - yes
+     * @apiParam {String} down                  直接下载
      * - no: 浏览（默认）
      * - yes: 下载（office文件直接下载）
      *
@@ -462,6 +397,7 @@ class FileController extends AbstractController
     {
         $id = Request::input('id');
         $down = Request::input('down', 'no');
+        $only_update_at = Request::input('only_update_at', 'no');
         //
         if (Base::isNumber($id)) {
             User::auth();
@@ -474,6 +410,13 @@ class FileController extends AbstractController
             }
         } else {
             return Base::retError('参数错误');
+        }
+        //
+        if ($only_update_at == 'yes') {
+            return Base::retSuccess('success', [
+                'id' => $file->id,
+                'update_at' => Carbon::parse($file->updated_at)->toDateTimeString()
+            ]);
         }
         //
         $content = FileContent::whereFid($file->id)->orderByDesc('id')->first();
@@ -631,10 +574,11 @@ class FileController extends AbstractController
         }
         //
         $dirs = explode("/", $webkitRelativePath);
-        AbstractModel::transaction(function() use ($user, $userid, $dirs, &$pid) {
-            while (count($dirs) > 1) {
-                $dirName = array_shift($dirs);
-                if ($dirName) {
+        while (count($dirs) > 1) {
+            $dirName = array_shift($dirs);
+            if ($dirName) {
+                $pushMsg = [];
+                AbstractModel::transaction(function () use ($dirName, $user, $userid, &$pid, &$pushMsg) {
                     $dirRow = File::wherePid($pid)->whereType('folder')->whereName($dirName)->lockForUpdate()->first();
                     if (empty($dirRow)) {
                         $dirRow = File::createInstance([
@@ -645,17 +589,19 @@ class FileController extends AbstractController
                             'created_id' => $user->userid,
                         ]);
                         if ($dirRow->save()) {
-                            $tmpRow = File::find($dirRow->id);
-                            $tmpRow->pushMsg('add', $tmpRow);
+                            $pushMsg[] = File::find($dirRow->id);
                         }
                     }
                     if (empty($dirRow)) {
                         throw new ApiException('创建文件夹失败');
                     }
                     $pid = $dirRow->id;
+                });
+                foreach ($pushMsg as $tmpRow) {
+                    $tmpRow->pushMsg('add', $tmpRow);
                 }
             }
-        });
+        }
         //
         $path = 'uploads/file/' . date("Ym") . '/u' . $user->userid . '/';
         $data = Base::upload([

@@ -91,7 +91,7 @@
             <Draggable
                 :list="columnList"
                 :animation="150"
-                :disabled="sortDisabled || windowMax768"
+                :disabled="sortDisabled || !isDesktop"
                 class="column-list"
                 tag="ul"
                 draggable=".column-item"
@@ -146,7 +146,7 @@
                         <Draggable
                             :list="column.tasks"
                             :animation="150"
-                            :disabled="sortDisabled || windowMax768"
+                            :disabled="sortDisabled || !isDesktop"
                             class="task-list"
                             draggable=".task-draggable"
                             group="task"
@@ -528,8 +528,8 @@ export default {
 
     computed: {
         ...mapState([
+            'isDesktop',
             'windowWidth',
-            'windowMax768',
 
             'userId',
             'cacheDialogs',

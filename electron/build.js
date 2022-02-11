@@ -33,7 +33,7 @@ function startBuild(data, publish) {
     // index.html
     let indexFile = path.resolve(electronDir, "index.html");
     let indexString = fs.readFileSync(indexFile, 'utf8');
-    indexString = indexString.replace(`<title></title>`, `<title>${data.name}</title>`);
+    indexString = indexString.replace(/<title>(.*?)<\/title>/g, `<title>${data.name}</title>`);
     fs.writeFileSync(indexFile, indexString, 'utf8');
     // package.json Backup
     fse.copySync(packageFile, packageBakFile)

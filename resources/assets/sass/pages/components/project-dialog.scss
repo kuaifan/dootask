@@ -35,6 +35,11 @@
                 align-items: center;
                 margin-top: 14px;
                 overflow: auto;
+
+                &::-webkit-scrollbar {
+                    display: none;
+                }
+
                 > li {
                     position: relative;
                     list-style: none;

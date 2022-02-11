@@ -9,6 +9,7 @@ use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Models\WebSocketDialogMsgRead;
 use App\Module\Base;
+use Carbon\Carbon;
 use Request;
 use Response;
 
@@ -269,7 +270,7 @@ class DialogController extends AbstractController
         } else {
             $data = Base::upload([
                 "file" => Request::file('files'),
-                "type" => 'file',
+                "type" => 'more',
                 "path" => $path,
                 "fileName" => $fileName,
             ]);
@@ -349,6 +350,9 @@ class DialogController extends AbstractController
      * @apiName msg__detail
      *
      * @apiParam {Number} msg_id            消息ID
+     * @apiParam {String} only_update_at    仅获取update_at字段
+     * - no (默认)
+     * - yes
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -359,11 +363,20 @@ class DialogController extends AbstractController
         User::auth();
         //
         $msg_id = intval(Request::input('msg_id'));
+        $only_update_at = Request::input('only_update_at', 'no');
         //
         $dialogMsg = WebSocketDialogMsg::whereId($msg_id)->first();
         if (empty($dialogMsg)) {
             return Base::retError("文件不存在");
         }
+        //
+        if ($only_update_at == 'yes') {
+            return Base::retSuccess('success', [
+                'id' => $dialogMsg->id,
+                'update_at' => Carbon::parse($dialogMsg->updated_at)->toDateTimeString()
+            ]);
+        }
+        //
         $data = $dialogMsg->toArray();
         //
         if ($data['type'] == 'file') {
