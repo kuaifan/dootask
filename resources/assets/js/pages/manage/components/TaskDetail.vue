@@ -68,10 +68,7 @@
     <!--主任务-->
     <div
         v-else-if="ready"
-        :class="{'task-detail':true, 'open-dialog': hasOpenDialog, 'completed': taskDetail.complete_at}"
-        @drop.prevent="taskPasteDrag($event, 'drag')"
-        @dragover.prevent="taskDragOver(true, $event)"
-        @dragleave.prevent="taskDragOver(false, $event)">
+        :class="{'task-detail':true, 'open-dialog': hasOpenDialog, 'completed': taskDetail.complete_at}">
         <div v-show="taskDetail.id > 0" class="task-info">
             <div class="head">
                 <TaskMenu
@@ -383,7 +380,10 @@
                     </div>
                 </div>
                 <ProjectLog v-if="navActive=='log' && taskId > 0" ref="log" :task-id="taskDetail.id" :show-load="false" @on-load-change="logLoadChange"/>
-                <div v-else class="no-dialog">
+                <div v-else class="no-dialog"
+                     @drop.prevent="taskPasteDrag($event, 'drag')"
+                     @dragover.prevent="taskDragOver(true, $event)"
+                     @dragleave.prevent="taskDragOver(false, $event)">
                     <div class="no-tip">{{$L('暂无消息')}}</div>
                     <div class="no-input">
                         <DragInput
@@ -402,13 +402,13 @@
                             <Icon v-else type="md-send" />
                         </div>
                     </div>
+                    <div v-if="dialogDrag" class="drag-over" @click="dialogDrag=false">
+                        <div class="drag-text">{{$L('拖动到这里发送')}}</div>
+                    </div>
                 </div>
             </div>
         </div>
         <div v-if="!taskDetail.id" class="task-load"><Loading/></div>
-        <div v-if="dialogDrag" class="drag-over" @click="dialogDrag=false">
-            <div class="drag-text">{{$L('拖动到这里发送')}}</div>
-        </div>
     </div>
 </template>
 
