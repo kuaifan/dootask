@@ -1134,7 +1134,7 @@ class ProjectController extends AbstractController
         //
         $codeExt = ['txt'];
         $officeExt = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'];
-        $localExt = ['jpg', 'jpeg', 'png', 'gif'];
+        $localExt = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'raw', 'tif', 'tiff', 'mp3', 'wav', 'mp4', 'flv', 'avi', 'mov', 'wmv', 'mkv', '3gp', 'rm'];
         $filePath = public_path($data['path']);
         if (in_array($data['ext'], $codeExt) && $data['size'] < 2 * 1024 * 1024) {
             // 文本预览，限制2M内的文件

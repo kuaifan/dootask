@@ -382,7 +382,7 @@ class DialogController extends AbstractController
         if ($data['type'] == 'file') {
             $codeExt = ['txt'];
             $officeExt = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'];
-            $localExt = ['jpg', 'jpeg', 'png', 'gif'];
+            $localExt = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'raw', 'tif', 'tiff', 'mp3', 'wav', 'mp4', 'flv', 'avi', 'mov', 'wmv', 'mkv', '3gp', 'rm'];
             $msg = Base::json2array($dialogMsg->getRawOriginal('msg'));
             $filePath = public_path($msg['path']);
             if (in_array($msg['ext'], $codeExt) && $msg['size'] < 2 * 1024 * 1024) {
