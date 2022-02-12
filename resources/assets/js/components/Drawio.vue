@@ -118,7 +118,6 @@ export default {
         let route = this.readOnly ? 'viewer' : 'index';
         let theme = this.themeIsDark ? 'dark' : 'light'
         this.url = $A.originUrl('js/drawio/' + route + '.html?lang=' + language + '&theme=' + theme + '&dev=1');
-        console.log('this.url',this.url);
     },
     mounted() {
         window.addEventListener('message', this.handleMessage)

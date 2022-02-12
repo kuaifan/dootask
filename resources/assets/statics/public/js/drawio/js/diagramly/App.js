@@ -930,10 +930,10 @@ App.main = function(callback, createUi)
 						mxscript(App.DROPBOX_URL, function()
 						{
 							// Must load this after the dropbox SDK since they use the same namespace
-							mxscript(App.DROPINS_URL, function()
-							{
-								DrawDropboxClientCallback();
-							}, 'dropboxjs', App.DROPBOX_APPKEY);
+							// mxscript(App.DROPINS_URL, function()
+							// {
+							// 	DrawDropboxClientCallback();
+							// }, 'dropboxjs', App.DROPBOX_APPKEY);
 						});
 					}
 					// Disables client
