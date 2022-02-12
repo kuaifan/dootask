@@ -1094,7 +1094,7 @@ class ProjectController extends AbstractController
     /**
      * @api {get} api/project/task/filedetail          23. 获取任务文件详情
      *
-     * @apiDescription 需要token身份（限：项目、任务负责人）
+     * @apiDescription 需要token身份
      * @apiVersion 1.0.0
      * @apiGroup project
      * @apiName task__filedetail
@@ -1130,11 +1130,11 @@ class ProjectController extends AbstractController
         $data = $file->toArray();
         $data['path'] = $file->getRawOriginal('path');
         //
-        ProjectTask::userTask($file->task_id, true, true);
+        ProjectTask::userTask($file->task_id, null);
         //
         $codeExt = ['txt'];
         $officeExt = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'];
-        $localExt = ['jpg', 'jpeg', 'png', 'gif'];
+        $localExt = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'raw', 'tif', 'tiff', 'mp3', 'wav', 'mp4', 'flv', 'avi', 'mov', 'wmv', 'mkv', '3gp', 'rm'];
         $filePath = public_path($data['path']);
         if (in_array($data['ext'], $codeExt) && $data['size'] < 2 * 1024 * 1024) {
             // 文本预览，限制2M内的文件
@@ -1160,7 +1160,7 @@ class ProjectController extends AbstractController
     /**
      * @api {get} api/project/task/filedown          24. 下载任务文件
      *
-     * @apiDescription 需要token身份（限：项目、任务负责人）
+     * @apiDescription 需要token身份
      * @apiVersion 1.0.0
      * @apiGroup project
      * @apiName task__filedown
@@ -1183,7 +1183,7 @@ class ProjectController extends AbstractController
         }
         //
         try {
-            ProjectTask::userTask($file->task_id, true, true);
+            ProjectTask::userTask($file->task_id, null);
         } catch (\Exception $e) {
             abort(403, $e->getMessage() ?: "This file not support download.");
         }
