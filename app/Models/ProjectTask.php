@@ -508,9 +508,7 @@ class ProjectTask extends AbstractModel
     {
         AbstractModel::transaction(function () use ($data, &$updateMarking) {
             // 判断版本
-            if (version_compare(Base::getClientVersion(), '0.6.0', '<')) {
-                throw new ApiException('当前版本过低');
-            }
+            Base::checkClientVersion('0.6.0');
             // 主任务
             $mainTask = $this->parent_id > 0 ? self::find($this->parent_id) : null;
             // 工作流

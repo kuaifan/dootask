@@ -69,7 +69,7 @@
                 type="textarea"
                 :rows="1"
                 :autosize="{ minRows: 1, maxRows: 3 }"
-                :maxlength="255"
+                :maxlength="20000"
                 @on-focus="onEventFocus"
                 @on-blur="onEventblur"
                 @on-keydown="chatKeydown"
@@ -280,6 +280,7 @@ export default {
                     dialog_id: this.dialogId,
                     text: this.msgText,
                 },
+                method: 'post'
             }).then(({data}) => {
                 this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
                 this.sendSuccess(data);
@@ -387,6 +388,12 @@ export default {
         },
 
         sendSuccess(data) {
+            if ($A.isArray(data)) {
+                data.some(item => {
+                    this.sendSuccess(item)
+                })
+                return;
+            }
             this.$store.dispatch("saveDialogMsg", data);
             this.$store.dispatch("increaseTaskMsgNum", this.dialogId);
             this.$store.dispatch("updateDialogLastMsg", data);

@@ -189,7 +189,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/sendtext          06. 发送消息
+     * @api {post} api/dialog/msg/sendtext          06. 发送消息
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -205,6 +205,7 @@ class DialogController extends AbstractController
      */
     public function msg__sendtext()
     {
+        Base::checkClientVersion('0.8.1');
         $user = User::auth();
         //
         $chat_nickname = Base::settingFind('system', 'chat_nickname');
@@ -215,8 +216,8 @@ class DialogController extends AbstractController
             }
         }
         //
-        $dialog_id = intval(Request::input('dialog_id'));
-        $text = trim(Request::input('text'));
+        $dialog_id = Base::getPostInt('dialog_id');
+        $text = trim(Base::getPostValue('text'));
         //
         if (mb_strlen($text) < 1) {
             return Base::retError('消息内容不能为空');
@@ -226,11 +227,21 @@ class DialogController extends AbstractController
         //
         WebSocketDialog::checkDialog($dialog_id);
         //
-        $msg = [
-            'text' => $text
-        ];
+        if (mb_strlen($text) > 2000) {
+            $array = mb_str_split($text, 2000);
+        } else {
+            $array = [$text];
+        }
         //
-        return WebSocketDialogMsg::sendMsg($dialog_id, 'text', $msg, $user->userid);
+        $list = [];
+        foreach ($array as $item) {
+            $res = WebSocketDialogMsg::sendMsg($dialog_id, 'text', ['text' => $item], $user->userid);
+            if (Base::isSuccess($res)) {
+                $list[] = $res['data'];
+            }
+        }
+        //
+        return Base::retSuccess('发送成功', $list);
     }
 
     /**
