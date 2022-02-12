@@ -199,6 +199,10 @@ export default {
                 this.getContactsList(1);
             }
         },
+        dialogId(id) {
+            $A.setStorage("messenger::dialogId", id);
+            this.$store.state.dialogOpenId = id;
+        },
         dialogOpenId(id) {
             this.dialogId = id;
         },
@@ -247,11 +251,9 @@ export default {
 
         closeDialog() {
             this.dialogId = 0;
-            $A.setStorage("messenger::dialogId", 0)
         },
 
         openDialog(dialog, smooth) {
-            $A.setStorage("messenger::dialogId", dialog.id)
             this.dialogId = dialog.id;
             this.scrollIntoActive(smooth);
         },
