@@ -135,7 +135,8 @@
             }
         }
         .scroller {
-            margin-left: 36px;
+            margin-left: 28px;
+            padding-left: 8px;
             padding-right: 36px;
             overflow-x: hidden;
             overflow-y: auto;
@@ -155,7 +156,6 @@
             }
             .desc {
                 margin-top: 10px;
-                overflow: auto;
                 div[contenteditable="true"] {
                     outline: none
                 }
