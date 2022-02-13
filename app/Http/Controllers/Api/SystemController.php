@@ -150,7 +150,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {post} api/system/column/template          03. 创建项目模板
+     * @api {post} api/system/column/template          04. 创建项目模板
      *
      * @apiDescription 获取创建项目模板、保存创建项目模板
      * @apiVersion 1.0.0
@@ -197,7 +197,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/info          04. 获取终端详细信息
+     * @api {get} api/system/get/info          05. 获取终端详细信息
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -226,7 +226,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/ip          05. 获取IP地址
+     * @api {get} api/system/get/ip          06. 获取IP地址
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -241,7 +241,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/cnip          06. 是否中国IP地址
+     * @api {get} api/system/get/cnip          07. 是否中国IP地址
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -258,7 +258,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/ipgcj02          07. 获取IP地址经纬度
+     * @api {get} api/system/get/ipgcj02          08. 获取IP地址经纬度
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -275,7 +275,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/ipinfo          08. 获取IP地址详细信息
+     * @api {get} api/system/get/ipinfo          09. 获取IP地址详细信息
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -292,7 +292,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {post} api/system/imgupload          09. 上传图片
+     * @api {post} api/system/imgupload          10. 上传图片
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -342,7 +342,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/imgview          10. 浏览图片空间
+     * @api {get} api/system/get/imgview          11. 浏览图片空间
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -438,7 +438,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {post} api/system/fileupload          11. 上传文件
+     * @api {post} api/system/fileupload          12. 上传文件
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
