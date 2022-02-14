@@ -818,7 +818,6 @@ App.main = function(callback, createUi)
 		{
 			// Adds bundle text to resources
 			mxResources.parse(xhr[0].getText());
-
 			// Configuration mode
 			if (isLocalStorage && localStorage != null && window.location.hash != null &&
 				window.location.hash.substring(0, 9) == '#_CONFIG_')
@@ -3260,14 +3259,7 @@ App.prototype.start = function()
 						else
 						{
 							var id = this.getDiagramId();
-
-							if (EditorUi.enableDrafts && urlParams['mode'] == null &&
-								this.getServiceName() == 'draw.io' && (id == null || id.length == 0) &&
-								!this.editor.isChromelessView())
-							{
-								this.checkDrafts();
-							}
-							else if (id != null && id.length > 0)
+				            if (id != null && id.length > 0)
 							{
 								this.loadFile(id, null, null, mxUtils.bind(this, function()
 								{
@@ -3290,7 +3282,7 @@ App.prototype.start = function()
 							}
 							else if (urlParams['splash'] != '0')
 							{
-								this.loadFile();
+                                this.createFile(this.defaultFilename, this.getFileData(), null, null, null, null, null, true);
 							}
 							else if (!EditorUi.isElectronApp)
 							{
@@ -3473,6 +3465,9 @@ App.prototype.start = function()
 	}
 };
 
+App.prototype.loadContent = function (){
+
+};
 /**
  * Checks for orphaned drafts.
  */
@@ -3568,6 +3563,49 @@ App.prototype.checkDrafts = function()
 					{
 						this.removeDatabaseItem(drafts[0].key);
 					}));
+				}
+				else if (drafts.length > 1)
+				{
+					var ts = new Date(drafts[0].modified);
+
+					var dlg = new DraftDialog(this, (drafts.length > 1) ? mxResources.get('selectDraft') :
+						mxResources.get('draftFound', [ts.toLocaleDateString() + ' ' + ts.toLocaleTimeString()]),
+						(drafts.length > 1) ? null : drafts[0].data, mxUtils.bind(this, function(index)
+					{
+						this.hideDialog();
+						index = (index != '') ? index : 0;
+
+						this.loadDraft(drafts[index].data, mxUtils.bind(this, function()
+						{
+							this.removeDatabaseItem(drafts[index].key);
+						}));
+					}), mxUtils.bind(this, function(index, success)
+					{
+						index = (index != '') ? index : 0;
+
+						// Discard draft
+						this.confirm(mxResources.get('areYouSure'), null, mxUtils.bind(this, function()
+						{
+							this.removeDatabaseItem(drafts[index].key);
+
+							if (success != null)
+							{
+								success();
+							}
+						}), mxResources.get('no'), mxResources.get('yes'));
+					}), null, null, null, (drafts.length > 1) ? drafts : null);
+					this.showDialog(dlg.container, 640, 480, true, false, mxUtils.bind(this, function(cancel)
+					{
+						if (urlParams['splash'] != '0')
+						{
+							this.loadFile();
+						}
+						else
+						{
+							this.createFile(this.defaultFilename, this.getFileData(), null, null, null, null, null, true);
+						}
+					}));
+					dlg.init();
 				}
 				else if (urlParams['splash'] != '0')
 				{

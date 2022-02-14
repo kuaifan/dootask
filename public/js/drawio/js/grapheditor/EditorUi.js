@@ -1761,7 +1761,7 @@ EditorUi.prototype.createShapePicker = function(x, y, source, callback, directio
 		}
 
 		graph.container.appendChild(div);
-        console.log(1111)
+
 		var addCell = mxUtils.bind(this, function(cell)
 		{
 			// Wrapper needed to catch events
@@ -4181,7 +4181,7 @@ EditorUi.prototype.refresh = function(sizeDidChange)
 
 	if (this.toolbar != null)
 	{
-		this.toolbarContainer.style.top = this.menubarHeight + 'px';
+		this.toolbarContainer.style.top = '0px';//this.menubarHeight + 'px';
 		this.toolbarContainer.style.height = this.toolbarHeight + 'px';
 		tmp += this.toolbarHeight;
 	}
@@ -4321,8 +4321,7 @@ EditorUi.prototype.createSidebarFooterContainer = function()
 EditorUi.prototype.createUi = function()
 {
 	// Creates menubar
-	this.menubar = (this.editor.chromeless) ? null : this.menus.createMenubar(this.createDiv('geMenubar'));
-
+	this.menubar = null;//(this.editor.chromeless) ? null : this.menus.createMenubar(this.createDiv('geMenubar'));
 	if (this.menubar != null)
 	{
 		this.menubarContainer.appendChild(this.menubar.container);
@@ -4403,6 +4402,162 @@ EditorUi.prototype.createUi = function()
 			this.refresh();
 		}));
 	}
+
+
+    var editorUi = this;
+    var graph = editorUi.editor.graph;
+    var getPos = function () {
+        var svg = null;
+        var childNodes = graph.container.childNodes;
+        for (var i = 0; i < childNodes.length; i++) {
+            if (childNodes[i].nodeName.toLocaleLowerCase() == 'svg') {
+                svg = childNodes[i];
+                break;
+            }
+        }
+        var data = {
+            p1: {left: 0, top: 0},
+            p2: {left: 0, top: 0},
+        };
+        if (svg != null) {
+            data = {
+                p1: {
+                    left: svg.clientWidth / 2,
+                    top: svg.clientHeight / 2,
+                },
+                p2: {
+                    left: graph.container.clientWidth / 2 + graph.container.scrollLeft,
+                    top: graph.container.clientHeight / 2 + graph.container.scrollTop,
+                }
+            };
+        }
+        return {
+            left: data.p2.left - data.p1.left,
+            top: data.p2.top - data.p1.top,
+        };
+    }
+
+    var setPos = function (diff) {
+        var svg = null;
+        var childNodes = graph.container.childNodes;
+        for (var i = 0; i < childNodes.length; i++) {
+            if (childNodes[i].nodeName.toLocaleLowerCase() == 'svg') {
+                svg = childNodes[i];
+                break;
+            }
+        }
+        if (svg == null) {
+            return;
+        }
+        graph.container.scrollLeft = svg.clientWidth / 2 + diff.left - graph.container.clientWidth / 2;
+        graph.container.scrollTop = svg.clientHeight / 2 + diff.top - graph.container.clientHeight / 2;
+    }
+
+    var newXml;
+    var newPos;
+    var randXml;
+    var backupParams;
+    var changePost = function (immediately) {
+        var randTmp = (randXml = Math.random());
+        setTimeout(() => {
+            if (randTmp != randXml) {
+                return;
+            }
+            if (!backupParams) {
+                return;
+            }
+            newPos = getPos();
+            newXml = mxUtils.getPrettyXml(editorUi.editor.getGraphXml());
+            if (backupParams.xml && backupParams.xml.replace(/^<mxGraphModel(.*?)>/, '') == newXml.replace(/^<mxGraphModel(.*?)>/, '')) {
+                if (backupParams.scale && backupParams.scale == graph.getView().scale) {
+                    if (typeof backupParams.diffpos === "object" && Math.abs(backupParams.diffpos.left - newPos.left) < 10 && Math.abs(backupParams.diffpos.top - newPos.top) < 10) {
+                        return;
+                    }
+                }
+            }
+            backupParams.xml = newXml;
+            window.parent.postMessage({
+                act: 'change',
+                params: {
+                    xml: newXml,
+                    scale: graph.getView().scale,
+                    diffpos: newPos,
+                }
+            }, '*');
+        }, immediately === true ? 0 : 200)
+    }
+
+    graph.getModel().addListener(mxEvent.CHANGE, mxUtils.bind(editorUi, function() { changePost(true) }));
+    graph.getView().addListener(mxEvent.SCALE, mxUtils.bind(editorUi, function() {changePost(true) }));
+    var container = document.getElementsByClassName('geDiagramContainer')[0];
+    container.addEventListener("scroll", changePost);
+
+    window.addEventListener("message", function(event){
+        var data = event.data;
+        switch (data.act) {
+            case 'setXml':
+                try {
+                    backupParams = data.params;
+                    editorUi.editor.setGraphXml(mxUtils.parseXml(data.params.xml).documentElement);
+                    typeof data.params.scale === "number" && graph.zoomTo(data.params.scale);
+                    typeof data.params.diffpos === "object" && setPos(data.params.diffpos);
+                } catch (e) {
+
+                }
+                break;
+
+            case 'exportPNG':
+                try {
+                    (function (name, scale, type) {
+                        name = name || '未命名';
+                        type = type || 'png';
+                        scale = scale || 1;
+                        var graph = editorUi.editor.graph;
+                        var bounds = graph.getGraphBounds();
+                        var width = Math.ceil(bounds.width / graph.view.scale * scale);
+                        var height = Math.ceil(bounds.height / graph.view.scale * scale);
+                        var source = '<?xml version="1.0" standalone="no"?>\r\n' + mxUtils.getXml(graph.getSvg(null, scale, 0))
+                        var image = new Image()
+                        image.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(source)
+                        var canvas = document.createElement('canvas')
+                        canvas.width = width
+                        canvas.height = height
+                        var context = canvas.getContext('2d')
+                        context.fillStyle = '#fff'
+                        context.fillRect(0, 0, 10000, 10000)
+                        image.onload = function () {
+                            context.drawImage(image, 0, 0)
+                            if (type == 'imageContent') {
+                                window.parent.postMessage({
+                                    act: 'imageContent',
+                                    params: {
+                                        name: name,
+                                        width: width,
+                                        height: height,
+                                        content: canvas.toDataURL(`image/${type}`)
+                                    }
+                                }, '*');
+                            } else {
+                                var a = document.createElement('a')
+                                a.download = `${name}.${type}`
+                                a.href = canvas.toDataURL(`image/${type}`)
+                                a.click()
+                            }
+                        }
+                    })(data.params.name, data.params.scale, data.params.type);
+                } catch (e) {
+
+                }
+                break;
+        }
+    });
+
+    window.parent.postMessage({
+        act: 'ready',
+        params: {}
+    }, '*');
+
+
 };
 
 /**

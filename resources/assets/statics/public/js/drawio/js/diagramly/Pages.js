@@ -43,7 +43,7 @@ DiagramPage.prototype.root = null;
 DiagramPage.prototype.viewState = null;
 
 /**
- * 
+ *
  */
 DiagramPage.prototype.getId = function()
 {
@@ -51,7 +51,7 @@ DiagramPage.prototype.getId = function()
 };
 
 /**
- * 
+ *
  */
 DiagramPage.prototype.getName = function()
 {
@@ -59,7 +59,7 @@ DiagramPage.prototype.getName = function()
 };
 
 /**
- * 
+ *
  */
 DiagramPage.prototype.setName = function(value)
 {
@@ -93,7 +93,7 @@ RenamePage.prototype.execute = function()
 	this.page.setName(this.previous);
 	this.name = this.previous;
 	this.previous = tmp;
-	
+
 	// Required to update page name in placeholders
 	this.ui.editor.graph.updatePlaceholders();
 	this.ui.editor.fireEvent(new mxEventObject('pageRenamed'));
@@ -118,7 +118,7 @@ MovePage.prototype.execute = function()
 	var tmp = this.oldIndex;
 	this.oldIndex = this.newIndex;
 	this.newIndex = tmp;
-	
+
 	// Required to update page numbers in placeholders
 	this.ui.editor.graph.updatePlaceholders();
 	this.ui.editor.fireEvent(new mxEventObject('pageMoved'));
@@ -139,12 +139,12 @@ function SelectPage(ui, page, viewState)
 	this.page = page;
 	this.previousPage = page;
 	this.neverShown = true;
-	
+
 	if (page != null)
 	{
 		this.neverShown = page.viewState == null;
 		this.ui.updatePageRoot(page);
-		
+
 		if (viewState != null)
 		{
 			page.viewState = viewState;
@@ -159,40 +159,40 @@ function SelectPage(ui, page, viewState)
 SelectPage.prototype.execute = function()
 {
 	var prevIndex = mxUtils.indexOf(this.ui.pages, this.previousPage);
-	
+
 	if (this.page != null && prevIndex >= 0)
 	{
 		var page = this.ui.currentPage;
 		var editor = this.ui.editor;
 		var graph = editor.graph;
-		
+
 		// Stores current diagram state in the page
 		var data = Graph.compressNode(editor.getGraphXml(true));
 		mxUtils.setTextContent(page.node, data);
 		page.viewState = graph.getViewState();
 		page.root = graph.model.root;
-		
+
 		if (page.model != null)
 		{
 			// Updates internal structures of offpage model
 			page.model.rootChanged(page.root);
 		}
-		
+
 		// Transitions for switching pages
 //		var curIndex = mxUtils.indexOf(this.ui.pages, page);
 //		mxUtils.setPrefixedStyle(graph.view.canvas.style, 'transition', null);
 //		mxUtils.setPrefixedStyle(graph.view.canvas.style, 'transform',
 //			(curIndex > prevIndex) ? 'translate(-50%,0)' : 'translate(50%,0)');
-		
+
 		// Removes the previous cells and clears selection
 		graph.view.clear(page.root, true);
 		graph.clearSelection();
-			
+
 		// Switches the current page
 		this.ui.currentPage = this.previousPage;
 		this.previousPage = page;
 		page = this.ui.currentPage;
-	
+
 		// Switches the root cell and sets the view state
 		graph.model.prefix = Editor.guid() + '-';
 		graph.model.rootChanged(page.root);
@@ -208,16 +208,16 @@ SelectPage.prototype.execute = function()
 		graph.blockMathRender = true;
 		graph.sizeDidChange();
 		graph.blockMathRender = false;
-		
+
 //		mxUtils.setPrefixedStyle(graph.view.canvas.style, 'transition', 'transform 0.2s');
 //		mxUtils.setPrefixedStyle(graph.view.canvas.style, 'transform', 'translate(0,0)');
-		
+
 		if (this.neverShown)
 		{
 			this.neverShown = false;
 			graph.selectUnlockedLayer();
 		}
-		
+
 		// Fires events
 		editor.graph.fireEvent(new mxEventObject(mxEvent.ROOT));
 		editor.fireEvent(new mxEventObject('pageSelected', 'change', this));
@@ -225,7 +225,7 @@ SelectPage.prototype.execute = function()
 };
 
 /**
- * 
+ *
  */
 function ChangePage(ui, page, select, index, noSelect)
 {
@@ -248,7 +248,7 @@ ChangePage.prototype.execute = function()
 	// Fires event to setting view state from realtime
 	this.ui.editor.fireEvent(new mxEventObject('beforePageChange', 'change', this));
 	this.previousIndex = this.index;
-	
+
 	if (this.index == null)
 	{
 		var tmp = mxUtils.indexOf(this.ui.pages, this.relatedPage);
@@ -260,7 +260,7 @@ ChangePage.prototype.execute = function()
 		this.ui.pages.splice(this.index, 0, this.relatedPage);
 		this.index = null;
 	}
-	
+
 	if (!this.noSelect)
 	{
 		SelectPage.prototype.execute.apply(this, arguments);
@@ -286,7 +286,7 @@ EditorUi.prototype.getSelectedPageIndex = function()
  EditorUi.prototype.getPageIndex = function(page)
  {
 	 var result = null;
-	 
+
 	 if (this.pages != null && page != null)
 	 {
 		 for (var i = 0; i < this.pages.length; i++)
@@ -294,15 +294,15 @@ EditorUi.prototype.getSelectedPageIndex = function()
 			 if (this.pages[i] == page)
 			 {
 				 result = i;
-				 
+
 				 break;
 			 }
 		 }
 	 }
-	 
+
 	 return result;
  };
- 
+
 /**
  * Returns true if the given string contains an mxfile.
  */
@@ -318,7 +318,7 @@ EditorUi.prototype.getPageById = function(id)
 			}
 		}
 	}
-	
+
 	return null;
 };
 
@@ -329,7 +329,7 @@ EditorUi.prototype.createImageForPageLink = function(src, sourcePage, sourceGrap
 {
 	var comma = src.indexOf(',');
 	var result = null;
-		
+
 	if (comma > 0)
 	{
 		var page = this.getPageById(src.substring(comma + 1));
@@ -407,7 +407,7 @@ EditorUi.prototype.initPages = function()
 		{
 			this.selectNextPage(false);
 		}));
-		
+
 		this.actions.addAction('nextPage', mxUtils.bind(this, function()
 		{
 			this.selectNextPage(true);
@@ -418,17 +418,17 @@ EditorUi.prototype.initPages = function()
 			this.keyHandler.bindAction(33, true, 'previousPage', true); // Ctrl+Shift+PageUp
 			this.keyHandler.bindAction(34, true, 'nextPage', true); // Ctrl+Shift+PageDown
 		}
-			
+
 		// Updates the tabs after loading the diagram
 		var graph = this.editor.graph;
-		var graphViewValidateBackground = graph.view.validateBackground; 
-		
+		var graphViewValidateBackground = graph.view.validateBackground;
+
 		graph.view.validateBackground = mxUtils.bind(this, function()
 		{
 			if (this.tabContainer != null)
 			{
 				var prevHeight = this.tabContainer.style.height;
-				
+
 				if (this.fileNode == null || this.pages == null ||
 					(this.pages.length == 1 && urlParams['pages'] == '0'))
 				{
@@ -438,36 +438,36 @@ EditorUi.prototype.initPages = function()
 				{
 					this.tabContainer.style.height = this.tabContainerHeight + 'px';
 				}
-				
+
 				if (prevHeight != this.tabContainer.style.height)
 				{
 					this.refresh(false);
 				}
 			}
-			
+
 			graphViewValidateBackground.apply(graph.view, arguments);
 		});
-	
+
 		var lastPage = null;
-		
+
 		var updateTabs = mxUtils.bind(this, function()
 		{
 			this.updateTabContainer();
-			
-			// Updates scrollbar positions and backgrounds after validation	
+
+			// Updates scrollbar positions and backgrounds after validation
 			var p = this.currentPage;
-			
+
 			if (p != null && p != lastPage)
 			{
 				if (p.viewState == null || p.viewState.scrollLeft == null)
 				{
 					this.resetScrollbars();
-	
+
 					if (graph.isLightboxView())
 					{
 						this.lightboxFit();
 					}
-					
+
 					if (this.chromelessResize != null)
 					{
 						graph.container.scrollLeft = 0;
@@ -480,16 +480,16 @@ EditorUi.prototype.initPages = function()
 					graph.container.scrollLeft = graph.view.translate.x * graph.view.scale + p.viewState.scrollLeft;
 					graph.container.scrollTop = graph.view.translate.y * graph.view.scale + p.viewState.scrollTop;
 				}
-				
+
 				lastPage = p;
 			}
-			
+
 			// Updates layers window
 			if (this.actions.layersWindow != null)
 			{
 				this.actions.layersWindow.refreshLayers();
 			}
-			
+
 			// Workaround for math if tab is switched before typesetting has stopped
 			if (typeof(MathJax) !== 'undefined' && typeof(MathJax.Hub) !== 'undefined')
 			{
@@ -513,13 +513,13 @@ EditorUi.prototype.initPages = function()
 				Editor.MathJaxClear();
 			}
 		});
-		
+
 		// Adds a graph model listener to update the view
 		this.editor.graph.model.addListener(mxEvent.CHANGE, mxUtils.bind(this, function(sender, evt)
 		{
 			var edit = evt.getProperty('edit');
 			var changes = edit.changes;
-			
+
 			for (var i = 0; i < changes.length; i++)
 			{
 				if (changes[i] instanceof SelectPage ||
@@ -528,11 +528,11 @@ EditorUi.prototype.initPages = function()
 					changes[i] instanceof mxRootChange)
 				{
 					updateTabs();
-					break;	
+					break;
 				}
 			}
 		}));
-		
+
 		// Updates zoom in toolbar
 		if (this.toolbar != null)
 		{
@@ -548,7 +548,7 @@ EditorUi.prototype.restoreViewState = function(page, viewState, selection)
 {
 	var newPage = (page != null) ? this.getPageById(page.getId()) : null;
 	var graph = this.editor.graph;
-	
+
 	if (newPage != null && this.currentPage != null && this.pages != null)
 	{
 		if (newPage != this.currentPage)
@@ -582,7 +582,7 @@ Graph.prototype.createViewState = function(node)
 	var bg = node.getAttribute('background');
 	var bgImg = this.parseBackgroundImage(node.getAttribute('backgroundImage'));
 	var extFonts = node.getAttribute('extFonts');
-	
+
 	if (extFonts)
 	{
 		try
@@ -641,18 +641,18 @@ Graph.prototype.saveViewState = function(vs, node, ignoreTransient, resolveRefer
 		node.setAttribute('arrows', (vs == null || vs.arrows) ? '1' : '0');
 		node.setAttribute('page', ((vs == null && this.defaultPageVisible ) ||
 			(vs != null && vs.pageVisible)) ? '1' : '0');
-		
+
 		// Ignores fold to avoid checksum errors for lightbox mode
 		node.setAttribute('fold', (vs == null || vs.foldingEnabled) ? '1' : '0');
 	}
 
 	node.setAttribute('pageScale', (vs != null && vs.pageScale != null) ?
 		vs.pageScale : mxGraph.prototype.pageScale);
-	
+
 	var pf = (vs != null) ? vs.pageFormat : (typeof mxSettings === 'undefined' ||
 		this.defaultPageFormat != null) ? mxGraph.prototype.pageFormat :
 			mxSettings.getPageFormat();
-	
+
 	if (pf != null)
 	{
 		node.setAttribute('pageWidth', pf.width);
@@ -676,7 +676,7 @@ Graph.prototype.saveViewState = function(vs, node, ignoreTransient, resolveRefer
 
 	node.setAttribute('math', (vs != null && vs.mathEnabled) ? '1' : '0');
 	node.setAttribute('shadow', (vs != null && vs.shadowVisible) ? '1' : '0');
-	
+
 	if (vs != null && vs.extFonts != null && vs.extFonts.length > 0)
 	{
 		node.setAttribute('extFonts', vs.extFonts.map(function(ef)
@@ -760,19 +760,19 @@ Graph.prototype.setViewState = function(state, removeOldExtFonts)
 			for (var i = 0; i < oldExtFonts.length; i++)
 			{
 				var fontElem = document.getElementById('extFont_' + oldExtFonts[i].name);
-				
+
 				if (fontElem != null)
 				{
 					fontElem.parentNode.removeChild(fontElem);
 				}
 			}
 		}
-		
+
 		for (var i = 0; i < this.extFonts.length; i++)
 		{
 			this.addExtFont(this.extFonts[i].name, this.extFonts[i].url, true);
 		}
-		
+
 		if (state.scale != null)
 		{
 			this.view.scale = state.scale;
@@ -781,21 +781,21 @@ Graph.prototype.setViewState = function(state, removeOldExtFonts)
 		{
 			this.view.scale = 1;
 		}
-		
+
 		// Checks if current root or default parent have been removed
 		if (this.view.currentRoot != null &&
 			!this.model.contains(this.view.currentRoot))
 		{
 			this.view.currentRoot = null;
 		}
-		
+
 		if (this.defaultParent != null &&
 			!this.model.contains(this.defaultParent))
 		{
 			this.setDefaultParent(null);
 			this.selectUnlockedLayer();
 		}
-		
+
 		if (state.translate != null)
 		{
 			this.view.translate = state.translate;
@@ -827,9 +827,9 @@ Graph.prototype.setViewState = function(state, removeOldExtFonts)
 		this.hiddenTags = [];
 		this.extFonts = [];
 	}
-	
+
 	// Implicit settings
-	this.pageBreaksVisible = this.pageVisible; 
+	this.pageBreaksVisible = this.pageVisible;
 	this.preferPageSize = this.pageVisible;
 	this.fireEvent(new mxEventObject('viewStateChanged', 'state', state));
 };
@@ -844,7 +844,7 @@ Graph.prototype.addExtFont = function(fontName, fontUrl, dontRemember)
 			// Adds inserted fonts to font family menu
 			Graph.recentCustomFonts[fontName.toLowerCase()] = {name: fontName, url: fontUrl};
 		}
-		
+
 		var fontId = 'extFont_' + fontName;
 
 		if (document.getElementById(fontId) == null)
@@ -856,29 +856,29 @@ Graph.prototype.addExtFont = function(fontName, fontUrl, dontRemember)
 			else
 			{
 				var head = document.getElementsByTagName('head')[0];
-				
+
 				// KNOWN: Should load fonts synchronously
 				var style = document.createElement('style');
-				
+
 				style.appendChild(document.createTextNode('@font-face {\n' +
-					'\tfont-family: "'+ fontName +'";\n' + 
+					'\tfont-family: "'+ fontName +'";\n' +
 					'\tsrc: url("'+ fontUrl +'");\n}'));
-				
+
 				style.setAttribute('id', fontId);
 				var head = document.getElementsByTagName('head')[0];
 		   		head.appendChild(style);
 			}
 		}
-		
+
 		if (!dontRemember)
 		{
-			if (this.extFonts == null) 
+			if (this.extFonts == null)
 			{
 				this.extFonts = [];
 			}
-			
+
 			var extFonts = this.extFonts, notFound = true;
-			
+
 			for (var i = 0; i < extFonts.length; i++)
 			{
 				if (extFonts[i].name == fontName)
@@ -887,7 +887,7 @@ Graph.prototype.addExtFont = function(fontName, fontUrl, dontRemember)
 					break;
 				}
 			}
-			
+
 			if (notFound)
 			{
 				this.extFonts.push({name: fontName, url: fontUrl});
@@ -905,7 +905,7 @@ EditorUi.prototype.updatePageRoot = function(page, checked)
 	{
 		var node = this.editor.extractGraphModel(page.node, null, checked);
 		var cause = Editor.extractParserError(node);
-		
+
 		if (cause)
 		{
 			throw new Error(cause);
@@ -913,7 +913,7 @@ EditorUi.prototype.updatePageRoot = function(page, checked)
 		else if (node != null)
 		{
 			page.graphModelNode = node;
-			
+
 			// Converts model XML into page object with root cell
 			page.viewState = this.editor.graph.createViewState(node);
 			var codec = new mxCodec(node.ownerDocument);
@@ -930,9 +930,9 @@ EditorUi.prototype.updatePageRoot = function(page, checked)
 		if (page.graphModelNode == null)
 		{
 			var node = this.editor.extractGraphModel(page.node);
-			
+
 			var cause = Editor.extractParserError(node);
-			
+
 			if (cause)
 			{
 				throw new Error(cause);
@@ -942,13 +942,13 @@ EditorUi.prototype.updatePageRoot = function(page, checked)
 				page.graphModelNode = node;
 			}
 		}
-		
+
 		if (page.graphModelNode != null)
 		{
-			page.viewState = this.editor.graph.createViewState(page.graphModelNode);	
+			page.viewState = this.editor.graph.createViewState(page.graphModelNode);
 		}
 	}
-	
+
 	return page;
 };
 
@@ -965,23 +965,23 @@ EditorUi.prototype.selectPage = function(page, quiet, viewState)
 			{
 				this.editor.graph.stopEditing(false);
 			}
-			
+
 			quiet = (quiet != null) ? quiet : false;
 			this.editor.graph.isMouseDown = false;
 			this.editor.graph.reset();
-			
+
 			var edit = this.editor.graph.model.createUndoableEdit();
-			
+
 			// Special flag to bypass autosave for this edit
 			edit.ignoreEdit = true;
-		
+
 			var change = new SelectPage(this, page, viewState);
 			change.execute();
 			edit.add(change);
 			edit.notify();
-			
+
 			this.editor.graph.tooltipHandler.hide();
-			
+
 			if (!quiet)
 			{
 				this.editor.graph.model.fireEvent(new mxEventObject(mxEvent.UNDO, 'edit', edit));
@@ -995,16 +995,16 @@ EditorUi.prototype.selectPage = function(page, quiet, viewState)
 };
 
 /**
- * 
+ *
  */
 EditorUi.prototype.selectNextPage = function(forward)
 {
 	var next = this.currentPage;
-	
+
 	if (next != null && this.pages != null)
 	{
 		var tmp = mxUtils.indexOf(this.pages, next);
-		
+
 		if (forward)
 		{
 			this.selectPage(this.pages[mxUtils.mod(tmp + 1, this.pages.length)]);
@@ -1027,15 +1027,15 @@ EditorUi.prototype.insertPage = function(page, index)
 		{
 			this.editor.graph.stopEditing(false);
 		}
-		
+
 		page = (page != null) ? page : this.createPage(null, this.createPageId());
 		index = (index != null) ? index : this.pages.length;
-		
+
 		// Uses model to fire event and trigger autosave
 		var change = new ChangePage(this, page, page, index);
 		this.editor.graph.model.execute(change);
 	}
-	
+
 	return page;
 };
 
@@ -1045,12 +1045,12 @@ EditorUi.prototype.insertPage = function(page, index)
 EditorUi.prototype.createPageId = function()
 {
 	var id = null;
-	
+
 	do
 	{
 		id = Editor.guid();
 	} while (this.getPageById(id) != null)
-	
+
 	return id;
 };
 
@@ -1061,7 +1061,7 @@ EditorUi.prototype.createPage = function(name, id)
 {
 	var page = new DiagramPage(this.fileNode.ownerDocument.createElement('diagram'), id);
 	page.setName((name != null) ? name : this.createPageName());
-	
+
 	return page;
 };
 
@@ -1072,11 +1072,11 @@ EditorUi.prototype.createPageName = function()
 {
 	// Creates a lookup with names
 	var existing = {};
-	
+
 	for (var i = 0; i < this.pages.length; i++)
 	{
 		var tmp = this.pages[i].getName();
-		
+
 		if (tmp != null && tmp.length > 0)
 		{
 			existing[tmp] = tmp;
@@ -1086,13 +1086,13 @@ EditorUi.prototype.createPageName = function()
 	// Avoids existing names
 	var nr = this.pages.length;
 	var name = null;
-	
+
 	do
 	{
 		name = mxResources.get('pageWithNumber', [++nr]);
 	}
 	while (existing[name] != null);
-	
+
 	return name;
 };
 
@@ -1105,19 +1105,19 @@ EditorUi.prototype.removePage = function(page)
 	{
 		var graph = this.editor.graph;
 		var tmp = mxUtils.indexOf(this.pages, page);
-		
+
 		if (graph.isEnabled() && tmp >= 0)
 		{
 			if (this.editor.graph.isEditing())
 			{
 				this.editor.graph.stopEditing(false);
 			}
-			
+
 			graph.model.beginUpdate();
 			try
 			{
 				var next = this.currentPage;
-				
+
 				if (next == page && this.pages.length > 1)
 				{
 					if (tmp == this.pages.length - 1)
@@ -1128,7 +1128,7 @@ EditorUi.prototype.removePage = function(page)
 					{
 						tmp++;
 					}
-					
+
 					next = this.pages[tmp];
 				}
 				else if (this.pages.length <= 1)
@@ -1139,7 +1139,7 @@ EditorUi.prototype.removePage = function(page)
 					graph.model.execute(new RenamePage(this, next,
 						mxResources.get('pageWithNumber', [1])));
 				}
-				
+
 				// Uses model to fire event to trigger autosave
 				graph.model.execute(new ChangePage(this, page, next));
 			}
@@ -1153,7 +1153,7 @@ EditorUi.prototype.removePage = function(page)
 	{
 		this.handleError(e);
 	}
-	
+
 	return page;
 };
 
@@ -1163,18 +1163,18 @@ EditorUi.prototype.removePage = function(page)
 EditorUi.prototype.duplicatePage = function(page, name)
 {
 	var newPage = null;
-	
+
 	try
 	{
 		var graph = this.editor.graph;
-		
+
 		if (graph.isEnabled())
 		{
 			if (graph.isEditing())
 			{
 				graph.stopEditing();
 			}
-			
+
 			// Clones the current page and takes a snapshot of the graph model and view state
 			var node = page.node.cloneNode(false);
 			node.removeAttribute('id');
@@ -1185,7 +1185,7 @@ EditorUi.prototype.duplicatePage = function(page, name)
 			var newPage = new DiagramPage(node);
 			newPage.root = graph.cloneCell(graph.model.root, null, cloneMap);
 			newPage.viewState = graph.getViewState();
-			
+
 			// Resets zoom and scrollbar positions
 			newPage.viewState.scale = 1;
 			newPage.viewState.scrollLeft = null;
@@ -1193,7 +1193,7 @@ EditorUi.prototype.duplicatePage = function(page, name)
 			newPage.viewState.currentRoot = null;
 			newPage.viewState.defaultParent = null;
 			newPage.setName(name);
-			
+
 			newPage = this.insertPage(newPage, mxUtils.indexOf(this.pages, page) + 1);
 
 			// Updates custom links after inserting into the model for cells to have new IDs
@@ -1204,7 +1204,7 @@ EditorUi.prototype.duplicatePage = function(page, name)
 	{
 		this.handleError(e);
 	}
-	
+
 	return newPage;
 };
 
@@ -1227,7 +1227,7 @@ EditorUi.prototype.renamePage = function(page)
 		this.showDialog(dlg.container, 300, 80, true, true);
 		dlg.init();
 	}
-	
+
 	return page;
 }
 
@@ -1250,7 +1250,7 @@ EditorUi.prototype.createTabContainer = function()
 	div.style.whiteSpace = 'nowrap';
 	div.style.overflow = 'hidden';
 	div.style.height = '0px';
-	
+
 	return div;
 };
 
@@ -1270,10 +1270,10 @@ EditorUi.prototype.updateTabContainer = function()
 		wrapper.style.whiteSpace = 'nowrap';
 		wrapper.style.overflow = 'hidden';
 		wrapper.style.fontSize = '13px';
-		
+
 		// Allows for negative left margin of first tab
 		wrapper.style.marginLeft = '30px';
-		
+
 		// Automatic tab width to match available width
 		// TODO: Fix tabWidth in chromeless mode
 		var btnWidth = (this.editor.isChromelessView()) ? 29 : 59;
@@ -1294,9 +1294,9 @@ EditorUi.prototype.updateTabContainer = function()
 				{
 					tab.className = 'geInactivePage';
 				}
-				
+
 				tab.setAttribute('draggable', 'true');
-				
+
 				mxEvent.addListener(tab, 'dragstart', mxUtils.bind(this, function(evt)
 				{
 					if (graph.isEnabled())
@@ -1307,7 +1307,7 @@ EditorUi.prototype.updateTabContainer = function()
 							// LATER: Check what triggers a parse as XML on this in FF after drop
 							evt.dataTransfer.setData('Text', '<diagram/>');
 						}
-						
+
 						startIndex = index;
 					}
 					else
@@ -1316,49 +1316,49 @@ EditorUi.prototype.updateTabContainer = function()
 						mxEvent.consume(evt);
 					}
 				}));
-				
+
 				mxEvent.addListener(tab, 'dragend', mxUtils.bind(this, function(evt)
 				{
 					startIndex = null;
 					evt.stopPropagation();
 					evt.preventDefault();
 				}));
-				
+
 				mxEvent.addListener(tab, 'dragover', mxUtils.bind(this, function(evt)
 				{
 					if (startIndex != null)
 					{
 						evt.dataTransfer.dropEffect = 'move';
 					}
-					
+
 					evt.stopPropagation();
 					evt.preventDefault();
 				}));
-				
+
 				mxEvent.addListener(tab, 'drop', mxUtils.bind(this, function(evt)
 				{
 					if (startIndex != null && index != startIndex)
 					{
-						// LATER: Shift+drag for merge, ctrl+drag for clone 
+						// LATER: Shift+drag for merge, ctrl+drag for clone
 						this.movePage(startIndex, index);
 					}
 
 					evt.stopPropagation();
 					evt.preventDefault();
 				}));
-				
+
 				wrapper.appendChild(tab);
 			}))(i, this.createTabForPage(this.pages[i], tabWidth, this.pages[i] != this.currentPage, i + 1));
 		}
-		
+
 		this.tabContainer.innerHTML = '';
 		this.tabContainer.appendChild(wrapper);
-		
+
 		// Adds floating menu with all pages and insert option
 		var menutab = this.createPageMenuTab();
 		this.tabContainer.appendChild(menutab);
 		var insertTab = null;
-		
+
 		// Not chromeless and not read-only file
 		if (this.isPageInsertTabVisible())
 		{
@@ -1374,27 +1374,27 @@ EditorUi.prototype.updateTabContainer = function()
 				insertTab.style.right = '0px';
 				wrapper.style.marginRight = '30px';
 			}
-			
+
 			var temp = this.createControlTab(4, '&nbsp;&#10094;&nbsp;');
 			temp.style.position = 'absolute';
 			temp.style.right = (this.editor.chromeless) ? '29px' : '55px';
 			temp.style.fontSize = '13pt';
-			
+
 			this.tabContainer.appendChild(temp);
-			
+
 			var temp2 = this.createControlTab(4, '&nbsp;&#10095;');
 			temp2.style.position = 'absolute';
 			temp2.style.right = (this.editor.chromeless) ? '0px' : '29px';
 			temp2.style.fontSize = '13pt';
-			
+
 			this.tabContainer.appendChild(temp2);
-			
+
 			// TODO: Scroll to current page
 			var dx = Math.max(0, this.tabContainer.clientWidth - ((this.editor.chromeless) ? 86 : 116));
 			wrapper.style.width = dx + 'px';
-			
+
 			var fade = 50;
-			
+
 			mxEvent.addListener(temp, 'click', mxUtils.bind(this, function(evt)
 			{
 				wrapper.scrollLeft -= Math.max(20, dx - 20);
@@ -1402,7 +1402,7 @@ EditorUi.prototype.updateTabContainer = function()
 				mxUtils.setOpacity(temp2, (wrapper.scrollLeft < wrapper.scrollWidth - wrapper.clientWidth) ? 100 : fade);
 				mxEvent.consume(evt);
 			}));
-		
+
 			mxUtils.setOpacity(temp, (wrapper.scrollLeft > 0) ? 100 : fade);
 			mxUtils.setOpacity(temp2, (wrapper.scrollLeft < wrapper.scrollWidth - wrapper.clientWidth) ? 100 : fade);
 
@@ -1458,14 +1458,14 @@ EditorUi.prototype.createTab = function(hoverEnabled)
 				mxEvent.consume(evt);
 			}
 		}));
-		
+
 		mxEvent.addListener(tab, 'mouseleave', mxUtils.bind(this, function(evt)
 		{
 			tab.style.backgroundColor = this.tabContainer.style.backgroundColor;
 			mxEvent.consume(evt);
 		}));
 	}
-	
+
 	return tab;
 };
 
@@ -1485,7 +1485,7 @@ EditorUi.prototype.createControlTab = function(paddingTop, html, hoverEnabled)
 	{
 		mxUtils.setOpacity(tab.firstChild, 40);
 	}
-	
+
 	return tab;
 };
 
@@ -1500,13 +1500,13 @@ EditorUi.prototype.createPageMenuTab = function(hoverEnabled, invert)
 	tab.style.marginLeft = '0px';
 	tab.style.top = '0px';
 	tab.style.left = '1px';
-	
+
 	var div = tab.getElementsByTagName('div')[0];
 	div.style.display = 'inline-block';
 	div.style.marginTop = '5px';
 	div.style.width = '21px';
 	div.style.height = '21px';
-	
+
 	mxEvent.addListener(tab, 'click', mxUtils.bind(this, function(evt)
 	{
 		this.editor.graph.popupMenuHandler.hideMenu();
@@ -1528,7 +1528,7 @@ EditorUi.prototype.createPageMenuTab = function(hoverEnabled, invert)
 						item.setAttribute('title', this.pages[index].getName() +
 							((id != null) ? ' (' + id + ')' : '') +
 							' [' + (index + 1)+ ']');
-						
+
 						// Adds checkmark to current page
 						if (this.pages[index] == this.currentPage)
 						{
@@ -1550,7 +1550,7 @@ EditorUi.prototype.createPageMenuTab = function(hoverEnabled, invert)
 			{
 				addPages();
 			}
-			
+
 			if (this.editor.graph.isEnabled())
 			{
 				if (!invert)
@@ -1560,24 +1560,24 @@ EditorUi.prototype.createPageMenuTab = function(hoverEnabled, invert)
 				}
 
 				var page = this.currentPage;
-				
+
 				if (page != null)
 				{
 					menu.addSeparator(parent);
 					var pageName = page.getName();
-	
+
 					menu.addItem(mxResources.get('removeIt', [pageName]), null, mxUtils.bind(this, function()
 					{
 						this.removePage(page);
 					}), parent);
-					
+
 					menu.addItem(mxResources.get('renameIt', [pageName]), null, mxUtils.bind(this, function()
 					{
 						this.renamePage(page, page.getName());
 					}), parent);
 
 					menu.addSeparator(parent);
-					
+
 					menu.addItem(mxResources.get('duplicateIt', [pageName]), null, mxUtils.bind(this, function()
 					{
 						this.duplicatePage(page, mxResources.get('copyOf', [page.getName()]));
@@ -1593,29 +1593,29 @@ EditorUi.prototype.createPageMenuTab = function(hoverEnabled, invert)
 				addPages();
 			}
 		}));
-		
+
 		menu.div.className += ' geMenubarMenu';
 		menu.smartSeparators = true;
 		menu.showDisabled = true;
 		menu.autoExpand = true;
-		
+
 		// Disables autoexpand and destroys menu when hidden
 		menu.hideMenu = mxUtils.bind(this, function()
 		{
 			mxPopupMenu.prototype.hideMenu.apply(menu, arguments);
 			menu.destroy();
 		});
-	
+
 		var x = mxEvent.getClientX(evt);
 		var y = mxEvent.getClientY(evt);
 		menu.popup(x, y, null, evt);
-		
+
 		// Allows hiding by clicking on document
 		this.setCurrentMenu(menu);
 
 		mxEvent.consume(evt);
 	}));
-	
+
 	return tab;
 };
 
@@ -1627,18 +1627,18 @@ EditorUi.prototype.createPageInsertTab = function()
 	var tab = this.createControlTab(4, '<div class="geSprite geSprite-plus"></div>');
 	tab.setAttribute('title', mxResources.get('insertPage'));
 	var graph = this.editor.graph;
-	
+
 	mxEvent.addListener(tab, 'click', mxUtils.bind(this, function(evt)
 	{
 		this.insertPage();
 		mxEvent.consume(evt);
 	}));
-	
+
 	var div = tab.getElementsByTagName('div')[0];
 	div.style.display = 'inline-block';
 	div.style.width = '21px';
 	div.style.height = '21px';
-	
+
 	return tab;
 };
 
@@ -1655,18 +1655,18 @@ EditorUi.prototype.createTabForPage = function(page, tabWidth, hoverEnabled, pag
 	tab.style.maxWidth = tabWidth + 'px';
 	tab.style.width = tabWidth + 'px';
 	this.addTabListeners(page, tab);
-	
+
 	if (tabWidth > 42)
 	{
 		tab.style.textOverflow = 'ellipsis';
 	}
-	
+
 	return tab;
 };
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
@@ -1681,16 +1681,16 @@ EditorUi.prototype.addTabListeners = function(page, tab)
 		this.renamePage(page)
 		mxEvent.consume(evt);
 	}));
-	
+
 	var menuWasVisible = false;
 	var pageWasActive = false;
-	
+
 	mxEvent.addGestureListeners(tab, mxUtils.bind(this, function(evt)
 	{
 		// Do not consume event here to allow for drag and drop of tabs
 		menuWasVisible = this.currentMenu != null;
 		pageWasActive = page == this.currentPage;
-		
+
 		if (!graph.isMouseDown && !pageWasActive)
 		{
 			this.selectPage(page);
@@ -1707,12 +1707,12 @@ EditorUi.prototype.addTabListeners = function(page, tab)
 			if (!mxEvent.isTouchEvent(evt) || !menuWasVisible)
 			{
 				var menu = new mxPopupMenu(this.createPageMenu(page));
-				
+
 				menu.div.className += ' geMenubarMenu';
 				menu.smartSeparators = true;
 				menu.showDisabled = true;
 				menu.autoExpand = true;
-				
+
 				// Disables autoexpand and destroys menu when hidden
 				menu.hideMenu = mxUtils.bind(this, function()
 				{
@@ -1720,13 +1720,13 @@ EditorUi.prototype.addTabListeners = function(page, tab)
 					this.resetCurrentMenu();
 					menu.destroy();
 				});
-		
+
 				var x = mxEvent.getClientX(evt);
 				var y = mxEvent.getClientY(evt);
 				menu.popup(x, y, null, evt);
 				this.setCurrentMenu(menu, tab);
 			}
-			
+
 			mxEvent.consume(evt);
 		}
 	}));
@@ -1741,18 +1741,18 @@ EditorUi.prototype.getLinkForPage = function(page, params, lightbox)
 	if (!mxClient.IS_CHROMEAPP && !EditorUi.isElectronApp)
 	{
 		var file = this.getCurrentFile();
-		
+
 		if (file != null && file.constructor != LocalFile && this.getServiceName() == 'draw.io')
 		{
 			var search = this.getSearch(['create', 'title', 'mode', 'url', 'drive', 'splash',
 				'state', 'clibs', 'ui', 'viewbox', 'hide-pages']);
 			search += ((search.length == 0) ? '?' : '&') + 'page-id=' + page.getId();
-			
+
 			if (params != null)
 			{
 				search += '&' + params.join('&');
 			}
-			
+
 			return ((lightbox && urlParams['dev'] != '1') ? EditorUi.lightboxHost :
 				(((mxClient.IS_CHROMEAPP || EditorUi.isElectronApp ||
 				!(/.*\.draw\.io$/.test(window.location.hostname))) ?
@@ -1760,7 +1760,7 @@ EditorUi.prototype.getLinkForPage = function(page, params, lightbox)
 				'/' + search + '#' + file.getHash();
 		}
 	}
-	
+
 	return null;
 };
 
@@ -1778,68 +1778,68 @@ EditorUi.prototype.createPageMenu = function(page, label)
 		{
 			this.insertPage(null, mxUtils.indexOf(this.pages, page) + 1);
 		}), parent);
-	
+
 		menu.addItem(mxResources.get('delete'), null, mxUtils.bind(this, function()
 		{
 			this.removePage(page);
 		}), parent);
-		
+
 		menu.addItem(mxResources.get('rename'), null, mxUtils.bind(this, function()
 		{
 			this.renamePage(page, label);
 		}), parent);
-		
+
 		var url = this.getLinkForPage(page);
 
 		if (url != null)
 		{
 			menu.addSeparator(parent);
-			
+
 			menu.addItem(mxResources.get('link'), null, mxUtils.bind(this, function()
 			{
 				this.showPublishLinkDialog(mxResources.get('url'), true, null, null,
 					mxUtils.bind(this, function(linkTarget, linkColor, allPages, lightbox, editLink, layers)
 				{
 					var params = this.createUrlParameters(linkTarget, linkColor, allPages, lightbox, editLink, layers);
-					
+
 					if (!allPages)
 					{
 						params.push('hide-pages=1');
 					}
-					
+
 					if (!graph.isSelectionEmpty())
 					{
 						var bounds = graph.getBoundingBox(graph.getSelectionCells());
-								
+
 						var t = graph.view.translate;
 						var s = graph.view.scale;
 						bounds.width /= s;
 						bounds.height /= s;
 						bounds.x = bounds.x / s - t.x;
 						bounds.y = bounds.y / s - t.y;
-					
+
 						params.push('viewbox=' + encodeURIComponent(JSON.stringify({x: Math.round(bounds.x), y: Math.round(bounds.y),
 							width: Math.round(bounds.width), height: Math.round(bounds.height), border: 100})));
 					}
-					
+
 					var dlg = new EmbedDialog(this, this.getLinkForPage(page, params, lightbox));
 					this.showDialog(dlg.container, 450, 240, true, true);
 					dlg.init();
 				}));
 			}));
 		}
-		
+
 		menu.addSeparator(parent);
-		
+
 		menu.addItem(mxResources.get('duplicate'), null, mxUtils.bind(this, function()
 		{
 			this.duplicatePage(page, mxResources.get('copyOf', [page.getName()]));
 		}), parent);
-		
+
 		if (!mxClient.IS_CHROMEAPP && !EditorUi.isElectronApp && this.getServiceName() == 'draw.io')
-		{		
+		{
 			menu.addSeparator(parent);
-			
+
 			menu.addItem(mxResources.get('openInNewWindow'), null, mxUtils.bind(this, function()
 			{
 				this.editor.editAsNew(this.getFileData(true, null, null, null, true, true));
@@ -1852,7 +1852,7 @@ EditorUi.prototype.createPageMenu = function(page, label)
 (function()
 {
 	var editorUiRefresh = EditorUi.prototype.refresh;
-	
+
 	EditorUi.prototype.refresh = function(sizeDidChange)
 	{
 		editorUiRefresh.apply(this, arguments);
@@ -1871,23 +1871,23 @@ EditorUi.prototype.createPageMenu = function(page, label)
 (function()
 {
 	var codec = new mxObjectCodec(new MovePage(), ['ui']);
-	
+
 	codec.beforeDecode = function(dec, node, obj)
 	{
 		obj.ui = dec.ui;
-		  
+
 		return node;
 	};
-	
+
 	codec.afterDecode = function(dec, node, obj)
 	{
 		var tmp = obj.oldIndex;
 		obj.oldIndex = obj.newIndex;
 		obj.newIndex = tmp;
-		
+
 	    return obj;
 	};
-	
+
 	mxCodecRegistry.register(codec);
 })();
 
@@ -1895,23 +1895,23 @@ EditorUi.prototype.createPageMenu = function(page, label)
 (function()
 {
 	var codec = new mxObjectCodec(new RenamePage(), ['ui', 'page']);
-	
+
 	codec.beforeDecode = function(dec, node, obj)
 	{
 		obj.ui = dec.ui;
-	  
+
 		return node;
 	};
-	
+
 	codec.afterDecode = function(dec, node, obj)
 	{
 	    var tmp = obj.previous;
 	    obj.previous = obj.name;
 	    obj.name = tmp;
-	    
+
 	    return obj;
 	};
-	
+
 	mxCodecRegistry.register(codec);
 })();
 
@@ -1920,14 +1920,14 @@ EditorUi.prototype.createPageMenu = function(page, label)
 {
 	var codec = new mxObjectCodec(new ChangePage(), ['ui', 'relatedPage',
 		'index', 'neverShown', 'page', 'previousPage']);
-	
+
 	var viewStateIgnored = ['defaultParent', 'currentRoot', 'scrollLeft',
 		'scrollTop', 'scale', 'translate', 'lastPasteXml', 'pasteCounter'];
-	
+
 	codec.afterEncode = function(enc, obj, node)
 	{
 		node.setAttribute('relatedPage', obj.relatedPage.getId())
-	    
+
 		if (obj.index == null)
 		{
 			node.setAttribute('name', obj.relatedPage.getName());
@@ -1940,13 +1940,13 @@ EditorUi.prototype.createPageMenu = function(page, label)
 	        		return (mxUtils.indexOf(viewStateIgnored, key) < 0) ? value : undefined;
 	        	}));
 			}
-	        
+
 			if (obj.relatedPage.root != null)
 			{
 				enc.encodeCell(obj.relatedPage.root, node);
 			}
 	    }
-	    
+
 	    return node;
 	};
 
@@ -1954,7 +1954,7 @@ EditorUi.prototype.createPageMenu = function(page, label)
 	{
 		obj.ui = dec.ui;
 		obj.relatedPage = obj.ui.getPageById(node.getAttribute('relatedPage'));
-	    
+
 		if (obj.relatedPage == null)
 		{
 			var temp = node.ownerDocument.createElement('diagram');
@@ -2016,6 +2016,6 @@ EditorUi.prototype.createPageMenu = function(page, label)
 
 		return obj;
 	};
-	
+
 	mxCodecRegistry.register(codec);
 })();
