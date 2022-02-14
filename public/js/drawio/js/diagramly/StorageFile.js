@@ -13,7 +13,7 @@
 StorageFile = function(ui, data, title)
 {
 	DrawioFile.call(this, ui, data);
-	
+
 	this.title = title;
 };
 
@@ -37,7 +37,7 @@ StorageFile.prototype.type = 'F';
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
@@ -56,7 +56,7 @@ StorageFile.prototype.isAutosaveOptional = function()
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
@@ -67,7 +67,7 @@ StorageFile.prototype.getHash = function()
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
@@ -78,7 +78,7 @@ StorageFile.prototype.getTitle = function()
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
@@ -89,7 +89,7 @@ StorageFile.prototype.isRenamable = function()
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
@@ -100,7 +100,7 @@ StorageFile.prototype.save = function(revision, success, error)
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
@@ -112,7 +112,7 @@ StorageFile.prototype.saveAs = function(title, success, error)
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
@@ -123,7 +123,7 @@ StorageFile.insertFile = function(ui, title, data, success, error)
 		var fn = function()
 		{
 			var file = new StorageFile(ui, data, title);
-			
+
 			// Inserts data into local storage
 			file.saveFile(title, false, function()
 			{
@@ -140,7 +140,7 @@ StorageFile.insertFile = function(ui, title, data, success, error)
 			fn();
 		}
 	});
-	
+
 	StorageFile.getFileContent(ui, title, function(data)
 	{
 		createStorageFile(data != null);
@@ -152,7 +152,7 @@ StorageFile.insertFile = function(ui, title, data, success, error)
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
@@ -161,7 +161,7 @@ StorageFile.getFileContent = function(ui, title, success, error)
 	ui.getDatabaseItem(title, function(obj)
 	{
 		success(obj != null? obj.data : null);
-	}, 
+	},
 	mxUtils.bind(this, function()
 	{
 		if (ui.database == null) //fallback to localstorage
@@ -177,7 +177,7 @@ StorageFile.getFileContent = function(ui, title, success, error)
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
@@ -186,7 +186,7 @@ StorageFile.getFileInfo = function(ui, title, success, error)
 	ui.getDatabaseItem(title, function(obj)
 	{
 		success(obj);
-	}, 
+	},
 	mxUtils.bind(this, function()
 	{
 		if (ui.database == null) //fallback to localstorage
@@ -205,7 +205,7 @@ StorageFile.getFileInfo = function(ui, title, success, error)
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
@@ -226,23 +226,23 @@ StorageFile.prototype.saveFile = function(title, revision, success, error)
 			{
 				this.title = title;
 			}
-			
+
 			try
 			{
 				var saveDone = mxUtils.bind(this, function()
 				{
 					this.setModified(this.getShadowModified());
 					this.contentChanged();
-					
+
 					if (success != null)
 					{
 						success();
 					}
 		        });
-				
+
 				this.setShadowModified(false);
 				var data = this.getData();
-				
+
 				this.ui.setDatabaseItem(null, [{
 						title: this.title,
 						size: data.length,
@@ -271,7 +271,7 @@ StorageFile.prototype.saveFile = function(title, revision, success, error)
 				}
 			}
 		});
-		
+
 		// Checks for trailing dots
 		if (this.isRenamable() && title.charAt(0) == '.' && error != null)
 		{
@@ -296,7 +296,7 @@ StorageFile.prototype.saveFile = function(title, revision, success, error)
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
@@ -311,19 +311,19 @@ StorageFile.prototype.rename = function(title, success, error)
 			var fn = mxUtils.bind(this, function()
 			{
 				this.title = title;
-				
+
 				// Updates the data if the extension has changed
 				if (!this.hasSameExtension(oldTitle, title))
 				{
 					this.setData(this.ui.getFileData());
 				}
-				
+
 				this.saveFile(title, false, mxUtils.bind(this, function()
 				{
 					this.ui.removeLocalData(oldTitle, success);
 				}), error);
 			});
-			
+
 			if (data != null)
 			{
 				this.ui.confirm(mxResources.get('replaceIt', [title]), fn, error);
@@ -369,7 +369,7 @@ StorageFile.prototype.getLatestVersion = function(success, error)
 StorageFile.prototype.destroy = function()
 {
 	DrawioFile.prototype.destroy.apply(this, arguments);
-	
+
 	if (this.storageListener != null)
 	{
 		mxEvent.removeListener(window, 'storage', this.storageListener);
@@ -379,19 +379,19 @@ StorageFile.prototype.destroy = function()
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
 StorageFile.listLocalStorageFiles = function(type)
 {
 	var filesInfo = [];
-	
+
 	for (var i = 0; i < localStorage.length; i++)
 	{
 		var key = localStorage.key(i);
 		var value = localStorage.getItem(key);
-		
+
 		if (key.length > 0 && key.charAt(0) != '.' && value.length > 0)
 		{
 			var isFile = (type == null || type == 'F') && (value.substring(0, 8) === '<mxfile ' ||
@@ -406,27 +406,27 @@ StorageFile.listLocalStorageFiles = function(type)
 					size: value.length,
 					lastModified: Date.now()
 				});
-			}	
+			}
 		}
 	}
-	
+
 	return filesInfo;
 };
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
-StorageFile.migrate = function(db) 
+StorageFile.migrate = function(db)
 {
 	var lsFilesInfo = StorageFile.listLocalStorageFiles();
 	lsFilesInfo.push({title: '.scratchpad', type: 'L'}); //Adding scratchpad also since it is a library (storage file)
 	var tx = db.transaction(['files', 'filesInfo'], 'readwrite');
 	var files = tx.objectStore('files');
 	var filesInfo = tx.objectStore('filesInfo');
-	
+
 	for (var i = 0; i < lsFilesInfo.length; i++)
 	{
 		var lsFileInfo = lsFilesInfo[i];
@@ -441,7 +441,7 @@ StorageFile.migrate = function(db)
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
@@ -450,7 +450,7 @@ StorageFile.listFiles = function(ui, type, success, error)
 	ui.getDatabaseItems(function(filesInfo)
 	{
 		var files = [];
-		
+
 		if (filesInfo != null)
 		{
 			for (var i = 0; i < filesInfo.length; i++)
@@ -461,7 +461,7 @@ StorageFile.listFiles = function(ui, type, success, error)
 				}
 			}
 		}
-		
+
 		success(files);
 	}, function()
 	{
@@ -478,7 +478,7 @@ StorageFile.listFiles = function(ui, type, success, error)
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */

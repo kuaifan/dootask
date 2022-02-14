@@ -3769,6 +3769,7 @@ App.prototype.loadFileSystemEntry = function(fileHandle, success, error)
 
 			reader.onload = mxUtils.bind(this, function(e)
 			{
+
 				try
 				{
 					if (success != null)
@@ -3912,7 +3913,6 @@ App.prototype.pickFile = function(mode)
 		else
 		{
 			var peer = this.getPeerForMode(mode);
-
 			if (peer != null)
 			{
 				peer.pickFile();
@@ -4548,7 +4548,7 @@ App.prototype.saveFile = function(forceDialog, success)
 				this.hideDialog();
 			}), mxResources.get('saveAs'), mxResources.get('download'), null, null, allowTab,
 				null, true, rowLimit, null, null, null, this.editor.fileExtensions, false);
-			this.showDialog(dlg.container, 420, (serviceCount > rowLimit) ? 390 : 280, true, true);
+			// this.showDialog(dlg.container, 420, (serviceCount > rowLimit) ? 390 : 280, true, true);
 			dlg.init();
 		}
 	}

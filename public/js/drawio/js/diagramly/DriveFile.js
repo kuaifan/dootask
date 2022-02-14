@@ -5,7 +5,7 @@
 DriveFile = function(ui, data, desc)
 {
 	DrawioFile.call(this, ui, data);
-	
+
 	this.desc = desc;
 };
 
@@ -57,7 +57,7 @@ DriveFile.prototype.getCurrentUser = function()
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
@@ -73,7 +73,7 @@ DriveFile.prototype.getPublicUrl = function(fn)
 {
 	this.ui.drive.executeRequest({
 		url: '/files/' + this.desc.id + '/permissions?supportsAllDrives=true'
-	}, 
+	},
 	mxUtils.bind(this, function(resp)
 	{
 		if (resp != null && resp.items != null)
@@ -84,12 +84,12 @@ DriveFile.prototype.getPublicUrl = function(fn)
 					resp.items[i].id === 'anyone')
 				{
 					fn(this.desc.webContentLink);
-					
+
 					return;
 				}
 			}
 		}
-		
+
 		fn(null);
 	}), mxUtils.bind(this, function()
 	{
@@ -108,7 +108,7 @@ DriveFile.prototype.isAutosaveOptional = function()
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
@@ -119,7 +119,7 @@ DriveFile.prototype.isRenamable = function()
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
@@ -130,7 +130,7 @@ DriveFile.prototype.isMovable = function()
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
@@ -141,7 +141,7 @@ DriveFile.prototype.isTrashed = function()
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
@@ -155,7 +155,7 @@ DriveFile.prototype.save = function(revision, success, error, unloading, overwri
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
@@ -184,31 +184,31 @@ DriveFile.prototype.saveFile = function(title, revision, success, error, unloadi
 					try
 					{
 						var lastDesc = this.desc;
-	
+
 						this.ui.drive.saveFile(this, realRevision, mxUtils.bind(this, function(resp, savedData)
 						{
 							try
 							{
 								this.savingFile = false;
-								
+
 								// Handles special case where resp is false eg
 								// if the old file was converted to realtime
 								if (resp != false)
 								{
 									// Checks for changes during save
 									this.setModified(this.getShadowModified());
-									
+
 									if (revision)
 									{
 										this.lastAutosaveRevision = new Date().getTime();
 									}
-				
+
 									// Adaptive autosave delay
 									this.autosaveDelay = Math.round(Math.min(10000,
 										Math.max(DriveFile.prototype.autosaveDelay,
 											this.saveDelay)));
 									this.desc = resp;
-									
+
 									// Shows possible errors but keeps the modified flag as the
 									// file was saved but the cache entry could not be written
 									if (token != null)
@@ -216,7 +216,7 @@ DriveFile.prototype.saveFile = function(title, revision, success, error, unloadi
 										this.fileSaved(savedData, lastDesc, mxUtils.bind(this, function()
 										{
 											this.contentChanged();
-											
+
 											if (success != null)
 											{
 												success(resp);
@@ -236,7 +236,7 @@ DriveFile.prototype.saveFile = function(title, revision, success, error, unloadi
 							catch (e)
 							{
 								this.savingFile = false;
-								
+
 								if (error != null)
 								{
 									error(e);
@@ -251,15 +251,15 @@ DriveFile.prototype.saveFile = function(title, revision, success, error, unloadi
 							try
 							{
 								this.savingFile = false;
-								
+
 								if (this.isConflict(err))
 								{
 									this.inConflictState = true;
-									
+
 									if (this.sync != null)
 									{
 										this.savingFile = true;
-										
+
 										this.sync.fileConflict(desc, mxUtils.bind(this, function()
 										{
 											// Adds random cool-off
@@ -272,7 +272,7 @@ DriveFile.prototype.saveFile = function(title, revision, success, error, unloadi
 										}), mxUtils.bind(this, function()
 										{
 											this.savingFile = false;
-							
+
 											if (error != null)
 											{
 												error();
@@ -292,7 +292,7 @@ DriveFile.prototype.saveFile = function(title, revision, success, error, unloadi
 							catch (e)
 							{
 								this.savingFile = false;
-					
+
 								if (error != null)
 								{
 									error(e);
@@ -307,7 +307,7 @@ DriveFile.prototype.saveFile = function(title, revision, success, error, unloadi
 					catch (e)
 					{
 						this.savingFile = false;
-						
+
 						if (error != null)
 						{
 							error(e);
@@ -318,8 +318,8 @@ DriveFile.prototype.saveFile = function(title, revision, success, error, unloadi
 						}
 					}
 				});
-				
-				doSave(overwrite, revision);				
+
+				doSave(overwrite, revision);
 			}));
 		}
 	}
@@ -361,7 +361,7 @@ DriveFile.prototype.copyFile = function(success, error)
 	else
 	{
 		DrawioFile.prototype.copyFile.apply(this, arguments);
-	}	
+	}
 };
 
 /**
@@ -379,17 +379,17 @@ DriveFile.prototype.makeCopy = function(success, error, timestamp)
 			this.desc = resp;
 			this.ui.spinner.stop();
 			this.setModified(false);
-			
+
 			this.backupPatch = null;
 			this.invalidChecksum = false;
 			this.inConflictState = false;
-			
+
 			this.descriptorChanged();
 			success();
 		}), mxUtils.bind(this, function()
 		{
 			this.ui.spinner.stop();
-			
+
 			if (error != null)
 			{
 				error();
@@ -400,7 +400,7 @@ DriveFile.prototype.makeCopy = function(success, error, timestamp)
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
@@ -411,14 +411,14 @@ DriveFile.prototype.saveAs = function(filename, success, error)
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
 DriveFile.prototype.rename = function(title, success, error)
 {
 	var etag = this.getCurrentEtag();
-	
+
 	this.ui.drive.renameFile(this.getId(), title, mxUtils.bind(this, function(desc)
 	{
 		if (!this.hasSameExtension(title, this.getTitle()))
@@ -429,19 +429,19 @@ DriveFile.prototype.rename = function(title, success, error)
 			{
 				this.sync.descriptorChanged(etag);
 			}
-			
+
 			this.save(true, success, error);
 		}
 		else
 		{
 			this.desc = desc;
 			this.descriptorChanged();
-			
+
 			if (this.sync != null)
 			{
 				this.sync.descriptorChanged(etag);
 			}
-			
+
 			if (success != null)
 			{
 				success(desc);
@@ -452,7 +452,7 @@ DriveFile.prototype.rename = function(title, success, error)
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
@@ -462,7 +462,7 @@ DriveFile.prototype.move = function(folderId, success, error)
 	{
 		this.desc = resp;
 		this.descriptorChanged();
-		
+
 		if (success != null)
 		{
 			success(resp);
@@ -472,7 +472,7 @@ DriveFile.prototype.move = function(folderId, success, error)
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
@@ -483,7 +483,7 @@ DriveFile.prototype.share = function()
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
@@ -494,7 +494,7 @@ DriveFile.prototype.getTitle = function()
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
@@ -505,7 +505,7 @@ DriveFile.prototype.getHash = function()
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
@@ -516,7 +516,7 @@ DriveFile.prototype.getId = function()
 
 /**
  * Translates this point by the given vector.
- * 
+ *
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
@@ -560,7 +560,7 @@ DriveFile.prototype.getRevisions = function(success, error)
 				// Redirects title to originalFilename to
 				// match expected descriptor interface
 				item.title = item.originalFilename;
-				
+
 				item.getXml = mxUtils.bind(this, function(itemSuccess, itemError)
 				{
 					this.ui.drive.getXmlFile(item, mxUtils.bind(this, function(file)
@@ -568,7 +568,7 @@ DriveFile.prototype.getRevisions = function(success, error)
 						itemSuccess(file.getData());
 		   			}), itemError);
 				});
-				
+
 				item.getUrl = mxUtils.bind(this, function(page)
 				{
 					return this.ui.getUrl(window.location.pathname + '?rev=' + item.id +
@@ -577,7 +577,7 @@ DriveFile.prototype.getRevisions = function(success, error)
 				});
 			}))(resp.items[i]);
 		}
-		
+
 		success(resp.items);
 	}), error);
 };
@@ -596,12 +596,12 @@ DriveFile.prototype.getLatestVersion = function(success, error)
 DriveFile.prototype.getChannelId = function()
 {
 	var chan = this.ui.drive.getCustomProperty(this.desc, 'channel');
-	
+
 	if (chan != null)
 	{
 		chan = 'G-' + this.getId() + '.' + chan;
 	}
-	
+
 	return chan;
 };
 
@@ -683,7 +683,7 @@ DriveFile.prototype.setDescriptorEtag = function(desc, etag)
 DriveFile.prototype.loadPatchDescriptor = function(success, error)
 {
 	this.ui.drive.executeRequest(
-	{	
+	{
 		url: '/files/' + this.getId() + '?supportsAllDrives=true&fields=' + this.ui.drive.catchupFields
 	},
 	mxUtils.bind(this, function(desc)
@@ -699,7 +699,7 @@ DriveFile.prototype.patchDescriptor = function(desc, patch)
 {
 	desc.headRevisionId = patch.headRevisionId;
 	desc.modifiedDate = patch.modifiedDate;
-	
+
 	DrawioFile.prototype.patchDescriptor.apply(this, arguments);
 };
 
@@ -725,25 +725,25 @@ DriveFile.prototype.commentsSupported = function()
 DriveFile.prototype.getComments = function(success, error)
 {
 	var currentUser = this.ui.getCurrentUser();
-	
+
 	function driveCommentToDrawio(file, gComment, pCommentId)
 	{
 		if (gComment.deleted) return null; //skip deleted comments
-		
-		var comment = new DriveComment(file, gComment.commentId || gComment.replyId, gComment.content, 
+
+		var comment = new DriveComment(file, gComment.commentId || gComment.replyId, gComment.content,
 				gComment.modifiedDate, gComment.createdDate, gComment.status == 'resolved',
 				gComment.author.isAuthenticatedUser? currentUser :
 				new DrawioUser(gComment.author.permissionId, gComment.author.emailAddress,
 						gComment.author.displayName, gComment.author.picture.url), pCommentId);
-		
+
 		for (var i = 0; gComment.replies != null && i < gComment.replies.length; i++)
 		{
 			comment.addReplyDirect(driveCommentToDrawio(file, gComment.replies[i], gComment.commentId));
 		}
-		
+
 		return comment;
 	};
-	
+
 	this.ui.drive.executeRequest(
 	{
 		url: '/files/' + this.getId() + '/comments'
@@ -751,14 +751,14 @@ DriveFile.prototype.getComments = function(success, error)
 	mxUtils.bind(this, function(resp)
 	{
 		var comments = [];
-		
+
 		for (var i = 0; i < resp.items.length; i++)
 		{
 			var comment = driveCommentToDrawio(this, resp.items[i]);
-			
+
 			if (comment != null) comments.push(comment);
 		}
-		
+
 		success(comments);
 	}), error);
 };
@@ -769,7 +769,7 @@ DriveFile.prototype.getComments = function(success, error)
 DriveFile.prototype.addComment = function(comment, success, error)
 {
 	var body = {'content': comment.content};
-	
+
 	this.ui.drive.executeRequest(
 	{
 		url: '/files/' + this.getId() + '/comments',
