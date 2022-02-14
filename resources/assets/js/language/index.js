@@ -67,6 +67,12 @@ export default {
                  * @private
                  */
                 __initLanguageData() {
+                    if (this.languageInit === undefined) {
+                        this.languageInit = false;
+                        this.languageData = [];
+                        this.languageType = window.localStorage['__language:type__'] || this.__getNavigatorLanguage();
+                        this.languageList = languageTypeLists;
+                    }
                     if (this.languageInit === false) {
                         this.languageInit = true;
                         //
