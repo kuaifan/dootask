@@ -1,11 +1,19 @@
 <template>
-    <div v-if="showButton" class="common-app-down" :class="{'on-client': !!$Electron}" :data-route="$route.name">
-        <div v-if="$Electron" class="common-app-down-link" @click="releasesNotification">
-            <Icon type="md-download"/> {{$L(repoTitle)}}
+    <div class="common-right-bottom">
+        <div v-if="$Electron" class="common-right-bottom-link" @click="useSSOLogin">
+            <Icon type="ios-globe-outline"/>
+            {{ $L('使用 SSO 登录') }}
         </div>
-        <a v-else class="common-app-down-link" :href="repoReleases.html_url" target="_blank">
-            <Icon type="md-download"/> {{$L(repoTitle)}}
-        </a>
+        <template v-if="showDown">
+            <div v-if="$Electron" class="common-right-bottom-link" @click="releasesNotification">
+                <Icon type="md-download"/>
+                {{ $L(repoTitle) }}
+            </div>
+            <a v-else class="common-right-bottom-link" :href="repoReleases.html_url" target="_blank">
+                <Icon type="md-download"/>
+                {{ $L(repoTitle) }}
+            </a>
+        </template>
     </div>
 </template>
 
@@ -16,9 +24,10 @@ import axios from "axios";
 Vue.component('MarkdownPreview', MarkdownPreview)
 
 import {mapState} from "vuex";
+import {Store} from "le5le-store";
 
 export default {
-    name: 'AppDown',
+    name: 'RightBottom',
     data() {
         return {
             loadIng: 0,
@@ -48,10 +57,12 @@ export default {
             'isDesktop',
             'wsOpenNum',
         ]),
+
         repoTitle() {
             return this.repoStatus == 2 ? '更新客户端' : '客户端下载';
         },
-        showButton() {
+
+        showDown() {
             return this.repoStatus && this.isDesktop && ['login', 'manage-dashboard'].includes(this.$route.name)
         }
     },
@@ -197,7 +208,7 @@ export default {
                 },
                 render: (h) => {
                     return h('div', {
-                        class: 'common-app-down-notification'
+                        class: 'common-right-bottom-notification'
                     }, [
                         h('div', {
                             class: "notification-head"
@@ -230,6 +241,10 @@ export default {
                 path: this.downloadResult.savePath
             });
             this.$Electron.ipcRenderer.send('windowQuit');
+        },
+
+        useSSOLogin() {
+            Store.set('useSSOLogin', true);
         }
     }
 };

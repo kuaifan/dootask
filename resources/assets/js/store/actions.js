@@ -167,6 +167,35 @@ export default {
     },
 
     /**
+     * 设置主题
+     * @param state
+     * @param mode
+     */
+    setTheme({state}, mode) {
+        if (mode === undefined) {
+            return;
+        }
+        if (!$A.isChrome()) {
+            $A.modalWarning("仅客户端或Chrome浏览器支持主题功能");
+            return;
+        }
+        switch (mode) {
+            case 'dark':
+                $A.dark.enableDarkMode()
+                break;
+            case 'light':
+                $A.dark.disableDarkMode()
+                break;
+            default:
+                $A.dark.autoDarkMode()
+                break;
+        }
+        state.themeMode = mode;
+        state.themeIsDark = $A.dark.isDarkEnabled();
+        $A.setStorage("cacheThemeMode", mode);
+    },
+
+    /**
      * 获取基本数据（项目、对话、仪表盘任务）
      * @param dispatch
      */

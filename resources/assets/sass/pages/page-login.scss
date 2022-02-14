@@ -102,7 +102,7 @@
             display: flex;
             align-items: center;
             width: 388px;
-            .login-language {
+            .login-setting {
                 flex-shrink: 0;
                 display: flex;
                 align-items: center;
@@ -115,6 +115,20 @@
                     font-size: 12px;
                 }
             }
+            .login-setting-menu {
+                display: flex;
+                flex-direction: column;
+            }
+            .login-setting-item {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                .ivu-icon {
+                    color: #666666;
+                    padding-left: 6px;
+                    margin-right: -6px;
+                }
+            }
             .login-forgot {
                 flex: 1;
                 padding-left: 24px;
@@ -122,13 +136,5 @@
                 text-align: right;
             }
         }
-    }
-    .login-right-bottom {
-        position: absolute;
-        bottom: 26px;
-        right: 26px;
-        z-index: 1;
-        display: flex;
-        align-items: center;
     }
 }

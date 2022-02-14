@@ -1,19 +1,33 @@
-.common-app-down {
+.common-right-bottom {
     position: absolute;
-    bottom: 26px;
+    bottom: 22px;
     right: 26px;
     z-index: 1;
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-end;
     transition: bottom 0.3s;
-    &.on-client {
-        &[data-route=login] {
-            bottom: 75px;
+
+    .common-right-bottom-link {
+        display: inline-block;
+        cursor: pointer;
+        line-height: 32px;
+        height: 32px;
+        padding: 0 15px;
+        margin: 4px 0;
+        font-size: 14px;
+        border-radius: 4px;
+        color: #fff;
+        background-color: #8bcf70;
+        border-color: #8bcf70;
+        &:hover {
+            color: #fff;
+            opacity: 0.9;
         }
     }
 }
 
-.common-app-down-notification {
+.common-right-bottom-notification {
     .notification-head {
         display: flex;
         align-items: center;
@@ -55,21 +69,5 @@
         > button + button {
             margin-left: 6px;
         }
-    }
-}
-.common-app-down-link {
-    display: inline-block;
-    cursor: pointer;
-    line-height: 32px;
-    height: 32px;
-    padding: 0 15px;
-    font-size: 14px;
-    border-radius: 4px;
-    color: #fff;
-    background-color: #8bcf70;
-    border-color: #8bcf70;
-    &:hover {
-        color: #fff;
-        opacity: 0.9;
     }
 }

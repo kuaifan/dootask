@@ -517,27 +517,7 @@ export default {
         },
 
         setTheme(mode) {
-            if (mode === undefined) {
-                return;
-            }
-            if (!$A.isChrome()) {
-                $A.modalWarning("仅客户端或Chrome浏览器支持主题功能");
-                return;
-            }
-            switch (mode) {
-                case 'dark':
-                    $A.dark.enableDarkMode()
-                    break;
-                case 'light':
-                    $A.dark.disableDarkMode()
-                    break;
-                default:
-                    $A.dark.autoDarkMode()
-                    break;
-            }
-            this.$store.state.themeMode = mode;
-            this.$store.state.themeIsDark = $A.dark.isDarkEnabled();
-            $A.setStorage("cacheThemeMode", mode);
+            this.$store.dispatch("setTheme", mode)
         },
 
         toggleRoute(path) {

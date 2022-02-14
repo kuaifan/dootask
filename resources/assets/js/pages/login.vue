@@ -31,26 +31,45 @@
                 </div>
             </div>
             <div class="login-bottom">
-                <Dropdown trigger="click" @on-click="setLanguage" transfer>
-                    <div class="login-language">
-                        {{currentLanguage}}
+                <Dropdown trigger="click" placement="bottom-start">
+                    <div class="login-setting">
+                        {{$L('设置')}}
                         <i class="taskfont">&#xe689;</i>
                     </div>
-                    <Dropdown-menu slot="list">
-                        <Dropdown-item v-for="(item, key) in languageList" :key="key" :name="key" :selected="getLanguage() === key">{{item}}</Dropdown-item>
+                    <Dropdown-menu slot="list" class="login-setting-menu">
+                        <Dropdown placement="right-start" @on-click="setTheme">
+                            <DropdownItem>
+                                <div class="login-setting-item">
+                                    {{$L('主题皮肤')}}
+                                    <Icon type="ios-arrow-forward"></Icon>
+                                </div>
+                            </DropdownItem>
+                            <DropdownMenu slot="list">
+                                <Dropdown-item v-for="(item, key) in themeList" :key="key" :name="item.value" :selected="themeMode === item.value">{{$L(item.name)}}</Dropdown-item>
+                            </DropdownMenu>
+                        </Dropdown>
+                        <Dropdown placement="right-start" @on-click="setLanguage">
+                            <DropdownItem divided>
+                                <div class="login-setting-item">
+                                    {{currentLanguage}}
+                                    <Icon type="ios-arrow-forward"></Icon>
+                                </div>
+                            </DropdownItem>
+                            <DropdownMenu slot="list">
+                                <Dropdown-item v-for="(item, key) in languageList" :key="key" :name="key" :selected="getLanguage() === key">{{item}}</Dropdown-item>
+                            </DropdownMenu>
+                        </Dropdown>
                     </Dropdown-menu>
                 </Dropdown>
                 <div class="login-forgot">{{$L('忘记密码了？')}}<a href="javascript:void(0)" @click="forgotPassword">{{$L('重置密码')}}</a></div>
             </div>
-        </div>
-        <div v-if="$Electron" class="login-right-bottom">
-            <Button icon="ios-globe-outline" type="primary" @click="inputServerUrl">{{$L('自定义服务器')}}</Button>
         </div>
     </div>
 </template>
 
 <script>
 import {mapState} from "vuex";
+import {Store} from "le5le-store";
 
 export default {
     data() {
@@ -71,6 +90,8 @@ export default {
             demoAccount: {},
 
             needInvite: false,
+
+            subscribe: null,
         }
     },
     mounted() {
@@ -81,6 +102,16 @@ export default {
         } else {
             this.clearServerUrl();
         }
+        //
+        this.subscribe = Store.subscribe('useSSOLogin', () => {
+            this.inputServerUrl();
+        });
+    },
+    beforeDestroy() {
+        if (this.subscribe) {
+            this.subscribe.unsubscribe();
+            this.subscribe = null;
+        }
     },
     deactivated() {
         this.loginJump = false;
@@ -90,7 +121,12 @@ export default {
         this.invite = "";
     },
     computed: {
-        ...mapState(['cacheServerUrl']),
+        ...mapState([
+            'cacheServerUrl',
+
+            'themeMode',
+            'themeList',
+        ]),
 
         currentLanguage() {
             return this.languageList[this.languageType] || 'Language'
@@ -121,6 +157,10 @@ export default {
         }
     },
     methods: {
+        setTheme(mode) {
+            this.$store.dispatch("setTheme", mode)
+        },
+
         getDemoAccount() {
             if (this.isNotServer()) {
                 return;
@@ -158,7 +198,7 @@ export default {
 
         inputServerUrl() {
             $A.modalInput({
-                title: "自定义服务器",
+                title: "使用 SSO 登录",
                 value: this.cacheServerUrl,
                 placeholder: "请输入服务器地址",
                 onOk: (value, cb) => {
