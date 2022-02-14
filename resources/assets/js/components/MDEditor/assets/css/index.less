@@ -42,18 +42,16 @@
 
     .markdown-toolbars {
         width: 100%;
-        display: flex;
-        align-items: center;
+        display: block;
         list-style: none;
         background: #fff;
         color: #6a6f7b;
-        height: 40px;
         cursor: pointer;
-        //box-shadow: 0 2px 3px #ddd;
         padding-left: 4px;
         border-bottom: 1px solid @border;
 
         > li {
+            float: left;
             position: relative;
             cursor: pointer;
             margin: 0;
@@ -103,11 +101,17 @@
                 align-items: center;
                 justify-content: center;
             }
-        }
 
-        .empty {
-            flex: 1;
-            width: 12px;
+            &.right {
+                float: right;
+                > ul {
+                    list-style: none;
+                    > li {
+                        line-height: normal;
+                        float: left;
+                    }
+                }
+            }
         }
 
         span {

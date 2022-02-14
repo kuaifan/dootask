@@ -125,26 +125,29 @@
             <li :name="$L('html转markdown')" @click="onCustom('html2md')">
                 <span style="width:auto;font-size:14px;padding:0 6px">HTML2MD</span>
             </li>
-            <li class="empty"></li>
-            <li :name="$L('菜单')" @click="tocTrigger=true">
+            <li class="right">
+                <ul>
+                    <li :name="$L('菜单')" @click="tocTrigger=true">
                 <span @click="tocShow = !tocShow" v-show="tocShow" class="icon-svg">
                     <svg t="1611551476626" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4615" width="22" height="22"><path d="M370.1 371.5h-49.6c-3.1 0-5.7-2.5-5.7-5.7v-49.6c0-3.1 2.5-5.7 5.7-5.7h49.6c3.1 0 5.7 2.5 5.7 5.7v49.6c0 3.1-2.6 5.7-5.7 5.7z m333.5-7.6H460.5c-3.1 0-5.7-2.5-5.7-5.7v-34.5c0-3.1 2.5-5.7 5.7-5.7h243.2c3.1 0 5.7 2.5 5.7 5.7v34.5c-0.1 3.2-2.7 5.7-5.8 5.7zM370.1 712.4h-49.6c-3.1 0-5.7-2.5-5.7-5.7v-49.6c0-3.1 2.5-5.7 5.7-5.7h49.6c3.1 0 5.7 2.5 5.7 5.7v49.6c0 3.2-2.6 5.7-5.7 5.7z m333.5-7.5H460.5c-3.1 0-5.7-2.5-5.7-5.7v-34.5c0-3.1 2.5-5.7 5.7-5.7h243.2c3.1 0 5.7 2.5 5.7 5.7v34.5c-0.1 3.1-2.7 5.7-5.8 5.7zM370.1 542.5h-49.6c-3.1 0-5.7-2.5-5.7-5.7v-49.6c0-3.1 2.5-5.7 5.7-5.7h49.6c3.1 0 5.7 2.5 5.7 5.7v49.6c0 3.1-2.6 5.7-5.7 5.7z m333.5-7.6H460.5c-3.1 0-5.7-2.5-5.7-5.7v-34.5c0-3.1 2.5-5.7 5.7-5.7h243.2c3.1 0 5.7 2.5 5.7 5.7v34.5c-0.1 3.2-2.7 5.7-5.8 5.7z" p-id="4616" fill="#1890ff"></path><path d="M847.1 560.4V250.1s0-24.7-14-46.4c-10.8-16.8-30-31.8-64.2-31.8h-261c-0.2 0-0.3 0-0.5 0.1H255s-78.1 0-78.1 78.1l0.1 213.4V774s0 24.7 13.9 46.3c10.8 16.8 30 31.8 64.2 31.8h261.1c0.2 0 0.3 0 0.5-0.1H769s78.1 0 78.1-78.1l-0.1-213.4 0.1-0.1z m-39 213.6c-1.3 38.5-38.9 39-38.9 39h-514c-1.3-0.1-2.5-0.2-3.8-0.3-5.4-1.1-15.7-4.1-23.9-11.7-9-9.7-11.2-22.3-11.7-26.1v-0.7l0.1-524.2c1.3-38.5 38.9-39 38.9-39h514c1.3 0.1 2.5 0.2 3.7 0.3 5.4 1.1 15.7 4.1 23.9 11.7 9 9.7 11.2 22.2 11.7 26 0 0.2 0 0.5 0.1 0.7l-0.1 524.3z" p-id="4617" fill="#1890ff"></path></svg>
                 </span>
-                <span @click="tocShow = !tocShow" v-show="!tocShow" class="icon-svg">
+                        <span @click="tocShow = !tocShow" v-show="!tocShow" class="icon-svg">
                     <svg t="1611551476626" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4615" width="22" height="22"><path d="M370.1 371.5h-49.6c-3.1 0-5.7-2.5-5.7-5.7v-49.6c0-3.1 2.5-5.7 5.7-5.7h49.6c3.1 0 5.7 2.5 5.7 5.7v49.6c0 3.1-2.6 5.7-5.7 5.7z m333.5-7.6H460.5c-3.1 0-5.7-2.5-5.7-5.7v-34.5c0-3.1 2.5-5.7 5.7-5.7h243.2c3.1 0 5.7 2.5 5.7 5.7v34.5c-0.1 3.2-2.7 5.7-5.8 5.7zM370.1 712.4h-49.6c-3.1 0-5.7-2.5-5.7-5.7v-49.6c0-3.1 2.5-5.7 5.7-5.7h49.6c3.1 0 5.7 2.5 5.7 5.7v49.6c0 3.2-2.6 5.7-5.7 5.7z m333.5-7.5H460.5c-3.1 0-5.7-2.5-5.7-5.7v-34.5c0-3.1 2.5-5.7 5.7-5.7h243.2c3.1 0 5.7 2.5 5.7 5.7v34.5c-0.1 3.1-2.7 5.7-5.8 5.7zM370.1 542.5h-49.6c-3.1 0-5.7-2.5-5.7-5.7v-49.6c0-3.1 2.5-5.7 5.7-5.7h49.6c3.1 0 5.7 2.5 5.7 5.7v49.6c0 3.1-2.6 5.7-5.7 5.7z m333.5-7.6H460.5c-3.1 0-5.7-2.5-5.7-5.7v-34.5c0-3.1 2.5-5.7 5.7-5.7h243.2c3.1 0 5.7 2.5 5.7 5.7v34.5c-0.1 3.2-2.7 5.7-5.8 5.7z" p-id="4616" fill="#777777"></path><path d="M847.1 560.4V250.1s0-24.7-14-46.4c-10.8-16.8-30-31.8-64.2-31.8h-261c-0.2 0-0.3 0-0.5 0.1H255s-78.1 0-78.1 78.1l0.1 213.4V774s0 24.7 13.9 46.3c10.8 16.8 30 31.8 64.2 31.8h261.1c0.2 0 0.3 0 0.5-0.1H769s78.1 0 78.1-78.1l-0.1-213.4 0.1-0.1z m-39 213.6c-1.3 38.5-38.9 39-38.9 39h-514c-1.3-0.1-2.5-0.2-3.8-0.3-5.4-1.1-15.7-4.1-23.9-11.7-9-9.7-11.2-22.3-11.7-26.1v-0.7l0.1-524.2c1.3-38.5 38.9-39 38.9-39h514c1.3 0.1 2.5 0.2 3.7 0.3 5.4 1.1 15.7 4.1 23.9 11.7 9 9.7 11.2 22.2 11.7 26 0 0.2 0 0.5 0.1 0.7l-0.1 524.3z" p-id="4617" fill="#777777"></path></svg>
                 </span>
-            </li>
-            <li v-if="tools.fullscreen && !fullscreen" :name="$L('全屏')">
-                <span @click="fullscreen = !fullscreen" class="iconfont icon-fullscreen"></span>
-            </li>
-            <li v-if="tools.fullscreen && fullscreen" :name="$L('退出全屏')">
-                <span @click="fullscreen = !fullscreen" class="iconfont icon-quite"></span>
-            </li>
-            <li v-if="tools.custom_fullscreen && !isCustomFullscreen" :name="$L('全屏')">
-                <span @click="onCustom('fullscreen')" class="iconfont icon-fullscreen"></span>
-            </li>
-            <li v-if="tools.custom_fullscreen && isCustomFullscreen" :name="$L('退出全屏')">
-                <span @click="onCustom('fullscreen')" class="iconfont icon-quite"></span>
+                    </li>
+                    <li v-if="tools.fullscreen && !fullscreen" :name="$L('全屏')">
+                        <span @click="fullscreen = !fullscreen" class="iconfont icon-fullscreen"></span>
+                    </li>
+                    <li v-if="tools.fullscreen && fullscreen" :name="$L('退出全屏')">
+                        <span @click="fullscreen = !fullscreen" class="iconfont icon-quite"></span>
+                    </li>
+                    <li v-if="tools.custom_fullscreen && !isCustomFullscreen" :name="$L('全屏')">
+                        <span @click="onCustom('fullscreen')" class="iconfont icon-fullscreen"></span>
+                    </li>
+                    <li v-if="tools.custom_fullscreen && isCustomFullscreen" :name="$L('退出全屏')">
+                        <span @click="onCustom('fullscreen')" class="iconfont icon-quite"></span>
+                    </li>
+                </ul>
             </li>
         </ul>
         <!-- 关闭预览按钮 -->

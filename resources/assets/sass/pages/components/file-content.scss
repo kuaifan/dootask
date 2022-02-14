@@ -250,7 +250,22 @@
         overflow: auto;
         .edit-header,
         .content-body {
-            min-width: 900px;
+            min-width: 768px;
+            overflow-x: auto;
+            .tox {
+                .tox-toolbar--scrolling {
+                    flex-wrap: wrap;
+                }
+            }
+            .teditor-loadedstyle {
+                .tox-menubar,
+                .tox-toolbar-overlord {
+                    padding: 0;
+                }
+                .tox-sidebar-wrap {
+                    margin: 0;
+                }
+            }
         }
     }
 }
