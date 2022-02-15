@@ -393,7 +393,7 @@
                             :disabled="sendLoad > 0"
                             :rows="1"
                             :autosize="{ minRows: 1, maxRows: 3 }"
-                            :maxlength="255"
+                            :maxlength="20000"
                             :placeholder="$L('输入消息...')"
                             @on-keydown="msgKeydown"
                             @on-input-paste="msgPasteDrag"/>

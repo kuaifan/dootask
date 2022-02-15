@@ -2,6 +2,7 @@
 
 namespace App\Module;
 
+use App\Exceptions\ApiException;
 use App\Models\Setting;
 use App\Models\Tmp;
 use Cache;
@@ -85,6 +86,18 @@ class Base
             $_A["__static_client_version"] = Request::header('version') ?: '0.0.1';
         }
         return $_A["__static_client_version"];
+    }
+
+    /**
+     * 检查客户端版本
+     * @param string $min 最小版本
+     * @return void
+     */
+    public static function checkClientVersion($min)
+    {
+        if (version_compare(Base::getClientVersion(), $min, '<')) {
+            throw new ApiException('当前版本 (v' . Base::getClientVersion() . ') 过低');
+        }
     }
 
     /**
