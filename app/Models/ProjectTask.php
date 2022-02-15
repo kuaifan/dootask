@@ -603,7 +603,6 @@ class ProjectTask extends AbstractModel
                     $this->completeTask(null);
                 }
                 $updateMarking['is_update_project'] = true;
-                return;
             }
             // 标题
             if (Arr::exists($data, 'name') && $this->name != $data['name']) {
