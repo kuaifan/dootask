@@ -33,3 +33,4 @@ window.mxBasePath = window.mxBasePath || 'mxgraph';
 window.mxImageBasePath = window.mxImageBasePath || 'mxgraph/images';
 window.mxLanguage = window.mxLanguage || urlParams['lang'];
 window.mxLanguages = window.mxLanguages || ['de', 'se'];
+window.mxTheme = window.mxTheme || urlParams['theme'] || 'light';

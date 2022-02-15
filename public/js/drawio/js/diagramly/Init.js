@@ -11,6 +11,7 @@ window.isLocalStorage = window.isLocalStorage || false;
 
 // Disables loading settings in configured mode
 window.mxLoadSettings = window.mxLoadSettings || urlParams['configure'] != '1';
+window.mxTheme = window.mxTheme || urlParams['theme'] || 'light';
 
 // Checks for SVG support
 window.isSvgBrowser = true;
