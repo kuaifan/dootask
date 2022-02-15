@@ -791,7 +791,7 @@ App.main = function(callback, createUi)
 			(urlParams['embed'] == '1' && urlParams['gapi'] == '1')) && isSvgBrowser &&
 			isLocalStorage && (document.documentMode == null || document.documentMode >= 10))))
 		{
-			mxscript('https://apis.google.com/js/api.js?onload=DrawGapiClientCallback', null, null, null, mxClient.IS_SVG);
+			// mxscript('https://apis.google.com/js/api.js?onload=DrawGapiClientCallback', null, null, null, mxClient.IS_SVG);
 		}
 		// Disables client
 		else if (typeof window.gapi === 'undefined')
