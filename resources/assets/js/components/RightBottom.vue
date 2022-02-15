@@ -1,6 +1,6 @@
 <template>
     <div class="common-right-bottom">
-        <div v-if="$Electron" class="common-right-bottom-link" @click="useSSOLogin">
+        <div v-if="showSSO" class="common-right-bottom-link" @click="useSSOLogin">
             <Icon type="ios-globe-outline"/>
             {{ $L('使用 SSO 登录') }}
         </div>
@@ -60,6 +60,10 @@ export default {
 
         repoTitle() {
             return this.repoStatus == 2 ? '更新客户端' : '客户端下载';
+        },
+
+        showSSO() {
+            return this.$Electron && ['login'].includes(this.$route.name)
         },
 
         showDown() {
