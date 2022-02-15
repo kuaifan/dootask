@@ -952,6 +952,16 @@ class ProjectTask extends AbstractModel
      */
     public function archivedTask($archived_at, $isAuto = false)
     {
+        if (!$this->complete_at) {
+            $flowItems = ProjectFlowItem::whereProjectId($this->project_id)->whereStatus('end')->pluck('name');
+            if ($flowItems) {
+                $flowItems = implode(",", array_values(array_unique($flowItems->toArray())));
+            }
+            if (empty($flowItems)) {
+                $flowItems = "已完成";
+            }
+            throw new ApiException('仅限【' . $flowItems . '】状态的任务归档');
+        }
         AbstractModel::transaction(function () use ($isAuto, $archived_at) {
             if ($archived_at === null) {
                 // 取消归档
