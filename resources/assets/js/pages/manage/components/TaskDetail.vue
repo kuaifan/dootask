@@ -33,7 +33,7 @@
             @on-clear="timeClear"
             @on-ok="timeOk"
             transfer>
-            <div v-if="taskDetail.end_at && taskDetail.end_at != mainEndAt" @click="openTime" :class="['time', taskDetail.today ? 'today' : '', taskDetail.overdue ? 'overdue' : '']">
+            <div v-if="!taskDetail.complete_at && taskDetail.end_at && taskDetail.end_at != mainEndAt" @click="openTime" :class="['time', taskDetail.today ? 'today' : '', taskDetail.overdue ? 'overdue' : '']">
                 {{expiresFormat(taskDetail.end_at)}}
             </div>
             <Icon v-else class="clock" type="ios-clock-outline" @click="openTime" />
