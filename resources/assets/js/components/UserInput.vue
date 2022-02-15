@@ -139,7 +139,6 @@
         methods: {
             searchUser(key) {
                 if (typeof key !== "string") key = "";
-                if (key == this.searchKey) return;
                 this.searchKey = key;
                 //
                 const history = this.searchHistory.find(item => item.key == key);
