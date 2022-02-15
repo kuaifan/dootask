@@ -28,22 +28,22 @@
         "url": "https://github.com/kuaifan/dootask.git"
     },
     "devDependencies": {
-        "@electron-forge/cli": "^6.0.0-beta.61",
-        "@electron-forge/maker-deb": "^6.0.0-beta.61",
-        "@electron-forge/maker-rpm": "^6.0.0-beta.61",
-        "@electron-forge/maker-squirrel": "^6.0.0-beta.61",
-        "@electron-forge/maker-zip": "^6.0.0-beta.61",
+        "@electron-forge/cli": "^6.0.0-beta.63",
+        "@electron-forge/maker-deb": "^6.0.0-beta.63",
+        "@electron-forge/maker-rpm": "^6.0.0-beta.63",
+        "@electron-forge/maker-squirrel": "^6.0.0-beta.63",
+        "@electron-forge/maker-zip": "^6.0.0-beta.63",
         "dmg-license": "^1.0.10",
-        "dotenv": "^10.0.0",
-        "electron": "^16.0.5",
-        "electron-builder": "^22.14.5"
+        "dotenv": "^16.0.0",
+        "electron": "^17.0.1",
+        "electron-builder": "^22.14.13"
     },
     "dependencies": {
-        "axios": "^0.24.0",
+        "axios": "^0.26.0",
         "electron-squirrel-startup": "^1.0.0",
-        "electron-log": "^4.4.3",
+        "electron-log": "^4.4.6",
         "fs-extra": "^10.0.0",
-        "xlsx": "^0.17.2"
+        "xlsx": "^0.18.1"
     },
     "build": {
         "appId": "com.dootask.task",
