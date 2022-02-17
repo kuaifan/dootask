@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Models\WebSocketDialogMsgRead;
+use App\Models\WebSocketDialogUser;
 use App\Module\Base;
 use Carbon\Carbon;
 use Request;
@@ -39,9 +40,10 @@ class DialogController extends AbstractController
     {
         $user = User::auth();
         //
-        $list = WebSocketDialog::select(['web_socket_dialogs.*'])
+        $list = WebSocketDialog::select(['web_socket_dialogs.*','u.top'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
             ->where('u.userid', $user->userid)
+            ->orderByDesc('u.top')
             ->orderByDesc('web_socket_dialogs.last_at')
             ->paginate(Base::getPaginate(200, 100));
         $list->transform(function (WebSocketDialog $item) use ($user) {
@@ -475,4 +477,36 @@ class DialogController extends AbstractController
         $msg->deleteMsg();
         return Base::retSuccess("success");
     }
+
+    /**
+     * @api {get} api/dialog/top          12. 会话置顶
+     *
+     * @apiDescription 消息撤回限制24小时内，需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName top
+     *
+     * @apiParam {Number} dialog_id            会话ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function top()
+    {
+        $user = User::auth();
+        $dialogId = intval(Request::input('dialog_id'));
+        $dialogUser = WebSocketDialogUser::whereUserid($user->userid)->whereDialogId($dialogId)->first();
+        if (!$dialogUser) {
+            return Base::retError("会话不存在");
+        }
+        WebSocketDialogUser::whereUserid($user->userid)
+            ->update([
+                'top' => 0
+            ]);
+        $dialogUser->top = 1;
+        $dialogUser->save();
+        return Base::retSuccess("success", $dialogId);
+    }
+
 }
