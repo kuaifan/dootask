@@ -189,6 +189,9 @@
                                 left: 42px;
                                 transform: scale(0.8);
                             }
+                            &.top {
+                                background-color: #f1f6fb;
+                            }
                             &.active {
                                 background-color: #F4F5F7;
                             }

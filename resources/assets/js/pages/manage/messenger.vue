@@ -29,7 +29,7 @@
                             v-for="(dialog, key) in dialogList"
                             :ref="`dialog_${dialog.id}`"
                             :key="key"
-                            :class="{active: dialog.id == dialogId}"
+                            :class="[{active: dialog.id == dialogId},{top:dialog.top === 1}]"
                             @click="openDialog(dialog, true)"
                             @contextmenu.prevent.stop="handleRightClick($event, dialog)">
                             <template v-if="dialog.type=='group'">
