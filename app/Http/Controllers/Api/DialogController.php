@@ -504,7 +504,8 @@ class DialogController extends AbstractController
             ->update([
                 'top' => 0
             ]);
-        $dialogUser->top = 1;
+        $top = $dialogUser->top === 1 ? 0 : 1;
+        $dialogUser->top = $top;
         $dialogUser->save();
         return Base::retSuccess("success", $dialogId);
     }

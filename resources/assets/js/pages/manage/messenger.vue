@@ -76,7 +76,11 @@
                             transfer>
                             <DropdownMenu slot="list">
                                 <template v-if="topOperateItem.id">
-                                    <DropdownItem @click.native="handleTopClick">{{ $L('置顶该聊天') }}
+                                    <DropdownItem v-if="topOperateItem.top === 1" @click.native="handleTopClick">
+                                        {{ $L('取消置顶') }}
+                                    </DropdownItem>
+                                    <DropdownItem v-if="topOperateItem.top === 0" @click.native="handleTopClick">
+                                        {{ $L('置顶该聊天') }}
                                     </DropdownItem>
                                 </template>
                             </DropdownMenu>
