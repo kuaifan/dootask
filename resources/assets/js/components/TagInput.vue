@@ -149,12 +149,14 @@
             downEnter(e) {
                 e.preventDefault();
             },
-            onFocus() {
+            onFocus(e) {
                 this.isFocus = true;
+                this.$emit("on-focus", e)
             },
-            onBlur() {
+            onBlur(e) {
                 this.isFocus = false;
                 this.addTag(false, this.content)
+                this.$emit("on-blur", e)
             },
             addTag(e, content) {
 

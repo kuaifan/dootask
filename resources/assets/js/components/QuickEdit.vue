@@ -1,8 +1,8 @@
 <template>
     <div class="quick-edit" :class="[alwaysIcon ? 'quick-always' : '']">
-        <div v-if="isEdit" v-clickoutside="onEnter" class="quick-input">
-            <TagInput v-if="isTag" ref="input" v-model="content" :disabled="isLoad" @on-enter="onEnter"/>
-            <Input v-else ref="input" v-model="content" :disabled="isLoad" @on-enter="onEnter"/>
+        <div v-if="isEdit" v-clickoutside="onClickOut" class="quick-input">
+            <TagInput v-if="isTag" ref="input" v-model="content" :disabled="isLoad" @on-enter="onEnter" @on-blur="onBlur"/>
+            <Input v-else ref="input" v-model="content" :disabled="isLoad" @on-enter="onEnter" @on-blur="onBlur"/>
             <div v-if="isLoad" class="quick-loading"><Loading/></div>
         </div>
         <template v-else>
@@ -32,6 +32,10 @@ export default {
         alwaysIcon: {
             type: Boolean,
             default: false
+        },
+        clickOutSide: {
+            type: Boolean,
+            default: true
         },
     },
 
@@ -85,6 +89,20 @@ export default {
                 this.isEdit = false;
                 this.isLoad = false;
             })
+        },
+
+        onClickOut() {
+            if (!this.clickOutSide) {
+                return;
+            }
+            this.onEnter();
+        },
+
+        onBlur() {
+            if (this.clickOutSide) {
+                return;
+            }
+            this.onEnter();
         },
     }
 }
