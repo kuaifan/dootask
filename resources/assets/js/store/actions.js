@@ -917,6 +917,15 @@ export default {
                 [data.flow_item_status, data.flow_item_name] = data.flow_item_name.split("|")
             }
             //
+            if (typeof data.archived_at !== "undefined") {
+                state.cacheTasks.filter(task => task.parent_id == data.id).some(task => {
+                    dispatch("saveTask", Object.assign(task, {
+                        archived_at: data.archived_at,
+                        archived_userid: data.archived_userid
+                    }))
+                })
+            }
+            //
             let updateMarking = {};
             if (typeof data.update_marking !== "undefined") {
                 updateMarking = $A.isJson(data.update_marking) ? data.update_marking : {};
