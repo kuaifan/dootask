@@ -293,9 +293,19 @@ class FileController extends AbstractController
             'userid' => $userid,
             'created_id' => $user->userid,
         ]);
-        $file->save();
+        $data = AbstractModel::transaction(function() use ($file) {
+            $content = FileContent::select(['content', 'text', 'size'])->whereFid($file->cid)->orderByDesc('id')->first();
+            $file->size = $content?->size ?: 0;
+            $file->save();
+            if ($content) {
+                $content = $content->toArray();
+                $content['fid'] = $file->id;
+                $content['userid'] = $file->userid;
+                FileContent::createInstance($content)->save();
+            }
+            return File::find($file->id);
+        });
         //
-        $data = File::find($file->id);
         $data->pushMsg('add', $data);
         return Base::retSuccess('复制成功', $data);
     }
@@ -531,6 +541,7 @@ class FileController extends AbstractController
                 $content->save();
                 //
                 $file->size = $content->size;
+                $file->updated_at = Carbon::now();
                 $file->save();
                 $file->pushMsg('update', $file);
             }
