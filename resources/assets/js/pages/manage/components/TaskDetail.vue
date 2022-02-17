@@ -259,7 +259,7 @@
                                     transfer>
                                     <div class="picker-time">
                                         <div @click="openTime" class="time">{{taskDetail.end_at ? cutTime : '--'}}</div>
-                                        <template v-if="!taskDetail.complete_at">
+                                        <template v-if="!taskDetail.complete_at && taskDetail.end_at">
                                             <Tag v-if="within24Hours(taskDetail.end_at)" color="blue"><i class="taskfont">&#xe71d;</i>{{expiresFormat(taskDetail.end_at)}}</Tag>
                                             <Tag v-if="taskDetail.overdue" color="red">{{$L('超期未完成')}}</Tag>
                                         </template>
