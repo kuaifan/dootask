@@ -194,6 +194,9 @@ export default {
                 }
                 return true;
             }).sort((a, b) => {
+                if (a.top || b.top) {
+                    return b.top - a.top;
+                }
                 return $A.Date(b.last_at) - $A.Date(a.last_at);
             })
         },
