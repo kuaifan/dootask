@@ -661,6 +661,7 @@ class ProjectTask extends AbstractModel
             // 计划时间（原则：子任务时间在主任务时间内）
             if (Arr::exists($data, 'times')) {
                 $oldAt = [Carbon::parse($this->start_at), Carbon::parse($this->end_at)];
+                $oldStringAt = $this->start_at ? ($oldAt[0]->toDateTimeString() . '~' . $oldAt[1]->toDateTimeString()) : '';
                 $this->start_at = null;
                 $this->end_at = null;
                 $times = $data['times'];
@@ -724,7 +725,10 @@ class ProjectTask extends AbstractModel
                         }
                     });
                 }
-                $this->addLog("修改{任务}时间");
+                $newStringAt = $this->start_at ? ($oldAt[0]->toDateTimeString() . '~' . $oldAt[1]->toDateTimeString()) : '';
+                $this->addLog("修改{任务}时间", [
+                    'change' => [$oldStringAt, $newStringAt]
+                ]);
             }
             // 以下紧顶级任务可修改
             if ($this->parent_id === 0) {
@@ -794,6 +798,7 @@ class ProjectTask extends AbstractModel
                 }
                 // 优先级
                 $p = false;
+                $oldPName = $this->p_name;
                 if (Arr::exists($data, 'p_level') && $this->p_level != $data['p_level']) {
                     $this->p_level = intval($data['p_level']);
                     $p = true;
@@ -807,7 +812,9 @@ class ProjectTask extends AbstractModel
                     $p = true;
                 }
                 if ($p) {
-                    $this->addLog("修改{任务}优先级");
+                    $this->addLog("修改{任务}优先级", [
+                        'change' => [$oldPName, $this->p_name]
+                    ]);
                 }
             }
             $this->save();
