@@ -31,12 +31,6 @@
                         <span v-if="item.share && item.permission == 0" class="readonly">{{$L('只读')}}</span>
                     </li>
                 </ul>
-                <Button v-if="shearFile" :disabled="shearFile.pid == pid" size="small" type="primary" @click="shearTo">
-                    <div class="file-shear">
-                        <span>{{$L('粘贴')}}</span>
-                        "<em>{{shearFile.name}}</em>"
-                    </div>
-                </Button>
                 <Button v-if="shearFiles.length > 0" :disabled="shearFiles[0].pid == pid" size="small" type="primary" @click="batchShearTo">
                     <div class="file-shear">
                         <span>{{$L('粘贴')}}</span>
@@ -96,7 +90,7 @@
                             <div class="file-menu" @click.stop="handleRightClick($event, item)">
                                 <Icon type="ios-more" />
                             </div>
-                            <div class="file-check" @click.stop :class="fileChecked[item.id] ?'file-checked' : ''">
+                            <div class="file-check" v-if="showMultipleChoice" @click.stop :class="fileChecked[item.id] ?'file-checked' : ''">
                                 <Checkbox v-model="fileChecked[item.id]" @on-change="onFileCheckClick(item)"/>
                             </div>
                             <div :class="`no-dark-mode-before file-icon ${item.type}`">
@@ -160,6 +154,7 @@
                             <DropdownItem @click.native="handleContextClick('rename')" divided>{{$L('重命名')}}</DropdownItem>
                             <DropdownItem @click.native="handleContextClick('copy')" :disabled="contextMenuItem.type == 'folder'">{{$L('复制')}}</DropdownItem>
                             <DropdownItem @click.native="handleContextClick('shear')" :disabled="contextMenuItem.userid != userId">{{$L('剪切')}}</DropdownItem>
+                            <DropdownItem v-if="!tableMode" @click.native="handleContextClick('multipleChoice')" divided>{{showMultipleChoice?$L('取消多选'):$L('多选')}}</DropdownItem>
                             <template v-if="contextMenuItem.userid == userId">
                                 <DropdownItem @click.native="handleContextClick('share')" divided>{{$L('共享')}}</DropdownItem>
                                 <DropdownItem @click.native="handleContextClick('link')" :disabled="contextMenuItem.type == 'folder'">{{$L('链接')}}</DropdownItem>
@@ -461,6 +456,7 @@ export default {
             selectFile: [],
             fileChecked: [],
             shearFiles: [],
+            showMultipleChoice: false
         }
     },
 
@@ -928,7 +924,27 @@ export default {
                     break;
 
                 case 'shear':
-                    this.shearId = item.id;
+                    this.showMultipleChoice = true;
+                    this.fileChecked[item.id] = true;
+                    this.onFileCheckClick(item);
+                    for (const item of this.selectFile) {
+                        let selected = false;
+                        for (const shearFile of this.shearFiles) {
+                            if ( shearFile.id === item.id ) {
+                                selected = true;
+                                break;
+                            }
+                        }
+                        if (!selected)
+                            this.shearFiles.push(item);
+                    }
+                    break;
+
+                case 'multipleChoice':
+                    this.showMultipleChoice = !this.showMultipleChoice;
+                    if(this.showMultipleChoice === false){
+                        this.clearSelect();
+                    }
                     break;
 
                 case 'batchShear':
@@ -1061,25 +1077,6 @@ export default {
 
         linkFocus() {
             this.$refs.linkInput.focus({cursor:'all'});
-        },
-
-        shearTo() {
-            if (!this.shearFile) {
-                return;
-            }
-            this.$store.dispatch("call", {
-                url: 'file/move',
-                data: {
-                    id: this.shearFile.id,
-                    pid: this.pid,
-                },
-            }).then(({data, msg}) => {
-                $A.messageSuccess(msg);
-                this.shearId = 0;
-                this.$store.dispatch("saveFile", data);
-            }).catch(({msg}) => {
-                $A.modalError(msg);
-            });
         },
 
         autoBlur(id) {
@@ -1361,6 +1358,7 @@ export default {
                         this.$Modal.remove();
                         this.selectFile = [];
                         this.fileChecked = [];
+                        this.showMultipleChoice = false;
                         $A.messageSuccess("已提交至后台处理，请稍后再回来查看结果吧");
                     }).catch(({msg}) => {
                         $A.modalError(msg, 301);
@@ -1417,6 +1415,7 @@ export default {
             this.shearFiles = [];
             this.selectFile = [];
             this.fileChecked = [];
+            this.showMultipleChoice = false;
             if ( this.tableMode ) // 如果是表格模式，则将表格取消全选
                 this.$refs.fileListTable.selectAll(false);
         },
