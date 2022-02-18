@@ -40,7 +40,7 @@ class DialogController extends AbstractController
     {
         $user = User::auth();
         //
-        $list = WebSocketDialog::select(['web_socket_dialogs.*','u.top'])
+        $list = WebSocketDialog::select(['web_socket_dialogs.*','u.top','u.top_at'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
             ->where('u.userid', $user->userid)
             ->orderByDesc('u.top')
@@ -500,12 +500,10 @@ class DialogController extends AbstractController
         if (!$dialogUser) {
             return Base::retError("会话不存在");
         }
-        WebSocketDialogUser::whereUserid($user->userid)
-            ->update([
-                'top' => 0
-            ]);
         $top = $dialogUser->top === 1 ? 0 : 1;
+        $topAt = $dialogUser->top === 1 ? null : Carbon::now();
         $dialogUser->top = $top;
+        $dialogUser->top_at = $topAt;
         $dialogUser->save();
         return Base::retSuccess("success", $dialogId);
     }

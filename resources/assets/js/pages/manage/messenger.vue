@@ -159,7 +159,7 @@ export default {
             if (dialogActive == '' && dialogKey == '') {
                 return this.cacheDialogs.filter(dialog => this.filterDialog(dialog)).sort((a, b) => {
                     if (a.top || b.top) {
-                        return b.top - a.top;
+                        return $A.Date(b.top_at) - $A.Date(a.top_at);
                     }
                     return $A.Date(b.last_at) - $A.Date(a.last_at);
                 });
@@ -195,7 +195,7 @@ export default {
                 return true;
             }).sort((a, b) => {
                 if (a.top || b.top) {
-                    return b.top - a.top;
+                    return $A.Date(b.top_at) - $A.Date(a.top_at);
                 }
                 return $A.Date(b.last_at) - $A.Date(a.last_at);
             })
@@ -311,7 +311,7 @@ export default {
         },
 
         filterDialog(dialog) {
-            if (dialog.unread > 0 || dialog.id == this.dialogId) {
+            if (dialog.unread > 0 || dialog.id == this.dialogId || dialog.top === 1) {
                 return true
             }
             if (dialog.name === undefined) {

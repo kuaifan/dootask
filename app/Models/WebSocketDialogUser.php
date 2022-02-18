@@ -9,6 +9,7 @@ namespace App\Models;
  * @property int|null $dialog_id 对话ID
  * @property int|null $userid 会员ID
  * @property int|null $top 是否置顶：0否，1是
+ * @property \Illuminate\Support\Carbon|null $top_at 置顶时间
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser newModelQuery()
