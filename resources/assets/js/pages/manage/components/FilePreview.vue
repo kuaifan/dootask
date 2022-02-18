@@ -46,6 +46,7 @@ const MDPreview = () => import('../../../components/MDEditor/preview');
 const TEditor = () => import('../../../components/TEditor');
 const AceEditor = () => import('../../../components/AceEditor');
 const OnlyOffice = () => import('../../../components/OnlyOffice');
+const Drawio = () => import('../../../components/Drawio');
 
 export default {
     name: "FilePreview",
