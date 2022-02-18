@@ -84,13 +84,13 @@
                     <ul class="clearfix">
                         <li
                             v-for="item in fileList"
-                            :class="[item.id && shearId == item.id ? 'shear' : '', !!item._highlight ? 'highlight' : '']"
+                            :class="[item.id && shearId == item.id ? 'shear' : '',showMultipleChoice?'highlight':'', !!item._highlight ? 'highlight' : '']"
                             @contextmenu.prevent.stop="handleRightClick($event, item)"
                             @click="openFile(item)">
-                            <div class="file-menu" @click.stop="handleRightClick($event, item)">
+                            <div class="file-menu" @click.stop="handleRightClick($event, item)" :style="showMultipleChoice?'opacity: 1':''">
                                 <Icon type="ios-more" />
                             </div>
-                            <div class="file-check" v-if="showMultipleChoice" @click.stop :class="fileChecked[item.id] ?'file-checked' : ''">
+                            <div class="file-check" v-if="showMultipleChoice" @click.stop :class="fileChecked[item.id] ?'file-checked' : ''" :style="showMultipleChoice?'opacity: 1':''">
                                 <Checkbox v-model="fileChecked[item.id]" @on-change="onFileCheckClick(item)"/>
                             </div>
                             <div :class="`no-dark-mode-before file-icon ${item.type}`">
@@ -1381,9 +1381,9 @@ export default {
         },
 
         onFileCheckClick(file) {
-            if ( this.fileChecked[file.id] === true && !$A.inArray(file.id, this.selectFile) )
+            if (this.fileChecked[file.id] === true && !$A.inArray(file.id, this.selectFile))
                 this.selectFile.push(file);
-            else if ( this.fileChecked[file.id] === false ) {
+            else if (this.fileChecked[file.id] === false) {
                 let index = -1;
                 for (let i = 0; i < this.selectFile.length; i++) {
                     if (parseInt(this.selectFile[i].id) === parseInt(file.id)) {
@@ -1394,6 +1394,9 @@ export default {
                 // 删除对应Id
                 if (index >= 0)
                     this.selectFile.splice(index, 1);
+            }
+            if (this.selectFile.length === 0) {
+                this.showMultipleChoice = false;
             }
             // 需要清空剪切的文件
             this.shearFiles = [];
