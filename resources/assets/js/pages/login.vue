@@ -237,12 +237,6 @@ export default {
 
         onLogin() {
             this.chackServerUrl(true).then(() => {
-                if (!this.email) {
-                    return;
-                }
-                if (!this.password) {
-                    return;
-                }
                 this.loadIng++;
                 this.$store.dispatch("call", {
                     url: 'users/login',
