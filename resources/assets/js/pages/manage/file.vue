@@ -1332,6 +1332,18 @@ export default {
 
         handleTableSelect(selection, row) {
             this.selectFile = selection;
+            this.fileChecked = [];
+            if (this.selectFile.length > 0) {
+                for (let i = 0; i < this.selectFile.length; i++) {
+                    this.fileChecked[this.selectFile[i].id] = true;
+                }
+            }
+            for (let i = 0; i < this.fileList.length; i++) {
+                if (this.fileChecked[this.fileList[i].id] === true)
+                    this.fileList[i]["_checked"] = true;
+                else
+                    this.fileList[i]["_checked"] = false;
+            }
             // 需要清空剪切的文件
             this.shearFiles = [];
         },
