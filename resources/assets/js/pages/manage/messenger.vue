@@ -138,10 +138,10 @@ export default {
             topOperateStyles: {
                 top: 0,
                 left: 0,
-                position: 'absolute'
             },
             topOperateVisible: false,
             topOperateItem: {},
+            scrollY: 0
 
 
         }
@@ -264,6 +264,7 @@ export default {
                             this.getContactsList(this.contactsCurrentPage + 1);
                         }
                     }
+                    this.scrollY = res.scrollY;
                     break;
             }
         },
@@ -456,7 +457,7 @@ export default {
                 const dialogBounding = dialogWrap.getBoundingClientRect();
                 this.topOperateStyles = {
                     left: `${event.clientX - dialogBounding.left}px`,
-                    top: `${event.clientY - dialogBounding.top + 100}px`
+                    top: `${event.clientY - dialogBounding.top + 100 - this.scrollY}px`
                 };
                 this.topOperateVisible = true;
             })
