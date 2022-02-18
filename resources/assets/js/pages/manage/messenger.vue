@@ -267,6 +267,7 @@ export default {
                     break;
             }
             this.scrollY = res.scrollY;
+            this.topOperateVisible = false;
         },
 
         onActive(type) {
