@@ -68,14 +68,13 @@ Vue.use(Minder)
 
 const MDEditor = () => import('../../../components/MDEditor/index');
 const TEditor = () => import('../../../components/TEditor');
-const Flow = () => import('../../../components/Flow');
 const AceEditor = () => import('../../../components/AceEditor');
 const OnlyOffice = () => import('../../../components/OnlyOffice');
 const Drawio = () => import('../../../components/Drawio');
 
 export default {
     name: "FileContent",
-    components: {AceEditor, TEditor, MDEditor, Flow, OnlyOffice,Drawio},
+    components: {AceEditor, TEditor, MDEditor, OnlyOffice,Drawio},
     props: {
         value: {
             type: Boolean,
