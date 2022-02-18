@@ -264,9 +264,9 @@ export default {
                             this.getContactsList(this.contactsCurrentPage + 1);
                         }
                     }
-                    this.scrollY = res.scrollY;
                     break;
             }
+            this.scrollY = res.scrollY;
         },
 
         onActive(type) {
