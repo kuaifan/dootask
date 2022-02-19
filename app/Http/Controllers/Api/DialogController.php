@@ -40,10 +40,10 @@ class DialogController extends AbstractController
     {
         $user = User::auth();
         //
-        $list = WebSocketDialog::select(['web_socket_dialogs.*','u.top','u.top_at'])
+        $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
             ->where('u.userid', $user->userid)
-            ->orderByDesc('u.top')
+            ->orderByDesc('u.top_at')
             ->orderByDesc('web_socket_dialogs.last_at')
             ->paginate(Base::getPaginate(200, 100));
         $list->transform(function (WebSocketDialog $item) use ($user) {
@@ -481,7 +481,7 @@ class DialogController extends AbstractController
     /**
      * @api {get} api/dialog/top          12. 会话置顶
      *
-     * @apiDescription 消息撤回限制24小时内，需要token身份
+     * @apiDescription 需要token身份
      * @apiVersion 1.0.0
      * @apiGroup dialog
      * @apiName top
@@ -500,12 +500,8 @@ class DialogController extends AbstractController
         if (!$dialogUser) {
             return Base::retError("会话不存在");
         }
-        $top = $dialogUser->top === 1 ? 0 : 1;
-        $topAt = $dialogUser->top === 1 ? null : Carbon::now();
-        $dialogUser->top = $top;
-        $dialogUser->top_at = $topAt;
+        $dialogUser->top_at = $dialogUser->top_at ? null : Carbon::now();
         $dialogUser->save();
         return Base::retSuccess("success", $dialogId);
     }
-
 }

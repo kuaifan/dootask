@@ -277,6 +277,20 @@ export default {
 
         onLogin() {
             this.chackServerUrl(true).then(() => {
+                if (!$A.isEmail(this.email)) {
+                    $A.messageWarning("请输入正确的邮箱地址");
+                    return;
+                }
+                if (!this.password) {
+                    $A.messageWarning("请输入密码");
+                    return;
+                }
+                if (this.loginType == 'reg') {
+                    if (this.password != this.password2) {
+                        $A.messageWarning("确认密码输入不一致");
+                        return;
+                    }
+                }
                 this.loadIng++;
                 this.$store.dispatch("call", {
                     url: 'users/login',
@@ -284,7 +298,6 @@ export default {
                         type: this.loginType,
                         email: this.email,
                         password: this.password,
-                        password2: this.password2,
                         code: this.code,
                         invite: this.invite,
                     },
@@ -298,7 +311,7 @@ export default {
                     });
                 }).catch(({data, msg}) => {
                     this.loadIng--;
-                    $A.modalError(this.$L(msg));
+                    $A.modalError(msg);
                     if (data.code === 'need') {
                         this.reCode();
                         this.codeNeed = true;

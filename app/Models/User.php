@@ -180,6 +180,13 @@ class User extends AbstractModel
      */
     public static function reg($email, $password, $other = [])
     {
+        //邮箱
+        if (!Base::isEmail($email)) {
+            throw new ApiException('请输入正确的邮箱地址');
+        }
+        if (User::email2userid($email) > 0) {
+            throw new ApiException('邮箱地址已存在');
+        }
         //密码
         self::passwordPolicy($password);
         //开始注册

@@ -42,24 +42,7 @@ class UsersController extends AbstractController
         $type = trim(Request::input('type'));
         $email = trim(Request::input('email'));
         $password = trim(Request::input('password'));
-        if(!$email){
-            return Base::retError('请输入邮箱地址');
-        }
         if ($type == 'reg') {
-            $password2 = trim(Request::input('password2'));
-            //邮箱
-            if (!Base::isMail($email)) {
-                return Base::retError('请输入正确的邮箱地址');
-            }
-            if (User::email2userid($email) > 0) {
-                return Base::retError('邮箱地址已存在');
-            }
-            if (empty($password)) {
-                return Base::retError('请输入密码');
-            }
-            if ($password != $password2) {
-                return Base::retError('确认密码输入不一致');
-            }
             $setting = Base::setting('system');
             if ($setting['reg'] == 'close') {
                 return Base::retError('未开放注册');
@@ -80,9 +63,6 @@ class UsersController extends AbstractController
                 if (!Captcha::check($code)) {
                     return Base::retError('请输入正确的验证码', ['code' => 'need']);
                 }
-            }
-            if (empty($password)) {
-                return Base::retError('请输入密码');
             }
             //
             $retError = function ($msg) use ($email) {

@@ -24,12 +24,19 @@
                     class="messenger-list overlay-y"
                     @on-scroll="listScroll"
                     static>
-                    <ul v-if="tabActive==='dialog'" class="dialog" ref="dialogWrapper">
+                    <ul
+                        v-if="tabActive==='dialog'"
+                        ref="dialogWrapper"
+                        class="dialog" >
                         <li
                             v-for="(dialog, key) in dialogList"
                             :ref="`dialog_${dialog.id}`"
                             :key="key"
-                            :class="[{active: dialog.id == dialogId},{top:dialog.top === 1}]"
+                            :class="{
+                                top: dialog.top_at,
+                                active: dialog.id == dialogId,
+                                operate: dialog.id == topOperateItem.id && topOperateVisible,
+                            }"
                             @click="openDialog(dialog, true)"
                             @contextmenu.prevent.stop="handleRightClick($event, dialog)">
                             <template v-if="dialog.type=='group'">
@@ -72,17 +79,11 @@
                             :visible="topOperateVisible"
                             transfer-class-name="page-file-dropdown-menu"
                             @on-clickoutside="handleClickTopOperateOutside"
-                            @on-visible-change="handleVisibleTopOperate"
                             transfer>
                             <DropdownMenu slot="list">
-                                <template v-if="topOperateItem.id">
-                                    <DropdownItem v-if="topOperateItem.top === 1" @click.native="handleTopClick">
-                                        {{ $L('取消置顶') }}
-                                    </DropdownItem>
-                                    <DropdownItem v-if="topOperateItem.top === 0" @click.native="handleTopClick">
-                                        {{ $L('置顶该聊天') }}
-                                    </DropdownItem>
-                                </template>
+                                <DropdownItem @click.native="handleTopClick">
+                                    {{ $L(topOperateItem.top_at ? '取消置顶' : '置顶该聊天') }}
+                                </DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
                     </div>
@@ -135,15 +136,10 @@ export default {
             contactsData: null,
             contactsCurrentPage: 1,
             contactsHasMorePages: false,
-            topOperateStyles: {
-                top: 0,
-                left: 0,
-            },
+
+            topOperateStyles: {},
             topOperateVisible: false,
             topOperateItem: {},
-            scrollY: 0
-
-
         }
     },
 
@@ -158,7 +154,7 @@ export default {
             const {dialogActive, dialogKey} = this;
             if (dialogActive == '' && dialogKey == '') {
                 return this.cacheDialogs.filter(dialog => this.filterDialog(dialog)).sort((a, b) => {
-                    if (a.top || b.top) {
+                    if (a.top_at || b.top_at) {
                         return $A.Date(b.top_at) - $A.Date(a.top_at);
                     }
                     return $A.Date(b.last_at) - $A.Date(a.last_at);
@@ -194,7 +190,7 @@ export default {
                 }
                 return true;
             }).sort((a, b) => {
-                if (a.top || b.top) {
+                if (a.top_at || b.top_at) {
                     return $A.Date(b.top_at) - $A.Date(a.top_at);
                 }
                 return $A.Date(b.last_at) - $A.Date(a.last_at);
@@ -240,8 +236,7 @@ export default {
             this.$store.state.dialogOpenId = id;
         },
         dialogOpenId(id) {
-            if ( id > 0 )
-                this.dialogId = id;
+            if (id > 0) this.dialogId = id;
         },
         contactsKey(val) {
             setTimeout(() => {
@@ -266,7 +261,6 @@ export default {
                     }
                     break;
             }
-            this.scrollY = res.scrollY;
             this.topOperateVisible = false;
         },
 
@@ -313,7 +307,7 @@ export default {
         },
 
         filterDialog(dialog) {
-            if (dialog.unread > 0 || dialog.id == this.dialogId || dialog.top === 1) {
+            if (dialog.unread > 0 || dialog.id == this.dialogId || dialog.top_at) {
                 return true
             }
             if (dialog.name === undefined) {
@@ -446,31 +440,25 @@ export default {
                 }
             })
         },
+
         handleRightClick(event, item) {
+            this.handleClickTopOperateOutside();
             this.topOperateItem = $A.isJson(item) ? item : {};
-            if (this.topOperateVisible) {
-                this.handleClickTopOperateOutside();
-            }
-            this.dialogId = this.topOperateItem.id;
-            this.scrollIntoActive(true);
             this.$nextTick(() => {
                 const dialogWrap = this.$refs.dialogWrapper;
                 const dialogBounding = dialogWrap.getBoundingClientRect();
                 this.topOperateStyles = {
                     left: `${event.clientX - dialogBounding.left}px`,
-                    top: `${event.clientY - dialogBounding.top + 100 - this.scrollY}px`
+                    top: `${event.clientY - dialogBounding.top + 100 - this.$refs.list.scrollInfo().scrollY}px`
                 };
                 this.topOperateVisible = true;
             })
         },
+
         handleClickTopOperateOutside() {
             this.topOperateVisible = false;
         },
-        handleVisibleTopOperate(visible) {
-            if (visible && this.topOperateItem.id) {
-                this.$set(this.topOperateItem, '_highlight', true);
-            }
-        },
+
         handleTopClick() {
             this.$store.dispatch("call", {
                 url: 'dialog/top',

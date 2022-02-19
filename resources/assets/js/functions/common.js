@@ -355,6 +355,15 @@
         },
 
         /**
+         * 检测邮箱地址格式
+         * @param email
+         * @returns {boolean}
+         */
+        isEmail(email) {
+            return /^[a-z0-9][a-z\.0-9-_]+@[a-z0-9_-]+(?:\.[a-z]{0,3}\.[a-z]{0,2}|\.[a-z]{0,3}|\.[a-z]{0,2})$/.test(email);
+        },
+
+        /**
          * 根据两点间的经纬度计算距离
          * @param lng1
          * @param lat1

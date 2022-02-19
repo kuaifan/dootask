@@ -74,7 +74,7 @@ const Drawio = () => import('../../../components/Drawio');
 
 export default {
     name: "FileContent",
-    components: {AceEditor, TEditor, MDEditor, OnlyOffice,Drawio},
+    components: {AceEditor, TEditor, MDEditor, OnlyOffice, Drawio},
     props: {
         value: {
             type: Boolean,

@@ -967,7 +967,7 @@ class Base
      * @param string $str 需要检测的字符串
      * @return int
      */
-    public static function isMail($str)
+    public static function isEmail($str)
     {
         $RegExp = '/^[a-z0-9][a-z\.0-9-_]+@[a-z0-9_-]+(?:\.[a-z]{0,3}\.[a-z]{0,2}|\.[a-z]{0,3}|\.[a-z]{0,2})$/i';
         return preg_match($RegExp, $str);
