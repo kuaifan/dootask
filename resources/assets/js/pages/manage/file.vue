@@ -381,7 +381,167 @@ export default {
 
             tableHeight: 500,
             tableMode: $A.getStorageBoolean("fileTableMode"),
-            columns: [
+            columns: [],
+
+            shareShow: false,
+            shareInfo: {id: 0, userid: 0, permission: 1},
+            shareList: [],
+            shareLoad: 0,
+
+            linkShow: false,
+            linkData: {},
+            linkLoad: 0,
+
+            fileShow: false,
+            fileInfo: {permission: -1},
+
+            uploadDir: false,
+            uploadIng: 0,
+            uploadShow: false,
+            uploadList: [],
+            uploadFormat: [
+                'docx', 'wps', 'doc', 'xls', 'xlsx', 'ppt', 'pptx',
+                'jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'raw',
+                'rar', 'zip', 'jar', '7-zip', 'tar', 'gzip', '7z',
+                'tif', 'tiff',
+                'dwg', 'dxf',
+                'ofd',
+                'pdf',
+                'txt',
+                'htaccess', 'htgroups', 'htpasswd', 'conf', 'bat', 'cmd', 'cpp', 'c', 'cc', 'cxx', 'h', 'hh', 'hpp', 'ino', 'cs', 'css',
+                'dockerfile', 'go', 'html', 'htm', 'xhtml', 'vue', 'we', 'wpy', 'java', 'js', 'jsm', 'jsx', 'json', 'jsp', 'less', 'lua', 'makefile', 'gnumakefile',
+                'ocamlmakefile', 'make', 'md', 'markdown', 'mysql', 'nginx', 'ini', 'cfg', 'prefs', 'm', 'mm', 'pl', 'pm', 'p6', 'pl6', 'pm6', 'pgsql', 'php',
+                'inc', 'phtml', 'shtml', 'php3', 'php4', 'php5', 'phps', 'phpt', 'aw', 'ctp', 'module', 'ps1', 'py', 'r', 'rb', 'ru', 'gemspec', 'rake', 'guardfile', 'rakefile',
+                'gemfile', 'rs', 'sass', 'scss', 'sh', 'bash', 'bashrc', 'sql', 'sqlserver', 'swift', 'ts', 'typescript', 'str', 'vbs', 'vb', 'v', 'vh', 'sv', 'svh', 'xml',
+                'rdf', 'rss', 'wsdl', 'xslt', 'atom', 'mathml', 'mml', 'xul', 'xbl', 'xaml', 'yaml', 'yml',
+                'asp', 'properties', 'gitignore', 'log', 'bas', 'prg', 'python', 'ftl', 'aspx',
+                'mp3', 'wav', 'mp4', 'flv',
+                'avi', 'mov', 'wmv', 'mkv', '3gp', 'rm',
+                'xmind',
+                'rp',
+            ],
+            uploadAccept: '',
+            maxSize: 204800,
+
+            contextMenuItem: {},
+            contextMenuVisible: false,
+            contextMenuStyles: {
+                top: 0,
+                left: 0
+            },
+        }
+    },
+
+    mounted() {
+        this.tableHeight = window.innerHeight - 160;
+        this.uploadAccept = this.uploadFormat.map(item => {
+            return '.' + item
+        }).join(",");
+    },
+
+    activated() {
+        this.$store.dispatch("websocketPath", "file");
+        this.getFileList();
+    },
+
+    computed: {
+        ...mapState(['userId', 'userToken', 'userIsAdmin', 'userInfo', 'files', 'wsOpenNum']),
+
+        actionUrl() {
+            return $A.apiUrl('file/content/upload?pid=' + this.pid)
+        },
+
+        headers() {
+            return {
+                fd: $A.getStorageString("userWsFd"),
+                token: this.userToken,
+            }
+        },
+
+        shearFile() {
+            const {files, shearId} = this;
+            if (shearId > 0) {
+                let file = files.find(({id}) => id == shearId);
+                if (file) {
+                    return file;
+                }
+            }
+            return null;
+        },
+
+        shareAlready() {
+            let data = this.shareList ? this.shareList.map(({userid}) => userid) : [];
+            if (this.shareInfo.userid) {
+                data.push(this.shareInfo.userid);
+            }
+            return data
+        },
+
+        fileList() {
+            const {files, searchKey, pid} = this;
+            return sortBy(files.filter((file) => {
+                if (searchKey) {
+                    return file.name.indexOf(searchKey) !== -1;
+                }
+                return file.pid == pid;
+            }), (file) => {
+                return (file.type == 'folder' ? 'a' : 'b') + file.name;
+            })
+        },
+
+        navigator() {
+            let {pid, files} = this;
+            let array = [];
+            while (pid > 0) {
+                let file = files.find(({id, permission}) => id == pid && permission > -1);
+                if (file) {
+                    array.unshift(file);
+                    pid = file.pid;
+                } else {
+                    pid = 0;
+                }
+            }
+            return array;
+        },
+
+        isParentShare() {
+            const {navigator} = this;
+            return !!navigator.find(({share}) => share);
+        },
+    },
+
+    watch: {
+        pid() {
+            this.getFileList();
+        },
+
+        tableMode(val) {
+            $A.setStorage("fileTableMode", val)
+        },
+
+        fileShow(val) {
+            if (val) {
+                this.$store.dispatch("websocketPath", "file/content/" + this.fileInfo.id);
+            } else {
+                this.$store.dispatch("websocketPath", "file");
+                this.getFileList();
+            }
+        },
+
+        wsOpenNum(num) {
+            if (num <= 1) return
+            this.wsOpenTimeout && clearTimeout(this.wsOpenTimeout)
+            this.wsOpenTimeout = setTimeout(() => {
+                if (this.$route.name == 'manage-file') {
+                    this.getFileList();
+                }
+            }, 5000)
+        }
+    },
+
+    methods: {
+        initLanguage() {
+            this.columns = [
                 {
                     title: this.$L('文件名'),
                     key: 'name',
@@ -554,165 +714,9 @@ export default {
                     resizable: true,
                     sortable: true,
                 },
-            ],
-
-            shareShow: false,
-            shareInfo: {id: 0, userid: 0, permission: 1},
-            shareList: [],
-            shareLoad: 0,
-
-            linkShow: false,
-            linkData: {},
-            linkLoad: 0,
-
-            fileShow: false,
-            fileInfo: {permission: -1},
-
-            uploadDir: false,
-            uploadIng: 0,
-            uploadShow: false,
-            uploadList: [],
-            uploadFormat: [
-                'docx', 'wps', 'doc', 'xls', 'xlsx', 'ppt', 'pptx',
-                'jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'raw',
-                'rar', 'zip', 'jar', '7-zip', 'tar', 'gzip', '7z',
-                'tif', 'tiff',
-                'dwg', 'dxf',
-                'ofd',
-                'pdf',
-                'txt',
-                'htaccess', 'htgroups', 'htpasswd', 'conf', 'bat', 'cmd', 'cpp', 'c', 'cc', 'cxx', 'h', 'hh', 'hpp', 'ino', 'cs', 'css',
-                'dockerfile', 'go', 'html', 'htm', 'xhtml', 'vue', 'we', 'wpy', 'java', 'js', 'jsm', 'jsx', 'json', 'jsp', 'less', 'lua', 'makefile', 'gnumakefile',
-                'ocamlmakefile', 'make', 'md', 'markdown', 'mysql', 'nginx', 'ini', 'cfg', 'prefs', 'm', 'mm', 'pl', 'pm', 'p6', 'pl6', 'pm6', 'pgsql', 'php',
-                'inc', 'phtml', 'shtml', 'php3', 'php4', 'php5', 'phps', 'phpt', 'aw', 'ctp', 'module', 'ps1', 'py', 'r', 'rb', 'ru', 'gemspec', 'rake', 'guardfile', 'rakefile',
-                'gemfile', 'rs', 'sass', 'scss', 'sh', 'bash', 'bashrc', 'sql', 'sqlserver', 'swift', 'ts', 'typescript', 'str', 'vbs', 'vb', 'v', 'vh', 'sv', 'svh', 'xml',
-                'rdf', 'rss', 'wsdl', 'xslt', 'atom', 'mathml', 'mml', 'xul', 'xbl', 'xaml', 'yaml', 'yml',
-                'asp', 'properties', 'gitignore', 'log', 'bas', 'prg', 'python', 'ftl', 'aspx',
-                'mp3', 'wav', 'mp4', 'flv',
-                'avi', 'mov', 'wmv', 'mkv', '3gp', 'rm',
-                'xmind',
-                'rp',
-            ],
-            uploadAccept: '',
-            maxSize: 204800,
-
-            contextMenuItem: {},
-            contextMenuVisible: false,
-            contextMenuStyles: {
-                top: 0,
-                left: 0
-            },
-        }
-    },
-
-    mounted() {
-        this.tableHeight = window.innerHeight - 160;
-        this.uploadAccept = this.uploadFormat.map(item => {
-            return '.' + item
-        }).join(",");
-    },
-
-    activated() {
-        this.$store.dispatch("websocketPath", "file");
-        this.getFileList();
-    },
-
-    computed: {
-        ...mapState(['userId', 'userToken', 'userIsAdmin', 'userInfo', 'files', 'wsOpenNum']),
-
-        actionUrl() {
-            return $A.apiUrl('file/content/upload?pid=' + this.pid)
+            ];
         },
 
-        headers() {
-            return {
-                fd: $A.getStorageString("userWsFd"),
-                token: this.userToken,
-            }
-        },
-
-        shearFile() {
-            const {files, shearId} = this;
-            if (shearId > 0) {
-                let file = files.find(({id}) => id == shearId);
-                if (file) {
-                    return file;
-                }
-            }
-            return null;
-        },
-
-        shareAlready() {
-            let data = this.shareList ? this.shareList.map(({userid}) => userid) : [];
-            if (this.shareInfo.userid) {
-                data.push(this.shareInfo.userid);
-            }
-            return data
-        },
-
-        fileList() {
-            const {files, searchKey, pid} = this;
-            return sortBy(files.filter((file) => {
-                if (searchKey) {
-                    return file.name.indexOf(searchKey) !== -1;
-                }
-                return file.pid == pid;
-            }), (file) => {
-                return (file.type == 'folder' ? 'a' : 'b') + file.name;
-            })
-        },
-
-        navigator() {
-            let {pid, files} = this;
-            let array = [];
-            while (pid > 0) {
-                let file = files.find(({id, permission}) => id == pid && permission > -1);
-                if (file) {
-                    array.unshift(file);
-                    pid = file.pid;
-                } else {
-                    pid = 0;
-                }
-            }
-            return array;
-        },
-
-        isParentShare() {
-            const {navigator} = this;
-            return !!navigator.find(({share}) => share);
-        },
-    },
-
-    watch: {
-        pid() {
-            this.getFileList();
-        },
-
-        tableMode(val) {
-            $A.setStorage("fileTableMode", val)
-        },
-
-        fileShow(val) {
-            if (val) {
-                this.$store.dispatch("websocketPath", "file/content/" + this.fileInfo.id);
-            } else {
-                this.$store.dispatch("websocketPath", "file");
-                this.getFileList();
-            }
-        },
-
-        wsOpenNum(num) {
-            if (num <= 1) return
-            this.wsOpenTimeout && clearTimeout(this.wsOpenTimeout)
-            this.wsOpenTimeout = setTimeout(() => {
-                if (this.$route.name == 'manage-file') {
-                    this.getFileList();
-                }
-            }, 5000)
-        }
-    },
-
-    methods: {
         formatName(file) {
             let {name, ext} = file;
             if (ext != '') {
