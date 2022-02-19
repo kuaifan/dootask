@@ -1828,6 +1828,8 @@ export default {
                 reject({msg: 'Parameter error'});
                 return;
             }
+            // 先重置dialogOpenId，否者无法重复打开相同对话
+            state.dialogOpenId = 0;
             dispatch("call", {
                 url: 'dialog/open/user',
                 data: {

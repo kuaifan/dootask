@@ -50,7 +50,7 @@
                     <MDEditor v-if="contentDetail.type=='md'" v-model="contentDetail.content" height="100%"/>
                     <TEditor v-else v-model="contentDetail.content" height="100%" @editorSave="handleClick('saveBefore')"/>
                 </template>
-                <Flow v-else-if="file.type=='flow'" ref="myFlow" v-model="contentDetail" @saveData="handleClick('saveBefore')"/>
+                <Drawio v-else-if="file.type=='flow'" ref="myFlow" v-model="contentDetail" @saveData="handleClick('saveBefore')"/>
                 <Minder v-else-if="file.type=='mind'" ref="myMind" v-model="contentDetail" @saveData="handleClick('saveBefore')"/>
                 <OnlyOffice v-else-if="['word', 'excel', 'ppt'].includes(file.type)" v-model="contentDetail" :documentKey="documentKey"/>
                 <AceEditor v-else-if="['code', 'txt'].includes(file.type)" v-model="contentDetail.content" :ext="file.ext" @saveData="handleClick('saveBefore')"/>
@@ -68,13 +68,13 @@ Vue.use(Minder)
 
 const MDEditor = () => import('../../../components/MDEditor/index');
 const TEditor = () => import('../../../components/TEditor');
-const Flow = () => import('../../../components/Flow');
 const AceEditor = () => import('../../../components/AceEditor');
 const OnlyOffice = () => import('../../../components/OnlyOffice');
+const Drawio = () => import('../../../components/Drawio');
 
 export default {
     name: "FileContent",
-    components: {AceEditor, TEditor, MDEditor, Flow, OnlyOffice},
+    components: {AceEditor, TEditor, MDEditor, OnlyOffice,Drawio},
     props: {
         value: {
             type: Boolean,

@@ -27,7 +27,7 @@
                     <MDPreview v-if="contentDetail.type=='md'" :initialValue="contentDetail.content"/>
                     <TEditor v-else v-model="contentDetail.content" height="100%" readOnly/>
                 </template>
-                <Flow v-else-if="file.type=='flow'" ref="myFlow" v-model="contentDetail" readOnly/>
+                <Drawio v-else-if="file.type=='flow'" ref="myFlow" v-model="contentDetail" readOnly/>
                 <Minder v-else-if="file.type=='mind'" ref="myMind" v-model="contentDetail" readOnly/>
                 <OnlyOffice v-else-if="['word', 'excel', 'ppt'].includes(file.type)" v-model="contentDetail" :code="code" :documentKey="documentKey" readOnly/>
                 <AceEditor v-else-if="['code', 'txt'].includes(file.type)" v-model="contentDetail.content" :ext="file.ext" readOnly/>
@@ -44,13 +44,13 @@ Vue.use(Minder)
 
 const MDPreview = () => import('../../../components/MDEditor/preview');
 const TEditor = () => import('../../../components/TEditor');
-const Flow = () => import('../../../components/Flow');
 const AceEditor = () => import('../../../components/AceEditor');
 const OnlyOffice = () => import('../../../components/OnlyOffice');
+const Drawio = () => import('../../../components/Drawio');
 
 export default {
     name: "FilePreview",
-    components: {AceEditor, TEditor, MDPreview, Flow, OnlyOffice},
+    components: {AceEditor, TEditor, MDPreview, OnlyOffice, Drawio},
     props: {
         code: {
             type: String,

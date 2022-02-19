@@ -24,13 +24,14 @@
                     class="messenger-list overlay-y"
                     @on-scroll="listScroll"
                     static>
-                    <ul v-if="tabActive==='dialog'" class="dialog">
+                    <ul v-if="tabActive==='dialog'" class="dialog" ref="dialogWrapper">
                         <li
                             v-for="(dialog, key) in dialogList"
                             :ref="`dialog_${dialog.id}`"
                             :key="key"
-                            :class="{active: dialog.id == dialogId}"
-                            @click="openDialog(dialog, true)">
+                            :class="[{active: dialog.id == dialogId},{top:dialog.top === 1}]"
+                            @click="openDialog(dialog, true)"
+                            @contextmenu.prevent.stop="handleRightClick($event, dialog)">
                             <template v-if="dialog.type=='group'">
                                 <i v-if="dialog.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
                                 <i v-else-if="dialog.group_type=='task'" class="taskfont icon-avatar task" :class="{completed:$A.dialogCompleted(dialog)}">&#xe6f4;</i>
@@ -65,6 +66,26 @@
                         <li v-if="contactsLoad > 0" class="loading"><Loading/></li>
                         <li v-else-if="!contactsHasMorePages" class="loaded">{{$L('共' + contactsList.length + '位联系人')}}</li>
                     </ul>
+                    <div class="top-operate" :style="topOperateStyles">
+                        <Dropdown
+                            trigger="custom"
+                            :visible="topOperateVisible"
+                            transfer-class-name="page-file-dropdown-menu"
+                            @on-clickoutside="handleClickTopOperateOutside"
+                            @on-visible-change="handleVisibleTopOperate"
+                            transfer>
+                            <DropdownMenu slot="list">
+                                <template v-if="topOperateItem.id">
+                                    <DropdownItem v-if="topOperateItem.top === 1" @click.native="handleTopClick">
+                                        {{ $L('取消置顶') }}
+                                    </DropdownItem>
+                                    <DropdownItem v-if="topOperateItem.top === 0" @click.native="handleTopClick">
+                                        {{ $L('置顶该聊天') }}
+                                    </DropdownItem>
+                                </template>
+                            </DropdownMenu>
+                        </Dropdown>
+                    </div>
                 </ScrollerY>
                 <div class="messenger-menu">
                     <Icon @click="tabActive='dialog'" :class="{active:tabActive==='dialog'}" type="ios-chatbubbles" />
@@ -114,6 +135,15 @@ export default {
             contactsData: null,
             contactsCurrentPage: 1,
             contactsHasMorePages: false,
+            topOperateStyles: {
+                top: 0,
+                left: 0,
+            },
+            topOperateVisible: false,
+            topOperateItem: {},
+            scrollY: 0
+
+
         }
     },
 
@@ -128,6 +158,9 @@ export default {
             const {dialogActive, dialogKey} = this;
             if (dialogActive == '' && dialogKey == '') {
                 return this.cacheDialogs.filter(dialog => this.filterDialog(dialog)).sort((a, b) => {
+                    if (a.top || b.top) {
+                        return $A.Date(b.top_at) - $A.Date(a.top_at);
+                    }
                     return $A.Date(b.last_at) - $A.Date(a.last_at);
                 });
             }
@@ -161,6 +194,9 @@ export default {
                 }
                 return true;
             }).sort((a, b) => {
+                if (a.top || b.top) {
+                    return $A.Date(b.top_at) - $A.Date(a.top_at);
+                }
                 return $A.Date(b.last_at) - $A.Date(a.last_at);
             })
         },
@@ -204,7 +240,8 @@ export default {
             this.$store.state.dialogOpenId = id;
         },
         dialogOpenId(id) {
-            this.dialogId = id;
+            if ( id > 0 )
+                this.dialogId = id;
         },
         contactsKey(val) {
             setTimeout(() => {
@@ -229,6 +266,8 @@ export default {
                     }
                     break;
             }
+            this.scrollY = res.scrollY;
+            this.topOperateVisible = false;
         },
 
         onActive(type) {
@@ -274,7 +313,7 @@ export default {
         },
 
         filterDialog(dialog) {
-            if (dialog.unread > 0 || dialog.id == this.dialogId) {
+            if (dialog.unread > 0 || dialog.id == this.dialogId || dialog.top === 1) {
                 return true
             }
             if (dialog.name === undefined) {
@@ -406,6 +445,45 @@ export default {
                     }
                 }
             })
+        },
+        handleRightClick(event, item) {
+            this.topOperateItem = $A.isJson(item) ? item : {};
+            if (this.topOperateVisible) {
+                this.handleClickTopOperateOutside();
+            }
+            this.dialogId = this.topOperateItem.id;
+            this.scrollIntoActive(true);
+            this.$nextTick(() => {
+                const dialogWrap = this.$refs.dialogWrapper;
+                const dialogBounding = dialogWrap.getBoundingClientRect();
+                this.topOperateStyles = {
+                    left: `${event.clientX - dialogBounding.left}px`,
+                    top: `${event.clientY - dialogBounding.top + 100 - this.scrollY}px`
+                };
+                this.topOperateVisible = true;
+            })
+        },
+        handleClickTopOperateOutside() {
+            this.topOperateVisible = false;
+        },
+        handleVisibleTopOperate(visible) {
+            if (visible && this.topOperateItem.id) {
+                this.$set(this.topOperateItem, '_highlight', true);
+            }
+        },
+        handleTopClick() {
+            this.$store.dispatch("call", {
+                url: 'dialog/top',
+                data: {
+                    dialog_id: this.topOperateItem.id,
+                },
+            }).then(() => {
+                this.$store.dispatch("getDialogs");
+                this.$Modal.remove();
+            }).catch(({msg}) => {
+                $A.modalError(msg, 301);
+                this.$Modal.remove();
+            });
         }
     }
 }

@@ -189,6 +189,9 @@
                                 left: 42px;
                                 transform: scale(0.8);
                             }
+                            &.top {
+                                background-color: #f1f6fb;
+                            }
                             &.active {
                                 background-color: #F4F5F7;
                             }
@@ -255,6 +258,23 @@
                                     }
                                 }
                             }
+                        }
+                    }
+                }
+                .top-operate {
+                    opacity: 0;
+                    position: absolute;
+                    top: 2px;
+                    right: 2px;
+                    transition: opacity 0.2s;
+                    display: flex;
+                    .ivu-icon {
+                        font-size: 16px;
+                        color: #aaaaaa;
+                        transition: color 0.2s;
+                        padding: 2px 5px;
+                        &:hover {
+                            color: $primary-text-color;
                         }
                     }
                 }
@@ -369,6 +389,23 @@
                         .dialog-input {
                             width: calc(100% - 44px);
                         }
+                    }
+                }
+            }
+            .top-operate {
+                opacity: 0;
+                position: absolute;
+                top: 2px;
+                right: 2px;
+                transition: opacity 0.2s;
+                display: flex;
+                .ivu-icon {
+                    font-size: 16px;
+                    color: #aaaaaa;
+                    transition: color 0.2s;
+                    padding: 2px 5px;
+                    &:hover {
+                        color: $primary-text-color;
                     }
                 }
             }
