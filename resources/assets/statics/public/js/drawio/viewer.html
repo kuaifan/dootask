@@ -13,7 +13,9 @@
             left: 0;
             right: 0;
             top: 0;
-            bottom: 0
+            bottom: 0;
+            overflow: hidden;
+            background: #ffffff;
         }
     </style>
     <script type="text/javascript">
@@ -46,6 +48,7 @@
 </head>
 <body class="geEditor">
 <div id="graph"></div>
+<script type="text/javascript" src="./js/grapheditor/Dark.js"></script>
 <script type="text/javascript">
     (function (win) {
         var graph = new Graph(document.getElementById('graph'));
