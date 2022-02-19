@@ -318,7 +318,7 @@ class FileController extends AbstractController
      * @apiGroup file
      * @apiName move
      *
-     * @apiParam {Number} id            文件ID
+     * @apiParam {Numbers} ids          文件ID（格式：[id1, id2]）
      * @apiParam {Number} pid           移动到的文件夹ID
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
@@ -329,30 +329,47 @@ class FileController extends AbstractController
     {
         $user = User::auth();
         //
-        $id = intval(Request::input('id'));
+        $ids = Request::input('ids');
         $pid = intval(Request::input('pid'));
         //
-        $file = File::permissionFind($id, 1000);
-        //
+        if (!is_array($ids) || empty($ids)) {
+            return Base::retError('请选择移动的文件或文件夹');
+        }
+        if (count($ids) > 100) {
+            return Base::retError('一次最多只能移动100个文件或文件夹');
+        }
         if ($pid > 0) {
             if (!File::whereUserid($user->userid)->whereId($pid)->exists()) {
                 return Base::retError('参数错误');
             }
-            $arr = [];
-            $tid = $pid;
-            while ($tid > 0) {
-                $arr[] = $tid;
-                $tid = intval(File::whereId($tid)->value('pid'));
-            }
-            if (in_array($id, $arr)) {
-                return Base::retError('位置错误');
-            }
         }
         //
-        $file->pid = $pid;
-        $file->save();
-        $file->pushMsg('update', $file);
-        return Base::retSuccess('操作成功', $file);
+        $files = [];
+        AbstractModel::transaction(function() use ($pid, $ids, &$files) {
+            foreach ($ids as $id) {
+                $file = File::permissionFind($id, 1000);
+                //
+                if ($pid > 0) {
+                    $arr = [];
+                    $tid = $pid;
+                    while ($tid > 0) {
+                        $arr[] = $tid;
+                        $tid = intval(File::whereId($tid)->value('pid'));
+                    }
+                    if (in_array($id, $arr)) {
+                        throw new ApiException('移动位置错误');
+                    }
+                }
+                //
+                $file->pid = $pid;
+                $file->save();
+                $files[] = $file;
+            }
+        });
+        foreach ($files as $file) {
+            $file->pushMsg('update', $file);
+        }
+        return Base::retSuccess('操作成功', $files);
     }
 
     /**
@@ -363,7 +380,7 @@ class FileController extends AbstractController
      * @apiGroup file
      * @apiName remove
      *
-     * @apiParam {Number} id            文件ID
+     * @apiParam {Numbers} ids          文件ID（格式：[id1, id2]）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -373,12 +390,25 @@ class FileController extends AbstractController
     {
         User::auth();
         //
-        $id = intval(Request::input('id'));
+        $ids = Request::input('ids');
         //
-        $file = File::permissionFind($id, 1000);
+        if (!is_array($ids) || empty($ids)) {
+            return Base::retError('请选择删除的文件或文件夹');
+        }
+        if (count($ids) > 100) {
+            return Base::retError('一次最多只能删除100个文件或文件夹');
+        }
         //
-        $file->deleteFile();
-        return Base::retSuccess('删除成功', $file);
+        $files = [];
+        AbstractModel::transaction(function() use ($ids, &$files) {
+            foreach ($ids as $id) {
+                $file = File::permissionFind($id, 1000);
+                $file->deleteFile();
+                $files[] = $file;
+            }
+        });
+        //
+        return Base::retSuccess('删除成功', $files);
     }
 
     /**

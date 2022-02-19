@@ -31,26 +31,24 @@
                         <span v-if="item.share && item.permission == 0" class="readonly">{{$L('只读')}}</span>
                     </li>
                 </ul>
-                <Button v-if="shearFiles.length > 0" :disabled="shearFiles[0].pid == pid" size="small" type="primary" @click="batchShearTo">
+                <Button v-if="shearFirst" :disabled="shearFirst.pid == pid" size="small" type="primary" @click="shearTo">
                     <div class="file-shear">
                         <span>{{$L('粘贴')}}</span>
-                        "<em>{{shearFiles[0].name}}</em>"
-                        <span v-if="shearFiles.length > 1">{{$L('等')}}{{shearFiles.length}}{{$L('个文件')}}</span>
+                        "<em>{{shearFirst.name}}</em>"
+                        <span v-if="shearIds.length > 1">{{$L('等')}}{{shearIds.length}}{{$L('个文件')}}</span>
                     </div>
                 </Button>
-                <template v-if="selectFile.length > 0 && shearFiles.length <= 0">
-                    <Tooltip :content="$L('仅支持移动文件')">
-                        <Button size="small" type="info" @click="handleContextClick('batchShear')">
-                            <Icon type="ios-cut" />
-                            {{$L('剪切')}}
-                        </Button>
-                    </Tooltip>
-                    <Button size="small" type="error" @click="deleteSelectFile">
+                <template v-else-if="selectIds.length > 0">
+                    <Button size="small" type="info" @click="handleContextClick('shearSelect')">
+                        <Icon type="ios-cut" />
+                        {{$L('剪切')}}
+                    </Button>
+                    <Button size="small" type="error" @click="deleteFile(selectIds)">
                         <Icon type="ios-trash" />
                         {{$L('删除')}}
                     </Button>
+                    <Button type="primary" size="small" @click="clearSelect">{{$L('取消选择')}}</Button>
                 </template>
-                <Button v-if="selectFile.length > 0" type="primary" size="small" @click="clearSelect">{{$L('取消选择')}}</Button>
                 <div v-if="loadIng > 0" class="nav-load"><Loading/></div>
                 <div class="flex-full"></div>
                 <div :class="['switch-button', tableMode ? 'table' : '']" @click="tableMode=!tableMode">
@@ -61,7 +59,6 @@
 
             <div v-if="tableMode" class="file-table" @contextmenu.prevent="handleRightClick">
                 <Table
-                    ref="fileListTable"
                     :columns="columns"
                     :data="fileList"
                     :height="tableHeight"
@@ -84,14 +81,17 @@
                     <ul class="clearfix">
                         <li
                             v-for="item in fileList"
-                            :class="[item.id && shearId == item.id ? 'shear' : '',showMultipleChoice?'highlight':'', !!item._highlight ? 'highlight' : '']"
+                            :class="{
+                                shear: shearIds.includes(item.id),
+                                highlight: selectIds.includes(item.id),
+                            }"
                             @contextmenu.prevent.stop="handleRightClick($event, item)"
                             @click="openFile(item)">
-                            <div class="file-menu" @click.stop="handleRightClick($event, item)" :style="showMultipleChoice?'opacity: 1':''">
-                                <Icon type="ios-more" />
+                            <div class="file-check" :class="{'file-checked':selectIds.includes(item.id)}" @click.stop="dropFile(item, 'select')">
+                                <Checkbox :value="selectIds.includes(item.id)"/>
                             </div>
-                            <div class="file-check" v-if="showMultipleChoice" @click.stop :class="fileChecked[item.id] ?'file-checked' : ''" :style="showMultipleChoice?'opacity: 1':''">
-                                <Checkbox v-model="fileChecked[item.id]" @on-change="onFileCheckClick(item)"/>
+                            <div class="file-menu" @click.stop="handleRightClick($event, item)">
+                                <Icon type="ios-more" />
                             </div>
                             <div :class="`no-dark-mode-before file-icon ${item.type}`">
                                 <template v-if="item.share">
@@ -136,6 +136,7 @@
                     <DropdownMenu slot="list">
                         <template v-if="contextMenuItem.id">
                             <DropdownItem @click.native="handleContextClick('open')">{{$L('打开')}}</DropdownItem>
+                            <DropdownItem @click.native="handleContextClick('select')">{{$L(selectIds.includes(contextMenuItem.id) ? '取消选择' : '选择')}}</DropdownItem>
                             <Dropdown placement="right-start" transfer>
                                 <DropdownItem divided>
                                     <div class="arrow-forward-item">{{$L('新建')}}<Icon type="ios-arrow-forward"></Icon></div>
@@ -154,7 +155,6 @@
                             <DropdownItem @click.native="handleContextClick('rename')" divided>{{$L('重命名')}}</DropdownItem>
                             <DropdownItem @click.native="handleContextClick('copy')" :disabled="contextMenuItem.type == 'folder'">{{$L('复制')}}</DropdownItem>
                             <DropdownItem @click.native="handleContextClick('shear')" :disabled="contextMenuItem.userid != userId">{{$L('剪切')}}</DropdownItem>
-                            <DropdownItem v-if="!tableMode" @click.native="handleContextClick('multipleChoice')" divided>{{showMultipleChoice?$L('取消多选'):$L('多选')}}</DropdownItem>
                             <template v-if="contextMenuItem.userid == userId">
                                 <DropdownItem @click.native="handleContextClick('share')" divided>{{$L('共享')}}</DropdownItem>
                                 <DropdownItem @click.native="handleContextClick('link')" :disabled="contextMenuItem.type == 'folder'">{{$L('链接')}}</DropdownItem>
@@ -349,7 +349,6 @@ export default {
             searchTimeout: null,
 
             pid: $A.getStorageInt("fileOpenPid"),
-            shearId: 0,
 
             types: [
                 {
@@ -453,10 +452,8 @@ export default {
                 left: 0
             },
 
-            selectFile: [],
-            fileChecked: [],
-            shearFiles: [],
-            showMultipleChoice: false
+            shearIds: [],
+            selectIds: [],
         }
     },
 
@@ -486,17 +483,6 @@ export default {
             }
         },
 
-        shearFile() {
-            const {files, shearId} = this;
-            if (shearId > 0) {
-                let file = files.find(({id}) => id == shearId);
-                if (file) {
-                    return file;
-                }
-            }
-            return null;
-        },
-
         shareAlready() {
             let data = this.shareList ? this.shareList.map(({userid}) => userid) : [];
             if (this.shareInfo.userid) {
@@ -506,15 +492,27 @@ export default {
         },
 
         fileList() {
-            const {files, searchKey, pid} = this;
-            return sortBy(files.filter((file) => {
+            const {files, searchKey, pid, selectIds} = this;
+            const list = $A.cloneJSON(sortBy(files.filter((file) => {
                 if (searchKey) {
                     return file.name.indexOf(searchKey) !== -1;
                 }
                 return file.pid == pid;
             }), (file) => {
                 return (file.type == 'folder' ? 'a' : 'b') + file.name;
+            }));
+            return list.map(item => {
+                item._checked = selectIds.includes(item.id)
+                return item;
             })
+        },
+
+        shearFirst() {
+            const {files, shearIds} = this;
+            if (shearIds.length === 0) {
+                return null;
+            }
+            return files.find(item => item.id == shearIds[0])
         },
 
         navigator() {
@@ -540,30 +538,12 @@ export default {
 
     watch: {
         pid() {
+            this.selectIds = [];
             this.getFileList();
         },
 
         tableMode(val) {
             $A.setStorage("fileTableMode", val)
-            // 切换显示模式时把选中的数据转移
-            if ( val === true ) {
-                if ( this.fileChecked.length > 0 ) {
-                    for (let i = 0; i < this.fileList.length; i++) {
-                        if ( this.fileChecked[this.fileList[i].id] === true )
-                            this.fileList[i]["_checked"] = true;
-                        else
-                            this.fileList[i]["_checked"] = false;
-                    }
-                }
-            } else {
-                this.fileChecked = []; // 清空
-                if ( this.selectFile.length > 0 ) {
-                    for (let i = 0; i < this.selectFile.length; i++) {
-                        this.fileChecked[this.selectFile[i].id] = true;
-                    }
-                }
-            }
-
         },
 
         fileShow(val) {
@@ -573,6 +553,24 @@ export default {
                 this.$store.dispatch("websocketPath", "file");
                 this.getFileList();
             }
+        },
+
+        selectIds: {
+            handler(ids) {
+                if (ids.length > 0) {
+                    this.shearIds = [];
+                }
+            },
+            deep: true
+        },
+
+        shearIds: {
+            handler(list) {
+                if (list.length > 0) {
+                    this.selectIds = [];
+                }
+            },
+            deep: true
         },
 
         wsOpenNum(num) {
@@ -591,8 +589,8 @@ export default {
             this.columns = [
                 {
                     type: 'selection',
-                    width: 60,
-                    align: 'center'
+                    width: 50,
+                    align: 'right'
                 },
                 {
                     title: this.$L('文件名'),
@@ -704,7 +702,7 @@ export default {
                                 ]))
                             }
                             return h('div', {
-                                class: 'file-nbox'
+                                class: `file-nbox ${this.shearIds.includes(row.id) ? 'shear' : ''}`,
                             }, [
                                 h('div', {
                                     class: `no-dark-mode-before file-name file-icon ${row.type}`,
@@ -843,8 +841,6 @@ export default {
                 this.searchKey = '';
                 this.pid = item.id;
             } else {
-                // 清空已选项
-                this.clearSelect()
                 if (this.$Electron) {
                     this.openSingle(item);
                 } else {
@@ -870,10 +866,12 @@ export default {
             });
         },
 
-        clickRow(row) {
-            // 清空已选择的行
-            this.clearSelect();
-            this.dropFile(row, 'open');
+        clickRow(row, column) {
+            if (column.type == "selection") {
+                this.dropFile(row, 'select');
+            } else {
+                this.dropFile(row, 'open');
+            }
         },
 
         handleContextMenu(row, event) {
@@ -904,6 +902,15 @@ export default {
                     this.openFile(item, false);
                     break;
 
+                case 'select':
+                    let index = this.selectIds.findIndex(id => id == item.id)
+                    if (index > -1) {
+                        this.selectIds.splice(index, 1)
+                    } else {
+                        this.selectIds.push(item.id)
+                    }
+                    break;
+
                 case 'rename':
                     this.$set(item, 'newname', item.name);
                     this.setEdit(item.id, true)
@@ -925,42 +932,11 @@ export default {
                     break;
 
                 case 'shear':
-                    this.showMultipleChoice = true;
-                    this.fileChecked[item.id] = true;
-                    this.onFileCheckClick(item);
-                    for (const item of this.selectFile) {
-                        let selected = false;
-                        for (const shearFile of this.shearFiles) {
-                            if ( shearFile.id === item.id ) {
-                                selected = true;
-                                break;
-                            }
-                        }
-                        if (!selected)
-                            this.shearFiles.push(item);
-                    }
+                    this.shearIds = [item.id];
                     break;
 
-                case 'multipleChoice':
-                    this.showMultipleChoice = !this.showMultipleChoice;
-                    if(this.showMultipleChoice === false){
-                        this.clearSelect();
-                    }
-                    break;
-
-                case 'batchShear':
-                    // 排除目录
-                    for (const item of this.selectFile) {
-                        let selected = false;
-                        for (const shearFile of this.shearFiles) {
-                            if ( shearFile.id === item.id ) {
-                                selected = true;
-                                break;
-                            }
-                        }
-                        if (!selected)
-                            this.shearFiles.push(item);
-                    }
+                case 'shearSelect':
+                    this.shearIds = $A.cloneJSON(this.selectIds);
                     break;
 
                 case 'share':
@@ -1019,27 +995,7 @@ export default {
                     break;
 
                 case 'delete':
-                    let typeName = item.type == 'folder' ? '文件夹' : '文件';
-                    $A.modalConfirm({
-                        title: '删除' + typeName,
-                        content: '你确定要删除' + typeName +'【' + item.name + '】吗？',
-                        loading: true,
-                        onOk: () => {
-                            this.$store.dispatch("call", {
-                                url: 'file/remove',
-                                data: {
-                                    id: item.id,
-                                },
-                            }).then(({msg}) => {
-                                $A.messageSuccess(msg);
-                                this.$Modal.remove();
-                                this.$store.dispatch("forgetFile", item.id);
-                            }).catch(({msg}) => {
-                                $A.modalError(msg, 301);
-                                this.$Modal.remove();
-                            });
-                        }
-                    });
+                    this.deleteFile([item.id])
                     break;
             }
         },
@@ -1078,6 +1034,61 @@ export default {
 
         linkFocus() {
             this.$refs.linkInput.focus({cursor:'all'});
+        },
+
+        shearTo() {
+            if (this.shearIds.length == 0) {
+                return;
+            }
+            this.$store.dispatch("call", {
+                url: 'file/move',
+                data: {
+                    ids: this.shearIds,
+                    pid: this.pid,
+                },
+            }).then(({data, msg}) => {
+                $A.messageSuccess(msg);
+                this.shearIds = [];
+                this.$store.dispatch("saveFile", data);
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            });
+        },
+
+        deleteFile(ids) {
+            if (ids.length === 0) {
+                return
+            }
+            const firstFile = this.files.find(item => item.id == ids[0]) || {};
+            const allFolder = !ids.find(id => {
+                return this.files.find(item => item.type != 'folder' && item.id == id)
+            });
+            let typeName = allFolder ? "文件夹" : "文件"
+            let fileName = `【${firstFile.name}】等${ids.length}个${typeName}`
+            if (ids.length === 1) {
+                fileName = `【${firstFile.name}】${typeName}`
+            }
+            $A.modalConfirm({
+                title: '删除' + typeName,
+                content: '你确定要删除' + fileName + '吗？',
+                loading: true,
+                onOk: () => {
+                    this.$store.dispatch("call", {
+                        url: 'file/remove',
+                        data: {
+                            ids,
+                        },
+                    }).then(({msg}) => {
+                        $A.messageSuccess(msg);
+                        this.$Modal.remove();
+                        this.$store.dispatch("forgetFile", ids);
+                        this.selectIds = this.selectIds.filter(id => !ids.includes(id))
+                    }).catch(({msg}) => {
+                        $A.modalError(msg, 301);
+                        this.$Modal.remove();
+                    });
+                }
+            });
         },
 
         autoBlur(id) {
@@ -1256,6 +1267,14 @@ export default {
             return $A.getObject(item, 'response.data.full_name') || item.name
         },
 
+        handleTableSelect(selection) {
+            this.selectIds = selection.map(item => item.id);
+        },
+
+        clearSelect() {
+            this.selectIds = [];
+        },
+
         /********************文件上传部分************************/
 
         uploadUpdate(fileList) {
@@ -1329,111 +1348,6 @@ export default {
             //上传前判断
             this.uploadShow = true;
             return true;
-        },
-
-        handleTableSelect(selection, row) {
-            this.selectFile = selection;
-            this.fileChecked = [];
-            if (this.selectFile.length > 0) {
-                for (let i = 0; i < this.selectFile.length; i++) {
-                    this.fileChecked[this.selectFile[i].id] = true;
-                }
-            }
-            for (let i = 0; i < this.fileList.length; i++) {
-                if (this.fileChecked[this.fileList[i].id] === true)
-                    this.fileList[i]["_checked"] = true;
-                else
-                    this.fileList[i]["_checked"] = false;
-            }
-            // 需要清空剪切的文件
-            this.shearFiles = [];
-        },
-
-        deleteSelectFile() {
-            if ( this.selectFile.length <= 0 ) {
-                $A.messageError("未选择任何文件或文件夹");
-                return false;
-            }
-            let s_ids = this.selectFile.map( (item, index) => {
-                return item.id;
-            } );
-            $A.modalConfirm({
-                title: '批量删除',
-                content: '你确定要删除这些文件吗？',
-                loading: true,
-                onOk: () => {
-                    this.$store.dispatch("call", {
-                        url: 'file/batch/remove',
-                        data: {
-                            ids: s_ids,
-                        },
-                    }).then(() => {
-                        this.$Modal.remove();
-                        this.selectFile = [];
-                        this.fileChecked = [];
-                        this.showMultipleChoice = false;
-                        $A.messageSuccess("已提交至后台处理，请稍后再回来查看结果吧");
-                    }).catch(({msg}) => {
-                        $A.modalError(msg, 301);
-                        this.$Modal.remove();
-                    });
-                }
-            });
-        },
-
-        onFileCheckClick(file) {
-            if (this.fileChecked[file.id] === true && !$A.inArray(file.id, this.selectFile))
-                this.selectFile.push(file);
-            else if (this.fileChecked[file.id] === false) {
-                let index = -1;
-                for (let i = 0; i < this.selectFile.length; i++) {
-                    if (parseInt(this.selectFile[i].id) === parseInt(file.id)) {
-                        index = i;
-                        break;
-                    }
-                }
-                // 删除对应Id
-                if (index >= 0)
-                    this.selectFile.splice(index, 1);
-            }
-            if (this.selectFile.length === 0) {
-                this.showMultipleChoice = false;
-            }
-            // 需要清空剪切的文件
-            this.shearFiles = [];
-        },
-        batchShearTo() {
-            if (!this.shearFiles) {
-                return;
-            }
-            this.$store.dispatch("call", {
-                url: 'file/batch/move',
-                data: {
-                    ids: this.shearFiles.map( (item,index) => item.id ),
-                    pid: this.pid,
-                },
-            }).then(({data, msg}) => {
-                $A.messageSuccess(msg);
-                // 清空数据
-                this.shearId = 0;
-                this.shearFiles = [];
-                this.selectFile = [];
-                this.fileChecked = [];
-                for (const item of data) {
-                    this.$store.dispatch("saveFile", item);
-                }
-            }).catch(({msg}) => {
-                $A.modalError(msg);
-            });
-        },
-
-        clearSelect() {
-            this.shearFiles = [];
-            this.selectFile = [];
-            this.fileChecked = [];
-            this.showMultipleChoice = false;
-            if ( this.tableMode ) // 如果是表格模式，则将表格取消全选
-                this.$refs.fileListTable.selectAll(false);
         },
     }
 }
