@@ -11,7 +11,7 @@
                         <Icon v-else type="ios-refresh" @click="getContent" />
                     </div>
                 </div>
-                <Dropdown v-if="file.type=='mind' || file.type=='flow'"
+                <Dropdown v-if="file.type=='mind'"
                           trigger="click"
                           class="header-hint"
                           @on-click="exportMenu">
@@ -27,7 +27,7 @@
                     <MDPreview v-if="contentDetail.type=='md'" :initialValue="contentDetail.content"/>
                     <TEditor v-else v-model="contentDetail.content" height="100%" readOnly/>
                 </template>
-                <Drawio v-else-if="file.type=='flow'" ref="myFlow" v-model="contentDetail" readOnly/>
+                <Drawio v-else-if="file.type=='drawio'" ref="myFlow" v-model="contentDetail" readOnly/>
                 <Minder v-else-if="file.type=='mind'" ref="myMind" v-model="contentDetail" readOnly/>
                 <OnlyOffice v-else-if="['word', 'excel', 'ppt'].includes(file.type)" v-model="contentDetail" :code="code" :documentKey="documentKey" readOnly/>
                 <AceEditor v-else-if="['code', 'txt'].includes(file.type)" v-model="contentDetail.content" :ext="file.ext" readOnly/>
@@ -164,10 +164,6 @@ export default {
             switch (this.file.type) {
                 case 'mind':
                     this.$refs.myMind.exportHandle(act == 'pdf' ? 1 : 0, this.file.name);
-                    break;
-
-                case 'flow':
-                    this.$refs.myFlow[act == 'pdf' ? 'exportPDF' : 'exportPNG'](this.file.name, 3);
                     break;
             }
         },

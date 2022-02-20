@@ -175,6 +175,9 @@ body.dark-mode-reverse {
         &.document:before {
             background-image: url("../images/file/dark/document.svg");
         }
+        &.drawio:before {
+            background-image: url("../images/file/dark/drawio.svg");
+        }
         &.excel:before {
             background-image: url("../images/file/dark/excel.svg");
         }

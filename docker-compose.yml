@@ -45,6 +45,7 @@ services:
       - php
       - office
       - fileview
+      - drawio
     restart: unless-stopped
 
   redis:
@@ -106,6 +107,35 @@ services:
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.7"
+    restart: unless-stopped
+
+  drawio:
+    container_name: "dootask-drawio-${APP_ID}"
+    image: "jgraph/drawio"
+    volumes:
+      - ./docker/drawio/index.html:/usr/local/tomcat/webapps/draw/index.html
+      - ./docker/drawio/js/app.min.js:/usr/local/tomcat/webapps/draw/js/app.min.js
+    networks:
+      extnetwork:
+        ipv4_address: "${APP_IPPR}.8"
+    depends_on:
+      - drawio-export
+    environment:
+      - EXPORT_URL=http://drawio-export:8000/
+    restart: unless-stopped
+
+  drawio-export:
+    container_name: "dootask-drawio-export-${APP_ID}"
+    image: "jgraph/export-server"
+    expose:
+      - "8000"
+    networks:
+      extnetwork:
+        ipv4_address: "${APP_IPPR}.9"
+    environment:
+      TZ: "Asia/Shanghai"
+    volumes:
+      - ./docker/drawio/fonts:/usr/share/fonts/drawio
     restart: unless-stopped
 
 networks:

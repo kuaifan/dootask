@@ -374,9 +374,9 @@ export default {
                     "divided": true
                 },
                 {
-                    "value": "flow",
-                    "label": "流程图",
-                    "name": "流程图",
+                    "value": "drawio",
+                    "label": "图表",
+                    "name": "图表",
                 },
                 {
                     "value": "mind",

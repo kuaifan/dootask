@@ -33,7 +33,7 @@
                 <div v-if="file.type=='mind'" class="header-hint">
                     {{$L('选中节点，按enter键添加同级节点，tab键添加子节点')}}
                 </div>
-                <Dropdown v-if="file.type=='mind' || file.type=='flow'"
+                <Dropdown v-if="file.type=='mind'"
                           trigger="click"
                           class="header-hint"
                           @on-click="exportMenu">
@@ -50,7 +50,7 @@
                     <MDEditor v-if="contentDetail.type=='md'" v-model="contentDetail.content" height="100%"/>
                     <TEditor v-else v-model="contentDetail.content" height="100%" @editorSave="handleClick('saveBefore')"/>
                 </template>
-                <Drawio v-else-if="file.type=='flow'" ref="myFlow" v-model="contentDetail" @saveData="handleClick('saveBefore')"/>
+                <Drawio v-else-if="file.type=='drawio'" ref="myFlow" v-model="contentDetail" @saveData="handleClick('saveBefore')"/>
                 <Minder v-else-if="file.type=='mind'" ref="myMind" v-model="contentDetail" @saveData="handleClick('saveBefore')"/>
                 <OnlyOffice v-else-if="['word', 'excel', 'ppt'].includes(file.type)" v-model="contentDetail" :documentKey="documentKey"/>
                 <AceEditor v-else-if="['code', 'txt'].includes(file.type)" v-model="contentDetail.content" :ext="file.ext" @saveData="handleClick('saveBefore')"/>
@@ -311,10 +311,6 @@ export default {
             switch (this.file.type) {
                 case 'mind':
                     this.$refs.myMind.exportHandle(act == 'pdf' ? 1 : 0, this.file.name);
-                    break;
-
-                case 'flow':
-                    this.$refs.myFlow[act == 'pdf' ? 'exportPDF' : 'exportPNG'](this.file.name, 3);
                     break;
             }
         },

@@ -15,7 +15,7 @@ class WebSocketDialogUsersAddTopAt extends Migration
     {
         Schema::table('web_socket_dialog_users', function (Blueprint $table) {
             if (!Schema::hasColumn('web_socket_dialog_users', 'top_at')) {
-                $table->timestamp('top_at')->nullable()->after('top')->comment('置顶时间');
+                $table->timestamp('top_at')->nullable()->after('userid')->comment('置顶时间');
             }
         });
     }

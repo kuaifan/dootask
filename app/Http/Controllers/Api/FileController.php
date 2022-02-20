@@ -206,7 +206,7 @@ class FileController extends AbstractController
                 'folder',
                 'document',
                 'mind',
-                'flow',
+                'drawio',
                 'word',
                 'excel',
                 'ppt',

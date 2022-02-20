@@ -203,7 +203,7 @@ class FilesTableSeeder extends Seeder
                 'pid' => 0,
                 'cid' => 0,
                 'name' => '流程图',
-                'type' => 'flow',
+                'type' => 'drawio',
                 'ext' => '',
                 'size' => 5418,
                 'userid' => 1,

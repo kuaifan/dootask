@@ -17,6 +17,9 @@
     &.document:before {
         background-image: url("../images/file/light/document.svg");
     }
+    &.drawio:before {
+        background-image: url("../images/file/light/drawio.svg");
+    }
     &.excel:before {
         background-image: url("../images/file/light/excel.svg");
     }
