@@ -70,7 +70,7 @@ export default {
         let chrome = this.readOnly ? 0 : 1;
         let lightbox = this.readOnly ? 1 : 0;
         let theme = this.themeIsDark ? 'dark' : 'kennedy'
-        this.url = $A.originUrl(`drawio/?embed=1&chrome=${chrome}&lightbox=${lightbox}&noLangIcon=1&noExitBtn=1&noSaveBtn=1&saveAndExit=0&ui=${theme}&lang=${language}&spin=1&proto=json`);
+        this.url = $A.apiUrl(`../drawio/?chrome=${chrome}&lightbox=${lightbox}&ui=${theme}&lang=${language}&embed=1&noLangIcon=1&noExitBtn=1&noSaveBtn=1&saveAndExit=0&spin=1&proto=json`);
     },
     mounted() {
         window.addEventListener('message', this.handleMessage)

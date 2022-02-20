@@ -60,6 +60,11 @@ check_docker() {
         echo -e "${Error} ${RedBG} 未安装 Docker-compose！${Font}"
         exit 1
     fi
+    if [[ -n `docker-compose --version | grep "docker-compose" | grep -E "\sv*1"` ]]; then
+        docker-compose --version
+        echo -e "${Error} ${RedBG} Docker-compose 版本过低，请升级至v2+！${Font}"
+        exit 1
+    fi
 }
 
 check_node() {
@@ -263,8 +268,7 @@ if [ $# -gt 0 ]; then
         chmod -R 775 "${cur_path}/docker/mysql/data"
         # 启动容器
         [[ "$(arg_get port)" -gt 0 ]] && env_set APP_PORT "$(arg_get port)"
-        docker-compose up -d
-        docker-compose restart php
+        docker-compose up php -d
         # 安装composer依赖
         run_exec php "composer install"
         if [ ! -f "${cur_path}/vendor/autoload.php" ]; then
@@ -292,8 +296,7 @@ if [ $# -gt 0 ]; then
         run_exec php "php artisan migrate --seed"
         # 设置初始化密码
         res=`run_exec mariadb "sh /etc/mysql/repassword.sh"`
-        docker-compose stop
-        docker-compose start
+        docker-compose up -d
         echo -e "${OK} ${GreenBG} 安装完成 ${Font}"
         echo -e "地址: http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
         echo -e "$res"
