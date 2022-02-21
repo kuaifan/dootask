@@ -15,19 +15,42 @@ const packageFile = path.resolve(__dirname, "package.json");
 const packageBakFile = path.resolve(__dirname, "package-bak.json");
 const platform = ["build-mac", "build-mac-arm", "build-win"];
 
+// 克隆 Drawio
+function cloneDrawio(systemInfo) {
+    child_process.spawnSync("git", ["submodule", "update", "--quiet", "--init", "--depth=1"], {stdio: "inherit"});
+    const drawioSrcDir = path.resolve(__dirname, "../resources/drawio/src/main/webapp");
+    const drawioCoverDir = path.resolve(__dirname, "../docker/drawio/webapp");
+    const drawioDestDir = path.resolve(electronDir, "drawio");
+    fse.copySync(drawioSrcDir, drawioDestDir)
+    fse.copySync(drawioCoverDir, drawioDestDir)
+    //
+    const preConfigFile = path.resolve(drawioDestDir, "js/PreConfig.js");
+    if (!fse.existsSync(preConfigFile)) {
+        console.log("clone drawio error!");
+        process.exit()
+    }
+    let preConfigString = fs.readFileSync(preConfigFile, 'utf8');
+    preConfigString += "\nwindow.systemInfo = " + JSON.stringify(systemInfo) + ";\n";
+    preConfigString += fs.readFileSync(path.resolve(__dirname, "drawio.js"), 'utf8');
+    fs.writeFileSync(preConfigFile, preConfigString, 'utf8');
+}
+
 // 生成配置、编译应用
 function startBuild(data, publish) {
+    // information
     console.log("Name: " + data.name);
     console.log("AppId: " + data.id);
     console.log("Version: " + config.version);
-    // config.js
     let systemInfo = {
         title: data.name,
         version: config.version,
         origin: "./",
         apiUrl:  utils.formatUrl(data.url) + "api/",
     }
-    fs.writeFileSync(electronDir + "/config.js", "window.systemInfo = " + JSON.stringify(systemInfo, null, 2), 'utf8');
+    // drawio
+    cloneDrawio(systemInfo)
+    // config.js
+    fs.writeFileSync(electronDir + "/config.js", "window.systemInfo = " + JSON.stringify(systemInfo), 'utf8');
     fs.writeFileSync(nativeCachePath, utils.formatUrl(data.url));
     fs.writeFileSync(devloadCachePath, "", 'utf8');
     // index.html

@@ -67,10 +67,15 @@ export default {
                 language = 'zh'
                 break;
         }
-        let chrome = this.readOnly ? 0 : 1;
         let lightbox = this.readOnly ? 1 : 0;
-        let theme = this.themeIsDark ? 'dark' : 'kennedy'
-        this.url = $A.apiUrl(`../drawio/?chrome=${chrome}&lightbox=${lightbox}&ui=${theme}&lang=${language}&embed=1&noLangIcon=1&noExitBtn=1&noSaveBtn=1&saveAndExit=0&spin=1&proto=json`);
+        let chrome = this.readOnly ? 0 : 1;
+        let theme = this.themeIsDark ? 'dark' : 'kennedy';
+        let query = `?chrome=${chrome}&lightbox=${lightbox}&ui=${theme}&lang=${language}&embed=1&noLangIcon=1&noExitBtn=1&noSaveBtn=1&saveAndExit=0&spin=1&proto=json`;
+        if (this.$Electron) {
+            this.url = $A.originUrl(`drawio/index.html${query}`);
+        } else {
+            this.url = $A.apiUrl(`../drawio/${query}`);
+        }
     },
     mounted() {
         window.addEventListener('message', this.handleMessage)
@@ -107,9 +112,8 @@ export default {
         },
 
         handleMessage(event) {
-            const origin = $A.originUrl(`drawio/`);
             const editWindow = this.$refs.myFlow.contentWindow;
-            if (!origin.includes(event.origin)) {
+            if (event.source !== editWindow) {
                 return;
             }
             const payload = $A.jsonParse(event.data);

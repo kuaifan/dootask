@@ -1,0 +1,3 @@
+[submodule "resources/drawio"]
+	path = resources/drawio
+	url = https://github.com/jgraph/drawio.git
