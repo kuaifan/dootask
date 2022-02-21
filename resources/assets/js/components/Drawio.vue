@@ -72,9 +72,9 @@ export default {
         let theme = this.themeIsDark ? 'dark' : 'kennedy';
         let query = `?chrome=${chrome}&lightbox=${lightbox}&ui=${theme}&lang=${language}&embed=1&noLangIcon=1&noExitBtn=1&noSaveBtn=1&saveAndExit=0&spin=1&proto=json`;
         if (this.$Electron) {
-            this.url = $A.originUrl(`drawio/index.html${query}`);
+            this.url = $A.originUrl(`drawio/webapp/index.html${query}`);
         } else {
-            this.url = $A.apiUrl(`../drawio/${query}`);
+            this.url = $A.apiUrl(`../drawio/webapp/${query}`);
         }
     },
     mounted() {

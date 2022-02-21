@@ -20,7 +20,7 @@ function cloneDrawio(systemInfo) {
     child_process.spawnSync("git", ["submodule", "update", "--quiet", "--init", "--depth=1"], {stdio: "inherit"});
     const drawioSrcDir = path.resolve(__dirname, "../resources/drawio/src/main/webapp");
     const drawioCoverDir = path.resolve(__dirname, "../docker/drawio/webapp");
-    const drawioDestDir = path.resolve(electronDir, "drawio");
+    const drawioDestDir = path.resolve(electronDir, "drawio/webapp");
     fse.copySync(drawioSrcDir, drawioDestDir)
     fse.copySync(drawioCoverDir, drawioDestDir)
     //

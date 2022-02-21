@@ -5,9 +5,7 @@ if (window.cacheServerUrl) {
     window.systemInfo.apiUrl = window.cacheServerUrl
 }
 
-window.EXPORT_URL = window.systemInfo.apiUrl + "drawio/export";
-window.PLANT_URL = window.systemInfo.apiUrl + "drawio/plant";
-window.DRAWIO_LIGHTBOX_URL = window.systemInfo.apiUrl + "../drawio";
-while (window.DRAWIO_LIGHTBOX_URL.indexOf("/../") !== -1) {
-    window.DRAWIO_LIGHTBOX_URL = window.DRAWIO_LIGHTBOX_URL.replace(/\/(((?!\/).)*)\/\.\.\//, "/")
-}
+window.EXPORT_URL = window.systemInfo.apiUrl + "../drawio/export/";
+window.DRAWIO_LIGHTBOX_URL = window.systemInfo.apiUrl + "../drawio/webapp";
+while (window.EXPORT_URL.indexOf("/../") !== -1) {window.EXPORT_URL = window.EXPORT_URL.replace(/\/(((?!\/).)*)\/\.\.\//, "/")}
+while (window.DRAWIO_LIGHTBOX_URL.indexOf("/../") !== -1) {window.DRAWIO_LIGHTBOX_URL = window.DRAWIO_LIGHTBOX_URL.replace(/\/(((?!\/).)*)\/\.\.\//, "/")}
