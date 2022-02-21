@@ -115,6 +115,7 @@ services:
     image: "jgraph/drawio:16.6.1"
     volumes:
       - ./docker/drawio/webapp/index.html:/usr/local/tomcat/webapps/draw/index.html
+      - ./docker/drawio/webapp/stencils:/usr/local/tomcat/webapps/draw/stencils
       - ./docker/drawio/webapp/js/app.min.js:/usr/local/tomcat/webapps/draw/js/app.min.js
       - ./docker/drawio/webapp/js/croppie/croppie.min.css:/usr/local/tomcat/webapps/draw/js/croppie/croppie.min.css
     networks:
