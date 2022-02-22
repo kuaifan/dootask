@@ -271,7 +271,7 @@ class DialogController extends AbstractController
         //
         $dialog = WebSocketDialog::checkDialog($dialog_id);
         //
-        $path = "uploads/chat/" . $user->userid . "/";
+        $path = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
         $image64 = Base::getPostValue('image64');
         $fileName = Base::getPostValue('filename');
         if ($image64) {

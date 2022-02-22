@@ -2259,6 +2259,9 @@ class Base
                     break;
                 case 'more':
                     $type = [
+                        'text', 'md', 'markdown',
+                        'drawio',
+                        'mind',
                         'docx', 'wps', 'doc', 'xls', 'xlsx', 'ppt', 'pptx',
                         'jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'raw',
                         'rar', 'zip', 'jar', '7-zip', 'tar', 'gzip', '7z',
@@ -2269,7 +2272,7 @@ class Base
                         'txt',
                         'htaccess', 'htgroups', 'htpasswd', 'conf', 'bat', 'cmd', 'cpp', 'c', 'cc', 'cxx', 'h', 'hh', 'hpp', 'ino', 'cs', 'css',
                         'dockerfile', 'go', 'html', 'htm', 'xhtml', 'vue', 'we', 'wpy', 'java', 'js', 'jsm', 'jsx', 'json', 'jsp', 'less', 'lua', 'makefile', 'gnumakefile',
-                        'ocamlmakefile', 'make', 'md', 'markdown', 'mysql', 'nginx', 'ini', 'cfg', 'prefs', 'm', 'mm', 'pl', 'pm', 'p6', 'pl6', 'pm6', 'pgsql', 'php',
+                        'ocamlmakefile', 'make', 'mysql', 'nginx', 'ini', 'cfg', 'prefs', 'm', 'mm', 'pl', 'pm', 'p6', 'pl6', 'pm6', 'pgsql', 'php',
                         'inc', 'phtml', 'shtml', 'php3', 'php4', 'php5', 'phps', 'phpt', 'aw', 'ctp', 'module', 'ps1', 'py', 'r', 'rb', 'ru', 'gemspec', 'rake', 'guardfile', 'rakefile',
                         'gemfile', 'rs', 'sass', 'scss', 'sh', 'bash', 'bashrc', 'sql', 'sqlserver', 'swift', 'ts', 'typescript', 'str', 'vbs', 'vb', 'v', 'vh', 'sv', 'svh', 'xml',
                         'rdf', 'rss', 'wsdl', 'xslt', 'atom', 'mathml', 'mml', 'xul', 'xbl', 'xaml', 'yaml', 'yml',
@@ -2397,6 +2400,37 @@ class Base
         } else {
             return Base::retError($file->getErrorMessage());
         }
+    }
+
+    /**
+     * 上传文件移动
+     * @param array $uploadResult
+     * @param string $newPath "/" 结尾
+     * @return array
+     */
+    public static function uploadMove($uploadResult, $newPath)
+    {
+        if (str_ends_with($newPath, "/") && file_exists($uploadResult['file'])) {
+            Base::makeDir(public_path($newPath));
+            $oldPath = dirname($uploadResult['path']) . "/";
+            $newFile = str_replace($oldPath, $newPath, $uploadResult['file']);
+            if (rename($uploadResult['file'], $newFile)) {
+                $oldUrl = $uploadResult['url'];
+                $uploadResult['file'] = $newFile;
+                $uploadResult['path'] = str_replace($oldPath, $newPath, $uploadResult['path']);
+                $uploadResult['url'] = str_replace($oldPath, $newPath, $uploadResult['url']);
+                if ($uploadResult['thumb'] == $oldUrl) {
+                    $uploadResult['thumb'] = $uploadResult['url'];
+                } elseif ($uploadResult['thumb']) {
+                    $oldThumb = substr($uploadResult['thumb'], strpos($uploadResult['thumb'], $newPath));
+                    $newThumb = str_replace($oldPath, $newPath, $oldThumb);
+                    if (file_exists(public_path($oldThumb)) && rename(public_path($oldThumb), public_path($newThumb))) {
+                        $uploadResult['thumb'] = str_replace($oldPath, $newPath, $uploadResult['thumb']);
+                    }
+                }
+            }
+        }
+        return $uploadResult;
     }
 
     /**

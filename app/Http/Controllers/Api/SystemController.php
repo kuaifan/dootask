@@ -315,7 +315,7 @@ class SystemController extends AbstractController
         if (!$scale[0] && !$scale[1]) {
             $scale = [2160, 4160, -1];
         }
-        $path = "uploads/picture/" . User::userid() . "/" . date("Ym") . "/";
+        $path = "uploads/user/picture/" . User::userid() . "/" . date("Ym") . "/";
         $image64 = trim(Base::getPostValue('image64'));
         $fileName = trim(Base::getPostValue('filename'));
         if ($image64) {
@@ -360,7 +360,7 @@ class SystemController extends AbstractController
         if (User::userid() === 0) {
             return Base::retError('身份失效，等重新登录');
         }
-        $publicPath = "uploads/picture/" . User::userid() . "/";
+        $publicPath = "uploads/user/picture/" . User::userid() . "/";
         $dirPath = public_path($publicPath);
         $dirs = $files = [];
         //
@@ -458,7 +458,7 @@ class SystemController extends AbstractController
         if (User::userid() === 0) {
             return Base::retError('身份失效，等重新登录');
         }
-        $path = "uploads/files/" . User::userid() . "/" . date("Ym") . "/";
+        $path = "uploads/user/file/" . User::userid() . "/" . date("Ym") . "/";
         $image64 = trim(Base::getPostValue('image64'));
         $fileName = trim(Base::getPostValue('filename'));
         if ($image64) {

@@ -213,14 +213,23 @@ class FileController extends AbstractController
             ])) {
                 return Base::retError('类型错误');
             }
-            $ext = '';
-            if (in_array($type, [
+            $ext = str_replace([
+                'folder',
+                'document',
+                'mind',
+                'drawio',
                 'word',
                 'excel',
                 'ppt',
-            ])) {
-                $ext = str_replace(['word', 'excel', 'ppt'], ['docx', 'xlsx', 'pptx'], $type);
-            }
+            ], [
+                '',
+                'md',
+                'mind',
+                'drawio',
+                'docx',
+                'xlsx',
+                'pptx',
+            ], $type);
             //
             $userid = $user->userid;
             if ($pid > 0) {
@@ -471,7 +480,7 @@ class FileController extends AbstractController
      * @apiGroup file
      * @apiName content__save
      *
-     * @apiParam {Number} id            文件ID
+     * @apiParam {Number} id                文件ID
      * @apiParam {Object} [D]               Request Payload 提交
      * - content: 内容
      *
@@ -481,6 +490,7 @@ class FileController extends AbstractController
      */
     public function content__save()
     {
+        Base::checkClientVersion('0.9.13');
         $user = User::auth();
         //
         $id = Base::getPostInt('id');
@@ -494,12 +504,11 @@ class FileController extends AbstractController
             $isRep = false;
             preg_match_all("/<img\s*src=\"data:image\/(png|jpg|jpeg);base64,(.*?)\"/s", $data['content'], $matchs);
             foreach ($matchs[2] as $key => $text) {
-                $p = "uploads/files/document/" . $id . "/";
-                Base::makeDir(public_path($p));
-                $p.= md5($text) . "." . $matchs[1][$key];
-                $r = file_put_contents(public_path($p), base64_decode($text));
-                if ($r) {
-                    $data['content'] = str_replace($matchs[0][$key], '<img src="' . Base::fillUrl($p) . '"', $data['content']);
+                $tmpPath = "uploads/file/document/" . date("Ym") . "/" . $id . "/attached/";
+                Base::makeDir(public_path($tmpPath));
+                $tmpPath .= md5($text) . "." . $matchs[1][$key];
+                if (file_put_contents(public_path($tmpPath), base64_decode($text))) {
+                    $data['content'] = str_replace($matchs[0][$key], '<img src="' . Base::fillUrl($tmpPath) . '"', $data['content']);
                     $isRep = true;
                 }
             }
@@ -509,11 +518,40 @@ class FileController extends AbstractController
             }
         }
         //
+        $contentArray = Base::json2array($content);
+        switch ($file->type) {
+            case 'document':
+                $file->ext = $contentArray['type'] ?: 'md';
+                $contentString = $contentArray['content'];
+                break;
+            case 'drawio':
+                $file->ext = 'drawio';
+                $contentString = $contentArray['xml'];
+                break;
+            case 'mind':
+                $file->ext = 'mind';
+                $contentString = $content;
+                break;
+        }
+        if (isset($contentString)) {
+            $path = "uploads/file/" . $file->type . "/" . date("Ym") . "/" . $id . "/" . md5($contentString);
+            $save = public_path($path);
+            Base::makeDir(dirname($save));
+            file_put_contents($save, $contentString);
+            $content = [
+                'type' => $file->ext,
+                'url' => $path
+            ];
+            $size = filesize($save);
+        } else {
+            $size = strlen($content);
+        }
+        //
         $content = FileContent::createInstance([
             'fid' => $file->id,
             'content' => $content,
             'text' => $text,
-            'size' => strlen($content),
+            'size' => $size,
             'userid' => $user->userid,
         ]);
         $content->save();
@@ -553,7 +591,7 @@ class FileController extends AbstractController
         if ($status === 2) {
             $parse = parse_url($url);
             $from = 'http://' . env('APP_IPPR') . '.3' . $parse['path'] . '?' . $parse['query'];
-            $path = 'uploads/office/' . date("Ym") . '/' . $file->id . '/' . $user->userid . '-' . $key;
+            $path = 'uploads/file/' . $file->type . '/' . date("Ym") . '/' . $file->id . '/' . $key;
             $save = public_path($path);
             Base::makeDir(dirname($save));
             $res = Ihttp::download($from, $save);
@@ -644,7 +682,7 @@ class FileController extends AbstractController
             }
         }
         //
-        $path = 'uploads/file/' . date("Ym") . '/u' . $user->userid . '/';
+        $path = 'uploads/tmp/' . date("Ym") . '/';
         $data = Base::upload([
             "file" => Request::file('files'),
             "type" => 'more',
@@ -657,6 +695,9 @@ class FileController extends AbstractController
         $data = $data['data'];
         //
         $type = match ($data['ext']) {
+            'text', 'md', 'markdown' => 'document',
+            'drawio' => 'drawio',
+            'mind' => 'mind',
             'doc', 'docx' => "word",
             'xls', 'xlsx' => "excel",
             'ppt', 'pptx' => "ppt",
@@ -670,7 +711,7 @@ class FileController extends AbstractController
             'txt' => "txt",
             'htaccess', 'htgroups', 'htpasswd', 'conf', 'bat', 'cmd', 'cpp', 'c', 'cc', 'cxx', 'h', 'hh', 'hpp', 'ino', 'cs', 'css',
             'dockerfile', 'go', 'html', 'htm', 'xhtml', 'vue', 'we', 'wpy', 'java', 'js', 'jsm', 'jsx', 'json', 'jsp', 'less', 'lua', 'makefile', 'gnumakefile',
-            'ocamlmakefile', 'make', 'md', 'markdown', 'mysql', 'nginx', 'ini', 'cfg', 'prefs', 'm', 'mm', 'pl', 'pm', 'p6', 'pl6', 'pm6', 'pgsql', 'php',
+            'ocamlmakefile', 'make', 'mysql', 'nginx', 'ini', 'cfg', 'prefs', 'm', 'mm', 'pl', 'pm', 'p6', 'pl6', 'pm6', 'pgsql', 'php',
             'inc', 'phtml', 'shtml', 'php3', 'php4', 'php5', 'phps', 'phpt', 'aw', 'ctp', 'module', 'ps1', 'py', 'r', 'rb', 'ru', 'gemspec', 'rake', 'guardfile', 'rakefile',
             'gemfile', 'rs', 'sass', 'scss', 'sh', 'bash', 'bashrc', 'sql', 'sqlserver', 'swift', 'ts', 'typescript', 'str', 'vbs', 'vb', 'v', 'vh', 'sv', 'svh', 'xml',
             'rdf', 'rss', 'wsdl', 'xslt', 'atom', 'mathml', 'mml', 'xul', 'xbl', 'xaml', 'yaml', 'yml',
@@ -681,6 +722,9 @@ class FileController extends AbstractController
             'rp' => "axure",
             default => "",
         };
+        if ($data['ext'] == 'markdown') {
+            $data['ext'] = 'md';
+        }
         $file = File::createInstance([
             'pid' => $pid,
             'name' => Base::rightDelete($data['name'], '.' . $data['ext']),
@@ -694,6 +738,7 @@ class FileController extends AbstractController
             $file->size = $data['size'] * 1024;
             $file->save();
             //
+            $data = Base::uploadMove($data, "uploads/file/" . $file->type . "/" . date("Ym") . "/" . $file->id . "/");
             $content = FileContent::createInstance([
                 'fid' => $file->id,
                 'content' => [

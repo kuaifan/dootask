@@ -23,6 +23,8 @@ class FilesUpdateType extends Migration
      */
     public function down()
     {
-        //
+        File::whereType('drawio')->update([
+            'type' => 'flow'
+        ]);
     }
 }

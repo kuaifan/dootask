@@ -2,6 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\File;
+use App\Models\FileContent;
+use App\Module\Base;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
 class FilesTableSeeder extends Seeder
@@ -280,5 +284,47 @@ class FilesTableSeeder extends Seeder
         ));
 
 
+        File::whereIn('type', ['mind', 'drawio', 'document'])->where('ext', '')->orderBy('id')->chunk(100, function($files) {
+            /** @var File $file */
+            foreach ($files as $file) {
+                $fileContent = FileContent::whereFid($file->id)->orderByDesc('id')->first();
+                $contentArray = Base::json2array($fileContent?->content);
+                $contentString = '';
+                //
+                switch ($file->type) {
+                    case 'document':
+                        $file->ext = $contentArray['type'] ?: 'md';
+                        $contentString = $contentArray['content'];
+                        break;
+                    case 'drawio':
+                        $file->ext = 'drawio';
+                        $contentString = $contentArray['xml'];
+                        break;
+                    case 'mind':
+                        $file->ext = 'mind';
+                        $contentString = $fileContent?->content;
+                        break;
+                }
+                $file->save();
+                //
+                $path = 'uploads/file/' . $file->type . '/' . date("Ym", Carbon::parse($file->created_at)->timestamp) . '/' . $file->id . '/' . md5($contentString);
+                $save = public_path($path);
+                Base::makeDir(dirname($save));
+                file_put_contents($save, $contentString);
+                $content = [
+                    'type' => $file->ext,
+                    'url' => $path
+                ];
+                //
+                $content = FileContent::createInstance([
+                    'fid' => $file->id,
+                    'content' => $content,
+                    'text' => $fileContent?->text,
+                    'size' => $file->size,
+                    'userid' => $file->userid,
+                ]);
+                $content->save();
+            }
+        });
     }
 }

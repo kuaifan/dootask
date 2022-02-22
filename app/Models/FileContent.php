@@ -60,7 +60,7 @@ class FileContent extends AbstractModel
         if (empty($content)) {
             $content = match ($file->type) {
                 'document' => [
-                    "type" => "md",
+                    "type" => $file->ext,
                     "content" => "",
                 ],
                 default => json_decode('{}'),
@@ -72,12 +72,36 @@ class FileContent extends AbstractModel
             $content['preview'] = false;
             if ($file->ext) {
                 $filePath = public_path($content['url']);
-                if (in_array($file->type, ['txt', 'code']) && $file->size < 2 * 1024 * 1024) {
-                    // 支持编辑，限制2M内的文件
+                $fileType = $file->type;
+                if ($fileType == 'document')
+                {
+                    // 文本
+                    $content = [
+                        'type' => $file->ext,
+                        'content' => file_get_contents($filePath)
+                    ];
+                }
+                elseif ($fileType == 'drawio')
+                {
+                    // 图表
+                    $content = [
+                        'xml' => file_get_contents($filePath)
+                    ];
+                }
+                elseif ($fileType == 'mind')
+                {
+                    // 思维导图
+                    $content = Base::json2array(file_get_contents($filePath));
+                }
+                elseif (in_array($fileType, ['txt', 'code']) && $file->size < 2 * 1024 * 1024)
+                {
+                    // 其他文本和代码（限制2M内的文件，支持编辑）
                     $content['content'] = file_get_contents($filePath);
-                } else {
+                }
+                else
+                {
                     // 支持预览
-                    if (in_array($file->type, ['picture', 'image', 'tif', 'media'])) {
+                    if (in_array($fileType, ['picture', 'image', 'tif', 'media'])) {
                         $url = Base::fillUrl($content['url']);
                     } else {
                         $url = 'http://' . env('APP_IPPR') . '.3/' . $content['url'];

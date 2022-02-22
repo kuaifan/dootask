@@ -599,7 +599,5 @@ curl -O https://task.hitosea.com/uploads/files/3/202105/ba786dfc2f4c2fe916880474
                 'deleted_at' => NULL,
             ),
         ));
-
-
     }
 }
