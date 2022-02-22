@@ -21,9 +21,9 @@ Group No.: `546574618`
 # 1、Clone the repository
 
 # Clone projects on github
-git clone https://github.com/kuaifan/dootask.git
+git clone --depth=1 https://github.com/kuaifan/dootask.git
 # Or you can use gitee
-git clone https://gitee.com/aipaw/dootask.git
+git clone --depth=1 https://gitee.com/aipaw/dootask.git
 
 # 2、Enter directory
 cd dootask

@@ -56,11 +56,6 @@ contextBridge.exposeInMainWorld(
         },
         sendSyncMessage: (action, args) => {
             ipcRenderer.sendSync(action, args);
-        },
-        openExternal: (url) => {
-            return new Promise((resolve, reject) => {
-                shell.openExternal(url).then(resolve).catch(reject)
-            });
         }
     }
 );
