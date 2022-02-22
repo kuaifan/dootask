@@ -51,7 +51,7 @@
                     <DropdownItem divided name="signout" style="color:#f40">{{$L('退出登录')}}</DropdownItem>
                 </DropdownMenu>
             </Dropdown>
-            <ul class="overlay-y">
+            <ul class="overlay-y" @scroll="listScroll()">
                 <li @click="toggleRoute('dashboard')" :class="classNameRoute('dashboard')">
                     <i class="taskfont">&#xe6fb;</i>
                     <div class="menu-title">{{$L('仪表盘')}}</div>
@@ -831,6 +831,9 @@ export default {
                 $A.modalError(msg, 301);
                 this.$Modal.remove();
             });
+        },
+        listScroll() {
+            this.topOperateVisible = false;
         }
     }
 }
