@@ -11,6 +11,7 @@ use App\Module\Base;
  * @property int|null $project_id 项目ID
  * @property int|null $userid 成员ID
  * @property int|null $owner 是否负责人
+ * @property \Illuminate\Support\Carbon|null $top_at 置顶时间
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Project|null $project

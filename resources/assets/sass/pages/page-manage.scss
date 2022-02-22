@@ -225,12 +225,25 @@
                                     display: block;
                                 }
                             }
+                            .top {
+                                background-color: #dae3ef;
+                            }
+                            .operate {
+                                border:1px solid $primary-color;
+                            }
                         }
                     }
                     .common-loading {
                         margin: 6px;
                         width: 22px;
                         height: 22px;
+                    }
+                    .top-operate {
+                        position: absolute;
+                        top: 0;
+                        right: 0;
+                        opacity: 0;
+                        display: flex;
                     }
                 }
                 &.active {
