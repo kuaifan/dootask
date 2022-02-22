@@ -118,6 +118,7 @@ services:
       - ./docker/drawio/webapp/stencils:/usr/local/tomcat/webapps/draw/stencils
       - ./docker/drawio/webapp/js/app.min.js:/usr/local/tomcat/webapps/draw/js/app.min.js
       - ./docker/drawio/webapp/js/croppie/croppie.min.css:/usr/local/tomcat/webapps/draw/js/croppie/croppie.min.css
+      - ./docker/drawio/webapp/js/diagramly/ElectronApp.js:/usr/local/tomcat/webapps/draw/js/diagramly/ElectronApp.js
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.8"

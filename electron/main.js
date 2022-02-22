@@ -73,6 +73,7 @@ function createMainWindow() {
             preload: path.join(__dirname, 'preload.js'),
             webSecurity: true,
             nodeIntegration: true,
+            nodeIntegrationInSubFrames: true,
             contextIsolation: true
         }
     })
@@ -156,6 +157,7 @@ function createSubWindow(args) {
                 devTools: args.devTools !== false,
                 webSecurity: true,
                 nodeIntegration: true,
+                nodeIntegrationInSubFrames: true,
                 contextIsolation: true
             },
         }, config))
@@ -418,8 +420,10 @@ ipcMain.on('setDockBadge', (event, args) => {
     event.returnValue = "ok"
 })
 
+//================================================================
+// Pdf export
+//================================================================
 
-//Pdf export
 const MICRON_TO_PIXEL = 264.58 		//264.58 micron = 1 pixel
 const PNG_CHUNK_IDAT = 1229209940;
 const LARGE_IMAGE_AREA = 30000000;
@@ -644,7 +648,7 @@ function exportDiagram(event, args, directFinalize) {
     try {
         browser = new BrowserWindow({
             webPreferences: {
-                preload: `${__dirname}/electron-preload.js`,
+                preload: path.join(__dirname, 'preload.js'),
                 backgroundThrottling: false,
                 contextIsolation: true,
                 nativeWindowOpen: true
@@ -658,7 +662,7 @@ function exportDiagram(event, args, directFinalize) {
         browser.loadURL(`file://${__dirname}/export3.html`);
 
         const contents = browser.webContents;
-        let pageByPage = (args.format == 'pdf' && !args.print), from, pdfs;
+        let pageByPage = (args.format == 'pdf' && !args.print), from, to, pdfs;
 
         if (pageByPage) {
             from = args.allPages ? 0 : parseInt(args.from || 0);
@@ -1107,7 +1111,7 @@ function windowAction(method) {
 }
 
 function openExternal(url) {
-    shell.openExternal(url);
+    shell.openExternal(url).then(() => {}).catch(() => {});
     return null
 }
 
