@@ -179,9 +179,8 @@ export default {
             if (!this.$Electron) {
                 return;
             }
-            const {ipcRenderer} = this.$Electron;
-            ipcRenderer.send('inheritClose');
-            ipcRenderer.on('windowClose', () => {
+            this.$Electron.sendMessage('inheritClose');
+            this.$Electron.registerMsgListener('windowClose', () => {
                 if (this.$Modal.removeLast()) {
                     return;
                 }
@@ -189,9 +188,9 @@ export default {
                     this.cacheDrawerOverlay[this.cacheDrawerOverlay.length - 1].close();
                     return;
                 }
-                ipcRenderer.send('windowHidden');
+                this.$Electron.sendMessage('windowHidden');
             })
-            ipcRenderer.on('dispatch', (event, args) => {
+            this.$Electron.registerMsgListener('dispatch', (event, args) => {
                 if (!$A.isJson(args)) {
                     return;
                 }

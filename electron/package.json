@@ -40,10 +40,11 @@
     },
     "dependencies": {
         "axios": "^0.26.0",
+        "crc": "^3.8.0",
         "electron-squirrel-startup": "^1.0.0",
         "electron-log": "^4.4.6",
         "fs-extra": "^10.0.0",
-        "xlsx": "^0.18.1"
+        "pdf-lib": "^1.16.0"
     },
     "build": {
         "appId": "com.dootask.task",

@@ -1126,7 +1126,7 @@ export default {
                 config.minWidth = 800;
                 config.minHeight = 600;
             }
-            this.$Electron.ipcRenderer.send('windowRouter', {
+            this.$Electron.sendMessage('windowRouter', {
                 title: this.taskDetail.name,
                 titleFixed: true,
                 name: 'task-' + this.taskDetail.id,
@@ -1139,7 +1139,7 @@ export default {
 
         resizeDialog() {
             return new Promise(resolve => {
-                this.$Electron.ipcRenderer.sendSync('windowSize', {
+                this.$Electron.sendSyncMessage('windowSize', {
                     width: Math.max(1100, window.innerWidth),
                     height: Math.max(720, window.innerHeight),
                     minWidth: 800,
@@ -1161,7 +1161,7 @@ export default {
 
         viewFile(file) {
             if (this.$Electron) {
-                this.$Electron.ipcRenderer.send('windowRouter', {
+                this.$Electron.sendMessage('windowRouter', {
                     title: `${file.name} (${$A.bytesToSize(file.size)})`,
                     titleFixed: true,
                     name: 'file-task-' + file.id,

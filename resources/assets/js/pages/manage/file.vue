@@ -854,7 +854,7 @@ export default {
         },
 
         openSingle(item) {
-            this.$Electron.ipcRenderer.send('windowRouter', {
+            this.$Electron.sendMessage('windowRouter', {
                 title: this.formatName(item),
                 titleFixed: true,
                 userAgent: "/hideenOfficeTitle/",

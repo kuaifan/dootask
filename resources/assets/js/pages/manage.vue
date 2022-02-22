@@ -475,7 +475,7 @@ export default {
         unreadTotal: {
             handler(num) {
                 if (this.$Electron) {
-                    this.$Electron.ipcRenderer.send('setDockBadge', num);
+                    this.$Electron.sendMessage('setDockBadge', num);
                 }
             },
             immediate: true

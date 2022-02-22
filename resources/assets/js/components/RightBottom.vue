@@ -44,7 +44,7 @@ export default {
         this.getReleases();
         //
         if (this.$Electron) {
-            this.$Electron.ipcRenderer.on('downloadDone', (event, {result}) => {
+            this.$Electron.registerMsgListener('downloadDone', (event, {result}) => {
                 if (result.name == this.repoData.name) {
                     this.downloadResult = result;
                     this.releasesNotification()
@@ -186,7 +186,7 @@ export default {
                 if (this.compareVersion(latestVersion, currentVersion) === 1) {
                     // 有新版本
                     console.log("New version: " + latestVersion);
-                    this.$Electron.ipcRenderer.send('downloadFile', {
+                    this.$Electron.sendMessage('downloadFile', {
                         url: this.repoData.browser_download_url
                     });
                 }
@@ -241,10 +241,10 @@ export default {
             if (!this.$Electron) {
                 return;
             }
-            this.$Electron.ipcRenderer.send('openFile', {
+            this.$Electron.sendMessage('openFile', {
                 path: this.downloadResult.savePath
             });
-            this.$Electron.ipcRenderer.send('windowQuit');
+            this.$Electron.sendMessage('windowQuit');
         },
 
         useSSOLogin() {

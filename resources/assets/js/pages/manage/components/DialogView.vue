@@ -213,7 +213,7 @@ export default {
 
         viewFile() {
             if (this.$Electron) {
-                this.$Electron.ipcRenderer.send('windowRouter', {
+                this.$Electron.sendMessage('windowRouter', {
                     title: `${this.msgData.msg.name} (${$A.bytesToSize(this.msgData.msg.size)})`,
                     titleFixed: true,
                     name: 'file-msg-' + this.msgData.id,

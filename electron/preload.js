@@ -1,14 +1,73 @@
-// preload.js
+const {
+    shell,
+    contextBridge,
+    ipcRenderer
+} = require("electron");
 
-// All of the Node.js APIs are available in the preload process.
-// It has the same sandbox as a Chrome extension.
-window.addEventListener('DOMContentLoaded', () => {
-    const replaceText = (selector, text) => {
-        const element = document.getElementById(selector)
-        if (element) element.innerText = text
+let reqId = 1;
+let reqInfo = {};
+let fileChangedListeners = {};
+
+ipcRenderer.on('mainResp', (event, resp) => {
+    let callbacks = reqInfo[resp.reqId];
+
+    if (resp.error) {
+        callbacks.error(resp.msg, resp.e);
+    } else {
+        callbacks.callback(resp.data);
     }
 
-    for (const dependency of ['chrome', 'node', 'electron']) {
-        replaceText(`${dependency}-version`, process.versions[dependency])
+    delete reqInfo[resp.reqId];
+});
+
+ipcRenderer.on('fileChanged', (event, resp) => {
+    let listener = fileChangedListeners[resp.path];
+
+    if (listener) {
+        listener(resp.curr, resp.prev);
     }
-})
+});
+
+contextBridge.exposeInMainWorld(
+    'electron', {
+        request: (msg, callback, error) => {
+            msg.reqId = reqId++;
+            reqInfo[msg.reqId] = {callback: callback, error: error};
+
+            if (msg.action == 'watchFile') {
+                fileChangedListeners[msg.path] = msg.listener;
+                delete msg.listener;
+            }
+
+            ipcRenderer.send('rendererReq', msg);
+        },
+        registerMsgListener: (action, callback) => {
+            ipcRenderer.on(action, (event, args) => {
+                callback(args);
+            });
+        },
+        listenOnce: (action, callback) => {
+            ipcRenderer.once(action, (event, args) => {
+                callback(args);
+            });
+        },
+        sendMessage: (action, args) => {
+            ipcRenderer.send(action, args);
+        },
+        sendSyncMessage: (action, args) => {
+            ipcRenderer.sendSync(action, args);
+        },
+        openExternal: (url) => {
+            return new Promise((resolve, reject) => {
+                shell.openExternal(url).then(resolve).catch(reject)
+            });
+        }
+    }
+);
+
+contextBridge.exposeInMainWorld(
+    'process', {
+        type: process.type,
+        versions: process.versions
+    }
+);
