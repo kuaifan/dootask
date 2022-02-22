@@ -4,7 +4,6 @@
 /public/uploads/*
 /public/.well-known
 /public/.user.ini
-/resources/drawio/
 /storage/*.key
 /vendor
 /build
