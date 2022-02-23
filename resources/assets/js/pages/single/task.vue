@@ -80,6 +80,7 @@ export default {
                 this.$store.dispatch("getTaskContent", this.taskId);
                 this.$store.dispatch("getTaskFiles", this.taskId);
                 this.$store.dispatch("getTaskForParent", this.taskId).catch(() => {})
+                this.$store.dispatch("getTaskPriority").catch(() => {})
             }).catch(({msg}) => {
                 this.loadIng--;
                 $A.modalError({

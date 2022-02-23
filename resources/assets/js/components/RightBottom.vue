@@ -38,18 +38,30 @@ export default {
             repoReleases: {},
 
             downloadResult: {},
+
+            subscribe: null,
         }
     },
     mounted() {
         this.getReleases();
         //
+        this.subscribe = Store.subscribe('releasesNotification', () => {
+            this.releasesNotification();
+        });
+        //
         if (this.$Electron) {
-            this.$Electron.ipcRenderer.on('downloadDone', (event, {result}) => {
-                if (result.name == this.repoData.name) {
+            this.$Electron.registerMsgListener('downloadDone', ({result}) => {
+                if (result.name == this.repoData.name && this.repoStatus !== 2) {
                     this.downloadResult = result;
                     this.releasesNotification()
                 }
             })
+        }
+    },
+    beforeDestroy() {
+        if (this.subscribe) {
+            this.subscribe.unsubscribe();
+            this.subscribe = null;
         }
     },
     computed: {
@@ -186,7 +198,7 @@ export default {
                 if (this.compareVersion(latestVersion, currentVersion) === 1) {
                     // 有新版本
                     console.log("New version: " + latestVersion);
-                    this.$Electron.ipcRenderer.send('downloadFile', {
+                    this.$Electron.sendMessage('downloadFile', {
                         url: this.repoData.browser_download_url
                     });
                 }
@@ -202,6 +214,8 @@ export default {
         },
 
         releasesNotification() {
+            const {tag_name, body} = this.repoReleases;
+            this.$store.state.clientNewVersion = tag_name
             $A.modalConfirm({
                 okText: this.$L('立即更新'),
                 onOk: () => {
@@ -224,12 +238,12 @@ export default {
                                 props: {
                                     color: 'volcano'
                                 }
-                            }, this.repoReleases.tag_name)
+                            }, tag_name)
                         ]),
                         h('MarkdownPreview', {
                             class: 'notification-body',
                             props: {
-                                initialValue: this.repoReleases.body
+                                initialValue: body
                             }
                         }),
                     ])
@@ -241,10 +255,10 @@ export default {
             if (!this.$Electron) {
                 return;
             }
-            this.$Electron.ipcRenderer.send('openFile', {
+            this.$Electron.sendMessage('openFile', {
                 path: this.downloadResult.savePath
             });
-            this.$Electron.ipcRenderer.send('windowQuit');
+            this.$Electron.sendMessage('windowQuit');
         },
 
         useSSOLogin() {

@@ -213,13 +213,13 @@ export default {
 
         viewFile() {
             if (this.$Electron) {
-                this.$Electron.ipcRenderer.send('windowRouter', {
-                    title: `${this.msgData.msg.name} (${$A.bytesToSize(this.msgData.msg.size)})`,
-                    titleFixed: true,
+                this.$Electron.sendMessage('windowRouter', {
                     name: 'file-msg-' + this.msgData.id,
                     path: "/single/file/msg/" + this.msgData.id,
                     force: false,
                     config: {
+                        title: `${this.msgData.msg.name} (${$A.bytesToSize(this.msgData.msg.size)})`,
+                        titleFixed: true,
                         parent: null,
                         width: Math.min(window.screen.availWidth, 1440),
                         height: Math.min(window.screen.availHeight, 900),

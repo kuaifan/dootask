@@ -118,6 +118,9 @@ const stateData = {
         {name: '暗黑', value: 'dark'},
     ],
     themeIsDark: false,
+
+    // 客户端新版本号
+    clientNewVersion: null
 };
 
 // 会员信息

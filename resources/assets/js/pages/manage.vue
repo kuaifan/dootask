@@ -11,7 +11,8 @@
                         <UserAvatar :userid="userId" :size="36" tooltipDisabled/>
                     </div>
                     <span>{{userInfo.nickname}}</span>
-                    <Badge class="manage-box-top-report" :count="reportUnreadNumber"/>
+                    <Badge v-if="reportUnreadNumber > 0" class="manage-box-top-report" :count="reportUnreadNumber"/>
+                    <Badge v-else-if="!!clientNewVersion" class="manage-box-top-report" dot/>
                     <div class="manage-box-arrow">
                         <Icon type="ios-arrow-up" />
                         <Icon type="ios-arrow-down" />
@@ -20,11 +21,13 @@
                 <DropdownMenu slot="list">
                     <DropdownItem
                         v-for="(item, key) in menu"
+                        v-if="item.visible !== false"
                         :key="key"
                         :divided="!!item.divided"
                         :name="item.path">
                         {{$L(item.name)}}
-                        <Badge v-if="item.path === 'workReport'"  class="manage-menu-report-badge" :count="reportUnreadNumber"/>
+                        <Badge v-if="item.path === 'version'" class="manage-menu-report-badge" :text="clientNewVersion"/>
+                        <Badge v-if="item.path === 'workReport'" class="manage-menu-report-badge" :count="reportUnreadNumber"/>
                     </DropdownItem>
                     <Dropdown placement="right-start" @on-click="setTheme">
                         <DropdownItem divided>
@@ -260,7 +263,6 @@ import DragBallComponent from "../components/DragBallComponent";
 import TaskAdd from "./manage/components/TaskAdd";
 import Report from "./manage/components/Report";
 import {Store} from "le5le-store";
-import state from "../store/state";
 
 export default {
     components: {
@@ -367,7 +369,9 @@ export default {
             'themeMode',
             'themeList',
 
-            'wsMsg'
+            'wsMsg',
+
+            'clientNewVersion'
         ]),
 
         ...mapGetters(['taskData', 'dashboardTask']),
@@ -402,6 +406,7 @@ export default {
                     {path: 'password', name: '密码设置'},
                     {path: 'clearCache', name: '清除缓存'},
                     {path: 'system', name: '系统设置', divided: true},
+                    {path: 'version', name: '更新版本', visible: !!this.clientNewVersion},
                     {path: 'workReport', name: '工作报告', divided: true},
                     {path: 'allUser', name: '团队管理'},
                     {path: 'allProject', name: '所有项目'},
@@ -412,6 +417,7 @@ export default {
                     {path: 'personal', name: '个人设置'},
                     {path: 'password', name: '密码设置'},
                     {path: 'clearCache', name: '清除缓存'},
+                    {path: 'version', name: '更新版本', divided: true, visible: !!this.clientNewVersion},
                     {path: 'workReport', name: '工作报告', divided: true},
                     {path: 'archivedProject', name: '已归档的项目'}
                 ]
@@ -503,7 +509,7 @@ export default {
         unreadTotal: {
             handler(num) {
                 if (this.$Electron) {
-                    this.$Electron.ipcRenderer.send('setDockBadge', num);
+                    this.$Electron.sendMessage('setDockBadge', num);
                 }
             },
             immediate: true
@@ -573,6 +579,9 @@ export default {
                         this.reportTabs = "receive";
                     }
                     this.workReportShow = true;
+                    return;
+                case 'version':
+                    Store.set('releasesNotification', null);
                     return;
                 case 'clearCache':
                     this.$store.dispatch("handleClearCache", null).then(() => {

@@ -1,3 +1,5 @@
+const isElectron = window && window.process && window.process.type;
+
 import './functions/common'
 import './functions/web'
 
@@ -56,7 +58,7 @@ VueRouter.prototype.push = function push(location) {
 }
 
 const router = new VueRouter({
-    mode: !!__IS_ELECTRON ? 'hash' : 'history',
+    mode: isElectron ? 'hash' : 'history',
     routes
 });
 
@@ -98,8 +100,8 @@ Vue.prototype.$Electron = null;
 Vue.prototype.$Platform = "web";
 Vue.prototype.$isMainElectron = false;
 Vue.prototype.$isSubElectron = false;
-if (!!__IS_ELECTRON) {
-    Vue.prototype.$Electron = require('electron');
+if (isElectron) {
+    Vue.prototype.$Electron = electron;
     Vue.prototype.$Platform = /macintosh|mac os x/i.test(navigator.userAgent) ? "mac" : "win";
     Vue.prototype.$isMainElectron = /\s+MainTaskWindow\//.test(window.navigator.userAgent);
     Vue.prototype.$isSubElectron = /\s+SubTaskWindow\//.test(window.navigator.userAgent);
@@ -131,7 +133,7 @@ $A.isMainElectron = app.$isMainElectron;
 $A.isSubElectron = app.$isSubElectron;
 $A.execMainDispatch = (action, data) => {
     if ($A.isSubElectron) {
-        $A.Electron.ipcRenderer.send('sendForwardMain', {
+        $A.Electron.sendMessage('sendForwardMain', {
             channel: 'dispatch',
             data: {action, data},
         });

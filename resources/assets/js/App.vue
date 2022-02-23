@@ -179,19 +179,16 @@ export default {
             if (!this.$Electron) {
                 return;
             }
-            const {ipcRenderer} = this.$Electron;
-            ipcRenderer.send('inheritClose');
-            ipcRenderer.on('windowClose', () => {
+            window.__onBeforeUnload = () => {
                 if (this.$Modal.removeLast()) {
-                    return;
+                    return true;
                 }
                 if (this.cacheDrawerOverlay.length > 0) {
                     this.cacheDrawerOverlay[this.cacheDrawerOverlay.length - 1].close();
-                    return;
+                    return true;
                 }
-                ipcRenderer.send('windowHidden');
-            })
-            ipcRenderer.on('dispatch', (event, args) => {
+            }
+            this.$Electron.registerMsgListener('dispatch', args => {
                 if (!$A.isJson(args)) {
                     return;
                 }

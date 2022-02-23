@@ -21,24 +21,16 @@ mix
     .js('resources/assets/js/app.js', 'js')
     .sass('resources/assets/sass/app.scss', 'css')
     .setPublicPath(publicPath)
-    .webpackConfig(webpack => {
+    .webpackConfig(() => {
         let config = {
             output: {
                 chunkFilename: ({chunk}) => {
                     return `js/build/${mixBuildName(chunk.id)}.js`
                 }
-            },
-            plugins: [
-                new webpack.DefinePlugin({
-                    '__IS_ELECTRON': isElectron,
-                })
-            ]
-        };
-        if (isElectron) {
-            config.target = 'electron-renderer'
-            if (!isHot) {
-                config.output.publicPath = './'
             }
+        };
+        if (isElectron && !isHot) {
+            config.output.publicPath = './'
         }
         return config
     })

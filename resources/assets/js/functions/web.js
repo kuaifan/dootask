@@ -366,9 +366,7 @@
                 return
             }
             if ($A.Electron) {
-                $A.Electron.shell.openExternal(url).catch(() => {
-                    $A.modalError("下载失败");
-                });
+                $A.Electron.sendMessage('openExternal', url);
             } else {
                 window.open(url)
             }

@@ -1,8 +1,8 @@
 {
     "name": "DooTask",
-    "version": "0.9.16",
+    "version": "0.9.36",
     "description": "DooTask is task management system.",
-    "main": "main.js",
+    "main": "electron.js",
     "license": "MIT",
     "scripts": {
         "start": "electron-forge start",
@@ -40,18 +40,19 @@
     },
     "dependencies": {
         "axios": "^0.26.0",
+        "crc": "^3.8.0",
         "electron-squirrel-startup": "^1.0.0",
         "electron-log": "^4.4.6",
         "fs-extra": "^10.0.0",
-        "xlsx": "^0.18.1"
+        "pdf-lib": "^1.16.0"
     },
     "build": {
         "appId": "com.dootask.task",
         "artifactName": "${productName}-v${version}-${os}-${arch}.${ext}",
         "files": [
             "public/**/*",
-            "main.js",
-            "preload.js",
+            "electron-preload.js",
+            "electron.js",
             "utils.js"
         ],
         "mac": {

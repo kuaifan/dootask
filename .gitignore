@@ -4,7 +4,6 @@
 /public/uploads/*
 /public/.well-known
 /public/.user.ini
-/resources/drawio/
 /storage/*.key
 /vendor
 /build
@@ -20,7 +19,6 @@ Homestead.yaml
 npm-debug.log
 yarn-error.log
 test.*
-composer.lock
 package-lock.json
 laravels-timer-process.pid
 .DS_Store
