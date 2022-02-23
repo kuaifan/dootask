@@ -172,9 +172,11 @@ export default {
                     let [before, now] = record.change
                     vNode.push(h('span', ': '))
                     if (before && before != now) {
-                        vNode.push(h('span', `${before || '-'} => ${now || '-'}`))
+                        vNode.push(h('span', {class:'change-value'}, `${before || '-'}`))
+                        vNode.push(h('span', ' => '))
+                        vNode.push(h('span', {class:'change-value'}, `${now || '-'}`))
                     } else {
-                        vNode.push(h('span', now || '-'))
+                        vNode.push(h('span', {class:'change-value'}, now || '-'))
                     }
                 }
                 if (record.userid) {

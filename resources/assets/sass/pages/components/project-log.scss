@@ -120,6 +120,12 @@
                     display: inline-block;
                     color: rgba(0, 0, 0, .72);
 
+                    .change-value {
+                        &:hover {
+                            border-bottom: 1px dotted rgba(0, 0, 0, .3);
+                        }
+                    }
+
                     .detail-user {
                         display: inline-block;
                         vertical-align: top;

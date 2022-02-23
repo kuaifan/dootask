@@ -725,7 +725,7 @@ class ProjectTask extends AbstractModel
                         }
                     });
                 }
-                $newStringAt = $this->start_at ? ($oldAt[0]->toDateTimeString() . '~' . $oldAt[1]->toDateTimeString()) : '';
+                $newStringAt = $this->start_at ? ($this->start_at->toDateTimeString() . '~' . $this->end_at->toDateTimeString()) : '';
                 $this->addLog("修改{任务}时间", [
                     'change' => [$oldStringAt, $newStringAt]
                 ]);
