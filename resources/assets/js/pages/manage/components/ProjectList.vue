@@ -5,7 +5,7 @@
             <div class="project-titbox">
                 <div class="project-title">
                     <h1>{{projectData.name}}</h1>
-                    <label v-if="projectData.top_at" class="top-text">置顶</label>
+                    <label v-if="projectData.top_at" class="top-text">{{$L('置顶')}}</label>
                     <div v-if="projectLoad > 0" class="project-load"><Loading/></div>
                 </div>
                 <ul class="project-icons">
