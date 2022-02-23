@@ -1116,23 +1116,25 @@ export default {
         state.cacheLoading["loadDashboardTasks"] = true;
         //
         const time = $A.Time()
-        const {today, overdue} = getters.dashboardTask;
+        const {today, overdue,all} = getters.dashboardTask;
         const currentIds = today.map(({id}) => id)
         currentIds.push(...overdue.map(({id}) => id))
+        currentIds.push(...all.map(({id}) => id))
         //
-        let loadIng = 2;
+        let loadIng = 3;
         let call = () => {
             if (loadIng <= 0) {
                 state.cacheLoading["loadDashboardTasks"] = false;
                 //
-                const {today, overdue} = getters.dashboardTask;
+                const {today, overdue,all} = getters.dashboardTask;
                 const newIds = today.filter(task => task._time >= time).map(({id}) => id)
                 newIds.push(...overdue.filter(task => task._time >= time).map(({id}) => id))
+                newIds.push(...all.filter(task => task._time >= time).map(({id}) => id))
                 dispatch("forgetTask", currentIds.filter(v => newIds.indexOf(v) == -1))
                 return;
             }
             loadIng--;
-            if (loadIng == 1) {
+            if (loadIng == 2) {
                 // 获取今日任务
                 dispatch("getTasks", {
                     complete: "no",
@@ -1141,11 +1143,16 @@ export default {
                         $A.formatDate("Y-m-d 23:59:59")
                     ],
                 }).then(call).catch(call)
-            } else if (loadIng == 0) {
+            } else if (loadIng == 1) {
                 // 获取过期任务
                 dispatch("getTasks", {
                     complete: "no",
                     time_before: $A.formatDate("Y-m-d H:i:s"),
+                }).then(call).catch(call)
+            } else if((loadIng == 0)) {
+                // 获取待处理任务
+                dispatch("getTasks", {
+                    complete: "no",
                 }).then(call).catch(call)
             }
         }

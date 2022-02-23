@@ -112,7 +112,7 @@ export default {
     /**
      * 仪表盘任务数据
      * @param state
-     * @returns {{overdue: *, today: *}}
+     * @returns {{overdue: *, today: *,all:*}}
      */
     dashboardTask(state) {
         const todayStart = $A.Date($A.formatDate("Y-m-d 00:00:00")),
@@ -123,9 +123,6 @@ export default {
                 return false;
             }
             if (task.complete_at && chackCompleted === true) {
-                return false;
-            }
-            if (!task.end_at) {
                 return false;
             }
             return task.owner;
@@ -142,11 +139,13 @@ export default {
             return (start <= todayStart && todayStart <= end) || (start <= todayEnd && todayEnd <= end) || (start > todayStart && todayEnd > end);
         })
         const overdueTasks = array.filter(task => {
-            return $A.Date(task.end_at) <= todayNow;
+            return task.end_at && $A.Date(task.end_at) <= todayNow;
         })
+
         return {
             today: todayTasks,
             overdue: overdueTasks,
+            all: array
         }
     },
 }

@@ -19,10 +19,10 @@
                         <i class="taskfont">&#xe603;</i>
                     </div>
                 </li>
-                <li>
-                    <div class="block-title">{{$L('参与的项目')}}</div>
+                <li @click="dashboard='all'">
+                    <div class="block-title">{{$L('待完成任务')}}</div>
                     <div class="block-data">
-                        <div class="block-num">{{cacheProjects.length}}</div>
+                        <div class="block-num">{{dashboardTask.all.length}}</div>
                         <i class="taskfont">&#xe6f9;</i>
                     </div>
                 </li>
@@ -62,7 +62,7 @@
                             <i class="taskfont">&#xe71f;</i>
                             <em>{{item.sub_complete}}/{{item.sub_num}}</em>
                         </div>
-                        <ETooltip :content="item.end_at" placement="right">
+                        <ETooltip v-if="item.end_at" :content="item.end_at" placement="right">
                             <div :class="['item-icon', item.today ? 'today' : '', item.overdue ? 'overdue' : '']">
                                 <i class="taskfont">&#xe71d;</i>
                                 <em>{{expiresFormat(item.end_at)}}</em>
@@ -121,6 +121,8 @@ export default {
                     return this.$L('今日任务');
                 case 'overdue':
                     return this.$L('超期任务');
+                case 'all':
+                    return this.$L('待完成任务');
                 default:
                     return '';
             }
@@ -136,9 +138,12 @@ export default {
                 case 'overdue':
                     data = this.transforTasks(this.dashboardTask.overdue);
                     break
+                case 'all':
+                    data = this.transforTasks(this.dashboardTask.all);
+                    break
             }
             return data.sort((a, b) => {
-                return $A.Date(a.end_at) - $A.Date(b.end_at);
+                return $A.Date(a.end_at || "2099-12-31 23:59:59") - $A.Date(b.end_at || "2099-12-31 23:59:59");
             });
         },
     },
