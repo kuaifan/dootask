@@ -4,7 +4,7 @@
         :placement="placement"
         :effect="tooltipTheme"
         :delay="delay"
-        :disabled="!showTooltip"
+        :disabled="!showTooltip || disabled"
         :max-width="tooltipMaxWidth"
         transfer>
         <span ref="content" @mouseenter="handleTooltipIn" class="common-auto-tip" @click="onClick">
@@ -35,6 +35,10 @@
             delay: {
                 type: Number,
                 default: 100
+            },
+            disabled: {
+                type: Boolean,
+                default: false
             },
         },
 

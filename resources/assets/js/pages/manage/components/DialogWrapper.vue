@@ -95,6 +95,7 @@
             :title="$L(pasteTitle)"
             :cancel-text="$L('取消')"
             :ok-text="$L('发送')"
+            :enter-ok="true"
             @on-ok="pasteSend">
             <div class="dialog-wrapper-paste">
                 <template v-for="item in pasteItem">
