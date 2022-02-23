@@ -112,16 +112,16 @@ function createMainWindow() {
     })
 }
 
+/**
+ * @param args {path, hash, title, titleFixed, force, userAgent, config, webPreferences}
+ */
 function createSubWindow(args) {
     if (!args) {
         return;
     }
 
-    if (typeof args !== "object") {
-        args = {
-            path: args,
-            config: {},
-        }
+    if (!utils.isJson(args)) {
+        args = {path: args, config: {}}
     }
 
     let name = args.name || "auto_" + utils.randomString(6);
@@ -134,27 +134,25 @@ function createSubWindow(args) {
         }
     } else {
         let config = args.config || {};
-        if (typeof args.title !== "undefined") {
-            config.title = args.title;
-        }
+        let webPreferences = args.webPreferences || {};
         browser = new BrowserWindow(Object.assign({
             width: 1280,
             height: 800,
             center: true,
             parent: mainWindow,
             autoHideMenuBar: true,
-            webPreferences: {
+            webPreferences: Object.assign({
                 preload: path.join(__dirname, 'electron-preload.js'),
-                devTools: args.devTools !== false,
                 webSecurity: true,
                 nodeIntegration: true,
                 nodeIntegrationInSubFrames: true,
                 contextIsolation: true,
                 nativeWindowOpen: true
-            },
+            }, webPreferences),
         }, config))
+        
         browser.on('page-title-updated', (event, title) => {
-            if (title == "index.html" || args.titleFixed === true) {
+            if (title == "index.html" || config.titleFixed === true) {
                 event.preventDefault()
             }
         })

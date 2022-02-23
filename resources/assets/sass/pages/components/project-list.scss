@@ -597,8 +597,7 @@
     .project-table {
         height: 100%;
         margin-top: 18px;
-        overflow-x: hidden;
-        overflow-y: auto;
+        overflow: auto;
         .task-row {
             background-color: #ffffff;
             border-bottom: 1px solid #F4F4F5;
@@ -631,6 +630,7 @@
         }
         .project-table-head,
         .project-table-body {
+            min-width: 800px;
             margin: 0 32px 12px;
             border-radius: 5px;
             border: 1px solid #F4F4F5;

@@ -855,13 +855,13 @@ export default {
 
         openSingle(item) {
             this.$Electron.sendMessage('windowRouter', {
-                title: this.formatName(item),
-                titleFixed: true,
-                userAgent: "/hideenOfficeTitle/",
                 name: 'file-' + item.id,
                 path: "/single/file/" + item.id,
+                userAgent: "/hideenOfficeTitle/",
                 force: false, // 如果窗口已存在不重新加载
                 config: {
+                    title: this.formatName(item),
+                    titleFixed: true,
                     parent: null,
                     width: Math.min(window.screen.availWidth, 1440),
                     height: Math.min(window.screen.availHeight, 900),

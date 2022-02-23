@@ -1116,6 +1116,8 @@ export default {
 
         openNewWin() {
             let config = {
+                title: this.taskDetail.name,
+                titleFixed: true,
                 parent: null,
                 width: Math.min(window.screen.availWidth, this.$el.clientWidth + 72),
                 height: Math.min(window.screen.availHeight, this.$el.clientHeight + 72),
@@ -1127,8 +1129,6 @@ export default {
                 config.minHeight = 600;
             }
             this.$Electron.sendMessage('windowRouter', {
-                title: this.taskDetail.name,
-                titleFixed: true,
                 name: 'task-' + this.taskDetail.id,
                 path: "/single/task/" + this.taskDetail.id,
                 force: false,
@@ -1162,12 +1162,12 @@ export default {
         viewFile(file) {
             if (this.$Electron) {
                 this.$Electron.sendMessage('windowRouter', {
-                    title: `${file.name} (${$A.bytesToSize(file.size)})`,
-                    titleFixed: true,
                     name: 'file-task-' + file.id,
                     path: "/single/file/task/" + file.id,
                     force: false,
                     config: {
+                        title: `${file.name} (${$A.bytesToSize(file.size)})`,
+                        titleFixed: true,
                         parent: null,
                         width: Math.min(window.screen.availWidth, 1440),
                         height: Math.min(window.screen.availHeight, 900),
