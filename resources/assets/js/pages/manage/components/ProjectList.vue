@@ -1274,13 +1274,9 @@ export default {
                 }
                 $A.modalConfirm({
                     content: '设置尚未保存，是否放弃修改？',
-                    cancelText: '放弃',
-                    okText: '保存',
-                    onCancel: () => {
-                        resolve()
-                    },
+                    cancelText: '取消',
+                    okText: '放弃',
                     onOk: () => {
-                        this.$refs.workflow.saveAll()
                         resolve()
                     }
                 });

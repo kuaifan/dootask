@@ -109,12 +109,28 @@ export default {
     },
 
     mounted() {
-        document.addEventListener('keydown', this.keySave);
+        document.addEventListener('keydown', this.keySave)
         window.addEventListener('message', this.handleMessage)
+        //
+        if (this.$isSubElectron) {
+            window.__onBeforeUnload = () => {
+                if (!this.equalContent) {
+                    $A.modalConfirm({
+                        content: '修改的内容尚未保存，真的要放弃修改吗？',
+                        cancelText: '取消',
+                        okText: '放弃',
+                        onOk: () => {
+                            this.$Electron.sendMessage('windowDestroy');
+                        }
+                    });
+                    return true
+                }
+            }
+        }
     },
 
     beforeDestroy() {
-        document.removeEventListener('keydown', this.keySave);
+        document.removeEventListener('keydown', this.keySave)
         window.removeEventListener('message', this.handleMessage)
     },
 
