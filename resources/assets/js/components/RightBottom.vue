@@ -44,8 +44,8 @@ export default {
         this.getReleases();
         //
         if (this.$Electron) {
-            this.$Electron.registerMsgListener('downloadDone', (event, {result}) => {
-                if (result.name == this.repoData.name) {
+            this.$Electron.registerMsgListener('downloadDone', ({result}) => {
+                if (result.name == this.repoData.name && this.repoStatus !== 2) {
                     this.downloadResult = result;
                     this.releasesNotification()
                 }
@@ -202,6 +202,7 @@ export default {
         },
 
         releasesNotification() {
+            const {tag_name, body} = this.repoReleases;
             $A.modalConfirm({
                 okText: this.$L('立即更新'),
                 onOk: () => {
@@ -224,12 +225,12 @@ export default {
                                 props: {
                                     color: 'volcano'
                                 }
-                            }, this.repoReleases.tag_name)
+                            }, tag_name)
                         ]),
                         h('MarkdownPreview', {
                             class: 'notification-body',
                             props: {
-                                initialValue: this.repoReleases.body
+                                initialValue: body
                             }
                         }),
                     ])

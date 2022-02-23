@@ -188,7 +188,7 @@ export default {
                     return true;
                 }
             }
-            this.$Electron.registerMsgListener('dispatch', (event, args) => {
+            this.$Electron.registerMsgListener('dispatch', args => {
                 if (!$A.isJson(args)) {
                     return;
                 }
