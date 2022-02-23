@@ -179,17 +179,15 @@ export default {
             if (!this.$Electron) {
                 return;
             }
-            this.$Electron.sendMessage('inheritClose');
-            this.$Electron.registerMsgListener('windowClose', () => {
+            window.__onBeforeUnload = () => {
                 if (this.$Modal.removeLast()) {
-                    return;
+                    return true;
                 }
                 if (this.cacheDrawerOverlay.length > 0) {
                     this.cacheDrawerOverlay[this.cacheDrawerOverlay.length - 1].close();
-                    return;
+                    return true;
                 }
-                this.$Electron.sendMessage('windowHidden');
-            })
+            }
             this.$Electron.registerMsgListener('dispatch', (event, args) => {
                 if (!$A.isJson(args)) {
                     return;

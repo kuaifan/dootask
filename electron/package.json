@@ -2,7 +2,7 @@
     "name": "DooTask",
     "version": "0.9.16",
     "description": "DooTask is task management system.",
-    "main": "main.js",
+    "main": "electron.js",
     "license": "MIT",
     "scripts": {
         "start": "electron-forge start",
@@ -51,8 +51,8 @@
         "artifactName": "${productName}-v${version}-${os}-${arch}.${ext}",
         "files": [
             "public/**/*",
-            "main.js",
-            "preload.js",
+            "electron-preload.js",
+            "electron.js",
             "utils.js"
         ],
         "mac": {

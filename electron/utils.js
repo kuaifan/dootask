@@ -1,5 +1,5 @@
 const fs = require("fs");
-const {shell} = require("electron");
+const {shell, dialog} = require("electron");
 
 module.exports = {
     /**
@@ -268,5 +268,40 @@ module.exports = {
             time = new Date().getTime();
         }
         return Math.round(time / 1000)
+    },
+
+    /**
+     * 窗口关闭事件
+     * @param event
+     * @param app
+     */
+    onBeforeUnload(event, app) {
+        const sender = event.sender
+        const contents = sender.webContents
+        if (contents != null) {
+            const destroy = () => {
+                if (typeof app === "undefined") {
+                    sender.destroy()
+                } else {
+                    if (process.platform === 'darwin') {
+                        app.hide()
+                    } else {
+                        app.quit()
+                    }
+                }
+            }
+            contents.executeJavaScript('if(typeof window.__onBeforeUnload === \'function\'){window.__onBeforeUnload()}', true).then(options => {
+                if (this.isJson(options)) {
+                    let choice = dialog.showMessageBoxSync(sender, options)
+                    if (choice === 1) {
+                        contents.executeJavaScript('if(typeof window.__removeBeforeUnload === \'function\'){window.__removeBeforeUnload()}', true).catch(() => {});
+                        destroy()
+                    }
+                } else if (options !== true) {
+                    destroy()
+                }
+            })
+            event.preventDefault()
+        }
     },
 }

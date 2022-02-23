@@ -14,7 +14,6 @@ const config = require('./package.json');
 let mainWindow = null,
     subWindow = [],
     willQuitApp = false,
-    inheritClose = false,
     devloadUrl = "",
     devloadCachePath = path.resolve(__dirname, ".devload"),
     downloadList = [],
@@ -70,7 +69,7 @@ function createMainWindow() {
         center: true,
         autoHideMenuBar: true,
         webPreferences: {
-            preload: path.join(__dirname, 'preload.js'),
+            preload: path.join(__dirname, 'electron-preload.js'),
             webSecurity: true,
             nodeIntegration: true,
             nodeIntegrationInSubFrames: true,
@@ -96,18 +95,9 @@ function createMainWindow() {
         }
     })
 
-    mainWindow.on('close', (e) => {
+    mainWindow.on('close', event => {
         if (!willQuitApp) {
-            e.preventDefault();
-            if (inheritClose) {
-                mainWindow.webContents.send("windowClose", {})
-            } else {
-                if (process.platform === 'darwin') {
-                    app.hide();
-                } else {
-                    app.quit();
-                }
-            }
+            utils.onBeforeUnload(event, app)
         }
     })
 
@@ -154,7 +144,7 @@ function createSubWindow(args) {
             parent: mainWindow,
             autoHideMenuBar: true,
             webPreferences: {
-                preload: path.join(__dirname, 'preload.js'),
+                preload: path.join(__dirname, 'electron-preload.js'),
                 devTools: args.devTools !== false,
                 webSecurity: true,
                 nodeIntegration: true,
@@ -168,12 +158,18 @@ function createSubWindow(args) {
                 event.preventDefault()
             }
         })
-        browser.on('close', () => {
+
+        browser.on('close', event => {
+            utils.onBeforeUnload(event)
+        })
+
+        browser.on('closed', () => {
             let index = subWindow.findIndex(item => item.name == name);
             if (index > -1) {
                 subWindow.splice(index, 1)
             }
         })
+
         subWindow.push({ name, browser })
     }
     browser.webContents.setUserAgent(browser.webContents.getUserAgent() + " SubTaskWindow/" + process.platform + "/" + os.arch() + "/1.0" + (args.userAgent ? (" " + args.userAgent) : ""));
@@ -207,14 +203,6 @@ app.on('window-all-closed', () => {
 
 app.on('before-quit', () => {
     willQuitApp = true
-})
-
-/**
- * 继承关闭窗口事件
- */
-ipcMain.on('inheritClose', (event) => {
-    inheritClose = true
-    event.returnValue = "ok"
 })
 
 /**
@@ -555,7 +543,7 @@ function exportVsdx(event, args, directFinalize) {
         height: 800,
         show: false,
         webPreferences: {
-            preload: path.join(__dirname, 'preload.js'),
+            preload: path.join(__dirname, 'electron-preload.js'),
             webSecurity: true,
             nodeIntegration: true,
             contextIsolation: true,
@@ -648,7 +636,7 @@ function exportDiagram(event, args, directFinalize) {
     try {
         browser = new BrowserWindow({
             webPreferences: {
-                preload: path.join(__dirname, 'preload.js'),
+                preload: path.join(__dirname, 'electron-preload.js'),
                 backgroundThrottling: false,
                 contextIsolation: true,
                 nativeWindowOpen: true
