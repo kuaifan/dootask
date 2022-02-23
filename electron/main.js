@@ -74,7 +74,8 @@ function createMainWindow() {
             webSecurity: true,
             nodeIntegration: true,
             nodeIntegrationInSubFrames: true,
-            contextIsolation: true
+            contextIsolation: true,
+            nativeWindowOpen: true
         }
     })
     mainWindow.webContents.setUserAgent(mainWindow.webContents.getUserAgent() + " MainTaskWindow/" + process.platform + "/" + os.arch() + "/1.0");
@@ -158,7 +159,8 @@ function createSubWindow(args) {
                 webSecurity: true,
                 nodeIntegration: true,
                 nodeIntegrationInSubFrames: true,
-                contextIsolation: true
+                contextIsolation: true,
+                nativeWindowOpen: true
             },
         }, config))
         browser.on('page-title-updated', (event, title) => {
@@ -551,15 +553,13 @@ function exportVsdx(event, args, directFinalize) {
     let win = new BrowserWindow({
         width: 1280,
         height: 800,
-        center: true,
         show: false,
-        autoHideMenuBar: true,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
-            devTools: args.devTools !== false,
             webSecurity: true,
             nodeIntegration: true,
-            contextIsolation: true
+            contextIsolation: true,
+            nativeWindowOpen: true
         },
     })
 
@@ -613,13 +613,13 @@ async function mergePdfs(pdfFiles, xml) {
 
     try {
         const pdfDoc = await PDFDocument.create();
-        pdfDoc.setCreator('diagrams.net');
+        pdfDoc.setCreator(config.name);
 
         if (xml != null) {
             //Embed diagram XML as file attachment
-            await pdfDoc.attach(Buffer.from(xml).toString('base64'), 'diagram.xml', {
+            await pdfDoc.attach(Buffer.from(xml).toString('base64'), config.name + '.xml', {
                 mimeType: 'application/vnd.jgraph.mxfile',
-                description: 'Diagram Content'
+                description: config.name + ' Content'
             });
         }
 
@@ -980,7 +980,7 @@ async function writeFile(path, data, enc) {
 function getAppDataFolder() {
     try {
         let appDataDir = app.getPath('appData');
-        let drawioDir = appDataDir + '/dootask.com';
+        let drawioDir = appDataDir + '/' + config.name;
 
         if (!fs.existsSync(drawioDir)) //Usually this dir already exists
         {
