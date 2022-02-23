@@ -38,10 +38,16 @@ export default {
             repoReleases: {},
 
             downloadResult: {},
+
+            subscribe: null,
         }
     },
     mounted() {
         this.getReleases();
+        //
+        this.subscribe = Store.subscribe('releasesNotification', () => {
+            this.releasesNotification();
+        });
         //
         if (this.$Electron) {
             this.$Electron.registerMsgListener('downloadDone', ({result}) => {
@@ -50,6 +56,12 @@ export default {
                     this.releasesNotification()
                 }
             })
+        }
+    },
+    beforeDestroy() {
+        if (this.subscribe) {
+            this.subscribe.unsubscribe();
+            this.subscribe = null;
         }
     },
     computed: {
@@ -203,6 +215,7 @@ export default {
 
         releasesNotification() {
             const {tag_name, body} = this.repoReleases;
+            this.$store.state.clientNewVersion = tag_name
             $A.modalConfirm({
                 okText: this.$L('立即更新'),
                 onOk: () => {

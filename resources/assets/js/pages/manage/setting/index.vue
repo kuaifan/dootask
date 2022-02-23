@@ -19,7 +19,16 @@
                         :key="key"
                         :class="classNameRoute(item.path, item.divided)"
                         @click="toggleRoute(item.path)">{{$L(item.name)}}</li>
-                    <li class="version divided"><AutoTip>{{$L('版本')}}: {{version}}</AutoTip></li>
+                    <li
+                        v-if="!!clientNewVersion"
+                        :class="classNameRoute('version', true)"
+                        @click="toggleRoute('version')">
+                        <AutoTip disabled>{{$L('版本')}}: {{version}}</AutoTip>
+                        <Badge :text="clientNewVersion"/>
+                    </li>
+                    <li v-else class="version divided">
+                        <AutoTip>{{$L('版本')}}: {{version}}</AutoTip>
+                    </li>
                 </ul>
             </div>
             <div class="setting-content">
@@ -32,6 +41,7 @@
 
 <script>
 import {mapState} from "vuex";
+import {Store} from "le5le-store";
 
 export default {
     data() {
@@ -46,7 +56,7 @@ export default {
 
     },
     computed: {
-        ...mapState(['userInfo', 'userIsAdmin']),
+        ...mapState(['userInfo', 'userIsAdmin', 'clientNewVersion']),
 
         menu() {
             let menu = [
@@ -80,6 +90,10 @@ export default {
     },
     methods: {
         toggleRoute(path) {
+            if (path == 'version') {
+                Store.set('releasesNotification', null);
+                return;
+            }
             this.show768Menu = false;
             this.goForward({path: '/manage/setting/' + path});
         },

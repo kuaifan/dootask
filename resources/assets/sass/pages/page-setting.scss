@@ -44,6 +44,13 @@
                     padding: 0 20px;
                     margin: 5px 0;
                     position: relative;
+                    display: flex;
+                    align-items: center;
+
+                    .ivu-badge {
+                        transform: scale(0.8);
+                        transform-origin: right center;
+                    }
 
                     &.active,
                     &:hover {
