@@ -513,6 +513,10 @@ class ProjectTask extends AbstractModel
             $mainTask = $this->parent_id > 0 ? self::find($this->parent_id) : null;
             // 工作流
             if (Arr::exists($data, 'flow_item_id')) {
+                $isProjectOwner = $this->useridInTheProject(User::userid()) === 2;
+                if (!$isProjectOwner && !$this->isOwner()) {
+                    throw new ApiException('仅限项目或任务负责人修改任务状态');
+                }
                 if ($this->flow_item_id == $data['flow_item_id']) {
                     throw new ApiException('任务状态未发生改变');
                 }
@@ -533,8 +537,7 @@ class ProjectTask extends AbstractModel
                             throw new ApiException("当前状态[{$currentFlowItem->name}]不可流转到[{$newFlowItem->name}]");
                         }
                         if ($currentFlowItem->userlimit) {
-                            if (!in_array(User::userid(), $currentFlowItem->userids)
-                                && !ProjectUser::whereProjectId($this->project_id)->whereOwner(1)->exists()) {
+                            if (!$isProjectOwner && !in_array(User::userid(), $currentFlowItem->userids)) {
                                 throw new ApiException("当前状态[{$currentFlowItem->name}]仅限状态负责人或项目负责人修改");
                             }
                         }
@@ -892,6 +895,44 @@ class ProjectTask extends AbstractModel
     }
 
     /**
+     * 权限版本
+     * @param int $level 1-负责人，2-协助人/负责人，3-创建人/协助人/负责人
+     * @return bool
+     */
+    public function permission($level = 1)
+    {
+        if ($level >= 3 && $this->isCreater()) {
+            return true;
+        }
+        if ($level >= 2 && $this->isAssister()) {
+            return true;
+        }
+        return $this->isOwner();
+    }
+
+    /**
+     * 判断是否创建者
+     * @return bool
+     */
+    public function isCreater()
+    {
+        return $this->userid == User::userid();
+    }
+
+    /**
+     * 判断是否协助人员
+     * @return bool
+     */
+    public function isAssister()
+    {
+        $row = $this;
+        while ($row->parent_id > 0) {
+            $row = self::find($row->parent_id);
+        }
+        return ProjectTaskUser::whereTaskId($row->id)->whereUserid(User::userid())->whereOwner(0)->exists();
+    }
+
+    /**
      * 判断是否负责人（或者是主任务的负责人）
      * @return bool
      */
@@ -1120,11 +1161,11 @@ class ProjectTask extends AbstractModel
      * 获取任务（会员有任务权限 或 会员存在项目内）
      * @param int $task_id
      * @param bool $archived true:仅限未归档, false:仅限已归档, null:不限制
-     * @param int|bool $mustOwner 0|false:不限制, 1|true:限制任务或项目负责人, 2:已有负责人才限制任务或项目负责人(子任务时如果是主任务负责人也可以)
+     * @param int|bool $permission 0|false:不限制, 1|true:限制项目负责人、任务负责人、协助人员及任务创建者, 2:已有负责人才限制true (子任务时如果是主任务负责人也可以)
      * @param array $with
      * @return self
      */
-    public static function userTask($task_id, $archived = true, $mustOwner = 0, $with = [])
+    public static function userTask($task_id, $archived = true, $permission = 0, $with = [])
     {
         $task = self::with($with)->allData()->where("project_tasks.id", intval($task_id))->first();
         //
@@ -1150,11 +1191,11 @@ class ProjectTask extends AbstractModel
             }
         }
         //
-        if ($mustOwner === 2) {
-            $mustOwner = $task->hasOwner() ? 1 : 0;
+        if ($permission === 2) {
+            $permission = $task->hasOwner() ? 1 : 0;
         }
-        if (($mustOwner === 1 || $mustOwner === true) && !$task->isOwner() && !$project->owner) {
-            throw new ApiException('仅限项目或任务负责人操作');
+        if (($permission === 1 || $permission === true) && !$project->owner && !$task->permission(3)) {
+            throw new ApiException('仅限项目负责人、任务负责人、协助人员或任务创建者操作');
         }
         //
         return $task;
