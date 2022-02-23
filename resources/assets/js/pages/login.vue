@@ -81,6 +81,7 @@ export default {
 
             loginType: 'login',
             loginJump: false,
+
             email: $A.getStorageString("cacheLoginEmail") || '',
             password: '',
             password2: '',
@@ -277,6 +278,12 @@ export default {
 
         onLogin() {
             this.chackServerUrl(true).then(() => {
+                this.email = $A.trim(this.email)
+                this.password = $A.trim(this.password)
+                this.password2 = $A.trim(this.password2)
+                this.code = $A.trim(this.code)
+                this.invite = $A.trim(this.invite)
+                //
                 if (!$A.isEmail(this.email)) {
                     $A.messageWarning("请输入正确的邮箱地址");
                     return;
