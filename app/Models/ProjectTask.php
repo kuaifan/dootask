@@ -910,6 +910,20 @@ class ProjectTask extends AbstractModel
     }
 
     /**
+     * 是否是参与者或者创建人
+     * @return bool
+     */
+    public function isActor(): bool
+    {
+        $user = User::auth();
+        $actor = ProjectTaskUser::whereTaskId($this->id)->whereUserid($user->userid)->exists();
+        if (!$actor && $user->userid != $this->userid) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * 是否有负责人
      * @return bool
      */
@@ -1120,7 +1134,7 @@ class ProjectTask extends AbstractModel
      * 获取任务（会员有任务权限 或 会员存在项目内）
      * @param int $task_id
      * @param bool $archived true:仅限未归档, false:仅限已归档, null:不限制
-     * @param int|bool $mustOwner 0|false:不限制, 1|true:限制任务或项目负责人, 2:已有负责人才限制任务或项目负责人(子任务时如果是主任务负责人也可以)
+     * @param int|bool $mustOwner 0|false:不限制, 1|true:限制任务或项目负责人, 2:已有负责人才限制任务或项目负责人(子任务时如果是主任务负责人也可以)，3:限制项目或任务负责人或任务参与者或者任务创建人
      * @param array $with
      * @return self
      */
@@ -1156,7 +1170,9 @@ class ProjectTask extends AbstractModel
         if (($mustOwner === 1 || $mustOwner === true) && !$task->isOwner() && !$project->owner) {
             throw new ApiException('仅限项目或任务负责人操作');
         }
-        //
+        if ($mustOwner === 3 && !$task->isActor() && !$task->isOwner() && !$project->owner) {
+            throw new ApiException('仅限项目或任务负责人或任务参与者或者任务创建人操作');
+        }
         return $task;
     }
 }

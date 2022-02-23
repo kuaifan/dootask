@@ -1336,7 +1336,10 @@ class ProjectController extends AbstractController
         parse_str(Request::getContent(), $data);
         $task_id = intval($data['task_id']);
         //
-        $task = ProjectTask::userTask($task_id, true, 2);
+        if (Arr::exists($data, 'content') || Arr::exists($data, 'name'))
+            $task = ProjectTask::userTask($task_id, true, 3);
+        else
+            $task = ProjectTask::userTask($task_id, true, 2);
         // 更新任务
         $updateMarking = [];
         $task->updateTask($data, $updateMarking);
