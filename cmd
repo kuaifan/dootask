@@ -117,13 +117,6 @@ run_electron() {
     mkdir -p ./electron/public
     cp ./electron/index.html ./electron/public/index.html
     #
-    if [ "$argv" == "dev" ]; then
-        run_exec php "php bin/run --mode=dev"
-    else
-        run_exec php "php bin/run --mode=prod"
-    fi
-    supervisorctl_restart php
-    #
     if [ "$argv" != "dev" ] && [ "$argv" != "--nobuild" ]; then
         npx mix --production -- --env --electron
     fi
