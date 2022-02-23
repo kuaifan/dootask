@@ -78,6 +78,7 @@
                 width: 100%;
                 overflow-x: hidden;
                 overflow-y: auto;
+                padding-right: 9px;
                 > ul {
                     &.dialog {
                         > li {
@@ -199,7 +200,6 @@
                             }
                             &.operate {
                                 border-color: $primary-color;
-                                width:97%;
                             }
                             &.loading {
                                 margin: 0;
