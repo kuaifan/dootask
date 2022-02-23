@@ -951,20 +951,6 @@ class ProjectTask extends AbstractModel
     }
 
     /**
-     * 是否是参与者或者创建人
-     * @return bool
-     */
-    public function isActor(): bool
-    {
-        $user = User::auth();
-        $actor = ProjectTaskUser::whereTaskId($this->id)->whereUserid($user->userid)->exists();
-        if (!$actor && $user->userid != $this->userid) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
      * 是否有负责人
      * @return bool
      */
@@ -1211,6 +1197,7 @@ class ProjectTask extends AbstractModel
         if (($permission === 1 || $permission === true) && !$project->owner && !$task->permission(3)) {
             throw new ApiException('仅限项目负责人、任务负责人、协助人员或任务创建者操作');
         }
+        //
         return $task;
     }
 }

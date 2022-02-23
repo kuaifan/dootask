@@ -249,9 +249,6 @@ export default {
             immediate: true
         }
     },
-    created() {
-        this.pasteEnter()
-    },
 
     methods: {
         sendMsg(text) {
@@ -356,15 +353,7 @@ export default {
                 this.dialogDrag = true;
             }
         },
-        pasteEnter() {
-            var that = this;
-            document.onkeydown = function (e) {
-                if (e.keyCode === 13 && that.pasteShow) {
-                    that.pasteSend();
-                    that.pasteShow = false;
-                }
-            }
-        },
+
         pasteSend() {
             this.pasteFile.some(file => {
                 this.$refs.chatUpload.upload(file)

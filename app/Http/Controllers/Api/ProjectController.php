@@ -1083,7 +1083,7 @@ class ProjectController extends AbstractController
             return Base::retError('文件不存在或已被删除');
         }
         //
-        $task = ProjectTask::userTask($file->task_id, true, 3);
+        $task = ProjectTask::userTask($file->task_id, true, true);
         //
         $task->pushMsg('filedelete', $file);
         $file->delete();
@@ -1284,7 +1284,7 @@ class ProjectController extends AbstractController
         $task_id = intval(Request::input('task_id'));
         $name = Request::input('name');
         //
-        $task = ProjectTask::userTask($task_id, true, 3);
+        $task = ProjectTask::userTask($task_id, true, true);
         if ($task->complete_at) {
             return Base::retError('主任务已完成无法添加子任务');
         }
@@ -1336,10 +1336,7 @@ class ProjectController extends AbstractController
         parse_str(Request::getContent(), $data);
         $task_id = intval($data['task_id']);
         //
-        if (!Arr::exists($data, 'flow_item_id') && !Arr::exists($data, 'complete_at'))
-            $task = ProjectTask::userTask($task_id, true, 3);
-        else
-            $task = ProjectTask::userTask($task_id, true, 2);
+        $task = ProjectTask::userTask($task_id, true, 2);
         // 更新任务
         $updateMarking = [];
         $task->updateTask($data, $updateMarking);
