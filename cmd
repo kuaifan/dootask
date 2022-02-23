@@ -260,8 +260,12 @@ if [ $# -gt 0 ]; then
             exit 1
         fi
         # 初始化文件
-        rm -rf composer.lock
-        rm -rf package-lock.json
+        if [[ -n "$(arg_get relock)" ]]; then
+            rm -rf node_modules
+            rm -rf package-lock.json
+            rm -rf vendor
+            rm -rf composer.lock
+        fi
         mkdir -p "${cur_path}/docker/log/supervisor"
         mkdir -p "${cur_path}/docker/mysql/data"
         chmod -R 775 "${cur_path}/docker/log/supervisor"
@@ -297,6 +301,7 @@ if [ $# -gt 0 ]; then
         # 设置初始化密码
         res=`run_exec mariadb "sh /etc/mysql/repassword.sh"`
         docker-compose up -d
+        supervisorctl_restart php
         echo -e "${OK} ${GreenBG} 安装完成 ${Font}"
         echo -e "地址: http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
         echo -e "$res"
