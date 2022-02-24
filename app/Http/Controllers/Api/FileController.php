@@ -348,9 +348,7 @@ class FileController extends AbstractController
             return Base::retError('一次最多只能移动100个文件或文件夹');
         }
         if ($pid > 0) {
-            if (!File::whereUserid($user->userid)->whereId($pid)->exists()) {
-                return Base::retError('参数错误');
-            }
+            File::permissionFind($pid, 1);
         }
         //
         $files = [];
