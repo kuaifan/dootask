@@ -31,13 +31,16 @@
                         <span v-if="item.share && item.permission == 0" class="readonly">{{$L('只读')}}</span>
                     </li>
                 </ul>
-                <Button v-if="shearFirst" :disabled="shearFirst.pid == pid" size="small" type="primary" @click="shearTo">
-                    <div class="file-shear">
-                        <span>{{$L('粘贴')}}</span>
-                        "<em>{{shearFirst.name}}</em>"
-                        <span v-if="shearIds.length > 1">{{$L('等')}}{{shearIds.length}}{{$L('个文件')}}</span>
-                    </div>
-                </Button>
+                <template v-if="shearFirst">
+                    <Button :disabled="shearFirst.pid == pid" size="small" type="primary" @click="shearTo">
+                        <div class="file-shear">
+                            <span>{{ $L('粘贴') }}</span>
+                            "<em>{{ shearFirst.name }}</em>"
+                            <span v-if="shearIds.length > 1">{{ $L('等') }}{{ shearIds.length }}{{ $L('个文件') }}</span>
+                        </div>
+                    </Button>
+                    <Button type="primary" size="small" @click="clearShear">{{ $L('取消剪切') }}</Button>
+                </template>
                 <template v-else-if="selectIds.length > 0">
                     <Button size="small" type="info" @click="handleContextClick('shearSelect')">
                         <Icon type="ios-cut" />
@@ -1276,6 +1279,10 @@ export default {
 
         clearSelect() {
             this.selectIds = [];
+        },
+
+        clearShear() {
+            this.shearIds = [];
         },
 
         /********************文件上传部分************************/
