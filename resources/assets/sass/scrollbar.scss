@@ -38,3 +38,8 @@
         background: rgba(0, 0, 0, 0);
     }
 }
+.overlay-none {
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}

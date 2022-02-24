@@ -21,7 +21,8 @@
                 </div>
                 <ScrollerY
                     ref="list"
-                    class="messenger-list overlay-y"
+                    class="messenger-list"
+                    :class="overlayClass"
                     @on-scroll="listScroll"
                     static>
                     <ul
@@ -223,6 +224,13 @@ export default {
                 return num;
             }
         },
+
+        overlayClass() {
+            return {
+                'overlay-y': true,
+                'overlay-none': this.topOperateVisible === true,
+            }
+        }
     },
 
     watch: {
