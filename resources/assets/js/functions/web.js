@@ -366,7 +366,11 @@
                 return
             }
             if ($A.Electron) {
-                $A.Electron.sendMessage('openExternal', url);
+                $A.Electron.request({action: 'openExternal', url}, () => {
+                    // 成功
+                }, () => {
+                    // 失败
+                });
             } else {
                 window.open(url)
             }
@@ -422,6 +426,22 @@
             }
             if (typeof config === "string") config = {title:config};
             let inputId = "modalInput_" + $A.randomString(6);
+            const onOk = () => {
+                if (typeof config.onOk === "function") {
+                    if (config.onOk(config.value, () => {
+                        $A.Modal.remove();
+                    }) === true) {
+                        $A.Modal.remove();
+                    }
+                } else {
+                    $A.Modal.remove();
+                }
+            };
+            const onCancel = () => {
+                if (typeof config.onCancel === "function") {
+                    config.onCancel();
+                }
+            };
             $A.Modal.confirm({
                 render: (h) => {
                     return h('div', [
@@ -441,27 +461,16 @@
                             on: {
                                 input: (val) => {
                                     config.value = val;
+                                },
+                                'on-enter': (e) => {
+                                    $A(e.target).parents(".ivu-modal-body").find(".ivu-btn-primary").click();
                                 }
                             }
                         })
                     ])
                 },
-                onOk: () => {
-                    if (typeof config.onOk === "function") {
-                        if (config.onOk(config.value, () => {
-                            $A.Modal.remove();
-                        }) === true) {
-                            $A.Modal.remove();
-                        }
-                    } else {
-                        $A.Modal.remove();
-                    }
-                },
-                onCancel: () => {
-                    if (typeof config.onCancel === "function") {
-                        config.onCancel();
-                    }
-                },
+                onOk,
+                onCancel,
                 loading: true,
                 okText: $A.L(config.okText || '确定'),
                 cancelText: $A.L(config.cancelText || '取消'),
