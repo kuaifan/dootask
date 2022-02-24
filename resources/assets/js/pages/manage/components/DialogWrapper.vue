@@ -12,8 +12,8 @@
                         <Tag :color="tag.color" :fade="false">{{$L(tag.text)}}</Tag>
                     </template>
                     <h2>{{dialogData.name}}</h2>
-                    <label v-if="dialogData.top_at" class="top-text">{{$L('置顶')}}</label>
                     <em v-if="peopleNum > 0">({{peopleNum}})</em>
+                    <label v-if="dialogData.top_at" class="top-text">{{$L('置顶')}}</label>
                 </div>
                 <template v-if="dialogData.type === 'group'">
                     <div v-if="dialogData.group_type === 'project'" class="sub-title pointer" @click="openProject">
