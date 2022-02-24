@@ -41,7 +41,7 @@ class SystemController extends AbstractController
             User::auth('admin');
             $all = Request::input();
             foreach ($all AS $key => $value) {
-                if (!in_array($key, ['reg', 'reg_invite', 'login_code', 'password_policy', 'project_invite', 'chat_nickname'])) {
+                if (!in_array($key, ['reg', 'reg_invite', 'login_code', 'password_policy', 'project_invite', 'chat_nickname','start_home','home_footer'])) {
                     unset($all[$key]);
                 }
             }
@@ -62,6 +62,7 @@ class SystemController extends AbstractController
         $setting['password_policy'] = $setting['password_policy'] ?: 'simple';
         $setting['project_invite'] = $setting['project_invite'] ?: 'open';
         $setting['chat_nickname'] = $setting['chat_nickname'] ?: 'optional';
+        $setting['start_home'] = $setting['start_home'] ?: 'close';
         //
         return Base::retSuccess('success', $setting ?: json_decode('{}'));
     }
@@ -416,5 +417,27 @@ class SystemController extends AbstractController
         }
         //
         return $data;
+    }
+
+
+    /**
+     * @api {get} api/system/get/starthome         12. 获取是都开启首页信息
+     *
+     * @apiDescription 用于判断首页跳转页面
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName get__starthome
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function get__starthome()
+    {
+
+        return Base::retSuccess('success', [
+            'need_start' => Base::settingFind('system', 'start_home') == 'open',
+            'home_footer' => Base::settingFind('system', 'home_footer')
+        ]);
     }
 }

@@ -65,7 +65,7 @@
                            <img  class="box-img"  :src="$store.state.method.apiUrl('../images/index/box-pic1.png')" />
                     </div>
                     <div class="box-one-pic1" v-else>
-                          
+
                     </div>
                     <div class="box-one-tips">
                         <div class="box-square"></div>
@@ -108,10 +108,10 @@
                                 $L("汇集文档、电子表格、思维笔记等多种在线工具，汇聚企业知识资源于一处，支持多人实时协同编辑，让团队协作更便捷。")
                             }}
                         </div>
-                  
-                      
+
+
                     </div>
-                    
+
                 </div>
                 <div class="main-box-one">
                     <div class="box-one-square"></div>
@@ -119,8 +119,8 @@
                            <img  class="box-img"  :src="$store.state.method.apiUrl('../images/index/box-pic3.png')" />
                     </div>
                     <div class="box-one-pic3" v-else >
-                          
-                    </div> 
+
+                    </div>
                     <div class="box-one-tips">
                         <div class="box-square"></div>
                         <div class="box-title">
@@ -162,12 +162,12 @@
                                 $L("通过灵活的任务日历，轻松安排每一天的日程，把任务拆解到每天，让工作目标更清晰，时间分配更合理。")
                             }}
                         </div>
-                  
-                      
+
+
                     </div>
-                    
+
                 </div>
-              
+
             </div>
             <div class="page-footer">
                 <div class="footer-service">
@@ -183,9 +183,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="footer-opyright">
-                    {{ $L("桂公网安备 31011002000058号 桂ICP备12020087号-3") }}
-                </div>
+                <div class="footer-opyright" v-html="this.homeFooter"></div>
             </div>
         </div>
     </div>
@@ -196,7 +194,8 @@ export default {
     data() {
         return {
             screenWidth: document.body.clientWidth,
-            
+            needStartHome: false,
+            homeFooter: '',
         };
     },
     watch: {
@@ -210,17 +209,13 @@ export default {
         },
     },
     mounted() {
-        // if (this.$store.state.userId > 0) {
-        //     this.goForward({path: '/manage/dashboard'}, true);
-        // } else {
-        //     this.goForward({path: '/login'}, true);
-        // }
+        this.getNeedStartHome();
         const that = this;
         window.onresize=()=>{
             window.screenWidth=document.body.clientWidth
             that.screenWidth=window.screenWidth
         }
-       
+
     },
 
     methods: {
@@ -232,7 +227,7 @@ export default {
                 false
             );
         },
-      
+
         register() {
             this.goForward(
                 {
@@ -243,6 +238,24 @@ export default {
                 },
                 false
             );
+        },
+        getNeedStartHome() {
+            this.$store
+                .dispatch("call", {
+                    url: "system/get/starthome",
+                })
+                .then(({data}) => {
+                    this.needStartHome = !!data.need_start;
+                    this.homeFooter = data.home_footer;
+                    if (this.$store.state.userId > 0) {
+                        this.goForward({path: '/manage/dashboard'}, true);
+                    } else if (this.needStartHome === false) {
+                        this.goForward({path: '/login'}, true);
+                    }
+                })
+                .catch(() => {
+                    this.needStartHome = false;
+                });
         },
     },
     deactivated() {
