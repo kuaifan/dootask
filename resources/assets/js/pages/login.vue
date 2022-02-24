@@ -214,6 +214,7 @@ export default {
                             url: value + 'system/setting',
                         }).then(() => {
                             this.setServerUrl(value)
+                            cb()
                         }).catch(({msg}) => {
                             $A.modalError(msg || "服务器地址无效", 301);
                             cb()
