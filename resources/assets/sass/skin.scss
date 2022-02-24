@@ -1,0 +1,133 @@
+//暗黑皮肤
+.black {
+    background-color: #171717;
+    > .manage-box-menu {
+        background-color: #202020;
+        > ul {
+            > li {
+                &.menu-project {
+                    >ul{
+                        >li{
+                            &.active {
+                                .project-h1 {
+                                    background-color: #b4b3b3;
+                                }
+                            }
+                        }
+                    }
+                  
+                }
+                color: #ffffff;
+                
+                &.active {
+                        background-color: #b4b3b3 !important;
+                }
+            }
+        }
+
+        .title {
+            color: #ffffff !important;
+        }
+        .manage-box-title {
+            background-color: #b4b3b3 !important;
+            color: #ffffff;
+        }
+    }
+    .manage-box-main {
+        .messenger-select:after {
+            background-color: #ffffff;
+        }
+        .dashboard-wrapper {
+            color: #ffffff;
+        }
+        .dashboard-hello {
+            color: #ffffff;
+        }
+        .dashboard-desc {
+            color: #ffffff;
+        }
+        .dashboard-list {
+            li {
+                background-color: #202020;
+            }
+        }
+        .calendar-title {
+            h1 {
+                color: #ffffff !important;
+            }
+        }
+    }
+    .messenger-wrapper {
+        color: #ffffff;
+        .dialog {
+            .active {
+                background-color: #979595 !important;
+            }
+        }
+        .dialog-box {
+            span {
+                color: #ffffff !important;
+            }
+            .dialog-text {
+                color: #ffffff !important;
+            }
+        }
+        .dialog-wrapper {
+            background-color: #171717;
+        }
+        .messenger-nav > p {
+            color: #ffffff !important;
+        }
+    }
+    .file-wrapper {
+        .file-nav {
+            h1 {
+                color: #ffffff !important;
+            }
+        }
+        .file-navigator {
+            > ul {
+                > li {
+                    color: #ffffff !important;
+                }
+            }
+        }
+        .file-list {
+            > ul {
+                > li {
+                    .file-name {
+                        color: #ffffff;
+                    }
+                }
+            }
+        }
+    }
+    .page-project {
+        .project-list {
+            background-color: #171717;
+            color: #ffffff;
+            .project-title {
+                h1 {
+                    color: #ffffff;
+                }
+            }
+            .project-subtitle {
+                color: #ffffff;
+            }
+            .column-head {
+                background-color: #202020;
+            }
+            .add-column {
+                background-color: #202020;
+                color: #ffffff;
+            }
+            .task-item {
+                background-color: #202020 !important;
+                color: #ffffff !important;
+            }
+            .add-placeholder {
+                color: #ffffff;
+            }
+        }
+    }
+}

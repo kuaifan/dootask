@@ -472,6 +472,55 @@ export default {
             }
         },
 
+        msgAllUnread() {
+            if (this.$Electron) {
+                this.$Electron.ipcRenderer.send('setDockBadge', this.msgAllUnread + this.dashboardTotal);
+            }
+        },
+
+        dashboardTotal() {
+            if (this.$Electron) {
+                this.$Electron.ipcRenderer.send('setDockBadge', this.msgAllUnread + this.dashboardTotal);
+            }
+        },
+
+        dialogMsgPush(data) {
+            if (this.natificationHidden && this.natificationReady) {
+                const {id, dialog_id, type, msg} = data;
+                let body = '';
+                switch (type) {
+                    case 'text':
+                        body = msg.text;
+                        break;
+                    case 'file':
+                        body = '[' + this.$L(msg.type == 'img' ? '图片信息' : '文件信息') + ']'
+                        break;
+                    default:
+                        return;
+                }
+                this._notificationId = id;
+                this.notificationClass.replaceOptions({
+                    icon: $A.originUrl('images/logo.png'),
+                    body: body,
+                    data: data,
+                    tag: "dialog",
+                    requireInteraction: true
+                });
+                let dialog = this.dialogs.find((item) => item.id == dialog_id);
+                if (dialog) {
+                    this.notificationClass.replaceTitle(dialog.name);
+                    this.notificationClass.userAgreed();
+                } else {
+                    this.$store.dispatch("getDialogOne", dialog_id).then(({data}) => {
+                        if (this._notificationId === id) {
+                            this.notificationClass.replaceTitle(data.name);
+                            this.notificationClass.userAgreed();
+                        }
+                    })
+                }
+            }
+        },
+
         projectKeyValue(val) {
             if (val == '') {
                 return;

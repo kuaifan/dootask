@@ -95,6 +95,14 @@
                     color: #666666;
                 }
             }
+            .mannage-menu-skin {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                .ivu-icon {
+                    color: #666666;
+                }
+            }
         }
         > ul {
             flex: 1;
