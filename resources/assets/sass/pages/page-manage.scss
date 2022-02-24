@@ -100,11 +100,14 @@
             flex: 1;
             width: 100%;
             margin-top: 16px;
-            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden !important;
             > li {
+                flex-shrink: 0;
                 display: flex;
                 align-items: center;
-                height: 38px;
+                height: 30px;
                 color: #6b6e72;
                 cursor: pointer;
                 position: relative;
@@ -128,27 +131,35 @@
                     margin-left: 12px;
                     transform: scale(0.9);
                 }
+                &:first-child {
+                    margin-top: 12px;
+                }
+                &.active {
+                    background-color: #ffffff;
+                }
                 &.menu-project {
+                    flex: 1;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
-                    height: auto;
-                    padding: 14px 0 0;
+                    padding: 10px 0 0;
                     cursor: default;
                     > ul {
                         width: 100%;
+                        overflow: auto;
                         > li {
                             display: flex;
                             flex-direction: column;
-                            margin: 4px auto;
                             list-style: none;
                             cursor: pointer;
+                            margin: 3px auto;
+                            border: 2px solid transparent;
                             .project-h1 {
                                 position: relative;
                                 display: flex;
                                 align-items: center;
                                 justify-content: space-between;
-                                padding: 0 8px 0 30px;
+                                padding: 0 8px 0 28px;
                                 border-radius: 4px;
                                 > em {
                                     position: absolute;
@@ -187,7 +198,7 @@
                             .project-h2 {
                                 display: none;
                                 margin: 16px 4px;
-                                padding: 0 8px 0 26px;
+                                padding: 0 8px 0 24px;
                                 cursor: default;
                                 > p {
                                     display: flex;
@@ -226,11 +237,11 @@
                                     display: block;
                                 }
                             }
-                            .top {
+                            &.top {
                                 background-color: #EEEFF1;
                             }
-                            .operate {
-                                border:1px solid $primary-color;
+                            &.operate {
+                                border-color: $primary-color;
                             }
                         }
                     }
@@ -247,15 +258,12 @@
                         display: flex;
                     }
                 }
-                &.active {
-                    background-color: #ffffff;
-                }
             }
         }
         .manage-project-search {
             width: 80%;
             padding: 0 3px;
-            margin: 12px 0 -2px;
+            margin: 8px 0 -2px;
             border-radius: 12px;
             background-color: #ffffff;
             overflow: hidden;
@@ -338,6 +346,28 @@
     }
 }
 
+@media (max-height: 640px) {
+    .page-manage {
+        .manage-box-menu {
+            > ul {
+                overflow: auto !important;
+                &.overlay-y {
+                    overflow-y: overlay !important;
+                }
+                > li {
+                    &.menu-project {
+                        > ul {
+                            overflow: visible !important;
+                        }
+                    }
+                }
+            }
+            .manage-project-search {
+                margin-top: 12px;
+            }
+        }
+    }
+}
 
 @media (max-width: 768px) {
     .page-manage {

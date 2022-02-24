@@ -54,7 +54,7 @@
                     <DropdownItem divided name="signout" style="color:#f40">{{$L('退出登录')}}</DropdownItem>
                 </DropdownMenu>
             </Dropdown>
-            <ul class="overlay-y" @scroll="listScroll()">
+            <ul :class="overlayClass" @scroll="handleClickTopOperateOutside">
                 <li @click="toggleRoute('dashboard')" :class="classNameRoute('dashboard')">
                     <i class="taskfont">&#xe6fb;</i>
                     <div class="menu-title">{{$L('仪表盘')}}</div>
@@ -73,20 +73,14 @@
                     <i class="taskfont">&#xe6f3;</i>
                     <div class="menu-title">{{$L('文件')}}</div>
                 </li>
-                <li class="menu-project" ref="projectWrapper">
-                    <ul>
+                <li ref="projectWrapper" class="menu-project">
+                    <ul :class="overlayClass" @scroll="handleClickTopOperateOutside">
                         <li
                             v-for="(item, key) in projectLists"
                             :key="key"
-                            :class="classNameRoute('project/' + item.id, openMenu[item.id])"
+                            :class="classNameProject(item)"
                             @click="toggleRoute('project/' + item.id)"
-                            @contextmenu.prevent.stop="handleRightClick($event, item)"
-                            >
-                            <div
-                                :class="{
-                                 top: item.top_at,
-                                 operate: item.id == topOperateItem.id && topOperateVisible
-                             }">
+                            @contextmenu.prevent.stop="handleRightClick($event, item)">
                             <div class="project-h1">
                                 <em @click.stop="toggleOpenMenu(item.id)"></em>
                                 <div class="title">{{item.name}}</div>
@@ -103,7 +97,6 @@
                                     <span>{{item.task_complete}}/{{item.task_num}}</span>
                                     <Progress :percent="item.task_percent" :stroke-width="6" />
                                 </p>
-                            </div>
                             </div>
                         </li>
                     </ul>
@@ -125,7 +118,7 @@
                 </li>
             </ul>
             <div
-                v-if="projectTotal > 50"
+                v-if="projectTotal > 20"
                 class="manage-project-search"
                 :class="{loading:projectKeyLoading > 0}">
                 <Input prefix="ios-search" v-model="projectKeyValue" :placeholder="$L('共' + projectTotal + '个项目，搜索...')" clearable />
@@ -309,6 +302,7 @@ export default {
 
             reportTabs: "my",
             reportUnreadNumber: 0,
+
             topOperateStyles: {},
             topOperateVisible: false,
             topOperateItem: {},
@@ -451,6 +445,13 @@ export default {
             const {innerHeight} = this;
             return {
                 maxHeight: (innerHeight - (innerHeight > 900 ? 200 : 70) - 20) + 'px'
+            }
+        },
+
+        overlayClass() {
+            return {
+                'overlay-y': true,
+                'overlay-none': this.topOperateVisible === true,
             }
         }
     },
@@ -610,10 +611,20 @@ export default {
             this.visibleMenu = visible
         },
 
-        classNameRoute(path, openMenu) {
+        classNameRoute(path) {
+            return {
+                "active": this.curPath == '/manage/' + path,
+            };
+        },
+
+        classNameProject(item) {
+            let path = 'project/' + item.id;
+            let openMenu = this.openMenu[item.id];
             return {
                 "active": this.curPath == '/manage/' + path,
                 "open-menu": openMenu === true,
+                "top": item.top_at,
+                "operate": item.id == this.topOperateItem.id && this.topOperateVisible
             };
         },
 
@@ -810,9 +821,10 @@ export default {
             }
             document.addEventListener(visibilityChangeEvent, visibilityChangeListener);
         },
+
         handleRightClick(event, item) {
             this.handleClickTopOperateOutside();
-            this.topOperateItem = $A.isJson(item) ? item : {};
+            this.topOperateItem = item;
             this.$nextTick(() => {
                 const projectWrap = this.$refs.projectWrapper;
                 const projectBounding = projectWrap.getBoundingClientRect();
@@ -823,6 +835,7 @@ export default {
                 this.topOperateVisible = true;
             })
         },
+
         handleClickTopOperateOutside() {
             this.topOperateVisible = false;
         },
@@ -835,15 +848,10 @@ export default {
                 },
             }).then(() => {
                 this.$store.dispatch("getProjects").catch(() => {});
-                this.$Modal.remove();
             }).catch(({msg}) => {
                 $A.modalError(msg, 301);
-                this.$Modal.remove();
             });
         },
-        listScroll() {
-            this.topOperateVisible = false;
-        }
     }
 }
 </script>
