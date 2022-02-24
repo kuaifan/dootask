@@ -1749,7 +1749,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/top       37. 项目置顶
+     * @api {get} api/project/top          37. 项目置顶
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
