@@ -112,6 +112,7 @@ class WebSocketDialog extends AbstractModel
         // 对方信息
         $dialog->dialog_user = null;
         $dialog->group_info = null;
+        $dialog->top_at = WebSocketDialogUser::whereDialogId($dialog->id)->whereUserid($userid)->value('top_at');
         switch ($dialog->type) {
             case "user":
                 $dialog_user = $builder->where('userid', '!=', $userid)->first();
