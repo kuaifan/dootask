@@ -1747,4 +1747,31 @@ class ProjectController extends AbstractController
         //
         return Base::retSuccess('success', $list);
     }
+
+    /**
+     * @api {get} api/project/top       37. 项目置顶
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName top
+     *
+     * @apiParam {Number} project_id            项目ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function top()
+    {
+        $user = User::auth();
+        $projectId = intval(Request::input('project_id'));
+        $projectUser = ProjectUser::whereUserid($user->userid)->whereProjectId($projectId)->first();
+        if (!$projectUser) {
+            return Base::retError("项目不存在");
+        }
+        $projectUser->top_at = $projectUser->top_at ? null : Carbon::now();
+        $projectUser->save();
+        return Base::retSuccess("success", $projectId);
+    }
 }

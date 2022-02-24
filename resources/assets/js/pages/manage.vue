@@ -54,7 +54,7 @@
                     <DropdownItem divided name="signout" style="color:#f40">{{$L('退出登录')}}</DropdownItem>
                 </DropdownMenu>
             </Dropdown>
-            <ul class="overlay-y">
+            <ul class="overlay-y" @scroll="listScroll()">
                 <li @click="toggleRoute('dashboard')" :class="classNameRoute('dashboard')">
                     <i class="taskfont">&#xe6fb;</i>
                     <div class="menu-title">{{$L('仪表盘')}}</div>
@@ -73,13 +73,20 @@
                     <i class="taskfont">&#xe6f3;</i>
                     <div class="menu-title">{{$L('文件')}}</div>
                 </li>
-                <li class="menu-project">
+                <li class="menu-project" ref="projectWrapper">
                     <ul>
                         <li
                             v-for="(item, key) in projectLists"
                             :key="key"
                             :class="classNameRoute('project/' + item.id, openMenu[item.id])"
-                            @click="toggleRoute('project/' + item.id)">
+                            @click="toggleRoute('project/' + item.id)"
+                            @contextmenu.prevent.stop="handleRightClick($event, item)"
+                            >
+                            <div
+                                :class="{
+                                 top: item.top_at,
+                                 operate: item.id == topOperateItem.id && topOperateVisible
+                             }">
                             <div class="project-h1">
                                 <em @click.stop="toggleOpenMenu(item.id)"></em>
                                 <div class="title">{{item.name}}</div>
@@ -97,9 +104,24 @@
                                     <Progress :percent="item.task_percent" :stroke-width="6" />
                                 </p>
                             </div>
+                            </div>
                         </li>
                     </ul>
                     <Loading v-if="loadIng > 0"/>
+                    <div class="top-operate" :style="topOperateStyles">
+                        <Dropdown
+                            trigger="custom"
+                            :visible="topOperateVisible"
+                            transfer-class-name="page-file-dropdown-menu"
+                            @on-clickoutside="handleClickTopOperateOutside"
+                            transfer>
+                            <DropdownMenu slot="list">
+                                <DropdownItem @click.native="handleTopClick">
+                                    {{ $L(topOperateItem.top_at ? '取消置顶' : '置顶该项目') }}
+                                </DropdownItem>
+                            </DropdownMenu>
+                        </Dropdown>
+                    </div>
                 </li>
             </ul>
             <div
@@ -287,6 +309,9 @@ export default {
 
             reportTabs: "my",
             reportUnreadNumber: 0,
+            topOperateStyles: {},
+            topOperateVisible: false,
+            topOperateItem: {},
         }
     },
 
@@ -411,6 +436,9 @@ export default {
         projectLists() {
             const {projectKeyValue, cacheProjects} = this;
             const data = cacheProjects.sort((a, b) => {
+                if (a.top_at || b.top_at) {
+                    return $A.Date(b.top_at) - $A.Date(a.top_at);
+                }
                 return b.id - a.id;
             });
             if (projectKeyValue) {
@@ -782,6 +810,40 @@ export default {
             }
             document.addEventListener(visibilityChangeEvent, visibilityChangeListener);
         },
+        handleRightClick(event, item) {
+            this.handleClickTopOperateOutside();
+            this.topOperateItem = $A.isJson(item) ? item : {};
+            this.$nextTick(() => {
+                const projectWrap = this.$refs.projectWrapper;
+                const projectBounding = projectWrap.getBoundingClientRect();
+                this.topOperateStyles = {
+                    left: `${event.clientX - projectBounding.left}px`,
+                    top: `${event.clientY - projectBounding.top}px`
+                };
+                this.topOperateVisible = true;
+            })
+        },
+        handleClickTopOperateOutside() {
+            this.topOperateVisible = false;
+        },
+
+        handleTopClick() {
+            this.$store.dispatch("call", {
+                url: 'project/top',
+                data: {
+                    project_id: this.topOperateItem.id,
+                },
+            }).then(() => {
+                this.$store.dispatch("getProjects").catch(() => {});
+                this.$Modal.remove();
+            }).catch(({msg}) => {
+                $A.modalError(msg, 301);
+                this.$Modal.remove();
+            });
+        },
+        listScroll() {
+            this.topOperateVisible = false;
+        }
     }
 }
 </script>
