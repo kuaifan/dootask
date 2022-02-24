@@ -238,7 +238,9 @@
                                 }
                             }
                             &.top {
-                                background-color: #EEEFF1;
+                                .project-h1 {
+                                    background-color: #EEEFF1;
+                                }
                             }
                             &.operate {
                                 border-color: $primary-color;
