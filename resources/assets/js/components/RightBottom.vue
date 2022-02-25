@@ -5,7 +5,7 @@
             {{ $L('使用 SSO 登录') }}
         </div>
         <template v-if="showDown">
-            <div v-if="$Electron" class="common-right-bottom-link" @click="releasesNotification">
+            <div v-if="$Electron" class="common-right-bottom-link" @click="updateWinShow=true">
                 <Icon type="md-download"/>
                 {{ $L(repoTitle) }}
             </div>
@@ -14,20 +14,32 @@
                 {{ $L(repoTitle) }}
             </a>
         </template>
+        <Modal
+            v-model="updateWinShow"
+            :ok-text="$L('立即升级')"
+            :closable="false"
+            :mask-closable="false"
+            @on-ok="installApplication"
+            @on-cancel="repoStatus=2"
+            class-name="common-right-bottom-notification">
+            <div slot="header" class="notification-head">
+                <div class="notification-title">{{$L('发现新版本')}}</div>
+                <Tag color="volcano">{{repoReleases.tag_name}}</Tag>
+            </div>
+            <MarkdownPreview class="notification-body overlay-y" :initialValue="repoReleases.body"/>
+        </Modal>
     </div>
 </template>
 
 <script>
-import Vue from 'vue'
 import MarkdownPreview from "./MDEditor/components/preview";
 import axios from "axios";
-Vue.component('MarkdownPreview', MarkdownPreview)
-
 import {mapState} from "vuex";
 import {Store} from "le5le-store";
 
 export default {
     name: 'RightBottom',
+    components: {MarkdownPreview},
     data() {
         return {
             loadIng: 0,
@@ -37,6 +49,7 @@ export default {
             repoStatus: 0,  // 0 没有，1有客户端，2客户端有新版本
             repoReleases: {},
 
+            updateWinShow: false,
             downloadResult: {},
 
             subscribe: null,
@@ -46,14 +59,14 @@ export default {
         this.getReleases();
         //
         this.subscribe = Store.subscribe('releasesNotification', () => {
-            this.releasesNotification();
+            this.updateWinShow = true;
         });
         //
         if (this.$Electron) {
             this.$Electron.registerMsgListener('downloadDone', ({result}) => {
                 if (result.name == this.repoData.name && this.repoStatus !== 2) {
                     this.downloadResult = result;
-                    this.releasesNotification()
+                    this.updateWinShow = true;
                 }
             })
         }
@@ -211,44 +224,6 @@ export default {
                     this.repoStatus = 1;
                 }
             }
-        },
-
-        releasesNotification() {
-            const {tag_name, body} = this.repoReleases;
-            this.$store.state.clientNewVersion = tag_name
-            $A.modalConfirm({
-                okText: this.$L('立即更新'),
-                onOk: () => {
-                    this.installApplication();
-                },
-                onCancel: () => {
-                    this.repoStatus = 2;
-                },
-                render: (h) => {
-                    return h('div', {
-                        class: 'common-right-bottom-notification'
-                    }, [
-                        h('div', {
-                            class: "notification-head"
-                        }, [
-                            h('div', {
-                                class: "notification-title"
-                            }, this.$L('发现新版本')),
-                            h('Tag', {
-                                props: {
-                                    color: 'volcano'
-                                }
-                            }, tag_name)
-                        ]),
-                        h('MarkdownPreview', {
-                            class: 'notification-body',
-                            props: {
-                                initialValue: body
-                            }
-                        }),
-                    ])
-                }
-            });
         },
 
         installApplication() {

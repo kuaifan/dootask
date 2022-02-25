@@ -478,9 +478,9 @@
                                 padding: 0;
                                 margin: 10px 0 0 0;
                                 line-height: 20px;
-                                word-break: break-all;
-                                white-space: pre-wrap;
-                                word-wrap: break-word;
+                                text-overflow: ellipsis;
+                                white-space: nowrap;
+                                overflow: hidden;
                             }
                         }
                         .task-tags {
