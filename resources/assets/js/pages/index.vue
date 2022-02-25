@@ -62,7 +62,7 @@
                 <div class="main-box-one">
                     <div class="box-one-square"></div>
                     <div class="box-pic" v-if="screenWidth<1920">
-                           <img  class="box-img"  :src="$store.state.method.apiUrl('../images/index/box-pic1.png')" />
+                           <img  class="box-img"  src="images/index/box-pic1.png" />
                     </div>
                     <div class="box-one-pic1" v-else>
 
@@ -97,7 +97,7 @@
                 <div class="main-box-two" v-else>
                     <div class="box-two-tips">
                         <div class="box-pic">
-                           <img  class="box-img"  :src="$store.state.method.apiUrl('../images/index/box-pic2.png')" />
+                           <img  class="box-img"  src="images/index/box-pic2.png" />
                         </div>
                         <div class="box-square"></div>
                         <div class="box-title">
@@ -116,7 +116,7 @@
                 <div class="main-box-one">
                     <div class="box-one-square"></div>
                     <div class="box-pic" v-if="screenWidth<1920" >
-                           <img  class="box-img"  :src="$store.state.method.apiUrl('../images/index/box-pic3.png')" />
+                           <img  class="box-img"  src="images/index/box-pic3.png" />
                     </div>
                     <div class="box-one-pic3" v-else >
 
@@ -151,7 +151,7 @@
                 <div class="main-box-two" v-else>
                     <div class="box-two-tips">
                         <div class="box-pic">
-                           <img  class="box-img"  :src="$store.state.method.apiUrl('../images/index/box-pic4.png')" />
+                           <img  class="box-img"  src="images/index/box-pic4.png" />
                         </div>
                         <div class="box-square"></div>
                         <div class="box-title">
