@@ -1164,6 +1164,7 @@ export default {
                 this.$Electron.sendMessage('windowRouter', {
                     name: 'file-task-' + file.id,
                     path: "/single/file/task/" + file.id,
+                    userAgent: "/hideenOfficeTitle/",
                     force: false,
                     config: {
                         title: `${file.name} (${$A.bytesToSize(file.size)})`,

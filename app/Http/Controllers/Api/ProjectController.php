@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Exceptions\ApiException;
 use App\Models\AbstractModel;
+use App\Models\File;
 use App\Models\Project;
 use App\Models\ProjectColumn;
 use App\Models\ProjectFlow;
@@ -1132,29 +1133,7 @@ class ProjectController extends AbstractController
         //
         ProjectTask::userTask($file->task_id, null);
         //
-        $codeExt = ['txt'];
-        $officeExt = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'];
-        $localExt = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'raw', 'tif', 'tiff', 'mp3', 'wav', 'mp4', 'flv', 'avi', 'mov', 'wmv', 'mkv', '3gp', 'rm'];
-        $filePath = public_path($data['path']);
-        if (in_array($data['ext'], $codeExt) && $data['size'] < 2 * 1024 * 1024) {
-            // 文本预览，限制2M内的文件
-            $data['content'] = file_get_contents($filePath);
-            $data['file_mode'] = 1;
-        } elseif (in_array($data['ext'], $officeExt)) {
-            // office预览
-            $data['file_mode'] = 2;
-        } else {
-            // 其他预览
-            if (in_array($data['ext'], $localExt)) {
-                $url = Base::fillUrl($data['path']);
-            } else {
-                $url = 'http://' . env('APP_IPPR') . '.3/' . $data['path'];
-            }
-            $data['url'] = base64_encode($url);
-            $data['file_mode'] = 3;
-        }
-        //
-        return Base::retSuccess('success', $data);
+        return Base::retSuccess('success', File::formatFileData($data));
     }
 
     /**

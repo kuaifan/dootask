@@ -813,6 +813,31 @@ class Base
     }
 
     /**
+     * 地址后拼接参数
+     * @param $url
+     * @param $parames
+     * @return mixed|string
+     */
+    public static function urlAddparameter($url, $parames)
+    {
+        if ($parames && is_array($parames)) {
+            $array = [];
+            foreach ($parames as $key => $val) {
+                $array[] = $key . "=" . $val;
+            }
+            if ($array) {
+                $query = implode("&", $array);
+                if (str_contains($url, "?")) {
+                    $url .= "&" . $query;
+                } else {
+                    $url .= "?" . $query;
+                }
+            }
+        }
+        return $url;
+    }
+
+    /**
      * 格式化内容图片地址
      * @param $content
      * @return mixed

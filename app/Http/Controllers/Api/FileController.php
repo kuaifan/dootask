@@ -516,40 +516,41 @@ class FileController extends AbstractController
             }
         }
         //
-        $contentArray = Base::json2array($content);
         switch ($file->type) {
             case 'document':
-                $file->ext = $contentArray['type'] ?: 'md';
+                $contentArray = Base::json2array($content);
                 $contentString = $contentArray['content'];
+                $file->ext = $contentArray['type'] == 'md' ? 'md' : 'text';
                 break;
             case 'drawio':
-                $file->ext = 'drawio';
+                $contentArray = Base::json2array($content);
                 $contentString = $contentArray['xml'];
+                $file->ext = 'drawio';
                 break;
             case 'mind':
+                $contentString = $content;
                 $file->ext = 'mind';
+                break;
+            case 'code':
+            case 'txt':
                 $contentString = $content;
                 break;
+            default:
+                return Base::retError('参数错误');
         }
-        if (isset($contentString)) {
-            $path = "uploads/file/" . $file->type . "/" . date("Ym") . "/" . $id . "/" . md5($contentString);
-            $save = public_path($path);
-            Base::makeDir(dirname($save));
-            file_put_contents($save, $contentString);
-            $content = [
-                'type' => $file->ext,
-                'url' => $path
-            ];
-            $size = filesize($save);
-        } else {
-            $size = strlen($content);
-        }
+        $path = "uploads/file/" . $file->type . "/" . date("Ym") . "/" . $id . "/" . md5($contentString);
+        $save = public_path($path);
+        Base::makeDir(dirname($save));
+        file_put_contents($save, $contentString);
         //
         $content = FileContent::createInstance([
             'fid' => $file->id,
-            'content' => $content,
+            'content' => [
+                'type' => $file->ext,
+                'url' => $path
+            ],
             'text' => $text,
-            'size' => $size,
+            'size' => filesize($save),
             'userid' => $user->userid,
         ]);
         $content->save();

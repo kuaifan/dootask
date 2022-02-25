@@ -69,48 +69,20 @@ class FileContent extends AbstractModel
                 abort(403, "This file is empty.");
             }
         } else {
-            $content['preview'] = false;
+            $path = $content['url'];
             if ($file->ext) {
-                $filePath = public_path($content['url']);
-                $fileType = $file->type;
-                if ($fileType == 'document')
-                {
-                    // 文本
-                    $content = [
-                        'type' => $file->ext,
-                        'content' => file_get_contents($filePath)
-                    ];
-                }
-                elseif ($fileType == 'drawio')
-                {
-                    // 图表
-                    $content = [
-                        'xml' => file_get_contents($filePath)
-                    ];
-                }
-                elseif ($fileType == 'mind')
-                {
-                    // 思维导图
-                    $content = Base::json2array(file_get_contents($filePath));
-                }
-                elseif (in_array($fileType, ['txt', 'code']) && $file->size < 2 * 1024 * 1024)
-                {
-                    // 其他文本和代码（限制2M内的文件，支持编辑）
-                    $content['content'] = file_get_contents($filePath);
-                }
-                else
-                {
-                    // 支持预览
-                    if (in_array($fileType, ['picture', 'image', 'tif', 'media'])) {
-                        $url = Base::fillUrl($content['url']);
-                    } else {
-                        $url = 'http://' . env('APP_IPPR') . '.3/' . $content['url'];
-                    }
-                    $content['url'] = base64_encode($url);
-                    $content['preview'] = true;
-                }
+                $res = File::formatFileData([
+                    'path' => $path,
+                    'ext' => $file->ext,
+                    'size' => $file->size,
+                    'name' => $file->name,
+                ]);
+                $content = $res['content'];
+            } else {
+                $content['preview'] = false;
             }
             if ($download) {
+                $filePath = public_path($path);
                 if (isset($filePath)) {
                     return Response::download($filePath, $name);
                 } else {

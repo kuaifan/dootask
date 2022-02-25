@@ -51,6 +51,39 @@ class File extends AbstractModel
     use SoftDeletes;
 
     /**
+     * 文件文件
+     */
+    const codeExt = [
+        'txt',
+        'htaccess', 'htgroups', 'htpasswd', 'conf', 'bat', 'cmd', 'cpp', 'c', 'cc', 'cxx', 'h', 'hh', 'hpp', 'ino', 'cs', 'css',
+        'dockerfile', 'go', 'html', 'htm', 'xhtml', 'vue', 'we', 'wpy', 'java', 'js', 'jsm', 'jsx', 'json', 'jsp', 'less', 'lua', 'makefile', 'gnumakefile',
+        'ocamlmakefile', 'make', 'mysql', 'nginx', 'ini', 'cfg', 'prefs', 'm', 'mm', 'pl', 'pm', 'p6', 'pl6', 'pm6', 'pgsql', 'php',
+        'inc', 'phtml', 'shtml', 'php3', 'php4', 'php5', 'phps', 'phpt', 'aw', 'ctp', 'module', 'ps1', 'py', 'r', 'rb', 'ru', 'gemspec', 'rake', 'guardfile', 'rakefile',
+        'gemfile', 'rs', 'sass', 'scss', 'sh', 'bash', 'bashrc', 'sql', 'sqlserver', 'swift', 'ts', 'typescript', 'str', 'vbs', 'vb', 'v', 'vh', 'sv', 'svh', 'xml',
+        'rdf', 'rss', 'wsdl', 'xslt', 'atom', 'mathml', 'mml', 'xul', 'xbl', 'xaml', 'yaml', 'yml',
+        'asp', 'properties', 'gitignore', 'log', 'bas', 'prg', 'python', 'ftl', 'aspx'
+    ];
+
+    /**
+     * office文件
+     */
+    const officeExt = [
+        'doc', 'docx',
+        'xls', 'xlsx',
+        'ppt', 'pptx',
+    ];
+
+    /**
+     * 本地媒体文件
+     */
+    const localExt = [
+        'jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'raw',
+        'tif', 'tiff',
+        'mp3', 'wav', 'mp4', 'flv',
+        'avi', 'mov', 'wmv', 'mkv', '3gp', 'rm',
+    ];
+
+    /**
      * 是否有访问权限
      * @param $userid
      * @return int -1:没有权限，0:访问权限，1:读写权限，1000:所有者或创建者
@@ -238,5 +271,77 @@ class File extends AbstractModel
             throw new ApiException($msg);
         }
         return $file;
+    }
+
+    /**
+     * 格式化内容数据
+     * @param array $data [path, ext, size, name]
+     * @return array
+     */
+    public static function formatFileData(array $data)
+    {
+        $filePath = $data['path'];
+        $fileExt = $data['ext'];
+        $fileSize = $data['size'];
+        $fileName = $data['name'];
+        $publicPath = public_path($filePath);
+        //
+        switch ($fileExt) {
+            case 'md':
+            case 'text':
+                // 文本
+                $data['content'] = [
+                    'type' => $fileExt,
+                    'content' => file_get_contents($publicPath),
+                ];
+                $data['file_mode'] = $fileExt;
+                break;
+
+            case 'drawio':
+                // 图表
+                $data['content'] = [
+                    'xml' => file_get_contents($publicPath)
+                ];
+                $data['file_mode'] = $fileExt;
+                break;
+
+            case 'mind':
+                // 思维导图
+                $data['content'] = Base::json2array(file_get_contents($publicPath));
+                $data['file_mode'] = $fileExt;
+                break;
+
+            default:
+                if (in_array($fileExt, self::codeExt) && $fileSize < 2 * 1024 * 1024)
+                {
+                    // 文本预览，限制2M内的文件
+                    $data['content'] = file_get_contents($publicPath);
+                    $data['file_mode'] = 'code';
+                }
+                elseif (in_array($fileExt, File::officeExt))
+                {
+                    // office预览
+                    $data['content'] = '';
+                    $data['file_mode'] = 'office';
+                }
+                else
+                {
+                    // 其他预览
+                    if (in_array($fileExt, File::localExt)) {
+                        $url = Base::fillUrl($filePath);
+                    } else {
+                        $url = 'http://' . env('APP_IPPR') . '.3/' . $filePath;
+                    }
+                    $data['content'] = [
+                        'preview' => true,
+                        'url' => base64_encode(Base::urlAddparameter($url, [
+                            'fullfilename' => $fileName
+                        ])),
+                    ];
+                    $data['file_mode'] = 'preview';
+                }
+                break;
+        }
+        return $data;
     }
 }
