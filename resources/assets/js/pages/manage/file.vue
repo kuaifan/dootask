@@ -57,73 +57,82 @@
                 </div>
             </div>
 
-            <div v-if="tableMode" class="file-table" @contextmenu.prevent="handleRightClick">
-                <Table
-                    :columns="columns"
-                    :data="fileList"
-                    :height="tableHeight"
-                    :no-data-text="$L('没有任何文件')"
-                    @on-cell-click="clickRow"
-                    @on-contextmenu="handleContextMenu"
-                    @on-select="handleTableSelect"
-                    @on-select-cancel="handleTableSelect"
-                    @on-select-all-cancel="handleTableSelect"
-                    @on-select-all="handleTableSelect"
-                    context-menu
-                    stripe/>
-            </div>
-            <template v-else>
-                <div v-if="fileList.length == 0 && loadIng == 0" class="file-no" @contextmenu.prevent="handleRightClick">
-                    <i class="taskfont">&#xe60b;</i>
-                    <p>{{$L('没有任何文件')}}</p>
+            <div
+                class="file-drag"
+                @drop.prevent="filePasteDrag($event, 'drag')"
+                @dragover.prevent="fileDragOver(true, $event)"
+                @dragleave.prevent="fileDragOver(false, $event)">
+                <div v-if="tableMode" class="file-table" @contextmenu.prevent="handleRightClick">
+                    <Table
+                        :columns="columns"
+                        :data="fileList"
+                        :height="tableHeight"
+                        :no-data-text="$L('没有任何文件')"
+                        @on-cell-click="clickRow"
+                        @on-contextmenu="handleContextMenu"
+                        @on-select="handleTableSelect"
+                        @on-select-cancel="handleTableSelect"
+                        @on-select-all-cancel="handleTableSelect"
+                        @on-select-all="handleTableSelect"
+                        context-menu
+                        stripe/>
                 </div>
-                <div v-else class="file-list" @contextmenu.prevent="handleRightClick">
-                    <ul class="clearfix">
-                        <li
-                            v-for="item in fileList"
-                            :class="{
+                <template v-else>
+                    <div v-if="fileList.length == 0 && loadIng == 0" class="file-no" @contextmenu.prevent="handleRightClick">
+                        <i class="taskfont">&#xe60b;</i>
+                        <p>{{$L('没有任何文件')}}</p>
+                    </div>
+                    <div v-else class="file-list" @contextmenu.prevent="handleRightClick">
+                        <ul class="clearfix">
+                            <li
+                                v-for="item in fileList"
+                                :class="{
                                 shear: shearIds.includes(item.id),
                                 highlight: selectIds.includes(item.id),
                             }"
-                            @contextmenu.prevent.stop="handleRightClick($event, item)"
-                            @click="openFile(item)">
-                            <div class="file-check" :class="{'file-checked':selectIds.includes(item.id)}" @click.stop="dropFile(item, 'select')">
-                                <Checkbox :value="selectIds.includes(item.id)"/>
-                            </div>
-                            <div class="file-menu" @click.stop="handleRightClick($event, item)">
-                                <Icon type="ios-more" />
-                            </div>
-                            <div :class="`no-dark-mode-before file-icon ${item.type}`">
-                                <template v-if="item.share">
-                                    <UserAvatar v-if="item.userid != userId" :userid="item.userid" class="share-avatar" :size="20">
-                                        <p>{{$L('共享权限')}}: {{$L(item.permission == 1 ? '读/写' : '只读')}}</p>
-                                    </UserAvatar>
-                                    <div v-else class="share-icon no-dark-mode">
-                                        <i class="taskfont">&#xe757;</i>
-                                    </div>
-                                </template>
-                                <template v-else-if="isParentShare">
-                                    <UserAvatar :userid="item.created_id" class="share-avatar" :size="20">
-                                        <p v-if="item.created_id != item.userid"><strong>{{$L('成员创建于')}}: {{item.created_at}}</strong></p>
-                                        <p v-else>{{$L('所有者创建于')}}: {{item.created_at}}</p>
-                                    </UserAvatar>
-                                </template>
-                            </div>
-                            <div v-if="item._edit" class="file-input">
-                                <Input
-                                    :ref="'input_' + item.id"
-                                    v-model="item.newname"
-                                    size="small"
-                                    :disabled="!!item._load"
-                                    @on-blur="onBlur(item)"
-                                    @on-enter="onEnter(item)"/>
-                                <div v-if="item._load" class="file-load"><Loading/></div>
-                            </div>
-                            <div v-else class="file-name" :title="item.name">{{formatName(item)}}</div>
-                        </li>
-                    </ul>
+                                @contextmenu.prevent.stop="handleRightClick($event, item)"
+                                @click="openFile(item)">
+                                <div class="file-check" :class="{'file-checked':selectIds.includes(item.id)}" @click.stop="dropFile(item, 'select')">
+                                    <Checkbox :value="selectIds.includes(item.id)"/>
+                                </div>
+                                <div class="file-menu" @click.stop="handleRightClick($event, item)">
+                                    <Icon type="ios-more" />
+                                </div>
+                                <div :class="`no-dark-mode-before file-icon ${item.type}`">
+                                    <template v-if="item.share">
+                                        <UserAvatar v-if="item.userid != userId" :userid="item.userid" class="share-avatar" :size="20">
+                                            <p>{{$L('共享权限')}}: {{$L(item.permission == 1 ? '读/写' : '只读')}}</p>
+                                        </UserAvatar>
+                                        <div v-else class="share-icon no-dark-mode">
+                                            <i class="taskfont">&#xe757;</i>
+                                        </div>
+                                    </template>
+                                    <template v-else-if="isParentShare">
+                                        <UserAvatar :userid="item.created_id" class="share-avatar" :size="20">
+                                            <p v-if="item.created_id != item.userid"><strong>{{$L('成员创建于')}}: {{item.created_at}}</strong></p>
+                                            <p v-else>{{$L('所有者创建于')}}: {{item.created_at}}</p>
+                                        </UserAvatar>
+                                    </template>
+                                </div>
+                                <div v-if="item._edit" class="file-input">
+                                    <Input
+                                        :ref="'input_' + item.id"
+                                        v-model="item.newname"
+                                        size="small"
+                                        :disabled="!!item._load"
+                                        @on-blur="onBlur(item)"
+                                        @on-enter="onEnter(item)"/>
+                                    <div v-if="item._load" class="file-load"><Loading/></div>
+                                </div>
+                                <div v-else class="file-name" :title="item.name">{{formatName(item)}}</div>
+                            </li>
+                        </ul>
+                    </div>
+                </template>
+                <div v-if="dialogDrag" class="drag-over" @click="dialogDrag=false">
+                    <div class="drag-text">{{$L('拖动到这里发送')}}</div>
                 </div>
-            </template>
+            </div>
 
             <div class="file-menu" :style="contextMenuStyles">
                 <Dropdown
@@ -323,6 +332,21 @@
             <FileContent v-else v-model="fileShow" :file="fileInfo"/>
         </DrawerOverlay>
 
+        <!--拖动上传提示-->
+        <Modal
+            v-model="pasteShow"
+            :title="$L(pasteTitle)"
+            :cancel-text="$L('取消')"
+            :ok-text="$L('发送')"
+            :enter-ok="true"
+            @on-ok="pasteSend">
+            <div class="dialog-wrapper-paste">
+                <template v-for="item in pasteItem">
+                    <img v-if="item.type == 'image'" :src="item.result"/>
+                    <div v-else>{{$L('文件')}}: {{item.name}} ({{$A.bytesToSize(item.size)}})</div>
+                </template>
+            </div>
+        </Modal>
     </div>
 </template>
 
@@ -457,6 +481,11 @@ export default {
 
             shearIds: [],
             selectIds: [],
+
+            dialogDrag: false,
+            pasteShow: false,
+            pasteFile: [],
+            pasteItem: [],
         }
     },
 
@@ -537,6 +566,18 @@ export default {
             const {navigator} = this;
             return !!navigator.find(({share}) => share);
         },
+
+        pasteTitle() {
+            const {pasteItem} = this;
+            let hasImage = pasteItem.find(({type}) => type == 'image')
+            let hasFile = pasteItem.find(({type}) => type != 'image')
+            if (hasImage && hasFile) {
+                return '上传文件/图片'
+            } else if (hasImage) {
+                return '上传图片'
+            }
+            return '上传文件'
+        }
     },
 
     watch: {
@@ -1279,6 +1320,61 @@ export default {
 
         clearSelect() {
             this.selectIds = [];
+        },
+
+        /********************拖动上传部分************************/
+
+        pasteDragNext(e, type) {
+            let files = type === 'drag' ? e.dataTransfer.files : e.clipboardData.files;
+            files = Array.prototype.slice.call(files);
+            if (files.length > 0) {
+                e.preventDefault();
+                if (files.length > 0) {
+                    this.pasteFile = [];
+                    this.pasteItem = [];
+                    files.some(file => {
+                        let reader = new FileReader();
+                        reader.readAsDataURL(file);
+                        reader.onload = ({target}) => {
+                            this.pasteFile.push(file)
+                            this.pasteItem.push({
+                                type: $A.getMiddle(file.type, null, '/'),
+                                name: file.name,
+                                size: file.size,
+                                result: target.result
+                            })
+                            this.pasteShow = true
+                        }
+                    });
+                }
+            }
+        },
+
+        filePasteDrag(e, type) {
+            this.dialogDrag = false;
+            this.pasteDragNext(e, type);
+        },
+
+        fileDragOver(show, e) {
+            let random = (this.__dialogDrag = $A.randomString(8));
+            if (!show) {
+                setTimeout(() => {
+                    if (random === this.__dialogDrag) {
+                        this.dialogDrag = show;
+                    }
+                }, 150);
+            } else {
+                if (e.dataTransfer.effectAllowed === 'move') {
+                    return;
+                }
+                this.dialogDrag = true;
+            }
+        },
+
+        pasteSend() {
+            this.pasteFile.some(file => {
+                this.$refs.fileUpload.upload(file)
+            });
         },
 
         /********************文件上传部分************************/
