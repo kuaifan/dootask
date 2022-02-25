@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div v-if="needStartHome">
         <div class="page-warp">
             <div class="page-header">
                 <div class="header-nav">
