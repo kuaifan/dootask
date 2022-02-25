@@ -672,7 +672,7 @@ export default {
             return {
                 "active": this.curPath == '/manage/' + path,
                 "open-menu": openMenu === true,
-                "top": item.top_at,
+                "top": item.top_at && this.curPath != '/manage/' + path,
                 "operate": item.id == this.topOperateItem.id && this.topOperateVisible
             };
         },
