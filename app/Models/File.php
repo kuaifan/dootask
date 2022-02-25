@@ -275,15 +275,16 @@ class File extends AbstractModel
 
     /**
      * 格式化内容数据
-     * @param array $data [path, ext, size, name]
+     * @param array $data [path, size, ext, name]
      * @return array
      */
     public static function formatFileData(array $data)
     {
         $filePath = $data['path'];
-        $fileExt = $data['ext'];
         $fileSize = $data['size'];
-        $fileName = $data['name'];
+        $fileExt = $data['ext'];
+        $fileDotExt = '.' . $fileExt;
+        $fileName = Base::rightDelete($data['name'], $fileDotExt) . $fileDotExt;
         $publicPath = public_path($filePath);
         //
         switch ($fileExt) {
