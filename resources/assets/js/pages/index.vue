@@ -245,12 +245,14 @@ export default {
                     url: "system/get/starthome",
                 })
                 .then(({data}) => {
-                    this.needStartHome = !!data.need_start;
                     this.homeFooter = data.home_footer;
                     if (this.$store.state.userId > 0) {
                         this.goForward({path: '/manage/dashboard'}, true);
-                    } else if (this.needStartHome === false) {
-                        this.goForward({path: '/login'}, true);
+                    } else {
+                        this.needStartHome = !!data.need_start;
+                        if (this.needStartHome === false) {
+                            this.goForward({path: '/login'}, true);
+                        }
                     }
                 })
                 .catch(() => {
