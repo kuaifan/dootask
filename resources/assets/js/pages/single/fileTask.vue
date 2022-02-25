@@ -120,7 +120,7 @@ export default {
         },
 
         previewUrl() {
-            return $A.apiUrl("../fileview/onlinePreview?url=" + encodeURIComponent(this.fileDetail.url))
+            return $A.apiUrl("../fileview/onlinePreview?url=" + encodeURIComponent(this.fileDetail.content.url))
         }
     },
     methods: {
