@@ -476,7 +476,7 @@
         .dialog-send {
             position: absolute;
             top: 0;
-            right: 28px;
+            right: 14px;
             bottom: 0;
             font-size: 18px;
             width: 46px;
@@ -604,10 +604,6 @@
         .dialog-footer {
             padding: 0 20px;
             margin-bottom: 16px;
-
-            .dialog-send {
-                right: 20px;
-            }
         }
     }
 }

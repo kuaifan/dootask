@@ -433,6 +433,7 @@
                 align-items: center;
                 margin-top: 6px;
                 height: 32px;
+                white-space: nowrap;
                 > i {
                     font-size: 14px;
                     padding-right: 8px;
@@ -554,6 +555,12 @@
                 }
                 .no-send {
                     display: none;
+                    .ivu-badge {
+                        position: absolute;
+                        transform: scale(0.6);
+                        top: 5px;
+                        left: 4px;
+                    }
                 }
             }
             .drag-over {

@@ -11,7 +11,7 @@ use App\Module\Base;
  * @property int|null $project_id 项目ID
  * @property int|null $userid 成员ID
  * @property int|null $owner 是否负责人
- * @property \Illuminate\Support\Carbon|null $top_at 置顶时间
+ * @property string|null $top_at 置顶时间
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Project|null $project
@@ -22,6 +22,7 @@ use App\Module\Base;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectUser whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectUser whereOwner($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectUser whereProjectId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectUser whereTopAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectUser whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectUser whereUserid($value)
  * @mixin \Eloquent

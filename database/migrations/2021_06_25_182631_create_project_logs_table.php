@@ -17,7 +17,7 @@ class CreateProjectLogsTable extends Migration
             $table->bigIncrements('id');
             $table->bigInteger('project_id')->nullable()->default(0)->comment('项目ID');
             $table->bigInteger('column_id')->nullable()->default(0)->comment('列表ID');
-            $table->bigInteger('task_id')->nullable()->default(0)->comment('项目ID');
+            $table->bigInteger('task_id')->nullable()->default(0)->comment('任务ID');
             $table->bigInteger('userid')->nullable()->default(0)->comment('会员ID');
             $table->string('detail', 500)->nullable()->default('')->comment('详细信息');
             $table->timestamps();
