@@ -65,6 +65,7 @@ export default {
         if (this.$Electron) {
             this.$Electron.registerMsgListener('downloadDone', ({result}) => {
                 if (result.name == this.repoData.name && this.repoStatus !== 2) {
+                    this.$store.state.clientNewVersion = this.repoReleases.tag_name
                     this.downloadResult = result;
                     this.updateWinShow = true;
                 }
