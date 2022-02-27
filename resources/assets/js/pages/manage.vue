@@ -39,7 +39,7 @@
                                         <Badge v-if="reportUnreadNumber > 0" class="manage-menu-report-badge" :count="reportUnreadNumber"/>
                                     </div>
                                 </DropdownItem>
-                                <DropdownItem name="exportTask">{{$L('导出任务记录')}}</DropdownItem>
+                                <DropdownItem name="exportTask">{{$L('导出任务统计')}}</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
                         <!-- 主题皮肤 -->
@@ -229,18 +229,18 @@
             <TaskAdd ref="addTask" v-model="addTaskShow"/>
         </Modal>
 
-        <!--导出任务记录-->
+        <!--导出任务统计-->
         <Modal
             v-model="exportTaskShow"
-            :title="$L('导出任务记录')"
+            :title="$L('导出任务统计')"
             :mask-closable="false">
             <Form ref="exportTask" :model="exportData" label-width="auto" @submit.native.prevent>
                 <FormItem :label="$L('导出会员')">
-                    <UserInput v-model="exportData.userids" :multiple-max="20" :placeholder="$L('请选择会员')"/>
+                    <UserInput v-model="exportData.userid" :multiple-max="20" :placeholder="$L('请选择会员')"/>
                 </FormItem>
                 <FormItem :label="$L('时间范围')">
                     <DatePicker
-                        v-model="exportData.times"
+                        v-model="exportData.time"
                         type="daterange"
                         format="yyyy/MM/dd"
                         style="width:100%"
@@ -359,8 +359,8 @@ export default {
             exportTaskShow: false,
             exportLoadIng: 0,
             exportData: {
-                userids: [],
-                times: [],
+                userid: [],
+                time: [],
             },
 
             dialogMsgSubscribe: null,
@@ -904,6 +904,7 @@ export default {
                 data: this.exportData,
             }).then(({data}) => {
                 this.exportLoadIng--;
+                this.exportTaskShow = false;
                 $A.downFile(data.url);
             }).catch(({msg}) => {
                 this.exportLoadIng--;

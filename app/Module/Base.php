@@ -2967,4 +2967,19 @@ class Base
         $matrix = array_unique($matrix, SORT_REGULAR);
         return array_merge($matrix);
     }
+
+    /**
+     * 去除emoji表情
+     * @param $str
+     * @return string|string[]|null
+     */
+    public static function filterEmoji($str)
+    {
+        return preg_replace_callback(
+            '/./u',
+            function (array $match) {
+                return strlen($match[0]) >= 4 ? '' : $match[0];
+            },
+            $str);
+    }
 }
