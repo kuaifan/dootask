@@ -1628,6 +1628,7 @@ export default {
                     task_id: task_id
                 },
             }).then(result => {
+                let task = state.cacheTasks.find(({id}) => id == task_id)
                 let {data} = result
                 data.turns.some(item => {
                     let index = state.taskFlowItems.findIndex(({id}) => id == item.id);
@@ -1635,6 +1636,16 @@ export default {
                         state.taskFlowItems.splice(index, 1, item);
                     } else {
                         state.taskFlowItems.push(item);
+                    }
+                    if (task
+                        && task.flow_item_id == item.id
+                        && task.flow_item_name != item.name) {
+                        state.cacheTasks.filter(({flow_item_id})=> flow_item_id == item.id).some(task => {
+                            dispatch("saveTask", {
+                                id: task.id,
+                                flow_item_name: `${item.status}|${item.name}`,
+                            })
+                        })
                     }
                 })
                 //
