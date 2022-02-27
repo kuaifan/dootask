@@ -623,10 +623,8 @@ export default {
                 column.tasks = this.transforTasks(allTask.filter(task => {
                     return task.column_id == column.id;
                 })).sort((a, b) => {
-                    let at1 = $A.Date(a.complete_at),
-                        at2 = $A.Date(b.complete_at);
-                    if (at1 || at2) {
-                        return at1 - at2;
+                    if (a.complete_at || b.complete_at) {
+                        return $A.Date(a.complete_at) - $A.Date(b.complete_at);
                     }
                     if (a.sort != b.sort) {
                         return a.sort - b.sort;

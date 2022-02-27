@@ -604,13 +604,14 @@ class ProjectController extends AbstractController
                 if (!is_array($item['task'])) continue;
                 $index = 0;
                 foreach ($item['task'] as $task_id) {
-                    ProjectTask::whereId($task_id)->whereProjectId($project->id)->update([
+                    if (ProjectTask::whereId($task_id)->whereProjectId($project->id)->whereCompleteAt(null)->update([
                         'column_id' => $item['id'],
                         'sort' => $index
-                    ]);
-                    ProjectTask::whereParentId($task_id)->whereProjectId($project->id)->update([
-                        'column_id' => $item['id'],
-                    ]);
+                    ])) {
+                        ProjectTask::whereParentId($task_id)->whereProjectId($project->id)->update([
+                            'column_id' => $item['id'],
+                        ]);
+                    }
                     $index++;
                 }
             }
