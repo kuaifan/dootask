@@ -1,6 +1,6 @@
 {
     "name": "DooTask",
-    "version": "0.9.78",
+    "version": "0.9.83",
     "description": "DooTask is task management system.",
     "scripts": {
         "start": "./cmd dev",
