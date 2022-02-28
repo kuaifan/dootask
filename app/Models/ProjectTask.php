@@ -7,10 +7,12 @@ use App\Module\Base;
 use App\Tasks\PushTask;
 use Arr;
 use Carbon\Carbon;
+use Config;
 use DB;
 use Exception;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Mail;
 use Request;
 
 /**
@@ -1207,5 +1209,34 @@ class ProjectTask extends AbstractModel
         }
         //
         return $task;
+    }
+
+    /**
+     * 预超期任务提醒
+     * @param $ownerIds
+     */
+    public static function overdueRemindEmail($ownerIds)
+    {
+        $users = User::whereIn('userid', $ownerIds)->get();
+        if (!$users) {
+            throw new ApiException("ProjectTask::overdueRemindEmail--没有负责人");
+        }
+        Config::set("mail.mailers.smtp.host", Base::settingFind('emailSetting', 'smtp_server'));
+        Config::set("mail.mailers.smtp.port", Base::settingFind('emailSetting', 'port'));
+        Config::set("mail.mailers.smtp.username", Base::settingFind('emailSetting', 'account'));
+        Config::set("mail.mailers.smtp.password", Base::settingFind('emailSetting', 'password'));
+        foreach ($users as $user) {
+            /** @var  User $user */
+            $email = $user->email;
+            try {
+                Mail::send('taskOverdueRemind', ['url' => 'https://www.baidu.com'], function ($m) use ($email) {
+                    $m->from(Config::get("mail.mailers.smtp.username"), env('APP_NAME'));
+                    $m->to($email);
+                    $m->subject("过期任务提醒");
+                });
+            } catch (\Exception $e) {
+                \Log::error($email.'--邮箱发动报错：', [$e->getMessage()]);
+            }
+        }
     }
 }
