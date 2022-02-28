@@ -1,6 +1,6 @@
 {
     "name": "DooTask",
-    "version": "0.9.61",
+    "version": "0.10.19",
     "description": "DooTask is task management system.",
     "scripts": {
         "start": "./cmd dev",
@@ -53,7 +53,7 @@
         "less-loader": "^10.2.0",
         "lodash": "^4.17.21",
         "moment": "^2.29.1",
-        "node-sass": "^4.11.0",
+        "node-sass": "^6.0.1",
         "notification-koro1": "^1.1.1",
         "postcss": "^8.4.5",
         "resolve-url-loader": "^4.0.0",

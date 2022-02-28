@@ -813,6 +813,31 @@ class Base
     }
 
     /**
+     * 地址后拼接参数
+     * @param $url
+     * @param $parames
+     * @return mixed|string
+     */
+    public static function urlAddparameter($url, $parames)
+    {
+        if ($parames && is_array($parames)) {
+            $array = [];
+            foreach ($parames as $key => $val) {
+                $array[] = $key . "=" . $val;
+            }
+            if ($array) {
+                $query = implode("&", $array);
+                if (str_contains($url, "?")) {
+                    $url .= "&" . $query;
+                } else {
+                    $url .= "?" . $query;
+                }
+            }
+        }
+        return $url;
+    }
+
+    /**
      * 格式化内容图片地址
      * @param $content
      * @return mixed
@@ -2941,5 +2966,20 @@ class Base
         }
         $matrix = array_unique($matrix, SORT_REGULAR);
         return array_merge($matrix);
+    }
+
+    /**
+     * 去除emoji表情
+     * @param $str
+     * @return string|string[]|null
+     */
+    public static function filterEmoji($str)
+    {
+        return preg_replace_callback(
+            '/./u',
+            function (array $match) {
+                return strlen($match[0]) >= 4 ? '' : $match[0];
+            },
+            $str);
     }
 }

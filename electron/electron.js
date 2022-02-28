@@ -72,7 +72,6 @@ function createMainWindow() {
             preload: path.join(__dirname, 'electron-preload.js'),
             webSecurity: true,
             nodeIntegration: true,
-            nodeIntegrationInSubFrames: true,
             contextIsolation: true,
             nativeWindowOpen: true
         }
@@ -145,12 +144,11 @@ function createSubWindow(args) {
                 preload: path.join(__dirname, 'electron-preload.js'),
                 webSecurity: true,
                 nodeIntegration: true,
-                nodeIntegrationInSubFrames: true,
                 contextIsolation: true,
                 nativeWindowOpen: true
             }, webPreferences),
         }, config))
-        
+
         browser.on('page-title-updated', (event, title) => {
             if (title == "index.html" || config.titleFixed === true) {
                 event.preventDefault()

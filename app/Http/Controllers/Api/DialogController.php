@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\File;
 use App\Models\ProjectTask;
 use App\Models\ProjectTaskFile;
 use App\Models\User;
@@ -393,31 +394,13 @@ class DialogController extends AbstractController
         $data = $dialogMsg->toArray();
         //
         if ($data['type'] == 'file') {
-            $codeExt = ['txt'];
-            $officeExt = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'];
-            $localExt = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'raw', 'tif', 'tiff', 'mp3', 'wav', 'mp4', 'flv', 'avi', 'mov', 'wmv', 'mkv', '3gp', 'rm'];
             $msg = Base::json2array($dialogMsg->getRawOriginal('msg'));
-            $filePath = public_path($msg['path']);
-            if (in_array($msg['ext'], $codeExt) && $msg['size'] < 2 * 1024 * 1024) {
-                // 文本预览，限制2M内的文件
-                $data['content'] = file_get_contents($filePath);
-                $data['file_mode'] = 1;
-            } elseif (in_array($msg['ext'], $officeExt)) {
-                // office预览
-                $data['file_mode'] = 2;
-            } else {
-                // 其他预览
-                if (in_array($msg['ext'], $localExt)) {
-                    $url = Base::fillUrl($msg['path']);
-                } else {
-                    $url = 'http://' . env('APP_IPPR') . '.3/' . $msg['path'];
-                }
-                $data['url'] = base64_encode($url);
-                $data['file_mode'] = 3;
-            }
+            $msg = File::formatFileData($msg);
+            $data['content'] = $msg['content'];
+            $data['file_mode'] = $msg['file_mode'];
         }
         //
-        return Base::retSuccess("success", $data);
+        return Base::retSuccess('success', $data);
     }
 
     /**

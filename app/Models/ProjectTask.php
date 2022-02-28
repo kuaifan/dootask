@@ -585,6 +585,14 @@ class ProjectTask extends AbstractModel
                     'flow' => $flowData,
                     'change' => [$currentFlowItem?->name, $newFlowItem->name]
                 ]);
+                ProjectTaskFlowChange::createInstance([
+                    'task_id' => $this->id,
+                    'userid' => User::userid(),
+                    'before_flow_item_id' => $flowData['flow_item_id'],
+                    'before_flow_item_name' => $flowData['flow_item_name'],
+                    'after_flow_item_id' => $this->flow_item_id,
+                    'after_flow_item_name' => $this->flow_item_name,
+                ])->save();
             }
             // 状态
             if (Arr::exists($data, 'complete_at')) {

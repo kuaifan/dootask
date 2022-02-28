@@ -87,15 +87,7 @@
                 transform: scale(0.9);
                 vertical-align: top;
             }
-            .manage-menu-language {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                .ivu-icon {
-                    color: #666666;
-                }
-            }
-            .mannage-menu-skin {
+            .manage-menu-flex {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
@@ -115,13 +107,13 @@
                 flex-shrink: 0;
                 display: flex;
                 align-items: center;
-                height: 30px;
+                height: 36px;
                 color: #6b6e72;
                 cursor: pointer;
                 position: relative;
                 width: 80%;
                 max-width: 100%;
-                margin: 8px auto;
+                margin: 5px auto;
                 padding: 0 4%;
                 border-radius: 4px;
                 > i {
@@ -145,16 +137,14 @@
                 &.active {
                     background-color: #ffffff;
                 }
-                &.top {
-                    background-color: #eeeff1;
-                }
                 &.menu-project {
                     flex: 1;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
-                    padding: 10px 0 0;
+                    padding: 12px 0 0;
                     cursor: default;
+                    width: 100%;
                     > ul {
                         width: 100%;
                         overflow: auto;
@@ -163,7 +153,8 @@
                             flex-direction: column;
                             list-style: none;
                             cursor: pointer;
-                            margin: 3px auto;
+                            width: 80%;
+                            margin: 2px auto;
                             border: 2px solid transparent;
                             .project-h1 {
                                 position: relative;
@@ -231,6 +222,11 @@
                                     }
                                 }
                             }
+                            &.top {
+                                .project-h1 {
+                                    background-color: #EEEFF1;
+                                }
+                            }
                             &.active {
                                 .project-h1 {
                                     background-color: #ffffff;
@@ -246,11 +242,6 @@
                                 }
                                 .project-h2 {
                                     display: block;
-                                }
-                            }
-                            &.top {
-                                .project-h1 {
-                                    background-color: #EEEFF1;
                                 }
                             }
                             &.operate {

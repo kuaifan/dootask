@@ -29,7 +29,7 @@
                         height: 22px;
                     }
                 }
-                .top-text{
+                .top-text {
                     width: 40px;
                     height: 24px;
                     border-radius:4px;
@@ -37,7 +37,7 @@
                     background-color: #8BCF70;
                     color:#FFFFFF;
                     text-align: center;
-                    margin-top: 4px;
+                    margin-top: 3px;
                     padding-top: 2px
                 }
             }
@@ -478,9 +478,9 @@
                                 padding: 0;
                                 margin: 10px 0 0 0;
                                 line-height: 20px;
-                                word-break: break-all;
-                                white-space: pre-wrap;
-                                word-wrap: break-word;
+                                text-overflow: ellipsis;
+                                white-space: nowrap;
+                                overflow: hidden;
                             }
                         }
                         .task-tags {

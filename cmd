@@ -55,13 +55,13 @@ check_docker() {
         echo -e "${Error} ${RedBG} 未安装 Docker！${Font}"
         exit 1
     fi
-    docker-compose --version &> /dev/null
+    docker-compose version &> /dev/null
     if [ $? -ne  0 ]; then
         echo -e "${Error} ${RedBG} 未安装 Docker-compose！${Font}"
         exit 1
     fi
-    if [[ -n `docker-compose --version | grep "docker-compose" | grep -E "\sv*1"` ]]; then
-        docker-compose --version
+    if [[ -n `docker-compose version | grep "docker-compose" | grep -E "\sv*1"` ]]; then
+        docker-compose version
         echo -e "${Error} ${RedBG} Docker-compose 版本过低，请升级至v2+！${Font}"
         exit 1
     fi

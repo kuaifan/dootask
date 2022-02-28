@@ -3,9 +3,13 @@
         <PageTitle :title="title"/>
         <Loading v-if="loadIng > 0"/>
         <template v-else>
-            <AceEditor v-if="isCode" v-model="codeContent" :ext="codeExt" class="view-editor" readOnly/>
-            <OnlyOffice v-else-if="isOffice" v-model="officeContent" :code="officeCode" :documentKey="documentKey" readOnly/>
-            <iframe v-else-if="isPreview" class="preview-iframe" :src="previewUrl"/>
+            <MDPreview v-if="isType('md')" :initialValue="msgDetail.content.content"/>
+            <TEditor v-else-if="isType('text')" :value="msgDetail.content.content" height="100%" readOnly/>
+            <Drawio v-else-if="isType('drawio')" v-model="msgDetail.content" :title="msgDetail.msg.name" readOnly/>
+            <Minder v-else-if="isType('mind')" :value="msgDetail.content" readOnly/>
+            <AceEditor v-else-if="isType('code')" v-model="msgDetail.content" :ext="msgDetail.msg.ext" class="view-editor" readOnly/>
+            <OnlyOffice v-else-if="isType('office')" v-model="officeContent" :code="officeCode" :documentKey="documentKey" readOnly/>
+            <iframe v-else-if="isType('preview')" class="preview-iframe" :src="previewUrl"/>
             <div v-else class="no-support">{{$L('不支持单独查看此消息')}}</div>
         </template>
     </div>
@@ -17,6 +21,8 @@
     align-items: center;
     .preview-iframe,
     .ace_editor,
+    .markdown-preview-warp,
+    .teditor-wrapper,
     .no-support {
         position: absolute;
         top: 0;
@@ -42,13 +48,27 @@
 }
 </style>
 <style lang="scss">
+.single-file-msg {
+    .teditor-wrapper {
+        .teditor-box {
+            height: 100%;
+        }
+    }
+}
 </style>
 <script>
-import AceEditor from "../../components/AceEditor";
-import OnlyOffice from "../../components/OnlyOffice";
+import Vue from 'vue'
+import Minder from '../../components/minder'
+Vue.use(Minder)
+
+const MDPreview = () => import('../../components/MDEditor/preview');
+const TEditor = () => import('../../components/TEditor');
+const AceEditor = () => import('../../components/AceEditor');
+const OnlyOffice = () => import('../../components/OnlyOffice');
+const Drawio = () => import('../../components/Drawio');
 
 export default {
-    components: {OnlyOffice, AceEditor},
+    components: {AceEditor, TEditor, MDPreview, OnlyOffice, Drawio},
     data() {
         return {
             loadIng: 0,
@@ -80,47 +100,27 @@ export default {
             return "Loading..."
         },
 
-        isCode() {
-            return this.msgDetail.type == 'file' && this.msgDetail.file_mode == 1;
-        },
-        codeContent() {
-            if (this.isCode) {
-                return this.msgDetail.content;
+        isType() {
+            const {msgDetail} = this;
+            return function (type) {
+                return msgDetail.type == 'file' && msgDetail.file_mode == type;
             }
-            return '';
-        },
-        codeExt() {
-            if (this.isCode) {
-                return this.msgDetail.msg.ext;
-            }
-            return 'txt'
         },
 
-        isOffice() {
-            return this.msgDetail.type == 'file' && this.msgDetail.file_mode == 2;
-        },
         officeContent() {
             return {
-                id: this.isOffice ? this.msgDetail.id : 0,
+                id: this.msgDetail.id || 0,
                 type: this.msgDetail.msg.ext,
                 name: this.title,
             }
         },
+
         officeCode() {
-            if (this.isOffice) {
-                return "msgFile_" + this.msgDetail.id;
-            }
-            return ''
+            return "msgFile_" + this.msgDetail.id;
         },
 
-        isPreview() {
-            return this.msgDetail.type == 'file' && this.msgDetail.file_mode == 3;
-        },
         previewUrl() {
-            if (this.isPreview) {
-                return $A.apiUrl("../fileview/onlinePreview?url=" + encodeURIComponent(this.msgDetail.url))
-            }
-            return ''
+            return $A.apiUrl("../fileview/onlinePreview?url=" + encodeURIComponent(this.msgDetail.content.url))
         }
     },
     methods: {

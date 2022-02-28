@@ -3,9 +3,13 @@
         <PageTitle :title="title"/>
         <Loading v-if="loadIng > 0"/>
         <template v-else>
-            <AceEditor v-if="isCode" v-model="codeContent" :ext="codeExt" class="view-editor" readOnly/>
-            <OnlyOffice v-else-if="isOffice" v-model="officeContent" :code="officeCode" :documentKey="documentKey" readOnly/>
-            <iframe v-else-if="isPreview" class="preview-iframe" :src="previewUrl"/>
+            <MDPreview v-if="isType('md')" :initialValue="fileDetail.content.content"/>
+            <TEditor v-else-if="isType('text')" :value="fileDetail.content.content" height="100%" readOnly/>
+            <Drawio v-else-if="isType('drawio')" v-model="fileDetail.content" :title="fileDetail.name" readOnly/>
+            <Minder v-else-if="isType('mind')" :value="fileDetail.content" readOnly/>
+            <AceEditor v-else-if="isType('code')" v-model="fileDetail.content" :ext="fileDetail.ext" class="view-editor" readOnly/>
+            <OnlyOffice v-else-if="isType('office')" v-model="officeContent" :code="officeCode" :documentKey="documentKey" readOnly/>
+            <iframe v-else-if="isType('preview')" class="preview-iframe" :src="previewUrl"/>
             <div v-else class="no-support">{{$L('不支持单独查看此消息')}}</div>
         </template>
     </div>
@@ -17,6 +21,8 @@
     align-items: center;
     .preview-iframe,
     .ace_editor,
+    .markdown-preview-warp,
+    .teditor-wrapper,
     .no-support {
         position: absolute;
         top: 0;
@@ -42,13 +48,27 @@
 }
 </style>
 <style lang="scss">
+.single-file-task {
+    .teditor-wrapper {
+        .teditor-box {
+            height: 100%;
+        }
+    }
+}
 </style>
 <script>
-import AceEditor from "../../components/AceEditor";
-import OnlyOffice from "../../components/OnlyOffice";
+import Vue from 'vue'
+import Minder from '../../components/minder'
+Vue.use(Minder)
+
+const MDPreview = () => import('../../components/MDEditor/preview');
+const TEditor = () => import('../../components/TEditor');
+const AceEditor = () => import('../../components/AceEditor');
+const OnlyOffice = () => import('../../components/OnlyOffice');
+const Drawio = () => import('../../components/Drawio');
 
 export default {
-    components: {OnlyOffice, AceEditor},
+    components: {AceEditor, TEditor, MDPreview, OnlyOffice, Drawio},
     data() {
         return {
             loadIng: 0,
@@ -80,47 +100,27 @@ export default {
             return "Loading..."
         },
 
-        isCode() {
-            return this.fileDetail.file_mode == 1;
-        },
-        codeContent() {
-            if (this.isCode) {
-                return this.fileDetail.content;
+        isType() {
+            const {fileDetail} = this;
+            return function (type) {
+                return fileDetail.file_mode == type;
             }
-            return '';
-        },
-        codeExt() {
-            if (this.isCode) {
-                return this.fileDetail.ext;
-            }
-            return 'txt'
         },
 
-        isOffice() {
-            return this.fileDetail.file_mode == 2;
-        },
         officeContent() {
             return {
-                id: this.isOffice ? this.fileDetail.id : 0,
+                id: this.fileDetail.id || 0,
                 type: this.fileDetail.ext,
                 name: this.title,
             }
         },
+
         officeCode() {
-            if (this.isOffice) {
-                return "taskFile_" + this.fileDetail.id;
-            }
-            return ''
+            return "taskFile_" + this.fileDetail.id;
         },
 
-        isPreview() {
-            return this.fileDetail.file_mode == 3;
-        },
         previewUrl() {
-            if (this.isPreview) {
-                return $A.apiUrl("../fileview/onlinePreview?url=" + encodeURIComponent(this.fileDetail.url))
-            }
-            return ''
+            return $A.apiUrl("../fileview/onlinePreview?url=" + encodeURIComponent(this.fileDetail.content.url))
         }
     },
     methods: {

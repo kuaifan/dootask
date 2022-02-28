@@ -153,9 +153,10 @@ class AbstractModel extends Model
      * @param $where
      * @param array $update 存在时更新的内容
      * @param array $insert 不存在时插入的内容，如果没有则插入更新内容
+     * @param bool $isInsert 是否是插入数据
      * @return AbstractModel|\Illuminate\Database\Eloquent\Builder|Model|object|static|null
      */
-    public static function updateInsert($where, $update = [], $insert = [])
+    public static function updateInsert($where, $update = [], $insert = [], &$isInsert = true)
     {
         $row = static::where($where)->first();
         if (empty($row)) {
@@ -165,8 +166,10 @@ class AbstractModel extends Model
                 unset($array[$row->primaryKey]);
             }
             $row->updateInstance($array);
+            $isInsert = true;
         } elseif ($update) {
             $row->updateInstance($update);
+            $isInsert = false;
         }
         if (!$row->save()) {
             return null;

@@ -399,7 +399,10 @@
                             @on-input-paste="msgPasteDrag"/>
                         <div class="no-send" @click="msgDialog">
                             <Loading v-if="sendLoad > 0"/>
-                            <Icon v-else type="md-send" />
+                            <template v-else>
+                                <Badge :count="taskDetail.msg_num"/>
+                                <Icon type="md-send" />
+                            </template>
                         </div>
                     </div>
                     <div v-if="dialogDrag" class="drag-over" @click="dialogDrag=false">
@@ -1164,6 +1167,7 @@ export default {
                 this.$Electron.sendMessage('windowRouter', {
                     name: 'file-task-' + file.id,
                     path: "/single/file/task/" + file.id,
+                    userAgent: "/hideenOfficeTitle/",
                     force: false,
                     config: {
                         title: `${file.name} (${$A.bytesToSize(file.size)})`,

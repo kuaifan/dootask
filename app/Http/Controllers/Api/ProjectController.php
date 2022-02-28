@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Exceptions\ApiException;
 use App\Models\AbstractModel;
+use App\Models\File;
 use App\Models\Project;
 use App\Models\ProjectColumn;
 use App\Models\ProjectFlow;
@@ -16,10 +17,13 @@ use App\Models\ProjectUser;
 use App\Models\User;
 use App\Models\WebSocketDialog;
 use App\Module\Base;
+use App\Module\BillExport;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
+use Madzipper;
 use Request;
 use Response;
+use Session;
 
 /**
  * @apiDefine project
@@ -603,13 +607,14 @@ class ProjectController extends AbstractController
                 if (!is_array($item['task'])) continue;
                 $index = 0;
                 foreach ($item['task'] as $task_id) {
-                    ProjectTask::whereId($task_id)->whereProjectId($project->id)->update([
+                    if (ProjectTask::whereId($task_id)->whereProjectId($project->id)->whereCompleteAt(null)->update([
                         'column_id' => $item['id'],
                         'sort' => $index
-                    ]);
-                    ProjectTask::whereParentId($task_id)->whereProjectId($project->id)->update([
-                        'column_id' => $item['id'],
-                    ]);
+                    ])) {
+                        ProjectTask::whereParentId($task_id)->whereProjectId($project->id)->update([
+                            'column_id' => $item['id'],
+                        ]);
+                    }
                     $index++;
                 }
             }
@@ -976,6 +981,154 @@ class ProjectController extends AbstractController
     }
 
     /**
+     * @api {get} api/project/task/export          18. 导出任务（限管理员）
+     *
+     * @apiDescription 导出指定范围任务（已完成、未完成、已归档），返回下载地址，需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__export
+     *
+     * @apiParam {Array} [userid]               指定会员，如：[1, 2]
+     * @apiParam {Array} [time]                 指定时间范围，如：['2020-12-12', '2020-12-30']
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function task__export()
+    {
+        $user = User::auth('admin');
+        //
+        $userid = Base::arrayRetainInt(Request::input('userid'), true);
+        $time = Request::input('time');
+        if (empty($userid) || empty($time)) {
+            return Base::retError('参数错误');
+        }
+        if (count($userid) > 20) {
+            return Base::retError('导出会员限制最多20个');
+        }
+        if (!(is_array($time) && Base::isDateOrTime($time[0]) && Base::isDateOrTime($time[1]))) {
+            return Base::retError('时间选择错误');
+        }
+        if (Carbon::parse($time[1])->timestamp - Carbon::parse($time[0])->timestamp > 90 * 86400) {
+            return Base::retError('时间范围限制最大90天');
+        }
+        //
+        $headings = [];
+        $headings[] = '任务ID';
+        $headings[] = '任务标题';
+        $headings[] = '负责人';
+        $headings[] = '创建人';
+        $headings[] = '是否完成';
+        $headings[] = '完成时间';
+        $headings[] = '是否归档';
+        $headings[] = '归档时间';
+        $headings[] = '任务开始时间';
+        $headings[] = '任务结束时间';
+        $headings[] = '结束剩余';
+        $headings[] = '所属项目';
+        $headings[] = '父级任务ID';
+        $datas = [];
+        //
+        $builder = ProjectTask::select(['project_tasks.*', 'project_task_users.userid as ownerid'])
+            ->join('project_task_users', 'project_tasks.id', '=', 'project_task_users.task_id')
+            ->where('project_task_users.owner', 1)
+            ->whereIn('project_task_users.userid', $userid)
+            ->betweenTime(Carbon::parse($time[0])->startOfDay(), Carbon::parse($time[1])->endOfDay());
+        $builder->orderByDesc('project_tasks.id')->chunk(100, function($tasks) use (&$datas) {
+            /** @var ProjectTask $task */
+            foreach ($tasks as $task) {
+                if ($task->complete_at) {
+                    $a = Carbon::parse($task->complete_at)->timestamp;
+                    $b = Carbon::parse($task->end_at)->timestamp;
+                    if ($b > $a) {
+                        $endSurplus = Base::timeDiff($a, $b);
+                    } else {
+                        $endSurplus = "-" . Base::timeDiff($b, $a);
+                    }
+                } else {
+                    $endSurplus = '-';
+                }
+                $datas[] = [
+                    $task->id,
+                    Base::filterEmoji($task->name),
+                    Base::filterEmoji(User::userid2nickname($task->ownerid)) . " (ID: {$task->ownerid})",
+                    Base::filterEmoji(User::userid2nickname($task->userid)) . " (ID: {$task->userid})",
+                    $task->complete_at ? '已完成' : '-',
+                    $task->complete_at ?: '-',
+                    $task->archived_at ? '已归档' : '-',
+                    $task->archived_at ?: '-',
+                    $task->start_at ?: '-',
+                    $task->end_at ?: '-',
+                    $endSurplus,
+                    Base::filterEmoji($task->project?->name) ?: '-',
+                    $task->parent_id ?: '-',
+                ];
+            }
+        });
+        //
+        $fileName = User::userid2nickname($userid[0]) ?: $userid[0];
+        if (count($userid) > 1) {
+            $fileName .= "等" . count($userid) . "位成员";
+        }
+        $fileName .= '任务统计_' . Base::time() . '.xls';
+        $filePath = "temp/task/export/" . date("Ym", Base::time());
+        $res = BillExport::create()->setHeadings($headings)->setData($datas)->store($filePath . "/" . $fileName);
+        if ($res != 1) {
+            return Base::retError('导出失败，' . $fileName . '！');
+        }
+        $xlsPath = storage_path("app/" . $filePath . "/" . $fileName);
+        $zipFile = "app/" . $filePath . "/" . Base::rightDelete($fileName, '.xls'). ".zip";
+        $zipPath = storage_path($zipFile);
+        if (file_exists($zipPath)) {
+            Base::deleteDirAndFile($zipPath, true);
+        }
+        try {
+            Madzipper::make($zipPath)->add($xlsPath)->close();
+        } catch (\Exception) { }
+        //
+        if (file_exists($zipPath)) {
+            $base64 = base64_encode(Base::array2string([
+                'file' => $zipFile,
+            ]));
+            Session::put('task::export:userid', $user->userid);
+            return Base::retSuccess('success', [
+                'size' => Base::twoFloat(filesize($zipPath) / 1024, true),
+                'url' => Base::fillUrl('api/project/task/down?key=' . urlencode($base64)),
+            ]);
+        } else {
+            return Base::retError('打包失败，请稍后再试...');
+        }
+    }
+
+    /**
+     * @api {get} api/project/task/down          18. 导出任务（限管理员）
+     *
+     * @apiDescription 导出指定范围任务（已完成、未完成、已归档），返回下载地址，需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__down
+     *
+     * @apiParam {String} key               通过export接口得到的下载钥匙
+     *
+     * @apiSuccess {File} 文件下载
+     */
+    public function task__down()
+    {
+        $userid = Session::get('task::export:userid');
+        if (empty($userid)) {
+            return Base::ajaxError("请求已过期，请重新导出！", [], 0, 502);
+        }
+        //
+        $array = Base::string2array(base64_decode(urldecode(Request::input('key'))));
+        $file = $array['file'];
+        if (empty($file) || !file_exists(storage_path($file))) {
+            return Base::ajaxError("文件不存在！", [], 0, 502);
+        }
+        return response()->download(storage_path($file));
+    }
+
+    /**
      * @api {get} api/project/task/one          19. 获取单个任务信息
      *
      * @apiDescription 需要token身份
@@ -1132,29 +1285,7 @@ class ProjectController extends AbstractController
         //
         ProjectTask::userTask($file->task_id, null);
         //
-        $codeExt = ['txt'];
-        $officeExt = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'];
-        $localExt = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'raw', 'tif', 'tiff', 'mp3', 'wav', 'mp4', 'flv', 'avi', 'mov', 'wmv', 'mkv', '3gp', 'rm'];
-        $filePath = public_path($data['path']);
-        if (in_array($data['ext'], $codeExt) && $data['size'] < 2 * 1024 * 1024) {
-            // 文本预览，限制2M内的文件
-            $data['content'] = file_get_contents($filePath);
-            $data['file_mode'] = 1;
-        } elseif (in_array($data['ext'], $officeExt)) {
-            // office预览
-            $data['file_mode'] = 2;
-        } else {
-            // 其他预览
-            if (in_array($data['ext'], $localExt)) {
-                $url = Base::fillUrl($data['path']);
-            } else {
-                $url = 'http://' . env('APP_IPPR') . '.3/' . $data['path'];
-            }
-            $data['url'] = base64_encode($url);
-            $data['file_mode'] = 3;
-        }
-        //
-        return Base::retSuccess('success', $data);
+        return Base::retSuccess('success', File::formatFileData($data));
     }
 
     /**

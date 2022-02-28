@@ -19,39 +19,84 @@
                     </div>
                 </div>
                 <DropdownMenu slot="list">
-                    <DropdownItem
-                        v-for="(item, key) in menu"
-                        v-if="item.visible !== false"
-                        :key="key"
-                        :divided="!!item.divided"
-                        :name="item.path">
-                        {{$L(item.name)}}
-                        <Badge v-if="item.path === 'version'" class="manage-menu-report-badge" :text="clientNewVersion"/>
-                        <Badge v-if="item.path === 'workReport'" class="manage-menu-report-badge" :count="reportUnreadNumber"/>
-                    </DropdownItem>
-                    <Dropdown placement="right-start" @on-click="setTheme">
-                        <DropdownItem divided>
-                            <div class="manage-menu-language">
-                                {{$L('主题皮肤')}}
-                                <Icon type="ios-arrow-forward"></Icon>
-                            </div>
+                    <template v-for="item in menu">
+                        <!-- 团队管理 -->
+                        <Dropdown
+                            v-if="item.path === 'team'"
+                            placement="right-start">
+                            <DropdownItem divided>
+                                <div class="manage-menu-flex">
+                                    {{$L(item.name)}}
+                                    <Badge v-if="reportUnreadNumber > 0" class="manage-menu-report-badge" :count="reportUnreadNumber"/>
+                                    <Icon v-else type="ios-arrow-forward"></Icon>
+                                </div>
+                            </DropdownItem>
+                            <DropdownMenu slot="list">
+                                <DropdownItem name="allUser">{{$L('团队管理')}}</DropdownItem>
+                                <DropdownItem name="workReport">
+                                    <div class="manage-menu-flex">
+                                        {{$L('工作报告')}}
+                                        <Badge v-if="reportUnreadNumber > 0" class="manage-menu-report-badge" :count="reportUnreadNumber"/>
+                                    </div>
+                                </DropdownItem>
+                                <DropdownItem name="exportTask">{{$L('导出任务统计')}}</DropdownItem>
+                            </DropdownMenu>
+                        </Dropdown>
+                        <!-- 主题皮肤 -->
+                        <Dropdown
+                            v-else-if="item.path === 'theme'"
+                            placement="right-start"
+                            @on-click="setTheme">
+                            <DropdownItem divided>
+                                <div class="manage-menu-flex">
+                                    {{$L(item.name)}}
+                                    <Icon type="ios-arrow-forward"></Icon>
+                                </div>
+                            </DropdownItem>
+                            <DropdownMenu slot="list">
+                                <DropdownItem
+                                    v-for="(item, key) in themeList"
+                                    :key="key"
+                                    :name="item.value"
+                                    :selected="themeMode === item.value">{{$L(item.name)}}</DropdownItem>
+                            </DropdownMenu>
+                        </Dropdown>
+                        <!-- 语言设置 -->
+                        <Dropdown
+                            v-else-if="item.path === 'language'"
+                            placement="right-start"
+                            @on-click="setLanguage">
+                            <DropdownItem divided>
+                                <div class="manage-menu-flex">
+                                    {{currentLanguage}}
+                                    <Icon type="ios-arrow-forward"></Icon>
+                                </div>
+                            </DropdownItem>
+                            <DropdownMenu slot="list">
+                                <DropdownItem
+                                    v-for="(item, key) in languageList"
+                                    :key="key"
+                                    :name="key"
+                                    :selected="getLanguage() === key">{{item}}</DropdownItem>
+                            </DropdownMenu>
+                        </Dropdown>
+                        <!-- 其他菜单 -->
+                        <DropdownItem
+                            v-else-if="item.visible !== false"
+                            :divided="!!item.divided"
+                            :name="item.path"
+                            :style="item.style || {}">
+                            {{$L(item.name)}}
+                            <Badge
+                                v-if="item.path === 'version'"
+                                class="manage-menu-report-badge"
+                                :text="clientNewVersion"/>
+                            <Badge
+                                v-else-if="item.path === 'workReport' && reportUnreadNumber > 0"
+                                class="manage-menu-report-badge"
+                                :count="reportUnreadNumber"/>
                         </DropdownItem>
-                        <DropdownMenu slot="list">
-                            <Dropdown-item v-for="(item, key) in themeList" :key="key" :name="item.value" :selected="themeMode === item.value">{{$L(item.name)}}</Dropdown-item>
-                        </DropdownMenu>
-                    </Dropdown>
-                    <Dropdown placement="right-start" @on-click="setLanguage">
-                        <DropdownItem divided>
-                            <div class="manage-menu-language">
-                                {{currentLanguage}}
-                                <Icon type="ios-arrow-forward"></Icon>
-                            </div>
-                        </DropdownItem>
-                        <DropdownMenu slot="list">
-                            <Dropdown-item v-for="(item, key) in languageList" :key="key" :name="key" :selected="getLanguage() === key">{{item}}</Dropdown-item>
-                        </DropdownMenu>
-                    </Dropdown>
-                    <DropdownItem divided name="signout" style="color:#f40">{{$L('退出登录')}}</DropdownItem>
+                    </template>
                 </DropdownMenu>
             </Dropdown>
             <ul :class="overlayClass" @scroll="handleClickTopOperateOutside">
@@ -184,6 +229,30 @@
             <TaskAdd ref="addTask" v-model="addTaskShow"/>
         </Modal>
 
+        <!--导出任务统计-->
+        <Modal
+            v-model="exportTaskShow"
+            :title="$L('导出任务统计')"
+            :mask-closable="false">
+            <Form ref="exportTask" :model="exportData" label-width="auto" @submit.native.prevent>
+                <FormItem :label="$L('导出会员')">
+                    <UserInput v-model="exportData.userid" :multiple-max="20" :placeholder="$L('请选择会员')"/>
+                </FormItem>
+                <FormItem :label="$L('时间范围')">
+                    <DatePicker
+                        v-model="exportData.time"
+                        type="daterange"
+                        format="yyyy/MM/dd"
+                        style="width:100%"
+                        :placeholder="$L('请选择时间')"/>
+                </FormItem>
+            </Form>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="exportTaskShow=false">{{$L('取消')}}</Button>
+                <Button type="primary" :loading="exportLoadIng > 0" @click="onExportTask">{{$L('导出')}}</Button>
+            </div>
+        </Modal>
+
         <!--任务详情-->
         <Modal
             :value="taskId > 0"
@@ -248,20 +317,27 @@
 import { mapState, mapGetters } from 'vuex'
 import TaskDetail from "./manage/components/TaskDetail";
 import ProjectArchived from "./manage/components/ProjectArchived";
-import notificationKoro from "notification-koro1";
 import TeamManagement from "./manage/components/TeamManagement";
 import ProjectManagement from "./manage/components/ProjectManagement";
 import DrawerOverlay from "../components/DrawerOverlay";
 import DragBallComponent from "../components/DragBallComponent";
 import TaskAdd from "./manage/components/TaskAdd";
 import Report from "./manage/components/Report";
+import notificationKoro from "notification-koro1";
 import {Store} from "le5le-store";
+import UserInput from "../components/UserInput";
 
 export default {
     components: {
+        UserInput,
         TaskAdd,
+        TaskDetail,
         Report,
-        DragBallComponent, DrawerOverlay, ProjectManagement, TeamManagement, ProjectArchived, TaskDetail},
+        DragBallComponent,
+        DrawerOverlay,
+        ProjectManagement,
+        TeamManagement,
+        ProjectArchived},
     data() {
         return {
             loadIng: 0,
@@ -279,6 +355,13 @@ export default {
 
             addTaskShow: false,
             addTaskSubscribe: null,
+
+            exportTaskShow: false,
+            exportLoadIng: 0,
+            exportData: {
+                userid: [],
+                time: [],
+            },
 
             dialogMsgSubscribe: null,
 
@@ -399,21 +482,37 @@ export default {
                     {path: 'personal', name: '个人设置'},
                     {path: 'password', name: '密码设置'},
                     {path: 'clearCache', name: '清除缓存'},
+
                     {path: 'system', name: '系统设置', divided: true},
                     {path: 'version', name: '更新版本', visible: !!this.clientNewVersion},
-                    {path: 'workReport', name: '工作报告', divided: true},
-                    {path: 'allUser', name: '团队管理'},
-                    {path: 'allProject', name: '所有项目'},
-                    {path: 'archivedProject', name: '已归档的项目'}
+
+                    {path: 'allProject', name: '所有项目', divided: true},
+                    {path: 'archivedProject', name: '已归档的项目'},
+
+                    {path: 'team', name: '团队管理', divided: true},
+
+                    {path: 'theme', name: '主题皮肤', divided: true},
+
+                    {path: 'language', name: this.currentLanguage, divided: true},
+
+                    {path: 'logout', name: '退出登录', style: {color: '#f40'}, divided: true},
                 ]
             } else {
                 return [
                     {path: 'personal', name: '个人设置'},
                     {path: 'password', name: '密码设置'},
                     {path: 'clearCache', name: '清除缓存'},
+
                     {path: 'version', name: '更新版本', divided: true, visible: !!this.clientNewVersion},
+
                     {path: 'workReport', name: '工作报告', divided: true},
-                    {path: 'archivedProject', name: '已归档的项目'}
+                    {path: 'archivedProject', name: '已归档的项目'},
+
+                    {path: 'theme', name: '主题皮肤', divided: true},
+
+                    {path: 'language', name: this.currentLanguage, divided: true},
+
+                    {path: 'logout', name: '退出登录', style: {color: '#f40'}, divided: true},
                 ]
             }
         },
@@ -429,7 +528,7 @@ export default {
 
         projectLists() {
             const {projectKeyValue, cacheProjects} = this;
-            const data = cacheProjects.sort((a, b) => {
+            const data = $A.cloneJSON(cacheProjects).sort((a, b) => {
                 if (a.top_at || b.top_at) {
                     return $A.Date(b.top_at) - $A.Date(a.top_at);
                 }
@@ -624,6 +723,9 @@ export default {
                 case 'archivedProject':
                     this.archivedProjectShow = true;
                     return;
+                case 'exportTask':
+                    this.exportTaskShow = true;
+                    return;
                 case 'workReport':
                     if (this.reportUnreadNumber > 0) {
                         this.reportTabs = "receive";
@@ -641,7 +743,7 @@ export default {
                         window.location.reload()
                     });
                     return;
-                case 'signout':
+                case 'logout':
                     $A.modalConfirm({
                         title: '退出登录',
                         content: '你确定要登出系统？',
@@ -805,9 +907,58 @@ export default {
                 this.$store.dispatch("call", {
                     url: 'report/unread',
                 }).then(({data}) => {
-                    this.reportUnreadNumber = data.total ? data.total : 0;
+                    this.reportUnreadNumber = data.total || 0;
                 }).catch(() => {});
             }, typeof timeout === "number" ? timeout : 1000)
+        },
+
+        handleRightClick(event, item) {
+            this.handleClickTopOperateOutside();
+            this.topOperateItem = item;
+            this.$nextTick(() => {
+                const projectWrap = this.$refs.projectWrapper;
+                const projectBounding = projectWrap.getBoundingClientRect();
+                this.topOperateStyles = {
+                    left: `${event.clientX - projectBounding.left}px`,
+                    top: `${event.clientY - projectBounding.top}px`
+                };
+                this.topOperateVisible = true;
+            })
+        },
+
+        handleClickTopOperateOutside() {
+            this.topOperateVisible = false;
+        },
+
+        handleTopClick() {
+            this.$store.dispatch("call", {
+                url: 'project/top',
+                data: {
+                    project_id: this.topOperateItem.id,
+                },
+            }).then(() => {
+                this.$store.dispatch("getProjects").catch(() => {});
+            }).catch(({msg}) => {
+                $A.modalError(msg, 301);
+            });
+        },
+
+        onExportTask() {
+            if (this.exportLoadIng > 0) {
+                return;
+            }
+            this.exportLoadIng++;
+            this.$store.dispatch("call", {
+                url: 'project/task/export',
+                data: this.exportData,
+            }).then(({data}) => {
+                this.exportLoadIng--;
+                this.exportTaskShow = false;
+                $A.downFile(data.url);
+            }).catch(({msg}) => {
+                this.exportLoadIng--;
+                $A.modalError(msg);
+            });
         },
 
         notificationInit() {
@@ -869,37 +1020,6 @@ export default {
                 this.natificationHidden = !!document[hiddenProperty]
             }
             document.addEventListener(visibilityChangeEvent, visibilityChangeListener);
-        },
-
-        handleRightClick(event, item) {
-            this.handleClickTopOperateOutside();
-            this.topOperateItem = item;
-            this.$nextTick(() => {
-                const projectWrap = this.$refs.projectWrapper;
-                const projectBounding = projectWrap.getBoundingClientRect();
-                this.topOperateStyles = {
-                    left: `${event.clientX - projectBounding.left}px`,
-                    top: `${event.clientY - projectBounding.top}px`
-                };
-                this.topOperateVisible = true;
-            })
-        },
-
-        handleClickTopOperateOutside() {
-            this.topOperateVisible = false;
-        },
-
-        handleTopClick() {
-            this.$store.dispatch("call", {
-                url: 'project/top',
-                data: {
-                    project_id: this.topOperateItem.id,
-                },
-            }).then(() => {
-                this.$store.dispatch("getProjects").catch(() => {});
-            }).catch(({msg}) => {
-                $A.modalError(msg, 301);
-            });
         },
     }
 }

@@ -91,6 +91,7 @@
             <div class="drag-text">{{$L('拖动到这里发送')}}</div>
         </div>
 
+        <!--拖动发送提示-->
         <Modal
             v-model="pasteShow"
             :title="$L(pasteTitle)"

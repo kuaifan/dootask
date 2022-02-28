@@ -78,6 +78,11 @@ body.dark-mode-reverse {
     .project-list {
         .project-head {
             .project-titbox {
+                .project-title {
+                    .top-text {
+                        color: #000000;
+                    }
+                }
                 .project-icons {
                     > li {
                         &.project-icon {
