@@ -109,14 +109,20 @@ export default {
             });
         },
         hoursChange(e) {
-            if (e % 0.5 !== 0) {
-                this.formData.task_remind_hours = 1;
+            let newNum = e * 10;
+            if (newNum % 5 !== 0) {
+                setTimeout(() => {
+                    this.formData.task_remind_hours = 1;
+                })
                 $A.messageError('任务提醒只能是0.5的倍数');
             }
         },
         hours2Change(e) {
-            if (e % 0.5 !== 0) {
-                this.formData.task_remind_hours2 = 1;
+            let newNum = e * 10;
+            if (newNum % 5 !== 0) {
+                setTimeout(() => {
+                    this.formData.task_remind_hours2 = 1;
+                })
                 $A.messageError('第二次任务提醒只能是0.5的倍数');
             }
         }
