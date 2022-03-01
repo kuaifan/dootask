@@ -37,7 +37,7 @@
                         <i class="taskfont">&#xe689;</i>
                     </div>
                     <Dropdown-menu slot="list" class="login-setting-menu">
-                        <Dropdown placement="right-start" @on-click="setTheme">
+                        <Dropdown placement="right" @on-click="setTheme">
                             <DropdownItem>
                                 <div class="login-setting-item">
                                     {{$L('主题皮肤')}}
@@ -48,7 +48,7 @@
                                 <Dropdown-item v-for="(item, key) in themeList" :key="key" :name="item.value" :selected="themeMode === item.value">{{$L(item.name)}}</Dropdown-item>
                             </DropdownMenu>
                         </Dropdown>
-                        <Dropdown placement="right-start" @on-click="setLanguage">
+                        <Dropdown placement="right" @on-click="setLanguage">
                             <DropdownItem divided>
                                 <div class="login-setting-item">
                                     {{currentLanguage}}
