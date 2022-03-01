@@ -129,6 +129,7 @@
                             <div class="project-h1">
                                 <em @click.stop="toggleOpenMenu(item.id)"></em>
                                 <div class="title">{{item.name}}</div>
+                                <img v-if="item.top_at" src="/images/mark.svg" class="icon-top">
                                 <div v-if="item.task_my_num - item.task_my_complete > 0" class="num">{{item.task_my_num - item.task_my_complete}}</div>
                             </div>
                             <div class="project-h2">
@@ -774,7 +775,6 @@ export default {
             return {
                 "active": this.curPath == '/manage/' + path,
                 "open-menu": openMenu === true,
-                "top": item.top_at && this.curPath != '/manage/' + path,
                 "operate": item.id == this.topOperateItem.id && this.topOperateVisible
             };
         },
