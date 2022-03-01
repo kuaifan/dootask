@@ -1,8 +1,9 @@
 <template>
-    <div id="calendar" ref="tuiCalendar" class="calendar-wrapper"></div>
+    <div ref="tuiCalendar" className="calendar-wrapper"></div>
 </template>
 <script>
 import Calendar from 'tui-calendar-hi';
+
 export default {
     name: 'Calendar',
     props: {
@@ -21,7 +22,7 @@ export default {
                 let notHave = false;
 
                 value.forEach(schedule => {
-                    notHave = [ 'start', 'category' ].some(prop => !schedule.hasOwnProperty(prop));
+                    notHave = ['start', 'category'].some(prop => !schedule.hasOwnProperty(prop));
                 });
 
                 return !notHave;
@@ -118,21 +119,21 @@ export default {
         },
         theme: {
             handler(newValue) {
-                this.calendarInstance.setTheme(this.cloneData(newValue));
+                this.calendarInstance.setTheme($A.cloneJSON(newValue));
             },
             deep: true
         },
         week: {
             handler(newValue) {
                 const silent = this.view !== 'week' && this.view !== 'day';
-                this.calendarInstance.setOptions({week: this.cloneData(newValue)}, silent);
+                this.calendarInstance.setOptions({week: $A.cloneJSON(newValue)}, silent);
             },
             deep: true
         },
         month: {
             handler(newValue) {
                 const silent = this.view !== 'month';
-                this.calendarInstance.setOptions({month: this.cloneData(newValue)}, silent);
+                this.calendarInstance.setOptions({month: $A.cloneJSON(newValue)}, silent);
             },
             deep: true
         },
@@ -150,37 +151,31 @@ export default {
         }
     },
     mounted() {
-        this.init();
+        this.calendarInstance = new Calendar(this.$refs.tuiCalendar, {
+            defaultView: this.view,
+            taskView: this.taskView,
+            scheduleView: this.scheduleView,
+            theme: this.theme,
+            template: this.template,
+            week: this.week,
+            month: this.month,
+            calendars: this.calendars,
+            useCreationPopup: this.useCreationPopup,
+            useDetailPopup: this.useDetailPopup,
+            timezones: this.timezones,
+            disableDblClick: this.disableDblClick,
+            disableClick: this.disableClick,
+            isReadOnly: this.isReadOnly,
+            usageStatistics: this.usageStatistics
+        });
+        this.addEventListeners();
+        this.reflectSchedules();
     },
     beforeDestroy() {
         this.calendarInstance.off();
         this.calendarInstance.destroy();
     },
     methods: {
-        init(){
-        this.calendarInstance = new Calendar(this.$refs.tuiCalendar, {
-                    defaultView: this.view,
-                    taskView: this.taskView,
-                    scheduleView: this.scheduleView,
-                    theme: this.theme,
-                    template: this.template,
-                    week: this.week,
-                    month: this.month,
-                    calendars: this.calendars,
-                    useCreationPopup: this.useCreationPopup,
-                    useDetailPopup: this.useDetailPopup,
-                    timezones: this.timezones,
-                    disableDblClick: this.disableDblClick,
-                    disableClick: this.disableClick,
-                    isReadOnly: this.isReadOnly,
-                    usageStatistics: this.usageStatistics,
-                });
-        this.addEventListeners();
-        this.reflectSchedules();
-        },
-        cloneData(data) {
-            return JSON.parse(JSON.stringify(data));
-        },
         addEventListeners() {
             for (const eventName of Object.keys(this.$listeners)) {
                 this.calendarInstance.on(eventName, (...args) => this.$emit(eventName, ...args));
