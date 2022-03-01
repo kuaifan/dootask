@@ -31,12 +31,12 @@
             <template v-if="formData.notice == 'open'">
                 <FormItem :label="$L('任务提醒:')" prop="task_remind_hours">
                     <label>{{ $L('到期前') }}</label>
-                    <InputNumber v-model="formData.task_remind_hours"/>
+                    <InputNumber v-model="formData.task_remind_hours" :min="0.5" :step="0.5" @on-change="hoursChange"/>
                     <label>{{ $L('小时') }}</label>
                 </FormItem>
                 <FormItem :label="$L('第二次任务提醒:')" prop="task_remind_hours2">
                     <label>{{ $L('到期前') }}</label>
-                    <InputNumber v-model="formData.task_remind_hours2"/>
+                    <InputNumber v-model="formData.task_remind_hours2" :min="0.5" :step="0.5" @on-change="hours2Change"/>
                     <label>{{ $L('小时') }}</label>
                 </FormItem>
             </template>
@@ -107,6 +107,18 @@ export default {
                 }
                 this.loadIng--;
             });
+        },
+        hoursChange(e) {
+            if (e % 0.5 !== 0) {
+                this.formData.task_remind_hours = 1;
+                $A.messageError('任务提醒只能是0.5的倍数');
+            }
+        },
+        hours2Change(e) {
+            if (e % 0.5 !== 0) {
+                this.formData.task_remind_hours2 = 1;
+                $A.messageError('第二次任务提醒只能是0.5的倍数');
+            }
         }
     }
 }

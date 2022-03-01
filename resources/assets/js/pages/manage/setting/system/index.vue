@@ -21,7 +21,7 @@
 import SystemSetting from "./setting";
 import SystemTaskPriority from "./taskPriority";
 import SystemColumnTemplate from "./columnTemplate";
-import SystemEmailSetting from "./emailSetting";
+import SystemEmailSetting from "./EmailSetting";
 
 export default {
     components: {SystemColumnTemplate, SystemTaskPriority, SystemSetting, SystemEmailSetting},
