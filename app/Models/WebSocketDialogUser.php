@@ -8,6 +8,7 @@ namespace App\Models;
  * @property int $id
  * @property int|null $dialog_id 对话ID
  * @property int|null $userid 会员ID
+ * @property int|null $top 是否置顶：0否，1是
  * @property string|null $top_at 置顶时间
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -17,6 +18,7 @@ namespace App\Models;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser whereDialogId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser whereTop($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser whereTopAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser whereUserid($value)

@@ -3,12 +3,17 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\User;
+use App\Models\UserEmailVerification;
 use App\Module\Base;
 use Arr;
 use Cache;
 use Captcha;
 use Carbon\Carbon;
+use Config;
+use Mail;
 use Request;
+use Exception;
+use Validator;
 
 /**
  * @apiDefine users
@@ -53,6 +58,10 @@ class UsersController extends AbstractController
                 }
             }
             $user = User::reg($email, $password);
+            $isRegVerify = false;//Base::settingFind('emailSetting', 'reg_verify') === 'open' ? true : false;
+            if ($isRegVerify) {
+                UserEmailVerification::userEmailSend($user);
+            }
         } else {
             $needCode = !Base::isError(User::needCode($email));
             if ($needCode) {
@@ -558,5 +567,54 @@ class UsersController extends AbstractController
         }
         //
         return Base::retSuccess('修改成功', $userInfo);
+    }
+
+    /**
+     * @api {get} api/users/email/verification        13. 邮箱验证
+     *
+     * @apiDescription 不需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName email__verification
+     *
+     * @apiParam {String} code           验证参数
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据（同"获取我的信息"接口）
+     */
+    public function email__verification()
+    {
+        $data = Request::input();
+        // 表单验证
+        $validator = Validator::make($data, [
+            "code" => ["required"],
+        ], [
+            "code.required" => "required字段非法",
+        ]);
+        if ($validator->fails())
+            return Base::retError($validator->errors()->first());
+        $res = UserEmailVerification::where('code', $data['code'])->first();
+        if (empty($res)) {
+            return Base::retError('链接已失效');
+        }
+        // 如果已经校验过
+        if (intval($res->status) === 1)
+            return Base::retError('链接已经使用过');
+
+        $oldTime = strtotime($res->created_at);
+        $time = time();
+        //24个小时失效
+        if (abs($time - $oldTime) > 86400) {
+            return Base::retError("链接已失效");
+        }
+        UserEmailVerification::where('code', $data['code'])
+            ->update([
+                'status' => 1
+            ]);
+        User::where('userid', $res->userid)->update([
+            'is_email_verity' => 1
+        ]);
+        return Base::retSuccess('绑定邮箱成功');
     }
 }

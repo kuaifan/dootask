@@ -100,4 +100,10 @@ export default [
         path: '*',
         component: () => import('./pages/404.vue')
     },
+    {
+        name: 'validEmail',
+        path: '/valid/email',
+        meta: {title: '验证绑定邮箱'},
+        component: () => import('./pages/email/validEmail.vue')
+    },
 ]

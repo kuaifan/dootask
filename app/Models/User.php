@@ -29,6 +29,7 @@ use Carbon\Carbon;
  * @property int|null $task_dialog_id 最后打开的任务会话ID
  * @property string|null $created_ip 注册IP
  * @property string|null $disable_at 禁用时间
+ * @property int $is_email_verity 邮箱是否已验证
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @method static \Database\Factories\UserFactory factory(...$parameters)
@@ -43,6 +44,7 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereEmail($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereEncrypt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereIdentity($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereIsEmailVerity($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereLastAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereLastIp($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereLineAt($value)
