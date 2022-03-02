@@ -1733,6 +1733,33 @@ class Base
     }
 
     /**
+     * 时间秒数格式化
+     * @param int $time 时间秒数
+     * @return string
+     */
+    public static function timeFormat($time)
+    {
+        if ($time > 86400) {
+            $day = floor($time / 86400);
+            $hour = ceil(($time - ($day * 86400)) / 3600);
+            if ($hour > 0) {
+                return $day . '天' . $hour . '小时';
+            } else {
+                return $day . '天';
+            }
+        } elseif ($time > 3600) {
+            return ceil($time / 3600) . '小时';
+        } elseif ($time > 60) {
+            return ceil($time / 60) . '分钟';
+        } elseif ($time > 1) {
+            return '1分钟内';
+        } else {
+            return '0秒';
+        }
+
+    }
+
+    /**
      * 取ip前3段
      * @param $ip
      * @return mixed|string

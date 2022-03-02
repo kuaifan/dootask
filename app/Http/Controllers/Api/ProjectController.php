@@ -13,6 +13,7 @@ use App\Models\ProjectInvite;
 use App\Models\ProjectLog;
 use App\Models\ProjectTask;
 use App\Models\ProjectTaskFile;
+use App\Models\ProjectTaskFlowChange;
 use App\Models\ProjectUser;
 use App\Models\User;
 use App\Models\WebSocketDialog;
@@ -1028,6 +1029,11 @@ class ProjectController extends AbstractController
         $headings[] = '结束剩余';
         $headings[] = '所属项目';
         $headings[] = '父级任务ID';
+        $headings[] = '任务计划用时';
+        $headings[] = '开发用时';
+        $headings[] = '验收/测试用时';
+        $headings[] = '任务实际总用时';
+        $headings[] = '超时时间';
         $datas = [];
         //
         $builder = ProjectTask::select(['project_tasks.*', 'project_task_users.userid as ownerid'])
@@ -1049,6 +1055,57 @@ class ProjectController extends AbstractController
                 } else {
                     $endSurplus = '-';
                 }
+                $developFlowChanges = ProjectTaskFlowChange::whereTaskId($task->id)->get();
+                $developTime = 0;//开发时间
+                $testTime = 0;//验收/测试时间
+                foreach ($developFlowChanges as $change) {
+                    if (strpos($change->before_flow_item_name, 'end') === false) {
+                        $upOne = ProjectTaskFlowChange::where('id', '<', $change->id)->whereTaskId($task->id)->orderByDesc('id')->first();
+                        if ($upOne) {
+                            if (strpos($change->before_flow_item_name, 'progress') !== false && strpos($change->before_flow_item_name, '进行') !== false) {
+                                $devCtime = Carbon::parse($change->created_at)->timestamp;
+                                $oCtime = Carbon::parse($upOne->created_at)->timestamp;
+                                $minusNum = $devCtime - $oCtime;
+                                $developTime += $minusNum;
+                            }
+                            if (strpos($change->before_flow_item_name, 'test') !== false || strpos($change->before_flow_item_name, '测试') !== false || strpos($change->before_flow_item_name, '验收') !== false) {
+                                $testCtime = Carbon::parse($change->created_at)->timestamp;
+                                $tTime = Carbon::parse($upOne->created_at)->timestamp;
+                                $tMinusNum = $testCtime - $tTime;
+                                $testTime += $tMinusNum;
+                            }
+                        }
+                    }
+                }
+                if (!$task->complete_at) {
+                    $lastChange = ProjectTaskFlowChange::whereTaskId($task->id)->orderByDesc('id')->first();
+                    $nowTime = time();
+                    $unFinishTime = $nowTime - Carbon::parse($lastChange->created_at)->timestamp;
+                    if (strpos($lastChange->after_flow_item_name, 'progress') !== false || strpos($lastChange->after_flow_item_name, '进行') !== false) {
+                        $developTime += $unFinishTime;
+                    } elseif (strpos($lastChange->after_flow_item_name, 'test') !== false || strpos($lastChange->after_flow_item_name, '测试') !== false || strpos($lastChange->after_flow_item_name, '验收') !== false) {
+                        $testTime += $unFinishTime;
+                    }
+                }
+                $firstChange = ProjectTaskFlowChange::whereTaskId($task->id)->orderBy('id')->first();
+                if (strpos($firstChange->after_flow_item_name, 'end') !== false) {
+                    $firstDevTime = Carbon::parse($firstChange->created_at)->timestamp - Carbon::parse($task->created_at)->timestamp;
+                    $developTime += $firstDevTime;
+                }
+                $totalTime = $developTime + $testTime; //任务总用时
+                $planTime = '-';//任务计划用时
+                $overTime = '-';//超时时间
+                if ($task->end_at) {
+                    $startTime = Carbon::parse($task->start_at)->timestamp;
+                    $endTime = Carbon::parse($task->end_at)->timestamp;
+                    $planTotalTime = $endTime - $startTime;
+                    $residueTime = $planTotalTime - $totalTime;
+                    if ($residueTime < 0) {
+                        $overTime = Base::timeFormat(abs($residueTime));
+                    }
+                    $planTime = Base::timeDiff($startTime, $endTime);
+                }
+
                 $datas[] = [
                     $task->id,
                     Base::filterEmoji($task->name),
@@ -1063,6 +1120,11 @@ class ProjectController extends AbstractController
                     $endSurplus,
                     Base::filterEmoji($task->project?->name) ?: '-',
                     $task->parent_id ?: '-',
+                    $planTime,
+                    $developTime > 0 ? Base::timeFormat($developTime) : '-',
+                    $testTime > 0 ? Base::timeFormat($testTime) : '-',
+                    $totalTime > 0 ? Base::timeFormat($totalTime) : '-',
+                    $overTime,
                 ];
             }
         });
