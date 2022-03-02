@@ -342,19 +342,15 @@ class Base
     {
         if (strtolower($charset) == 'utf-8') {
             if (Base::getStrlen($string) <= $length) return $string;
-            $strcut = str_replace(array('&amp;', '&quot;', '&lt;', '&gt;'), array('&', '"', '<', '>'), $string);
-            $strcut = Base::utf8Substr($strcut, $length, $start);
-            $strcut = str_replace(array('&', '"', '<', '>'), array('&amp;', '&quot;', '&lt;', '&gt;'), $strcut);
+            $strcut = Base::utf8Substr($string, $length, $start);
             return $strcut . $dot;
         } else {
             $length = $length * 2;
             if (strlen($string) <= $length) return $string;
-            $string = str_replace(array('&amp;', '&quot;', '&lt;', '&gt;'), array('&', '"', '<', '>'), $string);
             $strcut = '';
             for ($i = 0; $i < $length; $i++) {
                 $strcut .= ord($string[$i]) > 127 ? $string[$i] . $string[++$i] : $string[$i];
             }
-            $strcut = str_replace(array('&', '"', '<', '>'), array('&amp;', '&quot;', '&lt;', '&gt;'), $strcut);
         }
         return $strcut . $dot;
     }

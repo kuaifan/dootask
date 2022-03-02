@@ -157,8 +157,10 @@
             let time = Math.round(this.Date(date).getTime() / 1000) - nowTime;
             if (time < 86400 * 7 && time > 0 ) {
                 return this.formatSeconds(time);
-            } else if (time <= 0) {
+            } else if (time < 0) {
                 return '-' + this.formatSeconds(time * -1);
+            } else if (time == 0) {
+                return 0;
             }
             return this.formatTime(date)
         },

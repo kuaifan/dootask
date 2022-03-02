@@ -2,7 +2,7 @@
     <div class="teditor-wrapper">
         <div class="teditor-box" :class="[!inline && spinShow ? 'teditor-loadstyle' : 'teditor-loadedstyle']">
             <template v-if="inline">
-                <div ref="myTextarea" :id="id" v-html="content"></div>
+                <div ref="myTextarea" :id="id" v-html="spinShow ? '' : content"></div>
                 <Icon v-if="spinShow" type="ios-loading" :size="18" class="icon-loading icon-inline"></Icon>
             </template>
             <template v-else>
