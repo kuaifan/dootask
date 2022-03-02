@@ -174,6 +174,11 @@
                             border-color: rgba(27, 154, 238, 0.1);
                             color: #0171c2;
                         }
+                        &.test {
+                            background-color: rgba(27, 154, 238, 0.1);
+                            border-color: rgba(27, 154, 238, 0.1);
+                            color: #0171c2;
+                        }
                         &.end {
                             background-color: rgba(21, 173, 49, 0.1);
                             border-color: rgba(21, 173, 49, 0.1);
@@ -419,6 +424,11 @@
                                         color: #595959;
                                     }
                                     &.progress {
+                                        background-color: rgba(27, 154, 238, 0.1);
+                                        border-color: rgba(27, 154, 238, 0.1);
+                                        color: #0171c2;
+                                    }
+                                    &.test {
                                         background-color: rgba(27, 154, 238, 0.1);
                                         border-color: rgba(27, 154, 238, 0.1);
                                         color: #0171c2;
@@ -786,6 +796,11 @@
                                     border-color: rgba(27, 154, 238, 0.1);
                                     color: #0171c2;
                                 }
+                                &.test {
+                                    background-color: rgba(27, 154, 238, 0.1);
+                                    border-color: rgba(27, 154, 238, 0.1);
+                                    color: #0171c2;
+                                }
                                 &.end {
                                     background-color: rgba(21, 173, 49, 0.1);
                                     border-color: rgba(21, 173, 49, 0.1);
@@ -978,7 +993,9 @@
         &.progress {
             color: #0171c2 !important;
         }
-
+        &.test {
+            color: #0171c2 !important;
+        }
         &.end {
             color: #038a24 !important;
         }
@@ -994,7 +1011,9 @@
                 &.progress {
                     background-color: rgba(27, 154, 238, 0.1);
                 }
-
+                &.test {
+                    background-color: rgba(27, 154, 238, 0.1);
+                }
                 &.end {
                     background-color: rgba(21, 173, 49, 0.1);
                 }
