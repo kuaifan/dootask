@@ -77,6 +77,13 @@
                 img {
                     max-width: 100%;
                 }
+                pre {
+                    padding: 14px;
+                    margin: 7px 0;
+                    overflow: auto;
+                    background: #f5f2f0;
+                    border-radius: 5px;
+                }
                 &[data-mce-placeholder]:not(.mce-visualblocks)::before {
                     color: #bbbbbb;
                 }
