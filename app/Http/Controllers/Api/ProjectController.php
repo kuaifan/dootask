@@ -1055,10 +1055,10 @@ class ProjectController extends AbstractController
                 } else {
                     $endSurplus = '-';
                 }
-                $developFlowChanges = ProjectTaskFlowChange::whereTaskId($task->id)->get();
+                $flowChanges = ProjectTaskFlowChange::whereTaskId($task->id)->get();
                 $developTime = 0;//开发时间
                 $testTime = 0;//验收/测试时间
-                foreach ($developFlowChanges as $change) {
+                foreach ($flowChanges as $change) {
                     if (strpos($change->before_flow_item_name, 'end') === false) {
                         $upOne = ProjectTaskFlowChange::where('id', '<', $change->id)->whereTaskId($task->id)->orderByDesc('id')->first();
                         if ($upOne) {
@@ -1091,6 +1091,10 @@ class ProjectController extends AbstractController
                 if (strpos($firstChange->after_flow_item_name, 'end') !== false) {
                     $firstDevTime = Carbon::parse($firstChange->created_at)->timestamp - Carbon::parse($task->created_at)->timestamp;
                     $developTime += $firstDevTime;
+                }
+                if (count($flowChanges) === 0) {
+                    $lastTime = $task->complete_at ? Carbon::parse($task->complete_at)->timestamp : time();
+                    $developTime = $lastTime - Carbon::parse($task->created_at)->timestamp;
                 }
                 $totalTime = $developTime + $testTime; //任务总用时
                 $planTime = '-';//任务计划用时
