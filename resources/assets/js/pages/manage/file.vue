@@ -87,9 +87,9 @@
                             <li
                                 v-for="item in fileList"
                                 :class="{
-                                shear: shearIds.includes(item.id),
-                                highlight: selectIds.includes(item.id),
-                            }"
+                                    shear: shearIds.includes(item.id),
+                                    highlight: selectIds.includes(item.id),
+                                }"
                                 @contextmenu.prevent.stop="handleRightClick($event, item)"
                                 @click="openFile(item)">
                                 <div class="file-check" :class="{'file-checked':selectIds.includes(item.id)}" @click.stop="dropFile(item, 'select')">
@@ -121,7 +121,7 @@
                                         size="small"
                                         :disabled="!!item._load"
                                         @on-blur="onBlur(item)"
-                                        @on-enter="onEnter(item)"/>
+                                        @on-keyup="onKeyup($event, item)"/>
                                     <div v-if="item._load" class="file-load"><Loading/></div>
                                 </div>
                                 <div v-else class="file-name" :title="item.name">{{formatName(item)}}</div>
@@ -959,7 +959,6 @@ export default {
                     break;
 
                 case 'rename':
-                    this.$set(item, 'newname', item.name);
                     this.setEdit(item.id, true)
                     this.autoBlur(item.id)
                     break;
@@ -1154,7 +1153,19 @@ export default {
         },
 
         onBlur(item) {
+            if (this.files.find(({id, _edit}) => id == item.id && !_edit)) {
+                return;
+            }
             this.onEnter(item);
+        },
+
+        onKeyup(e, item) {
+            if (e.keyCode === 13) {
+                this.onEnter(item);
+            } else if (e.keyCode === 27) {
+                this.setLoad(item.id, false)
+                this.setEdit(item.id, false)
+            }
         },
 
         onEnter(item) {
@@ -1204,6 +1215,9 @@ export default {
             let item = this.$store.state.files.find(({id}) => id == fileId)
             if (item) {
                 this.$set(item, '_edit', is);
+                if (is) {
+                    this.$set(item, 'newname', item.name);
+                }
             }
         },
 
