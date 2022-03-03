@@ -13,6 +13,7 @@ Error="${Red}[错误]${Font}"
 
 cur_path="$(pwd)"
 cur_arg=$@
+COMPOSE="docker-compose"
 
 judge() {
     if [[ 0 -eq $? ]]; then
@@ -57,18 +58,22 @@ check_docker() {
     fi
     docker-compose version &> /dev/null
     if [ $? -ne  0 ]; then
-        echo -e "${Error} ${RedBG} 未安装 Docker-compose！${Font}"
-        exit 1
+        docker compose version &> /dev/null
+        if [ $? -ne  0 ]; then
+            echo -e "${Error} ${RedBG} 未安装 Docker-compose！${Font}"
+            exit 1
+        fi
+        COMPOSE="docker compose"
     fi
-    if [[ -n `docker-compose version | grep "docker-compose" | grep -E "\sv*1"` ]]; then
-        docker-compose version
+    if [[ -n `$COMPOSE version | grep -E "\sv*1"` ]]; then
+        $COMPOSE version
         echo -e "${Error} ${RedBG} Docker-compose 版本过低，请升级至v2+！${Font}"
         exit 1
     fi
 }
 
 check_node() {
-    npm --version > /dev/null
+    npm --version &> /dev/null
     if [ $? -ne  0 ]; then
         echo -e "${Error} ${RedBG} 未安装nodejs！${Font}"
         exit 1
@@ -76,7 +81,7 @@ check_node() {
 }
 
 docker_name() {
-    echo `docker-compose ps | awk '{print $1}' | grep "\-$1\-"`
+    echo `$COMPOSE ps | awk '{print $1}' | grep "\-$1\-"`
 }
 
 run_compile() {
@@ -272,7 +277,7 @@ if [ $# -gt 0 ]; then
         chmod -R 775 "${cur_path}/docker/mysql/data"
         # 启动容器
         [[ "$(arg_get port)" -gt 0 ]] && env_set APP_PORT "$(arg_get port)"
-        docker-compose up php -d
+        $COMPOSE up php -d
         # 安装composer依赖
         run_exec php "composer install"
         if [ ! -f "${cur_path}/vendor/autoload.php" ]; then
@@ -300,7 +305,7 @@ if [ $# -gt 0 ]; then
         run_exec php "php artisan migrate --seed"
         # 设置初始化密码
         res=`run_exec mariadb "sh /etc/mysql/repassword.sh"`
-        docker-compose up -d
+        $COMPOSE up -d
         supervisorctl_restart php
         echo -e "${OK} ${GreenBG} 安装完成 ${Font}"
         echo -e "地址: http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
@@ -314,7 +319,7 @@ if [ $# -gt 0 ]; then
         run_exec php "composer update"
         run_exec php "php artisan migrate"
         supervisorctl_restart php
-        docker-compose up -d
+        $COMPOSE up -d
     elif [[ "$1" == "uninstall" ]]; then
         shift 1
         read -rp "确定要卸载（含：删除容器、数据库、日志）吗？(y/n): " uninstall
@@ -328,7 +333,7 @@ if [ $# -gt 0 ]; then
             exit 2
             ;;
         esac
-        docker-compose down
+        $COMPOSE down
         rm -rf "./docker/mysql/data"
         rm -rf "./docker/log/supervisor"
         find "./storage/logs" -name "*.log" | xargs rm -rf
@@ -341,7 +346,7 @@ if [ $# -gt 0 ]; then
     elif [[ "$1" == "port" ]]; then
         shift 1
         env_set APP_PORT "$1"
-        docker-compose up -d
+        $COMPOSE up -d
         echo -e "${OK} ${GreenBG} 修改成功 ${Font}"
         echo -e "地址: http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
     elif [[ "$1" == "repassword" ]]; then
@@ -414,11 +419,11 @@ if [ $# -gt 0 ]; then
         e="./vendor/bin/phpunit $@" && run_exec php "$e"
     elif [[ "$1" == "restart" ]]; then
         shift 1
-        docker-compose stop "$@"
-        docker-compose start "$@"
+        $COMPOSE stop "$@"
+        $COMPOSE start "$@"
     else
-        docker-compose "$@"
+        $COMPOSE "$@"
     fi
 else
-    docker-compose ps
+    $COMPOSE ps
 fi
