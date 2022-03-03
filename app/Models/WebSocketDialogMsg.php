@@ -70,11 +70,7 @@ class WebSocketDialogMsg extends AbstractModel
     public function getPercentageAttribute()
     {
         if (!isset($this->appendattrs['percentage'])) {
-            if ($this->read > $this->send || empty($this->send)) {
-                $this->appendattrs['percentage'] = 100;
-            } else {
-                $this->appendattrs['percentage'] = intval($this->read / $this->send * 100);
-            }
+            $this->generatePercentage();
         }
         return $this->appendattrs['percentage'];
     }
@@ -96,6 +92,22 @@ class WebSocketDialogMsg extends AbstractModel
             $value['thumb'] = Base::fillUrl($value['thumb'] ?: Base::extIcon($value['ext']));
         }
         return $value;
+    }
+
+    /**
+     * 获取占比
+     * @param bool $increment 是否新增阅读数
+     * @return int
+     */
+    public function generatePercentage($increment = false) {
+        if ($increment) {
+            $this->increment('read');
+        }
+        if ($this->read > $this->send || empty($this->send)) {
+            return $this->appendattrs['percentage'] = 100;
+        } else {
+            return $this->appendattrs['percentage'] = intval($this->read / $this->send * 100);
+        }
     }
 
     /**
@@ -127,13 +139,17 @@ class WebSocketDialogMsg extends AbstractModel
             if (!$msgRead->read_at) {
                 $msgRead->read_at = Carbon::now();
                 $msgRead->save();
-                $this->increment('read');
+                $this->generatePercentage(true);
                 PushTask::push([
                     'userid' => $this->userid,
                     'msg' => [
                         'type' => 'dialog',
-                        'mode' => 'update',
-                        'data' => $this->toArray(),
+                        'mode' => 'readed',
+                        'data' => [
+                            'id' => $this->id,
+                            'read' => $this->read,
+                            'percentage' => $this->percentage,
+                        ],
                     ]
                 ]);
             }

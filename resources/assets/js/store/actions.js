@@ -2046,7 +2046,7 @@ export default {
                 }
             });
             state.wsReadWaitList = [];
-        }, 20);
+        }, 50);
     },
 
     /**
@@ -2173,6 +2173,12 @@ export default {
                                         dispatch("saveDialogMsg", data)
                                         // 更新最后消息
                                         dispatch("updateDialogLastMsg", data);
+                                        break;
+                                    case 'readed':
+                                        // 已读回执
+                                        if (state.dialogMsgs.find(({id}) => id == data.id)) {
+                                            dispatch("saveDialogMsg", data)
+                                        }
                                         break;
                                 }
                             })(msgDetail);
