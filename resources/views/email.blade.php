@@ -6,7 +6,7 @@
 </head>
 <body>
 
-你好，你正在绑定 {{env('APP_NAME') }} 的邮箱，请于24小时之内点击该链接完成验证 :
+您好，您正在绑定 {{env('APP_NAME') }} 的邮箱，请于24小时之内点击该链接完成验证 :
 <div style="display: flex; justify-content: center;">
     <a href="{{$url}}">{{$url}}</a>
 </div>
