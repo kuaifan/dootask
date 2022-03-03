@@ -102,7 +102,7 @@
          * @returns {*|string}
          */
         formatTime(date) {
-            let time = Math.round($A.Date(date).getTime() / 1000),
+            let time = $A.Date(date, true),
                 string = '';
             if ($A.formatDate('Ymd') === $A.formatDate('Ymd', time)) {
                 string = $A.formatDate('H:i', time)
@@ -160,7 +160,7 @@
             } else if (time < 0) {
                 return '-' + this.formatSeconds(time * -1);
             } else if (time == 0) {
-                return 0;
+                return 0 + 's';
             }
             return this.formatTime(date)
         },
