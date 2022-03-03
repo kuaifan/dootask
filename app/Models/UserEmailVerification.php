@@ -56,8 +56,12 @@ class UserEmailVerification extends AbstractModel
         $userEmailVerification->save();
         try {
             // 15秒后超时
+            Config::set("mail.mailers.smtp.host", Base::settingFind('emailSetting', 'smtp_server') ?: Config::get("mail.mailers.smtp.host"));
+            Config::set("mail.mailers.smtp.port", Base::settingFind('emailSetting', 'port') ?: Config::get("mail.mailers.smtp.port"));
+            Config::set("mail.mailers.smtp.username", Base::settingFind('emailSetting', 'account') ?: Config::get("mail.mailers.smtp.username"));
+            Config::set("mail.mailers.smtp.password",  Base::settingFind('emailSetting', 'password') ?: Config::get("mail.mailers.smtp.password"));
             Mail::send('email', ['url' => $url], function ($m) use ($user) {
-                $m->from(Base::settingFind('emailSetting', 'account') ?? Config::get("mail.mailers.smtp.username"), env('APP_NAME'));
+                $m->from(Base::settingFind('emailSetting', 'account') ?: Config::get("mail.mailers.smtp.username"), env('APP_NAME'));
                 $m->to($user->email);
                 $m->subject("绑定邮箱验证");
             });
