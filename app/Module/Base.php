@@ -1712,24 +1712,22 @@ class Base
      */
     public static function timeDiff($s, $e)
     {
-        $d = $e - $s;
-        if ($d > 86400) {
-            $day = floor($d / 86400);
-            $hour = ceil(($d - ($day * 86400)) / 3600);
-            if ($hour > 0) {
-                return $day . '天' . $hour . '小时';
-            } else {
-                return $day . '天';
-            }
-        } elseif ($d > 3600) {
-            return ceil($d / 3600) . '小时';
-        } elseif ($d > 60) {
-            return ceil($d / 60) . '分钟';
-        } elseif ($d > 1) {
-            return '1分钟内';
-        } else {
-            return '0秒';
+        $time = $e - $s;
+        $days = 0;
+        if ($time >= 86400) { // 如果大于1天
+            $days = (int)($time / 86400);
+            $time = $time % 86400; // 计算天后剩余的毫秒数
         }
+        $hours = 0;
+        if ($time >= 3600) { // 如果大于1小时
+            $hours = (int)($time / 3600);
+            $time = $time % 3600; // 计算小时后剩余的毫秒数
+        }
+        $minutes = (int)($time / 60); // 剩下的毫秒数都算作分
+        $daysStr = $days > 0 ? $days . '天' : '';
+        $hoursStr = ($hours > 0 || $minutes > 0) ? $hours . '时' : '';
+        $minuteStr = ($minutes > 0) ? $minutes . '分' : '';
+        return $daysStr . $hoursStr . $minuteStr;
     }
 
     /**
@@ -1739,24 +1737,21 @@ class Base
      */
     public static function timeFormat($time)
     {
-        if ($time > 86400) {
-            $day = floor($time / 86400);
-            $hour = ceil(($time - ($day * 86400)) / 3600);
-            if ($hour > 0) {
-                return $day . '天' . $hour . '小时';
-            } else {
-                return $day . '天';
-            }
-        } elseif ($time > 3600) {
-            return ceil($time / 3600) . '小时';
-        } elseif ($time > 60) {
-            return ceil($time / 60) . '分钟';
-        } elseif ($time > 1) {
-            return '1分钟内';
-        } else {
-            return '0秒';
+        $days = 0;
+        if ($time >= 86400) { // 如果大于1天
+            $days = (int)($time / 86400);
+            $time = $time % 86400; // 计算天后剩余的毫秒数
         }
-
+        $hours = 0;
+        if ($time >= 3600) { // 如果大于1小时
+            $hours = (int)($time / 3600);
+            $time = $time % 3600; // 计算小时后剩余的毫秒数
+        }
+        $minutes = (int)($time / 60); // 剩下的毫秒数都算作分
+        $daysStr = $days > 0 ? $days . '天' : '';
+        $hoursStr = ($hours > 0 || $minutes > 0) ? $hours . '时' : '';
+        $minuteStr = ($minutes > 0) ? $minutes . '分' : '';
+        return $daysStr . $hoursStr . $minuteStr;
     }
 
     /**

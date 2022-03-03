@@ -1014,26 +1014,23 @@ class ProjectController extends AbstractController
         if (Carbon::parse($time[1])->timestamp - Carbon::parse($time[0])->timestamp > 90 * 86400) {
             return Base::retError('时间范围限制最大90天');
         }
-        //
+
         $headings = [];
         $headings[] = '任务ID';
+        $headings[] = '父级任务ID';
+        $headings[] = '所属项目';
         $headings[] = '任务标题';
-        $headings[] = '负责人';
-        $headings[] = '创建人';
-        $headings[] = '是否完成';
-        $headings[] = '完成时间';
-        $headings[] = '是否归档';
-        $headings[] = '归档时间';
         $headings[] = '任务开始时间';
         $headings[] = '任务结束时间';
-        $headings[] = '结束剩余';
-        $headings[] = '所属项目';
-        $headings[] = '父级任务ID';
+        $headings[] = '完成时间';
+        $headings[] = '归档时间';
         $headings[] = '任务计划用时';
+        $headings[] = '实际完成总用时';
+        $headings[] = '超时时间';
         $headings[] = '开发用时';
         $headings[] = '验收/测试用时';
-        $headings[] = '任务实际总用时';
-        $headings[] = '超时时间';
+        $headings[] = '负责人';
+        $headings[] = '创建人';
         $datas = [];
         //
         $builder = ProjectTask::select(['project_tasks.*', 'project_task_users.userid as ownerid'])
@@ -1044,17 +1041,6 @@ class ProjectController extends AbstractController
         $builder->orderByDesc('project_tasks.id')->chunk(100, function($tasks) use (&$datas) {
             /** @var ProjectTask $task */
             foreach ($tasks as $task) {
-                if ($task->complete_at) {
-                    $a = Carbon::parse($task->complete_at)->timestamp;
-                    $b = Carbon::parse($task->end_at)->timestamp;
-                    if ($b > $a) {
-                        $endSurplus = Base::timeDiff($a, $b);
-                    } else {
-                        $endSurplus = "-" . Base::timeDiff($b, $a);
-                    }
-                } else {
-                    $endSurplus = '-';
-                }
                 $flowChanges = ProjectTaskFlowChange::whereTaskId($task->id)->get();
                 $developTime = 0;//开发时间
                 $testTime = 0;//验收/测试时间
@@ -1097,6 +1083,14 @@ class ProjectController extends AbstractController
                     $developTime = $lastTime - Carbon::parse($task->created_at)->timestamp;
                 }
                 $totalTime = $developTime + $testTime; //任务总用时
+
+                if ($task->complete_at) {
+                    $a = Carbon::parse($task->complete_at)->timestamp;
+                    if ($task->start_at) {
+                        $b = Carbon::parse($task->start_at)->timestamp;
+                        $totalTime = $a - $b;
+                    }
+                }
                 $planTime = '-';//任务计划用时
                 $overTime = '-';//超时时间
                 if ($task->end_at) {
@@ -1109,26 +1103,22 @@ class ProjectController extends AbstractController
                     }
                     $planTime = Base::timeDiff($startTime, $endTime);
                 }
-
                 $datas[] = [
                     $task->id,
+                    $task->parent_id ?: '-',
+                    Base::filterEmoji($task->project?->name) ?: '-',
                     Base::filterEmoji($task->name),
-                    Base::filterEmoji(User::userid2nickname($task->ownerid)) . " (ID: {$task->ownerid})",
-                    Base::filterEmoji(User::userid2nickname($task->userid)) . " (ID: {$task->userid})",
-                    $task->complete_at ? '已完成' : '-',
-                    $task->complete_at ?: '-',
-                    $task->archived_at ? '已归档' : '-',
-                    $task->archived_at ?: '-',
                     $task->start_at ?: '-',
                     $task->end_at ?: '-',
-                    $endSurplus,
-                    Base::filterEmoji($task->project?->name) ?: '-',
-                    $task->parent_id ?: '-',
+                    $task->complete_at ?: '-',
+                    $task->archived_at ?: '-',
                     $planTime,
-                    $developTime > 0 ? Base::timeFormat($developTime) : '-',
-                    $testTime > 0 ? Base::timeFormat($testTime) : '-',
                     $totalTime > 0 ? Base::timeFormat($totalTime) : '-',
                     $overTime,
+                    $developTime > 0 ? Base::timeFormat($developTime) : '-',
+                    $testTime > 0 ? Base::timeFormat($testTime) : '-',
+                    Base::filterEmoji(User::userid2nickname($task->ownerid)) . " (ID: {$task->ownerid})",
+                    Base::filterEmoji(User::userid2nickname($task->userid)) . " (ID: {$task->userid})",
                 ];
             }
         });
