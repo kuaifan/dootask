@@ -114,6 +114,9 @@ export default {
             this.subscribe = null;
         }
     },
+    activated() {
+        this.loginType = 'login'
+    },
     deactivated() {
         this.loginJump = false;
         this.password = "";
