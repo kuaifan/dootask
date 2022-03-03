@@ -261,7 +261,7 @@
                                         <div @click="openTime" class="time">{{taskDetail.end_at ? cutTime : '--'}}</div>
                                         <template v-if="!taskDetail.complete_at && taskDetail.end_at">
                                             <Tag v-if="within24Hours(taskDetail.end_at)" color="blue"><i class="taskfont">&#xe71d;</i>{{expiresFormat(taskDetail.end_at)}}</Tag>
-                                            <Tag v-if="taskDetail.overdue" color="red">{{$L('超期未完成')}}</Tag>
+                                            <Tag v-if="isOverdue(taskDetail)" color="red">{{$L('超期未完成')}}</Tag>
                                         </template>
                                     </div>
                                 </DatePicker>
@@ -616,8 +616,8 @@ export default {
 
         cutTime() {
             const {taskDetail} = this;
-            let start_at = Math.round($A.Date(taskDetail.start_at).getTime() / 1000);
-            let end_at = Math.round($A.Date(taskDetail.end_at).getTime() / 1000);
+            let start_at = $A.Date(taskDetail.start_at, true);
+            let end_at = $A.Date(taskDetail.end_at, true);
             let string = "";
             if ($A.formatDate('Y/m/d', start_at) == $A.formatDate('Y/m/d', end_at)) {
                 string = $A.formatDate('Y/m/d H:i', start_at) + " ~ " + $A.formatDate('H:i', end_at)
@@ -725,20 +725,23 @@ export default {
     },
 
     methods: {
-        initLanguage() {
-
-        },
-
         innerHeightListener() {
             this.innerHeight = Math.min(1100, window.innerHeight);
         },
 
         within24Hours(date) {
-            return Math.round($A.Date(date).getTime() / 1000) - this.nowTime < 86400
+            return $A.Date(date, true) - this.nowTime < 86400
         },
 
         expiresFormat(date) {
             return $A.countDownFormat(date, this.nowTime)
+        },
+
+        isOverdue(taskDetail) {
+            if (taskDetail.overdue) {
+                return true;
+            }
+            return $A.Date(taskDetail.end_at, true) < this.nowTime;
         },
 
         onNameKeydown(e) {
