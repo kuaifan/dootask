@@ -46,6 +46,7 @@
             <div class="time" :title="msgData.created_at">{{$A.formatTime(msgData.created_at)}}</div>
             <Poptip
                 v-if="msgData.send > 1 || dialogType == 'group'"
+                ref="percent"
                 class="percent"
                 placement="left-end"
                 transfer
@@ -134,13 +135,13 @@ export default {
             }
             this.msgData._r = true;
             //
-            this.$nextTick(() => {
+            setTimeout(() => {
                 if (!this.$el.offsetParent) {
                     this.msgData._r = false;
                     return
                 }
                 this.$store.dispatch("dialogMsgRead", this.msgData);
-            })
+            }, 50)
         },
 
         popperShow() {
@@ -151,6 +152,7 @@ export default {
                 },
             }).then(({data}) => {
                 this.read_list = data;
+                this.$refs.percent.updatePopper();
             }).catch(() => {
                 this.read_list = [];
             });

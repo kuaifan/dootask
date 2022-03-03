@@ -127,9 +127,11 @@ class WebSocketService implements WebSocketHandlerInterface
             case 'readMsg':
                 $ids = is_array($data['id']) ? $data['id'] : [$data['id']];
                 $userid = $this->getUserid($frame->fd);
-                $list = WebSocketDialogMsg::whereIn('id', $ids)->get();
-                $list->transform(function(WebSocketDialogMsg $item) use ($userid) {
-                    $item->readSuccess($userid);
+                WebSocketDialogMsg::whereIn('id', $ids)->chunkById(20, function($list) use ($userid) {
+                    /** @var WebSocketDialogMsg $item */
+                    foreach ($list as $item) {
+                        $item->readSuccess($userid);
+                    }
                 });
                 return;
 

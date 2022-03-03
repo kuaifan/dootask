@@ -21,6 +21,7 @@ export default {
     },
 
     mounted() {
+        tocObj.reset()
         this.init();
         this.createEditor();
     },

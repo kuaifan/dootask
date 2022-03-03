@@ -74,8 +74,12 @@ export default {
                     }
                 }
             };
-            params.error = () => {
-                reject({data: {}, msg: "System error"})
+            params.error = (xhr, status) => {
+                if (window.navigator.onLine === false || (status === 0 && xhr.readyState === 4)) {
+                    reject({data: {}, msg: $A.L('网络异常，请稍后再试！')})
+                } else {
+                    reject({data: {}, msg: "System error"})
+                }
             };
             //
             if (params.websocket === true || params.ws === true) {
@@ -2046,7 +2050,7 @@ export default {
                 }
             });
             state.wsReadWaitList = [];
-        }, 20);
+        }, 50);
     },
 
     /**
@@ -2173,6 +2177,12 @@ export default {
                                         dispatch("saveDialogMsg", data)
                                         // 更新最后消息
                                         dispatch("updateDialogLastMsg", data);
+                                        break;
+                                    case 'readed':
+                                        // 已读回执
+                                        if (state.dialogMsgs.find(({id}) => id == data.id)) {
+                                            dispatch("saveDialogMsg", data)
+                                        }
                                         break;
                                 }
                             })(msgDetail);

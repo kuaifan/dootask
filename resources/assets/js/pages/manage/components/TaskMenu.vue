@@ -15,7 +15,7 @@
                 </template>
             </div>
         </slot>
-        <EDropdownMenu slot="dropdown" class="task-menu-more-dropdown">
+        <EDropdownMenu ref="dropdownMenu" slot="dropdown" class="task-menu-more-dropdown">
             <li class="task-menu-more-warp" :class="size">
                 <ul>
                     <EDropdownItem v-if="!flow" class="load-flow" disabled>
@@ -218,7 +218,9 @@ export default {
 
         visibleChange(visible) {
             if (visible) {
-                this.$store.dispatch("getTaskFlow", this.task.id).catch(() => {})
+                this.$store.dispatch("getTaskFlow", this.task.id)
+                    .then(this.$refs.dropdownMenu.updatePopper)
+                    .catch(this.$refs.dropdownMenu.updatePopper)
             }
         },
 

@@ -266,7 +266,7 @@ export default {
         },
 
         completeAtFormat(date) {
-            let time = Math.round($A.Date(date).getTime() / 1000);
+            let time = $A.Date(date, true);
             if ($A.formatDate('Y') === $A.formatDate('Y', time)) {
                 return $A.formatDate('m-d H:i', time)
             } else {
