@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Exceptions\ApiException;
 use App\Module\Base;
+use Carbon\Carbon;
 use Config;
 use Exception;
 use Mail;
@@ -41,13 +42,15 @@ class UserEmailVerification extends AbstractModel
      */
     public static function userEmailSend(User $user)
     {
+        $res = self::where('userid', $user->userid)->where('created_at', '>', Carbon::now()->subMinutes(1440))->first();
+        if ($res) return;
         //删除
         self::where('userid', $user->userid)->delete();
         $info['created_at'] = date("Y-m-d H:i:s");
         $info['userid'] = $user->userid;
         $info['email'] = $user->email;
         $info['code'] = md5(uniqid(md5(microtime(true)), true)) . md5($user->userid . md5('lddsgagsgkdiid' . microtime(true)));
-        $url = Base::fillUrl('valid/email') . '?code=' . $info['code'];
+        $url = Base::fillUrl('single/valid/email') . '?code=' . $info['code'];
         $info['status'] = 0;
         $userEmailVerification = self::createInstance($info);
         $userEmailVerification->save();

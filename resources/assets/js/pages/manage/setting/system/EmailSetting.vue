@@ -21,6 +21,7 @@
                     <Radio label="open">{{ $L('开启') }}</Radio>
                     <Radio label="close">{{ $L('关闭') }}</Radio>
                 </RadioGroup>
+                <div v-if="formData.reg_verify == 'open'" class="form-tip">{{$L('开启后账号需验证通过才可登录')}}</div>
             </FormItem>
             <FormItem :label="$L('开启通知')" prop="notice">
                 <RadioGroup v-model="formData.notice">

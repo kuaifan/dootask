@@ -319,7 +319,11 @@ export default {
                     });
                 }).catch(({data, msg}) => {
                     this.loadIng--;
-                    $A.modalError(msg);
+                    if (data.code === 1000) {
+                        $A.modalSuccess(msg);
+                    } else {
+                        $A.modalError(msg);
+                    }
                     if (data.code === 'need') {
                         this.reCode();
                         this.codeNeed = true;

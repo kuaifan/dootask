@@ -13,7 +13,7 @@
                 <div>{{$L('2.重复使用验证码')}}</div>
             </div>
             <div slot="footer" v-if="success">
-                <Button type="primary" @click="$A.userLogoutV2()" long>{{$L('返回首页')}}</Button>
+                <Button type="primary" @click="userLogout" long>{{$L('返回首页')}}</Button>
             </div>
         </div>
     </div>
@@ -51,6 +51,9 @@ export default {
                     this.success = false;
                     this.error = true;
                 });
+        },
+        userLogout() {
+            this.$store.dispatch("logout", false)
         }
     },
 }

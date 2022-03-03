@@ -47,6 +47,7 @@ class UsersController extends AbstractController
         $type = trim(Request::input('type'));
         $email = trim(Request::input('email'));
         $password = trim(Request::input('password'));
+        $isRegVerify = Base::settingFind('emailSetting', 'reg_verify') === 'open' ? true : false;
         if ($type == 'reg') {
             $setting = Base::setting('system');
             if ($setting['reg'] == 'close') {
@@ -58,9 +59,9 @@ class UsersController extends AbstractController
                 }
             }
             $user = User::reg($email, $password);
-            $isRegVerify = false;//Base::settingFind('emailSetting', 'reg_verify') === 'open' ? true : false;
             if ($isRegVerify) {
                 UserEmailVerification::userEmailSend($user);
+                return Base::retError('注册成功,请验证邮箱后登录', ['code' => 1000]);
             }
         } else {
             $needCode = !Base::isError(User::needCode($email));
@@ -77,7 +78,7 @@ class UsersController extends AbstractController
             $retError = function ($msg) use ($email) {
                 Cache::forever("code::" . $email, "need");
                 $needCode = !Base::isError(User::needCode($email));
-                $needData = [ 'code' => $needCode ? 'need' : 'no' ];
+                $needData = ['code' => $needCode ? 'need' : 'no'];
                 return Base::retError($msg, $needData);
             };
             $user = User::whereEmail($email)->first();
@@ -92,6 +93,10 @@ class UsersController extends AbstractController
                 return $retError('帐号已停用...');
             }
             Cache::forget("code::" . $email);
+            if ($isRegVerify && $user->is_email_verity === 0) {
+                UserEmailVerification::userEmailSend($user);
+                return $retError('请验证邮箱后再登录');
+            }
         }
         //
         $array = [
