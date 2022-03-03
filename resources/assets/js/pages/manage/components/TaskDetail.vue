@@ -3,6 +3,7 @@
     <li v-if="ready && taskDetail.parent_id > 0">
         <div class="subtask-icon">
             <TaskMenu
+                v-if="taskId > 0"
                 :ref="`taskMenu_${taskDetail.id}`"
                 :task="taskDetail"
                 :load-status="taskDetail.loading === true"
@@ -72,6 +73,7 @@
         <div v-show="taskDetail.id > 0" class="task-info">
             <div class="head">
                 <TaskMenu
+                    v-if="taskId > 0"
                     :ref="`taskMenu_${taskDetail.id}`"
                     :task="taskDetail"
                     class="icon"
@@ -121,6 +123,7 @@
                     </ETooltip>
                     <div class="menu">
                         <TaskMenu
+                            v-if="taskId > 0"
                             :task="taskDetail"
                             icon="ios-more"
                             completed-icon="ios-more"
