@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\ProjectTask;
 use App\Models\User;
 use App\Models\UserEmailVerification;
 use App\Module\Base;
@@ -10,10 +9,7 @@ use Arr;
 use Cache;
 use Captcha;
 use Carbon\Carbon;
-use Config;
-use Mail;
 use Request;
-use Exception;
 use Validator;
 
 /**
@@ -622,43 +618,5 @@ class UsersController extends AbstractController
             'is_email_verity' => 1
         ]);
         return Base::retSuccess('绑定邮箱成功');
-    }
-
-
-    public function test()
-    {
-        $setting = Base::setting('emailSetting');
-        if ($setting['notice'] === 'open') {
-            $hours = floatval($setting['task_remind_hours']);
-            $hours2 = floatval($setting['task_remind_hours2']);
-            $taskLists1 = [];
-            $taskLists2 = [];
-            if ($hours > 0) {
-                $time = date('Y-m-d H:i:s',time());
-                $taskLists1 = ProjectTask::whereNull('complete_at')
-                    ->where('end_at', '>=', Carbon::now()->addMinutes($hours * 60 - 30)->rawFormat('Y-m-d H:i:s'))
-                    ->where('end_at', '<=', Carbon::now()->addMinutes($hours * 60 + 30)->rawFormat('Y-m-d H:i:s'))
-                    ->whereNull('archived_at')
-                    ->take(100)
-                    ->get()
-                    ->toArray();
-            }
-            if ($hours2 > 0) {
-                $taskLists2 = ProjectTask::whereNull('complete_at')
-                    ->where('end_at', '>=', Carbon::now()->subMinutes($hours2 * 60 - 30)->rawFormat('Y-m-d H:i:s'))
-                    ->where('end_at', '<=', Carbon::now()->subMinutes($hours * 60 + 30)->rawFormat('Y-m-d H:i:s'))
-                    ->whereNull('archived_at')
-                    ->take(100)
-                    ->get()
-                    ->toArray();
-
-            }
-            $taskLists = array_merge($taskLists1, $taskLists2);
-            $taskLists = Base::assoc_unique($taskLists, 'id');
-            return Base::retSuccess('水电费收费',$taskLists);
-            foreach ($taskLists as $task) {
-                ProjectTask::overdueRemindEmail($task);
-            }
-        }
     }
 }
