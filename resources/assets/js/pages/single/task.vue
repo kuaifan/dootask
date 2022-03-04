@@ -2,7 +2,7 @@
     <div class="electron-task">
         <PageTitle :title="taskInfo.name"/>
         <Loading v-if="loadIng > 0"/>
-        <TaskDetail v-else :task-id="taskInfo.id" :open-task="taskInfo"/>
+        <TaskDetail v-else ref="taskDetail" :task-id="taskInfo.id" :open-task="taskInfo"/>
     </div>
 </template>
 
@@ -48,7 +48,10 @@ export default {
         }
     },
     mounted() {
-        //
+        document.addEventListener('keydown', this.shortcutEvent);
+    },
+    beforeDestroy() {
+        document.removeEventListener('keydown', this.shortcutEvent);
     },
     computed: {
         ...mapState(['cacheTasks']),
@@ -92,7 +95,15 @@ export default {
                     }
                 });
             });
-        }
+        },
+        shortcutEvent(e) {
+            if (e.metaKey || e.ctrlKey) {
+                if (e.keyCode === 83) {
+                    e.preventDefault();
+                    this.$refs.taskDetail.checkUpdate(true)
+                }
+            }
+        },
     }
 }
 </script>
