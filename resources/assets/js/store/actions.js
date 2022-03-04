@@ -671,7 +671,9 @@ export default {
                     project_id,
                 },
             }).then(result => {
-                state.projectLoad--;
+                setTimeout(() => {
+                    state.projectLoad--;
+                }, 10)
                 dispatch("saveProject", result.data);
                 resolve(result)
             }).catch(e => {

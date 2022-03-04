@@ -6,7 +6,7 @@
                 <div class="project-title">
                     <h1>{{projectData.name}}</h1>
                     <label v-if="projectData.top_at" class="top-text">{{$L('置顶')}}</label>
-                    <div v-if="projectLoad > 0" class="project-load"><Loading/></div>
+                    <div v-if="loading" class="project-load"><Loading/></div>
                 </div>
                 <ul class="project-icons">
                     <li class="project-avatar" @click="projectDropdown('user')">
@@ -464,6 +464,8 @@ export default {
         ProjectLog, TaskArchived, TaskRow, Draggable, TaskAddSimple, UserInput, TaskAdd, TaskPriority},
     data() {
         return {
+            loading: false,
+
             nowTime: $A.Time(),
             nowInterval: null,
 
@@ -790,6 +792,16 @@ export default {
     watch: {
         projectData() {
             this.sortData = this.getSort();
+        },
+        projectLoad(n) {
+            this._loadTimeout && clearTimeout(this._loadTimeout)
+            if (n > 0) {
+                this._loadTimeout = setTimeout(() => {
+                    this.loading = true;
+                }, 1000)
+            } else {
+                this.loading = false;
+            }
         },
         projectId: {
             handler(val) {

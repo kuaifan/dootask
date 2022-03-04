@@ -9,6 +9,7 @@
     animation: rotate 2s linear infinite;
 
     .common-path {
+        fill: none;
         stroke-dasharray: 1, 200;
         stroke-dashoffset: 0;
         stroke-linecap: round;
@@ -17,7 +18,6 @@
 }
 @keyframes rotate {
     to {
-        -webkit-transform: rotate(1turn);
         transform: rotate(1turn)
     }
 }
