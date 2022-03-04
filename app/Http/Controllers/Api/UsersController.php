@@ -83,10 +83,10 @@ class UsersController extends AbstractController
             };
             $user = User::whereEmail($email)->first();
             if (empty($user)) {
-                return $retError('账号或密码错误');
+                return $retError('账号不存在，请确认账号是否输入正确');
             }
             if ($user->password != Base::md52($password, $user->encrypt)) {
-                return $retError('账号或密码错误');
+                return $retError('密码错误，请输入正确密码');
             }
             //
             if (in_array('disable', $user->identity)) {
