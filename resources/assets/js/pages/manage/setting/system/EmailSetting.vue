@@ -36,7 +36,7 @@
                     <label>{{ $L('小时') }}</label>
                 </FormItem>
                 <FormItem :label="$L('第二次任务提醒:')" prop="task_remind_hours2">
-                    <label>{{ $L('到期前') }}</label>
+                    <label>{{ $L('到期后') }}</label>
                     <InputNumber v-model="formData.task_remind_hours2" :min="0.5" :step="0.5" @on-change="hours2Change"/>
                     <label>{{ $L('小时') }}</label>
                 </FormItem>

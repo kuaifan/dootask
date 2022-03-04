@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Module\Base;
 use App\Tasks\AutoArchivedTask;
 use App\Tasks\DeleteTmpTask;
+use App\Tasks\OverdueRemindEmailTask;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Redirect;
 
@@ -61,6 +62,8 @@ class IndexController extends InvokeController
         Task::deliver(new DeleteTmpTask('tmp', 24));
         // 自动归档任务
         Task::deliver(new AutoArchivedTask());
+        // 任务到期邮件提醒
+        Task::deliver(new OverdueRemindEmailTask());
 
         return "success";
     }

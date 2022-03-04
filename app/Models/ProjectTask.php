@@ -1213,30 +1213,55 @@ class ProjectTask extends AbstractModel
 
     /**
      * 预超期任务提醒
-     * @param $ownerIds
+     * @param $task
      */
-    public static function overdueRemindEmail($ownerIds)
+    public static function overdueRemindEmail($task)
     {
+        $ownerIds = ProjectTaskUser::whereTaskId($task['id'])->whereOwner(1)->pluck('userid')->toArray();
         $users = User::whereIn('userid', $ownerIds)->get();
         if (!$users) {
             throw new ApiException("ProjectTask::overdueRemindEmail--没有负责人");
         }
-        Config::set("mail.mailers.smtp.host", Base::settingFind('emailSetting', 'smtp_server'));
-        Config::set("mail.mailers.smtp.port", Base::settingFind('emailSetting', 'port'));
-        Config::set("mail.mailers.smtp.username", Base::settingFind('emailSetting', 'account'));
-        Config::set("mail.mailers.smtp.password", Base::settingFind('emailSetting', 'password'));
+        $type = $task['end_at'] < Carbon::now() ? 2 : 1;
+        $setting = Base::setting('emailSetting');
+        $hours = floatval($setting['task_remind_hours']);
+        $hours2 = floatval($setting['task_remind_hours2']);
+        $time = $type === 1 ? $hours : $hours2;
+        Config::set("mail.mailers.smtp.host", Base::settingFind('emailSetting', 'smtp_server') ?: Config::get("mail.mailers.smtp.host"));
+        Config::set("mail.mailers.smtp.port", Base::settingFind('emailSetting', 'port') ?: Config::get("mail.mailers.smtp.port"));
+        Config::set("mail.mailers.smtp.username", Base::settingFind('emailSetting', 'account') ?: Config::get("mail.mailers.smtp.username"));
+        Config::set("mail.mailers.smtp.password", Base::settingFind('emailSetting', 'password') ?: Config::get("mail.mailers.smtp.password"));
         foreach ($users as $user) {
             /** @var  User $user */
+            if (ProjectTaskMailLog::whereTaskId($task['id'])->whereUserid($user->userid)->whereType($type)->whereIsSend(1)->exists()) {
+                return;
+            }
             $email = $user->email;
+            $isSend = 1;
             try {
-                Mail::send('taskOverdueRemind', ['url' => 'https://www.baidu.com'], function ($m) use ($email) {
+                $emailContent = [
+                    'name' => $task['name'],
+                    'time' => $time,
+                    'type' => $type
+                ];
+                Mail::send('taskOverdueRemind', $emailContent, function ($m) use ($email) {
                     $m->from(Config::get("mail.mailers.smtp.username"), env('APP_NAME'));
                     $m->to($email);
-                    $m->subject("过期任务提醒");
+                    $m->subject("任务提醒");
                 });
             } catch (\Exception $e) {
-                \Log::error($email.'--邮箱发动报错：', [$e->getMessage()]);
+                $isSend = 0;
+                \Log::error($email . '--邮箱发送报错：', [$e->getMessage()]);
             }
+            $logData = [
+                'userid' => $user->userid,
+                'task_id' => $task['id'],
+                'email' => $email,
+                'type' => $type,
+                'is_send' => $isSend,
+            ];
+            $emailLog = ProjectTaskMailLog::whereTaskId($task['id'])->whereUserid($user->userid)->whereType($type)->first();
+            ProjectTaskMailLog::createInstance($logData, $emailLog->id ?? null)->save();
         }
     }
 }
