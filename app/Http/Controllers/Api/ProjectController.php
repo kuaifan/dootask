@@ -1102,6 +1102,7 @@ class ProjectController extends AbstractController
                     }
                     $planTime = Base::timeDiff($startTime, $endTime);
                 }
+                $actualTime = $task->complete_at ? $totalTime : 0;//实际完成用时
                 $datas[] = [
                     $task->id,
                     $task->parent_id ?: '-',
@@ -1112,7 +1113,7 @@ class ProjectController extends AbstractController
                     $task->complete_at ?: '-',
                     $task->archived_at ?: '-',
                     $planTime ?: '-',
-                    $totalTime ? Base::timeFormat($totalTime) : '-',
+                    $actualTime ? Base::timeFormat($actualTime) : '-',
                     $overTime,
                     $developTime > 0? Base::timeFormat($developTime) : '-',
                     $testTime > 0 ? Base::timeFormat($testTime) : '-',
