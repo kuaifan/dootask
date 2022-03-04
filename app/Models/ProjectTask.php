@@ -314,18 +314,29 @@ class ProjectTask extends AbstractModel
      * @param $query
      * @param $start
      * @param $end
+     * @param $type
      * @return mixed
      */
-    public function scopeBetweenTime($query, $start, $end)
+    public function scopeBetweenTime($query, $start, $end, $type)
     {
-        $query->where(function ($q1) use ($start, $end) {
-            $q1->where(function ($q2) use ($start) {
-                $q2->where('project_tasks.start_at', '<=', $start)->where('project_tasks.end_at', '>=', $start);
-            })->orWhere(function ($q2) use ($end) {
-                $q2->where('project_tasks.start_at', '<=', $end)->where('project_tasks.end_at', '>=', $end);
-            })->orWhere(function ($q2) use ($start, $end) {
-                $q2->where('project_tasks.start_at', '>', $start)->where('project_tasks.end_at', '<', $end);
-            });
+        $query->where(function ($q1) use ($start, $end, $type) {
+            if ($type === 'taskTime') {
+                $q1->where(function ($q2) use ($start) {
+                    $q2->where('project_tasks.start_at', '<=', $start)->where('project_tasks.end_at', '>=', $start);
+                })->orWhere(function ($q2) use ($end) {
+                    $q2->where('project_tasks.start_at', '<=', $end)->where('project_tasks.end_at', '>=', $end);
+                })->orWhere(function ($q2) use ($start, $end) {
+                    $q2->where('project_tasks.start_at', '>', $start)->where('project_tasks.end_at', '<', $end);
+                });
+            } else {
+                $q1->where(function ($q2) use ($start) {
+                    $q2->where('project_tasks.created_at', '>=', $start);
+                })->orWhere(function ($q2) use ($end) {
+                    $q2->where('project_tasks.created_at', '<=', $end);
+                })->orWhere(function ($q2) use ($start, $end) {
+                    $q2->where('project_tasks.created_at', '>', $start)->where('project_tasks.created_at', '<', $end);
+                });
+            }
         });
         return $query;
     }

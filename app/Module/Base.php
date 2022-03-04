@@ -1723,9 +1723,9 @@ class Base
             $hours = (int)($time / 3600);
             $time = $time % 3600; // 计算小时后剩余的毫秒数
         }
-        $minutes = (int)($time / 60); // 剩下的毫秒数都算作分
+        $minutes = ceil($time / 60); // 剩下的毫秒数都算作分
         $daysStr = $days > 0 ? $days . '天' : '';
-        $hoursStr = ($hours > 0 || $minutes > 0) ? $hours . '时' : '';
+        $hoursStr = ($hours > 0 || ($days > 0 && $minutes > 0)) ? $hours . '时' : '';
         $minuteStr = ($minutes > 0) ? $minutes . '分' : '';
         return $daysStr . $hoursStr . $minuteStr;
     }
@@ -1747,9 +1747,9 @@ class Base
             $hours = (int)($time / 3600);
             $time = $time % 3600; // 计算小时后剩余的毫秒数
         }
-        $minutes = (int)($time / 60); // 剩下的毫秒数都算作分
+        $minutes = ceil($time / 60); // 剩下的毫秒数都算作分
         $daysStr = $days > 0 ? $days . '天' : '';
-        $hoursStr = ($hours > 0 || $minutes > 0) ? $hours . '时' : '';
+        $hoursStr = ($hours > 0 || ($days > 0 && $minutes > 0)) ? $hours . '时' : '';
         $minuteStr = ($minutes > 0) ? $minutes . '分' : '';
         return $daysStr . $hoursStr . $minuteStr;
     }

@@ -249,6 +249,12 @@
                         style="width:100%"
                         :placeholder="$L('请选择时间')"/>
                 </FormItem>
+                <FormItem prop="type" :label="$L('导出时间类型')">
+                    <RadioGroup v-model="exportData.type">
+                        <Radio label="taskTime">{{$L('任务时间')}}</Radio>
+                        <Radio label="CreatedTime">{{$L('创建时间')}}</Radio>
+                    </RadioGroup>
+                </FormItem>
             </Form>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="exportTaskShow=false">{{$L('取消')}}</Button>
@@ -364,6 +370,7 @@ export default {
             exportData: {
                 userid: [],
                 time: [],
+                type:'taskTime',
             },
 
             dialogMsgSubscribe: null,

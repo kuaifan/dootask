@@ -1014,7 +1014,7 @@ class ProjectController extends AbstractController
         if (Carbon::parse($time[1])->timestamp - Carbon::parse($time[0])->timestamp > 90 * 86400) {
             return Base::retError('时间范围限制最大90天');
         }
-
+        $type = Request::input('type','taskTime');
         $headings = [];
         $headings[] = '任务ID';
         $headings[] = '父级任务ID';
@@ -1037,7 +1037,7 @@ class ProjectController extends AbstractController
             ->join('project_task_users', 'project_tasks.id', '=', 'project_task_users.task_id')
             ->where('project_task_users.owner', 1)
             ->whereIn('project_task_users.userid', $userid)
-            ->betweenTime(Carbon::parse($time[0])->startOfDay(), Carbon::parse($time[1])->endOfDay());
+            ->betweenTime(Carbon::parse($time[0])->startOfDay(), Carbon::parse($time[1])->endOfDay(),$type);
         $builder->orderByDesc('project_tasks.id')->chunk(100, function($tasks) use (&$datas) {
             /** @var ProjectTask $task */
             foreach ($tasks as $task) {
@@ -1078,12 +1078,11 @@ class ProjectController extends AbstractController
                     $firstDevTime = Carbon::parse($firstChange->created_at)->timestamp - Carbon::parse($task->created_at)->timestamp;
                     $developTime += $firstDevTime;
                 }
-                if (count($flowChanges) === 0) {
+                if (count($flowChanges) === 0 && $task->start_at) {
                     $lastTime = $task->complete_at ? Carbon::parse($task->complete_at)->timestamp : time();
-                    $developTime = $lastTime - Carbon::parse($task->created_at)->timestamp;
+                    $developTime = $lastTime - Carbon::parse($task->start_at)->timestamp;
                 }
                 $totalTime = $developTime + $testTime; //任务总用时
-
                 if ($task->complete_at) {
                     $a = Carbon::parse($task->complete_at)->timestamp;
                     if ($task->start_at) {
@@ -1112,10 +1111,10 @@ class ProjectController extends AbstractController
                     $task->end_at ?: '-',
                     $task->complete_at ?: '-',
                     $task->archived_at ?: '-',
-                    $planTime,
-                    $totalTime > 0 ? Base::timeFormat($totalTime) : '-',
+                    $planTime ?: '-',
+                    $totalTime ? Base::timeFormat($totalTime) : '-',
                     $overTime,
-                    $developTime > 0 ? Base::timeFormat($developTime) : '-',
+                    $developTime > 0? Base::timeFormat($developTime) : '-',
                     $testTime > 0 ? Base::timeFormat($testTime) : '-',
                     Base::filterEmoji(User::userid2nickname($task->ownerid)) . " (ID: {$task->ownerid})",
                     Base::filterEmoji(User::userid2nickname($task->userid)) . " (ID: {$task->userid})",
