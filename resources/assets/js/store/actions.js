@@ -1484,7 +1484,7 @@ export default {
      */
     taskUpdate({state, dispatch}, data) {
         return new Promise(function (resolve, reject) {
-            dispatch("taskBeforeUpdate", data).then(post => {
+            dispatch("taskBeforeUpdate", data).then(({confirm, post}) => {
                 dispatch("taskLoadStart", post.task_id)
                 dispatch("call", {
                     url: 'project/task/update',
@@ -1498,7 +1498,7 @@ export default {
                     console.warn(e);
                     dispatch("taskLoadEnd", post.task_id)
                     dispatch("getTaskOne", post.task_id).catch(() => {})
-                    reject(e)
+                    setTimeout(() => { reject(e) }, confirm === true ? 301 : 0)
                 });
             }).catch(reject)
         });
@@ -1585,14 +1585,20 @@ export default {
             }
             //
             if (content === null) {
-                resolve(post);
+                resolve({
+                    confirm: false,
+                    post
+                });
                 return
             }
             $A.modalConfirm({
                 title,
                 content,
                 onOk: () => {
-                    resolve(post);
+                    resolve({
+                        confirm: true,
+                        post
+                    });
                 },
                 onCancel: () => {
                     reject({msg: false})
