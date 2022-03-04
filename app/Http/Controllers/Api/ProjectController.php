@@ -1025,7 +1025,7 @@ class ProjectController extends AbstractController
         $headings[] = '完成时间';
         $headings[] = '归档时间';
         $headings[] = '任务计划用时';
-        $headings[] = '实际完成总用时';
+        $headings[] = '实际完成用时';
         $headings[] = '超时时间';
         $headings[] = '开发用时';
         $headings[] = '验收/测试用时';
