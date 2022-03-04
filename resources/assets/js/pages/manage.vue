@@ -103,7 +103,9 @@
                 <li @click="toggleRoute('dashboard')" :class="classNameRoute('dashboard')">
                     <i class="taskfont">&#xe6fb;</i>
                     <div class="menu-title">{{$L('仪表盘')}}</div>
-                    <Badge class="menu-badge" :type="dashboardTask.overdue.length > 0 ? 'error' : 'primary'" :count="dashboardTotal"></Badge>
+                    <Badge v-if="dashboardTask.overdue.length > 0" class="menu-badge" type="error" :count="dashboardTask.overdue.length"/>
+                    <Badge v-else-if="dashboardTask.today.length > 0" class="menu-badge" type="info" :count="dashboardTask.today.length"/>
+                    <Badge v-else-if="dashboardTask.all.length > 0" class="menu-badge" type="primary" :count="dashboardTask.all.length"/>
                 </li>
                 <li @click="toggleRoute('calendar')" :class="classNameRoute('calendar')">
                     <i class="taskfont">&#xe6f5;</i>
@@ -112,7 +114,7 @@
                 <li @click="toggleRoute('messenger')" :class="classNameRoute('messenger')">
                     <i class="taskfont">&#xe6eb;</i>
                     <div class="menu-title">{{$L('消息')}}</div>
-                    <Badge class="menu-badge" :count="msgAllUnread"></Badge>
+                    <Badge class="menu-badge" :count="msgAllUnread"/>
                 </li>
                 <li @click="toggleRoute('file')" :class="classNameRoute('file')">
                     <i class="taskfont">&#xe6f3;</i>
@@ -256,15 +258,15 @@
         <!--任务详情-->
         <Modal
             :value="taskId > 0"
-            :mask-closable="false"
             :styles="{
                 width: '90%',
                 maxWidth: taskData.dialog_id ? '1200px' : '700px'
             }"
-            @on-visible-change="taskVisibleChange"
-            footer-hide>
+            :mask-closable="false"
+            :footer-hide="true"
+            @on-visible-change="taskVisibleChange">
             <div class="page-manage-task-modal" :style="taskStyle">
-                <TaskDetail :task-id="taskId" :open-task="taskData"/>
+                <TaskDetail ref="taskDetail" :task-id="taskId" :open-task="taskData"/>
             </div>
         </Modal>
 
@@ -463,12 +465,8 @@ export default {
             return num;
         },
 
-        dashboardTotal() {
-            return this.dashboardTask.today.length + this.dashboardTask.overdue.length
-        },
-
         unreadTotal() {
-            return this.msgAllUnread + this.dashboardTotal + this.reportUnreadNumber;
+            return this.msgAllUnread + this.dashboardTask.overdue.length + this.reportUnreadNumber;
         },
 
         currentLanguage() {
@@ -787,10 +785,13 @@ export default {
         },
 
         shortcutEvent(e) {
-            if (e.keyCode === 75 || e.keyCode === 78) {
-                if (e.metaKey || e.ctrlKey) {
+            if (e.metaKey || e.ctrlKey) {
+                if (e.keyCode === 75 || e.keyCode === 78) {
                     e.preventDefault();
                     this.onAddTask(0)
+                } else if (e.keyCode === 83 && this.taskId > 0) {
+                    e.preventDefault();
+                    this.$refs.taskDetail.checkUpdate(true)
                 }
             }
         },
