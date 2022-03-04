@@ -954,7 +954,7 @@ class ProjectController extends AbstractController
             $builder->whereNotNull('project_tasks.end_at')->where('project_tasks.end_at', '<', Carbon::parse($time_before));
         } elseif (is_array($time)) {
             if (Base::isDateOrTime($time[0]) && Base::isDateOrTime($time[1])) {
-                $builder->betweenTime(Carbon::parse($time[0])->startOfDay(), Carbon::parse($time[1])->endOfDay());
+                $builder->betweenTime(Carbon::parse($time[0])->startOfDay(), Carbon::parse($time[1])->endOfDay(),'taskTime');
             }
         }
         //
