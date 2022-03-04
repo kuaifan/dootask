@@ -67,10 +67,13 @@ class UserEmailVerification extends AbstractModel
             });
         } catch (Exception $exception) {
             // 一般是请求超时
-            if (strpos($exception->getMessage(), "Timed Out") !== false)
+            if (strpos($exception->getMessage(), "Timed Out") !== false) {
                 throw new ApiException("language.TimedOut");
-            else
+            } elseif ($exception->getCode() == 550) {
+                throw new ApiException('邮件内容被拒绝，请检查邮箱是否开启接收功能');
+            } else {
                 throw new ApiException($exception->getMessage());
+            }
         }
     }
 }
