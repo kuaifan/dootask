@@ -1299,15 +1299,33 @@ export default {
                 task_id,
             },
         }).then(result => {
-            let index = state.taskContents.findIndex(({id}) => id == result.data.id)
-            if (index > -1) {
-                state.taskContents.splice(index, 1, result.data)
-            } else {
-                state.taskContents.push(result.data)
-            }
+            dispatch("saveTaskContent", result.data)
         }).catch(e => {
             console.warn(e);
         });
+    },
+
+    /**
+     * 更新任务详情
+     * @param state
+     * @param dispatch
+     * @param data
+     */
+    saveTaskContent({state, dispatch}, data) {
+        $A.execMainDispatch("saveTaskContent", data)
+        //
+        if ($A.isArray(data)) {
+            data.forEach((msg) => {
+                dispatch("saveTaskContent", msg)
+            });
+        } else if ($A.isJson(data)) {
+            let index = state.taskContents.findIndex(({id}) => id == data.id);
+            if (index > -1) {
+                state.taskContents.splice(index, 1, Object.assign({}, state.taskContents[index], data));
+            } else {
+                state.taskContents.push(data);
+            }
+        }
     },
 
     /**

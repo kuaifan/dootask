@@ -796,6 +796,7 @@ export default {
         },
 
         updateData(action, params) {
+            let successCallback = null;
             switch (action) {
                 case 'priority':
                     this.$set(this.taskDetail, 'p_level', params.priority)
@@ -803,14 +804,24 @@ export default {
                     this.$set(this.taskDetail, 'p_color', params.color)
                     action = ['p_level', 'p_name', 'p_color'];
                     break;
+
                 case 'times':
                     this.$set(this.taskDetail, 'times', [params.start_at, params.end_at])
                     break;
+
                 case 'content':
-                    if (this.$refs.desc.getContent() == this.taskContent) {
+                    const newContent = this.$refs.desc.getContent();
+                    if (newContent == this.taskContent) {
                         return;
                     }
-                    this.$set(this.taskDetail, 'content', this.$refs.desc.getContent())
+                    this.$set(this.taskDetail, 'content', newContent)
+                    successCallback = () => {
+                        let content = this.taskContents.find(({task_id}) => task_id == this.taskId)
+                        this.$store.dispatch("saveTaskContent", {
+                            id: content.id,
+                            content: newContent
+                        })
+                    }
                     break;
             }
             //
@@ -826,6 +837,7 @@ export default {
             //
             this.$store.dispatch("taskUpdate", dataJson).then(({msg}) => {
                 $A.messageSuccess(msg);
+                if (typeof successCallback === "function") successCallback();
             }).catch(({msg}) => {
                 $A.modalError(msg);
             })
