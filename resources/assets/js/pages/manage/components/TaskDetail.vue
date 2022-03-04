@@ -153,7 +153,6 @@
                         :option-full="taskOptionFull"
                         :placeholder="$L('详细描述...')"
                         @on-blur="updateData('content')"
-                        @editorSave="updateData('content')"
                         inline/>
                 </div>
                 <Form class="items" label-position="left" label-width="auto" @submit.native.prevent>
@@ -310,7 +309,13 @@
                             <i class="taskfont">&#xe6f0;</i>{{$L('子任务')}}
                         </div>
                         <ul class="item-content subtask">
-                            <TaskDetail v-for="(task, key) in subList" :key="key" :task-id="task.id" :open-task="task" :main-end-at="taskDetail.end_at"/>
+                            <TaskDetail
+                                v-for="(task, key) in subList"
+                                :ref="`subTask_${task.id}`"
+                                :key="key"
+                                :task-id="task.id"
+                                :open-task="task"
+                                :main-end-at="taskDetail.end_at"/>
                         </ul>
                         <ul :class="['item-content', subList.length === 0 ? 'nosub' : '']">
                             <li>
@@ -748,17 +753,46 @@ export default {
         },
 
         onNameKeydown(e) {
-            if (e.keyCode === 83) {
-                if (e.metaKey || e.ctrlKey) {
-                    e.preventDefault();
-                    this.updateData('name');
-                }
-            } else if (e.keyCode === 13) {
+            if (e.keyCode === 13) {
                 if (!e.shiftKey) {
                     e.preventDefault();
                     this.updateData('name');
                 }
             }
+        },
+
+        checkUpdate(update) {
+            let isModify = false;
+            if (this.openTask.name != this.taskDetail.name) {
+                isModify = true;
+                if (update) {
+                    this.updateData('name');
+                } else if (isModify) {
+                    return true
+                }
+            }
+            if (this.$refs.desc && this.$refs.desc.getContent() != this.taskContent) {
+                isModify = true;
+                if (update) {
+                    this.updateData('content');
+                } else if (isModify) {
+                    return true
+                }
+            }
+            if (this.addsubShow && this.addsubName) {
+                isModify = true;
+                if (update) {
+                    this.onAddsub();
+                } else if (isModify) {
+                    return true
+                }
+            }
+            this.subList.some(({id}) => {
+                if (this.$refs[`subTask_${id}`][0].checkUpdate(update)) {
+                    isModify = true;
+                }
+            })
+            return isModify;
         },
 
         updateData(action, params) {
