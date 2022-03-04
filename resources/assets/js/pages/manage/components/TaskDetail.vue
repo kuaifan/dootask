@@ -956,12 +956,11 @@ export default {
 
         addsubKeydown(e) {
             if (e.keyCode === 13) {
-                if (e.shiftKey) {
+                if (e.shiftKey || this.addsubLoad > 0) {
                     return;
                 }
                 e.preventDefault();
                 this.onAddsub();
-
             }
         },
 
