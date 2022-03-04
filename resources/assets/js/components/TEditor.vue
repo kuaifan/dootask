@@ -181,11 +181,7 @@
                     newValue = "";
                 }
                 if (!this.isTyping) {
-                    if (this.getEditor() !== null) {
-                        this.getEditor().setContent(newValue);
-                    } else{
-                        this.content = newValue;
-                    }
+                    this.setContent(newValue);
                 }
             },
             readOnly(value) {
@@ -457,6 +453,14 @@
                     return "";
                 }
                 return this.getEditor().getContent();
+            },
+
+            setContent(content) {
+                if (this.getEditor() === null) {
+                    this.content = content;
+                } else if (content != this.getEditor().getContent()){
+                    this.getEditor().setContent(content);
+                }
             },
 
             insertImage(src) {

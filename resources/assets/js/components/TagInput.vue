@@ -11,7 +11,7 @@
             :placeholder="tis || placeholderText"
             @keydown.enter="downEnter($event)"
             @keydown.delete="delTag(false)"
-            @keyup="addTag($event, content)"
+            @keyup="onKeyup"
             @focus="onFocus"
             @blur="onBlur"
             :disabled="disabled"
@@ -158,19 +158,22 @@
                 this.addTag(false, this.content)
                 this.$emit("on-blur", e)
             },
+            onKeyup(e) {
+                this.addTag(e, this.content);
+                //
+                this.$emit("on-keyup", e)
+                if (e.keyCode === 13) {
+                    this.$nextTick(() => {
+                        this.$emit("on-enter", e)
+                    })
+                }
+            },
             addTag(e, content) {
-
                 if (e === false || e.keyCode === 13) {
                     if (content.trim() != '' && this.disSource.indexOf(content.trim()) === -1) {
                         this.disSource.push(content.trim());
                     }
                     this.content = '';
-                    //
-                    if (e.keyCode === 13) {
-                        this.$nextTick(() => {
-                            this.$emit("on-enter", e)
-                        })
-                    }
                     return;
                 }
                 if (this.max > 0 && this.disSource.length >= this.max) {
