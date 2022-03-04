@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\ProjectTaskContent;
+use App\Module\Base;
 use Illuminate\Database\Seeder;
 
 class ProjectTaskContentsTableSeeder extends Seeder
@@ -302,6 +304,17 @@ class ProjectTaskContentsTableSeeder extends Seeder
             ),
         ));
 
-
+        ProjectTaskContent::orderBy('id')->chunk(100, function($items) {
+            /** @var ProjectTaskContent $item */
+            foreach ($items as $item) {
+                $content = Base::json2array($item->content);
+                if (!isset($content['url'])) {
+                    $item->content = Base::array2json([
+                        'url' => ProjectTaskContent::saveContent($item->task_id, $item->content)
+                    ]);
+                    $item->save();
+                }
+            }
+        });
     }
 }

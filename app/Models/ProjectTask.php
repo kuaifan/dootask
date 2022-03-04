@@ -235,7 +235,7 @@ class ProjectTask extends AbstractModel
      */
     public function content(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
-        return $this->hasOne(ProjectTaskContent::class, 'task_id', 'id');
+        return $this->hasOne(ProjectTaskContent::class, 'task_id', 'id')->orderByDesc('id');
     }
 
     /**
@@ -467,7 +467,9 @@ class ProjectTask extends AbstractModel
                 ProjectTaskContent::createInstance([
                     'project_id' => $task->project_id,
                     'task_id' => $task->id,
-                    'content' => $content,
+                    'content' => [
+                        'url' => ProjectTaskContent::saveContent($task->id, $content)
+                    ],
                 ])->save();
             }
             if ($task->parent_id == 0 && $subtasks && is_array($subtasks)) {
@@ -797,12 +799,13 @@ class ProjectTask extends AbstractModel
                 }
                 // 内容
                 if (Arr::exists($data, 'content')) {
-                    ProjectTaskContent::updateInsert([
+                    ProjectTaskContent::createInstance([
                         'project_id' => $this->project_id,
                         'task_id' => $this->id,
-                    ], [
-                        'content' => $data['content'],
-                    ]);
+                        'content' => [
+                            'url' => ProjectTaskContent::saveContent($this->id, $data['content'])
+                        ],
+                    ])->save();
                     $this->desc = Base::getHtml($data['content'], 100);
                     $this->addLog("修改{任务}详细描述");
                     $updateMarking['is_update_content'] = true;

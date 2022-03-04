@@ -1183,7 +1183,10 @@ class ProjectController extends AbstractController
         //
         $task = ProjectTask::userTask($task_id, null);
         //
-        return Base::retSuccess('success', $task->content ?: json_decode('{}'));
+        if (empty($task->content)) {
+            return Base::retSuccess('success', json_decode('{}'));
+        }
+        return Base::retSuccess('success', $task->content->getContentInfo());
     }
 
     /**
