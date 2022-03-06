@@ -60,7 +60,7 @@
             </div>
         </ScrollerY>
         <div :class="['dialog-footer', msgNew > 0 && dialogMsgList.length > 0 ? 'newmsg' : '']" @click="onActive">
-            <div class="dialog-newmsg" @click="autoToBottom">{{$L('有' + msgNew + '条新消息')}}</div>
+            <div class="dialog-newmsg" @click="onToBottom">{{$L('有' + msgNew + '条新消息')}}</div>
             <slot name="inputBefore"/>
             <DragInput
                 ref="input"
@@ -273,7 +273,7 @@ export default {
             if (!this.isDesktop) {
                 this.$refs.input.blur();
             }
-            this.autoToBottom();
+            this.onToBottom();
             this.onActive();
             //
             this.$store.dispatch("call", {
@@ -374,7 +374,7 @@ export default {
                     if (!this.isDesktop) {
                         this.$refs.input.blur();
                     }
-                    this.autoToBottom();
+                    this.onToBottom();
                     this.onActive();
                     break;
 
@@ -414,7 +414,7 @@ export default {
                     this.autoBottom = false;
                     break;
             }
-            if (res.scale === 1) {
+            if (res.scale >= 1) {
                 this.msgNew = 0;
                 this.autoBottom = true;
             }
@@ -434,7 +434,8 @@ export default {
             this.$emit("on-active");
         },
 
-        autoToBottom() {
+        onToBottom() {
+            this.autoBottom = true;
             this.$refs.scroller && this.$refs.scroller.autoToBottom();
         },
 
@@ -457,24 +458,17 @@ export default {
             this.$store.dispatch('getDialogMoreMsgs', this.dialogId).then(() => {
                 this.$nextTick(() => {
                     this.topId = topId;
-                    let dom = document.getElementById("view_" + topId);
-                    if (dom) {
-                        try {
-                            dom.scrollIntoView(true);
-                        } catch (e) {
-                            scrollIntoView(dom, {
-                                behavior: 'instant',
-                                inline: 'start',
-                            })
-                        }
-                    }
+                    $A.scrollToView(document.getElementById("view_" + topId), {
+                        behavior: 'instant',
+                        inline: 'start',
+                    })
                 });
             }).catch(() => {})
         },
 
         addDialogMsg() {
             if (this.isAutoBottom) {
-                this.$nextTick(this.autoToBottom);
+                this.$nextTick(this.onToBottom);
             } else {
                 this.$nextTick(() => {
                     if (this.$refs.scroller && this.$refs.scroller.scrollInfo().scrollE > 10) {

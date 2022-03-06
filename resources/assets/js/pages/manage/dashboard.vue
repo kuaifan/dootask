@@ -156,17 +156,10 @@ export default {
         },
 
         scrollTo(type) {
-            try {
-                this.$refs[`type_${type}`][0].scrollIntoView({
-                    behavior: 'instant',
-                    inline: 'end',
-                });
-            } catch (e) {
-                scrollIntoView(this.$refs[`type_${type}`][0], {
-                    behavior: 'instant',
-                    inline: 'end',
-                })
-            }
+            $A.scrollToView(this.$refs[`type_${type}`][0], {
+                behavior: 'smooth',
+                inline: 'end',
+            });
         },
 
         openTask(task) {

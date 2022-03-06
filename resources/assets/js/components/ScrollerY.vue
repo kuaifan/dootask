@@ -123,15 +123,11 @@ export default {
         },
 
         autoToBottom() {
-            if (this.autoBottom && this.$refs.bottom) {
-                try {
-                    this.$refs.bottom.scrollIntoView(false);
-                } catch (e) {
-                    scrollIntoView(this.$refs.bottom, {
-                        behavior: 'instant',
-                        inline: 'end',
-                    })
-                }
+            if (this.autoBottom) {
+                $A.scrollToView(this.$refs.bottom, {
+                    behavior: 'instant',
+                    inline: 'end',
+                })
             }
         },
 

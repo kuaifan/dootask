@@ -277,14 +277,10 @@ export default {
                 // 再次点击滚动到未读条目
                 const dialog = this.dialogList.find(({unread}) => unread > 0)
                 if (dialog) {
-                    try {
-                        this.$refs[`dialog_${dialog.id}`][0].scrollIntoView();
-                    } catch (e) {
-                        scrollIntoView(this.$refs[`dialog_${dialog.id}`][0], {
-                            behavior: 'instant',
-                            inline: 'end',
-                        })
-                    }
+                    $A.scrollToView(this.$refs[`dialog_${dialog.id}`][0], {
+                        behavior: 'instant',
+                        inline: 'end',
+                    })
                 }
             }
             this.dialogActive = type
@@ -426,7 +422,7 @@ export default {
                 if (this.$refs.list) {
                     let active = this.$refs.list.querySelector(".active")
                     if (active) {
-                        scrollIntoView(active, {
+                        $A.scrollToView(active, {
                             behavior: smooth === true ? 'smooth' : 'instant',
                             scrollMode: 'if-needed',
                         });
@@ -437,7 +433,7 @@ export default {
                             this.$nextTick(() => {
                                 let active = this.$refs.list.querySelector(".active")
                                 if (active) {
-                                    scrollIntoView(active, {
+                                    $A.scrollToView(active, {
                                         behavior: smooth === true ? 'smooth' : 'instant',
                                         scrollMode: 'if-needed',
                                     });

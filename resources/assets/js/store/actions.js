@@ -2056,6 +2056,7 @@ export default {
         let dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
         if (dialog && dialog.unread > 0) {
             dialog.unread--
+            dispatch("saveDialog", dialog)
         }
         //
         state.wsReadWaitList.push(data.id);
@@ -2170,7 +2171,10 @@ export default {
                                                     dialog_id: data.dialog_id
                                                 }).then(result => {
                                                     dialog.unread = result.data.unread
+                                                    dispatch("saveDialog", dialog)
                                                 }).catch(() => {});
+                                            } else {
+                                                dispatch("saveDialog", dialog)
                                             }
                                         }
                                         break;
@@ -2188,6 +2192,7 @@ export default {
                                                 // 新增未读数
                                                 state.cacheUnreads[data.id] = true;
                                                 dialog.unread++;
+                                                dispatch("saveDialog", dialog)
                                             }
                                             Store.set('dialogMsgPush', data);
                                         }

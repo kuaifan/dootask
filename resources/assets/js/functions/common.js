@@ -967,6 +967,28 @@
             let domain = (weburl + "").match(urlReg);
             return ((domain != null && domain.length > 0) ? domain[2] : "");
         },
+
+        /**
+         * 滚动到View
+         * @param element
+         * @param options
+         */
+        scrollToView(element, options) {
+            if (!element) {
+                return;
+            }
+            if (typeof options.scrollMode !== "undefined" && typeof window.scrollIntoView === "function") {
+                window.scrollIntoView(element, options)
+                return;
+            }
+            try {
+                element.scrollIntoView(options);
+            } catch (e) {
+                if (typeof window.scrollIntoView === "function") {
+                    window.scrollIntoView(element, options)
+                }
+            }
+        }
     });
 
     /**
