@@ -107,10 +107,12 @@ export default {
                 return task.owner;
             }
             let array = cacheTasks.filter(task => filterTask(task));
-            let tmps = taskCompleteTemps.filter(task => filterTask(task, false));
-            if (tmps.length > 0) {
-                array = $A.cloneJSON(array)
-                array.push(...tmps);
+            if (taskCompleteTemps.length > 0) {
+                let tmps = cacheTasks.filter(task => taskCompleteTemps.includes(task.id) && filterTask(task, false));
+                if (tmps.length > 0) {
+                    array = $A.cloneJSON(array)
+                    array.push(...tmps);
+                }
             }
             return this.transforTasks(array).map(data => {
                 const isAllday = $A.rightExists(data.start_at, "00:00:00") && $A.rightExists(data.end_at, "23:59:59")

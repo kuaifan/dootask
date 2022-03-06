@@ -1737,16 +1737,11 @@ export default {
     /**
      * 保存完成任务临时表
      * @param state
-     * @param data
+     * @param task_id
      */
-    saveTaskCompleteTemp({state}, data) {
-        if ($A.isJson(data)) {
-            let index = state.taskCompleteTemps.findIndex(({id}) => id == data.id);
-            if (index > -1) {
-                state.taskCompleteTemps.splice(index, 1, data);
-            } else {
-                state.taskCompleteTemps.push(data);
-            }
+    saveTaskCompleteTemp({state}, task_id) {
+        if (/^\d+$/.test(task_id) && !state.taskCompleteTemps.includes(task_id)) {
+            state.taskCompleteTemps.push(task_id)
         }
     },
 
@@ -1758,11 +1753,8 @@ export default {
     forgetTaskCompleteTemp({state}, task_id) {
         if (task_id === true) {
             state.taskCompleteTemps = [];
-            return;
-        }
-        let index = state.taskCompleteTemps.findIndex(({id}) => id == task_id);
-        if (index > -1) {
-            state.taskCompleteTemps.splice(index, 1);
+        } else if (/^\d+$/.test(task_id)) {
+            state.taskCompleteTemps = state.taskCompleteTemps.filter(id => id != task_id);
         }
     },
 

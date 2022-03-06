@@ -128,10 +128,12 @@ export default {
             return task.owner;
         }
         let array = state.cacheTasks.filter(task => filterTask(task));
-        let tmps = state.taskCompleteTemps.filter(task => filterTask(task, false));
-        if (tmps.length > 0) {
-            array = $A.cloneJSON(array)
-            array.push(...tmps);
+        if (state.taskCompleteTemps.length > 0) {
+            let tmps = state.cacheTasks.filter(task => state.taskCompleteTemps.includes(task.id) && filterTask(task, false));
+            if (tmps.length > 0) {
+                array = $A.cloneJSON(array)
+                array.push(...tmps);
+            }
         }
         const todayTasks = array.filter(task => {
             const start = $A.Date(task.start_at),

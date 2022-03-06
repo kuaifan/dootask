@@ -640,10 +640,12 @@ export default {
         myList() {
             const {allTask, taskCompleteTemps, sortField, sortType} = this;
             let array = allTask.filter(task => this.myFilter(task));
-            let tmps = taskCompleteTemps.filter(task => this.myFilter(task, false));
-            if (tmps.length > 0) {
-                array = $A.cloneJSON(array)
-                array.push(...tmps);
+            if (taskCompleteTemps.length > 0) {
+                let tmps = allTask.filter(task => taskCompleteTemps.includes(task.id) && this.myFilter(task, false));
+                if (tmps.length > 0) {
+                    array = $A.cloneJSON(array)
+                    array.push(...tmps);
+                }
             }
             return array.sort((a, b) => {
                 if (sortType == 'asc') {
@@ -663,10 +665,12 @@ export default {
         helpList() {
             const {allTask, taskCompleteTemps, sortField, sortType} = this;
             let array = allTask.filter(task => this.helpFilter(task));
-            let tmps = taskCompleteTemps.filter(task => this.helpFilter(task, false));
-            if (tmps.length > 0) {
-                array = $A.cloneJSON(array)
-                array.push(...tmps);
+            if (taskCompleteTemps.length > 0) {
+                let tmps = allTask.filter(task => taskCompleteTemps.includes(task.id) && this.helpFilter(task, false));
+                if (tmps.length > 0) {
+                    array = $A.cloneJSON(array)
+                    array.push(...tmps);
+                }
             }
             return array.sort((a, b) => {
                 if (sortType == 'asc') {
