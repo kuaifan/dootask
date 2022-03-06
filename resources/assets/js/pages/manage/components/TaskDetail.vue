@@ -19,7 +19,7 @@
                 :rows="1"
                 :autosize="{ minRows: 1, maxRows: 8 }"
                 :maxlength="255"
-                @on-blur="updateData('name')"
+                @on-blur="updateBlur('name')"
                 @on-keydown="onNameKeydown"/>
         </div>
         <DatePicker
@@ -141,7 +141,7 @@
                         :rows="1"
                         :autosize="{ minRows: 1, maxRows: 8 }"
                         :maxlength="255"
-                        @on-blur="updateData('name')"
+                        @on-blur="updateBlur('name')"
                         @on-keydown="onNameKeydown"/>
                 </div>
                 <div class="desc">
@@ -152,7 +152,7 @@
                         :options="taskOptions"
                         :option-full="taskOptionFull"
                         :placeholder="$L('详细描述...')"
-                        @on-blur="updateData('content')"
+                        @on-blur="updateBlur('content')"
                         inline/>
                 </div>
                 <Form class="items" label-position="left" label-width="auto" @submit.native.prevent>
@@ -315,7 +315,8 @@
                                 :key="key"
                                 :task-id="task.id"
                                 :open-task="task"
-                                :main-end-at="taskDetail.end_at"/>
+                                :main-end-at="taskDetail.end_at"
+                                :can-update-blur="canUpdateBlur"/>
                         </ul>
                         <ul :class="['item-content', subList.length === 0 ? 'nosub' : '']">
                             <li>
@@ -451,6 +452,11 @@ export default {
         },
         mainEndAt: {
             default: null
+        },
+        // 允许失去焦点更新
+        canUpdateBlur: {
+            type: Boolean,
+            default: true
         },
     },
     data() {
@@ -795,6 +801,12 @@ export default {
             return isModify;
         },
 
+        updateBlur(action, params) {
+            if (this.canUpdateBlur) {
+                this.updateData(action, params)
+            }
+        },
+
         updateData(action, params) {
             let successCallback = null;
             switch (action) {
@@ -810,16 +822,15 @@ export default {
                     break;
 
                 case 'content':
-                    const newContent = this.$refs.desc.getContent();
-                    if (newContent == this.taskContent) {
+                    const content = this.$refs.desc.getContent();
+                    if (content == this.taskContent) {
                         return;
                     }
-                    this.$set(this.taskDetail, 'content', newContent)
+                    this.$set(this.taskDetail, 'content', content)
                     successCallback = () => {
-                        let content = this.taskContents.find(({task_id}) => task_id == this.taskId)
                         this.$store.dispatch("saveTaskContent", {
-                            id: content.id,
-                            content: newContent
+                            task_id: this.taskId,
+                            content
                         })
                     }
                     break;

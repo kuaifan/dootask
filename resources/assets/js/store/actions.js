@@ -1317,11 +1317,11 @@ export default {
         $A.execMainDispatch("saveTaskContent", data)
         //
         if ($A.isArray(data)) {
-            data.forEach((msg) => {
-                dispatch("saveTaskContent", msg)
+            data.forEach(item => {
+                dispatch("saveTaskContent", item)
             });
         } else if ($A.isJson(data)) {
-            let index = state.taskContents.findIndex(({id}) => id == data.id);
+            let index = state.taskContents.findIndex(({task_id}) => task_id == data.task_id);
             if (index > -1) {
                 state.taskContents.splice(index, 1, Object.assign({}, state.taskContents[index], data));
             } else {
