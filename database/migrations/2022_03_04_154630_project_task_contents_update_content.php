@@ -9,7 +9,7 @@ use Illuminate\Database\Migrations\Migration;
 class ProjectTaskContentsUpdateContent extends Migration
 {
     /**
-     * 更新后缀
+     * 任务详细描述保存至文件
      * @return void
      */
     public function up()
