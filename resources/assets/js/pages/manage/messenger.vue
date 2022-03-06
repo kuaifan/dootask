@@ -278,8 +278,8 @@ export default {
                 const dialog = this.dialogList.find(({unread}) => unread > 0)
                 if (dialog) {
                     $A.scrollToView(this.$refs[`dialog_${dialog.id}`][0], {
-                        behavior: 'instant',
-                        inline: 'end',
+                        behavior: 'smooth',
+                        scrollMode: 'if-needed',
                     })
                 }
             }
