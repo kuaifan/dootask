@@ -205,7 +205,7 @@ export default {
      */
     getBasicData({dispatch}) {
         dispatch("getProjects").catch(() => {});
-        dispatch("getDialogs");
+        dispatch("getDialogs").catch(() => {});
         dispatch("getTaskForDashboard");
     },
 
@@ -1813,18 +1813,24 @@ export default {
      * 获取会话列表
      * @param state
      * @param dispatch
+     * @returns {Promise<unknown>}
      */
     getDialogs({state, dispatch}) {
-        if (state.userId === 0) {
-            state.cacheDialogs = [];
-            return;
-        }
-        dispatch("call", {
-            url: 'dialog/lists',
-        }).then(result => {
-            dispatch("saveDialog", result.data.data);
-        }).catch(e => {
-            console.warn(e);
+        return new Promise(function (resolve, reject) {
+            if (state.userId === 0) {
+                state.cacheDialogs = [];
+                reject({msg: 'Parameter error'});
+                return;
+            }
+            dispatch("call", {
+                url: 'dialog/lists',
+            }).then(result => {
+                dispatch("saveDialog", result.data.data);
+                resolve(result)
+            }).catch(e => {
+                console.warn(e);
+                reject(e)
+            });
         });
     },
 

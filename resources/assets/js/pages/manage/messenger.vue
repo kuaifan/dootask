@@ -470,11 +470,11 @@ export default {
                     dialog_id: this.topOperateItem.id,
                 },
             }).then(() => {
-                this.$store.dispatch("getDialogs");
-                this.$Modal.remove();
+                this.$store.dispatch("getDialogs").then(() => {
+                    this.scrollIntoActive(true)
+                });
             }).catch(({msg}) => {
-                $A.modalError(msg, 301);
-                this.$Modal.remove();
+                $A.modalError(msg);
             });
         }
     }

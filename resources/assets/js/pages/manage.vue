@@ -889,9 +889,17 @@ export default {
                     project_id: this.topOperateItem.id,
                 },
             }).then(() => {
-                this.$store.dispatch("getProjects").catch(() => {});
+                this.$store.dispatch("getProjects").then(() => {
+                    let active = this.$refs.projectWrapper.querySelector(".active")
+                    if (active) {
+                        $A.scrollToView(active, {
+                            behavior: 'smooth',
+                            scrollMode: 'if-needed',
+                        });
+                    }
+                }).catch(() => {});
             }).catch(({msg}) => {
-                $A.modalError(msg, 301);
+                $A.modalError(msg);
             });
         },
 
