@@ -16,7 +16,7 @@
         .dashboard-desc ,
         .dashboard-block ,
         .dashboard-list .dashboard-title,
-        .dashboard-list .dashboard-li {
+        .dashboard-list .dashboard-ul {
             width: 660px;
             max-width: 80%;
             margin: 0 auto;
@@ -50,7 +50,7 @@
                 flex-direction: column;
                 justify-content: center;
                 cursor: pointer;
-                transition: transform 0.5s ease-out 0s, box-shadow 0.3s ease-out 0s;
+                transition: transform 0.3s ease-out 0s, box-shadow 0.3s ease-out 0s;
                 &:first-child {
                     background-color: #6f9ef6;
                 }
@@ -106,8 +106,8 @@
                 font-size: 15px;
                 background-color: #ffffff;
             }
-            .dashboard-li {
-                margin: 0 auto;
+            .dashboard-ul {
+                margin: 0 auto 18px;
                 padding: 0 12px;
                 overflow: hidden;
                 > li {
@@ -117,8 +117,8 @@
                     background: #F9FAFB;
                     padding: 12px;
                     cursor: pointer;
-                    transition: box-shadow 0.3s,transform 0.2s;
-                    border-bottom: 1px solid #f1f2f4;
+                    transition: transform 0.3s ease-out 0s;
+                    border-bottom: 1px solid #f1f2f3;
                     &:hover {
                         transform: translateX(-2px);
                     }
@@ -162,6 +162,9 @@
                         flex: 1;
                         padding-left: 6px;
                         line-height: 22px;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
                         > span {
                             font-size: 12px;
                             height: 18px;
@@ -254,7 +257,7 @@
             .dashboard-desc ,
             .dashboard-block ,
             .dashboard-list .dashboard-title,
-            .dashboard-list .dashboard-li {
+            .dashboard-list .dashboard-ul {
                 max-width: 86%;
             }
             .dashboard-block {
@@ -268,15 +271,8 @@
             .dashboard-list {
                 overflow: visible !important;
                 padding-bottom: 2px;
-                > ul {
+                .dashboard-ul {
                     margin-bottom: 36px;
-                    > li {
-                        .item-title {
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                            white-space: nowrap
-                        }
-                    }
                 }
             }
         }

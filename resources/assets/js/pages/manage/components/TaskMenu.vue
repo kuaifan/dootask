@@ -2,6 +2,7 @@
     <EDropdown
         ref="dropdown"
         trigger="click"
+        :disabled="disabled"
         :size="size"
         placement="bottom"
         @command="dropTask"
@@ -96,6 +97,10 @@ export default {
             default: true
         },
         updateBefore: {
+            type: Boolean,
+            default: false
+        },
+        disabled: {
             type: Boolean,
             default: false
         },

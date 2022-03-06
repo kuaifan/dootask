@@ -3,8 +3,8 @@
     <li v-if="ready && taskDetail.parent_id > 0">
         <div class="subtask-icon">
             <TaskMenu
-                v-if="taskId > 0"
                 :ref="`taskMenu_${taskDetail.id}`"
+                :disabled="taskId === 0"
                 :task="taskDetail"
                 :load-status="taskDetail.loading === true"
                 @on-update="getLogLists"/>
@@ -73,8 +73,8 @@
         <div v-show="taskDetail.id > 0" class="task-info">
             <div class="head">
                 <TaskMenu
-                    v-if="taskId > 0"
                     :ref="`taskMenu_${taskDetail.id}`"
+                    :disabled="taskId === 0"
                     :task="taskDetail"
                     class="icon"
                     size="medium"
@@ -123,7 +123,7 @@
                     </ETooltip>
                     <div class="menu">
                         <TaskMenu
-                            v-if="taskId > 0"
+                            :disabled="taskId === 0"
                             :task="taskDetail"
                             icon="ios-more"
                             completed-icon="ios-more"

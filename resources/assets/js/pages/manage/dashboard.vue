@@ -34,7 +34,7 @@
                     v-if="column.list.length > 0"
                     :key="index">
                     <div class="dashboard-title">{{column.title}}</div>
-                    <ul class="dashboard-li">
+                    <ul class="dashboard-ul">
                         <li
                             v-for="(item, index) in column.list"
                             :key="index"
