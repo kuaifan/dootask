@@ -602,12 +602,14 @@ class UsersController extends AbstractController
         }
         // 如果已经校验过
         if (intval($res->status) === 1)
-            return Base::retError('链接已经使用过');
+            return Base::retError('链接已经使用过',['code' => 2]);
 
         $oldTime = strtotime($res->created_at);
         $time = time();
         //24个小时失效
         if (abs($time - $oldTime) > 86400) {
+            $user = User::whereUserid($res->userid)->first();
+            UserEmailVerification::userEmailSend($user);
             return Base::retError("链接已失效");
         }
         UserEmailVerification::where('code', $data['code'])

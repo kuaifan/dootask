@@ -8,9 +8,7 @@
                 <p>{{$L('今后您可以通过此邮箱重置您的账号密码')}}</p>
             </div>
             <div class="validation-text" v-if="error">
-                <div>{{$L('您的邮箱未通过验证，可能的原因：')}}</div>
-                <div>{{$L('1.验证码已过期')}}</div>
-                <div>{{$L('2.重复使用验证码')}}</div>
+                <div>{{$L('链接已过期，请重新发送')}}</div>
             </div>
             <div slot="footer" v-if="success">
                 <Button type="primary" @click="userLogout" long>{{$L('返回首页')}}</Button>
@@ -46,11 +44,14 @@ export default {
                 .then(({data}) => {
                     this.success = true;
                     this.error = false;
-                })
-                .catch(() => {
+                }).catch(({data, msg}) => {
+                if (data.code === 2) {
+                    this.goForward({path: '/'}, true);
+                } else {
                     this.success = false;
                     this.error = true;
-                });
+                }
+            });
         },
         userLogout() {
             this.$store.dispatch("logout", false)
