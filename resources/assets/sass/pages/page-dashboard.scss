@@ -116,20 +116,13 @@
                     display: flex;
                     background: #F9FAFB;
                     padding: 12px;
+                    margin-bottom: 8px;
+                    border-radius: 6px;
                     cursor: pointer;
-                    transition: transform 0.3s ease-out 0s;
-                    border-bottom: 1px solid #f1f2f3;
+                    transition: transform 0.3s ease-out 0s, box-shadow 0.3s ease-out 0s;
                     &:hover {
                         transform: translateX(-2px);
-                    }
-                    &:first-child {
-                        border-top-right-radius: 6px;
-                        border-top-left-radius: 6px;
-                    }
-                    &:last-child {
-                        border-bottom-right-radius: 6px;
-                        border-bottom-left-radius: 6px;
-                        border-bottom: 0;
+                        box-shadow: 0 0 6px #dfdfdf;
                     }
                     &.complete {
                         .item-title {
