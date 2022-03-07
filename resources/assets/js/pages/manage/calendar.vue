@@ -328,7 +328,7 @@ export default {
             }
             Store.set('addTask', {
                 times: [start, end],
-                owner: this.userId,
+                owner: [this.userId],
                 beforeClose: () => {
                     guide.clearGuideElement();
                 }

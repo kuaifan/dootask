@@ -176,7 +176,7 @@ export default {
                 cascader: [],
                 name: "",
                 content: "",
-                owner: 0,
+                owner: [],
                 add_assist: 1,
                 project_id: 0,
                 column_id: 0,
@@ -247,11 +247,7 @@ export default {
         },
 
         showAddAssist() {
-            const {owner} = this.addData;
-            if ($A.isArray(owner) && owner.includes(this.userId)) {
-                return false;
-            }
-            return owner != this.userId;
+            return !this.addData.owner.includes(this.userId);
         }
     },
     watch: {
@@ -376,8 +372,8 @@ export default {
             if (this.subName.trim() !== '') {
                 this.addData.subtasks.push({
                     name: this.subName.trim(),
+                    owner: [this.userId],
                     times: [],
-                    owner: this.userId
                 });
                 this.subName = '';
             }
@@ -489,7 +485,7 @@ export default {
                         cascader: [],
                         name: "",
                         content: "",
-                        owner: 0,
+                        owner: [],
                         add_assist: 1,
                         column_id: 0,
                         times: [],

@@ -799,7 +799,7 @@ export default {
         onAddTask(data) {
             this.$refs.addTask.defaultPriority();
             this.$refs.addTask.setData($A.isJson(data) ? data : {
-                'owner': this.userId,
+                'owner': [this.userId],
                 'column_id': data,
             });
             this.addTaskShow = true;
