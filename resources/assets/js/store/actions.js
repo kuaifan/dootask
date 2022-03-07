@@ -432,6 +432,7 @@ export default {
                 state.cacheProjects = [];
                 state.cacheColumns = [];
                 state.cacheTasks = [];
+                state.cacheTaskBrowse = [];
                 //
                 $A.setStorage("cacheProjectParameter", state.cacheProjectParameter);
                 $A.setStorage("cacheServerUrl", state.cacheServerUrl);
@@ -1382,7 +1383,21 @@ export default {
             }).then(() => {
                 dispatch("getTaskContent", task_id);
                 dispatch("getTaskFiles", task_id);
-                dispatch("getTaskForParent", task_id).catch(() => {})
+                dispatch("getTaskForParent", task_id).catch(() => {});
+                task.view_time = new Date().getTime();
+                let index = state.cacheTaskBrowse.findIndex(({id}) => id == task.id)
+                if (index > -1) {
+                    state.cacheTaskBrowse.splice(index, 1,task)
+                } else {
+                    state.cacheTaskBrowse.push(task)
+                }
+                if (state.cacheTaskBrowse.length > 10) {
+                    let deleteNum = state.cacheTaskBrowse.length - 10
+                    state.cacheTaskBrowse.splice(0, parseInt(deleteNum))
+                }
+                setTimeout(() => {
+                    $A.setStorage("cacheTaskBrowse", state.cacheTaskBrowse);
+                })
             }).catch(({msg}) => {
                 $A.modalWarning({
                     content: msg,

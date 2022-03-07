@@ -95,6 +95,11 @@
                     color: #666666;
                 }
             }
+
+            .task-title {
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
         }
         > ul {
             flex: 1;

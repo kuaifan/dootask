@@ -42,6 +42,30 @@
                                 <DropdownItem name="exportTask">{{$L('导出任务统计')}}</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
+                        <!--最近打开的任务-->
+                        <Dropdown
+                            v-else-if="item.path === 'taskBrowse'"
+                            placement="right-start">
+                            <DropdownItem divided>
+                                <div class="manage-menu-flex">
+                                    {{$L(item.name)}}
+                                    <Icon type="ios-arrow-forward"></Icon>
+                                </div>
+                            </DropdownItem>
+                            <DropdownMenu slot="list" v-if="taskBrowseLists.length > 0">
+                                <DropdownItem
+                                    v-for="(item, key) in taskBrowseLists"
+                                    class="task-title"
+                                    :key="key"
+                                    @click.native="openTask(item)"
+                                    :name="item.name">{{ item.name }}</DropdownItem>
+                            </DropdownMenu>
+                            <DropdownMenu v-else slot="list">
+                                <DropdownItem style="color: darkgrey;">
+                                    {{ $L('暂无打开记录') }}
+                                </DropdownItem>
+                            </DropdownMenu>
+                        </Dropdown>
                         <!-- 主题皮肤 -->
                         <Dropdown
                             v-else-if="item.path === 'theme'"
@@ -458,7 +482,8 @@ export default {
 
             'wsMsg',
 
-            'clientNewVersion'
+            'clientNewVersion',
+            'cacheTaskBrowse'
         ]),
 
         ...mapGetters(['taskData', 'dashboardTask']),
@@ -497,6 +522,8 @@ export default {
 
                     {path: 'team', name: '团队管理', divided: true},
 
+                    {path: 'taskBrowse', name: '最近打开的任务', divided: true},
+
                     {path: 'theme', name: '主题皮肤', divided: true},
 
                     {path: 'language', name: this.currentLanguage, divided: true},
@@ -513,6 +540,8 @@ export default {
 
                     {path: 'workReport', name: '工作报告', divided: true},
                     {path: 'archivedProject', name: '已归档的项目'},
+
+                    {path: 'taskBrowse', name: '最近打开的任务', divided: true},
 
                     {path: 'theme', name: '主题皮肤', divided: true},
 
@@ -558,7 +587,16 @@ export default {
                 'overlay-y': true,
                 'overlay-none': this.topOperateVisible === true,
             }
-        }
+        },
+
+        taskBrowseLists() {
+            const {cacheTaskBrowse} = this;
+            return $A.cloneJSON(cacheTaskBrowse).sort((a, b) => {
+                if (a.view_time || b.view_time) {
+                    return b.view_time - a.view_time;
+                }
+            });
+        },
     },
 
     watch: {
@@ -1028,6 +1066,11 @@ export default {
                 this.natificationHidden = !!document[hiddenProperty]
             }
             document.addEventListener(visibilityChangeEvent, visibilityChangeListener);
+        },
+
+        openTask(task) {
+            console.log('openTask',task);
+            this.$store.dispatch("openTask", task)
         },
     }
 }
