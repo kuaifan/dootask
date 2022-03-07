@@ -281,18 +281,31 @@
                 height: 52px;
                 flex-shrink: 0;
                 border-top: 1px solid #f4f5f5;
-                > i {
-                    cursor: pointer;
-                    font-size: 24px;
-                    margin: 0 24px;
-                    color: #aaaaaa;
-                    opacity: 0.9;
-                    &.active {
-                        opacity: 1;
-                        color: $primary-color;
+                .menu-icon {
+                    height: 100%;
+                    display: flex;
+                    align-items: center;
+                    position: relative;
+                    .menu-num {
+                        position: absolute;
+                        top: 4px;
+                        left: 50%;
+                        margin-left: 3px;
+                        transform: scale(0.8);
                     }
-                    &:hover {
-                        opacity: 1;
+                    > i {
+                        cursor: pointer;
+                        font-size: 24px;
+                        margin: 0 24px;
+                        color: #aaaaaa;
+                        opacity: 0.9;
+                        &.active {
+                            opacity: 1;
+                            color: $primary-color;
+                        }
+                        &:hover {
+                            opacity: 1;
+                        }
                     }
                 }
             }

@@ -152,7 +152,9 @@ export default {
                 },
             }).then(({data}) => {
                 this.read_list = data;
-                this.$refs.percent.updatePopper();
+                this.$nextTick(() => {
+                    this.$refs.percent.updatePopper();
+                })
             }).catch(() => {
                 this.read_list = [];
             });

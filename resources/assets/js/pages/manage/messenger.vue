@@ -90,8 +90,13 @@
                     </div>
                 </ScrollerY>
                 <div class="messenger-menu">
-                    <Icon @click="tabActive='dialog'" :class="{active:tabActive==='dialog'}" type="ios-chatbubbles" />
-                    <Icon @click="tabActive='contacts'" :class="{active:tabActive==='contacts'}" type="md-person" />
+                    <div class="menu-icon">
+                        <Icon @click="tabActive='dialog'" :class="{active:tabActive==='dialog'}" type="ios-chatbubbles" />
+                        <Badge class="menu-num" :count="msgUnread('all')"/>
+                    </div>
+                    <div class="menu-icon">
+                        <Icon @click="tabActive='contacts'" :class="{active:tabActive==='contacts'}" type="md-person" />
+                    </div>
                 </div>
             </div>
 
