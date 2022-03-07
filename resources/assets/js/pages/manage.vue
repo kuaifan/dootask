@@ -1069,7 +1069,6 @@ export default {
         },
 
         openTask(task) {
-            console.log('openTask',task);
             this.$store.dispatch("openTask", task)
         },
     }
