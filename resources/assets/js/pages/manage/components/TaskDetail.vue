@@ -15,6 +15,7 @@
         <div class="subtask-name">
             <Input
                 v-model="taskDetail.name"
+                ref="name"
                 type="textarea"
                 :rows="1"
                 :autosize="{ minRows: 1, maxRows: 8 }"
@@ -137,6 +138,7 @@
                 <div class="title">
                     <Input
                         v-model="taskDetail.name"
+                        ref="name"
                         type="textarea"
                         :rows="1"
                         :autosize="{ minRows: 1, maxRows: 8 }"
@@ -767,34 +769,37 @@ export default {
             }
         },
 
-        checkUpdate(update) {
+        checkUpdate(action) {
             let isModify = false;
             if (this.openTask.name != this.taskDetail.name) {
                 isModify = true;
-                if (update) {
+                if (action === true) {
                     this.updateData('name');
-                } else if (isModify) {
+                } else {
+                    action === false && this.$refs.name.focus();
                     return true
                 }
             }
             if (this.$refs.desc && this.$refs.desc.getContent() != this.taskContent) {
                 isModify = true;
-                if (update) {
+                if (action === true) {
                     this.updateData('content');
-                } else if (isModify) {
+                } else {
+                    action === false && this.$refs.desc.focus();
                     return true
                 }
             }
             if (this.addsubShow && this.addsubName) {
                 isModify = true;
-                if (update) {
+                if (action === true) {
                     this.onAddsub();
-                } else if (isModify) {
+                } else {
+                    action === false && this.$refs.addsub.focus();
                     return true
                 }
             }
             this.subList.some(({id}) => {
-                if (this.$refs[`subTask_${id}`][0].checkUpdate(update)) {
+                if (this.$refs[`subTask_${id}`][0].checkUpdate(action)) {
                     isModify = true;
                 }
             })

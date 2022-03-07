@@ -65,6 +65,7 @@ export default {
                             this.$Electron.sendMessage('windowDestroy');
                         },
                         onCancel: () => {
+                            this.$refs.taskDetail.checkUpdate(false);
                             this.canUpdateBlur = true;
                         }
                     });
