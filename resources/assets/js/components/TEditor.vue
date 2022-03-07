@@ -463,6 +463,13 @@
                 }
             },
 
+            focus() {
+                if (this.getEditor() === null) {
+                    return "";
+                }
+                return this.getEditor().focus();
+            },
+
             insertImage(src) {
                 this.insertContent('<img src="' + src + '">');
             },
