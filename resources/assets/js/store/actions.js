@@ -207,6 +207,7 @@ export default {
         dispatch("getProjects").catch(() => {});
         dispatch("getDialogs");
         dispatch("getTaskForDashboard");
+        dispatch("getTaskBrowse");
     },
 
     /**
@@ -424,20 +425,29 @@ export default {
             try {
                 const cacheLoginEmail = $A.getStorageString("cacheLoginEmail");
                 const cacheThemeMode = $A.getStorageString("cacheThemeMode");
+                let userId = state.userId > 0 ? state.userId : userInfo.userid;
+                const cacheTaskBrowse = $A.getStorageArray("cacheTaskBrowse" + userId)
+
                 //
-                window.localStorage.clear();
+                // window.localStorage.clear();
                 //
                 state.cacheUserBasic = [];
                 state.cacheDialogs = [];
                 state.cacheProjects = [];
                 state.cacheColumns = [];
                 state.cacheTasks = [];
-                state.cacheTaskBrowse = [];
+                state.cacheLoading = {};
+                state.cacheDrawerIndex = 0;
+                state.cacheDrawerOverlay = [];
+                state.cacheUserActive = {};
+                state.cacheUserWait = [];
+
                 //
                 $A.setStorage("cacheProjectParameter", state.cacheProjectParameter);
                 $A.setStorage("cacheServerUrl", state.cacheServerUrl);
                 $A.setStorage("cacheLoginEmail", cacheLoginEmail);
                 $A.setStorage("cacheThemeMode", cacheThemeMode);
+                $A.setStorage("cacheTaskBrowse" + userId, cacheTaskBrowse);
                 dispatch("saveUserInfo", $A.isJson(userInfo) ? userInfo : state.userInfo);
                 //
                 resolve()
@@ -1396,7 +1406,7 @@ export default {
                     state.cacheTaskBrowse.splice(0, parseInt(deleteNum))
                 }
                 setTimeout(() => {
-                    $A.setStorage("cacheTaskBrowse", state.cacheTaskBrowse);
+                    $A.setStorage("cacheTaskBrowse" + state.userId, state.cacheTaskBrowse);
                 })
             }).catch(({msg}) => {
                 $A.modalWarning({
@@ -2368,4 +2378,8 @@ export default {
     websocketClose({state}) {
         state.ws && state.ws.close();
     },
+
+    getTaskBrowse({state}) {
+        state.cacheTaskBrowse = $A.getStorageArray("cacheTaskBrowse" + state.userId);
+    }
 }
