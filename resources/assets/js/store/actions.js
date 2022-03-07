@@ -2192,13 +2192,14 @@ export default {
                                             if (mode === "chat") {
                                                 return;
                                             }
-                                            let dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
-                                            // 更新对话列表
-                                            if (dialog && state.cacheUnreads[data.id] === undefined) {
-                                                // 新增未读数
-                                                state.cacheUnreads[data.id] = true;
-                                                dialog.unread++;
-                                                dispatch("saveDialog", dialog)
+                                            if (data.userid !== state.userId) {
+                                                // 更新对话新增未读数
+                                                let dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
+                                                if (dialog && state.cacheUnreads[data.id] === undefined) {
+                                                    state.cacheUnreads[data.id] = true;
+                                                    dialog.unread++;
+                                                    dispatch("saveDialog", dialog)
+                                                }
                                             }
                                             Store.set('dialogMsgPush', data);
                                         }
