@@ -888,16 +888,17 @@ export default {
                 data: {
                     project_id: this.topOperateItem.id,
                 },
-            }).then(() => {
-                this.$store.dispatch("getProjects").then(() => {
+            }).then(({data}) => {
+                this.$store.dispatch("saveProject", data);
+                this.$nextTick(() => {
                     let active = this.$refs.projectWrapper.querySelector(".active")
                     if (active) {
                         $A.scrollToView(active, {
-                            behavior: 'smooth',
+                            behavior: 'instant',
                             scrollMode: 'if-needed',
                         });
                     }
-                }).catch(() => {});
+                });
             }).catch(({msg}) => {
                 $A.modalError(msg);
             });

@@ -469,9 +469,10 @@ export default {
                 data: {
                     dialog_id: this.topOperateItem.id,
                 },
-            }).then(() => {
-                this.$store.dispatch("getDialogs").then(() => {
-                    this.scrollIntoActive(true)
+            }).then(({data}) => {
+                this.$store.dispatch("saveDialog", data);
+                this.$nextTick(() => {
+                    this.scrollIntoActive(false)
                 });
             }).catch(({msg}) => {
                 $A.modalError(msg);

@@ -1906,6 +1906,9 @@ class ProjectController extends AbstractController
         }
         $projectUser->top_at = $projectUser->top_at ? null : Carbon::now();
         $projectUser->save();
-        return Base::retSuccess("success", $projectId);
+        return Base::retSuccess("success", [
+            'id' => $projectUser->project_id,
+            'top_at' => $projectUser->top_at?->toDateTimeString(),
+        ]);
     }
 }

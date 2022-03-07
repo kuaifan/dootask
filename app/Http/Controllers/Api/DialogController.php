@@ -485,6 +485,9 @@ class DialogController extends AbstractController
         }
         $dialogUser->top_at = $dialogUser->top_at ? null : Carbon::now();
         $dialogUser->save();
-        return Base::retSuccess("success", $dialogId);
+        return Base::retSuccess("success", [
+            'id' => $dialogUser->dialog_id,
+            'top_at' => $dialogUser->top_at?->toDateTimeString(),
+        ]);
     }
 }
