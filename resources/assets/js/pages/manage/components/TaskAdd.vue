@@ -353,7 +353,10 @@ export default {
             let tempc = $A.date2string(times, "Y-m-d H:i");
             if (tempc[0] && tempc[1]) {
                 if ($A.rightExists(tempc[0], '00:00') && $A.rightExists(tempc[1], '00:00')) {
-                    this.$set(times, 1, tempc[1].replace("00:00", "23:59"));
+                    this.$set(this.addData, 'times', [
+                        tempc[0],
+                        tempc[1].replace("00:00", "23:59")
+                    ])
                 }
             }
         },
