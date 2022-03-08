@@ -185,7 +185,7 @@ export default {
         },
 
         chackReleases() {
-            let hostName = $A.getDomain(window.systemInfo.apiUrl);
+            let hostName = $A.getDomain(window.systemInfo.homeUrl || window.systemInfo.apiUrl);
             if (hostName == "" || $A.leftExists(hostName, '127.0.0.1')) {
                 hostName = "public"
             }

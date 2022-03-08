@@ -45,6 +45,7 @@ function startBuild(data, publish) {
         title: data.name,
         version: config.version,
         origin: "./",
+        homeUrl:  utils.formatUrl(data.url),
         apiUrl:  utils.formatUrl(data.url) + "api/",
     }
     // drawio
