@@ -133,6 +133,9 @@ body {
                         cursor: pointer;
                         font-size: 21px;
                         padding: 0 6px;
+                        &.ivu-icon {
+                            font-size: 16px;
+                        }
                     }
                 }
             }

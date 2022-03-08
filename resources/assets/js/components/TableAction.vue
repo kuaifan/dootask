@@ -21,7 +21,16 @@
                     trigger="click"
                     class="menu-dropdown"
                     @command="onClick">
-                    <i class="aliicon menu-icon" v-html="item.icon" :style="item.style || {}"></i>
+                    <i
+                        v-if="isAliIcon(item.icon)"
+                        class="aliicon menu-icon"
+                        v-html="item.icon"
+                        :style="item.style || {}"/>
+                    <Icon
+                        v-else
+                        class="menu-icon"
+                        :type="item.icon"
+                        :style="item.style || {}"/>
                     <EDropdownMenu slot="dropdown">
                         <EDropdownItem
                             v-for="(d, k) in item.children"
@@ -34,11 +43,17 @@
                     </EDropdownMenu>
                 </EDropdown>
                 <i
-                    v-else
+                    v-else-if="isAliIcon(item.icon)"
                     class="aliicon menu-icon"
                     v-html="item.icon"
                     :style="item.style || {}"
-                    @click="onClick(item.action)"></i>
+                    @click="onClick(item.action)"/>
+                <Icon
+                    v-else
+                    class="menu-icon"
+                    :type="item.icon"
+                    :style="item.style || {}"
+                    @click="onClick(item.action)"/>
             </ETooltip>
         </div>
     </div>
@@ -111,6 +126,9 @@ Vue.use(VueResizeObserver);
             }
         },
         methods: {
+            isAliIcon(icon) {
+                return $A.leftExists(icon, '&#')
+            },
             handleIn() {
                 if (this.$refs.action.offsetWidth != this.width) {
                     this.onUpdate();
