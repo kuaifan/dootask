@@ -16,17 +16,15 @@
                                     <p>{{$L('项目负责人')}}</p>
                                 </UserAvatar>
                             </li>
-                            <template v-if="projectUser.length > 0 && windowWidth > 980">
-                                <template v-for="(item, index) in projectUser"  v-if="index < projectUserShowNum">
-                                    <li v-if="index + 1 == projectUserShowNum && projectUser.length > projectUserShowNum" class="more">
-                                        <ETooltip :content="$L('共' + (projectUser.length + 1) + '个成员')">
-                                            <Icon type="ios-more"/>
-                                        </ETooltip>
-                                    </li>
-                                    <li>
-                                        <UserAvatar :userid="item.userid" :size="36" :borderWitdh="2" :openDelay="0"/>
-                                    </li>
-                                </template>
+                            <template v-if="windowWidth > 980 && projectUser.length > 0" v-for="item in projectUser">
+                                <li v-if="item.userid === -1" class="more">
+                                    <ETooltip :content="$L('共' + (item.count + 1) + '个成员')">
+                                        <Icon type="ios-more"/>
+                                    </ETooltip>
+                                </li>
+                                <li v-else>
+                                    <UserAvatar :userid="item.userid" :size="36" :borderWitdh="2" :openDelay="0"/>
+                                </li>
                             </template>
                         </ul>
                     </li>
@@ -590,15 +588,22 @@ export default {
         },
 
         projectUser() {
-            const {projectData} = this;
+            const {projectData, windowWidth} = this;
             if (!projectData.project_user) {
                 return [];
             }
-            return projectData.project_user.filter(({userid}) => userid != projectData.owner_userid)
-        },
-
-        projectUserShowNum() {
-            return this.windowWidth > 1200 ? 8 : 3;
+            let max = windowWidth > 1200 ? 8 : 3
+            let list = projectData.project_user.filter(({userid}) => userid != projectData.owner_userid)
+            if (list.length <= max) {
+                return list
+            }
+            let array = list.slice(0, max - 1);
+            array.push({
+                userid: -1,
+                count: list.length
+            })
+            array.push(list[list.length - 1])
+            return array;
         },
 
         allTask() {
