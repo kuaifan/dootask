@@ -487,4 +487,46 @@ class DialogController extends AbstractController
         $dialogUser->save();
         return Base::retSuccess("success", $dialogId);
     }
+
+
+    /**
+     * @api {get} api/dialog/msg/mark          13. 消息标记操作
+     *
+     * @apiDescription  需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__mark
+     *
+     * @apiParam {Number} dialog_id            消息ID
+     * @apiParam {String} type       类型
+     * - read
+     * - unread
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__mark()
+    {
+        $user = User::auth();
+        $dialogId = intval(Request::input('dialog_id'));
+        $type = Request::input('type');
+        if ($type == 'read') {
+            WebSocketDialogMsgRead::whereUserid($user->userid)
+                ->whereReadAt(null)
+                ->whereDialogId($dialogId)
+                ->update(
+                    [
+                        'read_at' => Carbon::now()
+                    ]);
+        } elseif ($type == 'unread') {
+            $msgRead = WebSocketDialogMsgRead::whereUserid(User::userid())->whereDialogId($dialogId)->orderByDesc('id')->first();
+            if (!$msgRead) {
+                return Base::retError("对方未发任何消息，没法设置未读");
+            }
+            $msgRead->read_at = null;
+            $msgRead->save();
+        }
+        return Base::retSuccess("success");
+    }
 }
