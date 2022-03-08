@@ -155,6 +155,12 @@ class DialogController extends AbstractController
             $user->task_dialog_id = $dialog->id;
             $user->save();
         }
+        //去掉标记未读
+        $isMarkDialogUser = WebSocketDialogUser::whereDialogId($dialog->id)->whereUserid($user->userid)->whereIsMarkUnread(1)->first();
+        if ($isMarkDialogUser) {
+            $isMarkDialogUser->is_mark_unread = 0;
+            $isMarkDialogUser->save();
+        }
         //
         $data = $list->toArray();
         if ($list->currentPage() === 1) {
@@ -511,6 +517,10 @@ class DialogController extends AbstractController
         $user = User::auth();
         $dialogId = intval(Request::input('dialog_id'));
         $type = Request::input('type');
+        $dialogUser = WebSocketDialogUser::whereUserid($user->userid)->whereDialogId($dialogId)->first();
+        if (!$dialogUser) {
+            return Base::retError("会话不存在");
+        }
         if ($type == 'read') {
             WebSocketDialogMsgRead::whereUserid($user->userid)
                 ->whereReadAt(null)
@@ -519,13 +529,11 @@ class DialogController extends AbstractController
                     [
                         'read_at' => Carbon::now()
                     ]);
+            $dialogUser->is_mark_unread = 0;
+            $dialogUser->save();
         } elseif ($type == 'unread') {
-            $msgRead = WebSocketDialogMsgRead::whereUserid(User::userid())->whereDialogId($dialogId)->orderByDesc('id')->first();
-            if (!$msgRead) {
-                return Base::retError("对方未发任何消息，没法设置未读");
-            }
-            $msgRead->read_at = null;
-            $msgRead->save();
+            $dialogUser->is_mark_unread = 1;
+            $dialogUser->save();
         }
         return Base::retSuccess("success");
     }
