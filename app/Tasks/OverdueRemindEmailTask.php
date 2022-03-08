@@ -34,8 +34,8 @@ class OverdueRemindEmailTask extends AbstractTask
             }
             if ($hours2 > 0) {
                 $taskLists2 = ProjectTask::whereNull('complete_at')
-                    ->where('end_at', '>=', Carbon::now()->subMinutes($hours2 * 60 - 3)->rawFormat('Y-m-d H:i:s'))
-                    ->where('end_at', '<=', Carbon::now()->subMinutes($hours * 60 + 3)->rawFormat('Y-m-d H:i:s'))
+                    ->where('end_at', '>=', Carbon::now()->subMinutes($hours2 * 60 + 3)->rawFormat('Y-m-d H:i:s'))
+                    ->where('end_at', '<=', Carbon::now()->subMinutes($hours2 * 60 - 3)->rawFormat('Y-m-d H:i:s'))
                     ->whereNull('archived_at')
                     ->take(100)
                     ->get()
