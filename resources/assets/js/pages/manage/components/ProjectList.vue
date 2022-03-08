@@ -858,14 +858,24 @@ export default {
                 $A.messageSuccess(msg);
                 this.sortDisabled = false;
                 //
-                if (!data.only_column) {
-                    let sort,
-                        upTask = [];
+                let sort,
+                    upData = [];
+                if (data.only_column) {
+                    sort = -1;
+                    data.sort.forEach((item) => {
+                        sort++;
+                        upData.push({
+                            id: item.id,
+                            sort,
+                        })
+                    })
+                    this.$store.dispatch("saveColumn", upData)
+                } else {
                     data.sort.forEach((item) => {
                         sort = -1;
-                        upTask.push(...item.task.map(id => {
+                        upData.push(...item.task.map(id => {
                             sort++;
-                            upTask.push(...this.allTask.filter(task => {
+                            upData.push(...this.allTask.filter(task => {
                                 return task.parent_id == id
                             }).map(({id}) => {
                                 return {
@@ -881,7 +891,7 @@ export default {
                             }
                         }))
                     })
-                    this.$store.dispatch("saveTask", upTask)
+                    this.$store.dispatch("saveTask", upData)
                 }
             }).catch(({msg}) => {
                 $A.modalError(msg);
