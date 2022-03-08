@@ -60,17 +60,26 @@
                 </li>
             </ul>
         </div>
-        <Table :columns="columns" :data="list" :no-data-text="$L(noText)"></Table>
-        <Page
-            class="page-container"
-            :total="total"
-            :current="page"
-            :pageSize="pageSize"
-            :disabled="loadIng > 0"
-            :simple="windowMax768"
-            showTotal
-            @on-change="setPage"
-            @on-page-size-change="setPageSize"/>
+        <div class="table-page-box">
+            <Table
+                :columns="columns"
+                :data="list"
+                :loading="loadIng > 0"
+                :no-data-text="$L(noText)"
+                stripe/>
+            <Page
+                :total="total"
+                :current="page"
+                :page-size="pageSize"
+                :disabled="loadIng > 0"
+                :simple="windowMax768"
+                :page-size-opts="[10,20,30,50,100]"
+                show-elevator
+                show-sizer
+                show-total
+                @on-change="setPage"
+                @on-page-size-change="setPageSize"/>
+        </div>
     </div>
 </template>
 
@@ -104,10 +113,19 @@ export default {
         initLanguage() {
             this.columns = [
                 {
-                    title: this.$L('ID'),
-                    minWidth: 50,
-                    maxWidth: 70,
+                    title: 'ID',
                     key: 'userid',
+                    width: 80,
+                    render: (h, {row, column}) => {
+                        return h('TableAction', {
+                            props: {
+                                column: column,
+                                align: 'left'
+                            }
+                        }, [
+                            h("div", row.userid),
+                        ]);
+                    }
                 },
                 {
                     title: this.$L('邮箱'),

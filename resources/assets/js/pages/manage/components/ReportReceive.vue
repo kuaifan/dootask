@@ -49,26 +49,26 @@
             </ul>
         </div>
 
-        <Table
-            class="tableFill report-row-content"
-            ref="tableRef"
-            :columns="columns" :data="lists"
-            :loading="loadIng > 0"
-            :no-data-text="$L(noDataText)"
-            stripe/>
-        <Page
-            class="page-box report-row-foot"
-            :total="listTotal"
-            :current="listPage"
-            :disabled="loadIng > 0"
-            @on-change="setPage"
-            @on-page-size-change="setPageSize"
-            :page-size-opts="[10,20,30,50,100]"
-            placement="top"
-            show-elevator
-            show-sizer
-            show-total
-            transfer/>
+        <div class="table-page-box">
+            <Table
+                :columns="columns"
+                :data="lists"
+                :loading="loadIng > 0"
+                :no-data-text="$L(noDataText)"
+                stripe/>
+            <Page
+                :total="listTotal"
+                :current="listPage"
+                :page-size="listPageSize"
+                :disabled="loadIng > 0"
+                :simple="windowMax768"
+                :page-size-opts="[10,20,30,50,100]"
+                show-elevator
+                show-sizer
+                show-total
+                @on-change="setPage"
+                @on-page-size-change="setPageSize"/>
+        </div>
     </div>
 </template>
 
@@ -84,7 +84,7 @@ export default {
             lists: [],
             listPage: 1,
             listTotal: 0,
-            listPageSize: 10,
+            listPageSize: 20,
             noDataText: "",
 
             username: '',
@@ -97,7 +97,7 @@ export default {
         this.getLists();
     },
     computed: {
-        ...mapState(['userId'])
+        ...mapState(['userId', 'windowMax768'])
     },
     methods: {
         initLanguage() {
@@ -124,7 +124,6 @@ export default {
                             h('span', row.title)
                         )
                     }
-
                     return h('div', arr)
                 }
             }, {
@@ -132,31 +131,35 @@ export default {
                 key: 'type',
                 align: 'center',
                 sortable: true,
-                maxWidth: 80,
+                width: 80,
             }, {
                 title: this.$L("接收时间"),
                 key: 'receive_time',
                 align: 'center',
                 sortable: true,
-                maxWidth: 180,
+                width: 180,
             }, {
                 title: this.$L("操作"),
                 align: 'center',
-                width: 100,
-                minWidth: 100,
+                width: 90,
+                minWidth: 90,
                 render: (h, {column, row}) => {
                     if (!row.id) {
                         return null;
                     }
-                    const vNodes = [
-                        h('ETooltip', {
-                            props: {content: this.$L('查看'), transfer: true, delay: 600},
-                            style: {position: 'relative'},
-                        }, [h('Icon', {
-                            props: {type: 'md-eye', size: 16},
-                            style: {margin: '0 3px', cursor: 'pointer'},
-                            on: {
-                                click: () => {
+                    return h('TableAction', {
+                        props: {
+                            column,
+                            menu: [
+                                {
+                                    icon: "md-eye",
+                                    action: "view",
+                                }
+                            ]
+                        },
+                        on: {
+                            action: (name) => {
+                                if (name === 'view') {
                                     this.$emit("on-view", row)
                                     const myUser = row.receives_user.find(({userid}) => userid == this.userId)
                                     if (myUser) {
@@ -164,13 +167,8 @@ export default {
                                     }
                                 }
                             }
-                        })])
-                    ];
-                    return h('TableAction', {
-                        props: {
-                            column: column
                         }
-                    }, vNodes);
+                    });
                 },
             }];
             this.reportTypeList = [

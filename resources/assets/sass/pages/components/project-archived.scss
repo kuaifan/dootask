@@ -5,7 +5,9 @@
     right: 0;
     bottom: 0;
     padding: 20px;
-    overflow: auto;
+    display: flex;
+    flex-direction: column;
+
     .archived-title {
         color: #333333;
         font-size: 20px;
@@ -14,6 +16,7 @@
         margin-bottom: 24px;
         display: flex;
         align-items: center;
+
         .title-icon {
             display: flex;
             align-items: center;
@@ -21,9 +24,15 @@
             height: 14px;
             margin-left: 4px;
             margin-top: 2px;
+
             > i {
                 cursor: pointer;
             }
         }
+    }
+
+    .table-page-box {
+        flex: 1;
+        height: 0;
     }
 }

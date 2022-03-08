@@ -30,17 +30,26 @@
                 </li>
             </ul>
         </div>
-        <Table :columns="columns" :data="list" :no-data-text="$L(noText)"></Table>
-        <Page
-            class="page-container"
-            :total="total"
-            :current="page"
-            :pageSize="pageSize"
-            :disabled="loadIng > 0"
-            :simple="windowMax768"
-            showTotal
-            @on-change="setPage"
-            @on-page-size-change="setPageSize"/>
+        <div class="table-page-box">
+            <Table
+                :columns="columns"
+                :data="list"
+                :loading="loadIng > 0"
+                :no-data-text="$L(noText)"
+                stripe/>
+            <Page
+                :total="total"
+                :current="page"
+                :page-size="pageSize"
+                :disabled="loadIng > 0"
+                :simple="windowMax768"
+                :page-size-opts="[10,20,30,50,100]"
+                show-elevator
+                show-sizer
+                show-total
+                @on-change="setPage"
+                @on-page-size-change="setPageSize"/>
+        </div>
     </div>
 </template>
 
@@ -74,10 +83,19 @@ export default {
         initLanguage() {
             this.columns = [
                 {
-                    title: this.$L('ID'),
+                    title: 'ID',
                     key: 'id',
-                    minWidth: 50,
-                    maxWidth: 70,
+                    width: 80,
+                    render: (h, {row, column}) => {
+                        return h('TableAction', {
+                            props: {
+                                column: column,
+                                align: 'left'
+                            }
+                        }, [
+                            h("div", row.id),
+                        ]);
+                    }
                 },
                 {
                     title: this.$L('项目名称'),
@@ -127,51 +145,50 @@ export default {
                     align: 'center',
                     width: 100,
                     render: (h, params) => {
-                        const recoveryNode = h('Poptip', {
-                            props: {
-                                title: this.$L('你确定要还原归档吗？'),
-                                confirm: true,
-                                transfer: true,
-                                placement: 'left',
-                            },
-                            style: {
-                                fontSize: '13px',
-                                cursor: 'pointer',
-                                color: '#8bcf70',
-                            },
-                            on: {
-                                'on-ok': () => {
-                                    this.recovery(params.row);
-                                }
-                            },
-                        }, this.$L('还原'));
-                        const deleteNode = h('Poptip', {
-                            props: {
-                                title: this.$L('你确定要删除项目吗？'),
-                                confirm: true,
-                                transfer: true,
-                                placement: 'left',
-                            },
-                            style: {
-                                marginLeft: '6px',
-                                fontSize: '13px',
-                                cursor: 'pointer',
-                                color: '#f00',
-                            },
-                            on: {
-                                'on-ok': () => {
-                                    this.delete(params.row);
-                                }
-                            },
-                        }, this.$L('删除'));
+                        const vNode = [
+                            h('Poptip', {
+                                props: {
+                                    title: this.$L('你确定要还原归档吗？'),
+                                    confirm: true,
+                                    transfer: true,
+                                    placement: 'left',
+                                },
+                                style: {
+                                    fontSize: '13px',
+                                    cursor: 'pointer',
+                                    color: '#8bcf70',
+                                },
+                                on: {
+                                    'on-ok': () => {
+                                        this.recovery(params.row);
+                                    }
+                                },
+                            }, this.$L('还原')),
+                            h('Poptip', {
+                                props: {
+                                    title: this.$L('你确定要删除项目吗？'),
+                                    confirm: true,
+                                    transfer: true,
+                                    placement: 'left',
+                                },
+                                style: {
+                                    marginLeft: '8px',
+                                    fontSize: '13px',
+                                    cursor: 'pointer',
+                                    color: '#f00',
+                                },
+                                on: {
+                                    'on-ok': () => {
+                                        this.delete(params.row);
+                                    }
+                                },
+                            }, this.$L('删除'))
+                        ];
                         return h('TableAction', {
                             props: {
                                 column: params.column
                             }
-                        }, [
-                            recoveryNode,
-                            deleteNode,
-                        ]);
+                        }, vNode);
                     },
                 }
             ]

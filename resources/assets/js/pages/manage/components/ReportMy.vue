@@ -46,30 +46,32 @@
             </div>
         </div>
 
-        <Table
-            class="tableFill report-row-content"
-            ref="tableRef"
-            :columns="columns" :data="lists"
-            :loading="loadIng > 0"
-            :no-data-text="$L(noDataText)"
-            stripe/>
-        <Page
-            class="page-box report-row-foot"
-            :total="listTotal"
-            :current="listPage"
-            :disabled="loadIng > 0"
-            @on-change="setPage"
-            @on-page-size-change="setPageSize"
-            :page-size-opts="[10,20,30,50,100]"
-            placement="top"
-            show-elevator
-            show-sizer
-            show-total
-            transfer/>
+        <div class="table-page-box">
+            <Table
+                :columns="columns"
+                :data="lists"
+                :loading="loadIng > 0"
+                :no-data-text="$L(noDataText)"
+                stripe/>
+            <Page
+                :total="listTotal"
+                :current="listPage"
+                :page-size="listPageSize"
+                :disabled="loadIng > 0"
+                :simple="windowMax768"
+                :page-size-opts="[10,20,30,50,100]"
+                show-elevator
+                show-sizer
+                show-total
+                @on-change="setPage"
+                @on-page-size-change="setPageSize"/>
+        </div>
     </div>
 </template>
 
 <script>
+import {mapState} from "vuex";
+
 export default {
     name: "ReportMy",
     data() {
@@ -79,8 +81,9 @@ export default {
             lists: [],
             listPage: 1,
             listTotal: 0,
-            listPageSize: 10,
+            listPageSize: 20,
             noDataText: "",
+
             createAt: [],
             reportType: '',
             reportTypeList: [],
@@ -88,6 +91,9 @@ export default {
     },
     mounted() {
         this.getLists();
+    },
+    computed: {
+        ...mapState(['windowMax768'])
     },
     methods: {
         initLanguage() {
@@ -102,13 +108,13 @@ export default {
                 key: 'type',
                 align: 'center',
                 sortable: true,
-                maxWidth: 80,
+                width: 80,
             }, {
                 title: this.$L("汇报时间"),
                 key: 'created_at',
                 align: 'center',
                 sortable: true,
-                maxWidth: 180,
+                width: 180,
             }, {
                 title: this.$L("操作"),
                 align: 'center',
@@ -118,36 +124,27 @@ export default {
                     if (!row.id) {
                         return null;
                     }
-                    const vNodes = [
-                        h('ETooltip', {
-                            props: {content: this.$L('编辑'), transfer: true, delay: 600}
-                        }, [h('Icon', {
-                            props: {type: 'md-create', size: 16},
-                            style: {margin: '0 3px', cursor: 'pointer'},
-                            on: {
-                                click: () => {
-                                    this.$emit("on-edit", row.id);
-                                }
-                            }
-                        })]),
-                        h('ETooltip', {
-                            props: {content: this.$L('查看'), transfer: true, delay: 600},
-                            style: {position: 'relative', marginLeft: '6px'},
-                        }, [h('Icon', {
-                            props: {type: 'md-eye', size: 16},
-                            style: {margin: '0 3px', cursor: 'pointer'},
-                            on: {
-                                click: () => {
-                                    this.$emit("on-view", row);
-                                }
-                            }
-                        })]),
-                    ];
                     return h('TableAction', {
                         props: {
-                            column
+                            column,
+                            menu: [
+                                {
+                                    icon: "md-create",
+                                    action: "edit",
+                                },
+                                {
+                                    icon: "md-eye",
+                                    action: "view",
+                                }
+                            ]
+                        },
+                        on: {
+                            action: (name) => {
+                                if (name === 'edit') this.$emit("on-edit", row.id);
+                                if (name === 'view') this.$emit("on-view", row);
+                            }
                         }
-                    }, vNodes);
+                    });
                 },
             }];
             this.reportTypeList = [
