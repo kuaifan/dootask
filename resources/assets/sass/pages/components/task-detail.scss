@@ -243,6 +243,9 @@
                         margin-bottom: -3px;
                         > li {
                             margin-bottom: 2px;
+                            &.tip {
+                                color: #999;
+                            }
                             .file-load {
                                 margin: 0;
                                 padding: 2px;

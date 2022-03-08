@@ -243,7 +243,7 @@ class ProjectTask extends AbstractModel
      */
     public function taskFile(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(ProjectTaskFile::class, 'task_id', 'id')->orderBy('id');
+        return $this->hasMany(ProjectTaskFile::class, 'task_id', 'id')->orderByDesc('id')->limit(50);
     }
 
     /**
