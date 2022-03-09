@@ -608,9 +608,7 @@ class UsersController extends AbstractController
         $time = time();
         //24个小时失效
         if (abs($time - $oldTime) > 86400) {
-            $user = User::whereUserid($res->userid)->first();
-            UserEmailVerification::userEmailSend($user);
-            return Base::retError("链接已过期，已重新发送");
+            return Base::retError("链接已失效，请重新登录/注册");
         }
         UserEmailVerification::where('code', $data['code'])
             ->update([
