@@ -598,7 +598,7 @@ class UsersController extends AbstractController
             return Base::retError($validator->errors()->first());
         $res = UserEmailVerification::where('code', $data['code'])->first();
         if (empty($res)) {
-            return Base::retError('链接已失效');
+            return Base::retError('无效连接,请重新注册');
         }
         // 如果已经校验过
         if (intval($res->status) === 1)
@@ -610,7 +610,7 @@ class UsersController extends AbstractController
         if (abs($time - $oldTime) > 86400) {
             $user = User::whereUserid($res->userid)->first();
             UserEmailVerification::userEmailSend($user);
-            return Base::retError("链接已失效");
+            return Base::retError("链接已过期，已重新发送");
         }
         UserEmailVerification::where('code', $data['code'])
             ->update([
