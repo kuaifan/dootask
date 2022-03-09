@@ -13,7 +13,7 @@
 
 - 必须安装：`Docker` 和 `Docker Compose v2.0+`
 - 支持环境：`Centos/Debian/Ubuntu/macOS`
-- 硬件建议：2核2G以上
+- 硬件建议：2核4G以上
 
 ### 部署项目
 
@@ -105,8 +105,9 @@ git pull
 ./cmd uninstall
 ./cmd install
 ./cmd mysql recovery
-./cmd artisan migrate
 ```
+
+如果升级后出现502请运行 `./cmd restart` 重启服务即可。
 
 ## 卸载项目
 

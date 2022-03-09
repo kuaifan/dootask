@@ -8,7 +8,6 @@ const fsProm = require('fs/promises');
 const PDFDocument = require('pdf-lib').PDFDocument;
 const crc = require('crc');
 const zlib = require('zlib');
-const azip = require("adm-zip");
 const utils = require('./utils');
 const config = require('./package.json');
 
@@ -1123,26 +1122,6 @@ function unwatchFile(path) {
     return null
 }
 
-function unzip(path, output) {
-    let zip = new azip(path, {});
-    try {
-        zip.extractAllTo(output, true, false, null);
-        return true;
-    } catch (e) {
-        return false;
-    }
-}
-
-function relaunch() {
-    app.relaunch();
-    return null
-}
-
-function exit() {
-    app.exit();
-    return null
-}
-
 ipcMain.on("rendererReq", async (event, args) => {
     try {
         let ret = null;
@@ -1210,18 +1189,6 @@ ipcMain.on("rendererReq", async (event, args) => {
                 break;
             case 'unwatchFile':
                 ret = await unwatchFile(args.path);
-                break;
-            case 'getAppPath':
-                ret = app.getAppPath();
-                break;
-            case 'unzip':
-                ret = unzip(args.path, args.output);
-                break;
-            case 'relaunch':
-                ret = relaunch();
-                break;
-            case 'exit':
-                ret = exit();
                 break;
         }
 

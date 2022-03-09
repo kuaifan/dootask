@@ -13,7 +13,7 @@ Group No.: `546574618`
 
 - `Docker` & `Docker Compose v2.0+` must be installed
 - System: `Centos/Debian/Ubuntu/macOS`
-- Hardware suggestion: 2 cores and above 2G memory
+- Hardware suggestion: 2 cores and above 4G memory
 
 ### Deployment project
 
@@ -104,8 +104,9 @@ git pull
 ./cmd uninstall
 ./cmd install
 ./cmd mysql recovery
-./cmd artisan migrate
 ```
+
+If 502 after the upgrade please run `./cmd restart` restart the service.
 
 ## Uninstall
 

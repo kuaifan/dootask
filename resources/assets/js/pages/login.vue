@@ -31,13 +31,13 @@
                 </div>
             </div>
             <div class="login-bottom">
-                <Dropdown trigger="click" placement="bottom-start">
+                <Dropdown trigger="click" placement="top-start">
                     <div class="login-setting">
                         {{$L('设置')}}
                         <i class="taskfont">&#xe689;</i>
                     </div>
-                    <Dropdown-menu slot="list" class="login-setting-menu">
-                        <Dropdown placement="right" @on-click="setTheme">
+                    <DropdownMenu slot="list" class="login-setting-menu">
+                        <Dropdown placement="right-end" @on-click="setTheme">
                             <DropdownItem>
                                 <div class="login-setting-item">
                                     {{$L('主题皮肤')}}
@@ -48,7 +48,7 @@
                                 <Dropdown-item v-for="(item, key) in themeList" :key="key" :name="item.value" :selected="themeMode === item.value">{{$L(item.name)}}</Dropdown-item>
                             </DropdownMenu>
                         </Dropdown>
-                        <Dropdown placement="right" @on-click="setLanguage">
+                        <Dropdown placement="right-end" @on-click="setLanguage">
                             <DropdownItem divided>
                                 <div class="login-setting-item">
                                     {{currentLanguage}}
@@ -59,7 +59,7 @@
                                 <Dropdown-item v-for="(item, key) in languageList" :key="key" :name="key" :selected="getLanguage() === key">{{item}}</Dropdown-item>
                             </DropdownMenu>
                         </Dropdown>
-                    </Dropdown-menu>
+                    </DropdownMenu>
                 </Dropdown>
                 <div class="login-forgot">{{$L('忘记密码了？')}}<a href="javascript:void(0)" @click="forgotPassword">{{$L('重置密码')}}</a></div>
             </div>
@@ -137,7 +137,7 @@ export default {
         },
 
         welcomeTitle() {
-            let title = window.systemInfo.title || "Dootask";
+            let title = window.systemInfo.title || "DooTask";
             if (title == "PublicDooTask") {
                 return "Public DooTask"
             } else {
