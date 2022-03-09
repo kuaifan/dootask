@@ -1233,29 +1233,27 @@ export default {
      * 删除任务
      * @param state
      * @param dispatch
-     * @param task_id
+     * @param data
      * @returns {Promise<unknown>}
      */
-    removeTask({state, dispatch}, task_id) {
+    removeTask({state, dispatch}, data) {
         return new Promise(function (resolve, reject) {
-            if ($A.runNum(task_id) === 0) {
+            if ($A.runNum(data.task_id) === 0) {
                 reject({msg: 'Parameter error'});
                 return;
             }
-            dispatch("taskLoadStart", task_id)
+            dispatch("taskLoadStart", data.task_id)
             dispatch("call", {
                 url: 'project/task/remove',
-                data: {
-                    task_id: task_id,
-                },
+                data,
             }).then(result => {
-                dispatch("forgetTask", task_id)
-                dispatch("taskLoadEnd", task_id)
+                dispatch("forgetTask", data.task_id)
+                dispatch("taskLoadEnd", data.task_id)
                 resolve(result)
             }).catch(e => {
                 console.warn(e);
-                dispatch("getTaskOne", task_id).catch(() => {})
-                dispatch("taskLoadEnd", task_id)
+                dispatch("getTaskOne", data.task_id).catch(() => {})
+                dispatch("taskLoadEnd", data.task_id)
                 reject(e)
             });
         });

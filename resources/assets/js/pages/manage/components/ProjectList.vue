@@ -57,6 +57,7 @@
                                 <EDropdownItem command="invite">{{$L('邀请链接')}}</EDropdownItem>
                                 <EDropdownItem command="log" divided>{{$L('项目动态')}}</EDropdownItem>
                                 <EDropdownItem command="archived_task">{{$L('已归档任务')}}</EDropdownItem>
+                                <EDropdownItem command="deleted_task">{{$L('已删除任务')}}</EDropdownItem>
                                 <EDropdownItem command="transfer" divided>{{$L('移交项目')}}</EDropdownItem>
                                 <EDropdownItem command="archived">{{$L('归档项目')}}</EDropdownItem>
                                 <EDropdownItem command="delete" style="color:#f40">{{$L('删除项目')}}</EDropdownItem>
@@ -64,6 +65,7 @@
                             <EDropdownMenu v-else slot="dropdown">
                                 <EDropdownItem command="log">{{$L('项目动态')}}</EDropdownItem>
                                 <EDropdownItem command="archived_task">{{$L('已归档任务')}}</EDropdownItem>
+                                <EDropdownItem command="deleted_task">{{$L('已删除任务')}}</EDropdownItem>
                                 <EDropdownItem command="exit" divided style="color:#f40">{{$L('退出项目')}}</EDropdownItem>
                             </EDropdownMenu>
                         </EDropdown>
@@ -433,6 +435,14 @@
             :size="900">
             <TaskArchived v-if="archivedTaskShow" :project-id="projectId"/>
         </DrawerOverlay>
+
+        <!--查看已删除任务-->
+        <DrawerOverlay
+            v-model="deletedTaskShow"
+            placement="right"
+            :size="900">
+            <TaskDeleted v-if="deletedTaskShow" :project-id="projectId"/>
+        </DrawerOverlay>
     </div>
 </template>
 
@@ -454,6 +464,7 @@ import ProjectLog from "./ProjectLog";
 import DrawerOverlay from "../../../components/DrawerOverlay";
 import ProjectWorkflow from "./ProjectWorkflow";
 import TaskMenu from "./TaskMenu";
+import TaskDeleted from "./TaskDeleted";
 
 export default {
     name: "ProjectList",
@@ -461,7 +472,7 @@ export default {
         TaskMenu,
         ProjectWorkflow,
         DrawerOverlay,
-        ProjectLog, TaskArchived, TaskRow, Draggable, TaskAddSimple, UserInput, TaskAdd, TaskPriority},
+        ProjectLog, TaskArchived, TaskRow, Draggable, TaskAddSimple, UserInput, TaskAdd, TaskPriority, TaskDeleted },
     data() {
         return {
             nowTime: $A.Time(),
@@ -500,6 +511,7 @@ export default {
             workflowShow: false,
             logShow: false,
             archivedTaskShow: false,
+            deletedTaskShow: false,
 
             projectDialogSubscribe: null,
 
@@ -1147,6 +1159,10 @@ export default {
 
                 case "archived_task":
                     this.archivedTaskShow = true;
+                    break;
+
+                case "deleted_task":
+                    this.deletedTaskShow = true;
                     break;
 
                 case "transfer":

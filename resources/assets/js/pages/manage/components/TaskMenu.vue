@@ -250,7 +250,7 @@ export default {
         archivedOrRemoveTask(type) {
             let typeDispatch = 'removeTask';
             let typeName = '删除';
-            let typeData = this.task.id;
+            let typeData = {task_id: this.task.id};
             let typeTask = this.task.parent_id > 0 ? '子任务' : '任务';
             if (type == 'archived') {
                 typeDispatch = 'archivedTask'

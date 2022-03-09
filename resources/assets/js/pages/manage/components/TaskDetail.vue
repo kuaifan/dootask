@@ -73,7 +73,7 @@
         <div v-show="taskDetail.id > 0" class="task-info">
             <div class="head">
                 <TaskMenu
-                    v-if="taskId > 0"
+                    v-if="taskId > 0 && !taskDetail.deleted_at"
                     :ref="`taskMenu_${taskDetail.id}`"
                     :task="taskDetail"
                     class="icon"
@@ -85,6 +85,9 @@
                 </div>
                 <div v-if="taskDetail.archived_at" class="flow">
                     <span class="archived" @click.stop="openMenu(taskDetail)">{{$L('已归档')}}</span>
+                </div>
+                <div v-if="taskDetail.deleted_at" class="flow">
+                    <span class="archived">{{$L('已删除')}}</span>
                 </div>
                 <div class="nav">
                     <p v-if="projectName"><span>{{projectName}}</span></p>
@@ -116,14 +119,14 @@
                                 <Button :loading="ownerLoad > 0" size="small" type="primary" @click="onOwner(true)">确定</Button>
                             </div>
                         </div>
-                        <Button slot="reference" :loading="ownerLoad > 0" class="pick" type="primary">{{$L('我要领取任务')}}</Button>
+                        <Button v-if="!taskDetail.deleted_at" slot="reference" :loading="ownerLoad > 0" class="pick" type="primary">{{$L('我要领取任务')}}</Button>
                     </EPopover>
                     <ETooltip v-if="$Electron" :content="$L('新窗口打开')">
                         <i class="taskfont open" @click="openNewWin">&#xe776;</i>
                     </ETooltip>
                     <div class="menu">
                         <TaskMenu
-                            v-if="taskId > 0"
+                            v-if="taskId > 0 && !taskDetail.deleted_at"
                             :task="taskDetail"
                             icon="ios-more"
                             completed-icon="ios-more"
@@ -336,7 +339,7 @@
                         </ul>
                     </FormItem>
                 </Form>
-                <div v-if="menuList.length > 0" class="add">
+                <div v-if="menuList.length > 0 && !taskDetail.deleted_at" class="add">
                     <EDropdown
                         trigger="click"
                         placement="bottom"
@@ -379,21 +382,21 @@
                 <div class="head">
                     <Icon class="icon" type="ios-chatbubbles-outline" />
                     <div class="nav">
-                        <p :class="{active:navActive=='dialog'}" @click="navActive='dialog'">{{$L('聊天')}}</p>
-                        <p :class="{active:navActive=='log'}" @click="navActive='log'">{{$L('动态')}}</p>
+                        <p :class="{active:navActive=='dialog'}" @click="navActive='dialog'"  v-if="!taskDetail.deleted_at">{{$L('聊天')}}</p>
+                        <p :class="{active:navActive=='log' || taskDetail.deleted_at}" @click="navActive='log'">{{$L('动态')}}</p>
                         <div v-if="navActive=='log'" class="refresh">
                             <Loading v-if="logLoadIng"/>
                             <Icon v-else type="ios-refresh" @click="getLogLists"></Icon>
                         </div>
                     </div>
                 </div>
-                <ProjectLog v-if="navActive=='log' && taskId > 0" ref="log" :task-id="taskDetail.id" :show-load="false" @on-load-change="logLoadChange"/>
+                <ProjectLog v-if="(navActive=='log' || taskDetail.deleted_at) && taskId > 0" ref="log" :task-id="taskDetail.id" :show-load="false" @on-load-change="logLoadChange"/>
                 <div v-else class="no-dialog"
                      @drop.prevent="taskPasteDrag($event, 'drag')"
                      @dragover.prevent="taskDragOver(true, $event)"
                      @dragleave.prevent="taskDragOver(false, $event)">
                     <div class="no-tip">{{$L('暂无消息')}}</div>
-                    <div class="no-input">
+                    <div class="no-input" v-if="!taskDetail.deleted_at">
                         <DragInput
                             class="dialog-input"
                             v-model="msgText"

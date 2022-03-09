@@ -42,6 +42,7 @@ use Request;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property int|null $deleted_userid 删除会员
  * @property-read \App\Models\ProjectTaskContent|null $content
  * @property-read int $file_num
  * @property-read int $msg_num
@@ -60,7 +61,7 @@ use Request;
  * @property-read int|null $task_user_count
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask allData($userid = null)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask authData($userid = null, $owner = null)
- * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask betweenTime($start, $end)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask betweenTime($start, $end, $type)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask newQuery()
  * @method static \Illuminate\Database\Query\Builder|ProjectTask onlyTrashed()
@@ -73,6 +74,7 @@ use Request;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereCompleteAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereDeletedUserid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereDesc($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereDialogId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereEndAt($value)
@@ -1192,6 +1194,7 @@ class ProjectTask extends AbstractModel
     public static function userTask($task_id, $archived = true, $permission = 0, $with = [])
     {
         $task = self::with($with)->allData()->where("project_tasks.id", intval($task_id))->first();
+        $task = $task ?: ProjectTask::where("project_tasks.id", intval($task_id))->onlyTrashed()->first();
         //
         if (empty($task)) {
             throw new ApiException('任务不存在', [ 'task_id' => $task_id ], -4002);

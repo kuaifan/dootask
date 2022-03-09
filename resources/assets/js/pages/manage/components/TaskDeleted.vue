@@ -1,7 +1,7 @@
 <template>
     <div class="task-archived">
         <div class="archived-title">
-            {{$L('归档的任务')}}
+            {{$L('删除的任务')}}
             <div class="title-icon">
                 <Loading v-if="loadIng > 0"/>
             </div>
@@ -48,7 +48,7 @@
 import {mapState} from "vuex";
 
 export default {
-    name: "TaskArchived",
+    name: "TaskDeleted",
     props: {
         projectId: {
             type: Number,
@@ -108,33 +108,26 @@ export default {
                     }
                 },
                 {
-                    title: this.$L('完成时间'),
-                    key: 'complete_at',
-                    width: 168,
-                    render: (h, {row}) => {
-                        return h('div', {
-                            style: {
-                                color: row.complete_at ? '' : '#f00'
-                            }
-                        }, row.complete_at || this.$L('未完成'));
-                    }
-                },
-                {
-                    title: this.$L('归档时间'),
-                    key: 'archived_at',
+                    title: this.$L('创建时间'),
+                    key: 'created_at',
                     width: 168,
                 },
                 {
-                    title: this.$L('归档会员'),
-                    key: 'archived_userid',
+                    title: this.$L('删除时间'),
+                    key: 'deleted_at',
+                    width: 168,
+                },
+                {
+                    title: this.$L('删除人员'),
+                    key: 'deleted_userid',
                     minWidth: 100,
                     render: (h, {row}) => {
-                        if (!row.archived_userid) {
-                            return h('Tag', this.$L('系统自动'));
+                        if (!row.deleted_userid) {
+                            return h('span', '-');
                         }
                         return h('UserAvatar', {
                             props: {
-                                userid: row.archived_userid,
+                                userid: row.deleted_userid,
                                 size: 24,
                                 showName: true
                             }
@@ -146,13 +139,6 @@ export default {
                     align: 'center',
                     width: 100,
                     render: (h, params) => {
-                        if (this.cacheTasks.find(task => task.id == params.row.id && !task.archived_at)) {
-                            return h('div', {
-                                style: {
-                                    color: '#888',
-                                },
-                            }, this.$L('已还原'));
-                        }
                         const vNodes = [
                             h('span', {
                                 style: {
@@ -168,7 +154,7 @@ export default {
                             }, this.$L('查看')),
                             h('Poptip', {
                                 props: {
-                                    title: this.$L('你确定要还原归档吗？'),
+                                    title: this.$L('你确定要还原删除吗？'),
                                     confirm: true,
                                     transfer: true,
                                     placement: 'left',
@@ -187,7 +173,7 @@ export default {
                             }, this.$L('还原')),
                             h('Poptip', {
                                 props: {
-                                    title: this.$L('你确定要删除任务吗？'),
+                                    title: this.$L('你确定要彻底删除任务吗？'),
                                     confirm: true,
                                     transfer: true,
                                     placement: 'left',
@@ -203,7 +189,7 @@ export default {
                                         this.delete(params.row);
                                     }
                                 },
-                            }, this.$L('删除'))
+                            }, this.$L('彻底删除'))
                         ];
                         return h('TableAction', {
                             props: {
@@ -231,9 +217,9 @@ export default {
                     keys: this.keys,
                     project_id: this.projectId,
                     parent_id: -1,
-                    archived: 'yes',
+                    deleted: 'yes',
                     sorts: {
-                        archived_at: 'desc'
+                        deleted_at: 'desc'
                     },
                     page: Math.max(this.page, 1),
                     pagesize: Math.max($A.runNum(this.pageSize), 20),
@@ -264,7 +250,7 @@ export default {
         recovery(row) {
             this.list = this.list.filter(({id}) => id != row.id);
             this.loadIng++;
-            this.$store.dispatch("archivedTask", {
+            this.$store.dispatch("removeTask", {
                 task_id: row.id,
                 type: 'recovery'
             }).then(({msg}) => {
@@ -282,7 +268,10 @@ export default {
         delete(row) {
             this.list = this.list.filter(({id}) => id != row.id);
             this.loadIng++;
-            this.$store.dispatch("removeTask", {task_id: row.id}).then(({msg}) => {
+            this.$store.dispatch("removeTask", {
+                task_id: row.id,
+                type: 'completely_delete'
+            }).then(({msg}) => {
                 $A.messageSuccess(msg);
                 this.loadIng--;
                 this.getLists();

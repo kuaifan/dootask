@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskMailLog newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskMailLog newQuery()
+ * @method static \Illuminate\Database\Query\Builder|ProjectTaskMailLog onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskMailLog query()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskMailLog whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskMailLog whereDeletedAt($value)
@@ -31,6 +32,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskMailLog whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskMailLog whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskMailLog whereUserid($value)
+ * @method static \Illuminate\Database\Query\Builder|ProjectTaskMailLog withTrashed()
+ * @method static \Illuminate\Database\Query\Builder|ProjectTaskMailLog withoutTrashed()
  * @mixin \Eloquent
  */
 class ProjectTaskMailLog extends AbstractModel

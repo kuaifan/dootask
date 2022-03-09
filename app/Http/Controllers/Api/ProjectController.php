@@ -916,6 +916,7 @@ class ProjectController extends AbstractController
         $time_before = Request::input('time_before');
         $complete = Request::input('complete', 'all');
         $archived = Request::input('archived', 'no');
+        $deleted = Request::input('deleted');
         $keys = Request::input('keys');
         $sorts = Request::input('sorts');
         $keys = is_array($keys) ? $keys : [];
@@ -968,6 +969,10 @@ class ProjectController extends AbstractController
             $builder->whereNotNull('project_tasks.archived_at');
         } elseif ($archived == 'no') {
             $builder->whereNull('project_tasks.archived_at');
+        }
+        //
+        if ($deleted == 'yes') {
+            $builder->onlyTrashed();
         }
         //
         foreach ($sorts as $column => $direction) {
@@ -1524,6 +1529,9 @@ class ProjectController extends AbstractController
         $task_id = intval($data['task_id']);
         //
         $task = ProjectTask::userTask($task_id, true, 2);
+        if ($task->deleted_at) {
+            throw new ApiException('任务已删除');
+        }
         // 更新任务
         $updateMarking = [];
         $task->updateTask($data, $updateMarking);
@@ -1643,8 +1651,21 @@ class ProjectController extends AbstractController
         User::auth();
         //
         $task_id = intval(Request::input('task_id'));
+        $type = Request::input('type');
         //
         $task = ProjectTask::userTask($task_id, null, true);
+        if($type == 'recovery'){
+            $task->deleted_at = null;
+            $task->deleted_userid = 0;
+            $task->save();
+            return Base::retSuccess('操作成功', ['id' => $task->id]);
+        }
+        if($type == 'completely_delete'){
+            $task->forceDelete();
+            return Base::retSuccess('彻底删除成功', ['id' => $task->id]);
+        }
+        $task->deleted_userid = User::userid();
+        $task->save();
         //
         $task->deleteTask();
         return Base::retSuccess('删除成功', ['id' => $task->id]);
