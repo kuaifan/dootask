@@ -42,7 +42,7 @@ class UserEmailVerification extends AbstractModel
      */
     public static function userEmailSend(User $user)
     {
-        $res = self::where('userid', $user->userid)->where('created_at', '>', Carbon::now()->subMinutes(1440))->first();
+        $res = self::where('userid', $user->userid)->where('created_at', '>', Carbon::now()->subMinutes(10))->first();
         if ($res) return;
         //删除
         self::where('userid', $user->userid)->delete();

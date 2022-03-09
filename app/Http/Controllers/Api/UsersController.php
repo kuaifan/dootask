@@ -607,7 +607,7 @@ class UsersController extends AbstractController
         $oldTime = strtotime($res->created_at);
         $time = time();
         //24个小时失效
-        if (abs($time - $oldTime) > 86400) {
+        if (abs($time - $oldTime) > 600) {
             return Base::retError("链接已失效，请重新登录/注册");
         }
         UserEmailVerification::where('code', $data['code'])
