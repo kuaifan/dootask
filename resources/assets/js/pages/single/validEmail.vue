@@ -8,7 +8,7 @@
                 <p>{{$L('今后您可以通过此邮箱重置您的账号密码')}}</p>
             </div>
             <div class="validation-text" v-if="error">
-                <div>{{$L('链接已过期，请重新发送')}}</div>
+                <div>{{$L('链接已过期，已重新发送')}}</div>
             </div>
             <div slot="footer" v-if="success">
                 <Button type="primary" @click="userLogout" long>{{$L('返回首页')}}</Button>
