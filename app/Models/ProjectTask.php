@@ -753,6 +753,9 @@ class ProjectTask extends AbstractModel
                 $this->addLog("修改{任务}时间", [
                     'change' => [$oldStringAt, $newStringAt]
                 ]);
+
+                //修改计划时间需要重置任务邮件提醒日志
+                ProjectTaskMailLog::whereTaskId($this->id)->delete();
             }
             // 以下紧顶级任务可修改
             if ($this->parent_id === 0) {
