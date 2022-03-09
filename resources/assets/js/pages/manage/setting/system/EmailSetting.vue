@@ -1,7 +1,7 @@
 <template>
     <div class="setting-item submit">
         <Form ref="formData" :model="formData" :rules="ruleData" label-width="auto" @submit.native.prevent>
-            <h3>{{ $L('邮箱服务器设置') }}</h3>
+            <h3 style="margin-bottom: 15px;">{{ $L('邮箱服务器设置') }}</h3>
             <FormItem :label="$L('SMTP服务器')" prop="smtp_server">
                 <Input v-model="formData.smtp_server"/>
             </FormItem>
@@ -15,7 +15,7 @@
                 <Input :maxlength="20" v-model="formData.password"/>
             </FormItem>
 
-            <h3>{{ $L('邮件通知设置') }}</h3>
+            <h3 style="margin-bottom: 15px;">{{ $L('邮件通知设置') }}</h3>
             <FormItem :label="$L('开启注册验证')" prop="reg_verify">
                 <RadioGroup v-model="formData.reg_verify">
                     <Radio label="open">{{ $L('开启') }}</Radio>
