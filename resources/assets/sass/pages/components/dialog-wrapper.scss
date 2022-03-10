@@ -77,20 +77,22 @@
             }
 
             > em {
+                flex-shrink: 0;
                 font-style: normal;
                 font-size: 17px;
                 font-weight: 500;
                 padding-left: 6px;
             }
-            .top-text{
+
+            .top-text {
+                flex-shrink: 0;
                 width: 40px;
                 height: 24px;
-                border-radius:4px;
+                border-radius: 4px;
                 margin-left: 10px;
                 background-color: #8BCF70;
-                color:#FFFFFF;
+                color: #FFFFFF;
                 text-align: center;
-                margin-top: 4px;
                 padding-top: 1px
             }
         }

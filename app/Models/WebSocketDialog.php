@@ -54,11 +54,23 @@ class WebSocketDialog extends AbstractModel
     public function deleteDialog()
     {
         AbstractModel::transaction(function () {
-            WebSocketDialogMsgRead::whereDialogId($this->id)->whereNull('read_at')->update([
-                'read_at' => Carbon::now()
-            ]);
+            WebSocketDialogMsgRead::whereDialogId($this->id)
+                ->whereNull('read_at')
+                ->chunkById(100, function ($list) {
+                    WebSocketDialogMsgRead::onlyMarkRead($list);
+                });
             $this->delete();
         });
+        return true;
+    }
+
+    /**
+     * 还原会话
+     * @return bool
+     */
+    public function recoveryDialog()
+    {
+        $this->restore();
         return true;
     }
 

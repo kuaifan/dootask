@@ -1,6 +1,6 @@
 <template>
-    <div class="task-archived">
-        <div class="archived-title">
+    <div class="task-deleted">
+        <div class="deleted-title">
             {{$L('删除的任务')}}
             <div class="title-icon">
                 <Loading v-if="loadIng > 0"/>
@@ -30,17 +30,26 @@
                 </li>
             </ul>
         </div>
-        <Table :columns="columns" :data="list" :loading="loadIng > 0" :no-data-text="$L(noText)"></Table>
-        <Page
-            class="page-container"
-            :total="total"
-            :current="page"
-            :pageSize="pageSize"
-            :disabled="loadIng > 0"
-            :simple="windowMax768"
-            showTotal
-            @on-change="setPage"
-            @on-page-size-change="setPageSize"/>
+        <div class="table-page-box">
+            <Table
+                :columns="columns"
+                :data="list"
+                :loading="loadIng > 0"
+                :no-data-text="$L(noText)"
+                stripe/>
+            <Page
+                :total="total"
+                :current="page"
+                :page-size="pageSize"
+                :disabled="loadIng > 0"
+                :simple="windowMax768"
+                :page-size-opts="[10,20,30,50,100]"
+                show-elevator
+                show-sizer
+                show-total
+                @on-change="setPage"
+                @on-page-size-change="setPageSize"/>
+        </div>
     </div>
 </template>
 
@@ -98,13 +107,7 @@ export default {
                     key: 'name',
                     minWidth: 200,
                     render: (h, {row}) => {
-                        return h('AutoTip', {
-                            on: {
-                                'on-click': () => {
-                                    this.$store.dispatch("openTask", row);
-                                }
-                            }
-                        }, row.name);
+                        return h('AutoTip', row.name);
                     }
                 },
                 {
@@ -140,18 +143,6 @@ export default {
                     width: 100,
                     render: (h, params) => {
                         const vNodes = [
-                            h('span', {
-                                style: {
-                                    fontSize: '13px',
-                                    cursor: 'pointer',
-                                    color: '#8bcf70',
-                                },
-                                on: {
-                                    'click': () => {
-                                        this.$store.dispatch("openTask", params.row);
-                                    }
-                                },
-                            }, this.$L('查看')),
                             h('Poptip', {
                                 props: {
                                     title: this.$L('你确定要还原删除吗？'),
@@ -160,7 +151,6 @@ export default {
                                     placement: 'left',
                                 },
                                 style: {
-                                    marginLeft: '6px',
                                     fontSize: '13px',
                                     cursor: 'pointer',
                                     color: '#8bcf70',
@@ -171,25 +161,6 @@ export default {
                                     }
                                 },
                             }, this.$L('还原')),
-                            h('Poptip', {
-                                props: {
-                                    title: this.$L('你确定要彻底删除任务吗？'),
-                                    confirm: true,
-                                    transfer: true,
-                                    placement: 'left',
-                                },
-                                style: {
-                                    marginLeft: '6px',
-                                    fontSize: '13px',
-                                    cursor: 'pointer',
-                                    color: '#f00',
-                                },
-                                on: {
-                                    'on-ok': () => {
-                                        this.delete(params.row);
-                                    }
-                                },
-                            }, this.$L('彻底删除'))
                         ];
                         return h('TableAction', {
                             props: {
@@ -263,23 +234,6 @@ export default {
                 this.loadIng--;
                 this.getLists();
             })
-        },
-
-        delete(row) {
-            this.list = this.list.filter(({id}) => id != row.id);
-            this.loadIng++;
-            this.$store.dispatch("removeTask", {
-                task_id: row.id,
-                type: 'completely_delete'
-            }).then(({msg}) => {
-                $A.messageSuccess(msg);
-                this.loadIng--;
-                this.getLists();
-            }).catch(({msg}) => {
-                $A.modalError(msg);
-                this.loadIng--;
-                this.getLists();
-            });
         }
     }
 }

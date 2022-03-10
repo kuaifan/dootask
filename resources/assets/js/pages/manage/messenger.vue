@@ -498,12 +498,10 @@ export default {
                     dialog_id: this.topOperateItem.id,
                     type: type
                 },
-            }).then(() => {
-                this.$store.dispatch("getDialogs");
-                this.$Modal.remove();
+            }).then(({data}) => {
+                this.$store.dispatch("saveDialog", data);
             }).catch(({msg}) => {
-                $A.modalError(msg, 301);
-                this.$Modal.remove();
+                $A.modalError(msg);
             });
         }
     }

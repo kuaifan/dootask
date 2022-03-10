@@ -428,7 +428,7 @@ class Project extends AbstractModel
             if (!$hasStart) {
                 throw new ApiException('至少需要1个开始状态');
             }
-            if($testNum > 1){
+            if ($testNum > 1) {
                 throw new ApiException('验收/测试状态只能有1个');
             }
             if (!$hasEnd) {

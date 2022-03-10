@@ -1,5 +1,5 @@
 <template>
-    <div ref="tuiCalendar" className="calendar-wrapper"></div>
+    <div ref="tuiCalendar" class="calendar-wrapper"></div>
 </template>
 <script>
 import Calendar from 'tui-calendar-hi';
@@ -22,7 +22,7 @@ export default {
                 let notHave = false;
 
                 value.forEach(schedule => {
-                    notHave = ['start', 'category'].some(prop => !schedule.hasOwnProperty(prop));
+                    notHave = [ 'start', 'category' ].some(prop => !schedule.hasOwnProperty(prop));
                 });
 
                 return !notHave;

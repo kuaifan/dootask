@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+
 /**
  * App\Models\WebSocketDialogMsgRead
  *
@@ -37,5 +39,31 @@ class WebSocketDialogMsgRead extends AbstractModel
     public function webSocketDialogMsg(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(WebSocketDialogMsg::class, 'id', 'msg_id');
+    }
+
+    /**
+     * 仅标记成阅读
+     * @param $list
+     * @return void
+     */
+    public static function onlyMarkRead($list)
+    {
+        $dialogMsg = [];
+        /** @var WebSocketDialogMsgRead $item */
+        foreach ($list as $item) {
+            $item->read_at = Carbon::now();
+            $item->save();
+            if (isset($dialogMsg[$item->msg_id])) {
+                $dialogMsg[$item->msg_id]['readNum']++;
+            } else {
+                $dialogMsg[$item->msg_id] = [
+                    'dialogMsg' => $item->webSocketDialogMsg,
+                    'readNum' => 1
+                ];
+            }
+        }
+        foreach ($dialogMsg as $item) {
+            $item['dialogMsg']?->generatePercentage($item['readNum']);
+        }
     }
 }

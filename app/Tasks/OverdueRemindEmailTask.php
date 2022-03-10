@@ -40,12 +40,14 @@ class OverdueRemindEmailTask extends AbstractTask
                     ->take(100)
                     ->get()
                     ->toArray();
-
             }
             $taskLists = array_merge($taskLists1, $taskLists2);
-            $taskLists = Base::assoc_unique($taskLists, 'id');
+            $ids = [];
             foreach ($taskLists as $task) {
-                ProjectTask::overdueRemindEmail($task);
+                if (!in_array($task->id, $ids)) {
+                    $ids[] = $task->id;
+                    ProjectTask::overdueRemindEmail($task);
+                }
             }
         }
     }

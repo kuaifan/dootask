@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Config;
 use Redirect;
 use Request;
 use Storage;
+use Validator;
 
 class Base
 {
@@ -3000,112 +3001,27 @@ class Base
             },
             $str);
     }
-    //去重复
-    public static function assoc_unique($array, $keyid,$desc=true) {
-        if(empty($array)){
-            return false;
-        }
-        $array = array_values($array);
-        //倒叙排列数
-        if($desc)
-        {
-            $array =(new Self)->array_rsort($array,true);
-        }
 
-        //提取需要判断的项目变成一维数组
-        $a = (new Self)->array_tq($array,$keyid);
-
-        //去除一维数组重复值
-        $a = array_unique($a);
-        //提取二维数组项目值
-        foreach($array[0] AS $key=>$value)
-        {
-            $akey[] = $key;
-        }
-        //重新拼接二维数组
-        foreach($akey AS $key=>$value)
-        {
-            $b = (new Self)->array_tq($array,$value);
-            foreach($a AS $key2=>$value2)
-            {
-                $c[$key2][$value] = $b[$key2];
-            }
-        }
-
-        if($desc)
-        {
-            $c = (new Self)->array_rsort($c,true);
-        }
-        return $c;
-    }
-
-    //提取二维数组项目
-    public static function array_tq($array,$aval="")
-    {
-        foreach($array AS $key=>$value)
-        {
-            $result[] = $value[$aval];
-        }
-        return $result;
-    }
-
-    public static function array_rsort($arr,$isvalues=false)
-    {
-        if(is_array($arr)){
-            $flag = false;
-            //一维数组
-            if(count($arr) == count($arr,1)){
-                $flag = true;
-                $i = 0;
-                //转换成二维数组
-                foreach($arr AS $key=>$value){
-                    $a[$i]["okey"] = $key;
-                    $a[$i]["value"] = $value;
-                    $i++;
-                }
-                $arr = $a;
-            }
-            //多维数组
-            else
-            {
-                //添加临时key值
-                foreach($arr AS $key=>$value){
-                    $value["okey"] = $key;
-                    $array[] = $value;
-                }
-                $arr = $array;
-            }
-
-            //倒叙并还原key值
-            $count = count($arr)-1;
-            for($i=0;$i<count($arr);$i++){
-                $b[$arr[$count]["okey"]] = $arr[$count];
-                $count--;
-            }
-
-            //重构一维数组
-            if($flag == true){
-                foreach($b AS $key=>$value){
-                    if($isvalues){
-                        $c[] = $value["value"];
-                    }else{
-                        $c[$value["okey"]] = $value["value"];
-                    }
+    /**
+     * 统一验证器
+     * @param $data
+     * @param $messages
+     */
+    public static function validator($data, $messages) {
+        $rules = [];
+        foreach ($messages as $key => $item) {
+            $keys = explode(".", $key);
+            if (isset($keys[1])) {
+                if (isset($rules[$keys[0]])) {
+                    $rules[$keys[0]] = $rules[$keys[0]] . '|' . $keys[1];
+                } else {
+                    $rules[$keys[0]] = $keys[1];
                 }
             }
-            //多维数组去除临时key值
-            else
-            {
-                foreach($b AS $key=>$value)  {
-                    unset($value["okey"]);
-                    if($isvalues){
-                        $c[] = $value;
-                    }else{
-                        $c[$key] = $value;
-                    }
-                }
-            }
-            return $c;
+        }
+        $validator = Validator::make($data, $rules, $messages);
+        if ($validator->fails()) {
+            throw new ApiException($validator->errors()->first());
         }
     }
 }

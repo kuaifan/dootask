@@ -61,7 +61,7 @@ use Request;
  * @property-read int|null $task_user_count
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask allData($userid = null)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask authData($userid = null, $owner = null)
- * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask betweenTime($start, $end, $type)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask betweenTime($start, $end, $type = 'taskTime')
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask newQuery()
  * @method static \Illuminate\Database\Query\Builder|ProjectTask onlyTrashed()
@@ -319,25 +319,29 @@ class ProjectTask extends AbstractModel
      * @param $type
      * @return mixed
      */
-    public function scopeBetweenTime($query, $start, $end, $type)
+    public function scopeBetweenTime($query, $start, $end, $type = 'taskTime')
     {
         $query->where(function ($q1) use ($start, $end, $type) {
-            if ($type === 'taskTime') {
-                $q1->where(function ($q2) use ($start) {
-                    $q2->where('project_tasks.start_at', '<=', $start)->where('project_tasks.end_at', '>=', $start);
-                })->orWhere(function ($q2) use ($end) {
-                    $q2->where('project_tasks.start_at', '<=', $end)->where('project_tasks.end_at', '>=', $end);
-                })->orWhere(function ($q2) use ($start, $end) {
-                    $q2->where('project_tasks.start_at', '>', $start)->where('project_tasks.end_at', '<', $end);
-                });
-            } else {
-                $q1->where(function ($q2) use ($start) {
-                    $q2->where('project_tasks.created_at', '>=', $start);
-                })->orWhere(function ($q2) use ($end) {
-                    $q2->where('project_tasks.created_at', '<=', $end);
-                })->orWhere(function ($q2) use ($start, $end) {
-                    $q2->where('project_tasks.created_at', '>', $start)->where('project_tasks.created_at', '<', $end);
-                });
+            switch ($type) {
+                case 'createdTime':
+                    $q1->where(function ($q2) use ($start) {
+                        $q2->where('project_tasks.created_at', '>=', $start);
+                    })->orWhere(function ($q2) use ($end) {
+                        $q2->where('project_tasks.created_at', '<=', $end);
+                    })->orWhere(function ($q2) use ($start, $end) {
+                        $q2->where('project_tasks.created_at', '>', $start)->where('project_tasks.created_at', '<', $end);
+                    });
+                    break;
+
+                default:
+                    $q1->where(function ($q2) use ($start) {
+                        $q2->where('project_tasks.start_at', '<=', $start)->where('project_tasks.end_at', '>=', $start);
+                    })->orWhere(function ($q2) use ($end) {
+                        $q2->where('project_tasks.start_at', '<=', $end)->where('project_tasks.end_at', '>=', $end);
+                    })->orWhere(function ($q2) use ($start, $end) {
+                        $q2->where('project_tasks.start_at', '>', $start)->where('project_tasks.end_at', '<', $end);
+                    });
+                    break;
             }
         });
         return $query;
@@ -1087,11 +1091,35 @@ class ProjectTask extends AbstractModel
                 $dialog?->deleteDialog();
             }
             self::whereParentId($this->id)->delete();
+            $this->deleted_userid = User::userid();
+            $this->save();
             $this->addLog("删除{任务}");
             $this->delete();
         });
         if ($pushMsg) {
             $this->pushMsg('delete');
+        }
+        return true;
+    }
+
+    /**
+     * 还原任务
+     * @param bool $pushMsg 是否推送
+     * @return bool
+     */
+    public function recoveryTask($pushMsg = true)
+    {
+        AbstractModel::transaction(function () {
+            if ($this->dialog_id) {
+                $dialog = WebSocketDialog::withTrashed()->find($this->dialog_id);
+                $dialog?->recoveryDialog();
+            }
+            self::whereParentId($this->id)->withTrashed()->restore();
+            $this->addLog("还原{任务}");
+            $this->restore();
+        });
+        if ($pushMsg) {
+            $this->pushMsg('restore');
         }
         return true;
     }
@@ -1192,12 +1220,16 @@ class ProjectTask extends AbstractModel
      * @param bool $archived true:仅限未归档, false:仅限已归档, null:不限制
      * @param int|bool $permission 0|false:不限制, 1|true:限制项目负责人、任务负责人、协助人员及任务创建者, 2:已有负责人才限制true (子任务时如果是主任务负责人也可以)
      * @param array $with
+     * @param bool $getTrashed
      * @return self
      */
-    public static function userTask($task_id, $archived = true, $permission = 0, $with = [])
+    public static function userTask($task_id, $archived = true, $permission = 0, $with = [], $getTrashed = false)
     {
-        $task = self::with($with)->allData()->where("project_tasks.id", intval($task_id))->first();
-        $task = $task ?: ProjectTask::where("project_tasks.id", intval($task_id))->onlyTrashed()->first();
+        $builder = self::with($with)->allData()->where("project_tasks.id", intval($task_id));
+        if ($getTrashed) {
+            $builder->withTrashed();
+        }
+        $task = $builder->first();
         //
         if (empty($task)) {
             throw new ApiException('任务不存在', [ 'task_id' => $task_id ], -4002);
@@ -1247,10 +1279,7 @@ class ProjectTask extends AbstractModel
         $hours = floatval($setting['task_remind_hours']);
         $hours2 = floatval($setting['task_remind_hours2']);
         $time = $type === 1 ? $hours : $hours2;
-        Config::set("mail.mailers.smtp.host", Base::settingFind('emailSetting', 'smtp_server') ?: Config::get("mail.mailers.smtp.host"));
-        Config::set("mail.mailers.smtp.port", Base::settingFind('emailSetting', 'port') ?: Config::get("mail.mailers.smtp.port"));
-        Config::set("mail.mailers.smtp.username", Base::settingFind('emailSetting', 'account') ?: Config::get("mail.mailers.smtp.username"));
-        Config::set("mail.mailers.smtp.password", Base::settingFind('emailSetting', 'password') ?: Config::get("mail.mailers.smtp.password"));
+        UserEmailVerification::initMailConfig();
         foreach ($users as $user) {
             /** @var  User $user */
             if (ProjectTaskMailLog::whereTaskId($task['id'])->whereUserid($user->userid)->whereType($type)->whereIsSend(1)->exists()) {

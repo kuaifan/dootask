@@ -14,7 +14,9 @@ class AddIsEmailVerityToUsers extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->boolean('is_email_verity')->default(0)->nullable(false)->after('disable_at')->comment('邮箱是否已验证');
+            if (!Schema::hasColumn('users', 'is_email_verity')) {
+                $table->boolean('is_email_verity')->default(0)->nullable(false)->after('disable_at')->comment('邮箱是否已验证');
+            }
         });
     }
 

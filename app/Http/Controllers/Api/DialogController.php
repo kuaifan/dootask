@@ -497,7 +497,6 @@ class DialogController extends AbstractController
         ]);
     }
 
-
     /**
      * @api {get} api/dialog/msg/mark          13. 消息标记操作
      *
@@ -530,23 +529,7 @@ class DialogController extends AbstractController
                     ->whereReadAt(null)
                     ->whereDialogId($dialogId)
                     ->chunkById(100, function ($list) {
-                        /** @var WebSocketDialogMsgRead $item */
-                        $dialogMsg = [];
-                        foreach ($list as $item) {
-                            $item->read_at = Carbon::now();
-                            $item->save();
-                            if (isset($dialogMsg[$item->msg_id])) {
-                                $dialogMsg[$item->msg_id]['re']++;
-                            } else {
-                                $dialogMsg[$item->msg_id] = [
-                                    'ob' => $item->webSocketDialogMsg,
-                                    're' => 1
-                                ];
-                            }
-                        }
-                        foreach ($dialogMsg as $item) {
-                            $item['ob']?->generatePercentage($item['re']);
-                        }
+                        WebSocketDialogMsgRead::onlyMarkRead($list);
                     });
                 $dialogUser->is_mark_unread = 0;
                 $dialogUser->save();
@@ -560,6 +543,9 @@ class DialogController extends AbstractController
             default:
                 return Base::retError("参数错误");
         }
-        return Base::retSuccess("success");
+        return Base::retSuccess("success", [
+            'id' => $dialogId,
+            'is_mark_unread' => $dialogUser->is_mark_unread,
+        ]);
     }
 }

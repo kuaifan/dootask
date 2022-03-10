@@ -25,7 +25,7 @@ class SystemController extends AbstractController
      * @apiParam {String} type
      * - get: 获取（默认）
      * - all: 获取所有（需要管理员权限）
-     * - save: 保存设置（参数：reg、reg_invite、login_code、password_policy、project_invite、chat_nickname、auto_archived、archived_day）
+     * - save: 保存设置（参数：reg、reg_invite、login_code、password_policy、project_invite、chat_nickname、auto_archived、archived_day、start_home、home_footer）
 
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -73,6 +73,59 @@ class SystemController extends AbstractController
         $setting['auto_archived'] = $setting['auto_archived'] ?: 'close';
         $setting['archived_day'] = floatval($setting['archived_day']) ?: 7;
         $setting['start_home'] = $setting['start_home'] ?: 'close';
+        //
+        return Base::retSuccess('success', $setting ?: json_decode('{}'));
+    }
+
+    /**
+     * @api {get} api/system/setting/email          14. 获取邮箱设置、保存邮箱设置
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName setting__email
+     *
+     * @apiParam {String} type
+     * - get: 获取（默认）
+     * - all: 获取所有（需要管理员权限）
+     * - save: 保存设置（参数：smtp_server port account password reg_verify notice task_remind_hours task_remind_hours2）
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function setting__email()
+    {
+        $type = trim(Request::input('type'));
+        if ($type == 'save') {
+            if (env("SYSTEM_SETTING") == 'disabled') {
+                return Base::retError('当前环境禁止修改');
+            }
+            User::auth('admin');
+            $all = Request::input();
+            foreach ($all as $key => $value) {
+                if (!in_array($key, ['smtp_server', 'port', 'account', 'password', 'reg_verify', 'notice', 'task_remind_hours', 'task_remind_hours2'])) {
+                    unset($all[$key]);
+                }
+            }
+            $setting = Base::setting('emailSetting', Base::newTrim($all));
+        } else {
+            $setting = Base::setting('emailSetting');
+        }
+        //
+        if ($type == 'all' || $type == 'save') {
+            User::auth('admin');
+            $setting['reg_invite'] = $setting['reg_invite'] ?: Base::generatePassword(8);
+        } else {
+            if (isset($setting['reg_invite'])) unset($setting['reg_invite']);
+        }
+        //
+        $setting['smtp_server'] = $setting['smtp_server'] ?: '';
+        $setting['port'] = $setting['port'] ?: '';
+        $setting['account'] = $setting['account'] ?: '';
+        $setting['password'] = $setting['password'] ?: '';
+        $setting['reg_verify'] = $setting['reg_verify'] ?: 'close';
+        $setting['notice'] = $setting['notice'] ?: 'open';
+        $setting['task_remind_hours'] = floatval($setting['task_remind_hours']) ?: 0;
+        $setting['task_remind_hours2'] = floatval($setting['task_remind_hours2']) ?: 0;
         //
         return Base::retSuccess('success', $setting ?: json_decode('{}'));
     }
@@ -501,57 +554,4 @@ class SystemController extends AbstractController
         ]);
     }
 
-
-    /**
-     * @api {get} api/system/emailSetting          14. 获取邮箱设置、保存邮箱设置
-     *
-     * @apiVersion 1.0.0
-     * @apiGroup system
-     * @apiName emailSetting
-     *
-     * @apiParam {String} type
-     * - get: 获取（默认）
-     * - all: 获取所有（需要管理员权限）
-     * - save: 保存设置（参数：smtp_server port account password reg_verify notice task_remind_hours task_remind_hours2）
-     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据
-     */
-    public function emailSetting()
-    {
-        $type = trim(Request::input('type'));
-        if ($type == 'save') {
-            if (env("SYSTEM_SETTING") == 'disabled') {
-                return Base::retError('当前环境禁止修改');
-            }
-            User::auth('admin');
-            $all = Request::input();
-            foreach ($all as $key => $value) {
-                if (!in_array($key, ['smtp_server', 'port', 'account', 'password', 'reg_verify', 'notice', 'task_remind_hours', 'task_remind_hours2'])) {
-                    unset($all[$key]);
-                }
-            }
-            $setting = Base::setting('emailSetting', Base::newTrim($all));
-        } else {
-            $setting = Base::setting('emailSetting');
-        }
-        //
-        if ($type == 'all' || $type == 'save') {
-            User::auth('admin');
-            $setting['reg_invite'] = $setting['reg_invite'] ?: Base::generatePassword(8);
-        } else {
-            if (isset($setting['reg_invite'])) unset($setting['reg_invite']);
-        }
-        //
-        $setting['smtp_server'] = $setting['smtp_server'] ?: '';
-        $setting['port'] = $setting['port'] ?: '';
-        $setting['account'] = $setting['account'] ?: '';
-        $setting['password'] = $setting['password'] ?: '';
-        $setting['reg_verify'] = $setting['reg_verify'] ?: 'close';
-        $setting['notice'] = $setting['notice'] ?: 'open';
-        $setting['task_remind_hours'] = floatval($setting['task_remind_hours']) ?: 0;
-        $setting['task_remind_hours2'] = floatval($setting['task_remind_hours2']) ?: 0;
-        //
-        return Base::retSuccess('success', $setting ?: json_decode('{}'));
-    }
 }

@@ -44,7 +44,7 @@ class UsersController extends AbstractController
         $type = trim(Request::input('type'));
         $email = trim(Request::input('email'));
         $password = trim(Request::input('password'));
-        $isRegVerify = Base::settingFind('emailSetting', 'reg_verify') === 'open' ? true : false;
+        $isRegVerify = Base::settingFind('emailSetting', 'reg_verify') === 'open';
         if ($type == 'reg') {
             $setting = Base::setting('system');
             if ($setting['reg'] == 'close') {
@@ -58,7 +58,7 @@ class UsersController extends AbstractController
             $user = User::reg($email, $password);
             if ($isRegVerify) {
                 UserEmailVerification::userEmailSend($user);
-                return Base::retError('注册成功,请验证邮箱后登录', ['code' => 1000]);
+                return Base::retError('注册成功，请验证邮箱后登录', ['code' => 'email']);
             }
         } else {
             $needCode = !Base::isError(User::needCode($email));
@@ -80,10 +80,10 @@ class UsersController extends AbstractController
             };
             $user = User::whereEmail($email)->first();
             if (empty($user)) {
-                return $retError('账号不存在，请确认账号是否输入正确');
+                return $retError('账号或密码错误');
             }
             if ($user->password != Base::md52($password, $user->encrypt)) {
-                return $retError('密码错误，请输入正确密码');
+                return $retError('账号或密码错误');
             }
             //
             if (in_array('disable', $user->identity)) {
@@ -589,14 +589,11 @@ class UsersController extends AbstractController
     {
         $data = Request::input();
         // 表单验证
-        $validator = Validator::make($data, [
-            "code" => ["required"],
-        ], [
-            "code.required" => "required字段非法",
+        Base::validator($data, [
+            'code.required' => '验证码不能为空',
         ]);
-        if ($validator->fails())
-            return Base::retError($validator->errors()->first());
-        $res = UserEmailVerification::where('code', $data['code'])->first();
+        //
+        $res = UserEmailVerification::whereCode($data['code'])->first();
         if (empty($res)) {
             return Base::retError('无效连接,请重新注册');
         }
@@ -604,17 +601,17 @@ class UsersController extends AbstractController
         if (intval($res->status) === 1)
             return Base::retError('链接已经使用过',['code' => 2]);
 
-        $oldTime = strtotime($res->created_at);
-        $time = time();
+        $oldTime = Carbon::parse($res->created_at)->timestamp;
+        $time = Base::Time();
         //24个小时失效
         if (abs($time - $oldTime) > 86400) {
             return Base::retError("链接已失效，请重新登录/注册");
         }
-        UserEmailVerification::where('code', $data['code'])
+        UserEmailVerification::whereCode($data['code'])
             ->update([
                 'status' => 1
             ]);
-        User::where('userid', $res->userid)->update([
+        User::whereUserid($res->userid)->update([
             'is_email_verity' => 1
         ]);
         return Base::retSuccess('绑定邮箱成功');

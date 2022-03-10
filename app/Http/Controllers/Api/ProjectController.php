@@ -894,6 +894,9 @@ class ProjectController extends AbstractController
      * - all：所有
      * - yes：已归档
      * - no：未归档（默认）
+     * @apiParam {String} [deleted]          是否读取已删除
+     * - yes：是
+     * - no：否（默认）
      * @apiParam {Object} sorts              排序方式
      * - sorts.complete_at  完成时间：asc|desc
      * - sorts.archived_at  归档时间：asc|desc
@@ -916,7 +919,7 @@ class ProjectController extends AbstractController
         $time_before = Request::input('time_before');
         $complete = Request::input('complete', 'all');
         $archived = Request::input('archived', 'no');
-        $deleted = Request::input('deleted');
+        $deleted = Request::input('deleted', 'no');
         $keys = Request::input('keys');
         $sorts = Request::input('sorts');
         $keys = is_array($keys) ? $keys : [];
@@ -955,7 +958,7 @@ class ProjectController extends AbstractController
             $builder->whereNotNull('project_tasks.end_at')->where('project_tasks.end_at', '<', Carbon::parse($time_before));
         } elseif (is_array($time)) {
             if (Base::isDateOrTime($time[0]) && Base::isDateOrTime($time[1])) {
-                $builder->betweenTime(Carbon::parse($time[0])->startOfDay(), Carbon::parse($time[1])->endOfDay(),'taskTime');
+                $builder->betweenTime(Carbon::parse($time[0])->startOfDay(), Carbon::parse($time[1])->endOfDay());
             }
         }
         //
@@ -996,6 +999,9 @@ class ProjectController extends AbstractController
      *
      * @apiParam {Array} [userid]               指定会员，如：[1, 2]
      * @apiParam {Array} [time]                 指定时间范围，如：['2020-12-12', '2020-12-30']
+     * @apiParam {String} [type]
+     * - createdTime 任务创建时间
+     * - taskTime  任务计划时间（默认）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -1007,6 +1013,7 @@ class ProjectController extends AbstractController
         //
         $userid = Base::arrayRetainInt(Request::input('userid'), true);
         $time = Request::input('time');
+        $type = Request::input('type','taskTime');
         if (empty($userid) || empty($time)) {
             return Base::retError('参数错误');
         }
@@ -1019,7 +1026,6 @@ class ProjectController extends AbstractController
         if (Carbon::parse($time[1])->timestamp - Carbon::parse($time[0])->timestamp > 90 * 86400) {
             return Base::retError('时间范围限制最大90天');
         }
-        $type = Request::input('type','taskTime');
         $headings = [];
         $headings[] = '任务ID';
         $headings[] = '父级任务ID';
@@ -1042,7 +1048,7 @@ class ProjectController extends AbstractController
             ->join('project_task_users', 'project_tasks.id', '=', 'project_task_users.task_id')
             ->where('project_task_users.owner', 1)
             ->whereIn('project_task_users.userid', $userid)
-            ->betweenTime(Carbon::parse($time[0])->startOfDay(), Carbon::parse($time[1])->endOfDay(),$type);
+            ->betweenTime(Carbon::parse($time[0])->startOfDay(), Carbon::parse($time[1])->endOfDay(), $type);
         $builder->orderByDesc('project_tasks.id')->chunk(100, function($tasks) use (&$datas) {
             /** @var ProjectTask $task */
             foreach ($tasks as $task) {
@@ -1050,16 +1056,16 @@ class ProjectController extends AbstractController
                 $developTime = 0;//开发时间
                 $testTime = 0;//验收/测试时间
                 foreach ($flowChanges as $change) {
-                    if (strpos($change->before_flow_item_name, 'end') === false) {
+                    if (!str_contains($change->before_flow_item_name, 'end')) {
                         $upOne = ProjectTaskFlowChange::where('id', '<', $change->id)->whereTaskId($task->id)->orderByDesc('id')->first();
                         if ($upOne) {
-                            if (strpos($change->before_flow_item_name, 'progress') !== false && strpos($change->before_flow_item_name, '进行') !== false) {
+                            if (str_contains($change->before_flow_item_name, 'progress') && str_contains($change->before_flow_item_name, '进行')) {
                                 $devCtime = Carbon::parse($change->created_at)->timestamp;
                                 $oCtime = Carbon::parse($upOne->created_at)->timestamp;
                                 $minusNum = $devCtime - $oCtime;
                                 $developTime += $minusNum;
                             }
-                            if (strpos($change->before_flow_item_name, 'test') !== false || strpos($change->before_flow_item_name, '测试') !== false || strpos($change->before_flow_item_name, '验收') !== false) {
+                            if (str_contains($change->before_flow_item_name, 'test') || str_contains($change->before_flow_item_name, '测试') || strpos($change->before_flow_item_name, '验收') !== false) {
                                 $testCtime = Carbon::parse($change->created_at)->timestamp;
                                 $tTime = Carbon::parse($upOne->created_at)->timestamp;
                                 $tMinusNum = $testCtime - $tTime;
@@ -1072,14 +1078,14 @@ class ProjectController extends AbstractController
                     $lastChange = ProjectTaskFlowChange::whereTaskId($task->id)->orderByDesc('id')->first();
                     $nowTime = time();
                     $unFinishTime = $nowTime - Carbon::parse($lastChange->created_at)->timestamp;
-                    if (strpos($lastChange->after_flow_item_name, 'progress') !== false || strpos($lastChange->after_flow_item_name, '进行') !== false) {
+                    if (str_contains($lastChange->after_flow_item_name, 'progress') || str_contains($lastChange->after_flow_item_name, '进行')) {
                         $developTime += $unFinishTime;
-                    } elseif (strpos($lastChange->after_flow_item_name, 'test') !== false || strpos($lastChange->after_flow_item_name, '测试') !== false || strpos($lastChange->after_flow_item_name, '验收') !== false) {
+                    } elseif (str_contains($lastChange->after_flow_item_name, 'test') || str_contains($lastChange->after_flow_item_name, '测试') || strpos($lastChange->after_flow_item_name, '验收') !== false) {
                         $testTime += $unFinishTime;
                     }
                 }
                 $firstChange = ProjectTaskFlowChange::whereTaskId($task->id)->orderBy('id')->first();
-                if (strpos($firstChange->after_flow_item_name, 'end') !== false) {
+                if (str_contains($firstChange->after_flow_item_name, 'end')) {
                     $firstDevTime = Carbon::parse($firstChange->created_at)->timestamp - Carbon::parse($task->created_at)->timestamp;
                     $developTime += $firstDevTime;
                 }
@@ -1532,9 +1538,6 @@ class ProjectController extends AbstractController
         $task_id = intval($data['task_id']);
         //
         $task = ProjectTask::userTask($task_id, true, 2);
-        if ($task->deleted_at) {
-            throw new ApiException('任务已删除');
-        }
         // 更新任务
         $updateMarking = [];
         $task->updateTask($data, $updateMarking);
@@ -1644,6 +1647,9 @@ class ProjectController extends AbstractController
      * @apiName task__remove
      *
      * @apiParam {Number} task_id               任务ID
+     * @apiParam {String} type
+     * - recovery: 还原
+     * - delete: 删除（默认）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -1654,24 +1660,16 @@ class ProjectController extends AbstractController
         User::auth();
         //
         $task_id = intval(Request::input('task_id'));
-        $type = Request::input('type');
+        $type = Request::input('type', 'delete');
         //
-        $task = ProjectTask::userTask($task_id, null, true);
-        if($type == 'recovery'){
-            $task->deleted_at = null;
-            $task->deleted_userid = 0;
-            $task->save();
+        $task = ProjectTask::userTask($task_id, null, true, [], $type === 'recovery');
+        if ($type == 'recovery') {
+            $task->recoveryTask();
             return Base::retSuccess('操作成功', ['id' => $task->id]);
+        } else {
+            $task->deleteTask();
+            return Base::retSuccess('删除成功', ['id' => $task->id]);
         }
-        if($type == 'completely_delete'){
-            $task->forceDelete();
-            return Base::retSuccess('彻底删除成功', ['id' => $task->id]);
-        }
-        $task->deleted_userid = User::userid();
-        $task->save();
-        //
-        $task->deleteTask();
-        return Base::retSuccess('删除成功', ['id' => $task->id]);
     }
 
     /**

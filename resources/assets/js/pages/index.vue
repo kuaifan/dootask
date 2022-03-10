@@ -1,5 +1,5 @@
 <template>
-    <div v-if="needStartHome">
+    <div v-if="needStartHome" class="page-index">
         <div class="page-warp">
             <div class="page-header">
                 <div class="header-nav">
@@ -11,13 +11,11 @@
                             <Dropdown trigger="click" @on-click="setLanguage">
                                 <Icon
                                     class="header-right-one-language"
-                                    type="md-globe"
-                                />
+                                    type="md-globe"/>
                                 <a
                                     href="javascript:void(0)"
                                     class="header-right-one-dropdown"
-                                    v-if="screenWidth>441"
-                                >
+                                    v-if="windowWidth>441">
                                     {{ currentLanguage }}
                                     <Icon type="ios-arrow-down"></Icon>
                                 </a>
@@ -27,7 +25,7 @@
                                         :key="key"
                                         :name="key"
                                         :selected="getLanguage() === key"
-                                        >{{ item }}
+                                    >{{ item }}
                                     </Dropdown-item>
                                 </DropdownMenu>
                             </Dropdown>
@@ -61,8 +59,8 @@
             <div class="page-main">
                 <div class="main-box-one">
                     <div class="box-one-square"></div>
-                    <div class="box-pic" v-if="screenWidth<1920">
-                           <img  class="box-img"  src="images/index/box-pic1.png" />
+                    <div class="box-pic" v-if="windowWidth<1920">
+                        <img class="box-img" :src="$A.originUrl('images/index/box-pic1.png')"/>
                     </div>
                     <div class="box-one-pic1" v-else>
 
@@ -79,7 +77,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="main-box-two" v-if="screenWidth>=1920">
+                <div class="main-box-two" v-if="windowWidth>=1920">
                     <div class="box-two-tips">
                         <div class="box-square"></div>
                         <div class="box-title">
@@ -97,7 +95,7 @@
                 <div class="main-box-two" v-else>
                     <div class="box-two-tips">
                         <div class="box-pic">
-                           <img  class="box-img"  src="images/index/box-pic2.png" />
+                            <img class="box-img" :src="$A.originUrl('images/index/box-pic2.png')"/>
                         </div>
                         <div class="box-square"></div>
                         <div class="box-title">
@@ -108,19 +106,14 @@
                                 $L("汇集文档、电子表格、思维笔记等多种在线工具，汇聚企业知识资源于一处，支持多人实时协同编辑，让团队协作更便捷。")
                             }}
                         </div>
-
-
                     </div>
-
                 </div>
                 <div class="main-box-one">
                     <div class="box-one-square"></div>
-                    <div class="box-pic" v-if="screenWidth<1920" >
-                           <img  class="box-img"  src="images/index/box-pic3.png" />
+                    <div class="box-pic" v-if="windowWidth<1920">
+                        <img class="box-img" :src="$A.originUrl('images/index/box-pic3.png')"/>
                     </div>
-                    <div class="box-one-pic3" v-else >
-
-                    </div>
+                    <div class="box-one-pic3" v-else></div>
                     <div class="box-one-tips">
                         <div class="box-square"></div>
                         <div class="box-title">
@@ -133,7 +126,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="main-box-two" v-if="screenWidth>=1920">
+                <div class="main-box-two" v-if="windowWidth>=1920">
                     <div class="box-two-tips">
                         <div class="box-square"></div>
                         <div class="box-title">
@@ -151,7 +144,7 @@
                 <div class="main-box-two" v-else>
                     <div class="box-two-tips">
                         <div class="box-pic">
-                           <img  class="box-img"  src="images/index/box-pic4.png" />
+                            <img class="box-img" :src="$A.originUrl('images/index/box-pic4.png')"/>
                         </div>
                         <div class="box-square"></div>
                         <div class="box-title">
@@ -162,12 +155,8 @@
                                 $L("通过灵活的任务日历，轻松安排每一天的日程，把任务拆解到每天，让工作目标更清晰，时间分配更合理。")
                             }}
                         </div>
-
-
                     </div>
-
                 </div>
-
             </div>
             <div class="page-footer">
                 <div class="footer-service">
@@ -190,32 +179,24 @@
 </template>
 
 <script>
+import {mapState} from "vuex";
+
 export default {
     data() {
         return {
-            screenWidth: document.body.clientWidth,
             needStartHome: false,
             homeFooter: '',
         };
     },
-    watch: {
-        screenWidth(nVal) {
-            // console.log(nVal)
-        },
-    },
     computed: {
+        ...mapState(['userId', 'windowWidth']),
+
         currentLanguage() {
             return this.languageList[this.languageType] || "Language";
         },
     },
     mounted() {
         this.getNeedStartHome();
-        const that = this;
-        window.onresize=()=>{
-            window.screenWidth=document.body.clientWidth
-            that.screenWidth=window.screenWidth
-        }
-
     },
 
     methods: {
@@ -240,28 +221,22 @@ export default {
             );
         },
         getNeedStartHome() {
-            this.$store
-                .dispatch("call", {
-                    url: "system/get/starthome",
-                })
-                .then(({data}) => {
-                    this.homeFooter = data.home_footer;
-                    if (this.$store.state.userId > 0) {
-                        this.goForward({path: '/manage/dashboard'}, true);
-                    } else {
-                        this.needStartHome = !!data.need_start;
-                        if (this.needStartHome === false) {
-                            this.goForward({path: '/login'}, true);
-                        }
+            this.$store.dispatch("call", {
+                url: "system/get/starthome",
+            }).then(({data}) => {
+                this.homeFooter = data.home_footer;
+                if (this.userId > 0) {
+                    this.goForward({path: '/manage/dashboard'}, true);
+                } else {
+                    this.needStartHome = !!data.need_start;
+                    if (this.needStartHome === false) {
+                        this.goForward({path: '/login'}, true);
                     }
-                })
-                .catch(() => {
-                    this.needStartHome = false;
-                });
+                }
+            }).catch(() => {
+                this.needStartHome = false;
+            });
         },
-    },
-    deactivated() {
-        // this.$destroy()
     },
 };
 </script>

@@ -93,7 +93,7 @@ export default {
         systemSetting(save) {
             this.loadIng++;
             this.$store.dispatch("call", {
-                url: 'system/emailSetting?type=' + (save ? 'save' : 'all'),
+                url: 'system/setting/email?type=' + (save ? 'save' : 'all'),
                 data: this.formData,
             }).then(({data}) => {
                 if (save) {

@@ -14,7 +14,9 @@ class AddWebSocketDialogUsersAddIsMarkUnread extends Migration
     public function up()
     {
         Schema::table('web_socket_dialog_users', function (Blueprint $table) {
-            $table->boolean('is_mark_unread')->default(0)->nullable(false)->after('top_at')->comment('是否标记为未读：0否，1是');
+            if (!Schema::hasColumn('web_socket_dialog_users', 'is_mark_unread')) {
+                $table->boolean('is_mark_unread')->default(0)->nullable(false)->after('top_at')->comment('是否标记为未读：0否，1是');
+            }
         });
     }
 

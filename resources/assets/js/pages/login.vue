@@ -322,8 +322,8 @@ export default {
                     });
                 }).catch(({data, msg}) => {
                     this.loadIng--;
-                    if (data.code === 1000) {
-                        $A.modalSuccess(msg);
+                    if (data.code === 'email') {
+                        $A.modalWarning(msg);
                     } else {
                         $A.modalError(msg);
                     }

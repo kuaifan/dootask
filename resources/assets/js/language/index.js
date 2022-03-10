@@ -79,7 +79,6 @@ export default {
                         this.addLanguageData(require("./language.js").default);
                         this.addLanguageData(window.languageData);
                         //
-               
                         languageListenerObjects.push((lang) => {
                             this.languageType = lang;
                         });

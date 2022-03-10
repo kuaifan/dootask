@@ -18,10 +18,7 @@
 </template>
 
 <script>
-
 export default {
-    name: "validEmail",
-    components: {},
     data() {
         return {
             success: false,
@@ -35,23 +32,21 @@ export default {
     watch: {},
     methods: {
         verificationEmail() {
-            this.$store
-                .dispatch("call", {
-                    url: "users/email/verification",
-                    data: {
-                        code: this.$route.query.code
-                    }
-                })
-                .then(({data}) => {
-                    this.success = true;
-                    this.error = false;
-                }).catch(({data, msg}) => {
+            this.$store.dispatch("call", {
+                url: "users/email/verification",
+                data: {
+                    code: this.$route.query.code
+                }
+            }).then(() => {
+                this.success = true;
+                this.error = false;
+            }).catch(({data, msg}) => {
                 if (data.code === 2) {
                     this.goForward({path: '/'}, true);
                 } else {
                     this.success = false;
                     this.error = true;
-                    this.errorText =  this.$L(msg);
+                    this.errorText = this.$L(msg);
                 }
             });
         },
