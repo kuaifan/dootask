@@ -92,7 +92,7 @@ class UsersController extends AbstractController
             Cache::forget("code::" . $email);
             if ($isRegVerify && $user->is_email_verity === 0) {
                 UserEmailVerification::userEmailSend($user);
-                return $retError('请验证邮箱后再登录');
+                return $retError('您还没有验证邮箱，请先登录邮箱通过验证邮件验证邮箱');
             }
         }
         //

@@ -964,13 +964,13 @@ class ProjectController extends AbstractController
         //
         if ($complete === 'yes') {
             $builder->whereNotNull('project_tasks.complete_at');
-        } elseif ($complete === 'no') {
+        } elseif ($complete === 'no' && $deleted == 'no') {
             $builder->whereNull('project_tasks.complete_at');
         }
         //
         if ($archived == 'yes') {
             $builder->whereNotNull('project_tasks.archived_at');
-        } elseif ($archived == 'no') {
+        } elseif ($archived == 'no' && $deleted == 'no') {
             $builder->whereNull('project_tasks.archived_at');
         }
         //
@@ -979,7 +979,7 @@ class ProjectController extends AbstractController
         }
         //
         foreach ($sorts as $column => $direction) {
-            if (!in_array($column, ['complete_at', 'archived_at', 'end_at'])) continue;
+            if (!in_array($column, ['complete_at', 'archived_at', 'end_at', 'deleted_at'])) continue;
             if (!in_array($direction, ['asc', 'desc'])) continue;
             $builder->orderBy('project_tasks.' . $column, $direction);
         }

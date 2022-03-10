@@ -4,13 +4,13 @@
             <div class="page-header">
                 <div class="header-nav">
                     <div class="header-nav-box">
-                        <div class="logo"></div>
+                        <div class="logo no-dark-mode"></div>
                     </div>
                     <div class="header-nav-box">
                         <div class="header-right-one">
                             <Dropdown trigger="click" @on-click="setLanguage">
                                 <Icon
-                                    class="header-right-one-language"
+                                    class="header-right-one-language no-dark-mode"
                                     type="md-globe"/>
                                 <a
                                     href="javascript:void(0)"
@@ -33,7 +33,7 @@
                         <div class="header-right-two" @click="register">
                             {{ $L("注册账号") }}
                         </div>
-                        <div class="header-right-three" @click="login">
+                        <div class="header-right-three no-dark-mode" @click="login">
                             {{ $L("登录") }}
                         </div>
                     </div>
@@ -48,13 +48,13 @@
                             $L("DooTask是一款轻量级的开源在线项目任务管理工具，提供各类文档协作工具、在线思维导图、在线流程图、项目管理、任务分发、即时IM，文件管理等工具。")
                         }}
                     </div>
-                    <div class="login-buttom" @click="login">
+                    <div class="login-buttom no-dark-mode" @click="login">
                         {{ $L("登录") }}
                     </div>
                 </div>
 
                 <div class="header-bg"></div>
-                <div class="header-pic"></div>
+                <div class="header-pic no-dark-mode"></div>
             </div>
             <div class="page-main">
                 <div class="main-box-one">
@@ -62,7 +62,7 @@
                     <div class="box-pic" v-if="windowWidth<1920">
                         <img class="box-img" :src="$A.originUrl('images/index/box-pic1.png')"/>
                     </div>
-                    <div class="box-one-pic1" v-else>
+                    <div class="box-one-pic1 no-dark-mode" v-else>
 
                     </div>
                     <div class="box-one-tips">
@@ -90,7 +90,7 @@
                         </div>
                     </div>
                     <div class="box-two-square"></div>
-                    <div class="box-two-pic2"></div>
+                    <div class="box-two-pic2 no-dark-mode"></div>
                 </div>
                 <div class="main-box-two" v-else>
                     <div class="box-two-tips">
@@ -113,7 +113,7 @@
                     <div class="box-pic" v-if="windowWidth<1920">
                         <img class="box-img" :src="$A.originUrl('images/index/box-pic3.png')"/>
                     </div>
-                    <div class="box-one-pic3" v-else></div>
+                    <div class="box-one-pic3 no-dark-mode" v-else></div>
                     <div class="box-one-tips">
                         <div class="box-square"></div>
                         <div class="box-title">
@@ -139,11 +139,11 @@
                         </div>
                     </div>
                     <div class="box-two-square"></div>
-                    <div class="box-two-pic4"></div>
+                    <div class="box-two-pic4 no-dark-mode"></div>
                 </div>
                 <div class="main-box-two" v-else>
                     <div class="box-two-tips">
-                        <div class="box-pic">
+                        <div class="box-pic no-dark-mode">
                             <img class="box-img" :src="$A.originUrl('images/index/box-pic4.png')"/>
                         </div>
                         <div class="box-square"></div>
@@ -159,7 +159,7 @@
                 </div>
             </div>
             <div class="page-footer">
-                <div class="footer-service">
+                <div class="footer-service no-dark-mode">
                     <div class="footer-bg-box">
                         <div class="box-title">
                             {{ $L("开启您的 Dootask 团队协作") }}
