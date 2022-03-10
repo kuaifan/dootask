@@ -7,10 +7,12 @@ use App\Module\Base;
 use App\Tasks\PushTask;
 use Arr;
 use Carbon\Carbon;
+use Config;
 use DB;
 use Exception;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Mail;
 use Request;
 
 /**
@@ -40,6 +42,7 @@ use Request;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property int|null $deleted_userid 删除会员
  * @property-read \App\Models\ProjectTaskContent|null $content
  * @property-read int $file_num
  * @property-read int $msg_num
@@ -58,7 +61,7 @@ use Request;
  * @property-read int|null $task_user_count
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask allData($userid = null)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask authData($userid = null, $owner = null)
- * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask betweenTime($start, $end)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask betweenTime($start, $end, $type)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask newQuery()
  * @method static \Illuminate\Database\Query\Builder|ProjectTask onlyTrashed()
@@ -71,6 +74,7 @@ use Request;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereCompleteAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereDeletedUserid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereDesc($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereDialogId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereEndAt($value)
@@ -312,18 +316,29 @@ class ProjectTask extends AbstractModel
      * @param $query
      * @param $start
      * @param $end
+     * @param $type
      * @return mixed
      */
-    public function scopeBetweenTime($query, $start, $end)
+    public function scopeBetweenTime($query, $start, $end, $type)
     {
-        $query->where(function ($q1) use ($start, $end) {
-            $q1->where(function ($q2) use ($start) {
-                $q2->where('project_tasks.start_at', '<=', $start)->where('project_tasks.end_at', '>=', $start);
-            })->orWhere(function ($q2) use ($end) {
-                $q2->where('project_tasks.start_at', '<=', $end)->where('project_tasks.end_at', '>=', $end);
-            })->orWhere(function ($q2) use ($start, $end) {
-                $q2->where('project_tasks.start_at', '>', $start)->where('project_tasks.end_at', '<', $end);
-            });
+        $query->where(function ($q1) use ($start, $end, $type) {
+            if ($type === 'taskTime') {
+                $q1->where(function ($q2) use ($start) {
+                    $q2->where('project_tasks.start_at', '<=', $start)->where('project_tasks.end_at', '>=', $start);
+                })->orWhere(function ($q2) use ($end) {
+                    $q2->where('project_tasks.start_at', '<=', $end)->where('project_tasks.end_at', '>=', $end);
+                })->orWhere(function ($q2) use ($start, $end) {
+                    $q2->where('project_tasks.start_at', '>', $start)->where('project_tasks.end_at', '<', $end);
+                });
+            } else {
+                $q1->where(function ($q2) use ($start) {
+                    $q2->where('project_tasks.created_at', '>=', $start);
+                })->orWhere(function ($q2) use ($end) {
+                    $q2->where('project_tasks.created_at', '<=', $end);
+                })->orWhere(function ($q2) use ($start, $end) {
+                    $q2->where('project_tasks.created_at', '>', $start)->where('project_tasks.created_at', '<', $end);
+                });
+            }
         });
         return $query;
     }
@@ -742,6 +757,9 @@ class ProjectTask extends AbstractModel
                 $this->addLog("修改{任务}时间", [
                     'change' => [$oldStringAt, $newStringAt]
                 ]);
+
+                //修改计划时间需要重置任务邮件提醒日志
+                ProjectTaskMailLog::whereTaskId($this->id)->delete();
             }
             // 以下紧顶级任务可修改
             if ($this->parent_id === 0) {
@@ -1179,6 +1197,7 @@ class ProjectTask extends AbstractModel
     public static function userTask($task_id, $archived = true, $permission = 0, $with = [])
     {
         $task = self::with($with)->allData()->where("project_tasks.id", intval($task_id))->first();
+        $task = $task ?: ProjectTask::where("project_tasks.id", intval($task_id))->onlyTrashed()->first();
         //
         if (empty($task)) {
             throw new ApiException('任务不存在', [ 'task_id' => $task_id ], -4002);
@@ -1210,5 +1229,59 @@ class ProjectTask extends AbstractModel
         }
         //
         return $task;
+    }
+
+    /**
+     * 预超期任务提醒
+     * @param $task
+     */
+    public static function overdueRemindEmail($task)
+    {
+        $ownerIds = ProjectTaskUser::whereTaskId($task['id'])->whereOwner(1)->pluck('userid')->toArray();
+        $users = User::whereIn('userid', $ownerIds)->get();
+        if (!$users) {
+            throw new ApiException("ProjectTask::overdueRemindEmail--没有负责人");
+        }
+        $type = $task['end_at'] < Carbon::now() ? 2 : 1;
+        $setting = Base::setting('emailSetting');
+        $hours = floatval($setting['task_remind_hours']);
+        $hours2 = floatval($setting['task_remind_hours2']);
+        $time = $type === 1 ? $hours : $hours2;
+        Config::set("mail.mailers.smtp.host", Base::settingFind('emailSetting', 'smtp_server') ?: Config::get("mail.mailers.smtp.host"));
+        Config::set("mail.mailers.smtp.port", Base::settingFind('emailSetting', 'port') ?: Config::get("mail.mailers.smtp.port"));
+        Config::set("mail.mailers.smtp.username", Base::settingFind('emailSetting', 'account') ?: Config::get("mail.mailers.smtp.username"));
+        Config::set("mail.mailers.smtp.password", Base::settingFind('emailSetting', 'password') ?: Config::get("mail.mailers.smtp.password"));
+        foreach ($users as $user) {
+            /** @var  User $user */
+            if (ProjectTaskMailLog::whereTaskId($task['id'])->whereUserid($user->userid)->whereType($type)->whereIsSend(1)->exists()) {
+                return;
+            }
+            $email = $user->email;
+            $isSend = 1;
+            try {
+                $emailContent = [
+                    'name' => $task['name'],
+                    'time' => $time,
+                    'type' => $type
+                ];
+                Mail::send('taskOverdueRemind', $emailContent, function ($m) use ($email) {
+                    $m->from(Config::get("mail.mailers.smtp.username"), env('APP_NAME'));
+                    $m->to($email);
+                    $m->subject("任务提醒");
+                });
+            } catch (\Exception $e) {
+                $isSend = 0;
+                \Log::error($email . '--邮箱发送报错：', [$e->getMessage()]);
+            }
+            $logData = [
+                'userid' => $user->userid,
+                'task_id' => $task['id'],
+                'email' => $email,
+                'type' => $type,
+                'is_send' => $isSend,
+            ];
+            $emailLog = ProjectTaskMailLog::whereTaskId($task['id'])->whereUserid($user->userid)->whereType($type)->first();
+            ProjectTaskMailLog::createInstance($logData, $emailLog->id ?? null)->save();
+        }
     }
 }

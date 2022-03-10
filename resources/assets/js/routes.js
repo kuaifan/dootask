@@ -91,6 +91,12 @@ export default [
         component: () => import('./pages/single/task.vue'),
     },
     {
+        name: 'valid-email',
+        path: '/single/valid/email',
+        meta: {title: '验证绑定邮箱'},
+        component: () => import('./pages/single/validEmail.vue')
+    },
+    {
         name: 'login',
         path: '/login',
         component: () => import('./pages/login.vue'),

@@ -105,13 +105,16 @@ class WebSocketDialog extends AbstractModel
         $last_msg = WebSocketDialogMsg::whereDialogId($dialog->id)->orderByDesc('id')->first();
         $dialog->last_msg = $last_msg;
         // 未读信息
-        $dialog->unread = WebSocketDialogMsgRead::whereDialogId($dialog->id)->whereUserid($userid)->whereReadAt(null)->count();
+        $unread = WebSocketDialogMsgRead::whereDialogId($dialog->id)->whereUserid($userid)->whereReadAt(null)->count();
+        $isMarkUnread = WebSocketDialogUser::whereDialogId($dialog->id)->whereUserid($userid)->whereIsMarkUnread(1)->exists();
+        $dialog->unread = $unread > 0 ? $unread : ($isMarkUnread ? 1 : 0);
         // 对话人数
         $builder = WebSocketDialogUser::whereDialogId($dialog->id);
         $dialog->people = $builder->count();
         // 对方信息
         $dialog->dialog_user = null;
         $dialog->group_info = null;
+        $dialog->top_at = $dialog->top_at ?? WebSocketDialogUser::whereDialogId($dialog->id)->whereUserid($userid)->value('top_at');
         switch ($dialog->type) {
             case "user":
                 $dialog_user = $builder->where('userid', '!=', $userid)->first();

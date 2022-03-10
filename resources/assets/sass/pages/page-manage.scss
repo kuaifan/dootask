@@ -95,6 +95,11 @@
                     color: #666666;
                 }
             }
+
+            .task-title {
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
         }
         > ul {
             flex: 1;
@@ -195,6 +200,11 @@
                                 .num {
                                     font-size: 12px;
                                     padding-left: 16px;
+                                }
+
+                                .icon-top {
+                                    width: 14px;
+                                    height: 14px;
                                 }
                             }
                             .project-h2 {

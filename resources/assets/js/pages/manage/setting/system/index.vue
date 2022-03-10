@@ -10,6 +10,9 @@
             <TabPane :label="$L('项目模板')" name="columnTemplate">
                 <SystemColumnTemplate/>
             </TabPane>
+            <TabPane :label="$L('邮件设置')" name="emailSetting">
+                <SystemEmailSetting/>
+            </TabPane>
         </Tabs>
     </div>
 </template>
@@ -18,8 +21,10 @@
 import SystemSetting from "./setting";
 import SystemTaskPriority from "./taskPriority";
 import SystemColumnTemplate from "./columnTemplate";
+import SystemEmailSetting from "./EmailSetting";
+
 export default {
-    components: {SystemColumnTemplate, SystemTaskPriority, SystemSetting},
+    components: {SystemColumnTemplate, SystemTaskPriority, SystemSetting, SystemEmailSetting},
     data() {
         return {
             tabAction: 'setting',

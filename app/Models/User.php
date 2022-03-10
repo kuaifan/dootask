@@ -29,6 +29,7 @@ use Carbon\Carbon;
  * @property int|null $task_dialog_id 最后打开的任务会话ID
  * @property string|null $created_ip 注册IP
  * @property string|null $disable_at 禁用时间
+ * @property int $is_email_verity 邮箱是否已验证
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @method static \Database\Factories\UserFactory factory(...$parameters)
@@ -43,6 +44,7 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereEmail($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereEncrypt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereIdentity($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereIsEmailVerity($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereLastAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereLastIp($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereLineAt($value)
@@ -185,6 +187,12 @@ class User extends AbstractModel
             throw new ApiException('请输入正确的邮箱地址');
         }
         if (User::email2userid($email) > 0) {
+            $isRegVerify = Base::settingFind('emailSetting', 'reg_verify') === 'open' ? true : false;
+            $user = self::whereUserid(User::email2userid($email))->first();
+            if ($isRegVerify && $user->is_email_verity === 0) {
+                UserEmailVerification::userEmailSend($user);
+                throw new ApiException('您的账号已注册过，请验证邮箱');
+            }
             throw new ApiException('邮箱地址已存在');
         }
         //密码

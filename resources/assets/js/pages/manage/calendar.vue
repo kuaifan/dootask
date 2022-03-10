@@ -361,7 +361,7 @@ export default {
                         content: '你确定要删除任务【' + data.name + '】吗？',
                         loading: true,
                         onOk: () => {
-                            this.$store.dispatch("removeTask", data.id).then(({msg}) => {
+                            this.$store.dispatch("removeTask", {task_id: data.id}).then(({msg}) => {
                                 $A.messageSuccess(msg);
                                 this.$Modal.remove();
                             }).catch(({msg}) => {

@@ -42,6 +42,30 @@
                                 <DropdownItem name="exportTask">{{$L('导出任务统计')}}</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
+                        <!--最近打开的任务-->
+                        <Dropdown
+                            v-else-if="item.path === 'taskBrowse'"
+                            placement="right-start">
+                            <DropdownItem divided>
+                                <div class="manage-menu-flex">
+                                    {{$L(item.name)}}
+                                    <Icon type="ios-arrow-forward"></Icon>
+                                </div>
+                            </DropdownItem>
+                            <DropdownMenu slot="list" v-if="taskBrowseLists.length > 0">
+                                <DropdownItem
+                                    v-for="(item, key) in taskBrowseLists"
+                                    class="task-title"
+                                    :key="key"
+                                    @click.native="openTask(item)"
+                                    :name="item.name">{{ item.name }}</DropdownItem>
+                            </DropdownMenu>
+                            <DropdownMenu v-else slot="list">
+                                <DropdownItem style="color: darkgrey;">
+                                    {{ $L('暂无打开记录') }}
+                                </DropdownItem>
+                            </DropdownMenu>
+                        </Dropdown>
                         <!-- 主题皮肤 -->
                         <Dropdown
                             v-else-if="item.path === 'theme'"
@@ -131,6 +155,7 @@
                             <div class="project-h1">
                                 <em @click.stop="toggleOpenMenu(item.id)"></em>
                                 <div class="title">{{item.name}}</div>
+                                <img v-if="item.top_at" src="/images/mark.svg" class="icon-top">
                                 <div v-if="item.task_my_num - item.task_my_complete > 0" class="num">{{item.task_my_num - item.task_my_complete}}</div>
                             </div>
                             <div class="project-h2">
@@ -248,6 +273,12 @@
                         style="width:100%"
                         :placeholder="$L('请选择时间')"/>
                 </FormItem>
+                <FormItem prop="type" :label="$L('导出时间类型')">
+                    <RadioGroup v-model="exportData.type">
+                        <Radio label="taskTime">{{$L('任务时间')}}</Radio>
+                        <Radio label="CreatedTime">{{$L('创建时间')}}</Radio>
+                    </RadioGroup>
+                </FormItem>
             </Form>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="exportTaskShow=false">{{$L('取消')}}</Button>
@@ -363,6 +394,7 @@ export default {
             exportData: {
                 userid: [],
                 time: [],
+                type:'taskTime',
             },
 
             dialogMsgSubscribe: null,
@@ -450,7 +482,8 @@ export default {
 
             'wsMsg',
 
-            'clientNewVersion'
+            'clientNewVersion',
+            'cacheTaskBrowse'
         ]),
 
         ...mapGetters(['taskData', 'dashboardTask']),
@@ -489,6 +522,8 @@ export default {
 
                     {path: 'team', name: '团队管理', divided: true},
 
+                    {path: 'taskBrowse', name: '最近打开的任务', divided: true},
+
                     {path: 'theme', name: '主题皮肤', divided: true},
 
                     {path: 'language', name: this.currentLanguage, divided: true},
@@ -505,6 +540,8 @@ export default {
 
                     {path: 'workReport', name: '工作报告', divided: true},
                     {path: 'archivedProject', name: '已归档的项目'},
+
+                    {path: 'taskBrowse', name: '最近打开的任务', divided: true},
 
                     {path: 'theme', name: '主题皮肤', divided: true},
 
@@ -550,7 +587,16 @@ export default {
                 'overlay-y': true,
                 'overlay-none': this.topOperateVisible === true,
             }
-        }
+        },
+
+        taskBrowseLists() {
+            const {cacheTaskBrowse} = this;
+            return $A.cloneJSON(cacheTaskBrowse).sort((a, b) => {
+                if (a.view_time || b.view_time) {
+                    return b.view_time - a.view_time;
+                }
+            });
+        },
     },
 
     watch: {
@@ -566,6 +612,55 @@ export default {
         taskId(id) {
             if (id > 0) {
                 this.$Modal.resetIndex();
+            }
+        },
+
+        msgAllUnread() {
+            if (this.$Electron) {
+                this.$Electron.ipcRenderer.send('setDockBadge', this.msgAllUnread + this.dashboardTotal);
+            }
+        },
+
+        dashboardTotal() {
+            if (this.$Electron) {
+                this.$Electron.ipcRenderer.send('setDockBadge', this.msgAllUnread + this.dashboardTotal);
+            }
+        },
+
+        dialogMsgPush(data) {
+            if (this.natificationHidden && this.natificationReady) {
+                const {id, dialog_id, type, msg} = data;
+                let body = '';
+                switch (type) {
+                    case 'text':
+                        body = msg.text;
+                        break;
+                    case 'file':
+                        body = '[' + this.$L(msg.type == 'img' ? '图片信息' : '文件信息') + ']'
+                        break;
+                    default:
+                        return;
+                }
+                this._notificationId = id;
+                this.notificationClass.replaceOptions({
+                    icon: $A.originUrl('images/logo.png'),
+                    body: body,
+                    data: data,
+                    tag: "dialog",
+                    requireInteraction: true
+                });
+                let dialog = this.dialogs.find((item) => item.id == dialog_id);
+                if (dialog) {
+                    this.notificationClass.replaceTitle(dialog.name);
+                    this.notificationClass.userAgreed();
+                } else {
+                    this.$store.dispatch("getDialogOne", dialog_id).then(({data}) => {
+                        if (this._notificationId === id) {
+                            this.notificationClass.replaceTitle(data.name);
+                            this.notificationClass.userAgreed();
+                        }
+                    })
+                }
             }
         },
 
@@ -723,7 +818,6 @@ export default {
             return {
                 "active": this.curPath == '/manage/' + path,
                 "open-menu": openMenu === true,
-                "top": item.top_at,
                 "operate": item.id == this.topOperateItem.id && this.topOperateVisible
             };
         },
@@ -981,6 +1075,10 @@ export default {
                 this.natificationHidden = !!document[hiddenProperty]
             }
             document.addEventListener(visibilityChangeEvent, visibilityChangeListener);
+        },
+
+        openTask(task) {
+            this.$store.dispatch("openTask", task)
         },
     }
 }

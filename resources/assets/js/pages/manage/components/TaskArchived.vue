@@ -300,7 +300,7 @@ export default {
         delete(row) {
             this.list = this.list.filter(({id}) => id != row.id);
             this.loadIng++;
-            this.$store.dispatch("removeTask", row.id).then(({msg}) => {
+            this.$store.dispatch("removeTask", {task_id: row.id}).then(({msg}) => {
                 $A.messageSuccess(msg);
                 this.loadIng--;
                 this.getLists();

@@ -70,6 +70,11 @@
                         border-color: rgba(27, 154, 238, 0.1);
                         color: #0171c2;
                     }
+                    &.test {
+                        background-color: rgba(27, 154, 238, 0.1);
+                        border-color: rgba(27, 154, 238, 0.1);
+                        color: #0171c2;
+                    }
                     &.end {
                         background-color: rgba(21, 173, 49, 0.1);
                         border-color: rgba(21, 173, 49, 0.1);
@@ -329,6 +334,13 @@
                     }
                 }
 
+                &.test {
+                    border-color: #ccecff;
+                    &:hover {
+                        border-color: #87d2ff
+                    }
+                }
+
                 &.end {
                     border-color: #cafac8;
                     &:hover {
@@ -373,6 +385,11 @@
                 }
 
                 &.progress {
+                    background: rgba(27,154,238,0.1);
+                    color: #0171c2
+                }
+
+                &.test {
                     background: rgba(27,154,238,0.1);
                     color: #0171c2
                 }

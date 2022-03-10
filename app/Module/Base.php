@@ -1712,24 +1712,46 @@ class Base
      */
     public static function timeDiff($s, $e)
     {
-        $d = $e - $s;
-        if ($d > 86400) {
-            $day = floor($d / 86400);
-            $hour = ceil(($d - ($day * 86400)) / 3600);
-            if ($hour > 0) {
-                return $day . '天' . $hour . '小时';
-            } else {
-                return $day . '天';
-            }
-        } elseif ($d > 3600) {
-            return ceil($d / 3600) . '小时';
-        } elseif ($d > 60) {
-            return ceil($d / 60) . '分钟';
-        } elseif ($d > 1) {
-            return '1分钟内';
-        } else {
-            return '0秒';
+        $time = $e - $s;
+        $days = 0;
+        if ($time >= 86400) { // 如果大于1天
+            $days = (int)($time / 86400);
+            $time = $time % 86400; // 计算天后剩余的毫秒数
         }
+        $hours = 0;
+        if ($time >= 3600) { // 如果大于1小时
+            $hours = (int)($time / 3600);
+            $time = $time % 3600; // 计算小时后剩余的毫秒数
+        }
+        $minutes = ceil($time / 60); // 剩下的毫秒数都算作分
+        $daysStr = $days > 0 ? $days . '天' : '';
+        $hoursStr = ($hours > 0 || ($days > 0 && $minutes > 0)) ? $hours . '时' : '';
+        $minuteStr = ($minutes > 0) ? $minutes . '分' : '';
+        return $daysStr . $hoursStr . $minuteStr;
+    }
+
+    /**
+     * 时间秒数格式化
+     * @param int $time 时间秒数
+     * @return string
+     */
+    public static function timeFormat($time)
+    {
+        $days = 0;
+        if ($time >= 86400) { // 如果大于1天
+            $days = (int)($time / 86400);
+            $time = $time % 86400; // 计算天后剩余的毫秒数
+        }
+        $hours = 0;
+        if ($time >= 3600) { // 如果大于1小时
+            $hours = (int)($time / 3600);
+            $time = $time % 3600; // 计算小时后剩余的毫秒数
+        }
+        $minutes = ceil($time / 60); // 剩下的毫秒数都算作分
+        $daysStr = $days > 0 ? $days . '天' : '';
+        $hoursStr = ($hours > 0 || ($days > 0 && $minutes > 0)) ? $hours . '时' : '';
+        $minuteStr = ($minutes > 0) ? $minutes . '分' : '';
+        return $daysStr . $hoursStr . $minuteStr;
     }
 
     /**
@@ -2977,5 +2999,113 @@ class Base
                 return strlen($match[0]) >= 4 ? '' : $match[0];
             },
             $str);
+    }
+    //去重复
+    public static function assoc_unique($array, $keyid,$desc=true) {
+        if(empty($array)){
+            return false;
+        }
+        $array = array_values($array);
+        //倒叙排列数
+        if($desc)
+        {
+            $array =(new Self)->array_rsort($array,true);
+        }
+
+        //提取需要判断的项目变成一维数组
+        $a = (new Self)->array_tq($array,$keyid);
+
+        //去除一维数组重复值
+        $a = array_unique($a);
+        //提取二维数组项目值
+        foreach($array[0] AS $key=>$value)
+        {
+            $akey[] = $key;
+        }
+        //重新拼接二维数组
+        foreach($akey AS $key=>$value)
+        {
+            $b = (new Self)->array_tq($array,$value);
+            foreach($a AS $key2=>$value2)
+            {
+                $c[$key2][$value] = $b[$key2];
+            }
+        }
+
+        if($desc)
+        {
+            $c = (new Self)->array_rsort($c,true);
+        }
+        return $c;
+    }
+
+    //提取二维数组项目
+    public static function array_tq($array,$aval="")
+    {
+        foreach($array AS $key=>$value)
+        {
+            $result[] = $value[$aval];
+        }
+        return $result;
+    }
+
+    public static function array_rsort($arr,$isvalues=false)
+    {
+        if(is_array($arr)){
+            $flag = false;
+            //一维数组
+            if(count($arr) == count($arr,1)){
+                $flag = true;
+                $i = 0;
+                //转换成二维数组
+                foreach($arr AS $key=>$value){
+                    $a[$i]["okey"] = $key;
+                    $a[$i]["value"] = $value;
+                    $i++;
+                }
+                $arr = $a;
+            }
+            //多维数组
+            else
+            {
+                //添加临时key值
+                foreach($arr AS $key=>$value){
+                    $value["okey"] = $key;
+                    $array[] = $value;
+                }
+                $arr = $array;
+            }
+
+            //倒叙并还原key值
+            $count = count($arr)-1;
+            for($i=0;$i<count($arr);$i++){
+                $b[$arr[$count]["okey"]] = $arr[$count];
+                $count--;
+            }
+
+            //重构一维数组
+            if($flag == true){
+                foreach($b AS $key=>$value){
+                    if($isvalues){
+                        $c[] = $value["value"];
+                    }else{
+                        $c[$value["okey"]] = $value["value"];
+                    }
+                }
+            }
+            //多维数组去除临时key值
+            else
+            {
+                foreach($b AS $key=>$value)  {
+                    unset($value["okey"]);
+                    if($isvalues){
+                        $c[] = $value;
+                    }else{
+                        $c[$key] = $value;
+                    }
+                }
+            }
+            return $c;
+        }
     }
 }

@@ -59,6 +59,18 @@
                     <div slot="content">{{$L('任务完成 % 天后自动归档。', formDatum.archived_day)}}</div>
                 </ETooltip>
             </FormItem>
+            <FormItem :label="$L('是否启动首页')" prop="startHome">
+                <RadioGroup v-model="formDatum.start_home">
+                    <Radio label="open">{{$L('开启')}}</Radio>
+                    <Radio label="close">{{$L('关闭')}}</Radio>
+                </RadioGroup>
+                <template v-if="formDatum.start_home == 'open'">
+                    <div class="form-tip">{{ $L('首页底部：首页底部网站备案号等信息') }}</div>
+                    <Input v-model="formDatum.home_footer" style="width:100%;margin-top:6px">
+                        <span slot="prepend">{{ $L('首页底部') }}</span>
+                    </Input>
+                </template>
+            </FormItem>
         </Form>
         <div class="setting-footer">
             <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{$L('提交')}}</Button>

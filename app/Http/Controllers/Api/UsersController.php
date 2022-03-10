@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\User;
+use App\Models\UserEmailVerification;
 use App\Module\Base;
 use Arr;
 use Cache;
 use Captcha;
 use Carbon\Carbon;
 use Request;
+use Validator;
 
 /**
  * @apiDefine users
@@ -42,6 +44,7 @@ class UsersController extends AbstractController
         $type = trim(Request::input('type'));
         $email = trim(Request::input('email'));
         $password = trim(Request::input('password'));
+        $isRegVerify = Base::settingFind('emailSetting', 'reg_verify') === 'open' ? true : false;
         if ($type == 'reg') {
             $setting = Base::setting('system');
             if ($setting['reg'] == 'close') {
@@ -53,6 +56,10 @@ class UsersController extends AbstractController
                 }
             }
             $user = User::reg($email, $password);
+            if ($isRegVerify) {
+                UserEmailVerification::userEmailSend($user);
+                return Base::retError('注册成功,请验证邮箱后登录', ['code' => 1000]);
+            }
         } else {
             $needCode = !Base::isError(User::needCode($email));
             if ($needCode) {
@@ -68,21 +75,25 @@ class UsersController extends AbstractController
             $retError = function ($msg) use ($email) {
                 Cache::forever("code::" . $email, "need");
                 $needCode = !Base::isError(User::needCode($email));
-                $needData = [ 'code' => $needCode ? 'need' : 'no' ];
+                $needData = ['code' => $needCode ? 'need' : 'no'];
                 return Base::retError($msg, $needData);
             };
             $user = User::whereEmail($email)->first();
             if (empty($user)) {
-                return $retError('账号或密码错误');
+                return $retError('账号不存在，请确认账号是否输入正确');
             }
             if ($user->password != Base::md52($password, $user->encrypt)) {
-                return $retError('账号或密码错误');
+                return $retError('密码错误，请输入正确密码');
             }
             //
             if (in_array('disable', $user->identity)) {
                 return $retError('帐号已停用...');
             }
             Cache::forget("code::" . $email);
+            if ($isRegVerify && $user->is_email_verity === 0) {
+                UserEmailVerification::userEmailSend($user);
+                return $retError('请验证邮箱后再登录');
+            }
         }
         //
         $array = [
@@ -558,5 +569,54 @@ class UsersController extends AbstractController
         }
         //
         return Base::retSuccess('修改成功', $userInfo);
+    }
+
+    /**
+     * @api {get} api/users/email/verification        13. 邮箱验证
+     *
+     * @apiDescription 不需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName email__verification
+     *
+     * @apiParam {String} code           验证参数
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据（同"获取我的信息"接口）
+     */
+    public function email__verification()
+    {
+        $data = Request::input();
+        // 表单验证
+        $validator = Validator::make($data, [
+            "code" => ["required"],
+        ], [
+            "code.required" => "required字段非法",
+        ]);
+        if ($validator->fails())
+            return Base::retError($validator->errors()->first());
+        $res = UserEmailVerification::where('code', $data['code'])->first();
+        if (empty($res)) {
+            return Base::retError('无效连接,请重新注册');
+        }
+        // 如果已经校验过
+        if (intval($res->status) === 1)
+            return Base::retError('链接已经使用过',['code' => 2]);
+
+        $oldTime = strtotime($res->created_at);
+        $time = time();
+        //24个小时失效
+        if (abs($time - $oldTime) > 86400) {
+            return Base::retError("链接已失效，请重新登录/注册");
+        }
+        UserEmailVerification::where('code', $data['code'])
+            ->update([
+                'status' => 1
+            ]);
+        User::where('userid', $res->userid)->update([
+            'is_email_verity' => 1
+        ]);
+        return Base::retSuccess('绑定邮箱成功');
     }
 }

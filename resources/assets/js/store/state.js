@@ -29,6 +29,7 @@ const stateData = {
     cacheColumns: $A.getStorageArray("cacheColumns"),
     cacheTasks: $A.getStorageArray("cacheTasks"),
     cacheProjectParameter: $A.getStorageArray("cacheProjectParameter"),
+    cacheTaskBrowse: $A.getStorageArray("cacheTaskBrowse" + $A.getStorageJson("userInfo").userid),
 
     // ServerUrl
     cacheServerUrl: $A.getStorageString("cacheServerUrl"),

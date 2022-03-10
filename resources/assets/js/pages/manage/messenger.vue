@@ -85,6 +85,12 @@
                                 <DropdownItem @click.native="handleTopClick">
                                     {{ $L(topOperateItem.top_at ? '取消置顶' : '置顶该聊天') }}
                                 </DropdownItem>
+                                <DropdownItem @click.native="updateRead('read')" v-if="topOperateItem.unread > 0">
+                                    {{ $L('标记已读') }}
+                                </DropdownItem>
+                                <DropdownItem @click.native="updateRead('unread')" v-else>
+                                    {{ $L('标记未读') }}
+                                </DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
                     </div>
@@ -481,6 +487,22 @@ export default {
                 });
             }).catch(({msg}) => {
                 $A.modalError(msg);
+            });
+        },
+
+        updateRead(type) {
+            this.$store.dispatch("call", {
+                url: 'dialog/msg/mark',
+                data: {
+                    dialog_id: this.topOperateItem.id,
+                    type: type
+                },
+            }).then(() => {
+                this.$store.dispatch("getDialogs");
+                this.$Modal.remove();
+            }).catch(({msg}) => {
+                $A.modalError(msg, 301);
+                this.$Modal.remove();
             });
         }
     }
