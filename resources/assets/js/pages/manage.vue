@@ -490,7 +490,8 @@ export default {
 
         msgAllUnread() {
             let num = 0;
-            this.cacheDialogs.some(({unread}) => {
+            this.cacheDialogs.some(dialog => {
+                let unread = $A.getDialogUnread(dialog);
                 if (unread) {
                     num += unread;
                 }

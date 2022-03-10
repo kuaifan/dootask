@@ -11,6 +11,7 @@ namespace App\Models;
  * @property int|null $userid 发送会员ID
  * @property int|null $after 在阅读之后才添加的记录
  * @property string|null $read_at 阅读时间
+ * @property-read \App\Models\WebSocketDialogMsg|null $webSocketDialogMsg
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsgRead newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsgRead newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsgRead query()
@@ -28,5 +29,13 @@ class WebSocketDialogMsgRead extends AbstractModel
     {
         parent::__construct($attributes);
         $this->timestamps = false;
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function webSocketDialogMsg(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(WebSocketDialogMsg::class, 'id', 'msg_id');
     }
 }

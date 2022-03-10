@@ -376,6 +376,15 @@
             } else {
                 window.open(url)
             }
+        },
+
+        /**
+         * 返回对话未读数量
+         * @param dialog
+         * @returns {*|number}
+         */
+        getDialogUnread(dialog) {
+            return dialog ? (dialog.unread || dialog.is_mark_unread || 0) : 0
         }
     });
 

@@ -41,7 +41,7 @@ class DialogController extends AbstractController
     {
         $user = User::auth();
         //
-        $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at'])
+        $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.is_mark_unread'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
             ->where('u.userid', $user->userid)
             ->orderByDesc('u.top_at')
@@ -74,7 +74,7 @@ class DialogController extends AbstractController
         //
         $dialog_id = intval(Request::input('dialog_id'));
         //
-        $item = WebSocketDialog::select(['web_socket_dialogs.*'])
+        $item = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.is_mark_unread'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
             ->where('web_socket_dialogs.id', $dialog_id)
             ->where('u.userid', $user->userid)
@@ -524,19 +524,41 @@ class DialogController extends AbstractController
         if (!$dialogUser) {
             return Base::retError("会话不存在");
         }
-        if ($type == 'read') {
-            WebSocketDialogMsgRead::whereUserid($user->userid)
-                ->whereReadAt(null)
-                ->whereDialogId($dialogId)
-                ->update(
-                    [
-                        'read_at' => Carbon::now()
-                    ]);
-            $dialogUser->is_mark_unread = 0;
-            $dialogUser->save();
-        } elseif ($type == 'unread') {
-            $dialogUser->is_mark_unread = 1;
-            $dialogUser->save();
+        switch ($type) {
+            case 'read':
+                WebSocketDialogMsgRead::whereUserid($user->userid)
+                    ->whereReadAt(null)
+                    ->whereDialogId($dialogId)
+                    ->chunkById(100, function ($list) {
+                        /** @var WebSocketDialogMsgRead $item */
+                        $dialogMsg = [];
+                        foreach ($list as $item) {
+                            $item->read_at = Carbon::now();
+                            $item->save();
+                            if (isset($dialogMsg[$item->msg_id])) {
+                                $dialogMsg[$item->msg_id]['re']++;
+                            } else {
+                                $dialogMsg[$item->msg_id] = [
+                                    'ob' => $item->webSocketDialogMsg,
+                                    're' => 1
+                                ];
+                            }
+                        }
+                        foreach ($dialogMsg as $item) {
+                            $item['ob']?->generatePercentage($item['re']);
+                        }
+                    });
+                $dialogUser->is_mark_unread = 0;
+                $dialogUser->save();
+                break;
+
+            case 'unread':
+                $dialogUser->is_mark_unread = 1;
+                $dialogUser->save();
+                break;
+
+            default:
+                return Base::retError("参数错误");
         }
         return Base::retSuccess("success");
     }

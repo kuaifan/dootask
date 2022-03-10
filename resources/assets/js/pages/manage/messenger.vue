@@ -58,7 +58,7 @@
                                 </div>
                                 <div class="dialog-text no-dark-mode">{{formatLastMsg(dialog.last_msg)}}</div>
                             </div>
-                            <Badge class="dialog-num" :count="dialog.unread"/>
+                            <Badge class="dialog-num" :count="$A.getDialogUnread(dialog)"/>
                         </li>
                     </ul>
                     <ul v-else class="contacts">
@@ -85,7 +85,7 @@
                                 <DropdownItem @click.native="handleTopClick">
                                     {{ $L(topOperateItem.top_at ? '取消置顶' : '置顶该聊天') }}
                                 </DropdownItem>
-                                <DropdownItem @click.native="updateRead('read')" v-if="topOperateItem.unread > 0">
+                                <DropdownItem @click.native="updateRead('read')" v-if="$A.getDialogUnread(topOperateItem) > 0">
                                     {{ $L('标记已读') }}
                                 </DropdownItem>
                                 <DropdownItem @click.native="updateRead('unread')" v-else>
@@ -213,21 +213,22 @@ export default {
             return function (type) {
                 let num = 0;
                 this.cacheDialogs.some((dialog) => {
-                    if (dialog.unread) {
+                    let unread = $A.getDialogUnread(dialog);
+                    if (unread) {
                         switch (type) {
                             case 'project':
                             case 'task':
                                 if (type == dialog.group_type) {
-                                    num += dialog.unread;
+                                    num += unread;
                                 }
                                 break;
                             case 'user':
                                 if (type == dialog.type) {
-                                    num += dialog.unread;
+                                    num += unread;
                                 }
                                 break;
                             default:
-                                num += dialog.unread;
+                                num += unread;
                                 break;
                         }
                     }
@@ -286,7 +287,7 @@ export default {
         onActive(type) {
             if (this.dialogActive == type) {
                 // 再次点击滚动到未读条目
-                const dialog = this.dialogList.find(({unread}) => unread > 0)
+                const dialog = this.dialogList.find(dialog => $A.getDialogUnread(dialog) > 0)
                 if (dialog) {
                     $A.scrollToView(this.$refs[`dialog_${dialog.id}`][0], {
                         behavior: 'smooth',
@@ -322,7 +323,7 @@ export default {
         },
 
         filterDialog(dialog) {
-            if (dialog.unread > 0 || dialog.id == this.dialogId || dialog.top_at) {
+            if ($A.getDialogUnread(dialog) > 0 || dialog.id == this.dialogId || dialog.top_at) {
                 return true
             }
             if (dialog.name === undefined) {

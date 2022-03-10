@@ -96,12 +96,12 @@ class WebSocketDialogMsg extends AbstractModel
 
     /**
      * 获取占比
-     * @param bool $increment 是否新增阅读数
+     * @param bool|int $increment 是否新增阅读数
      * @return int
      */
     public function generatePercentage($increment = false) {
         if ($increment) {
-            $this->increment('read');
+            $this->increment('read', is_bool($increment) ? 1 : $increment);
         }
         if ($this->read > $this->send || empty($this->send)) {
             return $this->appendattrs['percentage'] = 100;
