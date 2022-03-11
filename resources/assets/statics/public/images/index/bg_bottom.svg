@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1920px" height="370px" viewBox="0 0 1920 370" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>bg</title>
+    <defs>
+        <rect id="path-1" x="0" y="0" width="1920" height="370"></rect>
+        <rect id="path-3" x="0" y="4.54747351e-13" width="300" height="223"></rect>
+    </defs>
+    <g id="Dootask官网" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g transform="translate(0.000000, -481.000000)" id="pic">
+            <g transform="translate(0.000000, 71.000000)">
+                <g id="bg" transform="translate(0.000000, 410.000000)">
+                    <mask id="mask-2" fill="white">
+                        <use xlink:href="#path-1"></use>
+                    </mask>
+                    <use id="蒙版" fill="#8BCF70" opacity="0" xlink:href="#path-1"></use>
+                    <path d="M0,-410 L1920,-410 L1920,70 C1920,235.685425 1785.68542,370 1620,370 L300,370 C134.314575,370 2.02906125e-14,235.685425 0,70 L0,-410 L0,-410 Z" id="矩形" fill="#8BCF70" mask="url(#mask-2)"></path>
+                    <g id="decoration" mask="url(#mask-2)" opacity="0.2">
+                        <g transform="translate(259.000000, 159.000000)" id="圆">
+                            <circle id="椭圆形备份-63" fill="#FFFFFF" cx="50" cy="50" r="50"></circle>
+                        </g>
+                    </g>
+                    <g id="椭圆形" mask="url(#mask-2)">
+                        <g transform="translate(1209.000000, 147.000000)">
+                            <mask id="mask-4" fill="white">
+                                <use xlink:href="#path-3"></use>
+                            </mask>
+                            <use id="蒙版" stroke="none" fill="#D8D8D8" fill-rule="evenodd" opacity="0" xlink:href="#path-3"></use>
+                            <circle id="椭圆形" stroke="none" fill="#FFFFFF" fill-rule="evenodd" opacity="0.2" mask="url(#mask-4)" cx="150" cy="150" r="150"></circle>
+                        </g>
+                    </g>
+                    <g id="decoration" opacity="0.5" mask="url(#mask-2)" fill="#FFFFFF">
+                        <g transform="translate(525.000000, -0.000000)">
+                            <circle id="椭圆形" cx="3.24324324" cy="3.24324324" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-6" cx="3.24324324" cy="25.9459459" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-12" cx="3.24324324" cy="48.6486486" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-18" cx="3.24324324" cy="71.3513514" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-36" cx="3.24324324" cy="94.3513514" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-45" cx="3.24324324" cy="117.351351" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-54" cx="3.24324324" cy="140.351351" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-2" cx="48.6486486" cy="3.24324324" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-7" cx="48.6486486" cy="25.9459459" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-13" cx="48.6486486" cy="48.6486486" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-19" cx="48.6486486" cy="71.3513514" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-37" cx="48.6486486" cy="94.3513514" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-46" cx="48.6486486" cy="117.351351" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-55" cx="48.6486486" cy="140.351351" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-4" cx="94.0540541" cy="3.24324324" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-8" cx="94.0540541" cy="25.9459459" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-14" cx="94.0540541" cy="48.6486486" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-20" cx="94.0540541" cy="71.3513514" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-38" cx="94.0540541" cy="94.3513514" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-47" cx="94.0540541" cy="117.351351" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-56" cx="94.0540541" cy="140.351351" r="3.24324324"></circle>
+                            <circle id="椭圆形备份" cx="25.9459459" cy="3.24324324" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-9" cx="25.9459459" cy="25.9459459" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-15" cx="25.9459459" cy="48.6486486" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-21" cx="25.9459459" cy="71.3513514" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-39" cx="25.9459459" cy="94.3513514" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-48" cx="25.9459459" cy="117.351351" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-57" cx="25.9459459" cy="140.351351" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-3" cx="71.3513514" cy="3.24324324" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-10" cx="71.3513514" cy="25.9459459" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-16" cx="71.3513514" cy="48.6486486" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-22" cx="71.3513514" cy="71.3513514" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-40" cx="71.3513514" cy="94.3513514" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-49" cx="71.3513514" cy="117.351351" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-58" cx="71.3513514" cy="140.351351" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-5" cx="116.756757" cy="3.24324324" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-24" cx="139.756757" cy="3.24324324" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-28" cx="162.756757" cy="3.24324324" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-32" cx="185.756757" cy="3.24324324" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-11" cx="116.756757" cy="25.9459459" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-25" cx="139.756757" cy="25.9459459" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-29" cx="162.756757" cy="25.9459459" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-33" cx="185.756757" cy="25.9459459" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-17" cx="116.756757" cy="48.6486486" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-26" cx="139.756757" cy="48.6486486" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-30" cx="162.756757" cy="48.6486486" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-34" cx="185.756757" cy="48.6486486" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-23" cx="116.756757" cy="71.3513514" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-41" cx="116.756757" cy="94.3513514" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-50" cx="116.756757" cy="117.351351" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-59" cx="116.756757" cy="140.351351" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-27" cx="139.756757" cy="71.3513514" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-42" cx="139.756757" cy="94.3513514" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-51" cx="139.756757" cy="117.351351" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-60" cx="139.756757" cy="140.351351" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-31" cx="162.756757" cy="71.3513514" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-43" cx="162.756757" cy="94.3513514" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-52" cx="162.756757" cy="117.351351" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-61" cx="162.756757" cy="140.351351" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-35" cx="185.756757" cy="71.3513514" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-44" cx="185.756757" cy="94.3513514" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-53" cx="185.756757" cy="117.351351" r="3.24324324"></circle>
+                            <circle id="椭圆形备份-62" cx="185.756757" cy="140.351351" r="3.24324324"></circle>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

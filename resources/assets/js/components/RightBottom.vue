@@ -93,7 +93,7 @@ export default {
         },
 
         showDown() {
-            return this.repoStatus && this.isDesktop && ['login', 'manage-dashboard'].includes(this.$route.name)
+            return this.repoStatus && this.isDesktop && ['login','index', 'manage-dashboard'].includes(this.$route.name)
         }
     },
     watch: {

@@ -6,147 +6,92 @@
     height: 100%;
     overflow: auto;
 }
-@media (max-width: 1919px) {
     .page-warp {
-        width: 100%;
+        max-width: 1920px;
         margin: 0 auto;
         .page-header {
             width: 100%;
-            height: 720px;
             background: #8bcf70;
-            border-radius: 0px 0px 300px 300px;
             position: relative;
+            padding-bottom: 40px;
             .header-nav {
-                width: 100%;
+                max-width: 1200px;
                 height: 72px;
+                margin: auto;
                 display: flex;
                 justify-content: space-between;
                 .header-nav-box {
                     display: flex;
-                    justify-items: center;
                     align-items: center;
+                    padding-left: 20px;
                     color: #ffffff;
                     font-family: PingFangSC-Regular, PingFang SC;
+
                     font-weight: 400;
                     position: relative;
                     .logo {
-                        width: 65px;
+                        width: 143px;
                         height: 36px;
                         background: url("../images/index/indexlogo.png")
                             no-repeat center center;
                         background-size: contain;
-                        margin: 0 20px 0 20px;
                     }
                     .header-right-one {
                         display: flex;
-                        align-items: center;
-                        justify-content: end;
-                        font-size: 12px;
-                        min-width: 75px;
                         .header-right-one-language {
-                            margin-right: 4px;
+                            margin-right: 8px;
+                            font-size: 26px;
                         }
                         .header-right-one-dropdown {
                             color: #ffffff;
+                            font-size: 16px;
                         }
                     }
                     .header-right-two {
-                        font-size: 12px;
-                        margin: 0 20px 0 20px;
+                        font-size: 16px;
+                        margin: 0 30px 0 30px;
                         cursor: pointer;
-                        overflow: hidden;
-                        white-space: nowrap;
-                        text-overflow: ellipsis;
                     }
-                    @media(max-width:414px){
-
-                        .header-right-three {
-                            max-width: 50px;
-                            font-size: 12px;
-                            height: 36px;
-                            background: #ffa25a;
-                            border-radius: 4px;
-                            text-align: center;
-                            line-height: 36px;
-                            cursor: pointer;
-                            margin-right: 10px;
-                            padding: 0 5px 0 5px;
-                            overflow: hidden;
-                            white-space: nowrap;
-                            text-overflow: ellipsis;
-                        }
+                    .header-right-three {
+                        font-size: 16px;
+                        min-width: 100px;
+                        height: 36px;
+                        background: #ffa25a;
+                        border-radius: 4px;
+                        text-align: center;
+                        line-height: 36px;
+                        cursor: pointer;
+                        padding: 0 10px 0 10px;
                     }
-                    @media(min-width:414px){
-
-                        .header-right-three {
-                            font-size: 12px;
-                            height: 36px;
-                            background: #ffa25a;
-                            border-radius: 4px;
-                            text-align: center;
-                            line-height: 36px;
-                            cursor: pointer;
-                            margin-right: 10px;
-                            padding: 0 5px 0 5px;
-                            overflow: hidden;
-                            white-space: nowrap;
-                            text-overflow: ellipsis;
-                        }
-                    }
-                    @media(min-width:660px){
-                        .logo {
-                            width: 143px;
-                            height: 36px;
-                            background: url("../images/index/indexlogo.png")
-                                no-repeat center center;
-                            background-size: contain;
-                            margin: 0 20px 0 20px;
-                        }
-                        .header-right-one {
-                            display: flex;
-                            align-items: center;
-                            font-size: 16px;
-                            min-width: 75px;
-                            .header-right-one-language {
-                                margin-right: 4px;
-                            }
-                            .header-right-one-dropdown {
-                                color: #ffffff;
+                    .header-right-four {
+                        font-size: 16px;
+                        margin-left: 30px;
+                        cursor: pointer;
+                        .ivu-dropdown{
+                            .ivu-dropdown-rel{
+                                .header-right-one-dropdown {
+                                    color: #ffffff;
+                                    font-size: 16px;
+                                }
                             }
                         }
-                        .header-right-two {
-                            font-size: 16px;
-                            margin: 0 40px 0 40px;
-                            cursor: pointer;
-                            overflow: hidden;
-                            white-space: nowrap;
-                            text-overflow: ellipsis;
-                        }
-                        .header-right-three {
-                            font-size: 16px;
-                            height: 36px;
-                            background: #ffa25a;
-                            border-radius: 4px;
-                            text-align: center;
-                            line-height: 36px;
-                            cursor: pointer;
-                            margin-right: 10px;
-                            padding: 0 10px 0 10px;
-                            overflow: hidden;
-                            white-space: nowrap;
-                            text-overflow: ellipsis;
-                        }
+
                     }
-
-
+                }
+                .header-nav-boxs{
+                    justify-content: flex-end;
+                    padding-right: 20px;
+                    .header-nav-more{
+                        color: #fff;
+                        font-size: 36px;
+                    }
                 }
             }
             .header-content {
-                width: 100%;
-                height: 396px;
+                max-width: 1200px;
                 margin: 0 auto;
                 .header-title {
-                    font-size: 24px;
+                    font-size: 48px;
                     font-family: PingFangSC-Medium, PingFang SC;
                     font-weight: 500;
                     color: #ffffff;
@@ -157,15 +102,14 @@
                     margin-top: 40px;
                 }
                 .header-tips {
-                    width: 80%;
-                    font-size: 12px;
+                    font-size: 24px;
                     font-family: PingFangSC-Regular, PingFang SC;
                     font-weight: 400;
                     color: #ffffff;
                     line-height: 36px;
                     text-align: center;
+                    padding: 0 30px;
                     margin-top: 22px;
-                    margin: 0 auto;
                 }
                 .login-buttom {
                     width: 150px;
@@ -184,86 +128,263 @@
                 }
             }
 
-            // .header-bg {
-            //     width: 100%;
-            //     height: 400px;
-            //     background: url("../images/index/decoration.png") no-repeat center
-            //         center;
-            //     background-size: contain;
-            //     position: absolute;
-            //     bottom: 0;
-            // }
-            .header-pic {
-                width: 100%;
-                height: 340px;
-                background: url("../images/index/pic.png") no-repeat center center;
-                background-size: contain;
-                margin-top: 10px;
+        }
+        .page-header-bottom{
+            position: relative;
+            background: url("../images/index/bg_bottom.svg") no-repeat;
+            background-color: #FFFFFF;
+            background-size: 100%;
+            margin-bottom: 190px;
+            margin-top: -2px;
+            .page-header-bottoms{
+                max-width: 1200px;
+                margin: auto;
+                top: 0;
+                left: 0;
+                right: 0;
+                img{
+                    display: block;
+                    margin: auto;
+                    width: 80%;
+                }
             }
         }
-        .page-main {
-            width: 62.5%;
-            margin: 0 auto;
-            margin-top: 200px;
-            .box-img{
-                height: auto;
-                max-width: 100%;
-                max-height: 100%;
-                vertical-align: bottom;
-                bottom: 0;
-                -o-object-fit: fill;
-                object-fit: fill;
+        .page-main{
+            max-width: 1200px;
+            margin: auto;
+            .page-main-row{
+                margin-bottom: 150px;
             }
-            .box-pic {
-                -webkit-box-shadow: 0px 0px 10px #a9a4a4;
-                -moz-box-shadow: 0px 0px 10px #a9a4a4;
-                box-shadow: 0px 0px 10px #a9a4a4;
-                border-radius: 10px;
-                padding: 10px;
+            .page-main-rows{
+                margin-bottom: 140px;
             }
-            .box-square {
-                width: 24px;
-                height: 24px;
-                background: url("../images/index/square.png") no-repeat
-                    center center;
-                background-size: contain;
-                margin-top: 20px;
+            .page-main-img{
+                img{
+                    width: 100%;
+                }
             }
-            .box-title {
-                font-size: 16px;
-                font-family: PingFangSC-Medium, PingFang SC;
-                font-weight: 500;
-                color: #333333;
-                line-height: 45px;
-                margin: 6px 0 18px 0;
+            .page-main-imgs{
+                img{
+                    display: block;
+                    width: 90%;
+                    margin: auto;
+                }
             }
-            .box-tips {
+            .page-main-text{
+                padding-left: 60px;
+                padding-top: 120px;
+                h3{
+                    font-size: 32px;
+                    font-weight: 500;
+                    color: #333333;
+                    line-height: 45px;
+                    margin-bottom: 17px;
+                }
+                p{
+                    font-size: 18px;
+                    font-weight: 400;
+                    color: #828282;
+                    line-height: 28px;
+                    padding-right: 70px;
+                }
+            }
+            .page-main-texts{
+                padding-top: 40px;
+                h3{
+                    display: flex;
+                    align-items: center;
+                    font-size: 30px;
+                    img{
+                        margin-right:10px;
+                    }
+                }
+                p{
+                    font-size:16px;
+                }
+            }
+        }
+        .page-footer {
+            .footer-service {
+                width: 100%;
+                height: 188px;
+                background-color: #ffa25a;
+                position: relative;
+                .footer-bg-box {
+                    overflow: hidden;
+                    width: 100%;
+                    height: 188px;
+
+                    // background: url("../images/index/footer-bg.png") no-repeat
+                    //     center center;
+                    // background-size: 100% 100%;
+                    // background-size: contain;
+                    .box-title {
+                        height: 45px;
+                        font-size: 16px;
+                        font-family: PingFangSC-Medium, PingFang SC;
+                        font-weight: 500;
+                        color: #ffffff;
+                        line-height: 45px;
+                        text-align: center;
+                        margin: 33px 0 22px 0;
+                    }
+                    .buttom-box {
+                        display: flex;
+                        justify-content: center;
+                        .login-btn {
+                            width: 150px;
+                            height: 48px;
+                            background: #ffffff;
+                            border-radius: 8px;
+                            font-size: 14px;
+                            font-family: PingFangSC-Medium, PingFang SC;
+                            font-weight: 500;
+                            color: #ffa25a;
+                            line-height: 48px;
+                            text-align: center;
+                            margin-right: 20px;
+                            cursor: pointer;
+                        }
+                        .contact-btn {
+                            width: 150px;
+                            height: 48px;
+                            border-radius: 8px;
+                            border: 1px solid #ffffff;
+                            font-size: 14px;
+                            font-family: PingFangSC-Medium, PingFang SC;
+                            font-weight: 500;
+                            color: #ffffff;
+                            line-height: 48px;
+                            text-align: center;
+                            cursor: pointer;
+                        }
+                    }
+                }
+            }
+            .footer-opyright {
+                width: 100%;
+                height: 60px;
+                background: #ffffff;
+                text-align: center;
                 font-size: 12px;
                 font-family: PingFangSC-Regular, PingFang SC;
                 font-weight: 400;
                 color: #828282;
-                line-height: 28px;
+                line-height: 60px;
             }
-            .main-box-one {
-                position: relative;
-                margin-bottom: 70px;
+        }
+    }
+@media screen and (max-width: 468px) {
+    .page-index {
+    }
+    .page-warp {
+        .page-header {
+            .header-content {
+                .header-title {
+                    font-size: 24px;
+                    line-height: 34px;
+                    font-weight: 600;
+                }
+                .header-title-one {
+                    margin-top: 40px;
+                }
+                .header-tips {
+                    font-size: 16px;
+                    padding: 0 20px;
+                    font-weight: 400;
+                    line-height: 26px;
+                }
+                .login-buttom {
+                    width: 150px;
+                    height: 48px;
+                    background: #ffa25a;
+                    border-radius: 8px;
+                    font-size: 18px;
+                    font-family: PingFangSC-Medium, PingFang SC;
+                    font-weight: 500;
+                    color: #ffffff;
+                    line-height: 48px;
+                    text-align: center;
+                    margin: 0 auto;
+                    margin-top: 34px;
+                    cursor: pointer;
+                }
+            }
 
-                .box-one-tips {
+        }
+        .page-header-bottom{
+            position: relative;
+            background: url("../images/index/bg_bottom.svg") no-repeat;
+            background-color: #FFFFFF;
+            background-size: 100%;
+            margin-bottom: 100px;
+            margin-top: -2px;
+            .page-header-bottoms{
+                max-width: 1200px;
+                margin: auto;
+                top: 0;
+                left: 0;
+                right: 0;
+                img{
+                    display: block;
+                    margin: auto;
+                    width: 80%;
+                }
+            }
+        }
+        .page-main{
+            max-width: 1200px;
+            margin: auto;
+            .page-main-row{
+                margin-bottom: 150px;
+            }
+            .page-main-rows{
+                margin-bottom: 140px;
+            }
+            .page-main-img{
+                img{
                     width: 100%;
                 }
-
             }
-            .main-box-two {
-                width: 100%;
-                position: relative;
-                margin-bottom: 70px;
-                .box-two-square {
+            .page-main-imgs{
+                img{
+                    display: block;
+                    width: 90%;
+                    margin: auto;
                 }
-
-                .box-two-tips {
-                    width: 100%;
+            }
+            .page-main-text{
+                padding-left: 20px;
+                padding-top: 80px;
+                h3{
+                    font-size: 32px;
+                    font-weight: 500;
+                    color: #333333;
+                    line-height: 45px;
+                    margin-bottom: 17px;
                 }
-
+                p{
+                    font-size: 18px;
+                    font-weight: 400;
+                    color: #828282;
+                    line-height: 28px;
+                    padding-right: 20px;
+                }
+            }
+            .page-main-texts{
+                padding-top: 40px;
+                h3{
+                    display: flex;
+                    align-items: center;
+                    font-size: 24px;
+                    img{
+                        width: 24px;
+                        margin-right:10px;
+                    }
+                }
+                p{
+                    font-size:14px;
+                }
             }
         }
         .page-footer {
@@ -338,338 +459,8 @@
         }
     }
 }
-
-@media (min-width: 1920px) {
-    .page-warp {
-        width: 1920px;
-        margin: 0 auto;
-        .page-header {
-            width: 100%;
-            height: 852px;
-            background: #8bcf70;
-            border-radius: 0px 0px 300px 300px;
-            position: relative;
-            .header-nav {
-                width: 100%;
-                height: 72px;
-                display: flex;
-                .header-nav-box {
-                    width: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    color: #ffffff;
-                    font-family: PingFangSC-Regular, PingFang SC;
-
-                    font-weight: 400;
-                    position: relative;
-                    .logo {
-                        width: 143px;
-                        height: 36px;
-                        background: url("../images/index/indexlogo.png")
-                            no-repeat center center;
-                        background-size: contain;
-                    }
-                    .header-right-one {
-                        display: flex;
-                        .header-right-one-language {
-                            margin-right: 8px;
-                            font-size: 26px;
-                        }
-                        .header-right-one-dropdown {
-                            color: #ffffff;
-                            font-size: 16px;
-                        }
-                    }
-                    .header-right-two {
-                        font-size: 16px;
-                        margin: 0 30px 0 30px;
-                        cursor: pointer;
-                    }
-                    .header-right-three {
-                        font-size: 16px;
-                        min-width: 100px;
-                        height: 36px;
-                        background: #ffa25a;
-                        border-radius: 4px;
-                        text-align: center;
-                        line-height: 36px;
-                        cursor: pointer;
-                        padding: 0 10px 0 10px;
-                    }
-                }
-            }
-            .header-content {
-                width: 950px;
-                margin: 0 auto;
-                .header-title {
-                    font-size: 48px;
-                    font-family: PingFangSC-Medium, PingFang SC;
-                    font-weight: 500;
-                    color: #ffffff;
-                    line-height: 67px;
-                    text-align: center;
-                }
-                .header-title-one {
-                    margin-top: 40px;
-                }
-                .header-tips {
-                    width: 950px;
-                    font-size: 24px;
-                    font-family: PingFangSC-Regular, PingFang SC;
-                    font-weight: 400;
-                    color: #ffffff;
-                    line-height: 36px;
-                    text-align: center;
-
-                    margin-top: 22px;
-                }
-                .login-buttom {
-                    width: 150px;
-                    height: 48px;
-                    background: #ffa25a;
-                    border-radius: 8px;
-                    font-size: 18px;
-                    font-family: PingFangSC-Medium, PingFang SC;
-                    font-weight: 500;
-                    color: #ffffff;
-                    line-height: 48px;
-                    text-align: center;
-                    margin: 0 auto;
-                    margin-top: 34px;
-                    cursor: pointer;
-                }
-            }
-
-            .header-bg {
-                width: 100%;
-                height: 405px;
-                background: url("../images/index/decoration.png") no-repeat
-                    center center;
-                background-size: contain;
-                position: absolute;
-                bottom: -40px;
-            }
-            .header-pic {
-                width: 920px;
-                height: 528px;
-                background: url("../images/index/pic.png") no-repeat center
-                    center;
-                background-size: contain;
-                position: absolute;
-                left: 50%;
-                margin-left: -471px;
-                bottom: -236px;
-            }
-        }
-        .page-main {
-            width: 1200px;
-            margin: 0 auto;
-            margin-top: 388px;
-            .main-box-one {
-                height: 388px;
-                position: relative;
-                margin-bottom: 180px;
-                .box-one-square {
-                    width: 200px;
-                    height: 200px;
-                    background: #8bcf70;
-                    border-radius: 30px;
-                    opacity: 0.15;
-                    float: left;
-                }
-                .box-one-pic1 {
-                    width: 600px;
-                    height: 338px;
-                    background: url("../images/index/box-pic1.png") no-repeat
-                        center center;
-                    background-size: contain;
-                    position: absolute;
-                    margin: 50px 0 0 50px;
-                    -webkit-box-shadow: 0px 0px 10px #a9a4a4;
-                    -moz-box-shadow: 0px 0px 10px #a9a4a4;
-                    box-shadow: 0px 0px 10px #a9a4a4;
-                    border-radius: 10px;
-                }
-                .box-one-pic3 {
-                    width: 600px;
-                    height: 338px;
-                    background: url("../images/index/box-pic3.png") no-repeat
-                        center center;
-                    background-size: contain;
-                    position: absolute;
-                    margin: 50px 0 0 50px;
-                    -webkit-box-shadow: 0px 0px 10px #a9a4a4;
-                    -moz-box-shadow: 0px 0px 10px #a9a4a4;
-                    box-shadow: 0px 0px 10px #a9a4a4;
-                    border-radius: 10px;
-                }
-                .box-one-tips {
-                    width: 460px;
-                    position: absolute;
-                    right: 0;
-                }
-                .box-square {
-                    width: 38px;
-                    height: 38px;
-                    background: url("../images/index/square.png") no-repeat
-                        center center;
-                    background-size: contain;
-                    margin-top: 119px;
-                }
-                .box-title {
-                    font-size: 32px;
-                    font-family: PingFangSC-Medium, PingFang SC;
-                    font-weight: 500;
-                    color: #333333;
-                    line-height: 45px;
-                    margin: 6px 0 18px 0;
-                }
-                .box-tips {
-                    font-size: 18px;
-                    font-family: PingFangSC-Regular, PingFang SC;
-                    font-weight: 400;
-                    color: #828282;
-                    line-height: 28px;
-                }
-            }
-            .main-box-two {
-                height: 388px;
-                position: relative;
-                margin-bottom: 180px;
-                .box-two-square {
-                    width: 200px;
-                    height: 200px;
-                    background: #8bcf70;
-                    border-radius: 30px;
-                    opacity: 0.15;
-                    float: right;
-                }
-                .box-two-pic2 {
-                    width: 600px;
-                    height: 338px;
-                    background: url("../images/index/box-pic2.png") no-repeat
-                        center center;
-                    background-size: contain;
-                    position: absolute;
-                    right: 50px;
-                    top: 50px;
-                    -webkit-box-shadow: 0px 0px 10px #a9a4a4;
-                    -moz-box-shadow: 0px 0px 10px #a9a4a4;
-                    box-shadow: 0px 0px 10px #a9a4a4;
-                    border-radius: 10px;
-                }
-                .box-two-pic4 {
-                    width: 600px;
-                    height: 338px;
-                    background: url("../images/index/box-pic4.png") no-repeat
-                        center center;
-                    background-size: contain;
-                    position: absolute;
-                    right: 50px;
-                    top: 50px;
-                    -webkit-box-shadow: 0px 0px 10px #a9a4a4;
-                    -moz-box-shadow: 0px 0px 10px #a9a4a4;
-                    box-shadow: 0px 0px 10px #a9a4a4;
-                    border-radius: 10px;
-                }
-                .box-two-tips {
-                    width: 460px;
-                    position: absolute;
-                    left: 0;
-                }
-                .box-square {
-                    width: 38px;
-                    height: 38px;
-                    background: url("../images/index/square.png") no-repeat
-                        center center;
-                    background-size: contain;
-                    margin-top: 119px;
-                }
-                .box-title {
-                    font-size: 32px;
-                    font-family: PingFangSC-Medium, PingFang SC;
-                    font-weight: 500;
-                    color: #333333;
-                    line-height: 45px;
-                    margin: 6px 0 18px 0;
-                }
-                .box-tips {
-                    font-size: 18px;
-                    font-family: PingFangSC-Regular, PingFang SC;
-                    font-weight: 400;
-                    color: #828282;
-                    line-height: 28px;
-                }
-            }
-        }
-        .page-footer {
-            .footer-service {
-                width: 100%;
-                height: 188px;
-                background-color: #ffa25a;
-                position: relative;
-                .footer-bg-box {
-                    overflow: hidden;
-                    width: 100%;
-                    height: 188px;
-                    background: url("../images/index/footer-bg.png") no-repeat
-                        center center;
-                    background-size: contain;
-                    .box-title {
-                        height: 45px;
-                        font-size: 32px;
-                        font-family: PingFangSC-Medium, PingFang SC;
-                        font-weight: 500;
-                        color: #ffffff;
-                        line-height: 45px;
-                        text-align: center;
-                        margin: 33px 0 22px 0;
-                    }
-                    .buttom-box {
-                        display: flex;
-                        justify-content: center;
-                        .login-btn {
-                            width: 150px;
-                            height: 48px;
-                            background: #ffffff;
-                            border-radius: 8px;
-                            font-size: 18px;
-                            font-family: PingFangSC-Medium, PingFang SC;
-                            font-weight: 500;
-                            color: #ffa25a;
-                            line-height: 48px;
-                            text-align: center;
-                            margin-right: 20px;
-                            cursor: pointer;
-                        }
-                        .contact-btn {
-                            width: 150px;
-                            height: 48px;
-                            border-radius: 8px;
-                            border: 1px solid #ffffff;
-                            font-size: 18px;
-                            font-family: PingFangSC-Medium, PingFang SC;
-                            font-weight: 500;
-                            color: #ffffff;
-                            line-height: 48px;
-                            text-align: center;
-                            cursor: pointer;
-                        }
-                    }
-                }
-            }
-            .footer-opyright {
-                width: 100%;
-                height: 60px;
-                background: #ffffff;
-                text-align: center;
-                font-size: 14px;
-                font-family: PingFangSC-Regular, PingFang SC;
-                font-weight: 400;
-                color: #828282;
-                line-height: 60px;
-            }
-        }
-    }
+.client-downloads{
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
 }
