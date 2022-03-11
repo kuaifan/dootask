@@ -85,6 +85,12 @@
                         <div><i class="taskfont">&#xe60c;</i></div>
                         <div><i class="taskfont">&#xe66a;</i></div>
                     </div>
+                  <div class="project-gantt-item"
+                       :class="{active:projectGanttShow}"
+                       @click="projectGanttShow=!projectGanttShow">
+                    <Icon type="ios-paper-outline" size="26" />
+                    {{ $L('甘特图') }}
+                  </div>
                 </div>
             </div>
         </div>
@@ -311,7 +317,15 @@
                 <TaskRow v-if="projectParameter('showCompleted')" :list="completedList" open-key="completed" @on-priority="addTaskOpen" showCompleteAt/>
             </div>
         </div>
-
+      <div class="project-table overlay-y" v-if="projectGanttShow">
+        <!-- 甘特图 -->
+        <ProjectGantt v-if="projectGanttShow"
+                       @on-close="projectGanttShow=false"
+                       :lineData="columnList[0].tasks"
+                       :projectLabel="columnList"
+                       :lineTaskData="columnList[0].tasks"
+                       :levelList="taskPriority"></ProjectGantt>
+      </div>
         <!--项目设置-->
         <Modal
             v-model="settingShow"
@@ -463,6 +477,7 @@ import DrawerOverlay from "../../../components/DrawerOverlay";
 import ProjectWorkflow from "./ProjectWorkflow";
 import TaskMenu from "./TaskMenu";
 import TaskDeleted from "./TaskDeleted";
+import ProjectGantt from "./ProjectGantt";
 
 export default {
     name: "ProjectList",
@@ -470,7 +485,7 @@ export default {
         TaskMenu,
         ProjectWorkflow,
         DrawerOverlay,
-        ProjectLog, TaskArchived, TaskRow, Draggable, TaskAddSimple, UserInput, TaskAdd, TaskPriority, TaskDeleted },
+        ProjectLog, TaskArchived, TaskRow, Draggable, TaskAddSimple, UserInput, TaskAdd, TaskPriority, TaskDeleted, ProjectGantt},
     data() {
         return {
             loading: false,
@@ -517,6 +532,7 @@ export default {
 
             flowInfo: {},
             flowList: [],
+            projectGanttShow: false,
         }
     },
 

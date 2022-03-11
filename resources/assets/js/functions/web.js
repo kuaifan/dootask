@@ -385,7 +385,25 @@
          */
         getDialogUnread(dialog) {
             return dialog ? (dialog.unread || dialog.is_mark_unread || 0) : 0
-        }
+        },
+
+        /**
+         * 克隆对象
+         * @param myObj
+         * @returns {*}
+         */
+        cloneData(myObj) {
+            if (typeof (myObj) !== 'object') return myObj;
+            if (myObj === null) return myObj;
+            //
+            if (typeof myObj.length === 'number') {
+                let [...myNewObj] = myObj;
+                return myNewObj;
+            } else {
+                let {...myNewObj} = myObj;
+                return myNewObj;
+            }
+        },
     });
 
     /**

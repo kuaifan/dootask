@@ -1,0 +1,135 @@
+.project-gstc-gantt {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    right: 15px;
+    bottom: 15px;
+    z-index: 1;
+    transform: translateZ(0);
+    background-color: #fdfdfd;
+    border-radius: 3px;
+    overflow: hidden;
+
+    .project-gstc-dropdown-filtr {
+        position: absolute;
+        top: 38px;
+        left: 222px;
+
+        .project-gstc-dropdown-icon {
+            cursor: pointer;
+            color: #999;
+            font-size: 20px;
+
+            &.filtr {
+                color: #058ce4;
+            }
+        }
+    }
+
+    .project-gstc-close {
+        position: absolute;
+        top: 8px;
+        left: 12px;
+        cursor: pointer;
+
+        &:hover {
+            i {
+                transform: scale(1) rotate(45deg);
+            }
+        }
+
+        i {
+            color: #666666;
+            font-size: 28px;
+            transform: scale(0.92);
+            transition: all .2s;
+        }
+    }
+
+    .project-gstc-edit {
+        position: absolute;
+        bottom: 6px;
+        right: 6px;
+        background: #ffffff;
+        border-radius: 4px;
+        opacity: 0;
+        transform: translate(120%, 0);
+        transition: all 0.2s;
+
+        &.visible {
+            opacity: 1;
+            transform: translate(0, 0);
+        }
+
+        &.info {
+            .project-gstc-edit-info {
+                display: block;
+            }
+
+            .project-gstc-edit-small {
+                display: none;
+            }
+        }
+
+        .project-gstc-edit-info {
+            display: none;
+            border: 1px solid #e4e4e4;
+            background: #ffffff;
+            padding: 6px;
+            border-radius: 4px;
+            width: 500px;
+
+            .project-gstc-edit-btns {
+                margin: 12px 6px 4px;
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+
+                .ivu-btn {
+                    margin-right: 8px;
+                    font-size: 13px;
+                }
+
+                .zoom {
+                    font-size: 20px;
+                    color: #444444;
+                    cursor: pointer;
+
+                    &:hover {
+                        color: #57a3f3;
+                    }
+                }
+            }
+        }
+
+        .project-gstc-edit-small {
+            border: 1px solid #e4e4e4;
+            background: #ffffff;
+            padding: 6px 12px;
+            display: flex;
+            align-items: center;
+
+            .project-gstc-edit-text {
+                cursor: pointer;
+                text-decoration: underline;
+                color: #444444;
+                margin-right: 8px;
+
+                &:hover {
+                    color: #57a3f3;
+                }
+            }
+
+            .ivu-btn {
+                margin-left: 4px;
+                font-size: 13px;
+            }
+        }
+    }
+
+    .ivu-dropdown-item {
+        &.dropdown-active {
+            color: #058ce4;
+        }
+    }
+}
