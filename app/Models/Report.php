@@ -101,15 +101,13 @@ class Report extends AbstractModel
     /**
      * 获取单条记录
      * @param $id
-     * @param User|null $user
      * @return Report|Builder|Model|object|null
      * @throw ApiException
      */
-    public static function getOne($id, User $user = null)
+    public static function getOne($id)
     {
-        $user === null && $user = User::auth();
-        $one = self::whereUserid($user->userid)->whereId($id)->first();
-        if ( empty($one) )
+        $one = self::whereId($id)->first();
+        if (empty($one))
             throw new ApiException("记录不存在");
         return $one;
     }

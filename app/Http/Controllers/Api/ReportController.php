@@ -362,6 +362,7 @@ class ReportController extends AbstractController
      */
     public function detail(): array
     {
+        $user = User::auth();
         $id = intval(trim(Request::input("id")));
         if (empty($id))
             return Base::retError("缺少ID参数");
@@ -369,7 +370,6 @@ class ReportController extends AbstractController
         $one = Report::getOne($id);
         $one->type_val = $one->getRawOriginal("type");
 
-        $user = User::auth();
         // 标记为已读
         if (!empty($one->receivesUser)) {
             foreach ($one->receivesUser as $item) {

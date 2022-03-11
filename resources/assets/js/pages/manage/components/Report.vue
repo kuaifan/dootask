@@ -85,14 +85,59 @@ export default {
         },
 
         onView(row) {
-            this.showDetailDrawer = true;
             this.detailData = row;
             this.$emit("on-read");
+            if (this.$Electron) {
+                let config = {
+                    title: row.title,
+                    titleFixed: true,
+                    parent: null,
+                    width: Math.min(window.screen.availWidth, this.$el.clientWidth + 72),
+                    height: Math.min(window.screen.availHeight, this.$el.clientHeight + 72),
+                    minWidth: 600,
+                    minHeight: 450,
+                };
+                if (this.hasOpenDialog) {
+                    config.minWidth = 800;
+                    config.minHeight = 600;
+                }
+                this.$Electron.sendMessage('windowRouter', {
+                    name: 'report-' + row.id,
+                    path: "/single/report/detail/" + row.id,
+                    force: false,
+                    config
+                });
+            }else{
+                this.showDetailDrawer = true;
+            }
         },
 
-        onEditReport(id) {
+        onEditReport(id,title) {
             this.reportId = id;
-            this.showEditDrawer = true;
+            if (this.$Electron) {
+                let config = {
+                    title: title,
+                    titleFixed: true,
+                    parent: null,
+                    width: Math.min(window.screen.availWidth, this.$el.clientWidth + 72),
+                    height: Math.min(window.screen.availHeight, this.$el.clientHeight + 72),
+                    minWidth: 600,
+                    minHeight: 450,
+                };
+                if (this.hasOpenDialog) {
+                    config.minWidth = 800;
+                    config.minHeight = 600;
+                }
+                this.$Electron.sendMessage('windowRouter', {
+                    name: 'report-' + id,
+                    path: "/single/report/edit/" + id,
+                    force: false,
+                    config
+                });
+            } else {
+                this.showEditDrawer = true;
+            }
+
         },
 
         saveSuccess() {

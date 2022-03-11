@@ -97,6 +97,16 @@ export default [
         component: () => import('./pages/single/validEmail.vue')
     },
     {
+        name: 'report-edit',
+        path: '/single/report/edit/:id',
+        component: () => import('./pages/single/reportEdit.vue')
+    },
+    {
+        name: 'report-detail',
+        path: '/single/report/detail/:id',
+        component: () => import('./pages/single/reportDetail.vue')
+    },
+    {
         name: 'login',
         path: '/login',
         component: () => import('./pages/login.vue'),
