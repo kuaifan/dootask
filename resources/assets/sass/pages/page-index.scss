@@ -32,7 +32,7 @@
                     .logo {
                         width: 143px;
                         height: 36px;
-                        background: url("../images/index/indexlogo.png")
+                        background: url("../images/index/logo.svg")
                             no-repeat center center;
                         background-size: contain;
                     }
@@ -274,6 +274,191 @@
             }
         }
     }
+@media screen and (max-width: 1440px) {
+    .page-index {
+    }
+    .page-warp {
+        .page-header {
+            .header-content {
+                .header-title {
+                    font-size: 44px;
+                    line-height: 60px;
+                    font-weight: 600;
+                }
+                .header-title-one {
+                    margin-top: 40px;
+                }
+                .header-tips {
+                    font-size: 22px;
+                    padding: 0 20px;
+                    font-weight: 400;
+                    line-height: 36px;
+                }
+                .login-buttom {
+                    width: 150px;
+                    height: 48px;
+                    background: #ffa25a;
+                    border-radius: 8px;
+                    font-size: 18px;
+                    font-family: PingFangSC-Medium, PingFang SC;
+                    font-weight: 500;
+                    color: #ffffff;
+                    line-height: 48px;
+                    text-align: center;
+                    margin: 0 auto;
+                    margin-top: 34px;
+                    cursor: pointer;
+                }
+            }
+
+        }
+        .page-header-bottom{
+            position: relative;
+            background: url("../images/index/bg_bottom.svg") no-repeat;
+            background-color: #FFFFFF;
+            background-size: 100%;
+            margin-bottom: 100px;
+            margin-top: -2px;
+            .page-header-bottoms{
+                max-width: 1200px;
+                margin: auto;
+                top: 0;
+                left: 0;
+                right: 0;
+                img{
+                    display: block;
+                    margin: auto;
+                    width: 80%;
+                }
+            }
+        }
+        .page-main{
+            max-width: 1200px;
+            margin: auto;
+            .page-main-row{
+                margin-bottom: 150px;
+            }
+            .page-main-rows{
+                margin-bottom: 140px;
+            }
+            .page-main-img{
+                img{
+                    width: 100%;
+                }
+            }
+            .page-main-imgs{
+                img{
+                    display: block;
+                    width: 90%;
+                    margin: auto;
+                }
+            }
+            .page-main-text{
+                padding-left: 20px;
+                padding-top: 80px;
+                h3{
+                    font-size: 32px;
+                    font-weight: 500;
+                    color: #333333;
+                    line-height: 45px;
+                    margin-bottom: 17px;
+                }
+                p{
+                    font-size: 18px;
+                    font-weight: 400;
+                    color: #828282;
+                    line-height: 28px;
+                    padding-right: 20px;
+                }
+            }
+            .page-main-texts{
+                padding-top: 40px;
+                h3{
+                    display: flex;
+                    align-items: center;
+                    font-size: 24px;
+                    img{
+                        width: 24px;
+                        margin-right:10px;
+                    }
+                }
+                p{
+                    font-size:14px;
+                }
+            }
+        }
+        .page-footer {
+            .footer-service {
+                width: 100%;
+                height: 188px;
+                background-color: #ffa25a;
+                position: relative;
+                .footer-bg-box {
+                    overflow: hidden;
+                    width: 100%;
+                    height: 188px;
+
+                    // background: url("../images/index/footer-bg.png") no-repeat
+                    //     center center;
+                    // background-size: 100% 100%;
+                    // background-size: contain;
+                    .box-title {
+                        height: 45px;
+                        font-size: 16px;
+                        font-family: PingFangSC-Medium, PingFang SC;
+                        font-weight: 500;
+                        color: #ffffff;
+                        line-height: 45px;
+                        text-align: center;
+                        margin: 33px 0 22px 0;
+                    }
+                    .buttom-box {
+                        display: flex;
+                        justify-content: center;
+                        .login-btn {
+                            width: 150px;
+                            height: 48px;
+                            background: #ffffff;
+                            border-radius: 8px;
+                            font-size: 14px;
+                            font-family: PingFangSC-Medium, PingFang SC;
+                            font-weight: 500;
+                            color: #ffa25a;
+                            line-height: 48px;
+                            text-align: center;
+                            margin-right: 20px;
+                            cursor: pointer;
+                        }
+                        .contact-btn {
+                            width: 150px;
+                            height: 48px;
+                            border-radius: 8px;
+                            border: 1px solid #ffffff;
+                            font-size: 14px;
+                            font-family: PingFangSC-Medium, PingFang SC;
+                            font-weight: 500;
+                            color: #ffffff;
+                            line-height: 48px;
+                            text-align: center;
+                            cursor: pointer;
+                        }
+                    }
+                }
+            }
+            .footer-opyright {
+                width: 100%;
+                height: 60px;
+                background: #ffffff;
+                text-align: center;
+                font-size: 12px;
+                font-family: PingFangSC-Regular, PingFang SC;
+                font-weight: 400;
+                color: #828282;
+                line-height: 60px;
+            }
+        }
+    }
+}
 @media screen and (max-width: 468px) {
     .page-index {
     }
