@@ -152,6 +152,7 @@
                 <div class="desc">
                     <TEditor
                         ref="desc"
+                        :readOnly="taskDetail.deleted_at ? true : false"
                         :value="taskContent"
                         :plugins="taskPlugins"
                         :options="taskOptions"
