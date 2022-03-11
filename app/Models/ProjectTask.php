@@ -1232,7 +1232,11 @@ class ProjectTask extends AbstractModel
         $task = $builder->first();
         //
         if (empty($task)) {
-            throw new ApiException('任务不存在', [ 'task_id' => $task_id ], -4002);
+            if(self::whereId(intval($task_id))->withTrashed()->exists()){
+                throw new ApiException('任务已删除，不可编辑', [ 'task_id' => $task_id ], -4002);
+            }else{
+                throw new ApiException('任务不存在', [ 'task_id' => $task_id ], -4002);
+            }
         }
         if ($archived === true && $task->archived_at != null) {
             throw new ApiException('任务已归档', [ 'task_id' => $task_id ]);
