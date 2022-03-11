@@ -154,7 +154,18 @@ export default {
         }
     },
     watch: {
+        $route:{
+            handler(val) {
+                if (val.query.type=='reg'){
+                   this.$nextTick(()=>{
+                       this.loginType = "reg"
+                   })
+                }
+            },
+            immediate:true
+        },
         loginType(val) {
+            console.log(val)
             if (val == 'reg') {
                 this.getNeedInvite();
             }

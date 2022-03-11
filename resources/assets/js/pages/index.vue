@@ -9,12 +9,10 @@
                     <div class="header-nav-box header-nav-boxs" v-if="windowWidth>780">
                         <div class="header-right-one">
                             <Dropdown trigger="click" @on-click="setLanguage">
-                                <Icon
-                                    class="header-right-one-language no-dark-mode"
-                                    type="md-globe"/>
+
                                 <a
                                     href="javascript:void(0)"
-                                    class="header-right-one-dropdown"
+                                    class="header-right-one-dropdown"Dootask
                                     >
                                     {{ currentLanguage }}
                                     <Icon type="ios-arrow-down"></Icon>
@@ -100,7 +98,7 @@
 
                 </div>
                 <div class="header-content">
-                    <div class="header-title header-title-one">Dootask</div>
+                    <div class="header-title header-title-one">DooTask</div>
                     <div class="header-title">
                         {{ $L("轻量级任务管理工具") }}
                     </div>
@@ -196,7 +194,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="footer-opyright" v-html="this.homeFooter"></div>
+                <div class="footer-opyright" v-if="this.homeFooter" v-html="this.homeFooter"></div>
             </div>
         </div>
     </div>
