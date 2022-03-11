@@ -931,8 +931,9 @@ class ProjectController extends AbstractController
         //
         $scopeAll = false;
         if ($parent_id > 0) {
-            ProjectTask::userTask($parent_id, str_replace(['all', 'yes', 'no'], [null, false, true], $archived));
+            ProjectTask::userTask($parent_id, str_replace(['all', 'yes', 'no'], [null, false, true], $archived), false, [], true);
             $scopeAll = true;
+            $builder->withTrashed();
             $builder->where('project_tasks.parent_id', $parent_id);
         } elseif ($parent_id === -1) {
             $builder->where('project_tasks.parent_id', 0);
@@ -1220,7 +1221,7 @@ class ProjectController extends AbstractController
         $task_id = intval(Request::input('task_id'));
         $archived = Request::input('archived', 'no');
         //
-        $task = ProjectTask::userTask($task_id, str_replace(['all', 'yes', 'no'], [null, false, true], $archived), false, ['taskUser', 'taskTag']);
+        $task = ProjectTask::userTask($task_id, str_replace(['all', 'yes', 'no'], [null, false, true], $archived), false, ['taskUser', 'taskTag'], true);
         //
         $data = $task->toArray();
         $data['project_name'] = $task->project?->name;
@@ -1248,7 +1249,7 @@ class ProjectController extends AbstractController
         //
         $task_id = intval(Request::input('task_id'));
         //
-        $task = ProjectTask::userTask($task_id, null);
+        $task = ProjectTask::userTask($task_id, null, false, [], true);
         //
         if (empty($task->content)) {
             return Base::retSuccess('success', json_decode('{}'));
@@ -1276,7 +1277,7 @@ class ProjectController extends AbstractController
         //
         $task_id = intval(Request::input('task_id'));
         //
-        $task = ProjectTask::userTask($task_id, null);
+        $task = ProjectTask::userTask($task_id, null, false, [], true);
         //
         return Base::retSuccess('success', $task->taskFile);
     }
@@ -1751,7 +1752,7 @@ class ProjectController extends AbstractController
         //
         $task_id = intval(Request::input('task_id'));
         //
-        $projectTask = ProjectTask::select(['id', 'project_id', 'complete_at', 'flow_item_id', 'flow_item_name'])->find($task_id);
+        $projectTask = ProjectTask::select(['id', 'project_id', 'complete_at', 'flow_item_id', 'flow_item_name'])->withTrashed()->find($task_id);
         if (empty($projectTask)) {
             return Base::retError('任务不存在', [ 'task_id' => $task_id ], -4002);
         }
@@ -1932,7 +1933,7 @@ class ProjectController extends AbstractController
         //
         $builder = ProjectLog::select(["*"]);
         if ($task_id > 0) {
-            $task = ProjectTask::userTask($task_id, null);
+            $task = ProjectTask::userTask($task_id, null,false,[],true);
             $builder->whereTaskId($task->id);
         } else {
             $project = Project::userProject($project_id);

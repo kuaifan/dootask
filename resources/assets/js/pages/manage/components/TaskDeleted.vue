@@ -107,7 +107,13 @@ export default {
                     key: 'name',
                     minWidth: 200,
                     render: (h, {row}) => {
-                        return h('AutoTip', row.name);
+                        return h('AutoTip', {
+                            on: {
+                                'on-click': () => {
+                                    this.$store.dispatch("openTask", row);
+                                }
+                            }
+                        }, row.name);
                     }
                 },
                 {
@@ -143,6 +149,18 @@ export default {
                     width: 100,
                     render: (h, params) => {
                         const vNodes = [
+                            h('span', {
+                                style: {
+                                    fontSize: '13px',
+                                    cursor: 'pointer',
+                                    color: '#8bcf70',
+                                },
+                                on: {
+                                    'click': () => {
+                                        this.$store.dispatch("openTask", params.row);
+                                    }
+                                },
+                            }, this.$L('查看')),
                             h('Poptip', {
                                 props: {
                                     title: this.$L('你确定要还原删除吗？'),
@@ -154,6 +172,7 @@ export default {
                                     fontSize: '13px',
                                     cursor: 'pointer',
                                     color: '#8bcf70',
+                                    marginLeft: "8px"
                                 },
                                 on: {
                                     'on-ok': () => {
