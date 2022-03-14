@@ -139,7 +139,7 @@ export default {
                 } else {
                     // 等级颜色
                     this.levelList.some(level => {
-                        if (level.level === taskData.level) {
+                        if (level.priority === taskData.p_level) {
                             color = level.color;
                             return true;
                         }
@@ -230,7 +230,6 @@ export default {
                 } else {
                     this.lists.some((task) => {
                         if (task.id == item.id) {
-                            this.$set(task, 'time', item.backTime);
                             return true;
                         }
                     })
@@ -250,8 +249,8 @@ export default {
         },
 
         getTimeObj(taskData) {
-            let start = $A.Time(taskData.start_at) || $A.Time(taskData.start_at);
-            let end = $A.Time(taskData.start_at) || ($A.Time(taskData.created_at) + 86400);
+            let start = $A.Time(taskData.start_at) || $A.Time(taskData.created_at);
+            let end = $A.Time(taskData.end_at) || ($A.Time(taskData.created_at) + 86400);
             if (end == start) {
                 end = Math.round(new Date($A.formatDate('Y-m-d 23:59:59', end)).getTime()/1000);
             }
