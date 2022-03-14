@@ -244,7 +244,7 @@
                 .project-gantt-item {
                     padding-left: 5px;
                     display: flex;
-
+                    cursor: pointer;
                     &.active {
                         color: $primary-color;
                     }
@@ -258,6 +258,7 @@
                     .gantt-name {
                         font-size: 13px;
                         padding-top: 6%;
+                        cursor: pointer;
                     }
                 }
             }
