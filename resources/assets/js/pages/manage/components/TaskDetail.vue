@@ -619,7 +619,7 @@ export default {
         },
 
         hasOpenDialog() {
-            return this.taskDetail.dialog_id > 0 && !this.windowMax768;
+            return this.taskDetail.dialog_id > 0 && !this.windowMax768 && !this.taskDetail.deleted_at;
         },
 
         dialogStyle() {
