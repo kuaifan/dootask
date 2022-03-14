@@ -78,7 +78,7 @@
                 .item-title {
                     flex: 1;
                     padding-right: 12px;
-                    cursor: default;
+                    cursor: pointer;
                     overflow: hidden;
                     text-overflow: ellipsis;
                     white-space: nowrap;
@@ -238,6 +238,7 @@
                             white-space: nowrap;
                             margin-left: 4px;
                             margin-right: 10px;
+                            cursor:pointer;
                         }
                         .timeline-resizer {
                             height: 22px;

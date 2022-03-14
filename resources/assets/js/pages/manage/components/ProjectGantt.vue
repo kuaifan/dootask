@@ -135,7 +135,7 @@ export default {
                 //
                 let color = '#058ce4';
                 if (taskData.complete_at) {
-                    color = '#c1c1c1';
+                     return;
                 } else {
                     // 等级颜色
                     this.levelList.some(level => {
@@ -230,6 +230,7 @@ export default {
                 } else {
                     this.lists.some((task) => {
                         if (task.id == item.id) {
+                            this.$set(task, 'time', item.backTime);
                             return true;
                         }
                     })

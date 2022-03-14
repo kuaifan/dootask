@@ -88,8 +88,8 @@
                   <div class="project-gantt-item"
                        :class="{active:projectGanttShow}"
                        @click="projectGanttShow=!projectGanttShow">
-                    <Icon type="ios-paper-outline" size="26" />
-                    {{ $L('甘特图') }}
+                      <Icon type="ios-paper-outline" size="26"/>
+                      <label class="gantt-name">{{ $L('甘特图') }}</label>
                   </div>
                 </div>
             </div>

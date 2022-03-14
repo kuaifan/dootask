@@ -240,15 +240,24 @@
                         }
                     }
                 }
-                .project-gantt-item{
-                    padding-left:5px;
-                    &.active{
+
+                .project-gantt-item {
+                    padding-left: 5px;
+                    display: flex;
+
+                    &.active {
                         color: $primary-color;
                     }
-                    .force-right{
-                        &.act{
+
+                    .force-right {
+                        &.act {
                             color: #2A53FF;
                         }
+                    }
+
+                    .gantt-name {
+                        font-size: 13px;
+                        padding-top: 6%;
                     }
                 }
             }
