@@ -84,13 +84,8 @@
                     <div :class="['project-switch-button', !projectParameter('card') ? 'menu' : '']" @click="$store.dispatch('toggleProjectParameter', 'card')">
                         <div><i class="taskfont">&#xe60c;</i></div>
                         <div><i class="taskfont">&#xe66a;</i></div>
+                        <div  @click="projectGanttShow=!projectGanttShow"><i class="taskfont">&#xe797;</i></div>
                     </div>
-                  <div class="project-gantt-item"
-                       :class="{active:projectGanttShow}"
-                       @click="projectGanttShow=!projectGanttShow">
-                      <Icon type="ios-paper-outline" size="26"/>
-                      <label class="gantt-name">{{ $L('甘特图') }}</label>
-                  </div>
                 </div>
             </div>
         </div>

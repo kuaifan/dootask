@@ -299,6 +299,9 @@ export default {
             if (this.mouseItem != null) {
                 e.preventDefault();
                 var diff = e.clientX - this.mouseBak.clientX;
+                if (diff < 0 && this.mouseItem.time.start > this.mouseItem.time.end) {
+                    return false;
+                }
                 this.$set(this.mouseItem, this.mouseBak.type, this.mouseBak.value + diff);
             } else if (this.dateMove != null) {
                 e.preventDefault();
@@ -328,6 +331,9 @@ export default {
                     this.$set(this.mouseItem.time, 'end', end + moveTime);
                     this.$set(this.mouseItem, 'moveW', 0);
                     isM = true;
+                }
+                if (this.mouseItem.time && this.mouseItem.time.start > this.mouseItem.time.end) {
+                    return false;
                 }
                 //
                 if (isM) {
