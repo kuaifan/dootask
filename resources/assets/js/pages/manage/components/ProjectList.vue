@@ -82,14 +82,14 @@
                         </Cascader>
                     </div>
                     <div class="project-switch-button">
-                        <div @click="tabTypeChange('card')" :class="{ 'active': projectParameter('card')}"><i class="taskfont">&#xe60c;</i></div>
-                        <div @click="tabTypeChange('menu')" :class="{ 'active': projectParameter('menu')}"><i class="taskfont">&#xe66a;</i></div>
-                        <div @click="tabTypeChange('gantt')" :class="{ 'active': projectParameter('gantt')}"><i class="taskfont">&#xe797;</i></div>
+                        <div @click="tabTypeChange('card')" :class="{ 'active': projectParameter('menuType') === 'card'}"><i class="taskfont">&#xe60c;</i></div>
+                        <div @click="tabTypeChange('menu')" :class="{ 'active': projectParameter('menuType') === 'menu'}"><i class="taskfont">&#xe66a;</i></div>
+                        <div @click="tabTypeChange('gantt')" :class="{ 'active': projectParameter('menuType') === 'gantt'}"><i class="taskfont">&#xe797;</i></div>
                     </div>
                 </div>
             </div>
         </div>
-        <div v-if="projectParameter('card')" class="project-column">
+        <div v-if="projectParameter('menuType') === 'card'" class="project-column">
             <Draggable
                 :list="columnList"
                 :animation="150"
@@ -225,7 +225,7 @@
                 </li>
             </Draggable>
         </div>
-        <div v-if="projectParameter('menu')" class="project-table overlay-y">
+        <div v-if="projectParameter('menuType') === 'menu'" class="project-table overlay-y">
             <div class="project-table-head">
                 <Row class="task-row">
                     <Col span="12"># {{$L('任务名称')}}</Col>
@@ -312,7 +312,7 @@
                 <TaskRow v-if="projectParameter('showCompleted')" :list="completedList" open-key="completed" @on-priority="addTaskOpen" showCompleteAt/>
             </div>
         </div>
-        <div v-if="projectParameter('gantt')" class="project-table overlay-y" style="position: relative">
+        <div v-if="projectParameter('menuType') === 'gantt'" class="project-table overlay-y" style="position: relative">
             <!-- 甘特图 -->
             <ProjectGantt :lineData="ganttColumnList[0].tasks"
                           :projectLabel="ganttColumnList"
@@ -1401,31 +1401,25 @@ export default {
         tabTypeChange(type) {
             switch (type) {
                 case "card":
-                    this.$store.dispatch('toggleProjectParameter', 'card');
-                    if (this.projectParameter('card')) {
-                        this.projectParameter('menu') ? this.$store.dispatch('toggleProjectParameter', 'menu') : '';
-                        this.projectParameter('gantt') ? this.$store.dispatch('toggleProjectParameter', 'gantt') : '';
-                    } else {
-                        this.$store.dispatch('toggleProjectParameter', 'card');
-                    }
+                    this.$store.dispatch('toggleProjectParameter', {
+                        project_id: this.projectId,
+                        key: 'menuType',
+                        value: 'card'
+                    });
                     break;
                 case "menu":
-                    this.$store.dispatch('toggleProjectParameter', 'menu');
-                    if (this.projectParameter('menu')) {
-                        this.projectParameter('card') ? this.$store.dispatch('toggleProjectParameter', 'card') : '';
-                        this.projectParameter('gantt') ? this.$store.dispatch('toggleProjectParameter', 'gantt') : '';
-                    } else {
-                        this.$store.dispatch('toggleProjectParameter', 'menu');
-                    }
+                    this.$store.dispatch('toggleProjectParameter', {
+                        project_id: this.projectId,
+                        key: 'menuType',
+                        value: 'menu'
+                    });
                     break;
                 case "gantt":
-                    this.$store.dispatch('toggleProjectParameter', 'gantt');
-                    if (this.projectParameter('gantt')) {
-                        this.projectParameter('menu') ? this.$store.dispatch('toggleProjectParameter', 'menu') : '';
-                        this.projectParameter('card') ? this.$store.dispatch('toggleProjectParameter', 'card') : '';
-                    } else {
-                        this.$store.dispatch('toggleProjectParameter', 'gantt');
-                    }
+                    this.$store.dispatch('toggleProjectParameter', {
+                        project_id: this.projectId,
+                        key: 'menuType',
+                        value: 'gantt'
+                    });
                     break;
             }
         },

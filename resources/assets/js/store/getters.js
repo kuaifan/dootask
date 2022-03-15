@@ -34,7 +34,7 @@ export default {
                 cache = $A.projectParameterTemplate(state.projectId)
                 state.cacheProjectParameter.push(cache);
             }
-            return cache && !!cache[key];
+            return cache[key];
         }
     },
 

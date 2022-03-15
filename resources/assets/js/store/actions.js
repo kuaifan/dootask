@@ -148,9 +148,11 @@ export default {
         $A.execMainDispatch("toggleProjectParameter", data)
         //
         let key = data;
+        let value = null;
         let project_id = state.projectId;
         if ($A.isJson(data)) {
             key = data.key;
+            value = data.value;
             project_id = data.project_id;
         }
         if (project_id) {
@@ -160,8 +162,11 @@ export default {
                 index = state.cacheProjectParameter.findIndex(item => item.project_id == project_id)
             }
             const cache = state.cacheProjectParameter[index];
-            if (!$A.isJson(key)) {
+            if (!$A.isJson(key) && !value) {
                 key = {[key]: !cache[key]};
+            }
+            if (value) {
+                key = {[key]: value};
             }
             state.cacheProjectParameter.splice(index, 1, Object.assign(cache, key))
             setTimeout(() => {
