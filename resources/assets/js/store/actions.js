@@ -998,6 +998,13 @@ export default {
                 project_ids.push(state.cacheTasks[index].project_id)
                 state.cacheTasks.splice(index, 1);
             }
+            state.cacheTasks.filter(task => task.parent_id == id).some(childTask => {
+                let cIndex = state.cacheTasks.findIndex(task => task.id == childTask.id);
+                if (cIndex > -1) {
+                    project_ids.push(state.cacheTasks[index].project_id)
+                    state.cacheTasks.splice(cIndex, 1);
+                }
+            })
         })
         Array.from(new Set(parent_ids)).some(id => dispatch("getTaskOne", id).catch(() => {}))
         Array.from(new Set(project_ids)).some(id => dispatch("getProjectOne", id).catch(() => {}))
