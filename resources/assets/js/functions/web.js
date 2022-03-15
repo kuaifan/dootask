@@ -66,6 +66,8 @@
             return {
                 project_id,
                 card: true,
+                menu: false,
+                gantt: false,
                 cardInit: false,
                 chat: false,
                 showMy: true,

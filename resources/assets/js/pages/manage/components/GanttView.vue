@@ -291,6 +291,7 @@ export default {
                 type: type,
                 clientX: e.clientX,
                 value: item[type],
+                time: item.time,
             };
             this.mouseItem = item;
             this.dateMove = null;
@@ -299,7 +300,14 @@ export default {
             if (this.mouseItem != null) {
                 e.preventDefault();
                 var diff = e.clientX - this.mouseBak.clientX;
-                if (diff < 0 && this.mouseItem.time.start > this.mouseItem.time.end) {
+                const {start, end} = this.mouseBak.time;
+                let date = new Date();
+                let nowTime = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0).getTime();
+                let diffStartDay = (start - nowTime) / 1000 / 60 / 60 / 24;
+                let diffEndDay = (end - nowTime) / 1000 / 60 / 60 / 24;
+                let width = this.dateWidth * (diffEndDay - diffStartDay);
+                width += this.mouseBak.value + diff;
+                if (width <= 0) {
                     return false;
                 }
                 this.$set(this.mouseItem, this.mouseBak.type, this.mouseBak.value + diff);

@@ -14,7 +14,6 @@
                 </DropdownItem>
             </DropdownMenu>
         </Dropdown>
-        <div class="project-gstc-close" @click="$emit('on-close')"><Icon type="md-close" /></div>
         <div class="project-gstc-edit" :class="{info:editShowInfo, visible:editData&&editData.length > 0}">
             <div class="project-gstc-edit-info">
                 <Table size="small" max-height="600" :columns="editColumns" :data="editData"></Table>

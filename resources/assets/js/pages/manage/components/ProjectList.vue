@@ -81,10 +81,10 @@
                             <span :class="`project-flow ${flowInfo.status}`">{{ flowTitle }}</span>
                         </Cascader>
                     </div>
-                    <div :class="['project-switch-button', !projectParameter('card') ? 'menu' : '']" @click="$store.dispatch('toggleProjectParameter', 'card')">
-                        <div><i class="taskfont">&#xe60c;</i></div>
-                        <div><i class="taskfont">&#xe66a;</i></div>
-                        <div  @click="projectGanttShow=!projectGanttShow"><i class="taskfont">&#xe797;</i></div>
+                    <div class="project-switch-button">
+                        <div @click="tabTypeChange('card')" :class="{ 'active': projectParameter('card')}"><i class="taskfont">&#xe60c;</i></div>
+                        <div @click="tabTypeChange('menu')" :class="{ 'active': projectParameter('menu')}"><i class="taskfont">&#xe66a;</i></div>
+                        <div @click="tabTypeChange('gantt')" :class="{ 'active': projectParameter('gantt')}"><i class="taskfont">&#xe797;</i></div>
                     </div>
                 </div>
             </div>
@@ -225,7 +225,7 @@
                 </li>
             </Draggable>
         </div>
-        <div v-else class="project-table overlay-y">
+        <div v-if="projectParameter('menu')" class="project-table overlay-y">
             <div class="project-table-head">
                 <Row class="task-row">
                     <Col span="12"># {{$L('任务名称')}}</Col>
@@ -312,15 +312,13 @@
                 <TaskRow v-if="projectParameter('showCompleted')" :list="completedList" open-key="completed" @on-priority="addTaskOpen" showCompleteAt/>
             </div>
         </div>
-      <div class="project-table overlay-y" v-if="projectGanttShow">
-        <!-- 甘特图 -->
-        <ProjectGantt v-if="projectGanttShow"
-                       @on-close="projectGanttShow=false"
-                       :lineData="columnList[0].tasks"
-                       :projectLabel="columnList"
-                       :lineTaskData="columnList[0].tasks"
-                       :levelList="taskPriority"></ProjectGantt>
-      </div>
+        <div v-if="projectParameter('gantt')" class="project-table overlay-y" style="position: relative">
+            <!-- 甘特图 -->
+            <ProjectGantt :lineData="ganttColumnList[0].tasks"
+                          :projectLabel="ganttColumnList"
+                          :lineTaskData="ganttColumnList[0].tasks"
+                          :levelList="taskPriority"></ProjectGantt>
+        </div>
         <!--项目设置-->
         <Modal
             v-model="settingShow"
@@ -527,7 +525,6 @@ export default {
 
             flowInfo: {},
             flowList: [],
-            projectGanttShow: false,
         }
     },
 
@@ -663,6 +660,26 @@ export default {
                 });
             })
             return list;
+        },
+
+        ganttColumnList() {
+            const {projectId, cacheColumns} = this;
+            return cacheColumns.filter((row) => {
+                row.tasks = row.tasks.filter(task => {
+                    return task.column_id == row.id && !task.complete_at;
+                }).sort((a, b) => {
+                    if (a.sort != b.sort) {
+                        return a.sort - b.sort;
+                    }
+                    return a.id - b.id;
+                });
+                return row.project_id == projectId && row.tasks.length > 0;
+            }).sort((a, b) => {
+                if (a.sort != b.sort) {
+                    return a.sort - b.sort;
+                }
+                return a.id - b.id;
+            });
         },
 
         myList() {
@@ -1379,6 +1396,38 @@ export default {
 
         expiresFormat(date) {
             return $A.countDownFormat(date, this.nowTime)
+        },
+
+        tabTypeChange(type) {
+            switch (type) {
+                case "card":
+                    this.$store.dispatch('toggleProjectParameter', 'card');
+                    if (this.projectParameter('card')) {
+                        this.projectParameter('menu') ? this.$store.dispatch('toggleProjectParameter', 'menu') : '';
+                        this.projectParameter('gantt') ? this.$store.dispatch('toggleProjectParameter', 'gantt') : '';
+                    } else {
+                        this.$store.dispatch('toggleProjectParameter', 'card');
+                    }
+                    break;
+                case "menu":
+                    this.$store.dispatch('toggleProjectParameter', 'menu');
+                    if (this.projectParameter('menu')) {
+                        this.projectParameter('card') ? this.$store.dispatch('toggleProjectParameter', 'card') : '';
+                        this.projectParameter('gantt') ? this.$store.dispatch('toggleProjectParameter', 'gantt') : '';
+                    } else {
+                        this.$store.dispatch('toggleProjectParameter', 'menu');
+                    }
+                    break;
+                case "gantt":
+                    this.$store.dispatch('toggleProjectParameter', 'gantt');
+                    if (this.projectParameter('gantt')) {
+                        this.projectParameter('menu') ? this.$store.dispatch('toggleProjectParameter', 'menu') : '';
+                        this.projectParameter('card') ? this.$store.dispatch('toggleProjectParameter', 'card') : '';
+                    } else {
+                        this.$store.dispatch('toggleProjectParameter', 'gantt');
+                    }
+                    break;
+            }
         },
     }
 }

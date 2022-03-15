@@ -194,6 +194,13 @@
                     height: 30px;
                     position: relative;
                     transition: box-shadow 0.2s;
+                    .active {
+                        color: $primary-color;
+                        border-radius: 6px;
+                        border: 1px solid $primary-color;
+                        background-color: rgba($primary-color, 0.1);
+                        transition: left 0.2s;
+                    }
                     &:hover {
                         box-shadow: 0 0 10px #e6ecfa;
                     }
@@ -205,11 +212,6 @@
                         width: 33.3%;
                         height: 100%;
                         z-index: 0;
-                        color: $primary-color;
-                        border-radius: 6px;
-                        border: 1px solid $primary-color;
-                        background-color: rgba($primary-color, 0.1);
-                        transition: left 0.2s;
                     }
                     > div {
                         z-index: 1;
@@ -223,20 +225,6 @@
                         color: $primary-text-color;
                         > i {
                             font-size: 17px;
-                        }
-                        &:first-child {
-                            color: $primary-color;
-                        }
-                    }
-                    &.menu {
-                        &:before {
-                            left: 33.3%;
-                        }
-                        > div:first-child {
-                            color: $primary-text-color;
-                        }
-                        > div:last-child {
-                            color: $primary-color;
                         }
                     }
                 }
