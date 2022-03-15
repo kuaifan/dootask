@@ -34,6 +34,9 @@ export default {
                 cache = $A.projectParameterTemplate(state.projectId)
                 state.cacheProjectParameter.push(cache);
             }
+            if (key === 'menuType' && typeof cache[key] === "undefined") {
+                return 'column'
+            }
             return cache[key];
         }
     },

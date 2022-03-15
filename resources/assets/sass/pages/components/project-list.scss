@@ -193,8 +193,17 @@
                     border-radius: 6px;
                     height: 30px;
                     position: relative;
-                    transition: box-shadow 0.2s;
+                    transition: all 0.2s;
                     .active {
+                        color: $primary-color;
+                    }
+                    .slider {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 33.3%;
+                        height: 100%;
+                        z-index: 0;
                         color: $primary-color;
                         border-radius: 6px;
                         border: 1px solid $primary-color;
@@ -203,15 +212,6 @@
                     }
                     &:hover {
                         box-shadow: 0 0 10px #e6ecfa;
-                    }
-                    &:before {
-                        content: "";
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 33.3%;
-                        height: 100%;
-                        z-index: 0;
                     }
                     > div {
                         z-index: 1;
@@ -955,6 +955,10 @@
                 }
             }
         }
+    }
+    .project-gantt {
+        height: 100%;
+        position: relative
     }
 }
 .project-list-more-dropdown-menu {

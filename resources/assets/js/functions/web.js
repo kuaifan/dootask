@@ -60,14 +60,13 @@
         /**
          * 项目配置模板
          * @param project_id
-         * @returns {{showMy: boolean, showUndone: boolean, project_id, chat: boolean, showHelp: boolean, showCompleted: boolean, cardInit: boolean, card: boolean, completedTask: boolean}}
+         * @returns {{showMy: boolean, showUndone: boolean, project_id, chat: boolean, showHelp: boolean, showCompleted: boolean, menuType: string, menuInit: boolean, completedTask: boolean}}
          */
         projectParameterTemplate(project_id) {
             return {
                 project_id,
-                card: true,
-                menuType: 'card',
-                cardInit: false,
+                menuInit: false,
+                menuType: 'column',
                 chat: false,
                 showMy: true,
                 showHelp: true,

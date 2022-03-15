@@ -162,11 +162,8 @@ export default {
                 index = state.cacheProjectParameter.findIndex(item => item.project_id == project_id)
             }
             const cache = state.cacheProjectParameter[index];
-            if (!$A.isJson(key) && !value) {
-                key = {[key]: !cache[key]};
-            }
-            if (value) {
-                key = {[key]: value};
+            if (!$A.isJson(key)) {
+                key = {[key]: value || !cache[key]};
             }
             state.cacheProjectParameter.splice(index, 1, Object.assign(cache, key))
             setTimeout(() => {
@@ -861,12 +858,12 @@ export default {
                 // 判断只有1列的时候默认版面为表格模式
                 if (state.cacheColumns.filter(item => item.project_id == project_id).length === 1) {
                     const cache = state.cacheProjectParameter.find(item => item.project_id == project_id) || {};
-                    if (typeof cache.cardInit === "undefined" || cache.cardInit === false) {
+                    if (typeof cache.menuInit === "undefined" || cache.menuInit === false) {
                         dispatch("toggleProjectParameter", {
                             project_id,
                             key: {
-                                card: false,
-                                cardInit: true,
+                                menuInit: true,
+                                menuType: 'table',
                             }
                         });
                     }
