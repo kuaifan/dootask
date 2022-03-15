@@ -1,5 +1,5 @@
 <template>
-    <div class="wook-gantt">
+    <div class="common-gantt">
         <div class="gantt-left" :style="{width:menuWidth+'px'}">
             <div class="gantt-title">
                 <div class="gantt-title-text">{{$L('任务名称')}}</div>
@@ -26,7 +26,7 @@
                     <li v-for="(item, key) in dateNum" :key="key" :style="dateStyle(key)">
                         <div class="date-format">
                             <div class="format-day">{{dateFormat(key, 'day')}}</div>
-                            <div v-if="dateWidth > 46" class="format-wook">{{dateFormat(key, 'wook')}}</div>
+                            <div v-if="dateWidth > 46" class="format-week">{{dateFormat(key, 'week')}}</div>
                         </div>
                     </li>
                 </ul>
@@ -39,7 +39,7 @@
                             class="timeline-item"
                             :style="itemStyle(item)"
                             @mousedown="itemMouseDown($event, item)">
-                            <div class="timeline-title">{{item.label}}</div>
+                            <div class="timeline-title" :title="item.label">{{item.label}}</div>
                             <div class="timeline-resizer"></div>
                         </div>
                     </li>
@@ -184,7 +184,7 @@ export default {
                 let date = new Date(new Date().getTime() + j * 86400000)
                 if (type == 'day') {
                     return date.getDate();
-                } else if (type == 'wook') {
+                } else if (type == 'week') {
                     return this.$L(`星期${'日一二三四五六'.charAt(date.getDay())}`);
                 } else {
                     return date;
@@ -291,7 +291,6 @@ export default {
                 type: type,
                 clientX: e.clientX,
                 value: item[type],
-                time: item.time,
             };
             this.mouseItem = item;
             this.dateMove = null;
@@ -299,18 +298,16 @@ export default {
         itemMouseMove(e) {
             if (this.mouseItem != null) {
                 e.preventDefault();
-                var diff = e.clientX - this.mouseBak.clientX;
-                const {start, end} = this.mouseBak.time;
-                let date = new Date();
-                let nowTime = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0).getTime();
-                let diffStartDay = (start - nowTime) / 1000 / 60 / 60 / 24;
-                let diffEndDay = (end - nowTime) / 1000 / 60 / 60 / 24;
-                let width = this.dateWidth * (diffEndDay - diffStartDay);
-                width += this.mouseBak.value + diff;
-                if (width <= 0) {
-                    return false;
+                const diff = this.mouseBak.value + (e.clientX - this.mouseBak.clientX);
+                if (this.mouseBak.type === 'moveW') {
+                    const oneWidthTime = 86400000 / this.dateWidth;
+                    const {start, end} = this.mouseItem.time;
+                    let moveTime = diff * oneWidthTime;
+                    if (end + moveTime - start <= 0) {
+                        return
+                    }
                 }
-                this.$set(this.mouseItem, this.mouseBak.type, this.mouseBak.value + diff);
+                this.$set(this.mouseItem, this.mouseBak.type, diff);
             } else if (this.dateMove != null) {
                 e.preventDefault();
                 let moveX = (this.dateMove.clientX - e.clientX) * 5;
@@ -340,9 +337,6 @@ export default {
                     this.$set(this.mouseItem, 'moveW', 0);
                     isM = true;
                 }
-                if (this.mouseItem.time && this.mouseItem.time.start > this.mouseItem.time.end) {
-                    return false;
-                }
                 //
                 if (isM) {
                     this.$emit("on-change", this.mouseItem)
@@ -371,3 +365,265 @@ export default {
     }
 }
 </script>
+
+<style lang="scss" scoped>
+.common-gantt {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: self-start;
+    color: #747a81;
+    * {
+        box-sizing: border-box;
+    }
+    .gantt-left {
+        flex-grow:0;
+        flex-shrink:0;
+        height: 100%;
+        background-color: #ffffff;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        &:after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 1px;
+            background-color: rgba(237, 241, 242, 0.75);
+        }
+        .gantt-title {
+            height: 76px;
+            flex-grow: 0;
+            flex-shrink: 0;
+            background-color: #F9FAFB;
+            padding-left: 12px;
+            overflow: hidden;
+            .gantt-title-text {
+                line-height: 100px;
+                max-width: 200px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                font-weight: 600;
+            }
+        }
+        .gantt-item {
+            transform: translateZ(0);
+            max-height: 100%;
+            overflow: auto;
+            -ms-overflow-style: none;
+            &::-webkit-scrollbar {
+                display: none;
+            }
+            > li {
+                height: 40px;
+                border-bottom: 1px solid rgba(237, 241, 242, 0.75);
+                position: relative;
+                display: flex;
+                align-items: center;
+                padding-left: 12px;
+                &:hover {
+                    .item-icon {
+                        display: flex;
+                    }
+                }
+                .item-overdue {
+                    flex-grow:0;
+                    flex-shrink:0;
+                    color: #ffffff;
+                    margin-right: 4px;
+                    background-color: #ff0000;
+                    padding: 1px 3px;
+                    border-radius: 3px;
+                    font-size: 12px;
+                    line-height: 18px;
+                }
+                .item-title {
+                    flex: 1;
+                    padding-right: 12px;
+                    cursor: default;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    &.complete {
+                        text-decoration: line-through;
+                    }
+                    &.overdue {
+                        font-weight: 600;
+                    }
+                }
+                .item-icon {
+                    display: none;
+                    align-items: center;
+                    justify-content: center;
+                    width: 32px;
+                    margin-right: 2px;
+                    font-size: 16px;
+                    color: #888888;
+                }
+            }
+        }
+    }
+    .gantt-right {
+        flex: 1;
+        height: 100%;
+        background-color: #ffffff;
+        position: relative;
+        overflow: hidden;
+        .gantt-chart {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            transform: translateZ(0);
+            .gantt-month {
+                display: flex;
+                align-items: center;
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 1;
+                height: 26px;
+                line-height: 20px;
+                font-size: 14px;
+                background-color: #F9FAFB;
+                > li {
+                    flex-grow: 0;
+                    flex-shrink: 0;
+                    height: 100%;
+                    position: relative;
+                    overflow: hidden;
+                    &:after {
+                        content: "";
+                        position: absolute;
+                        top: 0;
+                        right: 0;
+                        width: 1px;
+                        height: 100%;
+                        background-color: rgba(237, 241, 242, 0.75);
+                    }
+                    .month-format {
+                        overflow: hidden;
+                        white-space: nowrap;
+                        padding: 6px 6px 0;
+                    }
+                }
+            }
+            .gantt-date {
+                display: flex;
+                align-items: center;
+                position: absolute;
+                top: 26px;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 2;
+                cursor: move;
+                &:before {
+                    content: "";
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 50px;
+                    background-color: #F9FAFB;
+                }
+                > li {
+                    flex-grow: 0;
+                    flex-shrink: 0;
+                    height: 100%;
+                    position: relative;
+                    overflow: hidden;
+                    &:after {
+                        content: "";
+                        position: absolute;
+                        top: 0;
+                        right: 0;
+                        width: 1px;
+                        height: 100%;
+                        background-color: rgba(237, 241, 242, 0.75);
+                    }
+                    .date-format {
+                        overflow: hidden;
+                        white-space: nowrap;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        height: 44px;
+                        .format-day {
+                            line-height: 28px;
+                            font-size: 18px;
+                        }
+                        .format-week {
+                            line-height: 16px;
+                            font-weight: 300;
+                            font-size: 13px;
+                        }
+                    }
+                }
+            }
+            .gantt-timeline {
+                position: absolute;
+                top: 76px;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 3;
+                overflow-x: hidden;
+                overflow-y: auto;
+                > li {
+                    cursor: default;
+                    height: 40px;
+                    border-bottom: 1px solid rgba(237, 241, 242, 0.75);
+                    position: relative;
+                    .timeline-item {
+                        position: absolute;
+                        top: 0;
+                        touch-action: none;
+                        pointer-events: auto;
+                        padding: 4px;
+                        margin-top: 4px;
+                        background: #e74c3c;
+                        border-radius: 18px;
+                        color: #fff;
+                        display: flex;
+                        align-items: center;
+                        will-change: contents;
+                        height: 32px;
+                        .timeline-title {
+                            touch-action: none;
+                            flex-grow: 1;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                            margin-left: 4px;
+                            margin-right: 10px;
+                        }
+                        .timeline-resizer {
+                            height: 22px;
+                            touch-action: none;
+                            width: 8px;
+                            background: rgba(255,255,255,0.1);
+                            cursor: ew-resize;
+                            flex-shrink: 0;
+                            will-change: visibility;
+                            position: absolute;
+                            top: 5px;
+                            right: 5px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+</style>

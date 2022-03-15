@@ -314,11 +314,8 @@
             </div>
         </div>
         <div v-else-if="tabTypeActive === 'gantt'" class="project-gantt">
-            <ProjectGantt
-                :lineData="ganttColumnList[0].tasks"
-                :projectLabel="ganttColumnList"
-                :lineTaskData="ganttColumnList[0].tasks"
-                :levelList="taskPriority"/>
+            <!--甘特图-->
+            <ProjectGantt :projectColumn="columnList"/>
         </div>
         <!--项目设置-->
         <Modal
@@ -556,8 +553,6 @@ export default {
             'userId',
             'cacheDialogs',
 
-            'taskPriority',
-
             'projectId',
             'projectLoad',
             'cacheTasks',
@@ -683,26 +678,6 @@ export default {
                 });
             })
             return list;
-        },
-
-        ganttColumnList() {
-            const {projectId, cacheColumns} = this;
-            return cacheColumns.filter((row) => {
-                row.tasks = row.tasks.filter(task => {
-                    return task.column_id == row.id && !task.complete_at;
-                }).sort((a, b) => {
-                    if (a.sort != b.sort) {
-                        return a.sort - b.sort;
-                    }
-                    return a.id - b.id;
-                });
-                return row.project_id == projectId && row.tasks.length > 0;
-            }).sort((a, b) => {
-                if (a.sort != b.sort) {
-                    return a.sort - b.sort;
-                }
-                return a.id - b.id;
-            });
         },
 
         myList() {

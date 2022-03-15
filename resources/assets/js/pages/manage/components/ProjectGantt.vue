@@ -1,20 +1,26 @@
 <template>
     <div class="project-gstc-gantt">
-        <GanttView :lists="lists" :menuWidth="windowWidth ? 180 : 260" :itemWidth="80" @on-change="updateTime" @on-click="clickItem"/>
-        <Dropdown class="project-gstc-dropdown-filtr" :style="windowWidth?{left:'142px'}:{}" @on-click="tapProject">
-            <Icon class="project-gstc-dropdown-icon" :class="{filtr:filtrProjectId>0}" type="md-funnel" />
+        <GanttView
+            :lists="lists"
+            :menuWidth="menuWidth"
+            :itemWidth="80"
+            @on-change="onChange"
+            @on-click="onClick"/>
+        <Dropdown class="project-gstc-dropdown-filtr" :style="dropStyle" trigger="click" @on-click="onSwitchColumn">
+            <Icon class="project-gstc-dropdown-icon" :class="{filtr:filtrProjectId > 0}" type="md-funnel" />
             <DropdownMenu slot="list">
-                <DropdownItem :name="0" :class="{'dropdown-active':filtrProjectId==0}">{{$L('全部')}}</DropdownItem>
-                <DropdownItem v-for="(item, index) in projectLabel"
-                              :key="index"
-                              :name="item.id"
-                              :class="{'dropdown-active':filtrProjectId==item.id}">
-                    {{item.name}}
-                    <span v-if="item.tasks">({{item.tasks.length}})</span>
+                <DropdownItem :name="0" :class="{'dropdown-active':filtrProjectId == 0}">{{ $L('全部') }}</DropdownItem>
+                <DropdownItem
+                    v-for="(item, index) in projectColumn"
+                    :key="index"
+                    :name="item.id"
+                    :class="{'dropdown-active':filtrProjectId == item.id}">
+                    {{ item.name }}
+                    <span v-if="item.tasks">({{ item.tasks.length }})</span>
                 </DropdownItem>
             </DropdownMenu>
         </Dropdown>
-        <div class="project-gstc-edit" :class="{info:editShowInfo, visible:editData&&editData.length > 0}">
+        <div class="project-gstc-edit" :class="{info:editShowInfo, visible:editData && editData.length > 0}">
             <div class="project-gstc-edit-info">
                 <Table size="small" max-height="600" :columns="editColumns" :data="editData"></Table>
                 <div class="project-gstc-edit-btns">
@@ -33,85 +39,83 @@
 </template>
 
 <script>
-import GanttView from "./GanttView";
 import {mapState} from "vuex";
+import GanttView from "../../../components/GanttView";
 
-/**
- * 甘特图
- */
 export default {
     name: 'ProjectGantt',
-    components: {GanttView },
+    components: {GanttView},
     props: {
-        projectLabel: {
+        projectColumn: {
             default: []
         },
-        lineTaskData: {
-            default: []
-        },
-        levelList: {},
     },
 
-    data () {
+    data() {
         return {
-            loadFinish: false,
-
             lists: [],
 
-            editColumns: [],
-            editData: [],
-            editShowInfo: false,
-            editLoad: 0,
-
             filtrProjectId: 0,
+
+            editColumns: [
+                {
+                    title: this.$L('任务名称'),
+                    key: 'label',
+                    minWidth: 150,
+                    ellipsis: true,
+                }, {
+                    title: this.$L('原计划时间'),
+                    minWidth: 135,
+                    align: 'center',
+                    render: (h, {row}) => {
+                        if (row.notime === true) {
+                            return h('span', '-');
+                        }
+                        return h('div', {
+                            style: {},
+                        }, [
+                            h('div', $A.formatDate('Y-m-d H:i', Math.round(row.baktime.start / 1000))),
+                            h('div', $A.formatDate('Y-m-d H:i', Math.round(row.baktime.end / 1000)))
+                        ]);
+                    }
+                }, {
+                    title: this.$L('新计划时间'),
+                    minWidth: 135,
+                    align: 'center',
+                    render: (h, {row}) => {
+                        return h('div', {
+                            style: {},
+                        }, [
+                            h('div', $A.formatDate('Y-m-d H:i', Math.round(row.newTime.start / 1000))),
+                            h('div', $A.formatDate('Y-m-d H:i', Math.round(row.newTime.end / 1000)))
+                        ]);
+                    }
+                }
+            ],
+            editData: [],
+            editLoad: 0,
+            editShowInfo: false,
         }
     },
 
     mounted() {
-        this.editColumns = [
-            {
-                title: this.$L('任务名称'),
-                key: 'label',
-                minWidth: 150,
-                ellipsis: true,
-            }, {
-                title: this.$L('原计划时间'),
-                minWidth: 135,
-                align: 'center',
-                render: (h, params) => {
-                    if (params.row.notime === true) {
-                        return h('span', '-');
-                    }
-                    return h('div', {
-                        style: {},
-                    }, [
-                        h('div', $A.formatDate('Y-m-d H:i', Math.round(params.row.backTime.start / 1000))),
-                        h('div', $A.formatDate('Y-m-d H:i', Math.round(params.row.backTime.end / 1000)))
-                    ]);
-                }
-            }, {
-                title: this.$L('新计划时间'),
-                minWidth: 135,
-                align: 'center',
-                render: (h, params) => {
-                    return h('div', {
-                        style: {},
-                    }, [
-                        h('div', $A.formatDate('Y-m-d H:i', Math.round(params.row.newTime.start / 1000))),
-                        h('div', $A.formatDate('Y-m-d H:i', Math.round(params.row.newTime.end / 1000)))
-                    ]);
-                }
-            }
-        ];
-        //
         this.initData();
-        this.loadFinish = true;
     },
+
     computed: {
         ...mapState(['userId', 'windowWidth', 'taskPriority']),
+
+        menuWidth() {
+            return this.windowWidth < 1440 ? 180 : 260;
+        },
+
+        dropStyle() {
+            return this.windowWidth < 1440 ? {left: '142px'} : {};
+        }
     },
-    watch:{
-        projectLabel: {
+
+    watch: {
+        projectColumn: {
             handler() {
                 this.initData();
             },
@@ -120,13 +124,18 @@ export default {
     },
 
     methods: {
-        verifyLists(item){
+        initData() {
+            this.lists = [];
+            this.projectColumn && this.projectColumn.some(this.checkAdd);
+        },
+
+        checkAdd(item) {
             if (this.filtrProjectId > 0) {
                 if (item.id != this.filtrProjectId) {
                     return;
                 }
             }
-            item.tasks && item.tasks.forEach((taskData) => {
+            item.tasks && item.tasks.some(taskData => {
                 let notime = !taskData.start_at || !taskData.end_at;
                 let times = this.getTimeObj(taskData);
                 let start = times.start;
@@ -134,10 +143,10 @@ export default {
                 //
                 let color = '#058ce4';
                 if (taskData.complete_at) {
-                     return;
+                    return;
                 } else {
                     // 等级颜色
-                    this.levelList.some(level => {
+                    this.taskPriority.some(level => {
                         if (level.priority === taskData.p_level) {
                             color = level.color;
                             return true;
@@ -145,11 +154,11 @@ export default {
                     });
                 }
                 //
-                let tempTime = { start, end };
-                let findData = this.editData.find((t) => { return t.id == taskData.id });
+                let tempTime = {start, end};
+                let bakTime = $A.cloneJSON(tempTime)
+                let findData = this.editData.find(({id}) => id == taskData.id);
                 if (findData) {
-                    findData.backTime = $A.cloneData(tempTime)
-                    tempTime = $A.cloneData(findData.newTime);
+                    tempTime = $A.cloneJSON(findData.newTime);
                 }
                 //
                 this.lists.push({
@@ -159,108 +168,80 @@ export default {
                     overdue: taskData.overdue,
                     time: tempTime,
                     notime: notime,
-                    style: { background: color },
+                    baktime: bakTime,
+                    style: {background: color},
                 });
             });
-        },
-        initData() {
-            this.lists = [];
-            this.projectLabel && this.projectLabel.forEach((item) => {
-                this.verifyLists(item);
-            });
-            if (this.lists&&this.lists.length == 0) {
-                this.lineTaskData && this.lineTaskData.forEach((item) => {
-                    this.verifyLists(item);
-                });
-            }
-            //
-            if (this.lists&&this.lists.length == 0 && this.filtrProjectId == 0) {
-                $A.modalWarning({
-                    content: '任务列表为空，请先添加任务。',
-                    onOk: () => {
-                        this.$emit('on-close');
-                    },
-                });
-            }
         },
 
-        updateTime(item) {
-            let original = this.getRawTime(item.id);
-            if (Math.abs(original.end - item.time.end) > 1000 || Math.abs(original.start - item.time.start) > 1000) {
+        onChange(item) {
+            const {time, baktime} = item;
+            if (Math.abs(baktime.end - time.end) > 1000 || Math.abs(baktime.start - time.start) > 1000) {
                 //修改时间（变化超过1秒钟)
-                let backTime = $A.cloneData(original);
-                let newTime = $A.cloneData(item.time);
                 let findData = this.editData.find(({id}) => id == item.id);
                 if (findData) {
-                    findData.newTime = newTime;
+                    findData.newTime = time;
                 } else {
                     this.editData.push({
                         id: item.id,
                         label: item.label,
                         notime: item.notime,
-                        backTime,
-                        newTime,
+                        baktime: item.baktime,
+                        newTime: time,
                     })
                 }
             }
         },
 
-        clickItem(item) {
+        onClick(item) {
             this.$store.dispatch("openTask", item);
         },
 
         editSubmit(save) {
-            this.editData&&this.editData.forEach((item) => {
+            this.editData && this.editData.forEach(item => {
+                let task = this.lists.find(({id}) => id == item.id)
                 if (save) {
                     this.editLoad++;
                     let timeStart = $A.formatDate('Y-m-d H:i', Math.round(item.newTime.start / 1000));
                     let timeEnd = $A.formatDate('Y-m-d H:i', Math.round(item.newTime.end / 1000));
                     let dataJson = {
                         task_id: item.id,
-                        times:[timeStart,timeEnd],
+                        times: [timeStart, timeEnd],
                     };
                     this.$store.dispatch("taskUpdate", dataJson).then(({msg}) => {
-                        $A.messageSuccess(msg);
                         this.editLoad--;
-                        if (typeof successCallback === "function") successCallback();
+                        this.editLoad === 0 && $A.messageSuccess(msg);
+                        task && this.$set(task, 'baktime', $A.cloneJSON(task.time));
                     }).catch(({msg}) => {
-                        $A.modalError(msg);
+                        this.editLoad--;
+                        this.editLoad === 0 && $A.modalError(msg);
+                        task && this.$set(task, 'time', $A.cloneJSON(task.baktime));
                     })
                 } else {
-                    this.lists.some((task) => {
-                        if (task.id == item.id) {
-                            this.$set(task, 'time', item.backTime);
-                            return true;
-                        }
-                    })
+                    task && this.$set(task, 'time', $A.cloneJSON(task.baktime));
                 }
             });
             this.editData = [];
         },
 
         getRawTime(taskId) {
-            let times = null;
-            this.lists.some((taskData) => {
-                if (taskData.id == taskId) {
-                    times = this.getTimeObj(taskData);
-                }
-            });
-            return times;
+            let task = this.lists.find(({id}) => id == taskId)
+            return task ? this.getTimeObj(task) : null;
         },
 
         getTimeObj(taskData) {
             let start = $A.Time(taskData.start_at) || $A.Time(taskData.created_at);
             let end = $A.Time(taskData.end_at) || ($A.Time(taskData.created_at) + 86400);
             if (end == start) {
-                end = Math.round(new Date($A.formatDate('Y-m-d 23:59:59', end)).getTime()/1000);
+                end = Math.round(new Date($A.formatDate('Y-m-d 23:59:59', end)).getTime() / 1000);
             }
             end = Math.max(end, start + 60);
-            start*= 1000;
-            end*= 1000;
+            start *= 1000;
+            end *= 1000;
             return {start, end};
         },
 
-        tapProject(e) {
+        onSwitchColumn(e) {
             this.filtrProjectId = $A.runNum(e);
             this.initData();
         },
