@@ -108,7 +108,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userToken', 'userId']),
+        ...mapState(['userToken', 'userId', 'dialogMsgs']),
 
         readList() {
             return this.allList.filter(({read_at}) => read_at)
@@ -220,6 +220,23 @@ export default {
         },
 
         viewFile() {
+            const {id, dialog_id, msg} = this.msgData;
+            if (['jpg', 'jpeg', 'gif', 'png'].includes(msg.ext)) {
+                const list = $A.cloneJSON(this.dialogMsgs.filter(item => {
+                    return item.dialog_id === dialog_id && item.type === 'file' && ['jpg', 'jpeg', 'gif', 'png'].includes(item.msg.ext);
+                })).sort((a, b) => {
+                    return a.id - b.id;
+                });
+                const index = list.findIndex(item => item.id === id);
+                if (index > -1) {
+                    this.$store.state.previewImageIndex = index;
+                    this.$store.state.previewImageList = list.map(({msg}) => msg.path);
+                } else {
+                    this.$store.state.previewImageIndex = 0;
+                    this.$store.state.previewImageList = [msg.path];
+                }
+                return
+            }
             if (this.$Electron) {
                 this.$Electron.sendMessage('windowRouter', {
                     name: 'file-msg-' + this.msgData.id,

@@ -1234,6 +1234,18 @@ export default {
         },
 
         viewFile(file) {
+            if (['jpg', 'jpeg', 'gif', 'png'].includes(file.ext)) {
+                const list = this.fileList.filter(item => ['jpg', 'jpeg', 'gif', 'png'].includes(item.ext))
+                const index = list.findIndex(item => item.id === file.id);
+                if (index > -1) {
+                    this.$store.state.previewImageIndex = index;
+                    this.$store.state.previewImageList = list.map(({path}) => path);
+                } else {
+                    this.$store.state.previewImageIndex = 0;
+                    this.$store.state.previewImageList = [file.path];
+                }
+                return
+            }
             if (this.$Electron) {
                 this.$Electron.sendMessage('windowRouter', {
                     name: 'file-task-' + file.id,

@@ -121,7 +121,11 @@ const stateData = {
     themeIsDark: false,
 
     // 客户端新版本号
-    clientNewVersion: null
+    clientNewVersion: null,
+
+    // 预览图片
+    previewImageIndex: 0,
+    previewImageList: [],
 };
 
 // 会员信息
