@@ -1,7 +1,7 @@
 <template>
     <div class="electron-report">
-        <PageTitle :title="$L('添加/编辑报告')"/>
-        <ReportEdit :id="$A.runNum(this.$route.params.id)"/>
+        <PageTitle :title="title"/>
+        <ReportEdit :id="id" @saveSuccess="saveSuccess"/>
     </div>
 </template>
 <style lang="scss" scoped>
@@ -17,5 +17,23 @@ import ReportEdit from "../manage/components/ReportEdit"
 
 export default {
     components: {ReportEdit},
+    data() {
+        return {
+            detail: {}
+        }
+    },
+    computed: {
+        id() {
+            return $A.runNum(this.detail.id || this.$route.params.id)
+        },
+        title() {
+            return this.$L(this.id > 0 ? '修改报告' : '新增报告');
+        }
+    },
+    methods: {
+        saveSuccess(data) {
+            this.detail = data;
+        }
+    }
 }
 </script>

@@ -140,7 +140,7 @@ export default {
                         },
                         on: {
                             action: (name) => {
-                                if (name === 'edit') this.$emit("on-edit", row.id, row.title);
+                                if (name === 'edit') this.$emit("on-edit", row.id);
                                 if (name === 'view') this.$emit("on-view", row);
                             }
                         }
@@ -197,7 +197,7 @@ export default {
         },
 
         addReport() {
-            this.$emit("on-edit", 0, this.$L('新增报告'));
+            this.$emit("on-edit", 0);
         }
     }
 }

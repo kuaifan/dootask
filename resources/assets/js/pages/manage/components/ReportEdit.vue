@@ -93,7 +93,6 @@ export default {
                 id: 0,
                 offset: 0 // 以当前日期为基础的周期偏移量。例如选择了上一周那么就是 -1，上一天同理。
             },
-            disabledType: false,
             prevCycleText: "",
             nextCycleText: "",
         };
@@ -102,7 +101,7 @@ export default {
         id(val) {
             if (this.id > 0) {
                 this.getDetail(val);
-            }else{
+            } else {
                 this.reportData.offset = 0;
                 this.reportData.type = "weekly";
                 this.reportData.receive = [];
@@ -117,7 +116,7 @@ export default {
         this.getTemplate();
     },
     methods: {
-        initLanguage () {
+        initLanguage() {
             this.prevCycleText = this.$L("上一周");
             this.nextCycleText = this.$L("下一周");
         },
@@ -127,14 +126,13 @@ export default {
                 $A.messageError(this.$L("请选择接收人"));
                 return false;
             }
-            if (this.id === 0 && this.reportData.id > 1) {
+            if (this.id === 0 && this.reportData.id > 0) {
                 $A.modalConfirm({
                     title: '覆盖提交',
                     content: '你已提交过此日期的报告，是否覆盖提交？',
                     loading: true,
-                    append: this.$el,
                     onOk: () => {
-                        this.doSubmit();
+                        this.doSubmit(true);
                     }
                 });
             } else {
@@ -142,24 +140,23 @@ export default {
             }
         },
 
-        doSubmit() {
+        doSubmit(isModal = false) {
             this.$store.dispatch("call", {
                 url: 'report/store',
                 data: this.reportData,
                 method: 'post',
             }).then(({data, msg}) => {
+                isModal && this.$Modal.remove();
                 // data 结果数据
                 this.reportData.offset = 0;
                 this.reportData.type = "weekly";
                 this.reportData.receive = [];
                 this.getTemplate();
-                this.disabledType = false;
-                this.$Modal.remove();
                 // msg 结果描述
                 $A.messageSuccess(msg);
-                this.$emit("saveSuccess");
+                this.$emit("saveSuccess", data);
             }).catch(({msg}) => {
-                this.$Modal.remove();
+                isModal && this.$Modal.remove();
                 // msg 错误原因
                 $A.messageError(msg);
             });
@@ -173,13 +170,13 @@ export default {
                     offset: this.reportData.offset,
                     id: this.id
                 },
-            }).then(({data, msg}) => {
+            }).then(({data}) => {
                 // data 结果数据
                 if (data.id) {
                     this.reportData.id = data.id;
-                    if(this.id > 0){
+                    if (this.id > 0) {
                         this.getDetail(data.id);
-                    }else{
+                    } else {
                         this.reportData.title = data.title;
                         this.reportData.content = data.content;
                     }
@@ -188,7 +185,6 @@ export default {
                     this.reportData.title = data.title;
                     this.reportData.content = data.content;
                 }
-                // msg 结果描述
             }).catch(({msg}) => {
                 // msg 错误原因
                 $A.messageError(msg);
@@ -198,14 +194,14 @@ export default {
         typeChange(value) {
             // 切换汇报类型后偏移量归零
             this.reportData.offset = 0;
-            if ( value === "weekly" ) {
+            if (value === "weekly") {
                 this.prevCycleText = this.$L("上一周");
                 this.nextCycleText = this.$L("下一周");
             } else {
                 this.prevCycleText = this.$L("上一天");
                 this.nextCycleText = this.$L("下一天");
             }
-           this.getTemplate();
+            this.getTemplate();
         },
 
         getDetail(reportId) {
@@ -214,15 +210,13 @@ export default {
                 data: {
                     id: reportId
                 },
-            }).then(({data, msg}) => {
+            }).then(({data}) => {
                 // data 结果数据
                 this.reportData.title = data.title;
                 this.reportData.content = data.content;
                 this.reportData.receive = data.receives_user.map(({userid}) => userid);
                 this.reportData.type = data.type_val;
                 this.reportData.id = reportId;
-                this.disabledType = true;
-                // msg 结果描述
             }).catch(({msg}) => {
                 // msg 错误原因
                 $A.messageError(msg);
@@ -231,17 +225,15 @@ export default {
 
         prevCycle() {
             this.reportData.offset -= 1;
-            this.disabledType = false;
             this.reReportData();
             this.getTemplate();
         },
 
         nextCycle() {
             // 周期偏移量不允许大于0
-            if ( this.reportData.offset < 0 ) {
+            if (this.reportData.offset < 0) {
                 this.reportData.offset += 1;
             }
-            this.disabledType = false;
             this.reReportData();
             this.getTemplate();
         },
@@ -250,12 +242,9 @@ export default {
         getLastSubmitter() {
             this.$store.dispatch("call", {
                 url: 'report/last_submitter',
-            }).then(({data, msg}) => {
-                // data 结果数据
+            }).then(({data}) => {
                 this.reportData.receive = data;
-                // msg 结果描述
             }).catch(({msg}) => {
-                // msg 错误原因
                 $A.messageError(msg);
             });
         },
@@ -269,7 +258,3 @@ export default {
     }
 }
 </script>
-
-<style scoped>
-
-</style>

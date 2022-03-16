@@ -89,7 +89,7 @@ export default {
             this.$emit("on-read");
             if (this.$Electron) {
                 let config = {
-                    title: this.formatName(row.title),
+                    title: row.title,
                     titleFixed: true,
                     parent: null,
                     width: Math.min(window.screen.availWidth, 1440),
@@ -106,12 +106,11 @@ export default {
             }
         },
 
-        onEditReport(id,title) {
+        onEditReport(id) {
             this.reportId = id;
             if (this.$Electron) {
                 let config = {
-                    title: title,
-                    titleFixed: true,
+                    title: this.$L(id > 0 ? '修改报告' : '新增报告'),
                     parent: null,
                     width: Math.min(window.screen.availWidth, 1440),
                     height: Math.min(window.screen.availHeight, 900),
@@ -125,7 +124,6 @@ export default {
             } else {
                 this.showEditDrawer = true;
             }
-
         },
 
         saveSuccess() {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Exceptions\ApiException;
+use App\Models\AbstractModel;
 use App\Models\ProjectTask;
 use App\Models\Report;
 use App\Models\ReportReceive;
@@ -173,7 +174,7 @@ class ReportController extends AbstractController
         }
 
         // 在事务中运行
-        Report::transaction(function () use ($input, $user) {
+        return AbstractModel::transaction(function () use ($input, $user) {
             $id = $input["id"];
             if ($id) {
                 // 编辑
@@ -224,8 +225,9 @@ class ReportController extends AbstractController
                 ];
                 Task::deliver(new PushTask($params, false));
             }
+            //
+            return Base::retSuccess('保存成功', $report);
         });
-        return Base::retSuccess('保存成功');
     }
 
     /**
