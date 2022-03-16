@@ -2,10 +2,10 @@
     <div class="report">
         <Tabs v-model="reportTabs">
             <TabPane :label="$L('我的汇报')" name="my">
-                <ReportMy ref="report" v-if="reportTabs === 'my'" @on-view="onView" @on-edit="onEditReport"></ReportMy>
+                <ReportMy ref="report" v-if="reportTabs === 'my'" @on-view="onView" @on-edit="onEditReport"/>
             </TabPane>
             <TabPane :label="tabRebder(reportUnreadNumber)" name="receive">
-                <ReportReceive v-if="reportTabs === 'receive'" @on-view="onView"></ReportReceive>
+                <ReportReceive v-if="reportTabs === 'receive'" @on-view="onView"/>
             </TabPane>
         </Tabs>
         <DrawerOverlay
@@ -61,6 +61,10 @@ export default {
 
     mounted() {
         this.reportTabs = this.reportType;
+        //
+        if (this.$isMainElectron) {
+            this.$Electron.registerMsgListener('reportSaveSuccess', this.saveSuccess)
+        }
     },
 
     methods: {
@@ -135,7 +139,3 @@ export default {
     }
 }
 </script>
-
-<style scoped>
-
-</style>

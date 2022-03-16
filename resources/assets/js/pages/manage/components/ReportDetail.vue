@@ -2,50 +2,22 @@
     <div class="report-detail">
         <div class="report-title">{{ data.title }}</div>
         <div class="report-detail-context">
-            <div class="report-profile">
-                <Row>
-                    <Col span="2">
-                        <div class="report-submitter">
-                            <p>{{ $L('汇报人') }}</p>
-                        </div>
-                    </Col>
-                    <Col span="6">
-                        <div class="report-submitter">
-                            <UserAvatar :userid="data.userid" :size="28"/>
-                        </div>
-                    </Col>
-                    <Col span="2">
-                        <div class="report-submitter">
-                            <p>{{ $L('提交时间') }}</p>
-                        </div>
-                    </Col>
-                    <Col span="6">
-                        <div class="report-submitter">
-                            <div>{{ data.created_at }}</div>
-                        </div>
-                    </Col>
-                    <Col span="2">
-                        <div class="report-submitter">
-                            <p>{{ $L('汇报对象') }}</p>
-                        </div>
-                    </Col>
-                    <Col span="6">
-                        <div class="report-submitter">
-                            <UserAvatar v-for="(item, key) in data.receives_user" :key="key" :userid="item.userid" :size="28"/>
-                        </div>
-                    </Col>
-                </Row>
-            </div>
-            <Row class="report-main">
-                <Col span="2">
-                    <div class="report-submitter">
-                        <p>{{ $L('汇报内容') }}</p>
-                    </div>
-                </Col>
-                <Col span="22">
+            <Form class="report-form" label-width="auto" inline>
+                <FormItem :label="$L('汇报人')">
+                    <UserAvatar :userid="data.userid" :size="28"/>
+                </FormItem>
+                <FormItem :label="$L('提交时间')">
+                    {{ data.created_at }}
+                </FormItem>
+                <FormItem :label="$L('汇报对象')">
+                    <UserAvatar v-for="(item, key) in data.receives_user" :key="key" :userid="item.userid" :size="28"/>
+                </FormItem>
+            </Form>
+            <Form class="report-form" label-width="auto">
+                <FormItem :label="$L('汇报内容')">
                     <div class="report-content" v-html="data.content"></div>
-                </Col>
-            </Row>
+                </FormItem>
+            </Form>
         </div>
     </div>
 </template>
@@ -58,12 +30,12 @@ export default {
             default: {},
         }
     },
-    mounted() {
-        if (this.data.id > 0) this.sendRead();
-    },
     watch: {
-        data() {
-            if (this.data.id > 0) this.sendRead();
+        'data.id': {
+            handler(id) {
+                if (id > 0) this.sendRead();
+            },
+            immediate: true
         },
     },
     methods: {
@@ -73,11 +45,10 @@ export default {
                 data: {
                     ids: [this.data.id]
                 },
-            }).then(({data, msg}) => {
-                // data 结果数据
-                // msg 结果描述
-            }).catch(({msg}) => {
-                // msg 错误原因
+            }).then(() => {
+                //
+            }).catch(() => {
+                //
             });
         },
     }

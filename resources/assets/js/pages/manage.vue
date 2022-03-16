@@ -849,6 +849,10 @@ export default {
             this.addTaskShow = true;
         },
 
+        openTask(task) {
+            this.$store.dispatch("openTask", task)
+        },
+
         addDialogMsg(data) {
             if (!this.natificationReady) {
                 return;
@@ -893,7 +897,7 @@ export default {
 
         taskVisibleChange(visible) {
             if (!visible) {
-                this.$store.dispatch('openTask', 0)
+                this.openTask(0)
             }
         },
 
@@ -1025,10 +1029,6 @@ export default {
                 this.natificationHidden = !!document[hiddenProperty]
             }
             document.addEventListener(visibilityChangeEvent, visibilityChangeListener);
-        },
-
-        openTask(task) {
-            this.$store.dispatch("openTask", task)
         },
     }
 }

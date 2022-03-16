@@ -39,10 +39,6 @@
             margin-top: -53px;
             padding-top: 53px;
         }
-
-        .ivu-tabs-tabpane {
-
-        }
     }
 }
 
@@ -62,55 +58,30 @@
 
     .report-detail-context {
         flex: 1;
+        height: 0;
         padding: 12px 0 12px 24px;
         display: flex;
         flex-direction: column;
-        height: 0;
+        overflow: auto;
+    }
 
-        .report-main {
+    .report-form {
+        display: flex;
+        margin-bottom: 12px;
+
+        .ivu-form-item {
             flex: 1;
-            overflow: auto;
-            margin-top: 12px;
-        }
+            flex-shrink: 0;
 
-        .report-submitter {
-            p {
+            .ivu-form-item-label {
+                padding-top: 8px;
                 opacity: 0.8;
             }
-        }
-    }
 
-    .report-profile {
-        font-size: 14px;
-        padding-right: 24px;
-    }
-
-    .report-submitter {
-        display: flex;
-        flex-wrap: wrap;
-        height: 28px;
-        line-height: 28px;
-
-        p {
-            display: block;
-            width: 100%;
-            text-align: justify;
-            padding-right: 12px;
-
-            &:after {
-                content: '';
-                display: inline-block;
-                width: 100%;
+            .ivu-form-item-content {
+                line-height: 30px;
             }
         }
-
-        & > div {
-            margin-right: 8px;
-        }
-    }
-
-    .ivu-col {
-        margin-bottom: 12px;
     }
 
     .report-content {
@@ -136,21 +107,21 @@
     }
 }
 
-.report-box {
+.report-edit {
     display: flex;
     flex-direction: column;
     height: 100%;
     padding: 24px;
 
-    .report-row-foot {
-        flex: 0 0 auto;
+    .ivu-input[disabled] {
+        color: #666666;
     }
 
-    .report-row-content {
+    .report-content {
         flex: 1 1 auto;
         overflow-y: auto;
 
-        .report-row-content-editor {
+        .report-content-editor {
             height: 100%;
 
             .ivu-form-item-content {
@@ -165,21 +136,6 @@
         }
     }
 
-    .report-row-foot {
-        margin-bottom: 0;
-    }
-
-    .report-titles {
-        line-height: 32px;
-    }
-
-    .report-poptip {
-        .ivu-tooltip-inner {
-            min-width: 60px !important;
-            font-size: 12px !important;
-        }
-    }
-
     .report-users {
         display: flex;
         align-items: center;
@@ -189,8 +145,14 @@
             margin-right: 12px;
         }
 
-        .report-row-a {
+        .report-user-link {
             flex-shrink: 0;
+
+            > i {
+                font-size: 16px;
+                margin-right: 2px;
+                transform: rotate(-90deg);
+            }
         }
     }
 
@@ -205,6 +167,10 @@
             color: #515A6E !important;
             box-shadow: none !important;
             border: none !important;
+
+            &.ivu-radio-wrapper-disabled {
+                color: #c6c6c6 !important;
+            }
 
             &:before {
                 width: 0 !important;
@@ -241,11 +207,13 @@
 
         .report-buttongroup-vertical {
             position: absolute;
-            left: 47px;
+            left: 50%;
             width: 1px;
-            height: 23px;
-            background-color: #E5E5E5;
-            top: 5px;
+            height: 15px;
+            background-color: #e9e9e9;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9;
         }
 
         .ivu-btn-primary {
@@ -257,34 +225,30 @@
             line-height: 34px;
 
             &[disabled] {
-                color: #515A6E !important;
+                color: #c6c6c6 !important;
             }
         }
     }
-}
 
-.report-row {
-    margin-bottom: 20px;
-
-    .report-row-a {
-        float: right;
-        line-height: 32px;
-
-        .report-row-a-icon {
-            transform: rotate(-90deg);
-            font-size: 16px;
-            margin-right: 2px;
+    .report-content-editor {
+        flex: 1;
+        .ivu-form-item-content {
+            display: flex;
+            height: 100%;
+            .teditor-wrapper {
+                display: flex;
+                flex: 1;
+            }
         }
     }
 
-    .report-bottom {
-        height: 38px;
-        line-height: 36px;
-        min-width: 120px;
-    }
-
-    .ivu-input[disabled] {
-        color: #666666;
+    .report-foot {
+        margin-bottom: 0;
+        .report-bottom {
+            height: 38px;
+            line-height: 36px;
+            min-width: 120px;
+        }
     }
 }
 

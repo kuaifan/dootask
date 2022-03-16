@@ -33,6 +33,12 @@ export default {
     methods: {
         saveSuccess(data) {
             this.detail = data;
+            if (this.$isSubElectron) {
+                $A.Electron.sendMessage('sendForwardMain', {
+                    channel: 'reportSaveSuccess',
+                    data,
+                });
+            }
         }
     }
 }

@@ -1,70 +1,51 @@
 <template>
-    <Form class="report-box" label-position="top" @submit.native.prevent>
-        <Row class="report-row">
-            <Col span="2">
-                <p class="report-titles">{{ $L("汇报类型") }}</p>
-            </Col>
-            <Col span="12">
-                <RadioGroup type="button" button-style="solid" v-model="reportData.type" @on-change="typeChange" class="report-radiogroup" :readonly="id > 0">
-                    <Radio label="weekly" :disabled="id > 0 && reportData.type =='daily'">{{ $L("周报") }}</Radio>
-                    <Radio label="daily" :disabled="id > 0 && reportData.type =='weekly'">{{ $L("日报") }}</Radio>
-                </RadioGroup>
-                <ButtonGroup class="report-buttongroup" v-if="id === 0">
-                    <ETooltip class="report-poptip" :content="prevCycleText" placement="bottom">
-                        <Button type="primary" @click="prevCycle">
-                            <Icon type="ios-arrow-back" />
-                        </Button>
-                    </ETooltip>
-                    <div class="report-buttongroup-vertical"></div>
-                    <ETooltip class="report-poptip" :disabled="reportData.offset >= 0" :content="nextCycleText" placement="bottom">
-                        <Button type="primary" @click="nextCycle" :disabled="reportData.offset >= 0">
-                            <Icon type="ios-arrow-forward" />
-                        </Button>
-                    </ETooltip>
-                </ButtonGroup>
-            </Col>
-        </Row>
-        <Row class="report-row">
-            <Col span="2">
-                <p class="report-titles">{{ $L("汇报名称") }}</p>
-            </Col>
-            <Col span="22">
-                <Input v-model="reportData.title" disabled/>
-            </Col>
-        </Row>
-        <Row class="report-row">
-            <Col span="2">
-                <p class="report-titles">{{ $L("汇报对象") }}</p>
-            </Col>
-            <Col span="22">
-                <div class="report-users">
-                    <UserInput
-                        v-model="reportData.receive"
-                        :disabledChoice="[userId]"
-                        :placeholder="$L('选择接收人')"
-                        :transfer="false"/>
-                    <a class="report-row-a" href="javascript:void(0);" @click="getLastSubmitter">
-                        <Icon class="report-row-a-icon" type="ios-share-outline" />{{ $L("使用我上次的汇报对象") }}
-                    </a>
-                </div>
-            </Col>
-        </Row>
-        <Row class="report-row report-row-content">
-            <Col span="2">
-                <p class="report-titles">{{ $L("汇报内容") }}</p>
-            </Col>
-            <Col span="22">
-                <FormItem class="report-row-content-editor">
-                    <TEditor v-model="reportData.content" height="100%"/>
-                </FormItem>
-            </Col>
-        </Row>
-        <Row class="report-row report-row-foot">
-            <Col span="2"></Col>
-            <Col span="4">
-                <Button type="primary" @click="handleSubmit" class="report-bottom">{{$L(id > 0 ? '修改' : '提交')}}</Button>
-            </Col>
-        </Row>
+    <Form class="report-edit" label-width="auto" @submit.native.prevent>
+        <FormItem :label="$L('汇报类型')">
+            <RadioGroup
+                type="button"
+                button-style="solid"
+                v-model="reportData.type"
+                @on-change="typeChange"
+                class="report-radiogroup"
+                :readonly="id > 0">
+                <Radio label="weekly" :disabled="id > 0 && reportData.type =='daily'">{{ $L("周报") }}</Radio>
+                <Radio label="daily" :disabled="id > 0 && reportData.type =='weekly'">{{ $L("日报") }}</Radio>
+            </RadioGroup>
+            <ButtonGroup v-if="id === 0" class="report-buttongroup">
+                <ETooltip :content="prevCycleText" placement="bottom">
+                    <Button type="primary" @click="prevCycle">
+                        <Icon type="ios-arrow-back" />
+                    </Button>
+                </ETooltip>
+                <div class="report-buttongroup-vertical"></div>
+                <ETooltip :disabled="reportData.offset >= 0" :content="nextCycleText" placement="bottom">
+                    <Button type="primary" @click="nextCycle" :disabled="reportData.offset >= 0">
+                        <Icon type="ios-arrow-forward" />
+                    </Button>
+                </ETooltip>
+            </ButtonGroup>
+        </FormItem>
+        <FormItem :label="$L('汇报名称')">
+            <Input v-model="reportData.title" disabled/>
+        </FormItem>
+        <FormItem :label="$L('汇报对象')">
+            <div class="report-users">
+                <UserInput
+                    v-model="reportData.receive"
+                    :disabledChoice="[userId]"
+                    :placeholder="$L('选择接收人')"
+                    :transfer="false"/>
+                <a class="report-user-link" href="javascript:void(0);" @click="getLastSubmitter">
+                    <Icon type="ios-share-outline" />{{ $L("使用我上次的汇报对象") }}
+                </a>
+            </div>
+        </FormItem>
+        <FormItem :label="$L('汇报内容')" class="report-content-editor">
+            <TEditor v-model="reportData.content" height="100%"/>
+        </FormItem>
+        <FormItem class="report-foot">
+            <Button type="primary" @click="handleSubmit" class="report-bottom">{{$L(id > 0 ? '修改' : '提交')}}</Button>
+        </FormItem>
     </Form>
 </template>
 
