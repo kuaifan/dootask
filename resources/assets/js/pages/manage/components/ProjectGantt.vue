@@ -16,7 +16,7 @@
                     :name="item.id"
                     :class="{'dropdown-active':filtrProjectId == item.id}">
                     {{ item.name }}
-                    <span v-if="item.tasks">({{ item.tasks.length }})</span>
+                    <span v-if="item.tasks">({{ filtrLength(item.tasks) }})</span>
                 </DropdownItem>
             </DropdownMenu>
         </Dropdown>
@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import {mapState} from "vuex";
+import {mapGetters, mapState} from "vuex";
 import GanttView from "../../../components/GanttView";
 
 export default {
@@ -48,6 +48,9 @@ export default {
     props: {
         projectColumn: {
             default: []
+        },
+        flowInfo: {
+            default: {}
         },
     },
 
@@ -105,12 +108,18 @@ export default {
     computed: {
         ...mapState(['userId', 'windowWidth', 'taskPriority']),
 
+        ...mapGetters(['projectParameter']),
+
         menuWidth() {
             return this.windowWidth < 1440 ? 180 : 260;
         },
 
         dropStyle() {
             return this.windowWidth < 1440 ? {left: '142px'} : {};
+        },
+
+        completedTask() {
+            return this.projectParameter('completedTask');
         }
     },
 
@@ -120,6 +129,15 @@ export default {
                 this.initData();
             },
             deep: true,
+        },
+        flowInfo: {
+            handler() {
+                this.initData();
+            },
+            deep: true,
+        },
+        completedTask() {
+            this.initData();
         }
     },
 
@@ -127,6 +145,18 @@ export default {
         initData() {
             this.lists = [];
             this.projectColumn && this.projectColumn.some(this.checkAdd);
+        },
+
+        filtrLength(list) {
+            return list.filter(taskData => {
+                if (taskData.complete_at && !this.completedTask) {
+                    return false;
+                }
+                if (this.flowInfo.value > 0 && taskData.flow_item_id !== this.flowInfo.value) {
+                    return false;
+                }
+                return true
+            }).length
         },
 
         checkAdd(item) {
@@ -141,18 +171,20 @@ export default {
                 let start = times.start;
                 let end = times.end;
                 //
-                let color = '#058ce4';
-                if (taskData.complete_at) {
-                    return;
-                } else {
-                    // 等级颜色
-                    this.taskPriority.some(level => {
-                        if (level.priority === taskData.p_level) {
-                            color = level.color;
-                            return true;
-                        }
-                    });
+                if (taskData.complete_at && !this.completedTask) {
+                    return false;
                 }
+                if (this.flowInfo.value > 0 && taskData.flow_item_id !== this.flowInfo.value) {
+                    return false;
+                }
+                // 等级颜色
+                let color = '#058ce4';
+                this.taskPriority.some(level => {
+                    if (level.priority === taskData.p_level) {
+                        color = level.color;
+                        return true;
+                    }
+                });
                 //
                 let tempTime = {start, end};
                 let bakTime = $A.cloneJSON(tempTime)

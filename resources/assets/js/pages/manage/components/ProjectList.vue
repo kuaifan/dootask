@@ -315,7 +315,7 @@
         </div>
         <div v-else-if="tabTypeActive === 'gantt'" class="project-gantt">
             <!--甘特图-->
-            <ProjectGantt :projectColumn="columnList"/>
+            <ProjectGantt :projectColumn="columnList" :flowInfo="flowInfo"/>
         </div>
         <!--项目设置-->
         <Modal
@@ -1302,6 +1302,7 @@ export default {
         },
 
         getFlowData() {
+            this.flowInfo = {}
             this.$store.dispatch("call", {
                 url: 'project/flow/list',
                 data: {
