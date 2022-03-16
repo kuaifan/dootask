@@ -17,6 +17,34 @@
     </div>
 </template>
 
+<style lang="scss" scoped>
+.valid-wrap {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .valid-box {
+        width: 500px;
+        background-color: #fff;
+        padding: 5px 15px 20px 15px;
+        border-radius: 10px;
+
+        .valid-title {
+            border-bottom: 1px solid #e8eaec;
+            padding: 14px 16px;
+            line-height: 1;
+        }
+
+        .validation-text {
+            padding: 10px;
+            color: #333;
+            font-size: 14px;
+        }
+    }
+}
+</style>
 <script>
 export default {
     data() {
@@ -56,30 +84,3 @@ export default {
     },
 }
 </script>
-<style lang="scss">
-.valid-wrap {
-    height: 100vh;
-    width: 100vw;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.valid-box {
-    width: 500px;
-    background-color: #fff;
-    padding: 5px 15px 20px 15px;
-    border-radius: 10px;
-
-    .valid-title {
-        border-bottom: 1px solid #e8eaec;
-        padding: 14px 16px;
-        line-height: 1;
-    }
-
-    .validation-text{
-        padding: 10px;
-        color: #333;
-        font-size: 14px;
-    }
-}
-</style>

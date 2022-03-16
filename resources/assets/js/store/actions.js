@@ -1003,7 +1003,7 @@ export default {
             state.cacheTasks.filter(task => task.parent_id == id).some(childTask => {
                 let cIndex = state.cacheTasks.findIndex(task => task.id == childTask.id);
                 if (cIndex > -1) {
-                    project_ids.push(state.cacheTasks[index].project_id)
+                    project_ids.push(childTask.project_id)
                     state.cacheTasks.splice(cIndex, 1);
                 }
             })

@@ -89,17 +89,11 @@ export default {
             this.$emit("on-read");
             if (this.$Electron) {
                 let config = {
-                    title: row.title,
+                    title: this.formatName(row.title),
                     titleFixed: true,
                     parent: null,
-                    width: Math.min(window.screen.availWidth, this.$el.clientWidth + 72),
-                    height: Math.min(window.screen.availHeight, this.$el.clientHeight + 72),
-                    minWidth: 600,
-                    minHeight: 450,
-                };
-                if (this.hasOpenDialog) {
-                    config.minWidth = 800;
-                    config.minHeight = 600;
+                    width: Math.min(window.screen.availWidth, 1440),
+                    height: Math.min(window.screen.availHeight, 900),
                 }
                 this.$Electron.sendMessage('windowRouter', {
                     name: 'report-' + row.id,
@@ -119,14 +113,8 @@ export default {
                     title: title,
                     titleFixed: true,
                     parent: null,
-                    width: Math.min(window.screen.availWidth, this.$el.clientWidth + 72),
-                    height: Math.min(window.screen.availHeight, this.$el.clientHeight + 72),
-                    minWidth: 600,
-                    minHeight: 450,
-                };
-                if (this.hasOpenDialog) {
-                    config.minWidth = 800;
-                    config.minHeight = 600;
+                    width: Math.min(window.screen.availWidth, 1440),
+                    height: Math.min(window.screen.availHeight, 900),
                 }
                 this.$Electron.sendMessage('windowRouter', {
                     name: 'report-' + id,

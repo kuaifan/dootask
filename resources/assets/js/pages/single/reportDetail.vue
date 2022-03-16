@@ -17,7 +17,6 @@ import ReportDetail from "../manage/components/ReportDetail";
 
 export default {
     components: {ReportDetail},
-    name: "reportDetail",
     data() {
         return {
             detailData: {},
@@ -47,7 +46,3 @@ export default {
     }
 }
 </script>
-
-<style scoped>
-
-</style>

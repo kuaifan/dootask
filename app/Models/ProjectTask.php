@@ -1218,31 +1218,29 @@ class ProjectTask extends AbstractModel
      * 获取任务（会员有任务权限 或 会员存在项目内）
      * @param int $task_id
      * @param bool $archived true:仅限未归档, false:仅限已归档, null:不限制
+     * @param bool $trashed true:仅限未删除, false:仅限已删除, null:不限制
      * @param int|bool $permission 0|false:不限制, 1|true:限制项目负责人、任务负责人、协助人员及任务创建者, 2:已有负责人才限制true (子任务时如果是主任务负责人也可以)
      * @param array $with
-     * @param bool $getTrashed
      * @return self
      */
-    public static function userTask($task_id, $archived = true, $permission = 0, $with = [], $getTrashed = false)
+    public static function userTask($task_id, $archived = true, $trashed = true, $permission = false, $with = [])
     {
         $builder = self::with($with)->allData()->where("project_tasks.id", intval($task_id));
-        if ($getTrashed) {
+        if ($trashed === false) {
+            $builder->onlyTrashed();
+        } elseif ($trashed === null) {
             $builder->withTrashed();
         }
         $task = $builder->first();
         //
         if (empty($task)) {
-            if(self::whereId(intval($task_id))->withTrashed()->exists()){
-                throw new ApiException('任务已删除，不可编辑', [ 'task_id' => $task_id ], -4002);
-            }else{
-                throw new ApiException('任务不存在', [ 'task_id' => $task_id ], -4002);
-            }
+            throw new ApiException('任务不存在', ['task_id' => $task_id], -4002);
         }
         if ($archived === true && $task->archived_at != null) {
-            throw new ApiException('任务已归档', [ 'task_id' => $task_id ]);
+            throw new ApiException('任务已归档', ['task_id' => $task_id]);
         }
         if ($archived === false && $task->archived_at == null) {
-            throw new ApiException('任务未归档', [ 'task_id' => $task_id ]);
+            throw new ApiException('任务未归档', ['task_id' => $task_id]);
         }
         //
         try {

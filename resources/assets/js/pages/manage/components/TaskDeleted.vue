@@ -97,23 +97,26 @@ export default {
         initLanguage() {
             this.columns = [
                 {
-                    title: this.$L('ID'),
-                    minWidth: 50,
-                    maxWidth: 70,
+                    title: 'ID',
                     key: 'id',
+                    width: 80,
+                    render: (h, {row, column}) => {
+                        return h('TableAction', {
+                            props: {
+                                column: column,
+                                align: 'left'
+                            }
+                        }, [
+                            h("div", row.id),
+                        ]);
+                    }
                 },
                 {
                     title: this.$L('任务名称'),
                     key: 'name',
                     minWidth: 200,
                     render: (h, {row}) => {
-                        return h('AutoTip', {
-                            on: {
-                                'on-click': () => {
-                                    this.$store.dispatch("openTask", row);
-                                }
-                            }
-                        }, row.name);
+                        return h('AutoTip', row.name);
                     }
                 },
                 {
@@ -149,18 +152,6 @@ export default {
                     width: 100,
                     render: (h, params) => {
                         const vNodes = [
-                            h('span', {
-                                style: {
-                                    fontSize: '13px',
-                                    cursor: 'pointer',
-                                    color: '#8bcf70',
-                                },
-                                on: {
-                                    'click': () => {
-                                        this.$store.dispatch("openTask", params.row);
-                                    }
-                                },
-                            }, this.$L('查看')),
                             h('Poptip', {
                                 props: {
                                     title: this.$L('你确定要还原删除吗？'),
@@ -172,7 +163,6 @@ export default {
                                     fontSize: '13px',
                                     cursor: 'pointer',
                                     color: '#8bcf70',
-                                    marginLeft: "8px"
                                 },
                                 on: {
                                     'on-ok': () => {

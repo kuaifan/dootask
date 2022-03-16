@@ -52,7 +52,7 @@
                                 <Icon type="ios-filing" />{{$L(task.archived_at ? '还原归档' : '归档')}}
                             </div>
                         </EDropdownItem>
-                        <EDropdownItem command="remove" v-if="!task.deleted_at">
+                        <EDropdownItem command="remove">
                             <div class="item hover-del">
                                 <Icon type="md-trash" />{{$L('删除')}}
                             </div>

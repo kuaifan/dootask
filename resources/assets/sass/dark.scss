@@ -307,38 +307,40 @@ body.dark-mode-reverse {
         }
     }
 
-    .page-warp {
-        background-color: #efefef;
-        .page-header {
-            .header-nav {
-                .header-nav-box {
-                    .header-right-one {
-                        .header-right-one-dropdown {
+    .page-index {
+        .page-warp {
+            background-color: #efefef;
+            .page-header {
+                .header-nav {
+                    .header-nav-box {
+                        .header-right-one {
+                            .header-right-one-dropdown {
+                                color: #000000;
+                            }
+                        }
+                        .header-right-two {
                             color: #000000;
                         }
-                    }
-                    .header-right-two {
-                        color: #000000;
-                    }
-                    .header-right-four {
-                        .ivu-dropdown{
-                            .ivu-dropdown-rel{
-                                .header-right-one-dropdown {
-                                    color: #000000;
+                        .header-right-four {
+                            .ivu-dropdown{
+                                .ivu-dropdown-rel{
+                                    .header-right-one-dropdown {
+                                        color: #000000;
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-            .header-content {
-                .header-title, .header-tips {
-                    color: #000000;
+                .header-content {
+                    .header-title, .header-tips {
+                        color: #000000;
+                    }
                 }
             }
-        }
-        .page-header-bottom{
-            background-color: #efefef;
+            .page-header-bottom{
+                background-color: #efefef;
+            }
         }
     }
 }

@@ -17,10 +17,5 @@ import ReportEdit from "../manage/components/ReportEdit"
 
 export default {
     components: {ReportEdit},
-    name: "reportEdit"
 }
 </script>
-
-<style scoped>
-
-</style>

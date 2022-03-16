@@ -87,9 +87,6 @@
                 <div v-if="taskDetail.archived_at" class="flow">
                     <span class="archived" @click.stop="openMenu(taskDetail)">{{$L('已归档')}}</span>
                 </div>
-                <div v-if="taskDetail.deleted_at" class="flow">
-                    <span class="archived">{{$L('已删除')}}</span>
-                </div>
                 <div class="nav">
                     <p v-if="projectName"><span>{{projectName}}</span></p>
                     <p v-if="columnName"><span>{{columnName}}</span></p>
@@ -152,7 +149,6 @@
                 <div class="desc">
                     <TEditor
                         ref="desc"
-                        :readOnly="taskDetail.deleted_at ? true : false"
                         :value="taskContent"
                         :plugins="taskPlugins"
                         :options="taskOptions"
@@ -387,16 +383,16 @@
                 <div class="head">
                     <Icon class="icon" type="ios-chatbubbles-outline" />
                     <div class="nav">
-                        <p :class="{active:navActive=='dialog'}" v-if="!taskDetail.deleted_at" @click="navActive='dialog'">{{$L('聊天')}}</p>
-                        <p :class="{active:navActive=='log' || taskDetail.deleted_at}" @click="navActive='log'">{{$L('动态')}}</p>
-                        <div v-if="navActive=='log' || taskDetail.deleted_at" class="refresh">
+                        <p :class="{active:navActive=='dialog'}" @click="navActive='dialog'">{{$L('聊天')}}</p>
+                        <p :class="{active:navActive=='log'}" @click="navActive='log'">{{$L('动态')}}</p>
+                        <div v-if="navActive=='log'" class="refresh">
                             <Loading v-if="logLoadIng"/>
                             <Icon v-else type="ios-refresh" @click="getLogLists"></Icon>
                         </div>
                     </div>
                 </div>
-                <ProjectLog v-if="(navActive=='log' || taskDetail.deleted_at) && taskId > 0" ref="log" :task-id="taskDetail.id" :show-load="false" @on-load-change="logLoadChange"/>
-                <div v-else-if="!taskDetail.deleted_at" class="no-dialog"
+                <ProjectLog v-if="navActive=='log' && taskId > 0" ref="log" :task-id="taskDetail.id" :show-load="false" @on-load-change="logLoadChange"/>
+                <div v-else class="no-dialog"
                      @drop.prevent="taskPasteDrag($event, 'drag')"
                      @dragover.prevent="taskDragOver(true, $event)"
                      @dragleave.prevent="taskDragOver(false, $event)">
@@ -619,7 +615,7 @@ export default {
         },
 
         hasOpenDialog() {
-            return this.taskDetail.dialog_id > 0 && !this.windowMax768 && !this.taskDetail.deleted_at;
+            return this.taskDetail.dialog_id > 0 && !this.windowMax768;
         },
 
         dialogStyle() {

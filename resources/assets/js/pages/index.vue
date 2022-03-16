@@ -202,14 +202,11 @@
 
 <script>
 import {mapState} from "vuex";
-import RightBottom from "../components/RightBottom";
 export default {
-    components:{RightBottom},
     data() {
         return {
             needStartHome: false,
             homeFooter: '',
-
         };
     },
     computed: {
@@ -229,25 +226,13 @@ export default {
         },
 
         login() {
-            this.goForward(
-                {
-                    path: `/login`,
-                },
-                false
-            );
+            this.goForward({path: `/login`}, false);
         },
 
         register() {
-            this.goForward(
-                {
-                    path: `/login`,
-                    query: {
-                        type: "reg",
-                    },
-                },
-                false
-            );
+            this.goForward({path: `/login`, query: {type: "reg"}}, false);
         },
+
         getNeedStartHome() {
             this.$store.dispatch("call", {
                 url: "system/get/starthome",

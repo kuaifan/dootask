@@ -228,27 +228,6 @@
                         }
                     }
                 }
-
-                .project-gantt-item {
-                    padding-left: 5px;
-                    display: flex;
-                    cursor: pointer;
-                    &.active {
-                        color: $primary-color;
-                    }
-
-                    .force-right {
-                        &.act {
-                            color: #2A53FF;
-                        }
-                    }
-
-                    .gantt-name {
-                        font-size: 13px;
-                        padding-top: 6%;
-                        cursor: pointer;
-                    }
-                }
             }
         }
     }

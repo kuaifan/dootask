@@ -290,7 +290,7 @@
             :value="taskId > 0"
             :styles="{
                 width: '90%',
-                maxWidth: taskData.dialog_id && !taskData.deleted_at ? '1200px' : '700px'
+                maxWidth: taskData.dialog_id ? '1200px' : '700px'
             }"
             :mask-closable="false"
             :footer-hide="true"

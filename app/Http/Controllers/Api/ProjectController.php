@@ -895,8 +895,9 @@ class ProjectController extends AbstractController
      * - yes：已归档
      * - no：未归档（默认）
      * @apiParam {String} [deleted]          是否读取已删除
-     * - yes：是
-     * - no：否（默认）
+     * - all：所有
+     * - yes：已删除
+     * - no：未删除（默认）
      * @apiParam {Object} sorts              排序方式
      * - sorts.complete_at  完成时间：asc|desc
      * - sorts.archived_at  归档时间：asc|desc
@@ -931,9 +932,10 @@ class ProjectController extends AbstractController
         //
         $scopeAll = false;
         if ($parent_id > 0) {
-            ProjectTask::userTask($parent_id, str_replace(['all', 'yes', 'no'], [null, false, true], $archived), false, [], true);
+            $isArchived = str_replace(['all', 'yes', 'no'], [null, false, true], $archived);
+            $isDeleted = str_replace(['all', 'yes', 'no'], [null, false, true], $deleted);
+            ProjectTask::userTask($parent_id, $isArchived, $isDeleted);
             $scopeAll = true;
-            $builder->withTrashed();
             $builder->where('project_tasks.parent_id', $parent_id);
         } elseif ($parent_id === -1) {
             $builder->where('project_tasks.parent_id', 0);
@@ -965,17 +967,19 @@ class ProjectController extends AbstractController
         //
         if ($complete === 'yes') {
             $builder->whereNotNull('project_tasks.complete_at');
-        } elseif ($complete === 'no' && $deleted == 'no') {
+        } elseif ($complete === 'no') {
             $builder->whereNull('project_tasks.complete_at');
         }
         //
         if ($archived == 'yes') {
             $builder->whereNotNull('project_tasks.archived_at');
-        } elseif ($archived == 'no' && $deleted == 'no') {
+        } elseif ($archived == 'no') {
             $builder->whereNull('project_tasks.archived_at');
         }
         //
-        if ($deleted == 'yes') {
+        if ($deleted == 'all') {
+            $builder->withTrashed();
+        } elseif ($deleted == 'yes') {
             $builder->onlyTrashed();
         }
         //
@@ -1221,7 +1225,8 @@ class ProjectController extends AbstractController
         $task_id = intval(Request::input('task_id'));
         $archived = Request::input('archived', 'no');
         //
-        $task = ProjectTask::userTask($task_id, str_replace(['all', 'yes', 'no'], [null, false, true], $archived), false, ['taskUser', 'taskTag'], true);
+        $isArchived = str_replace(['all', 'yes', 'no'], [null, false, true], $archived);
+        $task = ProjectTask::userTask($task_id, $isArchived, true, false, ['taskUser', 'taskTag']);
         //
         $data = $task->toArray();
         $data['project_name'] = $task->project?->name;
@@ -1249,7 +1254,7 @@ class ProjectController extends AbstractController
         //
         $task_id = intval(Request::input('task_id'));
         //
-        $task = ProjectTask::userTask($task_id, null, false, [], true);
+        $task = ProjectTask::userTask($task_id, null);
         //
         if (empty($task->content)) {
             return Base::retSuccess('success', json_decode('{}'));
@@ -1277,7 +1282,7 @@ class ProjectController extends AbstractController
         //
         $task_id = intval(Request::input('task_id'));
         //
-        $task = ProjectTask::userTask($task_id, null, false, [], true);
+        $task = ProjectTask::userTask($task_id, null);
         //
         return Base::retSuccess('success', $task->taskFile);
     }
@@ -1307,7 +1312,7 @@ class ProjectController extends AbstractController
             return Base::retError('文件不存在或已被删除');
         }
         //
-        $task = ProjectTask::userTask($file->task_id, true, true);
+        $task = ProjectTask::userTask($file->task_id, true, true, true);
         //
         $task->pushMsg('filedelete', $file);
         $file->delete();
@@ -1486,7 +1491,7 @@ class ProjectController extends AbstractController
         $task_id = intval(Request::input('task_id'));
         $name = Request::input('name');
         //
-        $task = ProjectTask::userTask($task_id, true, true);
+        $task = ProjectTask::userTask($task_id, true, true, true);
         if ($task->complete_at) {
             return Base::retError('主任务已完成无法添加子任务');
         }
@@ -1538,7 +1543,7 @@ class ProjectController extends AbstractController
         parse_str(Request::getContent(), $data);
         $task_id = intval($data['task_id']);
         //
-        $task = ProjectTask::userTask($task_id, true, 2);
+        $task = ProjectTask::userTask($task_id, true, true, 2);
         // 更新任务
         $updateMarking = [];
         $task->updateTask($data, $updateMarking);
@@ -1621,7 +1626,7 @@ class ProjectController extends AbstractController
         $task_id = intval(Request::input('task_id'));
         $type = Request::input('type', 'add');
         //
-        $task = ProjectTask::userTask($task_id, $type == 'add', true);
+        $task = ProjectTask::userTask($task_id, $type == 'add', true, true);
         //
         if ($task->parent_id > 0) {
             return Base::retError('子任务不支持此功能');
@@ -1663,7 +1668,7 @@ class ProjectController extends AbstractController
         $task_id = intval(Request::input('task_id'));
         $type = Request::input('type', 'delete');
         //
-        $task = ProjectTask::userTask($task_id, null, true, [], $type === 'recovery');
+        $task = ProjectTask::userTask($task_id, null, $type !== 'recovery', true);
         if ($type == 'recovery') {
             $task->recoveryTask();
             return Base::retSuccess('操作成功', ['id' => $task->id]);
@@ -1698,7 +1703,7 @@ class ProjectController extends AbstractController
             return Base::retError('记录不存在');
         }
         //
-        $task = ProjectTask::userTask($projectLog->task_id, true, true);
+        $task = ProjectTask::userTask($projectLog->task_id, true, true, true);
         //
         $record = $projectLog->record;
         if ($record['flow'] && is_array($record['flow'])) {
@@ -1933,7 +1938,7 @@ class ProjectController extends AbstractController
         //
         $builder = ProjectLog::select(["*"]);
         if ($task_id > 0) {
-            $task = ProjectTask::userTask($task_id, null,false,[],true);
+            $task = ProjectTask::userTask($task_id, null);
             $builder->whereTaskId($task->id);
         } else {
             $project = Project::userProject($project_id);
