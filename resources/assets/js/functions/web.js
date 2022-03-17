@@ -384,7 +384,7 @@
          * @returns {*|number}
          */
         getDialogUnread(dialog) {
-            return dialog ? (dialog.unread || dialog.is_mark_unread || 0) : 0
+            return dialog ? (dialog.unread || dialog.mark_unread || 0) : 0
         },
     });
 

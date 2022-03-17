@@ -90,7 +90,7 @@ class UsersController extends AbstractController
                 return $retError('帐号已停用...');
             }
             Cache::forget("code::" . $email);
-            if ($isRegVerify && $user->is_email_verity === 0) {
+            if ($isRegVerify && $user->email_verity === 0) {
                 UserEmailVerification::userEmailSend($user);
                 return $retError('您还没有验证邮箱，请先登录邮箱通过验证邮件验证邮箱');
             }
@@ -612,7 +612,7 @@ class UsersController extends AbstractController
                 'status' => 1
             ]);
         User::whereUserid($res->userid)->update([
-            'is_email_verity' => 1
+            'email_verity' => 1
         ]);
         return Base::retSuccess('绑定邮箱成功');
     }

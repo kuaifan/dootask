@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
 /**
- * App\Model\AbstractModel
+ * App\Models\AbstractModel
  *
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel newQuery()

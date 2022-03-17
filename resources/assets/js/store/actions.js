@@ -2093,7 +2093,7 @@ export default {
         let dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
         if (dialog && dialog.unread > 0) {
             dialog.unread--
-            dialog.is_mark_unread = 0
+            dialog.mark_unread = 0
             dispatch("saveDialog", dialog)
         }
         //

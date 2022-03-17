@@ -41,7 +41,7 @@ class DialogController extends AbstractController
     {
         $user = User::auth();
         //
-        $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.is_mark_unread'])
+        $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
             ->where('u.userid', $user->userid)
             ->orderByDesc('u.top_at')
@@ -74,7 +74,7 @@ class DialogController extends AbstractController
         //
         $dialog_id = intval(Request::input('dialog_id'));
         //
-        $item = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.is_mark_unread'])
+        $item = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
             ->where('web_socket_dialogs.id', $dialog_id)
             ->where('u.userid', $user->userid)
@@ -156,9 +156,9 @@ class DialogController extends AbstractController
             $user->save();
         }
         //去掉标记未读
-        $isMarkDialogUser = WebSocketDialogUser::whereDialogId($dialog->id)->whereUserid($user->userid)->whereIsMarkUnread(1)->first();
+        $isMarkDialogUser = WebSocketDialogUser::whereDialogId($dialog->id)->whereUserid($user->userid)->whereMarkUnread(1)->first();
         if ($isMarkDialogUser) {
-            $isMarkDialogUser->is_mark_unread = 0;
+            $isMarkDialogUser->mark_unread = 0;
             $isMarkDialogUser->save();
         }
         //
@@ -531,12 +531,12 @@ class DialogController extends AbstractController
                     ->chunkById(100, function ($list) {
                         WebSocketDialogMsgRead::onlyMarkRead($list);
                     });
-                $dialogUser->is_mark_unread = 0;
+                $dialogUser->mark_unread = 0;
                 $dialogUser->save();
                 break;
 
             case 'unread':
-                $dialogUser->is_mark_unread = 1;
+                $dialogUser->mark_unread = 1;
                 $dialogUser->save();
                 break;
 
@@ -545,7 +545,7 @@ class DialogController extends AbstractController
         }
         return Base::retSuccess("success", [
             'id' => $dialogId,
-            'is_mark_unread' => $dialogUser->is_mark_unread,
+            'mark_unread' => $dialogUser->mark_unread,
         ]);
     }
 }

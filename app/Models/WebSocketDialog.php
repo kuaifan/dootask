@@ -118,7 +118,7 @@ class WebSocketDialog extends AbstractModel
         $dialog->last_msg = $last_msg;
         // 未读信息
         $dialog->unread = WebSocketDialogMsgRead::whereDialogId($dialog->id)->whereUserid($userid)->whereReadAt(null)->count();
-        $dialog->is_mark_unread = $dialog->is_mark_unread ?? WebSocketDialogUser::whereDialogId($dialog->id)->whereUserid($userid)->value('is_mark_unread');
+        $dialog->mark_unread = $dialog->mark_unread ?? WebSocketDialogUser::whereDialogId($dialog->id)->whereUserid($userid)->value('mark_unread');
         // 对话人数
         $builder = WebSocketDialogUser::whereDialogId($dialog->id);
         $dialog->people = $builder->count();
