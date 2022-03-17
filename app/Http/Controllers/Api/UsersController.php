@@ -592,7 +592,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/email/verification        13. 邮箱验证
+     * @api {get} api/users/email/verification          13. 邮箱验证
      *
      * @apiDescription 不需要token身份
      * @apiVersion 1.0.0
