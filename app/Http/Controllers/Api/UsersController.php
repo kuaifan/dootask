@@ -427,9 +427,12 @@ class UsersController extends AbstractController
      * @apiName lists
      *
      * @apiParam {Object} [keys]        搜索条件
+     * - keys.key               邮箱/昵称/职位（赋值后keys.email、keys.nickname、keys.profession失效）
      * - keys.email             邮箱
      * - keys.nickname          昵称
      * - keys.profession        职位
+     * - keys.identity          身份（如：admin、noadmin）
+     * - keys.email_verity      邮箱是否认证（如：yes、no）
      * @apiParam {Number} [page]        当前页，默认:1
      * @apiParam {Number} [pagesize]    每页显示数量，默认:20，最大:50
      *
@@ -445,14 +448,26 @@ class UsersController extends AbstractController
         //
         $keys = Request::input('keys');
         if (is_array($keys)) {
-            if ($keys['email']) {
-                $builder->where("email", "like", "%{$keys['email']}%");
-            }
-            if ($keys['nickname']) {
-                $builder->where("nickname", "like", "%{$keys['nickname']}%");
-            }
-            if ($keys['profession']) {
-                $builder->where("profession", "like", "%{$keys['profession']}%");
+            if ($keys['key']) {
+                if (str_contains($keys['key'], "@")) {
+                    $builder->where("email", "like", "%{$keys['key']}%");
+                } else {
+                    $builder->where(function($query) use ($keys) {
+                        $query->where("email", "like", "%{$keys['key']}%")
+                            ->orWhere("nickname", "like", "%{$keys['key']}%")
+                            ->orWhere("profession", "like", "%{$keys['key']}%");
+                    });
+                }
+            } else {
+                if ($keys['email']) {
+                    $builder->where("email", "like", "%{$keys['email']}%");
+                }
+                if ($keys['nickname']) {
+                    $builder->where("nickname", "like", "%{$keys['nickname']}%");
+                }
+                if ($keys['profession']) {
+                    $builder->where("profession", "like", "%{$keys['profession']}%");
+                }
             }
             if ($keys['identity']) {
                 if (Base::leftExists($keys['identity'], "no")) {
@@ -460,6 +475,11 @@ class UsersController extends AbstractController
                 } else {
                     $builder->where("identity", "like", "%,{$keys['identity']},%");
                 }
+            }
+            if ($keys['email_verity'] === 'yes') {
+                $builder->whereEmailVerity(1);
+            } elseif ($keys['email_verity'] === 'no') {
+                $builder->whereEmailVerity(0);
             }
         }
         $list = $builder->orderByDesc('userid')->paginate(Base::getPaginate(50, 20));

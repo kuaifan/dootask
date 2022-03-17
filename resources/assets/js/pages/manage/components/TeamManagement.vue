@@ -10,26 +10,10 @@
             <ul>
                 <li>
                     <div class="search-label">
-                        {{$L("邮箱")}}
+                        {{$L("关键词")}}
                     </div>
                     <div class="search-content">
-                        <Input v-model="keys.email" clearable/>
-                    </div>
-                </li>
-                <li>
-                    <div class="search-label">
-                        {{$L("昵称")}}
-                    </div>
-                    <div class="search-content">
-                        <Input v-model="keys.nickname" clearable/>
-                    </div>
-                </li>
-                <li>
-                    <div class="search-label">
-                        {{$L("职位/职称")}}
-                    </div>
-                    <div class="search-content">
-                        <Input v-model="keys.position" clearable/>
+                        <Input v-model="keys.key" :placeholder="$L('邮箱、昵称、职位')" clearable/>
                     </div>
                 </li>
                 <li>
@@ -37,12 +21,24 @@
                         {{$L("身份")}}
                     </div>
                     <div class="search-content">
-                        <Select v-model="keys.identity">
+                        <Select v-model="keys.identity" :placeholder="$L('请选择')">
                             <Option value="">{{$L('全部')}}</Option>
                             <Option value="admin">{{$L('管理员')}}</Option>
                             <Option value="disable">{{$L('禁用')}}</Option>
                             <Option value="noadmin">{{$L('非管理员')}}</Option>
                             <Option value="nodisable">{{$L('非禁用')}}</Option>
+                        </Select>
+                    </div>
+                </li>
+                <li>
+                    <div class="search-label">
+                        {{$L("邮箱认证")}}
+                    </div>
+                    <div class="search-content">
+                        <Select v-model="keys.email_verity" :placeholder="$L('请选择')">
+                            <Option value="">{{$L('全部')}}</Option>
+                            <Option value="yes">{{$L('已邮箱认证')}}</Option>
+                            <Option value="no">{{$L('未邮箱认证')}}</Option>
                         </Select>
                     </div>
                 </li>
@@ -133,7 +129,14 @@ export default {
                     minWidth: 100,
                     render: (h, {row}) => {
                         const arr = [h('AutoTip', row.email)];
-                        const identity = row.identity;
+                        const {email_verity, identity} = row;
+                        if (email_verity) {
+                            arr.push(h('Icon', {
+                                props: {
+                                    type: 'md-checkmark'
+                                }
+                            }))
+                        }
                         if (identity.includes("admin")) {
                             arr.push(h('Tag', {
                                 props: {

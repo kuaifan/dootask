@@ -35,6 +35,11 @@
         display: flex;
         align-items: center;
 
+        .ivu-icon {
+            color: $primary-color;
+            margin-left: 4px;
+        }
+
         .ivu-tag {
             height: 18px;
             line-height: 18px;
