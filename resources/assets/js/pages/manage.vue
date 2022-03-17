@@ -342,13 +342,6 @@
                 <Badge :count="unreadTotal"/>
             </div>
         </DragBallComponent>
-
-        <!--预览图片-->
-        <EImageViewer
-            v-if="previewImageList.length > 0"
-            :urlList="previewImageList"
-            :initialIndex="previewImageIndex"
-            :on-close="closePreviewImage"/>
     </div>
 </template>
 
@@ -491,9 +484,6 @@ export default {
 
             'clientNewVersion',
             'cacheTaskBrowse',
-
-            'previewImageList',
-            'previewImageIndex',
         ]),
 
         ...mapGetters(['taskData', 'dashboardTask']),
@@ -978,11 +968,6 @@ export default {
                 this.exportLoadIng--;
                 $A.modalError(msg);
             });
-        },
-
-        closePreviewImage() {
-            this.$store.state.previewImageIndex = 0;
-            this.$store.state.previewImageList = [];
         },
 
         notificationInit() {

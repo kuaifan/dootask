@@ -45,7 +45,6 @@ import {
     DropdownMenu,
     DropdownItem,
 } from 'element-ui';
-import ImageViewer from 'element-ui/packages/image/src/image-viewer';
 
 Vue.component('EAvatar', Avatar);
 Vue.component('ETooltip', Tooltip);
@@ -53,7 +52,6 @@ Vue.component('EPopover', Popover);
 Vue.component('EDropdown', Dropdown);
 Vue.component('EDropdownMenu', DropdownMenu);
 Vue.component('EDropdownItem', DropdownItem);
-Vue.component('EImageViewer', ImageViewer);
 
 const originalPush = VueRouter.prototype.push
 VueRouter.prototype.push = function push(location) {
