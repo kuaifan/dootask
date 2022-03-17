@@ -44,7 +44,7 @@
                 </div>
             </div>
         </div>
-        <Modal :title="$L('浏览图片空间的图片')" v-model="browseVisible" class="img-upload-modal" width="710">
+        <Modal :title="$L('浏览图片空间')" v-model="browseVisible" class="img-upload-modal" width="710">
             <div class="browse-load" v-if="isLoading">{{$L('加载中...')}}</div>
             <div class="browse-list" :class="httpType==='input'?'browse-list-disabled':''" ref="browselistbox">
                 <div v-if="browseList.length <= 0">{{$L('无内容')}}</div>

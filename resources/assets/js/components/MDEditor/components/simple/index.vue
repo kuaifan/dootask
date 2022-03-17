@@ -88,7 +88,7 @@
             <li v-if="tools.uploadImage" :name="$L('本地图片')">
                 <span @click="chooseImage" class="iconfont icon-upload-img"></span>
             </li>
-            <li v-if="tools.custom_image" :name="$L('浏览图片')">
+            <li v-if="tools.custom_image" :name="$L('图片空间')">
                 <span @click="custom_insertImage" class="iconfont icon-img"></span>
             </li>
             <li v-if="tools.custom_uploadImage" :name="$L('上传图片')">

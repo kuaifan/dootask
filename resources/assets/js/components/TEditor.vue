@@ -268,7 +268,7 @@
                                     }
                                 }, {
                                     type: 'menuitem',
-                                    text: this.$L('浏览图片'),
+                                    text: this.$L('图片空间'),
                                     onAction: () => {
                                         this.$refs.myUpload.browsePicture();
                                     }
@@ -283,7 +283,7 @@
                             }
                         });
                         editor.ui.registry.addMenuItem('browseImages', {
-                            text: this.$L('浏览图片'),
+                            text: this.$L('图片空间'),
                             onAction: () => {
                                 this.$refs.myUpload.browsePicture();
                             }
