@@ -16,7 +16,8 @@ export default {
     computed: {
         srcValue() {
             const {src} = this;
-            if (src.substring(0, 2) === "//" ||
+            if (src.substring(0, 10) === "data:image" ||
+                src.substring(0, 2) === "//" ||
                 src.substring(0, 7) === "http://" ||
                 src.substring(0, 8) === "https://" ||
                 src.substring(0, 6) === "ftp://" ||

@@ -1,9 +1,10 @@
 <template>
     <Modal
         :value="previewImageList.length > 0"
+        :mask="false"
         :mask-closable="false"
         :footer-hide="true"
-        :transition-names="['fade', 'fade']"
+        :transition-names="['', '']"
         fullscreen
         @on-visible-change="visibleChange"
         class-name="common-preview-image">
@@ -55,15 +56,6 @@ import {mapState} from "vuex";
 export default {
     name: 'PreviewImage',
     components: {PreviewImageView},
-
-    data() {
-        return {
-
-        }
-    },
-    mounted() {
-
-    },
     computed: {
         ...mapState([
             'previewImageIndex',

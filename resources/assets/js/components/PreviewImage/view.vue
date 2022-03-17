@@ -1,10 +1,10 @@
 <template>
-    <div ref="view" class="common-preview-view">
+    <div ref="view" class="common-preview-view no-dark-mode">
         <template v-if="!isSingle">
-            <div class="preview-view-prev" :class="{ 'is-disabled': !infinite && isFirst }">
+            <div class="preview-view-prev" :class="{ 'is-disabled': !infinite && isFirst }" @click="prev">
                 <i class="taskfont">&#xe72d;</i>
             </div>
-            <div class="preview-view-next" :class="{ 'is-disabled': !infinite && isLast }">
+            <div class="preview-view-next" :class="{ 'is-disabled': !infinite && isLast }" @click="next">
                 <i class="taskfont">&#xe733;</i>
             </div>
         </template>
@@ -19,7 +19,7 @@
                 <i class="taskfont" @click="handleActions('clocelise')">&#xe7a6;</i>
             </div>
         </div>
-        <div class="preview-view-canvas">
+        <div class="preview-view-canvas no-dark-mode">
             <img
                 v-for="(url, i) in urlList"
                 v-if="i === index"
@@ -42,6 +42,8 @@
     position: fixed;
     right: 0;
     top: 0;
+    background: rgba(0, 0, 0, .8);
+    backdrop-filter: blur(4px);
 
     .preview-view-prev,
     .preview-view-next {
