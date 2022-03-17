@@ -209,7 +209,7 @@ export default {
                 autoresize_bottom_margin: 2,
                 min_height: 200,
                 max_height: 380,
-                contextmenu: 'bold italic underline forecolor backcolor | codesample | uploadImages browseImages | preview screenload',
+                contextmenu: 'bold italic underline forecolor backcolor | codesample | uploadImages imagePreview | preview screenload',
                 valid_elements : 'a[href|target=_blank],em,strong/b,div[align],span[style],a,br,p,img[src|alt|witdh|height],pre[class],code',
                 toolbar: false
             },

@@ -235,7 +235,7 @@
                         },
                         insert: {
                             title: "Insert",
-                            items: "image link media addcomment pageembed template codesample inserttable | charmap emoticons hr | pagebreak nonbreaking anchor toc | insertdatetime | uploadImages browseImages | uploadFiles"
+                            items: "image link media addcomment pageembed template codesample inserttable | charmap emoticons hr | pagebreak nonbreaking anchor toc | insertdatetime | uploadImages | uploadFiles"
                         }
                     },
                     codesample_languages: [
@@ -262,13 +262,13 @@
                             fetch: (callback) => {
                                 let items = [{
                                     type: 'menuitem',
-                                    text: this.$L('上传图片'),
+                                    text: this.$L('上传本地图片'),
                                     onAction: () => {
                                         this.$refs.myUpload.handleClick();
                                     }
                                 }, {
                                     type: 'menuitem',
-                                    text: this.$L('图片空间'),
+                                    text: this.$L('浏览已上传图片'),
                                     onAction: () => {
                                         this.$refs.myUpload.browsePicture();
                                     }
@@ -276,16 +276,35 @@
                                 callback(items);
                             }
                         });
-                        editor.ui.registry.addMenuItem('uploadImages', {
+                        editor.ui.registry.addNestedMenuItem('uploadImages', {
+                            icon: 'image',
                             text: this.$L('上传图片'),
-                            onAction: () => {
-                                this.$refs.myUpload.handleClick();
+                            getSubmenuItems: () => {
+                                return [{
+                                    type: 'menuitem',
+                                    text: this.$L('上传本地图片'),
+                                    onAction: () => {
+                                        this.$refs.myUpload.handleClick();
+                                    }
+                                }, {
+                                    type: 'menuitem',
+                                    text: this.$L('浏览已上传图片'),
+                                    onAction: () => {
+                                        this.$refs.myUpload.browsePicture();
+                                    }
+                                }];
                             }
                         });
-                        editor.ui.registry.addMenuItem('browseImages', {
-                            text: this.$L('图片空间'),
+                        editor.ui.registry.addMenuItem('imagePreview', {
+                            text: this.$L('预览图片'),
                             onAction: () => {
-                                this.$refs.myUpload.browsePicture();
+                                const array = this.getValueImages();
+                                if (array.length === 0) {
+                                    $A.messageWarning("没有可预览的图片")
+                                    return;
+                                }
+                                this.$store.state.previewImageIndex = 0;
+                                this.$store.state.previewImageList = array;
                             }
                         });
                         editor.ui.registry.addButton('uploadFiles', {
@@ -481,6 +500,22 @@
                         this.insertImage(item.url);
                     }
                 }
+            },
+
+            getValueImages() {
+                let imgs = [];
+                let imgReg = /<img.*?(?:>|\/>)/gi;
+                let srcReg = /src=['"]?([^'"]*)['"]?/i;
+                let array = (this.getContent() + "").match(imgReg);
+                if (array) {
+                    for (let i = 0; i < array.length; i++) {
+                        let src = array[i].match(srcReg);
+                        if(src[1]){
+                            imgs.push(src[1]);
+                        }
+                    }
+                }
+                return imgs;
             },
 
             /********************文件上传部分************************/
