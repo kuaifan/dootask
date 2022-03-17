@@ -95,13 +95,13 @@
             </div>
             <div class="page-header-bottom">
                 <div class="page-header-bottoms">
-                    <ImgView :src="themeIsDark ? 'images/index/pic_black.png':'images/index/pic.png'"/>
+                    <ImgView :src="themeIsDark ? 'images/index/dark/1.png':'images/index/light/1.png'"/>
                 </div>
             </div>
             <div class="page-main">
                 <Row :class="windowWidth > 1200 ? 'page-main-row':'page-main-rows'">
                     <Col :class="windowWidth > 1200 ? 'page-main-img':'page-main-imgs'" :xs="24" :sm="24" :xl="12">
-                        <ImgView :src="themeIsDark ? 'images/index/pic1_black.png':'images/index/pic1.png'"/>
+                        <ImgView :src="themeIsDark ? 'images/index/dark/2.png':'images/index/light/2.png'"/>
                     </Col>
                     <Col class="page-main-text" :xs="24" :sm="24" :xl="12" v-if="windowWidth > 1200">
                         <ImgView src="images/index/square.png"/>
@@ -122,7 +122,7 @@
                     </Col>
 
                     <Col :class="windowWidth > 1200 ? 'page-main-img':'page-main-imgs'" :xs="24" :sm="24" :xl="12">
-                        <ImgView :src="themeIsDark ? 'images/index/pic2_black.png':'images/index/pic2.png'"/>
+                        <ImgView :src="themeIsDark ? 'images/index/dark/3.png':'images/index/light/3.png'"/>
                     </Col>
                     <Col class="page-main-text page-main-texts" :xs="24" :sm="24" :xl="12" v-if="windowWidth<=1200">
                         <h3><ImgView src="images/index/square.png"/>{{$L('强大易用的协同创作云文档')}}</h3>
@@ -132,7 +132,7 @@
 
                 <Row :class="windowWidth > 1200 ? 'page-main-row':'page-main-rows'">
                     <Col :class="windowWidth > 1200 ? 'page-main-img':'page-main-imgs'" :xs="24" :sm="24" :xl="12">
-                        <ImgView :src="themeIsDark ? 'images/index/pic3_black.png':'images/index/pic3.png'"/>
+                        <ImgView :src="themeIsDark ? 'images/index/dark/4.png':'images/index/light/4.png'"/>
                     </Col>
                     <Col class="page-main-text" :xs="24" :sm="24" :xl="12" v-if="windowWidth > 1200">
                         <ImgView src="images/index/square.png"/>
@@ -153,7 +153,7 @@
                     </Col>
 
                     <Col :class="windowWidth > 1200 ? 'page-main-img':'page-main-imgs'" :xs="24" :sm="24" :xl="12">
-                        <ImgView :src="themeIsDark ? 'images/index/pic4_black.png':'images/index/pic4.png'"/>
+                        <ImgView :src="themeIsDark ? 'images/index/dark/5.png':'images/index/light/5.png'"/>
                     </Col>
                     <Col class="page-main-text page-main-texts" :xs="24" :sm="24" :xl="12" v-if="windowWidth <= 1200">
                         <h3><ImgView src="images/index/square.png"/>{{$L('清晰直观的任务日历')}}</h3>
