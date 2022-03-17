@@ -21,7 +21,7 @@
                         {{$L("项目状态")}}
                     </div>
                     <div class="search-content">
-                        <Select v-model="keys.status">
+                        <Select v-model="keys.status" :placeholder="$L('请选择')">
                             <Option value="">{{$L('全部')}}</Option>
                             <Option value="unarchived">{{$L('未归档')}}</Option>
                             <Option value="archived">{{$L('已归档')}}</Option>
