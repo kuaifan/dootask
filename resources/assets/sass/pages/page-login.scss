@@ -22,6 +22,9 @@
             height: 68px;
             background: url("../images/logo.svg") no-repeat center center;
             background-size: contain;
+            &.can-click {
+                cursor: pointer;
+            }
         }
         .login-box {
             margin-top: 32px;

@@ -2,7 +2,7 @@
     <div class="page-login">
         <PageTitle :title="$L('登录')"/>
         <div class="login-body">
-            <div class="login-logo no-dark-mode"></div>
+            <div class="login-logo no-dark-mode" :class="{'can-click':needStartHome}" @click="goHome"></div>
             <div class="login-box">
                 <div class="login-title">{{welcomeTitle}}</div>
 
@@ -45,7 +45,11 @@
                                 </div>
                             </DropdownItem>
                             <DropdownMenu slot="list">
-                                <Dropdown-item v-for="(item, key) in themeList" :key="key" :name="item.value" :selected="themeMode === item.value">{{$L(item.name)}}</Dropdown-item>
+                                <DropdownItem
+                                    v-for="(item, key) in themeList"
+                                    :key="key"
+                                    :name="item.value"
+                                    :selected="themeMode === item.value">{{$L(item.name)}}</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
                         <Dropdown placement="right-end" @on-click="setLanguage">
@@ -56,7 +60,11 @@
                                 </div>
                             </DropdownItem>
                             <DropdownMenu slot="list">
-                                <Dropdown-item v-for="(item, key) in languageList" :key="key" :name="key" :selected="getLanguage() === key">{{item}}</Dropdown-item>
+                                <DropdownItem
+                                    v-for="(item, key) in languageList"
+                                    :key="key"
+                                    :name="key"
+                                    :selected="getLanguage() === key">{{item}}</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
                     </DropdownMenu>
@@ -88,7 +96,7 @@ export default {
             code: '',
             invite: '',
 
-            demoAccount: {},
+            needStartHome: false,
 
             needInvite: false,
 
@@ -97,6 +105,7 @@ export default {
     },
     mounted() {
         this.getDemoAccount();
+        this.getNeedStartHome();
         //
         if (this.$Electron) {
             this.chackServerUrl().catch(() => {});
@@ -168,6 +177,12 @@ export default {
         }
     },
     methods: {
+        goHome() {
+            if (this.needStartHome) {
+                this.goForward({name: 'index'});
+            }
+        },
+
         setTheme(mode) {
             this.$store.dispatch("setTheme", mode)
         },
@@ -179,13 +194,22 @@ export default {
             this.$store.dispatch("call", {
                 url: 'system/demo',
             }).then(({data}) => {
-                this.demoAccount = data;
                 if (data.account) {
                     this.email = data.account;
                     this.password = data.password;
                 }
             }).catch(() => {
-                this.demoAccount = {};
+                //
+            });
+        },
+
+        getNeedStartHome() {
+            this.$store.dispatch("call", {
+                url: "system/get/starthome",
+            }).then(({data}) => {
+                this.needStartHome = !!data.need_start;
+            }).catch(() => {
+                this.needStartHome = false;
             });
         },
 

@@ -28,6 +28,7 @@ import TagInput from './components/TagInput.vue'
 import TableAction from './components/TableAction.vue'
 import QuickEdit from './components/QuickEdit.vue'
 import UserAvatar from './components/UserAvatar.vue'
+import ImgView from './components/ImgView.vue'
 
 Vue.component('PageTitle', PageTitle);
 Vue.component('Loading', Loading);
@@ -36,6 +37,7 @@ Vue.component('TagInput', TagInput)
 Vue.component('TableAction', TableAction);
 Vue.component('QuickEdit', QuickEdit);
 Vue.component('UserAvatar', UserAvatar);
+Vue.component('ImgView', ImgView);
 
 import {
     Avatar,

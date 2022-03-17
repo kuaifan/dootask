@@ -48,6 +48,8 @@
                 }
             }
             .flow {
+                display: flex;
+                align-items: center;
                 margin-right: 10px;
                 > span {
                     font-size: 14px;
@@ -60,6 +62,9 @@
                     display: inline-block;
                     text-align: center;
                     cursor: pointer;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    overflow: hidden;
                     &.start,
                     &.archived {
                         background-color: rgba(38, 38, 38, 0.05);
