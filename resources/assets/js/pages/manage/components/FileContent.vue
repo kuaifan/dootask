@@ -62,7 +62,7 @@
 
 <script>
 import Vue from 'vue'
-import Minder from '../../../components/minder'
+import Minder from '../../../components/Minder'
 import {mapState} from "vuex";
 Vue.use(Minder)
 

@@ -58,7 +58,7 @@
 </style>
 <script>
 import Vue from 'vue'
-import Minder from '../../components/minder'
+import Minder from '../../components/Minder'
 Vue.use(Minder)
 
 const MDPreview = () => import('../../components/MDEditor/preview');

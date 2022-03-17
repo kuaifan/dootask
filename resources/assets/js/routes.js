@@ -49,7 +49,7 @@ export default [
                     {
                         name: 'manage-setting-system',
                         path: 'system',
-                        component: () => import('./pages/manage/setting/system/index.vue'),
+                        component: () => import('./pages/manage/setting/system.vue'),
                     },
                 ]
             },

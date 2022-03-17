@@ -18,10 +18,10 @@
 </template>
 
 <script>
-import SystemSetting from "./setting";
-import SystemTaskPriority from "./taskPriority";
-import SystemColumnTemplate from "./columnTemplate";
-import SystemEmailSetting from "./EmailSetting";
+import SystemSetting from "./components/SystemSetting";
+import SystemTaskPriority from "./components/SystemTaskPriority";
+import SystemColumnTemplate from "./components/SystemColumnTemplate";
+import SystemEmailSetting from "./components/SystemEmailSetting";
 
 export default {
     components: {SystemColumnTemplate, SystemTaskPriority, SystemSetting, SystemEmailSetting},

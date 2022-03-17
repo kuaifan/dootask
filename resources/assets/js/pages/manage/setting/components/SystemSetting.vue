@@ -64,12 +64,14 @@
                     <Radio label="open">{{$L('开启')}}</Radio>
                     <Radio label="close">{{$L('关闭')}}</Radio>
                 </RadioGroup>
-                <template v-if="formDatum.start_home == 'open'">
-                    <div class="form-tip">{{ $L('首页底部：首页底部网站备案号等信息') }}</div>
-                    <Input v-model="formDatum.home_footer" style="width:100%;margin-top:6px">
-                        <span slot="prepend">{{ $L('首页底部') }}</span>
-                    </Input>
-                </template>
+                <Input
+                    v-if="formDatum.start_home == 'open'"
+                    v-model="formDatum.home_footer"
+                    type="textarea"
+                    style="margin:8px 0 -8px"
+                    :rows="2"
+                    :autosize="{ minRows: 2, maxRows: 8 }"
+                    :placeholder="$L('首页底部：首页底部网站备案号等信息')"/>
             </FormItem>
         </Form>
         <div class="setting-footer">

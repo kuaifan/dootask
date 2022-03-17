@@ -179,10 +179,6 @@
             display: flex;
             flex-direction: column;
             padding: 0 !important;
-            h3 {
-                font-size: 16px;
-                margin-bottom: 15px;
-            }
             .ivu-form {
                 flex: 1;
                 padding: 24px 40px;
@@ -212,6 +208,33 @@
                             }
                             .setting-footer {
                                 margin: 0 -32px;
+                            }
+                            .email-setting-box {
+                                position: relative;
+                                padding: 36px 24px 4px;
+                                margin: 24px 0 12px;
+                                border-radius: 8px;
+                                border: 1px solid #eeeeee;
+                                transition: box-shadow 0.3s;
+                                &:hover {
+                                    box-shadow: 0 0 10px #e6ecfa;
+                                }
+                                h3 {
+                                    position: absolute;
+                                    top: 0;
+                                    left: 24px;
+                                    padding: 4px 10px;
+                                    border-radius: 4px;
+                                    display: inline-block;
+                                    background-color: #ffffff;
+                                    border: 1px solid #eeeeee;
+                                    font-size: 15px;
+                                    font-weight: 500;
+                                    transform: translateY(-50%);
+                                }
+                            }
+                            .email-setting-placeholder {
+                                height: 8px;
                             }
                         }
                     }

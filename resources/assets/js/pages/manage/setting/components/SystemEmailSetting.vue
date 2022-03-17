@@ -1,46 +1,52 @@
 <template>
-    <div class="setting-item submit">
+    <div class="setting-system-item">
         <Form ref="formData" :model="formData" :rules="ruleData" label-width="auto" @submit.native.prevent>
-            <h3>{{ $L('邮箱服务器设置') }}</h3>
-            <FormItem :label="$L('SMTP服务器')" prop="smtp_server">
-                <Input v-model="formData.smtp_server"/>
-            </FormItem>
-            <FormItem :label="$L('端口')" prop="port">
-                <Input :maxlength="20" v-model="formData.port"/>
-            </FormItem>
-            <FormItem :label="$L('账号')" prop="account">
-                <Input :maxlength="20" v-model="formData.account"/>
-            </FormItem>
-            <FormItem :label="$L('密码')" prop="password">
-                <Input :maxlength="20" v-model="formData.password"/>
-            </FormItem>
+            <div class="email-setting-box">
+                <h3>{{ $L('邮箱服务器设置') }}</h3>
+                <FormItem :label="$L('SMTP服务器')" prop="smtp_server">
+                    <Input v-model="formData.smtp_server"/>
+                </FormItem>
+                <FormItem :label="$L('端口')" prop="port">
+                    <Input :maxlength="20" v-model="formData.port"/>
+                </FormItem>
+                <FormItem :label="$L('账号')" prop="account">
+                    <Input :maxlength="20" v-model="formData.account"/>
+                </FormItem>
+                <FormItem :label="$L('密码')" prop="password">
+                    <Input :maxlength="20" v-model="formData.password" type="password"/>
+                </FormItem>
+            </div>
 
-            <h3>{{ $L('邮件通知设置') }}</h3>
-            <FormItem :label="$L('开启注册验证')" prop="reg_verify">
-                <RadioGroup v-model="formData.reg_verify">
-                    <Radio label="open">{{ $L('开启') }}</Radio>
-                    <Radio label="close">{{ $L('关闭') }}</Radio>
-                </RadioGroup>
-                <div v-if="formData.reg_verify == 'open'" class="form-tip">{{$L('开启后账号需验证通过才可登录')}}</div>
-            </FormItem>
-            <FormItem :label="$L('开启通知')" prop="notice">
-                <RadioGroup v-model="formData.notice">
-                    <Radio label="open">{{ $L('开启') }}</Radio>
-                    <Radio label="close">{{ $L('关闭') }}</Radio>
-                </RadioGroup>
-            </FormItem>
-            <template v-if="formData.notice == 'open'">
-                <FormItem :label="$L('任务提醒:')" prop="task_remind_hours">
-                    <label>{{ $L('到期前') }}</label>
-                    <InputNumber v-model="formData.task_remind_hours" :min="0.5" :step="0.5" @on-change="hoursChange"/>
-                    <label>{{ $L('小时') }}</label>
+            <div class="email-setting-placeholder"></div>
+
+            <div class="email-setting-box">
+                <h3>{{ $L('邮件通知设置') }}</h3>
+                <FormItem :label="$L('开启注册验证')" prop="reg_verify">
+                    <RadioGroup v-model="formData.reg_verify">
+                        <Radio label="open">{{ $L('开启') }}</Radio>
+                        <Radio label="close">{{ $L('关闭') }}</Radio>
+                    </RadioGroup>
+                    <div v-if="formData.reg_verify == 'open'" class="form-tip">{{$L('开启后账号需验证通过才可登录')}}</div>
                 </FormItem>
-                <FormItem :label="$L('第二次任务提醒:')" prop="task_remind_hours2">
-                    <label>{{ $L('到期后') }}</label>
-                    <InputNumber v-model="formData.task_remind_hours2" :min="0.5" :step="0.5" @on-change="hours2Change"/>
-                    <label>{{ $L('小时') }}</label>
+                <FormItem :label="$L('开启通知')" prop="notice">
+                    <RadioGroup v-model="formData.notice">
+                        <Radio label="open">{{ $L('开启') }}</Radio>
+                        <Radio label="close">{{ $L('关闭') }}</Radio>
+                    </RadioGroup>
                 </FormItem>
-            </template>
+                <template v-if="formData.notice == 'open'">
+                    <FormItem :label="$L('任务提醒:')" prop="task_remind_hours">
+                        <label>{{ $L('到期前') }}</label>
+                        <InputNumber v-model="formData.task_remind_hours" :min="0.5" :step="0.5" @on-change="hoursChange"/>
+                        <label>{{ $L('小时') }}</label>
+                    </FormItem>
+                    <FormItem :label="$L('第二次任务提醒:')" prop="task_remind_hours2">
+                        <label>{{ $L('到期后') }}</label>
+                        <InputNumber v-model="formData.task_remind_hours2" :min="0.5" :step="0.5" @on-change="hours2Change"/>
+                        <label>{{ $L('小时') }}</label>
+                    </FormItem>
+                </template>
+            </div>
         </Form>
         <div class="setting-footer">
             <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{ $L('提交') }}</Button>
