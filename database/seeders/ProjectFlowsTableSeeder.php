@@ -26,48 +26,48 @@ class ProjectFlowsTableSeeder extends Seeder
                 'id' => 1,
                 'project_id' => 2,
                 'name' => 'Default',
-                'created_at' => '2022-01-15 23:43:15',
-                'updated_at' => '2022-01-15 23:43:15',
+                'created_at' => seeders_at('2021-07-01 12:27:12'),
+                'updated_at' => seeders_at('2021-07-01 12:27:12'),
             ),
             1 =>
             array (
                 'id' => 2,
                 'project_id' => 3,
                 'name' => 'Default',
-                'created_at' => '2022-01-15 23:43:23',
-                'updated_at' => '2022-01-15 23:43:23',
+                'created_at' => seeders_at('2021-07-01 12:27:12'),
+                'updated_at' => seeders_at('2021-07-01 12:27:12'),
             ),
             2 =>
             array (
                 'id' => 3,
                 'project_id' => 4,
                 'name' => 'Default',
-                'created_at' => '2022-01-15 23:43:28',
-                'updated_at' => '2022-01-15 23:43:28',
+                'created_at' => seeders_at('2021-07-01 12:27:12'),
+                'updated_at' => seeders_at('2021-07-01 12:27:12'),
             ),
             3 =>
             array (
                 'id' => 4,
                 'project_id' => 5,
                 'name' => 'Default',
-                'created_at' => '2022-01-15 23:43:34',
-                'updated_at' => '2022-01-15 23:43:34',
+                'created_at' => seeders_at('2021-07-01 12:27:12'),
+                'updated_at' => seeders_at('2021-07-01 12:27:12'),
             ),
             4 =>
             array (
                 'id' => 5,
                 'project_id' => 6,
                 'name' => 'Default',
-                'created_at' => '2022-01-15 23:43:40',
-                'updated_at' => '2022-01-15 23:43:40',
+                'created_at' => seeders_at('2021-07-01 12:27:12'),
+                'updated_at' => seeders_at('2021-07-01 12:27:12'),
             ),
             5 =>
             array (
                 'id' => 6,
                 'project_id' => 7,
                 'name' => 'Default',
-                'created_at' => '2022-01-15 23:43:45',
-                'updated_at' => '2022-01-15 23:43:45',
+                'created_at' => seeders_at('2021-07-01 12:27:12'),
+                'updated_at' => seeders_at('2021-07-01 12:27:12'),
             ),
         ));
 

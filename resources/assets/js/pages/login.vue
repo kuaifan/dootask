@@ -262,7 +262,7 @@ export default {
 
         chackServerUrl(tip) {
             return new Promise((resolve, reject) => {
-                if (this.$Electron && this.isNotServer()) {
+                if (this.isNotServer()) {
                     if (tip === true) {
                         $A.messageWarning("请设置服务器")
                     }
@@ -287,7 +287,7 @@ export default {
 
         isNotServer() {
             let apiHome = $A.getDomain(window.systemInfo.apiUrl)
-            return apiHome == "" || apiHome == "public"
+            return this.$Electron && (apiHome == "" || apiHome == "public")
         },
 
         onBlur() {

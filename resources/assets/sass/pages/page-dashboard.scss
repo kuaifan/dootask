@@ -8,7 +8,8 @@
     background-color: #ffffff;
     .dashboard-wrapper {
         width: 100%;
-        max-height: 80%;
+        height: auto;
+        max-height: 100%;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -22,7 +23,7 @@
             margin: 0 auto;
         }
         .dashboard-hello {
-            padding: 0 12px;
+            padding: 6% 12px 0;
             color: #333333;
             font-size: 24px;
             font-weight: 600;
@@ -93,7 +94,11 @@
         .dashboard-list {
             width: 100%;
             margin-top: 48px;
+            padding-bottom: 6%;
             overflow: auto;
+            .dashboard-ref {
+                height: 0;
+            }
             .dashboard-title {
                 position: sticky;
                 top: 0;

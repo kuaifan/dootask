@@ -28,11 +28,10 @@
                 </li>
             </ul>
             <div class="dashboard-list overlay-y">
-                <div
-                    :ref="`type_${column.type}`"
-                    v-for="(column, index) in columns"
-                    v-if="column.list.length > 0"
-                    :key="index">
+                <template
+                    v-for="column in columns"
+                    v-if="column.list.length > 0">
+                    <div :ref="`type_${column.type}`" class="dashboard-ref"></div>
                     <div class="dashboard-title">{{column.title}}</div>
                     <ul class="dashboard-ul">
                         <li
@@ -75,7 +74,7 @@
                             </ETooltip>
                         </li>
                     </ul>
-                </div>
+                </template>
             </div>
         </div>
     </div>

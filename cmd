@@ -296,13 +296,17 @@ if [ $# -gt 0 ]; then
         while [ ! -f "${cur_path}/docker/mysql/data/$(env_get DB_DATABASE)/db.opt" ]; do
             ((remaining=$remaining-1))
             if [ $remaining -lt 0 ]; then
-                echo -e "${Error} ${RedBG} 数据库安装失败! ${Font}"
+                echo -e "${Error} ${RedBG} 数据库初始化失败! ${Font}"
                 exit 1
             fi
             chmod -R 775 "${cur_path}/docker/mysql/data"
             sleep 3
         done
         run_exec php "php artisan migrate --seed"
+        if [ ! -f "${cur_path}/docker/mysql/data/$(env_get DB_DATABASE)/$(env_get DB_PREFIX)migrations.ibd" ]; then
+            echo -e "${Error} ${RedBG} 数据库安装失败! ${Font}"
+            exit 1
+        fi
         # 设置初始化密码
         res=`run_exec mariadb "sh /etc/mysql/repassword.sh"`
         $COMPOSE up -d
