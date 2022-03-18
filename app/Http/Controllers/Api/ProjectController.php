@@ -279,7 +279,7 @@ class ProjectController extends AbstractController
             $project->save();
             //
             if ($flow == 'open') {
-                $project->addFlow(Base::json2array('[{"id":"-10","name":"\u5f85\u5904\u7406","status":"start","turns":["-10","-11","-12","-13"],"usertype":"add","userlimit":"0","sort":"0"},{"id":"-11","name":"\u8fdb\u884c\u4e2d","status":"progress","turns":["-10","-11","-12","-13"],"usertype":"add","userlimit":"0","sort":"1"},{"id":"-12","name":"\u5df2\u5b8c\u6210","status":"end","turns":["-10","-11","-12","-13"],"usertype":"add","userlimit":"0","sort":"2"},{"id":"-13","name":"\u5df2\u53d6\u6d88","status":"end","turns":["-10","-11","-12","-13"],"usertype":"add","userlimit":"0","sort":"3"}]'));
+                $project->addFlow(Base::json2array('[{"id":-10,"name":"待处理","status":"start","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0},{"id":-11,"name":"进行中","status":"progress","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0},{"id":-12,"name":"待测试","status":"test","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0},{"id":-13,"name":"已完成","status":"end","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0},{"id":-14,"name":"已取消","status":"end","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0}]'));
             }
         });
         //
