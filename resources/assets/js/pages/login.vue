@@ -108,7 +108,7 @@ export default {
         this.getNeedStartHome();
         //
         if (this.$Electron) {
-            this.chackServerUrl().catch(() => {});
+            this.chackServerUrl().catch(_ => {});
         } else {
             this.clearServerUrl();
         }
@@ -198,17 +198,20 @@ export default {
                     this.email = data.account;
                     this.password = data.password;
                 }
-            }).catch(() => {
+            }).catch(_ => {
                 //
             });
         },
 
         getNeedStartHome() {
+            if (this.isNotServer()) {
+                return;
+            }
             this.$store.dispatch("call", {
                 url: "system/get/starthome",
             }).then(({data}) => {
                 this.needStartHome = !!data.need_start;
-            }).catch(() => {
+            }).catch(_ => {
                 this.needStartHome = false;
             });
         },
@@ -218,7 +221,7 @@ export default {
                 url: 'users/reg/needinvite',
             }).then(({data}) => {
                 this.needInvite = !!data.need;
-            }).catch(() => {
+            }).catch(_ => {
                 this.needInvite = false;
             });
         },
@@ -305,7 +308,7 @@ export default {
                 this.loadIng--;
                 this.reCode();
                 this.codeNeed = true;
-            }).catch(() => {
+            }).catch(_ => {
                 this.loadIng--;
                 this.codeNeed = false;
             });
@@ -348,7 +351,7 @@ export default {
                     $A.setStorage("cacheLoginEmail", this.email)
                     this.$store.dispatch("handleClearCache", data).then(() => {
                         this.goNext1();
-                    }).catch(() => {
+                    }).catch(_ => {
                         this.goNext1();
                     });
                 }).catch(({data, msg}) => {
@@ -380,7 +383,7 @@ export default {
                     },
                 }).then(() => {
                     this.goNext2();
-                }).catch(() => {
+                }).catch(_ => {
                     this.goNext2();
                 });
             }

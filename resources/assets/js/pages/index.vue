@@ -203,6 +203,11 @@ export default {
     },
 
     methods: {
+        isNotServer() {
+            let apiHome = $A.getDomain(window.systemInfo.apiUrl)
+            return this.$Electron && (apiHome == "" || apiHome == "public")
+        },
+
         setTheme(mode) {
             this.$store.dispatch("setTheme", mode)
         },
@@ -216,20 +221,26 @@ export default {
         },
 
         getNeedStartHome() {
+            if (this.isNotServer()) {
+                this.needStartHome = false;
+                this.goForward({name: 'login'}, true);
+                return;
+            }
             this.$store.dispatch("call", {
                 url: "system/get/starthome",
             }).then(({data}) => {
                 this.homeFooter = data.home_footer;
                 if (this.userId > 0) {
-                    this.goForward({path: '/manage/dashboard'}, true);
+                    this.goForward({name: 'manage-dashboard'}, true);
                 } else {
                     this.needStartHome = !!data.need_start;
                     if (this.needStartHome === false) {
-                        this.goForward({path: '/login'}, true);
+                        this.goForward({name: 'login'}, true);
                     }
                 }
-            }).catch(() => {
+            }).catch(_ => {
                 this.needStartHome = false;
+                this.goForward({name: 'login'}, true);
             });
         },
     },
