@@ -82,27 +82,24 @@
                             color: #595959;
 
                             &.start {
-                                background-color: rgba(38, 38, 38, 0.05);
-                                border-color: rgba(38, 38, 38, 0.05);
-                                color: #595959;
+                                background-color: rgba($flow-status-start-color, 0.1);
+                                border-color: rgba($flow-status-start-color, 0.1);
+                                color: $flow-status-start-color;
                             }
-
                             &.progress {
-                                background-color: rgba(27, 154, 238, 0.1);
-                                border-color: rgba(27, 154, 238, 0.1);
-                                color: #0171c2;
+                                background-color: rgba($flow-status-progress-color, 0.1);;
+                                border-color: rgba($flow-status-progress-color, 0.1);;
+                                color: $flow-status-progress-color;
                             }
-
                             &.test {
-                                background-color: rgba(27, 154, 238, 0.1);
-                                border-color: rgba(27, 154, 238, 0.1);
-                                color: #0171c2;
+                                background-color: rgba($flow-status-test-color, 0.1);;
+                                border-color: rgba($flow-status-test-color, 0.1);;
+                                color: $flow-status-test-color;
                             }
-
                             &.end {
-                                background-color: rgba(21, 173, 49, 0.1);
-                                border-color: rgba(21, 173, 49, 0.1);
-                                color: #038a24;
+                                background-color: rgba($flow-status-end-color, 0.1);;
+                                border-color: rgba($flow-status-end-color, 0.1);;
+                                color: $flow-status-end-color;
                             }
                         }
                     }

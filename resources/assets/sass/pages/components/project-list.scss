@@ -165,24 +165,24 @@
                         justify-content: center;
                         cursor: pointer;
                         &.start {
-                            background-color: rgba(38, 38, 38, 0.05);
-                            border-color: rgba(38, 38, 38, 0.05);
-                            color: #595959;
+                            background-color: rgba($flow-status-start-color, 0.1);
+                            border-color: rgba($flow-status-start-color, 0.1);
+                            color: $flow-status-start-color;
                         }
                         &.progress {
-                            background-color: rgba(27, 154, 238, 0.1);
-                            border-color: rgba(27, 154, 238, 0.1);
-                            color: #0171c2;
+                            background-color: rgba($flow-status-progress-color, 0.1);;
+                            border-color: rgba($flow-status-progress-color, 0.1);;
+                            color: $flow-status-progress-color;
                         }
                         &.test {
-                            background-color: rgba(27, 154, 238, 0.1);
-                            border-color: rgba(27, 154, 238, 0.1);
-                            color: #0171c2;
+                            background-color: rgba($flow-status-test-color, 0.1);;
+                            border-color: rgba($flow-status-test-color, 0.1);;
+                            color: $flow-status-test-color;
                         }
                         &.end {
-                            background-color: rgba(21, 173, 49, 0.1);
-                            border-color: rgba(21, 173, 49, 0.1);
-                            color: #038a24;
+                            background-color: rgba($flow-status-end-color, 0.1);;
+                            border-color: rgba($flow-status-end-color, 0.1);;
+                            color: $flow-status-end-color;
                         }
                     }
                 }
@@ -407,24 +407,24 @@
                                     margin-right: 4px;
                                     text-align: center;
                                     &.start {
-                                        background-color: rgba(38, 38, 38, 0.05);
-                                        border-color: rgba(38, 38, 38, 0.05);
-                                        color: #595959;
+                                        background-color: rgba($flow-status-start-color, 0.1);
+                                        border-color: rgba($flow-status-start-color, 0.1);
+                                        color: $flow-status-start-color;
                                     }
                                     &.progress {
-                                        background-color: rgba(27, 154, 238, 0.1);
-                                        border-color: rgba(27, 154, 238, 0.1);
-                                        color: #0171c2;
+                                        background-color: rgba($flow-status-progress-color, 0.1);;
+                                        border-color: rgba($flow-status-progress-color, 0.1);;
+                                        color: $flow-status-progress-color;
                                     }
                                     &.test {
-                                        background-color: rgba(27, 154, 238, 0.1);
-                                        border-color: rgba(27, 154, 238, 0.1);
-                                        color: #0171c2;
+                                        background-color: rgba($flow-status-test-color, 0.1);;
+                                        border-color: rgba($flow-status-test-color, 0.1);;
+                                        color: $flow-status-test-color;
                                     }
                                     &.end {
-                                        background-color: rgba(21, 173, 49, 0.1);
-                                        border-color: rgba(21, 173, 49, 0.1);
-                                        color: #038a24;
+                                        background-color: rgba($flow-status-end-color, 0.1);;
+                                        border-color: rgba($flow-status-end-color, 0.1);;
+                                        color: $flow-status-end-color;
                                     }
                                 }
                                 > pre {
@@ -775,24 +775,24 @@
                                 margin-right: 3px;
                                 text-align: center;
                                 &.start {
-                                    background-color: rgba(38, 38, 38, 0.05);
-                                    border-color: rgba(38, 38, 38, 0.05);
-                                    color: #595959;
+                                    background-color: rgba($flow-status-start-color, 0.1);
+                                    border-color: rgba($flow-status-start-color, 0.1);
+                                    color: $flow-status-start-color;
                                 }
                                 &.progress {
-                                    background-color: rgba(27, 154, 238, 0.1);
-                                    border-color: rgba(27, 154, 238, 0.1);
-                                    color: #0171c2;
+                                    background-color: rgba($flow-status-progress-color, 0.1);;
+                                    border-color: rgba($flow-status-progress-color, 0.1);;
+                                    color: $flow-status-progress-color;
                                 }
                                 &.test {
-                                    background-color: rgba(27, 154, 238, 0.1);
-                                    border-color: rgba(27, 154, 238, 0.1);
-                                    color: #0171c2;
+                                    background-color: rgba($flow-status-test-color, 0.1);;
+                                    border-color: rgba($flow-status-test-color, 0.1);;
+                                    color: $flow-status-test-color;
                                 }
                                 &.end {
-                                    background-color: rgba(21, 173, 49, 0.1);
-                                    border-color: rgba(21, 173, 49, 0.1);
-                                    color: #038a24;
+                                    background-color: rgba($flow-status-end-color, 0.1);;
+                                    border-color: rgba($flow-status-end-color, 0.1);;
+                                    color: $flow-status-end-color;
                                 }
                             }
                         }
@@ -979,35 +979,32 @@
         color: $primary-text-color !important;
 
         &.start {
-            color: #595959 !important;
+            color: $flow-status-start-color !important;
         }
-
         &.progress {
-            color: #0171c2 !important;
+            color: $flow-status-progress-color !important;
         }
         &.test {
-            color: #0171c2 !important;
+            color: $flow-status-test-color !important;
         }
         &.end {
-            color: #038a24 !important;
+            color: $flow-status-end-color !important;
         }
 
         &:hover,
         &.ivu-cascader-menu-item-active {
             &.project-list-flow-cascader-item {
-
                 &.start {
-                    background-color: rgba(38, 38, 38, 0.05);
+                    background-color: rgba($flow-status-start-color, 0.1);
                 }
-
                 &.progress {
-                    background-color: rgba(27, 154, 238, 0.1);
+                    background-color: rgba($flow-status-progress-color, 0.1);;
                 }
                 &.test {
-                    background-color: rgba(27, 154, 238, 0.1);
+                    background-color: rgba($flow-status-test-color, 0.1);;
                 }
                 &.end {
-                    background-color: rgba(21, 173, 49, 0.1);
+                    background-color: rgba($flow-status-end-color, 0.1);;
                 }
             }
         }
