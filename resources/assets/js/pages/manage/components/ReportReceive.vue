@@ -40,7 +40,7 @@
                         placement="right"
                         transfer-class-name="search-button-clear"
                         transfer>
-                        <Button :loading="loadIng > 0" type="primary" icon="ios-search" @click="searchTab">{{$L('搜索')}}</Button>
+                        <Button :loading="loadIng > 0" type="primary" icon="ios-search" @click="onSearch">{{$L('搜索')}}</Button>
                         <div slot="content">
                             <Button :loading="loadIng > 0" type="text" @click="getLists">{{$L('刷新')}}</Button>
                         </div>
@@ -178,6 +178,11 @@ export default {
             ]
         },
 
+        onSearch() {
+            this.listPage = 1;
+            this.getLists();
+        },
+
         getLists() {
             this.loadIng = 1;
             this.$store.dispatch("call", {
@@ -215,10 +220,6 @@ export default {
                 this.listPageSize = size;
                 this.getLists();
             }
-        },
-
-        searchTab() {
-            this.getLists();
         },
     }
 }

@@ -33,7 +33,7 @@
                             placement="right"
                             transfer-class-name="search-button-clear"
                             transfer>
-                            <Button :loading="loadIng > 0" type="primary" icon="ios-search" @click="searchTab">{{$L('搜索')}}</Button>
+                            <Button :loading="loadIng > 0" type="primary" icon="ios-search" @click="onSearch">{{$L('搜索')}}</Button>
                             <div slot="content">
                                 <Button :loading="loadIng > 0" type="text" @click="getLists">{{$L('刷新')}}</Button>
                             </div>
@@ -152,6 +152,11 @@ export default {
                 {value: "weekly", label: this.$L('周报')},
                 {value: "daily", label: this.$L('日报')},
             ]
+        },
+
+        onSearch() {
+            this.listPage = 1;
+            this.getLists();
         },
 
         getLists() {

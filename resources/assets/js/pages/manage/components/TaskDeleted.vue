@@ -22,7 +22,7 @@
                         placement="right"
                         transfer-class-name="search-button-clear"
                         transfer>
-                        <Button :loading="loadIng > 0" type="primary" icon="ios-search" @click="getLists">{{$L('搜索')}}</Button>
+                        <Button :loading="loadIng > 0" type="primary" icon="ios-search" @click="onSearch">{{$L('搜索')}}</Button>
                         <div slot="content">
                             <Button :loading="loadIng > 0" type="text" @click="getLists">{{$L('刷新')}}</Button>
                         </div>
@@ -184,6 +184,11 @@ export default {
         refresh() {
             this.keys = {};
             this.getLists()
+        },
+
+        onSearch() {
+            this.page = 1;
+            this.getLists();
         },
 
         getLists() {
