@@ -82,9 +82,9 @@ router.afterEach(() => {
 Vue.prototype.goForward = function(location, isReplace) {
     if (typeof location === 'string') location = {name: location};
     if (isReplace === true) {
-        app.$router.replace(location).then(() => {});
+        app.$router.replace(location).then(() => {}).catch(() => {});
     } else {
-        app.$router.push(location).then(() => {});
+        app.$router.push(location).then(() => {}).catch(() => {});
     }
 };
 
@@ -94,7 +94,7 @@ Vue.prototype.goBack = function (number) {
     if ($A.runNum(history['::count']) > 2) {
         app.$router.go(typeof number === 'number' ? number : -1);
     } else {
-        app.$router.replace(typeof number === "object" ? number : {path: '/'}).then(() => {});
+        app.$router.replace(typeof number === "object" ? number : {path: '/'}).then(() => {}).catch(() => {});
     }
 };
 
