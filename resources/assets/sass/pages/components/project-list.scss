@@ -74,6 +74,12 @@
                                 list-style: none;
                                 margin-left: -6px;
                                 transition: transform 0.2s;
+                                .ivu-badge {
+                                    position: absolute;
+                                    top: -5px;
+                                    left: 23px;
+                                    transform: scale(0.8);
+                                }
                                 &:hover {
                                     transform: scale(1.05);
                                 }

@@ -15,10 +15,11 @@
                                 <UserAvatar :userid="projectData.owner_userid" :size="36" :borderWitdh="2" :openDelay="0">
                                     <p>{{$L('项目负责人')}}</p>
                                 </UserAvatar>
+                                <Badge v-if="windowWidth <= 980 && projectUser.length > 0" type="normal" :count="projectData.project_user.length"/>
                             </li>
                             <template v-if="windowWidth > 980 && projectUser.length > 0" v-for="item in projectUser">
                                 <li v-if="item.userid === -1" class="more">
-                                    <ETooltip :content="$L('共' + (item.count + 1) + '个成员')">
+                                    <ETooltip :content="$L('共' + (projectData.project_user.length) + '个成员')">
                                         <Icon type="ios-more"/>
                                     </ETooltip>
                                 </li>
@@ -636,10 +637,7 @@ export default {
                 return list
             }
             let array = list.slice(0, max - 1);
-            array.push({
-                userid: -1,
-                count: list.length
-            })
+            array.push({userid: -1})
             array.push(list[list.length - 1])
             return array;
         },
