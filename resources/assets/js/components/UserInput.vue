@@ -12,7 +12,7 @@
             :default-event-object="true"
             :multiple-max="multipleMax"
             :multiple-uncancelable="uncancelable"
-            :remote-method="searchUser"
+            :remote-method="remoteMethod"
             @on-query-change="searchUser"
             @on-open-change="openChange"
             multiple
@@ -24,6 +24,7 @@
                 v-for="(item, key) in list"
                 :value="item.userid"
                 :key="key"
+                :key-value="item.email"
                 :label="item.nickname"
                 :avatar="item.userimg"
                 :disabled="isDisabled(item.userid)">
@@ -194,6 +195,10 @@
                 if (show) {
                     this.$nextTick(this.searchUser);
                 }
+            },
+
+            remoteMethod() {
+                //
             },
 
             valueChange() {
