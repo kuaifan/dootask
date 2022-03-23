@@ -80,6 +80,11 @@
 
             .ivu-form-item-content {
                 line-height: 30px;
+                display: flex;
+                align-items: center;
+                .common-avatar {
+                    margin-right: 6px;
+                }
             }
         }
     }
