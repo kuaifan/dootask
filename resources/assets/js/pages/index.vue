@@ -203,11 +203,6 @@ export default {
     },
 
     methods: {
-        isNotServer() {
-            let apiHome = $A.getDomain(window.systemInfo.apiUrl)
-            return this.$Electron && (apiHome == "" || apiHome == "public")
-        },
-
         setTheme(mode) {
             this.$store.dispatch("setTheme", mode)
         },
@@ -221,7 +216,7 @@ export default {
         },
 
         getNeedStartHome() {
-            if (this.isNotServer()) {
+            if (this.$Electron) {
                 this.needStartHome = false;
                 this.goForward({name: 'login'}, true);
                 return;

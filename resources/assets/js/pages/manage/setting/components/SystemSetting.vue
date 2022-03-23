@@ -44,12 +44,14 @@
                     <Radio label="required">{{$L('必填')}}</Radio>
                 </RadioGroup>
                 <div v-if="formDatum.chat_nickname == 'required'" class="form-tip">{{$L('必填：发送聊天内容前必须设置昵称。')}}</div>
+                <div v-else class="form-tip">{{$L('如果必填，发送聊天前必须设置昵称。')}}</div>
             </FormItem>
             <FormItem :label="$L('自动归档任务')" prop="autoArchived">
                 <RadioGroup :value="formDatum.auto_archived" @on-change="formArchived">
                     <Radio label="open">{{$L('开启')}}</Radio>
                     <Radio label="close">{{$L('关闭')}}</Radio>
                 </RadioGroup>
+                <div class="form-tip">{{$L('任务完成后自动归档。')}}</div>
                 <ETooltip v-if="formDatum.auto_archived=='open'" placement="right">
                     <div class="setting-auto-day">
                         <Input v-model="formDatum.archived_day" type="number">
@@ -64,6 +66,7 @@
                     <Radio label="open">{{$L('开启')}}</Radio>
                     <Radio label="close">{{$L('关闭')}}</Radio>
                 </RadioGroup>
+                <div class="form-tip">{{$L('仅支持网页版。')}}</div>
                 <Input
                     v-if="formDatum.start_home == 'open'"
                     v-model="formDatum.home_footer"
