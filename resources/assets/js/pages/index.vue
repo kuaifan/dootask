@@ -218,7 +218,11 @@ export default {
         getNeedStartHome() {
             if (this.$Electron) {
                 this.needStartHome = false;
-                this.goForward({name: 'login'}, true);
+                if (this.userId > 0) {
+                    this.goForward({name: 'manage-dashboard'}, true);
+                } else {
+                    this.goForward({name: 'login'}, true);
+                }
                 return;
             }
             this.$store.dispatch("call", {
