@@ -618,7 +618,7 @@ export default {
             if (project) {
                 $A.goForward({path: '/manage/project/' + project.id});
             } else {
-                $A.goForward({path: '/manage/dashboard'});
+                $A.goForward({name: 'manage-dashboard'});
             }
         }
         setTimeout(() => {

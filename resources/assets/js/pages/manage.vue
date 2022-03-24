@@ -691,7 +691,7 @@ export default {
 
         chackPass() {
             if (this.userInfo.changepass === 1) {
-                this.goForward({path: '/manage/setting/password'});
+                this.goForward({name: 'manage-setting-password'});
             }
         },
 
@@ -986,7 +986,7 @@ export default {
                             if (!$A.isJson(data)) {
                                 return;
                             }
-                            this.goForward({path: '/manage/messenger'});
+                            this.goForward({name: 'manage-messenger'});
                             if (data.dialog_id) {
                                 $A.setStorage("messenger::dialogId", data.dialog_id)
                                 this.$store.state.dialogOpenId = data.dialog_id;

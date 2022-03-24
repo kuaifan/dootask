@@ -394,7 +394,7 @@ export default {
             if (fromUrl) {
                 window.location.replace(fromUrl);
             } else {
-                this.goForward({path: '/manage/dashboard'}, true);
+                this.goForward({name: 'manage-dashboard'}, true);
             }
         }
     }

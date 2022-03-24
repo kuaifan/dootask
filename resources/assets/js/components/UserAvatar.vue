@@ -201,7 +201,7 @@
             },
 
             openDialog() {
-                this.goForward({path: '/manage/messenger'});
+                this.goForward({name: 'manage-messenger'});
                 this.$store.dispatch("openDialogUserid", this.userid).catch(() => {})
             }
         }

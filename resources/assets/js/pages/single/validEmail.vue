@@ -70,7 +70,7 @@ export default {
                 this.error = false;
             }).catch(({data, msg}) => {
                 if (data.code === 2) {
-                    this.goForward({path: '/'}, true);
+                    this.goForward({name: 'index'}, true);
                 } else {
                     this.success = false;
                     this.error = true;
