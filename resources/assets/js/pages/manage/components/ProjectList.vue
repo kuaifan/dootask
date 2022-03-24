@@ -328,7 +328,7 @@
                     <Input ref="projectName" type="text" v-model="settingData.name" :maxlength="32" :placeholder="$L('必填')"></Input>
                 </FormItem>
                 <FormItem prop="desc" :label="$L('项目介绍')">
-                    <Input type="textarea" :autosize="{ minRows: 3, maxRows: 5 }" v-model="settingData.desc" :maxlength="255" :placeholder="$L('选填')"></Input>
+                    <Input ref="projectDesc" type="textarea" :autosize="{ minRows: 3, maxRows: 5 }" v-model="settingData.desc" :maxlength="255" :placeholder="$L('选填')"></Input>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
@@ -1183,7 +1183,8 @@ export default {
                     this.$set(this.settingData, 'desc', this.projectData.desc);
                     this.settingShow = true;
                     this.$nextTick(() => {
-                        this.$refs.projectName.focus();
+                        this.$refs.projectName.focus()
+                        setTimeout(this.$refs.projectDesc.resizeTextarea, 0)
                     });
                     break;
 

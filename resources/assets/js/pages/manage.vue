@@ -109,15 +109,17 @@
                             :divided="!!item.divided"
                             :name="item.path"
                             :style="item.style || {}">
-                            {{$L(item.name)}}
-                            <Badge
-                                v-if="item.path === 'version'"
-                                class="manage-menu-report-badge"
-                                :text="clientNewVersion"/>
-                            <Badge
-                                v-else-if="item.path === 'workReport' && reportUnreadNumber > 0"
-                                class="manage-menu-report-badge"
-                                :count="reportUnreadNumber"/>
+                            <div class="manage-menu-flex">
+                                {{$L(item.name)}}
+                                <Badge
+                                    v-if="item.path === 'version'"
+                                    class="manage-menu-report-badge"
+                                    :text="clientNewVersion"/>
+                                <Badge
+                                    v-else-if="item.path === 'workReport' && reportUnreadNumber > 0"
+                                    class="manage-menu-report-badge"
+                                    :count="reportUnreadNumber"/>
+                            </div>
                         </DropdownItem>
                     </template>
                 </DropdownMenu>
