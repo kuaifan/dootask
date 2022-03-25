@@ -168,8 +168,8 @@
 }
 </style>
 <script>
-    import {generateMixed} from 'vue-kityminder-gg/src/utils/index.js';
-    import 'vue-kityminder-gg/examples/styles/minder.css';
+    import {generateMixed} from 'vue-kityminder-ggg/src/utils/index.js';
+    import 'vue-kityminder-ggg/examples/styles/minder.css';
     import JSPDF from 'jspdf';
 
     export default {
