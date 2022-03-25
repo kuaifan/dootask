@@ -63,6 +63,7 @@ export default {
 
             lists: [],
             listPage: 1,
+            listPageSize: 20,
             hasMorePages: false,
             totalNum: -1,
         }
@@ -107,7 +108,7 @@ export default {
                     project_id: this.projectId,
                     task_id: this.taskId,
                     page: Math.max(this.listPage, 1),
-                    pagesize: this.pagesize,
+                    pagesize: Math.max($A.runNum(this.listPageSize), 10),
                 }
             }).then(({data}) => {
                 this.loadIng--;

@@ -164,8 +164,8 @@ export default {
             this.$store.dispatch("call", {
                 url: 'report/my',
                 data: {
-                    page: this.listPage,
-                    pagesize: this.listPageSize,
+                    page: Math.max(this.listPage, 1),
+                    pagesize: Math.max($A.runNum(this.listPageSize), 10),
                     created_at: this.createAt,
                     type: this.reportType
                 },

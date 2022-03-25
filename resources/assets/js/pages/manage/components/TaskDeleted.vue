@@ -207,7 +207,7 @@ export default {
                         deleted_at: 'desc'
                     },
                     page: Math.max(this.page, 1),
-                    pagesize: Math.max($A.runNum(this.pageSize), 20),
+                    pagesize: Math.max($A.runNum(this.pageSize), 10),
                 },
             }).then(({data}) => {
                 this.loadIng--;
