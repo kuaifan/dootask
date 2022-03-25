@@ -88,7 +88,9 @@ export default {
         return {
             loadIng: 0,
 
-            keys: {},
+            keys: {
+                identity: 'nodisable'
+            },
 
             columns: [],
             list: [],
@@ -133,7 +135,7 @@ export default {
                         if (email_verity) {
                             arr.push(h('Icon', {
                                 props: {
-                                    type: 'md-checkmark'
+                                    type: 'md-mail'
                                 }
                             }))
                         }

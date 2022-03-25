@@ -6,14 +6,14 @@
                 ref="input"
                 v-model="content"
                 :disabled="isLoad"
-                @on-keyup="onKeyup"
+                @on-keydown="onKeydown"
                 @on-blur="onBlur"/>
             <Input
                 v-else
                 ref="input"
                 v-model="content"
                 :disabled="isLoad"
-                @on-keyup="onKeyup"
+                @on-keydown="onKeydown"
                 @on-blur="onBlur"/>
             <div v-if="isLoad" class="quick-loading"><Loading/></div>
         </div>
@@ -89,10 +89,12 @@ export default {
             })
         },
 
-        onKeyup(e) {
+        onKeydown(e) {
             if (e.keyCode === 13) {
                 this.onEnter();
             } else if (e.keyCode === 27) {
+                e.preventDefault()
+                e.stopPropagation()
                 this.isEdit = false;
                 this.isLoad = false;
             }
