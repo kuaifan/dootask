@@ -1,6 +1,6 @@
 {
     "name": "DooTask",
-    "version": "0.12.34",
+    "version": "0.12.36",
     "description": "DooTask is task management system.",
     "scripts": {
         "start": "./cmd dev",
@@ -10,7 +10,7 @@
     "app": [
         {
             "name": "DooTask",
-            "id": "com.dootask.desktop",
+            "id": "com.dootask.task",
             "url": "https://dootask.com/",
             "publish": {
                 "provider": "github",
@@ -20,7 +20,7 @@
         },
         {
             "name": "HitoseaTask",
-            "id": "com.hitosea.desktop",
+            "id": "com.hitosea.task",
             "url": "https://t.hitosea.com/",
             "publish": {
                 "provider": "generic",

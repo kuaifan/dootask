@@ -48,7 +48,7 @@
         "pdf-lib": "^1.17.1"
     },
     "build": {
-        "appId": "com.dootask.desktop",
+        "appId": "com.dootask.task",
         "artifactName": "${productName}-v${version}-${os}-${arch}.${ext}",
         "asar": true,
         "files": [

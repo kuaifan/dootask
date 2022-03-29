@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { notarize } = require('electron-notarize');
+const config = require('./package.json');
 
 exports.default = async function notarizing(context) {
     const { electronPlatformName, appOutDir } = context;
@@ -10,7 +11,7 @@ exports.default = async function notarizing(context) {
     }
 
     return await notarize({
-        appBundleId: 'com.dootask.desktop',
+        appBundleId: config.build.appId,
         appPath: `${appOutDir}/${appName}.app`,
         appleId: process.env.APPLEID,
         appleIdPassword: process.env.APPLEIDPASS,
