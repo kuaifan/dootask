@@ -87,7 +87,6 @@ class IndexController extends InvokeController
      */
     public function desktop__publish($name = '')
     {
-        $body = Request::input('body');
         $genericVersion = Request::header('generic-version');
         //
         $latestFile = public_path("uploads/desktop/latest");
@@ -100,14 +99,6 @@ class IndexController extends InvokeController
                 "fileName" => true
             ]);
             if (Base::isSuccess($res)) {
-                if (in_array($res['data']['name'], ['latest.yml', 'latest-mac.yml']) && $body) {
-                    $content = str_replace("\n", "\n  ", $body);
-                    $content = <<<EOF
-                        releaseNotes: |-
-                          $content
-                        EOF;
-                    file_put_contents($res['data']['file'], $content, FILE_APPEND);
-                }
                 file_put_contents($latestFile, $genericVersion);
             }
             return $res;
