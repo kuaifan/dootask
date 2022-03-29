@@ -8,6 +8,7 @@ use App\Tasks\DeleteTmpTask;
 use App\Tasks\OverdueRemindEmailTask;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Redirect;
+use Request;
 
 
 /**
@@ -39,6 +40,19 @@ class IndexController extends InvokeController
     }
 
     /**
+     * 获取版本号
+     * @return array
+     */
+    public function version()
+    {
+        return [
+            'version' => Base::getVersion(),
+            'owner' => 'kuaifan',
+            'repo' => 'dootask-test',
+        ];
+    }
+
+    /**
      * 接口文档
      * @return \Illuminate\Http\RedirectResponse
      */
@@ -66,6 +80,43 @@ class IndexController extends InvokeController
         Task::deliver(new OverdueRemindEmailTask());
 
         return "success";
+    }
+
+    /**
+     * 桌面客户端发布
+     */
+    public function desktop__publish($name = '')
+    {
+        $body = Request::input('body');
+        $genericVersion = Request::header('generic-version');
+        //
+        $latestFile = public_path("uploads/desktop/latest");
+        if (preg_match("/^\d+\.\d+\.\d+$/", $genericVersion)) {
+            $genericPath = "uploads/desktop/" . $genericVersion . "/";
+            $res = Base::upload([
+                "file" => Request::file('file'),
+                "type" => 'desktop',
+                "path" => $genericPath,
+                "fileName" => true
+            ]);
+            if ($res) {
+                if ($body) {
+                    file_put_contents(public_path($genericPath . "change.md"), $body);
+                }
+                file_put_contents($latestFile, $genericVersion);
+            }
+            return $res;
+        }
+        if ($name && file_exists($latestFile)) {
+            $genericVersion = file_get_contents($latestFile);
+            if (preg_match("/^\d+\.\d+\.\d+$/", $genericVersion)) {
+                $filePath = public_path("uploads/desktop/{$genericVersion}/{$name}");
+                if (file_exists($filePath)) {
+                    return response()->download($filePath);
+                }
+            }
+        }
+        return abort(404);
     }
 
     /**

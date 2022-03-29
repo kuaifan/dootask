@@ -2301,6 +2301,9 @@ class Base
                 case 'md':
                     $type = ['md'];
                     break;
+                case 'desktop':
+                    $type = ['yml', 'yaml', 'dmg', 'blockmap', 'zip', 'exe', 'msi'];
+                    break;
                 case 'more':
                     $type = [
                         'text', 'md', 'markdown',
@@ -2343,7 +2346,9 @@ class Base
                 $fileSize = 0;
             }
             $scaleName = "";
-            if ($param['fileName']) {
+            if ($param['fileName'] === true) {
+                $fileName = $file->getClientOriginalName();
+            } elseif ($param['fileName']) {
                 $fileName = $param['fileName'];
             } else {
                 if ($param['scale'] && is_array($param['scale'])) {
