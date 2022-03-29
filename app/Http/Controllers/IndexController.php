@@ -101,9 +101,10 @@ class IndexController extends InvokeController
             ]);
             if (Base::isSuccess($res)) {
                 if (in_array($res['data']['name'], ['latest.yml', 'latest-mac.yml']) && $body) {
+                    $content = str_replace("\n", "\n  ", $body);
                     $content = <<<EOF
                         releaseNotes: |-
-                          $body
+                          $content
                         EOF;
                     file_put_contents($res['data']['file'], $content, FILE_APPEND);
                 }
