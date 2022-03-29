@@ -13,6 +13,7 @@ use Request;
  * App\Models\File
  *
  * @property int $id
+ * @property string|null $pids 上级ID递归
  * @property int|null $pid 上级ID
  * @property int|null $cid 复制ID
  * @property string|null $name 名称
@@ -37,6 +38,7 @@ use Request;
  * @method static \Illuminate\Database\Eloquent\Builder|File whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File wherePid($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|File wherePids($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereShare($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereSize($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereType($value)
@@ -170,6 +172,40 @@ class File extends AbstractModel
                     foreach ($list as $item) {
                         $item->setShare(0);
                     }
+                }
+            });
+        }
+        return true;
+    }
+
+    /**
+     * 保存前更新pids
+     * @return bool
+     */
+    public function saveBeforePids()
+    {
+        $pid = $this->pid;
+        $array = [];
+        while ($pid > 0) {
+            $array[] = $pid;
+            $pid = intval(self::whereId($pid)->value('pid'));
+        }
+        $opids = $this->pids;
+        if ($array) {
+            $array = array_values(array_reverse($array));
+            $this->pids = ',' . implode(',', $array) . ',';
+        } else {
+            $this->pids = '';
+        }
+        if (!$this->save()) {
+            return false;
+        }
+        // 更新子文件（夹）
+        if ($opids != $this->pids) {
+            self::wherePid($this->id)->chunkById(100, function ($lists) {
+                /** @var self $item */
+                foreach ($lists as $item) {
+                    $item->saveBeforePids();
                 }
             });
         }

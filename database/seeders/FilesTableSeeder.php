@@ -326,5 +326,12 @@ class FilesTableSeeder extends Seeder
                 $content->save();
             }
         });
+
+        File::where('pid', '>', 0)->chunkById(100, function ($lists) {
+            /** @var File $item */
+            foreach ($lists as $item) {
+                $item->saveBeforePids();
+            }
+        });
     }
 }

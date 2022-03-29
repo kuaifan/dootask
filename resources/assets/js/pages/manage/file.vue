@@ -51,9 +51,9 @@
                 </template>
                 <div v-if="loadIng > 0" class="nav-load"><Loading/></div>
                 <div class="flex-full"></div>
-                <div :class="['switch-button', tableMode ? 'table' : '']" @click="tableMode=!tableMode">
-                    <div><i class="taskfont">&#xe60c;</i></div>
-                    <div><i class="taskfont">&#xe66a;</i></div>
+                <div :class="['switch-button', tableMode]">
+                    <div @click="tableMode='table'"><i class="taskfont">&#xe66a;</i></div>
+                    <div @click="tableMode='block'"><i class="taskfont">&#xe60c;</i></div>
                 </div>
             </div>
 
@@ -62,22 +62,7 @@
                 @drop.prevent="filePasteDrag($event, 'drag')"
                 @dragover.prevent="fileDragOver(true, $event)"
                 @dragleave.prevent="fileDragOver(false, $event)">
-                <div v-if="tableMode" class="file-table" @contextmenu.prevent="handleRightClick">
-                    <Table
-                        :columns="columns"
-                        :data="fileList"
-                        :height="tableHeight"
-                        :no-data-text="$L('没有任何文件')"
-                        @on-cell-click="clickRow"
-                        @on-contextmenu="handleContextMenu"
-                        @on-select="handleTableSelect"
-                        @on-select-cancel="handleTableSelect"
-                        @on-select-all-cancel="handleTableSelect"
-                        @on-select-all="handleTableSelect"
-                        context-menu
-                        stripe/>
-                </div>
-                <template v-else>
+                <template v-if="tableMode === 'block'">
                     <div v-if="fileList.length == 0 && loadIng == 0" class="file-no" @contextmenu.prevent="handleRightClick">
                         <i class="taskfont">&#xe60b;</i>
                         <p>{{$L('没有任何文件')}}</p>
@@ -129,6 +114,21 @@
                         </ul>
                     </div>
                 </template>
+                <div v-else class="file-table" @contextmenu.prevent="handleRightClick">
+                    <Table
+                        :columns="columns"
+                        :data="fileList"
+                        :height="tableHeight"
+                        :no-data-text="$L('没有任何文件')"
+                        @on-cell-click="clickRow"
+                        @on-contextmenu="handleContextMenu"
+                        @on-select="handleTableSelect"
+                        @on-select-cancel="handleTableSelect"
+                        @on-select-all-cancel="handleTableSelect"
+                        @on-select-all="handleTableSelect"
+                        context-menu
+                        stripe/>
+                </div>
                 <div v-if="dialogDrag" class="drag-over" @click="dialogDrag=false">
                     <div class="drag-text">{{$L('拖动到这里发送')}}</div>
                 </div>
@@ -426,7 +426,7 @@ export default {
             ],
 
             tableHeight: 500,
-            tableMode: $A.getStorageBoolean("fileTableMode"),
+            tableMode: $A.getStorageString("fileTableMode"),
             columns: [],
 
             shareShow: false,

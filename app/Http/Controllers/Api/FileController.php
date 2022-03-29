@@ -252,7 +252,7 @@ class FileController extends AbstractController
                 'userid' => $userid,
                 'created_id' => $user->userid,
             ]);
-            $file->save();
+            $file->saveBeforePids();
             //
             $data = File::find($file->id);
             $data->pushMsg('add', $data);
@@ -305,7 +305,7 @@ class FileController extends AbstractController
         $data = AbstractModel::transaction(function() use ($file) {
             $content = FileContent::select(['content', 'text', 'size'])->whereFid($file->cid)->orderByDesc('id')->first();
             $file->size = $content?->size ?: 0;
-            $file->save();
+            $file->saveBeforePids();
             if ($content) {
                 $content = $content->toArray();
                 $content['fid'] = $file->id;
@@ -336,7 +336,7 @@ class FileController extends AbstractController
      */
     public function move()
     {
-        $user = User::auth();
+        User::auth();
         //
         $ids = Request::input('ids');
         $pid = intval(Request::input('pid'));
@@ -369,7 +369,7 @@ class FileController extends AbstractController
                 }
                 //
                 $file->pid = $pid;
-                $file->save();
+                $file->saveBeforePids();
                 $files[] = $file;
             }
         });
@@ -666,7 +666,7 @@ class FileController extends AbstractController
                             'userid' => $userid,
                             'created_id' => $user->userid,
                         ]);
-                        if ($dirRow->save()) {
+                        if ($dirRow->saveBeforePids()) {
                             $pushMsg[] = File::find($dirRow->id);
                         }
                     }
@@ -735,7 +735,7 @@ class FileController extends AbstractController
         // 开始创建
         return AbstractModel::transaction(function () use ($webkitRelativePath, $type, $user, $data, $file) {
             $file->size = $data['size'] * 1024;
-            $file->save();
+            $file->saveBeforePids();
             //
             $data = Base::uploadMove($data, "uploads/file/" . $file->type . "/" . date("Ym") . "/" . $file->id . "/");
             $content = FileContent::createInstance([

@@ -223,7 +223,7 @@
                         color: $primary-color;
                     }
                 }
-                &.table {
+                &.block {
                     &:before {
                         left: 50%;
                     }
@@ -306,6 +306,13 @@
                             width: 22px;
                             height: 22px;
                             margin-right: 8px;
+                        }
+                    }
+                    .common-avatar {
+                        .el-avatar {
+                            > span {
+                                font-size: 12px;
+                            }
                         }
                     }
                     .permission {
