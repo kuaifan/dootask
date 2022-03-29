@@ -1,0 +1,75 @@
+name: Build Generic
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-mac:
+    runs-on: macos-latest
+    environment: build
+
+    if: startsWith(github.event.ref, 'refs/tags/v')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Create changelog text
+        id: changelog
+        uses: loopwerk/tag-changelog@v1
+        with:
+          token: ${{ secrets.GH_PAT }}
+          exclude_types: other,chore,build
+
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+
+      - name: Build for MacOS
+        env:
+          APPLEID: ${{ secrets.APPLEID }}
+          APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          PROVIDER: "generic"
+          RELEASE_BODY: ${{ steps.changelog.outputs.changes }}
+        run: ./cmd electron build-mac
+
+  build-win:
+    runs-on: windows-latest
+    environment: build
+
+    if: startsWith(github.event.ref, 'refs/tags/v')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Create changelog text
+        id: changelog
+        uses: loopwerk/tag-changelog@v1
+        with:
+          token: ${{ secrets.GH_PAT }}
+          exclude_types: other,chore,build
+
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+
+      - name: Build for Windows
+        shell: powershell
+        env:
+          PROVIDER: "generic"
+          RELEASE_BODY: ${{ steps.changelog.outputs.changes }}
+        run: |
+          npm install
+          cd electron
+          npm install
+          cd ../
+          mkdir -p ./electron/public
+          cp ./electron/index.html ./electron/public/index.html
+          npx mix --production -- --env --electron
+          node ./electron/build.js build-win
+

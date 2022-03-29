@@ -376,7 +376,6 @@ class Project extends AbstractModel
             $idc = [];
             $hasStart = false;
             $hasEnd = false;
-            $testNum = 0;
             $upTaskList = [];
             foreach ($flows as $item) {
                 $id = intval($item['id']);
@@ -417,9 +416,6 @@ class Project extends AbstractModel
                     if ($flow->status == 'end') {
                         $hasEnd = true;
                     }
-                    if ($flow->status == 'test') {
-                        $testNum++;
-                    }
                     if (!$isInsert) {
                         $upTaskList[$flow->id] = $flow->status . "|" . $flow->name;
                     }
@@ -427,9 +423,6 @@ class Project extends AbstractModel
             }
             if (!$hasStart) {
                 throw new ApiException('至少需要1个开始状态');
-            }
-            if ($testNum > 1) {
-                throw new ApiException('验收/测试状态只能有1个');
             }
             if (!$hasEnd) {
                 throw new ApiException('至少需要1个结束状态');

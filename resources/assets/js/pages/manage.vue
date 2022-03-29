@@ -729,7 +729,7 @@ export default {
                     this.workReportShow = true;
                     return;
                 case 'version':
-                    Store.set('releasesNotification', null);
+                    Store.set('updateNotification', null);
                     return;
                 case 'clearCache':
                     this.$store.dispatch("handleClearCache", null).then(() => {

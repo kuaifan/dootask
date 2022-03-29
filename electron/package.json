@@ -1,6 +1,6 @@
 {
     "name": "DooTask",
-    "version": "0.12.28",
+    "version": "1.0.0",
     "description": "DooTask is task management system.",
     "main": "electron.js",
     "license": "MIT",
@@ -9,11 +9,9 @@
         "start-quiet": "sleep 3 && electron-forge start &> /dev/null",
         "build": "electron-builder",
         "build-mac": "electron-builder --mac",
-        "build-mac-arm": "electron-builder --mac --arm64",
         "build-win": "electron-builder --win",
-        "build-mac-publish": "electron-builder -p always --mac",
-        "build-mac-arm-publish": "electron-builder -p always --mac --arm64",
-        "build-win-publish": "electron-builder -p always --win",
+        "build-mac-publish": "electron-builder --publish always --mac",
+        "build-win-publish": "electron-builder --publish always --win",
         "package": "electron-forge package",
         "make": "electron-forge make",
         "publish": "electron-forge publish"
@@ -33,21 +31,24 @@
         "@electron-forge/maker-rpm": "^6.0.0-beta.63",
         "@electron-forge/maker-squirrel": "^6.0.0-beta.63",
         "@electron-forge/maker-zip": "^6.0.0-beta.63",
-        "dmg-license": "^1.0.10",
         "dotenv": "^16.0.0",
-        "electron": "^17.1.1",
-        "electron-builder": "^22.14.13"
+        "electron": "^17.2.0",
+        "electron-builder": "^23.0.3",
+        "electron-notarize": "^1.2.1",
+        "form-data": "^4.0.0",
+        "ora": "^4.1.1"
     },
     "dependencies": {
-        "axios": "^0.26.0",
+        "axios": "^0.26.1",
         "crc": "^3.8.0",
-        "electron-squirrel-startup": "^1.0.0",
         "electron-log": "^4.4.6",
-        "fs-extra": "^10.0.0",
-        "pdf-lib": "^1.16.0"
+        "electron-squirrel-startup": "^1.0.0",
+        "electron-updater": "^4.6.5",
+        "fs-extra": "^10.0.1",
+        "pdf-lib": "^1.17.1"
     },
     "build": {
-        "appId": "com.dootask.task",
+        "appId": "com.dootask.desktop",
         "artifactName": "${productName}-v${version}-${os}-${arch}.${ext}",
         "asar": true,
         "files": [
@@ -60,38 +61,52 @@
         "publish": {
             "provider": "github"
         },
+        "releaseInfo": {},
+        "afterSign": "./notarize.js",
         "mac": {
             "icon": "../resources/assets/statics/public/images/logo-app.png",
             "entitlements": "entitlements.plist",
             "entitlementsInherit": "entitlements.plist",
             "category": "public.app-category.productivity",
             "target": [
-                "zip",
-                "dmg",
-                "pkg"
+                {
+                    "target": "zip",
+                    "arch": [
+                        "x64",
+                        "arm64"
+                    ]
+                },
+                {
+                    "target": "dmg",
+                    "arch": [
+                        "x64",
+                        "arm64",
+                        "universal"
+                    ]
+                }
             ]
         },
         "win": {
             "icon": "../resources/assets/statics/public/images/logo-app.ico",
             "target": [
-                "tar.gz",
-                "nsis"
+                {
+                    "target": "nsis",
+                    "arch": [
+                        "x64"
+                    ]
+                },
+                {
+                    "target": "msi",
+                    "arch": [
+                        "x64"
+                    ]
+                }
             ]
         },
         "nsis": {
             "oneClick": false,
             "artifactName": "${productName}-v${version}-${os}-${arch}.${ext}",
             "allowToChangeInstallationDirectory": true
-        },
-        "pkg": {
-            "installLocation": "/Applications",
-            "mustClose": [],
-            "allowAnywhere": true,
-            "allowCurrentUserHome": true,
-            "allowRootDirectory": true,
-            "isVersionChecked": true,
-            "isRelocatable": false,
-            "overwriteAction": "upgrade"
         }
     },
     "config": {

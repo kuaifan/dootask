@@ -1,32 +1,33 @@
 {
     "name": "DooTask",
-    "version": "0.12.28",
+    "version": "0.12.34",
     "description": "DooTask is task management system.",
     "scripts": {
         "start": "./cmd dev",
         "build": "./cmd prod",
         "version": "node ./version.js"
     },
-    "app": {
-        "id": "com.dootask.task",
-        "sites": [
-            {
-                "name": "DooTask",
-                "id": "com.dootask.task",
-                "url": "https://www.dootask.com/"
-            },
-            {
-                "name": "HitoseaTask",
-                "id": "com.hitosea.task",
-                "url": "https://t.hitosea.com/"
-            },
-            {
-                "name": "PublicDooTask",
-                "id": "com.dootask.public",
-                "url": "https://public/"
+    "app": [
+        {
+            "name": "DooTask",
+            "id": "com.dootask.desktop",
+            "url": "https://dootask.com/",
+            "publish": {
+                "provider": "github",
+                "owner": "kuaifan",
+                "repo": "dootask"
             }
-        ]
-    },
+        },
+        {
+            "name": "HitoseaTask",
+            "id": "com.hitosea.desktop",
+            "url": "https://t.hitosea.com/",
+            "publish": {
+                "provider": "generic",
+                "url": "https://t.hitosea.com/desktop/publish"
+            }
+        }
+    ],
     "author": {
         "name": "KuaiFan",
         "email": "aipaw@live.cn",

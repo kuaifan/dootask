@@ -1,0 +1,85 @@
+name: Build Main
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    if: startsWith(github.event.ref, 'refs/tags/v')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Create changelog text
+        id: changelog
+        uses: loopwerk/tag-changelog@v1
+        with:
+          token: ${{ secrets.GH_PAT }}
+          exclude_types: other,chore,build
+
+      - name: Create release
+        uses: actions/create-release@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: ${{ steps.changelog.outputs.changes }}
+
+  build-mac:
+    runs-on: macos-latest
+    environment: build
+
+    if: startsWith(github.event.ref, 'refs/tags/v')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+
+      - name: Build for MacOS
+        env:
+          APPLEID: ${{ secrets.APPLEID }}
+          APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          EP_PRE_RELEASE: true
+        run: ./cmd electron build-mac
+
+  build-win:
+    runs-on: windows-latest
+    environment: build
+
+    if: startsWith(github.event.ref, 'refs/tags/v')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+
+      - name: Build for Windows
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          EP_PRE_RELEASE: true
+        run: |
+          npm install
+          cd electron
+          npm install
+          cd ../
+          mkdir -p ./electron/public
+          cp ./electron/index.html ./electron/public/index.html
+          npx mix --production -- --env --electron
+          node ./electron/build.js build-win
+

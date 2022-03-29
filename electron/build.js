@@ -1,8 +1,12 @@
+const os = require('os')
 const fs = require('fs');
 const fse = require('fs-extra');
 const path = require('path')
 const inquirer = require('inquirer');
 const child_process = require('child_process');
+const ora = require('ora');
+const axios = require('axios');
+const FormData =require('form-data');
 const utils = require('./utils');
 const config = require('../package.json')
 const argv = process.argv;
@@ -13,7 +17,8 @@ const nativeCachePath = path.resolve(__dirname, ".native");
 const devloadCachePath = path.resolve(__dirname, ".devload");
 const packageFile = path.resolve(__dirname, "package.json");
 const packageBakFile = path.resolve(__dirname, "package-bak.json");
-const platform = ["build-mac", "build-mac-arm", "build-win"];
+const platform = ["build-mac", "build-win"];
+const comSuffix = os.type() == 'Windows_NT' ? '.cmd' : '';
 
 // 克隆 Drawio
 function cloneDrawio(systemInfo) {
@@ -35,12 +40,48 @@ function cloneDrawio(systemInfo) {
     fs.writeFileSync(preConfigFile, preConfigString, 'utf8');
 }
 
+// 通用发布
+function genericPublish(url, version) {
+    const filePath = path.resolve(__dirname, "dist")
+    fs.readdir(filePath, async (err, files) => {
+        if (err) {
+            console.warn(err)
+        } else {
+            for (const filename of files) {
+                const localFile = path.join(filePath, filename)
+                const fileStat = fs.statSync(localFile)
+                if (fileStat.isFile()) {
+                    const uploadOra = ora(`${filename} uploading...`).start()
+                    const formData = new FormData()
+                    formData.append("file", fs.createReadStream(localFile));
+                    await axios({
+                        method: 'post',
+                        url: url,
+                        data: formData,
+                        maxContentLength: Infinity,
+                        maxBodyLength: Infinity,
+                        headers: {
+                            'Generic-Version': version,
+                            'Content-Type': 'multipart/form-data;boundary=' + formData.getBoundary(),
+                        }
+                    }).then(_ => {
+                        uploadOra.succeed(`${filename} upload successful`)
+                    }).catch(_ => {
+                        uploadOra.fail(`${filename} upload fail`)
+                    })
+                }
+            }
+        }
+    });
+}
+
 // 生成配置、编译应用
 function startBuild(data, publish) {
     // information
     console.log("Name: " + data.name);
     console.log("AppId: " + data.id);
     console.log("Version: " + config.version);
+    console.log("Publish: " + (publish ? 'Yes' : 'No'));
     let systemInfo = {
         title: data.name,
         version: config.version,
@@ -68,12 +109,24 @@ function startBuild(data, publish) {
     econfig.build.appId = data.id;
     econfig.build.artifactName = utils.getDomain(data.url) + "-v${version}-${os}-${arch}.${ext}";
     econfig.build.nsis.artifactName = utils.getDomain(data.url) + "-v${version}-${os}-${arch}.${ext}";
-    econfig.build.pkg.mustClose = [data.id];
+    if (publish === false || typeof process.env.APPLEID !== "string" || !process.env.APPLEID) {
+        delete econfig.build.afterSign;
+    }
+    if (publish === true && utils.isJson(data.publish)) {
+        econfig.build.publish = data.publish
+    }
+    if (publish === true && process.env.RELEASE_BODY) {
+        econfig.build.releaseInfo.releaseNotes = process.env.RELEASE_BODY
+    }
     fs.writeFileSync(packageFile, JSON.stringify(econfig, null, 2), 'utf8');
     // build
-    child_process.spawnSync("npm", ["run", data.platform + (publish === true ? "-publish" : "")], {stdio: "inherit", cwd: "electron"});
+    child_process.spawnSync("npm" + comSuffix, ["run", data.platform + (publish === true ? "-publish" : "")], {stdio: "inherit", cwd: "electron"});
     // package.json Recovery
     fse.copySync(packageBakFile, packageFile)
+    // generic publish
+    if (econfig.build.publish.provider === "generic") {
+        genericPublish(econfig.build.publish.url, config.version)
+    }
 }
 
 if (["dev"].includes(argv[2])) {
@@ -83,63 +136,62 @@ if (["dev"].includes(argv[2])) {
     child_process.spawn("npm", ["run", "start-quiet"], {stdio: "inherit", cwd: "electron"});
 } else if (platform.includes(argv[2])) {
     // 自动编译
-    config.app.sites.forEach((data) => {
-        if (data.name && data.id && data.url) {
+    let provider = process.env.PROVIDER === "generic" ? "generic" : "github"
+    config.app.forEach(data => {
+        if (data.publish.provider === provider) {
             data.platform = argv[2];
             startBuild(data, true)
         }
     })
 } else {
     // 自定义编译
+    let appChoices = [];
+    config.app.forEach(data => {
+        appChoices.push({
+            name: data.name,
+            value: data
+        })
+    })
     const questions = [
         {
-            type: 'input',
-            name: 'website',
-            message: "请输入网站地址",
-            default: () => {
-                if (fs.existsSync(nativeCachePath)) {
-                    return fs.readFileSync(nativeCachePath, 'utf8');
-                }
-                return undefined;
-            },
-            validate: function (value) {
-                if (!utils.rightExists(value, "/")) {
-                    return '网址必须以 "/" 结尾';
-                }
-                return value !== ''
-            }
+            type: 'list',
+            name: 'app',
+            message: "选择编译应用",
+            choices: appChoices
         },
         {
             type: 'list',
             name: 'platform',
-            message: "选择编译系统平台",
+            message: "选择编译系统",
             choices: [{
                 name: "MacOS",
                 value: [platform[0]]
             }, {
-                name: "MacOS arm64",
+                name: "Window",
                 value: [platform[1]]
-            }, {
-                name: "Window x86_64",
-                value: [platform[2]]
             }, {
                 name: "All platforms",
                 value: platform
+            }]
+        },
+        {
+            type: 'list',
+            name: 'publish',
+            message: "选择是否要发布",
+            choices: [{
+                name: "No",
+                value: false
+            }, {
+                name: "Yes",
+                value: true
             }]
         }
     ];
     inquirer.prompt(questions).then(answers => {
         answers.platform.forEach(platform => {
-            startBuild({
-                "name": config.name,
-                "id": config.app.id,
-                "url": answers.website,
-                "platform": platform
-            }, false)
+            let data = answers.app;
+            data.platform = platform
+            startBuild(data, answers.publish)
         });
     });
 }
-
-
-
-

@@ -91,7 +91,7 @@ export default {
     methods: {
         toggleRoute(path) {
             if (path == 'version') {
-                Store.set('releasesNotification', null);
+                Store.set('updateNotification', null);
                 return;
             }
             this.show768Menu = false;

@@ -3,6 +3,7 @@ const fse = require('fs-extra')
 const os = require("os");
 const path = require('path')
 const {app, BrowserWindow, ipcMain, dialog, clipboard, nativeImage, shell} = require('electron')
+const {autoUpdater} = require("electron-updater")
 const log = require("electron-log");
 const fsProm = require('fs/promises');
 const PDFDocument = require('pdf-lib').PDFDocument;
@@ -79,11 +80,11 @@ function createMainWindow() {
     mainWindow.webContents.setUserAgent(mainWindow.webContents.getUserAgent() + " MainTaskWindow/" + process.platform + "/" + os.arch() + "/1.0");
 
     if (devloadUrl) {
-        mainWindow.loadURL(devloadUrl).then(r => {
+        mainWindow.loadURL(devloadUrl).then(_ => {
 
         })
     } else {
-        mainWindow.loadFile('./public/index.html').then(r => {
+        mainWindow.loadFile('./public/index.html').then(_ => {
 
         })
     }
@@ -171,13 +172,13 @@ function createSubWindow(args) {
     browser.webContents.setUserAgent(browser.webContents.getUserAgent() + " SubTaskWindow/" + process.platform + "/" + os.arch() + "/1.0" + (args.userAgent ? (" " + args.userAgent) : ""));
 
     if (devloadUrl) {
-        browser.loadURL(devloadUrl + '#' + (args.hash || args.path)).then(r => {
+        browser.loadURL(devloadUrl + '#' + (args.hash || args.path)).then(_ => {
 
         })
     } else {
         browser.loadFile('./public/index.html', {
             hash: args.hash || args.path
-        }).then(r => {
+        }).then(_ => {
 
         })
     }
@@ -404,6 +405,53 @@ ipcMain.on('setDockBadge', (event, args) => {
         app.dock.setBadge("")
     }
     event.returnValue = "ok"
+})
+
+//================================================================
+// Update
+//================================================================
+
+let autoUpdating = 0
+autoUpdater.logger = log
+autoUpdater.autoDownload = false
+autoUpdater.on('update-available', info => {
+    mainWindow.webContents.send("updateAvailable", info)
+})
+autoUpdater.on('update-downloaded', info => {
+    mainWindow.webContents.send("updateDownloaded", info)
+})
+
+/**
+ * 检查更新
+ */
+ipcMain.on('updateCheckAndDownload', (event, args) => {
+    event.returnValue = "ok"
+    if (autoUpdating + 3600 > utils.Time()) {
+        return  // 限制1小时仅执行一次
+    }
+    if (args.provider) {
+        autoUpdater.setFeedURL(args)
+    }
+    autoUpdater.checkForUpdates().then(info => {
+        if (args.apiVersion) {
+            if (utils.compareVersion(info.updateInfo.version, args.apiVersion) === 0) {
+                autoUpdating = utils.Time()
+                autoUpdater.downloadUpdate().then(_ => {}).catch(_ => {})
+            }
+        } else {
+            autoUpdating = utils.Time()
+            autoUpdater.downloadUpdate().then(_ => {}).catch(_ => {})
+        }
+    })
+})
+
+/**
+ * 退出并安装更新
+ */
+ipcMain.on('updateQuitAndInstall', (event) => {
+    event.returnValue = "ok"
+    autoUpdater.quitAndInstall()
+    app.quit()
 })
 
 //================================================================

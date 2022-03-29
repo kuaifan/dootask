@@ -48,7 +48,7 @@ class IndexController extends InvokeController
         return [
             'version' => Base::getVersion(),
             'owner' => 'kuaifan',
-            'repo' => 'dootask-test',
+            'repo' => 'dootask',
         ];
     }
 
