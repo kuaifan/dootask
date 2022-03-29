@@ -99,9 +99,13 @@ class IndexController extends InvokeController
                 "path" => $genericPath,
                 "fileName" => true
             ]);
-            if ($res) {
-                if ($body) {
-                    file_put_contents(public_path($genericPath . "change.md"), $body);
+            if (Base::isSuccess($res)) {
+                if (in_array($res['data']['name'], ['latest.yml', 'latest-mac.yml']) && $body) {
+                    $content = <<<EOF
+                        releaseNotes: |-
+                          $body
+                        EOF;
+                    file_put_contents($res['data']['file'], $content, FILE_APPEND);
                 }
                 file_put_contents($latestFile, $genericVersion);
             }
