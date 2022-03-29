@@ -109,14 +109,14 @@ function startBuild(data, publish) {
     econfig.build.appId = data.id;
     econfig.build.artifactName = utils.getDomain(data.url) + "-v${version}-${os}-${arch}.${ext}";
     econfig.build.nsis.artifactName = utils.getDomain(data.url) + "-v${version}-${os}-${arch}.${ext}";
-    if (publish === false || typeof process.env.APPLEID !== "string" || !process.env.APPLEID) {
+    if (!process.env.APPLEID || !process.env.APPLEIDPASS) {
         delete econfig.build.afterSign;
     }
-    if (publish === true && utils.isJson(data.publish)) {
-        econfig.build.publish = data.publish
-    }
-    if (publish === true && process.env.RELEASE_BODY) {
+    if (process.env.RELEASE_BODY) {
         econfig.build.releaseInfo.releaseNotes = process.env.RELEASE_BODY
+    }
+    if (utils.isJson(data.publish)) {
+        econfig.build.publish = data.publish
     }
     fs.writeFileSync(packageFile, JSON.stringify(econfig, null, 2), 'utf8');
     // build
@@ -124,7 +124,7 @@ function startBuild(data, publish) {
     // package.json Recovery
     fse.copySync(packageBakFile, packageFile)
     // generic publish
-    if (econfig.build.publish.provider === "generic") {
+    if (publish === true && econfig.build.publish.provider === "generic") {
         genericPublish(econfig.build.publish.url, config.version)
     }
 }
