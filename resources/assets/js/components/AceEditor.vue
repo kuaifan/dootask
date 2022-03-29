@@ -68,7 +68,7 @@ export default {
                 "^Dockerfile"
             ],
             "golang": [
-                "go"
+                "go|golang"
             ],
             "HTML": [
                 "html|htm|xhtml|vue|we|wpy"
