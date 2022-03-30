@@ -3,10 +3,11 @@
 
 namespace App\Tasks;
 
-
 use App\Models\ProjectTask;
 use App\Module\Base;
 use Carbon\Carbon;
+
+@error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 
 class OverdueRemindEmailTask extends AbstractTask
 {

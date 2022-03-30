@@ -96,6 +96,7 @@ run_compile() {
     if [ "$type" = "prod" ]; then
         rm -rf "./public/js/build"
         npx mix --production
+        echo "$(rand_string 16)" > ./public/js/hash
     else
         npx mix watch --hot
     fi

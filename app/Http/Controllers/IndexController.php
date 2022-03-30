@@ -37,7 +37,18 @@ class IndexController extends InvokeController
      */
     public function main()
     {
-        return view('main', ['version' => Base::getVersion()]);
+        $hash = 'no';
+        $path = public_path('js/hash');
+        if (file_exists($path)) {
+            $hash = trim(file_get_contents(public_path('js/hash')));
+            if (strlen($hash) > 16) {
+                $hash = 'long';
+            }
+        }
+        return view('main', [
+            'version' => Base::getVersion(),
+            'hash' => $hash
+        ]);
     }
 
     /**
