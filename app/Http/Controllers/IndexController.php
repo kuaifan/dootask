@@ -57,7 +57,7 @@ class IndexController extends InvokeController
      */
     public function version()
     {
-        $url = Base::getUrl();
+        $url = url('');
         $package = Base::getPackage();
         $array = [
             'version' => Base::getVersion(),
@@ -66,7 +66,7 @@ class IndexController extends InvokeController
         if (is_array($package['app'])) {
             foreach ($package['app'] as $item) {
                 if (is_array($item['publish']) && Base::hostContrast($url, $item['url'])) {
-                    $array = $item['publish'];
+                    $array['publish'] = $item['publish'];
                     break;
                 }
             }
