@@ -1328,10 +1328,19 @@ export default {
                         this.shareList.splice(index, 1)
                     }
                 }
-            }).catch(({msg}) => {
+            }).catch(({ret, msg}) => {
                 item.loading = false;
                 item.permission = item._permission;
-                $A.modalError(msg)
+                if (ret === -3001) {
+                    $A.modalConfirm({
+                        content: '此文件夹内已有共享文件夹，子文件的共享状态将被取消，是否继续？',
+                        onOk: () => {
+                            this.onShare(true)
+                        }
+                    })
+                } else {
+                    $A.modalError(msg, force === true ? 301 : 0)
+                }
             })
         },
 
