@@ -102,7 +102,7 @@ export default {
                         })
                     } else {
                         // 网页端提示下载
-                        this.getDownloadUrl(data)
+                        this.getDownloadUrl(data.publish)
                     }
                 }
             }).catch(_ => {
@@ -110,34 +110,45 @@ export default {
             });
         },
 
-        getDownloadUrl(data) {
-            let key = "cacheAppdown::" + this.apiVersion
-            let cache = $A.getStorageJson(key);
-            let timeout = 600;
-            if (cache.time && cache.time + timeout > Math.round(new Date().getTime() / 1000)) {
-                this.downloadUrl = cache.data.html_url;
-                setTimeout(this.checkVersion, timeout * 1000)
+        getDownloadUrl(publish) {
+            if (!$A.isJson(publish)) {
                 return;
             }
             //
-            if (this.loadIng > 0) {
-                return;
+            switch (publish.provider) {
+                case 'generic':
+                    this.downloadUrl = `${publish.url}/${this.apiVersion}`
+                    break;
+
+                case 'github':
+                    let key = "cacheAppdown::" + this.apiVersion
+                    let cache = $A.getStorageJson(key);
+                    let timeout = 600;
+                    if (cache.time && cache.time + timeout > Math.round(new Date().getTime() / 1000)) {
+                        this.downloadUrl = cache.data.html_url;
+                        setTimeout(this.checkVersion, timeout * 1000)
+                        return;
+                    }
+                    //
+                    if (this.loadIng > 0) {
+                        return;
+                    }
+                    this.loadIng++;
+                    axios.get(`https://api.github.com/repos/${publish.owner}/${publish.repo}/releases`).then(({status, data}) => {
+                        this.loadIng--;
+                        if (status === 200 && $A.isArray(data)) {
+                            cache.time = Math.round(new Date().getTime() / 1000)
+                            cache.data = data.find(({tag_name}) => this.compareVersion(this.tagVersion(tag_name), this.apiVersion) === 0) || {}
+                            $A.setStorage(key, cache);
+                            this.downloadUrl = cache.data.html_url;
+                        }
+                        setTimeout(this.checkVersion, timeout * 1000)
+                    }).catch(() => {
+                        this.loadIng--;
+                        setTimeout(this.checkVersion, timeout * 1000)
+                    });
+                    break;
             }
-            this.loadIng++;
-            //
-            axios.get(`https://api.github.com/repos/${data.owner}/${data.repo}/releases`).then(({status, data}) => {
-                this.loadIng--;
-                if (status === 200 && $A.isArray(data)) {
-                    cache.time = Math.round(new Date().getTime() / 1000)
-                    cache.data = data.find(({tag_name}) => this.compareVersion(this.tagVersion(tag_name), this.apiVersion) === 0) || {}
-                    $A.setStorage(key, cache);
-                    this.downloadUrl = cache.data.html_url;
-                }
-                setTimeout(this.checkVersion, timeout * 1000)
-            }).catch(() => {
-                this.loadIng--;
-                setTimeout(this.checkVersion, timeout * 1000)
-            });
         },
 
         updateQuitAndInstall() {

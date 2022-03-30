@@ -433,6 +433,9 @@ ipcMain.on('updateCheckAndDownload', (event, args) => {
         autoUpdater.setFeedURL(args)
     }
     autoUpdater.checkForUpdates().then(info => {
+        if (utils.compareVersion(config.version, info.updateInfo.version) >= 0) {
+            return
+        }
         if (args.apiVersion) {
             if (utils.compareVersion(info.updateInfo.version, args.apiVersion) === 0) {
                 autoUpdating = utils.Time()

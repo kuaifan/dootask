@@ -61,19 +61,29 @@ class Base
     }
 
     /**
+     * 获取package配置文件
+     * @return array
+     */
+    public static function getPackage()
+    {
+        return Cache::remember("Base::package", now()->addSeconds(10), function () {
+            $file = base_path('package.json');
+            if (file_exists($file)) {
+                $package = json_decode(file_get_contents($file), true);
+                return is_array($package) ? $package : [];
+            }
+            return [];
+        });
+    }
+
+    /**
      * 获取版本号
      * @return string
      */
     public static function getVersion()
     {
-        return Cache::remember("Base::version", now()->addSeconds(10), function () {
-            $file = base_path('package.json');
-            if (file_exists($file)) {
-                $packageArray = json_decode(file_get_contents($file), true);
-                return $packageArray['version'] ?? '1.0.0';
-            }
-            return '1.0.0';
-        });
+        $package = self::getPackage();
+        return $package['version'] ?? '1.0.0';
     }
 
     /**
@@ -2753,16 +2763,19 @@ class Base
     /**
      * 遍历获取文件
      * @param $dir
+     * @param bool $subdirectory    是否遍历子目录
      * @return array
      */
-    public static function readDir($dir)
+    public static function readDir($dir, $subdirectory = true)
     {
         $files = array();
         $dir_list = scandir($dir);
         foreach ($dir_list as $file) {
             if ($file != '..' && $file != '.') {
                 if (is_dir($dir . '/' . $file)) {
-                    $files = array_merge($files, self::readDir($dir . '/' . $file));
+                    if ($subdirectory) {
+                        $files = array_merge($files, self::readDir($dir . '/' . $file, $subdirectory));
+                    }
                 } else {
                     $files[] = $dir . "/" . $file;
                 }
@@ -2990,6 +3003,18 @@ class Base
         }
         $matrix = array_unique($matrix, SORT_REGULAR);
         return array_merge($matrix);
+    }
+
+    /**
+     * 字节转格式
+     * @param $bytes
+     * @return string
+     */
+    public static function readableBytes($bytes)
+    {
+        $i = floor(log($bytes) / log(1024));
+        $sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+        return sprintf('%.02F', $bytes / pow(1024, $i)) * 1 . ' ' . $sizes[$i];
     }
 
     /**

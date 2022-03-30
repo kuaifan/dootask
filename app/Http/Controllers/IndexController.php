@@ -6,6 +6,7 @@ use App\Module\Base;
 use App\Tasks\AutoArchivedTask;
 use App\Tasks\DeleteTmpTask;
 use App\Tasks\OverdueRemindEmailTask;
+use Arr;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Redirect;
 use Request;
@@ -45,11 +46,21 @@ class IndexController extends InvokeController
      */
     public function version()
     {
-        return [
+        $url = Base::getUrl();
+        $package = Base::getPackage();
+        $array = [
             'version' => Base::getVersion(),
-            'owner' => 'kuaifan',
-            'repo' => 'dootask',
+            'publish' => Arr::get($package, 'app.0.publish'),
         ];
+        if (is_array($package['app'])) {
+            foreach ($package['app'] as $item) {
+                if (is_array($item['publish']) && Base::hostContrast($url, $item['url'])) {
+                    $array = $item['publish'];
+                    break;
+                }
+            }
+        }
+        return $array;
     }
 
     /**
@@ -87,9 +98,9 @@ class IndexController extends InvokeController
      */
     public function desktop__publish($name = '')
     {
-        $genericVersion = Request::header('generic-version');
-        //
         $latestFile = public_path("uploads/desktop/latest");
+        $genericVersion = Request::header('generic-version');
+        // 上传
         if (preg_match("/^\d+\.\d+\.\d+$/", $genericVersion)) {
             $genericPath = "uploads/desktop/" . $genericVersion . "/";
             $res = Base::upload([
@@ -103,6 +114,24 @@ class IndexController extends InvokeController
             }
             return $res;
         }
+        // 列表
+        if (preg_match("/^\d+\.\d+\.\d+$/", $name)) {
+            $path = "uploads/desktop/{$name}";
+            $dirPath = public_path($path);
+            $lists = Base::readDir($dirPath);
+            $files = [];
+            foreach ($lists as $file) {
+                $fileName = Base::leftDelete($file, $dirPath);
+                $files[] = [
+                    'name' => substr($fileName, 1),
+                    'time' => date("Y-m-d H:i:s", fileatime($file)),
+                    'size' => Base::readableBytes(filesize($file)),
+                    'url' => Base::fillUrl($path . $fileName),
+                ];
+            }
+            return view('desktop', ['version' => $name, 'files' => $files]);
+        }
+        // 下载
         if ($name && file_exists($latestFile)) {
             $genericVersion = file_get_contents($latestFile);
             if (preg_match("/^\d+\.\d+\.\d+$/", $genericVersion)) {
