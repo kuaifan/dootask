@@ -17,7 +17,7 @@ class AddFilesPids extends Migration
         Schema::table('files', function (Blueprint $table) use (&$isAdd) {
             if (!Schema::hasColumn('files', 'pids')) {
                 $isAdd = true;
-                $table->string('pids', 255)->nullable()->default('')->after('id')->comment('上级ID递归');
+                $table->string('pids', 255)->nullable()->default('')->after('pid')->comment('上级ID递归');
             }
         });
         if ($isAdd) {
@@ -26,6 +26,12 @@ class AddFilesPids extends Migration
                 /** @var \App\Models\File $item */
                 foreach ($lists as $item) {
                     $item->saveBeforePids();
+                }
+            });
+            \App\Models\File::whereShare(0)->chunkById(100, function ($lists) {
+                /** @var \App\Models\File $item */
+                foreach ($lists as $item) {
+                    \App\Models\FileUser::whereFileId($item->id)->delete();
                 }
             });
         }

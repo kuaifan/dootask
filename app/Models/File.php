@@ -158,7 +158,7 @@ class File extends AbstractModel
      * @param $share
      * @return bool
      */
-    public function setShare($share = null)
+    public function updataShare($share = null)
     {
         if ($share === null) {
             $share = FileUser::whereFileId($this->id)->count() == 0 ? 0 : 1;
@@ -167,10 +167,13 @@ class File extends AbstractModel
             AbstractModel::transaction(function () use ($share) {
                 $this->share = $share;
                 $this->save();
+                if ($share === 0) {
+                    FileUser::whereFileId($this->id)->delete();
+                }
                 $list = self::wherePid($this->id)->get();
                 if ($list->isNotEmpty()) {
                     foreach ($list as $item) {
-                        $item->setShare(0);
+                        $item->updataShare(0);
                     }
                 }
             });

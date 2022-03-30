@@ -1272,7 +1272,7 @@ export default {
             })
         },
 
-        onShare() {
+        onShare(force = false) {
             if (this.shareInfo.userids.length == 0) {
                 $A.messageWarning("请选择共享成员")
                 return;
@@ -1280,16 +1280,27 @@ export default {
             this.shareLoad++;
             this.$store.dispatch("call", {
                 url: 'file/share/update',
-                data: this.shareInfo,
+                data: Object.assign(this.shareInfo, {
+                    force: force === true ? 1 : 0
+                }),
             }).then(({data, msg}) => {
                 this.shareLoad--;
                 $A.messageSuccess(msg)
                 this.$store.dispatch("saveFile", data);
                 this.$set(this.shareInfo, 'userids', []);
                 this.getShare();
-            }).catch(({msg}) => {
+            }).catch(({ret, msg}) => {
                 this.shareLoad--;
-                $A.modalError(msg)
+                if (ret === -3001) {
+                    $A.modalConfirm({
+                        content: '此文件夹内已有共享文件夹，子文件的共享状态将被取消，是否继续？',
+                        onOk: () => {
+                            this.onShare(true)
+                        }
+                    })
+                } else {
+                    $A.modalError(msg, force === true ? 301 : 0)
+                }
             })
         },
 

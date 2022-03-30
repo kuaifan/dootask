@@ -811,6 +811,9 @@ class FileController extends AbstractController
      * - 0：只读
      * - 1：读写
      * - -1: 删除
+     * @apiParam {Number} [force]       设置共享时是否忽略提醒
+     * - 0：如果子文件夹已存在共享则ret返回-3001（默认）
+     * - 1：忽略提醒
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -823,6 +826,7 @@ class FileController extends AbstractController
         $id = intval(Request::input('id'));
         $userids = Request::input('userids');
         $permission = intval(Request::input('permission'));
+        $force = intval(Request::input('force'));
         //
         if (!in_array($permission, [-1, 0, 1])) {
             return Base::retError('参数错误');
@@ -859,6 +863,11 @@ class FileController extends AbstractController
         } else {
             // 设置共享
             $action = "update";
+            if ($force === 0) {
+                if (File::where('pids', 'like', ",{$file->id},")->whereShare(1)->exists()) {
+                    return Base::retError('此文件夹内已有共享文件夹', [], -3001);
+                }
+            }
             if (FileUser::whereFileId($file->id)->count() + count($userids) > 100) {
                 return Base::retError('共享人数上限100个成员');
             }
@@ -874,7 +883,7 @@ class FileController extends AbstractController
             }
         }
         //
-        $file->setShare();
+        $file->updataShare();
         $file->pushMsg($action, $action == "delete" ? null : $file, $array);
         return Base::retSuccess($action == "delete" ? "删除成功" : "设置成功", $file);
     }
@@ -915,7 +924,7 @@ class FileController extends AbstractController
             'userid' => $user->userid,
         ])->delete();
         //
-        $file->setShare();
+        $file->updataShare();
         return Base::retSuccess("退出成功");
     }
 
