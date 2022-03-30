@@ -308,12 +308,8 @@
                             margin-right: 8px;
                         }
                     }
-                    .common-avatar {
-                        .el-avatar {
-                            > span {
-                                font-size: 12px;
-                            }
-                        }
+                    .avatar-char {
+                        font-size: 18px;
                     }
                     .permission {
                         padding-left: 6px;
@@ -438,7 +434,9 @@
                                     color: #ffffff;
                                 }
                             }
-
+                            .avatar-char {
+                                font-size: 18px;
+                            }
                         }
                         &.shear {
                             opacity: 0.38;
@@ -615,7 +613,7 @@
 }
 .page-file-share-list {
     max-height: 500px;
-    margin-bottom: 24px;
+    margin-bottom: 26px;
     > li {
         display: flex;
         align-items: center;

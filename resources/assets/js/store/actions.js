@@ -35,7 +35,7 @@ export default {
             params.success = (result, status, xhr) => {
                 if (!$A.isJson(result)) {
                     console.log(result, status, xhr);
-                    reject({data: {}, msg: "Return error"})
+                    reject({ret: -1, data: {}, msg: "Return error"})
                     return;
                 }
                 const {ret, data, msg} = result;
@@ -56,14 +56,14 @@ export default {
                             checkNick: false
                         })).then(resolve).catch(reject);
                     }).catch(() => {
-                        reject({data, msg: $A.L('请设置昵称！')})
+                        reject({ret: -1, data, msg: $A.L('请设置昵称！')})
                     });
                     return;
                 }
                 if (ret === 1) {
                     resolve({data, msg});
                 } else {
-                    reject({data, msg: msg || "Unknown error"})
+                    reject({ret, data, msg: msg || "Unknown error"})
                     //
                     if (ret === -4001) {
                         dispatch("forgetProject", data.project_id);
@@ -76,9 +76,9 @@ export default {
             };
             params.error = (xhr, status) => {
                 if (window.navigator.onLine === false || (status === 0 && xhr.readyState === 4)) {
-                    reject({data: {}, msg: $A.L('网络异常，请稍后再试！')})
+                    reject({ret: -1, data: {}, msg: $A.L('网络异常，请稍后再试！')})
                 } else {
-                    reject({data: {}, msg: "System error"})
+                    reject({ret: -1, data: {}, msg: "System error"})
                 }
             };
             //

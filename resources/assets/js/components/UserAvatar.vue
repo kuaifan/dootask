@@ -17,10 +17,10 @@
             <div v-if="showIcon" :class="['avatar-box', userId === userid || user.online ? 'online' : '']" :style="boxStyle">
                 <em :style="spotStyle"></em>
                 <EAvatar v-if="showImg" :class="{'avatar-default':isDefault}" :src="user.userimg" :size="avatarSize" @error="onError">
-                    <span :style="spotStyle">{{nickname}}</span>
+                    <span class="avatar-char" :style="spotStyle">{{nickname}}</span>
                 </EAvatar>
                 <EAvatar v-else :size="avatarSize" class="avatar-text">
-                    <span :style="spotStyle">{{nickname}}</span>
+                    <span class="avatar-char" :style="spotStyle">{{nickname}}</span>
                 </EAvatar>
             </div>
             <div v-if="showName" class="avatar-name" :style="nameStyle">{{user.nickname}}</div>

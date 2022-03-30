@@ -13,11 +13,11 @@
             }
             .avatar-text {
                 background-color: $primary-color;
-                > span {
-                    display: inline-block;
-                    font-size: 15px;
-                    line-height: 1;
-                }
+            }
+            .avatar-char {
+                display: inline-block;
+                font-size: 15px;
+                line-height: inherit;
             }
             > em {
                 position: absolute;
