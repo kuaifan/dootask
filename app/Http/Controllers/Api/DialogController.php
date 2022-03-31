@@ -303,8 +303,8 @@ class DialogController extends AbstractController
             $fileData['thumb'] = Base::unFillUrl($fileData['thumb']);
             $fileData['size'] *= 1024;
             //
-            if ($dialog->type === 'group') {
-                if ($dialog->group_type === 'task') {
+            if ($dialog->type === 'group' && $dialog->group_type === 'task') {  // 任务群聊保存文件
+                if (!in_array($fileData['ext'], File::localExt)) {      // 如果是图片不保存
                     $task = ProjectTask::whereDialogId($dialog->id)->first();
                     if ($task) {
                         $file = ProjectTaskFile::createInstance([
