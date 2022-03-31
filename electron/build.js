@@ -109,6 +109,7 @@ function startBuild(data, publish) {
     econfig.build.appId = data.id;
     econfig.build.artifactName = utils.getDomain(data.url) + "-v${version}-${os}-${arch}.${ext}";
     econfig.build.nsis.artifactName = utils.getDomain(data.url) + "-v${version}-${os}-${arch}.${ext}";
+    econfig.build.pkg.mustClose = [data.id];
     if (!process.env.APPLEID || !process.env.APPLEIDPASS) {
         delete econfig.build.afterSign;
     }

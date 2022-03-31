@@ -77,6 +77,13 @@
                     ]
                 },
                 {
+                    "target": "pkg",
+                    "arch": [
+                        "x64",
+                        "arm64"
+                    ]
+                },
+                {
                     "target": "dmg",
                     "arch": [
                         "x64",
@@ -107,6 +114,16 @@
             "oneClick": false,
             "artifactName": "${productName}-v${version}-${os}-${arch}.${ext}",
             "allowToChangeInstallationDirectory": true
+        },
+        "pkg": {
+            "installLocation": "/Applications",
+            "mustClose": [],
+            "allowAnywhere": true,
+            "allowCurrentUserHome": true,
+            "allowRootDirectory": true,
+            "isVersionChecked": true,
+            "isRelocatable": false,
+            "overwriteAction": "upgrade"
         }
     },
     "config": {
