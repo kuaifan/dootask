@@ -153,6 +153,7 @@
                             :disabled="sortDisabled || !isDesktop"
                             class="task-list"
                             draggable=".task-draggable"
+                            filter=".complete"
                             group="task"
                             @sort="sortUpdate"
                             @remove="sortUpdate">
