@@ -21,6 +21,9 @@ if (fs.existsSync(devloadCachePath)) {
     devloadUrl = fs.readFileSync(devloadCachePath, 'utf8')
 }
 
+/**
+ * 创建主窗口
+ */
 function createMainWindow() {
     mainWindow = new BrowserWindow({
         width: 1280,
@@ -61,6 +64,7 @@ function createMainWindow() {
 }
 
 /**
+ * 创建子窗口
  * @param args {path, hash, title, titleFixed, force, userAgent, config, webPreferences}
  */
 function createSubWindow(args) {
@@ -132,12 +136,25 @@ function createSubWindow(args) {
     }
 }
 
-app.whenReady().then(() => {
-    createMainWindow()
 
-    app.on('activate', () => {
-        if (BrowserWindow.getAllWindows().length === 0) createMainWindow()
+const getTheLock = app.requestSingleInstanceLock()
+if (!getTheLock) {
+    app.quit()
+} else {
+    app.on('second-instance', () => {
+        if (mainWindow) {
+            if (mainWindow.isMinimized()) {
+                mainWindow.restore()
+            }
+            mainWindow.focus()
+            mainWindow.show()
+        }
     })
+    app.on('ready', createMainWindow)
+}
+
+app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) createMainWindow()
 })
 
 app.on('window-all-closed', () => {
