@@ -1,5 +1,5 @@
 <template>
-    <div class="project-list">
+    <div class="project-list" :class="[tabTypeActive]">
         <PageTitle :title="projectData.name"/>
         <div class="project-head">
             <div class="project-titbox">

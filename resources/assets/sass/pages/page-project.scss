@@ -22,6 +22,9 @@
     .page-project {
         .project-list {
             height: auto;
+            &.gantt {
+                height: 100%;
+            }
         }
         .project-dialog {
             position: absolute;
