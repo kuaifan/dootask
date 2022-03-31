@@ -90,6 +90,10 @@ class FileController extends AbstractController
                 }
             }
         }
+        // 图片直接返回预览地址
+        foreach ($array as &$item) {
+            File::handleImageUrl($item);
+        }
         return Base::retSuccess('success', $array);
     }
 
@@ -757,6 +761,7 @@ class FileController extends AbstractController
             //
             $data = $tmpRow->toArray();
             $data['full_name'] = $webkitRelativePath ?: $data['name'];
+            File::handleImageUrl($data);
             return Base::retSuccess($data['name'] . ' 上传成功', $data);
         });
     }

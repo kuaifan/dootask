@@ -76,6 +76,13 @@ class File extends AbstractModel
     ];
 
     /**
+     * 图片文件
+     */
+    const imageExt = [
+        'jpg', 'jpeg', 'png', 'gif', 'bmp'
+    ];
+
+    /**
      * 本地媒体文件
      */
     const localExt = [
@@ -283,6 +290,21 @@ class File extends AbstractModel
         ];
         $task = new PushTask($params, false);
         Task::deliver($task);
+    }
+
+    /**
+     * 处理返回图片地址
+     * @param $item
+     * @return void
+     */
+    public static function handleImageUrl(&$item)
+    {
+        if (in_array($item['ext'], self::imageExt) ) {
+            $content = Base::json2array(FileContent::whereFid($item['id'])->orderByDesc('id')->value('content'));
+            if ($content) {
+                $item['image_url'] = Base::fillUrl($content['url']);
+            }
+        }
     }
 
     /**

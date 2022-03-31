@@ -880,12 +880,23 @@ export default {
                 this.searchKey = '';
                 this.pid = item.id;
             } else {
+                // 图片直接浏览
+                if (item.image_url) {
+                    const list = this.fileList.filter(({image_url}) => !!image_url)
+                    if (list.length > 0) {
+                        this.$store.state.previewImageIndex = list.findIndex(({id}) => item.id === id);
+                        this.$store.state.previewImageList = list.map(item => item.image_url);
+                        return;
+                    }
+                }
+                // 客户端打开独立窗口
                 if (this.$Electron) {
                     this.openSingle(item);
-                } else {
-                    this.fileInfo = item;
-                    this.fileShow = true;
+                    return;
                 }
+                // 正常显示弹窗
+                this.fileInfo = item;
+                this.fileShow = true;
             }
         },
 
