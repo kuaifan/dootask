@@ -7,8 +7,8 @@
     position: relative;
     .project-dialog-wrapper {
         .dialog-user {
-            margin-top: 36px;
-            padding: 0 32px;
+            margin-top: 26px;
+            padding: 0 22px;
             .member-head {
                 display: flex;
                 align-items: center;
@@ -21,12 +21,20 @@
                         color: $primary-color;
                     }
                 }
-                .member-view-all {
-                    color: #999;
-                    font-size: 13px;
+                .member-close {
                     cursor: pointer;
+
+                    .ivu-icon-ios-close {
+                        font-size: 38px;
+                        top: 3px;
+                        right: 2px;
+                        transition: all 0.2s;
+                    }
+
                     &:hover {
-                        color: #777;
+                        .ivu-icon-ios-close {
+                            transform: rotate(-90deg);
+                        }
                     }
                 }
             }
@@ -55,6 +63,9 @@
                 }
             }
         }
+        .dialog-title {
+            padding: 0 20px;
+        }
         .dialog-footer {
             .dialog-back {
                 display: none;
@@ -67,11 +78,12 @@
     .project-dialog {
         .project-dialog-wrapper {
             .dialog-user {
-                margin-top: 24px;
-                padding: 0 20px;
+                margin-top: 16px;
+                padding: 0 12px;
             }
             .dialog-title {
-                padding: 0 20px;
+                padding: 0 12px;
+                height: 58px;
             }
             .dialog-scroller {
                 padding: 0 20px;

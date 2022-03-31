@@ -4,8 +4,10 @@
             <div slot="head">
                 <div class="dialog-user">
                     <div class="member-head">
-                        <div class="member-title">{{$L('项目成员')}}<span>({{projectData.project_user.length}})</span></div>
-                        <div class="member-view-all" @click="memberShowAll=!memberShowAll">{{$L('查看所有')}}</div>
+                        <div class="member-title">{{$L('项目成员')}}<span @click="memberShowAll=!memberShowAll">({{projectData.project_user.length}})</span></div>
+                        <div class="member-close" @click="onClose">
+                            <Icon type="ios-close"/>
+                        </div>
                     </div>
                     <ul :class="['member-list', memberShowAll ? 'member-all' : '']">
                         <li v-for="item in projectData.project_user">
@@ -45,6 +47,9 @@ export default {
     methods: {
         onInputBack() {
             Store.set('onProjectDialogBack', null);
+        },
+        onClose() {
+            this.$store.dispatch('toggleProjectParameter', 'chat');
         }
     }
 }

@@ -2027,6 +2027,9 @@ export default {
      * @param dialog_id
      */
     getDialogMsgs({state, dispatch}, dialog_id) {
+        if (!dialog_id) {
+            return;
+        }
         let dialog = state.cacheDialogs.find(({id}) => id == dialog_id);
         if (!dialog) {
             dialog = {
