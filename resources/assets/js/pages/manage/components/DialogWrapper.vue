@@ -6,23 +6,34 @@
         @dragover.prevent="chatDragOver(true, $event)"
         @dragleave.prevent="chatDragOver(false, $event)">
         <slot name="head">
-            <div class="dialog-title" :class="{completed:$A.dialogCompleted(dialogData)}">
-                <div class="main-title">
-                    <template v-for="tag in $A.dialogTags(dialogData)" v-if="tag.color != 'success'">
-                        <Tag :color="tag.color" :fade="false">{{$L(tag.text)}}</Tag>
+            <div class="dialog-nav">
+                <div class="dialog-avatar">
+                    <template v-if="dialogData.type=='group'">
+                        <i v-if="dialogData.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
+                        <i v-else-if="dialogData.group_type=='task'" class="taskfont icon-avatar task" :class="{completed:$A.dialogCompleted(dialogData)}">&#xe6f4;</i>
+                        <Icon v-else class="icon-avatar" type="ios-people" />
                     </template>
-                    <h2>{{dialogData.name}}</h2>
-                    <em v-if="peopleNum > 0">({{peopleNum}})</em>
-                    <label v-if="dialogData.top_at" class="top-text">{{$L('置顶')}}</label>
+                    <div v-else-if="dialogData.dialog_user" class="user-avatar"><UserAvatar :userid="dialogData.dialog_user.userid" :size="42"/></div>
+                    <Icon v-else class="icon-avatar" type="md-person" />
                 </div>
-                <template v-if="dialogData.type === 'group'">
-                    <div v-if="dialogData.group_type === 'project'" class="sub-title pointer" @click="openProject">
-                        {{$L('项目聊天室')}} {{$L('打开项目管理')}}
+                <div class="dialog-title">
+                    <div class="main-title">
+                        <template v-for="tag in $A.dialogTags(dialogData)" v-if="tag.color != 'success'">
+                            <Tag :color="tag.color" :fade="false">{{$L(tag.text)}}</Tag>
+                        </template>
+                        <h2>{{dialogData.name}}</h2>
+                        <em v-if="peopleNum > 0">({{peopleNum}})</em>
+                        <label v-if="dialogData.top_at" class="top-text">{{$L('置顶')}}</label>
                     </div>
-                    <div v-else-if="dialogData.group_type === 'task'" class="sub-title pointer" @click="openTask">
-                        {{$L('任务聊天室')}} {{$L('查看任务详情')}}
-                    </div>
-                </template>
+                    <template v-if="dialogData.type === 'group'">
+                        <div v-if="dialogData.group_type === 'project'" class="sub-title pointer" @click="openProject">
+                            {{$L('项目聊天室')}} {{$L('打开项目管理')}}
+                        </div>
+                        <div v-else-if="dialogData.group_type === 'task'" class="sub-title pointer" @click="openTask">
+                            {{$L('任务聊天室')}} {{$L('查看任务详情')}}
+                        </div>
+                    </template>
+                </div>
             </div>
         </slot>
         <ScrollerY

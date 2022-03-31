@@ -15,8 +15,10 @@
                         </li>
                     </ul>
                 </div>
-                <div class="dialog-title">
-                    <h2>{{$L('群聊')}}</h2>
+                <div class="dialog-nav">
+                    <div class="dialog-title">
+                        <h2>{{$L('群聊')}}</h2>
+                    </div>
                 </div>
             </div>
             <div slot="inputBefore" class="dialog-back" @click="onInputBack">

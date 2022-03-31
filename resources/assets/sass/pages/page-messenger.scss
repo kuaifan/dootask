@@ -121,7 +121,7 @@
                                         position: absolute;
                                         bottom: 0;
                                         right: 12px;
-                                        font-size: 32px;
+                                        font-size: 28px;
                                         color: #19be6b;
                                         opacity: .2;
                                         z-index: 1;
@@ -376,9 +376,13 @@
             }
             .messenger-msg {
                 .dialog-wrapper {
-                    .dialog-title {
+                    .dialog-nav {
                         height: 54px;
-                        align-items: center;
+                        justify-content: center;
+                        .dialog-title {
+                            flex: 0;
+                            width: auto;
+                        }
                     }
                     .dialog-footer {
                         position: relative;
