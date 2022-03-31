@@ -15,7 +15,7 @@ class CreateFileLinksTable extends Migration
     {
         Schema::create('file_links', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->bigInteger('file_id')->nullable()->default(0)->comment('项目ID');
+            $table->bigInteger('file_id')->nullable()->default(0)->comment('文件ID');
             $table->integer('num')->nullable()->default(0)->comment('累计访问');
             $table->string('code')->nullable()->default('')->comment('链接码');
             $table->timestamps();

@@ -87,7 +87,7 @@
             //
             this.subscribe = Store.subscribe('cacheUserActive', (data) => {
                 if (data.userid == this.userid) {
-                    this.user = data;
+                    this.setUser(data)
                 }
             });
         },
@@ -174,7 +174,7 @@
 
             userInfo(info) {
                 if (info.userid == this.userid) {
-                    this.user = info;
+                    this.setUser(info);
                 }
             },
 
@@ -190,10 +190,21 @@
                     return;
                 }
                 if (this.userid == this.userInfo.userid) {
-                    this.user = this.userInfo;
+                    this.setUser(this.userInfo);
                     return;
                 }
                 this.$store.dispatch("getUserBasic", {userid: this.userid});
+            },
+
+            setUser(info) {
+                if (this.user && this.user.userimg != info.usering) {
+                    this.user = null
+                    this.$nextTick(() => {
+                        this.user = info
+                    })
+                } else {
+                    this.user = info
+                }
             },
 
             onError() {

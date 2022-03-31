@@ -87,7 +87,7 @@ class ReportController extends AbstractController
         $username = trim(Request::input('username', ''));
         $builder->whereHas('sendUser', function ($query) use ($username) {
             if (!empty($username)) {
-                $query->where('users.email', 'LIKE', '%' . $username . '%');
+                $query->where("users.email", "LIKE", "%{$username}%");
             }
         });
         in_array($type, [Report::WEEKLY, Report::DAILY]) && $builder->whereType($type);
