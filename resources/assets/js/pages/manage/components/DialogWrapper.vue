@@ -28,6 +28,7 @@
         <ScrollerY
             ref="scroller"
             class="dialog-scroller overlay-y"
+            :style="{opacity: visible ? 1 : 0}"
             :auto-bottom="isAutoBottom"
             @on-scroll="chatScroll"
             static>
@@ -129,6 +130,7 @@ export default {
 
     data() {
         return {
+            visible: true,
             autoBottom: true,
             autoInterval: null,
 
@@ -243,10 +245,13 @@ export default {
         dialogId: {
             handler(id) {
                 if (id) {
-                    this.autoBottom = true;
                     this.msgNew = 0;
                     this.topId = -1;
-                    this.$store.dispatch("getDialogMsgs", id);
+                    this.visible = false;
+                    this.$store.dispatch("getDialogMsgs", id).then(_ => {
+                        this.onToBottom();
+                        this.visible = true;
+                    });
                 }
             },
             immediate: true

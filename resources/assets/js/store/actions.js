@@ -2025,45 +2025,52 @@ export default {
      * @param state
      * @param dispatch
      * @param dialog_id
+     * @returns {Promise<unknown>}
      */
     getDialogMsgs({state, dispatch}, dialog_id) {
-        if (!dialog_id) {
-            return;
-        }
-        let dialog = state.cacheDialogs.find(({id}) => id == dialog_id);
-        if (!dialog) {
-            dialog = {
-                id: dialog_id,
-            };
-            state.cacheDialogs.push(dialog);
-        }
-        if (dialog.loading) {
-            return;
-        }
-        dialog.loading = true;
-        dialog.currentPage = 1;
-        dialog.hasMorePages = false;
-        //
-        dispatch("call", {
-            url: 'dialog/msg/lists',
-            data: {
-                dialog_id: dialog_id,
-                page: dialog.currentPage
-            },
-        }).then(result => {
-            dialog.loading = false;
-            dialog.currentPage = result.data.current_page;
-            dialog.hasMorePages = !!result.data.next_page_url;
-            dispatch("saveDialog", dialog);
+        return new Promise(resolve => {
+            if (!dialog_id) {
+                resolve()
+                return;
+            }
+            let dialog = state.cacheDialogs.find(({id}) => id == dialog_id);
+            if (!dialog) {
+                dialog = {
+                    id: dialog_id,
+                };
+                state.cacheDialogs.push(dialog);
+            }
+            if (dialog.loading) {
+                resolve()
+                return;
+            }
+            dialog.loading = true;
+            dialog.currentPage = 1;
+            dialog.hasMorePages = false;
             //
-            const ids = result.data.data.map(({id}) => id)
-            state.dialogMsgs = state.dialogMsgs.filter((item) => item.dialog_id != dialog_id || ids.includes(item.id));
-            //
-            dispatch("saveDialog", result.data.dialog);
-            dispatch("saveDialogMsg", result.data.data);
-        }).catch(e => {
-            console.warn(e);
-            dialog.loading = false;
+            dispatch("call", {
+                url: 'dialog/msg/lists',
+                data: {
+                    dialog_id: dialog_id,
+                    page: dialog.currentPage
+                },
+            }).then(result => {
+                dialog.loading = false;
+                dialog.currentPage = result.data.current_page;
+                dialog.hasMorePages = !!result.data.next_page_url;
+                dispatch("saveDialog", dialog);
+                //
+                const ids = result.data.data.map(({id}) => id)
+                state.dialogMsgs = state.dialogMsgs.filter((item) => item.dialog_id != dialog_id || ids.includes(item.id));
+                //
+                dispatch("saveDialog", result.data.dialog);
+                dispatch("saveDialogMsg", result.data.data);
+                resolve()
+            }).catch(e => {
+                console.warn(e);
+                dialog.loading = false;
+                resolve()
+            });
         });
     },
 
