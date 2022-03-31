@@ -14,10 +14,10 @@ class AddFileLinksUserid extends Migration
     public function up()
     {
         $isAdd = false;
-        Schema::table('file_links', function (Blueprint $table) {
+        Schema::table('file_links', function (Blueprint $table) use (&$isAdd) {
             if (!Schema::hasColumn('file_links', 'userid')) {
                 $isAdd = true;
-                $table->integer('userid')->nullable()->default(0)->after('code')->comment('会员ID');
+                $table->bigInteger('userid')->nullable()->default(0)->after('code')->comment('会员ID');
             }
         });
         if ($isAdd) {
