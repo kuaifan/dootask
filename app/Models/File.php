@@ -325,8 +325,8 @@ class File extends AbstractModel
         if ($permission < $limit) {
             $msg = match ($limit) {
                 1000 => '仅限所有者或创建者操作',
-                1 => '没有读写权限',
-                default => '没有访问权限',
+                1 => '没有修改写入权限',
+                default => '没有查看访问权限',
             };
             throw new ApiException($msg);
         }

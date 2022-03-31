@@ -23,7 +23,7 @@
 
             <div class="file-navigator">
                 <ul>
-                    <li @click="[pid=0,searchKey='']">{{$L('全部文件')}}</li>
+                    <li @click="backHomeDirectory">{{$L('全部文件')}}</li>
                     <li v-if="searchKey">{{$L('搜索')}} "{{searchKey}}"</li>
                     <li v-else v-for="item in navigator" @click="pid=item.id">
                         <i v-if="item.share" class="taskfont">&#xe63f;</i>
@@ -814,14 +814,24 @@ export default {
             return name;
         },
 
+        backHomeDirectory() {
+            this.pid = 0
+            this.searchKey = ''
+        },
+
         getFileList() {
             this.loadIng++;
             this.$store.dispatch("getFiles", this.pid).then(() => {
                 this.loadIng--;
                 $A.setStorage("fileOpenPid", this.pid)
             }).catch(({msg}) => {
-                $A.modalError(msg);
                 this.loadIng--;
+                $A.modalError({
+                    content: msg,
+                    onOk: () => {
+                        this.backHomeDirectory();
+                    }
+                });
             });
         },
 
