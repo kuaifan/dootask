@@ -157,7 +157,6 @@ export default {
             params = data.params || {};
         }
         url = $A.urlAddParams(url, params);
-        url = $A.apiUrl(`../download?key=${encodeURIComponent(url)}`)
         if ($A.Electron) {
             $A.Electron.request({action: 'openExternal', url}, () => {
                 // 成功
