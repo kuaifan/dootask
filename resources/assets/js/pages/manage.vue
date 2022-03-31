@@ -2,7 +2,7 @@
     <div v-show="userId > 0" class="page-manage">
         <div class="manage-box-menu" :class="{'show768-menu': show768Menu}">
             <Dropdown
-                class="manage-box-dropdown"
+                class="page-manage-menu-dropdown"
                 trigger="click"
                 @on-click="settingRoute"
                 @on-visible-change="menuVisibleChange">
@@ -24,6 +24,7 @@
                         <Dropdown
                             v-if="item.path === 'taskBrowse'"
                             transfer
+                            transfer-class-name="page-manage-menu-dropdown"
                             placement="right-start">
                             <DropdownItem>
                                 <div class="manage-menu-flex">
@@ -48,6 +49,7 @@
                         <Dropdown
                             v-else-if="item.path === 'team'"
                             transfer
+                            transfer-class-name="page-manage-menu-dropdown"
                             placement="right-start">
                             <DropdownItem divided>
                                 <div class="manage-menu-flex">
@@ -72,6 +74,7 @@
                             v-else-if="item.path === 'theme'"
                             placement="right-start"
                             transfer
+                            transfer-class-name="page-manage-menu-dropdown"
                             @on-click="setTheme">
                             <DropdownItem divided>
                                 <div class="manage-menu-flex">
@@ -92,6 +95,7 @@
                             v-else-if="item.path === 'language'"
                             placement="right-start"
                             transfer
+                            transfer-class-name="page-manage-menu-dropdown"
                             @on-click="setLanguage">
                             <DropdownItem divided>
                                 <div class="manage-menu-flex">

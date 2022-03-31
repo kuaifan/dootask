@@ -16,91 +16,6 @@
         flex-direction: column;
         align-items: center;
         transition: all 0.2s;
-        .manage-box-dropdown {
-            flex-shrink: 0;
-            width: 86%;
-            .ivu-select-dropdown {
-                padding: 7px 0;
-                .ivu-dropdown-item {
-                    padding: 9px 16px;
-                }
-                .ivu-dropdown-item-divided {
-                    margin-top: 7px;
-                    &:before {
-                        top: -9px;
-                    }
-                }
-            }
-            .manage-box-title {
-                display: flex;
-                align-items: center;
-                flex-shrink: 0;
-                padding: 6px 10px;
-                margin-top: 27px;
-                border-radius: 8px;
-                background-color: #ffffff;
-                cursor: pointer;
-                transition: box-shadow 0.3s;
-                &.menu-visible {
-                    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
-                }
-                .manage-box-avatar {
-                    width: 36px;
-                    height: 36px;
-                }
-                > span {
-                    flex: 1;
-                    padding-left: 12px;
-                    font-size: 16px;
-                    font-weight: 600;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
-                }
-                .manage-box-arrow {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    padding-left: 16px;
-                    padding-right: 2px;
-                    > i {
-                        font-size: 12px;
-                        margin: -1px;
-                    }
-                }
-                .manage-box-top-report {
-                    overflow: unset;
-                    margin-right: -6px;
-                    align-items: center;
-                    flex-direction: column;
-                    justify-content: center;
-                    flex: 0 0 auto;
-                    > i {
-                        font-size: 12px;
-                        margin: -1px;
-                    }
-                }
-            }
-            .manage-menu-report-badge {
-                margin-left: 6px;
-                transform: scale(0.9);
-                vertical-align: top;
-            }
-            .manage-menu-flex {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                .ivu-icon {
-                    color: #666666;
-                }
-            }
-
-            .task-title {
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-        }
         > ul {
             flex: 1;
             width: 100%;
@@ -343,6 +258,93 @@
             left: 30px;
             transform: scale(0.9);
         }
+    }
+}
+
+.page-manage-menu-dropdown {
+    flex-shrink: 0;
+    width: 86%;
+    .ivu-select-dropdown {
+        padding: 7px 0;
+        .ivu-dropdown-item {
+            padding: 9px 16px;
+        }
+        .ivu-dropdown-item-divided {
+            margin-top: 7px;
+            &:before {
+                top: -9px;
+            }
+        }
+    }
+    .manage-box-title {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+        padding: 6px 10px;
+        margin-top: 27px;
+        border-radius: 8px;
+        background-color: #ffffff;
+        cursor: pointer;
+        transition: box-shadow 0.3s;
+        &.menu-visible {
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
+        }
+        .manage-box-avatar {
+            width: 36px;
+            height: 36px;
+        }
+        > span {
+            flex: 1;
+            padding-left: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .manage-box-arrow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-left: 16px;
+            padding-right: 2px;
+            > i {
+                font-size: 12px;
+                margin: -1px;
+            }
+        }
+        .manage-box-top-report {
+            overflow: unset;
+            margin-right: -6px;
+            align-items: center;
+            flex-direction: column;
+            justify-content: center;
+            flex: 0 0 auto;
+            > i {
+                font-size: 12px;
+                margin: -1px;
+            }
+        }
+    }
+    .manage-menu-report-badge {
+        margin-left: 6px;
+        transform: scale(0.9);
+        vertical-align: top;
+    }
+    .manage-menu-flex {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        .ivu-icon {
+            color: #666666;
+        }
+    }
+
+    .task-title {
+        max-width: 600px;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 }
 
