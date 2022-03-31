@@ -15,9 +15,9 @@
                                 <UserAvatar :userid="projectData.owner_userid" :size="36" :borderWitdh="2" :openDelay="0">
                                     <p>{{$L('项目负责人')}}</p>
                                 </UserAvatar>
-                                <Badge v-if="windowWidth <= 980 && projectUser.length > 0" type="normal" :count="projectData.project_user.length"/>
+                                <Badge v-if="(windowWidth <= 980 || projectParameter('chat')) && projectUser.length > 0" type="normal" :count="projectData.project_user.length"/>
                             </li>
-                            <template v-if="windowWidth > 980 && projectUser.length > 0" v-for="item in projectUser">
+                            <template v-if="!(windowWidth <= 980 || projectParameter('chat')) && projectUser.length > 0" v-for="item in projectUser">
                                 <li v-if="item.userid === -1" class="more">
                                     <ETooltip :content="$L('共' + (projectData.project_user.length) + '个成员')">
                                         <Icon type="ios-more"/>

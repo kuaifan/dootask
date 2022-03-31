@@ -42,7 +42,7 @@
             .member-list {
                 display: flex;
                 align-items: center;
-                margin-top: 14px;
+                margin-top: 12px;
                 overflow: auto;
 
                 &::-webkit-scrollbar {
@@ -52,7 +52,7 @@
                 > li {
                     position: relative;
                     list-style: none;
-                    margin-right: 14px;
+                    margin-right: 10px;
                     margin-bottom: 8px;
                 }
                 &.member-all {
