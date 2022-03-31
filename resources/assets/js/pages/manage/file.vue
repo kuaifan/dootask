@@ -146,6 +146,7 @@
                         <template v-if="contextMenuItem.id">
                             <DropdownItem @click.native="handleContextClick('open')">{{$L('打开')}}</DropdownItem>
                             <DropdownItem @click.native="handleContextClick('select')">{{$L(selectIds.includes(contextMenuItem.id) ? '取消选择' : '选择')}}</DropdownItem>
+
                             <Dropdown placement="right-start" transfer>
                                 <DropdownItem divided>
                                     <div class="arrow-forward-item">{{$L('新建')}}<Icon type="ios-arrow-forward"></Icon></div>
@@ -161,17 +162,16 @@
                                     </DropdownItem>
                                 </DropdownMenu>
                             </Dropdown>
+
                             <DropdownItem @click.native="handleContextClick('rename')" divided>{{$L('重命名')}}</DropdownItem>
                             <DropdownItem @click.native="handleContextClick('copy')" :disabled="contextMenuItem.type == 'folder'">{{$L('复制')}}</DropdownItem>
                             <DropdownItem @click.native="handleContextClick('shear')" :disabled="contextMenuItem.userid != userId">{{$L('剪切')}}</DropdownItem>
-                            <template v-if="contextMenuItem.userid == userId">
-                                <DropdownItem @click.native="handleContextClick('share')" divided>{{$L('共享')}}</DropdownItem>
-                                <DropdownItem @click.native="handleContextClick('link')" :disabled="contextMenuItem.type == 'folder'">{{$L('链接')}}</DropdownItem>
-                            </template>
-                            <template v-else-if="contextMenuItem.share">
-                                <DropdownItem @click.native="handleContextClick('outshare')" divided>{{$L('退出共享')}}</DropdownItem>
-                            </template>
+
+                            <DropdownItem v-if="contextMenuItem.userid == userId" @click.native="handleContextClick('share')" divided>{{$L('共享')}}</DropdownItem>
+                            <DropdownItem v-else-if="contextMenuItem.share" @click.native="handleContextClick('outshare')" divided>{{$L('退出共享')}}</DropdownItem>
+                            <DropdownItem @click.native="handleContextClick('link')" :divided="contextMenuItem.userid != userId && !contextMenuItem.share" :disabled="contextMenuItem.type == 'folder'">{{$L('链接')}}</DropdownItem>
                             <DropdownItem @click.native="handleContextClick('download')" :disabled="contextMenuItem.ext == ''">{{$L('下载')}}</DropdownItem>
+
                             <DropdownItem @click.native="handleContextClick('delete')" divided style="color:red">{{$L('删除')}}</DropdownItem>
                         </template>
                         <template v-else>
@@ -722,11 +722,6 @@ export default {
                                             size: 20
                                         },
                                     }))
-                                    if (row.permission == 0) {
-                                        iconArray.push(h('span', {
-                                            class: 'permission',
-                                        }, this.$L('只读')))
-                                    }
                                 } else {
                                     iconArray.push(h('i', {
                                         class: 'taskfont',
@@ -1304,7 +1299,7 @@ export default {
             })
         },
 
-        upShare(item) {
+        upShare(item, force = false) {
             if (item.loading === true) {
                 return;
             }
@@ -1316,6 +1311,7 @@ export default {
                     id: this.shareInfo.id,
                     userids: [item.userid],
                     permission: item.permission,
+                    force: force === true ? 1 : 0
                 },
             }).then(({data, msg}) => {
                 item.loading = false;
@@ -1330,15 +1326,18 @@ export default {
                 }
             }).catch(({ret, msg}) => {
                 item.loading = false;
-                item.permission = item._permission;
                 if (ret === -3001) {
                     $A.modalConfirm({
                         content: '此文件夹内已有共享文件夹，子文件的共享状态将被取消，是否继续？',
                         onOk: () => {
-                            this.onShare(true)
+                            this.upShare(item, true)
+                        },
+                        onCancel: () => {
+                            item.permission = item._permission;
                         }
                     })
                 } else {
+                    item.permission = item._permission;
                     $A.modalError(msg, force === true ? 301 : 0)
                 }
             })

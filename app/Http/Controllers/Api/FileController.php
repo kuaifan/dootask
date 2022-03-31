@@ -853,10 +853,7 @@ class FileController extends AbstractController
             // 取消共享
             $action = "delete";
             foreach ($userids as $userid) {
-                if (FileUser::where([
-                    'file_id' => $file->id,
-                    'userid' => $userid,
-                ])->delete()) {
+                if (FileUser::deleteFileUser($file->id, $userid)) {
                     $array[] = $userid;
                 }
             }
@@ -864,7 +861,7 @@ class FileController extends AbstractController
             // 设置共享
             $action = "update";
             if ($force === 0) {
-                if (File::where('pids', 'like', ",{$file->id},")->whereShare(1)->exists()) {
+                if (File::where("pids", "like", "%,{$file->id},%")->whereShare(1)->exists()) {
                     return Base::retError('此文件夹内已有共享文件夹', [], -3001);
                 }
             }
@@ -913,16 +910,10 @@ class FileController extends AbstractController
         if ($file->userid == $user->userid) {
             return Base::retError('不能退出自己共享的文件');
         }
-        if (FileUser::where([
-            'file_id' => $file->id,
-            'userid' => 0,
-        ])->exists()) {
+        if (FileUser::whereFileId($file->id)->whereUserid(0)->exists()) {
             return Base::retError('无法退出共享所有人的文件或文件夹');
         }
-        FileUser::where([
-            'file_id' => $file->id,
-            'userid' => $user->userid,
-        ])->delete();
+        FileUser::deleteFileUser($file->id, $user->userid);
         //
         $file->updataShare();
         return Base::retSuccess("退出成功");
@@ -947,20 +938,21 @@ class FileController extends AbstractController
      */
     public function link()
     {
-        User::auth();
+        $user = User::auth();
         //
         $id = intval(Request::input('id'));
         $refresh = Request::input('refresh', 'no');
         //
-        $file = File::permissionFind($id, 1000);
+        $file = File::permissionFind($id);
         if ($file->type == 'folder') {
             return Base::retError('文件夹暂不支持此功能');
         }
         //
-        $fileLink = FileLink::whereFileId($file->id)->first();
+        $fileLink = FileLink::whereFileId($file->id)->whereUserid($user->userid)->first();
         if (empty($fileLink)) {
             $fileLink = FileLink::createInstance([
                 'file_id' => $file->id,
+                'userid' => $user->userid,
                 'code' => Base::generatePassword(64),
             ]);
             $fileLink->save();

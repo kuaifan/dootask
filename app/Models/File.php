@@ -168,7 +168,7 @@ class File extends AbstractModel
                 $this->share = $share;
                 $this->save();
                 if ($share === 0) {
-                    FileUser::whereFileId($this->id)->delete();
+                    FileUser::deleteFileAll($this->id, $this->userid);
                 }
                 $list = self::wherePid($this->id)->get();
                 if ($list->isNotEmpty()) {
@@ -224,8 +224,7 @@ class File extends AbstractModel
         AbstractModel::transaction(function () {
             $this->delete();
             $this->pushMsg('delete');
-            FileLink::whereFileId($this->id)->delete();
-            FileUser::whereFileId($this->id)->delete();
+            FileUser::deleteFileAll($this->id);
             FileContent::whereFid($this->id)->delete();
             $list = self::wherePid($this->id)->get();
             if ($list->isNotEmpty()) {
