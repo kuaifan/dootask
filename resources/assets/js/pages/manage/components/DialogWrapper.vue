@@ -166,6 +166,7 @@ export default {
             'userId',
             'cacheDialogs',
             'dialogMsgs',
+            'wsOpenNum',
         ]),
 
         dialogData() {
@@ -249,6 +250,11 @@ export default {
                 }
             },
             immediate: true
+        },
+
+        wsOpenNum(num) {
+            if (num <= 1) return
+            this.$store.dispatch("getDialogMsgs", this.dialogId);
         }
     },
 
