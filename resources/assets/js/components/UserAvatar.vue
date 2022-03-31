@@ -16,7 +16,7 @@
         <div class="avatar-wrapper">
             <div v-if="showIcon" :class="['avatar-box', userId === userid || user.online ? 'online' : '']" :style="boxStyle">
                 <em :style="spotStyle"></em>
-                <EAvatar v-if="showImg" :class="{'avatar-default':isDefault}" :src="user.userimg" :size="avatarSize" @error="onError">
+                <EAvatar v-if="showImg" ref="avatar" :class="{'avatar-default':isDefault}" :src="user.userimg" :size="avatarSize" :error="onError">
                     <span class="avatar-char" :style="spotStyle">{{nickname}}</span>
                 </EAvatar>
                 <EAvatar v-else :size="avatarSize" class="avatar-text">
@@ -197,18 +197,18 @@
             },
 
             setUser(info) {
-                if (this.user && this.user.userimg != info.usering) {
-                    this.user = null
-                    this.$nextTick(() => {
-                        this.user = info
-                    })
-                } else {
-                    this.user = info
+                try {
+                    if (this.user && this.user.userimg != info.userimg && this.$refs.avatar) {
+                        this.$refs.avatar.$data.isImageExist = true;
+                    }
+                } catch (e) {
+                    //
                 }
+                this.user = info;
             },
 
             onError() {
-                return false
+                return true
             },
 
             openDialog() {
