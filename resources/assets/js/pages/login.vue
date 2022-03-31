@@ -31,13 +31,13 @@
                 </div>
             </div>
             <div class="login-bottom">
-                <Dropdown trigger="click" placement="top-start">
+                <Dropdown trigger="click" placement="bottom-start">
                     <div class="login-setting">
                         {{$L('设置')}}
                         <i class="taskfont">&#xe689;</i>
                     </div>
                     <DropdownMenu slot="list" class="login-setting-menu">
-                        <Dropdown placement="right-end" @on-click="setTheme">
+                        <Dropdown placement="right-start" transfer @on-click="setTheme">
                             <DropdownItem>
                                 <div class="login-setting-item">
                                     {{$L('主题皮肤')}}
@@ -52,7 +52,7 @@
                                     :selected="themeMode === item.value">{{$L(item.name)}}</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
-                        <Dropdown placement="right-end" @on-click="setLanguage">
+                        <Dropdown placement="right-start" transfer @on-click="setLanguage">
                             <DropdownItem divided>
                                 <div class="login-setting-item">
                                     {{currentLanguage}}

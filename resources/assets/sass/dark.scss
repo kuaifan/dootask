@@ -38,6 +38,16 @@ body.dark-mode-reverse {
         }
     }
 
+    .common-avatar {
+        &.avatar-wrapper {
+            .avatar-box {
+                .avatar-char {
+                    color: #000000;
+                }
+            }
+        }
+    }
+
     .drawer-overlay {
         background: rgba(230, 230, 230, 0.6);
         .overlay-body {
@@ -139,6 +149,20 @@ body.dark-mode-reverse {
     }
 
     .dialog-wrapper {
+        .dialog-nav {
+            .dialog-avatar {
+                .icon-avatar {
+                    color: #1c1917;
+                }
+            }
+            .dialog-title {
+                .main-title {
+                    > h2 {
+                        color: #555;
+                    }
+                }
+            }
+        }
         .dialog-scroller {
             .dialog-list {
                 > ul {

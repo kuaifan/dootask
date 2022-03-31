@@ -23,6 +23,7 @@
                         <!--最近打开的任务-->
                         <Dropdown
                             v-if="item.path === 'taskBrowse'"
+                            transfer
                             placement="right-start">
                             <DropdownItem>
                                 <div class="manage-menu-flex">
@@ -46,6 +47,7 @@
                         <!-- 团队管理 -->
                         <Dropdown
                             v-else-if="item.path === 'team'"
+                            transfer
                             placement="right-start">
                             <DropdownItem divided>
                                 <div class="manage-menu-flex">
@@ -69,6 +71,7 @@
                         <Dropdown
                             v-else-if="item.path === 'theme'"
                             placement="right-start"
+                            transfer
                             @on-click="setTheme">
                             <DropdownItem divided>
                                 <div class="manage-menu-flex">
@@ -88,6 +91,7 @@
                         <Dropdown
                             v-else-if="item.path === 'language'"
                             placement="right-start"
+                            transfer
                             @on-click="setLanguage">
                             <DropdownItem divided>
                                 <div class="manage-menu-flex">
