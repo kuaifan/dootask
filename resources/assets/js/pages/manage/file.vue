@@ -337,7 +337,7 @@
             v-model="pasteShow"
             :title="$L(pasteTitle)"
             :cancel-text="$L('取消')"
-            :ok-text="$L('发送')"
+            :ok-text="$L('立即上传')"
             :enter-ok="true"
             @on-ok="pasteSend">
             <div class="dialog-wrapper-paste">
@@ -1030,7 +1030,7 @@ export default {
                         content: `${item.name}.${item.ext} (${$A.bytesToSize(item.size)})`,
                         okText: '立即下载',
                         onOk: () => {
-                            $A.downFile($A.apiUrl(`file/content?id=${item.id}&down=yes&token=${this.userToken}`))
+                            this.$store.dispatch('downUrl', $A.apiUrl(`file/content?id=${item.id}&down=yes`))
                         }
                     });
                     break;

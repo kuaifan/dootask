@@ -360,25 +360,6 @@
         },
 
         /**
-         * 下载文件
-         * @param url
-         */
-        downFile(url) {
-            if (!url) {
-                return
-            }
-            if ($A.Electron) {
-                $A.Electron.request({action: 'openExternal', url}, () => {
-                    // 成功
-                }, () => {
-                    // 失败
-                });
-            } else {
-                window.open(url)
-            }
-        },
-
-        /**
          * 返回对话未读数量
          * @param dialog
          * @returns {*|number}

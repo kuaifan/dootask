@@ -135,6 +135,22 @@
         },
 
         /**
+         * 删除右边字符串
+         * @param string
+         * @param find
+         * @param lower
+         * @returns {string}
+         */
+        rightDelete(string, find, lower = false) {
+            string += "";
+            find += "";
+            if (this.rightExists(string, find, lower)) {
+                string = string.substring(0, string.length - find.length)
+            }
+            return string ? string : '';
+        },
+
+        /**
          * 取字符串中间
          * @param string
          * @param start
@@ -683,7 +699,7 @@
                     url+= '&' + key + '=' + params[key];
                 }
             }
-            return url.replace("?&", "?");
+            return this.rightDelete(url.replace("?&", "?"), '?');
         },
 
         /**

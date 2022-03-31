@@ -965,7 +965,9 @@ export default {
             }).then(({data}) => {
                 this.exportLoadIng--;
                 this.exportTaskShow = false;
-                $A.downFile(data.url);
+                this.$store.dispatch('downUrl', {
+                    url: data.url
+                });
             }).catch(({msg}) => {
                 this.exportLoadIng--;
                 $A.modalError(msg);

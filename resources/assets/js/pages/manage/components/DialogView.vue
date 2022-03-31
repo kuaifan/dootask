@@ -262,7 +262,7 @@ export default {
                 content: `${this.msgData.msg.name} (${$A.bytesToSize(this.msgData.msg.size)})`,
                 okText: '立即下载',
                 onOk: () => {
-                    $A.downFile($A.apiUrl(`dialog/msg/download?msg_id=${this.msgData.id}&token=${this.userToken}`))
+                    this.$store.dispatch('downUrl', $A.apiUrl(`dialog/msg/download?msg_id=${this.msgData.id}`))
                 }
             });
         }

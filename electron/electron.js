@@ -1,5 +1,4 @@
 const fs = require('fs')
-const fse = require('fs-extra')
 const os = require("os");
 const path = require('path')
 const {app, BrowserWindow, ipcMain, dialog, clipboard, nativeImage, shell} = require('electron')
@@ -16,51 +15,10 @@ let mainWindow = null,
     subWindow = [],
     willQuitApp = false,
     devloadUrl = "",
-    devloadCachePath = path.resolve(__dirname, ".devload"),
-    downloadList = [],
-    downloadCacheFile = path.join(app.getPath('cache'), config.name, '.downloadCache');
+    devloadCachePath = path.resolve(__dirname, ".devload");
 
 if (fs.existsSync(devloadCachePath)) {
     devloadUrl = fs.readFileSync(devloadCachePath, 'utf8')
-}
-
-if (fs.existsSync(downloadCacheFile)) {
-    downloadList = utils.jsonParse(fs.readFileSync(downloadCacheFile, 'utf8'), [])
-} else {
-    fse.ensureDirSync(path.join(app.getPath('cache'), config.name))
-}
-
-function downloadUpdate(item) {
-    const chain = item.getURLChain()
-    if (chain.length == 0) {
-        return
-    }
-    let currentState = item.getState()
-    if (currentState == "progressing" && item.isPaused()) {
-        currentState = "paused"
-    }
-    //
-    const downloadItem = downloadList.find(item => item.url == chain[0])
-    if (downloadItem && downloadItem.state != currentState) {
-        downloadItem.state = currentState;
-        downloadItem.result = {
-            url: item.getURL(),
-            name: item.getFilename(),
-            savePath: item.getSavePath(),
-            mimeType: item.getMimeType(),
-            totalBytes: item.getTotalBytes(),
-            chain,
-        };
-        fs.writeFileSync(downloadCacheFile, utils.jsonStringify(downloadList), 'utf8');
-        //
-        if (currentState == 'completed') {
-            mainWindow.webContents.send("downloadDone", downloadItem)
-            log.info("下载完成", downloadItem)
-        } else {
-            mainWindow.webContents.send("downloadUpdate", downloadItem)
-            log.info("下载更新", downloadItem)
-        }
-    }
 }
 
 function createMainWindow() {
@@ -99,16 +57,6 @@ function createMainWindow() {
         if (!willQuitApp) {
             utils.onBeforeUnload(event, app)
         }
-    })
-
-    mainWindow.webContents.session.on('will-download', (event, item) => {
-        item.setSavePath(path.join(app.getPath('cache'), config.name, item.getFilename()));
-        item.on('updated', () => {
-            downloadUpdate(item)
-        })
-        item.on('done', () => {
-            downloadUpdate(item)
-        })
     })
 }
 
@@ -200,40 +148,6 @@ app.on('window-all-closed', () => {
 
 app.on('before-quit', () => {
     willQuitApp = true
-})
-
-/**
- * 下载文件
- * @param args {url}
- */
-ipcMain.on('downloadFile', (event, args) => {
-    event.returnValue = "ok"
-    //
-    let appendJson = {state: "progressing", startTime: utils.Time()}
-    let downloadItem = downloadList.find(({url}) => url == args.url)
-    if (downloadItem) {
-        switch (downloadItem.state) {
-            case "completed":
-                if (fs.existsSync(downloadItem.result.savePath)) {  // 下载完成，文件存在
-                    log.info("下载已完成", downloadItem)
-                    mainWindow.webContents.send("downloadDone", downloadItem)
-                    return
-                }
-                break;
-            case "progressing":
-                if (downloadItem.startTime + 480 > utils.Time()) {  // 下载中，未超时（超时时间8分钟）
-                    log.info("下载已存在", downloadItem)
-                    return;
-                }
-                break;
-        }
-        downloadItem = Object.assign(downloadItem, appendJson)
-    } else {
-        downloadList.push(downloadItem = Object.assign(args, appendJson))
-    }
-    fs.writeFileSync(downloadCacheFile, utils.jsonStringify(downloadList), 'utf8');
-    mainWindow.webContents.downloadURL(downloadItem.url);
-    log.info("下载开始", downloadItem)
 })
 
 /**

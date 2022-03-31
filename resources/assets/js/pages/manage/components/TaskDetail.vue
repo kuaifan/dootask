@@ -1271,7 +1271,7 @@ export default {
                 content: `${file.name} (${$A.bytesToSize(file.size)})`,
                 okText: '立即下载',
                 onOk: () => {
-                    $A.downFile($A.apiUrl(`project/task/filedown?file_id=${file.id}&token=${this.userToken}`))
+                    this.$store.dispatch('downUrl', $A.apiUrl(`project/task/filedown?file_id=${file.id}`))
                 }
             });
         }

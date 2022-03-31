@@ -140,6 +140,36 @@ export default {
     },
 
     /**
+     * 下载文件
+     * @param state
+     * @param data
+     */
+    downUrl({state}, data) {
+        if (!data) {
+            return
+        }
+        let url = data;
+        let params = {
+            token: state.userToken
+        };
+        if ($A.isJson(data)) {
+            url = data.url;
+            params = data.params || {};
+        }
+        url = $A.urlAddParams(url, params);
+        url = $A.apiUrl(`../download?key=${encodeURIComponent(url)}`)
+        if ($A.Electron) {
+            $A.Electron.request({action: 'openExternal', url}, () => {
+                // 成功
+            }, () => {
+                // 失败
+            });
+        } else {
+            window.open(url)
+        }
+    },
+
+    /**
      * 切换面板变量
      * @param state
      * @param data|{key, project_id}

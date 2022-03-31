@@ -7,9 +7,12 @@ use App\Tasks\AutoArchivedTask;
 use App\Tasks\DeleteTmpTask;
 use App\Tasks\OverdueRemindEmailTask;
 use Arr;
+use Cache;
+use Carbon\Carbon;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Redirect;
 use Request;
+use Route;
 
 
 /**
@@ -72,6 +75,36 @@ class IndexController extends InvokeController
             }
         }
         return $array;
+    }
+
+    /**
+     * 下载链接
+     * @return array|\Illuminate\Http\RedirectResponse|string
+     */
+    public function download()
+    {
+        $id = Request::input('id');
+        if ($id) {
+            $url = Cache::get("Download::" . $id);
+            if ($url) {
+                sleep(1);
+                return Redirect::to($url, 301);
+            }
+        }
+        //
+        $action = Route::input('action');
+        if ($action) {
+            $url = Base::fillUrl('download?id=' . $action);
+            return "<script>setTimeout(function() { window.location.href = '{$url}'; }, 0)</script>";
+        }
+        //
+        $key = Request::input('key');
+        if ($key) {
+            $id = md5($key);
+            Cache::put("Download::" . $id, $key, Carbon::now()->addDay());
+            return Redirect::to(Base::fillUrl('download/' . $id), 301);
+        }
+        return Base::ajaxError("Timeout", [], 0, 403);
     }
 
     /**
