@@ -6,9 +6,10 @@ namespace App\Models;
  * App\Models\FileLink
  *
  * @property int $id
- * @property int|null $file_id 项目ID
+ * @property int|null $file_id 文件ID
  * @property int|null $num 累计访问
  * @property string|null $code 链接码
+ * @property int|null $userid 会员ID
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\File|null $file
@@ -21,6 +22,7 @@ namespace App\Models;
  * @method static \Illuminate\Database\Eloquent\Builder|FileLink whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FileLink whereNum($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FileLink whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FileLink whereUserid($value)
  * @mixin \Eloquent
  */
 class FileLink extends AbstractModel

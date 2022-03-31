@@ -13,11 +13,23 @@ class AddFileLinksUserid extends Migration
      */
     public function up()
     {
+        $isAdd = false;
         Schema::table('file_links', function (Blueprint $table) {
             if (!Schema::hasColumn('file_links', 'userid')) {
+                $isAdd = true;
                 $table->integer('userid')->nullable()->default(0)->after('code')->comment('会员ID');
             }
         });
+        if ($isAdd) {
+            // 更新数据
+            \App\Models\FileLink::chunkById(100, function ($lists) {
+                /** @var \App\Models\FileLink $item */
+                foreach ($lists as $item) {
+                    $item->userid = intval(\App\Models\File::whereId($item->file_id)->value('userid'));
+                    $item->save();
+                }
+            });
+        }
     }
 
     /**
