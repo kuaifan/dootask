@@ -86,7 +86,7 @@ proxy_set_header X-Forwarded-Host $http_host;
 proxy_set_header X-Forwarded-Proto $scheme;
 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 
-# 2、Enter directory and run command
+# 2、Running commands in a project
 ./cmd https
 ```
 
@@ -95,7 +95,7 @@ proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 **Note: Please back up your data before upgrading!**
 
 ```bash
-# Method 1: enter directory and run command
+# Method 1: Running commands in a project
 ./cmd update
 
 # Or method 2: use this method if method 1 fails
@@ -108,9 +108,28 @@ git pull
 
 If 502 after the upgrade please run `./cmd restart` restart the service.
 
+## Transfer
+
+Follow these steps to complete the project migration after the new project is installed:
+
+1. Backup original database
+
+```bash
+# Run command under old project
+./cmd mysql backup
+```
+
+2. Copy `database backup file` and `public/uploads` directory to the new project.
+
+3. Restore database to new project
+```bash
+# Run command under new project
+./cmd mysql recovery
+```
+
 ## Uninstall
 
 ```bash
-# Enter directory and run command
+# Running commands in a project
 ./cmd uninstall
 ```

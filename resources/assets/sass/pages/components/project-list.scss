@@ -61,6 +61,9 @@
                     &:hover {
                         box-shadow: 0 0 6px #cccccc;
                     }
+                    &.cursor-default {
+                        cursor: default;
+                    }
                     &.project-avatar {
                         width: auto;
                         min-width: 36px;

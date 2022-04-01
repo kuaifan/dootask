@@ -57,6 +57,7 @@
         border-color: #fff;
         height: 44px;
         width: 44px;
+        overflow: hidden;
         position: absolute;
         top: 50%;
         z-index: 2;

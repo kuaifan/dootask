@@ -9,7 +9,7 @@
                     <div v-if="loading" class="project-load"><Loading/></div>
                 </div>
                 <ul class="project-icons">
-                    <li class="project-avatar" @click="projectDropdown('user')">
+                    <li class="project-avatar" :class="{'cursor-default': projectData.owner_userid !== userId}" @click="projectDropdown('user')">
                         <ul>
                             <li>
                                 <UserAvatar :userid="projectData.owner_userid" :size="36" :borderWitdh="2" :openDelay="0">

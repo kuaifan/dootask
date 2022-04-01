@@ -87,7 +87,7 @@ proxy_set_header X-Forwarded-Host $http_host;
 proxy_set_header X-Forwarded-Proto $scheme;
 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 
-# 2、进入项目所在目录，运行以下命令
+# 2、在项目下运行命令
 ./cmd https
 ```
 
@@ -96,7 +96,7 @@ proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 **注意：在升级之前请备份好你的数据！**
 
 ```bash
-# 方法1：进入项目所在目录，运行以下命令
+# 方法1：在项目下运行命令
 ./cmd update
 
 # （或者）方法2：如果方法1失败请使用此方法
@@ -109,9 +109,28 @@ git pull
 
 如果升级后出现502请运行 `./cmd restart` 重启服务即可。
 
+## 迁移项目
+
+在新项目安装好之后按照以下步骤完成项目迁移：
+
+1、备份原数据库
+
+```bash
+# 在旧的项目下运行命令
+./cmd mysql backup
+```
+
+2、将`数据库备份文件`及`public/uploads`目录拷贝至新项目
+
+3、还原数据库至新项目
+```bash
+# 在新的项目下运行命令
+./cmd mysql recovery
+```
+
 ## 卸载项目
 
 ```bash
-# 进入项目所在目录，运行以下命令
+# 在项目下运行命令
 ./cmd uninstall
 ```

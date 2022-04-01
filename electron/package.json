@@ -109,13 +109,15 @@
                 {
                     "target": "nsis",
                     "arch": [
-                        "x64"
+                        "x64",
+                        "arm64"
                     ]
                 },
                 {
                     "target": "msi",
                     "arch": [
-                        "x64"
+                        "x64",
+                        "arm64"
                     ]
                 }
             ]
