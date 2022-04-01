@@ -290,33 +290,24 @@ module.exports = {
      * @param app
      */
     onBeforeUnload(event, app) {
-        const sender = event.sender
-        const contents = sender.webContents
-        if (contents != null) {
-            const destroy = () => {
-                if (typeof app === "undefined") {
-                    sender.destroy()
-                } else {
-                    if (['darwin', 'win32'].includes(process.platform)) {
-                        app.hide()
-                    } else {
-                        app.quit()
+        return new Promise(resolve => {
+            const sender = event.sender
+            const contents = sender.webContents
+            if (contents != null) {
+                contents.executeJavaScript('if(typeof window.__onBeforeUnload === \'function\'){window.__onBeforeUnload()}', true).then(options => {
+                    if (this.isJson(options)) {
+                        let choice = dialog.showMessageBoxSync(sender, options)
+                        if (choice === 1) {
+                            contents.executeJavaScript('if(typeof window.__removeBeforeUnload === \'function\'){window.__removeBeforeUnload()}', true).catch(() => {});
+                            resolve()
+                        }
+                    } else if (options !== true) {
+                        resolve()
                     }
-                }
+                })
+                event.preventDefault()
             }
-            contents.executeJavaScript('if(typeof window.__onBeforeUnload === \'function\'){window.__onBeforeUnload()}', true).then(options => {
-                if (this.isJson(options)) {
-                    let choice = dialog.showMessageBoxSync(sender, options)
-                    if (choice === 1) {
-                        contents.executeJavaScript('if(typeof window.__removeBeforeUnload === \'function\'){window.__removeBeforeUnload()}', true).catch(() => {});
-                        destroy()
-                    }
-                } else if (options !== true) {
-                    destroy()
-                }
-            })
-            event.preventDefault()
-        }
+        })
     },
 
     /**

@@ -59,7 +59,15 @@ function createMainWindow() {
 
     mainWindow.on('close', event => {
         if (!willQuitApp) {
-            utils.onBeforeUnload(event, app)
+            utils.onBeforeUnload(event).then(() => {
+                if (process.platform === 'win32') {
+                    mainWindow.hide()
+                } else if (process.platform === 'darwin') {
+                    app.hide()
+                } else {
+                    app.quit()
+                }
+            })
         }
     })
 }
@@ -110,7 +118,9 @@ function createSubWindow(args) {
         })
 
         browser.on('close', event => {
-            utils.onBeforeUnload(event)
+            utils.onBeforeUnload(event).then(() => {
+                event.sender.destroy()
+            })
         })
 
         browser.on('closed', () => {
@@ -149,8 +159,11 @@ if (!getTheLock) {
         createMainWindow()
         // 创建托盘
         if (['darwin', 'win32'].includes(process.platform)) {
-            mainTray = new Tray(process.platform === 'darwin' ? config.build.mac.trayIcon : config.build.win.icon);
+            mainTray = new Tray(process.platform === 'darwin' ? config.trayIcon.mac : config.trayIcon.win);
             mainTray.on('click', () => {
+                utils.setShowWindow(mainWindow)
+            })
+            mainTray.on('double-click', () => {
                 utils.setShowWindow(mainWindow)
             })
             mainTray.setToolTip(config.name)

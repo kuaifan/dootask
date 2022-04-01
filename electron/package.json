@@ -47,6 +47,10 @@
         "fs-extra": "^10.0.1",
         "pdf-lib": "^1.17.1"
     },
+    "trayIcon": {
+        "mac": "../resources/assets/statics/public/images/tray/logo-trayTemplate.png",
+        "win": "../resources/assets/statics/public/images/logo-app.ico"
+    },
     "build": {
         "appId": "com.dootask.task",
         "artifactName": "${productName}-v${version}-${os}-${arch}.${ext}",
@@ -65,7 +69,6 @@
         "afterSign": "./notarize.js",
         "mac": {
             "icon": "../resources/assets/statics/public/images/logo-app.png",
-            "trayIcon": "../resources/assets/statics/public/images/tray/logo-trayTemplate.png",
             "entitlements": "entitlements.plist",
             "entitlementsInherit": "entitlements.plist",
             "category": "public.app-category.productivity",
