@@ -48,8 +48,14 @@
         "pdf-lib": "^1.17.1"
     },
     "trayIcon": {
-        "mac": "../resources/assets/statics/public/images/tray/logo-trayTemplate.png",
-        "win": "../resources/assets/statics/public/images/logo-app.ico"
+        "dev": {
+            "mac": "../resources/assets/statics/public/images/tray/logo-trayTemplate.png",
+            "win": "../resources/assets/statics/public/images/logo-app.ico"
+        },
+        "prod": {
+            "mac": "./public/images/tray/logo-trayTemplate.png",
+            "win": "./public/images/logo-app.ico"
+        }
     },
     "build": {
         "appId": "com.dootask.task",

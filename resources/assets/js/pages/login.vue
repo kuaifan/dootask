@@ -125,6 +125,10 @@ export default {
     },
     activated() {
         this.loginType = 'login'
+        //
+        if (this.$Electron) {
+            this.$Electron.sendMessage('subWindowDestroyAll')
+        }
     },
     deactivated() {
         this.loginJump = false;

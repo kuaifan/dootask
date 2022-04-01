@@ -158,17 +158,19 @@ if (!getTheLock) {
         // 创建主窗口
         createMainWindow()
         // 创建托盘
-        if (['darwin', 'win32'].includes(process.platform)) {
-            mainTray = new Tray(process.platform === 'darwin' ? config.trayIcon.mac : config.trayIcon.win);
+        if (['darwin', 'win32'].includes(process.platform) && utils.isJson(config.trayIcon)) {
+            mainTray = new Tray(path.join(__dirname, config.trayIcon[devloadUrl ? 'dev' : 'prod'][process.platform === 'darwin' ? 'mac' : 'win']));
             mainTray.on('click', () => {
-                utils.setShowWindow(mainWindow)
-            })
-            mainTray.on('double-click', () => {
                 utils.setShowWindow(mainWindow)
             })
             mainTray.setToolTip(config.name)
             if (process.platform === 'win32') {
                 const trayMenu = Menu.buildFromTemplate([{
+                    label: '显示',
+                    click: () => {
+                        utils.setShowWindow(mainWindow)
+                    }
+                }, {
                     label: '退出',
                     click: () => {
                         app.quit()
@@ -221,7 +223,7 @@ ipcMain.on('windowRouter', (event, args) => {
 })
 
 /**
- * 隐藏窗口（mac|win隐藏，其他关闭）
+ * 隐藏窗口（mac、win隐藏，其他关闭）
  */
 ipcMain.on('windowHidden', (event) => {
     if (['darwin', 'win32'].includes(process.platform)) {
@@ -242,11 +244,31 @@ ipcMain.on('windowClose', (event) => {
 })
 
 /**
- * 关闭窗口（强制）
+ * 销毁窗口
  */
 ipcMain.on('windowDestroy', (event) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     win.destroy()
+    event.returnValue = "ok"
+})
+
+/**
+ * 关闭所有子窗口
+ */
+ipcMain.on('subWindowCloseAll', () => {
+    subWindow.some(item => {
+        item.close()
+    })
+    event.returnValue = "ok"
+})
+
+/**
+ * 销毁所有子窗口
+ */
+ipcMain.on('subWindowDestroyAll', () => {
+    subWindow.some(item => {
+        item.destroy()
+    })
     event.returnValue = "ok"
 })
 
