@@ -28,6 +28,9 @@
 }
 
 .common-right-bottom-notification {
+    .ivu-modal-header {
+        padding-bottom: 8px !important;
+    }
     .notification-head {
         display: flex;
         align-items: center;
@@ -69,6 +72,13 @@
                 }
             }
         }
+    }
+    .notification-tip {
+        display: inline-block;
+        color: #999999;
+        line-height: 22px;
+        padding-top: 4px;
+        font-size: 12px;
     }
     .notification-link {
         margin-top: 20px;

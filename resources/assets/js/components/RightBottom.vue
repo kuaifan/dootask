@@ -16,17 +16,21 @@
         </template>
         <Modal
             v-model="updateShow"
-            :cancel-text="$L('稍后')"
-            :ok-text="$L('立即升级')"
             :closable="false"
             :mask-closable="false"
-            @on-ok="updateQuitAndInstall"
             class-name="common-right-bottom-notification">
-            <div slot="header" class="notification-head">
-                <div class="notification-title">{{$L('发现新版本')}}</div>
-                <Tag color="volcano">v{{systemVersion}} -&gt; v{{updateVersion}}</Tag>
+            <div slot="header">
+                <div class="notification-head">
+                    <div class="notification-title">{{$L('发现新版本')}}</div>
+                    <Tag color="volcano">v{{systemVersion}} -&gt; v{{updateVersion}}</Tag>
+                </div>
+                <div class="notification-tip">{{$L('离最新版本只有一步之遥了！重新启动应用即可完成更新。')}}</div>
             </div>
             <MarkdownPreview class="notification-body overlay-y" :initialValue="updateNote"/>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="updateShow=false">{{$L('稍后')}}</Button>
+                <Button type="primary" @click="updateQuitAndInstall">{{$L('重新启动')}}</Button>
+            </div>
         </Modal>
     </div>
 </template>
@@ -59,9 +63,16 @@ export default {
     mounted() {
         this.checkVersion()
         //
-        this.subscribe = Store.subscribe('updateNotification', _ => {
-            this.updateShow = true
-        })
+        if (this.$Electron) {
+            this.subscribe = Store.subscribe('updateNotification', _ => {
+                this.updateShow = true
+            })
+            this.$Electron.registerMsgListener('updateDownloaded', info => {
+                this.updateVersion = info.version;
+                this.updateNote = info.releaseNotes || this.$L('没有更新描述。');
+                this.updateShow = true;
+            })
+        }
     },
 
     beforeDestroy() {
@@ -92,11 +103,6 @@ export default {
                     this.apiVersion = data.version || ''
                     if (this.$Electron) {
                         // 客户端提示更新
-                        this.$Electron.registerMsgListener('updateDownloaded', info => {
-                            this.updateVersion = info.version;
-                            this.updateNote = info.releaseNotes || this.$L('没有更新描述。');
-                            this.updateShow = true;
-                        })
                         this.$Electron.sendMessage('updateCheckAndDownload', {
                             apiVersion: this.apiVersion
                         })
@@ -107,7 +113,10 @@ export default {
                 }
             }).catch(_ => {
 
-            });
+            })
+            //
+            this.__checkVersion && clearTimeout(this.__checkVersion)
+            this.__checkVersion = setTimeout(this.checkVersion, 600 * 1000)
         },
 
         getDownloadUrl(publish) {
@@ -126,7 +135,6 @@ export default {
                     let timeout = 600;
                     if (cache.time && cache.time + timeout > Math.round(new Date().getTime() / 1000)) {
                         this.downloadUrl = cache.data.html_url;
-                        setTimeout(this.checkVersion, timeout * 1000)
                         return;
                     }
                     //
@@ -142,10 +150,8 @@ export default {
                             $A.setStorage(key, cache);
                             this.downloadUrl = cache.data.html_url;
                         }
-                        setTimeout(this.checkVersion, timeout * 1000)
                     }).catch(() => {
                         this.loadIng--;
-                        setTimeout(this.checkVersion, timeout * 1000)
                     });
                     break;
             }
