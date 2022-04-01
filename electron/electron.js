@@ -255,7 +255,7 @@ ipcMain.on('windowDestroy', (event) => {
 /**
  * 关闭所有子窗口
  */
-ipcMain.on('subWindowCloseAll', () => {
+ipcMain.on('subWindowCloseAll', (event) => {
     subWindow.some(item => {
         item.close()
     })
@@ -265,7 +265,7 @@ ipcMain.on('subWindowCloseAll', () => {
 /**
  * 销毁所有子窗口
  */
-ipcMain.on('subWindowDestroyAll', () => {
+ipcMain.on('subWindowDestroyAll', (event) => {
     subWindow.some(item => {
         item.destroy()
     })

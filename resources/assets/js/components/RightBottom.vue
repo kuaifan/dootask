@@ -158,7 +158,7 @@ export default {
         },
 
         updateQuitAndInstall() {
-            this.$Electron.sendMessage('updateQuitAndInstall', null)
+            this.$Electron.sendMessage('updateQuitAndInstall')
         },
 
         useSSOLogin() {
