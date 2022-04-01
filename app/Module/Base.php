@@ -2312,7 +2312,7 @@ class Base
                     $type = ['md'];
                     break;
                 case 'desktop':
-                    $type = ['yml', 'yaml', 'dmg', 'blockmap', 'zip', 'exe', 'msi'];
+                    $type = ['yml', 'yaml', 'dmg', 'pkg', 'blockmap', 'zip', 'exe', 'msi'];
                     break;
                 case 'more':
                     $type = [
