@@ -1,7 +1,7 @@
 const fs = require('fs')
 const os = require("os");
 const path = require('path')
-const {app, BrowserWindow, ipcMain, dialog, clipboard, nativeImage, shell} = require('electron')
+const {app, BrowserWindow, ipcMain, dialog, clipboard, nativeImage, shell, Tray, Menu} = require('electron')
 const {autoUpdater} = require("electron-updater")
 const log = require("electron-log");
 const fsProm = require('fs/promises');
@@ -12,6 +12,7 @@ const utils = require('./utils');
 const config = require('./package.json');
 
 let mainWindow = null,
+    mainTray = null,
     subWindow = [],
     willQuitApp = false,
     devloadUrl = "",
@@ -136,21 +137,34 @@ function createSubWindow(args) {
     }
 }
 
-
 const getTheLock = app.requestSingleInstanceLock()
 if (!getTheLock) {
     app.quit()
 } else {
     app.on('second-instance', () => {
-        if (mainWindow) {
-            if (mainWindow.isMinimized()) {
-                mainWindow.restore()
+        utils.setShowWindow(mainWindow)
+    })
+    app.on('ready', () => {
+        // 创建主窗口
+        createMainWindow()
+        // 创建托盘
+        if (['darwin', 'win32'].includes(process.platform)) {
+            mainTray = new Tray(process.platform === 'darwin' ? config.build.mac.trayIcon : config.build.win.icon);
+            mainTray.on('click', () => {
+                utils.setShowWindow(mainWindow)
+            })
+            mainTray.setToolTip(config.name)
+            if (process.platform === 'win32') {
+                const trayMenu = Menu.buildFromTemplate([{
+                    label: '退出',
+                    click: () => {
+                        app.quit()
+                    }
+                }])
+                mainTray.setContextMenu(trayMenu)
             }
-            mainWindow.focus()
-            mainWindow.show()
         }
     })
-    app.on('ready', createMainWindow)
 }
 
 app.on('activate', () => {
@@ -194,10 +208,10 @@ ipcMain.on('windowRouter', (event, args) => {
 })
 
 /**
- * 隐藏窗口（mac隐藏，其他关闭）
+ * 隐藏窗口（mac|win隐藏，其他关闭）
  */
 ipcMain.on('windowHidden', (event) => {
-    if (process.platform === 'darwin') {
+    if (['darwin', 'win32'].includes(process.platform)) {
         app.hide();
     } else {
         app.quit();
@@ -330,10 +344,16 @@ ipcMain.on('setDockBadge', (event, args) => {
         // Mac only
         return;
     }
-    if (utils.runNum(args) > 0) {
-        app.dock.setBadge(String(args))
-    } else {
-        app.dock.setBadge("")
+    let num = args;
+    let tray = true;
+    if (utils.isJson(args)) {
+        num = args.num
+        tray = !!args.tray
+    }
+    let text = utils.runNum(num) > 0 ? String(num) : ""
+    app.dock.setBadge(text)
+    if (tray && mainTray) {
+        mainTray.setTitle(text)
     }
     event.returnValue = "ok"
 })

@@ -271,6 +271,20 @@ module.exports = {
     },
 
     /**
+     * 显示窗口
+     * @param win
+     */
+    setShowWindow(win) {
+        if (win) {
+            if (win.isMinimized()) {
+                win.restore()
+            }
+            win.focus()
+            win.show()
+        }
+    },
+
+    /**
      * 窗口关闭事件
      * @param event
      * @param app
@@ -283,7 +297,7 @@ module.exports = {
                 if (typeof app === "undefined") {
                     sender.destroy()
                 } else {
-                    if (process.platform === 'darwin') {
+                    if (['darwin', 'win32'].includes(process.platform)) {
                         app.hide()
                     } else {
                         app.quit()

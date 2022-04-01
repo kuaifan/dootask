@@ -65,6 +65,7 @@
         "afterSign": "./notarize.js",
         "mac": {
             "icon": "../resources/assets/statics/public/images/logo-app.png",
+            "trayIcon": "../resources/assets/statics/public/images/tray/logo-trayTemplate.png",
             "entitlements": "entitlements.plist",
             "entitlementsInherit": "entitlements.plist",
             "category": "public.app-category.productivity",
