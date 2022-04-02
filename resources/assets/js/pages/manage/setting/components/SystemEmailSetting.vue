@@ -1,5 +1,5 @@
 <template>
-    <div class="setting-system-item">
+    <div class="setting-component-item">
         <Form ref="formData" :model="formData" :rules="ruleData" label-width="auto" @submit.native.prevent>
             <div class="email-setting-box">
                 <h3>{{ $L('邮箱服务器设置') }}</h3>
@@ -90,10 +90,6 @@ export default {
 
         resetForm() {
             this.formData = $A.cloneJSON(this.formDatum_bak);
-        },
-
-        formArchived(value) {
-            this.formData = {...this.formData, auto_archived: value};
         },
 
         systemSetting(save) {

@@ -1,5 +1,5 @@
 <template>
-    <div class="setting-system-item">
+    <div class="setting-component-item">
         <Form ref="formDatum" :model="formDatum" label-width="auto" @submit.native.prevent>
             <FormItem :label="$L('允许注册')" prop="reg">
                 <RadioGroup v-model="formDatum.reg">

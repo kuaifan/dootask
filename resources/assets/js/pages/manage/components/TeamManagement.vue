@@ -24,8 +24,8 @@
                         <Select v-model="keys.identity" :placeholder="$L('请选择')">
                             <Option value="">{{$L('全部')}}</Option>
                             <Option value="admin">{{$L('管理员')}}</Option>
-                            <Option value="disable">{{$L('禁用')}}</Option>
                             <Option value="noadmin">{{$L('非管理员')}}</Option>
+                            <Option value="disable">{{$L('禁用')}}</Option>
                             <Option value="nodisable">{{$L('非禁用')}}</Option>
                         </Select>
                     </div>

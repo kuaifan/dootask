@@ -1,5 +1,5 @@
 <template>
-    <div class="setting-system-item">
+    <div class="setting-component-item">
         <Form ref="formDatum" label-width="auto" @submit.native.prevent>
             <Row class="setting-color">
                 <Col span="12">{{$L('名称')}}</Col>
