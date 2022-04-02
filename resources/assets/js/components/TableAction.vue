@@ -23,7 +23,7 @@
                     @command="onClick">
                     <i
                         v-if="isAliIcon(item.icon)"
-                        class="aliicon menu-icon"
+                        class="taskfont menu-icon"
                         v-html="item.icon"
                         :style="item.style || {}"/>
                     <Icon
@@ -44,7 +44,7 @@
                 </EDropdown>
                 <i
                     v-else-if="isAliIcon(item.icon)"
-                    class="aliicon menu-icon"
+                    class="taskfont menu-icon"
                     v-html="item.icon"
                     :style="item.style || {}"
                     @click="onClick(item.action)"/>
