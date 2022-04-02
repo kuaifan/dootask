@@ -256,8 +256,8 @@ ipcMain.on('windowDestroy', (event) => {
  * 关闭所有子窗口
  */
 ipcMain.on('subWindowCloseAll', (event) => {
-    subWindow.some(item => {
-        item.close()
+    subWindow.some(({browser}) => {
+        browser && browser.close()
     })
     event.returnValue = "ok"
 })
@@ -266,8 +266,8 @@ ipcMain.on('subWindowCloseAll', (event) => {
  * 销毁所有子窗口
  */
 ipcMain.on('subWindowDestroyAll', (event) => {
-    subWindow.some(item => {
-        item.destroy()
+    subWindow.some(({browser}) => {
+        browser && browser.destroy()
     })
     event.returnValue = "ok"
 })
