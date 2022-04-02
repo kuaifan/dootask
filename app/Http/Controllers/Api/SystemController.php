@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\AbstractModel;
+use App\Models\NotifyRule;
 use App\Models\User;
 use App\Module\Base;
 use Request;
-use Response;
 
 /**
  * @apiDefine system
@@ -25,7 +26,7 @@ class SystemController extends AbstractController
      * @apiParam {String} type
      * - get: 获取（默认）
      * - all: 获取所有（需要管理员权限）
-     * - save: 保存设置（参数：reg、reg_invite、login_code、password_policy、project_invite、chat_nickname、auto_archived、archived_day、start_home、home_footer）
+     * - save: 保存设置（参数：['reg', 'reg_invite', 'login_code', 'password_policy', 'project_invite', 'chat_nickname', 'auto_archived', 'archived_day', 'start_home', 'home_footer']）
 
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -41,7 +42,18 @@ class SystemController extends AbstractController
             User::auth('admin');
             $all = Request::input();
             foreach ($all AS $key => $value) {
-                if (!in_array($key, ['reg', 'reg_invite', 'login_code', 'password_policy', 'project_invite', 'chat_nickname', 'auto_archived', 'archived_day', 'start_home', 'home_footer'])) {
+                if (!in_array($key, [
+                    'reg',
+                    'reg_invite',
+                    'login_code',
+                    'password_policy',
+                    'project_invite',
+                    'chat_nickname',
+                    'auto_archived',
+                    'archived_day',
+                    'start_home',
+                    'home_footer'
+                ])) {
                     unset($all[$key]);
                 }
             }
@@ -78,7 +90,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/setting/email          02. 获取邮箱设置、保存邮箱设置
+     * @api {get} api/system/setting/email          02. 获取邮箱设置、保存邮箱设置（限管理员）
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -86,36 +98,38 @@ class SystemController extends AbstractController
      *
      * @apiParam {String} type
      * - get: 获取（默认）
-     * - all: 获取所有（需要管理员权限）
-     * - save: 保存设置（参数：smtp_server port account password reg_verify notice task_remind_hours task_remind_hours2）
+     * - save: 保存设置（参数：['smtp_server', 'port', 'account', 'password', 'reg_verify', 'notice', 'task_remind_hours', 'task_remind_hours2']）
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
      */
     public function setting__email()
     {
+        User::auth('admin');
+        //
         $type = trim(Request::input('type'));
         if ($type == 'save') {
             if (env("SYSTEM_SETTING") == 'disabled') {
                 return Base::retError('当前环境禁止修改');
             }
-            User::auth('admin');
             $all = Request::input();
             foreach ($all as $key => $value) {
-                if (!in_array($key, ['smtp_server', 'port', 'account', 'password', 'reg_verify', 'notice', 'task_remind_hours', 'task_remind_hours2'])) {
+                if (!in_array($key, [
+                    'smtp_server',
+                    'port',
+                    'account',
+                    'password',
+                    'reg_verify',
+                    'notice',
+                    'task_remind_hours',
+                    'task_remind_hours2'
+                ])) {
                     unset($all[$key]);
                 }
             }
             $setting = Base::setting('emailSetting', Base::newTrim($all));
         } else {
             $setting = Base::setting('emailSetting');
-        }
-        //
-        if ($type == 'all' || $type == 'save') {
-            User::auth('admin');
-            $setting['reg_invite'] = $setting['reg_invite'] ?: Base::generatePassword(8);
-        } else {
-            if (isset($setting['reg_invite'])) unset($setting['reg_invite']);
         }
         //
         $setting['smtp_server'] = $setting['smtp_server'] ?: '';
@@ -533,7 +547,6 @@ class SystemController extends AbstractController
         return $data;
     }
 
-
     /**
      * @api {get} api/system/get/starthome          14. 启动首页设置信息
      *
@@ -554,4 +567,220 @@ class SystemController extends AbstractController
         ]);
     }
 
+    /**
+     * @api {get} api/system/notify/lists          推送通知 - 列表（限管理员）
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName notify__lists
+     *
+     * @apiParam {Object} [keys]             搜索条件
+     * - keys.name: 名称关键词
+     *
+     * @apiParam {Number} [page]        当前页，默认:1
+     * @apiParam {Number} [pagesize]    每页显示数量，默认:20，最大:100
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function notify__lists()
+    {
+        User::auth('admin');
+        //
+        $builder = NotifyRule::select(['*']);
+        //
+        $keys = Request::input('keys');
+        if (is_array($keys)) {
+            if ($keys['name']) {
+                $builder->where("name", "like", "%{$keys['name']}%");
+            }
+        }
+        $list = $builder->orderByDesc('id')->paginate(Base::getPaginate(100, 20));
+        //
+        return Base::retSuccess('success', $list);
+    }
+
+    /**
+     * @api {post} api/system/notify/add          推送通知 - 添加规则（限管理员）
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName notify__add
+     *
+     * @apiParam {Number} [id]                  数据ID（为空时添加）
+     * @apiParam {String} mode                  推送方式
+     * @apiParam {String} name                  规则名称
+     * @apiParam {String} event                 触发条件
+     * @apiParam {String} content               推送内容
+     * @apiParam {String} [webhook_url]         推送URL（推送方式为：webhook时使用）
+     * @apiParam {Number} [expire_day]          时间条件（触发条件为：taskExpireBefore、taskExpireAfter时使用）
+     * @apiParam {Number} [status]              是否启用
+     * - 1：启用（默认）
+     * - 0：关闭
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function notify__add()
+    {
+        User::auth('admin');
+        //
+        $id = intval(Base::getPostValue('id'));
+        $mode = trim(Base::getPostValue('mode'));
+        $name = trim(Base::getPostValue('name'));
+        $event = trim(Base::getPostValue('event'));
+        $content = Base::getPostValue('content');
+        $webhook_url = trim(Base::getPostValue('webhook_url'));
+        $expire_day = round(Base::getPostValue('expire_day'), 1);
+        $status = Base::getPostInt('status', 1);
+        if (empty($name)) {
+            return Base::retError('请填写规则名称');
+        }
+        if (empty($mode)) {
+            return Base::retError('请选择推送方式');
+        }
+        if ($mode === 'webhook') {
+            if (empty($webhook_url)) {
+                return Base::retError('请填写推送URL');
+            }
+            if (!preg_match("/^https*:\/\//", $webhook_url)) {
+                return Base::retError('推送URL必须是以 http:// 或 https:// 开头');
+            }
+            $content = Base::json2array($content);
+            if (empty($content)) {
+                return Base::retError('请填写有效的推送内容');
+            }
+            $content = Base::array2json($content, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE);
+        }
+        if (empty($event)) {
+            return Base::retError('请选择触发条件');
+        }
+        if (in_array($event, ['taskExpireBefore', 'taskExpireAfter'])) {
+            if ($expire_day <= 0 || $expire_day > 720) {
+                return Base::retError('请填写有效的时间条件');
+            }
+        }
+        $data = [
+            'mode' => $mode,
+            'name' => $name,
+            'event' => $event,
+            'content' => $content,
+            'webhook_url' => $webhook_url,
+            'expire_day' => $expire_day,
+            'status' => $status,
+        ];
+        if ($id > 0) {
+            //修改
+            $rule = NotifyRule::createInstance($data, $id);
+            if ($rule->save()) {
+                return Base::retSuccess('修改成功！');
+            }
+        } else {
+            //添加
+            $rule = NotifyRule::createInstance($data);
+            if ($rule->save()) {
+                return Base::retSuccess('添加成功！');
+            }
+        }
+        return Base::retError('操作失败！');
+    }
+
+
+    /**
+     * @api {post} api/system/notify/delete          推送通知 - 删除规则（限管理员）
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName notify__delete
+     *
+     * @apiParam {Number} id              数据ID（支持数组）
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function notify__delete()
+    {
+        User::auth('admin');
+        //
+        $id = Request::input('id');
+        //
+        if (is_array($id)) {
+            $builder = NotifyRule::whereIn("id", Base::arrayRetainInt($id));
+        } else {
+            $builder = NotifyRule::whereId(intval($id));
+        }
+        $list = $builder->get();
+        if ($list->isEmpty()) {
+            return Base::retError('规则不存在或已被删除');
+        }
+        return AbstractModel::transaction(function() use ($list) {
+            $tmp = [];
+            foreach ($list as $item) {
+                $tmp[] = $item->id;
+                $item->delete();
+            }
+            return Base::retSuccess('删除成功', $tmp);
+        });
+    }
+
+    /**
+     * @api {get} api/system/notify/config          推送通知 - 参数配置（限管理员）
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName notify__config
+     *
+     * @apiParam {String} type
+     * - get: 获取（默认）
+     * - all: 获取所有（需要管理员权限）
+     * - save: 保存设置（参数：['mail_server', 'mail_port', 'mail_account', 'mail_password', 'dingding_token', 'dingding_secret', 'feishu_token', 'feishu_secret', 'wework_token', 'xizhi_token', 'telegram_token', 'gitter_token', 'gitter_roomid', 'googlechat_token', 'googlechat_key', 'googlechat_space']）
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function notify__config()
+    {
+        User::auth('admin');
+        //
+        $type = trim(Request::input('type'));
+        if ($type == 'save') {
+            if (env("SYSTEM_SETTING") == 'disabled') {
+                return Base::retError('当前环境禁止修改');
+            }
+            $all = Request::input();
+            foreach ($all as $key => $value) {
+                if (!in_array($key, [
+                    'mail_server',
+                    'mail_port',
+                    'mail_account',
+                    'mail_password',
+                    'dingding_token',
+                    'dingding_secret',
+                    'feishu_token',
+                    'feishu_secret',
+                    'wework_token',
+                    'xizhi_token',
+                    'telegram_token',
+                    'gitter_token',
+                    'gitter_roomid',
+                    'googlechat_token',
+                    'googlechat_key',
+                    'googlechat_space'
+                ])) {
+                    unset($all[$key]);
+                } else {
+                    $all[$key] = substr($value, 0, 128);
+                }
+            }
+            $setting = Base::setting('notifyConfig', Base::newTrim($all));
+        } else {
+            $setting = Base::setting('notifyConfig');
+        }
+        //
+        return Base::retSuccess('success', $setting ?: json_decode('{}'));
+    }
 }

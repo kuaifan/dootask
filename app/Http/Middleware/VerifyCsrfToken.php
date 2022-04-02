@@ -24,6 +24,9 @@ class VerifyCsrfToken extends Middleware
         // 保存创建项目列表模板
         'api/system/column/template/',
 
+        // 保存推送通知规则
+        'api/system/notify/add/',
+
         // 添加任务
         'api/project/task/add/',
 

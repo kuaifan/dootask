@@ -66,6 +66,7 @@ export default {
             if (this.userIsAdmin) {
                 menu.push(...[
                     {path: 'system', name: '系统设置', divided: true},
+                    {path: 'notify', name: '推送通知'},
                 ])
             }
             return menu;

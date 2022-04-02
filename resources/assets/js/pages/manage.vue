@@ -532,6 +532,7 @@ export default {
                     {path: 'clearCache', name: '清除缓存'},
 
                     {path: 'system', name: '系统设置', divided: true},
+                    {path: 'notify', name: '推送通知'},
                     {path: 'version', name: '更新版本', visible: !!this.clientNewVersion},
 
                     {path: 'allProject', name: '所有项目', divided: true},

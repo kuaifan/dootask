@@ -51,6 +51,11 @@ export default [
                         path: 'system',
                         component: () => import('./pages/manage/setting/system.vue'),
                     },
+                    {
+                        name: 'manage-setting-notify',
+                        path: 'notify',
+                        component: () => import('./pages/manage/setting/notify.vue'),
+                    },
                 ]
             },
             {

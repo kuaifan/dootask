@@ -194,7 +194,7 @@
                     height: 0;
                     .ivu-tabs-tabpane {
                         position: relative;
-                        .setting-system-item {
+                        .setting-component-item {
                             position: absolute;
                             top: 0;
                             left: 0;
@@ -236,6 +236,15 @@
                             .email-setting-placeholder {
                                 height: 8px;
                             }
+                            .notify-collapse-content {
+                                margin: 12px;
+                                > div:last-child {
+                                    margin-bottom: 0;
+                                }
+                            }
+                        }
+                        .setting-notify-item {
+                            margin-top: 8px;
                         }
                     }
                 }
@@ -247,6 +256,19 @@
                 border-top: 1px solid #F4F4F5;
             }
         }
+    }
+}
+
+.setting-item-notify-add-vars {
+    > em {
+        font-style: normal;
+        margin: 0 4px 0 2px;
+        cursor: pointer;
+        color: #0285d7;
+        text-decoration: underline;
+    }
+    > span {
+        text-decoration: underline;
     }
 }
 
