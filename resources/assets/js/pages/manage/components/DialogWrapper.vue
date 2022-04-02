@@ -6,11 +6,11 @@
         @dragover.prevent="chatDragOver(true, $event)"
         @dragleave.prevent="chatDragOver(false, $event)">
         <slot name="head">
-            <div class="dialog-nav">
+            <div class="dialog-nav" :class="{completed:$A.dialogCompleted(dialogData)}">
                 <div class="dialog-avatar">
                     <template v-if="dialogData.type=='group'">
                         <i v-if="dialogData.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
-                        <i v-else-if="dialogData.group_type=='task'" class="taskfont icon-avatar task" :class="{completed:$A.dialogCompleted(dialogData)}">&#xe6f4;</i>
+                        <i v-else-if="dialogData.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
                         <Icon v-else class="icon-avatar" type="ios-people" />
                     </template>
                     <div v-else-if="dialogData.dialog_user" class="user-avatar"><UserAvatar :userid="dialogData.dialog_user.userid" :size="42"/></div>

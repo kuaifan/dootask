@@ -26,6 +26,25 @@
             background-color: #f4f5f5;
         }
 
+        &.completed {
+            &:after {
+                content: "\f373";
+                font-family: Ionicons, serif;
+                pointer-events: none;
+                position: absolute;
+                top: 50%;
+                right: 22px;
+                transform: translateY(-50%);
+                font-size: 40px;
+                color: #19be6b;
+                opacity: .2;
+                z-index: 1;
+            }
+            .dialog-title {
+                padding-right: 52px;
+            }
+        }
+
         .dialog-avatar {
             flex-shrink: 0;
             margin-right: 12px;
@@ -51,21 +70,6 @@
                 &.task {
                     background-color: #9B96DF;
                     font-size: 24px;
-                }
-                &.completed {
-                    &:after {
-                        content: "\f373";
-                        font-family: Ionicons, serif;
-                        pointer-events: none;
-                        position: absolute;
-                        top: 50%;
-                        right: 22px;
-                        transform: translateY(-50%);
-                        font-size: 40px;
-                        color: #19be6b;
-                        opacity: .2;
-                        z-index: 1;
-                    }
                 }
             }
         }

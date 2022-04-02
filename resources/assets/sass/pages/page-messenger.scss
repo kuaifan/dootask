@@ -113,20 +113,6 @@
                                     background-color: #9B96DF;
                                     font-size: 24px;
                                 }
-                                &.completed {
-                                    &:after {
-                                        content: "\f373";
-                                        font-family: Ionicons, serif;
-                                        pointer-events: none;
-                                        position: absolute;
-                                        bottom: 0;
-                                        right: 12px;
-                                        font-size: 28px;
-                                        color: #19be6b;
-                                        opacity: .2;
-                                        z-index: 1;
-                                    }
-                                }
                             }
                             .dialog-box {
                                 flex: 1;
@@ -210,6 +196,25 @@
                                     width: 20px;
                                     height: 20px;
                                     margin: 0;
+                                }
+                            }
+                            &.completed {
+                                &:after {
+                                    content: "\f373";
+                                    font-family: Ionicons, serif;
+                                    pointer-events: none;
+                                    position: absolute;
+                                    bottom: 0;
+                                    right: 12px;
+                                    font-size: 28px;
+                                    color: #19be6b;
+                                    opacity: .2;
+                                    z-index: 1;
+                                }
+                                .dialog-box {
+                                    .dialog-text {
+                                        padding-right: 36px;
+                                    }
                                 }
                             }
                         }
