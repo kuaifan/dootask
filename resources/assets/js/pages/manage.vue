@@ -510,7 +510,11 @@ export default {
         },
 
         unreadTotal() {
-            return this.msgAllUnread + this.dashboardTask.overdue.length + this.reportUnreadNumber;
+            if (this.userId > 0) {
+                return this.msgAllUnread + this.dashboardTask.overdue.length + this.reportUnreadNumber
+            } else {
+                return 0
+            }
         },
 
         currentLanguage() {
