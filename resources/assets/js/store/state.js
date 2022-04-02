@@ -43,6 +43,7 @@ const stateData = {
     wsMsg: {},
     wsCall: {},
     wsTimeout: null,
+    wsRandom: 0,
     wsOpenNum: 0,
     wsListener: {},
     wsReadTimeout: null,

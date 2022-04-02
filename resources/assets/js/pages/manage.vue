@@ -668,6 +668,13 @@ export default {
             immediate: true
         },
 
+        userId: {
+            handler() {
+                this.$store.dispatch("websocketConnection")
+            },
+            immediate: true
+        },
+
         wsMsg: {
             handler(info) {
                 const {type, action} = info;

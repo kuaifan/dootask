@@ -126,6 +126,7 @@ export default {
                     return true
                 }
             }
+            this.$store.dispatch("websocketConnection")
         }
     },
 
@@ -269,10 +270,6 @@ export default {
                 this.loadContent--;
                 this.contentDetail = data.content;
                 this.updateBak();
-                //
-                if (this.$isSubElectron) {
-                    this.$store.dispatch("websocketConnection")
-                }
             }).catch(({msg}) => {
                 $A.modalError(msg);
                 this.loadIng--;

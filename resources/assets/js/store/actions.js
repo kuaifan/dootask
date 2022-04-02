@@ -277,7 +277,6 @@ export default {
             state.userIsAdmin = $A.inArray('admin', userInfo.identity);
             $A.setStorage("userInfo", state.userInfo);
             dispatch("getBasicData");
-            dispatch("websocketConnection");
             resolve()
         });
     },
@@ -2170,6 +2169,9 @@ export default {
         url = url.replace("http://", "ws://");
         url += "?action=web&token=" + state.userToken;
         //
+        const wsRandom = $A.randomString(16);
+        state.wsRandom = wsRandom;
+        //
         state.ws = new WebSocket(url);
         state.ws.onopen = (e) => {
             // console.log("[WS] Open", $A.formatDate())
@@ -2181,7 +2183,7 @@ export default {
             //
             clearTimeout(state.wsTimeout);
             state.wsTimeout = setTimeout(() => {
-                dispatch('websocketConnection');
+                wsRandom === state.wsRandom && dispatch('websocketConnection');
             }, 3000);
         };
         state.ws.onerror = (e) => {
@@ -2190,7 +2192,7 @@ export default {
             //
             clearTimeout(state.wsTimeout);
             state.wsTimeout = setTimeout(() => {
-                dispatch('websocketConnection');
+                wsRandom === state.wsRandom && dispatch('websocketConnection');
             }, 3000);
         };
         state.ws.onmessage = (e) => {
@@ -2453,6 +2455,9 @@ export default {
      * @param state
      */
     websocketClose({state}) {
-        state.ws && state.ws.close();
+        if (state.ws) {
+            state.ws.close();
+            state.ws = null;
+        }
     }
 }
