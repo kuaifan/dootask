@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\TelegramSubscribe;
+use App\Models\NotifyTelegramSubscribe;
 use App\Models\User;
 use App\Module\Base;
 use App\Tasks\AutoArchivedTask;
 use App\Tasks\DeleteTmpTask;
 use App\Tasks\NotifyTask;
-use App\Tasks\OverdueRemindEmailTask;
 use Arr;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Redirect;
@@ -123,7 +122,7 @@ class IndexController extends InvokeController
         //
         $post = Request::post();
         if (Arr::exists($post, 'message')) {
-            $ts = TelegramSubscribe::subscribe(Arr::get($post, 'message.chat.id'));
+            $ts = NotifyTelegramSubscribe::subscribe(Arr::get($post, 'message.chat.id'));
             if ($ts) {
                 $text = trim(Arr::get($post, 'message.text'));
                 $lowerText = strtolower($text);
@@ -187,7 +186,7 @@ class IndexController extends InvokeController
                 }
             }
         } elseif (Arr::exists($post, 'my_chat_member')) {
-            $ts = TelegramSubscribe::subscribe(Arr::get($post, 'my_chat_member.chat.id'));
+            $ts = NotifyTelegramSubscribe::subscribe(Arr::get($post, 'my_chat_member.chat.id'));
             if ($ts) {
                 $status = Arr::get($post, 'my_chat_member.new_chat_member.status');
                 if ($status == 'kicked') {

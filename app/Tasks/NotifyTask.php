@@ -6,7 +6,7 @@ use App\Models\NotifyLog;
 use App\Models\NotifyRule;
 use App\Models\NotifyTaskLog;
 use App\Models\ProjectTask;
-use App\Models\TelegramSubscribe;
+use App\Models\NotifyTelegramSubscribe;
 use App\Models\User;
 use App\Module\Base;
 use Carbon\Carbon;
@@ -129,7 +129,7 @@ class NotifyTask extends AbstractTask
                     break;
 
                 case "telegram":
-                    $chat_ids = TelegramSubscribe::whereSubscribe(1)
+                    $chat_ids = NotifyTelegramSubscribe::whereSubscribe(1)
                         ->whereUserid($userid)
                         ->orderByDesc('id')
                         ->take(5)
