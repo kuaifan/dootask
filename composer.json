@@ -16,6 +16,7 @@
         "ext-simplexml": "*",
         "fideloper/proxy": "^4.4.1",
         "fruitcake/laravel-cors": "^2.0.4",
+        "guanguans/notify": "^1.20",
         "guzzlehttp/guzzle": "^7.3.0",
         "laravel/framework": "^v8.48.1",
         "laravel/tinker": "^v2.6.1",

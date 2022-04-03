@@ -614,7 +614,7 @@ class SystemController extends AbstractController
      * @apiParam {String} event                 触发条件
      * @apiParam {String} content               推送内容
      * @apiParam {String} [webhook_url]         推送URL（推送方式为：webhook时使用）
-     * @apiParam {Number} [expire_day]          时间条件（触发条件为：taskExpireBefore、taskExpireAfter时使用）
+     * @apiParam {Number} [expire_hours]        时间条件（触发条件为：taskExpireBefore、taskExpireAfter时使用）
      * @apiParam {Number} [status]              是否启用
      * - 1：启用（默认）
      * - 0：关闭
@@ -633,7 +633,7 @@ class SystemController extends AbstractController
         $event = trim(Base::getPostValue('event'));
         $content = Base::getPostValue('content');
         $webhook_url = trim(Base::getPostValue('webhook_url'));
-        $expire_day = round(Base::getPostValue('expire_day'), 1);
+        $expire_hours = round(Base::getPostValue('expire_hours'), 1);
         $status = Base::getPostInt('status', 1);
         if (empty($name)) {
             return Base::retError('请填写规则名称');
@@ -658,9 +658,12 @@ class SystemController extends AbstractController
             return Base::retError('请选择触发条件');
         }
         if (in_array($event, ['taskExpireBefore', 'taskExpireAfter'])) {
-            if ($expire_day <= 0 || $expire_day > 720) {
+            if ($expire_hours <= 0 || $expire_hours > 720) {
                 return Base::retError('请填写有效的时间条件');
             }
+        }
+        if (NotifyRule::whereMode($mode)->whereEvent($event)->count() >= 10) {
+            return Base::retError("同个推送方式和触发条件最多只能添加10条规则");
         }
         $data = [
             'mode' => $mode,
@@ -668,7 +671,7 @@ class SystemController extends AbstractController
             'event' => $event,
             'content' => $content,
             'webhook_url' => $webhook_url,
-            'expire_day' => $expire_day,
+            'expire_hours' => $expire_hours,
             'status' => $status,
         ];
         if ($id > 0) {

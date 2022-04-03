@@ -80,9 +80,9 @@
                         <Option v-for="item in addEvents" :value="item.event" :key="item.event">{{ $L(item.label) }}</Option>
                     </Select>
                 </FormItem>
-                <FormItem v-if="['taskExpireBefore', 'taskExpireAfter'].includes(addData.event)" prop="expire_day" :label="$L('时间条件')">
+                <FormItem v-if="['taskExpireBefore', 'taskExpireAfter'].includes(addData.event)" prop="expire_hours" :label="$L('时间条件')">
                     <label>{{ $L(addData.event === 'taskExpireAfter' ? '任务超期后' : '任务到期前') }}</label>
-                    <InputNumber v-model="addData.expire_day" :min="0.5" :max="720" :step="0.5"/>
+                    <InputNumber v-model="addData.expire_hours" :min="0.5" :max="720" :step="0.5"/>
                     <label>{{ $L('小时') }}</label>
                 </FormItem>
                 <FormItem v-if="addModeData && addEventData" prop="content" :label="$L('推送内容')">
@@ -177,7 +177,7 @@ export default {
                         const data = this.eventTypes.find(({event}) => event === row.event);
                         let text = data ? data.label : row.event;
                         if (['taskExpireBefore', 'taskExpireAfter'].includes(row.event)) {
-                            text += ` (${row.expire_day}${this.$L('小时')})`
+                            text += ` (${row.expire_hours}${this.$L('小时')})`
                         }
                         return h('AutoTip', text);
                     }
@@ -258,7 +258,7 @@ export default {
                 event: '',
                 content: '',
                 webhook_url: '',
-                expire_day: 1,
+                expire_hours: 1,
                 status: 1
             },
             addRule: {},
@@ -388,7 +388,7 @@ export default {
                 event: '',
                 content: '',
                 webhook_url: '',
-                expire_day: 1,
+                expire_hours: 1,
                 status: 1
             };
             this.addShow = true;

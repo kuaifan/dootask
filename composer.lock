@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "82a2e2c4b376522e3a13c16949e1a5d3",
+    "content-hash": "ea9cf5820d67b47b3ade5df2398c7365",
     "packages": [
         {
             "name": "brick/math",
@@ -757,6 +757,132 @@
                 }
             ],
             "time": "2021-11-21T21:41:47+00:00"
+        },
+        {
+            "name": "guanguans/notify",
+            "version": "v1.20.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/guanguans/notify.git",
+                "reference": "9ca088680bf4e5b489a94c80a635db39e10dda63"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/guanguans/notify/zipball/9ca088680bf4e5b489a94c80a635db39e10dda63",
+                "reference": "9ca088680bf4e5b489a94c80a635db39e10dda63",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "overtrue/http": "^1.2",
+                "php": ">=7.2.5",
+                "psr/log": "^1.1 || ^2.0 || ^3.0",
+                "symfony/mailer": "^5.3 || ^6.0",
+                "symfony/options-resolver": "^5.3 || ^6.0",
+                "textalk/websocket": "^1.5"
+            },
+            "require-dev": {
+                "brainmaestro/composer-git-hooks": "^2.7",
+                "friendsofphp/php-cs-fixer": "^3.0",
+                "mockery/mockery": "^1.2",
+                "overtrue/phplint": "^3.0",
+                "phpunit/phpunit": "^7.0 || ^8.0 || ^9.0",
+                "vimeo/psalm": "^4.10"
+            },
+            "type": "library",
+            "extra": {
+                "hooks": {
+                    "pre-commit": [
+                        "composer style-lint",
+                        "composer test"
+                    ],
+                    "pre-push": [
+                        "composer style-lint",
+                        "composer test"
+                    ]
+                }
+            },
+            "autoload": {
+                "files": [
+                    "src/Support/helpers.php"
+                ],
+                "psr-4": {
+                    "Guanguans\\Notify\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "guanguans",
+                    "email": "ityaozm@gmail.com",
+                    "homepage": "https://www.guanguans.cn",
+                    "role": "developer"
+                }
+            ],
+            "description": "推送通知 sdk(Bark、Chanify、钉钉群机器人、Discord、邮件、飞书群机器人、Gitter、Google Chat、iGot、Logger、Mattermost、Now Push、PushBack、Push、PushDeer、PushPlus、QQ 频道机器人、Rocket Chat、Server 酱、Showdoc Push、Slack、Telegram、Webhook、企业微信群机器人、息知、Zulip)。",
+            "homepage": "https://github.com/guanguans/notify",
+            "keywords": [
+                "Bark",
+                "Feishu",
+                "Mattermost",
+                "PushDeer",
+                "QQ Bot",
+                "QQ 机器人",
+                "QQ 频道",
+                "QQ 频道机器人",
+                "Server酱",
+                "chanify",
+                "dingtalk",
+                "discord",
+                "email",
+                "gitter",
+                "googleChat",
+                "iGot",
+                "logger",
+                "notification",
+                "notifier",
+                "notify",
+                "now push",
+                "push",
+                "pushBack",
+                "pushPlus",
+                "qq",
+                "rocketchat",
+                "sdk",
+                "serverChan",
+                "showdoc push",
+                "slack",
+                "telegram",
+                "webhook",
+                "wework",
+                "xiZhi",
+                "zulip",
+                "企业微信",
+                "企业微信群机器人",
+                "微信",
+                "息知",
+                "机器人",
+                "邮件",
+                "钉钉",
+                "钉钉群",
+                "钉钉群机器人",
+                "飞书",
+                "飞书群机器人"
+            ],
+            "support": {
+                "issues": "https://github.com/guanguans/notify/issues",
+                "source": "https://github.com/guanguans/notify"
+            },
+            "funding": [
+                {
+                    "url": "https://www.guanguans.cn/images/wechat.jpeg",
+                    "type": "wechat"
+                }
+            ],
+            "time": "2022-03-31T07:00:37+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -2778,6 +2904,64 @@
             "time": "2022-02-11T07:31:08+00:00"
         },
         {
+            "name": "overtrue/http",
+            "version": "1.2.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/overtrue/http.git",
+                "reference": "e6e4c2ff274b1050d681288495878ee8fd3f1209"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/overtrue/http/zipball/e6e4c2ff274b1050d681288495878ee8fd3f1209",
+                "reference": "e6e4c2ff274b1050d681288495878ee8fd3f1209",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-json": "*",
+                "ext-libxml": "*",
+                "ext-simplexml": "*",
+                "guzzlehttp/guzzle": "^6.3 || ^7.0",
+                "php": ">=7.0"
+            },
+            "require-dev": {
+                "brainmaestro/composer-git-hooks": "^2.7",
+                "friendsofphp/php-cs-fixer": "^2.15 || ^3.0",
+                "mockery/mockery": "^1.0",
+                "overtrue/phplint": "^1.1 || ^2.0 || ^3.0",
+                "phpunit/phpunit": "^6.5 || ^8.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Overtrue\\Http\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "overtrue",
+                    "email": "anzhengchao@gmail.com"
+                }
+            ],
+            "description": "A simple http client wrapper.",
+            "support": {
+                "issues": "https://github.com/overtrue/http/issues",
+                "source": "https://github.com/overtrue/http/tree/1.2.3"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/overtrue",
+                    "type": "github"
+                }
+            ],
+            "time": "2022-03-14T06:24:13+00:00"
+        },
+        {
             "name": "phpoffice/phpspreadsheet",
             "version": "1.22.0",
             "source": {
@@ -4462,6 +4646,80 @@
             "time": "2022-01-29T18:08:07+00:00"
         },
         {
+            "name": "symfony/mailer",
+            "version": "v6.0.7",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/mailer.git",
+                "reference": "f7343f94e7afecca2ad840b078f9d80200e1bd27"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/mailer/zipball/f7343f94e7afecca2ad840b078f9d80200e1bd27",
+                "reference": "f7343f94e7afecca2ad840b078f9d80200e1bd27",
+                "shasum": ""
+            },
+            "require": {
+                "egulias/email-validator": "^2.1.10|^3",
+                "php": ">=8.0.2",
+                "psr/event-dispatcher": "^1",
+                "psr/log": "^1|^2|^3",
+                "symfony/event-dispatcher": "^5.4|^6.0",
+                "symfony/mime": "^5.4|^6.0",
+                "symfony/service-contracts": "^1.1|^2|^3"
+            },
+            "conflict": {
+                "symfony/http-kernel": "<5.4"
+            },
+            "require-dev": {
+                "symfony/http-client-contracts": "^1.1|^2|^3",
+                "symfony/messenger": "^5.4|^6.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Mailer\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Helps sending emails",
+            "homepage": "https://symfony.com",
+            "support": {
+                "source": "https://github.com/symfony/mailer/tree/v6.0.7"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2022-03-18T16:06:28+00:00"
+        },
+        {
             "name": "symfony/mime",
             "version": "v5.4.3",
             "source": {
@@ -4543,6 +4801,73 @@
                 }
             ],
             "time": "2022-01-02T09:53:40+00:00"
+        },
+        {
+            "name": "symfony/options-resolver",
+            "version": "v6.0.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/options-resolver.git",
+                "reference": "51f7006670febe4cbcbae177cbffe93ff833250d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/options-resolver/zipball/51f7006670febe4cbcbae177cbffe93ff833250d",
+                "reference": "51f7006670febe4cbcbae177cbffe93ff833250d",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.0.2",
+                "symfony/deprecation-contracts": "^2.1|^3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\OptionsResolver\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Provides an improved replacement for the array_replace PHP function",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "config",
+                "configuration",
+                "options"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/options-resolver/tree/v6.0.3"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2022-01-02T09:55:41+00:00"
         },
         {
             "name": "symfony/polyfill-ctype",
@@ -5941,6 +6266,55 @@
                 }
             ],
             "time": "2022-01-17T16:30:37+00:00"
+        },
+        {
+            "name": "textalk/websocket",
+            "version": "1.5.7",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Textalk/websocket-php.git",
+                "reference": "1712325e99b6bf869ccbf9bf41ab749e7328ea46"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Textalk/websocket-php/zipball/1712325e99b6bf869ccbf9bf41ab749e7328ea46",
+                "reference": "1712325e99b6bf869ccbf9bf41ab749e7328ea46",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.2 | ^8.0",
+                "psr/log": "^1 | ^2 | ^3"
+            },
+            "require-dev": {
+                "php-coveralls/php-coveralls": "^2.0",
+                "phpunit/phpunit": "^8.0|^9.0",
+                "squizlabs/php_codesniffer": "^3.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "WebSocket\\": "lib"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "ISC"
+            ],
+            "authors": [
+                {
+                    "name": "Fredrik Liljegren"
+                },
+                {
+                    "name": "Sören Jensen",
+                    "email": "soren@abicart.se"
+                }
+            ],
+            "description": "WebSocket client and server",
+            "support": {
+                "issues": "https://github.com/Textalk/websocket-php/issues",
+                "source": "https://github.com/Textalk/websocket-php/tree/1.5.7"
+            },
+            "time": "2022-03-29T09:46:59+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",
