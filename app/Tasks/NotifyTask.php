@@ -10,7 +10,6 @@ use App\Models\User;
 use App\Module\Base;
 use Carbon\Carbon;
 use Guanguans\Notify\Factory;
-use Guanguans\Notify\Messages\EmailMessage;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 
 @error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
@@ -72,32 +71,107 @@ class NotifyTask extends AbstractTask
         }
 
         $setting = Base::setting('notifyConfig');
-        switch ($rule->mode) {
-            case "mail":
-                if (Base::isEmail($user->email)) {
-                    $email = EmailMessage::create()
-                        ->from(env('APP_NAME', 'Task') . " <{$setting['mail_account']}>")
-                        ->to($user->email)
-                        ->subject($rule->name)
-                        ->html($content);
-                    try {
-                        Factory::mailer()
-                            ->setDsn("smtp://{$setting['mail_account']}:{$setting['mail_password']}@{$setting['mail_server']}:{$setting['mail_port']}?verify_peer=0")
-                            ->setMessage($email)
-                            ->send();
-                        $notifyLog->success = 1;
-                    } catch (\Exception $e) {
-                        $notifyLog->error = $e->getMessage();
+        try {
+            switch ($rule->mode) {
+                case "mail":
+                    if (!Base::isEmail($user->email)) {
+                        throw new \Exception("User email '{$user->email}' address error");
                     }
-                } else {
-                    $notifyLog->error = "User email '{$user->email}' address error";
-                }
-                break;
+                    Factory::mailer()
+                        ->setDsn("smtp://{$setting['mail_account']}:{$setting['mail_password']}@{$setting['mail_server']}:{$setting['mail_port']}?verify_peer=0")
+                        ->setMessage(\Guanguans\Notify\Messages\EmailMessage::create()
+                            ->from(env('APP_NAME', 'Task') . " <{$setting['mail_account']}>")
+                            ->to($user->email)
+                            ->subject($rule->name)
+                            ->html($content))
+                        ->send();
+                    break;
 
-            default:
-                $notifyLog->error = "mode error";
-                break;
+                case "dingding":
+                    Factory::dingTalk()
+                        ->setToken($setting['dingding_token'])
+                        ->setSecret($setting['dingding_secret'])
+                        ->setMessage((new \Guanguans\Notify\Messages\DingTalk\MarkdownMessage([
+                            'title' => $rule->name,
+                            'text'  => $content,
+                        ])))
+                        ->send();
+                    break;
 
+                case "feishu":
+                    Factory::feiShu()
+                        ->setToken($setting['feishu_token'])
+                        ->setSecret($setting['feishu_secret'])
+                        ->setMessage(new \Guanguans\Notify\Messages\FeiShu\PostMessage([
+                            'zh_cn' => [
+                                'title' => $rule->name,
+                                'content' => [
+                                    [
+                                        [
+                                            "tag" => "text",
+                                            "text" => $content
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]))
+                        ->send();
+                    break;
+
+                case "wework":
+                    Factory::weWork()
+                        ->setToken($setting['wework_token'])
+                        ->setMessage(new \Guanguans\Notify\Messages\WeWork\MarkdownMessage("# {$rule->name}\n{$content}"))
+                        ->send();
+                    break;
+
+                case "xizhi":
+                    Factory::xiZhi()
+                        ->setToken($setting['xizhi_token'])
+                        ->setMessage(new \Guanguans\Notify\Messages\XiZhiMessage($rule->name, $content))
+                        ->send();
+                    break;
+
+                case "telegram":
+                    if (empty($user->tgcid)) {
+                        throw new \Exception("User telegram chat_id is error");
+                    }
+                    Factory::telegram()
+                        ->setToken($setting['telegram_token'])
+                        ->setMessage(\Guanguans\Notify\Messages\Telegram\TextMessage::create([
+                            'chat_id' => $user->tgcid,
+                            'text' => "# {$rule->name}\n{$content}",
+                            'parse_mode' => 'MarkdownV2',
+                        ]))
+                        ->send();
+                    break;
+
+                case "gitter":
+                    Factory::gitter()
+                        ->setToken($setting['gitter_token'])
+                        ->setRoomId($setting['gitter_roomid'])
+                        ->setMessage(new \Guanguans\Notify\Messages\GitterMessage($content))
+                        ->send();
+                    break;
+
+                case "googlechat":
+                    Factory::googleChat()
+                        ->setToken($setting['googlechat_token'])
+                        ->setKey($setting['googlechat_token'])
+                        ->setSpace($setting['googlechat_space'])
+                        ->setMessage(new \Guanguans\Notify\Messages\GoogleChatMessage([
+                            'name' => $rule->name,
+                            'text' => $content,
+                        ]))
+                        ->send();
+                    break;
+
+                default:
+                    throw new \Exception("Mode error");
+            }
+            $notifyLog->success = 1;
+        } catch (\Exception $e) {
+            $notifyLog->error = $e->getMessage();
         }
 
         $notifyLog->save();

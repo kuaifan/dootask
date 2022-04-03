@@ -15,6 +15,7 @@ use Carbon\Carbon;
  * @property array $identity 身份
  * @property string|null $az A-Z
  * @property string|null $email 邮箱
+ * @property string|null $tgcid telegram chat_id
  * @property string $nickname 昵称
  * @property string|null $profession 职位/职称
  * @property string $userimg 头像
@@ -54,6 +55,7 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|User wherePassword($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereProfession($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereTaskDialogId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereTgcid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUserid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUserimg($value)

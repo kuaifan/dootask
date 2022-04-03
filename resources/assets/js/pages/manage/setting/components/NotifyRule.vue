@@ -68,6 +68,7 @@
                         @on-change="generateContent">
                         <Option v-for="item in modeLists" :value="item.mode" :key="item.mode">{{ $L(item.label) }}</Option>
                     </Select>
+                    <div v-if="addModeData && addModeData.receiver" class="setting-item-notify-tip">{{$L('接收对象')}}: {{$L(addModeData.receiver)}}</div>
                 </FormItem>
                 <FormItem v-if="addData.mode === 'webhook'" prop="webhook_url" :label="$L('推送URL')">
                     <Input type="text" v-model="addData.webhook_url" :placeholder="$L('请输入Webhook地址')"></Input>

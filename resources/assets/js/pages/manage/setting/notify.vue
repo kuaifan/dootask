@@ -79,6 +79,7 @@ export default {
                 {
                     mode: 'mail',
                     label: '邮件',
+                    receiver: '任务负责人',
                     contentType: 'html',
                     events: [
                         'taskExpireBefore',
@@ -101,6 +102,7 @@ export default {
                 }, {
                     mode: 'dingding',
                     label: '钉钉群机器人',
+                    receiver: '群内所有人',
                     contentType: 'md',
                     events: [
                         'taskExpireBefore',
@@ -121,6 +123,7 @@ export default {
                 }, {
                     mode: 'feishu',
                     label: '飞书群机器人',
+                    receiver: '群内所有人',
                     contentType: 'md',
                     events: [
                         'taskExpireBefore',
@@ -141,6 +144,7 @@ export default {
                 }, {
                     mode: 'wework',
                     label: '企业微信群机器人',
+                    receiver: '群内所有人',
                     contentType: 'md',
                     events: [
                         'taskExpireBefore',
@@ -160,6 +164,7 @@ export default {
                 }, {
                     mode: 'xizhi',
                     label: '息知',
+                    receiver: 'Token主人',
                     contentType: 'text',
                     events: [
                         'taskExpireBefore',
@@ -179,6 +184,7 @@ export default {
                 }, {
                     mode: 'telegram',
                     label: 'Telegram',
+                    receiver: '任务负责人',
                     contentType: 'md',
                     events: [
                         'taskExpireBefore',
@@ -198,6 +204,7 @@ export default {
                 }, {
                     mode: 'gitter',
                     label: 'Gitter',
+                    receiver: '房间内所有人',
                     contentType: 'text',
                     events: [
                         'taskExpireBefore',
@@ -218,6 +225,7 @@ export default {
                 }, {
                     mode: 'googlechat',
                     label: 'Google Chat',
+                    receiver: '群内所有人',
                     contentType: 'text',
                     events: [
                         'taskExpireBefore',
@@ -239,6 +247,7 @@ export default {
                 }, {
                     mode: 'webhook',
                     label: 'Webhook',
+                    receiver: null,
                     contentType: 'json',
                     events: [
                         'taskExpireBefore',

@@ -260,6 +260,8 @@
 }
 
 .setting-item-notify-add-vars {
+    line-height: 18px;
+    padding: 8px 0 0;
     > em {
         font-style: normal;
         margin: 0 4px 0 2px;
@@ -270,6 +272,12 @@
     > span {
         text-decoration: underline;
     }
+}
+
+.setting-item-notify-tip {
+    color: #f90;
+    line-height: 18px;
+    padding: 8px 0 0;
 }
 
 @media (max-width: 768px) {
