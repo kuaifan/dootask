@@ -6,6 +6,7 @@ use App\Models\AbstractModel;
 use App\Models\NotifyRule;
 use App\Models\User;
 use App\Module\Base;
+use App\Module\Telegram;
 use Request;
 
 /**
@@ -779,7 +780,21 @@ class SystemController extends AbstractController
                     $all[$key] = substr($value, 0, 128);
                 }
             }
-            $setting = Base::setting('notifyConfig', Base::newTrim($all));
+            $old = Base::setting('notifyConfig');
+            $new = Base::newTrim($all);
+            if ($old['telegram_token'] != $new['telegram_token']) {
+                $res = Telegram::create($new['telegram_token'])->setWebhook();
+                if (Base::isError($res)) {
+                    return $res;
+                }
+                $resData = Base::json2array($res['data']);
+                if ($resData['ok'] !== true) {
+                    return Base::retError($resData['description'] ?? $resData['error_code'] ?? 'Telegram token unknown error');
+                }
+            } else {
+                $new['telegram_webhook_token'] = $old['telegram_webhook_token'] ?? '';
+            }
+            $setting = Base::setting('notifyConfig', $new);
         } else {
             $setting = Base::setting('notifyConfig');
         }

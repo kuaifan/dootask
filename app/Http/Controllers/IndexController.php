@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\TelegramSubscribe;
+use App\Models\User;
 use App\Module\Base;
 use App\Tasks\AutoArchivedTask;
 use App\Tasks\DeleteTmpTask;
@@ -104,6 +106,100 @@ class IndexController extends InvokeController
         Task::deliver(new NotifyTask("taskExpireAfter"));
 
         return "success";
+    }
+
+    /**
+     * Telegram Webhook
+     */
+    public function telegram__webhook()
+    {
+        Base::addTmp('telegram__webhook');
+        //
+        $token1 = Request::input('token');
+        $token2 = Base::settingFind("notifyConfig", "telegram_webhook_token");
+        if ($token1 != $token2) {
+            return 'ok';
+        }
+        //
+        $post = Request::post();
+        if (Arr::exists($post, 'message')) {
+            $ts = TelegramSubscribe::subscribe(Arr::get($post, 'message.chat.id'));
+            if ($ts) {
+                $text = trim(Arr::get($post, 'message.text'));
+                $lowerText = strtolower($text);
+                if (Base::strExists($text, "#")) {
+                    // 订阅
+                    $email = Base::getMiddle($text, null, '#');
+                    $password = Base::getMiddle($text, '#', null);
+                    if (Base::isEmail($email)) {
+                        $user = User::whereEmail($email)->first();
+                        if (empty($user)) {
+                            $ts->sendTextAsync('订阅失败：帐号或密码错误');
+                            $ts->userid = 0;
+                            $ts->subscribe = 0;
+                            $ts->save();
+                            return 'ok';
+                        }
+                        if ($user->password != Base::md52($password, $user->encrypt)) {
+                            $ts->sendTextAsync('订阅失败：帐号或密码错误');
+                            $ts->userid = 0;
+                            $ts->subscribe = 0;
+                            $ts->save();
+                            return 'ok';
+                        }
+                        //
+                        if (in_array('disable', $user->identity)) {
+                            $ts->sendTextAsync('订阅失败：帐号已停用...');
+                            $ts->userid = 0;
+                            $ts->subscribe = 0;
+                            $ts->save();
+                            return 'ok';
+                        }
+                        $ts->sendTextAsync('订阅成功');
+                        $ts->userid = $user->userid;
+                        $ts->subscribe = 1;
+                        $ts->save();
+                    }
+                } elseif (in_array($lowerText, ['/unbind', '/unsubscribe', '/取消订阅'])) {
+                    // 取消订阅
+                    if ($ts->userid) {
+                        $ts->sendTextAsync('订阅取消成功');
+                    } else {
+                        $ts->sendTextAsync('没有订阅记录');
+                    }
+                    $ts->userid = 0;
+                    $ts->subscribe = 0;
+                    $ts->save();
+                } elseif (in_array($lowerText, ['/start', '/help', '/bind', '/subscribe', '/订阅'])) {
+                    // 订阅提示
+                    $status = $ts->userid && $ts->subscribe ? "已订阅" : "未订阅";
+                    $ts->sendTextAsync(<<<EOF
+                        【状态】
+                        {$status}
+
+                        【订阅】
+                        发送: 邮箱#密码
+                        例如: admin@admin.com#123456
+
+                        【取消订阅】
+                        发送: /unsubscribe
+                        EOF);
+                }
+            }
+        } elseif (Arr::exists($post, 'my_chat_member')) {
+            $ts = TelegramSubscribe::subscribe(Arr::get($post, 'my_chat_member.chat.id'));
+            if ($ts) {
+                $status = Arr::get($post, 'my_chat_member.new_chat_member.status');
+                if ($status == 'kicked') {
+                    $ts->subscribe = 0;
+                    $ts->save();
+                } elseif ($status == 'member') {
+                    $ts->subscribe = 1;
+                    $ts->save();
+                }
+            }
+        }
+        return 'ok';
     }
 
     /**

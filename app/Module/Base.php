@@ -1218,11 +1218,12 @@ class Base
 
     /**
      * 获取或设置
-     * @param $setname //配置名称
-     * @param bool $array //保存内容
+     * @param $setname          // 配置名称
+     * @param bool $array       // 保存内容
+     * @param false $isUpdate   // 保存内容为更新模式，默认否
      * @return array
      */
-    public static function setting($setname, $array = false)
+    public static function setting($setname, $array = false, $isUpdate = false)
     {
         global $_A;
         if (empty($setname)) {
@@ -1233,15 +1234,19 @@ class Base
         }
         $setting = [];
         $row = Setting::whereName($setname)->first();
-        if (!empty($row)) {
+        if ($row) {
             $setting = Base::string2array($row->setting);
         } else {
             $row = Setting::createInstance(['name' => $setname]);
             $row->save();
         }
         if ($array !== false) {
-            $setting = $array;
-            $row->updateInstance(['setting' => $array]);
+            if ($isUpdate && is_array($array)) {
+                $setting = array_merge($setting, $array);
+            } else {
+                $setting = $array;
+            }
+            $row->updateInstance(['setting' => $setting]);
             $row->save();
         }
         $_A["__static_setting_" . $setname] = $setting;

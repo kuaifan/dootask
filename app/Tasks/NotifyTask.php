@@ -6,6 +6,7 @@ use App\Models\NotifyLog;
 use App\Models\NotifyRule;
 use App\Models\NotifyTaskLog;
 use App\Models\ProjectTask;
+use App\Models\TelegramSubscribe;
 use App\Models\User;
 use App\Module\Base;
 use Carbon\Carbon;
@@ -42,46 +43,41 @@ class NotifyTask extends AbstractTask
      */
     private function notify()
     {
-        $rule_id = $this->data['rule_id'];
-        $userid = $this->data['userid'];
-        $vars = $this->data['vars'];
+        $rule_id = intval($this->data['rule_id']);
+        $userid = intval($this->data['userid']);
+        $vars = is_array($this->data['vars']) ? $this->data['vars'] : [];
 
         $rule = NotifyRule::whereId($rule_id)->first();
         if (empty($rule)) {
             return;
         }
-        $user = User::whereUserid($userid)->first();
-        if (empty($user)) {
-            return;
-        }
 
         $notifyLog = NotifyLog::createInstance([
             'rule_id' => $rule->id,
-            'userid' => $user->userid,
-            'vars' => is_array($vars) ? $vars : [],
+            'userid' => $userid,
+            'vars' => $vars,
             'content' => $rule->content,
         ]);
         $notifyLog->save();
 
         $content = $rule->content;
-        if (is_array($vars)) {
-            foreach ($vars as $key => $val) {
-                $content = str_replace('{' . $key . '}', $val, $content);
-            }
+        foreach ($vars as $key => $val) {
+            $content = str_replace('{' . $key . '}', $val, $content);
         }
 
         $setting = Base::setting('notifyConfig');
         try {
             switch ($rule->mode) {
                 case "mail":
-                    if (!Base::isEmail($user->email)) {
-                        throw new \Exception("User email '{$user->email}' address error");
+                    $email = User::whereUserid($userid)->value('email');
+                    if (!Base::isEmail($email)) {
+                        throw new \Exception("User email '{$email}' address error");
                     }
                     Factory::mailer()
                         ->setDsn("smtp://{$setting['mail_account']}:{$setting['mail_password']}@{$setting['mail_server']}:{$setting['mail_port']}?verify_peer=0")
                         ->setMessage(\Guanguans\Notify\Messages\EmailMessage::create()
                             ->from(env('APP_NAME', 'Task') . " <{$setting['mail_account']}>")
-                            ->to($user->email)
+                            ->to($email)
                             ->subject($rule->name)
                             ->html($content))
                         ->send();
@@ -133,17 +129,25 @@ class NotifyTask extends AbstractTask
                     break;
 
                 case "telegram":
-                    if (empty($user->tgcid)) {
+                    $chat_ids = TelegramSubscribe::whereSubscribe(1)
+                        ->whereUserid($userid)
+                        ->orderByDesc('id')
+                        ->take(5)
+                        ->pluck('chat_id')
+                        ->toArray();
+                    if (empty($chat_ids)) {
                         throw new \Exception("User telegram chat_id is error");
                     }
-                    Factory::telegram()
-                        ->setToken($setting['telegram_token'])
-                        ->setMessage(\Guanguans\Notify\Messages\Telegram\TextMessage::create([
-                            'chat_id' => $user->tgcid,
-                            'text' => "# {$rule->name}\n{$content}",
-                            'parse_mode' => 'MarkdownV2',
-                        ]))
-                        ->send();
+                    foreach ($chat_ids as $chat_id) {
+                        Factory::telegram()
+                            ->setToken($setting['telegram_token'])
+                            ->setMessage(\Guanguans\Notify\Messages\Telegram\TextMessage::create([
+                                'chat_id' => $chat_id,
+                                'text' => "# {$rule->name}\n{$content}",
+                                'parse_mode' => 'MarkdownV2',
+                            ]))
+                            ->send();
+                    }
                     break;
 
                 case "gitter":

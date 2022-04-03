@@ -7,6 +7,7 @@
                     <div slot="content" class="notify-collapse-content">
                         <FormItem v-for="param in item.params" :label="$L(param.label)" :key="`${item.mode}_${param.key}`">
                             <Input v-model="formData[`${item.mode}_${param.key}`]" :type="param.inputType || 'text'" :maxlength="128"/>
+                            <div v-if="item.mode === 'telegram'" class="form-tip">{{$L('打开 Telegram Bot 发送 “邮箱#密码” (例如:admin@admin.com#123456) 订阅节点异常日志等。')}}</div>
                         </FormItem>
                     </div>
                 </Panel>
