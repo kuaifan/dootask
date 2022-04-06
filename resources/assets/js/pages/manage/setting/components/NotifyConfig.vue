@@ -1,6 +1,10 @@
 <template>
     <div class="setting-component-item">
         <Form ref="formData" :model="formData" :rules="ruleData" label-width="auto" @submit.native.prevent>
+            <div class="notify-collapse-action">
+                <a href="javascript:void(0)" @click="openAll">{{$L('全部展开')}}</a>
+                <a href="javascript:void(0)" @click="closeAll">{{$L('全部收起')}}</a>
+            </div>
             <Collapse v-model="collapseAction">
                 <Panel v-for="item in modeLists" v-if="item.params.length > 0" :name="item.mode" :key="item.mode">
                     {{$L(item.label)}}
@@ -8,6 +12,9 @@
                         <FormItem v-for="param in item.params" :label="$L(param.label)" :key="`${item.mode}_${param.key}`">
                             <Input v-model="formData[`${item.mode}_${param.key}`]" :type="param.inputType || 'text'" :maxlength="128"/>
                             <div v-if="item.mode === 'telegram'" class="form-tip">{{$L('打开 Telegram Bot 发送 “邮箱#密码” (例如:admin@admin.com#123456) 订阅节点异常日志等。')}}</div>
+                        </FormItem>
+                        <FormItem v-if="item.applyUrl" :label="$L('申请通道')">
+                            <div class="apply-url"><a :href="item.applyUrl" target="_blank">{{item.applyUrl}}</a></div>
                         </FormItem>
                     </div>
                 </Panel>
@@ -31,7 +38,7 @@ export default {
     },
     data() {
         return {
-            collapseAction: 'mail',
+            collapseAction: ['mail'],
 
             loadIng: 0,
             formData: {},
@@ -75,6 +82,14 @@ export default {
                 this.loadIng--;
             });
         },
+
+        openAll() {
+            this.collapseAction = this.modeLists.map(item => item.mode);
+        },
+
+        closeAll() {
+            this.collapseAction = [];
+        }
     }
 }
 </script>

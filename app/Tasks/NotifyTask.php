@@ -242,4 +242,38 @@ class NotifyTask extends AbstractTask
                 }
             });
     }
+
+    /**
+     * 任务状态修改（结束状态）
+     * @return void
+     */
+    private function taskStateEnd()
+    {
+        NotifyRule::whereStatus(1)
+            ->whereEvent($this->event)
+            ->chunkById(10, function ($rules) {
+
+                /** @var NotifyRule $rule */
+                foreach ($rules as $rule) {
+                    
+                }
+            });
+    }
+
+    /**
+     * 任务状态修改（不含结束状态）
+     * @return void
+     */
+    private function taskStateChange()
+    {
+        NotifyRule::whereStatus(1)
+            ->whereEvent($this->event)
+            ->chunkById(10, function ($rules) {
+
+                /** @var NotifyRule $rule */
+                foreach ($rules as $rule) {
+
+                }
+            });
+    }
 }

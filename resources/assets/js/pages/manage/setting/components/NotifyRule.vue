@@ -68,25 +68,25 @@
                         @on-change="generateContent">
                         <Option v-for="item in modeLists" :value="item.mode" :key="item.mode">{{ $L(item.label) }}</Option>
                     </Select>
-                    <div v-if="addModeData && addModeData.receiver" class="setting-item-notify-tip">{{$L('接收对象')}}: {{$L(addModeData.receiver)}}</div>
                 </FormItem>
                 <FormItem v-if="addData.mode === 'webhook'" prop="webhook_url" :label="$L('推送URL')">
                     <Input type="text" v-model="addData.webhook_url" :placeholder="$L('请输入Webhook地址')"></Input>
                 </FormItem>
-                <FormItem v-if="addEvents.length > 0" prop="event" :label="$L('触发条件')">
+                <FormItem v-if="eventItems.length > 0" prop="event" :label="$L('触发条件')">
                     <Select
                         v-model="addData.event"
                         :placeholder="$L('选择推送触发条件')"
                         @on-change="generateContent">
-                        <Option v-for="item in addEvents" :value="item.event" :key="item.event">{{ $L(item.label) }}</Option>
+                        <Option v-for="item in eventItems" :value="item.event" :key="item.event">{{ $L(item.label) }}</Option>
                     </Select>
+                    <div v-if="eventData && eventData.receiver" class="setting-item-notify-tip">{{$L('接收对象')}}: {{$L(eventData.receiver)}}</div>
                 </FormItem>
                 <FormItem v-if="['taskExpireBefore', 'taskExpireAfter'].includes(addData.event)" prop="expire_hours" :label="$L('时间条件')">
                     <label>{{ $L(addData.event === 'taskExpireAfter' ? '任务超期后' : '任务到期前') }}</label>
                     <InputNumber v-model="addData.expire_hours" :min="0.5" :max="720" :step="0.5"/>
                     <label>{{ $L('小时') }}</label>
                 </FormItem>
-                <FormItem v-if="addModeData && addEventData" prop="content" :label="$L('推送内容')">
+                <FormItem v-if="modeData && eventData" prop="content" :label="$L('推送内容')">
                     <Input
                         v-model="addData.content"
                         type="textarea"
@@ -95,7 +95,7 @@
                         :placeholder="$L('请输入推送内容')">
                     </Input>
                     <div class="setting-item-notify-add-vars">
-                        {{$L('支持语法')}}: <span>{{addModeData.contentType}}</span>, {{$L('支持变量')}}: <em v-for="v in addEventData.vars" v-html="`{${v}}`"></em>
+                        {{$L('支持语法')}}: <span>{{modeData.contentType}}</span>, {{$L('支持变量')}}: <em v-for="v in eventData.vars" v-html="`{${v}}`"></em>
                     </div>
                 </FormItem>
                 <FormItem prop="status" :label="$L('是否启用')">
@@ -273,41 +273,46 @@ export default {
     computed: {
         ...mapState(['windowMax768']),
 
-        addModeData() {
-            return this.modeLists.find(({mode}) => mode === this.addData.mode) || null;
-        },
-
-        addEventData() {
-            return this.eventTypes.find(({event}) => event === this.addData.event) || null;
-        },
-
-        addEvents() {
+        eventItems() {
             const data = this.modeLists.find(({mode}) => mode === this.addData.mode);
             if (!data) {
                 return []
             }
-            return this.eventTypes.filter(({event}) => data.events.includes(event));
+            return $A.cloneJSON(this.eventTypes).filter(event => {
+                const tmp = data.events.find(item => {
+                    return item.event === event.event || (item.event === 'allTaskEvent' && $A.leftExists(event.event, 'task'))
+                })
+                if (tmp) {
+                    event.receiver = tmp.receiver
+                    return true;
+                }
+                return false;
+            });
         },
 
-        addContentType() {
-            return this.addModeData ? this.addModeData.contentType : null;
-        }
+        eventData() {
+            return this.eventItems.find(({event}) => event === this.addData.event) || null;
+        },
+
+        modeData() {
+            return this.modeLists.find(({mode}) => mode === this.addData.mode) || null;
+        },
     },
 
     methods: {
         generateContent() {
-            if (!this.addEventData) {
+            if (!this.eventData) {
                 return;
             }
             let content;
             if (this.addData.mode === 'webhook') {
                 content = {};
-                this.addEventData.vars.some(v => {
+                this.eventData.vars.some(v => {
                     content[v] = `{${v}}`
                 })
                 content = JSON.stringify(content, null, 4)
             } else {
-                content = this.$L(this.addEventData.example)
+                content = this.$L(this.eventData.example)
             }
             this.$set(this.addData, 'content', content)
         },

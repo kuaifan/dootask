@@ -36,5 +36,15 @@ namespace App\Models;
  */
 class NotifyRule extends AbstractModel
 {
-
+    /**
+     * @param $event
+     * @param callable $callback
+     * @return void
+     */
+    public static function chunkByIdForEvent($event, callable $callback)
+    {
+        NotifyRule::whereStatus(1)
+            ->whereEvent($event)
+            ->chunkById(10, $callback);
+    }
 }

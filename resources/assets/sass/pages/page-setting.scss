@@ -236,6 +236,12 @@
                             .email-setting-placeholder {
                                 height: 8px;
                             }
+                            .notify-collapse-action {
+                                margin-bottom: 12px;
+                                > a {
+                                    padding-right: 8px;
+                                }
+                            }
                             .notify-collapse-content {
                                 margin: 12px;
                                 > div:last-child {
