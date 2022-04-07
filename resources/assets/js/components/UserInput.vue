@@ -129,7 +129,10 @@
         watch: {
             value: {
                 handler() {
-                    this.valueChange()
+                    const tmpId = this._tmpId = $A.randomString(6)
+                    setTimeout(() => {
+                        if (tmpId === this._tmpId) this.valueChange()
+                    }, 10)
                 },
                 immediate: true,
             },
