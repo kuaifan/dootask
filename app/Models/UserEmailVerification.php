@@ -39,7 +39,7 @@ class UserEmailVerification extends AbstractModel
      */
     public static function userEmailSend(User $user)
     {
-        $res = self::whereUserid($user->userid)->where('created_at', '>', Carbon::now()->subMinutes(1440))->first();
+        $res = self::whereUserid($user->userid)->where('created_at', '>', Carbon::now()->subMinutes(30))->first();
         if ($res) return;
         //删除
         self::whereUserid($user->userid)->delete();
@@ -53,12 +53,12 @@ class UserEmailVerification extends AbstractModel
 
         $setting = Base::setting('emailSetting');
         $url = Base::fillUrl('single/valid/email') . '?code=' . $userEmailVerification->code;
-        $subject = "绑定邮箱验证";
-        $content = "您好，您正在绑定 " . env('APP_NAME') . " 的邮箱，请于24小时之内点击该链接完成验证 :<div style='display: flex; justify-content: center;'><a href='{$url}' target='_blank'>{$url}</a></div>";
         try {
             if (!Base::isEmail($user->email)) {
                 throw new \Exception("User email '{$user->email}' address error");
             }
+            $subject = env('APP_NAME') . " 绑定邮箱验证";
+            $content = "<p>{$user->nickname} 您好，您正在绑定 " . env('APP_NAME') . " 的邮箱，请于30分钟之内点击以下链接完成验证 :</p><p style='display: flex; justify-content: center;'><a href='{$url}' target='_blank'>{$url}</a></p>";
             Factory::mailer()
                 ->setDsn("smtp://{$setting['account']}:{$setting['password']}@{$setting['smtp_server']}:{$setting['port']}?verify_peer=0")
                 ->setMessage(EmailMessage::create()

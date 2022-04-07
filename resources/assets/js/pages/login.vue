@@ -352,6 +352,7 @@ export default {
                     },
                 }).then(({data}) => {
                     this.loadIng--;
+                    this.codeNeed = false;
                     $A.setStorage("cacheLoginEmail", this.email)
                     this.$store.dispatch("handleClearCache", data).then(() => {
                         this.goNext1();

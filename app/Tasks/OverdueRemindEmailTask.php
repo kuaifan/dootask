@@ -29,8 +29,8 @@ class OverdueRemindEmailTask extends AbstractTask
                 ProjectTask::whereNull('complete_at')
                     ->whereNull('archived_at')
                     ->whereBetween("end_at", [
-                        Carbon::now()->addMinutes($hours * 60 - 3),
-                        Carbon::now()->addMinutes($hours * 60 + 3)
+                        Carbon::now()->addMinutes($hours * 60),
+                        Carbon::now()->addMinutes($hours * 60 + 10)
                     ])->chunkById(100, function ($tasks) {
                         /** @var ProjectTask $task */
                         foreach ($tasks as $task) {
@@ -42,8 +42,8 @@ class OverdueRemindEmailTask extends AbstractTask
                 ProjectTask::whereNull('complete_at')
                     ->whereNull('archived_at')
                     ->whereBetween("end_at", [
-                        Carbon::now()->addMinutes($hours2 * 60 + 3),
-                        Carbon::now()->addMinutes($hours2 * 60 - 3)
+                        Carbon::now()->subMinutes($hours2 * 60 + 10),
+                        Carbon::now()->subMinutes($hours2 * 60)
                     ])->chunkById(100, function ($tasks) {
                         /** @var ProjectTask $task */
                         foreach ($tasks as $task) {
@@ -74,13 +74,6 @@ class OverdueRemindEmailTask extends AbstractTask
         $setting = Base::setting('emailSetting');
         $hours = floatval($setting['task_remind_hours']);
         $hours2 = floatval($setting['task_remind_hours2']);
-        if ($isBefore) {
-            $subject = "任务提醒";
-            $content = "<p>用户您好， " . env('APP_NAME') . " 任务到期提醒。</p><p>您有一个任务【{$task->name}】还有{$hours}小时即将超时，请及时处理</p>";
-        } else {
-            $subject = "任务过期提醒";
-            $content = "<p>用户您好， " . env('APP_NAME') . " 任务到期提醒。</p><p>您的任务【{$task->name}】已经超时{$hours2}小时，请及时处理</p>";
-        }
 
         /** @var User $user */
         foreach ($users as $user) {
@@ -96,6 +89,13 @@ class OverdueRemindEmailTask extends AbstractTask
             try {
                 if (!Base::isEmail($user->email)) {
                     throw new \Exception("User email '{$user->email}' address error");
+                }
+                if ($isBefore) {
+                    $subject = env('APP_NAME') . " 任务提醒";
+                    $content = "<p>{$user->nickname} 您好：</p><p>您有一个任务【{$task->name}】还有{$hours}小时即将超时，请及时处理。</p>";
+                } else {
+                    $subject = env('APP_NAME') . " 任务过期提醒";
+                    $content = "<p>{$user->nickname} 您好：</p><p>您的任务【{$task->name}】已经超时{$hours2}小时，请及时处理。</p>";
                 }
                 Factory::mailer()
                     ->setDsn("smtp://{$setting['account']}:{$setting['password']}@{$setting['smtp_server']}:{$setting['port']}?verify_peer=0")

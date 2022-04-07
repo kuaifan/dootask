@@ -616,23 +616,25 @@ class UsersController extends AbstractController
         if (empty($res)) {
             return Base::retError('无效连接,请重新注册');
         }
+
         // 如果已经校验过
         if (intval($res->status) === 1)
-            return Base::retError('链接已经使用过',['code' => 2]);
+            return Base::retError('链接已经使用过', ['code' => 2]);
 
         $oldTime = Carbon::parse($res->created_at)->timestamp;
         $time = Base::Time();
-        //24个小时失效
-        if (abs($time - $oldTime) > 86400) {
+
+        // 30分钟失效
+        if (abs($time - $oldTime) > 1800) {
             return Base::retError("链接已失效，请重新登录/注册");
         }
-        UserEmailVerification::whereCode($data['code'])
-            ->update([
-                'status' => 1
-            ]);
+        UserEmailVerification::whereCode($data['code'])->update([
+            'status' => 1
+        ]);
         User::whereUserid($res->userid)->update([
             'email_verity' => 1
         ]);
+
         return Base::retSuccess('绑定邮箱成功');
     }
 }
