@@ -42,7 +42,8 @@
                         transfer>
                         <Button :loading="loadIng > 0" type="primary" icon="ios-search" @click="onSearch">{{$L('搜索')}}</Button>
                         <div slot="content">
-                            <Button :loading="loadIng > 0" type="text" @click="getLists">{{$L('刷新')}}</Button>
+                            <Button v-if="keyIs" type="text" @click="keyIs=false">{{$L('取消筛选')}}</Button>
+                            <Button v-else :loading="loadIng > 0" type="text" @click="getLists">{{$L('刷新')}}</Button>
                         </div>
                     </Tooltip>
                 </li>
@@ -88,6 +89,8 @@ export default {
             noDataText: "数据加载中.....",
 
             keys: {},
+            keyIs: false,
+
             reportTypeList: [
                 {value: "", label: this.$L('全部')},
                 {value: "weekly", label: this.$L('周报')},
@@ -100,6 +103,14 @@ export default {
     },
     computed: {
         ...mapState(['userId', 'windowMax768'])
+    },
+    watch: {
+        keyIs(v) {
+            if (!v) {
+                this.keys = {}
+                this.setPage(1)
+            }
+        }
     },
     methods: {
         initLanguage() {
@@ -180,6 +191,7 @@ export default {
 
         getLists() {
             this.loadIng++;
+            this.keyIs = $A.objImplode(this.keys) != "";
             this.$store.dispatch("call", {
                 url: 'report/receive',
                 data: {

@@ -24,7 +24,8 @@
                         transfer>
                         <Button :loading="loadIng > 0" type="primary" icon="ios-search" @click="onSearch">{{$L('搜索')}}</Button>
                         <div slot="content">
-                            <Button :loading="loadIng > 0" type="text" @click="getLists">{{$L('刷新')}}</Button>
+                            <Button v-if="keyIs" type="text" @click="keyIs=false">{{$L('取消筛选')}}</Button>
+                            <Button v-else :loading="loadIng > 0" type="text" @click="getLists">{{$L('刷新')}}</Button>
                         </div>
                     </Tooltip>
                 </li>
@@ -69,6 +70,7 @@ export default {
             loadIng: 0,
 
             keys: {},
+            keyIs: false,
 
             columns: [],
             list: [],
@@ -91,6 +93,12 @@ export default {
                 this.getLists();
             },
             immediate: true
+        },
+        keyIs(v) {
+            if (!v) {
+                this.keys = {}
+                this.setPage(1)
+            }
         }
     },
     methods: {
@@ -181,11 +189,6 @@ export default {
             ]
         },
 
-        refresh() {
-            this.keys = {};
-            this.getLists()
-        },
-
         onSearch() {
             this.page = 1;
             this.getLists();
@@ -196,6 +199,7 @@ export default {
                 return;
             }
             this.loadIng++;
+            this.keyIs = $A.objImplode(this.keys) != "";
             this.$store.dispatch("call", {
                 url: 'project/task/lists',
                 data: {
