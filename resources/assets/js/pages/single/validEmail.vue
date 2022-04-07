@@ -57,7 +57,6 @@ export default {
     mounted() {
         this.verificationEmail();
     },
-    watch: {},
     methods: {
         verificationEmail() {
             this.$store.dispatch("call", {

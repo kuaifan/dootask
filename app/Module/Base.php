@@ -996,13 +996,16 @@ class Base
 
     /**
      * 检测邮箱格式
-     * @param string $str 需要检测的字符串
-     * @return int
+     * @param $str
+     * @return bool
      */
     public static function isEmail($str)
     {
-        $RegExp = '/^[a-z0-9][a-z\.0-9-_]+@[a-z0-9_-]+(?:\.[a-z]{0,3}\.[a-z]{0,2}|\.[a-z]{0,3}|\.[a-z]{0,2})$/i';
-        return preg_match($RegExp, $str);
+        if (filter_var($str, FILTER_VALIDATE_EMAIL)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**

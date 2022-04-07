@@ -10,10 +10,13 @@
                     <Input :maxlength="20" v-model="formData.port"/>
                 </FormItem>
                 <FormItem :label="$L('账号')" prop="account">
-                    <Input :maxlength="20" v-model="formData.account"/>
+                    <Input :maxlength="128" v-model="formData.account"/>
                 </FormItem>
                 <FormItem :label="$L('密码')" prop="password">
-                    <Input :maxlength="20" v-model="formData.password" type="password"/>
+                    <Input :maxlength="128" v-model="formData.password" type="password"/>
+                </FormItem>
+                <FormItem>
+                    <Button @click="checkEmailSend">{{ $L('邮件发送测试') }}</Button>
                 </FormItem>
             </div>
 
@@ -111,6 +114,7 @@ export default {
                 this.loadIng--;
             });
         },
+
         hoursChange(e) {
             let newNum = e * 10;
             if (newNum % 5 !== 0) {
@@ -120,6 +124,7 @@ export default {
                 $A.messageError('任务提醒只能是0.5的倍数');
             }
         },
+
         hours2Change(e) {
             let newNum = e * 10;
             if (newNum % 5 !== 0) {
@@ -128,6 +133,36 @@ export default {
                 })
                 $A.messageError('第二次任务提醒只能是0.5的倍数');
             }
+        },
+
+        checkEmailSend() {
+            $A.modalInput({
+                title: "测试邮件",
+                placeholder: "请输入收件人地址",
+                onOk: (value, cb) => {
+                    if (!value) {
+                        cb()
+                        return
+                    }
+                    if (!$A.isEmail(value)) {
+                        $A.modalError("请输入正确的收件人地址", 301)
+                        cb()
+                        return
+                    }
+                    this.$store.dispatch("call", {
+                        url: 'system/email/check',
+                        data: Object.assign(this.formData, {
+                            to: value
+                        }),
+                    }).then(({msg}) => {
+                        $A.messageSuccess(msg)
+                        cb()
+                    }).catch(({msg}) => {
+                        $A.modalError(msg, 301)
+                        cb()
+                    });
+                }
+            });
         }
     }
 }

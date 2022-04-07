@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\User;
 use App\Module\Base;
+use Guanguans\Notify\Factory;
+use Guanguans\Notify\Messages\EmailMessage;
 use Request;
 use Response;
 
@@ -566,4 +568,45 @@ class SystemController extends AbstractController
         ]);
     }
 
+    /**
+     * @api {get} api/system/email/check          15. 邮件发送测试（限管理员）
+     *
+     * @apiDescription 测试配置邮箱是否能发送邮件
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName email__check
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function email__check()
+    {
+        User::auth('admin');
+        //
+        $all = Request::input();
+        if (!Base::isEmail($all['to'])) {
+            return Base::retError('请输入正确的收件人地址');
+        }
+        try {
+            Factory::mailer()
+                ->setDsn("smtp://{$all['account']}:{$all['password']}@{$all['smtp_server']}:{$all['port']}?verify_peer=0")
+                ->setMessage(EmailMessage::create()
+                    ->from(env('APP_NAME', 'Task') . " <{$all['account']}>")
+                    ->to($all['to'])
+                    ->subject('Mail sending test')
+                    ->html('<p>收到此电子邮件意味着您的邮箱配置正确。</p><p>Receiving this email means that your mailbox is configured correctly.</p>'))
+                ->send();
+            return Base::retSuccess('成功发送');
+        } catch (\Exception $e) {
+            // 一般是请求超时
+            if (str_contains($e->getMessage(), "Timed Out")) {
+                return Base::retError("language.TimedOut");
+            } elseif ($e->getCode() === 550) {
+                return Base::retError('邮件内容被拒绝，请检查邮箱是否开启接收功能');
+            } else {
+                return Base::retError($e->getMessage());
+            }
+        }
+    }
 }
