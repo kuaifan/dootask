@@ -1,11 +1,14 @@
 <?php
 
-
 namespace App\Tasks;
 
 use App\Models\ProjectTask;
+use App\Models\ProjectTaskMailLog;
+use App\Models\User;
 use App\Module\Base;
 use Carbon\Carbon;
+use Guanguans\Notify\Factory;
+use Guanguans\Notify\Messages\EmailMessage;
 
 @error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 
@@ -22,35 +25,92 @@ class OverdueRemindEmailTask extends AbstractTask
         if ($setting['notice'] === 'open') {
             $hours = floatval($setting['task_remind_hours']);
             $hours2 = floatval($setting['task_remind_hours2']);
-            $taskLists1 = [];
-            $taskLists2 = [];
             if ($hours > 0) {
-                $taskLists1 = ProjectTask::whereNull('complete_at')
-                    ->where('end_at', '>=', Carbon::now()->addMinutes($hours * 60 - 3)->rawFormat('Y-m-d H:i:s'))
-                    ->where('end_at', '<=', Carbon::now()->addMinutes($hours * 60 + 3)->rawFormat('Y-m-d H:i:s'))
+                ProjectTask::whereNull('complete_at')
                     ->whereNull('archived_at')
-                    ->take(100)
-                    ->get()
-                    ->toArray();
+                    ->whereBetween("end_at", [
+                        Carbon::now()->addMinutes($hours * 60 - 3),
+                        Carbon::now()->addMinutes($hours * 60 + 3)
+                    ])->chunkById(100, function ($tasks) {
+                        /** @var ProjectTask $task */
+                        foreach ($tasks as $task) {
+                            $this->overdueBeforeAfterEmail($task, true);
+                        }
+                    });
             }
             if ($hours2 > 0) {
-                $taskLists2 = ProjectTask::whereNull('complete_at')
-                    ->where('end_at', '>=', Carbon::now()->subMinutes($hours2 * 60 + 3)->rawFormat('Y-m-d H:i:s'))
-                    ->where('end_at', '<=', Carbon::now()->subMinutes($hours2 * 60 - 3)->rawFormat('Y-m-d H:i:s'))
+                ProjectTask::whereNull('complete_at')
                     ->whereNull('archived_at')
-                    ->take(100)
-                    ->get()
-                    ->toArray();
-            }
-            $taskLists = array_merge($taskLists1, $taskLists2);
-            $ids = [];
-            foreach ($taskLists as $task) {
-                if (!in_array($task->id, $ids)) {
-                    $ids[] = $task->id;
-                    ProjectTask::overdueRemindEmail($task);
-                }
+                    ->whereBetween("end_at", [
+                        Carbon::now()->addMinutes($hours2 * 60 + 3),
+                        Carbon::now()->addMinutes($hours2 * 60 - 3)
+                    ])->chunkById(100, function ($tasks) {
+                        /** @var ProjectTask $task */
+                        foreach ($tasks as $task) {
+                            $this->overdueBeforeAfterEmail($task, false);
+                        }
+                    });
             }
         }
     }
 
+    /**
+     * 过期前、超期后提醒
+     * @param ProjectTask $task
+     * @param $isBefore
+     * @return void
+     */
+    private function overdueBeforeAfterEmail(ProjectTask $task, $isBefore)
+    {
+        $userids = $task->taskUser->where('owner', 1)->pluck('userid')->toArray();
+        if (empty($userids)) {
+            return;
+        }
+        $users = User::whereIn('userid', $userids)->get();
+        if (empty($users)) {
+            return;
+        }
+
+        $setting = Base::setting('emailSetting');
+        $hours = floatval($setting['task_remind_hours']);
+        $hours2 = floatval($setting['task_remind_hours2']);
+        if ($isBefore) {
+            $subject = "任务提醒";
+            $content = "<p>用户您好， " . env('APP_NAME') . " 任务到期提醒。</p><p>您有一个任务【{{$task->name}}】还有{{$hours}}小时即将超时，请及时处理</p>";
+        } else {
+            $subject = "任务过期提醒";
+            $content = "<p>用户您好， " . env('APP_NAME') . " 任务到期提醒。</p><p>您的任务【{{$task->name}}】已经超时{{$hours2}}小时，请及时处理</p>";
+        }
+
+        /** @var User $user */
+        foreach ($users as $user) {
+            $data = [
+                'type' => $isBefore ? 1 : 2,
+                'userid' => $user->userid,
+                'task_id' => $task->id,
+            ];
+            $emailLog = ProjectTaskMailLog::where($data)->first();
+            if ($emailLog) {
+                continue;
+            }
+            try {
+                if (!Base::isEmail($user->email)) {
+                    throw new \Exception("User email '{$user->email}' address error");
+                }
+                Factory::mailer()
+                    ->setDsn("smtp://{$setting['account']}:{$setting['password']}@{$setting['smtp_server']}:{$setting['port']}?verify_peer=0")
+                    ->setMessage(EmailMessage::create()
+                        ->from(env('APP_NAME', 'Task') . " <{$setting['account']}>")
+                        ->to($user->email)
+                        ->subject($subject)
+                        ->html($content))
+                    ->send();
+                $data['is_send'] = 1;
+            } catch (\Exception $e) {
+                $data['send_error'] = $e->getMessage();
+            }
+            $data['email'] = $user->email;
+            ProjectTaskMailLog::createInstance($data)->save();
+        }
+    }
 }
