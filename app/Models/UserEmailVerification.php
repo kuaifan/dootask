@@ -5,9 +5,8 @@ namespace App\Models;
 use App\Exceptions\ApiException;
 use App\Module\Base;
 use Carbon\Carbon;
-use Config;
-use Exception;
-use Mail;
+use Guanguans\Notify\Factory;
+use Guanguans\Notify\Messages\EmailMessage;
 
 /**
  * App\Models\UserEmailVerification
@@ -40,49 +39,42 @@ class UserEmailVerification extends AbstractModel
      */
     public static function userEmailSend(User $user)
     {
-        $res = self::where('userid', $user->userid)->where('created_at', '>', Carbon::now()->subMinutes(1440))->first();
+        $res = self::whereUserid($user->userid)->where('created_at', '>', Carbon::now()->subMinutes(1440))->first();
         if ($res) return;
         //删除
-        self::where('userid', $user->userid)->delete();
-        $info['created_at'] = date("Y-m-d H:i:s");
-        $info['userid'] = $user->userid;
-        $info['email'] = $user->email;
-        $info['code'] = md5(uniqid(md5(microtime(true)), true)) . md5($user->userid . md5('lddsgagsgkdiid' . microtime(true)));
-        $info['status'] = 0;
-        $userEmailVerification = self::createInstance($info);
+        self::whereUserid($user->userid)->delete();
+        $userEmailVerification = self::createInstance([
+            'userid' => $user->userid,
+            'email' => $user->email,
+            'code' => Base::generatePassword(64),
+            'status' => 0,
+        ]);
         $userEmailVerification->save();
-        $url = Base::fillUrl('single/valid/email') . '?code=' . $info['code'];
+
+        $setting = Base::setting('emailSetting');
+        $url = Base::fillUrl('single/valid/email') . '?code=' . $userEmailVerification->code;
+        $subject = "绑定邮箱验证";
+        $content = "您好，您正在绑定 " . env('APP_NAME') . " 的邮箱，请于24小时之内点击该链接完成验证 :<div style='display: flex; justify-content: center;'><a href='{$url}' target='_blank'>{$url}</a></div>";
         try {
-            // 15秒后超时
-            self::initMailConfig();
-            Mail::send('email', ['url' => $url], function ($m) use ($user) {
-                $m->from(Config::get("mail.mailers.smtp.username"), env('APP_NAME'));
-                $m->to($user->email);
-                $m->subject("绑定邮箱验证");
-            });
-        } catch (Exception $exception) {
-            // 一般是请求超时
-            if (str_contains($exception->getMessage(), "Timed Out")) {
+            if (!Base::isEmail($user->email)) {
+                throw new \Exception("User email '{$user->email}' address error");
+            }
+            Factory::mailer()
+                ->setDsn("smtp://{$setting['account']}:{$setting['password']}@{$setting['smtp_server']}:{$setting['port']}?verify_peer=0")
+                ->setMessage(EmailMessage::create()
+                    ->from(env('APP_NAME', 'Task') . " <{$setting['account']}>")
+                    ->to($user->email)
+                    ->subject($subject)
+                    ->html($content))
+                ->send();
+        } catch (\Exception $e) {
+            if (str_contains($e->getMessage(), "Timed Out")) {
                 throw new ApiException("language.TimedOut");
-            } elseif ($exception->getCode() == 550) {
+            } elseif ($e->getCode() === 550) {
                 throw new ApiException('邮件内容被拒绝，请检查邮箱是否开启接收功能');
             } else {
-                throw new ApiException($exception->getMessage());
+                throw new ApiException($e->getMessage());
             }
         }
-    }
-
-    /**
-     * 初始化邮箱配置
-     * @return void
-     */
-    public static function initMailConfig()
-    {
-        $config = Base::setting('emailSetting');
-        Config::set("mail.mailers.smtp.host", $config['smtp_server'] ?: Config::get("mail.mailers.smtp.host"));
-        Config::set("mail.mailers.smtp.port", $config['port'] ?: Config::get("mail.mailers.smtp.port"));
-        Config::set("mail.mailers.smtp.username", $config['account'] ?: Config::get("mail.mailers.smtp.username"));
-        Config::set("mail.mailers.smtp.password", $config['password'] ?: Config::get("mail.mailers.smtp.password"));
-        Config::set("mail.mailers.smtp.encryption", 'ssl');
     }
 }

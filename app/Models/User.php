@@ -191,7 +191,7 @@ class User extends AbstractModel
             $user = self::whereUserid(User::email2userid($email))->first();
             if ($isRegVerify && $user->email_verity === 0) {
                 UserEmailVerification::userEmailSend($user);
-                throw new ApiException('您的账号已注册过，请验证邮箱');
+                throw new ApiException('您的账号已注册过，请验证邮箱', ['code' => 'email']);
             }
             throw new ApiException('邮箱地址已存在');
         }

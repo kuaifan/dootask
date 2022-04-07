@@ -76,10 +76,10 @@ class OverdueRemindEmailTask extends AbstractTask
         $hours2 = floatval($setting['task_remind_hours2']);
         if ($isBefore) {
             $subject = "任务提醒";
-            $content = "<p>用户您好， " . env('APP_NAME') . " 任务到期提醒。</p><p>您有一个任务【{{$task->name}}】还有{{$hours}}小时即将超时，请及时处理</p>";
+            $content = "<p>用户您好， " . env('APP_NAME') . " 任务到期提醒。</p><p>您有一个任务【{$task->name}】还有{$hours}小时即将超时，请及时处理</p>";
         } else {
             $subject = "任务过期提醒";
-            $content = "<p>用户您好， " . env('APP_NAME') . " 任务到期提醒。</p><p>您的任务【{{$task->name}}】已经超时{{$hours2}}小时，请及时处理</p>";
+            $content = "<p>用户您好， " . env('APP_NAME') . " 任务到期提醒。</p><p>您的任务【{$task->name}】已经超时{$hours2}小时，请及时处理</p>";
         }
 
         /** @var User $user */

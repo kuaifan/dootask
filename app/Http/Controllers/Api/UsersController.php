@@ -10,7 +10,6 @@ use Cache;
 use Captcha;
 use Carbon\Carbon;
 use Request;
-use Validator;
 
 /**
  * @apiDefine users
@@ -92,7 +91,7 @@ class UsersController extends AbstractController
             Cache::forget("code::" . $email);
             if ($isRegVerify && $user->email_verity === 0) {
                 UserEmailVerification::userEmailSend($user);
-                return $retError('您还没有验证邮箱，请先登录邮箱通过验证邮件验证邮箱');
+                return Base::retError('您还没有验证邮箱，请先登录邮箱通过验证邮件验证邮箱', ['code' => 'email']);
             }
         }
         //

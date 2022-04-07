@@ -85,7 +85,7 @@ export default {
             loadIng: 0,
 
             codeNeed: false,
-            codeUrl: $A.apiUrl('users/login/codeimg'),
+            codeUrl: $A.apiUrl('users/login/codeimg?_=' + Math.random()),
 
             loginType: 'login',
             loginJump: false,
