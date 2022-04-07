@@ -24,12 +24,12 @@
                     <div class="notification-title">{{$L('发现新版本')}}</div>
                     <Tag color="volcano">v{{systemVersion}} -&gt; v{{updateVersion}}</Tag>
                 </div>
-                <div class="notification-tip">{{$L('离最新版本只有一步之遥了！重新启动应用即可完成更新。')}}</div>
+                <div v-if="$Platform === 'mac'" class="notification-tip">{{$L('离最新版本只有一步之遥了！重新启动应用即可完成更新。')}}</div>
             </div>
             <MarkdownPreview class="notification-body overlay-y" :initialValue="updateNote"/>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="updateShow=false">{{$L('稍后')}}</Button>
-                <Button type="primary" @click="updateQuitAndInstall">{{$L('重新启动')}}</Button>
+                <Button type="primary" @click="updateQuitAndInstall">{{$L($Platform === 'mac' ? '重新启动' : '立即升级')}}</Button>
             </div>
         </Modal>
     </div>
