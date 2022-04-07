@@ -111,7 +111,6 @@ export default {
         },
 
         onEditReport(id) {
-            this.reportId = id;
             if (this.$Electron) {
                 let config = {
                     title: this.$L(id > 0 ? '修改报告' : '新增报告'),
@@ -126,6 +125,7 @@ export default {
                     config
                 });
             } else {
+                this.reportId = id;
                 this.showEditDrawer = true;
             }
         },

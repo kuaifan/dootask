@@ -282,7 +282,7 @@ class ReportController extends AbstractController
         }
         // 生成唯一标识
         $sign = Report::generateSign($type, 0, Carbon::instance($start_time));
-        $one = Report::query()->whereSign($sign)->whereType($type)->first();
+        $one = Report::whereSign($sign)->whereType($type)->first();
         // 如果已经提交了相关汇报
         if ($one && $id > 0) {
             return Base::retSuccess('success', [
@@ -291,7 +291,6 @@ class ReportController extends AbstractController
                 "id" => $one->id,
             ]);
         }
-
 
         // 已完成的任务
         $completeContent = "";

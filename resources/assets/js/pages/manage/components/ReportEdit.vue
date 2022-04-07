@@ -74,35 +74,33 @@ export default {
                 id: 0,
                 offset: 0 // 以当前日期为基础的周期偏移量。例如选择了上一周那么就是 -1，上一天同理。
             },
-            prevCycleText: "",
-            nextCycleText: "",
+            prevCycleText: this.$L("上一周"),
+            nextCycleText: this.$L("下一周"),
         };
     },
     watch: {
-        id(val) {
-            if (this.id > 0) {
-                this.getDetail(val);
-            } else {
-                this.reportData.offset = 0;
-                this.reportData.type = "weekly";
-                this.reportData.receive = [];
-                this.getTemplate();
-            }
+        id: {
+            handler(val) {
+                if (val > 0) {
+                    this.getDetail(val);
+                } else {
+                    this.reportData.offset = 0;
+                    this.reportData.type = "weekly";
+                    this.reportData.receive = [];
+                    this.getTemplate();
+                }
+            },
+            immediate: true
         },
     },
     computed: {
         ...mapState(["userId"])
     },
     mounted() {
-        this.getTemplate();
+        //
     },
     methods: {
-        initLanguage() {
-            this.prevCycleText = this.$L("上一周");
-            this.nextCycleText = this.$L("下一周");
-        },
-
-        handleSubmit: function () {
+        handleSubmit() {
             if (this.reportData.receive.length === 0) {
                 $A.messageError(this.$L("请选择接收人"));
                 return false;

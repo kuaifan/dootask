@@ -142,8 +142,11 @@ export default {
                         },
                         on: {
                             action: (name) => {
-                                if (name === 'edit') this.$emit("on-edit", row.id);
-                                if (name === 'view') this.$emit("on-view", row);
+                                if (name === 'edit') {
+                                    this.$emit("on-edit", row.id);
+                                } else if (name === 'view') {
+                                    this.$emit("on-view", row);
+                                }
                             }
                         }
                     });
