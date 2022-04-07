@@ -9,7 +9,7 @@
                         </div>
                         <div class="search-content">
                             <Select
-                                v-model="reportType"
+                                v-model="keys.type"
                                 :placeholder="$L('全部')">
                                 <Option v-for="item in reportTypeList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                             </Select>
@@ -21,7 +21,7 @@
                         </div>
                         <div class="search-content">
                             <DatePicker
-                                v-model="createAt"
+                                v-model="keys.created_at"
                                 type="daterange"
                                 split-panels
                                 :placeholder="$L('请选择时间')"/>
@@ -82,11 +82,14 @@ export default {
             listPage: 1,
             listTotal: 0,
             listPageSize: 20,
-            noDataText: "",
+            noDataText: "数据加载中.....",
 
-            createAt: [],
-            reportType: '',
-            reportTypeList: [],
+            keys: {},
+            reportTypeList: [
+                {value: "", label: this.$L('全部')},
+                {value: "weekly", label: this.$L('周报')},
+                {value: "daily", label: this.$L('日报')},
+            ],
         }
     },
     mounted() {
@@ -97,7 +100,6 @@ export default {
     },
     methods: {
         initLanguage() {
-            this.noDataText = this.noDataText || "数据加载中.....";
             this.columns = [{
                 title: this.$L("名称"),
                 key: 'title',
@@ -108,7 +110,7 @@ export default {
                 key: 'type',
                 align: 'center',
                 sortable: true,
-                width: 80,
+                width: 90,
             }, {
                 title: this.$L("汇报时间"),
                 key: 'created_at',
@@ -147,11 +149,6 @@ export default {
                     });
                 },
             }];
-            this.reportTypeList = [
-                {value: "", label: this.$L('全部')},
-                {value: "weekly", label: this.$L('周报')},
-                {value: "daily", label: this.$L('日报')},
-            ]
         },
 
         onSearch() {
@@ -160,28 +157,26 @@ export default {
         },
 
         getLists() {
-            this.loadIng = 1;
+            this.loadIng++;
             this.$store.dispatch("call", {
                 url: 'report/my',
                 data: {
+                    keys: this.keys,
                     page: Math.max(this.listPage, 1),
                     pagesize: Math.max($A.runNum(this.listPageSize), 10),
-                    created_at: this.createAt,
-                    type: this.reportType
                 },
-            }).then(({data, msg}) => {
+            }).then(({data}) => {
                 // data 结果数据
                 this.lists = data.data;
                 this.listTotal = data.total;
-                if (this.lists.length <= 0) {
-                    this.noDataText = this.$L("无数据");
-                }
+                this.noDataText = "没有相关的数据";
                 // msg 结果描述
             }).catch(({msg}) => {
                 // msg 错误原因
                 $A.messageError(msg);
+                this.noDataText = '数据加载失败';
             }).finally(() => {
-                this.loadIng = 0;
+                this.loadIng--;
             });
         },
 
@@ -197,17 +192,9 @@ export default {
             }
         },
 
-        searchTab() {
-            this.getLists();
-        },
-
         addReport() {
             this.$emit("on-edit", 0);
         }
     }
 }
 </script>
-
-<style scoped>
-
-</style>
