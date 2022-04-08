@@ -29,7 +29,7 @@
             <MarkdownPreview class="notification-body overlay-y" :initialValue="updateNote"/>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="updateShow=false">{{$L('稍后')}}</Button>
-                <Button type="primary" @click="updateQuitAndInstall">{{$L($Platform === 'mac' ? '重新启动' : '立即升级')}}</Button>
+                <Button type="primary" :loading="updateIng" @click="updateQuitAndInstall">{{$L($Platform === 'mac' ? '重新启动' : '立即升级')}}</Button>
             </div>
         </Modal>
     </div>
@@ -55,6 +55,7 @@ export default {
             updateVersion: '',
             updateNote: '',
             updateShow: false,
+            updateIng: false,
 
             downloadUrl: '',
         }
@@ -158,7 +159,10 @@ export default {
         },
 
         updateQuitAndInstall() {
-            this.$Electron.sendMessage('updateQuitAndInstall')
+            this.updateIng = true
+            setTimeout(() => {
+                this.$Electron.sendMessage('updateQuitAndInstall')
+            }, 301)
         },
 
         useSSOLogin() {

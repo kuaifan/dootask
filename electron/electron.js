@@ -118,9 +118,11 @@ function createSubWindow(args) {
         })
 
         browser.on('close', event => {
-            utils.onBeforeUnload(event).then(() => {
-                event.sender.destroy()
-            })
+            if (!willQuitApp) {
+                utils.onBeforeUnload(event).then(() => {
+                    event.sender.destroy()
+                })
+            }
         })
 
         browser.on('closed', () => {
@@ -187,7 +189,7 @@ app.on('activate', () => {
 })
 
 app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
+    if (willQuitApp || process.platform !== 'darwin') {
         app.quit()
     }
 })
@@ -439,8 +441,8 @@ ipcMain.on('updateCheckAndDownload', (event, args) => {
  */
 ipcMain.on('updateQuitAndInstall', (event) => {
     event.returnValue = "ok"
-    autoUpdater.quitAndInstall()
-    app.quit()
+    willQuitApp = true
+    setTimeout(() => autoUpdater.quitAndInstall(), 1)
 })
 
 //================================================================
