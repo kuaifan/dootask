@@ -259,15 +259,15 @@ class File extends AbstractModel
         //
         if ($userid === null) {
             $userid = [$this->userid];
-            if ($this->share == 1) {
-                $builder = WebSocket::select(['userid']);
-                if ($action == 'content') {
-                    $builder->wherePath('file/content/' . $this->id);
-                }
-                $userid = array_merge($userid, $builder->pluck('userid')->toArray());
-            } elseif ($this->share == 2) {
-                $userid = array_merge($userid, FileUser::whereFileId($this->id)->pluck('userid')->toArray());
+            $builder = WebSocket::select(['userid']);
+            if ($action == 'content') {
+                $builder->wherePath("/single/file/{$this->id}");
+            } elseif ($this->pid > 0) {
+                $builder->wherePath("/manage/file/{$this->pid}");
+            } else {
+                $builder->wherePath("/manage/file");
             }
+            $userid = array_merge($userid, $builder->pluck('userid')->toArray());
             $userid = array_values(array_filter(array_unique($userid)));
         }
         if (empty($userid)) {

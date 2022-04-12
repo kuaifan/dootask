@@ -22,6 +22,7 @@ export default {
 
     data() {
         return {
+            curPath: this.$route.path,
             transitionName: null,
         }
     },
@@ -57,11 +58,12 @@ export default {
     },
 
     computed: {
-        ...mapState(['taskId', 'cacheDrawerOverlay']),
+        ...mapState(['userId', 'cacheDrawerOverlay']),
     },
 
     watch: {
         '$route'(To, From) {
+            this.curPath = To.path;
             if (this.transitionName === null) {
                 this.transitionName = 'app-slide-no';
                 return;
@@ -70,7 +72,17 @@ export default {
                 return;
             }
             this.slideType(To, From);
-        }
+        },
+
+        curPath: {
+            handler(path) {
+                if (this.userId > 0) {
+                    path = path.replace(/^\/manage\/file\/\d+\/(\d+)$/, "/single/file/$1")
+                    this.$store.dispatch("websocketPath", path)
+                }
+            },
+            immediate: true
+        },
     },
 
     methods: {

@@ -162,16 +162,16 @@ export default {
 
         wsMsg: {
             handler(info) {
-                const {type, data} = info;
+                const {type, action, data} = info;
                 switch (type) {
                     case 'path':
-                        if (data.path == 'file/content/' + this.fileId) {
+                        if (data.path == '/single/file/' + this.fileId) {
                             this.editUser = data.userids;
                         }
                         break;
 
                     case 'file':
-                        if (data.action == 'content') {
+                        if (action == 'content') {
                             if (this.value && data.id == this.fileId) {
                                 $A.modalConfirm({
                                     title: "更新提示",

@@ -615,6 +615,7 @@ export default {
     watch: {
         '$route' (route) {
             this.curPath = route.path;
+            this.chackPass();
         },
 
         userInfo() {
@@ -660,14 +661,6 @@ export default {
             if (show) {
                 this.getReportUnread(0);
             }
-        },
-
-        curPath: {
-            handler(path) {
-                this.$store.dispatch("websocketPath", path);
-                this.chackPass();
-            },
-            immediate: true
         },
 
         unreadTotal: {

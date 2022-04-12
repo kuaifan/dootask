@@ -145,10 +145,10 @@ class WebSocketService implements WebSocketHandlerInterface
                     $pathOld = $row->path;
                     $row->path = $pathNew;
                     $row->save();
-                    if (preg_match("/^file\/content\/\d+$/", $pathOld)) {
+                    if (preg_match("/^\/single\/file\/\d+$/", $pathOld)) {
                         $this->pushPath($pathOld);
                     }
-                    if (preg_match("/^file\/content\/\d+$/", $pathNew)) {
+                    if (preg_match("/^\/single\/file\/\d+$/", $pathNew)) {
                         $this->pushPath($pathNew);
                     }
                 }
@@ -211,7 +211,7 @@ class WebSocketService implements WebSocketHandlerInterface
             /** @var WebSocket $item */
             foreach ($list as $item) {
                 $item->delete();
-                if ($item->path && str_starts_with($item->path, "file/content/")) {
+                if ($item->path && str_starts_with($item->path, "/single/file/")) {
                     $array[$item->path] = $item->path;
                 }
             }

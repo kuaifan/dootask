@@ -968,6 +968,7 @@ export default {
                     nodeIntegrationInSubFrames: item.type === 'drawio'
                 },
             });
+            this.browseFile(0);
         },
 
         clickRow(row, column) {
