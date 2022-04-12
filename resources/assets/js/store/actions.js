@@ -644,7 +644,7 @@ export default {
         if (ids.includes(state.projectId)) {
             const project = state.cacheProjects.find(({id}) => id && id != project_id);
             if (project) {
-                $A.goForward({path: '/manage/project/' + project.id});
+                $A.goForward({name: 'manage-project', params: {projectId: project.id}});
             } else {
                 $A.goForward({name: 'manage-dashboard'});
             }

@@ -103,7 +103,7 @@ export default {
 
         goProject() {
             this.$nextTick(() => {
-                this.goForward({path: '/manage/project/' + this.project.id});
+                $A.goForward({name: 'manage-project', params: {projectId: this.project.id}});
             })
         }
     }

@@ -57,7 +57,7 @@ export default {
                         onOk: () => {
                             const project = this.cacheProjects.find(({id}) => id);
                             if (project) {
-                                $A.goForward({path: '/manage/project/' + project.id});
+                                $A.goForward({name: 'manage-project', params: {projectId: project.id}});
                             } else {
                                 $A.goForward({name: 'manage-dashboard'});
                             }

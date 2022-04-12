@@ -466,7 +466,7 @@ export default {
             if (!this.dialogData.group_info) {
                 return;
             }
-            this.goForward({path: '/manage/project/' + this.dialogData.group_info.id});
+            this.goForward({name: 'manage-project', params: {projectId:this.dialogData.group_info.id}});
         },
 
         openTask() {

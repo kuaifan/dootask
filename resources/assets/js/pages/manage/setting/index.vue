@@ -95,7 +95,7 @@ export default {
                 return;
             }
             this.show768Menu = false;
-            this.goForward({path: '/manage/setting/' + path});
+            this.goForward({name: 'manage-setting-' + path});
         },
 
         classNameRoute(path, divided) {

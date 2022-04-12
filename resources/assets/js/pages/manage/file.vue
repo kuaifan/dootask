@@ -844,7 +844,7 @@ export default {
             this.$store.dispatch("getFiles", this.pid).then(() => {
                 this.loadIng--;
                 this.openFileJudge()
-                $A.setStorage("file::pid", this.pid)
+                $A.setStorage("file::folderId", this.pid)
             }).catch(({msg}) => {
                 this.loadIng--;
                 $A.modalError({
@@ -899,7 +899,7 @@ export default {
 
         browseFolder(id) {
             if (id > 0) {
-                this.goForward({params: {folderId: id, fileId: null}});
+                this.goForward({name: 'manage-file', params: {folderId: id, fileId: null}});
             } else {
                 this.goForward({name: 'manage-file'});
             }
@@ -907,7 +907,7 @@ export default {
 
         browseFile(id) {
             if (id > 0) {
-                this.goForward({params: {folderId: this.pid, fileId: id}});
+                this.goForward({name: 'manage-file', params: {folderId: this.pid, fileId: id}});
             } else {
                 this.browseFolder(this.pid);
             }

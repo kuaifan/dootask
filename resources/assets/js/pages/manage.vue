@@ -159,7 +159,7 @@
                             v-for="(item, key) in projectLists"
                             :key="key"
                             :class="classNameProject(item)"
-                            @click="toggleRoute('project/' + item.id)"
+                            @click="toggleRoute('project', {projectId: item.id})"
                             @contextmenu.prevent.stop="handleRightClick($event, item)">
                             <div class="project-h1">
                                 <em @click.stop="toggleOpenMenu(item.id)"></em>
@@ -710,15 +710,16 @@ export default {
             this.$store.dispatch("setTheme", mode)
         },
 
-        toggleRoute(path) {
+        toggleRoute(path, params) {
             this.show768Menu = false;
-            if (path === 'file' && $A.getStorageInt("file::pid") > 0) {
-                path += `/${$A.getStorageInt("file::pid")}`
+            let location = {name: 'manage-' + path, params: params || {}};
+            if (path === 'file' && $A.getStorageInt("file::folderId") > 0) {
+                location.params.folderId = $A.getStorageInt("file::folderId")
             }
             if (path === 'messenger' && $A.getStorageInt("messenger::dialogId") > 0) {
-                path += `/${$A.getStorageInt("messenger::dialogId")}`
+                location.params.dialogId = $A.getStorageInt("messenger::dialogId")
             }
-            this.goForward({path: '/manage/' + path});
+            this.goForward(location);
         },
 
         toggleOpenMenu(id) {
@@ -767,7 +768,7 @@ export default {
                     return;
             }
             if (this.menu.findIndex((m) => m.path == path) > -1) {
-                this.toggleRoute('setting/' + path);
+                this.toggleRoute('setting-' + path);
             }
         },
 
@@ -812,7 +813,7 @@ export default {
                         this.addShow = false;
                         this.$refs.addProject.resetFields();
                         this.$store.dispatch("saveProject", data);
-                        this.toggleRoute('project/' + data.id)
+                        this.toggleRoute('project', {projectId: data.id})
                     }).catch(({msg}) => {
                         $A.modalError(msg);
                         this.loadIng--;
