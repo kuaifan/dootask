@@ -22,7 +22,7 @@ export default {
 
     data() {
         return {
-            curPath: this.$route.path,
+            routePath: this.$route.path,
             transitionName: null,
         }
     },
@@ -63,7 +63,7 @@ export default {
 
     watch: {
         '$route'(To, From) {
-            this.curPath = To.path;
+            this.routePath = To.path;
             if (this.transitionName === null) {
                 this.transitionName = 'app-slide-no';
                 return;
@@ -74,12 +74,19 @@ export default {
             this.slideType(To, From);
         },
 
-        curPath: {
+        routePath: {
             handler(path) {
                 if (this.userId > 0) {
                     path = path.replace(/^\/manage\/file\/\d+\/(\d+)$/, "/single/file/$1")
                     this.$store.dispatch("websocketPath", path)
                 }
+            },
+            immediate: true
+        },
+
+        userId: {
+            handler() {
+                this.$store.dispatch("websocketConnection")
             },
             immediate: true
         },

@@ -384,7 +384,7 @@ export default {
         return {
             loadIng: 0,
 
-            curPath: this.$route.path,
+            routePath: this.$route.path,
             mateName: /macintosh|mac os x/i.test(navigator.userAgent) ? '⌘' : 'Ctrl',
 
             addShow: false,
@@ -614,7 +614,7 @@ export default {
 
     watch: {
         '$route' (route) {
-            this.curPath = route.path;
+            this.routePath = route.path;
             this.chackPass();
         },
 
@@ -668,13 +668,6 @@ export default {
                 if (this.$Electron) {
                     this.$Electron.sendMessage('setDockBadge', num);
                 }
-            },
-            immediate: true
-        },
-
-        userId: {
-            handler() {
-                this.$store.dispatch("websocketConnection")
             },
             immediate: true
         },
@@ -782,7 +775,7 @@ export default {
 
         classNameRoute(path) {
             return {
-                "active": $A.leftExists(this.curPath, '/manage/' + path),
+                "active": $A.leftExists(this.routePath, '/manage/' + path),
             };
         },
 
@@ -790,7 +783,7 @@ export default {
             let path = 'project/' + item.id;
             let openMenu = this.openMenu[item.id];
             return {
-                "active": $A.leftExists(this.curPath, '/manage/' + path),
+                "active": $A.leftExists(this.routePath, '/manage/' + path),
                 "open-menu": openMenu === true,
                 "operate": item.id == this.topOperateItem.id && this.topOperateVisible
             };
@@ -881,7 +874,7 @@ export default {
             if (!this.natificationReady) {
                 return;
             }
-            if (!this.natificationHidden && this.curPath == "/manage/messenger" && this.dialogOpenId == data.dialog_id) {
+            if (!this.natificationHidden && this.routePath == "/manage/messenger" && this.dialogOpenId == data.dialog_id) {
                 return;
             }
             //

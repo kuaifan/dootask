@@ -126,7 +126,6 @@ export default {
                     return true
                 }
             }
-            this.$store.dispatch("websocketConnection")
         }
     },
 
