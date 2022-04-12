@@ -11,15 +11,6 @@ import ProjectList from "./components/ProjectList";
 import ProjectDialog from "./components/ProjectDialog";
 export default {
     components: {ProjectDialog, ProjectList},
-    data() {
-        return {
-            project_id: 0,
-        }
-    },
-
-    mounted() {
-        this.project_id = $A.runNum(this.$route.params.id);
-    },
 
     deactivated() {
         this.$store.dispatch("forgetTaskCompleteTemp", true);
@@ -28,37 +19,38 @@ export default {
     computed: {
         ...mapState(['cacheProjects', 'wsOpenNum']),
         ...mapGetters(['projectParameter']),
+
+        projectId() {
+            const {id} = this.$route.params;
+            return parseInt(this.$route.name == 'manage-project' && /^\d+$/.test(id) ? id : 0);
+        }
     },
 
     watch: {
-        '$route' ({params}) {
-            this.project_id = $A.runNum(params.id);
-        },
-
-        project_id() {
-            this.getProjectData();
+        projectId: {
+            handler() {
+                this.getProjectData();
+            },
+            immediate: true
         },
 
         wsOpenNum(num) {
             if (num <= 1) return
             this.wsOpenTimeout && clearTimeout(this.wsOpenTimeout)
             this.wsOpenTimeout = setTimeout(() => {
-                if (this.$route.name == 'manage-project') {
-                    this.getProjectData();
-                }
+                this.$route.name == 'manage-project' && this.getProjectData();
             }, 5000)
         }
     },
 
     methods: {
         getProjectData() {
-            let id = this.project_id;
-            if (id <= 0) return;
+            if (this.projectId <= 0) return;
             setTimeout(() => {
-                this.$store.state.projectId = $A.runNum(id);
-                this.$store.dispatch("getProjectOne", id).then(() => {
-                    this.$store.dispatch("getColumns", id).catch(() => {});
-                    this.$store.dispatch("getTaskForProject", id).catch(() => {})
+                this.$store.state.projectId = $A.runNum(this.projectId);
+                this.$store.dispatch("getProjectOne", this.projectId).then(() => {
+                    this.$store.dispatch("getColumns", this.projectId).catch(() => {});
+                    this.$store.dispatch("getTaskForProject", this.projectId).catch(() => {})
                 }).catch(({msg}) => {
                     $A.modalWarning({
                         content: msg,

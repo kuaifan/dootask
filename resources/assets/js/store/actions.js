@@ -1933,7 +1933,6 @@ export default {
                 reject({msg: 'Parameter error'});
                 return;
             }
-            state.dialogOpenId = 0; // 先重置dialogOpenId，否者无法重复打开相同对话
             dispatch("call", {
                 url: 'dialog/open/user',
                 data: {
@@ -1941,8 +1940,6 @@ export default {
                 },
             }).then(result => {
                 dispatch("saveDialog", result.data);
-                $A.setStorage("messenger::dialogId", result.data.id);
-                state.dialogOpenId = result.data.id;
                 resolve(result);
             }).catch(e => {
                 console.warn(e);

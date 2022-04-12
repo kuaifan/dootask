@@ -1104,9 +1104,7 @@ export default {
                                 };
                                 this.msgFile = [];
                                 this.msgText = "";
-                                this.goForward({name: 'manage-messenger', query: {_: $A.randomString(6)}});
-                                $A.setStorage("messenger::dialogId", data.dialog_id)
-                                this.$store.state.dialogOpenId = data.dialog_id;
+                                this.goForward({name: 'manage-messenger', params: {id: data.dialog_id}});
                                 this.$store.dispatch('openTask', 0);
                             } else {
                                 this.sendDialogMsg();

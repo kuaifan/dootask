@@ -24,7 +24,7 @@ export default [
             },
             {
                 name: 'manage-messenger',
-                path: 'messenger',
+                path: 'messenger/:id?',
                 component: () => import('./pages/manage/messenger.vue'),
             },
             {

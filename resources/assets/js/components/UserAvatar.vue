@@ -212,8 +212,9 @@
             },
 
             openDialog() {
-                this.goForward({name: 'manage-messenger'});
-                this.$store.dispatch("openDialogUserid", this.userid).catch(() => {})
+                this.$store.dispatch("openDialogUserid", this.userid).then(({data}) => {
+                    this.goForward({name: 'manage-messenger', params: {id: data.id}});
+                });
             }
         }
     };

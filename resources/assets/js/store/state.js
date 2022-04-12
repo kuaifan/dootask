@@ -58,7 +58,6 @@ const stateData = {
 
     // 会话聊天
     dialogMsgs: [],
-    dialogOpenId: 0,
 
     // 文件
     files: [],

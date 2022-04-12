@@ -39,7 +39,7 @@
                                 operate: dialog.id == topOperateItem.id && topOperateVisible,
                                 completed: $A.dialogCompleted(dialog)
                             }"
-                            @click="openDialog(dialog, true)"
+                            @click="openDialog(dialog.id)"
                             @contextmenu.prevent.stop="handleRightClick($event, dialog)">
                             <template v-if="dialog.type=='group'">
                                 <i v-if="dialog.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
@@ -113,7 +113,7 @@
                     <div class="msg-dialog-bg-text">{{$L('选择一个会话开始聊天')}}</div>
                 </div>
                 <DialogWrapper v-if="dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive">
-                    <div slot="inputBefore" class="dialog-back" @click="closeDialog">
+                    <div slot="inputBefore" class="dialog-back" @click="openDialog(0)">
                         <Icon type="md-arrow-back" />
                     </div>
                 </DialogWrapper>
@@ -141,7 +141,6 @@ export default {
             ],
             dialogActive: '',
             dialogKey: '',
-            dialogId: 0,
 
             contactsKey: '',
             contactsLoad: 0,
@@ -156,12 +155,13 @@ export default {
         }
     },
 
-    activated() {
-        this.openDialogStorage();
-    },
-
     computed: {
-        ...mapState(['userId', 'cacheDialogs', 'dialogOpenId']),
+        ...mapState(['userId', 'cacheDialogs']),
+
+        dialogId() {
+            const {id} = this.$route.params;
+            return parseInt(this.$route.name == 'manage-messenger' && /^\d+$/.test(id) ? id : 0);
+        },
 
         dialogList() {
             const {dialogActive, dialogKey} = this;
@@ -253,11 +253,7 @@ export default {
             }
         },
         dialogId(id) {
-            $A.setStorage("messenger::dialogId", id);
-            this.$store.state.dialogOpenId = id;
-        },
-        dialogOpenId(id) {
-            if (id > 0) this.dialogId = id;
+            this.$route.name == 'manage-messenger' && $A.setStorage("messenger::dialogId", id);
         },
         contactsKey(val) {
             setTimeout(() => {
@@ -299,27 +295,18 @@ export default {
             this.dialogActive = type
         },
 
-        closeDialog() {
-            this.dialogId = 0;
-        },
-
-        openDialog(dialog, smooth) {
-            this.dialogId = dialog.id;
-            this.scrollIntoActive(smooth);
-        },
-
-        openDialogStorage() {
-            this.dialogId = $A.getStorageInt("messenger::dialogId")
-            if (this.dialogId > 0) {
-                const dialog = this.cacheDialogs.find(({id}) => id === this.dialogId);
-                dialog && this.openDialog(dialog, false);
+        openDialog(id) {
+            if (id > 0) {
+                this.goForward({name: 'manage-messenger', params: {id}});
+            } else {
+                this.goForward({name: 'manage-messenger'});
             }
         },
 
         openContacts(user) {
             this.tabActive = 'dialog';
-            this.$store.dispatch("openDialogUserid", user.userid).then(() => {
-                this.scrollIntoActive()
+            this.$store.dispatch("openDialogUserid", user.userid).then(({data}) => {
+                this.goForward({name: 'manage-messenger', params: {id: data.id}});
             });
         },
 

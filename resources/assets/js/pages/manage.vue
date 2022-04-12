@@ -485,7 +485,6 @@ export default {
             'taskId',
             'wsOpenNum',
             'columnTemplate',
-            'dialogOpenId',
 
             'themeMode',
             'themeList',
@@ -713,8 +712,11 @@ export default {
 
         toggleRoute(path) {
             this.show768Menu = false;
-            if (path === 'file' && $A.getStorageInt("filePid") > 0) {
-                path += `/${$A.getStorageInt("filePid")}`
+            if (path === 'file' && $A.getStorageInt("file::pid") > 0) {
+                path += `/${$A.getStorageInt("file::pid")}`
+            }
+            if (path === 'messenger' && $A.getStorageInt("messenger::dialogId") > 0) {
+                path += `/${$A.getStorageInt("messenger::dialogId")}`
             }
             this.goForward({path: '/manage/' + path});
         },
@@ -874,7 +876,7 @@ export default {
             if (!this.natificationReady) {
                 return;
             }
-            if (!this.natificationHidden && this.routePath == "/manage/messenger" && this.dialogOpenId == data.dialog_id) {
+            if (!this.natificationHidden && $A.leftExists(this.routePath, "/manage/messenger") && this.$route.params.id == data.dialog_id) {
                 return;
             }
             //
@@ -1003,10 +1005,10 @@ export default {
                             if (!$A.isJson(data)) {
                                 return;
                             }
-                            this.goForward({name: 'manage-messenger'});
                             if (data.dialog_id) {
-                                $A.setStorage("messenger::dialogId", data.dialog_id)
-                                this.$store.state.dialogOpenId = data.dialog_id;
+                                this.goForward({name: 'manage-messenger', params: {id: data.dialog_id}});
+                            } else {
+                                this.goForward({name: 'manage-messenger'});
                             }
                         }
                     },

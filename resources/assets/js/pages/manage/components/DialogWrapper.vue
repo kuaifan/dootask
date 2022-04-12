@@ -270,7 +270,7 @@ export default {
 
         wsOpenNum(num) {
             if (num <= 1) return
-            this.$store.dispatch("getDialogMsgs", this.dialogId);
+            this.$store.dispatch("getDialogMsgs", this.dialogId).catch(_ => {});
         }
     },
 

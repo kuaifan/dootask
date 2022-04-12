@@ -513,19 +513,13 @@ export default {
         ...mapState(['userId', 'userToken', 'userIsAdmin', 'userInfo', 'files', 'wsOpenNum']),
 
         pid() {
-            let {pid} = this.$route.params;
-            if (!/^\d+$/.test(pid)) {
-                pid = 0
-            }
-            return parseInt(pid);
+            const {pid} = this.$route.params;
+            return parseInt(this.$route.name === 'manage-file' && /^\d+$/.test(pid) ? pid : 0);
         },
 
         fid() {
-            let {fid} = this.$route.params;
-            if (!/^\d+$/.test(fid)) {
-                fid = 0
-            }
-            return parseInt(fid);
+            const {fid} = this.$route.params;
+            return parseInt(this.$route.name === 'manage-file' && /^\d+$/.test(fid) ? fid : 0);
         },
 
         actionUrl() {
@@ -850,7 +844,7 @@ export default {
             this.$store.dispatch("getFiles", this.pid).then(() => {
                 this.loadIng--;
                 this.openFileJudge()
-                $A.setStorage("filePid", this.pid)
+                $A.setStorage("file::pid", this.pid)
             }).catch(({msg}) => {
                 this.loadIng--;
                 $A.modalError({
@@ -920,6 +914,11 @@ export default {
         },
 
         openFileJudge() {
+            if (this.$route.name !== 'manage-file') {
+                this.fileShow = false;
+                this.imageShow = false;
+                return;
+            }
             if (this.fid <= 0) {
                 this.fileShow = false;
                 this.imageShow = false;

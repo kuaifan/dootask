@@ -181,9 +181,7 @@ export default {
             if (num <= 1) return
             this.wsOpenTimeout && clearTimeout(this.wsOpenTimeout)
             this.wsOpenTimeout = setTimeout(() => {
-                if (this.$route.name == 'manage-calendar') {
-                    this.setRenderRange();
-                }
+                this.$route.name == 'manage-calendar' && this.setRenderRange();
             }, 5000)
         }
     },
