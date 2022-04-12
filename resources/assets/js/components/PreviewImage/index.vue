@@ -1,14 +1,13 @@
 <template>
     <Modal
-        :value="previewImageList.length > 0"
+        v-model="show"
         :mask="false"
         :mask-closable="false"
         :footer-hide="true"
         :transition-names="['', '']"
         fullscreen
-        @on-visible-change="visibleChange"
         class-name="common-preview-image">
-        <PreviewImageView v-if="previewImageList.length > 0" :initial-index="previewImageIndex" :url-list="previewImageList" infinite/>
+        <PreviewImageView v-if="list.length > 0" :initial-index="index" :url-list="list" infinite/>
     </Modal>
 </template>
 
@@ -19,8 +18,10 @@ body {
             .ivu-modal {
                 margin: 0;
                 padding: 0;
+
                 .ivu-modal-content {
                     background: transparent;
+
                     .ivu-modal-close {
                         display: flex;
                         align-items: center;
@@ -32,6 +33,7 @@ body {
                         right: 40px;
                         top: 40px;
                         width: 40px;
+
                         .ivu-icon-ios-close {
                             top: 0;
                             right: 0;
@@ -39,6 +41,7 @@ body {
                             color: #fff;
                         }
                     }
+
                     .ivu-modal-body {
                         padding: 0;
                     }
@@ -51,27 +54,38 @@ body {
 
 <script>
 import PreviewImageView from "./view";
-import {mapState} from "vuex";
 
 export default {
     name: 'PreviewImage',
     components: {PreviewImageView},
-    computed: {
-        ...mapState([
-            'previewImageIndex',
-            'previewImageList',
-        ]),
-    },
-    methods: {
-        visibleChange(val) {
-            if (!val) {
-                this.close()
+    props: {
+        value: {
+            type: Boolean,
+            default: false
+        },
+        index: {
+            type: Number,
+            default: 0
+        },
+        list: {
+            type: Array,
+            default: () => {
+                return [];
             }
+        }
+    },
+    data() {
+        return {
+            show: this.value,
+        }
+    },
+    watch: {
+        value(v) {
+            this.show = v;
         },
-        close() {
-            this.$store.state.previewImageIndex = 0;
-            this.$store.state.previewImageList = [];
-        },
+        show(v) {
+            this.value !== v && this.$emit("input", v)
+        }
     }
 };
 </script>

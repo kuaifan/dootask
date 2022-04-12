@@ -7,18 +7,18 @@
         </transition>
         <Spinner/>
         <RightBottom/>
-        <PreviewImage/>
+        <PreviewImageState/>
     </div>
 </template>
 
 <script>
 import Spinner from "./components/Spinner";
 import RightBottom from "./components/RightBottom";
-import PreviewImage from "./components/PreviewImage";
+import PreviewImageState from "./components/PreviewImage/state";
 import {mapState} from "vuex";
 
 export default {
-    components: {PreviewImage, RightBottom, Spinner},
+    components: {PreviewImageState, RightBottom, Spinner},
 
     data() {
         return {

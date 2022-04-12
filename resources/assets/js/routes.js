@@ -65,7 +65,7 @@ export default [
             },
             {
                 name: 'manage-file',
-                path: 'file',
+                path: 'file/:pid?/:fid?',
                 component: () => import('./pages/manage/file.vue'),
             },
         ]

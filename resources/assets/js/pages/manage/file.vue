@@ -23,9 +23,9 @@
 
             <div class="file-navigator">
                 <ul>
-                    <li @click="backHomeDirectory">{{$L('全部文件')}}</li>
+                    <li @click="browseFolder(0)">{{$L('全部文件')}}</li>
                     <li v-if="searchKey">{{$L('搜索')}} "{{searchKey}}"</li>
-                    <li v-else v-for="item in navigator" @click="pid=item.id">
+                    <li v-else v-for="item in navigator" @click="browseFolder(item.id)">
                         <i v-if="item.share" class="taskfont">&#xe63f;</i>
                         <span :title="item.name">{{item.name}}</span>
                         <span v-if="item.share && item.permission == 0" class="readonly">{{$L('只读')}}</span>
@@ -76,7 +76,7 @@
                                     highlight: selectIds.includes(item.id),
                                 }"
                                 @contextmenu.prevent.stop="handleRightClick($event, item)"
-                                @click="openFile(item)">
+                                @click="dropFile(item, 'openCheckMenu')">
                                 <div class="file-check" :class="{'file-checked':selectIds.includes(item.id)}" @click.stop="dropFile(item, 'select')">
                                     <Checkbox :value="selectIds.includes(item.id)"/>
                                 </div>
@@ -332,6 +332,12 @@
             <FileContent v-else v-model="fileShow" :file="fileInfo"/>
         </DrawerOverlay>
 
+        <!--预览文件-->
+        <PreviewImage
+            v-model="imageShow"
+            :index="imageIndex"
+            :list="imageList"/>
+
         <!--拖动上传提示-->
         <Modal
             v-model="pasteShow"
@@ -359,20 +365,19 @@ import {mapState} from "vuex";
 import {sortBy} from "lodash";
 import UserInput from "../../components/UserInput";
 import DrawerOverlay from "../../components/DrawerOverlay";
+import PreviewImage from "../../components/PreviewImage";
 
 const FilePreview = () => import('./components/FilePreview');
 const FileContent = () => import('./components/FileContent');
 
 
 export default {
-    components: {FilePreview, DrawerOverlay, UserInput, FileContent},
+    components: {PreviewImage, FilePreview, DrawerOverlay, UserInput, FileContent},
     data() {
         return {
             loadIng: 0,
             searchKey: '',
             searchTimeout: null,
-
-            pid: $A.getStorageInt("fileOpenPid"),
 
             types: [
                 {
@@ -441,6 +446,10 @@ export default {
             fileShow: false,
             fileInfo: {permission: -1},
 
+            imageShow: false,
+            imageIndex: 0,
+            imageList:[],
+
             uploadDir: false,
             uploadIng: 0,
             uploadShow: false,
@@ -497,12 +506,27 @@ export default {
     },
 
     activated() {
-        this.$store.dispatch("websocketPath", "file");
         this.getFileList();
     },
 
     computed: {
         ...mapState(['userId', 'userToken', 'userIsAdmin', 'userInfo', 'files', 'wsOpenNum']),
+
+        pid() {
+            let {pid} = this.$route.params;
+            if (!/^\d+$/.test(pid)) {
+                pid = 0
+            }
+            return parseInt(pid);
+        },
+
+        fid() {
+            let {fid} = this.$route.params;
+            if (!/^\d+$/.test(fid)) {
+                fid = 0
+            }
+            return parseInt(fid);
+        },
 
         actionUrl() {
             return $A.apiUrl('file/content/upload?pid=' + this.pid)
@@ -582,8 +606,13 @@ export default {
 
     watch: {
         pid() {
+            this.searchKey = '';
             this.selectIds = [];
             this.getFileList();
+        },
+
+        fid() {
+            this.openFileJudge();
         },
 
         tableMode(val) {
@@ -591,11 +620,14 @@ export default {
         },
 
         fileShow(val) {
-            if (val) {
-                this.$store.dispatch("websocketPath", "file/content/" + this.fileInfo.id);
-            } else {
-                this.$store.dispatch("websocketPath", "file");
-                this.getFileList();
+            if (!val) {
+                this.browseFile(0)
+            }
+        },
+
+        imageShow(val) {
+            if (!val) {
+                this.browseFile(0)
             }
         },
 
@@ -620,11 +652,7 @@ export default {
         wsOpenNum(num) {
             if (num <= 1) return
             this.wsOpenTimeout && clearTimeout(this.wsOpenTimeout)
-            this.wsOpenTimeout = setTimeout(() => {
-                if (this.$route.name == 'manage-file') {
-                    this.getFileList();
-                }
-            }, 5000)
+            this.wsOpenTimeout = setTimeout(this.getFileList, 5000)
         }
     },
 
@@ -814,22 +842,21 @@ export default {
             return name;
         },
 
-        backHomeDirectory() {
-            this.pid = 0
-            this.searchKey = ''
-        },
-
         getFileList() {
+            if (this.$route.name !== 'manage-file') {
+                return;
+            }
             this.loadIng++;
             this.$store.dispatch("getFiles", this.pid).then(() => {
                 this.loadIng--;
-                $A.setStorage("fileOpenPid", this.pid)
+                this.openFileJudge()
+                $A.setStorage("filePid", this.pid)
             }).catch(({msg}) => {
                 this.loadIng--;
                 $A.modalError({
                     content: msg,
                     onOk: () => {
-                        this.backHomeDirectory();
+                        this.browseFolder(0);
                     }
                 });
             });
@@ -876,41 +903,55 @@ export default {
             })
         },
 
-        openFile(item, checkMenuVisible = true) {
-            if (checkMenuVisible && this.contextMenuVisible) {
-                return;
-            }
-            if (this.fileList.findIndex((file) => file._edit === true) > -1) {
-                return;
-            }
-            if (item._load) {
-                return;
-            }
-            if (item.type == 'folder') {
-                this.searchKey = '';
-                this.pid = item.id;
+        browseFolder(id) {
+            if (id > 0) {
+                this.goForward({params: {pid: id, fid: undefined}});
             } else {
-                // 图片直接浏览
-                if (item.image_url) {
-                    const list = this.fileList.filter(({image_url}) => !!image_url)
-                    if (list.length > 0) {
-                        this.$store.state.previewImageIndex = list.findIndex(({id}) => item.id === id);
-                        this.$store.state.previewImageList = list.map(item => item.image_url);
-                        return;
-                    }
-                }
-                // 客户端打开独立窗口
-                if (this.$Electron) {
-                    this.openSingle(item);
-                    return;
-                }
-                // 正常显示弹窗
-                this.fileInfo = item;
-                this.fileShow = true;
+                this.goForward({name: 'manage-file'});
             }
         },
 
-        openSingle(item) {
+        browseFile(id) {
+            if (id > 0) {
+                this.goForward({params: {pid: this.pid, fid: id}});
+            } else {
+                this.browseFolder(this.pid);
+            }
+        },
+
+        openFileJudge() {
+            if (this.fid <= 0) {
+                this.fileShow = false;
+                this.imageShow = false;
+                return;
+            }
+            const item = this.fileList.find(({id}) => id === this.fid)
+            if (!item) {
+                this.fileShow = false;
+                this.imageShow = false;
+                return;
+            }
+            // 图片直接浏览
+            if (item.image_url) {
+                const list = this.fileList.filter(({image_url}) => !!image_url)
+                if (list.length > 0) {
+                    this.imageIndex = list.findIndex(({id}) => item.id === id)
+                    this.imageList = list.map(item => item.image_url)
+                    this.imageShow = true
+                    return;
+                }
+            }
+            // 客户端打开独立窗口
+            if (this.$Electron) {
+                this.openFileSingle(item);
+                return;
+            }
+            // 正常显示弹窗
+            this.fileInfo = item;
+            this.fileShow = true;
+        },
+
+        openFileSingle(item) {
             this.$Electron.sendMessage('windowRouter', {
                 name: 'file-' + item.id,
                 path: "/single/file/" + item.id,
@@ -962,7 +1003,21 @@ export default {
         dropFile(item, command) {
             switch (command) {
                 case 'open':
-                    this.openFile(item, false);
+                case 'openCheckMenu':
+                    if (command === 'openCheckMenu' && this.contextMenuVisible) {
+                        return;
+                    }
+                    if (this.fileList.findIndex((file) => file._edit === true) > -1) {
+                        return;
+                    }
+                    if (item._load) {
+                        return;
+                    }
+                    if (item.type == 'folder') {
+                        this.browseFolder(item.id)
+                    } else {
+                        this.browseFile(item.id)
+                    }
                     break;
 
                 case 'select':

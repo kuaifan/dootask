@@ -615,7 +615,6 @@ export default {
     watch: {
         '$route' (route) {
             this.curPath = route.path;
-            this.chackPass();
         },
 
         userInfo() {
@@ -661,6 +660,14 @@ export default {
             if (show) {
                 this.getReportUnread(0);
             }
+        },
+
+        curPath: {
+            handler(path) {
+                this.$store.dispatch("websocketPath", path);
+                this.chackPass();
+            },
+            immediate: true
         },
 
         unreadTotal: {
@@ -720,6 +727,9 @@ export default {
 
         toggleRoute(path) {
             this.show768Menu = false;
+            if (path === 'file' && $A.getStorageInt("filePid") > 0) {
+                path += `/${$A.getStorageInt("filePid")}`
+            }
             this.goForward({path: '/manage/' + path});
         },
 
@@ -779,7 +789,7 @@ export default {
 
         classNameRoute(path) {
             return {
-                "active": this.curPath == '/manage/' + path,
+                "active": $A.leftExists(this.curPath, '/manage/' + path),
             };
         },
 
@@ -787,7 +797,7 @@ export default {
             let path = 'project/' + item.id;
             let openMenu = this.openMenu[item.id];
             return {
-                "active": this.curPath == '/manage/' + path,
+                "active": $A.leftExists(this.curPath, '/manage/' + path),
                 "open-menu": openMenu === true,
                 "operate": item.id == this.topOperateItem.id && this.topOperateVisible
             };

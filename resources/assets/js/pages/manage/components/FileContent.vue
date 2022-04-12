@@ -187,16 +187,10 @@ export default {
             },
             deep: true,
         },
-
-        wsOpenNum() {
-            if (this.$isSubElectron) {
-                this.$store.dispatch("websocketPath", "file/content/" + this.fileId);
-            }
-        },
     },
 
     computed: {
-        ...mapState(['fileContent', 'wsMsg', 'userId', 'wsOpenNum']),
+        ...mapState(['fileContent', 'wsMsg', 'userId']),
 
         equalContent() {
             return this.contentBak == $A.jsonStringify(this.contentDetail);
