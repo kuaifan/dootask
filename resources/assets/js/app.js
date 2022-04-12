@@ -66,17 +66,19 @@ const router = new VueRouter({
 });
 
 // 进度条配置
-ViewUI.LoadingBar.config({
-    color: '#3fcc25',
-    failedColor: '#ff0000'
-});
-router.beforeEach((to, from, next) => {
-    ViewUI.LoadingBar.start();
-    next();
-});
-router.afterEach(() => {
-    ViewUI.LoadingBar.finish();
-});
+if (!isElectron) {
+    ViewUI.LoadingBar.config({
+        color: '#3fcc25',
+        failedColor: '#ff0000'
+    });
+    router.beforeEach((to, from, next) => {
+        ViewUI.LoadingBar.start();
+        next();
+    });
+    router.afterEach(() => {
+        ViewUI.LoadingBar.finish();
+    });
+}
 
 // 加载函数
 Vue.prototype.goForward = function(location, isReplace) {
