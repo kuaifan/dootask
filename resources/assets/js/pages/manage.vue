@@ -1006,7 +1006,7 @@ export default {
                                 return;
                             }
                             if (data.dialog_id) {
-                                this.goForward({name: 'manage-messenger', params: {id: data.dialog_id}});
+                                this.goForward({name: 'manage-messenger', params: {dialogId: data.dialog_id}});
                             } else {
                                 this.goForward({name: 'manage-messenger'});
                             }

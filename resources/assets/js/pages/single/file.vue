@@ -48,12 +48,12 @@ export default {
     },
     methods: {
         getInfo() {
-            let id = this.$route.params.id;
-            let data = {id};
-            if (/^\d+$/.test(id)) {
+            let {codeOrFileId} = this.$route.params;
+            let data = {id: codeOrFileId};
+            if (/^\d+$/.test(codeOrFileId)) {
                 this.code = null;
-            } else if (id) {
-                this.code = id;
+            } else if (codeOrFileId) {
+                this.code = codeOrFileId;
             } else {
                 return;
             }

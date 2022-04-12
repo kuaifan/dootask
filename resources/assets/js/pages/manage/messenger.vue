@@ -159,8 +159,8 @@ export default {
         ...mapState(['userId', 'cacheDialogs']),
 
         dialogId() {
-            const {id} = this.$route.params;
-            return parseInt(this.$route.name == 'manage-messenger' && /^\d+$/.test(id) ? id : 0);
+            const {dialogId} = this.$route.params;
+            return parseInt(/^\d+$/.test(dialogId) ? dialogId : 0);
         },
 
         dialogList() {
@@ -253,7 +253,10 @@ export default {
             }
         },
         dialogId(id) {
-            this.$route.name == 'manage-messenger' && $A.setStorage("messenger::dialogId", id);
+            if (id > 0) {
+                $A.setStorage("messenger::dialogId", id);
+                this.scrollIntoActive()
+            }
         },
         contactsKey(val) {
             setTimeout(() => {
@@ -295,9 +298,9 @@ export default {
             this.dialogActive = type
         },
 
-        openDialog(id) {
-            if (id > 0) {
-                this.goForward({name: 'manage-messenger', params: {id}});
+        openDialog(dialogId) {
+            if (dialogId > 0) {
+                this.goForward({name: 'manage-messenger', params: {dialogId}});
             } else {
                 this.goForward({name: 'manage-messenger'});
             }
@@ -306,7 +309,7 @@ export default {
         openContacts(user) {
             this.tabActive = 'dialog';
             this.$store.dispatch("openDialogUserid", user.userid).then(({data}) => {
-                this.goForward({name: 'manage-messenger', params: {id: data.id}});
+                this.openDialog(data.id)
             });
         },
 
@@ -417,13 +420,13 @@ export default {
             return null;
         },
 
-        scrollIntoActive(smooth) {
+        scrollIntoActive() {
             this.$nextTick(() => {
                 if (this.$refs.list) {
                     let active = this.$refs.list.querySelector(".active")
                     if (active) {
                         $A.scrollToView(active, {
-                            behavior: smooth === true ? 'smooth' : 'instant',
+                            behavior: 'instant',
                             scrollMode: 'if-needed',
                         });
                     } else {
@@ -434,7 +437,7 @@ export default {
                                 let active = this.$refs.list.querySelector(".active")
                                 if (active) {
                                     $A.scrollToView(active, {
-                                        behavior: smooth === true ? 'smooth' : 'instant',
+                                        behavior: 'instant',
                                         scrollMode: 'if-needed',
                                     });
                                 }
@@ -471,9 +474,7 @@ export default {
                 },
             }).then(({data}) => {
                 this.$store.dispatch("saveDialog", data);
-                this.$nextTick(() => {
-                    this.scrollIntoActive(false)
-                });
+                this.$nextTick(this.scrollIntoActive);
             }).catch(({msg}) => {
                 $A.modalError(msg);
             });

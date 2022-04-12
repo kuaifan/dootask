@@ -89,7 +89,8 @@ export default {
     },
     computed: {
         fileId() {
-            return $A.runNum(this.$route.params.id);
+            const {fileId} = this.$route.params;
+            return parseInt(/^\d+$/.test(fileId) ? fileId : 0);
         },
 
         title() {

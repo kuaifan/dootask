@@ -45,8 +45,6 @@ export default {
     data() {
         return {
             loadIng: 0,
-            taskId: 0,
-
             canUpdateBlur: true
         }
     },
@@ -80,12 +78,17 @@ export default {
     computed: {
         ...mapState(['cacheTasks']),
 
+        taskId() {
+            const {taskId} = this.$route.params;
+            return parseInt(/^\d+$/.test(taskId) ? taskId : 0);
+        },
+
         taskInfo() {
             return this.cacheTasks.find(({id}) => id === this.taskId) || {}
         }
     },
     watch: {
-        '$route': {
+        taskId: {
             handler() {
                 this.getInfo();
             },
@@ -94,7 +97,6 @@ export default {
     },
     methods: {
         getInfo() {
-            this.taskId = $A.runNum(this.$route.params.id);
             if (this.taskId <= 0) {
                 return;
             }

@@ -89,7 +89,8 @@ export default {
     },
     computed: {
         msgId() {
-            return $A.runNum(this.$route.params.id);
+            const {msgId} = this.$route.params;
+            return parseInt(/^\d+$/.test(msgId) ? msgId : 0);
         },
 
         title() {

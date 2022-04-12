@@ -24,7 +24,7 @@ export default [
             },
             {
                 name: 'manage-messenger',
-                path: 'messenger/:id?',
+                path: 'messenger/:dialogId?',
                 component: () => import('./pages/manage/messenger.vue'),
             },
             {
@@ -60,34 +60,34 @@ export default [
             },
             {
                 name: 'manage-project',
-                path: 'project/:id',
+                path: 'project/:projectId',
                 component: () => import('./pages/manage/project.vue'),
             },
             {
                 name: 'manage-file',
-                path: 'file/:pid?/:fid?',
+                path: 'file/:folderId?/:fileId?',
                 component: () => import('./pages/manage/file.vue'),
             },
         ]
     },
     {
         name: 'single-file-msg',
-        path: '/single/file/msg/:id',
+        path: '/single/file/msg/:msgId',
         component: () => import('./pages/single/fileMsg.vue'),
     },
     {
         name: 'single-file-task',
-        path: '/single/file/task/:id',
+        path: '/single/file/task/:fileId',
         component: () => import('./pages/single/fileTask.vue'),
     },
     {
         name: 'single-file',
-        path: '/single/file/:id',
+        path: '/single/file/:codeOrFileId',
         component: () => import('./pages/single/file.vue'),
     },
     {
         name: 'single-task',
-        path: '/single/task/:id',
+        path: '/single/task/:taskId',
         component: () => import('./pages/single/task.vue'),
     },
     {
@@ -98,12 +98,12 @@ export default [
     },
     {
         name: 'report-edit',
-        path: '/single/report/edit/:id',
+        path: '/single/report/edit/:reportEditId',
         component: () => import('./pages/single/reportEdit.vue')
     },
     {
         name: 'report-detail',
-        path: '/single/report/detail/:id',
+        path: '/single/report/detail/:reportDetailId',
         component: () => import('./pages/single/reportDetail.vue')
     },
     {

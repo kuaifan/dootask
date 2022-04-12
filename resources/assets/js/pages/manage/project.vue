@@ -21,8 +21,8 @@ export default {
         ...mapGetters(['projectParameter']),
 
         projectId() {
-            const {id} = this.$route.params;
-            return parseInt(this.$route.name == 'manage-project' && /^\d+$/.test(id) ? id : 0);
+            const {projectId} = this.$route.params;
+            return parseInt(/^\d+$/.test(projectId) ? projectId : 0);
         }
     },
 

@@ -513,13 +513,13 @@ export default {
         ...mapState(['userId', 'userToken', 'userIsAdmin', 'userInfo', 'files', 'wsOpenNum']),
 
         pid() {
-            const {pid} = this.$route.params;
-            return parseInt(this.$route.name === 'manage-file' && /^\d+$/.test(pid) ? pid : 0);
+            const {folderId} = this.$route.params;
+            return parseInt(/^\d+$/.test(folderId) ? folderId : 0);
         },
 
         fid() {
-            const {fid} = this.$route.params;
-            return parseInt(this.$route.name === 'manage-file' && /^\d+$/.test(fid) ? fid : 0);
+            const {fileId} = this.$route.params;
+            return parseInt(/^\d+$/.test(fileId) ? fileId : 0);
         },
 
         actionUrl() {
@@ -899,7 +899,7 @@ export default {
 
         browseFolder(id) {
             if (id > 0) {
-                this.goForward({params: {pid: id, fid: undefined}});
+                this.goForward({params: {folderId: id, fileId: null}});
             } else {
                 this.goForward({name: 'manage-file'});
             }
@@ -907,7 +907,7 @@ export default {
 
         browseFile(id) {
             if (id > 0) {
-                this.goForward({params: {pid: this.pid, fid: id}});
+                this.goForward({params: {folderId: this.pid, fileId: id}});
             } else {
                 this.browseFolder(this.pid);
             }
