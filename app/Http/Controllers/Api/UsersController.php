@@ -2,8 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\AbstractModel;
+use App\Models\File;
+use App\Models\ProjectTaskUser;
+use App\Models\ProjectUser;
 use App\Models\User;
 use App\Models\UserEmailVerification;
+use App\Models\UserTransfer;
 use App\Module\Base;
 use Arr;
 use Cache;
@@ -494,16 +499,18 @@ class UsersController extends AbstractController
      * @apiGroup users
      * @apiName operation
      *
-     * @apiParam {Number} userid          会员ID
-     * @apiParam {String} [type]          操作
+     * @apiParam {Number} userid                会员ID
+     * @apiParam {String} [type]                操作
      * - setadmin             设为管理员
      * - clearadmin           取消管理员
-     * - setdisable           设为禁用
-     * - cleardisable         取消禁用
+     * - setdisable           设为离职（需要参数 disable_time、transfer_userid）
+     * - cleardisable         取消离职
      * - delete               删除会员
-     * @apiParam {String} [password]      新的密码
-     * @apiParam {String} [nickname]      昵称
-     * @apiParam {String} [profession]    职位
+     * @apiParam {String} [password]            新的密码
+     * @apiParam {String} [nickname]            昵称
+     * @apiParam {String} [profession]          职位
+     * @apiParam {String} [disable_time]        离职时间
+     * @apiParam {String} [transfer_userid]     离职交接人
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -524,6 +531,7 @@ class UsersController extends AbstractController
         $userInfo->checkSystem(1);
         //
         $upArray = [];
+        $transferUser = null;
         switch ($type) {
             case 'setadmin':
                 $upArray['identity'] = array_diff($userInfo->identity, ['admin']);
@@ -537,7 +545,14 @@ class UsersController extends AbstractController
             case 'setdisable':
                 $upArray['identity'] = array_diff($userInfo->identity, ['disable']);
                 $upArray['identity'][] = 'disable';
-                $upArray['disable_at'] = Carbon::now();
+                $upArray['disable_at'] = Carbon::parse($data['disable_time']);
+                $transferUser = User::find(intval($data['transfer_userid']));
+                if (empty($transferUser)) {
+                    return Base::retError('请选择正确的交接人');
+                }
+                if (in_array('disable', $transferUser->identity)) {
+                    return Base::retError('交接人已离职，请选择另一个交接人');
+                }
                 break;
 
             case 'cleardisable':
@@ -583,8 +598,18 @@ class UsersController extends AbstractController
             }
         }
         if ($upArray) {
-            $userInfo->updateInstance($upArray);
-            $userInfo->save();
+            AbstractModel::transaction(function() use ($type, $upArray, $userInfo, $transferUser) {
+                $userInfo->updateInstance($upArray);
+                $userInfo->save();
+                if ($type === 'setdisable') {
+                    $userTransfer = UserTransfer::createInstance([
+                        'original_userid' => $userInfo->userid,
+                        'new_userid' => $transferUser->userid,
+                    ]);
+                    $userTransfer->save();
+                    $userTransfer->start();
+                }
+            });
         }
         //
         return Base::retSuccess('修改成功', $userInfo);

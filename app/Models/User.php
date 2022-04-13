@@ -28,7 +28,7 @@ use Carbon\Carbon;
  * @property string|null $line_at 最后在线时间（接口）
  * @property int|null $task_dialog_id 最后打开的任务会话ID
  * @property string|null $created_ip 注册IP
- * @property string|null $disable_at 禁用时间
+ * @property string|null $disable_at 禁用时间（离职时间）
  * @property int|null $email_verity 邮箱是否已验证
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -64,7 +64,6 @@ class User extends AbstractModel
     protected $primaryKey = 'userid';
 
     protected $hidden = [
-        'disable_at',
         'updated_at',
     ];
 

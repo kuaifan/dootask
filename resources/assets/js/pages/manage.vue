@@ -314,7 +314,7 @@
         <DrawerOverlay
             v-model="workReportShow"
             placement="right"
-            :size="1100">
+            :size="1200">
             <Report v-if="workReportShow" :reportType="reportTabs" :reportUnreadNumber="reportUnreadNumber" @on-read="getReportUnread" />
         </DrawerOverlay>
 
@@ -322,7 +322,7 @@
         <DrawerOverlay
             v-model="allUserShow"
             placement="right"
-            :size="1100">
+            :size="1200">
             <TeamManagement v-if="allUserShow"/>
         </DrawerOverlay>
 
@@ -330,7 +330,7 @@
         <DrawerOverlay
             v-model="allProjectShow"
             placement="right"
-            :size="1100">
+            :size="1200">
             <ProjectManagement v-if="allProjectShow"/>
         </DrawerOverlay>
 
@@ -338,7 +338,7 @@
         <DrawerOverlay
             v-model="archivedProjectShow"
             placement="right"
-            :size="1100">
+            :size="1200">
             <ProjectArchived v-if="archivedProjectShow"/>
         </DrawerOverlay>
 

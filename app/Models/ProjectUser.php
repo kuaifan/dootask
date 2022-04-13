@@ -39,6 +39,36 @@ class ProjectUser extends AbstractModel
     }
 
     /**
+     * 移交项目身份
+     * @param $originalUserid
+     * @param $newUserid
+     * @return void
+     */
+    public static function transfer($originalUserid, $newUserid)
+    {
+        self::whereUserid($originalUserid)->chunkById(100, function ($list) use ($newUserid) {
+            /** @var self $item */
+            foreach ($list as $item) {
+                $row = self::whereProjectId($item->project_id)->whereUserid($newUserid)->first();
+                if ($row) {
+                    // 已存在则删除原数据，判断改变已存在的数据
+                    $row->owner = max($row->owner, $item->owner);
+                    $row->save();
+                    $item->delete();
+                } else {
+                    // 不存在则改变原数据
+                    $item->userid = $newUserid;
+                    $item->save();
+                }
+                if ($item->project) {
+                    $item->project->addLog("移交项目身份给", ['userid' => $newUserid]);
+                    $item->project->syncDialogUser();
+                }
+            }
+        });
+    }
+
+    /**
      * 退出项目
      */
     public function exitProject()
@@ -47,15 +77,13 @@ class ProjectUser extends AbstractModel
             ->whereUserid($this->userid)
             ->chunk(100, function ($list) {
                 $tastIds = [];
+                /** @var ProjectTaskUser $item */
                 foreach ($list as $item) {
+                    $item->delete();
                     if (!in_array($item->task_pid, $tastIds)) {
                         $tastIds[] = $item->task_pid;
+                        $item->projectTask?->syncDialogUser();
                     }
-                    $item->delete();
-                }
-                $tasks = ProjectTask::whereIn('id', $tastIds)->get();
-                foreach ($tasks as $task) {
-                    $task->syncDialogUser();
                 }
             });
         $this->delete();

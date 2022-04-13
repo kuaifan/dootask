@@ -25,8 +25,18 @@
                             <Option value="">{{$L('全部')}}</Option>
                             <Option value="admin">{{$L('管理员')}}</Option>
                             <Option value="noadmin">{{$L('非管理员')}}</Option>
-                            <Option value="disable">{{$L('禁用')}}</Option>
-                            <Option value="nodisable">{{$L('非禁用')}}</Option>
+                        </Select>
+                    </div>
+                </li>
+                <li>
+                    <div class="search-label">
+                        {{$L("在职状态")}}
+                    </div>
+                    <div class="search-content">
+                        <Select v-model="keys.disable" :placeholder="$L('请选择')">
+                            <Option value="">{{$L('在职')}}</Option>
+                            <Option value="yes">{{$L('离职')}}</Option>
+                            <Option value="all">{{$L('全部')}}</Option>
                         </Select>
                     </div>
                 </li>
@@ -77,21 +87,48 @@
                 @on-change="setPage"
                 @on-page-size-change="setPageSize"/>
         </div>
+
+        <!--操作离职-->
+        <Modal
+            v-model="disableShow"
+            class="operate-left"
+            :title="$L('操作离职')">
+            <Form :model="disableData" label-width="auto" @submit.native.prevent>
+                <Alert type="error">{{$L(`正在进行帐号【ID:${disableData.userid}，${disableData.nickname}】离职操作。`)}}</Alert>
+                <FormItem :label="$L('离职时间')">
+                    <DatePicker
+                        v-model="disableData.disable_time"
+                        :editable="false"
+                        :placeholder="$L('选择离职时间')"
+                        style="width:100%"
+                        format="yyyy/MM/dd HH:mm"
+                        type="datetime"/>
+                </FormItem>
+                <FormItem :label="$L('交接人')">
+                    <UserInput v-model="disableData.transfer_userid" :disabled-choice="[disableData.userid]" :multiple-max="1" :placeholder="$L('选择交接人')"/>
+                    <div class="form-tip">{{ $L(`${disableData.nickname}负责的项目、任务和文件将自动移交给交接人`) }}</div>
+                </FormItem>
+            </Form>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="disableShow=false">{{$L('取消')}}</Button>
+                <Button type="primary" :loading="disableLoading > 0" @click="operationUser(disableData)">{{$L('确定离职')}}</Button>
+            </div>
+        </Modal>
     </div>
 </template>
 
 <script>
 import {mapState} from "vuex";
+import UserInput from "../../../components/UserInput";
 
 export default {
     name: "TeamManagement",
+    components: {UserInput},
     data() {
         return {
             loadIng: 0,
 
-            keys: {
-                identity: 'nodisable'
-            },
+            keys: {},
             keyIs: false,
 
             columns: [],
@@ -100,7 +137,11 @@ export default {
             page: 1,
             pageSize: 20,
             total: 0,
-            noText: ''
+            noText: '',
+
+            disableShow: false,
+            disableLoading: 0,
+            disableData: {},
         }
     },
     mounted() {
@@ -141,7 +182,7 @@ export default {
                     minWidth: 100,
                     render: (h, {row}) => {
                         const arr = [h('AutoTip', row.email)];
-                        const {email_verity, identity} = row;
+                        const {email_verity, identity, disable_at} = row;
                         if (email_verity) {
                             arr.push(h('Icon', {
                                 props: {
@@ -157,11 +198,17 @@ export default {
                             }, this.$L('管理员')))
                         }
                         if (identity.includes("disable")) {
-                            arr.push(h('Tag', {
+                            arr.push(h('Tooltip', {
                                 props: {
-                                    color: 'error'
-                                }
-                            }, this.$L('禁用')))
+                                    content: this.$L('离职时间') + ': ' + disable_at,
+                                },
+                            }, [
+                                h('Tag', {
+                                    props: {
+                                        color: 'error'
+                                    }
+                                }, this.$L('离职'))
+                            ]))
                         }
                         return h('div', {
                             class: 'team-email'
@@ -237,34 +284,42 @@ export default {
                                 },
                             }, [h('div', this.$L('设为管理员'))]));
                         }
+
+                        dropdownItems.push(h('EDropdownItem', {
+                            props: {
+                                command: 'password',
+                            },
+                        }, [h('div', this.$L('修改密码'))]))
+
                         if (identity.includes('disable')) {
                             dropdownItems.push(h('EDropdownItem', {
                                 props: {
                                     command: 'cleardisable',
                                 },
-                            }, [h('div', this.$L('取消禁用'))]));
+                                style: {
+                                    color: '#f90'
+                                }
+                            }, [h('div', this.$L('恢复身份（已离职）'))]));
                         } else {
                             dropdownItems.push(h('EDropdownItem', {
                                 props: {
                                     command: 'setdisable',
                                 },
-                            }, [h('div', this.$L('设为禁用'))]));
-                        }
-                        dropdownItems.push(...[
-                            h('EDropdownItem', {
-                                props: {
-                                    command: 'password',
-                                },
-                            }, [h('div', this.$L('修改密码'))]),
-                            h('EDropdownItem', {
-                                props: {
-                                    command: 'delete',
-                                },
                                 style: {
-                                    color: 'red'
+                                    color: '#f90'
                                 }
-                            }, [h('div', this.$L('删除'))]),
-                        ])
+                            }, [h('div', this.$L('操作离职'))]));
+                        }
+
+                        dropdownItems.push(h('EDropdownItem', {
+                            props: {
+                                command: 'delete',
+                            },
+                            style: {
+                                color: 'red'
+                            }
+                        }, [h('div', this.$L('删除'))]))
+
                         const dropdownMenu = h('EDropdown', {
                             props: {
                                 size: 'small',
@@ -355,9 +410,30 @@ export default {
                     });
                     break;
 
+                case 'setdisable':
+                    this.disableData = {
+                        type: 'setdisable',
+                        userid: row.userid,
+                        nickname: row.nickname,
+                    };
+                    this.disableShow = true;
+                    break;
+
+                case 'cleardisable':
+                    $A.modalConfirm({
+                        content: `你确定恢复已离职帐号【ID:${row.userid}，${row.nickname}】吗？（注：此操作仅恢复帐号状态，无法恢复操作离职时移交的数据）`,
+                        onOk: () => {
+                            this.operationUser({
+                                userid: row.userid,
+                                type: name
+                            });
+                        }
+                    });
+                    break;
+
                 case 'delete':
                     $A.modalConfirm({
-                        content: '你确定要删除此帐号吗？',
+                        content: `你确定要删除帐号【ID:${row.userid}，${row.nickname}】吗？`,
                         onOk: () => {
                             this.operationUser({
                                 userid: row.userid,

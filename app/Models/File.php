@@ -405,4 +405,55 @@ class File extends AbstractModel
         }
         return $data;
     }
+
+    /**
+     * 移交文件
+     * @param $originalUserid
+     * @param $newUserid
+     * @return void
+     */
+    public static function transfer($originalUserid, $newUserid)
+    {
+        // 创建一个文件夹存放移交的文件
+        $name = User::userid2nickname($originalUserid) ?: ('ID:' . $originalUserid);
+        $file = File::createInstance([
+            'pid' => 0,
+            'name' => "【{$name}】移交的文件",
+            'type' => "folder",
+            'ext' => "",
+            'userid' => $newUserid,
+            'created_id' => 0,
+        ]);
+        $file->saveBeforePids();
+
+        // 移交文件
+        self::whereUserid($originalUserid)->chunkById(100, function($list) use ($file, $newUserid) {
+            /** @var self $item */
+            foreach ($list as $item) {
+                if ($item->pid === 0) {
+                    $item->pid = $file->id;
+                }
+                $item->userid = $newUserid;
+                $item->saveBeforePids();
+            }
+        });
+
+        // 移交文件权限
+        FileUser::whereUserid($originalUserid)->chunkById(100, function ($list) use ($newUserid) {
+            /** @var FileUser $item */
+            foreach ($list as $item) {
+                $row = FileUser::whereFileId($item->file_id)->whereUserid($newUserid)->first();
+                if ($row) {
+                    // 已存在则删除原数据，判断改变已存在的数据
+                    $row->permission = max($row->permission, $item->permission);
+                    $row->save();
+                    $item->delete();
+                } else {
+                    // 不存在则改变原数据
+                    $item->userid = $newUserid;
+                    $item->save();
+                }
+            }
+        });
+    }
 }
