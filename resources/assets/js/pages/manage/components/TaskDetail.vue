@@ -1123,7 +1123,11 @@ export default {
 
         sendDialogMsg() {
             if (this.msgFile.length > 0) {
-                this.$refs.dialog.sendFileMsg(this.msgFile);
+                this.$refs.dialog.sendFileMsg(this.msgFile.map(file => Object.assign(file, {
+                    ajaxExtraData: {
+                        image_attachment: 1
+                    }
+                })));
             } else if (this.msgText) {
                 this.$refs.dialog.sendMsg(this.msgText);
             }

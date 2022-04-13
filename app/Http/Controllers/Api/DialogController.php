@@ -261,10 +261,11 @@ class DialogController extends AbstractController
      * @apiGroup dialog
      * @apiName msg__sendfile
      *
-     * @apiParam {Number} dialog_id         对话ID
-     * @apiParam {String} [filename]        post-文件名称
-     * @apiParam {String} [image64]         post-base64图片（二选一）
-     * @apiParam {File} [files]             post-文件对象（二选一）
+     * @apiParam {Number} dialog_id             对话ID
+     * @apiParam {Number} [image_attachment]    图片是否也存到附件
+     * @apiParam {String} [filename]            post-文件名称
+     * @apiParam {String} [image64]             post-base64图片（二选一）
+     * @apiParam {File} [files]                 post-文件对象（二选一）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -275,6 +276,7 @@ class DialogController extends AbstractController
         $user = User::auth();
         //
         $dialog_id = Base::getPostInt('dialog_id');
+        $image_attachment = Base::getPostInt('image_attachment');
         //
         $dialog = WebSocketDialog::checkDialog($dialog_id);
         //
@@ -303,8 +305,8 @@ class DialogController extends AbstractController
             $fileData['thumb'] = Base::unFillUrl($fileData['thumb']);
             $fileData['size'] *= 1024;
             //
-            if ($dialog->type === 'group' && $dialog->group_type === 'task') {  // 任务群聊保存文件
-                if (!in_array($fileData['ext'], File::localExt)) {      // 如果是图片不保存
+            if ($dialog->type === 'group' && $dialog->group_type === 'task') {                       // 任务群聊保存文件
+                if ($image_attachment || !in_array($fileData['ext'], File::imageExt)) {     // 如果是图片不保存
                     $task = ProjectTask::whereDialogId($dialog->id)->first();
                     if ($task) {
                         $file = ProjectTaskFile::createInstance([
