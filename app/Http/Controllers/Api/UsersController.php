@@ -530,7 +530,7 @@ class UsersController extends AbstractController
      */
     public function operation()
     {
-        User::auth('admin');
+        $user = User::auth('admin');
         //
         $data = Request::all();
         $userid = intval($data['userid']);
@@ -555,6 +555,9 @@ class UsersController extends AbstractController
                 break;
 
             case 'setdisable':
+                if ($userInfo->userid === $user->userid) {
+                    return Base::retError('不能操作自己离职');
+                }
                 $upArray['identity'] = array_diff($userInfo->identity, ['disable']);
                 $upArray['identity'][] = 'disable';
                 $upArray['disable_at'] = Carbon::parse($data['disable_time']);
@@ -562,6 +565,9 @@ class UsersController extends AbstractController
                 $transferUser = User::find(intval($transferUserid));
                 if (empty($transferUser)) {
                     return Base::retError('请选择正确的交接人');
+                }
+                if ($transferUser->userid === $userInfo->userid) {
+                    return Base::retError('不能移交给自己');
                 }
                 if (in_array('disable', $transferUser->identity)) {
                     return Base::retError('交接人已离职，请选择另一个交接人');
@@ -574,6 +580,9 @@ class UsersController extends AbstractController
                 break;
 
             case 'delete':
+                if ($userInfo->userid === $user->userid) {
+                    return Base::retError('不能删除自己');
+                }
                 $userInfo->deleteUser();
                 break;
         }
