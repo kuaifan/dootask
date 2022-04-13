@@ -37,7 +37,7 @@
                                 </DropdownMenu>
                             </Dropdown>
                         </div>
-                        <div class="header-right-two" @click="register">{{ $L("注册账号") }}</div>
+                        <div class="header-right-two" @click="register">{{ $L("注册帐号") }}</div>
                         <div class="header-right-three no-dark-mode" @click="login">{{ $L("登录") }}</div>
                     </div>
                     <div class="header-nav-box header-nav-boxs" v-else>
@@ -47,7 +47,7 @@
                             </a>
                             <DropdownMenu slot="list">
                                 <DropdownItem @click.native="login">{{ $L("登录") }}</DropdownItem>
-                                <DropdownItem @click.native="register">{{ $L("注册账号") }}</DropdownItem>
+                                <DropdownItem @click.native="register">{{ $L("注册帐号") }}</DropdownItem>
                                 <Dropdown placement="right-start" @on-click="setLanguage">
                                     <DropdownItem>
                                         <Icon class="header-right-one-language no-dark-mode" type="md-globe"/>

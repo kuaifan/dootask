@@ -9,7 +9,7 @@
                 <FormItem :label="$L('端口')" prop="port">
                     <Input :maxlength="20" v-model="formData.port"/>
                 </FormItem>
-                <FormItem :label="$L('账号')" prop="account">
+                <FormItem :label="$L('帐号')" prop="account">
                     <Input :maxlength="128" v-model="formData.account"/>
                 </FormItem>
                 <FormItem :label="$L('密码')" prop="password">
@@ -29,7 +29,7 @@
                         <Radio label="open">{{ $L('开启') }}</Radio>
                         <Radio label="close">{{ $L('关闭') }}</Radio>
                     </RadioGroup>
-                    <div v-if="formData.reg_verify == 'open'" class="form-tip">{{$L('开启后账号需验证通过才可登录')}}</div>
+                    <div v-if="formData.reg_verify == 'open'" class="form-tip">{{$L('开启后帐号需验证通过才可登录')}}</div>
                 </FormItem>
                 <FormItem :label="$L('开启通知')" prop="notice">
                     <RadioGroup v-model="formData.notice">

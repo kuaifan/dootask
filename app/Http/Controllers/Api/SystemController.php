@@ -146,7 +146,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/demo          03. 获取演示账号
+     * @api {get} api/system/demo          03. 获取演示帐号
      *
      * @apiVersion 1.0.0
      * @apiGroup system

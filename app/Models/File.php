@@ -414,6 +414,10 @@ class File extends AbstractModel
      */
     public static function transfer($originalUserid, $newUserid)
     {
+        if (!self::whereUserid($originalUserid)->exists()) {
+            return;
+        }
+
         // 创建一个文件夹存放移交的文件
         $name = User::userid2nickname($originalUserid) ?: ('ID:' . $originalUserid);
         $file = File::createInstance([

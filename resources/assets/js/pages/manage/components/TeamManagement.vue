@@ -21,7 +21,7 @@
                         {{$L("身份")}}
                     </div>
                     <div class="search-content">
-                        <Select v-model="keys.identity" :placeholder="$L('请选择')">
+                        <Select v-model="keys.identity" :placeholder="$L('全部')">
                             <Option value="">{{$L('全部')}}</Option>
                             <Option value="admin">{{$L('管理员')}}</Option>
                             <Option value="noadmin">{{$L('非管理员')}}</Option>
@@ -33,7 +33,7 @@
                         {{$L("在职状态")}}
                     </div>
                     <div class="search-content">
-                        <Select v-model="keys.disable" :placeholder="$L('请选择')">
+                        <Select v-model="keys.disable" :placeholder="$L('在职')">
                             <Option value="">{{$L('在职')}}</Option>
                             <Option value="yes">{{$L('离职')}}</Option>
                             <Option value="all">{{$L('全部')}}</Option>
@@ -45,7 +45,7 @@
                         {{$L("邮箱认证")}}
                     </div>
                     <div class="search-content">
-                        <Select v-model="keys.email_verity" :placeholder="$L('请选择')">
+                        <Select v-model="keys.email_verity" :placeholder="$L('全部')">
                             <Option value="">{{$L('全部')}}</Option>
                             <Option value="yes">{{$L('已邮箱认证')}}</Option>
                             <Option value="no">{{$L('未邮箱认证')}}</Option>
@@ -94,7 +94,7 @@
             class="operate-left"
             :title="$L('操作离职')">
             <Form :model="disableData" label-width="auto" @submit.native.prevent>
-                <Alert type="error">{{$L(`正在进行帐号【ID:${disableData.userid}，${disableData.nickname}】离职操作。`)}}</Alert>
+                <Alert type="error" style="margin-bottom:18px">{{$L(`正在进行帐号【ID:${disableData.userid}，${disableData.nickname}】离职操作。`)}}</Alert>
                 <FormItem :label="$L('离职时间')">
                     <DatePicker
                         v-model="disableData.disable_time"
@@ -111,7 +111,17 @@
             </Form>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="disableShow=false">{{$L('取消')}}</Button>
-                <Button type="primary" :loading="disableLoading > 0" @click="operationUser(disableData)">{{$L('确定离职')}}</Button>
+                <Poptip
+                    confirm
+                    placement="bottom"
+                    style="margin-left:8px"
+                    @on-ok="operationUser(disableData)"
+                    transfer>
+                    <div slot="title">
+                        <p>{{$L('注意：离职操作不可逆！')}}</p>
+                    </div>
+                    <Button type="primary" :loading="disableLoading > 0">{{$L('确定离职')}}</Button>
+                </Poptip>
             </div>
         </Modal>
     </div>
@@ -299,7 +309,7 @@ export default {
                                 style: {
                                     color: '#f90'
                                 }
-                            }, [h('div', this.$L('恢复身份（已离职）'))]));
+                            }, [h('div', this.$L('恢复帐号（已离职）'))]));
                         } else {
                             dropdownItems.push(h('EDropdownItem', {
                                 props: {
@@ -454,20 +464,31 @@ export default {
 
         operationUser(data) {
             return new Promise((resolve) => {
-                this.loadIng++;
+                if (data.type == 'setdisable') {
+                    this.disableLoading++;
+                } else {
+                    this.loadIng++;
+                }
                 this.$store.dispatch("call", {
                     url: 'users/operation',
                     data,
                 }).then(({msg}) => {
                     $A.messageSuccess(msg);
-                    this.loadIng--;
                     this.getLists();
                     resolve()
+                    if (data.type == 'setdisable') {
+                        this.disableShow = false;
+                    }
                 }).catch(({msg}) => {
                     $A.modalError(msg, 301);
-                    this.loadIng--;
                     this.getLists();
                     resolve()
+                }).finally(_ => {
+                    if (data.type == 'setdisable') {
+                        this.disableLoading--;
+                    } else {
+                        this.loadIng--;
+                    }
                 })
             })
         }

@@ -3,9 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\AbstractModel;
-use App\Models\File;
-use App\Models\ProjectTaskUser;
-use App\Models\ProjectUser;
 use App\Models\User;
 use App\Models\UserEmailVerification;
 use App\Models\UserTransfer;
@@ -84,10 +81,10 @@ class UsersController extends AbstractController
             };
             $user = User::whereEmail($email)->first();
             if (empty($user)) {
-                return $retError('账号或密码错误');
+                return $retError('帐号或密码错误');
             }
             if ($user->password != Base::md52($password, $user->encrypt)) {
-                return $retError('账号或密码错误');
+                return $retError('帐号或密码错误');
             }
             //
             if (in_array('disable', $user->identity)) {
@@ -436,7 +433,15 @@ class UsersController extends AbstractController
      * - keys.nickname          昵称
      * - keys.profession        职位
      * - keys.identity          身份（如：admin、noadmin）
-     * - keys.email_verity      邮箱是否认证（如：yes、no）
+     * - keys.disable           是否离职
+     *   - yes:     仅离职
+     *   - all:     全部
+     *   - 其他值:   仅在职（默认）
+     * - keys.email_verity      邮箱是否认证
+     *   - yes:     已认证
+     *   - no:      未认证
+     *   - 其他值:   全部（默认）
+     *
      * @apiParam {Number} [page]        当前页，默认:1
      * @apiParam {Number} [pagesize]    每页显示数量，默认:20，最大:50
      *
@@ -480,11 +485,18 @@ class UsersController extends AbstractController
                     $builder->where("identity", "like", "%,{$keys['identity']},%");
                 }
             }
+            if ($keys['disable'] === 'yes') {
+                $builder->whereNotNull('disable_at');
+            } elseif ($keys['disable'] !== 'all') {
+                $builder->whereNull('disable_at');
+            }
             if ($keys['email_verity'] === 'yes') {
                 $builder->whereEmailVerity(1);
             } elseif ($keys['email_verity'] === 'no') {
                 $builder->whereEmailVerity(0);
             }
+        } else {
+            $builder->whereNull('disable_at');
         }
         $list = $builder->orderByDesc('userid')->paginate(Base::getPaginate(50, 20));
         //
@@ -546,7 +558,8 @@ class UsersController extends AbstractController
                 $upArray['identity'] = array_diff($userInfo->identity, ['disable']);
                 $upArray['identity'][] = 'disable';
                 $upArray['disable_at'] = Carbon::parse($data['disable_time']);
-                $transferUser = User::find(intval($data['transfer_userid']));
+                $transferUserid = is_array($data['transfer_userid']) ? $data['transfer_userid'][0] : $data['transfer_userid'];
+                $transferUser = User::find(intval($transferUserid));
                 if (empty($transferUser)) {
                     return Base::retError('请选择正确的交接人');
                 }
