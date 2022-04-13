@@ -546,7 +546,7 @@ class UsersController extends AbstractController
                 break;
 
             case 'delete':
-                $userInfo->delete();
+                $userInfo->deleteUser();
                 break;
         }
         if (isset($upArray['identity'])) {

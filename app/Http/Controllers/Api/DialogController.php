@@ -507,8 +507,8 @@ class DialogController extends AbstractController
      * @apiGroup dialog
      * @apiName msg__mark
      *
-     * @apiParam {Number} dialog_id            消息ID
-     * @apiParam {String} type       类型
+     * @apiParam {Number} dialog_id             会话ID
+     * @apiParam {String} type                  类型
      * - read
      * - unread
      *
