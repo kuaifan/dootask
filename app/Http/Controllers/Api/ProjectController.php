@@ -1018,7 +1018,7 @@ class ProjectController extends AbstractController
         //
         $userid = Base::arrayRetainInt(Request::input('userid'), true);
         $time = Request::input('time');
-        $type = Request::input('type','taskTime');
+        $type = Request::input('type', 'taskTime');
         if (empty($userid) || empty($time)) {
             return Base::retError('参数错误');
         }
@@ -1047,6 +1047,7 @@ class ProjectController extends AbstractController
         $headings[] = '验收/测试用时';
         $headings[] = '负责人';
         $headings[] = '创建人';
+        $headings[] = '状态';
         $datas = [];
         //
         $builder = ProjectTask::select(['project_tasks.*', 'project_task_users.userid as ownerid'])
@@ -1054,22 +1055,18 @@ class ProjectController extends AbstractController
             ->where('project_task_users.owner', 1)
             ->whereIn('project_task_users.userid', $userid)
             ->betweenTime(Carbon::parse($time[0])->startOfDay(), Carbon::parse($time[1])->endOfDay(), $type);
-        $builder->orderByDesc('project_tasks.id')->chunk(100, function($tasks) use (&$datas) {
+        $builder->orderByDesc('project_tasks.id')->chunk(100, function ($tasks) use (&$datas) {
             /** @var ProjectTask $task */
             foreach ($tasks as $task) {
                 $flowChanges = ProjectTaskFlowChange::whereTaskId($task->id)->get();
-                $developTime = 0;//开发时间
                 $testTime = 0;//验收/测试时间
+                $taskStartTime = $task->start_at ? Carbon::parse($task->start_at)->timestamp : Carbon::parse($task->created_at)->timestamp;
+                $taskCompleteTime = $task->complete_at ? Carbon::parse($task->complete_at)->timestamp : time();
+                $totalTime = $taskCompleteTime - $taskStartTime; //开发测试总用时
                 foreach ($flowChanges as $change) {
                     if (!str_contains($change->before_flow_item_name, 'end')) {
                         $upOne = ProjectTaskFlowChange::where('id', '<', $change->id)->whereTaskId($task->id)->orderByDesc('id')->first();
                         if ($upOne) {
-                            if (str_contains($change->before_flow_item_name, 'progress') && str_contains($change->before_flow_item_name, '进行')) {
-                                $devCtime = Carbon::parse($change->created_at)->timestamp;
-                                $oCtime = Carbon::parse($upOne->created_at)->timestamp;
-                                $minusNum = $devCtime - $oCtime;
-                                $developTime += $minusNum;
-                            }
                             if (str_contains($change->before_flow_item_name, 'test') || str_contains($change->before_flow_item_name, '测试') || strpos($change->before_flow_item_name, '验收') !== false) {
                                 $testCtime = Carbon::parse($change->created_at)->timestamp;
                                 $tTime = Carbon::parse($upOne->created_at)->timestamp;
@@ -1083,29 +1080,11 @@ class ProjectController extends AbstractController
                     $lastChange = ProjectTaskFlowChange::whereTaskId($task->id)->orderByDesc('id')->first();
                     $nowTime = time();
                     $unFinishTime = $nowTime - Carbon::parse($lastChange->created_at)->timestamp;
-                    if (str_contains($lastChange->after_flow_item_name, 'progress') || str_contains($lastChange->after_flow_item_name, '进行')) {
-                        $developTime += $unFinishTime;
-                    } elseif (str_contains($lastChange->after_flow_item_name, 'test') || str_contains($lastChange->after_flow_item_name, '测试') || strpos($lastChange->after_flow_item_name, '验收') !== false) {
+                    if (str_contains($lastChange->after_flow_item_name, 'test') || str_contains($lastChange->after_flow_item_name, '测试') || strpos($lastChange->after_flow_item_name, '验收') !== false) {
                         $testTime += $unFinishTime;
                     }
                 }
-                $firstChange = ProjectTaskFlowChange::whereTaskId($task->id)->orderBy('id')->first();
-                if (str_contains($firstChange->after_flow_item_name, 'end')) {
-                    $firstDevTime = Carbon::parse($firstChange->created_at)->timestamp - Carbon::parse($task->created_at)->timestamp;
-                    $developTime += $firstDevTime;
-                }
-                if (count($flowChanges) === 0 && $task->start_at) {
-                    $lastTime = $task->complete_at ? Carbon::parse($task->complete_at)->timestamp : time();
-                    $developTime = $lastTime - Carbon::parse($task->start_at)->timestamp;
-                }
-                $totalTime = $developTime + $testTime; //任务总用时
-                if ($task->complete_at) {
-                    $a = Carbon::parse($task->complete_at)->timestamp;
-                    if ($task->start_at) {
-                        $b = Carbon::parse($task->start_at)->timestamp;
-                        $totalTime = $a - $b;
-                    }
-                }
+                $developTime = $totalTime - $testTime;//开发时间
                 $planTime = '-';//任务计划用时
                 $overTime = '-';//超时时间
                 if ($task->end_at) {
@@ -1119,6 +1098,20 @@ class ProjectController extends AbstractController
                     $planTime = Base::timeDiff($startTime, $endTime);
                 }
                 $actualTime = $task->complete_at ? $totalTime : 0;//实际完成用时
+                $statusText = '未完成';
+                if ($task->flow_item_name) {
+                    if (str_contains($task->flow_item_name, '已取消')) {
+                        $statusText = '已取消';
+                        $actualTime = 0;
+                        $testTime = 0;
+                        $developTime = 0;
+                        $overTime = '-';
+                    } elseif (str_contains($task->flow_item_name, '已完成')) {
+                        $statusText = '已完成';
+                    }
+                } elseif ($task->complete_at) {
+                    $statusText = '已完成';
+                }
                 $datas[] = [
                     $task->id,
                     $task->parent_id ?: '-',
@@ -1131,10 +1124,11 @@ class ProjectController extends AbstractController
                     $planTime ?: '-',
                     $actualTime ? Base::timeFormat($actualTime) : '-',
                     $overTime,
-                    $developTime > 0? Base::timeFormat($developTime) : '-',
+                    $developTime > 0 ? Base::timeFormat($developTime) : '-',
                     $testTime > 0 ? Base::timeFormat($testTime) : '-',
                     Base::filterEmoji(User::userid2nickname($task->ownerid)) . " (ID: {$task->ownerid})",
                     Base::filterEmoji(User::userid2nickname($task->userid)) . " (ID: {$task->userid})",
+                    $statusText
                 ];
             }
         });
@@ -1150,14 +1144,15 @@ class ProjectController extends AbstractController
             return Base::retError('导出失败，' . $fileName . '！');
         }
         $xlsPath = storage_path("app/" . $filePath . "/" . $fileName);
-        $zipFile = "app/" . $filePath . "/" . Base::rightDelete($fileName, '.xls'). ".zip";
+        $zipFile = "app/" . $filePath . "/" . Base::rightDelete($fileName, '.xls') . ".zip";
         $zipPath = storage_path($zipFile);
         if (file_exists($zipPath)) {
             Base::deleteDirAndFile($zipPath, true);
         }
         try {
             Madzipper::make($zipPath)->add($xlsPath)->close();
-        } catch (\Exception) { }
+        } catch (\Exception) {
+        }
         //
         if (file_exists($zipPath)) {
             $base64 = base64_encode(Base::array2string([
