@@ -15,9 +15,9 @@
                                 <UserAvatar :userid="projectData.owner_userid" :size="36" :borderWitdh="2" :openDelay="0">
                                     <p>{{$L('项目负责人')}}</p>
                                 </UserAvatar>
-                                <Badge v-if="(windowWidth <= 980 || projectParameter('chat')) && projectUser.length > 0" type="normal" :count="projectData.project_user.length"/>
+                                <Badge v-if="(windowWidth <= 980 || projectData.cacheParameter.chat) && projectUser.length > 0" type="normal" :count="projectData.project_user.length"/>
                             </li>
-                            <template v-if="!(windowWidth <= 980 || projectParameter('chat')) && projectUser.length > 0" v-for="item in projectUser">
+                            <template v-if="!(windowWidth <= 980 || projectData.cacheParameter.chat) && projectUser.length > 0" v-for="item in projectUser">
                                 <li v-if="item.userid === -1" class="more">
                                     <ETooltip :content="$L('共' + (projectData.project_user.length) + '个成员')">
                                         <Icon type="ios-more"/>
@@ -42,7 +42,7 @@
                             </div>
                         </Tooltip>
                     </li>
-                    <li :class="['project-icon', projectParameter('chat') ? 'active' : '']" @click="$store.dispatch('toggleProjectParameter', 'chat')">
+                    <li :class="['project-icon', projectData.cacheParameter.chat ? 'active' : '']" @click="$store.dispatch('toggleProjectParameter', 'chat')">
                         <Icon class="menu-icon" type="ios-chatbubbles" />
                         <Badge class="menu-badge" :count="msgUnread"></Badge>
                     </li>
@@ -75,7 +75,7 @@
                 <div class="project-subtitle">{{projectData.desc}}</div>
                 <div class="project-switch">
                     <div v-if="completedCount > 0" class="project-checkbox">
-                        <Checkbox :value="projectParameter('completedTask')" @on-change="toggleCompleted">{{$L('显示已完成')}}</Checkbox>
+                        <Checkbox :value="projectData.cacheParameter.completedTask" @on-change="toggleCompleted">{{$L('显示已完成')}}</Checkbox>
                     </div>
                     <div v-if="flowList.length > 0" class="project-select">
                         <Cascader :data="flowData" @on-change="flowChange" transfer-class-name="project-list-flow-cascader" transfer>
@@ -255,7 +255,7 @@
                 </Row>
             </div>
             <!--我的任务-->
-            <div :class="['project-table-body', !projectParameter('showMy') ? 'project-table-hide' : '']">
+            <div :class="['project-table-body', !projectData.cacheParameter.showMy ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
                         <i class="taskfont" @click="$store.dispatch('toggleProjectParameter', 'showMy')">&#xe689;</i>
@@ -267,10 +267,10 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow v-if="projectParameter('showMy')" :list="transforTasks(myList)" open-key="my" @on-priority="addTaskOpen" fast-add-task/>
+                <TaskRow v-if="projectData.cacheParameter.showMy" :list="transforTasks(myList)" open-key="my" @on-priority="addTaskOpen" fast-add-task/>
             </div>
             <!--协助的任务-->
-            <div v-if="helpList.length" :class="['project-table-body', !projectParameter('showHelp') ? 'project-table-hide' : '']">
+            <div v-if="helpList.length" :class="['project-table-body', !projectData.cacheParameter.showHelp ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
                         <i class="taskfont" @click="$store.dispatch('toggleProjectParameter', 'showHelp')">&#xe689;</i>
@@ -282,10 +282,10 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow v-if="projectParameter('showHelp')" :list="helpList" open-key="help" @on-priority="addTaskOpen"/>
+                <TaskRow v-if="projectData.cacheParameter.showHelp" :list="helpList" open-key="help" @on-priority="addTaskOpen"/>
             </div>
             <!--未完成任务-->
-            <div v-if="projectData.task_num > 0" :class="['project-table-body', !projectParameter('showUndone') ? 'project-table-hide' : '']">
+            <div v-if="projectData.task_num > 0" :class="['project-table-body', !projectData.cacheParameter.showUndone ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
                         <i class="taskfont" @click="$store.dispatch('toggleProjectParameter', 'showUndone')">&#xe689;</i>
@@ -297,10 +297,10 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow v-if="projectParameter('showUndone')" :list="unList" open-key="undone" @on-priority="addTaskOpen"/>
+                <TaskRow v-if="projectData.cacheParameter.showUndone" :list="unList" open-key="undone" @on-priority="addTaskOpen"/>
             </div>
             <!--已完成任务-->
-            <div v-if="projectData.task_num > 0" :class="['project-table-body', !projectParameter('showCompleted') ? 'project-table-hide' : '']">
+            <div v-if="projectData.task_num > 0" :class="['project-table-body', !projectData.cacheParameter.showCompleted ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
                         <i class="taskfont" @click="$store.dispatch('toggleProjectParameter', 'showCompleted')">&#xe689;</i>
@@ -310,9 +310,9 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                     <Col span="3"></Col>
-                    <Col span="3">{{projectData.task_num > 0 && projectParameter('showCompleted') ? $L('完成时间') : ''}}</Col>
+                    <Col span="3">{{projectData.task_num > 0 && projectData.cacheParameter.showCompleted ? $L('完成时间') : ''}}</Col>
                 </Row>
-                <TaskRow v-if="projectParameter('showCompleted')" :list="completedList" open-key="completed" @on-priority="addTaskOpen" showCompleteAt/>
+                <TaskRow v-if="projectData.cacheParameter.showCompleted" :list="completedList" open-key="completed" @on-priority="addTaskOpen" showCompleteAt/>
             </div>
         </div>
         <div v-else-if="tabTypeActive === 'gantt'" class="project-gantt">
@@ -563,10 +563,10 @@ export default {
             'taskCompleteTemps',
         ]),
 
-        ...mapGetters(['projectData', 'projectParameter', 'transforTasks']),
+        ...mapGetters(['projectData', 'transforTasks']),
 
         tabTypeActive() {
-            return this.projectParameter('menuType')
+            return this.projectData.cacheParameter.menuType
         },
 
         tabTypeStyle() {
@@ -610,7 +610,7 @@ export default {
         panelTask() {
             const {searchText, flowInfo} = this;
             return function (list) {
-                if (!this.projectParameter('completedTask')) {
+                if (!this.projectData.cacheParameter.completedTask) {
                     list = list.filter(({complete_at}) => {
                         return !complete_at;
                     });
@@ -1261,7 +1261,7 @@ export default {
         taskIsHidden(task) {
             const {name, desc, complete_at} = task;
             const {searchText, flowInfo} = this;
-            if (!this.projectParameter('completedTask')) {
+            if (!this.projectData.cacheParameter.completedTask) {
                 if (complete_at) {
                     return true;
                 }
@@ -1357,7 +1357,7 @@ export default {
         },
 
         myFilter(task, chackCompleted = true) {
-            if (!this.projectParameter('completedTask') && chackCompleted === true) {
+            if (!this.projectData.cacheParameter.completedTask && chackCompleted === true) {
                 if (task.complete_at) {
                     return false;
                 }
@@ -1377,7 +1377,7 @@ export default {
             if (task.parent_id > 0) {
                 return false;
             }
-            if (!this.projectParameter('completedTask') && chackCompleted === true) {
+            if (!this.projectData.cacheParameter.completedTask && chackCompleted === true) {
                 if (task.complete_at) {
                     return false;
                 }

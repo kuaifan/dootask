@@ -108,7 +108,7 @@ export default {
     computed: {
         ...mapState(['userId', 'windowWidth', 'taskPriority']),
 
-        ...mapGetters(['projectParameter']),
+        ...mapGetters(['projectData']),
 
         menuWidth() {
             return this.windowWidth < 1440 ? 180 : 260;
@@ -119,7 +119,7 @@ export default {
         },
 
         completedTask() {
-            return this.projectParameter('completedTask');
+            return this.projectData.cacheParameter.completedTask;
         }
     },
 

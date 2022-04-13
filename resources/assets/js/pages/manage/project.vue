@@ -1,7 +1,7 @@
 <template>
     <div class="page-project">
         <ProjectList/>
-        <ProjectDialog v-if="projectParameter('chat')"/>
+        <ProjectDialog v-if="projectData.cacheParameter.chat"/>
     </div>
 </template>
 
@@ -18,7 +18,7 @@ export default {
 
     computed: {
         ...mapState(['cacheProjects', 'wsOpenNum']),
-        ...mapGetters(['projectParameter']),
+        ...mapGetters(['projectData']),
 
         projectId() {
             const {projectId} = this.$route.params;
@@ -46,12 +46,16 @@ export default {
     methods: {
         getProjectData() {
             if (this.projectId <= 0) return;
-            setTimeout(() => {
-                this.$store.state.projectId = $A.runNum(this.projectId);
-                this.$store.dispatch("getProjectOne", this.projectId).then(() => {
-                    this.$store.dispatch("getColumns", this.projectId).catch(() => {});
-                    this.$store.dispatch("getTaskForProject", this.projectId).catch(() => {})
+            const projectId = this.projectId;
+            this.$nextTick(() => {
+                this.$store.state.projectId = projectId;
+                this.$store.dispatch("getProjectOne", projectId).then(() => {
+                    this.$store.dispatch("getColumns", projectId).catch(() => {});
+                    this.$store.dispatch("getTaskForProject", projectId).catch(() => {})
                 }).catch(({msg}) => {
+                    if (projectId !== this.projectId) {
+                        return;
+                    }
                     $A.modalWarning({
                         content: msg,
                         onOk: () => {

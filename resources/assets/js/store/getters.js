@@ -2,43 +2,27 @@ export default {
     /**
      * 当前打开的项目
      * @param state
-     * @returns {{}|{readonly id?: *}}
+     * @returns {{cacheParameter: {}}}
      */
     projectData(state) {
-        let projectId = state.projectId;
-        if (projectId == 0) {
-            projectId = $A.runNum(window.__projectId);
-        }
-        if (projectId > 0) {
-            window.__projectId = projectId;
-            const project = state.cacheProjects.find(({id}) => id == projectId);
-            if (project) {
-                return project;
+        if (state.projectId > 0) {
+            let data = state.cacheProjects.find(({id}) => id == state.projectId);
+            if (data) {
+                let cacheParameter = state.cacheProjectParameter.find(({project_id}) => project_id == state.projectId);
+                if (!cacheParameter) {
+                    cacheParameter = $A.projectParameterTemplate(state.projectId)
+                    state.cacheProjectParameter.push(cacheParameter);
+                }
+                if (cacheParameter.menuType === undefined) {
+                    cacheParameter.menuType = 'column'
+                }
+                data.cacheParameter = cacheParameter;
+                return data;
             }
         }
-        return {};
-    },
-
-    /**
-     * 当前打开的项目面板参数
-     * @param state
-     * @returns {(function(*): (boolean|*))|*}
-     */
-    projectParameter(state) {
-        return function (key) {
-            if (!state.projectId) {
-                return false;
-            }
-            let cache = state.cacheProjectParameter.find(({project_id}) => project_id == state.projectId);
-            if (!cache) {
-                cache = $A.projectParameterTemplate(state.projectId)
-                state.cacheProjectParameter.push(cache);
-            }
-            if (key === 'menuType' && typeof cache[key] === "undefined") {
-                return 'column'
-            }
-            return cache[key];
-        }
+        return {
+            cacheParameter: {}
+        };
     },
 
     /**
