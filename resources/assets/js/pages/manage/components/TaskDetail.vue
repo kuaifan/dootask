@@ -714,9 +714,10 @@ export default {
         openTask: {
             handler(data) {
                 this.taskDetail = $A.cloneJSON(data);
-                this.$nextTick(() => {
-                    this.$refs.name && this.$refs.name.resizeTextarea();
-                })
+                if (this.taskDetail.parent_id === 0 && this.$refs.name) {
+                    this.__openTask && clearTimeout(this.__openTask);
+                    this.__openTask = setTimeout(this.$refs.name.resizeTextarea, 100)
+                }
             },
             immediate: true,
             deep: true
