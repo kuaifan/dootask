@@ -106,7 +106,7 @@
                 </FormItem>
                 <FormItem :label="$L('交接人')">
                     <UserInput v-model="disableData.transfer_userid" :disabled-choice="[disableData.userid]" :multiple-max="1" :placeholder="$L('选择交接人')"/>
-                    <div class="form-tip">{{ $L(`${disableData.nickname}负责的项目、任务和文件将自动移交给交接人`) }}</div>
+                    <div class="form-tip">{{ $L(`${disableData.nickname} 负责的项目、任务和文件将移交给交接人`) }}</div>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
