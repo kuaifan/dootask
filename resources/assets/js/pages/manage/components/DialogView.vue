@@ -1,5 +1,9 @@
 <template>
     <div :class="`dialog-view ${msgData.type}`" :data-id="msgData.id">
+        <!--昵称-->
+        <div v-if="dialogType === 'group'" class="dialog-username">
+            <UserAvatar :userid="msgData.userid" :show-icon="false" :show-name="true" :tooltip-disabled="true"/>
+        </div>
 
         <div class="dialog-head">
             <!--详情-->
@@ -45,7 +49,7 @@
         <div v-if="msgData.created_at" class="dialog-foot">
             <div class="time" :title="msgData.created_at">{{$A.formatTime(msgData.created_at)}}</div>
             <EPopover
-                v-if="msgData.send > 1 || dialogType == 'group'"
+                v-if="msgData.send > 1 || dialogType === 'group'"
                 v-model="popperShow"
                 ref="percent"
                 class="percent"

@@ -164,7 +164,7 @@
                 > li {
                     display: flex;
                     flex-direction: row;
-                    align-items: flex-end;
+                    align-items: flex-start;
                     list-style: none;
                     margin-bottom: 16px;
 
@@ -197,6 +197,11 @@
                                     opacity: 1;
                                 }
                             }
+                        }
+
+                        .dialog-username {
+                            margin-bottom: 6px;
+                            opacity: 0.8;
                         }
 
                         .dialog-head {
