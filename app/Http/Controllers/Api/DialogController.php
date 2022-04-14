@@ -11,7 +11,6 @@ use App\Models\WebSocketDialogMsg;
 use App\Models\WebSocketDialogMsgRead;
 use App\Models\WebSocketDialogUser;
 use App\Module\Base;
-use App\Tasks\PushTask;
 use Carbon\Carbon;
 use Request;
 use Response;
@@ -598,14 +597,7 @@ class DialogController extends AbstractController
         if (empty($dialog)) {
             return Base::retError('创建群组失败');
         }
-        PushTask::push([
-            'userid' => $userids,
-            'msg' => [
-                'type' => 'dialog',
-                'mode' => 'groupAdd',
-                'data' => WebSocketDialog::formatData($dialog, $user->userid),
-            ]
-        ]);
+        $dialog->pushMsg("groupAdd", WebSocketDialog::formatData($dialog, $user->userid), $userids);
         return Base::retSuccess('创建成功', $dialog);
     }
 
@@ -714,14 +706,7 @@ class DialogController extends AbstractController
         }
         //
         $dialog->joinGroup($userids);
-        PushTask::push([
-            'userid' => $userids,
-            'msg' => [
-                'type' => 'dialog',
-                'mode' => 'groupJoin',
-                'data' => WebSocketDialog::formatData($dialog, $user->userid),
-            ]
-        ]);
+        $dialog->pushMsg("groupJoin", WebSocketDialog::formatData($dialog, $user->userid), $userids);
         return Base::retSuccess('添加成功');
     }
 
@@ -771,16 +756,7 @@ class DialogController extends AbstractController
         }
         //
         $dialog->exitGroup($userids);
-        PushTask::push([
-            'userid' => $userids,
-            'msg' => [
-                'type' => 'dialog',
-                'mode' => 'groupExit',
-                'data' => [
-                    'id' => $dialog->id,
-                ],
-            ]
-        ]);
+        $dialog->pushMsg("groupExit", null, $userids);
         return Base::retSuccess($type === 'remove' ? '移出成功' : '退出成功');
     }
 
@@ -816,16 +792,7 @@ class DialogController extends AbstractController
         }
         //
         $dialog->deleteDialog();
-        PushTask::push([
-            'userid' => $dialog->dialogUser->pluck('userid')->toArray(),
-            'msg' => [
-                'type' => 'dialog',
-                'mode' => 'groupDelete',
-                'data' => [
-                    'id' => $dialog->id,
-                ],
-            ]
-        ]);
+        $dialog->pushMsg("groupDelete");
         return Base::retSuccess('解散成功');
     }
 }

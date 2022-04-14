@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Exceptions\ApiException;
+use App\Tasks\PushTask;
 use Carbon\Carbon;
+use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -120,6 +122,35 @@ class WebSocketDialog extends AbstractModel
     {
         $this->restore();
         return true;
+    }
+
+    /**
+     * 推送消息
+     * @param $action
+     * @param array $data           发送内容，默认为[id=>项目ID]
+     * @param array $userid         指定会员，默认为群组所有成员
+     * @return void
+     */
+    public function pushMsg($action, $data = null, $userid = null)
+    {
+        if ($data === null) {
+            $data = ['id' => $this->id];
+        }
+        //
+        if ($userid === null) {
+            $userid = $this->dialogUser->pluck('userid')->toArray();
+        }
+        //
+        $params = [
+            'userid' => $userid,
+            'msg' => [
+                'type' => 'dialog',
+                'mode' => $action,
+                'data' => $data,
+            ]
+        ];
+        $task = new PushTask($params, false);
+        Task::deliver($task);
     }
 
     /**
