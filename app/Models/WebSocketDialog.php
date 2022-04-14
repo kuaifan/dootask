@@ -183,45 +183,41 @@ class WebSocketDialog extends AbstractModel
 
     /**
      * 格式化对话
-     * @param WebSocketDialog $dialog
      * @param int $userid   会员ID
-     * @return self|null
+     * @return $this
      */
-    public static function formatData(WebSocketDialog $dialog, $userid)
+    public function formatData($userid)
     {
-        if (empty($dialog)) {
-            return null;
-        }
         // 最后消息
-        $last_msg = WebSocketDialogMsg::whereDialogId($dialog->id)->orderByDesc('id')->first();
-        $dialog->last_msg = $last_msg;
+        $last_msg = WebSocketDialogMsg::whereDialogId($this->id)->orderByDesc('id')->first();
+        $this->last_msg = $last_msg;
         // 未读信息
-        $dialog->unread = WebSocketDialogMsgRead::whereDialogId($dialog->id)->whereUserid($userid)->whereReadAt(null)->count();
-        $dialog->mark_unread = $dialog->mark_unread ?? WebSocketDialogUser::whereDialogId($dialog->id)->whereUserid($userid)->value('mark_unread');
+        $this->unread = WebSocketDialogMsgRead::whereDialogId($this->id)->whereUserid($userid)->whereReadAt(null)->count();
+        $this->mark_unread = $this->mark_unread ?? WebSocketDialogUser::whereDialogId($this->id)->whereUserid($userid)->value('mark_unread');
         // 对话人数
-        $builder = WebSocketDialogUser::whereDialogId($dialog->id);
-        $dialog->people = $builder->count();
+        $builder = WebSocketDialogUser::whereDialogId($this->id);
+        $this->people = $builder->count();
         // 对方信息
-        $dialog->dialog_user = null;
-        $dialog->group_info = null;
-        $dialog->top_at = $dialog->top_at ?? WebSocketDialogUser::whereDialogId($dialog->id)->whereUserid($userid)->value('top_at');
-        switch ($dialog->type) {
+        $this->dialog_user = null;
+        $this->group_info = null;
+        $this->top_at = $this->top_at ?? WebSocketDialogUser::whereDialogId($this->id)->whereUserid($userid)->value('top_at');
+        switch ($this->type) {
             case "user":
                 $dialog_user = $builder->where('userid', '!=', $userid)->first();
-                $dialog->name = User::userid2nickname($dialog_user->userid);
-                $dialog->dialog_user = $dialog_user;
+                $this->name = User::userid2nickname($dialog_user->userid);
+                $this->dialog_user = $dialog_user;
                 break;
             case "group":
-                if ($dialog->group_type === 'project') {
-                    $dialog->group_info = Project::withTrashed()->select(['id', 'name', 'archived_at', 'deleted_at'])->whereDialogId($dialog->id)->first()?->cancelAppend()->cancelHidden();
-                    $dialog->name = $dialog->group_info ? $dialog->group_info->name : '';
-                } elseif ($dialog->group_type === 'task') {
-                    $dialog->group_info = ProjectTask::withTrashed()->select(['id', 'name', 'complete_at', 'archived_at', 'deleted_at'])->whereDialogId($dialog->id)->first()?->cancelAppend()->cancelHidden();
-                    $dialog->name = $dialog->group_info ? $dialog->group_info->name : '';
+                if ($this->group_type === 'project') {
+                    $this->group_info = Project::withTrashed()->select(['id', 'name', 'archived_at', 'deleted_at'])->whereDialogId($this->id)->first()?->cancelAppend()->cancelHidden();
+                    $this->name = $this->group_info ? $this->group_info->name : '';
+                } elseif ($this->group_type === 'task') {
+                    $this->group_info = ProjectTask::withTrashed()->select(['id', 'name', 'complete_at', 'archived_at', 'deleted_at'])->whereDialogId($this->id)->first()?->cancelAppend()->cancelHidden();
+                    $this->name = $this->group_info ? $this->group_info->name : '';
                 }
                 break;
         }
-        return $dialog;
+        return $this;
     }
 
     /**

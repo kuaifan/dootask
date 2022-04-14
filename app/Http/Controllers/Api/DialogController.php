@@ -48,7 +48,7 @@ class DialogController extends AbstractController
             ->orderByDesc('web_socket_dialogs.last_at')
             ->paginate(Base::getPaginate(200, 100));
         $list->transform(function (WebSocketDialog $item) use ($user) {
-            return WebSocketDialog::formatData($item, $user->userid);
+            return $item->formatData($user->userid);
         });
         //
         return Base::retSuccess('success', $list);
@@ -80,7 +80,7 @@ class DialogController extends AbstractController
             ->where('u.userid', $user->userid)
             ->first();
         if ($item) {
-            $item = WebSocketDialog::formatData($item, $user->userid);
+            $item = $item->formatData($user->userid);
         }
         //
         return Base::retSuccess('success', $item);
@@ -113,7 +113,7 @@ class DialogController extends AbstractController
         if (empty($dialog)) {
             return Base::retError('打开会话失败');
         }
-        $data = WebSocketDialog::formatData(WebSocketDialog::find($dialog->id), $user->userid);
+        $data = WebSocketDialog::find($dialog->id)?->formatData($user->userid);
         if (empty($data)) {
             return Base::retError('打开会话错误');
         }
@@ -164,7 +164,7 @@ class DialogController extends AbstractController
         //
         $data = $list->toArray();
         if ($list->currentPage() === 1) {
-            $data['dialog'] = WebSocketDialog::formatData($dialog, $user->userid);
+            $data['dialog'] = $dialog->formatData($user->userid);
         }
         return Base::retSuccess('success', $data);
     }
@@ -597,7 +597,7 @@ class DialogController extends AbstractController
         if (empty($dialog)) {
             return Base::retError('创建群组失败');
         }
-        $dialog->pushMsg("groupAdd", WebSocketDialog::formatData($dialog, $user->userid), $userids);
+        $dialog->pushMsg("groupAdd", $dialog->formatData($user->userid), $userids);
         return Base::retSuccess('创建成功', $dialog);
     }
 
@@ -706,7 +706,7 @@ class DialogController extends AbstractController
         }
         //
         $dialog->joinGroup($userids);
-        $dialog->pushMsg("groupJoin", WebSocketDialog::formatData($dialog, $user->userid), $userids);
+        $dialog->pushMsg("groupJoin", $dialog->formatData($user->userid), $userids);
         return Base::retSuccess('添加成功');
     }
 
