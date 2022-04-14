@@ -35,7 +35,7 @@
                     </template>
                 </div>
                 <template v-if="dialogData.type === 'group'">
-                    <ETooltip v-if="dialogData.group_type === 'user'" placement="top" :content="$L('群设置')">
+                    <ETooltip v-if="dialogData.group_type === 'user'" placement="top" :openDelay="600" :content="$L('群设置')">
                         <i class="taskfont dialog-create" @click="groupInfoShow = true">&#xe6e9;</i>
                     </ETooltip>
                 </template>
@@ -127,10 +127,10 @@
             </div>
         </Modal>
 
-        <!--创建群聊-->
+        <!--创建群组-->
         <Modal
             v-model="createGroupShow"
-            :title="$L('创建群聊')"
+            :title="$L('创建群组')"
             :mask-closable="false">
             <Form :model="createGroupData" label-width="auto" @submit.native.prevent>
                 <FormItem prop="userids" :label="$L('群成员')">

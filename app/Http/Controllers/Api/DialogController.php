@@ -305,7 +305,7 @@ class DialogController extends AbstractController
             $fileData['thumb'] = Base::unFillUrl($fileData['thumb']);
             $fileData['size'] *= 1024;
             //
-            if ($dialog->type === 'group' && $dialog->group_type === 'task') {                       // 任务群聊保存文件
+            if ($dialog->type === 'group' && $dialog->group_type === 'task') {                       // 任务群组保存文件
                 if ($image_attachment || !in_array($fileData['ext'], File::imageExt)) {     // 如果是图片不保存
                     $task = ProjectTask::whereDialogId($dialog->id)->first();
                     if ($task) {
@@ -552,15 +552,15 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/add         15. 新增群聊
+     * @api {get} api/dialog/group/add         15. 新增群组
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
      * @apiGroup dialog
      * @apiName group__add
      *
-     * @apiParam {String} chat_name             群名
      * @apiParam {Array} userids                群成员，格式: [userid1, userid2, userid3]
+     * @apiParam {String} chat_name             群名称
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -570,8 +570,8 @@ class DialogController extends AbstractController
     {
         $user = User::auth();
         //
-        $chatName = trim(Request::input('chat_name'));
         $userids = Request::input('userids');
+        $chatName = trim(Request::input('chat_name'));
         //
         if (!is_array($userids)) {
             return Base::retError('请选择群成员');
@@ -586,7 +586,7 @@ class DialogController extends AbstractController
             $array = [];
             foreach ($userids as $userid) {
                 $array[] = User::userid2nickname($userid);
-                if (count($array) >= 8 || strlen(implode(", ", $array)) > 200) {
+                if (count($array) >= 8 || strlen(implode(", ", $array)) > 100) {
                     $array[] = "...";
                     break;
                 }
@@ -595,9 +595,51 @@ class DialogController extends AbstractController
         }
         $dialog = WebSocketDialog::createGroup($chatName, $userids, 'user', $user->userid);
         if (empty($dialog)) {
-            return Base::retError('创建群聊失败');
+            return Base::retError('创建群组失败');
         }
         return Base::retSuccess('创建成功', $dialog);
+    }
+
+    /**
+     * @api {get} api/dialog/group/edit         16. 修改群组
+     *
+     * @apiDescription  需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName group__edit
+     *
+     * @apiParam {Number} dialog_id             会话ID
+     * @apiParam {String} chat_name             群名称
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function group__edit()
+    {
+        $user = User::auth();
+        //
+        $dialog_id = intval(Request::input('dialog_id'));
+        $chatName = trim(Request::input('chat_name'));
+        //
+        if (mb_strlen($chatName) < 2) {
+            return Base::retError('群名称至少2个字');
+        }
+        if (mb_strlen($chatName) > 100) {
+            return Base::retError('群名称最长限制100个字');
+        }
+        //
+        $dialog = WebSocketDialog::checkDialog($dialog_id);
+        if ($dialog->owner_id != $user->userid) {
+            return Base::retError('仅限群主操作');
+        }
+        //
+        $dialog->name = $chatName;
+        $dialog->save();
+        return Base::retSuccess('修改成功', [
+            'id' => $dialog->id,
+            'name' => $dialog->name,
+        ]);
     }
 
     /**
@@ -701,5 +743,34 @@ class DialogController extends AbstractController
         //
         $dialog->exitGroup($userids);
         return Base::retSuccess($type === 'remove' ? '移出成功' : '退出成功');
+    }
+
+    /**
+     * @api {get} api/dialog/group/disband         16. 解散群组
+     *
+     * @apiDescription  需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName group__disband
+     *
+     * @apiParam {Number} dialog_id             会话ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function group__disband()
+    {
+        $user = User::auth();
+        //
+        $dialog_id = intval(Request::input('dialog_id'));
+        //
+        $dialog = WebSocketDialog::checkDialog($dialog_id);
+        if ($dialog->owner_id != $user->userid) {
+            return Base::retError('仅限群主操作');
+        }
+        //
+        $dialog->disbandGroup();
+        return Base::retSuccess('解散成功');
     }
 }

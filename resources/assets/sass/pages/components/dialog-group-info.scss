@@ -24,29 +24,25 @@
             overflow: visible;
             white-space: normal;
         }
+
+        .quick-input {
+            display: flex;
+            flex-direction: column;
+        }
     }
 
     .group-info-search {
-        margin: 18px 24px 0;
+        margin: 24px 24px 0;
     }
 
     .group-info-button {
         display: flex;
         align-items: center;
-        margin: 18px 24px 0;
+        justify-content: center;
+        margin: 18px 24px;
         cursor: pointer;
-
-        > i {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 32px;
-            width: 32px;
-            font-size: 18px;
-            margin-right: 8px;
-            border-radius: 50%;
-            color: #777;
-            border: 1px solid #ddd;
+        > button {
+            margin: 0 8px;
         }
     }
 
@@ -87,14 +83,26 @@
                     }
                 }
 
+                .user-tag {
+                    margin-left: 4px;
+                    height: 22px;
+                    line-height: 22px;
+                    padding: 0 6px;
+                    border-radius: 3px;
+                    transform: scale(0.9);
+                    transform-origin: right center;
+                    color: #ffffff;
+                    background-color: $primary-color;
+                }
+
                 .user-exit {
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     cursor: pointer;
                     margin-left: 4px;
-                    width: 20px;
-                    height: 20px;
+                    width: 22px;
+                    height: 22px;
                     font-size: 12px;
                     color: #999999;
                     border: 1px solid #dddddd;
@@ -102,15 +110,6 @@
                     opacity: 0;
                     transform: translateX(50%);
                     transition: all 0.2s;
-                }
-
-                .ivu-tag {
-                    margin-left: 4px;
-                    height: 20px;
-                    line-height: 20px;
-                    padding: 0 5px;
-                    transform: scale(0.9);
-                    transform-origin: right center;
                 }
             }
         }

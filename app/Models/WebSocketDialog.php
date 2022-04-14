@@ -84,7 +84,10 @@ class WebSocketDialog extends AbstractModel
     public function joinGroup($userid)
     {
         if ($this->type !== 'group') {
-            return false;
+            throw new ApiException('此操作仅限群组');
+        }
+        if ($this->group_type !== 'user') {
+            throw new ApiException('此操作仅限个人群组');
         }
         AbstractModel::transaction(function () use ($userid) {
             foreach (is_array($userid) ? $userid : [$userid] as $value) {
@@ -106,6 +109,12 @@ class WebSocketDialog extends AbstractModel
      */
     public function exitGroup($userid)
     {
+        if ($this->type !== 'group') {
+            throw new ApiException('此操作仅限群组');
+        }
+        if ($this->group_type !== 'user') {
+            throw new ApiException('此操作仅限个人群组');
+        }
         $builder = WebSocketDialogUser::whereDialogId($this->id);
         if (is_array($userid)) {
             $builder->whereIn('userid', $userid);
@@ -123,6 +132,29 @@ class WebSocketDialog extends AbstractModel
             }
         });
         return true;
+    }
+
+    /**
+     * 解散群组
+     * @return bool
+     */
+    public function disbandGroup()
+    {
+        if ($this->type !== 'group') {
+            throw new ApiException('此操作仅限群组');
+        }
+        if ($this->group_type !== 'user') {
+            throw new ApiException('此操作仅限个人群组');
+        }
+        return AbstractModel::transaction(function() {
+            WebSocketDialogUser::whereDialogId($this->id)->chunkById(100, function($list) {
+                /** @var WebSocketDialogUser $item */
+                foreach ($list as $item) {
+                    $item->delete();
+                }
+            });
+            return $this->delete();
+        });
     }
 
     /**
@@ -148,7 +180,7 @@ class WebSocketDialog extends AbstractModel
             }
         }
         if (!WebSocketDialogUser::whereDialogId($dialog->id)->whereUserid($userid)->exists()) {
-            throw new ApiException('不在成员列表内');
+            throw new ApiException('不在成员列表内', ['dialog_id' => $dialog_id], -4003);
         }
         return $dialog;
     }
