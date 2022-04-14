@@ -1,0 +1,118 @@
+.dialog-group-info {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 10px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    .group-info-title {
+        color: #b7b1b1;
+        margin: 18px 24px 0;
+    }
+
+    .group-info-value {
+        margin: 4px 24px 0;
+        line-height: 34px;
+
+        .quick-text {
+            padding: 6px 0;
+            height: auto;
+            line-height: 20px;
+            box-sizing: content-box;
+            overflow: visible;
+            white-space: normal;
+        }
+    }
+
+    .group-info-search {
+        margin: 18px 24px 0;
+    }
+
+    .group-info-button {
+        display: flex;
+        align-items: center;
+        margin: 18px 24px 0;
+        cursor: pointer;
+
+        > i {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 32px;
+            width: 32px;
+            font-size: 18px;
+            margin-right: 8px;
+            border-radius: 50%;
+            color: #777;
+            border: 1px solid #ddd;
+        }
+    }
+
+    .group-info-user {
+        flex: 1;
+        overflow: auto;
+        margin-top: 16px;
+        padding: 0 24px;
+
+        > ul {
+            > li {
+                display: flex;
+                align-items: center;
+                list-style: none;
+                padding-bottom: 16px;
+
+                &:hover {
+                    .user-exit {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                }
+
+                &.no {
+                    justify-content: center;
+                    color: #999;
+                    .common-loading {
+                        width: 16px;
+                        height: 16px;
+                    }
+                }
+
+                .common-avatar {
+                    width: 0;
+                    flex: 1;
+                    .avatar-name {
+                        padding-left: 8px;
+                    }
+                }
+
+                .user-exit {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    margin-left: 4px;
+                    width: 20px;
+                    height: 20px;
+                    font-size: 12px;
+                    color: #999999;
+                    border: 1px solid #dddddd;
+                    border-radius: 50%;
+                    opacity: 0;
+                    transform: translateX(50%);
+                    transition: all 0.2s;
+                }
+
+                .ivu-tag {
+                    margin-left: 4px;
+                    height: 20px;
+                    line-height: 20px;
+                    padding: 0 5px;
+                    transform: scale(0.9);
+                    transform-origin: right center;
+                }
+            }
+        }
+    }
+}

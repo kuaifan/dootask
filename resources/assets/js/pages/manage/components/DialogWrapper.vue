@@ -34,6 +34,14 @@
                         </div>
                     </template>
                 </div>
+                <template v-if="dialogData.type === 'group'">
+                    <ETooltip v-if="dialogData.group_type === 'user'" placement="top" :content="$L('群设置')">
+                        <i class="taskfont dialog-create" @click="groupInfoShow = true">&#xe6e9;</i>
+                    </ETooltip>
+                </template>
+                <ETooltip v-else-if="dialogData.type === 'user'" placement="top" :content="$L('创建群组')">
+                    <i class="taskfont dialog-create" @click="openCreateGroup">&#xe646;</i>
+                </ETooltip>
             </div>
         </slot>
         <ScrollerY
@@ -118,6 +126,33 @@
                 </template>
             </div>
         </Modal>
+
+        <!--创建群聊-->
+        <Modal
+            v-model="createGroupShow"
+            :title="$L('创建群聊')"
+            :mask-closable="false">
+            <Form :model="createGroupData" label-width="auto" @submit.native.prevent>
+                <FormItem prop="userids" :label="$L('群成员')">
+                    <UserInput v-model="createGroupData.userids" :uncancelable="createGroupData.uncancelable" :multiple-max="100" :placeholder="$L('选择项目成员')"/>
+                </FormItem>
+                <FormItem prop="chat_name" :label="$L('群名称')">
+                    <Input v-model="createGroupData.chat_name" :placeholder="$L('输入群名称（选填）')"/>
+                </FormItem>
+            </Form>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="createGroupShow=false">{{$L('取消')}}</Button>
+                <Button type="primary" :loading="createGroupLoad > 0" @click="onCreateGroup">{{$L('创建')}}</Button>
+            </div>
+        </Modal>
+
+        <!--群设置-->
+        <DrawerOverlay
+            v-model="groupInfoShow"
+            placement="right"
+            :size="380">
+            <DialogGroupInfo v-if="groupInfoShow" :dialogId="dialogId"/>
+        </DrawerOverlay>
     </div>
 </template>
 
@@ -128,10 +163,13 @@ import {mapState} from "vuex";
 import DialogView from "./DialogView";
 import DialogUpload from "./DialogUpload";
 import {Store} from "le5le-store";
+import UserInput from "../../../components/UserInput";
+import DrawerOverlay from "../../../components/DrawerOverlay";
+import DialogGroupInfo from "./DialogGroupInfo";
 
 export default {
     name: "DialogWrapper",
-    components: {DialogUpload, DialogView, ScrollerY, DragInput},
+    components: {DialogGroupInfo, DrawerOverlay, UserInput, DialogUpload, DialogView, ScrollerY, DragInput},
     props: {
         dialogId: {
             type: Number,
@@ -159,6 +197,12 @@ export default {
             pasteShow: false,
             pasteFile: [],
             pasteItem: [],
+
+            createGroupShow: false,
+            createGroupData: {},
+            createGroupLoad: 0,
+
+            groupInfoShow: false,
         }
     },
 
@@ -499,6 +543,31 @@ export default {
                     }
                 })
             }
+        },
+
+        openCreateGroup() {
+            this.createGroupData = {
+                userids: this.dialogData.dialog_user ? [this.userId, this.dialogData.dialog_user.userid] : [this.userId],
+                uncancelable: [this.userId]
+            };
+            this.createGroupShow = true;
+        },
+
+        onCreateGroup() {
+            this.createGroupLoad++;
+            this.$store.dispatch("call", {
+                url: 'dialog/group/add',
+                data: this.createGroupData
+            }).then(({data, msg}) => {
+                $A.messageSuccess(msg);
+                this.createGroupShow = false;
+                this.createGroupData = {};
+                this.goForward({name: 'manage-messenger', params: {dialogId: data.id}});
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            }).finally(_ => {
+                this.createGroupLoad--;
+            });
         },
     }
 }

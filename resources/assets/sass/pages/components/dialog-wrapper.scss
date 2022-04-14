@@ -132,6 +132,7 @@
                     background-color: #8BCF70;
                     color: #FFFFFF;
                     text-align: center;
+                    white-space: nowrap;
                 }
             }
 
@@ -150,6 +151,13 @@
                     }
                 }
             }
+        }
+
+        .dialog-create {
+            cursor: pointer;
+            margin-left: 24px;
+            font-size: 20px;
+            color: $primary-text-color;
         }
     }
 

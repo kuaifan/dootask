@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $group_type 聊天室类型
  * @property string|null $name 对话名称
  * @property string|null $last_at 最后消息时间
+ * @property int|null $owner_id 群主用户ID
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
@@ -29,6 +30,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereLastAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereOwnerId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereUpdatedAt($value)
  * @method static \Illuminate\Database\Query\Builder|WebSocketDialog withTrashed()
@@ -71,6 +73,55 @@ class WebSocketDialog extends AbstractModel
     public function recoveryDialog()
     {
         $this->restore();
+        return true;
+    }
+
+    /**
+     * 加入聊天室
+     * @param int|array $userid     加入的会员ID或会员ID组
+     * @return bool
+     */
+    public function joinGroup($userid)
+    {
+        if ($this->type !== 'group') {
+            return false;
+        }
+        AbstractModel::transaction(function () use ($userid) {
+            foreach (is_array($userid) ? $userid : [$userid] as $value) {
+                if ($value > 0) {
+                    WebSocketDialogUser::updateInsert([
+                        'dialog_id' => $this->id,
+                        'userid' => $value,
+                    ]);
+                }
+            }
+        });
+        return true;
+    }
+
+    /**
+     * 退出聊天室
+     * @param int|array $userid     加入的会员ID或会员ID组
+     * @return bool
+     */
+    public function exitGroup($userid)
+    {
+        $builder = WebSocketDialogUser::whereDialogId($this->id);
+        if (is_array($userid)) {
+            $builder->whereIn('userid', $userid);
+        } else {
+            $builder->whereUserid($userid);
+        }
+        $builder->chunkById(100, function($list) {
+            /** @var WebSocketDialogUser $item */
+            foreach ($list as $item) {
+                if ($item->userid == $this->owner_id) {
+                    // 群主不可退出
+                    continue;
+                }
+                $item->delete();
+            }
+        });
         return true;
     }
 
@@ -148,17 +199,20 @@ class WebSocketDialog extends AbstractModel
     /**
      * 创建聊天室
      * @param string $name          聊天室名称
-     * @param int|array $userid     加入的会员ID或会员ID组
+     * @param int|array $userid     加入的会员ID(组)
      * @param string $group_type    聊天室类型
+     * @param int $owner_id         群主会员ID
      * @return self|null
      */
-    public static function createGroup($name, $userid, $group_type = '')
+    public static function createGroup($name, $userid, $group_type = '', $owner_id = 0)
     {
-        return AbstractModel::transaction(function () use ($userid, $group_type, $name) {
+        return AbstractModel::transaction(function () use ($owner_id, $userid, $group_type, $name) {
             $dialog = self::createInstance([
                 'type' => 'group',
                 'name' => $name ?: '',
                 'group_type' => $group_type,
+                'owner_id' => $owner_id,
+                'last_at' => $group_type === 'user' ? Carbon::now() : null,
             ]);
             $dialog->save();
             foreach (is_array($userid) ? $userid : [$userid] as $value) {
@@ -171,47 +225,6 @@ class WebSocketDialog extends AbstractModel
             }
             return $dialog;
         });
-    }
-
-    /**
-     * 加入聊天室
-     * @param int $dialog_id        会话ID（即 聊天室ID）
-     * @param int|array $userid     加入的会员ID或会员ID组
-     * @return bool
-     */
-    public static function joinGroup($dialog_id, $userid)
-    {
-        $dialog = self::whereId($dialog_id)->whereType('group')->first();
-        if (empty($dialog)) {
-            return false;
-        }
-        AbstractModel::transaction(function () use ($dialog, $userid) {
-            foreach (is_array($userid) ? $userid : [$userid] as $value) {
-                if ($value > 0) {
-                    WebSocketDialogUser::createInstance([
-                        'dialog_id' => $dialog->id,
-                        'userid' => $value,
-                    ])->save();
-                }
-            }
-        });
-        return true;
-    }
-
-    /**
-     * 退出聊天室
-     * @param int $dialog_id        会话ID（即 聊天室ID）
-     * @param int|array $userid     加入的会员ID或会员ID组
-     * @return bool
-     */
-    public static function exitGroup($dialog_id, $userid)
-    {
-        if (is_array($userid)) {
-            WebSocketDialogUser::whereDialogId($dialog_id)->whereIn('userid', $userid)->delete();
-        } else {
-            WebSocketDialogUser::whereDialogId($dialog_id)->whereUserid($userid)->delete();
-        }
-        return true;
     }
 
     /**

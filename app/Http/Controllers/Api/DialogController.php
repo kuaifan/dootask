@@ -550,4 +550,156 @@ class DialogController extends AbstractController
             'mark_unread' => $dialogUser->mark_unread,
         ]);
     }
+
+    /**
+     * @api {get} api/dialog/group/add         15. 新增群聊
+     *
+     * @apiDescription  需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName group__add
+     *
+     * @apiParam {String} chat_name             群名
+     * @apiParam {Array} userids                群成员，格式: [userid1, userid2, userid3]
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function group__add()
+    {
+        $user = User::auth();
+        //
+        $chatName = trim(Request::input('chat_name'));
+        $userids = Request::input('userids');
+        //
+        if (!is_array($userids)) {
+            return Base::retError('请选择群成员');
+        }
+        $userids = array_merge([$user->userid], $userids);
+        $userids = array_values(array_filter(array_unique($userids)));
+        if (count($userids) < 2) {
+            return Base::retError('群成员至少2人');
+        }
+        //
+        if (empty($chatName)) {
+            $array = [];
+            foreach ($userids as $userid) {
+                $array[] = User::userid2nickname($userid);
+                if (count($array) >= 8 || strlen(implode(", ", $array)) > 200) {
+                    $array[] = "...";
+                    break;
+                }
+            }
+            $chatName = implode(", ", $array);
+        }
+        $dialog = WebSocketDialog::createGroup($chatName, $userids, 'user', $user->userid);
+        if (empty($dialog)) {
+            return Base::retError('创建群聊失败');
+        }
+        return Base::retSuccess('创建成功', $dialog);
+    }
+
+    /**
+     * @api {get} api/dialog/group/user         16. 获取群成员
+     *
+     * @apiDescription  需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName group__user
+     *
+     * @apiParam {Number} dialog_id            会话ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function group__user()
+    {
+        User::auth();
+        //
+        $dialog_id = intval(Request::input('dialog_id'));
+        //
+        $dialog = WebSocketDialog::checkDialog($dialog_id);
+        //
+        return Base::retSuccess('success', $dialog->dialogUser);
+    }
+
+    /**
+     * @api {get} api/dialog/group/adduser         16. 添加群成员
+     *
+     * @apiDescription  需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName group__adduser
+     *
+     * @apiParam {Number} dialog_id             会话ID
+     * @apiParam {Array} userids                新增的群成员，格式: [userid1, userid2, userid3]
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function group__adduser()
+    {
+        $user = User::auth();
+        //
+        $dialog_id = intval(Request::input('dialog_id'));
+        $userids = Request::input('userids');
+        //
+        if (!is_array($userids)) {
+            return Base::retError('请选择群成员');
+        }
+        //
+        $dialog = WebSocketDialog::checkDialog($dialog_id);
+        if ($dialog->owner_id != $user->userid) {
+            return Base::retError('仅限群主操作');
+        }
+        //
+        $dialog->joinGroup($userids);
+        return Base::retSuccess('添加成功');
+    }
+
+    /**
+     * @api {get} api/dialog/group/deluser         16. 移出（退出）群成员
+     *
+     * @apiDescription  需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName group__adduser
+     *
+     * @apiParam {Number} dialog_id             会话ID
+     * @apiParam {Array} userids                移出的群成员，格式: [userid1, userid2, userid3]
+     * - 留空表示自己退出
+     * - 有值表示移出，仅限群主操作
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function group__deluser()
+    {
+        $user = User::auth();
+        //
+        $dialog_id = intval(Request::input('dialog_id'));
+        $userids = Request::input('userids');
+        //
+        $type = 'remove';
+        if (empty($userids)) {
+            $type = 'exit';
+            $userids = [$user->userid];
+        }
+        //
+        if (!is_array($userids)) {
+            return Base::retError('请选择群成员');
+        }
+        //
+        $dialog = WebSocketDialog::checkDialog($dialog_id);
+        if ($type === 'remove' && $dialog->owner_id != $user->userid) {
+            return Base::retError('仅限群主操作');
+        }
+        //
+        $dialog->exitGroup($userids);
+        return Base::retSuccess($type === 'remove' ? '移出成功' : '退出成功');
+    }
 }

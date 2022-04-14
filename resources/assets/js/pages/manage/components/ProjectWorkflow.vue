@@ -159,14 +159,14 @@
                         <Radio label="replace">{{$L('流转模式')}}</Radio>
                         <Radio label="merge">{{$L('剔除模式')}}</Radio>
                     </RadioGroup>
-                    <div v-if="userData.usertype=='replace'" class="form-tip">{{$L('流转到此状态时改变任务负责人为状态负责人，原本的任务负责人移至协助人员。')}}</div>
-                    <div v-else-if="userData.usertype=='merge'" class="form-tip">{{$L('流转到此状态时改变任务负责人为状态负责人（并保留操作状态的人员），原本的任务负责人移至协助人员。')}}</div>
-                    <div v-else class="form-tip">{{$L('流转到此状态时添加状态负责人至任务负责人。')}}</div>
+                    <div v-if="userData.usertype=='replace'" class="form-tip">{{$L(`流转到【${userData.name}】时改变任务负责人为状态负责人，原本的任务负责人移至协助人员。`)}}</div>
+                    <div v-else-if="userData.usertype=='merge'" class="form-tip">{{$L(`流转到【${userData.name}】时改变任务负责人为状态负责人（并保留操作状态的人员），原本的任务负责人移至协助人员。`)}}</div>
+                    <div v-else class="form-tip">{{$L(`流转到【${userData.name}】时添加状态负责人至任务负责人。`)}}</div>
                 </FormItem>
                 <FormItem prop="userlimit" :label="$L('限制负责人')">
                     <iSwitch v-model="userData.userlimit" :true-value="1" :false-value="0"/>
-                    <div v-if="userData.userlimit===1" class="form-tip">{{$L('在此状态的任务状态负责人、项目管理员可以修改状态。')}}</div>
-                    <div v-else class="form-tip">{{$L('在此状态的任务任务负责人、项目管理员可以修改状态。')}}</div>
+                    <div v-if="userData.userlimit===1" class="form-tip">{{$L(`流转到【${userData.name}】时，仅"状态负责人"和"项目管理员"可以修改状态。`)}}</div>
+                    <div v-else class="form-tip">{{$L(`流转到【${userData.name}】时，"任务负责人"和"项目管理员"可以修改状态。`)}}</div>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">

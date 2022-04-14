@@ -786,7 +786,7 @@ export default {
             let path = 'project/' + item.id;
             let openMenu = this.openMenu[item.id];
             return {
-                "active": $A.leftExists(this.routePath, '/manage/' + path),
+                "active": this.routePath === '/manage/' + path,
                 "open-menu": openMenu === true,
                 "operate": item.id == this.topOperateItem.id && this.topOperateVisible
             };

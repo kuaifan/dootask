@@ -75,6 +75,11 @@
                 type: Number,
                 default: 600
             },
+            userResult: {
+                type: Function,
+                default: () => {
+                }
+            }
         },
         data() {
             return {
@@ -205,6 +210,7 @@
                     //
                 }
                 this.user = info;
+                this.userResult(info);
             },
 
             onError() {

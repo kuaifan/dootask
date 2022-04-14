@@ -19,7 +19,7 @@
         </div>
         <template v-else>
             <div class="quick-text"><slot></slot></div>
-            <Icon class="quick-icon" type="ios-create-outline" @click.stop="onEdit"/>
+            <Icon v-if="!disabled" class="quick-icon" type="ios-create-outline" @click.stop="onEdit"/>
         </template>
     </div>
 </template>
@@ -48,6 +48,10 @@ export default {
         clickOutSide: {
             type: Boolean,
             default: true
+        },
+        disabled: {
+            type: Boolean,
+            default: false
         },
     },
 
