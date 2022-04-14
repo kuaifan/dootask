@@ -562,6 +562,7 @@ export default {
                 $A.messageSuccess(msg);
                 this.createGroupShow = false;
                 this.createGroupData = {};
+                this.$store.dispatch("saveDialog", data);
                 this.goForward({name: 'manage-messenger', params: {dialogId: data.id}});
             }).catch(({msg}) => {
                 $A.modalError(msg);

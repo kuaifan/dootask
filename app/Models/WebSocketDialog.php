@@ -52,6 +52,45 @@ class WebSocketDialog extends AbstractModel
     }
 
     /**
+     * 格式化对话
+     * @param int $userid   会员ID
+     * @return $this
+     */
+    public function formatData($userid)
+    {
+        // 最后消息
+        $last_msg = WebSocketDialogMsg::whereDialogId($this->id)->orderByDesc('id')->first();
+        $this->last_msg = $last_msg;
+        // 未读信息
+        $this->unread = WebSocketDialogMsgRead::whereDialogId($this->id)->whereUserid($userid)->whereReadAt(null)->count();
+        $this->mark_unread = $this->mark_unread ?? WebSocketDialogUser::whereDialogId($this->id)->whereUserid($userid)->value('mark_unread');
+        // 对话人数
+        $builder = WebSocketDialogUser::whereDialogId($this->id);
+        $this->people = $builder->count();
+        // 对方信息
+        $this->dialog_user = null;
+        $this->group_info = null;
+        $this->top_at = $this->top_at ?? WebSocketDialogUser::whereDialogId($this->id)->whereUserid($userid)->value('top_at');
+        switch ($this->type) {
+            case "user":
+                $dialog_user = $builder->where('userid', '!=', $userid)->first();
+                $this->name = User::userid2nickname($dialog_user->userid);
+                $this->dialog_user = $dialog_user;
+                break;
+            case "group":
+                if ($this->group_type === 'project') {
+                    $this->group_info = Project::withTrashed()->select(['id', 'name', 'archived_at', 'deleted_at'])->whereDialogId($this->id)->first()?->cancelAppend()->cancelHidden();
+                    $this->name = $this->group_info ? $this->group_info->name : '';
+                } elseif ($this->group_type === 'task') {
+                    $this->group_info = ProjectTask::withTrashed()->select(['id', 'name', 'complete_at', 'archived_at', 'deleted_at'])->whereDialogId($this->id)->first()?->cancelAppend()->cancelHidden();
+                    $this->name = $this->group_info ? $this->group_info->name : '';
+                }
+                break;
+        }
+        return $this;
+    }
+
+    /**
      * 加入聊天室
      * @param int|array $userid     加入的会员ID或会员ID组
      * @return bool
@@ -125,6 +164,20 @@ class WebSocketDialog extends AbstractModel
     }
 
     /**
+     * 检查群组类型
+     * @return void
+     */
+    public function checkGroup($groupType = 'user')
+    {
+        if ($this->type !== 'group') {
+            throw new ApiException('仅限群组操作');
+        }
+        if ($this->group_type !== $groupType) {
+            throw new ApiException('操作的群组类型错误');
+        }
+    }
+
+    /**
      * 推送消息
      * @param $action
      * @param array $data           发送内容，默认为[id=>项目ID]
@@ -156,9 +209,10 @@ class WebSocketDialog extends AbstractModel
     /**
      * 获取对话（同时检验对话身份）
      * @param $dialog_id
+     * @param bool $checkOwner 是否校验群组身份
      * @return self
      */
-    public static function checkDialog($dialog_id)
+    public static function checkDialog($dialog_id, $checkOwner = false)
     {
         $dialog = WebSocketDialog::find($dialog_id);
         if (empty($dialog)) {
@@ -166,6 +220,10 @@ class WebSocketDialog extends AbstractModel
         }
         //
         $userid = User::userid();
+        if ($checkOwner === true && $dialog->owner_id != $userid) {
+            throw new ApiException('仅限群主操作');
+        }
+        //
         if ($dialog->type === 'group' && $dialog->group_type === 'task') {
             // 任务群对话校验是否在项目内
             $project_id = intval(ProjectTask::whereDialogId($dialog->id)->value('project_id'));
@@ -179,45 +237,6 @@ class WebSocketDialog extends AbstractModel
             throw new ApiException('不在成员列表内', ['dialog_id' => $dialog_id], -4003);
         }
         return $dialog;
-    }
-
-    /**
-     * 格式化对话
-     * @param int $userid   会员ID
-     * @return $this
-     */
-    public function formatData($userid)
-    {
-        // 最后消息
-        $last_msg = WebSocketDialogMsg::whereDialogId($this->id)->orderByDesc('id')->first();
-        $this->last_msg = $last_msg;
-        // 未读信息
-        $this->unread = WebSocketDialogMsgRead::whereDialogId($this->id)->whereUserid($userid)->whereReadAt(null)->count();
-        $this->mark_unread = $this->mark_unread ?? WebSocketDialogUser::whereDialogId($this->id)->whereUserid($userid)->value('mark_unread');
-        // 对话人数
-        $builder = WebSocketDialogUser::whereDialogId($this->id);
-        $this->people = $builder->count();
-        // 对方信息
-        $this->dialog_user = null;
-        $this->group_info = null;
-        $this->top_at = $this->top_at ?? WebSocketDialogUser::whereDialogId($this->id)->whereUserid($userid)->value('top_at');
-        switch ($this->type) {
-            case "user":
-                $dialog_user = $builder->where('userid', '!=', $userid)->first();
-                $this->name = User::userid2nickname($dialog_user->userid);
-                $this->dialog_user = $dialog_user;
-                break;
-            case "group":
-                if ($this->group_type === 'project') {
-                    $this->group_info = Project::withTrashed()->select(['id', 'name', 'archived_at', 'deleted_at'])->whereDialogId($this->id)->first()?->cancelAppend()->cancelHidden();
-                    $this->name = $this->group_info ? $this->group_info->name : '';
-                } elseif ($this->group_type === 'task') {
-                    $this->group_info = ProjectTask::withTrashed()->select(['id', 'name', 'complete_at', 'archived_at', 'deleted_at'])->whereDialogId($this->id)->first()?->cancelAppend()->cancelHidden();
-                    $this->name = $this->group_info ? $this->group_info->name : '';
-                }
-                break;
-        }
-        return $this;
     }
 
     /**
