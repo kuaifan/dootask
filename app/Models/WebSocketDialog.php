@@ -50,6 +50,52 @@ class WebSocketDialog extends AbstractModel
     }
 
     /**
+     * 加入聊天室
+     * @param int|array $userid     加入的会员ID或会员ID组
+     * @return bool
+     */
+    public function joinGroup($userid)
+    {
+        AbstractModel::transaction(function () use ($userid) {
+            foreach (is_array($userid) ? $userid : [$userid] as $value) {
+                if ($value > 0) {
+                    WebSocketDialogUser::updateInsert([
+                        'dialog_id' => $this->id,
+                        'userid' => $value,
+                    ]);
+                }
+            }
+        });
+        return true;
+    }
+
+    /**
+     * 退出聊天室
+     * @param int|array $userid     加入的会员ID或会员ID组
+     * @return bool
+     */
+    public function exitGroup($userid)
+    {
+        $builder = WebSocketDialogUser::whereDialogId($this->id);
+        if (is_array($userid)) {
+            $builder->whereIn('userid', $userid);
+        } else {
+            $builder->whereUserid($userid);
+        }
+        $builder->chunkById(100, function($list) {
+            /** @var WebSocketDialogUser $item */
+            foreach ($list as $item) {
+                if ($item->userid == $this->owner_id) {
+                    // 群主不可退出
+                    continue;
+                }
+                $item->delete();
+            }
+        });
+        return true;
+    }
+
+    /**
      * 删除会话
      * @return bool
      */
@@ -74,87 +120,6 @@ class WebSocketDialog extends AbstractModel
     {
         $this->restore();
         return true;
-    }
-
-    /**
-     * 加入聊天室
-     * @param int|array $userid     加入的会员ID或会员ID组
-     * @return bool
-     */
-    public function joinGroup($userid)
-    {
-        if ($this->type !== 'group') {
-            throw new ApiException('此操作仅限群组');
-        }
-        if ($this->group_type !== 'user') {
-            throw new ApiException('此操作仅限个人群组');
-        }
-        AbstractModel::transaction(function () use ($userid) {
-            foreach (is_array($userid) ? $userid : [$userid] as $value) {
-                if ($value > 0) {
-                    WebSocketDialogUser::updateInsert([
-                        'dialog_id' => $this->id,
-                        'userid' => $value,
-                    ]);
-                }
-            }
-        });
-        return true;
-    }
-
-    /**
-     * 退出聊天室
-     * @param int|array $userid     加入的会员ID或会员ID组
-     * @return bool
-     */
-    public function exitGroup($userid)
-    {
-        if ($this->type !== 'group') {
-            throw new ApiException('此操作仅限群组');
-        }
-        if ($this->group_type !== 'user') {
-            throw new ApiException('此操作仅限个人群组');
-        }
-        $builder = WebSocketDialogUser::whereDialogId($this->id);
-        if (is_array($userid)) {
-            $builder->whereIn('userid', $userid);
-        } else {
-            $builder->whereUserid($userid);
-        }
-        $builder->chunkById(100, function($list) {
-            /** @var WebSocketDialogUser $item */
-            foreach ($list as $item) {
-                if ($item->userid == $this->owner_id) {
-                    // 群主不可退出
-                    continue;
-                }
-                $item->delete();
-            }
-        });
-        return true;
-    }
-
-    /**
-     * 解散群组
-     * @return bool
-     */
-    public function disbandGroup()
-    {
-        if ($this->type !== 'group') {
-            throw new ApiException('此操作仅限群组');
-        }
-        if ($this->group_type !== 'user') {
-            throw new ApiException('此操作仅限个人群组');
-        }
-        return AbstractModel::transaction(function() {
-            WebSocketDialogUser::whereDialogId($this->id)->chunkById(100, function($list) {
-                /** @var WebSocketDialogUser $item */
-                foreach ($list as $item) {
-                    $item->delete();
-                }
-            });
-            return $this->delete();
-        });
     }
 
     /**

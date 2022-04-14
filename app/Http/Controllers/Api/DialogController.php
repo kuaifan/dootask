@@ -11,6 +11,7 @@ use App\Models\WebSocketDialogMsg;
 use App\Models\WebSocketDialogMsgRead;
 use App\Models\WebSocketDialogUser;
 use App\Module\Base;
+use App\Tasks\PushTask;
 use Carbon\Carbon;
 use Request;
 use Response;
@@ -597,6 +598,14 @@ class DialogController extends AbstractController
         if (empty($dialog)) {
             return Base::retError('创建群组失败');
         }
+        PushTask::push([
+            'userid' => $userids,
+            'msg' => [
+                'type' => 'dialog',
+                'mode' => 'groupAdd',
+                'data' => WebSocketDialog::formatData($dialog, $user->userid),
+            ]
+        ]);
         return Base::retSuccess('创建成功', $dialog);
     }
 
@@ -697,8 +706,22 @@ class DialogController extends AbstractController
         if ($dialog->owner_id != $user->userid) {
             return Base::retError('仅限群主操作');
         }
+        if ($dialog->type !== 'group') {
+            return Base::retError('此操作仅限群组');
+        }
+        if ($dialog->group_type !== 'user') {
+            return Base::retError('此操作仅限个人群组');
+        }
         //
         $dialog->joinGroup($userids);
+        PushTask::push([
+            'userid' => $userids,
+            'msg' => [
+                'type' => 'dialog',
+                'mode' => 'groupJoin',
+                'data' => WebSocketDialog::formatData($dialog, $user->userid),
+            ]
+        ]);
         return Base::retSuccess('添加成功');
     }
 
@@ -740,8 +763,24 @@ class DialogController extends AbstractController
         if ($type === 'remove' && $dialog->owner_id != $user->userid) {
             return Base::retError('仅限群主操作');
         }
+        if ($dialog->type !== 'group') {
+            return Base::retError('此操作仅限群组');
+        }
+        if ($dialog->group_type !== 'user') {
+            return Base::retError('此操作仅限个人群组');
+        }
         //
         $dialog->exitGroup($userids);
+        PushTask::push([
+            'userid' => $userids,
+            'msg' => [
+                'type' => 'dialog',
+                'mode' => 'groupExit',
+                'data' => [
+                    'id' => $dialog->id,
+                ],
+            ]
+        ]);
         return Base::retSuccess($type === 'remove' ? '移出成功' : '退出成功');
     }
 
@@ -769,8 +808,24 @@ class DialogController extends AbstractController
         if ($dialog->owner_id != $user->userid) {
             return Base::retError('仅限群主操作');
         }
+        if ($dialog->type !== 'group') {
+            return Base::retError('此操作仅限群组');
+        }
+        if ($dialog->group_type !== 'user') {
+            return Base::retError('此操作仅限个人群组');
+        }
         //
-        $dialog->disbandGroup();
+        $dialog->deleteDialog();
+        PushTask::push([
+            'userid' => $dialog->dialogUser->pluck('userid')->toArray(),
+            'msg' => [
+                'type' => 'dialog',
+                'mode' => 'groupDelete',
+                'data' => [
+                    'id' => $dialog->id,
+                ],
+            ]
+        ]);
         return Base::retSuccess('解散成功');
     }
 }

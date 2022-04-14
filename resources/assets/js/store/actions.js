@@ -2284,6 +2284,16 @@ export default {
                                             dispatch("saveDialogMsg", data)
                                         }
                                         break;
+                                    case 'groupAdd':
+                                    case 'groupJoin':
+                                        // 群组添加、加入
+                                        dispatch("saveDialog", data)
+                                        break;
+                                    case 'groupExit':
+                                    case 'groupDelete':
+                                        // 群组退出、解散
+                                        dispatch("forgetDialog", data.id)
+                                        break;
                                 }
                             })(msgDetail);
                             break;
