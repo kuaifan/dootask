@@ -1,10 +1,12 @@
 <template>
-    <div class="chat-input-wrapper">
+    <div class="chat-input-wrapper" :class="modeClass">
         <div ref="editor"></div>
     </div>
 </template>
 
 <script>
+import {mapGetters, mapState} from "vuex";
+
 import Quill from 'quill';
 import "quill-mention";
 
@@ -53,7 +55,10 @@ export default {
             _content: '',
             _options: {},
 
+            modeClass: '',
+
             userList: null,
+            taskList: null,
         };
     },
     mounted() {
@@ -62,6 +67,11 @@ export default {
     beforeDestroy() {
         this.quill = null
         delete this.quill
+    },
+    computed: {
+        ...mapState(['cacheProjects', 'cacheTasks', 'cacheUserBasic', 'userId']),
+
+        ...mapGetters(['dashboardTask', 'transforTasks']),
     },
     watch: {
         // Watch content change
@@ -83,12 +93,14 @@ export default {
             }
         },
 
-        // Reset userList
+        // Reset lists
         dialogId() {
             this.userList = null;
+            this.taskList = null;
         },
         taskId() {
             this.userList = null;
+            this.taskList = null;
         },
     },
     methods: {
@@ -126,6 +138,7 @@ export default {
                         }
                     },
                     mention: {
+                        allowedChars: /^\S*$/,
                         mentionDenotationChars: ["@", "#"],
                         defaultMenuOrientation: this.defaultMenuOrientation,
                         renderItem: (data) => {
@@ -138,24 +151,25 @@ export default {
                             if (data.avatar) {
                                 return `<div class="mention-item-img${data.online ? ' online' : ''}"><img src="${data.avatar}"/><em></em></div><div class="mention-item-name">${data.value}</div>`;
                             }
-                            return `<div class="mention-item-name">${data.value}</div>`;
+                            return `<div class="mention-item-name" title="${data.value}">${data.value}</div>`;
                         },
                         renderLoading: () => {
                             return "Loading...";
                         },
                         source: (searchTerm, renderList, mentionChar) => {
-                            this.getSource(mentionChar).then(values => {
-                                if (searchTerm.length === 0) {
-                                    renderList(values, searchTerm);
-                                } else {
-                                    const matches = [];
-                                    for (let i = 0; i < values.length; i++) {
-                                        if (~values[i].value.toLowerCase().indexOf(searchTerm.toLowerCase())) {
-                                            matches.push(values[i]);
-                                        }
+                            this.getSource(mentionChar).then(array => {
+                                let values = [];
+                                array.some(item => {
+                                    let list = item.list;
+                                    if (searchTerm && !item.ignoreSearch) {
+                                        list = list.filter(({value}) => $A.strExists(value, searchTerm));
                                     }
-                                    renderList(matches, searchTerm);
-                                }
+                                    if (list.length > 0 || item.ignoreSearch) {
+                                        item.label && values.push(...item.label)
+                                        list.length > 0 && values.push(...list)
+                                    }
+                                })
+                                renderList(values, searchTerm);
                             })
                         }
                     }
@@ -219,10 +233,32 @@ export default {
             return new Promise(resolve => {
                 switch (mentionChar) {
                     case "@": // @成员
+                        this.modeClass = "user-mention";
                         if (this.userList !== null) {
                             resolve(this.userList)
                             return;
                         }
+                        const atCallback = (list) => {
+                            if (list.length > 2) {
+                                this.userList = [{
+                                    ignoreSearch: true,
+                                    label: null,
+                                    list: [{id: 0, value: this.$L('所有人')}]
+                                }, {
+                                    ignoreSearch: false,
+                                    label: [{id: 0, value: this.$L('会话内成员'), disabled: true}],
+                                    list,
+                                }]
+                            } else {
+                                this.userList = [{
+                                    ignoreSearch: false,
+                                    label: null,
+                                    list
+                                }]
+                            }
+                            resolve(this.userList)
+                        }
+                        let array = [];
                         if (this.dialogId > 0) {
                             // 根据会话ID获取成员
                             this.$store.dispatch("call", {
@@ -233,11 +269,7 @@ export default {
                                 }
                             }).then(({data}) => {
                                 if (data.length > 0) {
-                                    this.userList = [
-                                        { id: 0, value: this.$L('所有人') },
-                                        { id: 0, value: this.$L('会话内成员'), disabled: true },
-                                    ];
-                                    this.userList.push(...data.map(item => {
+                                    array.push(...data.map(item => {
                                         return {
                                             id: item.userid,
                                             value: item.nickname,
@@ -245,29 +277,123 @@ export default {
                                             online: item.online,
                                         }
                                     }))
-                                } else {
-                                    this.userList = [];
                                 }
-                                resolve(this.userList)
+                                atCallback(array)
                             }).catch(_ => {
-                                resolve([]);
+                                atCallback(array)
                             });
-                            return;
                         } else if (this.taskId > 0) {
-                            // 根据任务ID获取成员 todo
-                            return;
+                            // 根据任务ID获取成员
+                            const task = this.cacheTasks.find(({id}) => id == this.taskId)
+                            if (task && $A.isArray(task.task_user)) {
+                                task.task_user.some(tmp => {
+                                    let item = this.cacheUserBasic.find(({userid}) => userid == tmp.userid);
+                                    if (item) {
+                                        array.push({
+                                            id: item.userid,
+                                            value: item.nickname,
+                                            avatar: item.userimg,
+                                            online: item.online,
+                                        })
+                                    }
+                                })
+                            }
+                            atCallback(array)
                         }
                         break;
 
-                    case "#": // #任务 todo
-                        resolve([
-                            { id: 3, value: "Fredrik Sundqvist 2" },
-                            { id: 4, value: "Patrik Sjölin 2" }
-                        ])
+                    case "#": // #任务
+                        this.modeClass = "task-mention";
+                        if (this.taskList !== null) {
+                            resolve(this.taskList)
+                            return;
+                        }
+                        const taskCallback = (list) => {
+                            this.taskList = [];
+                            // 项目任务
+                            if (list.length > 0) {
+                                list = list.map(item => {
+                                    return {
+                                        id: item.id,
+                                        value: item.name
+                                    }
+                                })
+                                this.taskList.push({
+                                    ignoreSearch: false,
+                                    label: [{id: 0, value: this.$L('项目未完成任务'), disabled: true}],
+                                    list,
+                                })
+                            }
+                            // 待完成任务
+                            let data = this.transforTasks(this.dashboardTask['all']);
+                            if (data.length > 0) {
+                                data = data.sort((a, b) => {
+                                    return $A.Date(a.end_at || "2099-12-31 23:59:59") - $A.Date(b.end_at || "2099-12-31 23:59:59");
+                                })
+                                this.taskList.push({
+                                    ignoreSearch: false,
+                                    label: [{id: 0, value: this.$L('我的待完成任务'), disabled: true}],
+                                    list: data.map(item => {
+                                        return {
+                                            id: item.id,
+                                            value: item.name
+                                        }
+                                    }),
+                                })
+                            }
+                            resolve(this.taskList)
+                        }
+                        //
+                        const projectId = this.getProjectId();
+                        if (projectId > 0) {
+                            this.$store.dispatch("getTaskForProject", projectId).then(_ => {
+                                let tasks = this.cacheTasks.filter(task => {
+                                    if (task.archived_at) {
+                                        return false;
+                                    }
+                                    return task.project_id == projectId
+                                        && task.parent_id === 0
+                                        && !task.archived_at
+                                        && !task.complete_at
+                                })
+                                if (tasks.length > 0) {
+                                    taskCallback(tasks);
+                                } else {
+                                    taskCallback([])
+                                }
+                            }).catch(_ => {
+                                taskCallback([])
+                            })
+                            return;
+                        }
+                        taskCallback([])
+                        break;
+
+                    default:
+                        resolve([])
                         break;
                 }
-                resolve([])
             })
+        },
+
+        getProjectId() {
+            let object = null;
+            if (this.dialogId > 0) {
+                object = this.cacheProjects.find(({dialog_id}) => dialog_id == this.dialogId);
+                if (object) {
+                    return object.id;
+                }
+                object = this.cacheTasks.find(({dialog_id}) => dialog_id == this.dialogId);
+                if (object) {
+                    return object.project_id;
+                }
+            } else if (this.taskId > 0) {
+                object = this.cacheTasks.find(({id}) => id == this.taskId);
+                if (object) {
+                    return object.project_id;
+                }
+            }
+            return 0;
         }
     }
 }

@@ -5,6 +5,24 @@
     display: inline-block;
     width: 100%;
 
+    &.task-mention {
+        .ql-mention-list-container {
+            .ql-mention-list {
+                > li {
+                    &:first-child {
+                        margin-top: 0;
+                    }
+                }
+            }
+            .ql-mention-list-item {
+                line-height: 36px;
+                .mention-item-disabled {
+                    padding: 8px 4px 0;
+                }
+            }
+        }
+    }
+
     .ql-editor {
         padding: 4px 7px;
         font-size: 14px;
@@ -27,14 +45,30 @@
 
     .ql-mention-list-container {
         width: auto;
-        min-width: 200px;
-        max-width: 300px;
+        min-width: 220px;
+        max-width: 350px;
         max-height: 500px;
 
+        .ql-mention-list {
+            > li {
+                &:first-child {
+                    margin-top: 8px;
+                }
+                &:last-child {
+                    margin-bottom: 8px;
+                }
+            }
+        }
+
         .ql-mention-list-item {
-            padding: 0 12px;
+            padding: 0 8px;
             display: flex;
             align-items: center;
+            margin: 0 8px;
+
+            &.selected {
+                border-radius: 4px;
+            }
 
             .mention-item-at {
                 width: 28px;
@@ -98,7 +132,7 @@
             }
 
             .mention-item-disabled {
-                color: #8f8f8e;
+                color: #aaa;
                 font-size: 12px;
                 padding: 0 4px;
                 line-height: 40px;
