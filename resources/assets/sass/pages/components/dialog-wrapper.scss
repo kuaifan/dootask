@@ -221,12 +221,14 @@
                                 background-color: #F4F5F7;
                                 padding: 8px;
                                 min-width: 32px;
-                                border-radius: 6px 6px 6px 0;
+                                border-radius: 0 6px 6px 6px;
                                 display: flex;
                                 align-items: flex-start;
 
                                 .content-text {
+                                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
                                     color: #333333;
+
                                     > pre {
                                         display: block;
                                         margin: 0;
@@ -235,6 +237,22 @@
                                         white-space: pre-wrap;
                                         word-wrap: break-word;
                                         word-break: break-word;
+                                        img {
+                                            max-width: 220px;
+                                            max-height: 220px;
+                                        }
+                                        .mention {
+                                            color: $flow-status-end-color;
+                                            background-color: transparent;
+                                            user-select: auto;
+                                            margin-right: 0;
+                                            > span {
+                                                margin: 0;
+                                            }
+                                            &.task {
+                                                cursor: pointer;
+                                            }
+                                        }
                                     }
                                 }
 
@@ -461,10 +479,16 @@
 
                                 .dialog-content {
                                     background-color: $primary-color;
-                                    border-radius: 6px 6px 0 6px;
+                                    border-radius: 6px 0 6px 6px;
 
                                     .content-text {
                                         color: #ffffff;
+
+                                        > pre {
+                                            .mention {
+                                                color: #333333;
+                                            }
+                                        }
                                     }
 
                                     .content-file {

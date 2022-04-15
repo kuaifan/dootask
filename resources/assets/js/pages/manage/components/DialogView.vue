@@ -10,7 +10,7 @@
             <div class="dialog-content">
                 <!--文本-->
                 <div v-if="msgData.type === 'text'" class="content-text">
-                    <pre class="no-dark-mode">{{textMsg(msgData.msg.text)}}</pre>
+                    <pre class="no-dark-mode" @click="viewText" v-html="textMsg(msgData.msg.text)"></pre>
                 </div>
                 <!--文件-->
                 <div v-else-if="msgData.type === 'file'" :class="`content-file ${msgData.msg.type}`">
@@ -173,6 +173,7 @@ export default {
                 return ""
             }
             text = text.trim().replace(/(\n\x20*){3,}/g, "\n\n");
+            text = text.replace(/\{\{RemoteURL\}\}/g, $A.apiUrl('../'))
             return text;
         },
 
@@ -223,22 +224,18 @@ export default {
             });
         },
 
+        viewText({target}) {
+            if (target.nodeName === "IMG") {
+                this.viewPicture(target.currentSrc);
+            } else if (target.classList.contains('mention') && target.classList.contains('task')) {
+                this.$store.dispatch("openTask", $A.runNum(target.getAttribute("data-id")));
+            }
+        },
+
         viewFile() {
-            const {id, dialog_id, msg} = this.msgData;
+            const {msg} = this.msgData;
             if (['jpg', 'jpeg', 'gif', 'png'].includes(msg.ext)) {
-                const list = $A.cloneJSON(this.dialogMsgs.filter(item => {
-                    return item.dialog_id === dialog_id && item.type === 'file' && ['jpg', 'jpeg', 'gif', 'png'].includes(item.msg.ext);
-                })).sort((a, b) => {
-                    return a.id - b.id;
-                });
-                const index = list.findIndex(item => item.id === id);
-                if (index > -1) {
-                    this.$store.state.previewImageIndex = index;
-                    this.$store.state.previewImageList = list.map(({msg}) => msg.path);
-                } else {
-                    this.$store.state.previewImageIndex = 0;
-                    this.$store.state.previewImageList = [msg.path];
-                }
+                this.viewPicture(msg.path);
                 return
             }
             if (this.$Electron) {
@@ -257,6 +254,43 @@ export default {
                 });
             } else {
                 window.open($A.apiUrl(`../single/file/msg/${this.msgData.id}`))
+            }
+        },
+
+        viewPicture(currentUrl) {
+            const {dialog_id} = this.msgData;
+            const data = $A.cloneJSON(this.dialogMsgs.filter(item => {
+                if (item.dialog_id === dialog_id) {
+                    if (item.type === 'file') {
+                        return ['jpg', 'jpeg', 'gif', 'png'].includes(item.msg.ext);
+                    } else if (item.type === 'text') {
+                        return item.msg.text.match(/<img src="(.*?)"\/>/);
+                    }
+                }
+                return false;
+            })).sort((a, b) => {
+                return a.id - b.id;
+            });
+            //
+            let list = [];
+            data.some(({type, msg}) => {
+                if (type === 'file') {
+                    list.push(msg.path)
+                } else if (type === 'text') {
+                    const array = msg.text.match(/<img src="(.*?)"\/>/g);
+                    array.some(res => {
+                        list.push(res.match(/<img src="(.*?)"\/>/)[1].replace(/\{\{RemoteURL\}\}/g, $A.apiUrl('../')))
+                    })
+                }
+            })
+            //
+            let index = list.findIndex(item => item === currentUrl);
+            if (index > -1) {
+                this.$store.state.previewImageIndex = index;
+                this.$store.state.previewImageList = list;
+            } else {
+                this.$store.state.previewImageIndex = 0;
+                this.$store.state.previewImageList = [currentUrl];
             }
         },
 

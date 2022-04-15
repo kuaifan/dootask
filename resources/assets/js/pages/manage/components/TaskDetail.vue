@@ -434,7 +434,7 @@ import DialogWrapper from "./DialogWrapper";
 import ProjectLog from "./ProjectLog";
 import {Store} from "le5le-store";
 import TaskMenu from "./TaskMenu";
-import ChatInput from "../../../components/ChatInput";
+import ChatInput from "./ChatInput";
 
 export default {
     name: "TaskDetail",

@@ -199,6 +199,40 @@ class WebSocketDialogMsg extends AbstractModel
     }
 
     /**
+     * 处理文本消息内容，用于发送前
+     * @param $text
+     * @param $dialog_id
+     * @return mixed|string|string[]
+     */
+    public static function formatMsg($text, $dialog_id)
+    {
+        // 图片
+        preg_match_all("/<img\s*src=\"data:image\/(png|jpg|jpeg);base64,(.*?)\"(.*?)>(<\/img>)*/s", $text, $matchs);
+        foreach ($matchs[2] as $key => $base64) {
+            $tmpPath = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
+            Base::makeDir(public_path($tmpPath));
+            $tmpPath .= md5s($base64) . "." . $matchs[1][$key];
+            if (file_put_contents(public_path($tmpPath), base64_decode($base64))) {
+                $text = str_replace($matchs[0][$key], "[:IMG:{$tmpPath}:]", $text);
+            }
+        }
+        // @成员 #任务
+        preg_match_all("/<span class=\"mention\"(.*?)>.*?<\/span>.*?<\/span>.*?<\/span>/s", $text, $matchs);
+        foreach ($matchs[1] as $key => $str) {
+            preg_match("/data-denotation-char=\"(.*?)\"/", $str, $matchChar);
+            preg_match("/data-id=\"(.*?)\"/", $str, $matchId);
+            preg_match("/data-value=\"(.*?)\"/", $str, $matchValye);
+            $text = str_replace($matchs[0][$key], "[:{$matchChar[1]}:{$matchId[1]}:{$matchValye[1]}:]", $text);
+        }
+        // 过滤标签
+        $text = strip_tags($text, '<p>');
+        $text = preg_replace("/\<p.*?\>/i", "<p>", $text);
+        $text = preg_replace("/\[:IMG:(.*?):\]/i", "<img src=\"{{RemoteURL}}$1\"/>", $text);
+        $text = preg_replace("/\[:@:(.*?):(.*?):\]/i", "<span class=\"mention user\" data-id=\"$1\">@$2</span>", $text);
+        return preg_replace("/\[:#:(.*?):(.*?):\]/i", "<span class=\"mention task\" data-id=\"$1\">#$2</span>", $text);
+    }
+
+    /**
      * 发送消息
      * @param int $dialog_id    会话ID（即 聊天室ID）
      * @param string $type      消息类型

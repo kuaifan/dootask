@@ -171,17 +171,35 @@ body.dark-mode-reverse {
                 > ul {
                     > li {
                         .dialog-view {
-                            .dialog-content {
-                                background-color: #e1e1e1;
-                                .content-text {
-                                    color: #ffffff;
+                            .dialog-head {
+                                .dialog-content {
+                                    background-color: #e1e1e1;
+                                    .content-text {
+                                        color: #ffffff;
+                                        .content-text {
+                                            > pre {
+                                                .mention {
+                                                    color: #000000;
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
                         &.self {
                             .dialog-view {
-                                .dialog-content {
-                                    background-color: #8bcf70;
+                                .dialog-head {
+                                    .dialog-content {
+                                        background-color: #8bcf70;
+                                        .content-text {
+                                            > pre {
+                                                .mention {
+                                                    color: #000000;
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }

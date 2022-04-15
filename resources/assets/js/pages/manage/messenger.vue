@@ -397,14 +397,17 @@ export default {
             if ($A.isJson(data)) {
                 switch (data.type) {
                     case 'text':
-                        return data.msg.text
+                        let text = data.msg.text;
+                        text = text.replace(/<img src=".*?"\/>/g, `[${this.$L('图片')}]`)
+                        text = text.replace(/<[^>]+>/g,"")
+                        return text
                     case 'file':
                         if (data.msg.type == 'img') {
-                            return '[' + this.$L('图片') + ']'
+                            return `[${this.$L('图片')}]`
                         }
-                        return '[' + this.$L('文件') + '] ' + data.msg.name
+                        return `[${this.$L('文件')}] ${data.msg.name}`
                     default:
-                        return '[' + this.$L('未知的消息') + ']'
+                        return `[${this.$L('未知的消息')}]`
                 }
             }
             return '';

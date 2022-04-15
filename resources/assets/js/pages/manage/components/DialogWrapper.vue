@@ -162,7 +162,7 @@ import {Store} from "le5le-store";
 import UserInput from "../../../components/UserInput";
 import DrawerOverlay from "../../../components/DrawerOverlay";
 import DialogGroupInfo from "./DialogGroupInfo";
-import ChatInput from "../../../components/ChatInput";
+import ChatInput from "./ChatInput";
 
 export default {
     name: "DialogWrapper",
@@ -324,6 +324,8 @@ export default {
             if (this.msgText == '') {
                 return;
             }
+            this.msgText = this.msgText.replace(/<\/span> <\/p>$/, "</span></p>")
+            //
             let tempId = $A.randomString(16);
             this.tempMsgs.push({
                 id: tempId,

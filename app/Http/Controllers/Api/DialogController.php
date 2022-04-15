@@ -214,7 +214,7 @@ class DialogController extends AbstractController
      */
     public function msg__sendtext()
     {
-        Base::checkClientVersion('0.8.1');
+        Base::checkClientVersion('0.12.95');
         $user = User::auth();
         //
         $chat_nickname = Base::settingFind('system', 'chat_nickname');
@@ -228,14 +228,14 @@ class DialogController extends AbstractController
         $dialog_id = Base::getPostInt('dialog_id');
         $text = trim(Base::getPostValue('text'));
         //
+        WebSocketDialog::checkDialog($dialog_id);
+        //
+        $text = WebSocketDialogMsg::formatMsg($text, $dialog_id);
         if (mb_strlen($text) < 1) {
             return Base::retError('消息内容不能为空');
         } elseif (mb_strlen($text) > 20000) {
             return Base::retError('消息内容最大不能超过20000字');
         }
-        //
-        WebSocketDialog::checkDialog($dialog_id);
-        //
         if (mb_strlen($text) > 2000) {
             $array = mb_str_split($text, 2000);
         } else {
