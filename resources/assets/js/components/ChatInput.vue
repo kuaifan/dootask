@@ -4,36 +4,21 @@
     </div>
 </template>
 
-<style lang="scss">
-.chat-input-wrapper {
-    display: inline-block;
-    width: 100%;
-    .ql-editor {
-        padding: 4px 7px;
-        font-size: 14px;
-        max-height: 100px;
-        &.ql-blank {
-            &::before {
-                left: 7px;
-                right: 7px;
-                color: #ccc;
-                font-style: normal;
-            }
-        }
-    }
-}
-</style>
-
 <script>
 import Quill from 'quill';
-import "quill/dist/quill.snow.css";
-
 import "quill-mention";
-import "quill-mention/dist/quill.mention.min.css";
 
 export default {
     name: 'ChatInput',
     props: {
+        dialogId: {
+            type: Number,
+            default: 0
+        },
+        taskId: {
+            type: Number,
+            default: 0
+        },
         value: {
             type: [String, Number],
             default: ''
@@ -52,11 +37,14 @@ export default {
         },
         options: {
             type: Object,
-            required: false,
             default: () => ({})
         },
         maxlength: {
             type: Number
+        },
+        defaultMenuOrientation: {
+            type: String,
+            default: "top"
         },
     },
     data() {
@@ -64,6 +52,8 @@ export default {
             quill: null,
             _content: '',
             _options: {},
+
+            userList: null,
         };
     },
     mounted() {
@@ -85,24 +75,24 @@ export default {
                 }
             }
         },
+
         // Watch disabled change
         disabled(newVal) {
             if (this.quill) {
                 this.quill.enable(!newVal)
             }
-        }
+        },
+
+        // Reset userList
+        dialogId() {
+            this.userList = null;
+        },
+        taskId() {
+            this.userList = null;
+        },
     },
     methods: {
         init() {
-            const atValues = [
-                { id: 1, value: "Fredrik Sundqvist" },
-                { id: 2, value: "Patrik Sjölin" }
-            ];
-            const hashValues = [
-                { id: 3, value: "Fredrik Sundqvist 2" },
-                { id: 4, value: "Patrik Sjölin 2" }
-            ];
-
             // Options
             this._options = Object.assign({
                 theme: null,
@@ -137,26 +127,36 @@ export default {
                     },
                     mention: {
                         mentionDenotationChars: ["@", "#"],
-                        source: function(searchTerm, renderList, mentionChar) {
-                            let values;
-
-                            if (mentionChar === "@") {
-                                values = atValues;
-                            } else {
-                                values = hashValues;
+                        defaultMenuOrientation: this.defaultMenuOrientation,
+                        renderItem: (data) => {
+                            if (data.disabled === true) {
+                                return `<div class="mention-item-disabled">${data.value}</div>`;
                             }
-
-                            if (searchTerm.length === 0) {
-                                renderList(values, searchTerm);
-                            } else {
-                                const matches = [];
-                                for (let i = 0; i < values.length; i++)
-                                    if (
-                                        ~values[i].value.toLowerCase().indexOf(searchTerm.toLowerCase())
-                                    )
-                                        matches.push(values[i]);
-                                renderList(matches, searchTerm);
+                            if (data.id === 0) {
+                                return `<div class="mention-item-at">@</div><div class="mention-item-name">${data.value}</div><div class="mention-item-tip">${this.$L('提示所有成员')}</div>`;
                             }
+                            if (data.avatar) {
+                                return `<div class="mention-item-img${data.online ? ' online' : ''}"><img src="${data.avatar}"/><em></em></div><div class="mention-item-name">${data.value}</div>`;
+                            }
+                            return `<div class="mention-item-name">${data.value}</div>`;
+                        },
+                        renderLoading: () => {
+                            return "Loading...";
+                        },
+                        source: (searchTerm, renderList, mentionChar) => {
+                            this.getSource(mentionChar).then(values => {
+                                if (searchTerm.length === 0) {
+                                    renderList(values, searchTerm);
+                                } else {
+                                    const matches = [];
+                                    for (let i = 0; i < values.length; i++) {
+                                        if (~values[i].value.toLowerCase().indexOf(searchTerm.toLowerCase())) {
+                                            matches.push(values[i]);
+                                        }
+                                    }
+                                    renderList(matches, searchTerm);
+                                }
+                            })
                         }
                     }
                 }
@@ -212,6 +212,61 @@ export default {
         blur() {
             this.$nextTick(() => {
                 this.quill && this.quill.blur()
+            })
+        },
+
+        getSource(mentionChar) {
+            return new Promise(resolve => {
+                switch (mentionChar) {
+                    case "@": // @成员
+                        if (this.userList !== null) {
+                            resolve(this.userList)
+                            return;
+                        }
+                        if (this.dialogId > 0) {
+                            // 根据会话ID获取成员
+                            this.$store.dispatch("call", {
+                                url: 'dialog/group/user',
+                                data: {
+                                    dialog_id: this.dialogId,
+                                    getuser: 1
+                                }
+                            }).then(({data}) => {
+                                if (data.length > 0) {
+                                    this.userList = [
+                                        { id: 0, value: this.$L('所有人') },
+                                        { id: 0, value: this.$L('会话内成员'), disabled: true },
+                                    ];
+                                    this.userList.push(...data.map(item => {
+                                        return {
+                                            id: item.userid,
+                                            value: item.nickname,
+                                            avatar: item.userimg,
+                                            online: item.online,
+                                        }
+                                    }))
+                                } else {
+                                    this.userList = [];
+                                }
+                                resolve(this.userList)
+                            }).catch(_ => {
+                                resolve([]);
+                            });
+                            return;
+                        } else if (this.taskId > 0) {
+                            // 根据任务ID获取成员 todo
+                            return;
+                        }
+                        break;
+
+                    case "#": // #任务 todo
+                        resolve([
+                            { id: 3, value: "Fredrik Sundqvist 2" },
+                            { id: 4, value: "Patrik Sjölin 2" }
+                        ])
+                        break;
+                }
+                resolve([])
             })
         }
     }

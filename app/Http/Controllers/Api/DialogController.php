@@ -650,6 +650,7 @@ class DialogController extends AbstractController
      * @apiName group__user
      *
      * @apiParam {Number} dialog_id            会话ID
+     * @apiParam {Number} [getuser]            获取会员详情（1: 返回会员昵称、邮箱等基本信息，0: 默认不返回）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -660,10 +661,22 @@ class DialogController extends AbstractController
         User::auth();
         //
         $dialog_id = intval(Request::input('dialog_id'));
+        $getuser = intval(Request::input('getuser', 0));
         //
         $dialog = WebSocketDialog::checkDialog($dialog_id);
         //
-        return Base::retSuccess('success', $dialog->dialogUser);
+        $data = $dialog->dialogUser->toArray();
+        if ($getuser === 1) {
+            $array = [];
+            foreach ($data as $item) {
+                $res = User::userid2basic($item['userid']);
+                if ($res) {
+                    $array[] = array_merge($item, $res->toArray());
+                }
+            }
+            $data = $array;
+        }
+        return Base::retSuccess('success', $data);
     }
 
     /**

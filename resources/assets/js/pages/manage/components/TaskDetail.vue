@@ -400,6 +400,7 @@
                     <div class="no-input">
                         <ChatInput
                             class="dialog-input"
+                            :task-id="taskId"
                             v-model="msgText"
                             :disabled="sendLoad > 0"
                             :maxlength="20000"

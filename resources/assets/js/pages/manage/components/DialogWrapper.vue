@@ -86,6 +86,7 @@
             <ChatInput
                 ref="input"
                 class="dialog-input"
+                :dialog-id="dialogId"
                 v-model="msgText"
                 :maxlength="20000"
                 @on-focus="onEventFocus"

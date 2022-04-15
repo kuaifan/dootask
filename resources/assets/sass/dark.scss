@@ -196,8 +196,18 @@ body.dark-mode-reverse {
             > ul {
                 > li {
                     .user-tag {
-                        color: $primary-title-color;
+                        color: #1c1917;
                     }
+                }
+            }
+        }
+    }
+
+    .chat-input-wrapper {
+        .ql-mention-list-container {
+            .ql-mention-list-item {
+                .mention-item-at {
+                    color: #1c1917;
                 }
             }
         }
