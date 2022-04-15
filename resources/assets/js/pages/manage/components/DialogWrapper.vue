@@ -83,19 +83,15 @@
         <div :class="['dialog-footer', msgNew > 0 && dialogMsgList.length > 0 ? 'newmsg' : '']" @click="onActive">
             <div class="dialog-newmsg" @click="onToBottom">{{$L('有' + msgNew + '条新消息')}}</div>
             <slot name="inputBefore"/>
-            <DragInput
+            <ChatInput
                 ref="input"
-                v-model="msgText"
                 class="dialog-input"
-                type="textarea"
-                :rows="1"
-                :autosize="{ minRows: 1, maxRows: 3 }"
+                v-model="msgText"
                 :maxlength="20000"
                 @on-focus="onEventFocus"
                 @on-blur="onEventblur"
-                @on-keydown="chatKeydown"
-                @on-input-paste="pasteDrag"
-                :placeholder="$L('输入消息...')" />
+                @on-send="sendMsg"
+                :placeholder="$L('输入消息...')"/>
             <div v-if="msgText != ''" class="dialog-send" @click="sendMsg">
                 <Icon type="md-send" />
             </div>
@@ -157,7 +153,6 @@
 </template>
 
 <script>
-import DragInput from "../../../components/DragInput";
 import ScrollerY from "../../../components/ScrollerY";
 import {mapState} from "vuex";
 import DialogView from "./DialogView";
@@ -166,10 +161,11 @@ import {Store} from "le5le-store";
 import UserInput from "../../../components/UserInput";
 import DrawerOverlay from "../../../components/DrawerOverlay";
 import DialogGroupInfo from "./DialogGroupInfo";
+import ChatInput from "../../../components/ChatInput";
 
 export default {
     name: "DialogWrapper",
-    components: {DialogGroupInfo, DrawerOverlay, UserInput, DialogUpload, DialogView, ScrollerY, DragInput},
+    components: {ChatInput, DialogGroupInfo, DrawerOverlay, UserInput, DialogUpload, DialogView, ScrollerY},
     props: {
         dialogId: {
             type: Number,
@@ -382,28 +378,14 @@ export default {
             }
         },
 
-        chatKeydown(e) {
-            if (e.keyCode === 13) {
-                if (e.shiftKey) {
-                    return;
-                }
-                e.preventDefault();
-                this.sendMsg();
-            }
-        },
-
-        pasteDrag(e, type) {
+        chatPasteDrag(e, type) {
+            this.dialogDrag = false;
             const files = type === 'drag' ? e.dataTransfer.files : e.clipboardData.files;
             const postFiles = Array.prototype.slice.call(files);
             if (postFiles.length > 0) {
                 e.preventDefault();
                 this.sendFileMsg(postFiles);
             }
-        },
-
-        chatPasteDrag(e, type) {
-            this.dialogDrag = false;
-            this.pasteDrag(e, type);
         },
 
         chatDragOver(show, e) {

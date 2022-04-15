@@ -398,17 +398,13 @@
                      @dragleave.prevent="taskDragOver(false, $event)">
                     <div class="no-tip">{{$L('暂无消息')}}</div>
                     <div class="no-input">
-                        <DragInput
+                        <ChatInput
                             class="dialog-input"
                             v-model="msgText"
-                            type="textarea"
                             :disabled="sendLoad > 0"
-                            :rows="1"
-                            :autosize="{ minRows: 1, maxRows: 3 }"
                             :maxlength="20000"
                             :placeholder="$L('输入消息...')"
-                            @on-keydown="msgKeydown"
-                            @on-input-paste="msgPasteDrag"/>
+                            @on-send="msgDialog"/>
                         <div class="no-send" @click="msgDialog">
                             <Loading v-if="sendLoad > 0"/>
                             <template v-else>
@@ -437,11 +433,11 @@ import DialogWrapper from "./DialogWrapper";
 import ProjectLog from "./ProjectLog";
 import {Store} from "le5le-store";
 import TaskMenu from "./TaskMenu";
-import DragInput from "../../../components/DragInput";
+import ChatInput from "../../../components/ChatInput";
 
 export default {
     name: "TaskDetail",
-    components: {DragInput, TaskMenu, ProjectLog, DialogWrapper, TaskUpload, UserInput, TaskPriority, TEditor},
+    components: {ChatInput, TaskMenu, ProjectLog, DialogWrapper, TaskUpload, UserInput, TaskPriority, TEditor},
     props: {
         taskId: {
             type: Number,
@@ -1064,18 +1060,6 @@ export default {
             }
         },
 
-        msgKeydown(e) {
-            if (e.keyCode === 13) {
-                if (e.shiftKey) {
-                    return;
-                }
-                e.preventDefault();
-                if (this.msgText) {
-                    this.msgDialog();
-                }
-            }
-        },
-
         msgDialog() {
             if (this.sendLoad > 0) {
                 return;
@@ -1136,18 +1120,14 @@ export default {
             this.msgText = "";
         },
 
-        msgPasteDrag(e, type) {
+        taskPasteDrag(e, type) {
+            this.dialogDrag = false;
             const files = type === 'drag' ? e.dataTransfer.files : e.clipboardData.files;
             this.msgFile = Array.prototype.slice.call(files);
             if (this.msgFile.length > 0) {
                 e.preventDefault();
                 this.msgDialog()
             }
-        },
-
-        taskPasteDrag(e, type) {
-            this.dialogDrag = false;
-            this.msgPasteDrag(e, type);
         },
 
         taskDragOver(show, e) {

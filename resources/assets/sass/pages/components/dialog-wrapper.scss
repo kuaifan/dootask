@@ -142,6 +142,7 @@
                 line-height: 20px;
                 padding-top: 2px;
                 color: #aaaaaa;
+                white-space: normal;
 
                 &.pointer {
                     cursor: pointer;
@@ -527,22 +528,12 @@
             background-color: #F4F5F7;
             padding: 10px 52px 10px 12px;
             border-radius: 10px;
-
-            .ivu-input {
-                border: 0;
-                resize: none;
-                background-color: transparent;
-
-                &:focus {
-                    box-shadow: none;
-                }
-            }
         }
 
         .dialog-send {
             position: absolute;
             top: 0;
-            right: 14px;
+            right: 28px;
             bottom: 0;
             font-size: 18px;
             width: 46px;
