@@ -166,9 +166,26 @@
                                     color: #999999;
                                     font-size: 12px;
                                     line-height: 24px;
-                                    white-space: nowrap;
-                                    overflow: hidden;
-                                    text-overflow: ellipsis;
+                                    display: flex;
+                                    align-items: center;
+                                    .common-avatar {
+                                        padding-right: 4px;
+                                        margin-right: 4px;
+                                        position: relative;
+                                        &:after {
+                                            content: ":";
+                                            position: absolute;
+                                            top: 50%;
+                                            transform: translateY(-50%);
+                                            right: 0;
+                                        }
+                                    }
+                                    .last-text {
+                                        flex: 1;
+                                        white-space: nowrap;
+                                        overflow: hidden;
+                                        text-overflow: ellipsis;
+                                    }
                                 }
                             }
                             .dialog-num {

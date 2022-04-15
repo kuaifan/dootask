@@ -57,7 +57,14 @@
                                     <Icon v-if="dialog.type == 'user' && lastMsgReadDone(dialog.last_msg)" :type="lastMsgReadDone(dialog.last_msg)"/>
                                     <em v-if="dialog.last_at">{{$A.formatTime(dialog.last_at)}}</em>
                                 </div>
-                                <div class="dialog-text no-dark-mode">{{formatLastMsg(dialog.last_msg)}}</div>
+                                <div class="dialog-text no-dark-mode">
+                                    <UserAvatar
+                                        v-if="dialog.type=='group' && dialog.last_msg.userid != userId"
+                                        :userid="dialog.last_msg.userid"
+                                        :show-name="true"
+                                        :show-icon="false"/>
+                                    <div class="last-text">{{formatLastMsg(dialog.last_msg)}}</div>
+                                </div>
                             </div>
                             <Badge class="dialog-num" :count="$A.getDialogUnread(dialog)"/>
                         </li>
