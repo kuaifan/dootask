@@ -48,30 +48,38 @@ class WebSocketDialogMsgTask extends AbstractTask
         }
 
         // 推送目标①：群成员
+        $array = [];
         $userids = $dialog->dialogUser->pluck('userid')->toArray();
         foreach ($userids AS $userid) {
             if ($userid == $msg->userid) {
                 continue;
             }
+            $mention = preg_match("/<span class=\"mention user\" data-id=\"[0|{$userid}]\">/", $msg->type === 'text' ? $msg->msg['text'] : '');
             WebSocketDialogMsgRead::createInstance([
                 'dialog_id' => $msg->dialog_id,
                 'msg_id' => $msg->id,
                 'userid' => $userid,
+                'mention' => $mention,
             ])->saveOrIgnore();
+            $array[$userid] = $mention;
         }
         // 更新已发送数量
         $msg->send = WebSocketDialogMsgRead::whereMsgId($msg->id)->count();
         $msg->save();
         // 开始推送消息
-        PushTask::push([
-            'userid' => $userids,
-            'ignoreFd' => $this->ignoreFd,
-            'msg' => [
-                'type' => 'dialog',
-                'mode' => 'add',
-                'data' => $msg->toArray(),
-            ]
-        ]);
+        foreach ($array as $userid => $mention) {
+            PushTask::push([
+                'userid' => $userid,
+                'ignoreFd' => $this->ignoreFd,
+                'msg' => [
+                    'type' => 'dialog',
+                    'mode' => 'add',
+                    'data' => array_merge($msg->toArray(), [
+                        'mention' => $mention,
+                    ]),
+                ]
+            ]);
+        }
 
         // 推送目标②：正在打开这个任务会话的会员
         if ($dialog->type == 'group' && $dialog->group_type == 'task') {

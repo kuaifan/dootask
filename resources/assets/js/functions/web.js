@@ -367,6 +367,15 @@
         getDialogUnread(dialog) {
             return dialog ? (dialog.unread || dialog.mark_unread || 0) : 0
         },
+
+        /**
+         * 返回对话@提及未读数量
+         * @param dialog
+         * @returns {*|number}
+         */
+        getDialogMention(dialog) {
+            return dialog ? (dialog.mention || 0) : 0
+        }
     });
 
     /**

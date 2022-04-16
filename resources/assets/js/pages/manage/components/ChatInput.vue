@@ -141,6 +141,7 @@ export default {
                         allowedChars: /^\S*$/,
                         mentionDenotationChars: ["@", "#"],
                         defaultMenuOrientation: this.defaultMenuOrientation,
+                        isolateCharacter: true,
                         renderItem: (data) => {
                             if (data.disabled === true) {
                                 return `<div class="mention-item-disabled">${data.value}</div>`;

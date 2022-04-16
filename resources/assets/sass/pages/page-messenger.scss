@@ -126,6 +126,16 @@
                                     align-items: center;
                                     justify-content: space-between;
                                     line-height: 24px;
+                                    .mention {
+                                        color: #ff0000;
+                                        background-color: transparent;
+                                        font-weight: 600;
+                                        flex-shrink: 0;
+                                        margin-right: 4px;
+                                        padding: 0;
+                                        height: auto;
+                                        width: auto;
+                                    }
                                     .ivu-tag {
                                         margin: 0 4px 0 0;
                                         padding: 0 5px;
@@ -170,6 +180,7 @@
                                     align-items: center;
                                     .common-avatar,
                                     .last-self {
+                                        flex-shrink: 0;
                                         padding-right: 4px;
                                         margin-right: 4px;
                                         position: relative;

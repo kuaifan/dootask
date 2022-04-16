@@ -147,7 +147,7 @@
                 <li @click="toggleRoute('messenger')" :class="classNameRoute('messenger')">
                     <i class="taskfont">&#xe6eb;</i>
                     <div class="menu-title">{{$L('消息')}}</div>
-                    <Badge class="menu-badge" :count="msgAllUnread"/>
+                    <Badge class="menu-badge" :text="msgUnreadMention"/>
                 </li>
                 <li @click="toggleRoute('file')" :class="classNameRoute('file')">
                     <i class="taskfont">&#xe6f3;</i>
@@ -497,13 +497,26 @@ export default {
 
         ...mapGetters(['taskData', 'dashboardTask']),
 
+        msgUnreadMention() {
+            let num = 0;
+            let mention = 0;
+            this.cacheDialogs.some(dialog => {
+                num += $A.getDialogUnread(dialog);
+                mention += $A.getDialogMention(dialog);
+            })
+            if (num <= 0) {
+                return '';
+            }
+            if (mention > 0) {
+                return `${num}·@${mention}`
+            }
+            return String(num);
+        },
+
         msgAllUnread() {
             let num = 0;
             this.cacheDialogs.some(dialog => {
-                let unread = $A.getDialogUnread(dialog);
-                if (unread) {
-                    num += unread;
-                }
+                num += $A.getDialogUnread(dialog);
             })
             return num;
         },
@@ -886,6 +899,8 @@ export default {
             switch (type) {
                 case 'text':
                     body = msg.text;
+                    body = body.replace(/<img src=".*?"\/>/g, `[${this.$L('图片')}]`)
+                    body = body.replace(/<[^>]+>/g,"")
                     break;
                 case 'file':
                     body = '[' + this.$L(msg.type == 'img' ? '图片信息' : '文件信息') + ']'

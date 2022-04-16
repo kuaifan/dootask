@@ -12,6 +12,7 @@ use App\Models\WebSocketDialogMsgRead;
 use App\Models\WebSocketDialogUser;
 use App\Module\Base;
 use Carbon\Carbon;
+use DB;
 use Request;
 use Response;
 
@@ -145,11 +146,15 @@ class DialogController extends AbstractController
         //
         $dialog = WebSocketDialog::checkDialog($dialog_id);
         //
-        $list = WebSocketDialogMsg::whereDialogId($dialog_id)->orderByDesc('id')->paginate(Base::getPaginate(100, 50));
-        $list->transform(function (WebSocketDialogMsg $item) use ($user) {
-            $item->is_read = $item->userid === $user->userid || WebSocketDialogMsgRead::whereMsgId($item->id)->whereUserid($user->userid)->value('read_at');
-            return $item;
-        });
+        $list = WebSocketDialogMsg::select([
+            'web_socket_dialog_msgs.*',
+            'read.mention',
+            'read.read_at',
+        ])->leftJoin('web_socket_dialog_msg_reads as read', function ($leftJoin) use ($user) {
+            $leftJoin
+                ->on('read.userid', '=', DB::raw($user->userid))
+                ->on('read.msg_id', '=', 'web_socket_dialog_msgs.id');
+        })->where('web_socket_dialog_msgs.dialog_id', $dialog_id)->orderByDesc('web_socket_dialog_msgs.id')->paginate(Base::getPaginate(100, 50));
         //
         if ($dialog->type == 'group' && $dialog->group_type == 'task') {
             $user->task_dialog_id = $dialog->id;

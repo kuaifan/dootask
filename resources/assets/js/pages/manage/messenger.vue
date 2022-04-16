@@ -50,6 +50,7 @@
                             <Icon v-else class="icon-avatar" type="md-person" />
                             <div class="dialog-box">
                                 <div class="dialog-title">
+                                    <div v-if="$A.getDialogMention(dialog) > 0" class="mention">[@{{$A.getDialogMention(dialog)}}]</div>
                                     <template v-for="tag in $A.dialogTags(dialog)" v-if="tag.color != 'success'">
                                         <Tag :color="tag.color" :fade="false">{{$L(tag.text)}}</Tag>
                                     </template>

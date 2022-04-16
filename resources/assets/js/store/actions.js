@@ -2122,13 +2122,16 @@ export default {
      */
     dialogMsgRead({state, dispatch}, data) {
         if (data.userid == state.userId) return;
-        if (data.is_read === true) return;
-        data.is_read = true;
+        if (data.read_at) return;
+        data.read_at = $A.formatDate();
         //
         let dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
         if (dialog && dialog.unread > 0) {
-            dialog.unread--
             dialog.mark_unread = 0
+            dialog.unread--
+            if (data.mention) {
+                dialog.mention--
+            }
             dispatch("saveDialog", dialog)
         }
         //
@@ -2268,6 +2271,9 @@ export default {
                                                 if (dialog && state.cacheUnreads[data.id] === undefined) {
                                                     state.cacheUnreads[data.id] = true;
                                                     dialog.unread++;
+                                                    if (data.mention) {
+                                                        dialog.mention++;
+                                                    }
                                                     dispatch("saveDialog", dialog)
                                                 }
                                             }

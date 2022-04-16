@@ -11,6 +11,7 @@ use Carbon\Carbon;
  * @property int|null $dialog_id 对话ID
  * @property int|null $msg_id 消息ID
  * @property int|null $userid 发送会员ID
+ * @property int|null $mention 是否提及（被@）
  * @property int|null $after 在阅读之后才添加的记录
  * @property string|null $read_at 阅读时间
  * @property-read \App\Models\WebSocketDialogMsg|null $webSocketDialogMsg
@@ -20,6 +21,7 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsgRead whereAfter($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsgRead whereDialogId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsgRead whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsgRead whereMention($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsgRead whereMsgId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsgRead whereReadAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsgRead whereUserid($value)

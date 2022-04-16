@@ -48,6 +48,38 @@
         min-width: 220px;
         max-width: 350px;
         max-height: 360px;
+        overflow-y: overlay;
+
+        &::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0);
+        }
+
+        &::-webkit-scrollbar-thumb:active {
+            border-radius: 10px;
+            background: rgba(0, 0, 0, .5);
+        }
+
+        &:hover::-webkit-scrollbar-thumb {
+            border: 2px solid transparent;
+            background: rgba(0, 0, 0, .2);
+            background-clip: content-box;
+        }
+
+        &:hover::-webkit-scrollbar-thumb:hover {
+            border-top-width: 0;
+            border-bottom-width: 0;
+        }
+
+        &::-webkit-scrollbar-track {
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0);
+        }
 
         .ql-mention-list {
             > li {
