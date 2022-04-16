@@ -574,21 +574,13 @@
                 background-color: #F4F5F7;
                 padding: 10px 12px;
                 border-radius: 10px;
-                .ivu-input {
-                    border: 0;
-                    resize: none;
-                    background-color: transparent;
-                    &:focus {
-                        box-shadow: none;
-                    }
-                }
-                .no-send {
-                    display: none;
+                .chat-input-toolbar {
+                    position: relative;
                     .ivu-badge {
                         position: absolute;
                         transform: scale(0.6);
-                        top: 5px;
-                        left: 4px;
+                        top: -6px;
+                        left: 0;
                     }
                 }
             }
@@ -824,29 +816,6 @@
         .task-info {
             .scroller {
                 overflow-x: auto;
-            }
-        }
-        .task-dialog {
-            .no-dialog {
-                .no-input {
-                    position: relative;
-                    padding-right: 52px;
-                    .no-send {
-                        position: absolute;
-                        top: 0;
-                        right: 0;
-                        bottom: 0;
-                        font-size: 18px;
-                        width: 46px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        .common-loading {
-                            width: 20px;
-                            height: 20px;
-                        }
-                    }
-                }
             }
         }
     }

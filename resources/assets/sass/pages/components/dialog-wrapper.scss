@@ -550,21 +550,16 @@
         }
 
         .dialog-input {
-            background-color: #F4F5F7;
-            padding: 10px 52px 10px 12px;
-            border-radius: 10px;
-        }
-
-        .dialog-send {
-            position: absolute;
-            top: 0;
-            right: 28px;
-            bottom: 0;
-            font-size: 18px;
-            width: 46px;
+            width: 100%;
             display: flex;
             align-items: center;
-            justify-content: center;
+            .chat-input-wrapper {
+                flex: 1;
+                width: 0;
+                background-color: #F4F5F7;
+                padding: 10px 12px;
+                border-radius: 10px;
+            }
         }
 
         .chat-upload {

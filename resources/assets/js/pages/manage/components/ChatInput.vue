@@ -1,6 +1,11 @@
 <template>
     <div class="chat-input-wrapper" :class="modeClass">
         <div ref="editor"></div>
+        <div class="chat-input-toolbar">
+            <Loading v-if="loading"/>
+            <Icon v-else :class="[value ? '' : 'disabled']" type="md-send" @click="send"/>
+            <slot name="toolbarAfter"/>
+        </div>
     </div>
 </template>
 
@@ -30,6 +35,10 @@ export default {
             default: ''
         },
         disabled: {
+            type: Boolean,
+            default: false
+        },
+        loading: {
             type: Boolean,
             default: false
         },
@@ -118,7 +127,7 @@ export default {
                                 shortKey: true,
                                 handler: _ => {
                                     if (!this.enterSend) {
-                                        this.$emit('on-send', this.quill)
+                                        this.send();
                                         return false;
                                     }
                                     return true;
@@ -129,7 +138,7 @@ export default {
                                 shiftKey: false,
                                 handler: _ => {
                                     if (this.enterSend) {
-                                        this.$emit('on-send', this.quill)
+                                        this.send();
                                         return false;
                                     }
                                     return true;
@@ -228,6 +237,10 @@ export default {
             this.$nextTick(() => {
                 this.quill && this.quill.blur()
             })
+        },
+
+        send() {
+            this.$emit('on-send', this.quill)
         },
 
         getSource(mentionChar) {

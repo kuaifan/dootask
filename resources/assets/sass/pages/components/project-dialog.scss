@@ -68,8 +68,18 @@
             padding: 0 20px;
         }
         .dialog-footer {
-            .dialog-back {
-                display: none;
+            .dialog-input {
+                .dialog-back {
+                    display: none;
+                    align-items: center;
+                    justify-content: center;
+                    width: 64px;
+                    height: 100%;
+                    max-height: 64px;
+                    font-size: 26px;
+                    margin-left: -20px;
+                    z-index: 1;
+                }
             }
         }
     }
@@ -90,24 +100,11 @@
                 padding: 0 20px;
             }
             .dialog-footer {
-                position: relative;
-                .dialog-back {
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    bottom: 0;
-                    width: 64px;
-                    z-index: 1;
-                    font-size: 26px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
                 .dialog-input {
-                    width: calc(100% - 44px);
-                }
-                .dialog-send {
-                    right: 22px;
+                    align-items: flex-end;
+                    .dialog-back {
+                        display: flex;
+                    }
                 }
             }
         }

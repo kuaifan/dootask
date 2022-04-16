@@ -399,20 +399,15 @@
                     <div class="no-tip">{{$L('暂无消息')}}</div>
                     <div class="no-input">
                         <ChatInput
-                            class="dialog-input"
                             :task-id="taskId"
                             v-model="msgText"
                             :disabled="sendLoad > 0"
+                            :loading="sendLoad > 0"
                             :maxlength="20000"
                             :placeholder="$L('输入消息...')"
-                            @on-send="msgDialog"/>
-                        <div class="no-send" @click="msgDialog">
-                            <Loading v-if="sendLoad > 0"/>
-                            <template v-else>
-                                <Badge :count="taskDetail.msg_num"/>
-                                <Icon type="md-send" />
-                            </template>
-                        </div>
+                            @on-send="msgDialog">
+                            <Badge slot="toolbarAfter" :count="taskDetail.msg_num"/>
+                        </ChatInput>
                     </div>
                     <div v-if="dialogDrag" class="drag-over" @click="dialogDrag=false">
                         <div class="drag-text">{{$L('拖动到这里发送')}}</div>
@@ -1090,7 +1085,7 @@ export default {
                                 };
                                 this.msgFile = [];
                                 this.msgText = "";
-                                this.goForward({name: 'manage-messenger', params: {dialogId: data.dialog_id}});
+                                this.goForward({name: 'manage-messenger', params: {dialogId: data.dialog_id}, query: {_: $A.randomString(6)}});
                                 this.$store.dispatch('openTask', 0);
                             } else {
                                 this.sendDialogMsg();

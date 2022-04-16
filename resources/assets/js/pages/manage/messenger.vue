@@ -59,7 +59,7 @@
                                     <em v-if="dialog.last_at">{{$A.formatTime(dialog.last_at)}}</em>
                                 </div>
                                 <div class="dialog-text no-dark-mode">
-                                    <template v-if="dialog.type=='group'">
+                                    <template v-if="dialog.type=='group' && dialog.last_msg">
                                         <div v-if="dialog.last_msg.userid == userId" class="last-self">{{$L('您')}}</div>
                                         <UserAvatar v-else :userid="dialog.last_msg.userid" :show-name="true" :show-icon="false"/>
                                     </template>

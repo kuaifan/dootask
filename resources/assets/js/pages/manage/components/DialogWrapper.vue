@@ -82,19 +82,18 @@
         </ScrollerY>
         <div :class="['dialog-footer', msgNew > 0 && dialogMsgList.length > 0 ? 'newmsg' : '']" @click="onActive">
             <div class="dialog-newmsg" @click="onToBottom">{{$L('有' + msgNew + '条新消息')}}</div>
-            <slot name="inputBefore"/>
-            <ChatInput
-                ref="input"
-                class="dialog-input"
-                :dialog-id="dialogId"
-                v-model="msgText"
-                :maxlength="20000"
-                @on-focus="onEventFocus"
-                @on-blur="onEventblur"
-                @on-send="sendMsg"
-                :placeholder="$L('输入消息...')"/>
-            <div v-if="msgText != ''" class="dialog-send" @click="sendMsg">
-                <Icon type="md-send" />
+            <div class="dialog-input">
+                <slot name="inputBefore"/>
+                <ChatInput
+                    ref="input"
+                    :dialog-id="dialogId"
+                    v-model="msgText"
+                    :maxlength="20000"
+                    @on-focus="onEventFocus"
+                    @on-blur="onEventblur"
+                    @on-send="sendMsg"
+                    :placeholder="$L('输入消息...')"/>
+                <slot name="inputAfter"/>
             </div>
             <DialogUpload
                 ref="chatUpload"
