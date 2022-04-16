@@ -2,8 +2,34 @@
     <div class="chat-input-wrapper" :class="modeClass">
         <div ref="editor"></div>
         <div class="chat-input-toolbar">
+            <slot name="toolbarBefore"/>
+
+            <ETooltip placement="top" :content="$L('表情')"><i class="taskfont" @click="onToolbar('emoji')">&#xe7ad;</i></ETooltip>
+            <ETooltip placement="top" :content="$L('选择会员')"><i class="taskfont" @click="onToolbar('user')">&#xe78f;</i></ETooltip>
+            <ETooltip placement="top" :content="$L('选择任务')"><i class="taskfont" @click="onToolbar('task')">&#xe7d6;</i></ETooltip>
+
+            <EDropdown
+                trigger="hover"
+                placement="top"
+                @command="onToolbar">
+                <i class="taskfont">&#xe790;</i>
+                <EDropdownMenu slot="dropdown" class="chat-input-dropdown-menu">
+                    <EDropdownItem command="image">
+                        <i class="taskfont">&#xe64a;</i>
+                        {{$L('图片')}}
+                    </EDropdownItem>
+                    <EDropdownItem command="file">
+                        <i class="taskfont">&#xe786;</i>
+                        {{$L('文件')}}
+                    </EDropdownItem>
+                </EDropdownMenu>
+            </EDropdown>
+
+            <div class="toolbar-spacing"></div>
+
             <Loading v-if="loading"/>
-            <Icon v-else :class="[value ? '' : 'disabled']" type="md-send" @click="send"/>
+            <ETooltip v-else placement="top" :content="$L('发送')"><Icon :class="[value ? '' : 'disabled']" type="md-send" @click="send"/></ETooltip>
+
             <slot name="toolbarAfter"/>
         </div>
     </div>
@@ -241,6 +267,39 @@ export default {
 
         send() {
             this.$emit('on-send', this.quill)
+        },
+
+        onToolbar(action) {
+            switch (action) {
+                case 'user':
+                    this.openMenu("@");
+                    break;
+
+                case 'task':
+                    this.openMenu("#");
+                    break;
+
+                case 'image':
+                case 'file':
+                    this.$emit('on-more', action)
+                    break;
+            }
+        },
+
+        openMenu(char) {
+            if (!this.quill) {
+                return;
+            }
+            if (this.value.length === 0 || this.value.endsWith("<p><br></p>")) {
+                this.quill.getModule("mention").openMenu(char);
+            } else {
+                let str = this.value.replace(/<[^>]+>/g,"");
+                if (str.length === 0 || str.endsWith(" ")) {
+                    this.quill.getModule("mention").openMenu(char);
+                } else {
+                    this.quill.getModule("mention").openMenu(` ${char}`);
+                }
+            }
         },
 
         getSource(mentionChar) {

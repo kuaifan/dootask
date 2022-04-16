@@ -301,7 +301,7 @@
                         </ul>
                         <ul class="item-content">
                             <li>
-                                <div class="add-button" @click="$refs.upload.handleClick()">
+                                <div class="add-button" @click="onUploadClick(true)">
                                     <i class="taskfont">&#xe6f2;</i>{{$L('添加附件')}}
                                 </div>
                             </li>
@@ -405,6 +405,7 @@
                             :loading="sendLoad > 0"
                             :maxlength="20000"
                             :placeholder="$L('输入消息...')"
+                            @on-more="onEventMore"
                             @on-send="msgDialog">
                             <Badge slot="toolbarAfter" :count="taskDetail.msg_num"/>
                         </ChatInput>
@@ -515,6 +516,7 @@ export default {
             },
 
             dialogDrag: false,
+            imageAttachment: true,
             receiveTaskSubscribe: null,
         }
     },
@@ -1044,7 +1046,7 @@ export default {
                     break;
 
                 case 'file':
-                    this.$refs.upload.handleClick();
+                    this.onUploadClick(true)
                     break;
 
                 case 'subtask':
@@ -1054,6 +1056,17 @@ export default {
                     });
                     break;
             }
+        },
+
+        onEventMore(e) {
+            if (['image', 'file'].includes(e)) {
+                this.onUploadClick(false)
+            }
+        },
+
+        onUploadClick(attachment) {
+            this.imageAttachment = !!attachment;
+            this.$refs.upload.handleClick()
         },
 
         msgDialog() {
@@ -1106,7 +1119,7 @@ export default {
             if (this.msgFile.length > 0) {
                 this.$refs.dialog.sendFileMsg(this.msgFile.map(file => Object.assign(file, {
                     ajaxExtraData: {
-                        image_attachment: 1
+                        image_attachment: this.imageAttachment ? 1 : 0
                     }
                 })));
             } else if (this.msgText) {

@@ -90,7 +90,8 @@
                     v-model="msgText"
                     :maxlength="20000"
                     @on-focus="onEventFocus"
-                    @on-blur="onEventblur"
+                    @on-blur="onEventBlur"
+                    @on-more="onEventMore"
                     @on-send="sendMsg"
                     :placeholder="$L('输入消息...')"/>
                 <slot name="inputAfter"/>
@@ -476,9 +477,15 @@ export default {
             this.$emit("on-focus", e)
         },
 
-        onEventblur(e) {
+        onEventBlur(e) {
             this.inputFocus = false;
             this.$emit("on-blur", e)
+        },
+
+        onEventMore(e) {
+            if (['image', 'file'].includes(e)) {
+                this.$refs.chatUpload.handleClick()
+            }
         },
 
         onActive() {

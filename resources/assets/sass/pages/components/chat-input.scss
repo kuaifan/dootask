@@ -29,7 +29,7 @@
         display: block;
         float: left;
         max-width: 100%;
-        min-width: calc(100% - 28px);
+        min-width: calc(100% - 175px);
 
         .ql-editor {
             padding: 4px 7px;
@@ -47,6 +47,9 @@
                     right: 7px;
                     color: #ccc;
                     font-style: normal;
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
                 }
             }
         }
@@ -186,19 +189,46 @@
         align-items: center;
         justify-content: flex-end;
         float: right;
-        width: 28px;
+        width: 175px;
         height: 28px;
         padding: 0 2px;
         .common-loading {
             width: 18px;
             height: 18px;
         }
+        .toolbar-spacing {
+            width: 1px;
+            height: 14px;
+            margin: 2px 7px 0;
+            background-color: #cccccc;
+        }
         > i {
-            font-size: 18px;
+            cursor: pointer;
+            padding: 0 5px;
+            font-size: 20px;
             &.disabled {
                 opacity: 0.5;
             }
+            &:last-child {
+                margin-right: -5px;
+            }
+        }
+        .el-dropdown {
+            padding: 0 5px;
+            > i {
+                cursor: pointer;
+                font-size: 20px;
+            }
         }
     }
-
+}
+.chat-input-dropdown-menu {
+    > li {
+        display: flex;
+        align-items: center;
+        > i {
+            font-size: 20px;
+            margin-right: 8px;
+        }
+    }
 }
