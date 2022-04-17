@@ -404,10 +404,7 @@ export default {
             if ($A.isJson(data)) {
                 switch (data.type) {
                     case 'text':
-                        let text = data.msg.text;
-                        text = text.replace(/<img src=".*?"\/>/g, `[${this.$L('图片')}]`)
-                        text = text.replace(/<[^>]+>/g,"")
-                        return text
+                        return $A.getMsgTextPreview(data.msg.text)
                     case 'file':
                         if (data.msg.type == 'img') {
                             return `[${this.$L('图片')}]`

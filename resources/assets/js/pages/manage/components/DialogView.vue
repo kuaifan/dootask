@@ -225,10 +225,21 @@ export default {
         },
 
         viewText({target}) {
-            if (target.nodeName === "IMG") {
-                this.viewPicture(target.currentSrc);
-            } else if (target.classList.contains('mention') && target.classList.contains('task')) {
-                this.$store.dispatch("openTask", $A.runNum(target.getAttribute("data-id")));
+            switch (target.nodeName) {
+                case "IMG":
+                    if (target.classList.contains('browse')) {
+                        this.viewPicture(target.currentSrc);
+                    } else {
+                        this.$store.state.previewImageIndex = 0;
+                        this.$store.state.previewImageList = [target.currentSrc];
+                    }
+                    break;
+
+                case "SPAN":
+                    if (target.classList.contains('mention') && target.classList.contains('task')) {
+                        this.$store.dispatch("openTask", $A.runNum(target.getAttribute("data-id")));
+                    }
+                    break;
             }
         },
 
@@ -264,7 +275,7 @@ export default {
                     if (item.type === 'file') {
                         return ['jpg', 'jpeg', 'gif', 'png'].includes(item.msg.ext);
                     } else if (item.type === 'text') {
-                        return item.msg.text.match(/<img src="(.*?)"\/>/);
+                        return item.msg.text.match(/<img\s+class="browse"[^>]*?>/);
                     }
                 }
                 return false;
@@ -277,9 +288,10 @@ export default {
                 if (type === 'file') {
                     list.push(msg.path)
                 } else if (type === 'text') {
-                    const array = msg.text.match(/<img src="(.*?)"\/>/g);
+                    const baseUrl = $A.apiUrl('../');
+                    const array = msg.text.match(/<img\s+class="browse"[^>]*?src="(.*?)"[^>]*?>/g);
                     array.some(res => {
-                        list.push(res.match(/<img src="(.*?)"\/>/)[1].replace(/\{\{RemoteURL\}\}/g, $A.apiUrl('../')))
+                        list.push(res.match(/<img\s+class="browse"[^>]*?src="(.*?)"[^>]*?>/)[1].replace(/\{\{RemoteURL\}\}/g, baseUrl))
                     })
                 }
             })

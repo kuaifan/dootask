@@ -14,6 +14,8 @@
     <link rel="stylesheet" type="text/css" href="{{ mix('css/app.css') }}?v={{ $version }}-{{ $hash }}">
     <link rel="stylesheet" type="text/css" href="{{ asset_main('css/iview.css') }}">
     <script src="{{ asset_main('js/language.all.js') }}"></script>
+    <script src="{{ asset_main('js/emoji.all.js') }}"></script>
+    <script src="{{ asset_main('js/emoticon.all.js') }}"></script>
     <script src="{{ asset_main('js/scroll-into-view.min.js') }}"></script>
     <script>
         window.csrfToken = { csrfToken : "{{ csrf_token() }}" };

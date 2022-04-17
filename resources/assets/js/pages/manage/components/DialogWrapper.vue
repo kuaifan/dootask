@@ -317,14 +317,18 @@ export default {
 
     methods: {
         sendMsg(text) {
+            let msgText;
             if (typeof text === "string" && text) {
-                this.msgText = text;
-                this.$refs.input.focus();
+                msgText = text;
+            } else {
+                msgText = this.msgText;
+                this.msgText = '';
             }
-            if (this.msgText == '') {
+            if (msgText == '' && this.isDesktop) {
+                this.$refs.input.focus();
                 return;
             }
-            this.msgText = this.msgText.replace(/<\/span> <\/p>$/, "</span></p>")
+            msgText = msgText.replace(/<\/span> <\/p>$/, "</span></p>")
             //
             let tempId = $A.randomString(16);
             this.tempMsgs.push({
@@ -333,7 +337,7 @@ export default {
                 type: 'text',
                 userid: this.userId,
                 msg: {
-                    text: this.msgText,
+                    text: msgText,
                 },
             });
             if (!this.isDesktop) {
@@ -346,7 +350,7 @@ export default {
                 url: 'dialog/msg/sendtext',
                 data: {
                     dialog_id: this.dialogId,
-                    text: this.msgText,
+                    text: msgText,
                 },
                 method: 'post'
             }).then(({data}) => {
@@ -356,8 +360,6 @@ export default {
                 $A.modalError(msg);
                 this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
             });
-            //
-            this.msgText = '';
         },
 
         sendFileMsg(files) {

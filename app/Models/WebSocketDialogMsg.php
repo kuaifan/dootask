@@ -206,17 +206,28 @@ class WebSocketDialogMsg extends AbstractModel
      */
     public static function formatMsg($text, $dialog_id)
     {
-        // 图片
+        // 图片 [:IMAGE:className:width:height:src:alt:]
         preg_match_all("/<img\s*src=\"data:image\/(png|jpg|jpeg);base64,(.*?)\"(.*?)>(<\/img>)*/s", $text, $matchs);
         foreach ($matchs[2] as $key => $base64) {
             $tmpPath = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
             Base::makeDir(public_path($tmpPath));
             $tmpPath .= md5s($base64) . "." . $matchs[1][$key];
             if (file_put_contents(public_path($tmpPath), base64_decode($base64))) {
-                $text = str_replace($matchs[0][$key], "[:IMG:{$tmpPath}:]", $text);
+                $imagesize = getimagesize(public_path($tmpPath));
+                $text = str_replace($matchs[0][$key], "[:IMAGE:browse:{$imagesize[0]}:{$imagesize[1]}:{$tmpPath}::]", $text);
             }
         }
-        // @成员 #任务
+        // 表情图片
+        preg_match_all("/<img class=\"emoticon\"(.*?)>/s", $text, $matchs);
+        foreach ($matchs[1] as $key => $str) {
+            preg_match("/data-asset=\"(.*?)\"/", $str, $matchAsset);
+            preg_match("/data-name=\"(.*?)\"/", $str, $matchName);
+            if (file_exists(public_path($matchAsset[1]))) {
+                $imagesize = getimagesize(public_path($matchAsset[1]));
+                $text = str_replace($matchs[0][$key], "[:IMAGE:emoticon:{$imagesize[0]}:{$imagesize[1]}:{$matchAsset[1]}:{$matchName[1]}:]", $text);
+            }
+        }
+        // @成员、#任务
         preg_match_all("/<span class=\"mention\"(.*?)>.*?<\/span>.*?<\/span>.*?<\/span>/s", $text, $matchs);
         foreach ($matchs[1] as $key => $str) {
             preg_match("/data-denotation-char=\"(.*?)\"/", $str, $matchChar);
@@ -227,7 +238,7 @@ class WebSocketDialogMsg extends AbstractModel
         // 过滤标签
         $text = strip_tags($text, '<p>');
         $text = preg_replace("/\<p.*?\>/i", "<p>", $text);
-        $text = preg_replace("/\[:IMG:(.*?):\]/i", "<img src=\"{{RemoteURL}}$1\"/>", $text);
+        $text = preg_replace("/\[:IMAGE:(.*?):(.*?):(.*?):(.*?):(.*?):\]/i", "<img class=\"$1\" width=\"$2\" height=\"$3\" src=\"{{RemoteURL}}$4\" alt=\"$5\"/>", $text);
         $text = preg_replace("/\[:@:(.*?):(.*?):\]/i", "<span class=\"mention user\" data-id=\"$1\">@$2</span>", $text);
         return preg_replace("/\[:#:(.*?):(.*?):\]/i", "<span class=\"mention task\" data-id=\"$1\">#$2</span>", $text);
     }

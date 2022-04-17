@@ -898,9 +898,7 @@ export default {
             let body = '';
             switch (type) {
                 case 'text':
-                    body = msg.text;
-                    body = body.replace(/<img src=".*?"\/>/g, `[${this.$L('图片')}]`)
-                    body = body.replace(/<[^>]+>/g,"")
+                    body = $A.getMsgTextPreview(msg.text)
                     break;
                 case 'file':
                     body = '[' + this.$L(msg.type == 'img' ? '图片信息' : '文件信息') + ']'

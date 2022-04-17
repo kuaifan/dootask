@@ -40,6 +40,7 @@
                 opacity: .2;
                 z-index: 1;
             }
+
             .dialog-title {
                 padding-right: 52px;
             }
@@ -48,6 +49,7 @@
         .dialog-avatar {
             flex-shrink: 0;
             margin-right: 12px;
+
             .user-avatar,
             .icon-avatar {
                 width: 42px;
@@ -56,6 +58,7 @@
                 flex-grow: 0;
                 flex-shrink: 0;
             }
+
             .icon-avatar {
                 display: flex;
                 align-items: center;
@@ -64,9 +67,11 @@
                 font-size: 26px;
                 background-color: #61B2F9;
                 color: #ffffff;
+
                 &.project {
                     background-color: #6E99EB;
                 }
+
                 &.task {
                     background-color: #9B96DF;
                     font-size: 24px;
@@ -226,7 +231,6 @@
                                 align-items: flex-start;
 
                                 .content-text {
-                                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
                                     color: #333333;
 
                                     > pre {
@@ -237,19 +241,30 @@
                                         white-space: pre-wrap;
                                         word-wrap: break-word;
                                         word-break: break-word;
+                                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+
                                         img {
                                             cursor: pointer;
                                             max-width: 220px;
                                             max-height: 220px;
+                                            vertical-align: bottom;
+
+                                            &.emoticon {
+                                                max-width: 150px;
+                                                max-height: 150px;
+                                            }
                                         }
+
                                         .mention {
                                             color: $flow-status-end-color;
                                             background-color: transparent;
                                             user-select: auto;
                                             margin-right: 0;
+
                                             > span {
                                                 margin: 0;
                                             }
+
                                             &.task {
                                                 cursor: pointer;
                                             }
@@ -553,6 +568,7 @@
             width: 100%;
             display: flex;
             align-items: center;
+
             .chat-input-wrapper {
                 flex: 1;
                 width: 0;

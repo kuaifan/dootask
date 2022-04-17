@@ -4,26 +4,39 @@
         <div class="chat-input-toolbar">
             <slot name="toolbarBefore"/>
 
-            <ETooltip placement="top" :content="$L('表情')"><i class="taskfont" @click="onToolbar('emoji')">&#xe7ad;</i></ETooltip>
-            <ETooltip placement="top" :content="$L('选择会员')"><i class="taskfont" @click="onToolbar('user')">&#xe78f;</i></ETooltip>
-            <ETooltip placement="top" :content="$L('选择任务')"><i class="taskfont" @click="onToolbar('task')">&#xe7d6;</i></ETooltip>
+            <EPopover
+                v-model="showEmoji"
+                :visibleArrow="false"
+                popperClass="chat-input-emoji-popover">
+                <ETooltip slot="reference" :disabled="showEmoji" placement="top" :content="$L('表情')">
+                    <i class="taskfont" @click="onToolbar('emoji')">&#xe7ad;</i>
+                </ETooltip>
+                <ChatEmoji @on-select="onSelectEmoji"/>
+            </EPopover>
 
-            <EDropdown
-                trigger="hover"
-                placement="top"
-                @command="onToolbar">
-                <i class="taskfont">&#xe790;</i>
-                <EDropdownMenu slot="dropdown" class="chat-input-dropdown-menu">
-                    <EDropdownItem command="image">
-                        <i class="taskfont">&#xe64a;</i>
-                        {{$L('图片')}}
-                    </EDropdownItem>
-                    <EDropdownItem command="file">
-                        <i class="taskfont">&#xe786;</i>
-                        {{$L('文件')}}
-                    </EDropdownItem>
-                </EDropdownMenu>
-            </EDropdown>
+            <ETooltip placement="top" :content="$L('选择会员')">
+                <i class="taskfont" @click="onToolbar('user')">&#xe78f;</i>
+            </ETooltip>
+            <ETooltip placement="top" :content="$L('选择任务')">
+                <i class="taskfont" @click="onToolbar('task')">&#xe7d6;</i>
+            </ETooltip>
+
+            <EPopover
+                v-model="showMore"
+                :visibleArrow="false"
+                popperClass="chat-input-more-popover">
+                <ETooltip slot="reference" :disabled="showMore" placement="top" :content="$L('展开')">
+                    <i class="taskfont">&#xe790;</i>
+                </ETooltip>
+                <div class="chat-input-popover-item" @click="onToolbar('image')">
+                    <i class="taskfont">&#xe64a;</i>
+                    {{$L('图片')}}
+                </div>
+                <div class="chat-input-popover-item" @click="onToolbar('file')">
+                    <i class="taskfont">&#xe786;</i>
+                    {{$L('文件')}}
+                </div>
+            </EPopover>
 
             <div class="toolbar-spacing"></div>
 
@@ -40,9 +53,11 @@ import {mapGetters, mapState} from "vuex";
 
 import Quill from 'quill';
 import "quill-mention";
+import ChatEmoji from "./emoji";
 
 export default {
     name: 'ChatInput',
+    components: {ChatEmoji},
     props: {
         dialogId: {
             type: Number,
@@ -94,6 +109,9 @@ export default {
 
             userList: null,
             taskList: null,
+
+            showMore: false,
+            showEmoji: false,
         };
     },
     mounted() {
@@ -266,7 +284,22 @@ export default {
         },
 
         send() {
-            this.$emit('on-send', this.quill)
+            this.$emit('on-send')
+        },
+
+        onSelectEmoji(item) {
+            if (!this.quill) {
+                return;
+            }
+            if (item.type === 'emoji') {
+                let element = document.createElement('span');
+                element.innerHTML = item.html;
+                this.quill.insertText(this.quill.getSelection(true).index, element.innerHTML);
+                element = null;
+            } else if (item.type === 'emoticon') {
+                this.$emit('on-send', `<img class="emoticon" data-asset="${item.asset}" data-name="${item.name}" src="${item.src}"/>`)
+            }
+            this.showEmoji = false;
         },
 
         onToolbar(action) {
@@ -286,6 +319,10 @@ export default {
             }
         },
 
+        onMoreVisibleChange(v) {
+            this.showMore = v;
+        },
+
         openMenu(char) {
             if (!this.quill) {
                 return;
@@ -300,6 +337,26 @@ export default {
                     this.quill.getModule("mention").openMenu(` ${char}`);
                 }
             }
+        },
+
+        getProjectId() {
+            let object = null;
+            if (this.dialogId > 0) {
+                object = this.cacheProjects.find(({dialog_id}) => dialog_id == this.dialogId);
+                if (object) {
+                    return object.id;
+                }
+                object = this.cacheTasks.find(({dialog_id}) => dialog_id == this.dialogId);
+                if (object) {
+                    return object.project_id;
+                }
+            } else if (this.taskId > 0) {
+                object = this.cacheTasks.find(({id}) => id == this.taskId);
+                if (object) {
+                    return object.project_id;
+                }
+            }
+            return 0;
         },
 
         getSource(mentionChar) {
@@ -448,26 +505,6 @@ export default {
                 }
             })
         },
-
-        getProjectId() {
-            let object = null;
-            if (this.dialogId > 0) {
-                object = this.cacheProjects.find(({dialog_id}) => dialog_id == this.dialogId);
-                if (object) {
-                    return object.id;
-                }
-                object = this.cacheTasks.find(({dialog_id}) => dialog_id == this.dialogId);
-                if (object) {
-                    return object.project_id;
-                }
-            } else if (this.taskId > 0) {
-                object = this.cacheTasks.find(({id}) => id == this.taskId);
-                if (object) {
-                    return object.project_id;
-                }
-            }
-            return 0;
-        }
     }
 }
 </script>

@@ -375,6 +375,19 @@
          */
         getDialogMention(dialog) {
             return dialog ? (dialog.mention || 0) : 0
+        },
+
+        /**
+         * 返回文本信息预览格式
+         * @param text
+         * @returns {*}
+         */
+        getMsgTextPreview(text) {
+            if (!text) return '';
+            text = text.replace(/<img\s+class="emoticon"[^>]*?alt="(\S+)"[^>]*?>/g, "[$1]")
+            text = text.replace(/<img\s+class="emoticon"[^>]*?>/g, `[${$A.L('表情')}]`)
+            text = text.replace(/<img\s+class="browse"[^>]*?>/g, `[${$A.L('图片')}]`)
+            return text.replace(/<[^>]+>/g,"")
         }
     });
 
