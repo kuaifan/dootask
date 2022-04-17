@@ -9,7 +9,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
 
-    if: startsWith(github.event.ref, 'refs/tags/v')
+    if: ${{ (startsWith(github.event.ref, 'refs/tags/v')) && (github.repository == 'kuaifan/kkFileView') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -34,7 +34,7 @@ jobs:
     runs-on: macos-latest
     environment: build
 
-    if: startsWith(github.event.ref, 'refs/tags/v')
+    if: ${{ (startsWith(github.event.ref, 'refs/tags/v')) && (github.repository == 'kuaifan/kkFileView') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -58,7 +58,7 @@ jobs:
     runs-on: windows-latest
     environment: build
 
-    if: startsWith(github.event.ref, 'refs/tags/v')
+    if: ${{ (startsWith(github.event.ref, 'refs/tags/v')) && (github.repository == 'kuaifan/kkFileView') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
