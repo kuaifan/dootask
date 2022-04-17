@@ -32,7 +32,7 @@
         "@electron-forge/maker-squirrel": "^6.0.0-beta.63",
         "@electron-forge/maker-zip": "^6.0.0-beta.63",
         "dotenv": "^16.0.0",
-        "electron": "^17.2.0",
+        "electron": "^18.0.4",
         "electron-builder": "^23.0.3",
         "electron-notarize": "^1.2.1",
         "form-data": "^4.0.0",

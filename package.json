@@ -1,6 +1,6 @@
 {
     "name": "DooTask",
-    "version": "0.13.31",
+    "version": "0.13.32",
     "description": "DooTask is task management system.",
     "scripts": {
         "start": "./cmd dev",
@@ -16,6 +16,15 @@
                 "provider": "github",
                 "owner": "kuaifan",
                 "repo": "dootask"
+            }
+        },
+        {
+            "name": "DooTask",
+            "id": "com.dootask.task",
+            "url": "https://dootask.com/",
+            "publish": {
+                "provider": "generic",
+                "url": "https://dootask.com/desktop/publish"
             }
         },
         {
