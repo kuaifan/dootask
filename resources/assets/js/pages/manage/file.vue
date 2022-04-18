@@ -126,6 +126,7 @@
                         @on-select-cancel="handleTableSelect"
                         @on-select-all-cancel="handleTableSelect"
                         @on-select-all="handleTableSelect"
+                        @on-sort-change="handleTableSort"
                         context-menu
                         stripe/>
                 </div>
@@ -652,6 +653,7 @@ export default {
 
     methods: {
         initLanguage() {
+            const sort = $A.getStorageJson("cacheFileSort")
             this.columns = [
                 {
                     type: 'selection',
@@ -825,7 +827,12 @@ export default {
                     resizable: true,
                     sortable: true,
                 },
-            ];
+            ].map(item => {
+                if (item.key === sort.key) {
+                    item.sortType = sort.order
+                }
+                return item;
+            });
         },
 
         formatName(file) {
@@ -1429,6 +1436,10 @@ export default {
 
         clearSelect() {
             this.selectIds = [];
+        },
+
+        handleTableSort({key, order}) {
+            $A.setStorage("cacheFileSort", ['asc', 'desc'].includes(order) ? {key, order} : {});
         },
 
         /********************拖动上传部分************************/
