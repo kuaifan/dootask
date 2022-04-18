@@ -82,7 +82,7 @@ services:
 
   office:
     container_name: "dootask-office-${APP_ID}"
-    image: "onlyoffice/documentserver:7.0.0.132"
+    image: "onlyoffice/documentserver:7.0.1.37"
     volumes:
       - ./docker/office/data:/var/www/onlyoffice/Data
       - ./docker/office/logs:/var/log/onlyoffice
