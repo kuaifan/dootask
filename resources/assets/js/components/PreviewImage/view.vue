@@ -1,130 +1,140 @@
 <template>
-    <div ref="view" class="common-preview-view no-dark-mode">
-        <template v-if="!isSingle">
-            <div class="preview-view-prev" :class="{ 'is-disabled': !infinite && isFirst }" @click="prev">
-                <i class="taskfont">&#xe72d;</i>
+    <div ref="view" class="common-preview-image">
+        <div class="common-preview-view no-dark-content">
+            <template v-if="!isSingle">
+                <div class="preview-view-prev" :class="{ 'is-disabled': !infinite && isFirst }" @click="prev">
+                    <i class="taskfont">&#xe72d;</i>
+                </div>
+                <div class="preview-view-next" :class="{ 'is-disabled': !infinite && isLast }" @click="next">
+                    <i class="taskfont">&#xe733;</i>
+                </div>
+            </template>
+            <div class="preview-view-actions">
+                <div class="actions-inner">
+                    <i class="taskfont" @click="handleActions('zoomOut')">&#xe7a2;</i>
+                    <i class="taskfont" @click="handleActions('zoomIn')">&#xe79f;</i>
+                    <i class="actions-divider"></i>
+                    <i class="taskfont" @click="toggleMode" v-html="mode.icon"></i>
+                    <i class="actions-divider"></i>
+                    <i class="taskfont" @click="handleActions('anticlocelise')">&#xe7a7;</i>
+                    <i class="taskfont" @click="handleActions('clocelise')">&#xe7a6;</i>
+                </div>
             </div>
-            <div class="preview-view-next" :class="{ 'is-disabled': !infinite && isLast }" @click="next">
-                <i class="taskfont">&#xe733;</i>
+            <div class="preview-view-canvas">
+                <img
+                    v-for="(url, i) in urlList"
+                    v-if="i === index"
+                    ref="img"
+                    class="preview-view-img"
+                    :key="url"
+                    :src="currentImg"
+                    :style="imgStyle"
+                    @load="handleImgLoad"
+                    @error="handleImgError"
+                    @mousedown="handleMouseDown">
             </div>
-        </template>
-        <div class="preview-view-actions">
-            <div class="actions-inner">
-                <i class="taskfont" @click="handleActions('zoomOut')">&#xe7a2;</i>
-                <i class="taskfont" @click="handleActions('zoomIn')">&#xe79f;</i>
-                <i class="actions-divider"></i>
-                <i class="taskfont" @click="toggleMode" v-html="mode.icon"></i>
-                <i class="actions-divider"></i>
-                <i class="taskfont" @click="handleActions('anticlocelise')">&#xe7a7;</i>
-                <i class="taskfont" @click="handleActions('clocelise')">&#xe7a6;</i>
-            </div>
-        </div>
-        <div class="preview-view-canvas no-dark-mode">
-            <img
-                v-for="(url, i) in urlList"
-                v-if="i === index"
-                ref="img"
-                class="preview-view-img"
-                :key="url"
-                :src="currentImg"
-                :style="imgStyle"
-                @load="handleImgLoad"
-                @error="handleImgError"
-                @mousedown="handleMouseDown">
         </div>
     </div>
 </template>
 
 <style lang="scss" scoped>
-.common-preview-view {
+.common-preview-image {
+    position: fixed;
     bottom: 0;
     left: 0;
-    position: fixed;
     right: 0;
     top: 0;
-    background: rgba(0, 0, 0, .8);
     backdrop-filter: blur(4px);
 
-    .preview-view-prev,
-    .preview-view-next {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        opacity: .8;
-        cursor: pointer;
-        background-color: #606266;
-        border-color: #fff;
-        height: 44px;
-        width: 44px;
-        overflow: hidden;
+    .common-preview-view {
         position: absolute;
-        top: 50%;
-        z-index: 2;
-        transform: translateY(-50%);
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: 0;
+        background: rgba(0, 0, 0, .8);
 
-        &.is-disabled {
-            cursor: no-drop;
+        .preview-view-prev,
+        .preview-view-next {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            opacity: .8;
+            cursor: pointer;
+            background-color: #606266;
+            border-color: #fff;
+            height: 44px;
+            width: 44px;
+            overflow: hidden;
+            position: absolute;
+            top: 50%;
+            z-index: 2;
+            transform: translateY(-50%);
+
+            &.is-disabled {
+                cursor: no-drop;
+
+                > i {
+                    opacity: 0.8;
+                }
+            }
 
             > i {
-                opacity: 0.8;
+                color: #fff;
+                font-size: 24px;
             }
         }
 
-        > i {
-            color: #fff;
-            font-size: 24px;
+        .preview-view-prev {
+            left: 40px;
         }
-    }
 
-    .preview-view-prev {
-        left: 40px;
-    }
+        .preview-view-next {
+            right: 40px;
+        }
 
-    .preview-view-next {
-        right: 40px;
-    }
-
-    .preview-view-actions {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: .8;
-        background-color: #606266;
-        border-color: #fff;
-        border-radius: 22px;
-        bottom: 30px;
-        height: 44px;
-        position: absolute;
-        left: 50%;
-        z-index: 2;
-        padding: 0 23px;
-        transform: translateX(-50%);
-        width: 282px;
-
-        .actions-inner {
+        .preview-view-actions {
+            display: flex;
             align-items: center;
-            color: #fff;
-            cursor: default;
+            justify-content: center;
+            opacity: .8;
+            background-color: #606266;
+            border-color: #fff;
+            border-radius: 22px;
+            bottom: 30px;
+            height: 44px;
+            position: absolute;
+            left: 50%;
+            z-index: 2;
+            padding: 0 23px;
+            transform: translateX(-50%);
+            width: 282px;
+
+            .actions-inner {
+                align-items: center;
+                color: #fff;
+                cursor: default;
+                display: flex;
+                height: 100%;
+                justify-content: space-around;
+                text-align: justify;
+                width: 100%;
+
+                > i {
+                    cursor: pointer;
+                    font-size: 23px;
+                }
+            }
+        }
+
+        .preview-view-canvas {
+            align-items: center;
             display: flex;
             height: 100%;
-            justify-content: space-around;
-            text-align: justify;
+            justify-content: center;
             width: 100%;
-
-            > i {
-                cursor: pointer;
-                font-size: 23px;
-            }
         }
-    }
-
-    .preview-view-canvas {
-        align-items: center;
-        display: flex;
-        height: 100%;
-        justify-content: center;
-        width: 100%;
     }
 }
 </style>
@@ -221,7 +231,10 @@ export default {
                 this.onSwitch(val);
             }
         },
-        currentImg(val) {
+        initialIndex(index) {
+            this.index = index
+        },
+        currentImg() {
             this.$nextTick(_ => {
                 const $img = this.$refs.img[0];
                 if (!$img.complete) {

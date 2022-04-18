@@ -31,13 +31,16 @@
                         <span v-if="item.share && item.permission == 0" class="readonly">{{$L('只读')}}</span>
                     </li>
                 </ul>
-                <Button v-if="shearFirst" :disabled="shearFirst.pid == pid" size="small" type="primary" @click="shearTo">
-                    <div class="file-shear">
-                        <span>{{$L('粘贴')}}</span>
-                        "<em>{{shearFirst.name}}</em>"
-                        <span v-if="shearIds.length > 1">{{$L('等')}}{{shearIds.length}}{{$L('个文件')}}</span>
-                    </div>
-                </Button>
+                <template v-if="shearFirst">
+                    <Button :disabled="shearFirst.pid == pid" size="small" type="primary" @click="shearTo">
+                        <div class="file-shear">
+                            <span>{{$L('粘贴')}}</span>
+                            "<em>{{shearFirst.name}}</em>"
+                            <span v-if="shearIds.length > 1">{{$L('等')}}{{shearIds.length}}{{$L('个文件')}}</span>
+                        </div>
+                    </Button>
+                    <Button type="primary" size="small" @click="clearShear">{{ $L('取消剪切') }}</Button>
+                </template>
                 <template v-else-if="selectIds.length > 0">
                     <Button size="small" type="info" @click="handleContextClick('shearSelect')">
                         <Icon type="ios-cut" />
@@ -83,12 +86,12 @@
                                 <div class="file-menu" @click.stop="handleRightClick($event, item)">
                                     <Icon type="ios-more" />
                                 </div>
-                                <div :class="`no-dark-mode-before file-icon ${item.type}`">
+                                <div :class="`no-dark-before file-icon ${item.type}`">
                                     <template v-if="item.share">
                                         <UserAvatar v-if="item.userid != userId" :userid="item.userid" class="share-avatar" :size="20">
                                             <p>{{$L('共享权限')}}: {{$L(item.permission == 1 ? '读/写' : '只读')}}</p>
                                         </UserAvatar>
-                                        <div v-else class="share-icon no-dark-mode">
+                                        <div v-else class="share-icon no-dark-content">
                                             <i class="taskfont">&#xe757;</i>
                                         </div>
                                     </template>
@@ -159,7 +162,7 @@
                                         :key="key"
                                         :divided="!!type.divided"
                                         @click.native="addFile(type.value)">
-                                        <div :class="`no-dark-mode-before file-item file-icon ${type.value}`">{{$L(type.label)}}</div>
+                                        <div :class="`no-dark-before file-item file-icon ${type.value}`">{{$L(type.label)}}</div>
                                     </DropdownItem>
                                 </DropdownMenu>
                             </Dropdown>
@@ -182,7 +185,7 @@
                                 :key="key"
                                 :divided="!!type.divided"
                                 @click.native="addFile(type.value)">
-                                <div :class="`no-dark-mode-before file-item file-icon ${type.value}`">{{$L(type.label)}}</div>
+                                <div :class="`no-dark-before file-item file-icon ${type.value}`">{{$L(type.label)}}</div>
                             </DropdownItem>
                         </template>
                     </DropdownMenu>
@@ -347,12 +350,12 @@
             :ok-text="$L('立即上传')"
             :enter-ok="true"
             @on-ok="pasteSend">
-            <div class="dialog-wrapper-paste">
-                <template v-for="item in pasteItem">
+            <ul class="dialog-wrapper-paste" :class="pasteWrapperClass">
+                <li v-for="item in pasteItem">
                     <img v-if="item.type == 'image'" :src="item.result"/>
                     <div v-else>{{$L('文件')}}: {{item.name}} ({{$A.bytesToSize(item.size)}})</div>
-                </template>
-            </div>
+                </li>
+            </ul>
         </Modal>
     </div>
 </template>
@@ -596,6 +599,13 @@ export default {
                 return '上传图片'
             }
             return '上传文件'
+        },
+
+        pasteWrapperClass() {
+            if (this.pasteItem.find(({type}) => type !== 'image')) {
+                return ['multiple'];
+            }
+            return [];
         }
     },
 
@@ -704,7 +714,7 @@ export default {
                                 class: 'file-nbox'
                             }, [
                                 h('div', {
-                                    class: `no-dark-mode-before file-name file-icon ${row.type}`,
+                                    class: `no-dark-before file-name file-icon ${row.type}`,
                                 }, array),
                             ]);
                         } else {
@@ -768,7 +778,7 @@ export default {
                                 class: `file-nbox ${this.shearIds.includes(row.id) ? 'shear' : ''}`,
                             }, [
                                 h('div', {
-                                    class: `no-dark-mode-before file-name file-icon ${row.type}`,
+                                    class: `no-dark-before file-name file-icon ${row.type}`,
                                 }, array),
                                 iconArray
                             ]);
@@ -799,7 +809,7 @@ export default {
                         if (type) {
                             return h('AutoTip', type.name);
                         } else {
-                            return h('div', row.ext || row.type)
+                            return h('div', (row.ext || row.type).toUpperCase())
                         }
                     }
                 },
@@ -1430,6 +1440,10 @@ export default {
             return $A.getObject(item, 'response.data.full_name') || item.name
         },
 
+        handleTableSort({key, order}) {
+            $A.setStorage("cacheFileSort", ['asc', 'desc'].includes(order) ? {key, order} : {});
+        },
+
         handleTableSelect(selection) {
             this.selectIds = selection.map(item => item.id);
         },
@@ -1438,8 +1452,8 @@ export default {
             this.selectIds = [];
         },
 
-        handleTableSort({key, order}) {
-            $A.setStorage("cacheFileSort", ['asc', 'desc'].includes(order) ? {key, order} : {});
+        clearShear() {
+            this.shearIds = [];
         },
 
         /********************拖动上传部分************************/

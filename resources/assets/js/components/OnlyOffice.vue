@@ -1,6 +1,7 @@
 <template>
     <div class="component-only-office">
-        <div :id="this.id" class="placeholder"></div>
+        <Alert v-if="loadError" class="load-error" type="error" show-icon>{{$L('组件加载失败！')}}</Alert>
+        <div :id="id" class="placeholder"></div>
         <div v-if="loadIng > 0" class="office-loading"><Loading/></div>
     </div>
 </template>
@@ -15,11 +16,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
+
     .placeholder {
         flex: 1;
         width: 100%;
         height: 100%;
     }
+
     .office-loading {
         position: absolute;
         top: 0;
@@ -30,6 +33,26 @@
         align-items: center;
         justify-content: center;
         z-index: 2;
+    }
+}
+</style>
+<style lang="scss">
+.component-only-office {
+    .load-error {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1;
+        padding: 8px;
+        display: flex;
+        align-items: center;
+
+        .ivu-alert-icon {
+            position: static;
+            margin-right: 8px;
+            margin-left: 4px;
+        }
     }
 }
 </style>
@@ -66,6 +89,7 @@ export default {
     data() {
         return {
             loadIng: 0,
+            loadError: false,
 
             docEditor: null,
         }
@@ -101,10 +125,11 @@ export default {
                     return;
                 }
                 this.loadIng++;
+                this.loadError = false;
                 $A.loadScript($A.apiUrl("../office/web-apps/apps/api/documents/api.js"), (e) => {
                     this.loadIng--;
                     if (e !== null) {
-                        $A.modalAlert("组件加载失败！");
+                        this.loadError = true;
                         return;
                     }
                     if (!this.documentKey) {

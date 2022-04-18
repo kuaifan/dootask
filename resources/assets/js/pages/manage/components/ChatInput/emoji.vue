@@ -1,6 +1,6 @@
 <template>
     <div class="chat-emoji-wrapper">
-        <ul class="chat-emoji-box overlay-y" :class="type === 'emoji' ? ['no-dark-mode', 'emoji'] : [type]">
+        <ul class="chat-emoji-box overlay-y" :class="[type, 'no-dark-content']">
             <li v-for="item in list" @click="onSelect(item)">
                 <img v-if="item.type === 'emoticon'" :src="item.src" :title="item.name" :alt="item.name"/>
                 <span v-else v-html="item.html" :title="item.name"></span>
@@ -8,7 +8,7 @@
         </ul>
         <ul class="chat-emoji-menu">
             <li :class="{active: type === 'emoji'}" @click="type='emoji'">
-                <span class="no-dark-mode">&#128512;</span>
+                <span class="no-dark-content">&#128512;</span>
             </li>
             <li v-for="item in emoticonList" :class="{active: type === 'emoticon' && emoticonPath == item.path}" @click="onEmoticon(item.path)">
                 <img :title="item.name" :alt="item.name" :src="item.src"/>

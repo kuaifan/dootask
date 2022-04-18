@@ -691,12 +691,9 @@
                     [style*="background: url"],
                     [style*="background-image: url"],
                     [background],
-                    twitterwidget,
-                    .sr-reader,
                     .no-dark-mode,
-                    .no-dark-mode-before:before,
-                    .sr-backdrop,
-                    .dialog-content .content-text {
+                    .no-dark-content,
+                    .no-dark-before:before {
                         ${this.utils.reverseFilter}
                     }
 
@@ -706,8 +703,9 @@
                     [style*="background-image: url"] *,
                     input,
                     [background] *,
-                    twitterwidget .NaturalImage-image,
-                    .dialog-content .content-text img {
+                    .no-dark-content img,
+                    .no-dark-content canvas,
+                    .no-dark-content svg image {
                         ${this.utils.noneFilter}
                     }
 

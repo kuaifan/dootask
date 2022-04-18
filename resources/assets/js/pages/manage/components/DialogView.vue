@@ -9,7 +9,7 @@
             <!--详情-->
             <div class="dialog-content" :class="contentClass">
                 <!--文本-->
-                <div v-if="msgData.type === 'text'" class="content-text">
+                <div v-if="msgData.type === 'text'" class="content-text no-dark-content">
                     <pre @click="viewText" v-html="textMsg(msgData.msg.text)"></pre>
                 </div>
                 <!--文件-->

@@ -4,7 +4,7 @@
             <div class="page-header">
                 <div class="header-nav">
                     <div class="header-nav-box">
-                        <div class="logo no-dark-mode"></div>
+                        <div class="logo no-dark-content"></div>
                     </div>
                     <div class="header-nav-box header-nav-boxs" v-if="windowWidth > 780">
                         <div class="header-right-one">
@@ -38,20 +38,22 @@
                             </Dropdown>
                         </div>
                         <div class="header-right-two" @click="register">{{ $L("注册帐号") }}</div>
-                        <div class="header-right-three no-dark-mode" @click="login">{{ $L("登录") }}</div>
+                        <div class="header-right-three no-dark-content" @click="login">{{ $L("登录") }}</div>
                     </div>
                     <div class="header-nav-box header-nav-boxs" v-else>
                         <Dropdown trigger="click">
                             <a href="javascript:void(0)">
-                                <Icon type="md-menu" class="header-nav-more"/>
+                                <Icon type="md-menu" class="header-nav-more no-dark-content"/>
                             </a>
                             <DropdownMenu slot="list">
                                 <DropdownItem @click.native="login">{{ $L("登录") }}</DropdownItem>
                                 <DropdownItem @click.native="register">{{ $L("注册帐号") }}</DropdownItem>
-                                <Dropdown placement="right-start" @on-click="setLanguage">
+                                <Dropdown placement="right-start" @on-click="setLanguage" transfer>
                                     <DropdownItem>
-                                        <Icon class="header-right-one-language no-dark-mode" type="md-globe"/>
-                                        <a href="javascript:void(0)" class="header-right-one-dropdown">{{ currentLanguage }}</a>
+                                        <div class="header-nav-dropdown-item">
+                                            {{ currentLanguage }}
+                                            <Icon type="ios-arrow-forward"></Icon>
+                                        </div>
                                     </DropdownItem>
                                     <DropdownMenu slot="list">
                                         <DropdownItem
@@ -61,9 +63,9 @@
                                             :selected="getLanguage() === key">{{ item }}</DropdownItem>
                                     </DropdownMenu>
                                 </Dropdown>
-                                <Dropdown trigger="click" placement="right-end" @on-click="setTheme">
+                                <Dropdown trigger="click" placement="right-end" @on-click="setTheme" transfer>
                                     <DropdownItem>
-                                        <div class="login-setting-item">
+                                        <div class="header-nav-dropdown-item">
                                             {{$L('主题皮肤')}}
                                             <Icon type="ios-arrow-forward"></Icon>
                                         </div>
@@ -88,7 +90,7 @@
                     <div class="header-tips">
                         {{ $L(`${appTitle}是一款轻量级的开源在线项目任务管理工具，提供各类文档协作工具、在线思维导图、在线流程图、项目管理、任务分发、即时IM，文件管理等工具。`) }}
                     </div>
-                    <div class="login-buttom no-dark-mode" @click="login">
+                    <div class="login-buttom no-dark-content" @click="login">
                         {{ $L("登录") }}
                     </div>
                 </div>
@@ -162,7 +164,7 @@
                 </Row>
             </div>
             <div class="page-footer">
-                <div class="footer-service no-dark-mode">
+                <div class="footer-service no-dark-content">
                     <div class="footer-bg-box">
                         <div class="box-title">{{ $L(`开启您的 ${appTitle} 团队协作`) }}</div>
                         <div class="buttom-box">

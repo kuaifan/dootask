@@ -116,12 +116,12 @@
             :ok-text="$L('发送')"
             :enter-ok="true"
             @on-ok="pasteSend">
-            <div class="dialog-wrapper-paste">
-                <template v-for="item in pasteItem">
+            <ul class="dialog-wrapper-paste" :class="pasteWrapperClass">
+                <li v-for="item in pasteItem">
                     <img v-if="item.type == 'image'" :src="item.result"/>
                     <div v-else>{{$L('文件')}}: {{item.name}} ({{$A.bytesToSize(item.size)}})</div>
-                </template>
-            </div>
+                </li>
+            </ul>
         </Modal>
 
         <!--创建群组-->
@@ -268,6 +268,13 @@ export default {
                 return '发送图片'
             }
             return '发送文件'
+        },
+
+        pasteWrapperClass() {
+            if (this.pasteItem.find(({type}) => type !== 'image')) {
+                return ['multiple'];
+            }
+            return [];
         }
     },
 

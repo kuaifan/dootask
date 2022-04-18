@@ -38,7 +38,7 @@ export default {
     },
     render(createElement) {
         return createElement('div', {
-            class: "no-dark-mode"
+            class: "no-dark-content"
         })
     },
     data: () => ({

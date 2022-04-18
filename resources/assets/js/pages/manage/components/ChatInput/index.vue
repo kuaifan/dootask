@@ -1,6 +1,6 @@
 <template>
     <div class="chat-input-wrapper" :class="modeClass">
-        <div ref="editor" class="no-dark-mode"></div>
+        <div ref="editor" class="no-dark-content"></div>
         <div class="chat-input-toolbar">
             <slot name="toolbarBefore"/>
 
