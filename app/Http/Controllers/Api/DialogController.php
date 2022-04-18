@@ -557,7 +557,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/add         15. 新增群组
+     * @api {get} api/dialog/group/add          14. 新增群组
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -608,7 +608,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/edit         16. 修改群组
+     * @api {get} api/dialog/group/edit          15. 修改群组
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -647,7 +647,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/user         16. 获取群成员
+     * @api {get} api/dialog/group/user          16. 获取群成员
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -685,7 +685,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/adduser         16. 添加群成员
+     * @api {get} api/dialog/group/adduser          17. 添加群成员
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -719,7 +719,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/deluser         16. 移出（退出）群成员
+     * @api {get} api/dialog/group/deluser          18. 移出（退出）群成员
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -761,7 +761,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/disband         16. 解散群组
+     * @api {get} api/dialog/group/disband          19. 解散群组
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
