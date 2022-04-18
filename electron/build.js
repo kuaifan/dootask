@@ -68,8 +68,6 @@ function genericPublish(url, version) {
                         uploadOra.succeed(`${filename} upload successful`)
                     }).catch(_ => {
                         uploadOra.fail(`${filename} upload fail`)
-                    }).finally(_ => {
-                        fs.unlinkSync(localFile)
                     })
                 }
             }
@@ -79,6 +77,8 @@ function genericPublish(url, version) {
 
 // 生成配置、编译应用
 function startBuild(data, publish) {
+    // delete dist folder
+    fse.removeSync(path.resolve(__dirname, "dist"))
     // information
     console.log("Name: " + data.name);
     console.log("AppId: " + data.id);
@@ -111,7 +111,6 @@ function startBuild(data, publish) {
     econfig.build.appId = data.id;
     econfig.build.artifactName = utils.getDomain(data.url) + "-v${version}-${os}-${arch}.${ext}";
     econfig.build.nsis.artifactName = utils.getDomain(data.url) + "-v${version}-${os}-${arch}.${ext}";
-    econfig.build.pkg.mustClose = [data.id];
     if (!process.env.APPLEID || !process.env.APPLEIDPASS) {
         delete econfig.build.afterSign;
     }

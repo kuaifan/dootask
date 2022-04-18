@@ -219,7 +219,7 @@ class DialogController extends AbstractController
      */
     public function msg__sendtext()
     {
-        Base::checkClientVersion('0.12.95');
+        Base::checkClientVersion('0.13.33');
         $user = User::auth();
         //
         $chat_nickname = Base::settingFind('system', 'chat_nickname');

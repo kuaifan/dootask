@@ -166,7 +166,7 @@ export default {
                     "mode": "edit",
                     "lang": lang,
                     "user": {
-                        "id": this.userInfo.userid,
+                        "id": String(this.userInfo.userid),
                         "name": this.userInfo.nickname
                     },
                     "customization": {

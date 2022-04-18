@@ -113,17 +113,20 @@ class IndexController extends InvokeController
         $genericVersion = Request::header('generic-version');
         // 上传
         if (preg_match("/^\d+\.\d+\.\d+$/", $genericVersion)) {
-            $genericPath = "uploads/desktop/" . $genericVersion . "/";
-            $res = Base::upload([
-                "file" => Request::file('file'),
-                "type" => 'desktop',
-                "path" => $genericPath,
-                "fileName" => true
-            ]);
-            if (Base::isSuccess($res)) {
-                file_put_contents($latestFile, $genericVersion);
+            $latestVersion = file_exists($latestFile) ? trim(file_get_contents($latestFile)) : "0.0.1";
+            if (version_compare($genericVersion, $latestVersion) > -1) {    // 限制上传版本必须 ≥ 当前版本
+                $genericPath = "uploads/desktop/{$genericVersion}/";
+                $res = Base::upload([
+                    "file" => Request::file('file'),
+                    "type" => 'desktop',
+                    "path" => $genericPath,
+                    "fileName" => true
+                ]);
+                if (Base::isSuccess($res)) {
+                    file_put_contents($latestFile, $genericVersion);
+                }
+                return $res;
             }
-            return $res;
         }
         // 列表
         if (preg_match("/^\d+\.\d+\.\d+$/", $name)) {
@@ -132,6 +135,9 @@ class IndexController extends InvokeController
             $lists = Base::readDir($dirPath);
             $files = [];
             foreach ($lists as $file) {
+                if (str_ends_with($file, '.yml')) {
+                    continue;
+                }
                 $fileName = Base::leftDelete($file, $dirPath);
                 $files[] = [
                     'name' => substr($fileName, 1),
