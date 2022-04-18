@@ -65,7 +65,8 @@ class IndexController extends InvokeController
         ];
         if (is_array($package['app'])) {
             foreach ($package['app'] as $item) {
-                if (is_array($item['publish']) && Base::hostContrast($url, $item['url'])) {
+                $urls = $item['urls'] && is_array($item['urls']) ? $item['urls'] : $item['url'];
+                if (is_array($item['publish']) && Base::hostContrast($url, $urls)) {
                     $array['publish'] = $item['publish'];
                 }
             }

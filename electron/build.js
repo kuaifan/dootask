@@ -68,6 +68,8 @@ function genericPublish(url, version) {
                         uploadOra.succeed(`${filename} upload successful`)
                     }).catch(_ => {
                         uploadOra.fail(`${filename} upload fail`)
+                    }).finally(_ => {
+                        fs.unlinkSync(localFile)
                     })
                 }
             }

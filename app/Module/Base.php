@@ -717,24 +717,20 @@ class Base
     /**
      * 判断两个地址域名是否相同
      * @param string $var1
-     * @param string $var2
+     * @param string|array $var2
      * @return bool
      */
     public static function hostContrast($var1, $var2)
     {
         $arr1 = parse_url($var1);
-        $arr2 = parse_url($var2);
+        $host1 = $arr1['host'] ?? $var1;
         //
-        $host1 = $var1;
-        if (isset($arr1['host'])) {
-            $host1 = $arr1['host'];
+        $host2 = [];
+        foreach (is_array($var2) ? $var2 : [$var2] as $url) {
+            $arr2 = parse_url($url);
+            $host2[] = $arr2['host'] ?? $url;
         }
-        //
-        $host2 = $var2;
-        if (isset($arr2['host'])) {
-            $host2 = $arr2['host'];
-        }
-        return $host1 == $host2;
+        return in_array($host1, $host2);
     }
 
     /**

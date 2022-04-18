@@ -12,6 +12,10 @@
             "name": "DooTask",
             "id": "com.dootask.task",
             "url": "https://dootask.com/",
+            "urls": [
+                "https://dootask.com/",
+                "https://www.dootask.com/"
+            ],
             "publish": {
                 "provider": "github",
                 "owner": "kuaifan",
@@ -22,6 +26,10 @@
             "name": "DooTask",
             "id": "com.dootask.task",
             "url": "https://dootask.com/",
+            "urls": [
+                "https://dootask.com/",
+                "https://www.dootask.com/"
+            ],
             "publish": {
                 "provider": "generic",
                 "url": "https://dootask.com/desktop/publish"
