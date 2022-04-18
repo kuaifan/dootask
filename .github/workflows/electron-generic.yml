@@ -31,7 +31,7 @@ jobs:
         with:
           node-version: 16.x
 
-      - name: Build for MacOS ${{ matrix.id }}
+      - name: Build for MacOS
         env:
           APPID: ${{ matrix.id }}
           PROVIDER: "generic"
@@ -67,7 +67,7 @@ jobs:
         with:
           node-version: 16.x
 
-      - name: Build for Windows ${{ matrix.id }}
+      - name: Build for Windows
         shell: powershell
         env:
           APPID: ${{ matrix.id }}
