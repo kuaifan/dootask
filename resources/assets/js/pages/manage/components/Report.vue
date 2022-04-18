@@ -63,7 +63,10 @@ export default {
         this.reportTabs = this.reportType;
         //
         if (this.$isMainElectron) {
-            this.$Electron.registerMsgListener('reportSaveSuccess', this.saveSuccess)
+            this.$Electron.registerMsgListener('reportSaveSuccess', ({data, msg}) => {
+                $A.messageSuccess(msg)
+                this.saveSuccess(data)
+            })
         }
     },
 

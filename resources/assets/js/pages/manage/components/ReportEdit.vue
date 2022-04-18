@@ -132,8 +132,8 @@ export default {
                 this.reportData.receive = [];
                 this.getTemplate();
                 // msg 结果描述
-                $A.messageSuccess(msg);
-                this.$emit("saveSuccess", data);
+                !this.$isSubElectron && $A.messageSuccess(msg);
+                this.$emit("saveSuccess", {data, msg});
             }).catch(({msg}) => {
                 isModal && this.$Modal.remove();
                 // msg 错误原因

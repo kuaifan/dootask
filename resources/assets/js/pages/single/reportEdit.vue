@@ -42,6 +42,7 @@ export default {
                     channel: 'reportSaveSuccess',
                     data,
                 });
+                window.close();
             }
         }
     }
