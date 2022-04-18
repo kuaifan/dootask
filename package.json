@@ -1,50 +1,12 @@
 {
     "name": "DooTask",
-    "version": "0.13.38",
+    "version": "0.13.41",
     "description": "DooTask is task management system.",
     "scripts": {
         "start": "./cmd dev",
         "build": "./cmd prod",
         "version": "node ./version.js"
     },
-    "app": [
-        {
-            "name": "DooTask",
-            "id": "com.dootask.task",
-            "url": "https://dootask.com/",
-            "urls": [
-                "https://dootask.com/",
-                "https://www.dootask.com/"
-            ],
-            "publish": {
-                "provider": "github",
-                "owner": "kuaifan",
-                "repo": "dootask"
-            }
-        },
-        {
-            "name": "DooTask",
-            "id": "com.dootask.task",
-            "url": "https://dootask.com/",
-            "urls": [
-                "https://dootask.com/",
-                "https://www.dootask.com/"
-            ],
-            "publish": {
-                "provider": "generic",
-                "url": "https://dootask.com/desktop/publish"
-            }
-        },
-        {
-            "name": "HitoseaTask",
-            "id": "com.hitosea.task",
-            "url": "https://t.hitosea.com/",
-            "publish": {
-                "provider": "generic",
-                "url": "https://t.hitosea.com/desktop/publish"
-            }
-        }
-    ],
     "author": {
         "name": "KuaiFan",
         "email": "aipaw@live.cn",
@@ -95,5 +57,43 @@
         "vuex": "^3.6.2",
         "webpack": "^5.69.1",
         "webpack-cli": "^4.9.2"
-    }
+    },
+    "app": [
+        {
+            "id": "com.dootask.task",
+            "name": "DooTask",
+            "url": "https://dootask.com/",
+            "urls": [
+                "https://dootask.com/",
+                "https://www.dootask.com/"
+            ],
+            "publish": {
+                "provider": "github",
+                "owner": "kuaifan",
+                "repo": "dootask"
+            }
+        },
+        {
+            "id": "com.dootask.task",
+            "name": "DooTask",
+            "url": "https://dootask.com/",
+            "urls": [
+                "https://dootask.com/",
+                "https://www.dootask.com/"
+            ],
+            "publish": {
+                "provider": "generic",
+                "url": "https://dootask.com/desktop/publish"
+            }
+        },
+        {
+            "id": "com.hitosea.task",
+            "name": "HitoseaTask",
+            "url": "https://t.hitosea.com/",
+            "publish": {
+                "provider": "generic",
+                "url": "https://t.hitosea.com/desktop/publish"
+            }
+        }
+    ]
 }

@@ -7,6 +7,10 @@ on:
 
 jobs:
   build-mac:
+    strategy:
+      fail-fast: false
+      matrix:
+        id: [ "com.dootask.task", "com.hitosea.task" ]
     runs-on: macos-latest
     environment: build
 
@@ -27,17 +31,22 @@ jobs:
         with:
           node-version: 16.x
 
-      - name: Build for MacOS
+      - name: Build for MacOS ${{ matrix.id }}
         env:
+          APPID: ${{ matrix.id }}
+          PROVIDER: "generic"
           APPLEID: ${{ secrets.APPLEID }}
           APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           CSC_LINK: ${{ secrets.CSC_LINK }}
-          PROVIDER: "generic"
           RELEASE_BODY: ${{ steps.changelog.outputs.changes }}
         run: ./cmd electron build-mac
 
   build-win:
+    strategy:
+      fail-fast: false
+      matrix:
+        id: [ "com.dootask.task", "com.hitosea.task" ]
     runs-on: windows-latest
     environment: build
 
@@ -58,9 +67,10 @@ jobs:
         with:
           node-version: 16.x
 
-      - name: Build for Windows
+      - name: Build for Windows ${{ matrix.id }}
         shell: powershell
         env:
+          APPID: ${{ matrix.id }}
           PROVIDER: "generic"
           RELEASE_BODY: ${{ steps.changelog.outputs.changes }}
         run: |

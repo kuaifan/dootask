@@ -69,8 +69,6 @@ function genericPublish(url, version) {
                             uploadOra.succeed(`${filename} upload successful`)
                         }).catch(_ => {
                             uploadOra.fail(`${filename} upload fail`)
-                        }).finally(_ => {
-                            fse.removeSync(localFile)
                         })
                     }
                 }
@@ -140,13 +138,13 @@ if (["dev"].includes(argv[2])) {
     child_process.spawn("npm", ["run", "start-quiet"], {stdio: "inherit", cwd: "electron"});
 } else if (platform.includes(argv[2])) {
     // 自动编译
-    let provider = process.env.PROVIDER === "generic" ? "generic" : "github"
-    config.app.forEach(data => {
-        if (data.publish.provider === provider) {
-            data.platform = argv[2];
-            startBuild(data, true)
-        }
-    })
+    let data = config.app.find(({id, publish}) => id === process.env.APPID && publish.provider === process.env.PROVIDER);
+    if (data) {
+        data.platform = argv[2];
+        startBuild(data, true)
+    } else {
+        console.warn("not build appid!");
+    }
 } else {
     // 自定义编译
     let appChoices = [];

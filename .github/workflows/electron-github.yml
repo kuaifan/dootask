@@ -1,4 +1,4 @@
-name: Build Main
+name: Build Github
 
 on:
   push:
@@ -9,7 +9,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
 
-    if: ${{ (startsWith(github.event.ref, 'refs/tags/v')) && (github.repository == 'kuaifan/kkFileView') }}
+    if: ${{ (startsWith(github.event.ref, 'refs/tags/v')) && (github.repository == 'kuaifan/dootask') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -31,10 +31,14 @@ jobs:
           body: ${{ steps.changelog.outputs.changes }}
 
   build-mac:
+    strategy:
+      fail-fast: false
+      matrix:
+        id: [ "com.dootask.task", "com.hitosea.task" ]
     runs-on: macos-latest
     environment: build
 
-    if: ${{ (startsWith(github.event.ref, 'refs/tags/v')) && (github.repository == 'kuaifan/kkFileView') }}
+    if: ${{ (startsWith(github.event.ref, 'refs/tags/v')) && (github.repository == 'kuaifan/dootask') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -44,8 +48,10 @@ jobs:
         with:
           node-version: 16.x
 
-      - name: Build for MacOS
+      - name: Build for MacOS ${{ matrix.id }}
         env:
+          APPID: ${{ matrix.id }}
+          PROVIDER: "github"
           APPLEID: ${{ secrets.APPLEID }}
           APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
@@ -55,10 +61,14 @@ jobs:
         run: ./cmd electron build-mac
 
   build-win:
+    strategy:
+      fail-fast: false
+      matrix:
+        id: [ "com.dootask.task", "com.hitosea.task" ]
     runs-on: windows-latest
     environment: build
 
-    if: ${{ (startsWith(github.event.ref, 'refs/tags/v')) && (github.repository == 'kuaifan/kkFileView') }}
+    if: ${{ (startsWith(github.event.ref, 'refs/tags/v')) && (github.repository == 'kuaifan/dootask') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -68,9 +78,11 @@ jobs:
         with:
           node-version: 16.x
 
-      - name: Build for Windows
+      - name: Build for Windows ${{ matrix.id }}
         shell: powershell
         env:
+          APPID: ${{ matrix.id }}
+          PROVIDER: "github"
           GH_TOKEN: ${{ secrets.GH_PAT }}
           EP_PRE_RELEASE: true
         run: |
