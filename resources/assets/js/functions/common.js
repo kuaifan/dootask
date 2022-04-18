@@ -1004,6 +1004,40 @@
                     window.scrollIntoView(element, options)
                 }
             }
+        },
+
+        /**
+         * 等比缩放尺寸
+         * @param width
+         * @param height
+         * @param maxWidth
+         * @param maxHeight
+         * @returns {{width, height}|{width: number, height: number}}
+         */
+        scaleToScale(width, height, maxWidth, maxHeight) {
+            let tempWidth;
+            let tempHeight;
+            if (width > 0 && height > 0) {
+                if (width / height >= maxWidth / maxHeight) {
+                    if (width > maxWidth) {
+                        tempWidth = maxWidth;
+                        tempHeight = (height * maxWidth) / width;
+                    } else {
+                        tempWidth = width;
+                        tempHeight = height;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        tempHeight = maxHeight;
+                        tempWidth = (width * maxHeight) / height;
+                    } else {
+                        tempWidth = width;
+                        tempHeight = height;
+                    }
+                }
+                return {width: parseInt(tempWidth), height: parseInt(tempHeight)};
+            }
+            return {width, height};
         }
     });
 

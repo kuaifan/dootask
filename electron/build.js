@@ -49,28 +49,30 @@ function genericPublish(url, version) {
         } else {
             for (const filename of files) {
                 const localFile = path.join(filePath, filename)
-                const fileStat = fs.statSync(localFile)
-                if (fileStat.isFile()) {
-                    const uploadOra = ora(`${filename} uploading...`).start()
-                    const formData = new FormData()
-                    formData.append("file", fs.createReadStream(localFile));
-                    await axios({
-                        method: 'post',
-                        url: url,
-                        data: formData,
-                        maxContentLength: Infinity,
-                        maxBodyLength: Infinity,
-                        headers: {
-                            'Generic-Version': version,
-                            'Content-Type': 'multipart/form-data;boundary=' + formData.getBoundary(),
-                        }
-                    }).then(_ => {
-                        uploadOra.succeed(`${filename} upload successful`)
-                    }).catch(_ => {
-                        uploadOra.fail(`${filename} upload fail`)
-                    }).finally(_ => {
-                        fse.removeSync(localFile)
-                    })
+                if (fse.existsSync(localFile)) {
+                    const fileStat = fs.statSync(localFile)
+                    if (fileStat.isFile()) {
+                        const uploadOra = ora(`${filename} uploading...`).start()
+                        const formData = new FormData()
+                        formData.append("file", fs.createReadStream(localFile));
+                        await axios({
+                            method: 'post',
+                            url: url,
+                            data: formData,
+                            maxContentLength: Infinity,
+                            maxBodyLength: Infinity,
+                            headers: {
+                                'Generic-Version': version,
+                                'Content-Type': 'multipart/form-data;boundary=' + formData.getBoundary(),
+                            }
+                        }).then(_ => {
+                            uploadOra.succeed(`${filename} upload successful`)
+                        }).catch(_ => {
+                            uploadOra.fail(`${filename} upload fail`)
+                        }).finally(_ => {
+                            fse.removeSync(localFile)
+                        })
+                    }
                 }
             }
         }

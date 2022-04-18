@@ -174,6 +174,21 @@ export default {
             }
             text = text.trim().replace(/(\n\x20*){3,}/g, "\n\n");
             text = text.replace(/\{\{RemoteURL\}\}/g, $A.apiUrl('../'))
+            const array = text.match(/<img\s+[^>]*?>/g);
+            if (array) {
+                const widthReg = new RegExp("width=\"(\\d+)\"")
+                const heightReg = new RegExp("height=\"(\\d+)\"")
+                array.some(res => {
+                    if (widthReg.test(res) && heightReg.test(res)) {
+                        let width = parseInt(res.match(widthReg)[1]),
+                            height = parseInt(res.match(heightReg)[1]),
+                            maxSize = res.indexOf("emoticon") > -1 ? 150 : 220;
+                        let scale = $A.scaleToScale(width, height, maxSize, maxSize);
+                        let value = res.replace(widthReg, `width=${scale.width}`).replace(heightReg, `height=${scale.height}`)
+                        text = text.replace(res, value)
+                    }
+                })
+            }
             return text;
         },
 
@@ -290,7 +305,7 @@ export default {
                 } else if (type === 'text') {
                     const baseUrl = $A.apiUrl('../');
                     const array = msg.text.match(/<img\s+class="browse"[^>]*?src="(.*?)"[^>]*?>/g);
-                    array.some(res => {
+                    array && array.some(res => {
                         list.push(res.match(/<img\s+class="browse"[^>]*?src="(.*?)"[^>]*?>/)[1].replace(/\{\{RemoteURL\}\}/g, baseUrl))
                     })
                 }
