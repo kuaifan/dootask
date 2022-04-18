@@ -8,12 +8,12 @@
 /*!
  * The buffer module from node.js, for the browser.
  *
- * @author   Feross Aboukhadijeh <http://feross.org>
+ * @author   Feross Aboukhadijeh <https://feross.org>
  * @license  MIT
  */
 
 /*!
- * clipboard.js v2.0.10
+ * clipboard.js v2.0.8
  * https://clipboardjs.com/
  *
  * Licensed MIT © Zeno Rocha
