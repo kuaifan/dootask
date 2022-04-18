@@ -695,7 +695,8 @@
                     .sr-reader,
                     .no-dark-mode,
                     .no-dark-mode-before:before,
-                    .sr-backdrop {
+                    .sr-backdrop,
+                    .dialog-content .content-text {
                         ${this.utils.reverseFilter}
                     }
 
@@ -705,7 +706,8 @@
                     [style*="background-image: url"] *,
                     input,
                     [background] *,
-                    twitterwidget .NaturalImage-image {
+                    twitterwidget .NaturalImage-image,
+                    .dialog-content .content-text img {
                         ${this.utils.noneFilter}
                     }
 

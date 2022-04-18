@@ -7,10 +7,10 @@
 
         <div class="dialog-head">
             <!--详情-->
-            <div class="dialog-content">
+            <div class="dialog-content" :class="contentClass">
                 <!--文本-->
                 <div v-if="msgData.type === 'text'" class="content-text">
-                    <pre class="no-dark-mode" @click="viewText" v-html="textMsg(msgData.msg.text)"></pre>
+                    <pre @click="viewText" v-html="textMsg(msgData.msg.text)"></pre>
                 </div>
                 <!--文件-->
                 <div v-else-if="msgData.type === 'file'" :class="`content-file ${msgData.msg.type}`">
@@ -124,6 +124,23 @@ export default {
 
         showMenu() {
             return this.msgData.userid == this.userId || this.msgData.type === 'file'
+        },
+
+        contentClass() {
+            const {type, msg} = this.msgData;
+            let classArray = [];
+            if (type === 'text') {
+                if (/^<img\s+class="emoticon"[^>]*?>$/.test(msg.text)) {
+                    classArray.push('an-emoticon')
+                } else if (/^\s*<p>\s*([\uD800-\uDBFF][\uDC00-\uDFFF]){3}\s*<\/p>\s*$/.test(msg.text)) {
+                    classArray.push('three-emoji')
+                } else if (/^\s*<p>\s*([\uD800-\uDBFF][\uDC00-\uDFFF]){2}\s*<\/p>\s*$/.test(msg.text)) {
+                    classArray.push('two-emoji')
+                } else if (/^\s*<p>\s*[\uD800-\uDBFF][\uDC00-\uDFFF]\s*<\/p>\s*$/.test(msg.text)) {
+                    classArray.push('an-emoji')
+                }
+            }
+            return classArray;
         }
     },
 
@@ -195,8 +212,8 @@ export default {
         imageStyle(info) {
             const {width, height} = info;
             if (width && height) {
-                let maxW = 180,
-                    maxH = 180,
+                let maxW = 220,
+                    maxH = 220,
                     tempW = width,
                     tempH = height;
                 if (width > maxW || height > maxH) {

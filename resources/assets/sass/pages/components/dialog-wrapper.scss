@@ -230,6 +230,40 @@
                                 display: flex;
                                 align-items: flex-start;
 
+                                &.an-emoticon,
+                                &.an-emoji,
+                                &.two-emoji,
+                                &.three-emoji {
+                                    background-color: transparent !important;
+                                }
+
+                                &.an-emoji {
+                                    .content-text {
+                                        > pre {
+                                            font-size: 72px;
+                                            line-height: 1;
+                                        }
+                                    }
+                                }
+
+                                &.two-emoji {
+                                    .content-text {
+                                        > pre {
+                                            font-size: 52px;
+                                            line-height: 1;
+                                        }
+                                    }
+                                }
+
+                                &.three-emoji {
+                                    .content-text {
+                                        > pre {
+                                            font-size: 32px;
+                                            line-height: 1;
+                                        }
+                                    }
+                                }
+
                                 .content-text {
                                     color: #333333;
 
@@ -242,6 +276,7 @@
                                         word-wrap: break-word;
                                         word-break: break-word;
                                         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+                                        font-size: 14px;
 
                                         img {
                                             cursor: pointer;
