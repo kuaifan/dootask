@@ -81,10 +81,10 @@ export default {
                         data,
                     }).then(() => {
                         $A.messageSuccess('修改成功');
-                        this.loadIng--;
                         this.$store.dispatch('getUserInfo').catch(() => {});
                     }).catch(({msg}) => {
                         $A.modalError(msg);
+                    }).finally(_ => {
                         this.loadIng--;
                     });
                 }

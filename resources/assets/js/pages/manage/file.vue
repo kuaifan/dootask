@@ -1145,15 +1145,15 @@ export default {
                     refresh: refresh === true ? 'yes' : 'no'
                 },
             }).then(({data}) => {
-                this.linkLoad--;
                 this.linkData = Object.assign(data, {
                     id: this.linkData.id
                 });
                 this.linkCopy();
             }).catch(({msg}) => {
-                this.linkLoad--;
                 this.linkShow = false
                 $A.modalError(msg);
+            }).finally(_ => {
+                this.linkLoad--;
             });
         },
 
@@ -1348,7 +1348,6 @@ export default {
                     id: this.shareInfo.id
                 },
             }).then(({data}) => {
-                this.shareLoad--;
                 if (data.id == this.shareInfo.id) {
                     this.shareList = data.list.map(item => {
                         item._permission = item.permission;
@@ -1356,9 +1355,10 @@ export default {
                     });
                 }
             }).catch(({msg}) => {
-                this.shareLoad--;
                 this.shareShow = false;
                 $A.modalError(msg)
+            }).finally(_ => {
+                this.shareLoad--;
             })
         },
 
@@ -1374,13 +1374,11 @@ export default {
                     force: force === true ? 1 : 0
                 }),
             }).then(({data, msg}) => {
-                this.shareLoad--;
                 $A.messageSuccess(msg)
                 this.$store.dispatch("saveFile", data);
                 this.$set(this.shareInfo, 'userids', []);
                 this.getShare();
             }).catch(({ret, msg}) => {
-                this.shareLoad--;
                 if (ret === -3001) {
                     $A.modalConfirm({
                         content: '此文件夹内已有共享文件夹，子文件的共享状态将被取消，是否继续？',
@@ -1391,6 +1389,8 @@ export default {
                 } else {
                     $A.modalError(msg, force === true ? 301 : 0)
                 }
+            }).finally(_ => {
+                this.shareLoad--;
             })
         },
 

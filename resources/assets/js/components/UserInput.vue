@@ -165,7 +165,6 @@
                             take: 30
                         },
                     }).then(({data}) => {
-                        if (!history) this.loadIng--;
                         this.list = data;
                         //
                         const index = this.searchHistory.findIndex(item => item.key == key);
@@ -180,9 +179,10 @@
                             this.searchHistory.push(tmpData)
                         }
                     }).catch(({msg}) => {
-                        if (!history) this.loadIng--;
                         this.list = [];
                         $A.messageWarning(msg);
+                    }).finally(_ => {
+                        if (!history) this.loadIng--;
                     });
                 }, this.searchHistory.length > 0 ? 300 : 0)
             },

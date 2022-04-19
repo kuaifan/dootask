@@ -231,7 +231,6 @@ export default {
                     project_id: this.projectId,
                 },
             }).then(({data}) => {
-                this.loadIng--;
                 this.list = data.map(item => {
                     item.project_flow_bak = JSON.stringify(item.project_flow_item)
                     return item;
@@ -239,8 +238,9 @@ export default {
                 this.openIndex = this.list.length === 1 ? ("index_" + this.list[0].id) : ""
                 this.$nextTick(this.syncScroller);
             }).catch(({msg}) => {
-                this.loadIng--;
                 $A.modalError(msg);
+            }).finally(_ => {
+                this.loadIng--;
             });
         },
 
@@ -347,7 +347,6 @@ export default {
                                 project_id: this.projectId,
                             },
                         }).then(({msg}) => {
-                            this.loadIng--;
                             $.messageSuccess(msg);
                             this.$Modal.remove();
                             //
@@ -356,9 +355,10 @@ export default {
                                 this.list.splice(index, 1)
                             }
                         }).catch(({msg}) => {
-                            this.loadIng--;
                             $A.modalError(msg, 301);
                             this.$Modal.remove();
+                        }).finally(_ => {
+                            this.loadIng--;
                         });
                     } else {
                         let index = this.list.findIndex(({id}) => id == data.id)
@@ -475,7 +475,6 @@ export default {
                 },
                 method: 'post',
             }).then(({data, msg}) => {
-                this.loadIng--;
                 $.messageSuccess(msg)
                 //
                 data.project_flow_bak = JSON.stringify(data.project_flow_item)
@@ -488,8 +487,9 @@ export default {
                 this.openIndex = "index_" + data.id;
                 this.$nextTick(this.syncScroller);
             }).catch(({msg}) => {
-                this.loadIng--;
                 $A.modalError(msg);
+            }).finally(_ => {
+                this.loadIng--;
             });
         },
 

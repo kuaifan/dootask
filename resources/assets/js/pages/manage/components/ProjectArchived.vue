@@ -221,14 +221,14 @@ export default {
                     pagesize: Math.max($A.runNum(this.pageSize), 10),
                 },
             }).then(({data}) => {
-                this.loadIng--;
                 this.page = data.current_page;
                 this.total = data.total;
                 this.list = data.data;
                 this.noText = '没有相关的数据';
             }).catch(() => {
-                this.loadIng--;
                 this.noText = '数据加载失败';
+            }).finally(_ => {
+                this.loadIng--;
             })
         },
 
@@ -253,13 +253,13 @@ export default {
                     type: 'recovery'
                 },
             }).then(() => {
-                this.loadIng--;
                 this.getLists();
                 this.$store.dispatch("getProjectOne", row.id).catch(() => {});
             }).catch(({msg}) => {
                 $A.modalError(msg);
-                this.loadIng--;
                 this.getLists();
+            }).finally(_ => {
+                this.loadIng--;
             })
         },
 
@@ -268,12 +268,12 @@ export default {
             this.loadIng++;
             this.$store.dispatch("removeProject", row.id).then(({msg}) => {
                 $A.messageSuccess(msg);
-                this.loadIng--;
                 this.getLists();
             }).catch(({msg}) => {
                 $A.modalError(msg);
-                this.loadIng--;
                 this.getLists();
+            }).finally(_ => {
+                this.loadIng--;
             });
         }
     }

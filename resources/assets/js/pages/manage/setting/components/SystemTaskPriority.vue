@@ -119,12 +119,12 @@ export default {
                 if (save) {
                     $A.messageSuccess('修改成功');
                 }
-                this.loadIng--;
                 this.$store.state.taskPriority = $A.cloneJSON(data);
             }).catch(({msg}) => {
                 if (save) {
                     $A.modalError(msg);
                 }
+            }).finally(_ => {
                 this.loadIng--;
             });
         }

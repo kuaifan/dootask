@@ -376,7 +376,6 @@ export default {
                     pagesize: 50
                 },
             }).then(({data}) => {
-                this.contactsLoad--;
                 data.data.some((user) => {
                     if (user.userid === this.userId) {
                         return false;
@@ -395,8 +394,9 @@ export default {
                 this.contactsCurrentPage = data.current_page;
                 this.contactsHasMorePages = data.current_page < data.last_page;
             }).catch(() => {
-                this.contactsLoad--;
                 this.contactsHasMorePages = false;
+            }).finally(_ => {
+                this.contactsLoad--;
             });
         },
 

@@ -136,10 +136,10 @@ export default {
                     id: this.code || this.file.id,
                 },
             }).then(({data}) => {
-                this.loadContent--;
                 this.contentDetail = data.content;
             }).catch(({msg}) => {
                 $A.modalError(msg);
+            }).finally(_ => {
                 this.loadContent--;
             })
         },

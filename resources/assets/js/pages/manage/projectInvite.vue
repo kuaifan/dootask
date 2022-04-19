@@ -74,12 +74,12 @@ export default {
                     code: this.code,
                 },
             }).then(({data}) => {
-                this.loadIng--;
                 this.already = data.already;
                 this.project = data.project;
             }).catch(() => {
-                this.loadIng--;
                 this.project = {}
+            }).finally(_ => {
+                this.loadIng--;
             });
         },
 
@@ -91,13 +91,13 @@ export default {
                     code: this.code,
                 },
             }).then(({data}) => {
-                this.joinLoad--;
                 this.already = data.already;
                 this.project = data.project;
                 this.goProject();
             }).catch(({msg}) => {
-                this.joinLoad--;
                 $A.modalError(msg);
+            }).finally(_ => {
+                this.joinLoad--;
             });
         },
 

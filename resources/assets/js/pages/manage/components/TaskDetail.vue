@@ -1083,7 +1083,6 @@ export default {
             }).then(({data}) => {
                 this.$store.dispatch("saveTask", data);
                 this.$store.dispatch("getDialogOne", data.dialog_id).then(() => {
-                    this.sendLoad--;
                     if ($A.isSubElectron) {
                         this.resizeDialog().then(() => {
                             this.sendDialogMsg();
@@ -1106,8 +1105,9 @@ export default {
                         });
                     }
                 }).catch(({msg}) => {
-                    this.sendLoad--;
                     $A.modalError(msg);
+                }).finally(_ => {
+                    this.sendLoad--;
                 });
             }).catch(({msg}) => {
                 this.sendLoad--;

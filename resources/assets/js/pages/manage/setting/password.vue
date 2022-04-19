@@ -90,11 +90,11 @@ export default {
                         data: this.formDatum,
                     }).then(({data}) => {
                         $A.messageSuccess('修改成功');
-                        this.loadIng--;
                         this.$store.dispatch("saveUserInfo", data);
                         this.$refs.formDatum.resetFields();
                     }).catch(({msg}) => {
                         $A.modalError(msg);
+                    }).finally(_ => {
                         this.loadIng--;
                     });
                 }

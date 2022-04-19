@@ -62,16 +62,16 @@ export default {
                 url: 'file/one',
                 data,
             }).then(({data}) => {
-                this.loadIng--;
                 this.fileInfo = data;
             }).catch(({msg}) => {
-                this.loadIng--;
                 $A.modalError({
                     content: msg,
                     onOk: () => {
                         window.close();
                     }
                 });
+            }).finally(_ => {
+                this.loadIng--;
             });
         }
     }

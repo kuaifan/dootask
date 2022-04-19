@@ -136,10 +136,8 @@ export default {
                     msg_id: this.msgId,
                 },
             }).then(({data}) => {
-                this.loadIng--;
                 this.msgDetail = data;
             }).catch(({msg}) => {
-                this.loadIng--;
                 $A.modalError({
                     content: msg,
                     onOk: () => {
@@ -148,6 +146,8 @@ export default {
                         }
                     }
                 });
+            }).finally(_ => {
+                this.loadIng--;
             });
         },
         documentKey() {

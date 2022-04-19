@@ -309,12 +309,12 @@ export default {
                     email: this.email,
                 },
             }).then(() => {
-                this.loadIng--;
                 this.reCode();
                 this.codeNeed = true;
             }).catch(_ => {
-                this.loadIng--;
                 this.codeNeed = false;
+            }).finally(_ => {
+                this.loadIng--;
             });
         },
 
@@ -351,7 +351,6 @@ export default {
                         invite: this.invite,
                     },
                 }).then(({data}) => {
-                    this.loadIng--;
                     this.codeNeed = false;
                     $A.setStorage("cacheLoginEmail", this.email)
                     this.$store.dispatch("handleClearCache", data).then(() => {
@@ -360,7 +359,6 @@ export default {
                         this.goNext1();
                     });
                 }).catch(({data, msg}) => {
-                    this.loadIng--;
                     if (data.code === 'email') {
                         $A.modalWarning(msg);
                     } else {
@@ -370,6 +368,8 @@ export default {
                         this.reCode();
                         this.codeNeed = true;
                     }
+                }).finally(_ => {
+                    this.loadIng--;
                 });
             })
         },

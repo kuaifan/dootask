@@ -213,14 +213,14 @@ export default {
                     pagesize: Math.max($A.runNum(this.pageSize), 10),
                 },
             }).then(({data}) => {
-                this.loadIng--;
                 this.page = data.current_page;
                 this.total = data.total;
                 this.list = data.data;
                 this.noText = '没有相关的数据';
             }).catch(() => {
-                this.loadIng--;
                 this.noText = '数据加载失败';
+            }).finally(_ => {
+                this.loadIng--;
             })
         },
 

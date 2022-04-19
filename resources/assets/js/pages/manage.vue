@@ -822,13 +822,13 @@ export default {
                         data: this.addData,
                     }).then(({data, msg}) => {
                         $A.messageSuccess(msg);
-                        this.loadIng--;
                         this.addShow = false;
                         this.$refs.addProject.resetFields();
                         this.$store.dispatch("saveProject", data);
                         this.toggleRoute('project', {projectId: data.id})
                     }).catch(({msg}) => {
                         $A.modalError(msg);
+                    }).finally(_ => {
                         this.loadIng--;
                     });
                 }
@@ -998,14 +998,14 @@ export default {
                 url: 'project/task/export',
                 data: this.exportData,
             }).then(({data}) => {
-                this.exportLoadIng--;
                 this.exportTaskShow = false;
                 this.$store.dispatch('downUrl', {
                     url: data.url
                 });
             }).catch(({msg}) => {
-                this.exportLoadIng--;
                 $A.modalError(msg);
+            }).finally(_ => {
+                this.exportLoadIng--;
             });
         },
 

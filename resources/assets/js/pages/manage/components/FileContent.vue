@@ -259,12 +259,11 @@ export default {
                     id: this.fileId,
                 },
             }).then(({data}) => {
-                this.loadIng--;
-                this.loadContent--;
                 this.contentDetail = data.content;
                 this.updateBak();
             }).catch(({msg}) => {
                 $A.modalError(msg);
+            }).finally(_ => {
                 this.loadIng--;
                 this.loadContent--;
             })
@@ -299,15 +298,15 @@ export default {
                         },
                     }).then(({data, msg}) => {
                         $A.messageSuccess(msg);
-                        this.loadIng--;
                         this.$store.dispatch("saveFile", {
                             id: this.fileId,
                             size: data.size,
                         });
                     }).catch(({msg}) => {
                         $A.modalError(msg);
-                        this.loadIng--;
                         this.getContent();
+                    }).finally(_ => {
+                        this.loadIng--;
                     })
                     break;
             }

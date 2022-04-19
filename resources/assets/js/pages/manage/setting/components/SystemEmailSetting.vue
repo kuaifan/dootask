@@ -104,13 +104,13 @@ export default {
                 if (save) {
                     $A.messageSuccess('修改成功');
                 }
-                this.loadIng--;
                 this.formData = data;
                 this.formDatum_bak = $A.cloneJSON(this.formData);
             }).catch(({msg}) => {
                 if (save) {
                     $A.modalError(msg);
                 }
+            }).finally(_ => {
                 this.loadIng--;
             });
         },

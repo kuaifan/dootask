@@ -111,7 +111,6 @@ export default {
                     pagesize: Math.max($A.runNum(this.listPageSize), 10),
                 }
             }).then(({data}) => {
-                this.loadIng--;
                 if (resetLoad === true) {
                     this.lists = [];
                 }
@@ -143,10 +142,11 @@ export default {
                 this.hasMorePages = data.current_page < data.last_page;
                 this.totalNum = data.total;
             }).catch(() => {
-                this.loadIng--;
                 this.lists = [];
                 this.hasMorePages = false;
                 this.totalNum = 0;
+            }).finally(_ => {
+                this.loadIng--;
             });
         },
 

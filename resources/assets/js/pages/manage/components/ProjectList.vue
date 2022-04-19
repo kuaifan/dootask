@@ -1077,11 +1077,11 @@ export default {
                 }),
             }).then(({data, msg}) => {
                 $A.messageSuccess(msg);
-                this.settingLoad--;
                 this.settingShow = false;
                 this.$store.dispatch("saveProject", data)
             }).catch(({msg}) => {
                 $A.modalError(msg);
+            }).finally(_ => {
                 this.settingLoad--;
             });
         },
@@ -1096,12 +1096,12 @@ export default {
                 },
             }).then(({msg}) => {
                 $A.messageSuccess(msg);
-                this.userLoad--;
                 this.userShow = false;
                 this.$store.dispatch("getProjectOne", this.projectId).catch(() => {});
                 this.$store.dispatch("getTaskForProject", this.projectId).catch(() => {})
             }).catch(({msg}) => {
                 $A.modalError(msg);
+            }).finally(_ => {
                 this.userLoad--;
             });
         },
@@ -1116,12 +1116,12 @@ export default {
                 },
             }).then(({msg}) => {
                 $A.messageSuccess(msg);
-                this.transferLoad--;
                 this.transferShow = false;
                 this.$store.dispatch("getProjectOne", this.projectId).catch(() => {});
                 this.$store.dispatch("getTaskForProject", this.projectId).catch(() => {})
             }).catch(({msg}) => {
                 $A.modalError(msg);
+            }).finally(_ => {
                 this.transferLoad--;
             });
         },
@@ -1292,11 +1292,11 @@ export default {
                     refresh: refresh === true ? 'yes' : 'no'
                 },
             }).then(({data}) => {
-                this.inviteLoad--;
                 this.inviteData = data;
                 this.inviteCopy();
             }).catch(({msg}) => {
                 $A.modalError(msg);
+            }).finally(_ => {
                 this.inviteLoad--;
             });
         },
