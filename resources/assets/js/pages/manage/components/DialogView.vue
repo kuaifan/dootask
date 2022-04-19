@@ -141,6 +141,10 @@ export default {
                 }
             }
             return classArray;
+        },
+
+        atUserReg() {
+            return new RegExp(`<span class="mention user" data-id="${this.userId}">`, "g")
         }
     },
 
@@ -191,6 +195,7 @@ export default {
             }
             text = text.trim().replace(/(\n\x20*){3,}/g, "\n\n");
             text = text.replace(/\{\{RemoteURL\}\}/g, $A.apiUrl('../'))
+            text = text.replace(this.atUserReg, `<span class="mention me" data-id="${this.userId}">`)
             const array = text.match(/<img\s+[^>]*?>/g);
             if (array) {
                 const widthReg = new RegExp("width=\"(\\d+)\"")

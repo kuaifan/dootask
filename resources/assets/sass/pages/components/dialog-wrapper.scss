@@ -294,7 +294,8 @@
                                             color: $flow-status-end-color;
                                             background-color: transparent;
                                             user-select: auto;
-                                            margin-right: 0;
+                                            padding: 0;
+                                            margin: 0;
 
                                             > span {
                                                 margin: 0;
@@ -302,6 +303,14 @@
 
                                             &.task {
                                                 cursor: pointer;
+                                            }
+
+                                            &.me {
+                                                font-size: 13px;
+                                                font-weight: 600;
+                                                padding: 3px 4px;
+                                                color: #ffffff;
+                                                background-color: $primary-color;
                                             }
                                         }
                                     }

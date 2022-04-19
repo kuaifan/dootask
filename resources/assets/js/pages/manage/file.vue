@@ -23,7 +23,9 @@
 
             <div class="file-navigator">
                 <ul>
-                    <li @click="browseFolder(0)">{{$L('全部文件')}}</li>
+                    <li @click="browseFolder(0)">
+                        <span>{{$L('全部文件')}}</span>
+                    </li>
                     <li v-if="searchKey">{{$L('搜索')}} "{{searchKey}}"</li>
                     <li v-else v-for="item in navigator" @click="browseFolder(item.id)">
                         <i v-if="item.share" class="taskfont">&#xe63f;</i>

@@ -221,16 +221,6 @@ body.dark-mode-reverse {
         }
     }
 
-    .chat-input-wrapper {
-        .ql-mention-list-container {
-            .ql-mention-list-item {
-                .mention-item-at {
-                    color: #1c1917;
-                }
-            }
-        }
-    }
-
     .file-icon {
         &:before {
             background-image: url("../images/file/dark/other.svg");
