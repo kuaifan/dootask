@@ -7,6 +7,7 @@
         </transition>
         <Spinner/>
         <RightBottom/>
+        <NetworkException/>
         <PreviewImageState/>
     </div>
 </template>
@@ -16,9 +17,10 @@ import Spinner from "./components/Spinner";
 import RightBottom from "./components/RightBottom";
 import PreviewImageState from "./components/PreviewImage/state";
 import {mapState} from "vuex";
+import NetworkException from "./components/NetworkException";
 
 export default {
-    components: {PreviewImageState, RightBottom, Spinner},
+    components: {NetworkException, PreviewImageState, RightBottom, Spinner},
 
     data() {
         return {

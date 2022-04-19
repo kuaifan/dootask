@@ -37,6 +37,7 @@ const stateData = {
     // Ajax
     ajaxWsReady: false,
     ajaxWsListener: [],
+    ajaxNetworkException: false,
 
     // Websocket
     ws: null,

@@ -33,6 +33,7 @@ export default {
             }
             //
             params.success = (result, status, xhr) => {
+                state.ajaxNetworkException = false;
                 if (!$A.isJson(result)) {
                     console.log(result, status, xhr);
                     reject({ret: -1, data: {}, msg: "Return error"})
@@ -47,6 +48,7 @@ export default {
                             dispatch("logout")
                         }
                     });
+                    reject(result)
                     return;
                 }
                 if (ret === -2 && params.checkNick !== false) {
@@ -75,8 +77,9 @@ export default {
                 }
             };
             params.error = (xhr, status) => {
-                if (window.navigator.onLine === false || (status === 0 && xhr.readyState === 4)) {
-                    reject({ret: -1, data: {}, msg: $A.L('网络异常，请稍后再试！')})
+                state.ajaxNetworkException = window.navigator.onLine === false || (status === 0 && xhr.readyState === 4);
+                if (state.ajaxNetworkException) {
+                    reject({ret: -1001, data: {}, msg: "Network exception"})
                 } else {
                     reject({ret: -1, data: {}, msg: "System error"})
                 }

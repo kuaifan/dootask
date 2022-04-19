@@ -937,11 +937,15 @@ export default {
         getReportUnread(timeout) {
             this.reportUnreadTimeout && clearTimeout(this.reportUnreadTimeout)
             this.reportUnreadTimeout = setTimeout(() => {
-                this.$store.dispatch("call", {
-                    url: 'report/unread',
-                }).then(({data}) => {
-                    this.reportUnreadNumber = data.total || 0;
-                }).catch(() => {});
+                if (this.userId === 0) {
+                    this.reportUnreadNumber = 0;
+                } else {
+                    this.$store.dispatch("call", {
+                        url: 'report/unread',
+                    }).then(({data}) => {
+                        this.reportUnreadNumber = data.total || 0;
+                    }).catch(() => {});
+                }
             }, typeof timeout === "number" ? timeout : 1000)
         },
 

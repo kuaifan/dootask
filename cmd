@@ -126,6 +126,10 @@ run_electron() {
     if [ "$argv" != "dev" ] && [ "$argv" != "--nobuild" ]; then
         npx mix --production -- --env --electron
     fi
+    if [ "$argv" == "dev" ]; then
+        run_exec php "php bin/run --mode=$argv"
+        supervisorctl_restart php
+    fi
     node ./electron/build.js $argv
 }
 
@@ -293,7 +297,7 @@ if [ $# -gt 0 ]; then
         [[ -z "$(env_get APP_KEY)" ]] && run_exec php "php artisan key:generate"
         run_exec php "php bin/run --mode=prod"
         # 检查数据库
-        remaining=10
+        remaining=20
         while [ ! -f "${cur_path}/docker/mysql/data/$(env_get DB_DATABASE)/db.opt" ]; do
             ((remaining=$remaining-1))
             if [ $remaining -lt 0 ]; then
