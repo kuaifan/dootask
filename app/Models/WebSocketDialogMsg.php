@@ -236,11 +236,12 @@ class WebSocketDialogMsg extends AbstractModel
             $text = str_replace($matchs[0][$key], "[:{$matchChar[1]}:{$matchId[1]}:{$matchValye[1]}:]", $text);
         }
         // 过滤标签
-        $text = strip_tags($text, '<p>');
-        $text = preg_replace("/\<p.*?\>/i", "<p>", $text);
+        $text = strip_tags($text, '<blockquote> <strong> <pre> <ol> <ul> <li> <em> <p> <s> <u>');
+        $text = preg_replace("/\<(blockquote|strong|pre|ol|ul|li|em|p|s|u).*?\>/i", "<$1>", $text);
         $text = preg_replace("/\[:IMAGE:(.*?):(.*?):(.*?):(.*?):(.*?):\]/i", "<img class=\"$1\" width=\"$2\" height=\"$3\" src=\"{{RemoteURL}}$4\" alt=\"$5\"/>", $text);
         $text = preg_replace("/\[:@:(.*?):(.*?):\]/i", "<span class=\"mention user\" data-id=\"$1\">@$2</span>", $text);
-        return preg_replace("/\[:#:(.*?):(.*?):\]/i", "<span class=\"mention task\" data-id=\"$1\">#$2</span>", $text);
+        $text = preg_replace("/\[:#:(.*?):(.*?):\]/i", "<span class=\"mention task\" data-id=\"$1\">#$2</span>", $text);
+        return preg_replace("/^(<p><\/p>)+|(<p><\/p>)+$/i", "", $text);
     }
 
     /**

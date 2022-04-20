@@ -546,6 +546,9 @@
                 setTimeout(() => { $A.modalError(config) }, millisecond);
                 return;
             }
+            if (typeof config === "string" && config === "Network exception") {
+                return;
+            }
             $A.Modal.error($A.modalConfig(config));
         },
 

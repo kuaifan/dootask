@@ -195,6 +195,7 @@ export default {
             }
             text = text.trim().replace(/(\n\x20*){3,}/g, "\n\n");
             text = text.replace(/\{\{RemoteURL\}\}/g, $A.apiUrl('../'))
+            text = text.replace(/<p><\/p>/g, '<p><br/></p>')
             text = text.replace(this.atUserReg, `<span class="mention me" data-id="${this.userId}">`)
             const array = text.match(/<img\s+[^>]*?>/g);
             if (array) {

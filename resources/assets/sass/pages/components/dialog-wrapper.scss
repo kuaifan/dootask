@@ -278,6 +278,59 @@
                                         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
                                         font-size: 14px;
 
+                                        ol,
+                                        ul {
+                                            li {
+                                                list-style-type: none;
+
+                                                &::before {
+                                                    display: inline-block;
+                                                    white-space: nowrap;
+                                                    width: 1.2em;
+                                                    color: #0088ff;
+                                                    text-align: left;
+                                                    margin-right: 0.2em;
+                                                }
+                                            }
+                                        }
+
+                                        ul {
+                                            li {
+                                                &::before {
+                                                    content: '\2022';
+                                                    font-weight: 900;
+                                                }
+                                            }
+                                        }
+
+                                        ol {
+                                            li {
+                                                counter-reset: list-1 list-2 list-3 list-4 list-5 list-6 list-7 list-8 list-9;
+                                                counter-increment: list-0;
+
+                                                &:before {
+                                                    content: counter(list-0, decimal) '. ';
+                                                }
+                                            }
+                                        }
+
+                                        blockquote {
+                                            border-left: 4px solid #ccc;
+                                            margin-bottom: 5px;
+                                            margin-top: 5px;
+                                            padding-left: 16px;
+                                        }
+
+                                        pre {
+                                            white-space: pre-wrap;
+                                            margin: 5px 0;
+                                            padding: 5px 10px;
+                                            border-radius: 3px;
+                                            background-color: #23241f;
+                                            color: #f8f8f2;
+                                            overflow: visible;
+                                        }
+
                                         img {
                                             cursor: pointer;
                                             max-width: 220px;

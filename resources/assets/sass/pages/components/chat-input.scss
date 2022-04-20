@@ -1,4 +1,4 @@
-@import "~quill/dist/quill.snow.css";
+@import "~quill/dist/quill.bubble.css";
 @import "~quill-mention/dist/quill.mention.min.css";
 
 .chat-input-wrapper {
@@ -40,6 +40,26 @@
             img {
                 max-width: 150px;
                 max-height: 150px;
+            }
+
+            ol,
+            ul {
+                padding-left: 0;
+                li {
+                    &:before {
+                        color: #0088ff;
+                        text-align: left;
+                        margin-right: 0.2em;
+                    }
+                }
+            }
+
+            ul {
+                li {
+                    &:before {
+                        font-weight: 900;
+                    }
+                }
             }
 
             &.ql-blank {
@@ -182,6 +202,12 @@
                     line-height: 40px;
                 }
             }
+        }
+    }
+
+    .ql-bubble {
+        .ql-tooltip {
+            z-index: 1;
         }
     }
 

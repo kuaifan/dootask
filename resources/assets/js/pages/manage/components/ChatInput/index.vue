@@ -160,10 +160,13 @@ export default {
         init() {
             // Options
             this._options = Object.assign({
-                theme: null,
+                theme: 'bubble',
                 readOnly: false,
                 placeholder: this.placeholder,
                 modules: {
+                    toolbar: [
+                        ['bold', 'strike', 'italic', 'underline', {'list': 'ordered'}, {'list': 'bullet'}, 'blockquote', 'code-block']
+                    ],
                     keyboard: {
                         bindings: {
                             'short enter': {
@@ -259,9 +262,9 @@ export default {
                     this.quill.deleteText(this.maxlength, this.quill.getLength());
                 }
                 let html = this.$refs.editor.children[0].innerHTML
+                html = html.replace(/^(<p><br><\/p>)+|(<p><br><\/p>)+$/gi, '')
                 const quill = this.quill
                 const text = this.quill.getText()
-                if (/^(\<p\>\<br\>\<\/p\>)+$/.test(html)) html = ''
                 this._content = html
                 this.$emit('input', this._content)
                 this.$emit('on-change', { html, text, quill })
