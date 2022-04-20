@@ -1,6 +1,6 @@
 <template>
     <div class="chat-input-wrapper" :class="modeClass">
-        <div ref="editor" class="no-dark-content"></div>
+        <div ref="editor" class="no-dark-content" :style="editorStyle"></div>
         <div class="chat-input-toolbar">
             <slot name="toolbarBefore"/>
 
@@ -106,6 +106,7 @@ export default {
             _options: {},
 
             modeClass: '',
+            editorStyle: {},
 
             userList: null,
             taskList: null,
@@ -268,10 +269,12 @@ export default {
                 this._content = html
                 this.$emit('input', this._content)
                 this.$emit('on-change', { html, text, quill })
+                this.calcEditStyle();
             })
 
             // Emit ready event
             this.$emit('on-ready', this.quill)
+            this.calcEditStyle();
         },
 
         focus() {
@@ -288,6 +291,16 @@ export default {
 
         send() {
             this.$emit('on-send')
+        },
+
+        calcEditStyle() {
+            if (this.$refs.editor.clientWidth < 120 || this.$refs.editor.clientHeight > 40) {
+                this.editorStyle = {
+                    width: '100%'
+                };
+            } else {
+                this.editorStyle = {};
+            }
         },
 
         onSelectEmoji(item) {

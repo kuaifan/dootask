@@ -28,8 +28,9 @@
     .ql-container {
         display: block;
         float: left;
+        width: auto;
         max-width: 100%;
-        min-width: calc(100% - 175px);
+        min-width: calc(100% - 170px);
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
 
         .ql-editor {
@@ -216,7 +217,7 @@
         align-items: center;
         justify-content: flex-end;
         float: right;
-        width: 175px;
+        width: 170px;
         height: 28px;
         padding: 0 2px;
         .common-loading {

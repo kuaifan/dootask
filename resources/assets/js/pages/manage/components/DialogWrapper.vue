@@ -307,9 +307,18 @@ export default {
                     this.msgNew = 0;
                     this.topId = -1;
                     this.visible = false;
+                    if (this.dialogMsgList.length > 0) {
+                        setTimeout(_ => {
+                            this.onToBottom();
+                            this.visible = true;
+                        }, 10);
+                    }
+                    let startTime = new Date().getTime();
                     this.$store.dispatch("getDialogMsgs", id).then(_ => {
-                        this.onToBottom();
-                        this.visible = true;
+                        setTimeout(_ => {
+                            this.onToBottom();
+                            this.visible = true;
+                        }, Math.max(0, 100 - (new Date().getTime() - startTime)));
                     });
                 }
             },
