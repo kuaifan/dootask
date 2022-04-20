@@ -305,8 +305,8 @@
             :mask-closable="false"
             :footer-hide="true"
             @on-visible-change="taskVisibleChange">
-            <div class="page-manage-task-modal" :style="taskStyle">
-                <TaskDetail ref="taskDetail" :task-id="taskId" :open-task="taskData"/>
+            <div class="page-manage-task-modal">
+                <TaskDetail ref="taskDetail" :task-id="taskId" :open-task="taskData" modalMode/>
             </div>
         </Modal>
 

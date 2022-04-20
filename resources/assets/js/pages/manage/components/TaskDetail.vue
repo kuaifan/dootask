@@ -70,7 +70,8 @@
     <!--主任务-->
     <div
         v-else-if="ready"
-        :class="{'task-detail':true, 'open-dialog': hasOpenDialog, 'completed': taskDetail.complete_at}">
+        :class="{'task-detail':true, 'open-dialog': hasOpenDialog, 'completed': taskDetail.complete_at}"
+        :style="taskDetailStyle">
         <div v-show="taskDetail.id > 0" class="task-info">
             <div class="head">
                 <TaskMenu
@@ -454,6 +455,11 @@ export default {
             type: Boolean,
             default: true
         },
+        // 是否Modal模式
+        modalMode: {
+            type: Boolean,
+            default: false
+        },
     },
     data() {
         return {
@@ -623,6 +629,16 @@ export default {
             return {
                 minHeight: (innerHeight - (innerHeight > 900 ? 200 : 70) - 48) + 'px'
             }
+        },
+
+        taskDetailStyle() {
+            const {modalMode, innerHeight, hasOpenDialog} = this;
+            if (modalMode && hasOpenDialog) {
+                return {
+                    maxHeight: (innerHeight - (innerHeight > 900 ? 200 : 70) - 30) + 'px'
+                }
+            }
+            return {}
         },
 
         cutTime() {

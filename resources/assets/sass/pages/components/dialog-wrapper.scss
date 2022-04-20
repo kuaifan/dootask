@@ -504,6 +504,7 @@
                             .percent {
                                 display: none;
                                 margin-left: 4px;
+                                align-items: center;
                                 cursor: pointer;
                             }
                         }
@@ -628,7 +629,7 @@
                                 }
 
                                 .percent {
-                                    display: inline-block;
+                                    display: flex;
                                 }
                             }
                         }

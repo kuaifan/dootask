@@ -4,7 +4,6 @@
     margin: 0 -32px 12px -10px;
     padding: 0 22px 12px 0;
     min-height: 120px;
-    overflow: auto;
     .task-info {
         flex: 3;
         display: flex;
@@ -492,6 +491,7 @@
         flex-shrink: 0;
         display: flex;
         flex-direction: column;
+        justify-content: flex-end;
         margin-top: 22px;
         position: relative;
         .head {
@@ -671,16 +671,8 @@
             margin: 0 0 0 18px;
             min-width: 320px;
             max-width: 450px;
-            &:before {
-                content: "";
-                position: absolute;
-                top: 0;
-                left: 0;
-                bottom: 0;
-                z-index: 1;
-                width: 1px;
-                background-color: #f4f5f5;
-            }
+            border-left: 1px solid #f4f5f5;
+            
             .head {
                 &:before {
                     left: 18px;

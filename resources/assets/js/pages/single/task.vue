@@ -11,12 +11,12 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    overflow: auto;
     .task-detail {
         flex: 1;
         margin: 0;
         padding: 18px 22px;
         border-radius: 0;
+        overflow: auto;
     }
 }
 </style>
