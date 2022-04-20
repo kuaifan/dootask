@@ -48,30 +48,32 @@
         <!--时间/阅读-->
         <div v-if="msgData.created_at" class="dialog-foot">
             <div class="time" :title="msgData.created_at">{{$A.formatTime(msgData.created_at)}}</div>
-            <EPopover
-                v-if="msgData.send > 1 || dialogType === 'group'"
-                v-model="popperShow"
-                ref="percent"
-                class="percent"
-                placement="left-end"
-                :width="360"
-                :offset="-8">
-                <div class="dialog-wrapper-read-poptip-content">
-                    <ul class="read overlay-y">
-                        <li class="read-title"><em>{{ readList.length }}</em>{{ $L('已读') }}</li>
-                        <li v-for="item in readList">
-                            <UserAvatar :userid="item.userid" :size="26" showName/>
-                        </li>
-                    </ul>
-                    <ul class="unread overlay-y">
-                        <li class="read-title"><em>{{ unreadList.length }}</em>{{ $L('未读') }}</li>
-                        <li v-for="item in unreadList">
-                            <UserAvatar :userid="item.userid" :size="26" showName/>
-                        </li>
-                    </ul>
-                </div>
-                <WCircle slot="reference" :percent="msgData.percentage" :size="14"/>
-            </EPopover>
+
+            <div v-if="msgData.send > 1 || dialogType === 'group'" class="percent" @click="openReadPercentage">
+                <EPopover
+                    v-model="popperShow"
+                    ref="percent"
+                    placement="left-end"
+                    :width="360">
+                    <div class="dialog-wrapper-read-poptip-content">
+                        <ul class="read overlay-y">
+                            <li class="read-title"><em>{{ readList.length }}</em>{{ $L('已读') }}</li>
+                            <li v-for="item in readList">
+                                <UserAvatar :userid="item.userid" :size="26" showName/>
+                            </li>
+                        </ul>
+                        <ul class="unread overlay-y">
+                            <li class="read-title"><em>{{ unreadList.length }}</em>{{ $L('未读') }}</li>
+                            <li v-for="item in unreadList">
+                                <UserAvatar :userid="item.userid" :size="26" showName/>
+                            </li>
+                        </ul>
+                    </div>
+                    <div slot="reference"></div>
+                </EPopover>
+                <Loading v-if="popperLoad > 0"/>
+                <WCircle v-else :percent="msgData.percentage" :size="14"/>
+            </div>
             <Icon v-else-if="msgData.percentage === 100" class="done" type="md-done-all"/>
             <Icon v-else class="done" type="md-checkmark"/>
         </div>
@@ -102,6 +104,7 @@ export default {
 
     data() {
         return {
+            popperLoad: 0,
             popperShow: false,
             allList: [],
         }
@@ -154,22 +157,6 @@ export default {
                 this.msgRead();
             },
             immediate: true,
-        },
-        popperShow(val) {
-            if (val) {
-                this.$store.dispatch("call", {
-                    url: 'dialog/msg/readlist',
-                    data: {
-                        msg_id: this.msgData.id,
-                    },
-                }).then(({data}) => {
-                    this.allList = data;
-                    setTimeout(this.$refs.percent.updatePopper, 10)
-                }).catch(() => {
-                    this.allList = [];
-                    setTimeout(this.$refs.percent.updatePopper, 10)
-                });
-            }
         }
     },
 
@@ -187,6 +174,32 @@ export default {
                 }
                 this.$store.dispatch("dialogMsgRead", this.msgData);
             }, 50)
+        },
+
+        openReadPercentage() {
+            if (this.popperLoad > 0) {
+                return;
+            }
+            if (this.popperShow) {
+                this.popperShow = false;
+                return;
+            }
+            this.popperLoad++;
+            this.$store.dispatch("call", {
+                url: 'dialog/msg/readlist',
+                data: {
+                    msg_id: this.msgData.id,
+                },
+            }).then(({data}) => {
+                this.allList = data;
+            }).catch(() => {
+                this.allList = [];
+            }).finally(_ => {
+                setTimeout(() => {
+                    this.popperLoad--;
+                    this.popperShow = true
+                }, 100)
+            });
         },
 
         textMsg(text) {
