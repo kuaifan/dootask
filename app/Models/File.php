@@ -343,8 +343,6 @@ class File extends AbstractModel
         $filePath = $data['path'];
         $fileSize = $data['size'];
         $fileExt = $data['ext'];
-        $fileDotExt = '.' . $fileExt;
-        $fileName = Base::rightDelete($data['name'], $fileDotExt) . $fileDotExt;
         $publicPath = public_path($filePath);
         //
         switch ($fileExt) {
@@ -393,11 +391,16 @@ class File extends AbstractModel
                     } else {
                         $url = 'http://' . env('APP_IPPR') . '.3/' . $filePath;
                     }
+                    if ($fileExt != 'pdf') {
+                        $fileDotExt = ".{$fileExt}";
+                        $fileName = Base::rightDelete($data['name'], $fileDotExt) . $fileDotExt;
+                        $url = Base::urlAddparameter($url, [
+                            'fullfilename' => $fileName
+                        ]);
+                    }
                     $data['content'] = [
                         'preview' => true,
-                        'url' => base64_encode(Base::urlAddparameter($url, [
-                            'fullfilename' => $fileName
-                        ])),
+                        'url' => base64_encode($url),
                     ];
                     $data['file_mode'] = 'preview';
                 }
