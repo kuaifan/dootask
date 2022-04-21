@@ -65,7 +65,8 @@ export default {
             if (!$A.strExists(this.userInfo.userimg, '/avatar/default_')) {
                 this.$set(this.formData, 'userimg', this.userInfo.userimg);
             }
-            this.$set(this.formData, 'nickname', this.userInfo.nickname);
+            const nickname = typeof this.userInfo.nickname_original !== "undefined" ? this.userInfo.nickname_original : this.userInfo.nickname;
+            this.$set(this.formData, 'nickname', nickname);
             this.$set(this.formData, 'profession', this.userInfo.profession);
             this.formData_bak = $A.cloneJSON(this.formData);
         },

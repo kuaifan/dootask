@@ -57,8 +57,8 @@ export default {
                         dispatch("call", Object.assign(cloneParams, {
                             checkNick: false
                         })).then(resolve).catch(reject);
-                    }).catch(() => {
-                        reject({ret: -1, data, msg: $A.L('请设置昵称！')})
+                    }).catch(({msg}) => {
+                        reject({ret: -1, data, msg: msg || $A.L('请设置昵称！')})
                     });
                     return;
                 }
@@ -386,46 +386,49 @@ export default {
      */
     userNickNameInput({dispatch}) {
         return new Promise(function (resolve, reject) {
-            let callback = (cb, success) => {
+            let callback = (cb, result) => {
                 if (typeof cb === "function") {
                     cb();
                 }
-                if (success === true) {
+                if (result === true) {
                     setTimeout(resolve, 301)
                 } else {
-                    setTimeout(reject, 301)
+                    setTimeout(_ => {
+                        reject(result === false ? {} : {msg: result})
+                    }, 301)
                 }
             }
-            $A.modalInput({
-                title: "设置昵称",
-                placeholder: "请输入昵称",
-                okText: "保存",
-                onOk: (value, cb) => {
-                    if (value) {
-                        dispatch("call", {
-                            url: 'users/editdata',
-                            data: {
-                                nickname: value,
-                            },
-                            checkNick: false,
-                        }).then(() => {
-                            dispatch('getUserInfo').then(() => {
-                                callback(cb, true);
-                            }).catch(() => {
-                                callback(cb, false);
+            setTimeout(_ => {
+                $A.modalInput({
+                    title: "设置昵称",
+                    placeholder: "请输入昵称",
+                    okText: "保存",
+                    onOk: (value, cb) => {
+                        if (value) {
+                            dispatch("call", {
+                                url: 'users/editdata',
+                                data: {
+                                    nickname: value,
+                                },
+                                checkNick: false,
+                            }).then(() => {
+                                dispatch('getUserInfo').then(() => {
+                                    callback(cb, true);
+                                }).catch(() => {
+                                    callback(cb, false);
+                                });
+                            }).catch(({msg}) => {
+                                callback(cb, msg);
                             });
-                        }).catch(({msg}) => {
-                            $A.modalError(msg, 301);
+                        } else {
                             callback(cb, false);
-                        });
-                    } else {
-                        callback(cb, false);
+                        }
+                    },
+                    onCancel: () => {
+                        callback(null, false);
                     }
-                },
-                onCancel: () => {
-                    callback(null, false);
-                }
-            });
+                });
+            }, 100)
         });
     },
 

@@ -216,7 +216,9 @@ class UsersController extends AbstractController
         $user = User::auth();
         User::token($user);
         //
-        return Base::retSuccess('success', $user);
+        $data = $user->toArray();
+        $data['nickname_original'] = $user->getRawOriginal('nickname');
+        return Base::retSuccess('success', $data);
     }
 
     /**
