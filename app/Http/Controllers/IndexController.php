@@ -25,6 +25,10 @@ class IndexController extends InvokeController
         if ($action) {
             $app .= "__" . $action;
         }
+        if ($app === 'manifest.txt') {
+            $app = 'manifest';
+            $child = 'txt';
+        }
         if (!method_exists($this, $app)) {
             $app = method_exists($this, $method) ? $method : 'main';
         }
@@ -33,22 +37,65 @@ class IndexController extends InvokeController
 
     /**
      * 首页
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @return \Illuminate\Http\Response
      */
     public function main()
     {
         $hash = 'no';
         $path = public_path('js/hash');
+        $murl = url('manifest.txt');
         if (file_exists($path)) {
             $hash = trim(file_get_contents(public_path('js/hash')));
             if (strlen($hash) > 16) {
                 $hash = 'long';
             }
         }
-        return view('main', [
+        return response()->view('main', [
             'version' => Base::getVersion(),
             'hash' => $hash
-        ]);
+        ])->header('Link', "<{$murl}>; rel=\"prefetch\"");
+    }
+
+    /**
+     * Manifest
+     * @param $child
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\Response|string
+     */
+    public function manifest($child = '')
+    {
+        if (empty($child)) {
+            $murl = url('manifest.txt');
+            return response($murl)->header('Link', "<{$murl}>; rel=\"prefetch\"");
+        }
+        $array = [
+            "office/web-apps/apps/api/documents/api.js?hash=" . Base::getVersion(),
+            "office/7.0.1-37/web-apps/vendor/requirejs/require.js",
+            "office/7.0.1-37/web-apps/apps/api/documents/api.js",
+            "office/7.0.1-37/sdkjs/common/AllFonts.js",
+            "office/7.0.1-37/web-apps/vendor/xregexp/xregexp-all-min.js",
+            "office/7.0.1-37/web-apps/vendor/sockjs/sockjs.min.js",
+            "office/7.0.1-37/web-apps/vendor/jszip/jszip.min.js",
+            "office/7.0.1-37/web-apps/vendor/jszip-utils/jszip-utils.min.js",
+            "office/7.0.1-37/sdkjs/common/libfont/wasm/fonts.js",
+            "office/7.0.1-37/sdkjs/common/Charts/ChartStyles.js",
+            "office/7.0.1-37/sdkjs/slide/themes//themes.js",
+
+            "office/7.0.1-37/web-apps/apps/presentationeditor/main/app.js",
+            "office/7.0.1-37/sdkjs/slide/sdk-all-min.js",
+            "office/7.0.1-37/sdkjs/slide/sdk-all.js",
+
+            "office/7.0.1-37/web-apps/apps/documenteditor/main/app.js",
+            "office/7.0.1-37/sdkjs/word/sdk-all-min.js",
+            "office/7.0.1-37/sdkjs/word/sdk-all.js",
+
+            "office/7.0.1-37/web-apps/apps/spreadsheeteditor/main/app.js",
+            "office/7.0.1-37/sdkjs/cell/sdk-all-min.js",
+            "office/7.0.1-37/sdkjs/cell/sdk-all.js",
+        ];
+        foreach ($array as &$item) {
+            $item = url($item);
+        }
+        return implode(PHP_EOL, $array);
     }
 
     /**
