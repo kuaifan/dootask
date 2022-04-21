@@ -9,6 +9,7 @@
         <RightBottom/>
         <NetworkException/>
         <PreviewImageState/>
+        <iframe v-if="manifestUrl" v-show="false" :src="manifestUrl"></iframe>
     </div>
 </template>
 
@@ -26,6 +27,7 @@ export default {
         return {
             routePath: this.$route.path,
             transitionName: null,
+            manifestUrl: null
         }
     },
 
@@ -218,6 +220,7 @@ export default {
                 let {action, data} = args;
                 this.$store.dispatch(action, data);
             })
+            this.manifestUrl = $A.apiUrl("../manifest")
         }
     }
 }

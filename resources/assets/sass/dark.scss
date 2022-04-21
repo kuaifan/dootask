@@ -407,4 +407,17 @@ body.dark-mode-reverse {
             }
         }
     }
+
+    .chat-input-wrapper {
+        .ql-container {
+            .ql-editor {
+                color: #ccc;
+                &.ql-blank {
+                    &::before {
+                        color: #333;
+                    }
+                }
+            }
+        }
+    }
 }
