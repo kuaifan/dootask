@@ -845,8 +845,10 @@ class FileController extends AbstractController
             return Base::retError('仅限所有者操作');
         }
         //
-        if ($file->isNnShare()) {
-            return Base::retError('已经处于共享文件夹中');
+        $share = $file->isNnShare();
+        if ($share) {
+            $typeCn = $file->type === 'folder' ? '文件夹' : '文件';
+            return Base::retError("此{$typeCn}已经处于【{$share->name}】共享文件夹中，无法重复共享");
         }
         //
         if (!is_array($userids) || empty($userids)) {

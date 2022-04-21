@@ -142,7 +142,7 @@ class File extends AbstractModel
 
     /**
      * 是否处于共享文件夹内（不含自身）
-     * @return bool
+     * @return File|false
      */
     public function isNnShare()
     {
@@ -153,7 +153,7 @@ class File extends AbstractModel
                 break;
             }
             if ($row->share) {
-                return true;
+                return $row;
             }
             $pid = $row->pid;
         }
