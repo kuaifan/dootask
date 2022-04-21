@@ -19,6 +19,11 @@
                 font-size: 15px;
                 line-height: inherit;
             }
+            .el-avatar {
+                > img {
+                    margin: 0 auto;
+                }
+            }
             > em {
                 position: absolute;
                 right: 0;

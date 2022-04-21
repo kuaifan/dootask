@@ -90,6 +90,8 @@
             },
             height: {
             },
+            whcut: {
+            },
             type: {
             },
             http: {
@@ -110,10 +112,6 @@
         data () {
             return {
                 actionUrl: $A.apiUrl('system/imgupload'),
-                params: {
-                    width: this.width,
-                    height: this.height
-                },
                 multiple: this.num > 1,
                 visible: false,
                 browseVisible: false,
@@ -176,10 +174,15 @@
             },
 
             uploadParams() {
+                let params = {
+                    width: this.width,
+                    height: this.height,
+                    whcut: this.whcut,
+                };
                 if (Object.keys(this.otherParams).length > 0) {
-                    return Object.assign(this.params, this.otherParams);
+                    return Object.assign(params, this.otherParams);
                 } else {
-                    return this.params;
+                    return params;
                 }
             }
         },
@@ -277,10 +280,6 @@
                 if (!check) {
                     $A.noticeWarning(this.$L('最多只能上传 ' + this.maxNum + ' 张图片。'));
                 }
-                this.params = {
-                    width: this.width,
-                    height: this.height
-                };
                 return check;
             },
             handleClick() {

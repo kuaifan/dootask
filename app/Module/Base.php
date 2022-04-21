@@ -2196,7 +2196,7 @@ class Base
                     if ($width > 0 || $height > 0) {
                         $scaleName = "_{WIDTH}x{HEIGHT}";
                         if (isset($param['scale'][2])) {
-                            $scaleName .= $param['scale'][2];
+                            $scaleName .= "_c{$param['scale'][2]}";
                         }
                     }
                 }
@@ -2370,7 +2370,7 @@ class Base
                     if ($width > 0 || $height > 0) {
                         $scaleName = "_{WIDTH}x{HEIGHT}";
                         if (isset($param['scale'][2])) {
-                            $scaleName .= $param['scale'][2];
+                            $scaleName .= "_c{$param['scale'][2]}";
                         }
                     }
                 }

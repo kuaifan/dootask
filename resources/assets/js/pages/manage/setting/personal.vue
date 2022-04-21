@@ -2,7 +2,7 @@
     <div class="setting-item submit">
         <Form ref="formData" :model="formData" :rules="ruleData" label-width="auto" @submit.native.prevent>
             <FormItem :label="$L('头像')" prop="userimg">
-                <ImgUpload v-model="formData.userimg" :num="1"></ImgUpload>
+                <ImgUpload v-model="formData.userimg" :num="1" :width="512" :height="512" :whcut="1"></ImgUpload>
                 <span class="form-tip">{{$L('建议尺寸：200x200')}}</span>
             </FormItem>
             <FormItem :label="$L('邮箱')">

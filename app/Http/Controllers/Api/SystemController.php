@@ -368,8 +368,15 @@ class SystemController extends AbstractController
      * @apiGroup system
      * @apiName imgupload
      *
-     * @apiParam {String} image64         图片base64
-     * @apiParam {String} filename        文件名
+     * @apiParam {File} image               post-图片对象
+     * @apiParam {String} [image64]         post-图片base64（与'image'二选一）
+     * @apiParam {String} filename          post-文件名
+     * @apiParam {Number} [width]           压缩图片宽（默认0）
+     * @apiParam {Number} [height]          压缩图片高（默认0）
+     * @apiParam {String} [whcut]           压缩方式
+     * - 1：裁切（默认，宽、高非0有效）
+     * - 0：缩放
+     * - -1或'auto'：保持等比裁切
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -380,9 +387,12 @@ class SystemController extends AbstractController
         if (User::userid() === 0) {
             return Base::retError('身份失效，等重新登录');
         }
-        $scale = [intval(Request::input('width')), intval(Request::input('height'))];
-        if (!$scale[0] && !$scale[1]) {
-            $scale = [2160, 4160, -1];
+        $width = intval(Request::input('width'));
+        $height = intval(Request::input('height'));
+        $whcut = intval(Request::input('whcut', 1));
+        $scale = [2160, 4160, -1];
+        if ($width > 0 || $height > 0) {
+            $scale = [$width, $height, $whcut];
         }
         $path = "uploads/user/picture/" . User::userid() . "/" . date("Ym") . "/";
         $image64 = trim(Base::getPostValue('image64'));
