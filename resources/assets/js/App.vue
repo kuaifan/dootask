@@ -197,6 +197,7 @@ export default {
 
         windowSizeListener() {
             this.$store.state.windowWidth = window.innerWidth
+            this.$store.state.windowHeight = window.innerHeight
             this.$store.state.windowMax768 = window.innerWidth <= 768
         },
 

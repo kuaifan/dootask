@@ -489,8 +489,6 @@ export default {
             nowTime: $A.Time(),
             nowInterval: null,
 
-            innerHeight: Math.min(1100, window.innerHeight),
-
             msgText: '',
             msgFile: [],
             navActive: 'dialog',
@@ -531,7 +529,6 @@ export default {
         this.nowInterval = setInterval(() => {
             this.nowTime = $A.Time();
         }, 1000);
-        window.addEventListener('resize', this.innerHeightListener);
         //
         this.receiveTaskSubscribe = Store.subscribe('receiveTask', () => {
             this.receiveShow = true;
@@ -540,7 +537,6 @@ export default {
 
     destroyed() {
         clearInterval(this.nowInterval);
-        window.removeEventListener('resize', this.innerHeightListener);
         //
         if (this.receiveTaskSubscribe) {
             this.receiveTaskSubscribe.unsubscribe();
@@ -559,7 +555,8 @@ export default {
             'taskFiles',
             'taskPriority',
 
-            'windowMax768'
+            'windowMax768',
+            'windowHeight'
         ]),
 
         projectName() {
@@ -619,23 +616,25 @@ export default {
         },
 
         dialogStyle() {
-            const {innerHeight, hasOpenDialog} = this;
-            if (!innerHeight) {
+            const {windowHeight, hasOpenDialog} = this;
+            let height = Math.min(1100, windowHeight)
+            if (!height) {
                 return {};
             }
             if (!hasOpenDialog) {
                 return {};
             }
             return {
-                minHeight: (innerHeight - (innerHeight > 900 ? 200 : 70) - 48) + 'px'
+                minHeight: (height - (height > 900 ? 200 : 70) - 48) + 'px'
             }
         },
 
         taskDetailStyle() {
-            const {modalMode, innerHeight, hasOpenDialog} = this;
+            const {modalMode, windowHeight, hasOpenDialog} = this;
+            let height = Math.min(1100, windowHeight)
             if (modalMode && hasOpenDialog) {
                 return {
-                    maxHeight: (innerHeight - (innerHeight > 900 ? 200 : 70) - 30) + 'px'
+                    maxHeight: (height - (height > 900 ? 200 : 70) - 30) + 'px'
                 }
             }
             return {}
@@ -756,10 +755,6 @@ export default {
     },
 
     methods: {
-        innerHeightListener() {
-            this.innerHeight = Math.min(1100, window.innerHeight);
-        },
-
         within24Hours(date) {
             return $A.Date(date, true) - this.nowTime < 86400
         },

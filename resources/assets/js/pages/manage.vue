@@ -415,7 +415,6 @@ export default {
             openMenu: {},
             visibleMenu: false,
             show768Menu: false,
-            innerHeight: window.innerHeight,
 
             workReportShow: false,
             allUserShow: false,
@@ -452,7 +451,6 @@ export default {
         this.dialogMsgSubscribe = Store.subscribe('dialogMsgPush', this.addDialogMsg);
         //
         document.addEventListener('keydown', this.shortcutEvent);
-        window.addEventListener('resize', this.innerHeightListener);
     },
 
     beforeDestroy() {
@@ -466,7 +464,6 @@ export default {
         }
         //
         document.removeEventListener('keydown', this.shortcutEvent);
-        window.removeEventListener('resize', this.innerHeightListener);
     },
 
     deactivated() {
@@ -493,6 +490,8 @@ export default {
 
             'clientNewVersion',
             'cacheTaskBrowse',
+
+            'windowHeight',
         ]),
 
         ...mapGetters(['taskData', 'dashboardTask']),
@@ -603,9 +602,9 @@ export default {
         },
 
         taskStyle() {
-            const {innerHeight} = this;
+            const {windowHeight} = this;
             return {
-                maxHeight: (innerHeight - (innerHeight > 900 ? 200 : 70) - 20) + 'px'
+                maxHeight: (windowHeight - (windowHeight > 900 ? 200 : 70) - 20) + 'px'
             }
         },
 
@@ -707,10 +706,6 @@ export default {
                     { type: 'string', min: 2, message: this.$L('项目名称至少2个字！'), trigger: 'change' }
                 ]
             };
-        },
-
-        innerHeightListener() {
-            this.innerHeight = window.innerHeight;
         },
 
         chackPass() {

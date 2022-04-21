@@ -436,7 +436,6 @@ export default {
                 }
             ],
 
-            tableHeight: 500,
             tableMode: $A.getStorageString("fileTableMode"),
             columns: [],
 
@@ -505,7 +504,6 @@ export default {
     },
 
     mounted() {
-        this.tableHeight = window.innerHeight - 160;
         this.uploadAccept = this.uploadFormat.map(item => {
             return '.' + item
         }).join(",");
@@ -516,7 +514,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'userToken', 'userIsAdmin', 'userInfo', 'files', 'wsOpenNum']),
+        ...mapState(['userId', 'userToken', 'userIsAdmin', 'userInfo', 'files', 'wsOpenNum', 'windowHeight']),
 
         pid() {
             const {folderId} = this.$route.params;
@@ -608,6 +606,10 @@ export default {
                 return ['multiple'];
             }
             return [];
+        },
+
+        tableHeight() {
+            return Math.max(300, this.windowHeight - 160)
         }
     },
 
