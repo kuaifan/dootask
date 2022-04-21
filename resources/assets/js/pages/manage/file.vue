@@ -88,7 +88,7 @@
                                 <div class="file-menu" @click.stop="handleRightClick($event, item)">
                                     <Icon type="ios-more" />
                                 </div>
-                                <div :class="`no-dark-before file-icon ${item.type}`">
+                                <div :class="`no-dark-before file-icon ${item.type}${item.share ? ' share' : ''}`">
                                     <template v-if="item.share">
                                         <UserAvatar v-if="item.userid != userId" :userid="item.userid" class="share-avatar" :size="20">
                                             <p>{{$L('共享权限')}}: {{$L(item.permission == 1 ? '读/写' : '只读')}}</p>
@@ -776,11 +776,13 @@ export default {
                                     row.created_id != row.userid ? h('p', [h('strong', this.$L('成员创建于') + ": " + row.created_at)]) : h('p', this.$L('所有者创建') + ": " + row.created_at)
                                 ]))
                             }
+                            const shearClass = this.shearIds.includes(row.id) ? ' shear' : '';
+                            const shareClass = row.share ? ' share' : '';
                             return h('div', {
-                                class: `file-nbox ${this.shearIds.includes(row.id) ? 'shear' : ''}`,
+                                class: `file-nbox${shearClass}`,
                             }, [
                                 h('div', {
-                                    class: `no-dark-before file-name file-icon ${row.type}`,
+                                    class: `no-dark-before file-name file-icon ${row.type}${shareClass}`,
                                 }, array),
                                 iconArray
                             ]);

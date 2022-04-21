@@ -26,8 +26,15 @@
     &.flow:before {
         background-image: url("../images/file/light/flow.svg");
     }
-    &.folder:before {
-        background-image: url("../images/file/light/folder.svg");
+    &.folder {
+        &:before {
+            background-image: url("../images/file/light/folder.svg");
+        }
+        &.share {
+            &:before {
+                background-image: url("../images/file/light/folder-share.svg");
+            }
+        }
     }
     &.media:before {
         background-image: url("../images/file/light/media.svg");
