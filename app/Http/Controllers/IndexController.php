@@ -182,7 +182,7 @@ class IndexController extends InvokeController
             $lists = Base::readDir($dirPath);
             $files = [];
             foreach ($lists as $file) {
-                if (str_ends_with($file, '.yml')) {
+                if (str_ends_with($file, '.yml') || str_ends_with($file, '.yaml')) {
                     continue;
                 }
                 $fileName = Base::leftDelete($file, $dirPath);
