@@ -40,6 +40,25 @@ function cloneDrawio(systemInfo) {
     fs.writeFileSync(preConfigFile, preConfigString, 'utf8');
 }
 
+function changeLog() {
+    child_process.execSync("docker run -t -v \"$(pwd)\":/app/ orhunp/git-cliff:latest > CHANGELOG.md", {stdio: "inherit"});
+    let filePath = path.resolve(__dirname, "../CHANGELOG.md");
+    if (!fse.existsSync(filePath)) {
+        return "";
+    }
+    let content = fs.readFileSync(filePath, 'utf8')
+    let array = content.match(/## \[([0-9]+.+)\]/g)
+    if (!array) {
+        return ""
+    }
+    if (array.length > 5) {
+        content = content.substr(content.indexOf(array[0]), content.indexOf(array[5]))
+    } else {
+        content = content.substr(content.indexOf(array[0]))
+    }
+    return content;
+}
+
 // 通用发布
 function genericPublish({url, version, output}) {
     const filePath = path.resolve(__dirname, output)
@@ -118,6 +137,8 @@ function startBuild(data, publish) {
     }
     if (process.env.RELEASE_BODY) {
         econfig.build.releaseInfo.releaseNotes = process.env.RELEASE_BODY
+    } else {
+        econfig.build.releaseInfo.releaseNotes = changeLog()
     }
     if (utils.isJson(data.publish)) {
         econfig.build.publish = data.publish
