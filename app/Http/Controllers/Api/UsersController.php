@@ -137,8 +137,6 @@ class UsersController extends AbstractController
      * @apiGroup users
      * @apiName login__codeimg
      *
-     * @apiParam {String} email       用户名
-     *
      * @apiSuccess {Image} data     返回数据（直接输出图片）
      */
     public function login__codeimg()
