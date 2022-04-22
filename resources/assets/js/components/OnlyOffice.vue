@@ -196,6 +196,8 @@ export default {
                     },
                     "customization": {
                         "uiTheme": this.themeIsDark ? "theme-dark" : "theme-classic-light",
+                        "forcesave": true,
+                        "help": false,
                     },
                     "callbackUrl": `http://nginx/api/file/content/office?id=${fileKey}&token=${this.userToken}`,
                 }
