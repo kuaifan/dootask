@@ -61,6 +61,9 @@
         "appId": "com.dootask.task",
         "artifactName": "${productName}-v${version}-${os}-${arch}.${ext}",
         "asar": true,
+        "directories": {
+            "output": "dist"
+        },
         "files": [
             "public/**/*",
             "electron-preload.js",

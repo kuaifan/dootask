@@ -41,8 +41,8 @@ function cloneDrawio(systemInfo) {
 }
 
 // 通用发布
-function genericPublish(url, version) {
-    const filePath = path.resolve(__dirname, "dist")
+function genericPublish({url, version, output}) {
+    const filePath = path.resolve(__dirname, output)
     fs.readdir(filePath, async (err, files) => {
         if (err) {
             console.warn(err)
@@ -83,6 +83,7 @@ function startBuild(data, publish) {
     console.log("Name: " + data.name);
     console.log("AppId: " + data.id);
     console.log("Version: " + config.version);
+    console.log("Platform: " + data.platform);
     console.log("Publish: " + (publish ? 'Yes' : 'No'));
     let systemInfo = {
         title: data.name,
@@ -109,6 +110,7 @@ function startBuild(data, publish) {
     econfig.name = data.name;
     econfig.version = config.version;
     econfig.build.appId = data.id;
+    econfig.build.directories.output = `dist/${data.platform}`;
     econfig.build.artifactName = utils.getDomain(data.url) + "-v${version}-${os}-${arch}.${ext}";
     econfig.build.nsis.artifactName = utils.getDomain(data.url) + "-v${version}-${os}-${arch}.${ext}";
     if (!process.env.APPLEID || !process.env.APPLEIDPASS) {
@@ -127,7 +129,11 @@ function startBuild(data, publish) {
     fse.copySync(packageBakFile, packageFile)
     // generic publish
     if (publish === true && econfig.build.publish.provider === "generic") {
-        genericPublish(econfig.build.publish.url, config.version)
+        genericPublish({
+            url: econfig.build.publish.url,
+            version: config.version,
+            output: econfig.build.directories.output
+        })
     }
 }
 
