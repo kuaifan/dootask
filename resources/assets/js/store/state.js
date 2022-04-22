@@ -63,7 +63,6 @@ const stateData = {
 
     // 文件
     files: [],
-    fileContent: {},
 
     // 项目任务
     projectId: 0,

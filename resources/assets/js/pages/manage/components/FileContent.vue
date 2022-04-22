@@ -43,7 +43,7 @@
                         <DropdownItem name="pdf">{{$L('导出PDF文件')}}</DropdownItem>
                     </DropdownMenu>
                 </Dropdown>
-                <Button v-if="!file.only_view" :disabled="equalContent" :loading="loadIng > 0" class="header-button" size="small" type="primary" @click="handleClick('save')">{{$L('保存')}}</Button>
+                <Button v-if="!file.only_view" :disabled="equalContent" :loading="loadSave > 0" class="header-button" size="small" type="primary" @click="handleClick('save')">{{$L('保存')}}</Button>
             </div>
             <div v-if="contentDetail" class="content-body">
                 <template v-if="file.type=='document'">
@@ -92,10 +92,8 @@ export default {
         return {
             ready: false,
 
+            loadSave: 0,
             loadContent: 0,
-            loadIng: 0,
-
-            fileId: 0,
 
             unsaveTip: false,
 
@@ -135,25 +133,12 @@ export default {
     },
 
     watch: {
-        file: {
-            handler(info) {
-                if (this.fileId != info.id) {
-                    this.fileId = info.id;
-                    this.contentDetail = null;
-                    this.getContent();
-                }
-            },
-            immediate: true,
-            deep: true,
-        },
-
         value: {
             handler(val) {
                 if (val) {
                     this.ready = true;
                     this.editUser = [this.userId];
-                } else {
-                    this.fileContent[this.fileId] = this.contentDetail;
+                    this.getContent();
                 }
             },
             immediate: true,
@@ -189,7 +174,11 @@ export default {
     },
 
     computed: {
-        ...mapState(['fileContent', 'wsMsg', 'userId']),
+        ...mapState(['wsMsg', 'userId']),
+
+        fileId() {
+            return this.file.id || 0
+        },
 
         equalContent() {
             return this.contentBak == $A.jsonStringify(this.contentDetail);
@@ -236,13 +225,8 @@ export default {
         },
 
         getContent() {
-            if (!this.fileId) {
+            if (this.fileId === 0) {
                 this.contentDetail = {};
-                this.updateBak();
-                return;
-            }
-            if (typeof this.fileContent[this.fileId] !== "undefined") {
-                this.contentDetail = this.fileContent[this.fileId];
                 this.updateBak();
                 return;
             }
@@ -251,7 +235,7 @@ export default {
                 this.updateBak();
                 return;
             }
-            this.loadIng++;
+            this.loadSave++;
             this.loadContent++;
             this.$store.dispatch("call", {
                 url: 'file/content',
@@ -264,7 +248,7 @@ export default {
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {
-                this.loadIng--;
+                this.loadSave--;
                 this.loadContent--;
             })
         },
@@ -276,7 +260,7 @@ export default {
         handleClick(act) {
             switch (act) {
                 case "saveBefore":
-                    if (!this.equalContent && this.loadIng == 0) {
+                    if (!this.equalContent && this.loadSave == 0) {
                         this.handleClick('save');
                     } else {
                         $A.messageWarning('没有任何修改！');
@@ -288,7 +272,7 @@ export default {
                         return;
                     }
                     this.updateBak();
-                    this.loadIng++;
+                    this.loadSave++;
                     this.$store.dispatch("call", {
                         url: 'file/content/save',
                         method: 'post',
@@ -306,7 +290,7 @@ export default {
                         $A.modalError(msg);
                         this.getContent();
                     }).finally(_ => {
-                        this.loadIng--;
+                        this.loadSave--;
                     })
                     break;
             }
@@ -321,7 +305,6 @@ export default {
         },
 
         unSaveGive() {
-            delete this.fileContent[this.fileId];
             this.getContent();
             this.unsaveTip = false;
         },
