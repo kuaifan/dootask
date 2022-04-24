@@ -439,6 +439,7 @@ class FileController extends AbstractController
      * @apiParam {String} down                  直接下载
      * - no: 浏览（默认）
      * - yes: 下载（office文件直接下载）
+     * @apiParam {Number} [history_id]          读取历史记录ID
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -449,6 +450,7 @@ class FileController extends AbstractController
         $id = Request::input('id');
         $down = Request::input('down', 'no');
         $only_update_at = Request::input('only_update_at', 'no');
+        $history_id = intval(Request::input('history_id'));
         //
         if (Base::isNumber($id)) {
             User::auth();
@@ -470,7 +472,11 @@ class FileController extends AbstractController
             ]);
         }
         //
-        $content = FileContent::whereFid($file->id)->orderByDesc('id')->first();
+        $builder = FileContent::whereFid($file->id);
+        if ($history_id > 0) {
+            $builder->whereId($history_id);
+        }
+        $content = $builder->orderByDesc('id')->first();
         return FileContent::formatContent($file, $content?->content, $down == 'yes');
     }
 
@@ -765,6 +771,36 @@ class FileController extends AbstractController
             File::handleImageUrl($data);
             return Base::retSuccess($data['name'] . ' 上传成功', $data);
         });
+    }
+
+    /**
+     * @api {get} api/file/content/history          08. 获取内容历史
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup file
+     * @apiName content__history
+     *
+     * @apiParam {Number} id                文件ID
+     *
+     * @apiParam {Number} [page]            当前页，默认:1
+     * @apiParam {Number} [pagesize]        每页显示数量，默认:20，最大:100
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function content__history()
+    {
+        $id = Request::input('id');
+        //
+        $file = File::permissionFind(intval($id));
+        //
+        $data = FileContent::select(['id', 'size', 'userid', 'created_at'])
+            ->whereFid($file->id)
+            ->orderByDesc('id')
+            ->paginate(Base::getPaginate(100, 20));
+        return Base::retSuccess('success', $data);
     }
 
     /**

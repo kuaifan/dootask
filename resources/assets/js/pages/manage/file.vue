@@ -1529,7 +1529,7 @@ export default {
                     return
                 }
                 $A.modalConfirm({
-                    content: '文件尚未保存，是否放弃修改？',
+                    content: '修改的内容尚未保存，确定要放弃修改吗？',
                     cancelText: '取消',
                     okText: '放弃',
                     onOk: () => {

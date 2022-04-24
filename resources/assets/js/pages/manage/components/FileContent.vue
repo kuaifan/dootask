@@ -43,7 +43,22 @@
                         <DropdownItem name="pdf">{{$L('导出PDF文件')}}</DropdownItem>
                     </DropdownMenu>
                 </Dropdown>
-                <Button v-if="!file.only_view" :disabled="equalContent" :loading="loadSave > 0" class="header-button" size="small" type="primary" @click="handleClick('save')">{{$L('保存')}}</Button>
+                <template v-if="!file.only_view">
+                    <div class="header-icons">
+                        <ETooltip :content="$L('文件链接')">
+                            <div class="header-icon" @click="handleClick('link')"><i class="taskfont">&#xe785;</i></div>
+                        </ETooltip>
+                        <EPopover v-model="historyShow" trigger="click">
+                            <div class="file-content-history">
+                                <FileHistory :value="historyShow" :fileId="fileId" @on-select="handleHistory"/>
+                            </div>
+                            <ETooltip slot="reference" :disabled="historyShow" :content="$L('历史版本')">
+                                <div class="header-icon"><i class="taskfont">&#xe71d;</i></div>
+                            </ETooltip>
+                        </EPopover>
+                    </div>
+                    <Button :disabled="equalContent" :loading="loadSave > 0" class="header-button" size="small" type="primary" @click="handleClick('save')">{{$L('保存')}}</Button>
+                </template>
             </div>
             <div v-if="contentDetail" class="content-body">
                 <template v-if="file.type=='document'">
@@ -57,6 +72,31 @@
             </div>
         </template>
         <div v-if="contentLoad" class="content-load"><Loading/></div>
+
+        <!--文件链接-->
+        <Modal
+            v-model="linkShow"
+            :title="$L('文件链接')"
+            :mask-closable="false">
+            <div>
+                <Input ref="linkInput" v-model="linkData.url" type="textarea" :rows="3" @on-focus="linkFocus" readonly/>
+                <div class="form-tip" style="padding-top:6px">{{$L('可通过此链接浏览文件。')}}</div>
+            </div>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="linkShow=false">{{$L('取消')}}</Button>
+                <Poptip
+                    confirm
+                    placement="bottom"
+                    style="margin-left:8px"
+                    @on-ok="linkGet(true)"
+                    transfer>
+                    <div slot="title">
+                        <p><strong>{{$L('注意：刷新将导致原来的链接失效！')}}</strong></p>
+                    </div>
+                    <Button type="primary" :loading="linkLoad > 0">{{$L('刷新')}}</Button>
+                </Poptip>
+            </div>
+        </Modal>
     </div>
 </template>
 
@@ -64,6 +104,7 @@
 import Vue from 'vue'
 import Minder from '../../../components/Minder'
 import {mapState} from "vuex";
+import FileHistory from "./FileHistory";
 Vue.use(Minder)
 
 const MDEditor = () => import('../../../components/MDEditor/index');
@@ -74,7 +115,7 @@ const Drawio = () => import('../../../components/Drawio');
 
 export default {
     name: "FileContent",
-    components: {AceEditor, TEditor, MDEditor, OnlyOffice, Drawio},
+    components: {FileHistory, AceEditor, TEditor, MDEditor, OnlyOffice, Drawio},
     props: {
         value: {
             type: Boolean,
@@ -103,6 +144,12 @@ export default {
             editUser: [],
 
             loadPreview: true,
+
+            linkShow: false,
+            linkData: {},
+            linkLoad: 0,
+
+            historyShow: false,
         }
     },
 
@@ -114,7 +161,7 @@ export default {
             window.__onBeforeUnload = () => {
                 if (!this.equalContent) {
                     $A.modalConfirm({
-                        content: '修改的内容尚未保存，真的要放弃修改吗？',
+                        content: '修改的内容尚未保存，确定要放弃修改吗？',
                         cancelText: '取消',
                         okText: '放弃',
                         onOk: () => {
@@ -139,6 +186,9 @@ export default {
                     this.ready = true;
                     this.editUser = [this.userId];
                     this.getContent();
+                } else {
+                    this.linkShow = false;
+                    this.historyShow = false;
                 }
             },
             immediate: true,
@@ -224,7 +274,7 @@ export default {
             }
         },
 
-        getContent() {
+        getContent(history_id = 0) {
             if (this.fileId === 0) {
                 this.contentDetail = {};
                 this.updateBak();
@@ -241,10 +291,13 @@ export default {
                 url: 'file/content',
                 data: {
                     id: this.fileId,
+                    history_id: history_id
                 },
             }).then(({data}) => {
                 this.contentDetail = data.content;
-                this.updateBak();
+                if (!history_id) {
+                    this.updateBak();
+                }
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {
@@ -259,13 +312,21 @@ export default {
 
         handleClick(act) {
             switch (act) {
+                case "link":
+                    this.linkData = {
+                        id: this.fileId
+                    };
+                    this.linkShow = true;
+                    this.linkGet()
+                    break;
+
                 case "saveBefore":
                     if (!this.equalContent && this.loadSave == 0) {
                         this.handleClick('save');
                     } else {
                         $A.messageWarning('没有任何修改！');
                     }
-                    return;
+                    break;
 
                 case "save":
                     if (this.file.only_view) {
@@ -294,6 +355,58 @@ export default {
                     })
                     break;
             }
+        },
+
+        handleHistory(item) {
+            this.historyShow = false;
+            if (!this.equalContent) {
+                $A.modalConfirm({
+                    content: '修改的内容尚未保存，确定要读取历史记录吗？',
+                    cancelText: '取消',
+                    okText: '确定',
+                    onOk: () => {
+                        this.getContent(item.id)
+                    }
+                });
+            } else {
+                this.getContent(item.id)
+            }
+        },
+
+        linkGet(refresh) {
+            this.linkLoad++;
+            this.$store.dispatch("call", {
+                url: 'file/link',
+                data: {
+                    id: this.linkData.id,
+                    refresh: refresh === true ? 'yes' : 'no'
+                },
+            }).then(({data}) => {
+                this.linkData = Object.assign(data, {
+                    id: this.linkData.id
+                });
+                this.linkCopy();
+            }).catch(({msg}) => {
+                this.linkShow = false
+                $A.modalError(msg);
+            }).finally(_ => {
+                this.linkLoad--;
+            });
+        },
+
+        linkCopy() {
+            if (!this.linkData.url) {
+                return;
+            }
+            this.$copyText(this.linkData.url).then(() => {
+                $A.messageSuccess(this.$L('复制成功！'));
+            }, () => {
+                $A.messageError(this.$L('复制失败！'));
+            });
+        },
+
+        linkFocus() {
+            this.$refs.linkInput.focus({cursor:'all'});
         },
 
         exportMenu(act) {

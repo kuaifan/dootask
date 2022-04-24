@@ -92,6 +92,25 @@
                 font-size: 12px !important;
             }
         }
+        .header-icons {
+            margin-left: -4px;
+            margin-right: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            .header-icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 44px;
+                height: 100%;
+                color: #777777;
+                > i {
+                    font-size: 20px;
+                }
+            }
+        }
+
         .header-button {
             font-size: 12px;
             margin-right: 24px;
