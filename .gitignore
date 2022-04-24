@@ -8,6 +8,7 @@
 /vendor
 /build
 /tmp
+/CHANGELOG.md
 ._*
 .env
 .idea
