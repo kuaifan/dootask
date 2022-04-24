@@ -294,10 +294,10 @@ class File extends AbstractModel
 
     /**
      * 处理返回图片地址
-     * @param $item
-     * @return void
+     * @param array $item
+     * @return array
      */
-    public static function handleImageUrl(&$item)
+    public static function handleImageUrl($item)
     {
         if (in_array($item['ext'], self::imageExt) ) {
             $content = Base::json2array(FileContent::whereFid($item['id'])->orderByDesc('id')->value('content'));
@@ -305,6 +305,7 @@ class File extends AbstractModel
                 $item['image_url'] = Base::fillUrl($content['url']);
             }
         }
+        return $item;
     }
 
     /**

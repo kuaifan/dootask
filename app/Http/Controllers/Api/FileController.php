@@ -92,7 +92,7 @@ class FileController extends AbstractController
         }
         // 图片直接返回预览地址
         foreach ($array as &$item) {
-            File::handleImageUrl($item);
+            $item = File::handleImageUrl($item);
         }
         return Base::retSuccess('success', $array);
     }
@@ -635,7 +635,7 @@ class FileController extends AbstractController
      * @apiGroup file
      * @apiName content__upload
      *
-     * @apiParam {Number} [pid]         父级ID
+     * @apiParam {Number} [pid]             父级ID
      * @apiParam {String} [files]           文件名
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
@@ -663,11 +663,11 @@ class FileController extends AbstractController
         }
         //
         $dirs = explode("/", $webkitRelativePath);
+        $addItem = [];
         while (count($dirs) > 1) {
             $dirName = array_shift($dirs);
             if ($dirName) {
-                $pushMsg = [];
-                AbstractModel::transaction(function () use ($dirName, $user, $userid, &$pid, &$pushMsg) {
+                AbstractModel::transaction(function () use ($dirName, $user, $userid, &$pid, &$addItem) {
                     $dirRow = File::wherePid($pid)->whereType('folder')->whereName($dirName)->lockForUpdate()->first();
                     if (empty($dirRow)) {
                         $dirRow = File::createInstance([
@@ -678,7 +678,7 @@ class FileController extends AbstractController
                             'created_id' => $user->userid,
                         ]);
                         if ($dirRow->saveBeforePids()) {
-                            $pushMsg[] = File::find($dirRow->id);
+                            $addItem[] = File::find($dirRow->id);
                         }
                     }
                     if (empty($dirRow)) {
@@ -686,7 +686,7 @@ class FileController extends AbstractController
                     }
                     $pid = $dirRow->id;
                 });
-                foreach ($pushMsg as $tmpRow) {
+                foreach ($addItem as $tmpRow) {
                     $tmpRow->pushMsg('add', $tmpRow);
                 }
             }
@@ -744,7 +744,7 @@ class FileController extends AbstractController
             'created_id' => $user->userid,
         ]);
         // 开始创建
-        return AbstractModel::transaction(function () use ($webkitRelativePath, $type, $user, $data, $file) {
+        return AbstractModel::transaction(function () use ($addItem, $webkitRelativePath, $type, $user, $data, $file) {
             $file->size = $data['size'] * 1024;
             $file->saveBeforePids();
             //
@@ -766,10 +766,11 @@ class FileController extends AbstractController
             $tmpRow = File::find($file->id);
             $tmpRow->pushMsg('add', $tmpRow);
             //
-            $data = $tmpRow->toArray();
+            $data = File::handleImageUrl($tmpRow->toArray());
             $data['full_name'] = $webkitRelativePath ?: $data['name'];
-            File::handleImageUrl($data);
-            return Base::retSuccess($data['name'] . ' 上传成功', $data);
+            //
+            $addItem[] = $data;
+            return Base::retSuccess($data['name'] . ' 上传成功', $addItem);
         });
     }
 
