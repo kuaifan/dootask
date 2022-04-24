@@ -333,9 +333,10 @@
         <DrawerOverlay
             v-model="fileShow"
             class="page-file-drawer"
+            :beforeClose="fileBeforeClose"
             :mask-closable="false">
             <FilePreview v-if="fileInfo.permission === 0" :file="fileInfo"/>
-            <FileContent v-else v-model="fileShow" :file="fileInfo"/>
+            <FileContent v-else ref="fileContent" v-model="fileShow" :file="fileInfo"/>
         </DrawerOverlay>
 
         <!--预览文件-->
@@ -1515,6 +1516,27 @@ export default {
             this.pasteFile.some(file => {
                 this.$refs.fileUpload.upload(file)
             });
+        },
+
+        fileBeforeClose() {
+            return new Promise(resolve => {
+                if (!this.$refs.fileContent) {
+                    resolve();
+                    return;
+                }
+                if (this.$refs.fileContent.equalContent) {
+                    resolve()
+                    return
+                }
+                $A.modalConfirm({
+                    content: '文件尚未保存，是否放弃修改？',
+                    cancelText: '取消',
+                    okText: '放弃',
+                    onOk: () => {
+                        resolve()
+                    }
+                });
+            })
         },
 
         /********************文件上传部分************************/

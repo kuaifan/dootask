@@ -492,7 +492,7 @@ class FileController extends AbstractController
      */
     public function content__save()
     {
-        Base::checkClientVersion('0.9.13');
+        Base::checkClientVersion('0.13.68');
         $user = User::auth();
         //
         $id = Base::getPostInt('id');
@@ -535,9 +535,10 @@ class FileController extends AbstractController
                 $contentString = $content;
                 $file->ext = 'mind';
                 break;
-            case 'code':
             case 'txt':
-                $contentString = $content;
+            case 'code':
+                $contentArray = Base::json2array($content);
+                $contentString = $contentArray['content'];
                 break;
             default:
                 return Base::retError('参数错误');

@@ -29,7 +29,7 @@
                 </template>
                 <Drawio v-else-if="file.type=='drawio'" ref="myFlow" :value="contentDetail" :title="file.name" readOnly/>
                 <Minder v-else-if="file.type=='mind'" ref="myMind" :value="contentDetail" readOnly/>
-                <AceEditor v-else-if="['code', 'txt'].includes(file.type)" :value="contentDetail" :ext="file.ext" readOnly/>
+                <AceEditor v-else-if="['code', 'txt'].includes(file.type)" :value="contentDetail.content" :ext="file.ext" readOnly/>
                 <OnlyOffice v-else-if="['word', 'excel', 'ppt'].includes(file.type)" :value="contentDetail" :code="code" :documentKey="documentKey" readOnly/>
             </div>
         </template>

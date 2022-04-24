@@ -7,7 +7,7 @@
             <TEditor v-else-if="isType('text')" :value="fileDetail.content.content" height="100%" readOnly/>
             <Drawio v-else-if="isType('drawio')" v-model="fileDetail.content" :title="fileDetail.name" readOnly/>
             <Minder v-else-if="isType('mind')" :value="fileDetail.content" readOnly/>
-            <AceEditor v-else-if="isType('code')" v-model="fileDetail.content" :ext="fileDetail.ext" class="view-editor" readOnly/>
+            <AceEditor v-else-if="isType('code')" v-model="fileDetail.content.content" :ext="fileDetail.ext" class="view-editor" readOnly/>
             <OnlyOffice v-else-if="isType('office')" v-model="officeContent" :code="officeCode" :documentKey="documentKey" readOnly/>
             <iframe v-else-if="isType('preview')" class="preview-iframe" :src="previewUrl"/>
             <div v-else class="no-support">{{$L('不支持单独查看此消息')}}</div>

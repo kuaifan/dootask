@@ -374,13 +374,15 @@ class File extends AbstractModel
                 if (in_array($fileExt, self::codeExt) && $fileSize < 2 * 1024 * 1024)
                 {
                     // 文本预览，限制2M内的文件
-                    $data['content'] = file_get_contents($publicPath) ?: 'Content deleted';
+                    $data['content'] = [
+                        'content' => file_get_contents($publicPath) ?: 'Content deleted',
+                    ];
                     $data['file_mode'] = 'code';
                 }
                 elseif (in_array($fileExt, File::officeExt))
                 {
                     // office预览
-                    $data['content'] = '';
+                    $data['content'] = json_decode('{}');
                     $data['file_mode'] = 'office';
                 }
                 else
