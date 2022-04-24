@@ -303,7 +303,12 @@
                                     $A.messageWarning("没有可预览的图片")
                                     return;
                                 }
-                                this.$store.state.previewImageIndex = 0;
+                                let index = 0;
+                                const imgElm = editor.selection.getNode();
+                                if (imgElm && imgElm.nodeName === "IMG") {
+                                    index = array.findIndex(item => item === imgElm.getAttribute("src"));
+                                }
+                                this.$store.state.previewImageIndex = index;
                                 this.$store.state.previewImageList = array;
                             }
                         });
