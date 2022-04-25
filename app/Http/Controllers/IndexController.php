@@ -156,11 +156,14 @@ class IndexController extends InvokeController
      */
     public function desktop__publish($name = '')
     {
-        $latestFile = public_path("uploads/desktop/latest");
         $genericVersion = Request::header('generic-version');
+        $latestFile = public_path("uploads/desktop/latest");
+        $latestVersion = file_exists($latestFile) ? trim(file_get_contents($latestFile)) : "0.0.1";
+        if (strtolower($name) === 'latest') {
+            $name = $latestVersion;
+        }
         // 上传
         if (preg_match("/^\d+\.\d+\.\d+$/", $genericVersion)) {
-            $latestVersion = file_exists($latestFile) ? trim(file_get_contents($latestFile)) : "0.0.1";
             if (version_compare($genericVersion, $latestVersion) > -1) {    // 限制上传版本必须 ≥ 当前版本
                 $genericPath = "uploads/desktop/{$genericVersion}/";
                 $res = Base::upload([
