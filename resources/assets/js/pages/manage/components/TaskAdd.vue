@@ -292,7 +292,13 @@ export default {
         },
 
         initCascaderData() {
-            this.cascaderData = this.cacheProjects.map(project => {
+            const data = $A.cloneJSON(this.cacheProjects).sort((a, b) => {
+                if (a.top_at || b.top_at) {
+                    return $A.Date(b.top_at) - $A.Date(a.top_at);
+                }
+                return b.id - a.id;
+            });
+            this.cascaderData = data.map(project => {
                 const children = this.cacheColumns.filter(({project_id}) => project_id == project.id).map(column => {
                     return {
                         value: column.id,
@@ -432,7 +438,10 @@ export default {
         },
 
         cascaderChange(value) {
-            value[1] && this.$set(this.addData, 'column_id', value[1])
+            if (value[1]) {
+                this.$set(this.addData, 'project_id', value[0])
+                this.$set(this.addData, 'column_id', value[1])
+            }
         },
 
         cascaderInputChange(key) {
