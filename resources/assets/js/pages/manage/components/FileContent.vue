@@ -69,6 +69,7 @@
                 <Minder v-else-if="file.type=='mind'" ref="myMind" v-model="contentDetail" @saveData="handleClick('saveBefore')"/>
                 <AceEditor v-else-if="['code', 'txt'].includes(file.type)" v-model="contentDetail.content" :ext="file.ext" @saveData="handleClick('saveBefore')"/>
                 <OnlyOffice v-else-if="['word', 'excel', 'ppt'].includes(file.type)" v-model="contentDetail" :documentKey="documentKey"/>
+                <div v-if="historyShow" class="content-mask"></div>
             </div>
         </template>
         <div v-if="contentLoad" class="content-load"><Loading/></div>
