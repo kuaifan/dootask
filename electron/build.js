@@ -129,7 +129,7 @@ function startBuild(data, publish) {
     econfig.name = data.name;
     econfig.version = config.version;
     econfig.build.appId = data.id;
-    econfig.build.directories.output = `dist/${data.platform}`;
+    econfig.build.directories.output = `dist/${data.id}/${data.platform}`;
     econfig.build.artifactName = utils.getDomain(data.url) + "-v${version}-${os}-${arch}.${ext}";
     econfig.build.nsis.artifactName = utils.getDomain(data.url) + "-v${version}-${os}-${arch}.${ext}";
     if (!process.env.APPLEID || !process.env.APPLEIDPASS) {
@@ -177,9 +177,13 @@ if (["dev"].includes(argv[2])) {
     let appChoices = [];
     config.app.forEach(data => {
         appChoices.push({
-            name: data.name,
+            name: `${data.name} (${data.publish.provider})`,
             value: data
         })
+    })
+    appChoices.push({
+        name: "All generic",
+        value: 'generic'
     })
     const questions = [
         {
@@ -218,9 +222,16 @@ if (["dev"].includes(argv[2])) {
     ];
     inquirer.prompt(questions).then(answers => {
         answers.platform.forEach(platform => {
-            let data = answers.app;
-            data.platform = platform
-            startBuild(data, answers.publish)
+            let array = [];
+            if (answers.app === 'generic') {
+                array = config.app.filter(({publish}) => publish.provider === 'generic')
+            } else {
+                array.push(answers.app)
+            }
+            array.forEach(data => {
+                data.platform = platform
+                startBuild(data, answers.publish)
+            })
         });
     });
 }
