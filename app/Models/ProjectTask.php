@@ -682,7 +682,7 @@ class ProjectTask extends AbstractModel
                 }
                 $rows = ProjectTaskUser::whereTaskId($this->id)->whereOwner(1)->whereNotIn('userid', $array)->get();
                 if ($rows->isNotEmpty()) {
-                    $this->addLog("删除{任务}负责人", ['userid' => $rows->implode('userid', ',')]);
+                    $this->addLog("删除{任务}负责人", ['userid' => $rows->pluck('userid')]);
                     foreach ($rows as $row) {
                         $row->delete();
                     }
@@ -793,7 +793,7 @@ class ProjectTask extends AbstractModel
                     }
                     $rows = ProjectTaskUser::whereTaskId($this->id)->whereOwner(0)->whereNotIn('userid', $array)->get();
                     if ($rows->isNotEmpty()) {
-                        $this->addLog("删除{任务}协助人员", ['userid' => $rows->implode('userid', ',')]);
+                        $this->addLog("删除{任务}协助人员", ['userid' => $rows->pluck('userid')]);
                         foreach ($rows as $row) {
                             $row->delete();
                         }
