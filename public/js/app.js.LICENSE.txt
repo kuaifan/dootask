@@ -16,6 +16,13 @@
  */
 
 /*!
+ * clipboard.js v2.0.10
+ * https://clipboardjs.com/
+ *
+ * Licensed MIT © Zeno Rocha
+ */
+
+/*!
  * jQuery JavaScript Library v3.6.0
  * https://jquery.com/
  *

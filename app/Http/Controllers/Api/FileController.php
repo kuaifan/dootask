@@ -845,7 +845,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/share          13. 获取共享信息
+     * @api {get} api/file/share          14. 获取共享信息
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -881,7 +881,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/share/update          14. 设置共享
+     * @api {get} api/file/share/update          15. 设置共享
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -971,7 +971,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/share/out          15. 退出共享
+     * @api {get} api/file/share/out          16. 退出共享
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1005,7 +1005,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/link          16. 获取链接
+     * @api {get} api/file/link          17. 获取链接
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0

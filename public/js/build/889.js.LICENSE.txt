@@ -12,13 +12,6 @@
  * @license  MIT
  */
 
-/*!
- * clipboard.js v2.0.10
- * https://clipboardjs.com/
- *
- * Licensed MIT © Zeno Rocha
- */
-
 /*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
 
 /**!
