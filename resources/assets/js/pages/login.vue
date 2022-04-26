@@ -245,26 +245,46 @@ export default {
                 placeholder: "请输入服务器地址",
                 onOk: (value, cb) => {
                     if (value) {
-                        if (!$A.leftExists(value, "http://") && !$A.leftExists(value, "https://")) {
-                            value = "http://" + value;
-                        }
-                        if (!$A.rightExists(value, "/api/")) {
-                            value = value + ($A.rightExists(value, "/") ? "api/" : "/api/");
-                        }
-                        this.$store.dispatch("call", {
-                            url: value + 'system/setting',
-                        }).then(() => {
-                            this.setServerUrl(value)
-                            cb()
-                        }).catch(({msg}) => {
-                            $A.modalError(msg || "服务器地址无效", 301);
-                            cb()
-                        });
-                        return;
+                        this.inputServerChack(value).then(_ => cb)
+                    } else {
+                        this.clearServerUrl();
                     }
-                    this.clearServerUrl();
                 }
             });
+        },
+
+        inputServerChack(value) {
+            return new Promise(resolve => {
+                let url = value;
+                if (!/\/api\/$/.test(url)) {
+                    url = url + ($A.rightExists(url, "/") ? "api/" : "/api/");
+                }
+                if (!/^https*:\/\//i.test(url)) {
+                    url = `http://${url}`;
+                }
+                this.$store.dispatch("call", {
+                    url: `${url}system/setting`,
+                    checkNetwork: false,
+                }).then(() => {
+                    this.setServerUrl(url)
+                    resolve()
+                }).catch(({ret, msg}) => {
+                    if (ret === -1001) {
+                        if (!/^https*:\/\//i.test(value)) {
+                            this.inputServerChack(`https://${value}`).then(resolve);
+                            return;
+                        }
+                        msg = "服务器地址无效";
+                    }
+                    $A.modalError({
+                        content: msg,
+                        onOk: () => {
+                            setTimeout(this.inputServerUrl, 301)
+                        }
+                    }, 301);
+                    resolve()
+                });
+            })
         },
 
         chackServerUrl(tip) {

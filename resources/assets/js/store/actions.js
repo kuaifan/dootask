@@ -77,8 +77,11 @@ export default {
                 }
             };
             params.error = (xhr, status) => {
-                state.ajaxNetworkException = window.navigator.onLine === false || (status === 0 && xhr.readyState === 4);
-                if (state.ajaxNetworkException) {
+                const networkException = window.navigator.onLine === false || (status === 0 && xhr.readyState === 4);
+                if (params.checkNetwork !== false) {
+                    state.ajaxNetworkException = networkException;
+                }
+                if (networkException) {
                     reject({ret: -1001, data: {}, msg: "Network exception"})
                 } else {
                     reject({ret: -1, data: {}, msg: "System error"})
