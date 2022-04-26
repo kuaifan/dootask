@@ -361,11 +361,11 @@ export default {
                         onOk: () => {
                             this.$store.dispatch("removeTask", {task_id: data.id}).then(({msg}) => {
                                 $A.messageSuccess(msg);
-                                this.$Modal.remove();
                             }).catch(({msg}) => {
                                 $A.modalError(msg, 301);
-                                this.$Modal.remove();
                                 this.setRenderRange();
+                            }).finally(_ => {
+                                this.$Modal.remove();
                             });
                         }
                     });

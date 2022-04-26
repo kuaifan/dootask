@@ -8,6 +8,7 @@ import Vuex from 'vuex'
 import App from './App.vue'
 import routes from './routes'
 import VueRouter from 'vue-router'
+import VueClipboard from 'vue-clipboard2'
 import ViewUI from 'view-design-hi';
 import Language from './language/index'
 import store from './store/index'
@@ -18,6 +19,7 @@ Vue.use(ViewUI, {
         checkEscClose: true
     }
 });
+Vue.use(VueClipboard);
 Vue.use(VueRouter);
 Vue.use(Language);
 

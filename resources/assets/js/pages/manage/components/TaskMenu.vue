@@ -311,9 +311,9 @@ export default {
                     }
                     this.$store.dispatch(typeDispatch, typeData).then(({msg}) => {
                         $A.messageSuccess(msg);
-                        this.$Modal.remove();
                     }).catch(({msg}) => {
                         $A.modalError(msg, 301);
+                    }).finally(_ => {
                         this.$Modal.remove();
                     });
                 }

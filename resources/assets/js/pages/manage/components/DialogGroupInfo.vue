@@ -225,7 +225,6 @@ export default {
                             userids,
                         }
                     }).then(({msg}) => {
-                        this.$Modal.remove();
                         $A.messageSuccess(msg);
                         if (userids.length > 0) {
                             this.getDialogUser();
@@ -235,6 +234,7 @@ export default {
                         }
                     }).catch(({msg}) => {
                         $A.modalError(msg, 301);
+                    }).finally(_ => {
                         this.$Modal.remove();
                     });
                 },
@@ -253,12 +253,12 @@ export default {
                             dialog_id: this.dialogId,
                         }
                     }).then(({msg}) => {
-                        this.$Modal.remove();
                         $A.messageSuccess(msg);
                         this.$store.dispatch("forgetDialog", this.dialogId);
                         this.goForward({name: 'manage-messenger'});
                     }).catch(({msg}) => {
                         $A.modalError(msg, 301);
+                    }).finally(_ => {
                         this.$Modal.remove();
                     });
                 },

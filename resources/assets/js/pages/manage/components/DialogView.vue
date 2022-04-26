@@ -266,9 +266,9 @@ export default {
                     }).then(() => {
                         $A.messageSuccess("消息已撤回");
                         this.$store.dispatch("forgetDialogMsg", this.msgData.id);
-                        this.$Modal.remove();
                     }).catch(({msg}) => {
                         $A.messageError(msg, 301);
+                    }).finally(_ => {
                         this.$Modal.remove();
                     });
                 }

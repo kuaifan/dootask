@@ -247,11 +247,11 @@ export default {
                         }
                     }).then(({data, msg}) => {
                         $A.messageSuccess(msg);
-                        this.$Modal.remove();
                         this.$store.dispatch("saveTask", data);
                         this.getLists(true);
                     }).catch(({msg}) => {
                         $A.modalError(msg, 301);
+                    }).finally(_ => {
                         this.$Modal.remove();
                     });
                 }

@@ -348,7 +348,6 @@ export default {
                             },
                         }).then(({msg}) => {
                             $.messageSuccess(msg);
-                            this.$Modal.remove();
                             //
                             let index = this.list.findIndex(({id}) => id == data.id)
                             if (index > -1) {
@@ -356,8 +355,8 @@ export default {
                             }
                         }).catch(({msg}) => {
                             $A.modalError(msg, 301);
-                            this.$Modal.remove();
                         }).finally(_ => {
+                            this.$Modal.remove();
                             this.loadIng--;
                         });
                     } else {
