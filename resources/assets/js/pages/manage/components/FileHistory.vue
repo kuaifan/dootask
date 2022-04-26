@@ -1,12 +1,13 @@
 <template>
     <div class="file-history">
         <Table
-            :width="460"
+            :width="480"
             :max-height="windowHeight - 180"
             :columns="columns"
             :data="list"
             :loading="loadIng > 0"
             :no-data-text="$L(noText)"
+            highlight-row
             stripe/>
         <Page
             v-if="total > pageSize"
@@ -40,9 +41,11 @@ export default {
             type: Boolean,
             default: false
         },
-        fileId: {
-            type: Number,
-            default: 0
+        file: {
+            type: Object,
+            default: () => {
+                return {};
+            }
         },
     },
 
@@ -70,7 +73,7 @@ export default {
                 }, {
                     title: this.$L('大小'),
                     key: 'size',
-                    width: 80,
+                    width: 90,
                     render: (h, {row}) => {
                         return h('AutoTip', $A.bytesToSize(row.size));
                     }
@@ -78,26 +81,29 @@ export default {
                     title: this.$L('操作'),
                     align: 'center',
                     width: 100,
-                    render: (h, {row, column}) => {
-                        const vNodes = [
-                            h('div', {
-                                style: {
-                                    fontSize: '13px',
-                                    cursor: 'pointer',
-                                    color: '#8bcf70',
-                                },
-                                on: {
-                                    'click': () => {
-                                        this.$emit('on-select', row)
-                                    }
-                                },
-                            }, this.$L('读取')),
-                        ];
+                    render: (h, {index, row, column}) => {
+                        if (index === 0) {
+                            return h('div', '-');
+                        }
                         return h('TableAction', {
                             props: {
-                                column: column
+                                column: column,
+                                menu: [
+                                    {
+                                        label: this.$L('查看'),
+                                        action: "preview",
+                                    }, {
+                                        label: this.$L('还原'),
+                                        action: "restore",
+                                    }
+                                ]
+                            },
+                            on: {
+                                action: (name) => {
+                                    this.onAction(name, row)
+                                }
                             }
-                        }, vNodes);
+                        });
                     }
                 }
             ],
@@ -126,7 +132,11 @@ export default {
     },
 
     computed: {
-        ...mapState(['windowHeight'])
+        ...mapState(['windowHeight']),
+
+        fileId() {
+            return this.file.id || 0
+        },
     },
 
     methods: {
@@ -163,6 +173,37 @@ export default {
             this.page = 1;
             this.pageSize = pageSize;
             this.getLists();
+        },
+
+        onAction(name, row) {
+            switch (name) {
+                case 'restore':
+                    this.$emit('on-restore', row)
+                    break;
+
+                case 'preview':
+                    if (this.$Electron) {
+                        this.$Electron.sendMessage('windowRouter', {
+                            name: `file-${this.fileId}-${row.id}`,
+                            path: `/single/file/${this.fileId}?history_id=${row.id}&history_at=${row.created_at}`,
+                            userAgent: "/hideenOfficeTitle/",
+                            force: false,
+                            config: {
+                                title: $A.getFileName(this.file) + ` [${row.created_at}]`,
+                                titleFixed: true,
+                                parent: null,
+                                width: Math.min(window.screen.availWidth, 1440),
+                                height: Math.min(window.screen.availHeight, 900),
+                            },
+                            webPreferences: {
+                                nodeIntegrationInSubFrames: this.file.type === 'drawio'
+                            },
+                        });
+                    } else {
+                        window.open($A.apiUrl(`../single/file/${this.fileId}?history_id=${row.id}&history_at=${row.created_at}`))
+                    }
+                    break;
+            }
         },
     }
 }

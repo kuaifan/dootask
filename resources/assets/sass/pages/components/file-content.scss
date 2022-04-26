@@ -25,6 +25,40 @@
         padding: 0;
     }
 
+    .office-header {
+        display: flex;
+        align-items: center;
+        position: absolute;
+        right: 40px;
+        top: 28px;
+        z-index: 1;
+
+        .header-icons {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            .header-icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 40px;
+                height: 28px;
+                line-height: 28px;
+                cursor: pointer;
+                color: rgba(255, 255, 255, 0.9);
+
+                &:hover {
+                    background-color: rgba(255, 255, 255, 0.2);
+                }
+
+                > i {
+                    font-size: 16px;
+                }
+            }
+        }
+    }
+
     .edit-header {
         display: flex;
         flex-direction: row;
@@ -105,6 +139,7 @@
                 width: 44px;
                 height: 100%;
                 color: #777777;
+                cursor: pointer;
                 > i {
                     font-size: 20px;
                 }
@@ -269,6 +304,14 @@
         .markdown-preview-warp {
             flex: 1;
             overflow: auto;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .file-content {
+        .office-header {
+            display: none;
         }
     }
 }

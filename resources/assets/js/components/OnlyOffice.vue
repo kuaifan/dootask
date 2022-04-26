@@ -73,6 +73,10 @@ export default {
             type: String,
             default: ''
         },
+        historyId: {
+            type: Number,
+            default: 0
+        },
         value: {
             type: [Object, Array],
             default: function () {
@@ -178,14 +182,20 @@ export default {
                     break;
             }
             //
-            let fileKey = this.code || this.value.id;
+            let codeId = this.code || this.value.id;
             let fileName = $A.strExists(this.fileName, '.') ? this.fileName : (this.fileName + '.' + this.fileType);
+            let fileKey = `${this.fileType}-${fileKey}-${keyAppend}`;
+            let fileUrl = `http://nginx/api/file/content/?id=${codeId}&token=${this.userToken}`;
+            if (this.historyId > 0) {
+                fileKey += `-${this.historyId}`
+                fileUrl += `&history_id=${this.historyId}`
+            }
             const config = {
                 "document": {
                     "fileType": this.fileType,
-                    "key": `${this.fileType}-${fileKey}-${keyAppend}`,
                     "title": fileName,
-                    "url": `http://nginx/api/file/content/?id=${fileKey}&token=${this.userToken}`,
+                    "key": fileKey,
+                    "url": fileUrl,
                 },
                 "editorConfig": {
                     "mode": "edit",
@@ -199,18 +209,21 @@ export default {
                         "forcesave": true,
                         "help": false,
                     },
-                    "callbackUrl": `http://nginx/api/file/content/office?id=${fileKey}&token=${this.userToken}`,
-                }
+                    "callbackUrl": `http://nginx/api/file/content/office?id=${codeId}&token=${this.userToken}`,
+                },
+                "events": {
+                    "onDocumentReady": this.onDocumentReady,
+                },
             };
             if (/\/hideenOfficeTitle\//.test(window.navigator.userAgent)) {
                 config.document.title = " ";
             }
-            if ($A.leftExists(fileKey, "msgFile_")) {
-                config.document.url = `http://nginx/api/dialog/msg/download/?msg_id=${$A.leftDelete(fileKey, "msgFile_")}&token=${this.userToken}`;
-            } else if ($A.leftExists(fileKey, "taskFile_")) {
-                config.document.url = `http://nginx/api/project/task/filedown/?file_id=${$A.leftDelete(fileKey, "taskFile_")}&token=${this.userToken}`;
+            if ($A.leftExists(codeId, "msgFile_")) {
+                config.document.url = `http://nginx/api/dialog/msg/download/?msg_id=${$A.leftDelete(codeId, "msgFile_")}&token=${this.userToken}`;
+            } else if ($A.leftExists(codeId, "taskFile_")) {
+                config.document.url = `http://nginx/api/project/task/filedown/?file_id=${$A.leftDelete(codeId, "taskFile_")}&token=${this.userToken}`;
             }
-            if (this.readOnly) {
+            if (this.readOnly || this.historyId > 0) {
                 config.editorConfig.mode = "view";
                 config.editorConfig.callbackUrl = null;
                 if (!config.editorConfig.user.id) {
@@ -226,6 +239,10 @@ export default {
             this.$nextTick(() => {
                 this.docEditor = new DocsAPI.DocEditor(this.id, config);
             })
+        },
+
+        onDocumentReady() {
+            this.$emit("on-document-ready", this.docEditor)
         }
     }
 }

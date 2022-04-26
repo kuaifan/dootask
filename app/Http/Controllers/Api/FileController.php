@@ -805,6 +805,46 @@ class FileController extends AbstractController
     }
 
     /**
+     * @api {get} api/file/content/restore          13. 恢复文件历史
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup file
+     * @apiName content__restore
+     *
+     * @apiParam {Number} id                文件ID
+     * @apiParam {Number} history_id        历史数据ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function content__restore()
+    {
+        $user = User::auth();
+        //
+        $id = intval(Request::input('id'));
+        $history_id = intval(Request::input('history_id'));
+        //
+        $file = File::permissionFind($id);
+        //
+        $history = FileContent::whereFid($file->id)->whereId($history_id)->first();
+        if (empty($history)) {
+            return Base::retError('历史数据不存在或已被删除');
+        }
+        //
+        $content = $history->replicate();
+        $content->userid = $user->userid;
+        $content->save();
+        //
+        $file->size = $content->size;
+        $file->save();
+        $file->pushMsg('content');
+        //
+        return Base::retSuccess('还原成功');
+    }
+
+    /**
      * @api {get} api/file/share          13. 获取共享信息
      *
      * @apiDescription 需要token身份

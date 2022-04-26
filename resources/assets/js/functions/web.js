@@ -388,6 +388,19 @@
             text = text.replace(/<img\s+class="emoticon"[^>]*?>/g, `[${$A.L('表情')}]`)
             text = text.replace(/<img\s+class="browse"[^>]*?>/g, `[${$A.L('图片')}]`)
             return text.replace(/<[^>]+>/g,"")
+        },
+
+        /**
+         * 获取文件标题
+         * @param file
+         * @returns {*}
+         */
+        getFileName(file) {
+            let {name, ext} = file;
+            if (ext != '') {
+                name += "." + ext;
+            }
+            return name;
         }
     });
 

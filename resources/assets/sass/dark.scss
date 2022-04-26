@@ -64,6 +64,16 @@ body.dark-mode-reverse {
 
     .file-content,
     .file-preview {
+        .office-header {
+            .header-icons {
+                .header-icon {
+                    color: rgba(0, 0, 0, 0.8);
+                    &:hover {
+                        background-color: rgba(0, 0, 0, 0.05);
+                    }
+                }
+            }
+        }
         .content-body {
             .tox {
                 .tox-edit-area__iframe {

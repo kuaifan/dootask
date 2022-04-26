@@ -114,7 +114,7 @@
                                         @on-keyup="onKeyup($event, item)"/>
                                     <div v-if="item._load" class="file-load"><Loading/></div>
                                 </div>
-                                <div v-else class="file-name" :title="item.name">{{formatName(item)}}</div>
+                                <div v-else class="file-name" :title="item.name">{{$A.getFileName(item)}}</div>
                             </li>
                         </ul>
                     </div>
@@ -364,10 +364,6 @@
 </template>
 
 <script>
-import Vue from 'vue'
-import VueClipboard from 'vue-clipboard2'
-Vue.use(VueClipboard)
-
 import {mapState} from "vuex";
 import {sortBy} from "lodash";
 import UserInput from "../../components/UserInput";
@@ -376,7 +372,6 @@ import PreviewImage from "../../components/PreviewImage";
 
 const FilePreview = () => import('./components/FilePreview');
 const FileContent = () => import('./components/FileContent');
-
 
 export default {
     components: {PreviewImage, FilePreview, DrawerOverlay, UserInput, FileContent},
@@ -749,7 +744,7 @@ export default {
                                     }
                                 }
                             }, [
-                                h('AutoTip', this.formatName(row))
+                                h('AutoTip', $A.getFileName(row))
                             ]));
                             //
                             const iconArray = [];
@@ -850,14 +845,6 @@ export default {
                 }
                 return item;
             });
-        },
-
-        formatName(file) {
-            let {name, ext} = file;
-            if (ext != '') {
-                name += "." + ext;
-            }
-            return name;
         },
 
         getFileList() {
@@ -976,12 +963,12 @@ export default {
 
         openFileSingle(item) {
             this.$Electron.sendMessage('windowRouter', {
-                name: 'file-' + item.id,
-                path: "/single/file/" + item.id,
+                name: `file-${item.id}`,
+                path: `/single/file/${item.id}`,
                 userAgent: "/hideenOfficeTitle/",
                 force: false, // 如果窗口已存在不重新加载
                 config: {
-                    title: this.formatName(item),
+                    title: $A.getFileName(item),
                     titleFixed: true,
                     parent: null,
                     width: Math.min(window.screen.availWidth, 1440),
@@ -1103,11 +1090,11 @@ export default {
                                 },
                             }).then(({msg}) => {
                                 $A.messageSuccess(msg);
-                                this.$Modal.remove();
                                 this.$store.dispatch("forgetFile", item.id);
                             }).catch(({msg}) => {
-                                this.$Modal.remove();
                                 $A.modalError(msg, 301);
+                            }).finally(_ => {
+                                this.$Modal.remove();
                             });
                         }
                     });
@@ -1221,11 +1208,11 @@ export default {
                         },
                     }).then(({msg}) => {
                         $A.messageSuccess(msg);
-                        this.$Modal.remove();
                         this.$store.dispatch("forgetFile", ids);
                         this.selectIds = this.selectIds.filter(id => !ids.includes(id))
                     }).catch(({msg}) => {
                         $A.modalError(msg, 301);
+                    }).finally(_ => {
                         this.$Modal.remove();
                     });
                 }

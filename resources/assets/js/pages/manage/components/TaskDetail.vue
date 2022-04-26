@@ -1206,8 +1206,8 @@ export default {
                 config.minHeight = 600;
             }
             this.$Electron.sendMessage('windowRouter', {
-                name: 'task-' + this.taskDetail.id,
-                path: "/single/task/" + this.taskDetail.id,
+                name: `task-${this.taskDetail.id}`,
+                path: `/single/task/${this.taskDetail.id}`,
                 force: false,
                 config
             });
@@ -1251,8 +1251,8 @@ export default {
             }
             if (this.$Electron) {
                 this.$Electron.sendMessage('windowRouter', {
-                    name: 'file-task-' + file.id,
-                    path: "/single/file/task/" + file.id,
+                    name: `file-task-${file.id}`,
+                    path: `/single/file/task/${file.id}`,
                     userAgent: "/hideenOfficeTitle/",
                     force: false,
                     config: {

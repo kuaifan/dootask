@@ -2,7 +2,18 @@
     <div v-if="ready" class="file-content">
         <iframe v-if="isPreview" ref="myPreview" class="preview-iframe" :src="previewUrl"></iframe>
         <template v-else>
-            <div v-show="!['word', 'excel', 'ppt'].includes(file.type)" class="edit-header">
+            <div v-if="['word', 'excel', 'ppt'].includes(file.type)" class="office-header">
+                <div v-if="!file.only_view && officeReady" class="header-icons">
+                    <div class="header-icon" @click="handleClick('link')"><i class="taskfont">&#xe785;</i></div>
+                    <EPopover v-model="historyShow" trigger="click">
+                        <div class="file-content-history">
+                            <FileHistory :value="historyShow" :file="file" @on-restore="onRestoreHistory"/>
+                        </div>
+                        <div slot="reference" class="header-icon"><i class="taskfont">&#xe71d;</i></div>
+                    </EPopover>
+                </div>
+            </div>
+            <div v-else class="edit-header">
                 <div class="header-title">
                     <EPopover v-if="!equalContent" v-model="unsaveTip" class="file-unsave-tip">
                         <div class="task-detail-delete-file-popover">
@@ -14,7 +25,7 @@
                         </div>
                         <span slot="reference">[{{$L('未保存')}}*]</span>
                     </EPopover>
-                    {{formatName(file)}}
+                    {{$A.getFileName(file)}}
                 </div>
                 <div class="header-user">
                     <ul>
@@ -50,7 +61,7 @@
                         </ETooltip>
                         <EPopover v-model="historyShow" trigger="click">
                             <div class="file-content-history">
-                                <FileHistory :value="historyShow" :fileId="fileId" @on-select="handleHistory"/>
+                                <FileHistory :value="historyShow" :file="file" @on-restore="onRestoreHistory"/>
                             </div>
                             <ETooltip slot="reference" :disabled="historyShow" :content="$L('历史版本')">
                                 <div class="header-icon"><i class="taskfont">&#xe71d;</i></div>
@@ -61,6 +72,7 @@
                 </template>
             </div>
             <div v-if="contentDetail" class="content-body">
+                <div v-if="historyShow" class="content-mask"></div>
                 <template v-if="file.type=='document'">
                     <MDEditor v-if="contentDetail.type=='md'" v-model="contentDetail.content" height="100%"/>
                     <TEditor v-else v-model="contentDetail.content" height="100%" @editorSave="handleClick('saveBefore')"/>
@@ -68,8 +80,7 @@
                 <Drawio v-else-if="file.type=='drawio'" ref="myFlow" v-model="contentDetail" :title="file.name" @saveData="handleClick('saveBefore')"/>
                 <Minder v-else-if="file.type=='mind'" ref="myMind" v-model="contentDetail" @saveData="handleClick('saveBefore')"/>
                 <AceEditor v-else-if="['code', 'txt'].includes(file.type)" v-model="contentDetail.content" :ext="file.ext" @saveData="handleClick('saveBefore')"/>
-                <OnlyOffice v-else-if="['word', 'excel', 'ppt'].includes(file.type)" v-model="contentDetail" :documentKey="documentKey"/>
-                <div v-if="historyShow" class="content-mask"></div>
+                <OnlyOffice v-else-if="['word', 'excel', 'ppt'].includes(file.type)" v-model="contentDetail" :documentKey="documentKey" @on-document-ready="handleClick('officeReady')"/>
             </div>
         </template>
         <div v-if="contentLoad" class="content-load"><Loading/></div>
@@ -151,6 +162,7 @@ export default {
             linkLoad: 0,
 
             historyShow: false,
+            officeReady: false,
         }
     },
 
@@ -190,6 +202,7 @@ export default {
                 } else {
                     this.linkShow = false;
                     this.historyShow = false;
+                    this.officeReady = false;
                 }
             },
             immediate: true,
@@ -275,7 +288,7 @@ export default {
             }
         },
 
-        getContent(history_id = 0) {
+        getContent() {
             if (this.fileId === 0) {
                 this.contentDetail = {};
                 this.updateBak();
@@ -292,13 +305,10 @@ export default {
                 url: 'file/content',
                 data: {
                     id: this.fileId,
-                    history_id: history_id
                 },
             }).then(({data}) => {
                 this.contentDetail = data.content;
-                if (!history_id) {
-                    this.updateBak();
-                }
+                this.updateBak();
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {
@@ -355,23 +365,38 @@ export default {
                         this.loadSave--;
                     })
                     break;
+
+                case "officeReady":
+                    this.officeReady = true
+                    break;
             }
         },
 
-        handleHistory(item) {
+        onRestoreHistory(item) {
             this.historyShow = false;
-            if (!this.equalContent) {
-                $A.modalConfirm({
-                    content: '修改的内容尚未保存，确定要读取历史记录吗？',
-                    cancelText: '取消',
-                    okText: '确定',
-                    onOk: () => {
-                        this.getContent(item.id)
-                    }
-                });
-            } else {
-                this.getContent(item.id)
-            }
+            $A.modalConfirm({
+                content: `你确定文件还原至【${item.created_at}】吗？`,
+                cancelText: '取消',
+                okText: '确定',
+                loading: true,
+                onOk: () => {
+                    this.$store.dispatch("call", {
+                        url: 'file/content/restore',
+                        data: {
+                            id: this.fileId,
+                            history_id: item.id,
+                        }
+                    }).then(({msg}) => {
+                        $A.messageSuccess(msg);
+                        this.contentDetail = null;
+                        this.getContent();
+                    }).catch(({msg}) => {
+                        $A.modalError(msg, 301);
+                    }).finally(_ => {
+                        this.$Modal.remove();
+                    });
+                }
+            });
         },
 
         linkGet(refresh) {
@@ -442,14 +467,6 @@ export default {
                     resolve(0)
                 });
             })
-        },
-
-        formatName(file) {
-            let {name, ext} = file;
-            if (ext != '') {
-                name += "." + ext;
-            }
-            return name;
         },
     }
 }

@@ -302,8 +302,8 @@ export default {
             }
             if (this.$Electron) {
                 this.$Electron.sendMessage('windowRouter', {
-                    name: 'file-msg-' + this.msgData.id,
-                    path: "/single/file/msg/" + this.msgData.id,
+                    name: `file-msg-${this.msgData.id}`,
+                    path: `/single/file/msg/${this.msgData.id}`,
                     userAgent: "/hideenOfficeTitle/",
                     force: false,
                     config: {

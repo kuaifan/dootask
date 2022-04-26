@@ -103,8 +103,8 @@ export default {
                     height: Math.min(window.screen.availHeight, 900),
                 }
                 this.$Electron.sendMessage('windowRouter', {
-                    name: 'report-' + row.id,
-                    path: "/single/report/detail/" + row.id,
+                    name: `report-detail-${row.id}`,
+                    path: `/single/report/detail/${row.id}`,
                     force: false,
                     config
                 });
@@ -122,8 +122,8 @@ export default {
                     height: Math.min(window.screen.availHeight, 900),
                 }
                 this.$Electron.sendMessage('windowRouter', {
-                    name: 'report-' + id,
-                    path: "/single/report/edit/" + id,
+                    name: `report-edit-${id}`,
+                    path: `/single/report/edit/${id}`,
                     force: false,
                     config
                 });

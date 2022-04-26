@@ -4,7 +4,7 @@
         <template v-else>
             <div v-show="!['word', 'excel', 'ppt'].includes(file.type)" class="edit-header">
                 <div class="header-title">
-                    {{formatName(file)}}
+                    {{$A.getFileName(file)}}
                     <Tag color="default">{{$L('只读')}}</Tag>
                     <div class="refresh">
                         <Loading v-if="contentLoad"/>
@@ -30,7 +30,7 @@
                 <Drawio v-else-if="file.type=='drawio'" ref="myFlow" :value="contentDetail" :title="file.name" readOnly/>
                 <Minder v-else-if="file.type=='mind'" ref="myMind" :value="contentDetail" readOnly/>
                 <AceEditor v-else-if="['code', 'txt'].includes(file.type)" :value="contentDetail.content" :ext="file.ext" readOnly/>
-                <OnlyOffice v-else-if="['word', 'excel', 'ppt'].includes(file.type)" :value="contentDetail" :code="code" :documentKey="documentKey" readOnly/>
+                <OnlyOffice v-else-if="['word', 'excel', 'ppt'].includes(file.type)" :value="contentDetail" :code="code" :historyId="historyId" :documentKey="documentKey" readOnly/>
             </div>
         </template>
         <div v-if="contentLoad" class="content-load"><Loading/></div>
@@ -55,6 +55,10 @@ export default {
         code: {
             type: String,
             default: ''
+        },
+        historyId: {
+            type: Number,
+            default: 0
         },
         file: {
             type: Object,
@@ -134,6 +138,7 @@ export default {
                 url: 'file/content',
                 data: {
                     id: this.code || this.file.id,
+                    history_id: this.historyId
                 },
             }).then(({data}) => {
                 this.contentDetail = data.content;
@@ -166,14 +171,6 @@ export default {
                     this.$refs.myMind.exportHandle(act == 'pdf' ? 1 : 0, this.file.name);
                     break;
             }
-        },
-
-        formatName(file) {
-            let {name, ext} = file;
-            if (ext != '') {
-                name += "." + ext;
-            }
-            return name;
         },
     }
 }
