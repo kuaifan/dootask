@@ -8,7 +8,7 @@
                 v-model="showEmoji"
                 :visibleArrow="false"
                 popperClass="chat-input-emoji-popover">
-                <ETooltip slot="reference" :disabled="showEmoji" placement="top" :content="$L('表情')">
+                <ETooltip slot="reference" ref="emojiTip" :disabled="showEmoji" placement="top" :content="$L('表情')">
                     <i class="taskfont" @click="onToolbar('emoji')">&#xe7ad;</i>
                 </ETooltip>
                 <ChatEmoji @on-select="onSelectEmoji"/>
@@ -25,7 +25,7 @@
                 v-model="showMore"
                 :visibleArrow="false"
                 popperClass="chat-input-more-popover">
-                <ETooltip slot="reference" :disabled="showMore" placement="top" :content="$L('展开')">
+                <ETooltip slot="reference" ref="moreTip" :disabled="showMore" placement="top" :content="$L('展开')">
                     <i class="taskfont">&#xe790;</i>
                 </ETooltip>
                 <div class="chat-input-popover-item" @click="onToolbar('image')">
@@ -156,6 +156,18 @@ export default {
             this.userList = null;
             this.taskList = null;
         },
+
+        showEmoji(val) {
+            if (!val && this.$refs.emojiTip) {
+                this.$refs.emojiTip.updatePopper()
+            }
+        },
+
+        showMore(val) {
+            if (!val && this.$refs.moreTip) {
+                this.$refs.moreTip.updatePopper()
+            }
+        }
     },
     methods: {
         init() {

@@ -63,7 +63,7 @@
                             <div class="file-content-history">
                                 <FileHistory :value="historyShow" :file="file" @on-restore="onRestoreHistory"/>
                             </div>
-                            <ETooltip slot="reference" :disabled="historyShow" :content="$L('历史版本')">
+                            <ETooltip slot="reference" ref="historyTip" :disabled="historyShow" :content="$L('历史版本')">
                                 <div class="header-icon"><i class="taskfont">&#xe71d;</i></div>
                             </ETooltip>
                         </EPopover>
@@ -206,6 +206,12 @@ export default {
                 }
             },
             immediate: true,
+        },
+
+        historyShow(val) {
+            if (!val && this.$refs.historyTip) {
+                this.$refs.historyTip.updatePopper()
+            }
         },
 
         wsMsg: {
