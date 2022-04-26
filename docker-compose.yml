@@ -84,13 +84,14 @@ services:
     container_name: "dootask-office-${APP_ID}"
     image: "onlyoffice/documentserver:7.0.1.37"
     volumes:
-      - ./docker/office/data:/var/www/onlyoffice/Data
       - ./docker/office/logs:/var/log/onlyoffice
-      - ./docker/office/resources/documenteditor/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/documenteditor/main/resources/css/app.css
-      - ./docker/office/resources/presentationeditor/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/presentationeditor/main/resources/css/app.css
-      - ./docker/office/resources/spreadsheeteditor/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/spreadsheeteditor/main/resources/css/app.css
+      - ./docker/office/data:/var/www/onlyoffice/Data
+      - ./docker/office/resources/api/documents/api.js:/var/www/onlyoffice/documentserver/web-apps/apps/api/documents/api.js
+      - ./docker/office/resources/documenteditor/main/resources/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/documenteditor/main/resources/css/app.css
       - ./docker/office/resources/documenteditor/mobile/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/documenteditor/mobile/css/app.css
+      - ./docker/office/resources/presentationeditor/main/resources/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/presentationeditor/main/resources/css/app.css
       - ./docker/office/resources/presentationeditor/mobile/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/presentationeditor/mobile/css/app.css
+      - ./docker/office/resources/spreadsheeteditor/main/resources/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/spreadsheeteditor/main/resources/css/app.css
       - ./docker/office/resources/spreadsheeteditor/mobile/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/spreadsheeteditor/mobile/css/app.css
     environment:
       TZ: "Asia/Shanghai"
