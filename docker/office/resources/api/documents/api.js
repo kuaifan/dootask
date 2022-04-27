@@ -9,7 +9,7 @@
 ;(function(window) {
     try {
         window.localStorage.removeItem('ui-theme-id')
-    } catch () { }
+    } catch (e) {}
 })(window);
 
 ;(function(DocsAPI, window, document, undefined) {
