@@ -161,6 +161,15 @@ class File extends AbstractModel
     }
 
     /**
+     * 目录内是否存在共享文件或文件夹
+     * @return bool
+     */
+    public function isSubShare()
+    {
+        return $this->type == 'folder' && File::where("pids", "like", "%,{$this->id},%")->whereShare(1)->exists();
+    }
+
+    /**
      * 设置/关闭 共享（同时遍历取消里面的共享）
      * @param $share
      * @return bool

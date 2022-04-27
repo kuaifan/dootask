@@ -1164,20 +1164,16 @@ export default {
             this.$refs.linkInput.focus({cursor:'all'});
         },
 
-        shearTo(force = false) {
+        shearTo() {
             if (this.shearIds.length == 0) {
                 return;
             }
-            if (force !== true
-                && this.isParentShare
-                && this.files.findIndex(({id, share}) => share && this.shearIds.includes(id)) > -1) {
-                $A.modalConfirm({
-                    content: '剪切板含有共享文件，粘贴到共享文件夹中原共享属性将失效。',
-                    onOk: () => {
-                        this.shearTo(true)
-                    }
-                });
-                return;
+            if (this.isParentShare) {
+                const tmpFile = this.files.find(({id, share}) => share && this.shearIds.includes(id));
+                if (tmpFile) {
+                    $A.modalError(`${tmpFile.name} 当前正在共享，无法移动到另一个共享文件夹内`)
+                    return;
+                }
             }
             this.$store.dispatch("call", {
                 url: 'file/move',

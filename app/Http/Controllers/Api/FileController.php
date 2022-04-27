@@ -363,17 +363,21 @@ class FileController extends AbstractController
                 $file = File::permissionFind($id, 1000);
                 //
                 if ($pid > 0) {
+                    if ($toShareFile) {
+                        if ($file->share) {
+                            throw new ApiException("{$file->name} 当前正在共享，无法移动到另一个共享文件夹内");
+                        }
+                        if ($file->isSubShare()) {
+                            throw new ApiException("{$file->name} 内含有共享文件，无法移动到另一个共享文件夹内");
+                        }
+                    }
+                    //
                     $tmpId = $pid;
                     while ($tmpId > 0) {
                         if ($id == $tmpId) {
                             throw new ApiException('移动位置错误');
                         }
                         $tmpId = intval(File::whereId($tmpId)->value('pid'));
-                    }
-                    if ($file->share && $toShareFile) {
-                        $file->share = 0;
-                        $file->save();
-                        FileUser::deleteFileAll($file->id, $file->userid);
                     }
                 }
                 //
@@ -951,7 +955,7 @@ class FileController extends AbstractController
             // 设置共享
             $action = "update";
             if ($force === 0) {
-                if (File::where("pids", "like", "%,{$file->id},%")->whereShare(1)->exists()) {
+                if ($file->isSubShare()) {
                     return Base::retError('此文件夹内已有共享文件夹', [], -3001);
                 }
             }
