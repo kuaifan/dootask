@@ -384,7 +384,7 @@ export default {
         return {
             loadIng: 0,
 
-            routePath: this.$route.path,
+            routeName: this.$route.name,
             mateName: /macintosh|mac os x/i.test(navigator.userAgent) ? '⌘' : 'Ctrl',
 
             addShow: false,
@@ -423,7 +423,7 @@ export default {
 
             natificationHidden: false,
             natificationReady: false,
-            notificationClass: null,
+            notificationManage: null,
 
             reportTabs: "my",
             reportUnreadNumber: 0,
@@ -625,7 +625,7 @@ export default {
 
     watch: {
         '$route' (route) {
-            this.routePath = route.path;
+            this.routeName = route.name;
             this.chackPass();
         },
 
@@ -652,9 +652,9 @@ export default {
 
         natificationHidden(val) {
             clearTimeout(this.notificationTimeout);
-            if (!val && this.notificationClass) {
+            if (!val && this.notificationManage) {
                 this.notificationTimeout = setTimeout(() => {
-                    this.notificationClass.close();
+                    this.notificationManage.close();
                 }, 6000);
             }
         },
@@ -786,16 +786,14 @@ export default {
 
         classNameRoute(path) {
             return {
-                "active": $A.leftExists(this.routePath, '/manage/' + path),
+                "active": this.routeName === `manage-${path}`,
             };
         },
 
         classNameProject(item) {
-            let path = 'project/' + item.id;
-            let openMenu = this.openMenu[item.id];
             return {
-                "active": this.routePath === '/manage/' + path,
-                "open-menu": openMenu === true,
+                "active": this.routeName === 'manage-project' && this.$route.params.projectId === item.id,
+                "open-menu": this.openMenu[item.id] === true,
                 "operate": item.id == this.topOperateItem.id && this.topOperateVisible
             };
         },
@@ -883,10 +881,12 @@ export default {
 
         addDialogMsg(data) {
             if (!this.natificationReady) {
-                return;
+                return; // 通知未准备好
             }
-            if (!this.natificationHidden && $A.leftExists(this.routePath, "/manage/messenger") && this.$route.params.id == data.dialog_id) {
-                return;
+            if (!this.natificationHidden
+                && this.routeName === 'manage-messenger'
+                && this.$route.params.dialogId == data.dialog_id) {
+                return; // 可见 且 路由匹配时
             }
             //
             const {id, dialog_id, type, msg} = data;
@@ -902,7 +902,7 @@ export default {
                     return;
             }
             this._notificationId = id;
-            this.notificationClass.replaceOptions({
+            this.notificationManage.replaceOptions({
                 icon: $A.originUrl('images/logo.png'),
                 body: body,
                 data: data,
@@ -911,13 +911,13 @@ export default {
             });
             let dialog = this.cacheDialogs.find((item) => item.id == dialog_id);
             if (dialog) {
-                this.notificationClass.replaceTitle(dialog.name);
-                this.notificationClass.userAgreed();
+                this.notificationManage.replaceTitle(dialog.name);
+                this.notificationManage.userAgreed();
             } else {
                 this.$store.dispatch("getDialogOne", dialog_id).then(({data}) => {
                     if (this._notificationId === id) {
-                        this.notificationClass.replaceTitle(data.name);
-                        this.notificationClass.userAgreed();
+                        this.notificationManage.replaceTitle(data.name);
+                        this.notificationManage.userAgreed();
                     }
                 }).catch(() => {})
             }
@@ -1005,13 +1005,13 @@ export default {
         },
 
         notificationInit() {
-            this.notificationClass = new notificationKoro(this.$L("打开通知成功"));
-            if (this.notificationClass.support) {
-                this.notificationClass.notificationEvent({
+            this.notificationManage = new notificationKoro(this.$L("打开通知成功"));
+            if (this.notificationManage.support) {
+                this.notificationManage.notificationEvent({
                     onclick: ({target}) => {
                         console.log("[Notification] Click", target);
-                        this.notificationClass.close();
-                        window.focus();
+                        this.notificationManage.close();
+                        try {window.focus()}catch (e) {}
                         //
                         const {tag, data} = target;
                         if (tag == 'dialog') {
@@ -1040,7 +1040,7 @@ export default {
 
                     // 请求权限通知被关闭，再次调用
                     case 'close':
-                        return this.notificationClass.initNotification(userSelectFn);
+                        return this.notificationManage.initNotification(userSelectFn);
 
                     // 请求权限当前被拒绝 || 曾经被拒绝
                     case 'denied':
@@ -1053,7 +1053,7 @@ export default {
                         break;
                 }
             };
-            this.notificationClass.initNotification(userSelectFn);
+            this.notificationManage.initNotification(userSelectFn);
         },
 
         onVisibilityChange() {

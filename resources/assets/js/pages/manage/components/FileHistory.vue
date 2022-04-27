@@ -82,7 +82,7 @@ export default {
                     align: 'center',
                     width: 100,
                     render: (h, {index, row, column}) => {
-                        if (index === 0) {
+                        if (index === 0 && this.page === 1) {
                             return h('div', '-');
                         }
                         return h('TableAction', {

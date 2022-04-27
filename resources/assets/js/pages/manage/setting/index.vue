@@ -46,7 +46,7 @@ import {Store} from "le5le-store";
 export default {
     data() {
         return {
-            routePath: this.$route.path,
+            routeName: this.$route.name,
             show768Menu: true,
 
             version: window.systemInfo.version
@@ -72,10 +72,10 @@ export default {
         },
 
         titleNameRoute() {
-            const {routePath, menu} = this;
+            const {routeName, menu} = this;
             let name = '';
             menu.some((item) => {
-                if ($A.leftExists(routePath, '/manage/setting/' + item.path)) {
+                if (routeName === `manage-setting-${item.path}`) {
                     name = item.name;
                     return true;
                 }
@@ -85,7 +85,7 @@ export default {
     },
     watch: {
         '$route' (route) {
-            this.routePath = route.path;
+            this.routeName = route.name;
         }
     },
     methods: {
@@ -100,7 +100,7 @@ export default {
 
         classNameRoute(path, divided) {
             return {
-                "active": $A.leftExists(this.routePath, '/manage/setting/' + path),
+                "active": this.routeName === `manage-setting-${path}`,
                 "divided": !!divided
             };
         },
