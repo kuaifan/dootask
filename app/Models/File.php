@@ -266,19 +266,7 @@ class File extends AbstractModel
             ];
         }
         //
-        if ($userid === null) {
-            $userid = [$this->userid];
-            $builder = WebSocket::select(['userid']);
-            if ($action == 'content') {
-                $builder->wherePath("/single/file/{$this->id}");
-            } elseif ($this->pid > 0) {
-                $builder->wherePath("/manage/file/{$this->pid}");
-            } else {
-                $builder->wherePath("/manage/file");
-            }
-            $userid = array_merge($userid, $builder->pluck('userid')->toArray());
-            $userid = array_values(array_filter(array_unique($userid)));
-        }
+        $userid = $this->pushUserid($action, $userid);
         if (empty($userid)) {
             return;
         }
@@ -300,6 +288,47 @@ class File extends AbstractModel
         $task = new PushTask($params, false);
         Task::deliver($task);
     }
+
+    /**
+     * 获取推送会员
+     * @param $action
+     * @param $userid
+     * @return array|int[]|mixed|null[]
+     */
+    public function pushUserid($action, $userid = null) {
+        $wherePath = "/manage/file";
+        if ($userid === null) {
+            $array = [$this->userid];
+            if ($action == 'add' && $this->pid == 0) {
+                return $array;
+            }
+            if ($action == 'content') {
+                $wherePath = "/single/file/{$this->id}";
+            } elseif ($this->pid > 0) {
+                $wherePath = "/manage/file/{$this->pid}";
+            } else {
+                $tmpArray = FileUser::whereFileId($this->id)->pluck('userid')->toArray();
+                if (empty($tmpArray)) {
+                    return $array;
+                }
+                if (!in_array(0, $tmpArray)) {
+                    return $tmpArray;
+                }
+            }
+            $tmpArray = WebSocket::wherePath($wherePath)->pluck('userid')->toArray();
+            if (empty($tmpArray)) {
+                return $array;
+            }
+            $array = array_values(array_filter(array_unique(array_merge($array, $tmpArray))));
+        } else {
+            $array = is_array($userid) ? $userid : [$userid];
+            if (in_array(0, $array)) {
+                return WebSocket::wherePath($wherePath)->pluck('userid')->toArray();
+            }
+        }
+        return $array;
+    }
+
 
     /**
      * 处理返回图片地址

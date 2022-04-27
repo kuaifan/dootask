@@ -16,7 +16,7 @@ export default {
         params.header['Content-Type'] = 'application/json';
         params.header['language'] = $A.getLanguage();
         params.header['token'] = state.userToken;
-        params.header['fd'] = $A.getStorageString("userWsFd");
+        params.header['fd'] = $A.getSessionStorageString("userWsFd");
         params.header['version'] = window.systemInfo.version || "0.0.1";
         params.header['platform'] = $A.Platform;
         //
@@ -2212,7 +2212,7 @@ export default {
             const {type, msgId} = msgDetail;
             switch (type) {
                 case "open":
-                    $A.setStorage("userWsFd", msgDetail.data.fd)
+                    $A.setSessionStorage("userWsFd", msgDetail.data.fd)
                     break
 
                 case "receipt":

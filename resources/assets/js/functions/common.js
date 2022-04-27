@@ -1043,45 +1043,45 @@
 
     /**
      * =============================================================================
-     * ********************************   storage   ********************************
+     * *****************************   localStorage   ******************************
      * =============================================================================
      */
     $.extend({
         setStorage(key, value) {
-            return this.storage(key, value);
+            return this.operationStorage(key, value);
         },
 
         getStorage(key, def = null) {
-            let value = this.storage(key);
+            let value = this.operationStorage(key);
             return value || def;
         },
 
         getStorageString(key, def = '') {
-            let value = this.storage(key);
+            let value = this.operationStorage(key);
             return typeof value === "string" || typeof value === "number" ? value : def;
         },
 
         getStorageInt(key, def = 0) {
-            let value = this.storage(key);
+            let value = this.operationStorage(key);
             return typeof value === "number" ? value : def;
         },
 
         getStorageBoolean(key, def = false) {
-            let value = this.storage(key);
+            let value = this.operationStorage(key);
             return typeof value === "boolean" ? value : def;
         },
 
         getStorageArray(key, def = []) {
-            let value = this.storage(key);
+            let value = this.operationStorage(key);
             return this.isArray(value) ? value : def;
         },
 
         getStorageJson(key, def = {}) {
-            let value = this.storage(key);
+            let value = this.operationStorage(key);
             return this.isJson(value) ? value : def;
         },
 
-        storage(key, value) {
+        operationStorage(key, value) {
             if (!key) {
                 return;
             }
@@ -1115,6 +1115,79 @@
             try {
                 if (typeof keyName === 'undefined') keyName = '__seller__';
                 let seller = window.localStorage[keyName];
+                if (!seller) {
+                    return def;
+                }
+                seller = JSON.parse(seller);
+                if (!seller || typeof seller[key] === 'undefined') {
+                    return def;
+                }
+                return seller[key];
+            } catch (e) {
+                return def;
+            }
+        },
+    });
+
+    /**
+     * =============================================================================
+     * *****************************   sessionStorage   ****************************
+     * =============================================================================
+     */
+    $.extend({
+        setSessionStorage(key, value) {
+            return this.operationSessionStorage(key, value);
+        },
+
+        getSessionStorage(key, def = null) {
+            let value = this.operationSessionStorage(key);
+            return value || def;
+        },
+
+        getSessionStorageString(key, def = '') {
+            let value = this.operationSessionStorage(key);
+            return typeof value === "string" || typeof value === "number" ? value : def;
+        },
+
+        getSessionStorageInt(key, def = 0) {
+            let value = this.operationSessionStorage(key);
+            return typeof value === "number" ? value : def;
+        },
+
+        operationSessionStorage(key, value) {
+            if (!key) {
+                return;
+            }
+            let keyName = '__state__';
+            if (key.substring(0, 5) === 'cache') {
+                keyName = '__state:' + key + '__';
+            }
+            if (typeof value === 'undefined') {
+                return this.loadFromlSession(key, '', keyName);
+            } else {
+                this.savaToSession(key, value, keyName);
+            }
+        },
+
+        savaToSession(key, value, keyName) {
+            try {
+                if (typeof keyName === 'undefined') keyName = '__seller__';
+                let seller = window.sessionStorage[keyName];
+                if (!seller) {
+                    seller = {};
+                } else {
+                    seller = JSON.parse(seller);
+                }
+                seller[key] = value;
+                window.sessionStorage[keyName] = JSON.stringify(seller);
+            } catch (e) {
+            }
+        },
+
+        loadFromlSession(key, def, keyName) {
+            try {
+                if (typeof keyName === 'undefined') keyName = '__seller__';
+                let seller = window.sessionStorage[keyName];
                 if (!seller) {
                     return def;
                 }

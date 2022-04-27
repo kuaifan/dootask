@@ -396,7 +396,8 @@
          * @returns {*}
          */
         getFileName(file) {
-            let {name, ext} = file;
+            let name = file.name || '';
+            let ext = file.ext || '';
             if (ext != '') {
                 name += "." + ext;
             }

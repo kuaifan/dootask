@@ -2,7 +2,7 @@
     <div class="single-file">
         <PageTitle :title="pageName"/>
         <Loading v-if="loadIng > 0"/>
-        <template v-else>
+        <template v-else-if="fileInfo">
             <FilePreview v-if="isPreview" :code="code" :file="fileInfo" :historyId="historyId"/>
             <FileContent v-else v-model="fileShow" :file="fileInfo"/>
         </template>
@@ -32,7 +32,7 @@ export default {
             code: null,
 
             fileShow: true,
-            fileInfo: {},
+            fileInfo: null,
         }
     },
     mounted() {
@@ -43,10 +43,10 @@ export default {
             return this.$route.query ? $A.runNum(this.$route.query.history_id) : 0;
         },
         isPreview() {
-            return this.code || this.fileInfo.permission === 0 || this.historyId > 0
+            return this.code || this.historyId > 0 || (this.fileInfo && this.fileInfo.permission === 0)
         },
         pageName() {
-            let name = this.fileInfo.name;
+            let name = this.fileInfo ? this.fileInfo.name : '';
             if (this.$route.query && this.$route.query.history_at) {
                 name += ` [${this.$route.query.history_at}]`
             }
