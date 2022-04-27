@@ -351,24 +351,29 @@ class FileController extends AbstractController
         if (count($ids) > 100) {
             return Base::retError('一次最多只能移动100个文件或文件夹');
         }
+        $toShareFile = false;
         if ($pid > 0) {
-            File::permissionFind($pid, 1);
+            $tmpFile = File::permissionFind($pid, 1);
+            $toShareFile = $tmpFile->getShareInfo();
         }
         //
         $files = [];
-        AbstractModel::transaction(function() use ($pid, $ids, &$files) {
+        AbstractModel::transaction(function() use ($pid, $ids, $toShareFile, &$files) {
             foreach ($ids as $id) {
                 $file = File::permissionFind($id, 1000);
                 //
                 if ($pid > 0) {
-                    $arr = [];
-                    $tid = $pid;
-                    while ($tid > 0) {
-                        $arr[] = $tid;
-                        $tid = intval(File::whereId($tid)->value('pid'));
+                    $tmpId = $pid;
+                    while ($tmpId > 0) {
+                        if ($id == $tmpId) {
+                            throw new ApiException('移动位置错误');
+                        }
+                        $tmpId = intval(File::whereId($tmpId)->value('pid'));
                     }
-                    if (in_array($id, $arr)) {
-                        throw new ApiException('移动位置错误');
+                    if ($file->share && $toShareFile) {
+                        $file->share = 0;
+                        $file->save();
+                        FileUser::deleteFileAll($file->id, $file->userid);
                     }
                 }
                 //
