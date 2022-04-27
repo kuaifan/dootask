@@ -46,7 +46,7 @@ class ProjectUser extends AbstractModel
      */
     public static function transfer($originalUserid, $newUserid)
     {
-        self::whereUserid($originalUserid)->chunkById(100, function ($list) use ($newUserid) {
+        self::whereUserid($originalUserid)->chunkById(100, function ($list) use ($originalUserid, $newUserid) {
             /** @var self $item */
             foreach ($list as $item) {
                 $row = self::whereProjectId($item->project_id)->whereUserid($newUserid)->first();
@@ -61,7 +61,7 @@ class ProjectUser extends AbstractModel
                     $item->save();
                 }
                 if ($item->project) {
-                    $item->project->addLog("移交项目身份给", ['userid' => $newUserid]);
+                    $item->project->addLog("移交项目身份", ['userid' => [$originalUserid, ' => ',$newUserid]]);
                     $item->project->syncDialogUser();
                 }
             }

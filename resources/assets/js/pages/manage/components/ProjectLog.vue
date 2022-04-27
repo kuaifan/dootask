@@ -184,12 +184,16 @@ export default {
                     let userids = $A.isArray(record.userid) ? record.userid : [record.userid]
                     let userNode = [];
                     userids.some(userid => {
-                        userNode.push(h('UserAvatar', {
-                            props: {
-                                size: 18,
-                                userid
-                            }
-                        }))
+                        if (/\d+/.test(userid)) {
+                            userNode.push(h('UserAvatar', {
+                                props: {
+                                    size: 18,
+                                    userid
+                                }
+                            }))
+                        } else {
+                            userNode.push(h('span', userid))
+                        }
                     })
                     if (userNode.length > 0) {
                         vNode.push(h('div', {
