@@ -1,5 +1,10 @@
 # 发布说明
 
+## 发布前
+
+1. 添加环境变量 `APPLEID`、`APPLEIDPASS`、`CSC_LINK`
+2. 发布GitHub还需要添加 `GH_PAT`
+
 ## 通过 GitHub Actions 发布
 
 1. 执行 `./cmd prod` 编译

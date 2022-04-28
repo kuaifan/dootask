@@ -170,7 +170,7 @@
 
             headers() {
                 return {
-                    fd: $A.getStorageString("userWsFd"),
+                    fd: $A.getSessionStorageString("userWsFd"),
                     token: this.userToken,
                 }
             },
