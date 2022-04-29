@@ -519,7 +519,7 @@ class FileController extends AbstractController
         if ($file->type == 'document') {
             $data = Base::json2array($content);
             $isRep = false;
-            preg_match_all("/<img\s*src=\"data:image\/(png|jpg|jpeg);base64,(.*?)\"/s", $data['content'], $matchs);
+            preg_match_all("/<img\s+src=\"data:image\/(png|jpg|jpeg);base64,(.*?)\"/s", $data['content'], $matchs);
             foreach ($matchs[2] as $key => $text) {
                 $tmpPath = "uploads/file/document/" . date("Ym") . "/" . $id . "/attached/";
                 Base::makeDir(public_path($tmpPath));

@@ -207,7 +207,7 @@ class WebSocketDialogMsg extends AbstractModel
     public static function formatMsg($text, $dialog_id)
     {
         // 图片 [:IMAGE:className:width:height:src:alt:]
-        preg_match_all("/<img\s*src=\"data:image\/(png|jpg|jpeg);base64,(.*?)\"(.*?)>(<\/img>)*/s", $text, $matchs);
+        preg_match_all("/<img\s+src=\"data:image\/(png|jpg|jpeg|gif);base64,(.*?)\"(.*?)>(<\/img>)*/s", $text, $matchs);
         foreach ($matchs[2] as $key => $base64) {
             $tmpPath = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
             Base::makeDir(public_path($tmpPath));
@@ -218,7 +218,7 @@ class WebSocketDialogMsg extends AbstractModel
             }
         }
         // 表情图片
-        preg_match_all("/<img class=\"emoticon\"(.*?)>/s", $text, $matchs);
+        preg_match_all("/<img\s+class=\"emoticon\"(.*?)>/s", $text, $matchs);
         foreach ($matchs[1] as $key => $str) {
             preg_match("/data-asset=\"(.*?)\"/", $str, $matchAsset);
             preg_match("/data-name=\"(.*?)\"/", $str, $matchName);
@@ -227,8 +227,27 @@ class WebSocketDialogMsg extends AbstractModel
                 $text = str_replace($matchs[0][$key], "[:IMAGE:emoticon:{$imagesize[0]}:{$imagesize[1]}:{$matchAsset[1]}:{$matchName[1]}:]", $text);
             }
         }
+        // 其他网络图片
+        preg_match_all("/<img[^>]*?src=([\"'])(.*?\.(png|jpg|jpeg|gif))\\1[^>]*?>/is", $text, $matchs);
+        foreach ($matchs[2] as $key => $str) {
+            $tmpPath = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
+            Base::makeDir(public_path($tmpPath));
+            $tmpPath .= md5s($str) . "." . $matchs[3][$key];
+            if (file_exists(public_path($tmpPath))) {
+                $imagesize = getimagesize(public_path($tmpPath));
+                $text = str_replace($matchs[0][$key], "[:IMAGE:browse:{$imagesize[0]}:{$imagesize[1]}:{$tmpPath}::]", $text);
+            } else {
+                $image = file_get_contents($str);
+                if (empty($image)) {
+                    $text = str_replace($matchs[0][$key], "[:IMAGE:browse:90:90:images/other/imgerr.jpg::]", $text);
+                } else if (file_put_contents(public_path($tmpPath), $image)) {
+                    $imagesize = getimagesize(public_path($tmpPath));
+                    $text = str_replace($matchs[0][$key], "[:IMAGE:browse:{$imagesize[0]}:{$imagesize[1]}:{$tmpPath}::]", $text);
+                }
+            }
+        }
         // @成员、#任务
-        preg_match_all("/<span class=\"mention\"(.*?)>.*?<\/span>.*?<\/span>.*?<\/span>/s", $text, $matchs);
+        preg_match_all("/<span\s+class=\"mention\"(.*?)>.*?<\/span>.*?<\/span>.*?<\/span>/s", $text, $matchs);
         foreach ($matchs[1] as $key => $str) {
             preg_match("/data-denotation-char=\"(.*?)\"/", $str, $matchChar);
             preg_match("/data-id=\"(.*?)\"/", $str, $matchId);
@@ -237,7 +256,7 @@ class WebSocketDialogMsg extends AbstractModel
         }
         // 过滤标签
         $text = strip_tags($text, '<blockquote> <strong> <pre> <ol> <ul> <li> <em> <p> <s> <u>');
-        $text = preg_replace("/\<(blockquote|strong|pre|ol|ul|li|em|p|s|u).*?\>/i", "<$1>", $text);
+        $text = preg_replace("/\<(blockquote|strong|pre|ol|ul|li|em|p|s|u).*?\>/is", "<$1>", $text);
         $text = preg_replace("/\[:IMAGE:(.*?):(.*?):(.*?):(.*?):(.*?):\]/i", "<img class=\"$1\" width=\"$2\" height=\"$3\" src=\"{{RemoteURL}}$4\" alt=\"$5\"/>", $text);
         $text = preg_replace("/\[:@:(.*?):(.*?):\]/i", "<span class=\"mention user\" data-id=\"$1\">@$2</span>", $text);
         $text = preg_replace("/\[:#:(.*?):(.*?):\]/i", "<span class=\"mention task\" data-id=\"$1\">#$2</span>", $text);
