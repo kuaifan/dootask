@@ -106,26 +106,59 @@ export default {
             _options: {},
 
             modeClass: '',
-            editorStyle: {},
 
             userList: null,
             taskList: null,
 
             showMore: false,
             showEmoji: false,
+
+            observer: null,
+            wrapperWidth: 0,
+            editorHeight: 0,
         };
     },
     mounted() {
         this.init();
+        //
+        this.observer = new ResizeObserver(entries => {
+            entries.some(({target, contentRect}) => {
+                if (target === this.$el) {
+                    this.wrapperWidth = contentRect.width;
+                } else if (target === this.$refs.editor) {
+                    this.editorHeight = contentRect.height;
+                }
+            })
+        });
+        this.observer.observe(this.$el);
+        this.observer.observe(this.$refs.editor);
     },
     beforeDestroy() {
-        this.quill = null
-        delete this.quill
+        if (this.quill) {
+            this.quill = null
+        }
+        if (this.observer) {
+            this.observer.disconnect()
+            this.observer = null
+        }
     },
     computed: {
         ...mapState(['cacheProjects', 'cacheTasks', 'cacheUserBasic', 'userId']),
 
         ...mapGetters(['dashboardTask', 'transforTasks']),
+
+        editorStyle() {
+            const {wrapperWidth, editorHeight} = this;
+            if (wrapperWidth > 0
+                && editorHeight > 0
+                && (wrapperWidth < 300 || editorHeight > 40)) {
+                return {
+                    width: '100%'
+                };
+            } else {
+                return {};
+            }
+        }
     },
     watch: {
         // Watch content change
@@ -167,7 +200,7 @@ export default {
             if (!val && this.$refs.moreTip) {
                 this.$refs.moreTip.updatePopper()
             }
-        }
+        },
     },
     methods: {
         init() {
@@ -281,12 +314,10 @@ export default {
                 this._content = html
                 this.$emit('input', this._content)
                 this.$emit('on-change', { html, text, quill })
-                this.calcEditStyle();
             })
 
             // Emit ready event
             this.$emit('on-ready', this.quill)
-            this.calcEditStyle();
         },
 
         focus() {
@@ -303,16 +334,6 @@ export default {
 
         send() {
             this.$emit('on-send')
-        },
-
-        calcEditStyle() {
-            if (this.$refs.editor.clientWidth < 120 || this.$refs.editor.clientHeight > 40) {
-                this.editorStyle = {
-                    width: '100%'
-                };
-            } else {
-                this.editorStyle = {};
-            }
         },
 
         onSelectEmoji(item) {
