@@ -1,0 +1,219 @@
+<?php
+
+namespace App\Tasks;
+
+use App\Models\ProjectTask;
+use App\Models\ProjectTaskMailLog;
+use App\Models\User;
+use App\Models\WebSocketDialogMsg;
+use App\Models\WebSocketDialogMsgRead;
+use App\Module\Base;
+use Carbon\Carbon;
+use Guanguans\Notify\Factory;
+use Guanguans\Notify\Messages\EmailMessage;
+
+@error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
+
+class EmailNoticeTask extends AbstractTask
+{
+    public function __construct()
+    {
+        //
+    }
+
+    public function start()
+    {
+        $setting = Base::setting('emailSetting');
+        // 任务通知
+        if ($setting['notice'] === 'open') {
+            $hours = floatval($setting['task_remind_hours']);
+            $hours2 = floatval($setting['task_remind_hours2']);
+            if ($hours > 0) {
+                ProjectTask::whereNull("complete_at")
+                    ->whereNull("archived_at")
+                    ->whereBetween("end_at", [
+                        Carbon::now()->addMinutes($hours * 60),
+                        Carbon::now()->addMinutes($hours * 60 + 10)
+                    ])->chunkById(100, function ($tasks) {
+                        /** @var ProjectTask $task */
+                        foreach ($tasks as $task) {
+                            $this->overdueBeforeAfterEmail($task, true);
+                        }
+                    });
+            }
+            if ($hours2 > 0) {
+                ProjectTask::whereNull("complete_at")
+                    ->whereNull("archived_at")
+                    ->whereBetween("end_at", [
+                        Carbon::now()->subMinutes($hours2 * 60 + 10),
+                        Carbon::now()->subMinutes($hours2 * 60)
+                    ])->chunkById(100, function ($tasks) {
+                        /** @var ProjectTask $task */
+                        foreach ($tasks as $task) {
+                            $this->overdueBeforeAfterEmail($task, false);
+                        }
+                    });
+            }
+        }
+        // 消息通知
+        if ($setting['notice_msg'] === 'open') {
+            $userMinute = floatval($setting['msg_unread_user_minute']);
+            $groupMinute = floatval($setting['msg_unread_group_minute']);
+            if ($userMinute > 0) {
+                WebSocketDialogMsg::select(['web_socket_dialog_msgs.*', 'r.id as r_id', 'r.userid as r_userid'])
+                    ->join('web_socket_dialog_msg_reads as r', 'web_socket_dialog_msgs.id', '=', 'r.msg_id')
+                    ->where("web_socket_dialog_msgs.dialog_type", "user")
+                    ->where("r.email", 0)
+                    ->whereNull("r.read_at")
+                    ->whereBetween("web_socket_dialog_msgs.created_at", [
+                        Carbon::now()->subMinutes($userMinute + 10),
+                        Carbon::now()->subMinutes($userMinute)
+                    ])->chunkById(100, function ($rows) {
+                        $this->unreadMsgEmail($rows);
+                    });
+            }
+            if ($groupMinute > 0) {
+                WebSocketDialogMsg::select(['web_socket_dialog_msgs.*', 'r.id as r_id', 'r.userid as r_userid'])
+                    ->join('web_socket_dialog_msg_reads as r', 'web_socket_dialog_msgs.id', '=', 'r.msg_id')
+                    ->where("web_socket_dialog_msgs.dialog_type", "group")
+                    ->where("r.email", 0)
+                    ->whereNull("r.read_at")
+                    ->whereBetween("web_socket_dialog_msgs.created_at", [
+                        Carbon::now()->subMinutes($groupMinute + 10),
+                        Carbon::now()->subMinutes($groupMinute)
+                    ])->chunkById(100, function ($rows) {
+                        $this->unreadMsgEmail($rows);
+                    });
+            }
+        }
+    }
+
+    /**
+     * 任务过期前、超期后提醒
+     * @param ProjectTask $task
+     * @param $isBefore
+     * @return void
+     */
+    private function overdueBeforeAfterEmail(ProjectTask $task, $isBefore)
+    {
+        $userids = $task->taskUser->where('owner', 1)->pluck('userid')->toArray();
+        if (empty($userids)) {
+            return;
+        }
+        $users = User::whereIn('userid', $userids)->get();
+        if (empty($users)) {
+            return;
+        }
+
+        $setting = Base::setting('emailSetting');
+        $hours = floatval($setting['task_remind_hours']);
+        $hours2 = floatval($setting['task_remind_hours2']);
+
+        /** @var User $user */
+        foreach ($users as $user) {
+            $data = [
+                'type' => $isBefore ? 1 : 2,
+                'userid' => $user->userid,
+                'task_id' => $task->id,
+            ];
+            $emailLog = ProjectTaskMailLog::where($data)->first();
+            if ($emailLog) {
+                continue;
+            }
+            try {
+                if (!Base::isEmail($user->email)) {
+                    throw new \Exception("User email '{$user->email}' address error");
+                }
+                if ($isBefore) {
+                    $subject = env('APP_NAME') . " 任务提醒";
+                    $content = "<p>{$user->nickname} 您好：</p><p>您有一个任务【{$task->name}】还有{$hours}小时即将超时，请及时处理。</p>";
+                } else {
+                    $subject = env('APP_NAME') . " 任务过期提醒";
+                    $content = "<p>{$user->nickname} 您好：</p><p>您的任务【{$task->name}】已经超时{$hours2}小时，请及时处理。</p>";
+                }
+                Factory::mailer()
+                    ->setDsn("smtp://{$setting['account']}:{$setting['password']}@{$setting['smtp_server']}:{$setting['port']}?verify_peer=0")
+                    ->setMessage(EmailMessage::create()
+                        ->from(env('APP_NAME', 'Task') . " <{$setting['account']}>")
+                        ->to($user->email)
+                        ->subject($subject)
+                        ->html($content))
+                    ->send();
+                $data['is_send'] = 1;
+            } catch (\Exception $e) {
+                $data['send_error'] = $e->getMessage();
+            }
+            $data['email'] = $user->email;
+            ProjectTaskMailLog::createInstance($data)->save();
+        }
+    }
+
+    /**
+     * 未读消息通知
+     * @param \Illuminate\Database\Eloquent\Collection|EmailNoticeTask[] $rows
+     * @return void
+     */
+    private function unreadMsgEmail($rows)
+    {
+        $array = $rows->groupBy('r_userid');
+        foreach ($array as $userid => $data) {
+            $user = User::find($userid);
+            if (empty($user)) {
+                continue;
+            }
+            if (!Base::isEmail($user->email)) {
+                continue;
+            }
+            if (count($data) === 0) {
+                continue;
+            }
+            $setting = Base::setting('emailSetting');
+            $subject = env('APP_NAME') . " 未读消息提醒（" . count($data) . "）条";
+            $content = view('unread', [
+                'type' => 'head',
+                'nickname' => $user->nickname,
+                'count' => count($data),
+            ]);
+            $lists = $data->groupBy('dialog_id');
+            /** @var WebSocketDialogMsg[] $items */
+            foreach ($lists as $items) {
+                $dialogName = null;
+                foreach ($items as $item) {
+                    $item->userInfo = User::userid2basic($item->userid);
+                    $item->preview = $item->previewMsg(true);
+                    if ($dialogName === null) {
+                        switch ($item->dialog_type) {
+                            case "user":
+                                $dialogName = $item->userInfo['nickname'];
+                                break;
+                            case "group":
+                                $dialogName = $item->webSocketDialog?->name;
+                                break;
+                        }
+                    }
+                }
+                $content .= view('unread', [
+                    'type' => 'content',
+                    'dialogName' => $dialogName,
+                    'unread' => count($items),
+                    'items' => $items,
+                ]);
+            }
+            try {
+                Factory::mailer()
+                    ->setDsn("smtp://{$setting['account']}:{$setting['password']}@{$setting['smtp_server']}:{$setting['port']}?verify_peer=0")
+                    ->setMessage(EmailMessage::create()
+                        ->from(env('APP_NAME', 'Task') . " <{$setting['account']}>")
+                        ->to($user->email)
+                        ->subject($subject)
+                        ->html($content))
+                    ->send();
+            } catch (\Exception $e) {
+                info("unreadMsgEmail: " . $e->getMessage());
+            }
+        }
+        WebSocketDialogMsgRead::whereIn('id', $rows->pluck('r_id'))->update([
+            'email' => 1
+        ]);
+    }
+}

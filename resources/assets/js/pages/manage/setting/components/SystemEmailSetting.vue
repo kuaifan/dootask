@@ -39,12 +39,12 @@
                     <Form v-if="formData.notice == 'open'" label-width="auto" @submit.native.prevent>
                         <FormItem :label="$L('第一次通知:')" prop="task_remind_hours">
                             <label>{{ $L('到期前') }}</label>
-                            <InputNumber v-model="formData.task_remind_hours" :min="0.5" :step="0.5" @on-change="hoursChange($event, 'task_remind_hours')"/>
+                            <InputNumber v-model="formData.task_remind_hours" :min="0" :step="0.5" @on-change="hoursChange($event, 'task_remind_hours')"/>
                             <label>{{ $L('小时') }}</label>
                         </FormItem>
                         <FormItem :label="$L('第二次通知:')" prop="task_remind_hours2">
                             <label>{{ $L('到期后') }}</label>
-                            <InputNumber v-model="formData.task_remind_hours2" :min="0.5" :step="0.5" @on-change="hoursChange($event, 'task_remind_hours2')"/>
+                            <InputNumber v-model="formData.task_remind_hours2" :min="0" :step="0.5" @on-change="hoursChange($event, 'task_remind_hours2')"/>
                             <label>{{ $L('小时') }}</label>
                         </FormItem>
                     </Form>
@@ -57,12 +57,12 @@
                     <Form v-if="formData.notice_msg == 'open'" label-width="auto" @submit.native.prevent>
                         <FormItem :label="$L('个人消息:')" prop="msg_unread_user_minute">
                             <label>{{ $L('未读时长') }}</label>
-                            <InputNumber v-model="formData.msg_unread_user_minute" :min="1" :step="1"/>
+                            <InputNumber v-model="formData.msg_unread_user_minute" :min="0" :step="1"/>
                             <label>{{ $L('分钟') }}</label>
                         </FormItem>
                         <FormItem :label="$L('群聊消息:')" prop="msg_unread_group_minute">
                             <label>{{ $L('未读时长') }}</label>
-                            <InputNumber v-model="formData.msg_unread_group_minute" :min="1" :step="1"/>
+                            <InputNumber v-model="formData.msg_unread_group_minute" :min="0" :step="1"/>
                             <label>{{ $L('分钟') }}</label>
                         </FormItem>
                     </Form>
@@ -91,6 +91,9 @@ export default {
                 notice: 'open',
                 task_remind_hours: 0,
                 task_remind_hours2: 0,
+                notice_msg: 'open',
+                msg_unread_user_minute: 0,
+                msg_unread_group_minute: 0,
             },
             ruleData: {},
         }

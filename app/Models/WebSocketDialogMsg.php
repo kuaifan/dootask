@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  *
  * @property int $id
  * @property int|null $dialog_id 对话ID
+ * @property string|null $dialog_type 对话类型
  * @property int|null $userid 发送会员ID
  * @property string|null $type 消息类型
  * @property array|mixed $msg 详细消息
@@ -32,6 +33,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereDialogId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereDialogType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereMsg($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereRead($value)
@@ -199,6 +201,45 @@ class WebSocketDialogMsg extends AbstractModel
     }
 
     /**
+     * 预览消息
+     * @param bool $preserveHtml    保留html格式
+     * @return string
+     */
+    public function previewMsg($preserveHtml = false)
+    {
+        switch ($this->type) {
+            case 'text':
+                return $this->previewTextMsg($this->msg['text'], $preserveHtml);
+            case 'file':
+                if ($this->msg['type'] == 'img') {
+                    return "[图片]";
+                }
+                return "[文件] {$this->msg['name']}";
+            default:
+                return "[未知的消息]";
+        }
+    }
+
+    /**
+     * 返回文本预览消息
+     * @param $text
+     * @param bool $preserveHtml    保留html格式
+     * @return string|string[]|null
+     */
+    private function previewTextMsg($text, $preserveHtml = false)
+    {
+        if (!$text) return '';
+        $text = preg_replace("/<img\s+class=\"emoticon\"[^>]*?alt=\"(\S+)\"[^>]*?>/", "[$1]", $text);
+        $text = preg_replace("/<img\s+class=\"emoticon\"[^>]*?>/", "[表情]", $text);
+        $text = preg_replace("/<img\s+class=\"browse\"[^>]*?>/", "[图片]", $text);
+        if ($preserveHtml) {
+            return $text;
+        } else {
+            return strip_tags($text);
+        }
+    }
+
+    /**
      * 处理文本消息内容，用于发送前
      * @param $text
      * @param $dialog_id
@@ -288,6 +329,7 @@ class WebSocketDialogMsg extends AbstractModel
             $dialog->save();
             $dialogMsg->send = 1;
             $dialogMsg->dialog_id = $dialog->id;
+            $dialogMsg->dialog_type = $dialog->type;
             $dialogMsg->save();
         });
         Task::deliver(new WebSocketDialogMsgTask($dialogMsg->id));

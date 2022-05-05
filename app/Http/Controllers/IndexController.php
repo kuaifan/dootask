@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Module\Base;
 use App\Tasks\AutoArchivedTask;
 use App\Tasks\DeleteTmpTask;
-use App\Tasks\OverdueRemindEmailTask;
+use App\Tasks\EmailNoticeTask;
 use Arr;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Redirect;
@@ -140,13 +140,13 @@ class IndexController extends InvokeController
             // 限制内网访问
             return "Forbidden Access";
         }
+        // 自动归档
+        Task::deliver(new AutoArchivedTask());
+        // 邮件通知
+        Task::deliver(new EmailNoticeTask());
         // 删除过期的临时表数据
         Task::deliver(new DeleteTmpTask('wg_tmp_msgs', 1));
         Task::deliver(new DeleteTmpTask('tmp', 24));
-        // 自动归档任务
-        Task::deliver(new AutoArchivedTask());
-        // 任务到期邮件提醒
-        Task::deliver(new OverdueRemindEmailTask());
 
         return "success";
     }

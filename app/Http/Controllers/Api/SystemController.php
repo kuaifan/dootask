@@ -99,7 +99,7 @@ class SystemController extends AbstractController
      *
      * @apiParam {String} type
      * - get: 获取（默认）
-     * - save: 保存设置（参数：['smtp_server', 'port', 'account', 'password', 'reg_verify', 'notice', 'task_remind_hours', 'task_remind_hours2']）
+     * - save: 保存设置（参数：['smtp_server', 'port', 'account', 'password', 'reg_verify', 'notice', 'task_remind_hours', 'task_remind_hours2', 'notice_msg', 'msg_unread_user_minute', 'msg_unread_group_minute']）
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
@@ -123,7 +123,10 @@ class SystemController extends AbstractController
                     'reg_verify',
                     'notice',
                     'task_remind_hours',
-                    'task_remind_hours2'
+                    'task_remind_hours2',
+                    'notice_msg',
+                    'msg_unread_user_minute',
+                    'msg_unread_group_minute'
                 ])) {
                     unset($all[$key]);
                 }
@@ -141,6 +144,9 @@ class SystemController extends AbstractController
         $setting['notice'] = $setting['notice'] ?: 'open';
         $setting['task_remind_hours'] = floatval($setting['task_remind_hours']) ?: 0;
         $setting['task_remind_hours2'] = floatval($setting['task_remind_hours2']) ?: 0;
+        $setting['notice_msg'] = $setting['notice_msg'] ?: 'open';
+        $setting['msg_unread_user_minute'] = floatval($setting['msg_unread_user_minute']) ?: 0;
+        $setting['msg_unread_group_minute'] = floatval($setting['msg_unread_group_minute']) ?: 0;
         //
         return Base::retSuccess('success', $setting ?: json_decode('{}'));
     }
