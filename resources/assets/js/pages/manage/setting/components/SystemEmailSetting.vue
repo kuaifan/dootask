@@ -36,14 +36,12 @@
                         <Radio label="open">{{ $L('开启') }}</Radio>
                         <Radio label="close">{{ $L('关闭') }}</Radio>
                     </RadioGroup>
-                    <Form v-if="formData.notice == 'open'" label-width="auto" @submit.native.prevent>
-                        <FormItem :label="$L('第一次通知:')" prop="task_remind_hours">
-                            <label>{{ $L('到期前') }}</label>
+                    <Form v-if="formData.notice == 'open'" @submit.native.prevent>
+                        <FormItem :label="$L('距离到期')" prop="task_remind_hours">
                             <InputNumber v-model="formData.task_remind_hours" :min="0" :step="0.5" @on-change="hoursChange($event, 'task_remind_hours')"/>
                             <label>{{ $L('小时') }}</label>
                         </FormItem>
-                        <FormItem :label="$L('第二次通知:')" prop="task_remind_hours2">
-                            <label>{{ $L('到期后') }}</label>
+                        <FormItem :label="$L('超时')" prop="task_remind_hours2">
                             <InputNumber v-model="formData.task_remind_hours2" :min="0" :step="0.5" @on-change="hoursChange($event, 'task_remind_hours2')"/>
                             <label>{{ $L('小时') }}</label>
                         </FormItem>
@@ -55,14 +53,12 @@
                         <Radio label="open">{{ $L('开启') }}</Radio>
                         <Radio label="close">{{ $L('关闭') }}</Radio>
                     </RadioGroup>
-                    <Form v-if="formData.notice_msg == 'open'" label-width="auto" @submit.native.prevent>
-                        <FormItem :label="$L('个人消息:')" prop="msg_unread_user_minute">
-                            <label>{{ $L('未读时长') }}</label>
+                    <Form v-if="formData.notice_msg == 'open'" @submit.native.prevent>
+                        <FormItem :label="$L('未读个人消息')" prop="msg_unread_user_minute">
                             <InputNumber v-model="formData.msg_unread_user_minute" :min="0" :step="1"/>
                             <label>{{ $L('分钟') }}</label>
                         </FormItem>
-                        <FormItem :label="$L('群聊消息:')" prop="msg_unread_group_minute">
-                            <label>{{ $L('未读时长') }}</label>
+                        <FormItem :label="$L('未读群聊消息')" prop="msg_unread_group_minute">
                             <InputNumber v-model="formData.msg_unread_group_minute" :min="0" :step="1"/>
                             <label>{{ $L('分钟') }}</label>
                         </FormItem>

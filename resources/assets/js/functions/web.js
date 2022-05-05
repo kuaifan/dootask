@@ -563,6 +563,9 @@
             if (typeof config === "string" && config === "Network exception") {
                 return;
             }
+            if ($A.isJson(config) && config.content === "Network exception") {
+                return;
+            }
             $A.Modal.error($A.modalConfig(config));
         },
 
