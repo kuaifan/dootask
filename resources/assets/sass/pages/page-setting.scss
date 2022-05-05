@@ -232,6 +232,23 @@
                                     font-weight: 500;
                                     transform: translateY(-50%);
                                 }
+
+                                .ivu-form-item {
+                                    .ivu-form {
+                                        padding: 12px 0 0 0;
+                                        .ivu-form-item {
+                                            margin-bottom: 8px;
+                                            .ivu-form-item-content {
+                                                display: flex;
+                                                align-items: center;
+                                                .ivu-input-number {
+                                                    margin: 0 8px;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
                             }
                             .email-setting-placeholder {
                                 height: 8px;

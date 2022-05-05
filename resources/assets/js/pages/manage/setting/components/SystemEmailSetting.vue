@@ -31,24 +31,42 @@
                     </RadioGroup>
                     <div v-if="formData.reg_verify == 'open'" class="form-tip">{{$L('开启后帐号需验证通过才可登录')}}</div>
                 </FormItem>
-                <FormItem :label="$L('开启通知')" prop="notice">
+                <FormItem :label="$L('任务提醒')" prop="notice">
                     <RadioGroup v-model="formData.notice">
                         <Radio label="open">{{ $L('开启') }}</Radio>
                         <Radio label="close">{{ $L('关闭') }}</Radio>
                     </RadioGroup>
+                    <Form v-if="formData.notice == 'open'" label-width="auto" @submit.native.prevent>
+                        <FormItem :label="$L('第一次通知:')" prop="task_remind_hours">
+                            <label>{{ $L('到期前') }}</label>
+                            <InputNumber v-model="formData.task_remind_hours" :min="0.5" :step="0.5" @on-change="hoursChange($event, 'task_remind_hours')"/>
+                            <label>{{ $L('小时') }}</label>
+                        </FormItem>
+                        <FormItem :label="$L('第二次通知:')" prop="task_remind_hours2">
+                            <label>{{ $L('到期后') }}</label>
+                            <InputNumber v-model="formData.task_remind_hours2" :min="0.5" :step="0.5" @on-change="hoursChange($event, 'task_remind_hours2')"/>
+                            <label>{{ $L('小时') }}</label>
+                        </FormItem>
+                    </Form>
                 </FormItem>
-                <template v-if="formData.notice == 'open'">
-                    <FormItem :label="$L('任务提醒:')" prop="task_remind_hours">
-                        <label>{{ $L('到期前') }}</label>
-                        <InputNumber v-model="formData.task_remind_hours" :min="0.5" :step="0.5" @on-change="hoursChange"/>
-                        <label>{{ $L('小时') }}</label>
-                    </FormItem>
-                    <FormItem :label="$L('第二次任务提醒:')" prop="task_remind_hours2">
-                        <label>{{ $L('到期后') }}</label>
-                        <InputNumber v-model="formData.task_remind_hours2" :min="0.5" :step="0.5" @on-change="hours2Change"/>
-                        <label>{{ $L('小时') }}</label>
-                    </FormItem>
-                </template>
+                <FormItem :label="$L('消息提醒')" prop="notice_msg">
+                    <RadioGroup v-model="formData.notice_msg">
+                        <Radio label="open">{{ $L('开启') }}</Radio>
+                        <Radio label="close">{{ $L('关闭') }}</Radio>
+                    </RadioGroup>
+                    <Form v-if="formData.notice_msg == 'open'" label-width="auto" @submit.native.prevent>
+                        <FormItem :label="$L('个人消息:')" prop="msg_unread_user_minute">
+                            <label>{{ $L('未读时长') }}</label>
+                            <InputNumber v-model="formData.msg_unread_user_minute" :min="1" :step="1"/>
+                            <label>{{ $L('分钟') }}</label>
+                        </FormItem>
+                        <FormItem :label="$L('群聊消息:')" prop="msg_unread_group_minute">
+                            <label>{{ $L('未读时长') }}</label>
+                            <InputNumber v-model="formData.msg_unread_group_minute" :min="1" :step="1"/>
+                            <label>{{ $L('分钟') }}</label>
+                        </FormItem>
+                    </Form>
+                </FormItem>
             </div>
         </Form>
         <div class="setting-footer">
@@ -115,23 +133,13 @@ export default {
             });
         },
 
-        hoursChange(e) {
+        hoursChange(e, key) {
             let newNum = e * 10;
             if (newNum % 5 !== 0) {
                 setTimeout(() => {
-                    this.formData.task_remind_hours = 1;
+                    this.$set(this.formData, key, Math.round(e))
                 })
                 $A.messageError('任务提醒只能是0.5的倍数');
-            }
-        },
-
-        hours2Change(e) {
-            let newNum = e * 10;
-            if (newNum % 5 !== 0) {
-                setTimeout(() => {
-                    this.formData.task_remind_hours2 = 1;
-                })
-                $A.messageError('第二次任务提醒只能是0.5的倍数');
             }
         },
 
