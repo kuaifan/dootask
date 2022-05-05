@@ -106,8 +106,6 @@ class EmailNoticeTask extends AbstractTask
         }
 
         $setting = Base::setting('emailSetting');
-        $hours = floatval($setting['task_remind_hours']);
-        $hours2 = floatval($setting['task_remind_hours2']);
 
         /** @var User $user */
         foreach ($users as $user) {
@@ -116,7 +114,7 @@ class EmailNoticeTask extends AbstractTask
                 'userid' => $user->userid,
                 'task_id' => $task->id,
             ];
-            $emailLog = ProjectTaskMailLog::where($data)->first();
+            $emailLog = ProjectTaskMailLog::where($data)->exists();
             if ($emailLog) {
                 continue;
             }
@@ -126,11 +124,15 @@ class EmailNoticeTask extends AbstractTask
                 }
                 if ($isBefore) {
                     $subject = env('APP_NAME') . " 任务提醒";
-                    $content = "<p>{$user->nickname} 您好：</p><p>您有一个任务【{$task->name}】还有{$hours}小时即将超时，请及时处理。</p>";
                 } else {
                     $subject = env('APP_NAME') . " 任务过期提醒";
-                    $content = "<p>{$user->nickname} 您好：</p><p>您的任务【{$task->name}】已经超时{$hours2}小时，请及时处理。</p>";
                 }
+                $content = view('email.task', [
+                    'type' => $isBefore ? 'before' : 'after',
+                    'user' => $user,
+                    'task' => $task,
+                    'setting' => $setting,
+                ]);
                 Factory::mailer()
                     ->setDsn("smtp://{$setting['account']}:{$setting['password']}@{$setting['smtp_server']}:{$setting['port']}?verify_peer=0")
                     ->setMessage(EmailMessage::create()
@@ -168,8 +170,8 @@ class EmailNoticeTask extends AbstractTask
                 continue;
             }
             $setting = Base::setting('emailSetting');
-            $subject = env('APP_NAME') . " 未读消息提醒（" . count($data) . "）条";
-            $content = view('unread', [
+            $subject = env('APP_NAME') . " 未读消息提醒（" . count($data) . "条）";
+            $content = view('email.unread', [
                 'type' => 'head',
                 'nickname' => $user->nickname,
                 'count' => count($data),
@@ -192,7 +194,7 @@ class EmailNoticeTask extends AbstractTask
                         }
                     }
                 }
-                $content .= view('unread', [
+                $content .= view('email.unread', [
                     'type' => 'content',
                     'dialogName' => $dialogName,
                     'unread' => count($items),

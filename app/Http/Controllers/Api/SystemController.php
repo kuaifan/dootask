@@ -141,10 +141,10 @@ class SystemController extends AbstractController
         $setting['account'] = $setting['account'] ?: '';
         $setting['password'] = $setting['password'] ?: '';
         $setting['reg_verify'] = $setting['reg_verify'] ?: 'close';
-        $setting['notice'] = $setting['notice'] ?: 'open';
+        $setting['notice'] = $setting['notice'] ?: 'close';
         $setting['task_remind_hours'] = floatval($setting['task_remind_hours']) ?: 0;
         $setting['task_remind_hours2'] = floatval($setting['task_remind_hours2']) ?: 0;
-        $setting['notice_msg'] = $setting['notice_msg'] ?: 'open';
+        $setting['notice_msg'] = $setting['notice_msg'] ?: 'close';
         $setting['msg_unread_user_minute'] = floatval($setting['msg_unread_user_minute']) ?: 0;
         $setting['msg_unread_group_minute'] = floatval($setting['msg_unread_group_minute']) ?: 0;
         //

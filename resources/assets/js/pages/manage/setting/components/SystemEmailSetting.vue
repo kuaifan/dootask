@@ -47,6 +47,7 @@
                             <InputNumber v-model="formData.task_remind_hours2" :min="0" :step="0.5" @on-change="hoursChange($event, 'task_remind_hours2')"/>
                             <label>{{ $L('小时') }}</label>
                         </FormItem>
+                        <div class="form-tip">{{$L('填写0则不通知，误差±10分钟')}}</div>
                     </Form>
                 </FormItem>
                 <FormItem :label="$L('消息提醒')" prop="notice_msg">
@@ -65,6 +66,7 @@
                             <InputNumber v-model="formData.msg_unread_group_minute" :min="0" :step="1"/>
                             <label>{{ $L('分钟') }}</label>
                         </FormItem>
+                        <div class="form-tip">{{$L('填写0则不通知，误差±10分钟')}}</div>
                     </Form>
                 </FormItem>
             </div>
