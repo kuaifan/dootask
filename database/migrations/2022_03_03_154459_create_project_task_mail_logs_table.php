@@ -18,7 +18,7 @@ class CreateProjectTaskMailLogsTable extends Migration
             $table->bigInteger('userid')->nullable()->default(0)->comment('用户id');
             $table->integer('task_id')->nullable()->default(0)->comment('任务id');
             $table->string('email')->nullable()->default('')->comment('电子邮箱');
-            $table->tinyInteger('type')->nullable()->default(0)->comment('提醒类型：1第一次任务提醒，2第二次任务超期提醒');
+            $table->tinyInteger('type')->nullable()->default(0)->comment('提醒类型：0 任务开始提醒，1 距离到期提醒，2到期超时提醒');
             $table->tinyInteger('is_send')->nullable()->default(0)->comment('邮件发送是否成功：0否，1是');
             $table->timestamps();
         });

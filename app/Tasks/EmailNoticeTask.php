@@ -26,9 +26,23 @@ class EmailNoticeTask extends AbstractTask
         $setting = Base::setting('emailSetting');
         // 任务通知
         if ($setting['notice'] === 'open') {
+            $start = intval($setting['task_start_minute']);
             $hours = floatval($setting['task_remind_hours']);
             $hours2 = floatval($setting['task_remind_hours2']);
-            if ($hours > 0) {
+            if ($start > -1) {
+                ProjectTask::whereNull("complete_at")
+                    ->whereNull("archived_at")
+                    ->whereBetween("start_at", [
+                        Carbon::now()->subMinutes($start * 60 + 10),
+                        Carbon::now()->subMinutes($start * 60)
+                    ])->chunkById(100, function ($tasks) {
+                        /** @var ProjectTask $task */
+                        foreach ($tasks as $task) {
+                            $this->taskEmail($task, 0);
+                        }
+                    });
+            }
+            if ($hours > -1) {
                 ProjectTask::whereNull("complete_at")
                     ->whereNull("archived_at")
                     ->whereBetween("end_at", [
@@ -37,11 +51,11 @@ class EmailNoticeTask extends AbstractTask
                     ])->chunkById(100, function ($tasks) {
                         /** @var ProjectTask $task */
                         foreach ($tasks as $task) {
-                            $this->overdueBeforeAfterEmail($task, true);
+                            $this->taskEmail($task, 1);
                         }
                     });
             }
-            if ($hours2 > 0) {
+            if ($hours2 > -1) {
                 ProjectTask::whereNull("complete_at")
                     ->whereNull("archived_at")
                     ->whereBetween("end_at", [
@@ -50,16 +64,16 @@ class EmailNoticeTask extends AbstractTask
                     ])->chunkById(100, function ($tasks) {
                         /** @var ProjectTask $task */
                         foreach ($tasks as $task) {
-                            $this->overdueBeforeAfterEmail($task, false);
+                            $this->taskEmail($task, 2);
                         }
                     });
             }
         }
         // 消息通知
         if ($setting['notice_msg'] === 'open') {
-            $userMinute = floatval($setting['msg_unread_user_minute']);
-            $groupMinute = floatval($setting['msg_unread_group_minute']);
-            if ($userMinute > 0) {
+            $userMinute = intval($setting['msg_unread_user_minute']);
+            $groupMinute = intval($setting['msg_unread_group_minute']);
+            if ($userMinute > -1) {
                 WebSocketDialogMsg::select(['web_socket_dialog_msgs.*', 'r.id as r_id', 'r.userid as r_userid'])
                     ->join('web_socket_dialog_msg_reads as r', 'web_socket_dialog_msgs.id', '=', 'r.msg_id')
                     ->where("web_socket_dialog_msgs.dialog_type", "user")
@@ -72,7 +86,7 @@ class EmailNoticeTask extends AbstractTask
                         $this->unreadMsgEmail($rows, "user");
                     });
             }
-            if ($groupMinute > 0) {
+            if ($groupMinute > -1) {
                 WebSocketDialogMsg::select(['web_socket_dialog_msgs.*', 'r.id as r_id', 'r.userid as r_userid'])
                     ->join('web_socket_dialog_msg_reads as r', 'web_socket_dialog_msgs.id', '=', 'r.msg_id')
                     ->where("web_socket_dialog_msgs.dialog_type", "group")
@@ -91,10 +105,10 @@ class EmailNoticeTask extends AbstractTask
     /**
      * 任务过期前、超期后提醒
      * @param ProjectTask $task
-     * @param $isBefore
+     * @param int $type
      * @return void
      */
-    private function overdueBeforeAfterEmail(ProjectTask $task, $isBefore)
+    private function taskEmail(ProjectTask $task, int $type)
     {
         $userids = $task->taskUser->where('owner', 1)->pluck('userid')->toArray();
         if (empty($userids)) {
@@ -110,7 +124,7 @@ class EmailNoticeTask extends AbstractTask
         /** @var User $user */
         foreach ($users as $user) {
             $data = [
-                'type' => $isBefore ? 1 : 2,
+                'type' => $type,
                 'userid' => $user->userid,
                 'task_id' => $task->id,
             ];
@@ -122,13 +136,13 @@ class EmailNoticeTask extends AbstractTask
                 if (!Base::isEmail($user->email)) {
                     throw new \Exception("User email '{$user->email}' address error");
                 }
-                if ($isBefore) {
-                    $subject = env('APP_NAME') . " 任务提醒";
-                } else {
-                    $subject = env('APP_NAME') . " 任务过期提醒";
-                }
+                $subject = match ($type) {
+                    1 => env('APP_NAME') . " 任务提醒",
+                    2 => env('APP_NAME') . " 任务过期提醒",
+                    default => env('APP_NAME') . " 任务开始提醒",
+                };
                 $content = view('email.task', [
-                    'type' => $isBefore ? 'before' : 'after',
+                    'type' => str_replace([0, 1, 2], ['start', 'before', 'after'], $type),
                     'user' => $user,
                     'task' => $task,
                     'setting' => $setting,

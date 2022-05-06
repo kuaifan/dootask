@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int|null $userid 用户id
  * @property int|null $task_id 任务id
  * @property string|null $email 电子邮箱
- * @property int|null $type 提醒类型：1第一次任务提醒，2第二次任务超期提醒
+ * @property int|null $type 提醒类型：0 任务开始提醒，1 距离到期提醒，2到期超时提醒
  * @property int|null $is_send 邮件发送是否成功：0否，1是
  * @property string|null $send_error 邮件发送错误详情
  * @property \Illuminate\Support\Carbon|null $created_at

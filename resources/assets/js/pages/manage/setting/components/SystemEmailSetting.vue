@@ -37,15 +37,25 @@
                         <Radio label="close">{{ $L('关闭') }}</Radio>
                     </RadioGroup>
                     <Form v-if="formData.notice == 'open'" @submit.native.prevent>
+                        <FormItem :label="$L('任务开始')" prop="task_start_minute">
+                            <div class="input-number-box">
+                                <InputNumber v-model="formData.task_start_minute" :min="0" :step="1"/>
+                                <label>{{ $L('分钟') }}</label>
+                            </div>
+                        </FormItem>
                         <FormItem :label="$L('距离到期')" prop="task_remind_hours">
-                            <InputNumber v-model="formData.task_remind_hours" :min="0" :step="0.5" @on-change="hoursChange($event, 'task_remind_hours')"/>
-                            <label>{{ $L('小时') }}</label>
+                            <div class="input-number-box">
+                                <InputNumber v-model="formData.task_remind_hours" :min="0" :step="0.5" @on-change="hoursChange($event, 'task_remind_hours')"/>
+                                <label>{{ $L('小时') }}</label>
+                            </div>
                         </FormItem>
-                        <FormItem :label="$L('超时')" prop="task_remind_hours2">
-                            <InputNumber v-model="formData.task_remind_hours2" :min="0" :step="0.5" @on-change="hoursChange($event, 'task_remind_hours2')"/>
-                            <label>{{ $L('小时') }}</label>
+                        <FormItem :label="$L('到期超时')" prop="task_remind_hours2">
+                            <div class="input-number-box">
+                                <InputNumber v-model="formData.task_remind_hours2" :min="0" :step="0.5" @on-change="hoursChange($event, 'task_remind_hours2')"/>
+                                <label>{{ $L('小时') }}</label>
+                            </div>
                         </FormItem>
-                        <div class="form-tip">{{$L('填写0则不通知，误差±10分钟')}}</div>
+                        <div class="form-tip">{{$L('填写-1则不通知，误差±10分钟')}}</div>
                     </Form>
                 </FormItem>
                 <FormItem :label="$L('消息提醒')" prop="notice_msg">
@@ -55,14 +65,18 @@
                     </RadioGroup>
                     <Form v-if="formData.notice_msg == 'open'" @submit.native.prevent>
                         <FormItem :label="$L('未读个人消息')" prop="msg_unread_user_minute">
-                            <InputNumber v-model="formData.msg_unread_user_minute" :min="0" :step="1"/>
-                            <label>{{ $L('分钟') }}</label>
+                            <div class="input-number-box">
+                                <InputNumber v-model="formData.msg_unread_user_minute" :min="0" :step="1"/>
+                                <label>{{ $L('分钟') }}</label>
+                            </div>
                         </FormItem>
                         <FormItem :label="$L('未读群聊消息')" prop="msg_unread_group_minute">
-                            <InputNumber v-model="formData.msg_unread_group_minute" :min="0" :step="1"/>
-                            <label>{{ $L('分钟') }}</label>
+                            <div class="input-number-box">
+                                <InputNumber v-model="formData.msg_unread_group_minute" :min="0" :step="1"/>
+                                <label>{{ $L('分钟') }}</label>
+                            </div>
                         </FormItem>
-                        <div class="form-tip">{{$L('填写0则不通知，误差±10分钟')}}</div>
+                        <div class="form-tip">{{$L('填写-1则不通知，误差±10分钟')}}</div>
                     </Form>
                 </FormItem>
             </div>
@@ -87,11 +101,12 @@ export default {
                 password: '',
                 reg_verify: 'colse',
                 notice: 'open',
-                task_remind_hours: 0,
-                task_remind_hours2: 0,
+                task_start_minute: -1,
+                task_remind_hours: -1,
+                task_remind_hours2: -1,
                 notice_msg: 'open',
-                msg_unread_user_minute: 0,
-                msg_unread_group_minute: 0,
+                msg_unread_user_minute: -1,
+                msg_unread_group_minute: -1,
             },
             ruleData: {},
         }

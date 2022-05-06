@@ -7,6 +7,35 @@ body {
         padding: 5px 0;
     }
 
+    .input-number-box {
+        display: flex;
+        align-items: center;
+        border: 1px solid #dcdee2;
+        border-radius: 4px;
+        .ivu-input-number {
+            width: 72px;
+            margin: 0;
+            border: 0;
+        }
+        > label {
+            color: #515a6e;
+            text-align: center;
+            background-color: #f8f8f9;
+            padding: 0 7px;
+            font-weight: 400;
+            &:first-child {
+                border-left: 1px solid transparent;
+                border-right: 1px solid #dcdee2;
+                border-radius: 4px 0 0 4px;
+            }
+            &:last-child {
+                border-left: 1px solid #dcdee2;
+                border-right: 1px solid transparent;
+                border-radius: 0 4px 4px 0;
+            }
+        }
+    }
+
     .ivu-input,
     .ivu-select-selection {
         border-color: #e8e8e8;
