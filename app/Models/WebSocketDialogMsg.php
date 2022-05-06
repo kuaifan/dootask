@@ -247,6 +247,7 @@ class WebSocketDialogMsg extends AbstractModel
      */
     public static function formatMsg($text, $dialog_id)
     {
+        @ini_set("pcre.backtrack_limit", 999999999);
         // 图片 [:IMAGE:className:width:height:src:alt:]
         preg_match_all("/<img\s+src=\"data:image\/(png|jpg|jpeg|gif);base64,(.*?)\"(.*?)>(<\/img>)*/s", $text, $matchs);
         foreach ($matchs[2] as $key => $base64) {

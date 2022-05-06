@@ -45,6 +45,16 @@ cd dootask
 ./cmd port 2222
 ```
 
+### 更换URL
+
+```bash
+# 此地址仅影响邮件回复功能
+./cmd url {域名地址}
+
+# 例如:
+./cmd url https://domain.com
+```
+
 ### 停止服务
 
 ```bash

@@ -358,6 +358,18 @@ if [ $# -gt 0 ]; then
         $COMPOSE up -d
         echo -e "${OK} ${GreenBG} 修改成功 ${Font}"
         echo -e "地址: http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
+    elif [[ "$1" == "url" ]]; then
+        shift 1
+        env_set APP_URL "$1"
+        supervisorctl_restart php
+        echo -e "${OK} ${GreenBG} 修改成功 ${Font}"
+    elif [[ "$1" == "env" ]]; then
+        shift 1
+        if [ -n "$1" ]; then
+            env_set $1 "$2"
+        fi
+        supervisorctl_restart php
+        echo -e "${OK} ${GreenBG} 修改成功 ${Font}"
     elif [[ "$1" == "repassword" ]]; then
         shift 1
         run_exec mariadb "sh /etc/mysql/repassword.sh \"$@\""

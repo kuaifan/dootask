@@ -69,7 +69,7 @@ class EmailNoticeTask extends AbstractTask
                         Carbon::now()->subMinutes($userMinute + 10),
                         Carbon::now()->subMinutes($userMinute)
                     ])->chunkById(100, function ($rows) {
-                        $this->unreadMsgEmail($rows);
+                        $this->unreadMsgEmail($rows, "user");
                     });
             }
             if ($groupMinute > 0) {
@@ -82,7 +82,7 @@ class EmailNoticeTask extends AbstractTask
                         Carbon::now()->subMinutes($groupMinute + 10),
                         Carbon::now()->subMinutes($groupMinute)
                     ])->chunkById(100, function ($rows) {
-                        $this->unreadMsgEmail($rows);
+                        $this->unreadMsgEmail($rows, "group");
                     });
             }
         }
@@ -152,10 +152,11 @@ class EmailNoticeTask extends AbstractTask
 
     /**
      * 未读消息通知
-     * @param \Illuminate\Database\Eloquent\Collection|EmailNoticeTask[] $rows
+     * @param $rows
+     * @param $dialogType
      * @return void
      */
-    private function unreadMsgEmail($rows)
+    private function unreadMsgEmail($rows, $dialogType)
     {
         $array = $rows->groupBy('r_userid');
         foreach ($array as $userid => $data) {
@@ -170,32 +171,40 @@ class EmailNoticeTask extends AbstractTask
                 continue;
             }
             $setting = Base::setting('emailSetting');
-            $subject = env('APP_NAME') . " 未读消息提醒（" . count($data) . "条）";
+            $msgType = $dialogType === "group" ? "群聊" : "个人";
+            $subject = env('APP_NAME') . " 未读{$msgType}消息提醒（" . count($data) . "条）";
             $content = view('email.unread', [
                 'type' => 'head',
                 'nickname' => $user->nickname,
+                'msgType' => $msgType,
                 'count' => count($data),
             ]);
             $lists = $data->groupBy('dialog_id');
             /** @var WebSocketDialogMsg[] $items */
             foreach ($lists as $items) {
+                $dialogId = 0;
                 $dialogName = null;
                 foreach ($items as $item) {
                     $item->userInfo = User::userid2basic($item->userid);
                     $item->preview = $item->previewMsg(true);
+                    if (empty($dialogId)) {
+                        $dialogId = $item->dialog_id;
+                    }
                     if ($dialogName === null) {
-                        switch ($item->dialog_type) {
-                            case "user":
-                                $dialogName = $item->userInfo['nickname'];
-                                break;
-                            case "group":
-                                $dialogName = $item->webSocketDialog?->name;
-                                break;
+                        if ($dialogType === "user" && $item->userInfo) {
+                            if ($item->userInfo->profession) {
+                                $dialogName = $item->userInfo->nickname . " ({$item->userInfo->profession})";
+                            } else {
+                                $dialogName = $item->userInfo->nickname;
+                            }
+                        } else {
+                            $dialogName = $item->webSocketDialog?->name;
                         }
                     }
                 }
                 $content .= view('email.unread', [
                     'type' => 'content',
+                    'dialogUrl' => config("app.url") . "/manage/messenger/{$dialogId}",
                     'dialogName' => $dialogName,
                     'unread' => count($items),
                     'items' => $items,
