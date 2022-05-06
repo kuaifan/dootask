@@ -143,12 +143,12 @@ class SystemController extends AbstractController
         $setting['password'] = $setting['password'] ?: '';
         $setting['reg_verify'] = $setting['reg_verify'] ?: 'close';
         $setting['notice'] = $setting['notice'] ?: 'close';
-        $setting['task_start_minute'] = intval($setting['task_start_minute']);
-        $setting['task_remind_hours'] = floatval($setting['task_remind_hours']);
-        $setting['task_remind_hours2'] = floatval($setting['task_remind_hours2']);
+        $setting['task_start_minute'] = intval($setting['task_start_minute'] ?? -1);
+        $setting['task_remind_hours'] = floatval($setting['task_remind_hours'] ?? -1);
+        $setting['task_remind_hours2'] = floatval($setting['task_remind_hours2'] ?? -1);
         $setting['notice_msg'] = $setting['notice_msg'] ?: 'close';
-        $setting['msg_unread_user_minute'] = intval($setting['msg_unread_user_minute']);
-        $setting['msg_unread_group_minute'] = intval($setting['msg_unread_group_minute']);
+        $setting['msg_unread_user_minute'] = intval($setting['msg_unread_user_minute'] ?? -1);
+        $setting['msg_unread_group_minute'] = intval($setting['msg_unread_group_minute'] ?? -1);
         //
         return Base::retSuccess('success', $setting ?: json_decode('{}'));
     }
