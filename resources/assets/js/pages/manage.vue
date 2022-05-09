@@ -1,5 +1,5 @@
 <template>
-    <div v-show="userId > 0" class="page-manage">
+    <div v-show="userId > 0" class="page-manage" :class="{'show-tabbar': showMobileTabbar}">
         <div class="manage-box-menu" :class="{'show768-menu': show768Menu}">
             <Dropdown
                 class="page-manage-menu-dropdown"
@@ -352,6 +352,9 @@
                 <Badge :count="unreadTotal"/>
             </div>
         </DragBallComponent>
+
+        <!--移动端选项卡-->
+        <MobileTabbar v-if="showMobileTabbar"/>
     </div>
 </template>
 
@@ -363,14 +366,16 @@ import TeamManagement from "./manage/components/TeamManagement";
 import ProjectManagement from "./manage/components/ProjectManagement";
 import DrawerOverlay from "../components/DrawerOverlay";
 import DragBallComponent from "../components/DragBallComponent";
+import MobileTabbar from "../components/Mobile/Tabbar";
+import UserInput from "../components/UserInput";
 import TaskAdd from "./manage/components/TaskAdd";
 import Report from "./manage/components/Report";
 import notificationKoro from "notification-koro1";
 import {Store} from "le5le-store";
-import UserInput from "../components/UserInput";
 
 export default {
     components: {
+        MobileTabbar,
         UserInput,
         TaskAdd,
         TaskDetail,
@@ -384,7 +389,6 @@ export default {
         return {
             loadIng: 0,
 
-            routeName: this.$route.name,
             mateName: /macintosh|mac os x/i.test(navigator.userAgent) ? '⌘' : 'Ctrl',
 
             addShow: false,
@@ -496,6 +500,10 @@ export default {
 
         ...mapGetters(['taskData', 'dashboardTask']),
 
+        routeName() {
+            return this.$route.name
+        },
+
         msgUnreadMention() {
             let num = 0;
             let mention = 0;
@@ -601,13 +609,6 @@ export default {
             return data;
         },
 
-        taskStyle() {
-            const {windowHeight} = this;
-            return {
-                maxHeight: (windowHeight - (windowHeight > 900 ? 200 : 70) - 20) + 'px'
-            }
-        },
-
         overlayClass() {
             return {
                 'overlay-y': true,
@@ -621,11 +622,23 @@ export default {
                 return cacheTasks.find(task => task.id === id) || {}
             });
         },
+
+        showMobileTabbar() {
+            if (this.routeName === 'manage-dashboard') {
+                return true;
+            }
+            if (this.routeName === 'manage-project' && !/^\d+$/.test(this.$route.params.projectId)) {
+                return true;
+            }
+            if (this.routeName === 'manage-messenger' && !/^\d+$/.test(this.$route.params.dialogId)) {
+                return true;
+            }
+            return $A.leftExists(this.routeName, 'manage-setting');
+        },
     },
 
     watch: {
         '$route' (route) {
-            this.routeName = route.name;
             this.chackPass();
         },
 
@@ -792,7 +805,7 @@ export default {
 
         classNameProject(item) {
             return {
-                "active": this.routeName === 'manage-project' && this.$route.params.projectId === item.id,
+                "active": this.routeName === 'manage-project' && this.$route.params.projectId == item.id,
                 "open-menu": this.openMenu[item.id] === true,
                 "operate": item.id == this.topOperateItem.id && this.topOperateVisible
             };

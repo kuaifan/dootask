@@ -1,7 +1,10 @@
 <template>
     <div class="page-project">
-        <ProjectList/>
-        <ProjectDialog v-if="projectData.cacheParameter.chat"/>
+        <template v-if="projectId > 0">
+            <ProjectList/>
+            <ProjectDialog v-if="projectData.cacheParameter.chat"/>
+        </template>
+        <ProjectAll v-else-if="routeName === 'manage-project'"/>
     </div>
 </template>
 
@@ -9,8 +12,9 @@
 import {mapState, mapGetters} from "vuex";
 import ProjectList from "./components/ProjectList";
 import ProjectDialog from "./components/ProjectDialog";
+import ProjectAll from "./components/ProjectAll";
 export default {
-    components: {ProjectDialog, ProjectList},
+    components: {ProjectAll, ProjectDialog, ProjectList},
 
     deactivated() {
         this.$store.dispatch("forgetTaskCompleteTemp", true);
@@ -19,6 +23,10 @@ export default {
     computed: {
         ...mapState(['cacheProjects', 'wsOpenNum']),
         ...mapGetters(['projectData']),
+
+        routeName() {
+            return this.$route.name
+        },
 
         projectId() {
             const {projectId} = this.$route.params;

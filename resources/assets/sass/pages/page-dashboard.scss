@@ -281,3 +281,17 @@
         }
     }
 }
+@media (max-width: 640px) {
+    .page-dashboard {
+        .dashboard-wrapper {
+            max-height: 96%;
+            .dashboard-hello,
+            .dashboard-desc ,
+            .dashboard-block ,
+            .dashboard-list .dashboard-title,
+            .dashboard-list .dashboard-ul {
+                max-width: 96%;
+            }
+        }
+    }
+}

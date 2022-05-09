@@ -28,14 +28,10 @@ export default [
                 component: () => import('./pages/manage/messenger.vue'),
             },
             {
+                name: 'manage-setting',
                 path: 'setting',
                 component: () => import('./pages/manage/setting/index.vue'),
                 children: [
-                    {
-                        name: 'manage-setting',
-                        path: '',
-                        redirect: 'personal',
-                    },
                     {
                         name: 'manage-setting-personal',
                         path: 'personal',

@@ -302,3 +302,20 @@
         }
     }
 }
+
+@media (max-width: 640px) {
+    .page-setting {
+        .setting-item {
+            .setting-footer {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                > button {
+                    flex: 1;
+                    height: 42px;
+                    line-height: 40px;
+                }
+            }
+        }
+    }
+}

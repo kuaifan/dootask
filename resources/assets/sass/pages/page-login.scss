@@ -18,8 +18,8 @@
         overflow: auto;
         .login-logo {
             flex-shrink: 0;
-            width: 68px;
-            height: 68px;
+            width: 84px;
+            height: 84px;
             background: url("../images/logo.svg") no-repeat center center;
             background-size: contain;
             &.can-click {
@@ -27,8 +27,9 @@
             }
         }
         .login-box {
-            margin-top: 32px;
+            margin-top: 36px;
             width: 400px;
+            max-width: 90%;
             border-radius: 12px;
             background-color: #ffffff;
             box-shadow: 0 0 10px #e6ecfa;
@@ -105,6 +106,7 @@
             display: flex;
             align-items: center;
             width: 388px;
+            max-width: 90%;
             .login-setting {
                 flex-shrink: 0;
                 display: flex;

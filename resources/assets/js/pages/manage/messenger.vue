@@ -1,6 +1,6 @@
 <template>
     <div class="page-messenger">
-        <PageTitle :title="$L('消息')"/>
+        <PageTitle :title="$L(tabActive==='dialog' ? '消息' : '通讯录')"/>
         <div class="messenger-wrapper">
             <div class="messenger-select" :class="{'show768-menu':dialogId == 0}">
                 <div class="messenger-search">
@@ -120,7 +120,7 @@
                     <div class="msg-dialog-bg-text">{{$L('选择一个会话开始聊天')}}</div>
                 </div>
                 <DialogWrapper v-if="dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive">
-                    <div slot="inputBefore" class="dialog-back" @click="openDialog(0)">
+                    <div slot="inputBefore" class="dialog-back" @click="goBack">
                         <Icon type="md-arrow-back" />
                     </div>
                 </DialogWrapper>
@@ -163,10 +163,13 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'cacheDialogs']),
+        ...mapState(['userId', 'cacheDialogs', 'windowMax768']),
 
         dialogId() {
             const {dialogId} = this.$route.params;
+            if (dialogId && !/^\d+$/.test(dialogId)) {
+                this.tabActive = dialogId
+            }
             return parseInt(/^\d+$/.test(dialogId) ? dialogId : 0);
         },
 
@@ -314,7 +317,9 @@ export default {
         },
 
         openContacts(user) {
-            this.tabActive = 'dialog';
+            if (!this.windowMax768) {
+                this.tabActive = 'dialog';
+            }
             this.$store.dispatch("openDialogUserid", user.userid).then(({data}) => {
                 this.openDialog(data.id)
             });

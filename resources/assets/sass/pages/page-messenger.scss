@@ -439,3 +439,16 @@
         }
     }
 }
+
+@media (max-width: 640px) {
+    .page-messenger {
+        .messenger-wrapper {
+            .messenger-select {
+                .messenger-menu {
+                    height: 60px;
+                    border-top: 0;
+                }
+            }
+        }
+    }
+}

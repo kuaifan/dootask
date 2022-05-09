@@ -416,3 +416,15 @@
         }
     }
 }
+@media (max-width: 640px) {
+    .page-manage {
+        &.show-tabbar {
+            .manage-box-main {
+                margin-bottom: 60px;
+            }
+        }
+        .manage-mini-menu {
+            display: none;
+        }
+    }
+}

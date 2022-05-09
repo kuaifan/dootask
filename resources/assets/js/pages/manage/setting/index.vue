@@ -5,8 +5,8 @@
             <div class="setting-titbox">
                 <div class="setting-title">
                     <h1>{{$L('设置')}}</h1>
-                    <div class="setting-more" @click="show768Menu=!show768Menu">
-                        <Icon :type="show768Menu ? 'md-close' : 'md-more'" />
+                    <div v-if="!show768Menu" class="setting-more" @click="show768Menu=!show768Menu">
+                        <Icon type="md-more" />
                     </div>
                 </div>
             </div>
@@ -46,17 +46,22 @@ import {Store} from "le5le-store";
 export default {
     data() {
         return {
-            routeName: this.$route.name,
             show768Menu: true,
 
             version: window.systemInfo.version
         }
     },
+
     mounted() {
 
     },
+
     computed: {
-        ...mapState(['userInfo', 'userIsAdmin', 'clientNewVersion']),
+        ...mapState(['userInfo', 'userIsAdmin', 'clientNewVersion', 'windowMax768']),
+
+        routeName() {
+            return this.$route.name
+        },
 
         menu() {
             let menu = [
@@ -83,11 +88,21 @@ export default {
             return name || '设置';
         }
     },
+
     watch: {
-        '$route' (route) {
-            this.routeName = route.name;
+        routeName: {
+            handler(name) {
+                if (name === 'manage-setting') {
+                    if (!this.windowMax768) {
+                        this.goForward({name: 'manage-setting-personal'}, true);
+                    }
+                    this.show768Menu = true;
+                }
+            },
+            immediate: true
         }
     },
+
     methods: {
         toggleRoute(path) {
             if (path == 'version') {
@@ -100,7 +115,7 @@ export default {
 
         classNameRoute(path, divided) {
             return {
-                "active": this.routeName === `manage-setting-${path}`,
+                "active": !this.windowMax768 && this.routeName === `manage-setting-${path}`,
                 "divided": !!divided
             };
         },
