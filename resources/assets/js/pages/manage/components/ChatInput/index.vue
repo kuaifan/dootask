@@ -151,7 +151,7 @@ export default {
             const {wrapperWidth, editorHeight} = this;
             if (wrapperWidth > 0
                 && editorHeight > 0
-                && (wrapperWidth < 300 || editorHeight > 40)) {
+                && (wrapperWidth < 280 || editorHeight > 40)) {
                 return {
                     width: '100%'
                 };

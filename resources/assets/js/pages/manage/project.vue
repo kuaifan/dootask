@@ -1,20 +1,20 @@
 <template>
     <div class="page-project">
         <template v-if="projectId > 0">
-            <ProjectList/>
+            <ProjectPanel/>
             <ProjectDialog v-if="projectData.cacheParameter.chat"/>
         </template>
-        <ProjectAll v-else-if="routeName === 'manage-project'"/>
+        <ProjectList v-else-if="routeName === 'manage-project'"/>
     </div>
 </template>
 
 <script>
 import {mapState, mapGetters} from "vuex";
-import ProjectList from "./components/ProjectList";
+import ProjectPanel from "./components/ProjectPanel";
 import ProjectDialog from "./components/ProjectDialog";
-import ProjectAll from "./components/ProjectAll";
+import ProjectList from "./components/ProjectList";
 export default {
-    components: {ProjectAll, ProjectDialog, ProjectList},
+    components: {ProjectList, ProjectDialog, ProjectPanel},
 
     deactivated() {
         this.$store.dispatch("forgetTaskCompleteTemp", true);

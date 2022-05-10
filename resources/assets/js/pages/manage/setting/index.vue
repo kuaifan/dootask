@@ -57,7 +57,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userInfo', 'userIsAdmin', 'clientNewVersion', 'windowMax768']),
+        ...mapState(['userInfo', 'userIsAdmin', 'clientNewVersion', 'isDesktop']),
 
         routeName() {
             return this.$route.name
@@ -93,10 +93,10 @@ export default {
         routeName: {
             handler(name) {
                 if (name === 'manage-setting') {
-                    if (!this.windowMax768) {
+                    this.show768Menu = true;
+                    if (this.isDesktop) {
                         this.goForward({name: 'manage-setting-personal'}, true);
                     }
-                    this.show768Menu = true;
                 }
             },
             immediate: true
@@ -115,7 +115,7 @@ export default {
 
         classNameRoute(path, divided) {
             return {
-                "active": !this.windowMax768 && this.routeName === `manage-setting-${path}`,
+                "active": this.isDesktop && this.routeName === `manage-setting-${path}`,
                 "divided": !!divided
             };
         },

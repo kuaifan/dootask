@@ -445,8 +445,9 @@
         .messenger-wrapper {
             .messenger-select {
                 .messenger-menu {
-                    height: 60px;
                     border-top: 0;
+                    height: 60px;
+                    opacity: 0;
                 }
             }
         }

@@ -163,11 +163,11 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'cacheDialogs', 'windowMax768']),
+        ...mapState(['userId', 'cacheDialogs', 'isDesktop']),
 
         dialogId() {
             const {dialogId} = this.$route.params;
-            if (dialogId && !/^\d+$/.test(dialogId)) {
+            if (['dialog', 'contacts'].includes(dialogId)) {
                 this.tabActive = dialogId
             }
             return parseInt(/^\d+$/.test(dialogId) ? dialogId : 0);
@@ -317,7 +317,7 @@ export default {
         },
 
         openContacts(user) {
-            if (!this.windowMax768) {
+            if (this.isDesktop) {
                 this.tabActive = 'dialog';
             }
             this.$store.dispatch("openDialogUserid", user.userid).then(({data}) => {
