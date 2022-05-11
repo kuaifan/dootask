@@ -1,4 +1,5 @@
 const isElectron = window && window.process && window.process.type;
+const isEEUiApp = window && window.navigator && /eeui/i.test(window.navigator.userAgent);
 
 import './functions/common'
 import './functions/web'
@@ -63,12 +64,12 @@ VueRouter.prototype.push = function push(location) {
 }
 
 const router = new VueRouter({
-    mode: isElectron ? 'hash' : 'history',
+    mode: isElectron || isEEUiApp ? 'hash' : 'history',
     routes
 });
 
 // 进度条配置
-if (!isElectron) {
+if (!isElectron && !isEEUiApp) {
     ViewUI.LoadingBar.config({
         color: '#3fcc25',
         failedColor: '#ff0000'

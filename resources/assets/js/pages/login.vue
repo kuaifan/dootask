@@ -12,14 +12,14 @@
                 <div class="login-input">
                     <Input v-if="$Electron && cacheServerUrl" :value="$A.getDomain(cacheServerUrl)" prefix="ios-globe-outline" size="large" readonly clearable @on-clear="clearServerUrl"/>
 
-                    <Input v-model="email" prefix="ios-mail-outline" :placeholder="$L('输入您的电子邮件')" size="large" @on-enter="onLogin" @on-blur="onBlur" />
+                    <Input v-model="email" prefix="ios-mail-outline" :placeholder="$L('输入您的电子邮件')" type="email" size="large" @on-enter="onLogin" @on-blur="onBlur" />
 
                     <Input v-model="password" prefix="ios-lock-outline" :placeholder="$L('输入您的密码')" type="password" size="large" @on-enter="onLogin" />
 
                     <Input v-if="loginType=='reg'" v-model="password2" prefix="ios-lock-outline" :placeholder="$L('输入确认密码')" type="password" size="large" @on-enter="onLogin" />
                     <Input v-if="loginType=='reg' && needInvite" v-model="invite" class="login-code" :placeholder="$L('请输入注册邀请码')" type="text" size="large" @on-enter="onLogin"><span slot="prepend">&nbsp;{{$L('邀请码')}}&nbsp;</span></Input>
 
-                    <Input v-if="loginType=='login' && codeNeed" v-model="code" class="login-code" :placeholder="$L('输入图形验证码')" size="large" @on-enter="onLogin">
+                    <Input v-if="loginType=='login' && codeNeed" v-model="code" class="login-code" :placeholder="$L('输入图形验证码')" type="text" size="large" @on-enter="onLogin">
                         <Icon type="ios-checkmark-circle-outline" class="login-icon" slot="prepend"></Icon>
                         <div slot="append" class="login-code-end" @click="reCode"><img :src="codeUrl"/></div>
                     </Input>

@@ -5,8 +5,8 @@
             <div class="setting-titbox">
                 <div class="setting-title">
                     <h1>{{$L('设置')}}</h1>
-                    <div v-if="!show768Menu" class="setting-more" @click="show768Menu=!show768Menu">
-                        <Icon type="md-more" />
+                    <div v-if="!show768Menu" class="setting-more" @click="toggleRoute('index')">
+                        <Icon type="md-close" />
                     </div>
                 </div>
             </div>
@@ -46,8 +46,6 @@ import {Store} from "le5le-store";
 export default {
     data() {
         return {
-            show768Menu: true,
-
             version: window.systemInfo.version
         }
     },
@@ -63,6 +61,10 @@ export default {
             return this.$route.name
         },
 
+        show768Menu() {
+            return this.routeName === 'manage-setting'
+        },
+
         menu() {
             let menu = [
                 {path: 'personal', name: '个人设置'},
@@ -71,6 +73,13 @@ export default {
             if (this.userIsAdmin) {
                 menu.push(...[
                     {path: 'system', name: '系统设置', divided: true},
+                    {path: 'clearCache', name: '清除缓存'},
+                    {path: 'logout', name: '退出登录'},
+                ])
+            } else {
+                menu.push(...[
+                    {path: 'clearCache', name: '清除缓存', divided: true},
+                    {path: 'logout', name: '退出登录'},
                 ])
             }
             return menu;
@@ -92,11 +101,8 @@ export default {
     watch: {
         routeName: {
             handler(name) {
-                if (name === 'manage-setting') {
-                    this.show768Menu = true;
-                    if (this.isDesktop) {
-                        this.goForward({name: 'manage-setting-personal'}, true);
-                    }
+                if (name === 'manage-setting' && this.isDesktop) {
+                    this.goForward({name: 'manage-setting-personal'}, true);
                 }
             },
             immediate: true
@@ -105,12 +111,38 @@ export default {
 
     methods: {
         toggleRoute(path) {
-            if (path == 'version') {
-                Store.set('updateNotification', null);
-                return;
+            switch (path) {
+                case 'clearCache':
+                    this.$store.dispatch("handleClearCache", null).then(() => {
+                        $A.setStorage("clearCache", $A.randomString(6))
+                        window.location.reload()
+                    }).catch(() => {
+                        window.location.reload()
+                    });
+                    break;
+
+                case 'logout':
+                    $A.modalConfirm({
+                        title: '退出登录',
+                        content: '你确定要登出系统？',
+                        onOk: () => {
+                            this.$store.dispatch("logout", false)
+                        }
+                    });
+                    break;
+
+                case 'version':
+                    Store.set('updateNotification', null);
+                    break;
+
+                case 'index':
+                    this.goForward({name: 'manage-setting'});
+                    break;
+
+                default:
+                    this.goForward({name: 'manage-setting-' + path});
+                    break;
             }
-            this.show768Menu = false;
-            this.goForward({name: 'manage-setting-' + path});
         },
 
         classNameRoute(path, divided) {

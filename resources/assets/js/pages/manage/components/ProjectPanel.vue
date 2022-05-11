@@ -42,7 +42,7 @@
                             </div>
                         </Tooltip>
                     </li>
-                    <li :class="['project-icon', projectData.cacheParameter.chat ? 'active' : '']" @click="$store.dispatch('toggleProjectParameter', 'chat')">
+                    <li :class="['project-icon', projectData.cacheParameter.chat ? 'active' : '']" @click="toggleParameter('chat')">
                         <Icon class="menu-icon" type="ios-chatbubbles" />
                         <Badge class="menu-badge" :count="msgUnread"></Badge>
                     </li>
@@ -258,7 +258,7 @@
             <div :class="['project-table-body', !projectData.cacheParameter.showMy ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
-                        <i class="taskfont" @click="$store.dispatch('toggleProjectParameter', 'showMy')">&#xe689;</i>
+                        <i class="taskfont" @click="toggleParameter('showMy')">&#xe689;</i>
                         <div class="row-h1">{{$L('我的任务')}}</div>
                         <div class="row-num">({{myList.length}})</div>
                     </Col>
@@ -273,7 +273,7 @@
             <div v-if="helpList.length" :class="['project-table-body', !projectData.cacheParameter.showHelp ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
-                        <i class="taskfont" @click="$store.dispatch('toggleProjectParameter', 'showHelp')">&#xe689;</i>
+                        <i class="taskfont" @click="toggleParameter('showHelp')">&#xe689;</i>
                         <div class="row-h1">{{$L('协助的任务')}}</div>
                         <div class="row-num">({{helpList.length}})</div>
                     </Col>
@@ -288,7 +288,7 @@
             <div v-if="projectData.task_num > 0" :class="['project-table-body', !projectData.cacheParameter.showUndone ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
-                        <i class="taskfont" @click="$store.dispatch('toggleProjectParameter', 'showUndone')">&#xe689;</i>
+                        <i class="taskfont" @click="toggleParameter('showUndone')">&#xe689;</i>
                         <div class="row-h1">{{$L('未完成任务')}}</div>
                         <div class="row-num">({{unList.length}})</div>
                     </Col>
@@ -303,7 +303,7 @@
             <div v-if="projectData.task_num > 0" :class="['project-table-body', !projectData.cacheParameter.showCompleted ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
-                        <i class="taskfont" @click="$store.dispatch('toggleProjectParameter', 'showCompleted')">&#xe689;</i>
+                        <i class="taskfont" @click="toggleParameter('showCompleted')">&#xe689;</i>
                         <div class="row-h1">{{$L('已完成任务')}}</div>
                         <div class="row-num">({{completedList.length}})</div>
                     </Col>
@@ -319,6 +319,7 @@
             <!--甘特图-->
             <ProjectGantt :projectColumn="columnList" :flowInfo="flowInfo"/>
         </div>
+
         <!--项目设置-->
         <Modal
             v-model="settingShow"
@@ -517,8 +518,6 @@ export default {
             archivedTaskShow: false,
             deletedTaskShow: false,
 
-            projectDialogSubscribe: null,
-
             flowInfo: {},
             flowList: [],
         }
@@ -528,19 +527,10 @@ export default {
         this.nowInterval = setInterval(() => {
             this.nowTime = $A.Time();
         }, 1000);
-        //
-        this.projectDialogSubscribe = Store.subscribe('onProjectDialogBack', () => {
-            this.$store.dispatch('toggleProjectParameter', 'chat');
-        });
     },
 
     destroyed() {
         clearInterval(this.nowInterval);
-        //
-        if (this.projectDialogSubscribe) {
-            this.projectDialogSubscribe.unsubscribe();
-            this.projectDialogSubscribe = null;
-        }
     },
 
     computed: {
@@ -1341,8 +1331,7 @@ export default {
         },
 
         toggleCompleted() {
-            this.$store.dispatch("forgetTaskCompleteTemp", true);
-            this.$store.dispatch('toggleProjectParameter', 'completedTask');
+            this.toggleParameter('completedTask');
         },
 
         workflowBeforeClose() {
@@ -1406,21 +1395,21 @@ export default {
         tabTypeChange(type) {
             switch (type) {
                 case "column":
-                    this.$store.dispatch('toggleProjectParameter', {
+                    this.toggleParameter({
                         project_id: this.projectId,
                         key: 'menuType',
                         value: 'column'
                     });
                     break;
                 case "table":
-                    this.$store.dispatch('toggleProjectParameter', {
+                    this.toggleParameter({
                         project_id: this.projectId,
                         key: 'menuType',
                         value: 'table'
                     });
                     break;
                 case "gantt":
-                    this.$store.dispatch('toggleProjectParameter', {
+                    this.toggleParameter({
                         project_id: this.projectId,
                         key: 'menuType',
                         value: 'gantt'
@@ -1428,6 +1417,18 @@ export default {
                     break;
             }
         },
+
+        toggleParameter(data) {
+            if (data === 'completedTask') {
+                this.$store.dispatch("forgetTaskCompleteTemp", true);
+            } else if (data === 'chat') {
+                if (!this.isDesktop) {
+                    this.goForward({name: 'manage-messenger', params: {dialogId: this.projectData.dialog_id}});
+                    return;
+                }
+            }
+            this.$store.dispatch('toggleProjectParameter', data);
+        }
     }
 }
 </script>

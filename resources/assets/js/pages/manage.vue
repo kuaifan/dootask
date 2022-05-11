@@ -355,6 +355,7 @@
 
         <!--移动端选项卡-->
         <MobileTabbar v-if="showMobileTabbar"/>
+        <MobileBack :disabled="showMobileTabbar"/>
     </div>
 </template>
 
@@ -372,9 +373,11 @@ import TaskAdd from "./manage/components/TaskAdd";
 import Report from "./manage/components/Report";
 import notificationKoro from "notification-koro1";
 import {Store} from "le5le-store";
+import MobileBack from "../components/Mobile/Back";
 
 export default {
     components: {
+        MobileBack,
         MobileTabbar,
         UserInput,
         TaskAdd,
@@ -633,7 +636,7 @@ export default {
             if (this.routeName === 'manage-messenger' && !/^\d+$/.test(this.$route.params.dialogId)) {
                 return true;
             }
-            return $A.leftExists(this.routeName, 'manage-setting');
+            return this.routeName === 'manage-setting';
         },
     },
 

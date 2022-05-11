@@ -21,9 +21,6 @@
                     </div>
                 </div>
             </div>
-            <div slot="inputBefore" class="dialog-back" @click="onInputBack">
-                <Icon type="md-arrow-back" />
-            </div>
         </DialogWrapper>
     </div>
 </template>
@@ -47,9 +44,6 @@ export default {
     },
 
     methods: {
-        onInputBack() {
-            Store.set('onProjectDialogBack', null);
-        },
         onClose() {
             this.$store.dispatch('toggleProjectParameter', 'chat');
         }

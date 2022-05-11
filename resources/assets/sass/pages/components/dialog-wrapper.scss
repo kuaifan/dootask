@@ -46,124 +46,136 @@
             }
         }
 
-        .dialog-avatar {
-            flex-shrink: 0;
-            margin-right: 12px;
-
-            .user-avatar,
-            .icon-avatar {
-                width: 42px;
-                height: 42px;
-                margin: 2px;
-                flex-grow: 0;
-                flex-shrink: 0;
-            }
-
-            .icon-avatar {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                border-radius: 50%;
-                font-size: 26px;
-                background-color: #61B2F9;
-                color: #ffffff;
-
-                &.project {
-                    background-color: #6E99EB;
-                }
-
-                &.task {
-                    background-color: #9B96DF;
-                    font-size: 24px;
-                }
-            }
-        }
-
-        .dialog-title {
+        .dialog-block {
             flex: 1;
             width: 0;
             display: flex;
-            flex-direction: column;
-            justify-content: center;
+            align-items: center;
 
-            .main-title {
-                display: flex;
-                align-items: center;
-                line-height: 22px;
-                max-width: 100%;
+            .dialog-avatar {
+                flex-shrink: 0;
+                margin-right: 12px;
 
-                .ivu-tag {
+                .user-avatar,
+                .icon-avatar {
+                    width: 42px;
+                    height: 42px;
+                    margin: 2px;
+                    flex-grow: 0;
                     flex-shrink: 0;
-                    margin: 0 6px 0 0;
-                    padding: 0 5px;
+                }
 
-                    &.ivu-tag-success {
-                        padding: 0 6px;
+                .icon-avatar {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 50%;
+                    font-size: 26px;
+                    background-color: #61B2F9;
+                    color: #ffffff;
+
+                    &.project {
+                        background-color: #6E99EB;
                     }
-                }
 
-                .ivu-icon {
-                    font-size: 18px;
-                    margin-right: 6px;
-
-                    &.completed {
-                        color: $primary-color;
+                    &.task {
+                        background-color: #9B96DF;
+                        font-size: 24px;
                     }
-                }
-
-                > h2 {
-                    font-size: 17px;
-                    font-weight: 600;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
-                }
-
-                > em {
-                    flex-shrink: 0;
-                    font-style: normal;
-                    font-size: 17px;
-                    font-weight: 500;
-                    padding-left: 6px;
-                }
-
-                .top-text {
-                    flex-shrink: 0;
-                    height: 24px;
-                    line-height: 24px;
-                    padding: 0 6px;
-                    border-radius: 4px;
-                    margin-left: 10px;
-                    background-color: #8BCF70;
-                    color: #FFFFFF;
-                    text-align: center;
-                    white-space: nowrap;
                 }
             }
 
-            .sub-title {
-                flex-shrink: 0;
-                font-size: 12px;
-                line-height: 20px;
-                padding-top: 2px;
-                color: #aaaaaa;
-                white-space: normal;
+            .dialog-title {
+                flex: 1;
+                width: 0;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
 
-                &.pointer {
-                    cursor: pointer;
+                .main-title {
+                    display: flex;
+                    align-items: center;
+                    line-height: 22px;
+                    max-width: 100%;
 
-                    &:hover {
-                        color: #888888;
+                    .ivu-tag {
+                        flex-shrink: 0;
+                        margin: 0 6px 0 0;
+                        padding: 0 5px;
+
+                        &.ivu-tag-success {
+                            padding: 0 6px;
+                        }
+                    }
+
+                    .ivu-icon {
+                        font-size: 18px;
+                        margin-right: 6px;
+
+                        &.completed {
+                            color: $primary-color;
+                        }
+                    }
+
+                    > h2 {
+                        font-size: 17px;
+                        font-weight: 600;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                    }
+
+                    > em {
+                        flex-shrink: 0;
+                        font-style: normal;
+                        font-size: 17px;
+                        font-weight: 500;
+                        padding-left: 6px;
+                    }
+
+                    .top-text {
+                        flex-shrink: 0;
+                        height: 24px;
+                        line-height: 24px;
+                        padding: 0 6px;
+                        border-radius: 4px;
+                        margin-left: 10px;
+                        background-color: #8BCF70;
+                        color: #FFFFFF;
+                        text-align: center;
+                        white-space: nowrap;
+                    }
+                }
+
+                .sub-title {
+                    flex-shrink: 0;
+                    font-size: 12px;
+                    line-height: 20px;
+                    padding-top: 2px;
+                    color: #aaaaaa;
+                    white-space: normal;
+
+                    &.pointer {
+                        cursor: pointer;
+
+                        &:hover {
+                            color: #888888;
+                        }
                     }
                 }
             }
         }
 
+        .dialog-back,
         .dialog-create {
             cursor: pointer;
             margin-left: 24px;
-            font-size: 20px;
+            font-size: 22px;
             color: $primary-text-color;
+        }
+
+        .dialog-back {
+            display: none;
         }
     }
 
@@ -813,6 +825,59 @@
 
 @media (max-width: 768px) {
     .dialog-wrapper {
+        .dialog-nav {
+            height: 60px;
+            padding: 0;
+            justify-content: center;
+
+            &.completed {
+                &:after {
+                    right: 14px;
+                }
+                .dialog-title {
+                    padding-right: 0;
+                }
+            }
+
+            .dialog-back,
+            .dialog-create {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                right: 0;
+                margin: 0;
+                width: 60px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .dialog-back {
+                right: auto;
+                left: 0;
+                > i {
+                    font-size: 26px;
+                }
+            }
+            .dialog-block {
+                margin: 0 60px;
+                justify-content: center;
+                .dialog-avatar {
+                    display: none;
+                }
+                .dialog-title {
+                    flex: unset;
+                    width: unset;
+                    overflow: hidden;
+                    text-align: center;
+                    .sub-title {
+                        line-height: 18px;
+                    }
+                }
+            }
+        }
+        .dialog-scroller {
+            padding: 0 14px;
+        }
         .dialog-footer {
             padding: 0 20px;
             margin-bottom: 16px;

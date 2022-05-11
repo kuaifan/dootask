@@ -67,21 +67,6 @@
         .dialog-nav {
             padding: 0 20px;
         }
-        .dialog-footer {
-            .dialog-input {
-                .dialog-back {
-                    display: none;
-                    align-items: center;
-                    justify-content: center;
-                    width: 64px;
-                    height: 100%;
-                    max-height: 64px;
-                    font-size: 26px;
-                    margin-left: -20px;
-                    z-index: 1;
-                }
-            }
-        }
     }
 }
 
@@ -94,18 +79,10 @@
             }
             .dialog-nav {
                 padding: 0 12px;
-                height: 58px;
+                height: 64px;
             }
             .dialog-scroller {
-                padding: 0 20px;
-            }
-            .dialog-footer {
-                .dialog-input {
-                    align-items: flex-end;
-                    .dialog-back {
-                        display: flex;
-                    }
-                }
+                padding: 0 14px;
             }
         }
     }

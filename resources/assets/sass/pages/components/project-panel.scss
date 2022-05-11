@@ -1029,7 +1029,10 @@
                 display: block;
                 .project-title {
                     float: left;
-                    padding-bottom: 4px;
+                    padding-bottom: 8px;
+                    > h1 {
+                        font-size: 24px;
+                    }
                 }
                 .project-icons {
                     float: right;

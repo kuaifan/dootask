@@ -297,6 +297,12 @@
                 }
                 > ul {
                     padding: 12px 32px;
+                    > li {
+                        padding: 0 8px;
+                        &:hover {
+                            background-color: transparent;
+                        }
+                    }
                 }
             }
         }
@@ -312,8 +318,8 @@
                 justify-content: center;
                 > button {
                     flex: 1;
-                    height: 42px;
-                    line-height: 40px;
+                    height: 38px;
+                    line-height: 36px;
                 }
             }
         }

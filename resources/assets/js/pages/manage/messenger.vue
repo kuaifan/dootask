@@ -119,11 +119,7 @@
                     <div class="msg-dialog-bg-icon"><Icon type="ios-chatbubbles" /></div>
                     <div class="msg-dialog-bg-text">{{$L('选择一个会话开始聊天')}}</div>
                 </div>
-                <DialogWrapper v-if="dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive">
-                    <div slot="inputBefore" class="dialog-back" @click="goBack">
-                        <Icon type="md-arrow-back" />
-                    </div>
-                </DialogWrapper>
+                <DialogWrapper v-if="dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive"/>
             </div>
         </div>
     </div>

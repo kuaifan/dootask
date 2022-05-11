@@ -6,15 +6,13 @@
                 <div class="tabbar-title">{{$L(item.label)}}</div>
             </li>
         </ul>
+        <div class="mobile-back"></div>
     </div>
 </template>
 
 <script>
 export default {
     name: "MobileTabbar",
-    props: {
-
-    },
 
     data() {
         return {
@@ -49,6 +47,7 @@ export default {
             if (this.routeName === 'manage-dashboard') {
                 return 'dashboard';
             }
+
             if (this.routeName === 'manage-project' && !/^\d+$/.test(this.$route.params.projectId)) {
                 return 'project';
             }
@@ -59,8 +58,8 @@ export default {
                     return 'dialog'
                 }
             }
-            if ($A.leftExists(this.routeName, 'manage-setting')) {
-                return 'setting'
+            if (this.routeName === 'manage-setting') {
+                return 'setting';
             }
             return ''
         },
