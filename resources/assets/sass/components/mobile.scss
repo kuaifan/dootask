@@ -4,9 +4,9 @@
     left: 0;
     bottom: 0;
     right: 0;
-    background-color: #f3f6fe;
+    background-color: #f8f8f8;
     box-shadow: 0 0 2px rgba(28, 34, 43, 0.15);
-    z-index: 98;
+    z-index: 9998;
     > ul {
         display: flex;
         align-items: center;
@@ -47,7 +47,7 @@
     width: 500px;
     height: 500px;
     background-color: rgba(0, 0, 0, 0.1);
-    z-index: 99;
+    z-index: 9999;
     border-radius: 50%;
     transform: translate(-460px, -50%);
     transition: left 0.2s;

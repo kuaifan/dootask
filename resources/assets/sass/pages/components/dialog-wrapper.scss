@@ -826,9 +826,10 @@
 @media (max-width: 768px) {
     .dialog-wrapper {
         .dialog-nav {
-            height: 60px;
+            height: 52px;
             padding: 0;
             justify-content: center;
+            background-color: #f8f8f8;
 
             &.completed {
                 &:after {
@@ -846,7 +847,7 @@
                 bottom: 0;
                 right: 0;
                 margin: 0;
-                width: 60px;
+                width: 52px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -859,7 +860,7 @@
                 }
             }
             .dialog-block {
-                margin: 0 60px;
+                margin: 0 52px;
                 justify-content: center;
                 .dialog-avatar {
                     display: none;
@@ -879,8 +880,16 @@
             padding: 0 14px;
         }
         .dialog-footer {
-            padding: 0 20px;
-            margin-bottom: 16px;
+            background-color: #f8f8f8;
+            padding: 8px 10px;
+            margin-bottom: 0;
+            .dialog-input {
+                .chat-input-wrapper {
+                    padding-left: 6px;
+                    padding-right: 8px;
+                    background-color: #ffffff;
+                }
+            }
         }
     }
 }

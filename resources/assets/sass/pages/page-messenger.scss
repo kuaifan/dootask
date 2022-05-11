@@ -410,6 +410,15 @@
     .page-messenger {
         .messenger-wrapper {
             .messenger-select {
+                .messenger-search {
+                    background-color: #f8f8f8;
+                    .search-wrapper {
+                        background-color: #ffffff;
+                    }
+                }
+                .messenger-nav {
+                    background-color: #f8f8f8;
+                }
                 .messenger-menu {
                     border-top: 0;
                     height: 60px;

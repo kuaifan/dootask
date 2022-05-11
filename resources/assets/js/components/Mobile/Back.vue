@@ -3,10 +3,12 @@
 </template>
 
 <script>
+import {mapState} from "vuex";
+
 export default {
     name: "MobileBack",
     props: {
-        disabled: {
+        showTabbar: {
             type: Boolean,
             default: false
         },
@@ -37,16 +39,17 @@ export default {
     },
 
     computed: {
+        ...mapState(['cacheDrawerOverlay']),
+
         style() {
             return {
                 top: this.y + 'px',
-                left: !this.disabled && this.x > 30 && this.show ? 0 : '-50px',
+                left: this.x > 30 && this.show ? 0 : '-50px',
             }
         },
     },
 
     methods: {
-        // 获取坐标
         getXY(event) {
             let touch = event.touches[0]
             this.x = touch.clientX
@@ -55,19 +58,40 @@ export default {
         touchstart(event) {
             this.getXY(event)
             // 判断是否是边缘滑动
-            this.show = !this.disabled && this.x < 30;
+            this.show = this.canBack() && this.x < 30;
         },
         touchmove(event) {
             this.getXY(event)
         },
         touchend() {
             // 判断停止时的位置偏移
-            if (this.x > 90 && this.show) {
-                this.goBack();
+            if (this.x > 90) {
+                this.onBack();
             }
             this.x = 0
             this.show = false
         },
+        canBack() {
+            if (!this.showTabbar) {
+                return true;
+            }
+            if (this.$Modal.visibles().length > 0) {
+                return true;
+            }
+            return this.cacheDrawerOverlay.length > 0;
+        },
+        onBack() {
+            if (this.$Modal.removeLast()) {
+                return;
+            }
+            if (this.cacheDrawerOverlay.length > 0) {
+                this.cacheDrawerOverlay[this.cacheDrawerOverlay.length - 1].close();
+                return;
+            }
+            if (this.show) {
+                this.goBack();
+            }
+        }
     },
 };
 </script>

@@ -4,6 +4,9 @@
         <div class="project-head">
             <div class="project-titbox">
                 <div class="project-title">
+                    <div class="project-back" @click="goBack">
+                        <i class="taskfont">&#xe72d;</i>
+                    </div>
                     <h1>{{projectData.name}}</h1>
                     <label v-if="projectData.top_at" class="top-text">{{$L('置顶')}}</label>
                     <div v-if="loading" class="project-load"><Loading/></div>

@@ -355,7 +355,7 @@
 
         <!--移动端选项卡-->
         <MobileTabbar v-if="showMobileTabbar"/>
-        <MobileBack :disabled="showMobileTabbar"/>
+        <MobileBack :showTabbar="showMobileTabbar"/>
     </div>
 </template>
 
