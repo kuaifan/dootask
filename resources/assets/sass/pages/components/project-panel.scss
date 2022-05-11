@@ -254,7 +254,7 @@
             > li {
                 flex-shrink: 0;
                 list-style: none;
-                width: 260px;
+                width: 300px;
                 height: 100%;
                 display: flex;
                 flex-direction: column;
@@ -1042,6 +1042,12 @@
                 display: block;
                 .project-subtitle {
                     margin-bottom: 6px;
+                    word-break: break-all;
+                    text-overflow: ellipsis;
+                    overflow: hidden;
+                    display: -webkit-box;
+                    -webkit-line-clamp: 2;
+                    -webkit-box-orient: vertical;
                 }
                 .project-switch {
                     margin-left: 0;

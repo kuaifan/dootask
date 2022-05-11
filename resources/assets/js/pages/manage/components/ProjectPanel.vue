@@ -72,7 +72,7 @@
                 </ul>
             </div>
             <div class="project-subbox clearfix">
-                <div class="project-subtitle">{{projectData.desc}}</div>
+                <div class="project-subtitle" @click="showDesc">{{projectData.desc}}</div>
                 <div class="project-switch">
                     <div v-if="completedCount > 0" class="project-checkbox">
                         <Checkbox :value="projectData.cacheParameter.completedTask" @on-change="toggleCompleted">{{$L('显示已完成')}}</Checkbox>
@@ -856,6 +856,16 @@ export default {
     },
 
     methods: {
+        showDesc() {
+            if (this.isDesktop) {
+                return;
+            }
+            $A.modalInfo({
+                title: '项目描述',
+                content: this.projectData.desc
+            })
+        },
+
         searchFocus() {
             this.$nextTick(() => {
                 this.$refs.searchInput.focus({
