@@ -65,7 +65,7 @@ export default {
         },
         touchend() {
             // 判断停止时的位置偏移
-            if (this.x > 90) {
+            if (this.x > 90 && this.show) {
                 this.onBack();
             }
             this.x = 0
@@ -88,9 +88,7 @@ export default {
                 this.cacheDrawerOverlay[this.cacheDrawerOverlay.length - 1].close();
                 return;
             }
-            if (this.show) {
-                this.goBack();
-            }
+            this.goBack();
         }
     },
 };
