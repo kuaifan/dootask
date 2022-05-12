@@ -1,6 +1,6 @@
 <template>
     <div
-        v-if="dialogData && dialogData.id"
+        v-if="isReady"
         class="dialog-wrapper"
         @drop.prevent="chatPasteDrag($event, 'drag')"
         @dragover.prevent="chatDragOver(true, $event)"
@@ -51,42 +51,38 @@
                 </ETooltip>
             </div>
         </slot>
-        <ScrollerY
+        <DynamicScroller
             ref="scroller"
-            class="dialog-scroller overlay-y"
-            :style="{opacity: visible ? 1 : 0}"
-            :auto-bottom="isAutoBottom"
-            @on-scroll="chatScroll"
-            static>
-            <div ref="manageList" class="dialog-list">
-                <ul>
-                    <li v-if="dialogData.hasMorePages" class="history" @click="loadNextPage">{{$L('加载历史消息')}}</li>
-                    <li v-else-if="dialogData.loading > 0 && dialogMsgList.length === 0" class="loading"><Loading/></li>
-                    <li v-else-if="dialogMsgList.length === 0" class="nothing">{{$L('暂无消息')}}</li>
-                    <li
-                        v-for="item in dialogMsgList"
-                        :id="'view_' + item.id"
-                        :key="item.id"
-                        :class="{self:item.userid == userId, 'history-tip': topId == item.id}">
-                        <em v-if="topId == item.id" class="history-text">{{$L('历史消息')}}</em>
-                        <div class="dialog-avatar">
-                            <UserAvatar :userid="item.userid" :tooltipDisabled="item.userid == userId" :size="30"/>
-                        </div>
-                        <DialogView :msg-data="item" :dialog-type="dialogData.type"/>
-                    </li>
-                    <li
-                        v-for="item in tempMsgList"
-                        :id="'tmp_' + item.id"
-                        :key="'tmp_' + item.id"
-                        :class="{self:item.userid == userId}">
-                        <div class="dialog-avatar">
-                            <UserAvatar :userid="item.userid" :tooltipDisabled="item.userid == userId" :size="30"/>
-                        </div>
-                        <DialogView :msg-data="item" :dialog-type="dialogData.type"/>
-                    </li>
-                </ul>
-            </div>
-        </ScrollerY>
+            :items="allMsgs"
+            :min-item-size="58"
+            @onScroll="onScroll"
+            class="dialog-scroller overlay-y">
+            <template #before>
+                <div v-if="dialogData.hasMorePages" class="dialog-item history" @click="loadNextPage">{{$L('加载历史消息')}}</div>
+                <div v-else-if="dialogData.loading > 0 && dialogMsgList.length === 0" class="dialog-item loading"><Loading/></div>
+                <div v-else-if="dialogMsgList.length === 0" class="dialog-item nothing">{{$L('暂无消息')}}</div>
+            </template>
+            <template v-slot="{ item, index, active }">
+                <DynamicScrollerItem
+                    :item="item"
+                    :active="active"
+                    :size-dependencies="[item.msg]"
+                    :data-index="index"
+                    :data-active="active"
+                    :class="{
+                        'dialog-item': true,
+                        'self': item.userid == userId,
+                        'history-tip': topId == item.id
+                    }"
+                    @click.native="">
+                    <em v-if="topId == item.id" class="history-text">{{$L('历史消息')}}</em>
+                    <div class="dialog-avatar">
+                        <UserAvatar :userid="item.userid" :tooltipDisabled="item.userid == userId" :size="30"/>
+                    </div>
+                    <DialogView :msg-data="item" :dialog-type="dialogData.type"/>
+                </DynamicScrollerItem>
+            </template>
+        </DynamicScroller>
         <div :class="['dialog-footer', msgNew > 0 && dialogMsgList.length > 0 ? 'newmsg' : '']" @click="onActive">
             <div class="dialog-newmsg" @click="onToBottom">{{$L('有' + msgNew + '条新消息')}}</div>
             <div class="dialog-input">
@@ -161,19 +157,30 @@
 </template>
 
 <script>
-import ScrollerY from "../../../components/ScrollerY";
 import {mapState} from "vuex";
 import DialogView from "./DialogView";
 import DialogUpload from "./DialogUpload";
-import {Store} from "le5le-store";
 import UserInput from "../../../components/UserInput";
 import DrawerOverlay from "../../../components/DrawerOverlay";
 import DialogGroupInfo from "./DialogGroupInfo";
 import ChatInput from "./ChatInput";
 
+import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller-hi'
+import 'vue-virtual-scroller-hi/dist/vue-virtual-scroller.css'
+
 export default {
     name: "DialogWrapper",
-    components: {ChatInput, DialogGroupInfo, DrawerOverlay, UserInput, DialogUpload, DialogView, ScrollerY},
+    components: {
+        DynamicScroller,
+        DynamicScrollerItem,
+        ChatInput,
+        DialogGroupInfo,
+        DrawerOverlay,
+        UserInput,
+        DialogUpload,
+        DialogView
+    },
+
     props: {
         dialogId: {
             type: Number,
@@ -183,20 +190,12 @@ export default {
 
     data() {
         return {
-            visible: true,
-            autoBottom: true,
-            autoInterval: null,
-
-            dialogDrag: false,
-            inputFocus: false,
-
             msgText: '',
             msgNew: 0,
             topId: 0,
 
+            allMsgs: [],
             tempMsgs: [],
-
-            dialogMsgSubscribe: null,
 
             pasteShow: false,
             pasteFile: [],
@@ -206,19 +205,17 @@ export default {
             createGroupData: {},
             createGroupLoad: 0,
 
+            dialogDrag: false,
             groupInfoShow: false,
         }
     },
 
     mounted() {
-        this.dialogMsgSubscribe = Store.subscribe('dialogMsgPush', this.addDialogMsg);
+
     },
 
     beforeDestroy() {
-        if (this.dialogMsgSubscribe) {
-            this.dialogMsgSubscribe.unsubscribe();
-            this.dialogMsgSubscribe = null;
-        }
+
     },
 
     computed: {
@@ -230,12 +227,16 @@ export default {
             'wsOpenNum',
         ]),
 
+        isReady() {
+            return this.dialogId > 0 && this.dialogData.id > 0
+        },
+
         dialogData() {
             return this.cacheDialogs.find(({id}) => id == this.dialogId) || {};
         },
 
         dialogMsgList() {
-            if (!this.dialogId) {
+            if (!this.isReady) {
                 return [];
             }
             return $A.cloneJSON(this.dialogMsgs.filter(({dialog_id}) => {
@@ -245,20 +246,21 @@ export default {
             });
         },
 
-        isAutoBottom() {
-            if (this.inputFocus && !this.isDesktop) {
-                return false;
-            }
-            return this.autoBottom
-        },
-
         tempMsgList() {
-            if (!this.dialogId) {
+            if (!this.isReady) {
                 return [];
             }
             return $A.cloneJSON(this.tempMsgs.filter(({dialog_id}) => {
                 return dialog_id == this.dialogId;
             }));
+        },
+
+        allMsgList() {
+            const {dialogMsgList, tempMsgList} = this;
+            if (tempMsgList.length > 0) {
+                dialogMsgList.push(...tempMsgList);
+            }
+            return dialogMsgList;
         },
 
         peopleNum() {
@@ -313,20 +315,7 @@ export default {
                 if (id) {
                     this.msgNew = 0;
                     this.topId = -1;
-                    this.visible = false;
-                    if (this.dialogMsgList.length > 0) {
-                        setTimeout(_ => {
-                            this.onToBottom();
-                            this.visible = true;
-                        }, 10);
-                    }
-                    let startTime = new Date().getTime();
-                    this.$store.dispatch("getDialogMsgs", id).then(_ => {
-                        setTimeout(_ => {
-                            this.onToBottom();
-                            this.visible = true;
-                        }, Math.max(0, 100 - (new Date().getTime() - startTime)));
-                    });
+                    this.$store.dispatch("getDialogMsgs", id).then(this.onToBottom).catch(_ => {});
                 }
             },
             immediate: true
@@ -335,7 +324,21 @@ export default {
         wsOpenNum(num) {
             if (num <= 1) return
             this.$store.dispatch("getDialogMsgs", this.dialogId).catch(_ => {});
-        }
+        },
+
+        allMsgList(newList, oldList) {
+            const {scrollE} = this.scrollInfo();
+            this.allMsgs = newList;
+            this.$nextTick(_ => {
+                if (scrollE > 10 && oldList.length > 0) {
+                    const lastId = oldList[oldList.length - 1].id
+                    const tmpList = newList.filter(item => item.id && item.id > lastId)
+                    this.msgNew += tmpList.length
+                } else {
+                    this.onToBottom();
+                }
+            })
+        },
     },
 
     methods: {
@@ -353,6 +356,12 @@ export default {
             }
             msgText = msgText.replace(/<\/span> <\/p>$/, "</span></p>")
             //
+            if (!this.isDesktop) {
+                this.$refs.input.blur();
+            }
+            this.onToBottom();
+            this.onActive();
+            //
             let tempId = $A.randomString(16);
             this.tempMsgs.push({
                 id: tempId,
@@ -363,11 +372,6 @@ export default {
                     text: msgText,
                 },
             });
-            if (!this.isDesktop) {
-                this.$refs.input.blur();
-            }
-            this.onToBottom();
-            this.onActive();
             //
             this.$store.dispatch("call", {
                 url: 'dialog/msg/sendtext',
@@ -441,6 +445,12 @@ export default {
         chatFile(type, file) {
             switch (type) {
                 case 'progress':
+                    if (!this.isDesktop) {
+                        this.$refs.input.blur();
+                    }
+                    this.onToBottom();
+                    this.onActive();
+                    //
                     this.tempMsgs.push({
                         id: file.tempId,
                         dialog_id: this.dialogData.id,
@@ -448,11 +458,6 @@ export default {
                         userid: this.userId,
                         msg: { },
                     });
-                    if (!this.isDesktop) {
-                        this.$refs.input.blur();
-                    }
-                    this.onToBottom();
-                    this.onActive();
                     break;
 
                 case 'error':
@@ -479,31 +484,11 @@ export default {
             this.onActive();
         },
 
-        chatScroll(res) {
-            switch (res.directionreal) {
-                case 'up':
-                    if (res.scrollE < 10) {
-                        this.msgNew = 0;
-                        this.autoBottom = true;
-                    }
-                    break;
-                case 'down':
-                    this.autoBottom = false;
-                    break;
-            }
-            if (res.scale >= 1) {
-                this.msgNew = 0;
-                this.autoBottom = true;
-            }
-        },
-
         onEventFocus(e) {
-            this.inputFocus = true;
             this.$emit("on-focus", e)
         },
 
         onEventBlur(e) {
-            this.inputFocus = false;
             this.$emit("on-blur", e)
         },
 
@@ -518,8 +503,10 @@ export default {
         },
 
         onToBottom() {
-            this.autoBottom = true;
-            this.$refs.scroller && this.$refs.scroller.autoToBottom();
+            this.msgNew = 0;
+            if (this.isReady) {
+                this.$refs.scroller.scrollToBottom();
+            }
         },
 
         openProject() {
@@ -537,28 +524,16 @@ export default {
         },
 
         loadNextPage() {
-            let topId = this.dialogMsgList[0].id;
+            let tmpId = this.allMsgs[0].id;
             this.$store.dispatch('getDialogMoreMsgs', this.dialogId).then(() => {
                 this.$nextTick(() => {
-                    this.topId = topId;
-                    $A.scrollToView(document.getElementById("view_" + topId), {
-                        behavior: 'instant',
-                        inline: 'start',
-                    })
+                    this.topId = tmpId;
+                    const index = this.allMsgs.findIndex(({id}) => id == tmpId);
+                    if (index > -1) {
+                        this.$refs.scroller.scrollToItem(index);
+                    }
                 });
             }).catch(() => {})
-        },
-
-        addDialogMsg() {
-            if (this.isAutoBottom) {
-                this.$nextTick(this.onToBottom);
-            } else {
-                this.$nextTick(() => {
-                    if (this.$refs.scroller && this.$refs.scroller.scrollInfo().scrollE > 10) {
-                        this.msgNew++;
-                    }
-                })
-            }
         },
 
         openCreateGroup() {
@@ -585,6 +560,36 @@ export default {
             }).finally(_ => {
                 this.createGroupLoad--;
             });
+        },
+
+        scrollInfo() {
+            if (!this.isReady) {
+                return {
+                    scale: 0,       //已滚动比例
+                    scrollY: 0,     //滚动的距离
+                    scrollE: 0,     //与底部距离
+                }
+            }
+            const scrollerView = this.$refs.scroller.$el;
+            let wInnerH = scrollerView.clientHeight;
+            let wScrollY = scrollerView.scrollTop;
+            let bScrollH = scrollerView.scrollHeight;
+            this.scrollY = wScrollY;
+            return {
+                scale: wScrollY / (bScrollH - wInnerH),
+                scrollY: wScrollY,
+                scrollE: bScrollH - wInnerH - wScrollY,
+            }
+        },
+
+        onScroll() {
+            this.__onScroll && clearTimeout(this.__onScroll);
+            this.__onScroll = setTimeout(_ => {
+                const {scrollE} = this.scrollInfo();
+                if (scrollE <= 10) {
+                    this.msgNew = 0;
+                }
+            }, 100)
         },
     }
 }

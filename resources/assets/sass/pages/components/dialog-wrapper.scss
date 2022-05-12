@@ -180,477 +180,468 @@
     }
 
     .dialog-scroller {
-        position: relative;
         flex: 1;
-        padding: 0 32px;
-        overflow: auto;
+        position: relative;
+        padding: 16px 32px 0;
 
-        .dialog-list {
-            > ul {
-                > li {
-                    display: flex;
-                    flex-direction: row;
-                    align-items: flex-start;
-                    list-style: none;
-                    margin-bottom: 16px;
+        .dialog-item {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            list-style: none;
+            padding-bottom: 16px;
 
-                    &:first-child {
-                        margin-top: 16px;
-                    }
+            .dialog-avatar {
+                position: relative;
+                margin-bottom: 20px;
+                flex-shrink: 0;
+                width: 30px;
+                height: 30px;
+            }
 
-                    .dialog-avatar {
-                        position: relative;
-                        margin-bottom: 20px;
-                        flex-shrink: 0;
-                        width: 30px;
-                        height: 30px;
-                    }
+            .dialog-view {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                margin: 0 0 0 8px;
+                position: relative;
 
-                    .dialog-view {
-                        display: flex;
-                        flex-direction: column;
-                        align-items: flex-start;
-                        margin: 0 0 0 8px;
-                        position: relative;
+                &.text {
+                    max-width: 70%;
+                }
 
-                        &.text {
-                            max-width: 70%;
-                        }
-
-                        &:hover {
-                            .dialog-head {
-                                .dialog-menu {
-                                    opacity: 1;
-                                }
-                            }
-                        }
-
-                        .dialog-username {
-                            margin-bottom: 6px;
-                            opacity: 0.8;
-                        }
-
-                        .dialog-head {
-                            display: flex;
-                            align-items: flex-start;
-
-                            .dialog-content {
-                                background-color: #F4F5F7;
-                                padding: 8px;
-                                min-width: 32px;
-                                border-radius: 0 6px 6px 6px;
-                                display: flex;
-                                align-items: flex-start;
-
-                                &.an-emoticon,
-                                &.an-emoji,
-                                &.two-emoji,
-                                &.three-emoji {
-                                    background-color: transparent !important;
-                                }
-
-                                &.an-emoji {
-                                    .content-text {
-                                        > pre {
-                                            font-size: 72px;
-                                            line-height: 1;
-                                        }
-                                    }
-                                }
-
-                                &.two-emoji {
-                                    .content-text {
-                                        > pre {
-                                            font-size: 52px;
-                                            line-height: 1;
-                                        }
-                                    }
-                                }
-
-                                &.three-emoji {
-                                    .content-text {
-                                        > pre {
-                                            font-size: 32px;
-                                            line-height: 1;
-                                        }
-                                    }
-                                }
-
-                                .content-text {
-                                    color: #333333;
-
-                                    > pre {
-                                        display: block;
-                                        margin: 0;
-                                        padding: 0;
-                                        line-height: 1.5;
-                                        white-space: pre-wrap;
-                                        word-wrap: break-word;
-                                        word-break: break-word;
-                                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-                                        font-size: 14px;
-
-                                        ol,
-                                        ul {
-                                            li {
-                                                list-style-type: none;
-
-                                                &::before {
-                                                    display: inline-block;
-                                                    white-space: nowrap;
-                                                    width: 1.2em;
-                                                    color: #0088ff;
-                                                    text-align: left;
-                                                    margin-right: 0.2em;
-                                                }
-                                            }
-                                        }
-
-                                        ul {
-                                            li {
-                                                &::before {
-                                                    content: '\2022';
-                                                    font-weight: 900;
-                                                }
-                                            }
-                                        }
-
-                                        ol {
-                                            li {
-                                                counter-reset: list-1 list-2 list-3 list-4 list-5 list-6 list-7 list-8 list-9;
-                                                counter-increment: list-0;
-
-                                                &:before {
-                                                    content: counter(list-0, decimal) '. ';
-                                                }
-                                            }
-                                        }
-
-                                        blockquote {
-                                            border-left: 4px solid #ccc;
-                                            margin-bottom: 5px;
-                                            margin-top: 5px;
-                                            padding-left: 16px;
-                                        }
-
-                                        pre {
-                                            white-space: pre-wrap;
-                                            margin: 5px 0;
-                                            padding: 5px 10px;
-                                            border-radius: 3px;
-                                            background-color: #23241f;
-                                            color: #f8f8f2;
-                                            overflow: visible;
-                                        }
-
-                                        img {
-                                            cursor: pointer;
-                                            max-width: 220px;
-                                            max-height: 220px;
-                                            vertical-align: bottom;
-
-                                            &.emoticon {
-                                                max-width: 150px;
-                                                max-height: 150px;
-                                            }
-                                        }
-
-                                        .mention {
-                                            color: $flow-status-end-color;
-                                            background-color: transparent;
-                                            user-select: auto;
-                                            padding: 0;
-                                            margin: 0;
-
-                                            > span {
-                                                margin: 0;
-                                            }
-
-                                            &.task {
-                                                cursor: pointer;
-                                            }
-
-                                            &.me {
-                                                font-size: 13px;
-                                                font-weight: 600;
-                                                padding: 3px 4px;
-                                                color: #ffffff;
-                                                background-color: $primary-color;
-                                            }
-                                        }
-                                    }
-                                }
-
-                                .content-file {
-                                    &.file {
-                                        display: inline-block;
-
-                                        .file-box {
-                                            background-color: #ffffff;
-                                            display: flex;
-                                            align-items: center;
-                                            padding: 10px 14px;
-                                            border-radius: 3px;
-                                            width: 220px;
-
-                                            .file-thumb {
-                                                width: 36px;
-                                            }
-
-                                            .file-info {
-                                                margin-left: 12px;
-                                                display: flex;
-                                                flex-direction: column;
-                                                justify-content: center;
-
-                                                .file-name {
-                                                    color: #333333;
-                                                    font-size: 14px;
-                                                    line-height: 18px;
-                                                    word-break: break-all;
-                                                    text-overflow: ellipsis;
-                                                    overflow: hidden;
-                                                    display: -webkit-box;
-                                                    -webkit-line-clamp: 2;
-                                                    -webkit-box-orient: vertical;
-                                                }
-
-                                                .file-size {
-                                                    padding-top: 4px;
-                                                    color: #666666;
-                                                    font-size: 14px;
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    &.img {
-                                        padding: 0;
-                                        display: flex;
-                                        max-width: 220px;
-                                        max-height: 220px;
-                                        border-radius: 6px;
-                                        background-color: transparent;
-                                        overflow: hidden;
-
-                                        .file-img {
-                                            display: flex;
-                                            cursor: pointer;
-                                        }
-                                    }
-                                }
-
-                                .content-loading {
-                                    display: flex;
-
-                                    .common-loading {
-                                        width: 20px;
-                                        height: 20px;
-                                        margin: 4px;
-                                    }
-                                }
-
-                                .content-unknown {
-                                    text-decoration: underline;
-                                }
-                            }
-
-                            .dialog-menu {
-                                opacity: 0;
-                                margin-left: 6px;
-                                transition: all 0.3s;
-
-                                .menu-icon {
-                                    display: flex;
-                                    align-items: center;
-                                    border-radius: 4px;
-                                    border: 1px solid #ddd;
-                                    background-color: #ffffff;
-
-                                    > i {
-                                        flex: 1;
-                                        display: inline-block;
-                                        padding: 4px 6px;
-                                        color: #999;
-                                        font-size: 13px;
-                                        cursor: pointer;
-
-                                        & + i {
-                                            border-left: 1px solid #ddd;
-                                        }
-
-                                        &:hover {
-                                            color: #777;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        .dialog-foot {
-                            display: flex;
-                            align-items: center;
-                            padding-top: 4px;
-                            height: 21px;
-                            line-height: 1;
-
-                            .common-loading {
-                                margin: 0 2px;
-                                width: 10px;
-                                height: 10px;
-                            }
-
-                            .time {
-                                color: #bbbbbb;
-                                font-size: 12px;
-                            }
-
-                            .done {
-                                display: none;
-                                margin-left: 4px;
-                                transform: scale(0.9);
-                                font-size: 12px;
-                                color: $primary-color;
-                            }
-
-                            .percent {
-                                display: none;
-                                margin-left: 4px;
-                                align-items: center;
-                                cursor: pointer;
-                            }
-                        }
-                    }
-
-                    .dialog-action {
-                        align-self: flex-start;
-                        display: flex;
-                        align-items: flex-start;
-                        height: 100%;
-
-                        > * {
-                            margin: 0 5px;
-                        }
-
-                    }
-
-                    &.history {
-                        cursor: pointer;
-                        justify-content: center;
-                        font-size: 13px;
-                        padding: 3px 0;
-                        margin: 12px 0;
-                        opacity: 0.6;
-                        transition: opacity 0.2s;
-
-                        &:hover {
+                &:hover {
+                    .dialog-head {
+                        .dialog-menu {
                             opacity: 1;
                         }
                     }
+                }
 
-                    &.history-tip {
-                        position: relative;
-                        padding-top: 60px;
+                .dialog-username {
+                    margin-bottom: 6px;
+                    opacity: 0.8;
+                }
 
-                        .history-text {
-                            font-style: normal;
-                            position: absolute;
-                            top: 10px;
-                            left: 50%;
-                            height: 22px;
-                            line-height: 22px;
-                            padding: 0 48px;
-                            text-align: center;
-                            font-size: 12px;
-                            border-radius: 2px;
-                            background: #f5f5f5;
-                            transform: translateX(-50%);
+                .dialog-head {
+                    display: flex;
+                    align-items: flex-start;
+
+                    .dialog-content {
+                        background-color: #F4F5F7;
+                        padding: 8px;
+                        min-width: 32px;
+                        border-radius: 0 6px 6px 6px;
+                        display: flex;
+                        align-items: flex-start;
+
+                        &.an-emoticon,
+                        &.an-emoji,
+                        &.two-emoji,
+                        &.three-emoji {
+                            background-color: transparent !important;
                         }
-                    }
 
-                    &.loading {
-                        padding: 12px 0;
-                        justify-content: center;
-
-                        .common-loading {
-                            margin: 0;
-                            width: 18px;
-                            height: 18px;
+                        &.an-emoji {
+                            .content-text {
+                                > pre {
+                                    font-size: 72px;
+                                    line-height: 1;
+                                }
+                            }
                         }
-                    }
 
-                    &.nothing {
-                        position: absolute;
-                        top: 50%;
-                        left: 50%;
-                        transform: translate(-50%, -50%);
-                        color: #999999;
-                    }
+                        &.two-emoji {
+                            .content-text {
+                                > pre {
+                                    font-size: 52px;
+                                    line-height: 1;
+                                }
+                            }
+                        }
 
-                    &.bottom {
-                        height: 0;
-                        margin: 0;
-                        padding: 0;
-                    }
+                        &.three-emoji {
+                            .content-text {
+                                > pre {
+                                    font-size: 32px;
+                                    line-height: 1;
+                                }
+                            }
+                        }
 
-                    &.self {
-                        flex-direction: row-reverse;
+                        .content-text {
+                            color: #333333;
 
-                        .dialog-view {
-                            align-items: flex-end;
-                            margin: 0 8px 0 0;
+                            > pre {
+                                display: block;
+                                margin: 0;
+                                padding: 0;
+                                line-height: 1.5;
+                                white-space: pre-wrap;
+                                word-wrap: break-word;
+                                word-break: break-word;
+                                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+                                font-size: 14px;
 
-                            .dialog-head {
-                                flex-direction: row-reverse;
+                                ol,
+                                ul {
+                                    li {
+                                        list-style-type: none;
 
-                                .dialog-content {
-                                    background-color: $primary-color;
-                                    border-radius: 6px 0 6px 6px;
-
-                                    .content-text {
-                                        color: #ffffff;
-
-                                        > pre {
-                                            .mention {
-                                                color: #333333;
-
-                                                &.me {
-                                                    font-size: 14px;
-                                                    font-weight: normal;
-                                                    padding: 3px 0;
-                                                    background-color: transparent;
-                                                }
-                                            }
+                                        &::before {
+                                            display: inline-block;
+                                            white-space: nowrap;
+                                            width: 1.2em;
+                                            color: #0088ff;
+                                            text-align: left;
+                                            margin-right: 0.2em;
                                         }
                                     }
+                                }
 
-                                    .content-file {
-                                        &.file {
-                                            background-color: #F4F5F7;
+                                ul {
+                                    li {
+                                        &::before {
+                                            content: '\2022';
+                                            font-weight: 900;
+                                        }
+                                    }
+                                }
+
+                                ol {
+                                    li {
+                                        counter-reset: list-1 list-2 list-3 list-4 list-5 list-6 list-7 list-8 list-9;
+                                        counter-increment: list-0;
+
+                                        &:before {
+                                            content: counter(list-0, decimal) '. ';
+                                        }
+                                    }
+                                }
+
+                                blockquote {
+                                    border-left: 4px solid #ccc;
+                                    margin-bottom: 5px;
+                                    margin-top: 5px;
+                                    padding-left: 16px;
+                                }
+
+                                pre {
+                                    white-space: pre-wrap;
+                                    margin: 5px 0;
+                                    padding: 5px 10px;
+                                    border-radius: 3px;
+                                    background-color: #23241f;
+                                    color: #f8f8f2;
+                                    overflow: visible;
+                                }
+
+                                img {
+                                    cursor: pointer;
+                                    max-width: 220px;
+                                    max-height: 220px;
+                                    vertical-align: bottom;
+
+                                    &.emoticon {
+                                        max-width: 150px;
+                                        max-height: 150px;
+                                    }
+                                }
+
+                                .mention {
+                                    color: $flow-status-end-color;
+                                    background-color: transparent;
+                                    user-select: auto;
+                                    padding: 0;
+                                    margin: 0;
+
+                                    > span {
+                                        margin: 0;
+                                    }
+
+                                    &.task {
+                                        cursor: pointer;
+                                    }
+
+                                    &.me {
+                                        font-size: 13px;
+                                        font-weight: 600;
+                                        padding: 3px 4px;
+                                        color: #ffffff;
+                                        background-color: $primary-color;
+                                    }
+                                }
+                            }
+                        }
+
+                        .content-file {
+                            &.file {
+                                display: inline-block;
+
+                                .file-box {
+                                    background-color: #ffffff;
+                                    display: flex;
+                                    align-items: center;
+                                    padding: 10px 14px;
+                                    border-radius: 3px;
+                                    width: 220px;
+
+                                    .file-thumb {
+                                        width: 36px;
+                                    }
+
+                                    .file-info {
+                                        margin-left: 12px;
+                                        display: flex;
+                                        flex-direction: column;
+                                        justify-content: center;
+
+                                        .file-name {
+                                            color: #333333;
+                                            font-size: 14px;
+                                            line-height: 18px;
+                                            word-break: break-all;
+                                            text-overflow: ellipsis;
+                                            overflow: hidden;
+                                            display: -webkit-box;
+                                            -webkit-line-clamp: 2;
+                                            -webkit-box-orient: vertical;
                                         }
 
-                                        &.img {
-                                            border-radius: 6px;
+                                        .file-size {
+                                            padding-top: 4px;
+                                            color: #666666;
+                                            font-size: 14px;
+                                        }
+                                    }
+                                }
+                            }
+
+                            &.img {
+                                padding: 0;
+                                display: flex;
+                                max-width: 220px;
+                                max-height: 220px;
+                                border-radius: 6px;
+                                background-color: transparent;
+                                overflow: hidden;
+
+                                .file-img {
+                                    display: flex;
+                                    cursor: pointer;
+                                }
+                            }
+                        }
+
+                        .content-loading {
+                            display: flex;
+
+                            .common-loading {
+                                width: 20px;
+                                height: 20px;
+                                margin: 4px;
+                            }
+                        }
+
+                        .content-unknown {
+                            text-decoration: underline;
+                        }
+                    }
+
+                    .dialog-menu {
+                        opacity: 0;
+                        margin-left: 6px;
+                        transition: all 0.3s;
+
+                        .menu-icon {
+                            display: flex;
+                            align-items: center;
+                            border-radius: 4px;
+                            border: 1px solid #ddd;
+                            background-color: #ffffff;
+
+                            > i {
+                                flex: 1;
+                                display: inline-block;
+                                padding: 4px 6px;
+                                color: #999;
+                                font-size: 13px;
+                                cursor: pointer;
+
+                                & + i {
+                                    border-left: 1px solid #ddd;
+                                }
+
+                                &:hover {
+                                    color: #777;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                .dialog-foot {
+                    display: flex;
+                    align-items: center;
+                    padding-top: 4px;
+                    height: 21px;
+                    line-height: 1;
+
+                    .common-loading {
+                        margin: 0 2px;
+                        width: 10px;
+                        height: 10px;
+                    }
+
+                    .time {
+                        color: #bbbbbb;
+                        font-size: 12px;
+                    }
+
+                    .done {
+                        display: none;
+                        margin-left: 4px;
+                        transform: scale(0.9);
+                        font-size: 12px;
+                        color: $primary-color;
+                    }
+
+                    .percent {
+                        display: none;
+                        margin-left: 4px;
+                        align-items: center;
+                        cursor: pointer;
+                    }
+                }
+            }
+
+            .dialog-action {
+                align-self: flex-start;
+                display: flex;
+                align-items: flex-start;
+                height: 100%;
+
+                > * {
+                    margin: 0 5px;
+                }
+
+            }
+
+            &.history {
+                cursor: pointer;
+                justify-content: center;
+                font-size: 13px;
+                padding: 3px 0;
+                margin: 12px 0;
+                opacity: 0.6;
+                transition: opacity 0.2s;
+
+                &:hover {
+                    opacity: 1;
+                }
+            }
+
+            &.history-tip {
+                position: relative;
+                padding-top: 60px;
+
+                .history-text {
+                    font-style: normal;
+                    position: absolute;
+                    top: 10px;
+                    left: 50%;
+                    height: 22px;
+                    line-height: 22px;
+                    padding: 0 48px;
+                    text-align: center;
+                    font-size: 12px;
+                    border-radius: 2px;
+                    background: #f5f5f5;
+                    transform: translateX(-50%);
+                }
+            }
+
+            &.loading {
+                padding: 12px 0;
+                justify-content: center;
+
+                .common-loading {
+                    margin: 0;
+                    width: 18px;
+                    height: 18px;
+                }
+            }
+
+            &.nothing {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                color: #999999;
+            }
+
+            &.bottom {
+                height: 0;
+                margin: 0;
+                padding: 0;
+            }
+
+            &.self {
+                flex-direction: row-reverse;
+
+                .dialog-view {
+                    align-items: flex-end;
+                    margin: 0 8px 0 0;
+
+                    .dialog-head {
+                        flex-direction: row-reverse;
+
+                        .dialog-content {
+                            background-color: $primary-color;
+                            border-radius: 6px 0 6px 6px;
+
+                            .content-text {
+                                color: #ffffff;
+
+                                > pre {
+                                    .mention {
+                                        color: #333333;
+
+                                        &.me {
+                                            font-size: 14px;
+                                            font-weight: normal;
+                                            padding: 3px 0;
                                             background-color: transparent;
                                         }
                                     }
                                 }
-
-                                .dialog-menu {
-                                    margin-left: 0;
-                                    margin-right: 6px;
-                                }
                             }
 
-                            .dialog-foot {
-                                .done {
-                                    display: inline-block;
+                            .content-file {
+                                &.file {
+                                    background-color: #F4F5F7;
                                 }
 
-                                .percent {
-                                    display: flex;
+                                &.img {
+                                    border-radius: 6px;
+                                    background-color: transparent;
                                 }
                             }
+                        }
+
+                        .dialog-menu {
+                            margin-left: 0;
+                            margin-right: 6px;
+                        }
+                    }
+
+                    .dialog-foot {
+                        .done {
+                            display: inline-block;
+                        }
+
+                        .percent {
+                            display: flex;
                         }
                     }
                 }
@@ -877,7 +868,8 @@
             }
         }
         .dialog-scroller {
-            padding: 0 14px;
+            padding-right: 14px;
+            padding-left: 14px;
         }
         .dialog-footer {
             background-color: #f8f8f8;

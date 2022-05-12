@@ -179,37 +179,33 @@ body.dark-mode-reverse {
             }
         }
         .dialog-scroller {
-            .dialog-list {
-                > ul {
-                    > li {
-                        .dialog-view {
-                            .dialog-head {
-                                .dialog-content {
-                                    background-color: #e1e1e1;
-                                    .content-text {
-                                        color: #ffffff;
-                                        .content-text {
-                                            > pre {
-                                                .mention {
-                                                    color: #000000;
-                                                }
-                                            }
+            .dialog-item {
+                .dialog-view {
+                    .dialog-head {
+                        .dialog-content {
+                            background-color: #e1e1e1;
+                            .content-text {
+                                color: #ffffff;
+                                .content-text {
+                                    > pre {
+                                        .mention {
+                                            color: #000000;
                                         }
                                     }
                                 }
                             }
                         }
-                        &.self {
-                            .dialog-view {
-                                .dialog-head {
-                                    .dialog-content {
-                                        background-color: #8bcf70;
-                                        .content-text {
-                                            > pre {
-                                                .mention {
-                                                    color: #000000;
-                                                }
-                                            }
+                    }
+                }
+                &.self {
+                    .dialog-view {
+                        .dialog-head {
+                            .dialog-content {
+                                background-color: #8bcf70;
+                                .content-text {
+                                    > pre {
+                                        .mention {
+                                            color: #000000;
                                         }
                                     }
                                 }
