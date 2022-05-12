@@ -61,7 +61,7 @@
                                 <div class="dialog-text no-dark-content">
                                     <template v-if="dialog.type=='group' && dialog.last_msg">
                                         <div v-if="dialog.last_msg.userid == userId" class="last-self">{{$L('你')}}</div>
-                                        <UserAvatar v-else :userid="dialog.last_msg.userid" :show-name="true" :show-icon="false"/>
+                                        <UserAvatar v-else :userid="dialog.last_msg.userid" :show-name="true" :show-icon="false" tooltip-disabled/>
                                     </template>
                                     <div class="last-text">{{formatLastMsg(dialog.last_msg)}}</div>
                                 </div>
