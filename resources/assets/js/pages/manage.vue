@@ -517,7 +517,13 @@ export default {
             if (num <= 0) {
                 return '';
             }
+            if (num > 99) {
+                num = "99+"
+            }
             if (mention > 0) {
+                if (mention > 99) {
+                    return "@99+"
+                }
                 return `${num}·@${mention}`
             }
             return String(num);

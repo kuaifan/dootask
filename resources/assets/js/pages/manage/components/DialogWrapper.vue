@@ -315,7 +315,13 @@ export default {
                 if (id) {
                     this.msgNew = 0;
                     this.topId = -1;
-                    this.$store.dispatch("getDialogMsgs", id).then(this.onToBottom).catch(_ => {});
+                    if (this.dialogMsgList.length > 0) {
+                        setTimeout(this.onToBottom, 10);
+                    }
+                    const startTime = new Date().getTime();
+                    this.$store.dispatch("getDialogMsgs", id).then(_ => {
+                        setTimeout(this.onToBottom, Math.max(0, 100 - (new Date().getTime() - startTime)));
+                    }).catch(_ => {});
                 }
             },
             immediate: true

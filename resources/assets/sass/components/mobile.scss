@@ -25,6 +25,7 @@
             padding: 0;
             margin: 0;
             color: $primary-text-color;
+            position: relative;
             .taskfont {
                 font-size: 24px;
                 line-height: 34px;
@@ -32,6 +33,15 @@
             .tabbar-title {
                 font-size: 12px;
                 line-height: 18px;
+            }
+            .tabbar-badge {
+                position: absolute;
+                top: 0;
+                left: 50%;
+                transform: scale(0.8);
+                .ivu-badge-count {
+                    font-size: 14px;
+                }
             }
             &.active {
                 color: $primary-color;

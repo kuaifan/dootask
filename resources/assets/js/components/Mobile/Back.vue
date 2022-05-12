@@ -23,7 +23,7 @@ export default {
     },
 
     created() {
-
+        this.appAndroidEvents()
     },
 
     mounted() {
@@ -55,14 +55,17 @@ export default {
             this.x = touch.clientX
             this.y = touch.clientY
         },
+
         touchstart(event) {
             this.getXY(event)
             // 判断是否是边缘滑动
             this.show = this.canBack() && this.x < 30;
         },
+
         touchmove(event) {
             this.getXY(event)
         },
+
         touchend() {
             // 判断停止时的位置偏移
             if (this.x > 90 && this.show) {
@@ -71,6 +74,7 @@ export default {
             this.x = 0
             this.show = false
         },
+
         canBack() {
             if (!this.showTabbar) {
                 return true;
@@ -80,6 +84,7 @@ export default {
             }
             return this.cacheDrawerOverlay.length > 0;
         },
+
         onBack() {
             if (this.$Modal.removeLast()) {
                 return;
@@ -89,6 +94,23 @@ export default {
                 return;
             }
             this.goBack();
+        },
+
+        appAndroidEvents() {
+            if (window && window.navigator
+                && /eeui/i.test(window.navigator.userAgent)
+                && /android/i.test(window.navigator.userAgent)) {
+                let eeui = requireModuleJs("eeui");
+                eeui.setPageBackPressed({
+                    pageName: 'firstPage',
+                }, _ => {
+                    if (this.canBack()) {
+                        this.onBack();
+                    } else {
+                        eeui.goDesktop()
+                    }
+                });
+            }
         }
     },
 };

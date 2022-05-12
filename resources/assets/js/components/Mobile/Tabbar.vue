@@ -4,6 +4,14 @@
             <li v-for="item in navList" @click="toggleRoute(item.name)" :class="{active: activeName === item.name}">
                 <i class="taskfont" v-html="item.icon"></i>
                 <div class="tabbar-title">{{$L(item.label)}}</div>
+                <template v-if="item.name === 'dashboard'">
+                    <Badge v-if="dashboardTask.overdue.length > 0" class="tabbar-badge" type="error" :count="dashboardTask.overdue.length"/>
+                    <Badge v-else-if="dashboardTask.today.length > 0" class="tabbar-badge" type="info" :count="dashboardTask.today.length"/>
+                    <Badge v-else-if="dashboardTask.all.length > 0" class="tabbar-badge" type="primary" :count="dashboardTask.all.length"/>
+                </template>
+                <template v-else-if="item.name === 'dialog'">
+                    <Badge class="tabbar-badge" :text="msgUnreadMention"/>
+                </template>
             </li>
         </ul>
         <div class="mobile-back"></div>
@@ -11,6 +19,8 @@
 </template>
 
 <script>
+import {mapGetters, mapState} from "vuex";
+
 export default {
     name: "MobileTabbar",
 
@@ -39,6 +49,11 @@ export default {
     },
 
     computed: {
+        ...mapState([
+            'cacheDialogs',
+        ]),
+        ...mapGetters(['dashboardTask']),
+
         routeName() {
             return this.$route.name
         },
@@ -62,6 +77,28 @@ export default {
                 return 'setting';
             }
             return ''
+        },
+
+        msgUnreadMention() {
+            let num = 0;
+            let mention = 0;
+            this.cacheDialogs.some(dialog => {
+                num += $A.getDialogUnread(dialog);
+                mention += $A.getDialogMention(dialog);
+            })
+            if (num <= 0) {
+                return '';
+            }
+            if (num > 99) {
+                num = "99+"
+            }
+            if (mention > 0) {
+                if (mention > 99) {
+                    return "@99+"
+                }
+                return `${num}·@${mention}`
+            }
+            return String(num);
         },
     },
 
