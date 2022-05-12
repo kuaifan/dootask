@@ -993,6 +993,11 @@
             if (!element) {
                 return;
             }
+            if (typeof options === "undefined" || options === true) {
+                options = {block: "start", inline: "nearest"}
+            } else if (options === false) {
+                options = {block: "end", inline: "nearest"}
+            }
             if (typeof options.scrollMode !== "undefined" && typeof window.scrollIntoView === "function") {
                 window.scrollIntoView(element, options)
                 return;

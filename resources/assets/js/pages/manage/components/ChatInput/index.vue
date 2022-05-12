@@ -116,6 +116,9 @@ export default {
             observer: null,
             wrapperWidth: 0,
             editorHeight: 0,
+
+            timerScroll: null,
+            isSpecVersion: this.checkIOSVersion(),
         };
     },
     mounted() {
@@ -295,10 +298,24 @@ export default {
 
             // Mark model as touched if editor lost focus
             this.quill.on('selection-change', range => {
+                if (this.timerScroll) {
+                    clearInterval(this.timerScroll);
+                }
                 if (!range) {
                     this.$emit('on-blur', this.quill)
                 } else {
                     this.$emit('on-focus', this.quill)
+                    if (this.isSpecVersion) {
+                        // ios11.0-11.3 对scrollTop及scrolIntoView解释有bug
+                        // 直接执行会导致输入框滚到底部被遮挡
+                    } else {
+                        setTimeout(() => {
+                            $A.scrollToView(this.$refs.editor, true)
+                            this.timerScroll = setInterval(() => {
+                                $A.scrollToView(this.$refs.editor, true)
+                            }, 300);
+                        }, 300);
+                    }
                 }
             })
 
@@ -554,6 +571,14 @@ export default {
                 }
             })
         },
+
+        checkIOSVersion() {
+            let ua = window && window.navigator && window.navigator.userAgent;
+            let match = ua.match(/OS ((\d+_?){2,3})\s/i);
+            let IOSVersion = match ? match[1].replace(/_/g, ".") : "unknown";
+            const iosVsn = IOSVersion.split(".");
+            return +iosVsn[0] == 11 && +iosVsn[1] >= 0 && +iosVsn[1] < 3;
+        }
     }
 }
 </script>
