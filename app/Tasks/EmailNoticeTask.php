@@ -33,8 +33,8 @@ class EmailNoticeTask extends AbstractTask
                 ProjectTask::whereNull("complete_at")
                     ->whereNull("archived_at")
                     ->whereBetween("start_at", [
-                        Carbon::now()->subMinutes($start * 60 + 10),
-                        Carbon::now()->subMinutes($start * 60)
+                        Carbon::now()->subMinutes($start + 10),
+                        Carbon::now()->subMinutes($start)
                     ])->chunkById(100, function ($tasks) {
                         /** @var ProjectTask $task */
                         foreach ($tasks as $task) {
@@ -146,7 +146,7 @@ class EmailNoticeTask extends AbstractTask
                     'user' => $user,
                     'task' => $task,
                     'setting' => $setting,
-                ]);
+                ])->render();
                 Factory::mailer()
                     ->setDsn("smtp://{$setting['account']}:{$setting['password']}@{$setting['smtp_server']}:{$setting['port']}?verify_peer=0")
                     ->setMessage(EmailMessage::create()
@@ -156,7 +156,7 @@ class EmailNoticeTask extends AbstractTask
                         ->html($content))
                     ->send();
                 $data['is_send'] = 1;
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 $data['send_error'] = $e->getMessage();
             }
             $data['email'] = $user->email;
@@ -192,7 +192,7 @@ class EmailNoticeTask extends AbstractTask
                 'nickname' => $user->nickname,
                 'msgType' => $msgType,
                 'count' => count($data),
-            ]);
+            ])->render();
             $lists = $data->groupBy('dialog_id');
             /** @var WebSocketDialogMsg[] $items */
             foreach ($lists as $items) {
@@ -222,7 +222,7 @@ class EmailNoticeTask extends AbstractTask
                     'dialogName' => $dialogName,
                     'unread' => count($items),
                     'items' => $items,
-                ]);
+                ])->render();
             }
             try {
                 Factory::mailer()
@@ -233,7 +233,7 @@ class EmailNoticeTask extends AbstractTask
                         ->subject($subject)
                         ->html($content))
                     ->send();
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 info("unreadMsgEmail: " . $e->getMessage());
             }
         }
