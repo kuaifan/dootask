@@ -128,6 +128,7 @@ function startBuild(data, publish) {
     indexString = indexString.replace(/<title>(.*?)<\/title>/g, `<title>${data.name}</title>`);
     fs.writeFileSync(indexFile, indexString, 'utf8');
     if (data.id === 'app') {
+        fse.copySync(electronDir, path.resolve(__dirname, "../resources/mobile/src/public"))
         return;
     }
     // package.json Backup
@@ -172,6 +173,12 @@ if (["dev"].includes(argv[2])) {
     child_process.spawn("npx", ["mix", "watch", "--hot", "--", "--env", "--electron"], {stdio: "inherit"});
     child_process.spawn("npm", ["run", "start-quiet"], {stdio: "inherit", cwd: "electron"});
 } else if (["app"].includes(argv[2])) {
+    // 编译给app
+    let mobileSrcDir = path.resolve(__dirname, "../resources/mobile");
+    if (!fse.existsSync(mobileSrcDir)) {
+        console.log("mobile directory does not exist!");
+        process.exit()
+    }
     let urlChoices = [];
     Array.from(new Set(config.app.map(item => item.url))).forEach(url => {
         urlChoices.push({
