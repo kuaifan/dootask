@@ -99,11 +99,16 @@ function genericPublish({url, version, output}) {
 // 生成配置、编译应用
 function startBuild(data, publish) {
     // information
-    console.log("Name: " + data.name);
-    console.log("AppId: " + data.id);
-    console.log("Version: " + config.version);
-    console.log("Platform: " + data.platform);
-    console.log("Publish: " + (publish ? 'Yes' : 'No'));
+    if (data.id === 'app') {
+        console.log("Name: " + data.name);
+        console.log("Version: " + config.version);
+    } else {
+        console.log("Name: " + data.name);
+        console.log("AppId: " + data.id);
+        console.log("Version: " + config.version);
+        console.log("Platform: " + data.platform);
+        console.log("Publish: " + (publish ? 'Yes' : 'No'));
+    }
     let systemInfo = {
         title: data.name,
         version: config.version,
@@ -122,6 +127,9 @@ function startBuild(data, publish) {
     let indexString = fs.readFileSync(indexFile, 'utf8');
     indexString = indexString.replace(/<title>(.*?)<\/title>/g, `<title>${data.name}</title>`);
     fs.writeFileSync(indexFile, indexString, 'utf8');
+    if (data.id === 'app') {
+        return;
+    }
     // package.json Backup
     fse.copySync(packageFile, packageBakFile)
     // package.json Generated
@@ -163,6 +171,29 @@ if (["dev"].includes(argv[2])) {
     fs.writeFileSync(devloadCachePath, utils.formatUrl("127.0.0.1:" + env.parsed.APP_PORT), 'utf8');
     child_process.spawn("npx", ["mix", "watch", "--hot", "--", "--env", "--electron"], {stdio: "inherit"});
     child_process.spawn("npm", ["run", "start-quiet"], {stdio: "inherit", cwd: "electron"});
+} else if (["app"].includes(argv[2])) {
+    let urlChoices = [];
+    Array.from(new Set(config.app.map(item => item.url))).forEach(url => {
+        urlChoices.push({
+            name: url,
+            value: url
+        })
+    })
+    inquirer.prompt([
+        {
+            type: 'list',
+            name: 'url',
+            message: "选择网址",
+            choices: urlChoices
+        }
+    ]).then(answers => {
+        startBuild({
+            name: 'App',
+            id: 'app',
+            platform: '',
+            url: answers.url,
+        }, false)
+    });
 } else if (platform.includes(argv[2])) {
     // 自动编译
     let data = config.app.find(({id, publish}) => id === process.env.APPID && publish.provider === process.env.PROVIDER);

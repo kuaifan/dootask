@@ -11,7 +11,7 @@
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             .project-title {
                 display: flex;
                 align-items: center;
@@ -142,11 +142,11 @@
                 float: left;
                 color: #999999;
                 line-height: 24px;
-                padding: 3px 0;
+                padding: 6px 0;
             }
             .project-switch {
                 float: right;
-                margin-left: 32px;
+                margin: 3px 0 3px 32px;
                 display: flex;
                 align-items: flex-end;
                 .project-checkbox {

@@ -861,6 +861,9 @@
                     width: unset;
                     overflow: hidden;
                     text-align: center;
+                    .main-title {
+                        justify-content: center;
+                    }
                     .sub-title {
                         line-height: 18px;
                     }

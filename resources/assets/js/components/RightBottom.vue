@@ -88,8 +88,12 @@ export default {
             'isDesktop',
         ]),
 
+        isSoftware() {
+            return this.$Electron || this.$isEEUiApp;
+        },
+
         showSSO() {
-            return this.$Electron && ['login'].includes(this.$route.name)
+            return this.isSoftware && ['login'].includes(this.$route.name)
         },
 
         showDown() {

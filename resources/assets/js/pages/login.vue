@@ -10,7 +10,7 @@
                 <div v-else class="login-subtitle">{{$L('输入您的凭证以访问您的帐户。')}}</div>
 
                 <div class="login-input">
-                    <Input v-if="$Electron && cacheServerUrl" :value="$A.getDomain(cacheServerUrl)" prefix="ios-globe-outline" size="large" readonly clearable @on-clear="clearServerUrl"/>
+                    <Input v-if="isSoftware && cacheServerUrl" :value="$A.getDomain(cacheServerUrl)" prefix="ios-globe-outline" size="large" readonly clearable @on-clear="clearServerUrl"/>
 
                     <Input v-model="email" prefix="ios-mail-outline" :placeholder="$L('输入您的电子邮件')" type="email" size="large" @on-enter="onLogin" @on-blur="onBlur" />
 
@@ -107,7 +107,7 @@ export default {
         this.getDemoAccount();
         this.getNeedStartHome();
         //
-        if (this.$Electron) {
+        if (this.isSoftware) {
             this.chackServerUrl().catch(_ => {});
         } else {
             this.clearServerUrl();
@@ -117,12 +117,14 @@ export default {
             this.inputServerUrl();
         });
     },
+
     beforeDestroy() {
         if (this.subscribe) {
             this.subscribe.unsubscribe();
             this.subscribe = null;
         }
     },
+
     activated() {
         this.loginType = 'login'
         //
@@ -130,6 +132,7 @@ export default {
             this.$Electron.sendMessage('subWindowDestroyAll')
         }
     },
+
     deactivated() {
         this.loginJump = false;
         this.password = "";
@@ -137,6 +140,7 @@ export default {
         this.code = "";
         this.invite = "";
     },
+
     computed: {
         ...mapState([
             'cacheServerUrl',
@@ -144,6 +148,10 @@ export default {
             'themeMode',
             'themeList',
         ]),
+
+        isSoftware() {
+            return this.$Electron || this.$isEEUiApp;
+        },
 
         currentLanguage() {
             return this.languageList[this.languageType] || 'Language'
@@ -166,6 +174,7 @@ export default {
             return text
         }
     },
+
     watch: {
         '$route' ({query}) {
             if (query.type=='reg'){
@@ -180,6 +189,7 @@ export default {
             }
         }
     },
+
     methods: {
         goHome() {
             if (this.needStartHome) {
@@ -314,7 +324,7 @@ export default {
 
         isNotServer() {
             let apiHome = $A.getDomain(window.systemInfo.apiUrl)
-            return this.$Electron && (apiHome == "" || apiHome == "public")
+            return this.isSoftware && (apiHome == "" || apiHome == "public")
         },
 
         onBlur() {

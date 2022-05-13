@@ -88,3 +88,18 @@
         }
     }
 }
+
+@media (max-width: 768px) {
+    .common-right-bottom {
+        bottom: 20px;
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
+
+        .common-right-bottom-link {
+            color: $primary-text-color !important;
+            background-color: transparent;
+            border-color: transparent;
+        }
+    }
+}

@@ -379,6 +379,9 @@ if [ $# -gt 0 ]; then
     elif [[ "$1" == "prod" ]] || [[ "$1" == "production" ]]; then
         shift 1
         run_compile prod
+    elif [[ "$1" == "appbuild" ]] || [[ "$1" == "buildapp" ]]; then
+        shift 1
+        run_electron app
     elif [[ "$1" == "electron" ]]; then
         shift 1
         run_electron $@

@@ -31,6 +31,10 @@
         padding: 0 20px;
         overflow: auto;
 
+        .ivu-collapse {
+            min-width: 700px;
+        }
+
         .ivu-collapse-header {
             display: flex;
             align-items: center;
