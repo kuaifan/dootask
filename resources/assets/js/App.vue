@@ -62,7 +62,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'cacheDrawerOverlay']),
+        ...mapState(['userId', 'userToken', 'cacheDrawerOverlay']),
     },
 
     watch: {
@@ -90,7 +90,19 @@ export default {
 
         userId: {
             handler() {
-                this.$store.dispatch("websocketConnection")
+                this.$store.dispatch("websocketConnection");
+                //
+                if (this.$isEEUiApp) {
+                    setTimeout(_ => {
+                        const webview = requireModuleJs("webview");
+                        webview && webview.sendMessage({
+                            action: 'setUmengAlias',
+                            userid: this.userId,
+                            token: this.userToken,
+                            url: $A.apiUrl('users/umeng/alias')
+                        });
+                    }, 6000)
+                }
             },
             immediate: true
         },

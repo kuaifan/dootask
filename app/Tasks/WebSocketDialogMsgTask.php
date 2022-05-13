@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Models\WebSocketDialogMsgRead;
+use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Request;
 
 
@@ -80,6 +81,19 @@ class WebSocketDialogMsgTask extends AbstractTask
                 ]
             ]);
         }
+        // umeng推送app
+        $msgTitle = User::userid2nickname($msg->userid);
+        if ($dialog->type == 'group') {
+            $msgTitle = "{$dialog->name} ($msgTitle)";
+        }
+        $umengMsg = new PushUmengMsg(array_keys($array), [
+            'title' => $msgTitle,
+            'body' => $msg->previewMsg(),
+            'description' => "消息推送-ID:{$msg->id}",
+            'seconds' => 3600,
+            'badge' => 1,
+        ]);
+        Task::deliver($umengMsg);
 
         // 推送目标②：正在打开这个任务会话的会员
         if ($dialog->type == 'group' && $dialog->group_type == 'task') {

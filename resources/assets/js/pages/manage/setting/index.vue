@@ -70,16 +70,17 @@ export default {
                 {path: 'personal', name: '个人设置'},
                 {path: 'password', name: '密码设置'},
             ]
+            if (!this.isDesktop) {
+                menu.push({path: 'clearCache', name: '清除缓存'})
+            }
             if (this.userIsAdmin) {
                 menu.push(...[
                     {path: 'system', name: '系统设置', divided: true},
-                    {path: 'clearCache', name: '清除缓存'},
                     {path: 'logout', name: '退出登录'},
                 ])
             } else {
                 menu.push(...[
-                    {path: 'clearCache', name: '清除缓存', divided: true},
-                    {path: 'logout', name: '退出登录'},
+                    {path: 'logout', name: '退出登录', divided: true},
                 ])
             }
             return menu;

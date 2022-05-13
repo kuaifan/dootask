@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\AbstractModel;
+use App\Models\UmengAlias;
 use App\Models\User;
 use App\Models\UserEmailVerification;
 use App\Models\UserTransfer;
@@ -683,5 +684,54 @@ class UsersController extends AbstractController
         ]);
 
         return Base::retSuccess('绑定邮箱成功');
+    }
+
+    /**
+     * @api {get} api/users/umeng/alias          13. 设置友盟别名
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName umeng__alias
+     *
+     * @apiParam {String} alias           别名
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据（同"获取我的信息"接口）
+     */
+    public function umeng__alias()
+    {
+        $data = Request::input();
+        // 表单验证
+        Base::validator($data, [
+            'alias.required' => '别名不能为空',
+            'alias.between:2,20' => '别名的长度在2-20个字符',
+        ]);
+        //
+        $agent = strtolower(Request::server('HTTP_USER_AGENT'));
+        if (str_contains($agent, 'android')) {
+            $platform = 'android';
+        } elseif (str_contains($agent, 'iphone') || str_contains($agent, 'ipad')) {
+            $platform = 'ios';
+        } else {
+            return Base::retError('设备类型错误');
+        }
+        //
+        $user = User::auth();
+        $inArray = [
+            'userid' => $user->userid,
+            'alias' => $data['alias'],
+            'platform' => $platform,
+        ];
+        if (UmengAlias::where($inArray)->exists()) {
+            return Base::retSuccess('别名已存在');
+        }
+        $row = UmengAlias::createInstance($inArray);
+        if ($row->save()) {
+            return Base::retSuccess('添加成功');
+        } else {
+            return Base::retError('添加错误');
+        }
     }
 }

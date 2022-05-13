@@ -132,7 +132,7 @@ function startBuild(data, publish) {
     econfig.build.directories.output = `dist/${data.id}/${data.platform}`;
     econfig.build.artifactName = utils.getDomain(data.url) + "-v${version}-${os}-${arch}.${ext}";
     econfig.build.nsis.artifactName = utils.getDomain(data.url) + "-v${version}-${os}-${arch}.${ext}";
-    if (!process.env.APPLEID || !process.env.APPLEIDPASS) {
+    if (!process.env.APPLEID || !process.env.APPLEIDPASS || publish !== true) {
         delete econfig.build.afterSign;
     }
     if (process.env.RELEASE_BODY) {

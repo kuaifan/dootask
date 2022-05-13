@@ -1,7 +1,7 @@
 <template>
     <div class="setting-component-item">
         <Form ref="formData" :model="formData" :rules="ruleData" label-width="auto" @submit.native.prevent>
-            <div class="email-setting-box">
+            <div class="block-setting-box">
                 <h3>{{ $L('邮箱服务器设置') }}</h3>
                 <FormItem :label="$L('SMTP服务器')" prop="smtp_server">
                     <Input v-model="formData.smtp_server"/>
@@ -20,9 +20,9 @@
                 </FormItem>
             </div>
 
-            <div class="email-setting-placeholder"></div>
+            <div class="block-setting-placeholder"></div>
 
-            <div class="email-setting-box">
+            <div class="block-setting-box">
                 <h3>{{ $L('邮件通知设置') }}</h3>
                 <FormItem :label="$L('开启注册验证')" prop="reg_verify">
                     <RadioGroup v-model="formData.reg_verify">

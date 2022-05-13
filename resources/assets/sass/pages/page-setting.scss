@@ -209,7 +209,7 @@
                             .setting-footer {
                                 margin: 0 -32px;
                             }
-                            .email-setting-box {
+                            .block-setting-box {
                                 position: relative;
                                 padding: 44px 24px 4px;
                                 margin: 24px 0 12px;
@@ -247,7 +247,7 @@
                                 }
 
                             }
-                            .email-setting-placeholder {
+                            .block-setting-placeholder {
                                 height: 8px;
                             }
                         }
@@ -267,6 +267,7 @@
 @media (max-width: 768px) {
     .page-setting {
         .setting-head {
+            margin: 32px 32px 0;
             .setting-titbox {
                 .setting-title {
                     .setting-more {
@@ -299,6 +300,7 @@
                     padding: 12px 32px;
                     > li {
                         padding: 0 8px;
+                        font-size: 16px;
                         &:hover {
                             background-color: transparent;
                         }
