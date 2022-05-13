@@ -27,7 +27,7 @@ abstract class AbstractTask extends Task
     {
         try {
             $this->start();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->info($e);
             $this->failed($e);
         }

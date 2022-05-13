@@ -172,7 +172,7 @@ class PushTask extends AbstractTask
                     try {
                         $swoole->push($fid, Base::array2json($msg));
                         $tmpMsgId > 0 && WebSocketTmpMsg::whereId($tmpMsgId)->update(['send' => 1]);
-                    } catch (\Exception $e) {
+                    } catch (\Throwable) {
 
                     }
                 }

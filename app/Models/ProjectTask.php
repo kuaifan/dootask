@@ -7,12 +7,9 @@ use App\Module\Base;
 use App\Tasks\PushTask;
 use Arr;
 use Carbon\Carbon;
-use Config;
 use DB;
-use Exception;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Mail;
 use Request;
 
 /**
@@ -1245,7 +1242,7 @@ class ProjectTask extends AbstractModel
         //
         try {
             $project = Project::userProject($task->project_id);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             if ($task->owner === null) {
                 throw new ApiException($e->getMessage(), [ 'task_id' => $task_id ], -4002);
             }

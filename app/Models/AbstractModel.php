@@ -46,7 +46,7 @@ class AbstractModel extends Model
     {
         try {
             return $this->save();
-        } catch (\Exception $e) {
+        } catch (\Throwable) {
             return false;
         }
     }

@@ -6,7 +6,6 @@ use App\Exceptions\ApiException;
 use App\Models\Setting;
 use App\Models\Tmp;
 use Cache;
-use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Config;
 use Redirect;
@@ -285,7 +284,7 @@ class Base
     {
         try {
             Storage::makeDirectory($path);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
         }
         if (!file_exists($path)) {
             self::makeDir(dirname($path));
@@ -486,7 +485,7 @@ class Base
         try {
             $array = json_decode($string, true);
             return is_array($array) ? $array : [];
-        } catch (Exception $e) {
+        } catch (\Throwable) {
             return [];
         }
     }
@@ -504,7 +503,7 @@ class Base
         }
         try {
             return json_encode($array, $options);
-        } catch (Exception $e) {
+        } catch (\Throwable) {
             return '';
         }
     }
@@ -2356,7 +2355,7 @@ class Base
                 if ($param['size'] > 0 && $fileSize > $param['size'] * 1024) {
                     return Base::retError('文件大小超限，最大限制：' . $param['size'] . 'KB');
                 }
-            } catch (Exception $e) {
+            } catch (\Throwable) {
                 $fileSize = 0;
             }
             $scaleName = "";
@@ -2613,7 +2612,7 @@ class Base
         try {
             $white = imagecolorallocate($dst, 255, 255, 255);
             imagefill($dst, 0, 0, $white);
-        } catch (Exception $e) {
+        } catch (\Throwable) {
 
         }
         if (function_exists('imagecopyresampled')) {

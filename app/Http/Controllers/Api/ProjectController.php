@@ -1151,7 +1151,7 @@ class ProjectController extends AbstractController
         }
         try {
             Madzipper::make($zipPath)->add($xlsPath)->close();
-        } catch (\Exception) {
+        } catch (\Throwable) {
         }
         //
         if (file_exists($zipPath)) {
@@ -1386,7 +1386,7 @@ class ProjectController extends AbstractController
         //
         try {
             ProjectTask::userTask($file->task_id, null);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             abort(403, $e->getMessage() ?: "This file not support download.");
         }
         //

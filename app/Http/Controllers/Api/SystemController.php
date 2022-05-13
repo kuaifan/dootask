@@ -661,7 +661,7 @@ class SystemController extends AbstractController
                     ->html('<p>收到此电子邮件意味着您的邮箱配置正确。</p><p>Receiving this email means that your mailbox is configured correctly.</p>'))
                 ->send();
             return Base::retSuccess('成功发送');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             // 一般是请求超时
             if (str_contains($e->getMessage(), "Timed Out")) {
                 return Base::retError("language.TimedOut");
