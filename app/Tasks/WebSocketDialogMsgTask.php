@@ -84,7 +84,7 @@ class WebSocketDialogMsgTask extends AbstractTask
         // umeng推送app
         $msgTitle = User::userid2nickname($msg->userid);
         if ($dialog->type == 'group') {
-            $msgTitle = "{$dialog->name} ($msgTitle)";
+            $msgTitle = "{$dialog->getGroupName()} ($msgTitle)";
         }
         $umengMsg = new PushUmengMsg(array_keys($array), [
             'title' => $msgTitle,

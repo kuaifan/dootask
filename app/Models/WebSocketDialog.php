@@ -180,6 +180,23 @@ class WebSocketDialog extends AbstractModel
     }
 
     /**
+     * 获取群组名称
+     * @return mixed|string|null
+     */
+    public function getGroupName()
+    {
+        $name = $this->name;
+        if ($this->type == "group") {
+            if ($this->group_type === 'project') {
+                $name = \DB::table('projects')->where('dialog_id', $this->id)->value('name');
+            } elseif ($this->group_type === 'task') {
+                $name = \DB::table('project_tasks')->where('dialog_id', $this->id)->value('name');
+            }
+        }
+        return $name;
+    }
+
+    /**
      * 推送消息
      * @param $action
      * @param array $data           发送内容，默认为[id=>项目ID]
