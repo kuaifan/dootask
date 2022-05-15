@@ -103,3 +103,9 @@
         }
     }
 }
+
+@media (max-height: 640px) {
+    .common-right-bottom {
+        display: none;
+    }
+}
