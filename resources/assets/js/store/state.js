@@ -12,10 +12,6 @@ const stateData = {
     // 数据缓存
     cacheLoading: {},
 
-    // DrawerOverlay
-    cacheDrawerIndex: 0,
-    cacheDrawerOverlay: [],
-
     // User
     cacheUserActive: {},
     cacheUserWait: [],

@@ -62,7 +62,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'userToken', 'cacheDrawerOverlay']),
+        ...mapState(['userId', 'userToken']),
     },
 
     watch: {
@@ -219,10 +219,6 @@ export default {
             }
             window.__onBeforeUnload = () => {
                 if (this.$Modal.removeLast()) {
-                    return true;
-                }
-                if (this.cacheDrawerOverlay.length > 0) {
-                    this.cacheDrawerOverlay[this.cacheDrawerOverlay.length - 1].close();
                     return true;
                 }
             }

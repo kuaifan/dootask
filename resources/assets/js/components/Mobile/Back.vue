@@ -39,8 +39,6 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheDrawerOverlay']),
-
         style() {
             return {
                 top: this.y + 'px',
@@ -79,18 +77,11 @@ export default {
             if (!this.showTabbar) {
                 return true;
             }
-            if (this.$Modal.visibles().length > 0) {
-                return true;
-            }
-            return this.cacheDrawerOverlay.length > 0;
+            return this.$Modal.visibles().length > 0;
         },
 
         onBack() {
             if (this.$Modal.removeLast()) {
-                return;
-            }
-            if (this.cacheDrawerOverlay.length > 0) {
-                this.cacheDrawerOverlay[this.cacheDrawerOverlay.length - 1].close();
                 return;
             }
             this.goBack();
