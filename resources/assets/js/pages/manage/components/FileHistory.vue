@@ -132,7 +132,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['windowHeight']),
+        ...mapState(['userToken', 'windowHeight']),
 
         fileId() {
             return this.file.id || 0
@@ -199,6 +199,12 @@ export default {
                                 nodeIntegrationInSubFrames: this.file.type === 'drawio'
                             },
                         });
+                    } else if (this.$isEEUiApp) {
+                        const eeui = requireModuleJs("eeui");
+                        eeui.openPage({
+                            pageType: 'web',
+                            url: $A.apiUrl(`../single/file/${this.fileId}?history_id=${row.id}&history_at=${row.created_at}&token=${this.userToken}`)
+                        }, _ => {});
                     } else {
                         window.open($A.apiUrl(`../single/file/${this.fileId}?history_id=${row.id}&history_at=${row.created_at}`))
                     }

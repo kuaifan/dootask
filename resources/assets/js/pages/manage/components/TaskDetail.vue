@@ -1263,6 +1263,12 @@ export default {
                         height: Math.min(window.screen.availHeight, 900),
                     }
                 });
+            } else if (this.$isEEUiApp) {
+                const eeui = requireModuleJs("eeui");
+                eeui.openPage({
+                    pageType: 'web',
+                    url: $A.apiUrl(`../single/file/task/${file.id}?token=${this.userToken}`)
+                }, _ => {});
             } else {
                 window.open($A.apiUrl(`../single/file/task/${file.id}`))
             }
