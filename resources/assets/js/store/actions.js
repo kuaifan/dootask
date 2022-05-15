@@ -217,7 +217,11 @@ export default {
             return;
         }
         if (!$A.isChrome()) {
-            $A.modalWarning("仅客户端或Chrome浏览器支持主题功能");
+            if ($A.isEEUiApp) {
+                $A.modalWarning("仅Android设置支持主题功能");
+            } else {
+                $A.modalWarning("仅客户端或Chrome浏览器支持主题功能");
+            }
             return;
         }
         switch (mode) {
