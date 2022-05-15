@@ -255,7 +255,7 @@ export default {
                 placeholder: "请输入服务器地址",
                 onOk: (value, cb) => {
                     if (value) {
-                        this.inputServerChack(value).then(_ => cb)
+                        this.inputServerChack(value).then(cb)
                     } else {
                         this.clearServerUrl();
                     }
