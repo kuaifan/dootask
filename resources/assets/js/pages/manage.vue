@@ -655,12 +655,6 @@ export default {
             this.chackPass();
         },
 
-        taskId(id) {
-            if (id > 0) {
-                this.$Modal.resetIndex();
-            }
-        },
-
         projectKeyValue(val) {
             if (val == '') {
                 return;

@@ -51,7 +51,8 @@
             reverse: {
                 type: Boolean,
                 default: false
-            }
+            },
+            beforeResize: Function
         },
 
         data() {
@@ -74,6 +75,21 @@
 
         methods: {
             resizeDown(e) {
+                if (!this.beforeResize) {
+                    this.handleDown(e)
+                    return
+                }
+                const before = this.beforeResize();
+                if (before && before.then) {
+                    before.then(_ => {
+                        this.handleDown(e)
+                    });
+                } else {
+                    this.handleDown(e);
+                }
+            },
+
+            handleDown(e) {
                 this.mouseX = e.pageX || e.clientX + document.documentElement.scrollLeft;
                 this.mouseY = e.pageY || e.clientY + document.documentElement.scrollTop;
                 this.offset = {
@@ -88,6 +104,7 @@
                     event: 'down',
                 });
             },
+
             handleMove(e) {
                 if (!this.resizing) {
                     return;
@@ -118,7 +135,11 @@
                     offset: this.offset,
                 });
             },
+
             handleUp() {
+                if (!this.resizing) {
+                    return;
+                }
                 this.resizing = false;
                 this.tmpSize = undefined;
                 this.$emit('on-change', {
