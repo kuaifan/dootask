@@ -170,7 +170,7 @@ export default {
                 "v|vh|sv|svh"
             ],
             "XML": [
-                "xml|rdf|rss|wsdl|xslt|atom|mathml|mml|xul|xbl|xaml"
+                "xml|rdf|rss|wsdl|xslt|atom|mathml|mml|xul|xbl|xaml|plist"
             ],
             "YAML": [
                 "yaml|yml"
