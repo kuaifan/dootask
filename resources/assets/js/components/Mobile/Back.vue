@@ -97,10 +97,8 @@ export default {
         },
 
         appAndroidEvents() {
-            if (window && window.navigator
-                && /eeui/i.test(window.navigator.userAgent)
-                && /android/i.test(window.navigator.userAgent)) {
-                let eeui = requireModuleJs("eeui");
+            if (this.$isEEUiApp && $A.isAndroid()) {
+                const eeui = requireModuleJs("eeui");
                 eeui.setPageBackPressed({
                     pageName: 'firstPage',
                 }, _ => {

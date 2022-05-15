@@ -34,9 +34,10 @@
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
 
         .ql-editor {
-            padding: 4px 7px;
             font-size: 14px;
             max-height: 200px;
+            padding: 0;
+            margin: 4px 7px;
 
             img {
                 max-width: 150px;
