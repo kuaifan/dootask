@@ -687,7 +687,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/umeng/alias          13. 设置友盟别名
+     * @api {get} api/users/umeng/alias          14. 设置友盟别名
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
