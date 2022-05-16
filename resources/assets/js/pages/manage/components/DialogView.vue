@@ -318,6 +318,7 @@ export default {
                 const eeui = requireModuleJs("eeui");
                 eeui.openPage({
                     pageType: 'web',
+                    pageTitle: `${this.msgData.msg.name} (${$A.bytesToSize(this.msgData.msg.size)})`,
                     url: $A.apiUrl(`../#/single/file/msg/${this.msgData.id}?token=${this.userToken}`)
                 }, _ => {});
             } else {

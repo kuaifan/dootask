@@ -1267,6 +1267,7 @@ export default {
                 const eeui = requireModuleJs("eeui");
                 eeui.openPage({
                     pageType: 'web',
+                    pageTitle: `${file.name} (${$A.bytesToSize(file.size)})`,
                     url: $A.apiUrl(`../#/single/file/task/${file.id}?token=${this.userToken}`)
                 }, _ => {});
             } else {

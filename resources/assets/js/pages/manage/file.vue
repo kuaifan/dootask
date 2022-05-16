@@ -500,6 +500,9 @@ export default {
     },
 
     mounted() {
+        if (!this.tableMode && this.$isEEUiApp) {
+            this.tableMode = 'block';
+        }
         this.uploadAccept = this.uploadFormat.map(item => {
             return '.' + item
         }).join(",");

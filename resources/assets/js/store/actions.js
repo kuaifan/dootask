@@ -169,6 +169,9 @@ export default {
             }, () => {
                 // 失败
             });
+        } else if ($A.isEEUiApp) {
+            const eeui = requireModuleJs("eeui");
+            eeui.openWeb(url);
         } else {
             window.open(url)
         }
