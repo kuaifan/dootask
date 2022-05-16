@@ -203,7 +203,7 @@ export default {
                         const eeui = requireModuleJs("eeui");
                         eeui.openPage({
                             pageType: 'web',
-                            url: $A.apiUrl(`../single/file/${this.fileId}?history_id=${row.id}&history_at=${row.created_at}&token=${this.userToken}`)
+                            url: $A.apiUrl(`../#/single/file/${this.fileId}?history_id=${row.id}&history_at=${row.created_at}&token=${this.userToken}`)
                         }, _ => {});
                     } else {
                         window.open($A.apiUrl(`../single/file/${this.fileId}?history_id=${row.id}&history_at=${row.created_at}`))

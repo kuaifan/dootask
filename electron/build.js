@@ -98,6 +98,13 @@ function genericPublish({url, version, output}) {
 
 // 生成配置、编译应用
 function startBuild(data, publish) {
+    const systemInfo = {
+        title: data.name,
+        version: config.version,
+        origin: "./",
+        homeUrl:  utils.formatUrl(data.url),
+        apiUrl:  utils.formatUrl(data.url) + "api/",
+    }
     // information
     if (data.id === 'app') {
         console.log("Name: " + data.name);
@@ -108,16 +115,9 @@ function startBuild(data, publish) {
         console.log("Version: " + config.version);
         console.log("Platform: " + data.platform);
         console.log("Publish: " + (publish ? 'Yes' : 'No'));
+        // drawio
+        cloneDrawio(systemInfo)
     }
-    let systemInfo = {
-        title: data.name,
-        version: config.version,
-        origin: "./",
-        homeUrl:  utils.formatUrl(data.url),
-        apiUrl:  utils.formatUrl(data.url) + "api/",
-    }
-    // drawio
-    cloneDrawio(systemInfo)
     // config.js
     fs.writeFileSync(electronDir + "/config.js", "window.systemInfo = " + JSON.stringify(systemInfo), 'utf8');
     fs.writeFileSync(nativeCachePath, utils.formatUrl(data.url));
@@ -128,7 +128,9 @@ function startBuild(data, publish) {
     indexString = indexString.replace(/<title>(.*?)<\/title>/g, `<title>${data.name}</title>`);
     fs.writeFileSync(indexFile, indexString, 'utf8');
     if (data.id === 'app') {
-        fse.copySync(electronDir, path.resolve(__dirname, "../resources/mobile/src/public"))
+        const publicDir = path.resolve(__dirname, "../resources/mobile/src/public");
+        fse.removeSync(publicDir)
+        fse.copySync(electronDir, publicDir)
         return;
     }
     // package.json Backup

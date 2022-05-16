@@ -32,20 +32,13 @@ export default {
     },
 
     created() {
+        if ($A.urlParameter('token')) {
+            this.$store.state.userToken = $A.urlParameter('token');
+        }
         this.electronEvents();
     },
 
     mounted() {
-        let hash = window.location.hash;
-        if (hash.indexOf("#") === 0) {
-            hash = hash.substr(1);
-            if (hash) {
-                this.$nextTick(() => {
-                    hash = $A.removeURLParameter(hash, 'token');
-                    this.goForward({path: hash});
-                });
-            }
-        }
         this.sessionStorage('/', 1);
         let pathname = window.location.pathname;
         if (pathname && this.sessionStorage(pathname) === 0) {

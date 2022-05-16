@@ -1,6 +1,17 @@
 <template>
-    <div class="mobile-tabbar">
-        <ul>
+    <div class="mobile-tabbar" :class="{'more-show': isMore}" @click="toggleRoute('more')">
+        <div @click.stop="" class="more-box">
+            <div class="tabbar-more-title">{{$L('更多')}}</div>
+            <ul>
+                <li v-for="item in navMore" @click="toggleRoute(item.name)" :class="{active: activeName === item.name}">
+                    <div class="more-item">
+                        <i class="taskfont" v-html="item.icon"></i>
+                        <div class="tabbar-title">{{$L(item.label)}}</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <ul @click.stop="">
             <li v-for="item in navList" @click="toggleRoute(item.name)" :class="{active: activeName === item.name}">
                 <i class="taskfont" v-html="item.icon"></i>
                 <div class="tabbar-title">{{$L(item.label)}}</div>
@@ -26,12 +37,19 @@ export default {
 
     data() {
         return {
+            isMore: false,
+
             navList: [
                 {icon: '&#xe736;', name: 'dashboard', label: '仪表盘'},
                 {icon: '&#xe732;', name: 'project', label: '项目'},
                 {icon: '&#xe71e;', name: 'dialog', label: '消息'},
                 {icon: '&#xe6b2;', name: 'contacts', label: '通讯录'},
-                {icon: '&#xe61a;', name: 'setting', label: '我的'},
+                {icon: '&#xe6e9;', name: 'more', label: '更多'},
+            ],
+            navMore: [
+                {icon: '&#xe6f5;', name: 'calendar', label: '日历'},
+                {icon: '&#xe6f3;', name: 'file', label: '文件'},
+                {icon: '&#xe67b;', name: 'setting', label: '设置'},
             ]
         };
     },
@@ -58,27 +76,6 @@ export default {
             return this.$route.name
         },
 
-        activeName() {
-            if (this.routeName === 'manage-dashboard') {
-                return 'dashboard';
-            }
-
-            if (this.routeName === 'manage-project' && !/^\d+$/.test(this.$route.params.projectId)) {
-                return 'project';
-            }
-            if (this.routeName === 'manage-messenger') {
-                if (this.$route.params.dialogId === 'contacts') {
-                    return 'contacts'
-                } else {
-                    return 'dialog'
-                }
-            }
-            if (this.routeName === 'manage-setting') {
-                return 'setting';
-            }
-            return ''
-        },
-
         msgUnreadMention() {
             let num = 0;
             let mention = 0;
@@ -100,12 +97,38 @@ export default {
             }
             return String(num);
         },
+
+        activeName() {
+            if (this.isMore || ['manage-calendar', 'manage-file', 'manage-setting'].includes(this.routeName)) {
+                return 'more';
+            }
+
+            if (this.routeName === 'manage-dashboard') {
+                return 'dashboard';
+            }
+
+            if (this.routeName === 'manage-project' && !/^\d+$/.test(this.$route.params.projectId)) {
+                return 'project';
+            }
+            if (this.routeName === 'manage-messenger') {
+                if (this.$route.params.dialogId === 'contacts') {
+                    return 'contacts'
+                } else {
+                    return 'dialog'
+                }
+            }
+            return ''
+        },
     },
 
     methods: {
         toggleRoute(path) {
             let location;
             switch (path) {
+                case 'more':
+                    this.isMore = !this.isMore;
+                    return;
+
                 case 'project':
                     location = {name: 'manage-project', params: {projectId: 'all'}};
                     break;
@@ -122,6 +145,7 @@ export default {
                     location = {name: 'manage-' + path};
                     break;
             }
+            this.isMore = false;
             this.goForward(location);
         },
     },

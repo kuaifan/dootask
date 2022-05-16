@@ -38,6 +38,11 @@ export default [
                         component: () => import('./pages/manage/setting/personal.vue'),
                     },
                     {
+                        name: 'manage-setting-language',
+                        path: 'language',
+                        component: () => import('./pages/manage/setting/language.vue'),
+                    },
+                    {
                         name: 'manage-setting-password',
                         path: 'password',
                         component: () => import('./pages/manage/setting/password.vue'),

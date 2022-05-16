@@ -439,6 +439,11 @@ body {
             }
         }
     }
+
+    .ivu-tabs-nav-next,
+    .ivu-tabs-nav-prev {
+        padding-top: 2px;
+    }
 }
 
 *[hidden="hidden"] {

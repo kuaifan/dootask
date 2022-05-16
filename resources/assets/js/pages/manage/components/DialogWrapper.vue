@@ -356,15 +356,12 @@ export default {
                 msgText = this.msgText;
                 this.msgText = '';
             }
-            if (msgText == '' && this.isDesktop) {
+            if (msgText == '') {
                 this.$refs.input.focus();
                 return;
             }
             msgText = msgText.replace(/<\/span> <\/p>$/, "</span></p>")
             //
-            if (!this.isDesktop) {
-                this.$refs.input.blur();
-            }
             this.onToBottom();
             this.onActive();
             //
@@ -451,9 +448,6 @@ export default {
         chatFile(type, file) {
             switch (type) {
                 case 'progress':
-                    if (!this.isDesktop) {
-                        this.$refs.input.blur();
-                    }
                     this.onToBottom();
                     this.onActive();
                     //

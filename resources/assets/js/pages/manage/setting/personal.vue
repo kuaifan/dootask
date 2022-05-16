@@ -9,10 +9,10 @@
                 <Input v-model="userInfo.email" disabled></Input>
             </FormItem>
             <FormItem :label="$L('昵称')" prop="nickname">
-                <Input v-model="formData.nickname" :maxlength="20"></Input>
+                <Input v-model="formData.nickname" :maxlength="20" :placeholder="$L('请输入昵称')"></Input>
             </FormItem>
             <FormItem :label="$L('职位/职称')" prop="profession">
-                <Input v-model="formData.profession" :maxlength="20"></Input>
+                <Input v-model="formData.profession" :maxlength="20" :placeholder="$L('请输入职位/职称')"></Input>
             </FormItem>
         </Form>
         <div class="setting-footer">

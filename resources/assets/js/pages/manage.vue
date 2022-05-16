@@ -633,16 +633,13 @@ export default {
         },
 
         showMobileTabbar() {
-            if (this.routeName === 'manage-dashboard') {
-                return true;
-            }
             if (this.routeName === 'manage-project' && !/^\d+$/.test(this.$route.params.projectId)) {
                 return true;
             }
             if (this.routeName === 'manage-messenger' && !/^\d+$/.test(this.$route.params.dialogId)) {
                 return true;
             }
-            return this.routeName === 'manage-setting';
+            return ['manage-dashboard', 'manage-calendar', 'manage-file', 'manage-setting'].includes(this.routeName)
         },
     },
 

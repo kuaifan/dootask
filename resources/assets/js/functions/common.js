@@ -632,7 +632,7 @@
         },
 
         urlParameterAll() {
-            let search = window.location.search || "";
+            let search = window.location.search || window.location.hash || "";
             let arr = [];
             if (this.strExists(search, "?")) {
                 arr = this.getMiddle(search, "?").split("&");
