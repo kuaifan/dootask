@@ -8,7 +8,9 @@
     right: 0;
     z-index: 99;
 
-    > ul {
+    .tabbar-box {
+        position: relative;
+        z-index: 3;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -16,7 +18,7 @@
         margin: 0;
         height: 60px;
         background-color: #f8f8f8;
-        box-shadow: 0 0 2px rgba(28, 34, 43, 0.15);
+        box-shadow: 0 0 1px rgba(28, 34, 43, 0.15);
 
         > li {
             flex: 1;
@@ -58,27 +60,40 @@
         }
     }
 
+    .more-mask {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1;
+        background-color: rgba(0, 0, 0, 0.15);
+    }
+
     .more-box {
-        display: none;
+        position: relative;
+        z-index: 2;
+        display: block;
         margin-bottom: -2px;
         border-radius: 16px 16px 0 0;
-        background-color: rgba(250, 250, 250, 0.98);
+        padding-bottom: 16px;
+        background-color: #ffffff;
         border-top: 1px solid #f1f1f1;
 
         .tabbar-more-title {
             font-size: 18px;
             font-weight: 500;
-            padding: 14px 14px 0;
+            padding: 16px 16px 36px;
         }
 
         > ul {
-            padding: 36px 12px 16px;
+            padding: 0 12px;
 
             > li {
                 list-style: none;
                 display: inline-block;
                 width: 25%;
-                margin-bottom: 20px;
+                margin-bottom: 28px;
 
                 .more-item {
                     display: flex;
@@ -92,9 +107,9 @@
                         justify-content: center;
                         width: 56px;
                         height: 56px;
-                        font-size: 26px;
-                        color: #0bc037;
-                        background-color: #f1f1f1;
+                        font-size: 25px;
+                        color: $primary-color;
+                        background-color: rgba($primary-color, 0.08);
                         border-radius: 12px;
                     }
 
@@ -107,19 +122,6 @@
                     }
                 }
             }
-        }
-    }
-
-    &.more-show {
-        top: 0;
-        background-color: rgba(0, 0, 0, 0.15);
-
-        > ul {
-            box-shadow: 0 0 1px rgba(28, 34, 43, 0.15);
-        }
-
-        .more-box {
-            display: block;
         }
     }
 }
@@ -140,6 +142,33 @@
     &.show-back {
         left: 0;
     }
+}
+
+.mobile-fade-enter-active {
+    transition: all 0.2s ease;
+}
+
+.mobile-fade-leave-active {
+    transition: all 0.2s ease;
+}
+
+.mobile-fade-enter,
+.mobile-fade-leave-to {
+    opacity: 0;
+}
+
+.mobile-slide-enter-active {
+    transition: all 0.2s ease;
+}
+
+.mobile-slide-leave-active {
+    transition: all 0.2s ease;
+}
+
+.mobile-slide-enter,
+.mobile-slide-leave-to {
+    transform: translate(0, 15%) scale(0.98);
+    opacity: 0;
 }
 
 @media (max-width: 640px) {

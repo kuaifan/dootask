@@ -1,17 +1,22 @@
 <template>
-    <div class="mobile-tabbar" :class="{'more-show': isMore}" @click="toggleRoute('more')">
-        <div @click.stop="" class="more-box">
-            <div class="tabbar-more-title">{{$L('更多')}}</div>
-            <ul>
-                <li v-for="item in navMore" @click="toggleRoute(item.name)" :class="{active: activeName === item.name}">
-                    <div class="more-item">
-                        <i class="taskfont" v-html="item.icon"></i>
-                        <div class="tabbar-title">{{$L(item.label)}}</div>
-                    </div>
-                </li>
-            </ul>
-        </div>
-        <ul @click.stop="">
+    <div class="mobile-tabbar">
+        <transition name="mobile-fade">
+            <div v-if="isMore" class="more-mask" @click="toggleRoute('more')"></div>
+        </transition>
+        <transition name="mobile-slide">
+            <div v-if="isMore" class="more-box">
+                <div class="tabbar-more-title">{{$L('更多')}}</div>
+                <ul v-for="list in navMore">
+                    <li v-for="item in list" @click="toggleRoute(item.name)" :class="{active: activeName === item.name}">
+                        <div class="more-item">
+                            <i class="taskfont" v-html="item.icon"></i>
+                            <div class="tabbar-title">{{$L(item.label)}}</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </transition>
+        <ul class="tabbar-box">
             <li v-for="item in navList" @click="toggleRoute(item.name)" :class="{active: activeName === item.name}">
                 <i class="taskfont" v-html="item.icon"></i>
                 <div class="tabbar-title">{{$L(item.label)}}</div>
@@ -40,17 +45,23 @@ export default {
             isMore: false,
 
             navList: [
-                {icon: '&#xe736;', name: 'dashboard', label: '仪表盘'},
-                {icon: '&#xe732;', name: 'project', label: '项目'},
-                {icon: '&#xe71e;', name: 'dialog', label: '消息'},
+                {icon: '&#xe6fb;', name: 'dashboard', label: '仪表盘'},
+                {icon: '&#xe6fa;', name: 'project', label: '项目'},
+                {icon: '&#xe6eb;', name: 'dialog', label: '消息'},
                 {icon: '&#xe6b2;', name: 'contacts', label: '通讯录'},
                 {icon: '&#xe6e9;', name: 'more', label: '更多'},
             ],
             navMore: [
-                {icon: '&#xe6f5;', name: 'calendar', label: '日历'},
-                {icon: '&#xe6f3;', name: 'file', label: '文件'},
-                {icon: '&#xe67b;', name: 'setting', label: '设置'},
-            ]
+                [
+                    {icon: '&#xe6f5;', name: 'calendar', label: '日历'},
+                    {icon: '&#xe6f3;', name: 'file', label: '文件'},
+                    {icon: '&#xe67b;', name: 'setting', label: '设置'},
+                ],
+                [
+                    {icon: '&#xe7b8;', name: 'addTask', label: '添加任务'},
+                    {icon: '&#xe7b9;', name: 'addProject', label: '添加项目'},
+                ]
+            ],
         };
     },
 
@@ -123,10 +134,19 @@ export default {
 
     methods: {
         toggleRoute(path) {
+            this.$emit("on-click", path)
+            if (path != 'more') {
+                this.isMore = false
+            }
+            //
             let location;
             switch (path) {
                 case 'more':
                     this.isMore = !this.isMore;
+                    return;
+
+                case 'addTask':
+                case 'addProject':
                     return;
 
                 case 'project':
@@ -145,7 +165,6 @@ export default {
                     location = {name: 'manage-' + path};
                     break;
             }
-            this.isMore = false;
             this.goForward(location);
         },
     },

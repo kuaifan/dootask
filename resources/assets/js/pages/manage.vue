@@ -354,7 +354,7 @@
         </DragBallComponent>
 
         <!--移动端选项卡-->
-        <MobileTabbar v-if="showMobileTabbar"/>
+        <MobileTabbar v-if="showMobileTabbar" @on-click="onTabbarClick"/>
         <MobileBack :showTabbar="showMobileTabbar"/>
     </div>
 </template>
@@ -1015,6 +1015,17 @@ export default {
             }).finally(_ => {
                 this.exportLoadIng--;
             });
+        },
+
+        onTabbarClick(act) {
+            switch (act) {
+                case 'addTask':
+                    this.onAddTask(0)
+                    break;
+                case 'addProject':
+                    this.onAddShow()
+                    break;
+            }
         },
 
         notificationInit() {
