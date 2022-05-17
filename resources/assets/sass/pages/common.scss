@@ -245,6 +245,11 @@ body {
 
             .ivu-modal-body {
                 padding: 16px 32px 2px;
+                overscroll-behavior: none;
+
+                * {
+                    overscroll-behavior: none;
+                }
             }
 
             .ivu-modal-footer {
