@@ -195,8 +195,8 @@ class EmailNoticeTask extends AbstractTask
                 continue;
             }
             $setting = Base::setting('emailSetting');
-            $msgType = $dialogType === "group" ? "群聊" : "个人";
-            $subject = env('APP_NAME') . " 未读{$msgType}消息提醒";
+            $msgType = $dialogType === "group" ? "群聊" : "成员";
+            $subject = null;
             $content = view('email.unread', [
                 'type' => 'head',
                 'nickname' => $user->nickname,
@@ -225,6 +225,14 @@ class EmailNoticeTask extends AbstractTask
                         } else {
                             $dialogName = $item->webSocketDialog?->getGroupName();
                         }
+                    }
+                }
+                if ($subject === null) {
+                    $count = count($lists);
+                    if ($count > 1) {
+                        $subject = "来自{$count}个{$msgType}未读消息提醒";
+                    } else {
+                        $subject = "来自{$dialogName}未读消息提醒";
                     }
                 }
                 $content .= view('email.unread', [
