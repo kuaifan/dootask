@@ -181,28 +181,12 @@ if (["dev"].includes(argv[2])) {
         console.log("mobile directory does not exist!");
         process.exit()
     }
-    let urlChoices = [];
-    Array.from(new Set(config.app.map(item => item.url))).forEach(url => {
-        urlChoices.push({
-            name: url,
-            value: url
-        })
-    })
-    inquirer.prompt([
-        {
-            type: 'list',
-            name: 'url',
-            message: "选择网址",
-            choices: urlChoices
-        }
-    ]).then(answers => {
-        startBuild({
-            name: 'App',
-            id: 'app',
-            platform: '',
-            url: answers.url,
-        }, false)
-    });
+    startBuild({
+        name: 'App',
+        id: 'app',
+        platform: '',
+        url: 'http://public/',
+    }, false)
 } else if (platform.includes(argv[2])) {
     // 自动编译
     let data = config.app.find(({id, publish}) => id === process.env.APPID && publish.provider === process.env.PROVIDER);

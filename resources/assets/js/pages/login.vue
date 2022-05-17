@@ -159,11 +159,7 @@ export default {
 
         welcomeTitle() {
             let title = window.systemInfo.title || "DooTask";
-            if (title == "PublicDooTask") {
-                return "Public DooTask"
-            } else {
-                return "Welcome " + title
-            }
+            return "Welcome " + title
         },
 
         loginText() {
@@ -249,13 +245,15 @@ export default {
         },
 
         inputServerUrl() {
+            let value = $A.rightDelete(this.cacheServerUrl, "/api/");
+            value = $A.leftDelete(value, "http://");
             $A.modalInput({
                 title: "使用 SSO 登录",
-                value: this.cacheServerUrl,
+                value,
                 placeholder: "请输入服务器地址",
                 onOk: (value, cb) => {
                     if (value) {
-                        this.inputServerChack(value).then(cb)
+                        this.inputServerChack($A.trim(value)).then(cb)
                     } else {
                         this.clearServerUrl();
                     }
