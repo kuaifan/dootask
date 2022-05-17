@@ -430,7 +430,7 @@ export default {
 
         scrollIntoActive() {
             this.$nextTick(() => {
-                if (this.$refs.list) {
+                if (this.$isDesktop && this.$refs.list) {
                     let active = this.$refs.list.querySelector(".active")
                     if (active) {
                         $A.scrollToView(active, {
