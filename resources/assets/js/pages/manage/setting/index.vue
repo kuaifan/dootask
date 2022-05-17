@@ -55,7 +55,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userInfo', 'userIsAdmin', 'clientNewVersion', 'isDesktop']),
+        ...mapState(['userInfo', 'userIsAdmin', 'clientNewVersion']),
 
         routeName() {
             return this.$route.name
@@ -71,7 +71,7 @@ export default {
                 {path: 'language', name: '语言设置'},
                 {path: 'password', name: '密码设置'},
             ]
-            if (!this.isDesktop) {
+            if (!this.$isDesktop) {
                 menu.push({path: 'clearCache', name: '清除缓存'})
             }
             if (this.userIsAdmin) {
@@ -103,7 +103,7 @@ export default {
     watch: {
         routeName: {
             handler(name) {
-                if (name === 'manage-setting' && this.isDesktop) {
+                if (name === 'manage-setting' && this.$isDesktop) {
                     this.goForward({name: 'manage-setting-personal'}, true);
                 }
             },
@@ -149,7 +149,7 @@ export default {
 
         classNameRoute(path, divided) {
             return {
-                "active": this.isDesktop && this.routeName === `manage-setting-${path}`,
+                "active": this.$isDesktop && this.routeName === `manage-setting-${path}`,
                 "divided": !!divided
             };
         },

@@ -8,16 +8,16 @@
                 v-model="showEmoji"
                 :visibleArrow="false"
                 popperClass="chat-input-emoji-popover">
-                <ETooltip slot="reference" ref="emojiTip" :disabled="showEmoji" placement="top" :content="$L('表情')">
+                <ETooltip slot="reference" ref="emojiTip" :disabled="!$isDesktop || showEmoji" placement="top" :content="$L('表情')">
                     <i class="taskfont" @click="onToolbar('emoji')">&#xe7ad;</i>
                 </ETooltip>
                 <ChatEmoji @on-select="onSelectEmoji"/>
             </EPopover>
 
-            <ETooltip placement="top" :content="$L('选择会员')">
+            <ETooltip placement="top" :disabled="!$isDesktop" :content="$L('选择会员')">
                 <i class="taskfont" @click="onToolbar('user')">&#xe78f;</i>
             </ETooltip>
-            <ETooltip placement="top" :content="$L('选择任务')">
+            <ETooltip placement="top" :disabled="!$isDesktop" :content="$L('选择任务')">
                 <i class="taskfont" @click="onToolbar('task')">&#xe7d6;</i>
             </ETooltip>
 
@@ -25,7 +25,7 @@
                 v-model="showMore"
                 :visibleArrow="false"
                 popperClass="chat-input-more-popover">
-                <ETooltip slot="reference" ref="moreTip" :disabled="showMore" placement="top" :content="$L('展开')">
+                <ETooltip slot="reference" ref="moreTip" :disabled="!$isDesktop || showMore" placement="top" :content="$L('展开')">
                     <i class="taskfont">&#xe790;</i>
                 </ETooltip>
                 <div class="chat-input-popover-item" @click="onToolbar('image')">
@@ -41,7 +41,7 @@
             <div class="toolbar-spacing"></div>
 
             <Loading v-if="loading"/>
-            <ETooltip v-else placement="top" :content="$L('发送')"><Icon :class="[value ? '' : 'disabled']" type="md-send" @click="send"/></ETooltip>
+            <ETooltip v-else placement="top" :disabled="!$isDesktop" :content="$L('发送')"><Icon :class="[value ? '' : 'disabled']" type="md-send" @click="send"/></ETooltip>
 
             <slot name="toolbarAfter"/>
         </div>

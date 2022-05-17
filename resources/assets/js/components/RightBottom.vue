@@ -84,10 +84,6 @@ export default {
     },
 
     computed: {
-        ...mapState([
-            'isDesktop',
-        ]),
-
         isSoftware() {
             return this.$Electron || this.$isEEUiApp;
         },
@@ -97,7 +93,7 @@ export default {
         },
 
         showDown() {
-            return this.isDesktop && ['login', 'index', 'manage-dashboard'].includes(this.$route.name)
+            return this.$isDesktop && ['login', 'index', 'manage-dashboard'].includes(this.$route.name)
         }
     },
 

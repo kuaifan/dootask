@@ -109,6 +109,7 @@ Vue.prototype.$Platform = "web";
 Vue.prototype.$isMainElectron = false;
 Vue.prototype.$isSubElectron = false;
 Vue.prototype.$isEEUiApp = isEEUiApp;
+Vue.prototype.$isDesktop = $A.isDesktop();
 if (isElectron) {
     Vue.prototype.$Electron = electron;
     Vue.prototype.$Platform = /macintosh|mac os x/i.test(navigator.userAgent) ? "mac" : "win";
@@ -141,6 +142,7 @@ $A.Platform = app.$Platform;
 $A.isMainElectron = app.$isMainElectron;
 $A.isSubElectron = app.$isSubElectron;
 $A.isEEUiApp = app.$isEEUiApp;
+$A.isDesktop = app.$isDesktop;
 $A.execMainDispatch = (action, data) => {
     if ($A.isSubElectron) {
         $A.Electron.sendMessage('sendForwardMain', {

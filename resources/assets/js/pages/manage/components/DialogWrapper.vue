@@ -42,11 +42,16 @@
                 </div>
 
                 <template v-if="dialogData.type === 'group'">
-                    <ETooltip v-if="dialogData.group_type === 'user'" placement="top" :openDelay="600" :content="$L('群设置')">
+                    <ETooltip
+                        v-if="dialogData.group_type === 'user'"
+                        placement="top"
+                        :disabled="!$isDesktop"
+                        :openDelay="600"
+                        :content="$L('群设置')">
                         <i class="taskfont dialog-create" @click="groupInfoShow = true">&#xe6e9;</i>
                     </ETooltip>
                 </template>
-                <ETooltip v-else-if="dialogData.type === 'user'" placement="top" :content="$L('创建群组')">
+                <ETooltip v-else-if="dialogData.type === 'user'" placement="top" :disabled="!$isDesktop" :content="$L('创建群组')">
                     <i class="taskfont dialog-create" @click="openCreateGroup">&#xe646;</i>
                 </ETooltip>
             </div>
@@ -220,7 +225,6 @@ export default {
 
     computed: {
         ...mapState([
-            'isDesktop',
             'userId',
             'cacheDialogs',
             'dialogMsgs',

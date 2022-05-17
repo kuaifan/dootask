@@ -120,7 +120,7 @@
                         </div>
                         <Button slot="reference" :loading="ownerLoad > 0" class="pick" type="primary">{{$L('我要领取任务')}}</Button>
                     </EPopover>
-                    <ETooltip v-if="$Electron" :content="$L('新窗口打开')">
+                    <ETooltip v-if="$Electron" :disabled="!$isDesktop" :content="$L('新窗口打开')">
                         <i class="taskfont open" @click="openNewWin">&#xe776;</i>
                     </ETooltip>
                     <div class="menu">

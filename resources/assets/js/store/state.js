@@ -1,7 +1,4 @@
 const stateData = {
-    // 是否桌面端
-    isDesktop: $A.isDesktop(),
-
     // 浏览器宽高
     windowWidth: window.innerWidth,
     windowHeight: window.innerHeight,

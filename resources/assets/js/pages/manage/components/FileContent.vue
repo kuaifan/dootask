@@ -56,14 +56,14 @@
                 </Dropdown>
                 <template v-if="!file.only_view">
                     <div class="header-icons">
-                        <ETooltip :content="$L('文件链接')">
+                        <ETooltip :disabled="!$isDesktop" :content="$L('文件链接')">
                             <div class="header-icon" @click="handleClick('link')"><i class="taskfont">&#xe785;</i></div>
                         </ETooltip>
                         <EPopover v-model="historyShow" trigger="click">
                             <div class="file-content-history">
                                 <FileHistory :value="historyShow" :file="file" @on-restore="onRestoreHistory"/>
                             </div>
-                            <ETooltip slot="reference" ref="historyTip" :disabled="historyShow" :content="$L('历史版本')">
+                            <ETooltip slot="reference" ref="historyTip" :disabled="!$isDesktop || historyShow" :content="$L('历史版本')">
                                 <div class="header-icon"><i class="taskfont">&#xe71d;</i></div>
                             </ETooltip>
                         </EPopover>

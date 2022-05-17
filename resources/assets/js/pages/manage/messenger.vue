@@ -159,7 +159,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'cacheDialogs', 'isDesktop']),
+        ...mapState(['userId', 'cacheDialogs']),
 
         dialogId() {
             const {dialogId} = this.$route.params;
@@ -313,7 +313,7 @@ export default {
         },
 
         openContacts(user) {
-            if (this.isDesktop) {
+            if (this.$isDesktop) {
                 this.tabActive = 'dialog';
             }
             this.$store.dispatch("openDialogUserid", user.userid).then(({data}) => {
