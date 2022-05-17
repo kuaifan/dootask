@@ -1085,6 +1085,12 @@ export default {
      * @returns {Promise<unknown>}
      */
     getTasks({state, dispatch}, data) {
+        let taskData = [];
+        if ($A.isArray(data.taskData)) {
+            taskData = data.taskData;
+            delete data.taskData;
+        }
+        //
         return new Promise(function (resolve, reject) {
             if (state.userId === 0) {
                 state.cacheTasks = [];
@@ -1104,11 +1110,12 @@ export default {
                 }
                 //
                 const resData = result.data;
-                dispatch("saveTask", resData.data);
+                taskData.push(...resData.data);
                 //
                 if (resData.next_page_url) {
                     const nextData = Object.assign(data, {
                         page: resData.current_page + 1,
+                        taskData,
                     });
                     if (resData.current_page % 5 === 0) {
                         $A.modalWarning({
@@ -1117,6 +1124,7 @@ export default {
                                 dispatch("getTasks", nextData).then(resolve).catch(reject)
                             },
                             onCancel: () => {
+                                dispatch("saveTask", taskData);
                                 resolve()
                             }
                         });
@@ -1124,6 +1132,7 @@ export default {
                         dispatch("getTasks", nextData).then(resolve).catch(reject)
                     }
                 } else {
+                    dispatch("saveTask", taskData);
                     resolve()
                 }
             }).catch(e => {
