@@ -73,29 +73,32 @@ class EmailNoticeTask extends AbstractTask
         if ($setting['notice_msg'] === 'open') {
             $userMinute = intval($setting['msg_unread_user_minute']);
             $groupMinute = intval($setting['msg_unread_group_minute']);
+            \DB::statement("SET SQL_MODE=''");
+            $builder = WebSocketDialogMsg::select(['web_socket_dialog_msgs.*', 'r.id as r_id', 'r.userid as r_userid'])
+                ->join('web_socket_dialog_msg_reads as r', 'web_socket_dialog_msgs.id', '=', 'r.msg_id')
+                ->whereNull("r.read_at")
+                ->where("r.email", 0);
             if ($userMinute > -1) {
-                WebSocketDialogMsg::select(['web_socket_dialog_msgs.*', 'r.id as r_id', 'r.userid as r_userid'])
-                    ->join('web_socket_dialog_msg_reads as r', 'web_socket_dialog_msgs.id', '=', 'r.msg_id')
+                $builder->clone()
                     ->where("web_socket_dialog_msgs.dialog_type", "user")
-                    ->where("r.email", 0)
-                    ->whereNull("r.read_at")
                     ->whereBetween("web_socket_dialog_msgs.created_at", [
                         Carbon::now()->subMinutes($userMinute + 10),
                         Carbon::now()->subMinutes($userMinute)
-                    ])->chunkById(100, function ($rows) {
+                    ])
+                    ->groupBy('r_userid')
+                    ->chunkById(100, function ($rows) {
                         $this->unreadMsgEmail($rows, "user");
                     });
             }
             if ($groupMinute > -1) {
-                WebSocketDialogMsg::select(['web_socket_dialog_msgs.*', 'r.id as r_id', 'r.userid as r_userid'])
-                    ->join('web_socket_dialog_msg_reads as r', 'web_socket_dialog_msgs.id', '=', 'r.msg_id')
+                $builder->clone()
                     ->where("web_socket_dialog_msgs.dialog_type", "group")
-                    ->where("r.email", 0)
-                    ->whereNull("r.read_at")
                     ->whereBetween("web_socket_dialog_msgs.created_at", [
                         Carbon::now()->subMinutes($groupMinute + 10),
                         Carbon::now()->subMinutes($groupMinute)
-                    ])->chunkById(100, function ($rows) {
+                    ])
+                    ->groupBy('r_userid')
+                    ->chunkById(100, function ($rows) {
                         $this->unreadMsgEmail($rows, "group");
                     });
             }
@@ -174,14 +177,21 @@ class EmailNoticeTask extends AbstractTask
     {
         $array = $rows->groupBy('r_userid');
         foreach ($array as $userid => $data) {
+            $data = WebSocketDialogMsg::select(['web_socket_dialog_msgs.*', 'r.id as r_id', 'r.userid as r_userid'])
+                ->join('web_socket_dialog_msg_reads as r', 'web_socket_dialog_msgs.id', '=', 'r.msg_id')
+                ->whereNull("r.read_at")
+                ->where("r.email", 0)
+                ->where("web_socket_dialog_msgs.dialog_type", $dialogType)
+                ->take(100)
+                ->get();
+            if (empty($data)) {
+                continue;
+            }
             $user = User::find($userid);
             if (empty($user)) {
                 continue;
             }
             if (!Base::isEmail($user->email)) {
-                continue;
-            }
-            if (count($data) === 0) {
                 continue;
             }
             $setting = Base::setting('emailSetting');
@@ -199,6 +209,7 @@ class EmailNoticeTask extends AbstractTask
                 $dialogId = 0;
                 $dialogName = null;
                 foreach ($items as $item) {
+                    $item->cancelAppend();
                     $item->userInfo = User::userid2basic($item->userid);
                     $item->preview = $item->previewMsg(true);
                     if (empty($dialogId)) {
@@ -212,7 +223,7 @@ class EmailNoticeTask extends AbstractTask
                                 $dialogName = $item->userInfo->nickname;
                             }
                         } else {
-                            $dialogName = $item->webSocketDialog?->name;
+                            $dialogName = $item->webSocketDialog?->getGroupName();
                         }
                     }
                 }
@@ -237,9 +248,9 @@ class EmailNoticeTask extends AbstractTask
             } catch (\Throwable $e) {
                 info("unreadMsgEmail: " . $e->getMessage());
             }
+            WebSocketDialogMsgRead::whereIn('id', $data->pluck('r_id'))->update([
+                'email' => 1
+            ]);
         }
-        WebSocketDialogMsgRead::whereIn('id', $rows->pluck('r_id'))->update([
-            'email' => 1
-        ]);
     }
 }
