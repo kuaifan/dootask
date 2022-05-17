@@ -58,8 +58,8 @@ export default {
                     {icon: '&#xe67b;', name: 'setting', label: '设置'},
                 ],
                 [
+                    {icon: '&#xe7b9;', name: 'addProject', label: '创建项目'},
                     {icon: '&#xe7b8;', name: 'addTask', label: '添加任务'},
-                    {icon: '&#xe7b9;', name: 'addProject', label: '添加项目'},
                 ]
             ],
         };

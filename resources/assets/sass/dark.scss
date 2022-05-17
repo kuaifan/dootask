@@ -96,19 +96,17 @@ body.dark-mode-reverse {
     }
 
     .project-panel {
-        .project-head {
-            .project-titbox {
-                .project-title {
-                    .top-text {
-                        color: #000000;
-                    }
+        .project-titbox {
+            .project-title {
+                .top-text {
+                    color: #000000;
                 }
-                .project-icons {
-                    > li {
-                        &.project-icon {
-                            &.active {
-                                color: #000000;
-                            }
+            }
+            .project-icons {
+                > li {
+                    &.project-icon {
+                        &.active {
+                            color: #000000;
                         }
                     }
                 }

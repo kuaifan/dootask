@@ -1,96 +1,94 @@
 <template>
     <div class="project-panel" :class="[tabTypeActive]">
         <PageTitle :title="projectData.name"/>
-        <div class="project-head">
-            <div class="project-titbox">
-                <div class="project-title">
-                    <div class="project-back" @click="goBack">
-                        <i class="taskfont">&#xe72d;</i>
-                    </div>
-                    <h1>{{projectData.name}}</h1>
-                    <label v-if="projectData.top_at" class="top-text">{{$L('置顶')}}</label>
-                    <div v-if="loading" class="project-load"><Loading/></div>
+        <div class="project-titbox">
+            <div class="project-title">
+                <div class="project-back" @click="goBack">
+                    <i class="taskfont">&#xe72d;</i>
                 </div>
-                <ul class="project-icons">
-                    <li class="project-avatar" :class="{'cursor-default': projectData.owner_userid !== userId}" @click="projectDropdown('user')">
-                        <ul>
-                            <li>
-                                <UserAvatar :userid="projectData.owner_userid" :size="36" :borderWitdh="2" :openDelay="0">
-                                    <p>{{$L('项目负责人')}}</p>
-                                </UserAvatar>
-                                <Badge v-if="(windowWidth <= 980 || projectData.cacheParameter.chat) && projectUser.length > 0" type="normal" :count="projectData.project_user.length"/>
-                            </li>
-                            <template v-if="!(windowWidth <= 980 || projectData.cacheParameter.chat) && projectUser.length > 0" v-for="item in projectUser">
-                                <li v-if="item.userid === -1" class="more">
-                                    <ETooltip :disabled="!$isDesktop" :content="$L('共' + (projectData.project_user.length) + '个成员')">
-                                        <Icon type="ios-more"/>
-                                    </ETooltip>
-                                </li>
-                                <li v-else>
-                                    <UserAvatar :userid="item.userid" :size="36" :borderWitdh="2" :openDelay="0"/>
-                                </li>
-                            </template>
-                        </ul>
-                    </li>
-                    <li class="project-icon" @click="addTaskOpen(0)">
-                        <ETooltip :disabled="!$isDesktop" :content="$L('添加任务')">
-                            <Icon class="menu-icon" type="md-add" />
-                        </ETooltip>
-                    </li>
-                    <li :class="['project-icon', searchText!='' ? 'active' : '']">
-                        <Tooltip :always="searchText!=''" @on-popper-show="searchFocus" theme="light" :rawIndex="10">
-                            <Icon class="menu-icon" type="ios-search" @click="searchFocus" />
-                            <div slot="content">
-                                <Input v-model="searchText" ref="searchInput" :placeholder="$L('名称、描述...')" class="search-input" clearable/>
-                            </div>
-                        </Tooltip>
-                    </li>
-                    <li :class="['project-icon', projectData.cacheParameter.chat ? 'active' : '']" @click="toggleParameter('chat')">
-                        <Icon class="menu-icon" type="ios-chatbubbles" />
-                        <Badge class="menu-badge" :count="msgUnread"></Badge>
-                    </li>
-                    <li class="project-icon">
-                        <EDropdown @command="projectDropdown" trigger="click" transfer>
-                            <Icon class="menu-icon" type="ios-more" />
-                            <EDropdownMenu v-if="projectData.owner_userid === userId" slot="dropdown">
-                                <EDropdownItem command="setting">{{$L('项目设置')}}</EDropdownItem>
-                                <EDropdownItem command="workflow">{{$L('工作流设置')}}</EDropdownItem>
-                                <EDropdownItem command="user" divided>{{$L('成员管理')}}</EDropdownItem>
-                                <EDropdownItem command="invite">{{$L('邀请链接')}}</EDropdownItem>
-                                <EDropdownItem command="log" divided>{{$L('项目动态')}}</EDropdownItem>
-                                <EDropdownItem command="archived_task">{{$L('已归档任务')}}</EDropdownItem>
-                                <EDropdownItem command="deleted_task">{{$L('已删除任务')}}</EDropdownItem>
-                                <EDropdownItem command="transfer" divided>{{$L('移交项目')}}</EDropdownItem>
-                                <EDropdownItem command="archived">{{$L('归档项目')}}</EDropdownItem>
-                                <EDropdownItem command="delete" style="color:#f40">{{$L('删除项目')}}</EDropdownItem>
-                            </EDropdownMenu>
-                            <EDropdownMenu v-else slot="dropdown">
-                                <EDropdownItem command="log">{{$L('项目动态')}}</EDropdownItem>
-                                <EDropdownItem command="archived_task">{{$L('已归档任务')}}</EDropdownItem>
-                                <EDropdownItem command="deleted_task">{{$L('已删除任务')}}</EDropdownItem>
-                                <EDropdownItem command="exit" divided style="color:#f40">{{$L('退出项目')}}</EDropdownItem>
-                            </EDropdownMenu>
-                        </EDropdown>
-                    </li>
-                </ul>
+                <h1>{{projectData.name}}</h1>
+                <label v-if="projectData.top_at" class="top-text">{{$L('置顶')}}</label>
+                <div v-if="loading" class="project-load"><Loading/></div>
             </div>
-            <div class="project-subbox clearfix">
-                <div class="project-subtitle" @click="showDesc">{{projectData.desc}}</div>
-                <div class="project-switch">
-                    <div v-if="completedCount > 0" class="project-checkbox">
-                        <Checkbox :value="projectData.cacheParameter.completedTask" @on-change="toggleCompleted">{{$L('显示已完成')}}</Checkbox>
-                    </div>
-                    <div v-if="flowList.length > 0" class="project-select">
-                        <Cascader :data="flowData" @on-change="flowChange" transfer-class-name="project-panel-flow-cascader" transfer>
-                            <span :class="`project-flow ${flowInfo.status}`">{{ flowTitle }}</span>
-                        </Cascader>
-                    </div>
-                    <div class="project-switch-button">
-                        <div class="slider" :style="tabTypeStyle"></div>
-                        <div @click="tabTypeChange('column')" :class="{ 'active': tabTypeActive === 'column'}"><i class="taskfont">&#xe60c;</i></div>
-                        <div @click="tabTypeChange('table')" :class="{ 'active': tabTypeActive === 'table'}"><i class="taskfont">&#xe66a;</i></div>
-                        <div @click="tabTypeChange('gantt')" :class="{ 'active': tabTypeActive === 'gantt'}"><i class="taskfont">&#xe797;</i></div>
-                    </div>
+            <ul class="project-icons">
+                <li class="project-avatar" :class="{'cursor-default': projectData.owner_userid !== userId}" @click="projectDropdown('user')">
+                    <ul>
+                        <li>
+                            <UserAvatar :userid="projectData.owner_userid" :size="36" :borderWitdh="2" :openDelay="0">
+                                <p>{{$L('项目负责人')}}</p>
+                            </UserAvatar>
+                            <Badge v-if="(windowWidth <= 980 || projectData.cacheParameter.chat) && projectUser.length > 0" type="normal" :count="projectData.project_user.length"/>
+                        </li>
+                        <template v-if="!(windowWidth <= 980 || projectData.cacheParameter.chat) && projectUser.length > 0" v-for="item in projectUser">
+                            <li v-if="item.userid === -1" class="more">
+                                <ETooltip :disabled="!$isDesktop" :content="$L('共' + (projectData.project_user.length) + '个成员')">
+                                    <Icon type="ios-more"/>
+                                </ETooltip>
+                            </li>
+                            <li v-else>
+                                <UserAvatar :userid="item.userid" :size="36" :borderWitdh="2" :openDelay="0"/>
+                            </li>
+                        </template>
+                    </ul>
+                </li>
+                <li class="project-icon" @click="addTaskOpen(0)">
+                    <ETooltip :disabled="!$isDesktop" :content="$L('添加任务')">
+                        <Icon class="menu-icon" type="md-add" />
+                    </ETooltip>
+                </li>
+                <li :class="['project-icon', searchText!='' ? 'active' : '']">
+                    <Tooltip :always="searchText!=''" @on-popper-show="searchFocus" theme="light" :rawIndex="10">
+                        <Icon class="menu-icon" type="ios-search" @click="searchFocus" />
+                        <div slot="content">
+                            <Input v-model="searchText" ref="searchInput" :placeholder="$L('名称、描述...')" class="search-input" clearable/>
+                        </div>
+                    </Tooltip>
+                </li>
+                <li :class="['project-icon', projectData.cacheParameter.chat ? 'active' : '']" @click="toggleParameter('chat')">
+                    <Icon class="menu-icon" type="ios-chatbubbles" />
+                    <Badge class="menu-badge" :count="msgUnread"></Badge>
+                </li>
+                <li class="project-icon">
+                    <EDropdown @command="projectDropdown" trigger="click" transfer>
+                        <Icon class="menu-icon" type="ios-more" />
+                        <EDropdownMenu v-if="projectData.owner_userid === userId" slot="dropdown">
+                            <EDropdownItem command="setting">{{$L('项目设置')}}</EDropdownItem>
+                            <EDropdownItem command="workflow">{{$L('工作流设置')}}</EDropdownItem>
+                            <EDropdownItem command="user" divided>{{$L('成员管理')}}</EDropdownItem>
+                            <EDropdownItem command="invite">{{$L('邀请链接')}}</EDropdownItem>
+                            <EDropdownItem command="log" divided>{{$L('项目动态')}}</EDropdownItem>
+                            <EDropdownItem command="archived_task">{{$L('已归档任务')}}</EDropdownItem>
+                            <EDropdownItem command="deleted_task">{{$L('已删除任务')}}</EDropdownItem>
+                            <EDropdownItem command="transfer" divided>{{$L('移交项目')}}</EDropdownItem>
+                            <EDropdownItem command="archived">{{$L('归档项目')}}</EDropdownItem>
+                            <EDropdownItem command="delete" style="color:#f40">{{$L('删除项目')}}</EDropdownItem>
+                        </EDropdownMenu>
+                        <EDropdownMenu v-else slot="dropdown">
+                            <EDropdownItem command="log">{{$L('项目动态')}}</EDropdownItem>
+                            <EDropdownItem command="archived_task">{{$L('已归档任务')}}</EDropdownItem>
+                            <EDropdownItem command="deleted_task">{{$L('已删除任务')}}</EDropdownItem>
+                            <EDropdownItem command="exit" divided style="color:#f40">{{$L('退出项目')}}</EDropdownItem>
+                        </EDropdownMenu>
+                    </EDropdown>
+                </li>
+            </ul>
+        </div>
+        <div class="project-subbox">
+            <div class="project-subtitle" @click="showDesc">{{projectData.desc}}</div>
+            <div class="project-switch">
+                <div v-if="completedCount > 0" class="project-checkbox">
+                    <Checkbox :value="projectData.cacheParameter.completedTask" @on-change="toggleCompleted">{{$L('显示已完成')}}</Checkbox>
+                </div>
+                <div v-if="flowList.length > 0" class="project-select">
+                    <Cascader :data="flowData" @on-change="flowChange" transfer-class-name="project-panel-flow-cascader" transfer>
+                        <span :class="`project-flow ${flowInfo.status}`">{{ flowTitle }}</span>
+                    </Cascader>
+                </div>
+                <div class="project-switch-button">
+                    <div class="slider" :style="tabTypeStyle"></div>
+                    <div @click="tabTypeChange('column')" :class="{ 'active': tabTypeActive === 'column'}"><i class="taskfont">&#xe60c;</i></div>
+                    <div @click="tabTypeChange('table')" :class="{ 'active': tabTypeActive === 'table'}"><i class="taskfont">&#xe66a;</i></div>
+                    <div @click="tabTypeChange('gantt')" :class="{ 'active': tabTypeActive === 'gantt'}"><i class="taskfont">&#xe797;</i></div>
                 </div>
             </div>
         </div>
