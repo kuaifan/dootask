@@ -312,7 +312,7 @@ export default {
         setServerUrl(value) {
             if (value != this.cacheServerUrl) {
                 $A.setStorage("cacheServerUrl", value)
-                window.location.reload();
+                $A.reloadUrl();
             }
         },
 

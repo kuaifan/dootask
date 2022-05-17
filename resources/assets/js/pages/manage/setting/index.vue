@@ -117,9 +117,9 @@ export default {
                 case 'clearCache':
                     this.$store.dispatch("handleClearCache", null).then(() => {
                         $A.setStorage("clearCache", $A.randomString(6))
-                        window.location.reload()
+                        $A.reloadUrl()
                     }).catch(() => {
-                        window.location.reload()
+                        $A.reloadUrl()
                     });
                     break;
 
