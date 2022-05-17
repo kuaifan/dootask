@@ -186,7 +186,7 @@ class EmailNoticeTask extends AbstractTask
             }
             $setting = Base::setting('emailSetting');
             $msgType = $dialogType === "group" ? "群聊" : "个人";
-            $subject = env('APP_NAME') . " 未读{$msgType}消息提醒（" . count($data) . "条）";
+            $subject = env('APP_NAME') . " 未读{$msgType}消息提醒";
             $content = view('email.unread', [
                 'type' => 'head',
                 'nickname' => $user->nickname,
@@ -223,6 +223,7 @@ class EmailNoticeTask extends AbstractTask
                     'unread' => count($items),
                     'items' => $items,
                 ])->render();
+                $content = str_replace("{{RemoteURL}}", config("app.url") . "/", $content);
             }
             try {
                 Factory::mailer()
