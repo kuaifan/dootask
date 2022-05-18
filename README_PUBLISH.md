@@ -20,3 +20,9 @@
 3. 执行 `git commit` 相关操作
 4. 制作标签
 5. 执行 `./cmd electron` 相关操作
+
+
+## 编译App
+
+1. 执行 `./cmd appbuild` 编译
+2. 进入 `resources/mobile` eeui框架内打包Android或iOS应用

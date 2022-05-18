@@ -704,34 +704,37 @@
 
         /**
          * 刷新当前地址
-         * @param url
-         * @param key
          * @returns {string}
          */
-        reloadUrl(url = undefined, key = undefined) {
-            url = key || window.location.href;
-            key = (key || '_') + '='
-            let reg = new RegExp(key + '\\d+');
-            let timestamp = this.Time();
-            if (url.indexOf(key) > -1) {
-                url = url.replace(reg, key + timestamp);
-            } else {
-                if (url.indexOf('\?') > -1) {
-                    let urlArr = url.split('\?');
-                    if (urlArr[1]) {
-                        url = urlArr[0] + '?' + key + timestamp + '&' + urlArr[1];
-                    } else {
-                        url = urlArr[0] + '?' + key + timestamp;
-                    }
+        reloadUrl() {
+            if ($A.isEEUiApp && $A.isAndroid()) {
+                let url = window.location.href;
+                let key = '_='
+                let reg = new RegExp(key + '\\d+');
+                let timestamp = this.Time();
+                if (url.indexOf(key) > -1) {
+                    url = url.replace(reg, key + timestamp);
                 } else {
-                    if (url.indexOf('#') > -1) {
-                        url = url.split('#')[0] + '?' + key + timestamp + location.hash;
+                    if (url.indexOf('\?') > -1) {
+                        let urlArr = url.split('\?');
+                        if (urlArr[1]) {
+                            url = urlArr[0] + '?' + key + timestamp + '&' + urlArr[1];
+                        } else {
+                            url = urlArr[0] + '?' + key + timestamp;
+                        }
                     } else {
-                        url = url + '?' + key + timestamp;
+                        if (url.indexOf('#') > -1) {
+                            url = url.split('#')[0] + '?' + key + timestamp + location.hash;
+                        } else {
+                            url = url + '?' + key + timestamp;
+                        }
                     }
                 }
+                const webview = requireModuleJs("webview");
+                webview.setUrl(url);
+            } else {
+                window.location.reload();
             }
-            window.location.href = url
         },
 
         /**

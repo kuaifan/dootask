@@ -723,7 +723,7 @@ export default {
         openTask: {
             handler(data) {
                 this.taskDetail = $A.cloneJSON(data);
-                if (this.taskDetail.parent_id === 0 && this.$refs.name) {
+                if (this.$refs.name) {
                     this.__openTask && clearTimeout(this.__openTask);
                     this.__openTask = setTimeout(this.$refs.name.resizeTextarea, 100)
                 }
@@ -1249,10 +1249,11 @@ export default {
                 }
                 return
             }
+            const uri = `/single/file/task/${file.id}`;
             if (this.$Electron) {
                 this.$Electron.sendMessage('windowRouter', {
                     name: `file-task-${file.id}`,
-                    path: `/single/file/task/${file.id}`,
+                    path: uri,
                     userAgent: "/hideenOfficeTitle/",
                     force: false,
                     config: {
@@ -1268,10 +1269,11 @@ export default {
                 eeui.openPage({
                     pageType: 'web',
                     pageTitle: `${file.name} (${$A.bytesToSize(file.size)})`,
-                    url: $A.apiUrl(`../#/single/file/task/${file.id}?token=${this.userToken}`)
+                    statusBarStyle: false,
+                    url: $A.apiUrl(`../#/token?token=${this.userToken}&from=${encodeURIComponent($A.apiUrl(`../#${uri}`))}`)
                 }, _ => {});
             } else {
-                window.open($A.apiUrl(`../single/file/task/${file.id}`))
+                window.open($A.apiUrl(`..${uri}`))
             }
         },
 

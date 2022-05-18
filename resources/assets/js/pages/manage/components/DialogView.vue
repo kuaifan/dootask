@@ -300,10 +300,11 @@ export default {
                 this.viewPicture(msg.path);
                 return
             }
+            const uri = `/single/file/msg/${this.msgData.id}`;
             if (this.$Electron) {
                 this.$Electron.sendMessage('windowRouter', {
                     name: `file-msg-${this.msgData.id}`,
-                    path: `/single/file/msg/${this.msgData.id}`,
+                    path: uri,
                     userAgent: "/hideenOfficeTitle/",
                     force: false,
                     config: {
@@ -319,10 +320,11 @@ export default {
                 eeui.openPage({
                     pageType: 'web',
                     pageTitle: `${this.msgData.msg.name} (${$A.bytesToSize(this.msgData.msg.size)})`,
-                    url: $A.apiUrl(`../#/single/file/msg/${this.msgData.id}?token=${this.userToken}`)
+                    statusBarStyle: false,
+                    url: $A.apiUrl(`../#/token?token=${this.userToken}&from=${encodeURIComponent($A.apiUrl(`../#${uri}`))}`)
                 }, _ => {});
             } else {
-                window.open($A.apiUrl(`../single/file/msg/${this.msgData.id}`))
+                window.open($A.apiUrl(`..${uri}`))
             }
         },
 

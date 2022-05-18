@@ -10,15 +10,21 @@ export default {
      */
     call({state, dispatch}, params) {
         if (!$A.isJson(params)) params = {url: params}
-        if (!$A.isJson(params.header)) params.header = {}
+        const header = {
+            'Content-Type': 'application/json',
+            'language': $A.getLanguage(),
+            'token': state.userToken,
+            'fd': $A.getSessionStorageString("userWsFd"),
+            'version': window.systemInfo.version || "0.0.1",
+            'platform': $A.Platform,
+        }
+        if ($A.isJson(params.header)) {
+            params.header = Object.assign(header, params.header)
+        } else {
+            params.header = header;
+        }
         params.url = $A.apiUrl(params.url);
         params.data = $A.date2string(params.data);
-        params.header['Content-Type'] = 'application/json';
-        params.header['language'] = $A.getLanguage();
-        params.header['token'] = state.userToken;
-        params.header['fd'] = $A.getSessionStorageString("userWsFd");
-        params.header['version'] = window.systemInfo.version || "0.0.1";
-        params.header['platform'] = $A.Platform;
         //
         const cloneParams = $A.cloneJSON(params);
         return new Promise(function (resolve, reject) {

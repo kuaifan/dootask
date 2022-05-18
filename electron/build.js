@@ -131,6 +131,7 @@ function startBuild(data, publish) {
         const publicDir = path.resolve(__dirname, "../resources/mobile/src/public");
         fse.removeSync(publicDir)
         fse.copySync(electronDir, publicDir)
+        child_process.spawnSync("eeui", ["build"], {stdio: "inherit", cwd: "resources/mobile"});
         return;
     }
     // package.json Backup

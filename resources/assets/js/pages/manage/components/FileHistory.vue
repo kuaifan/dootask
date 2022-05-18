@@ -182,10 +182,11 @@ export default {
                     break;
 
                 case 'preview':
+                    const uri = `/single/file/${this.fileId}?history_id=${row.id}&history_at=${row.created_at}`;
                     if (this.$Electron) {
                         this.$Electron.sendMessage('windowRouter', {
                             name: `file-${this.fileId}-${row.id}`,
-                            path: `/single/file/${this.fileId}?history_id=${row.id}&history_at=${row.created_at}`,
+                            path: uri,
                             userAgent: "/hideenOfficeTitle/",
                             force: false,
                             config: {
@@ -204,10 +205,11 @@ export default {
                         eeui.openPage({
                             pageType: 'web',
                             pageTitle: $A.getFileName(this.file) + ` [${row.created_at}]`,
-                            url: $A.apiUrl(`../#/single/file/${this.fileId}?history_id=${row.id}&history_at=${row.created_at}&token=${this.userToken}`)
+                            statusBarStyle: false,
+                            url: $A.apiUrl(`../#/token?token=${this.userToken}&from=${encodeURIComponent($A.apiUrl(`../#${uri}`))}`)
                         }, _ => {});
                     } else {
-                        window.open($A.apiUrl(`../single/file/${this.fileId}?history_id=${row.id}&history_at=${row.created_at}`))
+                        window.open($A.apiUrl(`..${uri}`))
                     }
                     break;
             }

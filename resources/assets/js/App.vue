@@ -32,9 +32,6 @@ export default {
     },
 
     created() {
-        if ($A.urlParameter('token')) {
-            this.$store.state.userToken = $A.urlParameter('token');
-        }
         this.electronEvents();
     },
 

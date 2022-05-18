@@ -108,6 +108,11 @@ export default [
         component: () => import('./pages/single/reportDetail.vue')
     },
     {
+        name: 'token',
+        path: '/token',
+        component: () => import('./pages/token.vue'),
+    },
+    {
         name: 'login',
         path: '/login',
         component: () => import('./pages/login.vue'),
