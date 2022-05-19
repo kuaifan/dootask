@@ -2,7 +2,7 @@
     <div class="page-messenger">
         <PageTitle :title="$L(tabActive==='dialog' ? '消息' : '通讯录')"/>
         <div class="messenger-wrapper">
-            <div class="messenger-select" :class="{'show768-menu':dialogId == 0}">
+            <div class="messenger-select">
                 <div class="messenger-search">
                     <div class="search-wrapper">
                         <Input v-if="tabActive==='dialog'" prefix="ios-search" v-model="dialogKey" :placeholder="$L('搜索...')" clearable />
@@ -114,12 +114,12 @@
                 </div>
             </div>
 
-            <div class="messenger-msg">
+            <div class="messenger-msg" :class="{'show768':dialogId > 0}">
                 <div class="msg-dialog-bg">
                     <div class="msg-dialog-bg-icon"><Icon type="ios-chatbubbles" /></div>
                     <div class="msg-dialog-bg-text">{{$L('选择一个会话开始聊天')}}</div>
                 </div>
-                <DialogWrapper v-if="dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive"/>
+                <DialogWrapper v-if="dialogTmpId > 0" :dialogId="dialogTmpId" @on-active="scrollIntoActive"/>
             </div>
         </div>
     </div>
@@ -144,6 +144,7 @@ export default {
             ],
             dialogActive: '',
             dialogKey: '',
+            dialogTmpId: 0,
 
             contactsKey: '',
             contactsLoad: 0,
@@ -258,12 +259,6 @@ export default {
                 this.getContactsList(1);
             }
         },
-        dialogId(id) {
-            if (id > 0) {
-                $A.setStorage("messenger::dialogId", id);
-                this.scrollIntoActive()
-            }
-        },
         contactsKey(val) {
             setTimeout(() => {
                 if (this.contactsKey == val) {
@@ -271,7 +266,24 @@ export default {
                     this.getContactsList(1);
                 }
             }, 600);
-        }
+        },
+        dialogId: {
+            handler(id) {
+                if (id > 0) {
+                    this.dialogTmpId = id;
+                    $A.setStorage("messenger::dialogId", id);
+                    this.scrollIntoActive()
+                } else {
+                    this.timerA && clearTimeout(this.timerA);
+                    this.timerA = setTimeout(_ => {
+                        if (this.dialogId == 0) {
+                            this.dialogTmpId = 0;
+                        }
+                    }, 300)
+                }
+            },
+            immediate: true
+        },
     },
 
     methods: {

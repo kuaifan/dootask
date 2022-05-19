@@ -387,6 +387,7 @@
 @media (max-width: 768px) {
     .page-messenger {
         .messenger-wrapper {
+            overflow-x: hidden;
             .messenger-select {
                 position: fixed;
                 top: 0;
@@ -396,9 +397,15 @@
                 max-width: none;
                 background-color: #ffffff;
                 z-index: 48;
-                transition: all 0.2s;
-                transform: translateX(-120%);
-                &.show768-menu {
+            }
+            .messenger-msg {
+                z-index: 49;
+                transition: transform 0.2s;
+                transform: translateX(120%);
+                .msg-dialog-bg {
+                    display: none;
+                }
+                &.show768 {
                     transform: translateX(0);
                 }
             }
