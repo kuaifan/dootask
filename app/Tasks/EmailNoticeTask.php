@@ -181,6 +181,7 @@ class EmailNoticeTask extends AbstractTask
                 ->join('web_socket_dialog_msg_reads as r', 'web_socket_dialog_msgs.id', '=', 'r.msg_id')
                 ->whereNull("r.read_at")
                 ->where("r.email", 0)
+                ->where("r.userid", $userid)
                 ->where("web_socket_dialog_msgs.dialog_type", $dialogType)
                 ->take(100)
                 ->get();
