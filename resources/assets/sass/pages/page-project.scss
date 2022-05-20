@@ -20,13 +20,6 @@
 
 @media (max-width: 768px) {
     .page-project {
-        .project-panel {
-            height: auto;
-            min-height: 100%;
-            &.gantt {
-                height: 100%;
-            }
-        }
         .project-dialog {
             position: fixed;
             top: 0;
@@ -34,6 +27,17 @@
             height: 100%;
             width: 100%;
             max-width: none;
+        }
+    }
+}
+@media (max-height: 700px) {
+    .page-project {
+        .project-panel {
+            height: auto;
+            min-height: 100%;
+            &.gantt {
+                height: 100%;
+            }
         }
     }
 }

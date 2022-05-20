@@ -245,9 +245,9 @@ body {
 
             .ivu-modal-body {
                 padding: 16px 32px 2px;
-                overscroll-behavior: none;
 
-                * {
+                .ivu-table-body,
+                .project-log {
                     overscroll-behavior: none;
                 }
             }

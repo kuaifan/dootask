@@ -343,8 +343,46 @@
 
     .task-title {
         max-width: 600px;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        display: flex;
+        align-items: center;
+        > span {
+            flex-shrink: 0;
+            font-size: 12px;
+            height: 18px;
+            min-width: 20px;
+            line-height: 16px;
+            padding: 0 2px;
+            border-radius: 3px;
+            color: #8bcf70;
+            border: 1px solid #8bcf70;
+            margin-right: 6px;
+            &.start {
+                background-color: rgba($flow-status-start-color, 0.1);
+                border-color: rgba($flow-status-start-color, 0.1);
+                color: $flow-status-start-color;
+            }
+            &.progress {
+                background-color: rgba($flow-status-progress-color, 0.1);;
+                border-color: rgba($flow-status-progress-color, 0.1);;
+                color: $flow-status-progress-color;
+            }
+            &.test {
+                background-color: rgba($flow-status-test-color, 0.1);;
+                border-color: rgba($flow-status-test-color, 0.1);;
+                color: $flow-status-test-color;
+            }
+            &.end {
+                background-color: rgba($flow-status-end-color, 0.1);;
+                border-color: rgba($flow-status-end-color, 0.1);;
+                color: $flow-status-end-color;
+            }
+        }
+        .task-title-text {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
     }
 }
 

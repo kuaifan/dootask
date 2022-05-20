@@ -21,6 +21,7 @@
 
                     <Input
                         v-model="email"
+                        ref="email"
                         prefix="ios-mail-outline"
                         :placeholder="$L('输入您的电子邮件')"
                         type="email"
@@ -31,6 +32,7 @@
 
                     <Input
                         v-model="password"
+                        ref="password"
                         prefix="ios-lock-outline"
                         :placeholder="$L('输入您的密码')"
                         type="password"
@@ -41,6 +43,7 @@
                     <Input
                         v-if="loginType=='reg'"
                         v-model="password2"
+                        ref="password2"
                         prefix="ios-lock-outline"
                         :placeholder="$L('输入确认密码')"
                         type="password"
@@ -50,6 +53,7 @@
                     <Input
                         v-if="loginType=='reg' && needInvite"
                         v-model="invite"
+                        ref="invite"
                         class="login-code"
                         :placeholder="$L('请输入注册邀请码')"
                         type="text"
@@ -60,6 +64,7 @@
                     <Input
                         v-if="loginType=='login' && codeNeed"
                         v-model="code"
+                        ref="code"
                         class="login-code"
                         :placeholder="$L('输入图形验证码')"
                         type="text"
@@ -402,15 +407,18 @@ export default {
                 //
                 if (!$A.isEmail(this.email)) {
                     $A.messageWarning("请输入正确的邮箱地址");
+                    this.$refs.email.focus();
                     return;
                 }
                 if (!this.password) {
                     $A.messageWarning("请输入密码");
+                    this.$refs.password.focus();
                     return;
                 }
                 if (this.loginType == 'reg') {
                     if (this.password != this.password2) {
                         $A.messageWarning("确认密码输入不一致");
+                        this.$refs.password2.focus();
                         return;
                     }
                 }
@@ -441,6 +449,7 @@ export default {
                     if (data.code === 'need') {
                         this.reCode();
                         this.codeNeed = true;
+                        this.$refs.code.focus();
                     }
                 }).finally(_ => {
                     this.loadIng--;

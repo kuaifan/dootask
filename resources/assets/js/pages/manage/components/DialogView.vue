@@ -53,9 +53,9 @@
                 <EPopover
                     v-model="popperShow"
                     ref="percent"
-                    placement="left-end"
-                    :width="360">
-                    <div class="dialog-wrapper-read-poptip-content">
+                    popper-class="dialog-wrapper-read-poptip"
+                    placement="left-end">
+                    <div class="read-poptip-content">
                         <ul class="read overlay-y">
                             <li class="read-title"><em>{{ readList.length }}</em>{{ $L('已读') }}</li>
                             <li v-for="item in readList">

@@ -735,55 +735,66 @@
     }
 }
 
-.dialog-wrapper-read-poptip-content {
-    display: flex;
-    position: relative;
+.dialog-wrapper-read-poptip {
+    width: 360px;
+    max-width: 72%;
 
-    .read,
-    .unread {
-        flex: 1;
-        max-height: 300px;
-        overflow: auto;
+    .read-poptip-content {
+        display: flex;
+        position: relative;
 
-        > li {
-            list-style: none;
-            margin-bottom: 12px;
+        .read,
+        .unread {
+            flex: 1;
+            max-height: 300px;
+            overflow: auto;
 
-            .common-avatar {
-                width: 100%;
-            }
+            > li {
+                min-height: 26px;
+                list-style: none;
+                margin-bottom: 12px;
 
-            &:last-child {
-                margin-bottom: 6px;
-            }
+                .common-avatar {
+                    width: 100%;
+                    .avatar-name {
+                        padding-right: 6px;
+                    }
+                }
 
-            &.read-title {
-                > em {
-                    font-size: 18px;
-                    font-weight: 600;
-                    font-style: normal;
-                    padding-right: 6px;
+                &:last-child {
+                    margin-bottom: 6px;
+                }
+
+                &.read-title {
+                    min-height: auto;
+                    > em {
+                        font-size: 18px;
+                        font-weight: 600;
+                        font-style: normal;
+                        padding-right: 6px;
+                    }
                 }
             }
         }
-    }
 
-    .unread {
-        > li {
-            padding-left: 16px;
+        .unread {
+            > li {
+                padding-left: 16px;
+            }
+        }
+
+        &:before {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background-color: #F4F4F5;
         }
     }
-
-    &:before {
-        content: "";
-        position: absolute;
-        left: 50%;
-        top: 0;
-        bottom: 0;
-        width: 1px;
-        background-color: #F4F4F5;
-    }
 }
+
 
 .dialog-wrapper-paste {
     display: flex;
