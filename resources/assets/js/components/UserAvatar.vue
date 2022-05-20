@@ -103,7 +103,7 @@
             }
         },
         computed: {
-            ...mapState(["userId", "userInfo", "userOnline"]),
+            ...mapState(["userId", "userInfo", "userOnline", "cacheUserBasic"]),
 
             boxStyle() {
                 const style = {};
@@ -197,6 +197,10 @@
                 if (this.userid == this.userInfo.userid) {
                     this.setUser(this.userInfo);
                     return;
+                }
+                const tempUser = this.cacheUserBasic.find(({userid}) => userid == this.userid);
+                if (tempUser) {
+                    this.setUser(tempUser);
                 }
                 this.$store.dispatch("getUserBasic", {userid: this.userid});
             },
