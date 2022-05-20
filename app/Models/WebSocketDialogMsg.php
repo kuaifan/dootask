@@ -256,6 +256,9 @@ class WebSocketDialogMsg extends AbstractModel
             $tmpPath .= md5s($base64) . "." . $matchs[1][$key];
             if (file_put_contents(public_path($tmpPath), base64_decode($base64))) {
                 $imagesize = getimagesize(public_path($tmpPath));
+                if (Base::imgThumb(public_path($tmpPath), public_path($tmpPath) . "_thumb.jpg", 320, 0)) {
+                    $tmpPath .= "_thumb.jpg";
+                }
                 $text = str_replace($matchs[0][$key], "[:IMAGE:browse:{$imagesize[0]}:{$imagesize[1]}:{$tmpPath}::]", $text);
             }
         }
@@ -277,6 +280,9 @@ class WebSocketDialogMsg extends AbstractModel
             $tmpPath .= md5s($str) . "." . $matchs[3][$key];
             if (file_exists(public_path($tmpPath))) {
                 $imagesize = getimagesize(public_path($tmpPath));
+                if (Base::imgThumb(public_path($tmpPath), public_path($tmpPath) . "_thumb.jpg", 320, 0)) {
+                    $tmpPath .= "_thumb.jpg";
+                }
                 $text = str_replace($matchs[0][$key], "[:IMAGE:browse:{$imagesize[0]}:{$imagesize[1]}:{$tmpPath}::]", $text);
             } else {
                 $image = file_get_contents($str);
@@ -284,6 +290,9 @@ class WebSocketDialogMsg extends AbstractModel
                     $text = str_replace($matchs[0][$key], "[:IMAGE:browse:90:90:images/other/imgerr.jpg::]", $text);
                 } else if (file_put_contents(public_path($tmpPath), $image)) {
                     $imagesize = getimagesize(public_path($tmpPath));
+                    if (Base::imgThumb(public_path($tmpPath), public_path($tmpPath) . "_thumb.jpg", 320, 0)) {
+                        $tmpPath .= "_thumb.jpg";
+                    }
                     $text = str_replace($matchs[0][$key], "[:IMAGE:browse:{$imagesize[0]}:{$imagesize[1]}:{$tmpPath}::]", $text);
                 }
             }

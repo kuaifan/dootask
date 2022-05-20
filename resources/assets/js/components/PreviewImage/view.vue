@@ -208,7 +208,7 @@ export default {
             return this.index === this.urlList.length - 1;
         },
         currentImg() {
-            return this.urlList[this.index];
+            return $A.rightDelete(this.urlList[this.index], "_thumb.jpg");
         },
         imgStyle() {
             const {scale, deg, offsetX, offsetY, enableTransition} = this.transform;
