@@ -39,7 +39,10 @@
                                     :key="key"
                                     class="task-title"
                                     @click.native="openTask(item)"
-                                    :name="item.name">{{ item.name }}</DropdownItem>
+                                    :name="item.name">
+                                    <span v-if="item.flow_item_name" :class="item.flow_item_status">{{item.flow_item_name}}</span>
+                                    <div class="task-title-text">{{ item.name }}</div>
+                                </DropdownItem>
                             </DropdownMenu>
                             <DropdownMenu v-else slot="list">
                                 <DropdownItem style="color:darkgrey">{{ $L('暂无打开记录') }}</DropdownItem>
@@ -136,9 +139,9 @@
                 <li @click="toggleRoute('dashboard')" :class="classNameRoute('dashboard')">
                     <i class="taskfont">&#xe6fb;</i>
                     <div class="menu-title">{{$L('仪表盘')}}</div>
-                    <Badge v-if="dashboardTask.overdue.length > 0" class="menu-badge" type="error" :count="dashboardTask.overdue.length"/>
-                    <Badge v-else-if="dashboardTask.today.length > 0" class="menu-badge" type="info" :count="dashboardTask.today.length"/>
-                    <Badge v-else-if="dashboardTask.all.length > 0" class="menu-badge" type="primary" :count="dashboardTask.all.length"/>
+                    <Badge v-if="dashboardTask.overdue_count > 0" class="menu-badge" type="error" :count="dashboardTask.overdue_count"/>
+                    <Badge v-else-if="dashboardTask.today_count > 0" class="menu-badge" type="info" :count="dashboardTask.today_count"/>
+                    <Badge v-else-if="dashboardTask.all_count > 0" class="menu-badge" type="primary" :count="dashboardTask.all_count"/>
                 </li>
                 <li @click="toggleRoute('calendar')" :class="classNameRoute('calendar')">
                     <i class="taskfont">&#xe6f5;</i>
@@ -374,9 +377,11 @@ import Report from "./manage/components/Report";
 import notificationKoro from "notification-koro1";
 import {Store} from "le5le-store";
 import MobileBack from "../components/Mobile/Back";
+import TaskMenu from "./manage/components/TaskMenu";
 
 export default {
     components: {
+        TaskMenu,
         MobileBack,
         MobileTabbar,
         UserInput,
@@ -539,7 +544,7 @@ export default {
 
         unreadTotal() {
             if (this.userId > 0) {
-                return this.msgAllUnread + this.dashboardTask.overdue.length + this.reportUnreadNumber
+                return this.msgAllUnread + this.dashboardTask.overdue_count + this.reportUnreadNumber
             } else {
                 return 0
             }

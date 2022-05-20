@@ -21,9 +21,9 @@
                 <i class="taskfont" v-html="item.icon"></i>
                 <div class="tabbar-title">{{$L(item.label)}}</div>
                 <template v-if="item.name === 'dashboard'">
-                    <Badge v-if="dashboardTask.overdue.length > 0" class="tabbar-badge" type="error" :count="dashboardTask.overdue.length"/>
-                    <Badge v-else-if="dashboardTask.today.length > 0" class="tabbar-badge" type="info" :count="dashboardTask.today.length"/>
-                    <Badge v-else-if="dashboardTask.all.length > 0" class="tabbar-badge" type="primary" :count="dashboardTask.all.length"/>
+                    <Badge v-if="dashboardTask.overdue_count > 0" class="tabbar-badge" type="error" :count="dashboardTask.overdue_count"/>
+                    <Badge v-else-if="dashboardTask.today_count > 0" class="tabbar-badge" type="info" :count="dashboardTask.today_count"/>
+                    <Badge v-else-if="dashboardTask.all_count > 0" class="tabbar-badge" type="primary" :count="dashboardTask.all_count"/>
                 </template>
                 <template v-else-if="item.name === 'dialog'">
                     <Badge class="tabbar-badge" :text="msgUnreadMention"/>

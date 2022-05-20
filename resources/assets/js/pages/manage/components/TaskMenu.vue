@@ -270,15 +270,17 @@ export default {
                 //
                 Object.keys(updata).forEach(key => this.$set(this.task, key, updata[key]));
                 //
-                this.$store.dispatch("taskUpdate", Object.assign(updata, {
+                const updateData = Object.assign(updata, {
                     task_id: this.task.id,
-                })).then(({data, msg}) => {
+                });
+                this.$store.dispatch("taskUpdate", updateData).then(({data, msg}) => {
                     $A.messageSuccess(msg);
                     resolve()
+                    this.$store.dispatch("saveTaskBrowse", updateData.task_id);
                     this.$emit("on-update", data)
                 }).catch(({msg}) => {
                     $A.modalError(msg);
-                    this.$store.dispatch("getTaskOne", this.task.id).catch(() => {})
+                    this.$store.dispatch("getTaskOne", updateData.task_id).catch(() => {})
                     reject()
                 });
             })
@@ -311,6 +313,7 @@ export default {
                     }
                     this.$store.dispatch(typeDispatch, typeData).then(({msg}) => {
                         $A.messageSuccess(msg);
+                        this.$store.dispatch("saveTaskBrowse", typeData.task_id);
                     }).catch(({msg}) => {
                         $A.modalError(msg, 301);
                     }).finally(_ => {

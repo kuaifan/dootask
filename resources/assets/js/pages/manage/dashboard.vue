@@ -8,21 +8,21 @@
                 <li @click="scrollTo('today')">
                     <div class="block-title">{{getTitle('today')}}</div>
                     <div class="block-data">
-                        <div class="block-num">{{dashboardTask.today.length}}</div>
+                        <div class="block-num">{{dashboardTask.today_count}}</div>
                         <i class="taskfont">&#xe6f4;</i>
                     </div>
                 </li>
                 <li @click="scrollTo('overdue')">
                     <div class="block-title">{{getTitle('overdue')}}</div>
                     <div class="block-data">
-                        <div class="block-num">{{dashboardTask.overdue.length}}</div>
+                        <div class="block-num">{{dashboardTask.overdue_count}}</div>
                         <i class="taskfont">&#xe603;</i>
                     </div>
                 </li>
                 <li @click="scrollTo('all')">
                     <div class="block-title">{{getTitle('all')}}</div>
                     <div class="block-data">
-                        <div class="block-num">{{dashboardTask.all.length}}</div>
+                        <div class="block-num">{{dashboardTask.all_count}}</div>
                         <i class="taskfont">&#xe6f9;</i>
                     </div>
                 </li>
@@ -136,7 +136,7 @@ export default {
 
         total() {
             const {dashboardTask} = this;
-            return dashboardTask.today.length + dashboardTask.overdue.length + dashboardTask.all.length;
+            return dashboardTask.today_count + dashboardTask.overdue_count + dashboardTask.all_count;
         },
     },
 
@@ -144,7 +144,7 @@ export default {
         getTitle(type) {
             switch (type) {
                 case 'today':
-                    return this.$L('今日任务');
+                    return this.$L('今日到期');
                 case 'overdue':
                     return this.$L('超期任务');
                 case 'all':

@@ -115,26 +115,37 @@ export default {
             return task.owner;
         }
         let array = state.cacheTasks.filter(task => filterTask(task));
+        let tmpCount = 0;
         if (state.taskCompleteTemps.length > 0) {
             let tmps = state.cacheTasks.filter(task => state.taskCompleteTemps.includes(task.id) && filterTask(task, false));
             if (tmps.length > 0) {
+                tmpCount = tmps.length
                 array = $A.cloneJSON(array)
                 array.push(...tmps);
             }
         }
         const todayTasks = array.filter(task => {
-            const start = $A.Date(task.start_at),
-                end = $A.Date(task.end_at);
-            return (start <= todayStart && todayStart <= end) || (start <= todayEnd && todayEnd <= end) || (start > todayStart && todayEnd > end);
+            const end = $A.Date(task.end_at);
+            return todayStart <= end && end <= todayEnd;
         })
         const overdueTasks = array.filter(task => {
             return task.end_at && $A.Date(task.end_at) <= todayNow;
         })
-
-        return {
+        const result = {
             today: todayTasks,
+            today_count: todayTasks.length,
+
             overdue: overdueTasks,
-            all: array
+            overdue_count: overdueTasks.length,
+
+            all: array,
+            all_count: array.length,
+        };
+        if (tmpCount > 0) {
+            result.today_count -= todayTasks.filter(task => state.taskCompleteTemps.includes(task.id)).length
+            result.overdue_count -= overdueTasks.filter(task => state.taskCompleteTemps.includes(task.id)).length
+            result.all_count -= tmpCount
         }
+        return result
     },
 }
