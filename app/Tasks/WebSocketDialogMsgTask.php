@@ -48,13 +48,10 @@ class WebSocketDialogMsgTask extends AbstractTask
             return;
         }
 
-        // 推送目标①：群成员
+        // 推送目标①：会话成员/群成员
         $array = [];
         $userids = $dialog->dialogUser->pluck('userid')->toArray();
         foreach ($userids AS $userid) {
-            if ($userid == $msg->userid) {
-                continue;
-            }
             $mention = preg_match("/<span class=\"mention user\" data-id=\"[0|{$userid}]\">/", $msg->type === 'text' ? $msg->msg['text'] : '');
             WebSocketDialogMsgRead::createInstance([
                 'dialog_id' => $msg->dialog_id,
