@@ -407,6 +407,7 @@
                             :maxlength="20000"
                             :placeholder="$L('输入消息...')"
                             @on-more="onEventMore"
+                            @on-file="onSelectFile"
                             @on-send="msgDialog">
                             <Badge slot="toolbarAfter" :count="taskDetail.msg_num"/>
                         </ChatInput>
@@ -1166,8 +1167,8 @@ export default {
             }
         },
 
-        onSelectFile(file) {
-            this.msgFile = [file];
+        onSelectFile(row) {
+            this.msgFile = $A.isArray(row) ? row : [row];
             this.msgDialog()
         },
 

@@ -100,6 +100,7 @@
                     @on-focus="onEventFocus"
                     @on-blur="onEventBlur"
                     @on-more="onEventMore"
+                    @on-file="sendFileMsg"
                     @on-send="sendMsg"
                     :placeholder="$L('输入消息...')"/>
                 <slot name="inputAfter"/>
@@ -396,7 +397,8 @@ export default {
             });
         },
 
-        sendFileMsg(files) {
+        sendFileMsg(row) {
+            const files = $A.isArray(row) ? row : [row];
             if (files.length > 0) {
                 this.pasteFile = [];
                 this.pasteItem = [];

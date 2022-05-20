@@ -1,6 +1,6 @@
 <template>
     <div class="chat-input-wrapper" :class="modeClass">
-        <div ref="editor" class="no-dark-content" :style="editorStyle"></div>
+        <div ref="editor" class="no-dark-content" :style="editorStyle" @paste="handlePaste"></div>
         <div class="chat-input-toolbar">
             <slot name="toolbarBefore"/>
 
@@ -578,6 +578,15 @@ export default {
             let IOSVersion = match ? match[1].replace(/_/g, ".") : "unknown";
             const iosVsn = IOSVersion.split(".");
             return +iosVsn[0] == 11 && +iosVsn[1] >= 0 && +iosVsn[1] < 3;
+        },
+
+        handlePaste(e) {
+            const {files} = e.clipboardData;
+            const postFiles = Array.prototype.slice.call(files).filter(file => !$A.leftExists(file.type, 'image/'));
+            if (postFiles.length > 0) {
+                e.preventDefault()
+                this.$emit('on-file', postFiles)
+            }
         }
     }
 }
