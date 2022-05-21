@@ -427,6 +427,11 @@
 
 @media (max-width: 768px) {
     .page-manage {
+        &.show-tabbar {
+            .manage-box-main {
+                margin-bottom: 60px;
+            }
+        }
         .manage-box-menu {
             position: fixed;
             z-index: 49;
@@ -440,7 +445,8 @@
             }
         }
         .manage-mini-menu {
-            display: flex;
+            //display: flex;    // todo 可以去除mini了
+            display: none;
             align-items: center;
             justify-content: center;
             width: 46px;
@@ -451,18 +457,6 @@
             border-radius: 4px;
             box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
             cursor: pointer;
-        }
-    }
-}
-@media (max-width: 640px) {
-    .page-manage {
-        &.show-tabbar {
-            .manage-box-main {
-                margin-bottom: 60px;
-            }
-        }
-        .manage-mini-menu {
-            display: none;
         }
     }
 }

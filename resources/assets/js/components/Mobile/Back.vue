@@ -40,7 +40,7 @@ export default {
         style() {
             return {
                 top: this.y + 'px',
-                left: this.x > 30 && this.show ? 0 : '-50px',
+                left: this.x > 20 && this.show ? 0 : '-50px',
             }
         },
     },
@@ -55,7 +55,7 @@ export default {
         touchstart(event) {
             this.getXY(event)
             // 判断是否是边缘滑动
-            this.show = this.canBack() && this.x < 30;
+            this.show = this.canBack() && this.x < 20;
         },
 
         touchmove(event) {

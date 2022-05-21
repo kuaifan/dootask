@@ -192,6 +192,10 @@ export default {
     computed: {
         ...mapState(['userId', 'windowWidth', 'themeMode', 'themeIsDark', 'themeList',]),
 
+        isSoftware() {
+            return this.$Electron || this.$isEEUiApp;
+        },
+
         currentLanguage() {
             return this.languageList[this.languageType] || "Language";
         },
@@ -218,7 +222,7 @@ export default {
         },
 
         getNeedStartHome() {
-            if (this.$Electron) {
+            if (this.isSoftware) {
                 this.needStartHome = false;
                 if (this.userId > 0) {
                     this.goForward({name: 'manage-dashboard'}, true);

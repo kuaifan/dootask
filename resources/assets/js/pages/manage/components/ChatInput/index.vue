@@ -24,6 +24,7 @@
             <EPopover
                 v-model="showMore"
                 :visibleArrow="false"
+                placement="top"
                 popperClass="chat-input-more-popover">
                 <ETooltip slot="reference" ref="moreTip" :disabled="!$isDesktop || showMore" placement="top" :content="$L('展开')">
                     <i class="taskfont">&#xe790;</i>
