@@ -159,6 +159,10 @@ export default {
         }
     },
 
+    activated() {
+        this.updateDialogs();
+    },
+
     computed: {
         ...mapState(['userId', 'cacheDialogs']),
 
@@ -254,11 +258,6 @@ export default {
     },
 
     watch: {
-        tabActive(val) {
-            if (val && this.contactsData === null) {
-                this.getContactsList(1);
-            }
-        },
         contactsKey(val) {
             setTimeout(() => {
                 if (this.contactsKey == val) {
@@ -266,6 +265,16 @@ export default {
                     this.getContactsList(1);
                 }
             }, 600);
+        },
+        tabActive: {
+            handler(val) {
+                if (val == 'contacts') {
+                    this.contactsData === null && this.getContactsList(1);
+                } else {
+                    this.updateDialogs();
+                }
+            },
+            immediate: true
         },
         dialogId: {
             handler(id) {
@@ -512,7 +521,14 @@ export default {
             }).catch(({msg}) => {
                 $A.modalError(msg);
             });
-        }
+        },
+
+        updateDialogs() {
+            this.__updateDialogs && clearTimeout(this.__updateDialogs)
+            this.__updateDialogs = setTimeout(_ => {
+                this.$store.dispatch("getDialogs", true).catch(() => {});
+            }, 2000)
+        },
     }
 }
 </script>

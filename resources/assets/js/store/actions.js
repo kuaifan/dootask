@@ -1905,17 +1905,29 @@ export default {
      * 获取会话列表
      * @param state
      * @param dispatch
+     * @param atAfter
      * @returns {Promise<unknown>}
      */
-    getDialogs({state, dispatch}) {
+    getDialogs({state, dispatch}, atAfter) {
         return new Promise(function (resolve, reject) {
             if (state.userId === 0) {
                 state.cacheDialogs = [];
                 reject({msg: 'Parameter error'});
                 return;
             }
+            let data = {};
+            if (atAfter === true && state.cacheDialogs.length > 0) {
+                const tmpList = state.cacheDialogs.sort((a, b) => {
+                    if (a.top_at || b.top_at) {
+                        return $A.Date(b.top_at) - $A.Date(a.top_at);
+                    }
+                    return $A.Date(b.last_at) - $A.Date(a.last_at);
+                })
+                data.at_after = tmpList[0].last_at;
+            }
             dispatch("call", {
                 url: 'dialog/lists',
+                data,
             }).then(result => {
                 dispatch("saveDialog", result.data.data);
                 resolve(result)

@@ -31,6 +31,7 @@ class DialogController extends AbstractController
      * @apiGroup dialog
      * @apiName lists
      *
+     * @apiParam {String} [at_after]        只读取在这个时间之后更新的对话
      * @apiParam {Number} [page]            当前页，默认:1
      * @apiParam {Number} [pagesize]        每页显示数量，默认:100，最大:200
      *
@@ -42,9 +43,13 @@ class DialogController extends AbstractController
     {
         $user = User::auth();
         //
-        $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread'])
+        $builder = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
-            ->where('u.userid', $user->userid)
+            ->where('u.userid', $user->userid);
+        if (Request::exists('at_after')) {
+            $builder->where('web_socket_dialogs.last_at', '>', Carbon::parse(Request::input('at_after')));
+        }
+        $list = $builder
             ->orderByDesc('u.top_at')
             ->orderByDesc('web_socket_dialogs.last_at')
             ->paginate(Base::getPaginate(200, 100));
