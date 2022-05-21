@@ -2201,11 +2201,11 @@ export default {
      */
     websocketConnection({state, dispatch, commit}) {
         clearTimeout(state.wsTimeout);
+        if (state.ws) {
+            state.ws.close();
+            state.ws = null;
+        }
         if (state.userId === 0) {
-            if (state.ws) {
-                state.ws.close();
-                state.ws = null;
-            }
             return;
         }
         //

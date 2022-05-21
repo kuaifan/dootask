@@ -33,6 +33,7 @@ export default {
 
     created() {
         this.electronEvents();
+        this.eeuiEvents();
     },
 
     mounted() {
@@ -82,7 +83,7 @@ export default {
             handler() {
                 this.$store.dispatch("websocketConnection");
                 //
-                if (this.$isEEUiApp) {
+                if (this.$isEEUiApp && this.userId > 0) {
                     setTimeout(_ => {
                         const webview = requireModuleJs("webview");
                         webview && webview.sendMessage({
@@ -220,6 +221,22 @@ export default {
                 this.$store.dispatch(action, data);
             })
             this.manifestUrl = $A.apiUrl("../manifest")
+        },
+
+        eeuiEvents() {
+            if (!this.$isEEUiApp) {
+                return;
+            }
+            // 页面失活
+            window.__onPagePause = () => {
+
+            }
+            // 页面激活
+            window.__onPageResume = (num) => {
+                if (num > 0) {
+                    this.$store.state.ws === null && this.$store.dispatch("websocketConnection");
+                }
+            }
         }
     }
 }
