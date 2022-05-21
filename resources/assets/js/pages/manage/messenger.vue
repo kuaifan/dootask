@@ -526,7 +526,9 @@ export default {
         updateDialogs() {
             this.__updateDialogs && clearTimeout(this.__updateDialogs)
             this.__updateDialogs = setTimeout(_ => {
-                this.$store.dispatch("getDialogs", true).catch(() => {});
+                if (this.tabActive === 'dialog') {
+                    this.$store.dispatch("getDialogs", true).catch(() => {});
+                }
             }, 2000)
         },
     }

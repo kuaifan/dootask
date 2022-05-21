@@ -47,7 +47,8 @@
 
         <!--时间/阅读-->
         <div v-if="msgData.created_at" class="dialog-foot">
-            <div class="time" :title="msgData.created_at">{{$A.formatTime(msgData.created_at)}}</div>
+            <div v-if="timeShow" class="time" @click="timeShow=false">{{msgData.created_at}}</div>
+            <div v-else class="time" :title="msgData.created_at" @click="timeShow=true">{{$A.formatTime(msgData.created_at)}}</div>
 
             <div v-if="msgData.send > 1 || dialogType === 'group'" class="percent" @click="openReadPercentage">
                 <EPopover
@@ -106,6 +107,7 @@ export default {
         return {
             popperLoad: 0,
             popperShow: false,
+            timeShow: false,
             allList: [],
         }
     },

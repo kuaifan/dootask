@@ -102,13 +102,11 @@
          * @returns {*|string}
          */
         formatTime(date) {
-            let time = $A.Date(date, true),
-                now = $A.Time(),
+            let now = $A.Time(),
+                time = $A.Date(date, true),
                 string = '';
-            if ($A.formatDate('Ymd', now) === $A.formatDate('Ymd', time)) {
+            if (now - time < 3600 * 6 || $A.formatDate('Ymd', now) === $A.formatDate('Ymd', time)) {
                 string = $A.formatDate('H:i', time)
-            } else if (now - time < 86400 * 7) {
-                string = $A.formatDate('m-d H:i', time)
             } else if ($A.formatDate('Y', now) === $A.formatDate('Y', time)) {
                 string = $A.formatDate('m-d', time)
             } else {

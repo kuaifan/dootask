@@ -907,7 +907,10 @@ export default {
                 return; // 可见 且 路由匹配时
             }
             //
-            const {id, dialog_id, type, msg} = data;
+            const {id, dialog_id, type, msg, userid} = data;
+            if (userid == this.userId) {
+                return; // 自己的消息不弹出通知
+            }
             let body = '';
             switch (type) {
                 case 'text':
