@@ -52,14 +52,18 @@ class WebSocketDialogMsgTask extends AbstractTask
         $array = [];
         $userids = $dialog->dialogUser->pluck('userid')->toArray();
         foreach ($userids AS $userid) {
-            $mention = preg_match("/<span class=\"mention user\" data-id=\"[0|{$userid}]\">/", $msg->type === 'text' ? $msg->msg['text'] : '');
-            WebSocketDialogMsgRead::createInstance([
-                'dialog_id' => $msg->dialog_id,
-                'msg_id' => $msg->id,
-                'userid' => $userid,
-                'mention' => $mention,
-            ])->saveOrIgnore();
-            $array[$userid] = $mention;
+            if ($userid == $msg->userid) {
+                $array[$userid] = false;
+            } else {
+                $mention = preg_match("/<span class=\"mention user\" data-id=\"[0|{$userid}]\">/", $msg->type === 'text' ? $msg->msg['text'] : '');
+                WebSocketDialogMsgRead::createInstance([
+                    'dialog_id' => $msg->dialog_id,
+                    'msg_id' => $msg->id,
+                    'userid' => $userid,
+                    'mention' => $mention,
+                ])->saveOrIgnore();
+                $array[$userid] = $mention;
+            }
         }
         // 更新已发送数量
         $msg->send = WebSocketDialogMsgRead::whereMsgId($msg->id)->count();

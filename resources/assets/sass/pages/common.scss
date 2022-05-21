@@ -27,6 +27,7 @@ body {
             background-color: #f8f8f9;
             padding: 0 7px;
             font-weight: 400;
+            white-space: nowrap;
             &:first-child {
                 border-left: 1px solid transparent;
                 border-right: 1px solid #dcdee2;

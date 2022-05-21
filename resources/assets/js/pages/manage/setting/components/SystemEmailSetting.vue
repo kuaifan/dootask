@@ -40,19 +40,19 @@
                         <FormItem :label="$L('任务开始')" prop="task_start_minute">
                             <div class="input-number-box">
                                 <InputNumber v-model="formData.task_start_minute" :min="0" :step="1"/>
-                                <label>{{ $L('分钟') }}</label>
+                                <label>{{ $L('分钟') }}(m)</label>
                             </div>
                         </FormItem>
                         <FormItem :label="$L('距离到期')" prop="task_remind_hours">
                             <div class="input-number-box">
                                 <InputNumber v-model="formData.task_remind_hours" :min="0" :step="0.5" @on-change="hoursChange($event, 'task_remind_hours')"/>
-                                <label>{{ $L('小时') }}</label>
+                                <label>{{ $L('小时') }}(h)</label>
                             </div>
                         </FormItem>
                         <FormItem :label="$L('到期超时')" prop="task_remind_hours2">
                             <div class="input-number-box">
                                 <InputNumber v-model="formData.task_remind_hours2" :min="0" :step="0.5" @on-change="hoursChange($event, 'task_remind_hours2')"/>
-                                <label>{{ $L('小时') }}</label>
+                                <label>{{ $L('小时') }}(h)</label>
                             </div>
                         </FormItem>
                         <div class="form-tip">{{$L('填写-1则不通知，误差±10分钟')}}</div>
@@ -67,13 +67,13 @@
                         <FormItem :label="$L('未读个人消息')" prop="msg_unread_user_minute">
                             <div class="input-number-box">
                                 <InputNumber v-model="formData.msg_unread_user_minute" :min="0" :step="1"/>
-                                <label>{{ $L('分钟') }}</label>
+                                <label>{{ $L('分钟') }}(m)</label>
                             </div>
                         </FormItem>
                         <FormItem :label="$L('未读群聊消息')" prop="msg_unread_group_minute">
                             <div class="input-number-box">
                                 <InputNumber v-model="formData.msg_unread_group_minute" :min="0" :step="1"/>
-                                <label>{{ $L('分钟') }}</label>
+                                <label>{{ $L('分钟') }}(m)</label>
                             </div>
                         </FormItem>
                         <div class="form-tip">{{$L('填写-1则不通知，误差±10分钟')}}</div>
