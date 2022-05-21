@@ -83,12 +83,17 @@ class WebSocketDialogMsgTask extends AbstractTask
             ]);
         }
         // umeng推送app
-        $msgTitle = User::userid2nickname($msg->userid);
-        if ($dialog->type == 'group') {
-            $msgTitle = "{$dialog->getGroupName()} ($msgTitle)";
+        $umengUserid = $array;
+        if (isset($umengUserid[$msg->userid])) {
+            unset($umengUserid[$msg->userid]);
         }
-        $umengMsg = new PushUmengMsg(array_keys($array), [
-            'title' => $msgTitle,
+        $umengUserid = array_keys($umengUserid);
+        $umengTitle = User::userid2nickname($msg->userid);
+        if ($dialog->type == 'group') {
+            $umengTitle = "{$dialog->getGroupName()} ($umengTitle)";
+        }
+        $umengMsg = new PushUmengMsg($umengUserid, [
+            'title' => $umengTitle,
             'body' => $msg->previewMsg(),
             'description' => "MID:{$msg->id}",
             'seconds' => 3600,
