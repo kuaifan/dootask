@@ -755,9 +755,9 @@ class UsersController extends AbstractController
             return Base::retError('empty');
         }
         if (WebSocket::whereFd($fd)->exists()) {
-            return Base::retError('not exist');
-        } else {
             return Base::retSuccess('success');
+        } else {
+            return Base::retError('not exist');
         }
     }
 }
