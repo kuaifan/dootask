@@ -160,7 +160,11 @@ export default {
     },
 
     activated() {
-        this.updateDialogs();
+        this.updateDialogs(1000);
+    },
+
+    deactivated() {
+        this.updateDialogs(-1);
     },
 
     computed: {
@@ -285,7 +289,7 @@ export default {
                 if (val == 'contacts') {
                     this.contactsData === null && this.getContactsList(1);
                 } else {
-                    this.updateDialogs();
+                    this.updateDialogs(1000);
                 }
             },
             immediate: true
@@ -537,13 +541,16 @@ export default {
             });
         },
 
-        updateDialogs() {
+        updateDialogs(timeout) {
             this.__updateDialogs && clearTimeout(this.__updateDialogs)
-            this.__updateDialogs = setTimeout(_ => {
-                if (this.tabActive === 'dialog') {
-                    this.$store.dispatch("getDialogs", true).catch(() => {});
-                }
-            }, 2000)
+            if (timeout > -1) {
+                this.__updateDialogs = setTimeout(_ => {
+                    if (this.tabActive === 'dialog') {
+                        this.$store.dispatch("getDialogs", true).catch(() => {
+                        });
+                    }
+                }, timeout)
+            }
         },
     }
 }

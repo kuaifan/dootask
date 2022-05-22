@@ -266,7 +266,7 @@ export default {
                     }).catch(_ => {
                         this.$store.dispatch("websocketConnection");
                     });
-                    this.$store.dispatch("getBasicData", 5000)
+                    this.$store.dispatch("getBasicData", 1000)
                 }
             }
         }
