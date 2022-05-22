@@ -49,7 +49,7 @@ class UsersTableSeeder extends Seeder
             array (
                 'userid' => 2,
                 'identity' => '',
-                'az' => 'z',
+                'az' => 'T',
                 'email' => 'test@dootask.com',
                 'nickname' => '',
                 'profession' => '测试员',
