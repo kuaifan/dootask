@@ -252,18 +252,20 @@ export default {
                 if (this.$openVlog) {
                     console.log('onPagePause');
                 }
+                this.$store.dispatch("getBasicData", -1)
             }
             // 页面激活
             window.__onPageResume = (num) => {
                 if (this.$openVlog) {
                     console.log('onPageResume', num);
-                    console.log('ws', this.ws);
-                    console.log('ws.readyState', this.ws ? this.ws.readyState : null);
+                    console.log('ws', this.ws, this.ws ? this.ws.readyState : null);
                 }
                 if (num > 0) {
-                    if (this.ws === null || this.ws.readyState === WebSocket.CLOSED) {
+                    this.$store.dispatch("call", {
+                        url: 'users/ws/exist',
+                    }).catch(_ => {
                         this.$store.dispatch("websocketConnection");
-                    }
+                    });
                     this.$store.dispatch("getBasicData", 5000)
                 }
             }

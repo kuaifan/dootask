@@ -259,10 +259,12 @@ export default {
         if (typeof timeout === "number") {
             return new Promise(resolve => {
                 window.__getBasicData && clearTimeout(window.__getBasicData)
-                window.__getBasicData = setTimeout(() => {
-                    dispatch("getBasicData", null)
-                    resolve()
-                }, timeout)
+                if (timeout > -1) {
+                    window.__getBasicData = setTimeout(() => {
+                        dispatch("getBasicData", null)
+                        resolve()
+                    }, timeout)
+                }
             });
         }
         dispatch("getProjects").catch(() => {});

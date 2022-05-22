@@ -103,20 +103,29 @@ Vue.prototype.goBack = function (number) {
     }
 };
 
-Vue.prototype.$A = $A;
-Vue.prototype.$Electron = null;
-Vue.prototype.$Platform = "web";
-Vue.prototype.$isMainElectron = false;
-Vue.prototype.$isSubElectron = false;
-Vue.prototype.$isEEUiApp = isEEUiApp;
-Vue.prototype.$isDesktop = $A.isDesktop();
-Vue.prototype.$openVlog = $A.getStorageString("vlog::open") === "open";
+// 全局对象/变量
+$A.Electron = null;
+$A.Platform = "web";
+$A.isMainElectron = false;
+$A.isSubElectron = false;
+$A.isEEUiApp = isEEUiApp;
+$A.isDesktop = $A.isDesktop();
+$A.openVlog = $A.getStorageString("vlog::open") === "open";
 if (isElectron) {
-    Vue.prototype.$Electron = electron;
-    Vue.prototype.$Platform = /macintosh|mac os x/i.test(navigator.userAgent) ? "mac" : "win";
-    Vue.prototype.$isMainElectron = /\s+MainTaskWindow\//.test(window.navigator.userAgent);
-    Vue.prototype.$isSubElectron = /\s+SubTaskWindow\//.test(window.navigator.userAgent);
+    $A.Electron = electron;
+    $A.Platform = /macintosh|mac os x/i.test(navigator.userAgent) ? "mac" : "win";
+    $A.isMainElectron = /\s+MainTaskWindow\//.test(window.navigator.userAgent);
+    $A.isSubElectron = /\s+SubTaskWindow\//.test(window.navigator.userAgent);
 }
+
+Vue.prototype.$A = $A;
+Vue.prototype.$Electron = $A.Electron;
+Vue.prototype.$Platform = $A.Platform;
+Vue.prototype.$isMainElectron = $A.isMainElectron;
+Vue.prototype.$isSubElectron = $A.isSubElectron;
+Vue.prototype.$isEEUiApp = $A.isEEUiApp;
+Vue.prototype.$isDesktop = $A.isDesktop;
+Vue.prototype.$openVlog = $A.openVlog;
 
 Vue.config.productionTip = false;
 
@@ -138,13 +147,6 @@ $A.Modal = app.$Modal;
 $A.store = app.$store;
 $A.L = app.$L;
 
-$A.Electron = app.$Electron;
-$A.Platform = app.$Platform;
-$A.isMainElectron = app.$isMainElectron;
-$A.isSubElectron = app.$isSubElectron;
-$A.isEEUiApp = app.$isEEUiApp;
-$A.isDesktop = app.$isDesktop;
-$A.openVlog = app.$openVlog;
 $A.execMainDispatch = (action, data) => {
     if ($A.isSubElectron) {
         $A.Electron.sendMessage('sendForwardMain', {

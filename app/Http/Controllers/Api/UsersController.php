@@ -7,6 +7,7 @@ use App\Models\UmengAlias;
 use App\Models\User;
 use App\Models\UserEmailVerification;
 use App\Models\UserTransfer;
+use App\Models\WebSocket;
 use App\Module\Base;
 use Arr;
 use Cache;
@@ -732,6 +733,31 @@ class UsersController extends AbstractController
             return Base::retSuccess('添加成功');
         } else {
             return Base::retError('添加错误');
+        }
+    }
+
+    /**
+     * @api {get} api/users/ws/exist          15. websocket是否存在
+     *
+     * @apiDescription 查询websocket连接是否存在
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName ws__exist
+     *
+     * @apiSuccess {Number} ret     返回状态码（1存在、0不存在）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据（同"获取我的信息"接口）
+     */
+    public function ws__exist()
+    {
+        $fd = Request::header('fd');
+        if (empty($fd)) {
+            return Base::retError('empty');
+        }
+        if (WebSocket::whereFd($fd)->exists()) {
+            return Base::retError('not exist');
+        } else {
+            return Base::retSuccess('success');
         }
     }
 }
