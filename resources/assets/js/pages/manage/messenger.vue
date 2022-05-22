@@ -258,6 +258,20 @@ export default {
     },
 
     watch: {
+        dialogKey(val) {
+            switch (val) {
+                case 'vlog.open':
+                case 'vlog:open':
+                    $A.setStorage("vlog::open", "open");
+                    $A.reloadUrl();
+                    break;
+                case 'vlog.close':
+                case 'vlog:close':
+                    $A.setStorage("vlog::open", "close");
+                    $A.reloadUrl();
+                    break;
+            }
+        },
         contactsKey(val) {
             setTimeout(() => {
                 if (this.contactsKey == val) {

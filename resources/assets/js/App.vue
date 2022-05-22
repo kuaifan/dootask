@@ -53,7 +53,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'userToken']),
+        ...mapState(['ws', 'userId', 'userToken']),
     },
 
     watch: {
@@ -83,16 +83,36 @@ export default {
             handler() {
                 this.$store.dispatch("websocketConnection");
                 //
-                if (this.$isEEUiApp && this.userId > 0) {
-                    setTimeout(_ => {
-                        const webview = requireModuleJs("webview");
-                        webview && webview.sendMessage({
-                            action: 'setUmengAlias',
-                            userid: this.userId,
-                            token: this.userToken,
-                            url: $A.apiUrl('users/umeng/alias')
+                if (this.userId > 0) {
+                    if (this.$isEEUiApp) {
+                        setTimeout(_ => {
+                            const webview = requireModuleJs("webview");
+                            webview && webview.sendMessage({
+                                action: 'setUmengAlias',
+                                userid: this.userId,
+                                token: this.userToken,
+                                url: $A.apiUrl('users/umeng/alias')
+                            });
+                        }, 6000)
+                    }
+                    //
+                    if (this.openVlog) {
+                        $A.loadScript('js/vconsole.min.js', (e) => {
+                            if (e !== null || typeof window.VConsole !== 'function') {
+                                $A.modalAlert("vConsole 组件加载失败！");
+                                return;
+                            }
+                            window.vConsole = new window.VConsole({
+                                onReady: () => {
+                                    console.log('vConsole: onReady');
+                                },
+                                onClearLog: () => {
+                                    console.log('vConsole: onClearLog');
+                                }
+                            });
+                            console.info('vConsole: Welcome');
                         });
-                    }, 6000)
+                    }
                 }
             },
             immediate: true
@@ -229,12 +249,22 @@ export default {
             }
             // 页面失活
             window.__onPagePause = () => {
-
+                if (this.openVlog) {
+                    console.log('onPagePause');
+                }
             }
             // 页面激活
             window.__onPageResume = (num) => {
+                if (this.openVlog) {
+                    console.log('onPageResume', num);
+                    console.log('ws', this.ws);
+                    console.log('ws.readyState', this.ws ? this.ws.readyState : null);
+                }
                 if (num > 0) {
-                    this.$store.state.ws === null && this.$store.dispatch("websocketConnection");
+                    if (this.ws === null || this.ws.readyState === WebSocket.CLOSED) {
+                        this.$store.dispatch("websocketConnection");
+                    }
+                    this.$store.dispatch("getBasicData", 5000)
                 }
             }
         }

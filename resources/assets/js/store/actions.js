@@ -252,8 +252,19 @@ export default {
     /**
      * 获取基本数据（项目、对话、仪表盘任务）
      * @param dispatch
+     * @param timeout
+     * @returns {Promise<unknown>}
      */
-    getBasicData({dispatch}) {
+    getBasicData({dispatch}, timeout) {
+        if (typeof timeout === "number") {
+            return new Promise(resolve => {
+                window.__getBasicData && clearTimeout(window.__getBasicData)
+                window.__getBasicData = setTimeout(() => {
+                    dispatch("getBasicData", null)
+                    resolve()
+                }, timeout)
+            });
+        }
         dispatch("getProjects").catch(() => {});
         dispatch("getDialogs").catch(() => {});
         dispatch("getTaskForDashboard");
@@ -2214,16 +2225,17 @@ export default {
         url = url.replace("http://", "ws://");
         url += "?action=web&token=" + state.userToken;
         //
+        const wgLog = $A.openVlog;
         const wsRandom = $A.randomString(16);
         state.wsRandom = wsRandom;
         //
         state.ws = new WebSocket(url);
         state.ws.onopen = (e) => {
-            // console.log("[WS] Open", $A.formatDate())
+            wgLog && console.log("[WS] Open", e, $A.formatDate())
             state.wsOpenNum++;
         };
         state.ws.onclose = (e) => {
-            // console.log("[WS] Close", $A.formatDate())
+            wgLog && console.log("[WS] Close", e, $A.formatDate())
             state.ws = null;
             //
             clearTimeout(state.wsTimeout);
@@ -2232,7 +2244,7 @@ export default {
             }, 3000);
         };
         state.ws.onerror = (e) => {
-            // console.log("[WS] Error", $A.formatDate())
+            wgLog && console.log("[WS] Error", e, $A.formatDate())
             state.ws = null;
             //
             clearTimeout(state.wsTimeout);
@@ -2241,7 +2253,7 @@ export default {
             }, 3000);
         };
         state.ws.onmessage = (e) => {
-            // console.log("[WS] Message", e);
+            wgLog && console.log("[WS] Message", e);
             const msgDetail = $A.formatWebsocketMessageDetail($A.jsonParse(e.data));
             const {type, msgId} = msgDetail;
             switch (type) {
@@ -2266,7 +2278,7 @@ export default {
                             try {
                                 call(msgDetail);
                             } catch (err) {
-                                // console.log("[WS] Callerr", err);
+                                wgLog && console.log("[WS] Callerr", err);
                             }
                         }
                     });

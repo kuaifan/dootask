@@ -110,6 +110,7 @@ Vue.prototype.$isMainElectron = false;
 Vue.prototype.$isSubElectron = false;
 Vue.prototype.$isEEUiApp = isEEUiApp;
 Vue.prototype.$isDesktop = $A.isDesktop();
+Vue.prototype.$openVlog = $A.getStorageString("vlog::open") === "open";
 if (isElectron) {
     Vue.prototype.$Electron = electron;
     Vue.prototype.$Platform = /macintosh|mac os x/i.test(navigator.userAgent) ? "mac" : "win";
@@ -143,6 +144,7 @@ $A.isMainElectron = app.$isMainElectron;
 $A.isSubElectron = app.$isSubElectron;
 $A.isEEUiApp = app.$isEEUiApp;
 $A.isDesktop = app.$isDesktop;
+$A.openVlog = app.$openVlog;
 $A.execMainDispatch = (action, data) => {
     if ($A.isSubElectron) {
         $A.Electron.sendMessage('sendForwardMain', {

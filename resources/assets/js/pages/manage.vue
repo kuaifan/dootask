@@ -679,11 +679,7 @@ export default {
 
         wsOpenNum(num) {
             if (num <= 1) return
-            this.wsOpenTimeout && clearTimeout(this.wsOpenTimeout)
-            this.wsOpenTimeout = setTimeout(() => {
-                this.$store.dispatch("getBasicData")
-                this.getReportUnread()
-            }, 5000)
+            this.$store.dispatch("getBasicData", 5000).then(this.getReportUnread)
         },
 
         workReportShow(show) {
