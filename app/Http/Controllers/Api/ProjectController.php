@@ -212,6 +212,7 @@ class ProjectController extends AbstractController
      * @apiParam {String} [flow]        开启流程
      * - open: 开启
      * - close: 关闭（默认）
+     * @apiParam {Number} [personal]    个人项目，注册成功时创建（仅支持创建一个个人项目）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -224,6 +225,7 @@ class ProjectController extends AbstractController
         $name = trim(Request::input('name', ''));
         $desc = trim(Request::input('desc', ''));
         $flow = trim(Request::input('flow', 'close'));
+        $isPersonal = intval(Request::input('personal'));
         if (mb_strlen($name) < 2) {
             return Base::retError('项目名称不可以少于2个字');
         } elseif (mb_strlen($name) > 32) {
@@ -260,6 +262,12 @@ class ProjectController extends AbstractController
             'desc' => $desc,
             'userid' => $user->userid,
         ]);
+        if ($isPersonal) {
+            if (Project::whereUserid($user->userid)->wherePersonal(1)->exists()) {
+                return Base::retError('个人项目已存在，无须重复创建');
+            }
+            $project->personal = 1;
+        }
         AbstractModel::transaction(function() use ($flow, $insertColumns, $project) {
             $project->save();
             ProjectUser::createInstance([

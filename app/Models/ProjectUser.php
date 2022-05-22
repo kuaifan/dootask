@@ -61,7 +61,12 @@ class ProjectUser extends AbstractModel
                     $item->save();
                 }
                 if ($item->project) {
-                    $item->project->addLog("移交项目身份", ['userid' => [$originalUserid, ' => ',$newUserid]]);
+                    if ($item->project->personal) {
+                        $name = User::userid2nickname($originalUserid) ?: ('ID:' . $originalUserid);
+                        $item->project->name = "【{$name}】{$item->project->name}";
+                        $item->project->save();
+                    }
+                    $item->project->addLog("移交项目身份", ['userid' => [$originalUserid, ' => ', $newUserid]]);
                     $item->project->syncDialogUser();
                 }
             }
