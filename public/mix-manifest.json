@@ -1,5 +1,6 @@
 {
     "/js/app.js": "/js/app.js",
     "/css/app.css": "/css/app.css",
+    "/.DS_Store": "/.DS_Store",
     "/favicon.ico": "/favicon.ico"
 }

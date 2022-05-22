@@ -96,7 +96,7 @@ export default {
                         }, 6000)
                     }
                     //
-                    if (this.openVlog) {
+                    if (this.$openVlog) {
                         $A.loadScript('js/vconsole.min.js', (e) => {
                             if (e !== null || typeof window.VConsole !== 'function') {
                                 $A.modalAlert("vConsole 组件加载失败！");
@@ -249,13 +249,13 @@ export default {
             }
             // 页面失活
             window.__onPagePause = () => {
-                if (this.openVlog) {
+                if (this.$openVlog) {
                     console.log('onPagePause');
                 }
             }
             // 页面激活
             window.__onPageResume = (num) => {
-                if (this.openVlog) {
+                if (this.$openVlog) {
                     console.log('onPageResume', num);
                     console.log('ws', this.ws);
                     console.log('ws.readyState', this.ws ? this.ws.readyState : null);
