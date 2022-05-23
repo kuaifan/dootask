@@ -1,12 +1,13 @@
 <template>
-    <div class="chat-input-wrapper" :class="modeClass">
-        <div ref="editor" class="no-dark-content" :style="editorStyle" @paste="handlePaste"></div>
-        <div class="chat-input-toolbar">
+    <div class="chat-input-wrapper" :class="modeClass" @click.stop="focus">
+        <div ref="editor" class="no-dark-content" :style="editorStyle" @click.stop="" @paste="handlePaste"></div>
+        <div class="chat-input-toolbar" @click.stop="">
             <slot name="toolbarBefore"/>
 
             <EPopover
                 v-model="showEmoji"
                 :visibleArrow="false"
+                placement="top"
                 popperClass="chat-input-emoji-popover">
                 <ETooltip slot="reference" ref="emojiTip" :disabled="!$isDesktop || showEmoji" placement="top" :content="$L('表情')">
                     <i class="taskfont" @click="onToolbar('emoji')">&#xe7ad;</i>
