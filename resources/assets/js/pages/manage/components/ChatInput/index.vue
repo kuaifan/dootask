@@ -28,7 +28,7 @@
                 placement="top"
                 popperClass="chat-input-more-popover">
                 <ETooltip slot="reference" ref="moreTip" :disabled="!$isDesktop || showMore" placement="top" :content="$L('展开')">
-                    <i class="taskfont">&#xe790;</i>
+                    <i class="taskfont" @click="onToolbar('more')">&#xe790;</i>
                 </ETooltip>
                 <div class="chat-input-popover-item" @click="onToolbar('image')">
                     <i class="taskfont">&#xe64a;</i>
@@ -314,6 +314,8 @@ export default {
                     this.$emit('on-blur', this.quill)
                 } else {
                     this.$emit('on-focus', this.quill)
+                    this.showEmoji = false
+                    this.showMore = false
                     if (this.isSpecVersion) {
                         // ios11.0-11.3 对scrollTop及scrolIntoView解释有bug
                         // 直接执行会导致输入框滚到底部被遮挡
@@ -407,6 +409,12 @@ export default {
         },
 
         onToolbar(action) {
+            if (action !== 'emoji') {
+                this.showEmoji = false;
+            }
+            if (action !== 'more') {
+                this.showMore = false;
+            }
             switch (action) {
                 case 'user':
                     this.openMenu("@");

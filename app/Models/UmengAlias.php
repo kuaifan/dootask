@@ -126,12 +126,13 @@ class UmengAlias extends AbstractModel
                         ],
                     ], $extra),
                     'type' => 'customizedcast',
-                    'mipush' => true,
-                    'mi_activity' => 'app.eeui.umeng.activity.MfrMessageActivity',
                     'alias_type' => 'userid',
                     'alias' => $alias,
                     'policy' => [
                         'expire_time' => Carbon::now()->addSeconds($seconds)->toDateTimeString(),
+                    ],
+                    'channel_properties' => [
+                        'channel_activity' => 'app.eeui.umeng.activity.MfrMessageActivity',
                     ],
                 ]);
 
