@@ -133,6 +133,7 @@ class UmengAlias extends AbstractModel
                     ],
                     'channel_properties' => [
                         'channel_activity' => 'app.eeui.umeng.activity.MfrMessageActivity',
+                        'huawei_channel_importance' => 'NORMAL'
                     ],
                 ]);
 
