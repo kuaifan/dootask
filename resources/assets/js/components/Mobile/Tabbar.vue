@@ -78,9 +78,7 @@ export default {
     },
 
     computed: {
-        ...mapState([
-            'cacheDialogs',
-        ]),
+        ...mapState(['cacheDialogs']),
         ...mapGetters(['dashboardTask']),
 
         routeName() {
