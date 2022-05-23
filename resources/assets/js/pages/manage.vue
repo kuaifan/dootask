@@ -679,7 +679,7 @@ export default {
 
         wsOpenNum(num) {
             if (num <= 1) return
-            this.$store.dispatch("getBasicData", 1000).then(this.getReportUnread)
+            this.$store.dispatch("getBasicData", 600).then(this.getReportUnread)
         },
 
         workReportShow(show) {

@@ -261,12 +261,16 @@ export default {
                     console.log('ws', this.ws, this.ws ? this.ws.readyState : null);
                 }
                 if (num > 0) {
-                    this.$store.dispatch("call", {
-                        url: 'users/ws/exist',
-                    }).catch(_ => {
-                        this.$store.dispatch("websocketConnection");
-                    });
                     this.$store.dispatch("getBasicData", 1000)
+                    if (this.ws === null) {
+                        this.$store.dispatch("websocketConnection");
+                    } else {
+                        this.$store.dispatch("call", {
+                            url: 'users/ws/exist',
+                        }).catch(_ => {
+                            this.$store.dispatch("websocketConnection");
+                        });
+                    }
                 }
             }
         }

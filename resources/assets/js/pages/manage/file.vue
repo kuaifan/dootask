@@ -660,7 +660,9 @@ export default {
         wsOpenNum(num) {
             if (num <= 1) return
             this.wsOpenTimeout && clearTimeout(this.wsOpenTimeout)
-            this.wsOpenTimeout = setTimeout(this.getFileList, 5000)
+            this.wsOpenTimeout = setTimeout(() => {
+                this.$route.name == 'manage-file' && this.getFileList();
+            }, 5000)
         }
     },
 

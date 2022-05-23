@@ -314,7 +314,7 @@ export default {
             state.userToken = userInfo.token;
             state.userIsAdmin = $A.inArray('admin', userInfo.identity);
             $A.setStorage("userInfo", state.userInfo);
-            dispatch("getBasicData");
+            dispatch("getBasicData", null);
             resolve()
         });
     },
