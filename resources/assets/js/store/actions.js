@@ -250,12 +250,13 @@ export default {
     },
 
     /**
-     * 获取基本数据（项目、对话、仪表盘任务）
+     * 获取基本数据（项目、对话、仪表盘任务、会员基本信息）
+     * @param state
      * @param dispatch
      * @param timeout
      * @returns {Promise<unknown>}
      */
-    getBasicData({dispatch}, timeout) {
+    getBasicData({state, dispatch}, timeout) {
         if (typeof timeout === "number") {
             return new Promise(resolve => {
                 window.__getBasicData && clearTimeout(window.__getBasicData)
@@ -270,6 +271,11 @@ export default {
         dispatch("getProjects").catch(() => {});
         dispatch("getDialogs").catch(() => {});
         dispatch("getTaskForDashboard");
+        //
+        const allIds = Object.values(state.userAvatar).map(({userid}) => userid);
+        [...new Set(allIds)].some(userid => {
+            dispatch("getUserBasic", {userid});
+        })
     },
 
     /**

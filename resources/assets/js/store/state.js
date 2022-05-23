@@ -50,6 +50,7 @@ const stateData = {
     userToken: '',
     userIsAdmin: false,
     userOnline: {},
+    userAvatar: {},
 
     // 会话聊天
     dialogMsgs: [],

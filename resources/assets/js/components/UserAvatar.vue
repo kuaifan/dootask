@@ -95,11 +95,15 @@
                     this.setUser(data)
                 }
             });
+            this.$store.state.userAvatar[this._uid] = this.$props;
         },
         beforeDestroy() {
             if (this.subscribe) {
                 this.subscribe.unsubscribe();
                 this.subscribe = null;
+            }
+            if (this.$store.state.userAvatar[this._uid] !== undefined) {
+                delete this.$store.state.userAvatar[this._uid];
             }
         },
         computed: {
