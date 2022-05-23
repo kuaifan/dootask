@@ -9,6 +9,7 @@
             <div class="dialog-nav" :class="{completed:$A.dialogCompleted(dialogData)}">
                 <div class="dialog-back" @click="goBack">
                     <i class="taskfont">&#xe72d;</i>
+                    <div v-if="msgUnreadOnly" class="back-num">{{msgUnreadOnly}}</div>
                 </div>
 
                 <div class="dialog-block">
@@ -289,7 +290,21 @@ export default {
                 return ['multiple'];
             }
             return [];
-        }
+        },
+
+        msgUnreadOnly() {
+            let num = 0;
+            this.cacheDialogs.some(dialog => {
+                num += $A.getDialogUnread(dialog);
+            })
+            if (num <= 0) {
+                return '';
+            }
+            if (num > 99) {
+                num = "99+"
+            }
+            return String(num);
+        },
     },
 
     watch: {

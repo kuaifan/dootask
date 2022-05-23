@@ -857,14 +857,32 @@
                 justify-content: center;
             }
             .dialog-back {
+                padding-right: 6px;
                 right: auto;
                 left: 0;
                 > i {
                     font-size: 26px;
                 }
+                .back-num {
+                    font-family: "Source Sans Pro", "Helvetica Neue", Arial, sans-serif;
+                    position: absolute;
+                    top: 50%;
+                    left: 32px;
+                    background: #e6ebf1;
+                    color: $primary-title-color;
+                    transform: translate(0, -50%);
+                    font-weight: 500;
+                    font-size: 14px;
+                    border-radius: 12px;
+                    min-width: 24px;
+                    height: 24px;
+                    line-height: 24px;
+                    text-align: center;
+                    padding: 0 6px;
+                }
             }
             .dialog-block {
-                margin: 0 52px;
+                margin: 0 80px;
                 justify-content: center;
                 .dialog-avatar {
                     display: none;
