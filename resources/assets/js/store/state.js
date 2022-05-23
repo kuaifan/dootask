@@ -54,6 +54,7 @@ const stateData = {
 
     // 会话聊天
     dialogMsgs: [],
+    dialogInputCache: $A.getStorageArray("cacheDialogInput"),
 
     // 文件
     files: [],

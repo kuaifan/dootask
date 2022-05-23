@@ -139,6 +139,7 @@ export default {
         this.observer.observe(this.$refs.editor);
     },
     beforeDestroy() {
+        this.inputCache(this.dialogId, this.value);
         if (this.quill) {
             this.quill = null
         }
@@ -148,9 +149,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(['cacheProjects', 'cacheTasks', 'cacheUserBasic', 'userId']),
-
-        ...mapGetters(['dashboardTask', 'transforTasks']),
+        ...mapState(['dialogInputCache', 'cacheProjects', 'cacheTasks', 'cacheUserBasic', 'userId']),
 
         editorStyle() {
             const {wrapperWidth, editorHeight} = this;
@@ -171,7 +170,7 @@ export default {
             if (this.quill) {
                 if (newVal && newVal !== this._content) {
                     this._content = newVal
-                    this.quill.pasteHTML(newVal)
+                    this.setContent(newVal)
                 } else if(!newVal) {
                     this.quill.setText('')
                 }
@@ -186,9 +185,11 @@ export default {
         },
 
         // Reset lists
-        dialogId() {
+        dialogId(id1, id2) {
             this.userList = null;
             this.taskList = null;
+            this.inputCache(id2, this.value)
+            this.$emit('input', this.inputCache(id1))
         },
         taskId() {
             this.userList = null;
@@ -206,6 +207,10 @@ export default {
                 this.$refs.moreTip.updatePopper()
             }
         },
+
+        dialogInputCache() {
+            this.$emit('input', this.inputCache(this.dialogId))
+        }
     },
     methods: {
         init() {
@@ -290,7 +295,9 @@ export default {
 
             // Set editor content
             if (this.value) {
-                this.quill.pasteHTML(this.value)
+                this.setContent(this.value)
+            } else {
+                this.$emit('input', this.inputCache(this.dialogId))
             }
 
             // Disabled editor
@@ -337,6 +344,35 @@ export default {
 
             // Emit ready event
             this.$emit('on-ready', this.quill)
+        },
+
+        setText(value) {
+            if (this.quill) {
+                this.quill.setText(value)
+            }
+        },
+
+        setContent(value) {
+            if (this.quill) {
+                this.quill.setContents(this.quill.clipboard.convert(value))
+            }
+        },
+
+        inputCache(key, cache) {
+            if (cache === undefined) {
+                const item = this.dialogInputCache.find(item => item.key == key);
+                return item ? item.cache : '';
+            }
+            const index = this.dialogInputCache.findIndex(item => item.key == key);
+            const data = {key, cache}
+            if (index > -1) {
+                this.$store.state.dialogInputCache.splice(index, 1, data)
+            } else {
+                this.$store.state.dialogInputCache.push(data)
+            }
+            setTimeout(_ => {
+                $A.setStorage("cacheDialogInput", this.$store.state.dialogInputCache);
+            })
         },
 
         focus() {
@@ -523,7 +559,7 @@ export default {
                                 })
                             }
                             // 待完成任务
-                            let data = this.transforTasks(this.dashboardTask['all']);
+                            let data = this.$store.getters.transforTasks(this.$store.getters.dashboardTask['all']);
                             if (data.length > 0) {
                                 data = data.sort((a, b) => {
                                     return $A.Date(a.end_at || "2099-12-31 23:59:59") - $A.Date(b.end_at || "2099-12-31 23:59:59");
