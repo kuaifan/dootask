@@ -140,9 +140,9 @@ class EmailNoticeTask extends AbstractTask
                     throw new \Exception("User email '{$user->email}' address error");
                 }
                 $subject = match ($type) {
-                    1 => env('APP_NAME') . " 任务提醒",
-                    2 => env('APP_NAME') . " 任务过期提醒",
-                    default => env('APP_NAME') . " 任务开始提醒",
+                    1 => "任务提醒",
+                    2 => "任务过期提醒",
+                    default => "任务开始提醒",
                 };
                 $content = view('email.task', [
                     'type' => str_replace([0, 1, 2], ['start', 'before', 'after'], $type),
@@ -213,6 +213,7 @@ class EmailNoticeTask extends AbstractTask
                     $item->cancelAppend();
                     $item->userInfo = User::userid2basic($item->userid);
                     $item->preview = $item->previewMsg(true);
+                    $item->preview = str_replace('<p>', '<p style="margin:0;padding:0">', $item->preview);
                     if (empty($dialogId)) {
                         $dialogId = $item->dialog_id;
                     }

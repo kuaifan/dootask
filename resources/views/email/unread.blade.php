@@ -15,15 +15,15 @@
         <tbody>
         <tr style="box-sizing:border-box;padding:0;vertical-align:top;text-align:left">
             <td style="box-sizing:border-box;word-break:break-word;border-collapse:collapse;padding:0 0 10px;vertical-align:top;text-align:left;color:#202020;font-weight:normal;margin:0;line-height:19px;font-size:14px">
-                <h2 style="box-sizing:border-box;color:#202020;font-weight:normal;padding:0 0 8px 0;margin:0;text-align:left;line-height:1.3;word-break:normal;font-size:24px">
+                <h2 style="box-sizing:border-box;color:#202020;font-weight:normal;padding:0 0 8px 0;margin:0;text-align:left;line-height:1.3;word-break:normal;font-size:20px">
                     {{ $dialogName }}
                 </h2>
-                <h4 style="box-sizing:border-box;color:#202020;font-weight:normal;padding:0;margin:0;text-align:left;line-height:1.3;word-break:normal;font-size:18px">
+                <h4 style="box-sizing:border-box;color:#202020;font-weight:normal;padding:0;margin:0;text-align:left;line-height:1.3;word-break:normal;font-size:14px">
                     {{ $unread }}条未读信息
                 </h4>
                 <br style="box-sizing:border-box">
                 @foreach($items as $item)
-                <table style="box-sizing:border-box;border-spacing:0;border-collapse:collapse;padding:0;vertical-align:top;text-align:left">
+                <table style="box-sizing:border-box;border-spacing:0;border-collapse:collapse;padding:0;vertical-align:top;text-align:left;margin-top:4px">
                     <tbody>
                     <tr style="box-sizing:border-box;padding:0;vertical-align:top;text-align:left">
                         <td style="box-sizing:border-box;word-break:break-word;border-collapse:collapse;vertical-align:middle;text-align:left;padding: 0 10px 10px 0;min-width:24px;color:#202020;font-weight:normal;margin:0;line-height:19px;font-size:14px;border-radius:4px">
@@ -36,10 +36,10 @@
                         </td>
                     </tr>
                     <tr style="box-sizing:border-box;padding:0;vertical-align:top;text-align:left">
-                        <td style="box-sizing:border-box;word-break:break-word;border-collapse:collapse;padding:0 0 10px;vertical-align:top;text-align:left;color:#202020;font-weight:normal;margin:0;line-height:19px;font-size:14px">
-                        </td>
+                        <td style="box-sizing:border-box;word-break:break-word;border-collapse:collapse;padding:0 0 10px;vertical-align:top;text-align:left;color:#202020;font-weight:normal;margin:0;line-height:19px;font-size:14px"></td>
                         <td style="box-sizing:border-box;word-break:break-word;border-collapse:collapse;padding:0 0 10px;vertical-align:top;text-align:left;color:#202020;font-weight:normal;margin:0;line-height:19px;font-size:14px">
                             {!! $item->preview !!}
+                            <div style="font-size:12px;opacity:0.3;padding-top:4px">{{ $item->created_at }}</div>
                         </td>
                     </tr>
                     </tbody>
