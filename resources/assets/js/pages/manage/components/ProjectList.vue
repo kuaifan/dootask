@@ -3,7 +3,12 @@
         <PageTitle :title="$L('项目')"/>
         <div class="list-search">
             <div class="search-wrapper">
-                <Input prefix="ios-search" v-model="projectKeyValue" :placeholder="$L('搜索...')" clearable />
+                <Input v-model="projectKeyValue" :placeholder="$L(loadProjects || projectKeyLoading ? '读取中...' : '搜索...')" clearable>
+                    <div class="search-pre" slot="prefix">
+                        <Loading v-if="loadProjects || projectKeyLoading"/>
+                        <Icon v-else type="ios-search" />
+                    </div>
+                </Input>
             </div>
         </div>
         <ul>
@@ -47,9 +52,7 @@ export default {
     },
 
     computed: {
-        ...mapState([
-            'cacheProjects',
-        ]),
+        ...mapState(['cacheProjects', 'loadProjects']),
 
         projectLists() {
             const {projectKeyValue, cacheProjects} = this;

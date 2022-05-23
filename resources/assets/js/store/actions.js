@@ -338,7 +338,7 @@ export default {
      * @param data {userid}
      */
     getUserBasic({state, dispatch}, data) {
-        if (state.cacheLoading["loadUserBasic"] === true) {
+        if (state.loadUserBasic === true) {
             data && state.cacheUserWait.push(data);
             return;
         }
@@ -370,7 +370,7 @@ export default {
             array = array.slice(0, 30)
         }
         //
-        state.cacheLoading["loadUserBasic"] = true;
+        state.loadUserBasic = true;
         dispatch("call", {
             url: 'users/basic',
             data: {
@@ -383,11 +383,11 @@ export default {
                 data._time = time;
                 dispatch("saveUserBasic", data);
             });
-            state.cacheLoading["loadUserBasic"] = false;
+            state.loadUserBasic = false;
             dispatch("getUserBasic");
         }).catch(e => {
             console.warn(e);
-            state.cacheLoading["loadUserBasic"] = false;
+            state.loadUserBasic = false;
             dispatch("getUserBasic");
         });
     },
@@ -711,6 +711,7 @@ export default {
                 reject({msg: 'Parameter error'});
                 return;
             }
+            state.loadProjects++;
             dispatch("call", {
                 url: 'project/lists',
                 data: data || {}
@@ -721,6 +722,8 @@ export default {
             }).catch(e => {
                 console.warn(e);
                 reject(e)
+            }).finally(_ => {
+                state.loadProjects--;
             });
         });
     },
@@ -1204,12 +1207,22 @@ export default {
      * @param state
      * @param dispatch
      * @param getters
+     * @param timeout
      */
-    getTaskForDashboard({state, dispatch, getters}) {
-        if (state.cacheLoading["loadDashboardTasks"] === true) {
+    getTaskForDashboard({state, dispatch, getters}, timeout) {
+        if (typeof timeout === "number") {
+            window.__getTaskForDashboard && clearTimeout(window.__getTaskForDashboard)
+            if (timeout > -1) {
+                window.__getTaskForDashboard = setTimeout(() => {
+                    dispatch("getTaskForDashboard", null)
+                }, timeout)
+            }
             return;
         }
-        state.cacheLoading["loadDashboardTasks"] = true;
+        if (state.loadDashboardTasks === true) {
+            return;
+        }
+        state.loadDashboardTasks = true;
         //
         const time = $A.Time()
         const {today, overdue,all} = getters.dashboardTask;
@@ -1220,7 +1233,7 @@ export default {
         let loadIng = 3;
         let call = () => {
             if (loadIng <= 0) {
-                state.cacheLoading["loadDashboardTasks"] = false;
+                state.loadDashboardTasks = false;
                 //
                 const {today, overdue,all} = getters.dashboardTask;
                 const newIds = today.filter(task => task._time >= time).map(({id}) => id)
@@ -1935,14 +1948,18 @@ export default {
                 return;
             }
             let data = {};
-            if (atAfter === true && state.cacheDialogs.length > 0) {
-                const tmpList = state.cacheDialogs.sort((a, b) => {
-                    if (a.top_at || b.top_at) {
-                        return $A.Date(b.top_at) - $A.Date(a.top_at);
-                    }
-                    return $A.Date(b.last_at) - $A.Date(a.last_at);
-                })
-                data.at_after = tmpList[0].last_at;
+            if (atAfter === true) {
+                if (state.cacheDialogs.length > 0) {
+                    const tmpList = state.cacheDialogs.sort((a, b) => {
+                        if (a.top_at || b.top_at) {
+                            return $A.Date(b.top_at) - $A.Date(a.top_at);
+                        }
+                        return $A.Date(b.last_at) - $A.Date(a.last_at);
+                    })
+                    data.at_after = tmpList[0].last_at;
+                }
+            } else {
+                state.loadDialogs++;
             }
             dispatch("call", {
                 url: 'dialog/lists',
@@ -1953,6 +1970,10 @@ export default {
             }).catch(e => {
                 console.warn(e);
                 reject(e)
+            }).finally(_ => {
+                if (atAfter !== true) {
+                    state.loadDialogs--;
+                }
             });
         });
     },

@@ -6,8 +6,11 @@ const stateData = {
     // 浏览器宽度≤768返回true
     windowMax768: window.innerWidth <= 768,
 
-    // 数据缓存
-    cacheLoading: {},
+    // 加载状态
+    loadDashboardTasks: false,
+    loadUserBasic: false,
+    loadProjects: 0,
+    loadDialogs: 0,
 
     // User
     cacheUserActive: {},

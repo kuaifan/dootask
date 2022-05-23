@@ -3,7 +3,10 @@
         <PageTitle :title="$L('仪表盘')"/>
         <div class="dashboard-wrapper">
             <div class="dashboard-hello">{{$L('欢迎您，' + userInfo.nickname)}}</div>
-            <div class="dashboard-desc">{{$L('以下是你当前的任务统计数据')}}</div>
+            <div class="dashboard-desc">
+                {{$L('以下是你当前的任务统计数据')}}
+                <div v-if="loadDashboardTasks" class="dashboard-load"><Loading/></div>
+            </div>
             <ul class="dashboard-block">
                 <li @click="scrollTo('today')">
                     <div class="block-title">{{getTitle('today')}}</div>
@@ -107,7 +110,7 @@ export default {
     },
 
     activated() {
-        this.$store.dispatch("getTaskForDashboard");
+        this.$store.dispatch("getTaskForDashboard", 600);
     },
 
     deactivated() {
@@ -115,7 +118,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userInfo']),
+        ...mapState(['userInfo', 'loadDashboardTasks']),
 
         ...mapGetters(['dashboardTask', 'transforTasks']),
 

@@ -23,6 +23,19 @@
             border-radius: 12px;
             overflow: hidden;
 
+            .search-pre {
+                width: 32px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                .common-loading {
+                    width: 16px;
+                    height: 16px;
+                    margin: 0;
+                }
+            }
+
             .ivu-input {
                 border-color: transparent;
                 background-color: transparent;

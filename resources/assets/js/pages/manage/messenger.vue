@@ -5,7 +5,12 @@
             <div class="messenger-select">
                 <div class="messenger-search">
                     <div class="search-wrapper">
-                        <Input v-if="tabActive==='dialog'" prefix="ios-search" v-model="dialogKey" :placeholder="$L('搜索...')" clearable />
+                        <Input v-if="tabActive==='dialog'" v-model="dialogKey" :placeholder="$L(loadDialogs ? '读取中...' : '搜索...')" clearable >
+                            <div class="search-pre" slot="prefix">
+                                <Loading v-if="loadDialogs"/>
+                                <Icon v-else type="ios-search" />
+                            </div>
+                        </Input>
                         <Input v-else prefix="ios-search" v-model="contactsKey" :placeholder="$L('搜索...')" clearable />
                     </div>
                 </div>
@@ -168,7 +173,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'cacheDialogs']),
+        ...mapState(['userId', 'cacheDialogs', 'loadDialogs']),
 
         dialogId() {
             const {dialogId} = this.$route.params;

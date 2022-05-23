@@ -30,10 +30,20 @@
             word-wrap: break-word;
         }
         .dashboard-desc {
+            display: flex;
+            align-items: center;
             margin-top: 18px;
             padding: 0 12px;
             color: #888888;
             font-size: 13px;
+            .dashboard-load {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 14px;
+                height: 14px;
+                margin: 0 0 0 4px;
+            }
         }
         .dashboard-block {
             margin-top: 18px;

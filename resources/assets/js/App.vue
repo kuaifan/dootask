@@ -261,7 +261,7 @@ export default {
                     console.log('ws', this.ws, this.ws ? this.ws.readyState : null);
                 }
                 if (num > 0) {
-                    this.$store.dispatch("getBasicData", 1000)
+                    this.$store.dispatch("getBasicData", 600)
                     if (this.ws === null) {
                         this.$store.dispatch("websocketConnection");
                     } else {
