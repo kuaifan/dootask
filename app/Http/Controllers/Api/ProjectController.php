@@ -390,6 +390,8 @@ class ProjectController extends AbstractController
             }
             $project->syncDialogUser();
             $project->addLog("修改项目成员");
+            $project->user_simple = count($array) . "|" . implode(",", array_slice($array, 0, 3));
+            $project->save();
             return $deleteUser->toArray();
         });
         //

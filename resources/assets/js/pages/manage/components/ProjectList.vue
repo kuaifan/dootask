@@ -18,7 +18,15 @@
                     {{item.desc}}
                 </div>
                 <div class="project-percent">
-                    <Progress :percent="item.task_percent" :stroke-width="6" />
+                    <Progress :percent="item.task_my_percent" :stroke-width="5" hide-info />
+                    <div class="percent-info" @click.stop="modalPercent(item)">{{item.task_my_complete}}<em>/{{item.task_my_num}}</em></div>
+                </div>
+                <div class="project-footer">
+                    <div class="footer-percent" @click.stop="modalPercent(item)">{{item.task_complete}}<em>/{{item.task_num}}</em></div>
+                    <div class="footer-user">
+                        <UserAvatar v-for="(uid, ukey) in item.user_simple" :key="ukey" :userid="uid" :size="26" :borderWitdh="2"/>
+                        <div v-if="item.user_count > 3" class="footer-user-more">{{item.user_count > 99 ? '99+' : `${item.user_count}+`}}</div>
+                    </div>
                 </div>
             </li>
         </ul>
@@ -38,14 +46,6 @@ export default {
         }
     },
 
-    mounted() {
-
-    },
-
-    destroyed() {
-
-    },
-
     computed: {
         ...mapState([
             'cacheProjects',
@@ -62,7 +62,19 @@ export default {
             if (projectKeyValue) {
                 return data.filter(({name}) => name.toLowerCase().indexOf(projectKeyValue.toLowerCase()) > -1);
             }
-            return data;
+            return data.map(item => {
+                if (!$A.isArray(item.user_simple)) {
+                    const arr = item.user_simple.split("|");
+                    if (arr.length > 1) {
+                        item.user_count = arr[0];
+                        item.user_simple = arr[1].split(",");
+                    } else {
+                        item.user_count = 0;
+                        item.user_simple = [];
+                    }
+                }
+                return item;
+            });
         },
     },
 
@@ -104,6 +116,13 @@ export default {
             let location = {name: 'manage-' + path, params: params || {}};
             this.goForward(location);
         },
+
+        modalPercent(item) {
+            $A.modalInfo({
+                title: `${item.name} 项目进度`,
+                content: `总进度：${item.task_complete}/${item.task_num}<br/>我的任务：${item.task_my_complete}/${item.task_my_num}`
+            });
+        }
     }
 }
 </script>

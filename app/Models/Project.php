@@ -19,6 +19,7 @@ use Request;
  * @property string|null $desc 描述、备注
  * @property int|null $userid 创建人
  * @property int|null $personal 是否个人项目
+ * @property string|null $user_simple 成员总数|1,2,3
  * @property int|null $dialog_id 聊天会话ID
  * @property string|null $archived_at 归档时间
  * @property int|null $archived_userid 归档会员
@@ -48,6 +49,7 @@ use Request;
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Project wherePersonal($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Project whereUserSimple($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereUserid($value)
  * @method static \Illuminate\Database\Query\Builder|Project withTrashed()
  * @method static \Illuminate\Database\Query\Builder|Project withoutTrashed()

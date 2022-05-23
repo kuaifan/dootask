@@ -411,6 +411,34 @@
                     height: 60px;
                     opacity: 0;
                 }
+                .messenger-list {
+                    flex: 1;
+                    height: 0;
+                    width: 100%;
+                    overflow-x: hidden;
+                    overflow-y: auto;
+                    > ul {
+                        &.dialog {
+                            > li {
+                                &:after {
+                                    content: "";
+                                    position: absolute;
+                                    bottom: 0;
+                                    right: 0;
+                                    left: 68px;
+                                    height: 1px;
+                                    background-color: #f2f2f2;
+                                    transform: scaleY(0.5);
+                                }
+                                &:last-child {
+                                    &:after {
+                                        display: none;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
             .messenger-msg {
                 z-index: 49;

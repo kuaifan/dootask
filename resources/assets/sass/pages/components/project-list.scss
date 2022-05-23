@@ -70,6 +70,47 @@
             }
             .project-percent {
                 margin-top: 12px;
+                display: flex;
+                align-items: center;
+                .percent-info {
+                    margin-left: 12px;
+                    min-width: 28px;
+                    text-align: right;
+                    > em {
+                        opacity: 0.7;
+                        font-style: normal;
+                    }
+                }
+            }
+            .project-footer {
+                margin-top: 12px;
+                margin-bottom: -2px;
+                display: flex;
+                align-items: center;
+                .footer-percent {
+                    flex-shrink: 0;
+                    margin-right: 12px;
+                    min-width: 28px;
+                    text-align: left;
+                    > em {
+                        opacity: 0.7;
+                        font-style: normal;
+                    }
+                }
+                .footer-user {
+                    flex: 1;
+                    display: flex;
+                    align-items: center;
+                    justify-content: flex-end;
+                    .common-avatar {
+                        margin-left: -4px;
+                    }
+                    .footer-user-more {
+                        padding-left: 6px;
+                        font-weight: 500;
+                        color: $primary-color;
+                    }
+                }
             }
         }
     }
