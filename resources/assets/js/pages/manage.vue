@@ -359,6 +359,7 @@
         <!--移动端选项卡-->
         <MobileTabbar v-if="showMobileTabbar" @on-click="onTabbarClick"/>
         <MobileBack :showTabbar="showMobileTabbar"/>
+        <MobileNotification ref="mobileNotification"/>
     </div>
 </template>
 
@@ -378,9 +379,11 @@ import notificationKoro from "notification-koro1";
 import {Store} from "le5le-store";
 import MobileBack from "../components/Mobile/Back";
 import TaskMenu from "./manage/components/TaskMenu";
+import MobileNotification from "../components/Mobile/Notification";
 
 export default {
     components: {
+        MobileNotification,
         TaskMenu,
         MobileBack,
         MobileTabbar,
@@ -894,7 +897,7 @@ export default {
         },
 
         addDialogMsg(data) {
-            if (!this.natificationReady) {
+            if (!this.natificationReady && !this.$isEEUiApp) {
                 return; // 通知未准备好
             }
             if (!this.natificationHidden
@@ -918,24 +921,36 @@ export default {
                 default:
                     return;
             }
-            this._notificationId = id;
-            this.notificationManage.replaceOptions({
-                icon: $A.originUrl('images/logo.png'),
-                body: body,
-                data: data,
-                tag: "dialog",
-                requireInteraction: true
-            });
-            let dialog = this.cacheDialogs.find((item) => item.id == dialog_id);
-            if (dialog) {
-                this.notificationManage.replaceTitle(dialog.name);
-                this.notificationManage.userAgreed();
-            } else {
-                this.$store.dispatch("getDialogOne", dialog_id).then(({data}) => {
-                    if (this._notificationId === id) {
-                        this.notificationManage.replaceTitle(data.name);
+            this.__notificationId = id;
+            const notificationFunc = (title) => {
+                if (this.__notificationId === id) {
+                    if (this.$isEEUiApp) {
+                        this.$refs.mobileNotification.open({
+                            userid: userid,
+                            desc: body,
+                            callback: () => {
+                                this.goForward({name: 'manage-messenger', params: {dialogId: dialog_id}});
+                            }
+                        })
+                    } else {
+                        this.notificationManage.replaceOptions({
+                            icon: $A.originUrl('images/logo.png'),
+                            body: body,
+                            data: data,
+                            tag: "dialog",
+                            requireInteraction: true
+                        });
+                        this.notificationManage.replaceTitle(title);
                         this.notificationManage.userAgreed();
                     }
+                }
+            }
+            const dialog = this.cacheDialogs.find((item) => item.id == dialog_id);
+            if (dialog) {
+                notificationFunc(dialog.name)
+            } else {
+                this.$store.dispatch("getDialogOne", dialog_id).then(({data}) => {
+                    notificationFunc(data.name)
                 }).catch(() => {})
             }
         },
