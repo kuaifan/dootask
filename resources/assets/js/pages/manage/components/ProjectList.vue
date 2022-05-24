@@ -67,7 +67,7 @@ export default {
             }
             return data.map(item => {
                 if (!$A.isArray(item.user_simple)) {
-                    const arr = item.user_simple.split("|");
+                    const arr = (item.user_simple || "").split("|");
                     if (arr.length > 1) {
                         item.user_count = arr[0];
                         item.user_simple = arr[1].split(",");
