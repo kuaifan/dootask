@@ -381,7 +381,7 @@ if [ $# -gt 0 ]; then
         run_compile prod
     elif [[ "$1" == "appbuild" ]] || [[ "$1" == "buildapp" ]]; then
         shift 1
-        run_electron app
+        run_electron app $@
     elif [[ "$1" == "electron" ]]; then
         shift 1
         run_electron $@
