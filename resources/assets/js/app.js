@@ -75,11 +75,19 @@ if (!isElectron && !isEEUiApp) {
         failedColor: '#ff0000'
     });
     router.beforeEach((to, from, next) => {
-        ViewUI.LoadingBar.start();
+        ViewUI.LoadingBar._timer && clearTimeout(ViewUI.LoadingBar._timer)
+        ViewUI.LoadingBar._timer = setTimeout(_ => {
+            ViewUI.LoadingBar._load = true;
+            ViewUI.LoadingBar.start();
+        }, 300)
         next();
     });
     router.afterEach(() => {
-        ViewUI.LoadingBar.finish();
+        ViewUI.LoadingBar._timer && clearTimeout(ViewUI.LoadingBar._timer)
+        if (ViewUI.LoadingBar._load === true) {
+            ViewUI.LoadingBar._load = false;
+            ViewUI.LoadingBar.finish();
+        }
     });
 }
 
@@ -99,7 +107,7 @@ Vue.prototype.goBack = function (number) {
     if ($A.runNum(history['::count']) > 2) {
         app.$router.go(typeof number === 'number' ? number : -1);
     } else {
-        app.$router.replace(typeof number === "object" ? number : {path: '/'}).then(() => {}).catch(() => {});
+        app.$router.replace(typeof number === "object" ? number : {path: '/'}).catch(_ => {});
     }
 };
 

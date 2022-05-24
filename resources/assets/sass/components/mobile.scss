@@ -181,6 +181,7 @@
     }
 }
 
+// 渐见
 .mobile-fade-enter-active {
     transition: all 0.2s ease;
 }
@@ -194,6 +195,7 @@
     opacity: 0;
 }
 
+// 底部划上
 .mobile-slide-enter-active {
     transition: all 0.2s ease;
 }
@@ -204,10 +206,11 @@
 
 .mobile-slide-enter,
 .mobile-slide-leave-to {
-    transform: translate(0, 15%) scale(0.98);
+    transform: translate(0, 15%);
     opacity: 0;
 }
 
+// 通知（顶部划入）
 .mobile-notify-enter-active {
     transition: all 0.3s ease;
 }
@@ -219,6 +222,21 @@
 .mobile-notify-enter,
 .mobile-notify-leave-to {
     transform: translate(-50%, -100%);
+    opacity: 0;
+}
+
+// 对话框（右侧划入）
+.mobile-dialog-enter-active {
+    transition: all 0.3s ease;
+}
+
+.mobile-dialog-leave-active {
+    transition: all 0.3s ease;
+}
+
+.mobile-dialog-enter,
+.mobile-dialog-leave-to {
+    transform: translate(100%, 0);
     opacity: 0;
 }
 

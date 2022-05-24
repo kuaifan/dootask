@@ -119,13 +119,16 @@
                 </div>
             </div>
 
-            <div class="messenger-msg" :class="{'show768':dialogId > 0}">
-                <div class="msg-dialog-bg">
-                    <div class="msg-dialog-bg-icon"><Icon type="ios-chatbubbles" /></div>
-                    <div class="msg-dialog-bg-text">{{$L('选择一个会话开始聊天')}}</div>
+            <transition :name="windowMax768 ? 'mobile-dialog' : ''">
+                <div v-if="dialogId || !windowMax768" class="messenger-msg">
+                    <div class="msg-dialog-bg">
+                        <div class="msg-dialog-bg-icon"><Icon type="ios-chatbubbles" /></div>
+                        <div class="msg-dialog-bg-text">{{$L('选择一个会话开始聊天')}}</div>
+                    </div>
+                    <DialogWrapper v-if="dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive"/>
                 </div>
-                <DialogWrapper v-if="dialogTmpId > 0" :dialogId="dialogTmpId" @on-active="scrollIntoActive"/>
-            </div>
+            </transition>
+
         </div>
     </div>
 </template>
@@ -149,7 +152,6 @@ export default {
             ],
             dialogActive: '',
             dialogKey: '',
-            dialogTmpId: 0,
 
             contactsKey: '',
             contactsLoad: 0,
@@ -173,7 +175,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'cacheDialogs', 'loadDialogs']),
+        ...mapState(['userId', 'cacheDialogs', 'loadDialogs', 'windowMax768']),
 
         dialogId() {
             const {dialogId} = this.$route.params;
@@ -302,16 +304,8 @@ export default {
         dialogId: {
             handler(id) {
                 if (id > 0) {
-                    this.dialogTmpId = id;
                     $A.setStorage("messenger::dialogId", id);
                     this.scrollIntoActive()
-                } else {
-                    this.timerA && clearTimeout(this.timerA);
-                    this.timerA = setTimeout(_ => {
-                        if (this.dialogId == 0) {
-                            this.dialogTmpId = 0;
-                        }
-                    }, 300)
                 }
             },
             immediate: true
