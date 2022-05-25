@@ -419,7 +419,7 @@ class User extends AbstractModel
         if (isset($_A["__static_userid2basic_" . $userid])) {
             return $_A["__static_userid2basic_" . $userid];
         }
-        $fields = ['userid', 'email', 'nickname', 'profession', 'userimg'];
+        $fields = ['userid', 'email', 'nickname', 'profession', 'userimg', 'line_at'];
         $userInfo = self::whereUserid($userid)->select($fields)->first();
         if ($userInfo) {
             $userInfo->online = $userInfo->getOnlineStatus();

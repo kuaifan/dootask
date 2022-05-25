@@ -19,7 +19,9 @@
                             <i v-else-if="dialogData.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
                             <Icon v-else class="icon-avatar" type="ios-people" />
                         </template>
-                        <div v-else-if="dialogData.dialog_user" class="user-avatar"><UserAvatar :userid="dialogData.dialog_user.userid" :size="42"/></div>
+                        <div v-else-if="dialogData.dialog_user" class="user-avatar">
+                            <UserAvatar :online.sync="dialogData.online_state" :userid="dialogData.dialog_user.userid" :size="42"/>
+                        </div>
                         <Icon v-else class="icon-avatar" type="md-person" />
                     </div>
                     <div class="dialog-title">
@@ -39,6 +41,9 @@
                                 {{$L('任务聊天室')}} {{$L('查看任务详情')}}
                             </div>
                         </template>
+                        <div v-else-if="dialogData.type === 'user'" :class="['sub-title', dialogData.online_state === true ? 'online' : 'offline']">
+                            {{$L(dialogData.online_state === true ? '在线' : dialogData.online_state)}}
+                        </div>
                     </div>
                 </div>
 
