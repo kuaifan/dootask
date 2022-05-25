@@ -81,7 +81,7 @@
                 </div>
                 <div v-if="flowList.length > 0" class="project-select">
                     <Cascader :data="flowData" @on-change="flowChange" transfer-class-name="project-panel-flow-cascader" transfer>
-                        <span :class="`project-flow ${flowInfo.status}`">{{ flowTitle }}</span>
+                        <span :class="`project-flow ${flowInfo.status || ''}`">{{ flowTitle }}</span>
                     </Cascader>
                 </div>
                 <div class="project-switch-button">
@@ -781,9 +781,10 @@ export default {
         },
 
         flowTitle() {
-            const {flowInfo, allTask} = this;
+            const {flowInfo, flowData, allTask} = this;
             if (flowInfo.value) {
-                return flowInfo.label;
+                const item = flowData.find(item => item.value === flowInfo.value);
+                return item ? item.label : flowInfo.label;
             }
             return `${this.$L('全部')} (${allTask.length})`
         },
