@@ -50,33 +50,35 @@
             <div v-if="timeShow" class="time" @click="timeShow=false">{{msgData.created_at}}</div>
             <div v-else class="time" :title="msgData.created_at" @click="timeShow=true">{{$A.formatTime(msgData.created_at)}}</div>
 
-            <div v-if="msgData.send > 1 || dialogType === 'group'" class="percent" @click="openReadPercentage">
-                <EPopover
-                    v-model="popperShow"
-                    ref="percent"
-                    popper-class="dialog-wrapper-read-poptip"
-                    placement="left-end">
-                    <div class="read-poptip-content">
-                        <ul class="read overlay-y">
-                            <li class="read-title"><em>{{ readList.length }}</em>{{ $L('已读') }}</li>
-                            <li v-for="item in readList">
-                                <UserAvatar :userid="item.userid" :size="26" showName/>
-                            </li>
-                        </ul>
-                        <ul class="unread overlay-y">
-                            <li class="read-title"><em>{{ unreadList.length }}</em>{{ $L('未读') }}</li>
-                            <li v-for="item in unreadList">
-                                <UserAvatar :userid="item.userid" :size="26" showName/>
-                            </li>
-                        </ul>
-                    </div>
-                    <div slot="reference"></div>
-                </EPopover>
-                <Loading v-if="popperLoad > 0"/>
-                <WCircle v-else :percent="msgData.percentage" :size="14"/>
-            </div>
-            <Icon v-else-if="msgData.percentage === 100" class="done" type="md-done-all"/>
-            <Icon v-else class="done" type="md-checkmark"/>
+            <template v-if="!hiddenPercentage">
+                <div v-if="msgData.send > 1 || dialogType === 'group'" class="percent" @click="openReadPercentage">
+                    <EPopover
+                        v-model="popperShow"
+                        ref="percent"
+                        popper-class="dialog-wrapper-read-poptip"
+                        placement="left-end">
+                        <div class="read-poptip-content">
+                            <ul class="read overlay-y">
+                                <li class="read-title"><em>{{ readList.length }}</em>{{ $L('已读') }}</li>
+                                <li v-for="item in readList">
+                                    <UserAvatar :userid="item.userid" :size="26" showName/>
+                                </li>
+                            </ul>
+                            <ul class="unread overlay-y">
+                                <li class="read-title"><em>{{ unreadList.length }}</em>{{ $L('未读') }}</li>
+                                <li v-for="item in unreadList">
+                                    <UserAvatar :userid="item.userid" :size="26" showName/>
+                                </li>
+                            </ul>
+                        </div>
+                        <div slot="reference"></div>
+                    </EPopover>
+                    <Loading v-if="popperLoad > 0"/>
+                    <WCircle v-else :percent="msgData.percentage" :size="14"/>
+                </div>
+                <Icon v-else-if="msgData.percentage === 100" class="done" type="md-done-all"/>
+                <Icon v-else class="done" type="md-checkmark"/>
+            </template>
         </div>
         <div v-else class="dialog-foot"><Loading/></div>
 
@@ -100,6 +102,10 @@ export default {
         dialogType: {
             type: String,
             default: ''
+        },
+        hiddenPercentage: {
+            type: Boolean,
+            default: false
         },
     },
 

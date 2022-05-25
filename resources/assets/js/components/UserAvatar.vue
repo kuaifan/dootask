@@ -194,14 +194,16 @@
             },
 
             'user.online'(val) {
-                if (val) {
+                if (val || this.userId === this.userid) {
                     this.$emit('update:online', true)
                 } else {
                     const now = $A.Time()
                     const line = $A.Time(this.user.line_at)
                     const seconds = now - line
                     let stats = '最后在线于很久以前';
-                    if (seconds < 3600) {
+                    if (seconds < 60) {
+                        stats = `最后在线于刚刚`
+                    } else if (seconds < 3600) {
                         stats = `最后在线于 ${Math.floor(seconds / 60)} 分钟前`
                     } else if (seconds < 3600 * 6) {
                         stats = `最后在线于 ${Math.floor(seconds / 3600)} 小时前`

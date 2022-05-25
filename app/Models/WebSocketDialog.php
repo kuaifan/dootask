@@ -76,6 +76,9 @@ class WebSocketDialog extends AbstractModel
         switch ($this->type) {
             case "user":
                 $dialog_user = $builder->where('userid', '!=', $userid)->first();
+                if ($dialog_user->userid === 0) {
+                    $dialog_user->userid = $userid;
+                }
                 $this->name = User::userid2nickname($dialog_user->userid);
                 $this->dialog_user = $dialog_user;
                 break;
@@ -300,6 +303,9 @@ class WebSocketDialog extends AbstractModel
      */
     public static function checkUserDialog($userid, $userid2)
     {
+        if ($userid == $userid2) {
+            $userid2 = 0;
+        }
         $dialogUser = self::select(['web_socket_dialogs.*'])
             ->join('web_socket_dialog_users as u1', 'web_socket_dialogs.id', '=', 'u1.dialog_id')
             ->join('web_socket_dialog_users as u2', 'web_socket_dialogs.id', '=', 'u2.dialog_id')

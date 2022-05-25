@@ -111,8 +111,8 @@ class DialogController extends AbstractController
         $user = User::auth();
         //
         $userid = intval(Request::input('userid'));
-        if ($userid == $user->userid) {
-            return Base::retError('不能对话自己');
+        if (empty($userid)) {
+            return Base::retError('错误的会话');
         }
         //
         $dialog = WebSocketDialog::checkUserDialog($user->userid, $userid);

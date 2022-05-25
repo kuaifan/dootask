@@ -2020,10 +2020,6 @@ export default {
      */
     openDialogUserid({state, dispatch}, userid) {
         return new Promise(function (resolve, reject) {
-            if (userid === state.userId) {
-                reject({msg: 'Parameter error'});
-                return;
-            }
             dispatch("call", {
                 url: 'dialog/open/user',
                 data: {

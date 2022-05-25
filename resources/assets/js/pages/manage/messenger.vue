@@ -35,7 +35,7 @@
                         ref="dialogWrapper"
                         class="dialog" >
                         <li v-if="dialogList.length === 0" class="nothing">
-                            {{$L(dialogKey ? `没有任何与"${dialogKey}"相关的对话` : `没有任何对话`)}}
+                            {{$L(dialogKey ? `没有任何与"${dialogKey}"相关的会话` : `没有任何会话`)}}
                         </li>
                         <li
                             v-else
@@ -64,7 +64,7 @@
                                         <Tag :color="tag.color" :fade="false">{{$L(tag.text)}}</Tag>
                                     </template>
                                     <span>{{dialog.name}}</span>
-                                    <Icon v-if="dialog.type == 'user' && lastMsgReadDone(dialog.last_msg)" :type="lastMsgReadDone(dialog.last_msg)"/>
+                                    <Icon v-if="dialog.type == 'user' && lastMsgReadDone(dialog.last_msg) && dialog.dialog_user.userid != userId" :type="lastMsgReadDone(dialog.last_msg)"/>
                                     <em v-if="dialog.last_at">{{$A.formatTime(dialog.last_at)}}</em>
                                 </div>
                                 <div class="dialog-text no-dark-content">
@@ -460,9 +460,6 @@ export default {
                     this.contactsData = [];
                 }
                 data.data.some((user) => {
-                    if (user.userid === this.userId) {
-                        return false;
-                    }
                     if (this.contactsData.findIndex(item => item.userid == user.userid) === -1) {
                         this.contactsData.push(user)
                     }
