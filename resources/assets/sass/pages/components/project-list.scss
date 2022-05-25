@@ -24,14 +24,14 @@
             overflow: hidden;
 
             .search-pre {
-                width: 32px;
-                height: 32px;
+                width: 100%;
+                height: 100%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 .common-loading {
-                    width: 16px;
-                    height: 16px;
+                    width: 14px;
+                    height: 14px;
                     margin: 0;
                 }
             }
@@ -60,6 +60,25 @@
             border-radius: 12px;
             background-color: #ffffff;
             list-style: none;
+            &.nothing,
+            &.loading {
+                text-align: center;
+                height: 100%;
+                margin: 0;
+                padding: 24px;
+                border-radius: 0;
+                line-height: 22px;
+            }
+            &.loading {
+                display: flex;
+                align-items: flex-start;
+                justify-content: center;
+                .common-loading {
+                    width: 20px;
+                    height: 20px;
+                    margin: 1px;
+                }
+            }
             .project-h1 {
                 font-size: 16px;
                 line-height: 22px;

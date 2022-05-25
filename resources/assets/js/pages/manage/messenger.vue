@@ -5,16 +5,16 @@
             <div class="messenger-select">
                 <div class="messenger-search">
                     <div class="search-wrapper">
-                        <Input v-if="tabActive==='dialog'" v-model="dialogKey" :placeholder="$L(loadDialogs ? '读取中...' : '搜索...')" clearable >
+                        <Input v-if="tabActive==='dialog'" v-model="dialogKey" :placeholder="$L(loadDialogs ? '更新中...' : '搜索消息')" clearable >
                             <div class="search-pre" slot="prefix">
                                 <Loading v-if="loadDialogs"/>
                                 <Icon v-else type="ios-search" />
                             </div>
                         </Input>
-                        <Input v-else prefix="ios-search" v-model="contactsKey" :placeholder="$L('搜索...')" clearable />
+                        <Input v-else prefix="ios-search" v-model="contactsKey" :placeholder="$L('搜索联系人')" clearable />
                     </div>
                 </div>
-                <div v-if="tabActive==='dialog'" class="messenger-nav">
+                <div v-if="tabActive==='dialog' && !dialogKey" class="messenger-nav">
                     <p
                         v-for="(item, key) in dialogType"
                         :key="key"
@@ -34,7 +34,11 @@
                         v-if="tabActive==='dialog'"
                         ref="dialogWrapper"
                         class="dialog" >
+                        <li v-if="dialogList.length === 0" class="nothing">
+                            {{$L(dialogKey ? `没有任何与"${dialogKey}"相关的对话` : `没有任何对话`)}}
+                        </li>
                         <li
+                            v-else
                             v-for="(dialog, key) in dialogList"
                             :ref="`dialog_${dialog.id}`"
                             :key="key"
@@ -76,17 +80,24 @@
                         </li>
                     </ul>
                     <ul v-else class="contacts">
-                        <li v-for="(users, label) in contactsData">
-                            <div class="label">{{label}}</div>
-                            <ul>
-                                <li v-for="(user, index) in users" :key="index" @click="openContacts(user)">
-                                    <div class="avatar"><UserAvatar :userid="user.userid" :size="30"/></div>
-                                    <div class="nickname">{{user.nickname}}</div>
-                                </li>
-                            </ul>
-                        </li>
-                        <li v-if="contactsLoad > 0" class="loading"><Loading/></li>
-                        <li v-else-if="!contactsHasMorePages" class="loaded">{{$L('共' + contactsList.length + '位联系人')}}</li>
+                        <template v-if="contactsFilter.length === 0">
+                            <li v-if="contactsLoad > 0" class="loading"><Loading/></li>
+                            <li v-else class="nothing">
+                                {{$L(contactsKey ? `没有任何与"${contactsKey}"相关的联系人` : `没有任何联系人`)}}
+                            </li>
+                        </template>
+                        <template v-else>
+                            <li v-for="items in contactsList">
+                                <div class="label">{{items.az}}</div>
+                                <ul>
+                                    <li v-for="(user, index) in items.list" :key="index" @click="openContacts(user)">
+                                        <div class="avatar"><UserAvatar :userid="user.userid" :size="30"/></div>
+                                        <div class="nickname">{{user.nickname}}</div>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li class="loaded">{{$L('共' + contactsFilter.length + '位联系人')}}</li>
+                        </template>
                     </ul>
                     <div class="top-operate" :style="topOperateStyles">
                         <Dropdown
@@ -156,7 +167,6 @@ export default {
 
             contactsKey: '',
             contactsLoad: 0,
-            contactsList: [],
             contactsData: null,
             contactsCurrentPage: 1,
             contactsHasMorePages: false,
@@ -200,7 +210,13 @@ export default {
                 if (!this.filterDialog(dialog)) {
                     return false;
                 }
-                if (dialogActive) {
+                if (dialogKey) {
+                    let existName = $A.strExists(dialog.name, dialogKey);
+                    let existMsg = dialog.last_msg && dialog.last_msg.type === 'text' && $A.strExists(dialog.last_msg.msg.text, dialogKey);
+                    if (!existName && !existMsg) {
+                        return false;
+                    }
+                } else if (dialogActive) {
                     switch (dialogActive) {
                         case 'project':
                         case 'task':
@@ -217,13 +233,6 @@ export default {
                             return false;
                     }
                 }
-                if (dialogKey) {
-                    let existName = $A.strExists(dialog.name, dialogKey);
-                    let existMsg = dialog.last_msg && dialog.last_msg.type === 'text' && $A.strExists(dialog.last_msg.msg.text, dialogKey);
-                    if (!existName && !existMsg) {
-                        return false;
-                    }
-                }
                 return true;
             }).sort((a, b) => {
                 if (a.top_at || b.top_at) {
@@ -231,6 +240,36 @@ export default {
                 }
                 return $A.Date(b.last_at) - $A.Date(a.last_at);
             })
+        },
+
+        contactsFilter() {
+            const {contactsData, contactsKey} = this;
+            if (contactsData === null) {
+                return [];
+            }
+            if (contactsKey) {
+                return contactsData.filter(item => $A.strExists(item.email, contactsKey) || $A.strExists(item.nickname, contactsKey))
+            }
+            return contactsData;
+        },
+
+        contactsList() {
+            let list = [];
+            this.contactsFilter.some(user => {
+                let az = user.az ? user.az.toUpperCase() : "#";
+                let item = list.find(item => item.az = az);
+                if (item) {
+                    if (item.list.findIndex(({userid}) => userid == user.userid) === -1) {
+                        item.list.push(user)
+                    }
+                } else {
+                    list.push({
+                        az,
+                        list: [user]
+                    })
+                }
+            })
+            return list;
         },
 
         msgUnread() {
@@ -285,11 +324,15 @@ export default {
             }
         },
         contactsKey(val) {
+            if (val == '') {
+                return;
+            }
+            this.contactsLoad++;
             setTimeout(() => {
                 if (this.contactsKey == val) {
-                    this.contactsData = null;
                     this.getContactsList(1);
                 }
+                this.contactsLoad--;
             }, 600);
         },
         tabActive: {
@@ -399,9 +442,6 @@ export default {
         },
 
         getContactsList(page) {
-            if (this.contactsData === null) {
-                this.contactsData = {};
-            }
             this.contactsLoad++;
             this.$store.dispatch("call", {
                 url: 'users/search',
@@ -416,19 +456,15 @@ export default {
                     pagesize: 50
                 },
             }).then(({data}) => {
+                if (this.contactsData === null) {
+                    this.contactsData = [];
+                }
                 data.data.some((user) => {
                     if (user.userid === this.userId) {
                         return false;
                     }
-                    let az = user.az ? user.az.toUpperCase() : "#";
-                    if (typeof this.contactsData[az] === "undefined") this.contactsData[az] = [];
-                    //
-                    let index = this.contactsData[az].findIndex(({userid}) => userid === user.userid);
-                    if (index > -1) {
-                        this.contactsData[az].splice(index, 1, user);
-                    } else {
-                        this.contactsData[az].push(user);
-                        this.contactsList.push(user);
+                    if (this.contactsData.findIndex(item => item.userid = user.userid) === -1) {
+                        this.contactsData.push(user)
                     }
                 });
                 this.contactsCurrentPage = data.current_page;

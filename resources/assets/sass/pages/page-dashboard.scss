@@ -261,6 +261,22 @@
     }
 }
 
+// 加载状态（延时显示，立即隐藏）
+.dashboard-load-enter-active {
+    transition: opacity 0.3s ease;
+    transition-delay: 1s;
+}
+
+.dashboard-load-leave-active {
+    transition: opacity 0.2s ease;
+    transition-delay: 0s;
+}
+
+.dashboard-load-enter,
+.dashboard-load-leave-to {
+    opacity: 0;
+}
+
 @media (max-width: 768px) {
     .page-dashboard {
         .dashboard-wrapper {

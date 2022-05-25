@@ -5,7 +5,9 @@
             <div class="dashboard-hello">{{$L('欢迎您，' + userInfo.nickname)}}</div>
             <div class="dashboard-desc">
                 {{$L('以下是你当前的任务统计数据')}}
-                <div v-if="loadDashboardTasks" class="dashboard-load"><Loading/></div>
+                <transition name="dashboard-load">
+                    <div v-if="loadDashboardTasks" class="dashboard-load"><Loading/></div>
+                </transition>
             </div>
             <ul class="dashboard-block">
                 <li @click="scrollTo('today')">

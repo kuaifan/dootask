@@ -3,15 +3,21 @@
         <PageTitle :title="$L('项目')"/>
         <div class="list-search">
             <div class="search-wrapper">
-                <Input v-model="projectKeyValue" :placeholder="$L(loadProjects || projectKeyLoading ? '读取中...' : '搜索...')" clearable>
+                <Input v-model="projectKeyValue" :placeholder="$L(loadProjects ? '更新中...' : '搜索项目')" clearable>
                     <div class="search-pre" slot="prefix">
-                        <Loading v-if="loadProjects || projectKeyLoading"/>
+                        <Loading v-if="loadProjects"/>
                         <Icon v-else type="ios-search" />
                     </div>
                 </Input>
             </div>
         </div>
         <ul>
+            <template v-if="projectLists.length === 0">
+                <li v-if="projectKeyLoading > 0" class="loading"><Loading/></li>
+                <li v-else class="nothing">
+                    {{$L(projectLists ? `没有任何与"${projectKeyValue}"相关的项目` : `没有任何项目`)}}
+                </li>
+            </template>
             <li
                 v-for="(item, key) in projectLists"
                 :key="key"
@@ -49,7 +55,6 @@ export default {
     data() {
         return {
             projectKeyValue: '',
-            projectKeyAlready: {},
             projectKeyLoading: 0,
         }
     },
@@ -89,31 +94,25 @@ export default {
             if (val == '') {
                 return;
             }
+            this.projectKeyLoading++;
             setTimeout(() => {
                 if (this.projectKeyValue == val) {
                     this.searchProject();
                 }
+                this.projectKeyLoading--;
             }, 600);
         },
     },
 
     methods: {
         searchProject() {
-            if (this.projectKeyAlready[this.projectKeyValue] === true) {
-                return;
-            }
-            this.projectKeyAlready[this.projectKeyValue] = true;
-            //
-            setTimeout(() => {
-                this.projectKeyLoading++;
-            }, 1000)
+            this.projectKeyLoading++;
             this.$store.dispatch("getProjects", {
                 keys: {
                     name: this.projectKeyValue
-                }
-            }).then(() => {
-                this.projectKeyLoading--;
-            }).catch(() => {
+                },
+                hideLoad: true,
+            }).finally(_ => {
                 this.projectKeyLoading--;
             });
         },

@@ -711,7 +711,12 @@ export default {
                 reject({msg: 'Parameter error'});
                 return;
             }
-            state.loadProjects++;
+            let showLoad = true;
+            if (data.hideLoad !== undefined) {
+                showLoad = !data.hideLoad;
+                delete data.hideLoad;
+            }
+            showLoad && state.loadProjects++;
             dispatch("call", {
                 url: 'project/lists',
                 data: data || {}
@@ -723,7 +728,7 @@ export default {
                 console.warn(e);
                 reject(e)
             }).finally(_ => {
-                state.loadProjects--;
+                showLoad && state.loadProjects--;
             });
         });
     },
