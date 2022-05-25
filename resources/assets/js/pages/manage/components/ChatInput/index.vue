@@ -40,10 +40,12 @@
                 </div>
             </EPopover>
 
-            <div class="toolbar-spacing"></div>
-
-            <Loading v-if="loading"/>
-            <ETooltip v-else placement="top" :disabled="!$isDesktop" :content="$L('发送')"><Icon :class="[value ? '' : 'disabled']" type="md-send" @click="send"/></ETooltip>
+            <ETooltip placement="top" :disabled="!$isDesktop" :content="$L('发送')">
+                <div class="chat-send" :class="[value ? '' : 'disabled']" v-touchmouse="send">
+                    <Loading v-if="loading"/>
+                    <Icon v-else type="md-send"/>
+                </div>
+            </ETooltip>
 
             <slot name="toolbarAfter"/>
         </div>
@@ -51,15 +53,16 @@
 </template>
 
 <script>
-import {mapGetters, mapState} from "vuex";
-
+import {mapState} from "vuex";
 import Quill from 'quill';
 import "quill-mention";
 import ChatEmoji from "./emoji";
+import touchmouse from "../../../../directives/touchmouse";
 
 export default {
     name: 'ChatInput',
     components: {ChatEmoji},
+    directives: {touchmouse},
     props: {
         dialogId: {
             type: Number,
@@ -87,7 +90,9 @@ export default {
         },
         enterSend: {
             type: Boolean,
-            default: true
+            default: () => {
+                return $A.$isDesktop
+            }
         },
         options: {
             type: Object,
@@ -337,14 +342,26 @@ export default {
                 }
                 let html = this.$refs.editor.children[0].innerHTML
                 html = html.replace(/^(<p><br><\/p>)+|(<p><br><\/p>)+$/gi, '')
-                const quill = this.quill
-                const text = this.quill.getText()
                 this._content = html
                 this.$emit('input', this._content)
-                this.$emit('on-change', { html, text, quill })
+                this.$nextTick(_ => {
+                    const range = this.quill.getSelection();
+                    if (range) {
+                        const endText = this.quill.getText(range.index);
+                        /\n\n/.test(endText) && this.quill.deleteText(range.index, 1);
+                    }
+                })
             })
 
-            // Emit ready event
+            // Clipboard Matcher (保留图片跟空格，清除其余所以样式)
+            this.quill.clipboard.addMatcher(Node.ELEMENT_NODE, (node, delta) => {
+                delta.ops = delta.ops.map(op => ({
+                    insert: op.insert
+                }))
+                return delta
+            })
+
+            // Ready event
             this.$emit('on-ready', this.quill)
         },
 
@@ -390,6 +407,9 @@ export default {
         },
 
         send() {
+            if (this.loading) {
+                return;
+            }
             this.$emit('on-send')
         },
 

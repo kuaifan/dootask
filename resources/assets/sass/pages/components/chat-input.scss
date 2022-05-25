@@ -221,16 +221,6 @@
         width: 170px;
         height: 28px;
         padding: 0 2px;
-        .common-loading {
-            width: 18px;
-            height: 18px;
-        }
-        .toolbar-spacing {
-            width: 1px;
-            height: 14px;
-            margin: 2px 7px 0;
-            background-color: #cccccc;
-        }
         > i {
             display: inline-block;
             cursor: pointer;
@@ -240,8 +230,73 @@
             &.disabled {
                 opacity: 0.5;
             }
-            &:last-child {
-                margin-right: -5px;
+        }
+        .chat-send {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            cursor: pointer;
+            font-size: 20px;
+            padding-right: 16px;
+            margin: 0 -16px 0 7px;
+            height: 48px;
+            width: 48px;
+            position: relative;
+            .common-loading {
+                width: 18px;
+                height: 18px;
+                padding: 0;
+                margin: 0 1px;
+            }
+            > i {
+                position: static;
+                z-index: 2;
+                display: flex;
+                align-items: center;
+                height: 100%;
+                color: #ffffff;
+                transition: all 0.3s;
+            }
+            &:after {
+                position: absolute;
+                content: "";
+                left: 0;
+                z-index: 1;
+                width: 1px;
+                height: 14px;
+                background-color: #cccccc;
+                transition: all 0.3s ease;
+                transform: scale(0);
+                opacity: 0;
+            }
+            &:before {
+                position: absolute;
+                content: "";
+                left: 2px;
+                z-index: 1;
+                border-radius: 50%;
+                background-color: #8bcf70;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 36px;
+                height: 36px;
+                transition: all 0.3s ease;
+                transform: scale(1);
+                opacity: 1;
+            }
+            &.disabled {
+                > i {
+                    color: rgba($primary-text-color, 0.5);
+                }
+                &:after {
+                    transform: scale(1);
+                    opacity: 1;
+                }
+                &:before {
+                    transform: scale(0);
+                    opacity: 0;
+                }
             }
         }
         .el-tooltip.taskfont {

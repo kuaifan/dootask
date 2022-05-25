@@ -72,6 +72,7 @@
                                 </div>
                             </div>
                             <Badge class="dialog-num" :count="$A.getDialogUnread(dialog)"/>
+                            <div class="dialog-split"></div>
                         </li>
                     </ul>
                     <ul v-else class="contacts">

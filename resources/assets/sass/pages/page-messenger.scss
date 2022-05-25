@@ -219,6 +219,9 @@
                                 left: 42px;
                                 transform: scale(0.8);
                             }
+                            .dialog-split {
+                                display: none;
+                            }
                             &.top {
                                 background-color: #EEEFF1;
                             }
@@ -432,8 +435,8 @@
                     > ul {
                         &.dialog {
                             > li {
-                                &:after {
-                                    content: "";
+                                .dialog-split {
+                                    display: block;
                                     position: absolute;
                                     bottom: 0;
                                     right: 0;
@@ -443,7 +446,7 @@
                                     transform: scaleY(0.5);
                                 }
                                 &:last-child {
-                                    &:after {
+                                    .dialog-split {
                                         display: none;
                                     }
                                 }
