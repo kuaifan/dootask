@@ -463,7 +463,7 @@ export default {
                     if (user.userid === this.userId) {
                         return false;
                     }
-                    if (this.contactsData.findIndex(item => item.userid = user.userid) === -1) {
+                    if (this.contactsData.findIndex(item => item.userid == user.userid) === -1) {
                         this.contactsData.push(user)
                     }
                 });
