@@ -56,8 +56,8 @@
                     line-height: 24px;
                     padding: 0 8px;
                     border-radius: 4px;
-                    color: #8bcf70;
-                    border: 1px solid #8bcf70;
+                    color: $primary-color;
+                    border: 1px solid $primary-color;
                     display: inline-block;
                     text-align: center;
                     cursor: pointer;
@@ -142,7 +142,7 @@
                     align-items: center;
                     .ivu-icon {
                         font-size: 22px;
-                        color: #606266;
+                        color: $primary-text-color;
                     }
                 }
             }
@@ -351,8 +351,8 @@
                                     line-height: 16px;
                                     padding: 0 2px;
                                     border-radius: 3px;
-                                    color: #8bcf70;
-                                    border: 1px solid #8bcf70;
+                                    color: $primary-color;
+                                    border: 1px solid $primary-color;
                                     display: inline-block;
                                     margin-right: 3px;
                                     text-align: center;

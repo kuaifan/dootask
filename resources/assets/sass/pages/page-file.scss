@@ -46,8 +46,8 @@
                 cursor: pointer;
                 > button {
                     color: #ffffff;
-                    background: #8bcf70;
-                    border-color: #8bcf70;
+                    background: $primary-color;
+                    border-color: $primary-color;
                 }
             }
             .file-search {
@@ -502,7 +502,7 @@
             .title {
                 font-weight: 700;
                 font-size: 16px;
-                color: #303133;
+                color: $primary-title-color;
                 margin: 0;
                 > em {
                     padding-left: 4px;
@@ -517,7 +517,7 @@
                 font-size: 14px;
                 line-height: 21px;
                 margin: 12px 0 0;
-                color: #606266;
+                color: $primary-text-color;
                 max-height: 500px;
                 max-width: 100%;
                 overflow: auto;

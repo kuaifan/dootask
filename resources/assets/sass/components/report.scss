@@ -197,7 +197,7 @@
 
         .ivu-radio-wrapper-checked:not(.ivu-radio-wrapper-disabled) {
             background: #fff !important;
-            color: #8BCF70 !important;
+            color: $primary-color !important;
             box-shadow: none !important;
             border: none !important;
             border-radius: 4px !important;
@@ -225,7 +225,7 @@
             background: #F4F5F7 !important;
             box-shadow: none !important;
             border: none !important;
-            color: #8BCF70 !important;
+            color: $primary-color !important;
             height: 36px;
             line-height: 34px;
 

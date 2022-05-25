@@ -143,7 +143,7 @@
                     border-radius: 50%;
                     text-align: center;
                     color: #ffffff;
-                    background-color: #8bcf70;
+                    background-color: $primary-color;
                     overflow: hidden;
                 }
 
@@ -275,7 +275,7 @@
                 left: 2px;
                 z-index: 1;
                 border-radius: 50%;
-                background-color: #8bcf70;
+                background-color: $primary-color;
                 display: flex;
                 align-items: center;
                 justify-content: center;
