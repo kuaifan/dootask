@@ -105,6 +105,12 @@
                     margin-right: 12px;
                     min-width: 28px;
                     text-align: left;
+                    display: flex;
+                    align-items: center;
+                    .taskfont {
+                        font-size: 14px;
+                        padding-right: 4px;
+                    }
                     > em {
                         opacity: 0.7;
                         font-style: normal;

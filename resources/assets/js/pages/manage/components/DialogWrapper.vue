@@ -64,9 +64,11 @@
             @onScroll="onScroll"
             class="dialog-scroller overlay-y">
             <template #before>
-                <div v-if="dialogData.hasMorePages" class="dialog-item history" @click="loadNextPage">{{$L('加载历史消息')}}</div>
-                <div v-else-if="dialogData.loading > 0 && dialogMsgList.length === 0" class="dialog-item loading"><Loading/></div>
-                <div v-else-if="dialogMsgList.length === 0" class="dialog-item nothing">{{$L('暂无消息')}}</div>
+                <template v-if="allMsgs.length === 0">
+                    <div v-if="dialogData.loading > 0" class="dialog-item loading"><Loading/></div>
+                    <div v-else class="dialog-item nothing">{{$L('暂无消息')}}</div>
+                </template>
+                <div v-else-if="dialogData.hasMorePages" class="dialog-item history" @click="loadNextPage">{{$L('加载历史消息')}}</div>
             </template>
             <template v-slot="{ item, index, active }">
                 <DynamicScrollerItem
@@ -89,7 +91,7 @@
                 </DynamicScrollerItem>
             </template>
         </DynamicScroller>
-        <div :class="['dialog-footer', msgNew > 0 && dialogMsgList.length > 0 ? 'newmsg' : '']" @click="onActive">
+        <div :class="['dialog-footer', msgNew > 0 && allMsgs.length > 0 ? 'newmsg' : '']" @click="onActive">
             <div class="dialog-newmsg" @click="onToBottom">{{$L('有' + msgNew + '条新消息')}}</div>
             <div class="dialog-input">
                 <slot name="inputBefore"/>
@@ -335,11 +337,16 @@ export default {
                 if (id) {
                     this.msgNew = 0;
                     this.topId = -1;
-                    if (this.dialogMsgList.length > 0) {
-                        setTimeout(this.onToBottom, 10);
+                    let cacheTimer = null;
+                    if (this.allMsgList.length > 0) {
+                        cacheTimer = setTimeout(_ => {
+                            this.allMsgs = this.allMsgList;
+                            this.onToBottom();
+                        }, 1);
                     }
                     const startTime = new Date().getTime();
                     this.$store.dispatch("getDialogMsgs", id).then(_ => {
+                        cacheTimer && clearTimeout(cacheTimer);
                         setTimeout(this.onToBottom, Math.max(0, 100 - (new Date().getTime() - startTime)));
                     }).catch(_ => {});
                 }
