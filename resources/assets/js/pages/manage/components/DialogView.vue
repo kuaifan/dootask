@@ -211,8 +211,17 @@ export default {
             text = text.trim().replace(/(\n\x20*){3,}/g, "\n\n");
             text = text.replace(/\{\{RemoteURL\}\}/g, $A.apiUrl('../'))
             text = text.replace(/<p><\/p>/g, '<p><br/></p>')
-            // text = text.replace(/(https*:\/\/)((\w|=|\?|\.|\/|&|-|:|\+|%|;)+)/g, "<a href=\"$1$2\" target=\"_blank\">$1$2</a>");
             text = text.replace(this.atUserReg, `<span class="mention me" data-id="${this.userId}">`)
+            // 处理内容连接
+            if (/https*:\/\//.test(text)) {
+                text = text.split(/(<[^>]*>)/g).map(string => {
+                    if (string && !/<[^>]*>/.test(string)) {
+                        string = string.replace(/(https*:\/\/)((\w|=|\?|\.|\/|&|-|:|\+|%|;)+)/g, "<a href=\"$1$2\" target=\"_blank\">$1$2</a>")
+                    }
+                    return string;
+                }).join("")
+            }
+            // 处理图片显示尺寸
             const array = text.match(/<img\s+[^>]*?>/g);
             if (array) {
                 const widthReg = new RegExp("width=\"(\\d+)\"")
