@@ -91,7 +91,7 @@ export default {
         enterSend: {
             type: Boolean,
             default: () => {
-                return $A.$isDesktop
+                return $A.isDesktop
             }
         },
         options: {
@@ -317,6 +317,7 @@ export default {
                 }
                 if (!range) {
                     this.$emit('on-blur', this.quill)
+                    this.inputCache(this.dialogId, this.value)
                 } else {
                     this.$emit('on-focus', this.quill)
                     this.showEmoji = false
@@ -411,6 +412,7 @@ export default {
                 return;
             }
             this.$emit('on-send')
+            this.inputCache(this.dialogId, null)
         },
 
         onSelectEmoji(item) {

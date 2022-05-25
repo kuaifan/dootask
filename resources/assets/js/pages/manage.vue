@@ -203,9 +203,13 @@
             </ul>
             <div
                 v-if="projectTotal > 20"
-                class="manage-project-search"
-                :class="{loading:projectKeyLoading > 0}">
-                <Input prefix="ios-search" v-model="projectKeyValue" :placeholder="$L('共' + projectTotal + '个项目，搜索...')" clearable />
+                class="manage-project-search">
+                <Input v-model="projectKeyValue" :placeholder="$L('共' + projectTotal + '个项目，搜索...')" clearable>
+                    <div class="search-pre" slot="prefix">
+                        <Loading v-if="projectKeyLoading > 0"/>
+                        <Icon v-else type="ios-search" />
+                    </div>
+                </Input>
             </div>
             <ButtonGroup class="manage-box-new-group">
                 <Button class="manage-box-new" type="primary" icon="md-add" @click="onAddShow">{{$L('新建项目')}}</Button>
@@ -424,7 +428,6 @@ export default {
             dialogMsgSubscribe: null,
 
             projectKeyValue: '',
-            projectKeyAlready: {},
             projectKeyLoading: 0,
 
             openMenu: {},
@@ -621,7 +624,7 @@ export default {
                 return b.id - a.id;
             });
             if (projectKeyValue) {
-                return data.filter(({name}) => name.toLowerCase().indexOf(projectKeyValue.toLowerCase()) > -1);
+                return data.filter(item => $A.strExists(`${item.name}||${item.desc}`, projectKeyValue));
             }
             return data;
         },
@@ -846,11 +849,6 @@ export default {
         },
 
         searchProject() {
-            if (this.projectKeyAlready[this.projectKeyValue] === true) {
-                return;
-            }
-            this.projectKeyAlready[this.projectKeyValue] = true;
-            //
             setTimeout(() => {
                 this.projectKeyLoading++;
             }, 1000)
@@ -858,9 +856,7 @@ export default {
                 keys: {
                     name: this.projectKeyValue
                 }
-            }).then(() => {
-                this.projectKeyLoading--;
-            }).catch(() => {
+            }).finally(_ => {
                 this.projectKeyLoading--;
             });
         },

@@ -248,7 +248,7 @@ export default {
                 return [];
             }
             if (contactsKey) {
-                return contactsData.filter(item => $A.strExists(item.email, contactsKey) || $A.strExists(item.nickname, contactsKey))
+                return contactsData.filter(item => $A.strExists(`${item.email}||${item.nickname}`, contactsKey))
             }
             return contactsData;
         },

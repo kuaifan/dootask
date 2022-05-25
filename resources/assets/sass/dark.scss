@@ -184,13 +184,6 @@ body.dark-mode-reverse {
                             background-color: #e1e1e1;
                             .content-text {
                                 color: #ffffff;
-                                .content-text {
-                                    > pre {
-                                        .mention {
-                                            color: #000000;
-                                        }
-                                    }
-                                }
                             }
                         }
                     }
@@ -202,6 +195,9 @@ body.dark-mode-reverse {
                                 background-color: #8bcf70;
                                 .content-text {
                                     > pre {
+                                        a {
+                                            color: #0027a1;
+                                        }
                                         .mention {
                                             color: #000000;
                                         }

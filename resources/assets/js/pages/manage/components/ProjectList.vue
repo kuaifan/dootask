@@ -15,7 +15,7 @@
             <template v-if="projectLists.length === 0">
                 <li v-if="projectKeyLoading > 0" class="loading"><Loading/></li>
                 <li v-else class="nothing">
-                    {{$L(projectLists ? `没有任何与"${projectKeyValue}"相关的项目` : `没有任何项目`)}}
+                    {{$L(projectKeyValue ? `没有任何与"${projectKeyValue}"相关的项目` : `没有任何项目`)}}
                 </li>
             </template>
             <li
@@ -71,7 +71,7 @@ export default {
                 return b.id - a.id;
             });
             if (projectKeyValue) {
-                return data.filter(({name}) => name.toLowerCase().indexOf(projectKeyValue.toLowerCase()) > -1);
+                return data.filter(item => $A.strExists(`${item.name}||${item.desc}`, projectKeyValue));
             }
             return data.map(item => {
                 if (!$A.isArray(item.user_simple)) {

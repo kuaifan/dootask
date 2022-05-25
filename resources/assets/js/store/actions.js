@@ -711,15 +711,16 @@ export default {
                 reject({msg: 'Parameter error'});
                 return;
             }
+            let request = data || {};
             let showLoad = true;
-            if (data.hideLoad !== undefined) {
-                showLoad = !data.hideLoad;
-                delete data.hideLoad;
+            if (typeof request.hideLoad !== "undefined") {
+                showLoad = !request.hideLoad;
+                delete request.hideLoad;
             }
             showLoad && state.loadProjects++;
             dispatch("call", {
                 url: 'project/lists',
-                data: data || {}
+                data: request
             }).then(({data}) => {
                 state.projectTotal = data.total_all;
                 dispatch("saveProject", data.data);
