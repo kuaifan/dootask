@@ -257,7 +257,7 @@ export default {
             let list = [];
             this.contactsFilter.some(user => {
                 let az = user.az ? user.az.toUpperCase() : "#";
-                let item = list.find(item => item.az = az);
+                let item = list.find(item => item.az == az);
                 if (item) {
                     if (item.list.findIndex(({userid}) => userid == user.userid) === -1) {
                         item.list.push(user)
