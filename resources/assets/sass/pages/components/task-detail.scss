@@ -219,13 +219,15 @@
                         .picker-time {
                             display: flex;
                             align-items: center;
+                            flex-wrap: wrap;
                             line-height: 26px;
                             .time {
                                 cursor: pointer;
+                                margin-right: 10px;
                             }
                             .ivu-tag {
                                 flex-shrink: 0;
-                                margin-left: 10px;
+                                margin-right: 10px;
                                 padding: 0 4px;
                                 height: 20px;
                                 line-height: 18px;

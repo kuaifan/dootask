@@ -57,7 +57,7 @@
                         <i class="taskfont dialog-create" @click="groupInfoShow = true">&#xe6e9;</i>
                     </ETooltip>
                 </template>
-                <ETooltip v-else-if="dialogData.type === 'user'" placement="top" :disabled="!$isDesktop" :content="$L('创建群组')">
+                <ETooltip v-else-if="dialogData.type === 'user' && !isMyDialog" placement="top" :disabled="!$isDesktop" :content="$L('创建群组')">
                     <i class="taskfont dialog-create" @click="openCreateGroup">&#xe646;</i>
                 </ETooltip>
             </div>
@@ -92,7 +92,7 @@
                     <div class="dialog-avatar">
                         <UserAvatar :userid="item.userid" :tooltipDisabled="item.userid == userId" :size="30"/>
                     </div>
-                    <DialogView :msg-data="item" :dialog-type="dialogData.type" :hidden-percentage="dialogData.dialog_user && dialogData.dialog_user.userid == userId"/>
+                    <DialogView :msg-data="item" :dialog-type="dialogData.type" :hide-percentage="isMyDialog"/>
                 </DynamicScrollerItem>
             </template>
         </DynamicScroller>
@@ -102,8 +102,9 @@
                 <slot name="inputBefore"/>
                 <ChatInput
                     ref="input"
-                    :dialog-id="dialogId"
                     v-model="msgText"
+                    :dialog-id="dialogId"
+                    :emoji-bottom="!$isDesktop"
                     :maxlength="20000"
                     @on-focus="onEventFocus"
                     @on-blur="onEventBlur"
@@ -312,6 +313,11 @@ export default {
             }
             return String(num);
         },
+
+        isMyDialog() {
+            const {dialogData, userId} = this;
+            return dialogData.dialog_user && dialogData.dialog_user.userid == userId
+        }
     },
 
     watch: {

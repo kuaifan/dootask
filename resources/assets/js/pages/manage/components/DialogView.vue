@@ -50,7 +50,7 @@
             <div v-if="timeShow" class="time" @click="timeShow=false">{{msgData.created_at}}</div>
             <div v-else class="time" :title="msgData.created_at" @click="timeShow=true">{{$A.formatTime(msgData.created_at)}}</div>
 
-            <template v-if="!hiddenPercentage">
+            <template v-if="!hidePercentage">
                 <div v-if="msgData.send > 1 || dialogType === 'group'" class="percent" @click="openReadPercentage">
                     <EPopover
                         v-model="popperShow"
@@ -103,7 +103,7 @@ export default {
             type: String,
             default: ''
         },
-        hiddenPercentage: {
+        hidePercentage: {
             type: Boolean,
             default: false
         },
@@ -339,7 +339,7 @@ export default {
                     pageType: 'web',
                     pageTitle: `${this.msgData.msg.name} (${$A.bytesToSize(this.msgData.msg.size)})`,
                     statusBarStyle: false,
-                    url: $A.apiUrl(`../#/token?token=${this.userToken}&from=${encodeURIComponent($A.apiUrl(`../#${uri}`))}`)
+                    url: $A.apiUrl(`../token?token=${this.userToken}&from=${encodeURIComponent($A.apiUrl(`..${uri}`))}`)
                 }, _ => {});
             } else {
                 window.open($A.apiUrl(`..${uri}`))

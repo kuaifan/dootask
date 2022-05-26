@@ -85,7 +85,7 @@
             .ql-mention-list-container {
                 width: auto;
                 min-width: 220px;
-                max-width: 350px;
+                max-width: 280px;
                 max-height: 360px;
                 overflow-y: overlay;
 
@@ -317,9 +317,6 @@
         .chat-emoji-box {
             width: auto;
             padding: 8px 2px;
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
             &::after {
                 content: "";
                 flex: auto;
@@ -403,6 +400,9 @@
         width: 360px;
         height: 280px;
         padding: 8px;
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
         overflow-x: hidden;
         word-break: break-all;
         box-sizing: content-box;

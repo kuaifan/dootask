@@ -206,7 +206,7 @@ export default {
                             pageType: 'web',
                             pageTitle: $A.getFileName(this.file) + ` [${row.created_at}]`,
                             statusBarStyle: false,
-                            url: $A.apiUrl(`../#/token?token=${this.userToken}&from=${encodeURIComponent($A.apiUrl(`../#${uri}`))}`)
+                            url: $A.apiUrl(`../token?token=${this.userToken}&from=${encodeURIComponent($A.apiUrl(`..${uri}`))}`)
                         }, _ => {});
                     } else {
                         window.open($A.apiUrl(`..${uri}`))

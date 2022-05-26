@@ -6,7 +6,7 @@
                 <slot name="toolbarBefore"/>
 
                 <EPopover
-                    v-if="$isDesktop"
+                    v-if="!emojiBottom"
                     v-model="showEmoji"
                     :visibleArrow="false"
                     placement="top"
@@ -55,7 +55,7 @@
                 <slot name="toolbarAfter"/>
             </div>
         </div>
-        <template v-if="!$isDesktop">
+        <template v-if="emojiBottom">
             <ChatEmoji v-if="showEmoji" @on-select="onSelectEmoji"/>
         </template>
     </div>
@@ -102,6 +102,10 @@ export default {
             default: () => {
                 return $A.isDesktop
             }
+        },
+        emojiBottom: {
+            type: Boolean,
+            default: false
         },
         options: {
             type: Object,
@@ -339,9 +343,11 @@ export default {
                         // ios11.0-11.3 对scrollTop及scrolIntoView解释有bug
                         // 直接执行会导致输入框滚到底部被遮挡
                     } else {
-                        setTimeout(() => {
-                            $A.scrollToView(this.$refs.editor, true)
-                        }, 300);
+                        for (let i = 1; i <= 5; i++) {
+                            setTimeout(() => {
+                                $A.scrollToView(this.$refs.editor, true)
+                            }, 200 * i);
+                        }
                     }
                 }
             })

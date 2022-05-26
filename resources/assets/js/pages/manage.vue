@@ -361,7 +361,9 @@
         </DragBallComponent>
 
         <!--移动端选项卡-->
-        <MobileTabbar v-if="showMobileTabbar" @on-click="onTabbarClick"/>
+        <transition name="mobile-slide">
+            <MobileTabbar v-if="showMobileTabbar" @on-click="onTabbarClick"/>
+        </transition>
         <MobileBack :showTabbar="showMobileTabbar"/>
         <MobileNotification ref="mobileNotification"/>
     </div>
