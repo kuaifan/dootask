@@ -40,12 +40,12 @@
                 </div>
             </EPopover>
 
-            <ETooltip placement="top" :disabled="!$isDesktop" :content="$L('发送')">
-                <div class="chat-send" :class="[value ? '' : 'disabled']" v-touchmouse="send">
-                    <Loading v-if="loading"/>
-                    <Icon v-else type="md-send"/>
-                </div>
-            </ETooltip>
+            <div class="chat-send" :class="[value ? '' : 'disabled']" v-touchmouse="send">
+                <Loading v-if="loading"/>
+                <ETooltip v-else placement="top" :disabled="!$isDesktop" :content="$L('发送')">
+                    <Icon type="md-send"/>
+                </ETooltip>
+            </div>
 
             <slot name="toolbarAfter"/>
         </div>

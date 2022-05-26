@@ -92,7 +92,7 @@
                     <div class="dialog-avatar">
                         <UserAvatar :userid="item.userid" :tooltipDisabled="item.userid == userId" :size="30"/>
                     </div>
-                    <DialogView :msg-data="item" :dialog-type="dialogData.type" :hidden-percentage="dialogData.dialog_user.userid == userId"/>
+                    <DialogView :msg-data="item" :dialog-type="dialogData.type" :hidden-percentage="dialogData.dialog_user && dialogData.dialog_user.userid == userId"/>
                 </DynamicScrollerItem>
             </template>
         </DynamicScroller>

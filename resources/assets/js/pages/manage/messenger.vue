@@ -33,7 +33,7 @@
                     <ul
                         v-if="tabActive==='dialog'"
                         ref="dialogWrapper"
-                        class="dialog" >
+                        class="dialog">
                         <li v-if="dialogList.length === 0" class="nothing">
                             {{$L(dialogKey ? `没有任何与"${dialogKey}"相关的会话` : `没有任何会话`)}}
                         </li>

@@ -249,7 +249,7 @@ class UsersController extends AbstractController
                 $userimg = is_array($userimg) ? $userimg[0]['path'] : $userimg;
                 $user->userimg = Base::unFillUrl($userimg);
             } else {
-                $user->userimg = $user->getUserimgAttribute(null);
+                $user->userimg = Base::unFillUrl($user->getUserimgAttribute(null));
             }
         }
         //昵称
