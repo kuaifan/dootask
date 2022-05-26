@@ -410,17 +410,19 @@ body.dark-mode-reverse {
         }
     }
 
-    .chat-input-wrapper {
-        .ql-container {
-            .ql-editor {
-                color: #ccc;
-                &.ql-blank {
-                    &::before {
+    .chat-input-box {
+        .chat-input-wrapper {
+            .ql-container {
+                .ql-editor {
+                    color: #ccc;
+                    &.ql-blank {
+                        &::before {
+                            color: #333;
+                        }
+                    }
+                    .mention {
                         color: #333;
                     }
-                }
-                .mention {
-                    color: #333;
                 }
             }
         }

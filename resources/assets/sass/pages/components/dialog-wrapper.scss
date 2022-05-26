@@ -687,12 +687,16 @@
             display: flex;
             align-items: center;
 
-            .chat-input-wrapper {
+            .chat-input-box {
                 flex: 1;
                 width: 0;
-                background-color: #F4F5F7;
-                padding: 10px 12px;
-                border-radius: 10px;
+                display: flex;
+                flex-direction: column;
+                .chat-input-wrapper {
+                    background-color: #F4F5F7;
+                    padding: 10px 12px;
+                    border-radius: 10px;
+                }
             }
         }
 
@@ -918,10 +922,12 @@
             padding: 8px 10px;
             margin-bottom: 0;
             .dialog-input {
-                .chat-input-wrapper {
-                    padding-left: 6px;
-                    padding-right: 8px;
-                    background-color: #ffffff;
+                .chat-input-box {
+                    .chat-input-wrapper {
+                        padding-left: 6px;
+                        padding-right: 6px;
+                        background-color: #ffffff;
+                    }
                 }
             }
         }

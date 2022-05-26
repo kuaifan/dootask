@@ -570,15 +570,23 @@
                 align-items: center;
                 margin: 22px 0 0 36px;
                 background-color: #F4F5F7;
-                padding: 10px 12px;
+                padding: 10px 11px;
                 border-radius: 10px;
+                .chat-input-box {
+                    .chat-input-wrapper {
+                        padding: 0;
+                        background-color: #F4F5F7;
+                    }
+                }
                 .chat-input-toolbar {
                     position: relative;
                     .ivu-badge {
                         position: absolute;
-                        transform: scale(0.6);
-                        top: -6px;
-                        right: 14px;
+                        transform: scale(0.6) translateX(100%);
+                        transform-origin: right center;
+                        top: -8px;
+                        right: 10px;
+                        z-index: 1;
                     }
                 }
             }

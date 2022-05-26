@@ -400,6 +400,7 @@
                     <div class="no-tip">{{$L('暂无消息')}}</div>
                     <div class="no-input">
                         <ChatInput
+                            ref="chatInput"
                             :task-id="taskId"
                             v-model="msgText"
                             :disabled="sendLoad > 0"
@@ -408,7 +409,7 @@
                             :placeholder="$L('输入消息...')"
                             @on-more="onEventMore"
                             @on-file="onSelectFile"
-                            @on-send="msgDialog">
+                            @on-send="onSend">
                             <Badge slot="toolbarAfter" :count="taskDetail.msg_num"/>
                         </ChatInput>
                     </div>
@@ -744,6 +745,7 @@ export default {
                     this.receiveShow = false;
                     this.$refs.owner && this.$refs.owner.handleClose();
                     this.$refs.assist && this.$refs.assist.handleClose();
+                    this.$refs.chatInput && this.$refs.chatInput.hidePopover();
                 }
             },
             immediate: true
@@ -1170,6 +1172,11 @@ export default {
         onSelectFile(row) {
             this.msgFile = $A.isArray(row) ? row : [row];
             this.msgDialog()
+        },
+
+        onSend() {
+            this.$refs.chatInput && this.$refs.chatInput.hidePopover();
+            this.msgDialog();
         },
 
         deleteFile(file) {

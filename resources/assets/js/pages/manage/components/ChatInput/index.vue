@@ -1,54 +1,63 @@
 <template>
-    <div class="chat-input-wrapper" :class="modeClass" @click.stop="focus">
-        <div ref="editor" class="no-dark-content" :style="editorStyle" @click.stop="" @paste="handlePaste"></div>
-        <div class="chat-input-toolbar" @click.stop="">
-            <slot name="toolbarBefore"/>
+    <div class="chat-input-box">
+        <div class="chat-input-wrapper" :class="modeClass" @click.stop="focus">
+            <div ref="editor" class="no-dark-content" :style="editorStyle" @click.stop="" @paste="handlePaste"></div>
+            <div class="chat-input-toolbar" @click.stop="">
+                <slot name="toolbarBefore"/>
 
-            <EPopover
-                v-model="showEmoji"
-                :visibleArrow="false"
-                placement="top"
-                popperClass="chat-input-emoji-popover">
-                <ETooltip slot="reference" ref="emojiTip" :disabled="!$isDesktop || showEmoji" placement="top" :content="$L('表情')">
-                    <i class="taskfont" @click="onToolbar('emoji')">&#xe7ad;</i>
+                <EPopover
+                    v-if="$isDesktop"
+                    v-model="showEmoji"
+                    :visibleArrow="false"
+                    placement="top"
+                    popperClass="chat-input-emoji-popover">
+                    <ETooltip slot="reference" ref="emojiTip" :disabled="!$isDesktop || showEmoji" placement="top" :content="$L('表情')">
+                        <i class="taskfont">&#xe7ad;</i>
+                    </ETooltip>
+                    <ChatEmoji @on-select="onSelectEmoji"/>
+                </EPopover>
+                <ETooltip v-else ref="emojiTip" :disabled="!$isDesktop || showEmoji" placement="top" :content="$L('表情')">
+                    <i class="taskfont" @click="showEmoji=!showEmoji">&#xe7ad;</i>
                 </ETooltip>
-                <ChatEmoji @on-select="onSelectEmoji"/>
-            </EPopover>
 
-            <ETooltip placement="top" :disabled="!$isDesktop" :content="$L('选择会员')">
-                <i class="taskfont" @click="onToolbar('user')">&#xe78f;</i>
-            </ETooltip>
-            <ETooltip placement="top" :disabled="!$isDesktop" :content="$L('选择任务')">
-                <i class="taskfont" @click="onToolbar('task')">&#xe7d6;</i>
-            </ETooltip>
-
-            <EPopover
-                v-model="showMore"
-                :visibleArrow="false"
-                placement="top"
-                popperClass="chat-input-more-popover">
-                <ETooltip slot="reference" ref="moreTip" :disabled="!$isDesktop || showMore" placement="top" :content="$L('展开')">
-                    <i class="taskfont" @click="onToolbar('more')">&#xe790;</i>
+                <ETooltip placement="top" :disabled="!$isDesktop" :content="$L('选择会员')">
+                    <i class="taskfont" @click="onToolbar('user')">&#xe78f;</i>
                 </ETooltip>
-                <div class="chat-input-popover-item" @click="onToolbar('image')">
-                    <i class="taskfont">&#xe64a;</i>
-                    {{$L('图片')}}
+                <ETooltip placement="top" :disabled="!$isDesktop" :content="$L('选择任务')">
+                    <i class="taskfont" @click="onToolbar('task')">&#xe7d6;</i>
+                </ETooltip>
+
+                <EPopover
+                    v-model="showMore"
+                    :visibleArrow="false"
+                    placement="top"
+                    popperClass="chat-input-more-popover">
+                    <ETooltip slot="reference" ref="moreTip" :disabled="!$isDesktop || showMore" placement="top" :content="$L('展开')">
+                        <i class="taskfont">&#xe790;</i>
+                    </ETooltip>
+                    <div class="chat-input-popover-item" @click="onToolbar('image')">
+                        <i class="taskfont">&#xe64a;</i>
+                        {{$L('图片')}}
+                    </div>
+                    <div class="chat-input-popover-item" @click="onToolbar('file')">
+                        <i class="taskfont">&#xe786;</i>
+                        {{$L('文件')}}
+                    </div>
+                </EPopover>
+
+                <div class="chat-send" :class="[value ? '' : 'disabled']" v-touchmouse="send">
+                    <Loading v-if="loading"/>
+                    <ETooltip v-else placement="top" :disabled="!$isDesktop" :content="$L('发送')">
+                        <Icon type="md-send"/>
+                    </ETooltip>
                 </div>
-                <div class="chat-input-popover-item" @click="onToolbar('file')">
-                    <i class="taskfont">&#xe786;</i>
-                    {{$L('文件')}}
-                </div>
-            </EPopover>
 
-            <div class="chat-send" :class="[value ? '' : 'disabled']" v-touchmouse="send">
-                <Loading v-if="loading"/>
-                <ETooltip v-else placement="top" :disabled="!$isDesktop" :content="$L('发送')">
-                    <Icon type="md-send"/>
-                </ETooltip>
+                <slot name="toolbarAfter"/>
             </div>
-
-            <slot name="toolbarAfter"/>
         </div>
+        <template v-if="!$isDesktop">
+            <ChatEmoji v-if="showEmoji" @on-select="onSelectEmoji"/>
+        </template>
     </div>
 </template>
 
@@ -109,6 +118,7 @@ export default {
     data() {
         return {
             quill: null,
+            rangeIndex: 0,
             _content: '',
             _options: {},
 
@@ -124,7 +134,6 @@ export default {
             wrapperWidth: 0,
             editorHeight: 0,
 
-            timerScroll: null,
             isSpecVersion: this.checkIOSVersion(),
         };
     },
@@ -144,7 +153,6 @@ export default {
         this.observer.observe(this.$refs.editor);
     },
     beforeDestroy() {
-        this.inputCache(this.dialogId, this.value);
         if (this.quill) {
             this.quill = null
         }
@@ -171,15 +179,16 @@ export default {
     },
     watch: {
         // Watch content change
-        value(newVal) {
+        value(val) {
             if (this.quill) {
-                if (newVal && newVal !== this._content) {
-                    this._content = newVal
-                    this.setContent(newVal)
-                } else if(!newVal) {
+                if (val && val !== this._content) {
+                    this._content = val
+                    this.setContent(val)
+                } else if(!val) {
                     this.quill.setText('')
                 }
             }
+            this.setInputCache(val)
         },
 
         // Watch disabled change
@@ -190,11 +199,10 @@ export default {
         },
 
         // Reset lists
-        dialogId(id1, id2) {
+        dialogId() {
             this.userList = null;
             this.taskList = null;
-            this.inputCache(id2, this.value)
-            this.$emit('input', this.inputCache(id1))
+            this.$emit('input', this.getInputCache())
         },
         taskId() {
             this.userList = null;
@@ -202,19 +210,29 @@ export default {
         },
 
         showEmoji(val) {
+            if (val) {
+                this.showMore = false;
+                if (this.quill) {
+                    const range = this.quill.selection.savedRange;
+                    this.rangeIndex = range ? range.index : 0
+                }
+            }
             if (!val && this.$refs.emojiTip) {
                 this.$refs.emojiTip.updatePopper()
             }
         },
 
         showMore(val) {
+            if (val) {
+                this.showEmoji = false;
+            }
             if (!val && this.$refs.moreTip) {
                 this.$refs.moreTip.updatePopper()
             }
         },
 
         dialogInputCache() {
-            this.$emit('input', this.inputCache(this.dialogId))
+            this.$emit('input', this.getInputCache())
         }
     },
     methods: {
@@ -302,7 +320,7 @@ export default {
             if (this.value) {
                 this.setContent(this.value)
             } else {
-                this.$emit('input', this.inputCache(this.dialogId))
+                this.$emit('input', this.getInputCache())
             }
 
             // Disabled editor
@@ -312,25 +330,17 @@ export default {
 
             // Mark model as touched if editor lost focus
             this.quill.on('selection-change', range => {
-                if (this.timerScroll) {
-                    clearInterval(this.timerScroll);
-                }
                 if (!range) {
                     this.$emit('on-blur', this.quill)
-                    this.inputCache(this.dialogId, this.value)
                 } else {
                     this.$emit('on-focus', this.quill)
-                    this.showEmoji = false
-                    this.showMore = false
+                    this.hidePopover()
                     if (this.isSpecVersion) {
                         // ios11.0-11.3 对scrollTop及scrolIntoView解释有bug
                         // 直接执行会导致输入框滚到底部被遮挡
                     } else {
                         setTimeout(() => {
                             $A.scrollToView(this.$refs.editor, true)
-                            this.timerScroll = setInterval(() => {
-                                $A.scrollToView(this.$refs.editor, true)
-                            }, 300);
                         }, 300);
                     }
                 }
@@ -378,11 +388,14 @@ export default {
             }
         },
 
-        inputCache(key, cache) {
-            if (cache === undefined) {
-                const item = this.dialogInputCache.find(item => item.key == key);
-                return item ? item.cache : '';
-            }
+        getInputCache() {
+            const key = this.dialogId;
+            const item = this.dialogInputCache.find(item => item.key == key);
+            return item ? item.cache : '';
+        },
+
+        setInputCache(cache) {
+            const key = this.dialogId;
             const index = this.dialogInputCache.findIndex(item => item.key == key);
             const data = {key, cache}
             if (index > -1) {
@@ -390,9 +403,10 @@ export default {
             } else {
                 this.$store.state.dialogInputCache.push(data)
             }
-            setTimeout(_ => {
+            this.__setInputCache && clearTimeout(this.__setInputCache);
+            this.__setInputCache = setTimeout(_ => {
                 $A.setStorage("cacheDialogInput", this.$store.state.dialogInputCache);
-            })
+            }, 600)
         },
 
         focus() {
@@ -412,7 +426,11 @@ export default {
                 return;
             }
             this.$emit('on-send')
-            this.inputCache(this.dialogId, null)
+        },
+
+        hidePopover() {
+            this.showEmoji = false;
+            this.showMore = false;
         },
 
         onSelectEmoji(item) {
@@ -422,21 +440,21 @@ export default {
             if (item.type === 'emoji') {
                 let element = document.createElement('span');
                 element.innerHTML = item.html;
-                this.quill.insertText(this.quill.getSelection(true).index, element.innerHTML);
+                this.quill.insertText(this.rangeIndex, element.innerHTML);
+                this.rangeIndex += element.innerHTML.length
                 element = null;
+                if (this.$isDesktop) {
+                    this.showEmoji = false;
+                    this.quill.setSelection(this.rangeIndex)
+                }
             } else if (item.type === 'emoticon') {
                 this.$emit('on-send', `<img class="emoticon" data-asset="${item.asset}" data-name="${item.name}" src="${item.src}"/>`)
+                this.showEmoji = false;
             }
-            this.showEmoji = false;
         },
 
         onToolbar(action) {
-            if (action !== 'emoji') {
-                this.showEmoji = false;
-            }
-            if (action !== 'more') {
-                this.showMore = false;
-            }
+            this.hidePopover();
             switch (action) {
                 case 'user':
                     this.openMenu("@");
