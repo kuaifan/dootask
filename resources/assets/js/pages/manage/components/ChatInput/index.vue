@@ -372,9 +372,21 @@ export default {
 
             // Clipboard Matcher (保留图片跟空格，清除其余所以样式)
             this.quill.clipboard.addMatcher(Node.ELEMENT_NODE, (node, delta) => {
-                delta.ops = delta.ops.map(op => ({
-                    insert: op.insert
-                }))
+                delta.ops = delta.ops.map(op => {
+                    console.log(op);
+                    const obj = {
+                        attributes: {},
+                        insert: op.insert
+                    };
+                    if (op.attributes) {
+                        ['bold', 'strike', 'italic', 'underline', 'list', 'blockquote', 'link'].some(item => {
+                            if (op.attributes[item]) {
+                                obj.attributes[item] = op.attributes[item]
+                            }
+                        })
+                    }
+                    return obj
+                })
                 return delta
             })
 

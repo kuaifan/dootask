@@ -305,9 +305,16 @@ class WebSocketDialogMsg extends AbstractModel
             preg_match("/data-value=\"(.*?)\"/", $str, $matchValye);
             $text = str_replace($matchs[0][$key], "[:{$matchChar[1]}:{$matchId[1]}:{$matchValye[1]}:]", $text);
         }
+        // 处理链接
+        preg_match_all("/<a[^>]*?href=([\"'])(.*?)\\1[^>]*?>([^<]*?)<\/a>/is", $text, $matchs);
+        foreach ($matchs[2] as $key => $str) {
+            $herf = $matchs[2][$key];
+            $title = $matchs[3][$key] ?: $herf;
+            $text = str_replace($matchs[0][$key], "<a href=\"{$herf}\" target=\"_blank\">{$title}</a>", $text);
+        }
         // 过滤标签
-        $text = strip_tags($text, '<blockquote> <strong> <pre> <ol> <ul> <li> <em> <p> <s> <u>');
-        $text = preg_replace("/\<(blockquote|strong|pre|ol|ul|li|em|p|s|u).*?\>/is", "<$1>", $text);
+        $text = strip_tags($text, '<blockquote> <strong> <pre> <ol> <ul> <li> <em> <p> <s> <u> <a>');
+        $text = preg_replace("/\<(blockquote|strong|pre|ol|ul|li|em|p|s|u).*?\>/is", "<$1>", $text);    // 不用去除a标签，上面已经处理过了
         $text = preg_replace("/\[:IMAGE:(.*?):(.*?):(.*?):(.*?):(.*?):\]/i", "<img class=\"$1\" width=\"$2\" height=\"$3\" src=\"{{RemoteURL}}$4\" alt=\"$5\"/>", $text);
         $text = preg_replace("/\[:@:(.*?):(.*?):\]/i", "<span class=\"mention user\" data-id=\"$1\">@$2</span>", $text);
         $text = preg_replace("/\[:#:(.*?):(.*?):\]/i", "<span class=\"mention task\" data-id=\"$1\">#$2</span>", $text);
