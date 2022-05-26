@@ -108,9 +108,12 @@
                     margin-left: 12px;
                     min-width: 28px;
                     text-align: right;
-                    > em {
+                    > span {
                         opacity: 0.7;
-                        font-style: normal;
+                        > em {
+                            padding: 0 1px;
+                            font-style: normal;
+                        }
                     }
                 }
             }
@@ -130,9 +133,12 @@
                         font-size: 14px;
                         padding-right: 4px;
                     }
-                    > em {
+                    > span {
                         opacity: 0.7;
-                        font-style: normal;
+                        > em {
+                            padding: 0 1px;
+                            font-style: normal;
+                        }
                     }
                 }
                 .footer-user {

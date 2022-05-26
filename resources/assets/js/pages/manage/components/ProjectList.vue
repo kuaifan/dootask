@@ -30,12 +30,12 @@
                 </div>
                 <div class="project-percent">
                     <Progress :percent="item.task_my_percent" :stroke-width="5" hide-info />
-                    <div class="percent-info" @click.stop="modalPercent(item)">{{item.task_my_complete}}<em>/{{item.task_my_num}}</em></div>
+                    <div class="percent-info" @click.stop="modalPercent(item)">{{item.task_my_complete}}<span><em>/</em>{{item.task_my_num}}</span></div>
                 </div>
                 <div class="project-footer">
                     <div class="footer-percent" @click.stop="modalPercent(item)">
-                        <i class="taskfont">&#xe641;</i>
-                        {{item.task_complete}}<em>/{{item.task_num}}</em>
+                        <i class="taskfont">&#xe6e4;</i>
+                        {{item.task_complete}}<span><em>/</em>{{item.task_num}}</span>
                     </div>
                     <div class="footer-user">
                         <UserAvatar v-for="(uid, ukey) in item.user_simple" :key="ukey" :userid="uid" :size="26" :borderWitdh="2"/>
