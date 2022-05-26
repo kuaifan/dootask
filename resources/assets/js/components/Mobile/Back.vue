@@ -25,15 +25,15 @@ export default {
     },
 
     mounted() {
-        window.addEventListener('touchstart', this.touchstart)
-        window.addEventListener('touchmove', this.touchmove)
-        window.addEventListener('touchend', this.touchend)
+        document.addEventListener('touchstart', this.touchstart)
+        document.addEventListener('touchmove', this.touchmove)
+        document.addEventListener('touchend', this.touchend)
     },
 
     beforeDestroy() {
-        window.removeEventListener('touchstart', this.touchstart)
-        window.removeEventListener('touchmove', this.touchmove)
-        window.removeEventListener('touchend', this.touchend)
+        document.removeEventListener('touchstart', this.touchstart)
+        document.removeEventListener('touchmove', this.touchmove)
+        document.removeEventListener('touchend', this.touchend)
     },
 
     computed: {
