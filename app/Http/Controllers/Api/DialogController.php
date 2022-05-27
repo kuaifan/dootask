@@ -264,6 +264,50 @@ class DialogController extends AbstractController
     }
 
     /**
+     * @api {post} api/dialog/msg/sendrecord          07. 发送语音
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__sendrecord
+     *
+     * @apiParam {Number} dialog_id             对话ID
+     * @apiParam {String} base64                语音base64
+     * @apiParam {Number} duration              语音时长（毫秒）
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__sendrecord()
+    {
+        $user = User::auth();
+        //
+        $dialog_id = Base::getPostInt('dialog_id');
+        //
+        WebSocketDialog::checkDialog($dialog_id);
+        //
+        $path = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
+        $base64 = Base::getPostValue('base64');
+        $duration = Base::getPostInt('duration');
+        if ($duration < 600) {
+            return Base::retError('说话时间太短');
+        }
+        $data = Base::record64save([
+            "base64" => $base64,
+            "path" => $path,
+        ]);
+        if (Base::isError($data)) {
+            return Base::retError($data['msg']);
+        } else {
+            $recordData = $data['data'];
+            $recordData['size'] *= 1024;
+            $recordData['duration'] = $duration;
+            return WebSocketDialogMsg::sendMsg($dialog_id, 'record', $recordData, $user->userid);
+        }
+    }
+
+    /**
      * @api {post} api/dialog/msg/sendfile          07. 文件上传
      *
      * @apiDescription 需要token身份

@@ -96,24 +96,8 @@
                 </DynamicScrollerItem>
             </template>
         </DynamicScroller>
-        <div :class="['dialog-footer', msgNew > 0 && allMsgs.length > 0 ? 'newmsg' : '']" @click="onActive">
+        <div class="dialog-footer" :class="{newmsg: msgNew > 0 && allMsgs.length > 0}" @click="onActive">
             <div class="dialog-newmsg" @click="onToBottom">{{$L('有' + msgNew + '条新消息')}}</div>
-            <div class="dialog-input">
-                <slot name="inputBefore"/>
-                <ChatInput
-                    ref="input"
-                    v-model="msgText"
-                    :dialog-id="dialogId"
-                    :emoji-bottom="!$isDesktop"
-                    :maxlength="20000"
-                    @on-focus="onEventFocus"
-                    @on-blur="onEventBlur"
-                    @on-more="onEventMore"
-                    @on-file="sendFileMsg"
-                    @on-send="sendMsg"
-                    :placeholder="$L('输入消息...')"/>
-                <slot name="inputAfter"/>
-            </div>
             <DialogUpload
                 ref="chatUpload"
                 class="chat-upload"
@@ -121,6 +105,18 @@
                 @on-progress="chatFile('progress', $event)"
                 @on-success="chatFile('success', $event)"
                 @on-error="chatFile('error', $event)"/>
+            <ChatInput
+                ref="input"
+                v-model="msgText"
+                :dialog-id="dialogId"
+                :emoji-bottom="!$isDesktop"
+                :maxlength="20000"
+                @on-focus="onEventFocus"
+                @on-blur="onEventBlur"
+                @on-more="onEventMore"
+                @on-file="sendFileMsg"
+                @on-send="sendMsg"
+                :placeholder="$L('输入消息...')"/>
         </div>
         <div v-if="dialogDrag" class="drag-over" @click="dialogDrag=false">
             <div class="drag-text">{{$L('拖动到这里发送')}}</div>
@@ -386,7 +382,18 @@ export default {
     },
 
     methods: {
+        /**
+         * 发送消息
+         * @param text
+         */
         sendMsg(text) {
+            if ($A.isJson(text)) {
+                if (text.type === 'record') {
+                    // 发送录音 text.record
+                    this.sendRecordMsg(text.data);
+                }
+                return;
+            }
             let msgText;
             if (typeof text === "string" && text) {
                 msgText = text;
@@ -430,6 +437,42 @@ export default {
             });
         },
 
+        /**
+         * 发送录音
+         * @param msg {base64, duration}
+         */
+        sendRecordMsg(msg) {
+            this.onToBottom();
+            this.onActive();
+            //
+            let tempId = $A.randomString(16);
+            this.tempMsgs.push({
+                id: tempId,
+                dialog_id: this.dialogData.id,
+                type: 'loading',
+                userid: this.userId,
+                msg,
+            });
+            //
+            this.$store.dispatch("call", {
+                url: 'dialog/msg/sendrecord',
+                data: Object.assign(msg, {
+                    dialog_id: this.dialogId,
+                }),
+                method: 'post'
+            }).then(({data}) => {
+                this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
+                this.sendSuccess(data);
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+                this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
+            });
+        },
+
+        /**
+         * 发送文件
+         * @param row
+         */
         sendFileMsg(row) {
             const files = $A.isArray(row) ? row : [row];
             if (files.length > 0) {

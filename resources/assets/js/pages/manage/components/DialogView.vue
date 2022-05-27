@@ -25,6 +25,13 @@
                         </div>
                     </div>
                 </div>
+                <!--录音-->
+                <div v-else-if="msgData.type === 'record'" class="content-record no-dark-content">
+                    <div class="dialog-record" :class="{playing: recordPlay}" :style="recordStyle(msgData.msg)" @click="playRecord">
+                        <div class="record-time">{{recordDuration(msgData.msg.duration)}}</div>
+                        <div class="record-icon taskfont"></div>
+                    </div>
+                </div>
                 <!--等待-->
                 <div v-else-if="msgData.type === 'loading'" class="content-loading">
                     <Loading/>
@@ -88,6 +95,7 @@
 <script>
 import WCircle from "../../../components/WCircle";
 import {mapState} from "vuex";
+import {Store} from "le5le-store";
 
 export default {
     name: "DialogView",
@@ -114,12 +122,19 @@ export default {
             popperLoad: 0,
             popperShow: false,
             timeShow: false,
+            recordPlay: false,
             allList: [],
         }
     },
 
     activated() {
         this.msgRead()
+    },
+
+    beforeDestroy() {
+        if (this.recordPlay) {
+            Store.set('audioSubscribe', false);
+        }
     },
 
     computed: {
@@ -246,6 +261,23 @@ export default {
             return text;
         },
 
+        recordStyle(info) {
+            const {duration} = info;
+            let width = 50 + Math.min(180, Math.floor(duration / 150));
+            return {
+                width: width + 'px',
+            };
+        },
+
+        recordDuration(duration) {
+            let minute = Math.floor(duration / 60000),
+                seconds = Math.floor(duration / 1000) % 60;
+            if (minute > 0) {
+                return `${minute}:${seconds}″`
+            }
+            return `${Math.max(1, seconds)}″`
+        },
+
         imageStyle(info) {
             const {width, height} = info;
             if (width && height) {
@@ -268,6 +300,15 @@ export default {
                 };
             }
             return {};
+        },
+
+        playRecord() {
+            Store.set('audioSubscribe', {
+                src: this.msgData.msg.path,
+                callback: (play) => {
+                    this.recordPlay = play;
+                }
+            });
         },
 
         withdraw() {

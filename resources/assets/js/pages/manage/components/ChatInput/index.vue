@@ -1,63 +1,104 @@
 <template>
-    <div class="chat-input-box">
-        <div class="chat-input-wrapper" :class="modeClass" @click.stop="focus">
-            <div ref="editor" class="no-dark-content" :style="editorStyle" @click.stop="" @paste="handlePaste"></div>
-            <div class="chat-input-toolbar" @click.stop="">
-                <slot name="toolbarBefore"/>
+    <div class="chat-input-box" :class="boxClass">
+        <div class="chat-input-wrapper" @click.stop="focus">
+            <!-- 输入框 -->
+            <div
+                ref="editor"
+                class="no-dark-content"
+                :style="editorStyle"
+                @click.stop=""
+                @paste="handlePaste"></div>
 
-                <EPopover
-                    v-if="!emojiBottom"
-                    v-model="showEmoji"
-                    :visibleArrow="false"
-                    placement="top"
-                    popperClass="chat-input-emoji-popover">
-                    <ETooltip slot="reference" ref="emojiTip" :disabled="!$isDesktop || showEmoji" placement="top" :content="$L('表情')">
-                        <i class="taskfont">&#xe7ad;</i>
+            <!-- 工具栏 -->
+            <ul class="chat-toolbar" @click.stop="">
+                <!-- 桌面端表情（漂浮） -->
+                <li>
+                    <EPopover
+                        v-if="!emojiBottom"
+                        v-model="showEmoji"
+                        :visibleArrow="false"
+                        placement="top"
+                        popperClass="chat-input-emoji-popover">
+                        <ETooltip slot="reference" ref="emojiTip" :disabled="!$isDesktop || showEmoji" placement="top" :content="$L('表情')">
+                            <i class="taskfont">&#xe7ad;</i>
+                        </ETooltip>
+                        <ChatEmoji @on-select="onSelectEmoji"/>
+                    </EPopover>
+                    <ETooltip v-else ref="emojiTip" :disabled="!$isDesktop || showEmoji" placement="top" :content="$L('表情')">
+                        <i class="taskfont" @click="showEmoji=!showEmoji">&#xe7ad;</i>
                     </ETooltip>
-                    <ChatEmoji @on-select="onSelectEmoji"/>
-                </EPopover>
-                <ETooltip v-else ref="emojiTip" :disabled="!$isDesktop || showEmoji" placement="top" :content="$L('表情')">
-                    <i class="taskfont" @click="showEmoji=!showEmoji">&#xe7ad;</i>
-                </ETooltip>
+                </li>
 
-                <ETooltip placement="top" :disabled="!$isDesktop" :content="$L('选择会员')">
-                    <i class="taskfont" @click="onToolbar('user')">&#xe78f;</i>
-                </ETooltip>
-                <ETooltip placement="top" :disabled="!$isDesktop" :content="$L('选择任务')">
-                    <i class="taskfont" @click="onToolbar('task')">&#xe7d6;</i>
-                </ETooltip>
-
-                <EPopover
-                    v-model="showMore"
-                    :visibleArrow="false"
-                    placement="top"
-                    popperClass="chat-input-more-popover">
-                    <ETooltip slot="reference" ref="moreTip" :disabled="!$isDesktop || showMore" placement="top" :content="$L('展开')">
-                        <i class="taskfont">&#xe790;</i>
+                <!-- @ # -->
+                <li>
+                    <ETooltip placement="top" :disabled="!$isDesktop" :content="$L('选择会员')">
+                        <i class="taskfont" @click="onToolbar('user')">&#xe78f;</i>
                     </ETooltip>
-                    <div class="chat-input-popover-item" @click="onToolbar('image')">
-                        <i class="taskfont">&#xe64a;</i>
-                        {{$L('图片')}}
-                    </div>
-                    <div class="chat-input-popover-item" @click="onToolbar('file')">
-                        <i class="taskfont">&#xe786;</i>
-                        {{$L('文件')}}
-                    </div>
-                </EPopover>
-
-                <div class="chat-send" :class="[value ? '' : 'disabled']" v-touchmouse="send">
-                    <Loading v-if="loading"/>
-                    <ETooltip v-else placement="top" :disabled="!$isDesktop" :content="$L('发送')">
-                        <Icon type="md-send"/>
+                </li>
+                <li>
+                    <ETooltip placement="top" :disabled="!$isDesktop" :content="$L('选择任务')">
+                        <i class="taskfont" @click="onToolbar('task')">&#xe7d6;</i>
                     </ETooltip>
-                </div>
+                </li>
 
-                <slot name="toolbarAfter"/>
-            </div>
+                <!-- 图片文件 -->
+                <li>
+                    <EPopover
+                        v-model="showMore"
+                        :visibleArrow="false"
+                        placement="top"
+                        popperClass="chat-input-more-popover">
+                        <ETooltip slot="reference" ref="moreTip" :disabled="!$isDesktop || showMore" placement="top" :content="$L('展开')">
+                            <i class="taskfont">&#xe790;</i>
+                        </ETooltip>
+                        <div class="chat-input-popover-item" @click="onToolbar('image')">
+                            <i class="taskfont">&#xe64a;</i>
+                            {{$L('图片')}}
+                        </div>
+                        <div class="chat-input-popover-item" @click="onToolbar('file')">
+                            <i class="taskfont">&#xe786;</i>
+                            {{$L('文件')}}
+                        </div>
+                    </EPopover>
+                </li>
+
+                <!-- 发送按钮 -->
+                <li class="chat-send" :class="sendClass" v-touchmouse="clickSend">
+                    <ETooltip placement="top" :disabled="!$isDesktop" :content="$L('发送')">
+                        <div>
+                            <transition name="mobile-send">
+                                <i v-if="sendClass === 'recorder'" class="taskfont">&#xe609;</i>
+                            </transition>
+                            <transition name="mobile-send">
+                                <i v-if="sendClass !== 'recorder'" class="taskfont">&#xe606;</i>
+                            </transition>
+                        </div>
+                    </ETooltip>
+                </li>
+
+                <!-- 录音效果 -->
+                <li v-if="recordReady" class="chat-record-recwave">
+                    <div ref="recwave"></div>
+                </li>
+            </ul>
         </div>
-        <template v-if="emojiBottom">
-            <ChatEmoji v-if="showEmoji" @on-select="onSelectEmoji"/>
-        </template>
+
+        <!-- 移动端表情（底部） -->
+        <ChatEmoji v-if="emojiBottom && showEmoji" @on-select="onSelectEmoji"/>
+
+        <!-- 录音取消 -->
+        <transition name="fade">
+            <div
+                v-if="recordState === 'ing'"
+                v-transfer-dom
+                :data-transfer="true"
+                class="chat-input-record-transfer"
+                :class="{cancel: touchLimitY}"
+                @click="stopRecord">
+                <div class="record-duration">{{recordFormatDuration}}</div>
+                <div class="record-cancel" @click.stop="stopRecord(true)">{{$L(touchLimitY ? '松开取消' : '向上滑动取消')}}</div>
+            </div>
+        </transition>
     </div>
 </template>
 
@@ -67,11 +108,12 @@ import Quill from 'quill';
 import "quill-mention";
 import ChatEmoji from "./emoji";
 import touchmouse from "../../../../directives/touchmouse";
+import TransferDom from "../../../../directives/transfer-dom";
 
 export default {
     name: 'ChatInput',
     components: {ChatEmoji},
-    directives: {touchmouse},
+    directives: {touchmouse, TransferDom},
     props: {
         dialogId: {
             type: Number,
@@ -126,7 +168,7 @@ export default {
             _content: '',
             _options: {},
 
-            modeClass: '',
+            mentionMode: '',
 
             userList: null,
             taskList: null,
@@ -137,6 +179,17 @@ export default {
             observer: null,
             wrapperWidth: 0,
             editorHeight: 0,
+
+            recordReady: false,
+            recordRec: null,
+            recordState: "stop",
+            recordBlob: null,
+            recordWave: null,
+            recordDuration: 0,
+
+            touchStart: {},
+            touchLimitX: false,
+            touchLimitY: false,
 
             isSpecVersion: this.checkIOSVersion(),
         };
@@ -179,6 +232,37 @@ export default {
             } else {
                 return {};
             }
+        },
+
+        boxClass() {
+            const array = [];
+            if (this.recordState === 'ing') {
+                array.push('record-ing');
+            }
+            if (this.mentionMode) {
+                array.push(this.mentionMode);
+            }
+            return array
+        },
+
+        sendClass() {
+            if (this.value) {
+                return 'sender';
+            }
+            if (this.recordReady) {
+                return 'recorder'
+            }
+            return ''
+        },
+
+        recordFormatDuration() {
+            const {recordDuration} = this;
+            let minute = Math.floor(recordDuration / 60000),
+                seconds = Math.floor(recordDuration / 1000) % 60,
+                millisecond = ("00" + recordDuration % 1000).substr(-2)
+            if (minute < 10) minute = `0${minute}`
+            if (seconds < 10) seconds = `0${seconds}`
+            return `${minute}:${seconds}″${millisecond}`
         }
     },
     watch: {
@@ -257,7 +341,7 @@ export default {
                                 shortKey: true,
                                 handler: _ => {
                                     if (!this.enterSend) {
-                                        this.send();
+                                        this.onSend();
                                         return false;
                                     }
                                     return true;
@@ -268,7 +352,7 @@ export default {
                                 shiftKey: false,
                                 handler: _ => {
                                     if (this.enterSend) {
-                                        this.send();
+                                        this.onSend();
                                         return false;
                                     }
                                     return true;
@@ -390,6 +474,27 @@ export default {
                 return delta
             })
 
+            // Load recorder
+            $A.loadScriptS([
+                'js/recorder/recorder.mp3.min.js',
+                'js/recorder/lib.fft.js',
+                'js/recorder/frequency.histogram.view.js',
+            ], (e) => {
+                if (e !== null || typeof window.Recorder !== 'function') {
+                    return;
+                }
+                this.recordRec = window.Recorder({
+                    type: "mp3",
+                    bitRate: 16,
+                    sampleRate: 16000,
+                    onProcess: (buffers, powerLevel, duration, sampleRate, newBufferIdx, asyncEnd) => {
+                        this.recordWave.input(buffers[buffers.length - 1], powerLevel, sampleRate);
+                        this.recordDuration = duration;
+                    }
+                })
+                this.recordReady = true;
+            });
+
             // Ready event
             this.$emit('on-ready', this.quill)
         },
@@ -439,16 +544,120 @@ export default {
             })
         },
 
-        send() {
+        clickSend(action, event) {
             if (this.loading) {
                 return;
             }
+            switch (action) {
+                case 'down':
+                    this.touchLimitX = false;
+                    this.touchLimitY = false;
+                    this.touchStart = event.type === "touchstart" ? event.touches[0] : event;
+                    if (this.startRecord()) {
+                        return;
+                    }
+                    break;
+
+                case 'move':
+                    const touchMove = event.type === "touchmove" ? event.touches[0] : event;
+                    this.touchLimitX = (this.touchStart.clientX - touchMove.clientX) / window.innerWidth > 0.1
+                    this.touchLimitY = (this.touchStart.clientY - touchMove.clientY) / window.innerHeight > 0.1
+                    break;
+
+                case 'up':
+                    if (this.stopRecord(this.touchLimitY)) {
+                        return;
+                    }
+                    if (this.touchLimitY || this.touchLimitX) {
+                        return; // 移动了 X、Y 轴
+                    }
+                    this.onSend()
+                    break;
+            }
+        },
+
+        onSend() {
+            this.rangeIndex = 0
             this.$emit('on-send')
+        },
+
+        startRecord() {
+            if (this.sendClass === 'recorder') {
+                this.recordState = "ready";
+                this.recordRec.open(_ => {
+                    if (this.recordState === "ready") {
+                        this.recordState = "ing"
+                        this.recordBlob = null
+                        this.$nextTick(_ => {
+                            this.$refs.recwave.innerHTML = "";
+                            this.recordWave = window.Recorder.FrequencyHistogramView({
+                                elem: this.$refs.recwave,
+                                lineCount: 90,
+                                position: 0,
+                                minHeight: 1,
+                                stripeEnable: false
+                            })
+                            this.recordRec.start()
+                        })
+                    } else {
+                        this.recordRec.close();
+                    }
+                }, (msg) => {
+                    $A.modalError(msg || '打开录音失败')
+                });
+                return true;
+            } else {
+                return false;
+            }
+        },
+
+        stopRecord(isCancel) {
+            if (this.recordState === "ing") {
+                this.recordState = "stop";
+                this.recordRec.stop((blob, duration) => {
+                    this.recordRec.close();
+                    if (isCancel === true) {
+                        return;
+                    }
+                    if (duration < 600) {
+                        // 小于 600ms 不发送
+                        $A.messageWarning("说话时间太短")
+                    } else {
+                        this.recordBlob = blob;
+                        this.uploadRecord(duration);
+                    }
+                }, (msg) => {
+                    this.recordRec.close();
+                    $A.modalError("录音失败: " + msg);
+                });
+                return true;
+            } else {
+                this.recordState = "stop";
+                return false;
+            }
         },
 
         hidePopover() {
             this.showEmoji = false;
             this.showMore = false;
+        },
+
+        uploadRecord(duration) {
+            if (this.recordBlob === null) {
+                return;
+            }
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                this.$emit('on-send', {
+                    type: 'record',
+                    data: {
+                        type: this.recordBlob.type,
+                        base64: reader.result,
+                        duration,
+                    }
+                })
+            };
+            reader.readAsDataURL(this.recordBlob);
         },
 
         onSelectEmoji(item) {
@@ -533,7 +742,7 @@ export default {
             return new Promise(resolve => {
                 switch (mentionChar) {
                     case "@": // @成员
-                        this.modeClass = "user-mention";
+                        this.mentionMode = "user-mention";
                         if (this.userList !== null) {
                             resolve(this.userList)
                             return;
@@ -603,7 +812,7 @@ export default {
                         break;
 
                     case "#": // #任务
-                        this.modeClass = "task-mention";
+                        this.mentionMode = "task-mention";
                         if (this.taskList !== null) {
                             resolve(this.taskList)
                             return;

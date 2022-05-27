@@ -2175,6 +2175,39 @@ class Base
     }
 
     /**
+     * base64语音保存
+     * @param array $param [ base64=带前缀的base64, path=>文件路径 ]
+     * @return array [name=>文件名, size=>文件大小(单位KB),file=>绝对地址, path=>相对地址, url=>全路径地址, ext=>文件后缀名]
+     */
+    public static function record64save($param)
+    {
+        $base64 = $param['base64'];
+        if (preg_match('/^(data:\s*audio\/(\w+);base64,)/', $base64, $res)) {
+            $extension = $res[2];
+            if (!in_array($extension, ['mp3', 'wav'])) {
+                return Base::retError('语音格式错误');
+            }
+            $fileName = 'record_' . md5($base64) . '.' . $extension;
+            $fileDir = $param['path'];
+            $filePath = public_path($fileDir);
+            Base::makeDir($filePath);
+            if (file_put_contents($filePath . $fileName, base64_decode(str_replace($res[1], '', $base64)))) {
+                $fileSize = filesize($filePath . $fileName);
+                $array = [
+                    "name" => $fileName,                                                //原文件名
+                    "size" => Base::twoFloat($fileSize / 1024, true),         //大小KB
+                    "file" => $filePath . $fileName,                                    //文件的完整路径                "D:\www....KzZ.jpg"
+                    "path" => $fileDir . $fileName,                                     //相对路径                     "uploads/pic....KzZ.jpg"
+                    "url" => Base::fillUrl($fileDir . $fileName),                   //完整的URL                    "https://.....hhsKzZ.jpg"
+                    "ext" => $extension,                                                //文件后缀名
+                ];
+                return Base::retSuccess('success', $array);
+            }
+        }
+        return Base::retError('语音保存失败');
+    }
+
+    /**
      * image64图片保存
      * @param array $param [ image64=带前缀的base64, path=>文件路径, fileName=>文件名称, scale=>[压缩原图宽,高, 压缩方式] ]
      * @return array [name=>文件名, size=>文件大小(单位KB),file=>绝对地址, path=>相对地址, url=>全路径地址, ext=>文件后缀名]

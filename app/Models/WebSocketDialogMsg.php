@@ -92,6 +92,8 @@ class WebSocketDialogMsg extends AbstractModel
             $value['type'] = in_array($value['ext'], ['jpg', 'jpeg', 'png', 'gif']) ? 'img' : 'file';
             $value['path'] = Base::fillUrl($value['path']);
             $value['thumb'] = Base::fillUrl($value['thumb'] ?: Base::extIcon($value['ext']));
+        } else if ($this->type === 'record') {
+            $value['path'] = Base::fillUrl($value['path']);
         }
         return $value;
     }
@@ -210,6 +212,8 @@ class WebSocketDialogMsg extends AbstractModel
         switch ($this->type) {
             case 'text':
                 return $this->previewTextMsg($this->msg['text'], $preserveHtml);
+            case 'record':
+                return "[语音]";
             case 'file':
                 if ($this->msg['type'] == 'img') {
                     return "[图片]";

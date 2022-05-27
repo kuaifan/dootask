@@ -240,6 +240,21 @@
     opacity: 0;
 }
 
+// 录音发送（缩放）
+.mobile-send-enter-active {
+    transition: all 0.3s ease;
+}
+
+.mobile-send-leave-active {
+    transition: all 0.3s ease;
+}
+
+.mobile-send-enter,
+.mobile-send-leave-to {
+    transform: translate(-50%, -50%) scale(0) !important;
+    opacity: 0;
+}
+
 @media (max-width: 768px) {
     .mobile-tabbar {
         display: flex;

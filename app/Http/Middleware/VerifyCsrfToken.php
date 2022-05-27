@@ -36,6 +36,9 @@ class VerifyCsrfToken extends Middleware
         // 聊天发文本
         'api/dialog/msg/sendtext/',
 
+        // 聊天发语音
+        'api/dialog/msg/sendrecord/',
+
         // 聊天发文件
         'api/dialog/msg/sendfile/',
 

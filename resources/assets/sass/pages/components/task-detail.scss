@@ -568,28 +568,31 @@
                 margin-left: 36px;
             }
             .no-input {
-                display: flex;
-                align-items: center;
+                position: relative;
                 margin: 22px 0 0 36px;
                 background-color: #F4F5F7;
-                padding: 10px 11px;
+                padding: 10px 8px;
                 border-radius: 10px;
                 .chat-input-box {
                     .chat-input-wrapper {
                         padding: 0;
                         background-color: #F4F5F7;
+                        .chat-toolbar {
+                            > li {
+                                &.chat-record-recwave {
+                                    background-color: #F4F5F7;
+                                }
+                            }
+                        }
                     }
                 }
-                .chat-input-toolbar {
-                    position: relative;
-                    .ivu-badge {
-                        position: absolute;
-                        transform: scale(0.6) translateX(100%);
-                        transform-origin: right center;
-                        top: -8px;
-                        right: 10px;
-                        z-index: 1;
-                    }
+                .input-badge {
+                    position: absolute;
+                    transform: scale(0.6) translateX(100%);
+                    transform-origin: right center;
+                    top: 2px;
+                    right: 25px;
+                    z-index: 2;
                 }
             }
             .drag-over {
@@ -651,7 +654,7 @@
                 padding-left: 32px;
             }
             .dialog-footer {
-                padding: 0 14px 0 28px;
+                padding: 0 0 0 24px;
             }
         }
     }

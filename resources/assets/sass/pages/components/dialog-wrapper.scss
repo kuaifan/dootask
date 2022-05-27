@@ -443,6 +443,55 @@
                             }
                         }
 
+                        .content-record {
+                            display: flex;
+
+                            .dialog-record {
+                                display: flex;
+                                flex-direction: row-reverse;
+                                justify-content: flex-end;
+                                align-content: center;
+                                color: #ffffff;
+                                line-height: 20px;
+                                cursor: pointer;
+
+                                .record-time {
+                                    padding: 0 0 0 4px;
+                                }
+
+                                .record-icon {
+                                    transform: rotate(180deg) scale(0.9);
+
+                                    &:before {
+                                        content: "\E793";
+                                    }
+                                }
+
+                                &.playing {
+                                    .record-icon {
+                                        &:before {
+                                            animation: record-playing 1s infinite;
+                                        }
+                                    }
+                                }
+
+                                @keyframes record-playing {
+                                    0% {
+                                        content: "\E793";
+                                    }
+                                    33% {
+                                        content: "\E791";
+                                    }
+                                    66% {
+                                        content: "\E792";
+                                    }
+                                    100% {
+                                        content: "\E793";
+                                    }
+                                }
+                            }
+                        }
+
                         .content-loading {
                             display: flex;
 
@@ -637,6 +686,21 @@
                                     background-color: transparent;
                                 }
                             }
+
+                            .content-record {
+
+                                .dialog-record {
+                                    flex-direction: row;
+
+                                    .record-time {
+                                        padding: 0 4px 0 0;
+                                    }
+
+                                    .record-icon {
+                                        transform: rotate(0) scale(0.9);
+                                    }
+                                }
+                            }
                         }
 
                         .dialog-menu {
@@ -660,15 +724,14 @@
     }
 
     .dialog-footer {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        padding: 0 28px;
-        margin-bottom: 20px;
         position: relative;
+        padding: 0 24px;
+        margin-bottom: 16px;
 
         .dialog-newmsg {
             display: none;
+            position: absolute;
+            top: -38px;
             height: 30px;
             line-height: 30px;
             color: #ffffff;
@@ -679,25 +742,7 @@
             margin-right: 10px;
             border-radius: 16px;
             cursor: pointer;
-            z-index: 2;;
-        }
-
-        .dialog-input {
-            width: 100%;
-            display: flex;
-            align-items: center;
-
-            .chat-input-box {
-                flex: 1;
-                width: 0;
-                display: flex;
-                flex-direction: column;
-                .chat-input-wrapper {
-                    background-color: #F4F5F7;
-                    padding: 10px 12px;
-                    border-radius: 10px;
-                }
-            }
+            z-index: 2;
         }
 
         .chat-upload {
@@ -707,9 +752,26 @@
             overflow: hidden;
         }
 
-        &.newmsg {
-            margin-top: -50px;
+        .chat-input-box {
+            .chat-input-wrapper {
+                background-color: #F4F5F7;
+                padding: 8px 2px;
+                border-radius: 10px;
+                .ql-container {
+                    .ql-editor {
+                        margin: 4px 12px;
+                        &.ql-blank {
+                            &::before {
+                                left: 12px;
+                                right: 12px;
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
+        &.newmsg {
             .dialog-newmsg {
                 display: block;
             }
@@ -921,13 +983,23 @@
             background-color: #f8f8f8;
             padding: 8px 10px;
             margin-bottom: 0;
-            .dialog-input {
-                .chat-input-box {
-                    .chat-input-wrapper {
-                        padding-left: 6px;
-                        padding-right: 6px;
-                        background-color: #ffffff;
+            .chat-input-box {
+                .chat-input-wrapper {
+                    background-color: #ffffff;
+                    .chat-toolbar {
+                        > li {
+                            &.chat-record-recwave {
+                                margin-left: -10px;
+                                width: calc(100% + 20px);
+                                background-color: #f8f8f8;
+                            }
+                        }
                     }
+                }
+                .chat-emoji-wrapper {
+                    margin-left: -10px;
+                    margin-bottom: -8px;
+                    width: calc(100% + 20px);
                 }
             }
         }

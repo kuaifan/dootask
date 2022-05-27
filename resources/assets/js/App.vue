@@ -9,6 +9,7 @@
         <RightBottom/>
         <NetworkException/>
         <PreviewImageState/>
+        <AudioManager/>
         <iframe v-if="manifestUrl" v-show="false" :src="manifestUrl"></iframe>
     </div>
 </template>
@@ -19,9 +20,10 @@ import RightBottom from "./components/RightBottom";
 import PreviewImageState from "./components/PreviewImage/state";
 import {mapState} from "vuex";
 import NetworkException from "./components/NetworkException";
+import AudioManager from "./components/AudioManager";
 
 export default {
-    components: {NetworkException, PreviewImageState, RightBottom, Spinner},
+    components: {AudioManager, NetworkException, PreviewImageState, RightBottom, Spinner},
 
     data() {
         return {

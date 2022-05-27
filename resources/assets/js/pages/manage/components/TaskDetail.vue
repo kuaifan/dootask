@@ -409,9 +409,8 @@
                             :placeholder="$L('输入消息...')"
                             @on-more="onEventMore"
                             @on-file="onSelectFile"
-                            @on-send="onSend">
-                            <Badge slot="toolbarAfter" :count="taskDetail.msg_num"/>
-                        </ChatInput>
+                            @on-send="onSend"/>
+                        <Badge class="input-badge" :count="taskDetail.msg_num"/>
                     </div>
                     <div v-if="dialogDrag" class="drag-over" @click="dialogDrag=false">
                         <div class="drag-text">{{$L('拖动到这里发送')}}</div>

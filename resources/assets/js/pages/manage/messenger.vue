@@ -478,6 +478,8 @@ export default {
                 switch (data.type) {
                     case 'text':
                         return $A.getMsgTextPreview(data.msg.text)
+                    case 'record':
+                        return `[${this.$L('语音')}]`
                     case 'file':
                         if (data.msg.type == 'img') {
                             return `[${this.$L('图片')}]`
