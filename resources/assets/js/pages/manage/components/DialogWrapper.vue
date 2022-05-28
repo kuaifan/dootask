@@ -2,6 +2,7 @@
     <div
         v-if="isReady"
         class="dialog-wrapper"
+        :style="wrapperStyle"
         @drop.prevent="chatPasteDrag($event, 'drag')"
         @dragover.prevent="chatDragOver(true, $event)"
         @dragleave.prevent="chatDragOver(false, $event)">
@@ -116,6 +117,7 @@
                 @on-more="onEventMore"
                 @on-file="sendFileMsg"
                 @on-send="sendMsg"
+                @on-emoji-visible-change="onEventEmojiVisibleChange"
                 :placeholder="$L('输入消息...')"/>
         </div>
         <div v-if="dialogDrag" class="drag-over" @click="dialogDrag=false">
@@ -218,15 +220,21 @@ export default {
 
             dialogDrag: false,
             groupInfoShow: false,
+
+            windowScrollY: 0
         }
     },
 
     mounted() {
-
+        if ($A.isIos()) {
+            window.addEventListener('scroll', this.onScrollEvent);
+        }
     },
 
     beforeDestroy() {
-
+        if ($A.isIos()) {
+            window.removeEventListener('scroll', this.onScrollEvent);
+        }
     },
 
     computed: {
@@ -313,6 +321,13 @@ export default {
         isMyDialog() {
             const {dialogData, userId} = this;
             return dialogData.dialog_user && dialogData.dialog_user.userid == userId
+        },
+
+        wrapperStyle() {
+            const {windowScrollY} = this;
+            return {
+                top: windowScrollY + 'px'
+            }
         }
     },
 
@@ -580,6 +595,12 @@ export default {
             }
         },
 
+        onEventEmojiVisibleChange(val) {
+            if (val && !this.$isDesktop) {
+                this.onToBottom();
+            }
+        },
+
         onActive() {
             this.$emit("on-active");
         },
@@ -673,6 +694,10 @@ export default {
                 }
             }, 100)
         },
+
+        onScrollEvent() {
+            this.windowScrollY = window.scrollY
+        }
     }
 }
 </script>

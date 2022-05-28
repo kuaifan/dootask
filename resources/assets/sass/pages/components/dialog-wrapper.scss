@@ -451,7 +451,7 @@
                                 flex-direction: row-reverse;
                                 justify-content: flex-end;
                                 align-content: center;
-                                color: #ffffff;
+                                color: #333333;
                                 line-height: 20px;
                                 cursor: pointer;
 
@@ -691,6 +691,7 @@
 
                                 .dialog-record {
                                     flex-direction: row;
+                                    color: #ffffff;
 
                                     .record-time {
                                         padding: 0 4px 0 0;

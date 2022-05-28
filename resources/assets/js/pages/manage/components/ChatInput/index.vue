@@ -105,7 +105,7 @@
 <script>
 import {mapState} from "vuex";
 import Quill from 'quill';
-import "quill-mention";
+import "quill-mention-hi";
 import ChatEmoji from "./emoji";
 import touchmouse from "../../../../directives/touchmouse";
 import TransferDom from "../../../../directives/transfer-dom";
@@ -308,6 +308,7 @@ export default {
             if (!val && this.$refs.emojiTip) {
                 this.$refs.emojiTip.updatePopper()
             }
+            this.$emit('on-emoji-visible-change', val)
         },
 
         showMore(val) {
@@ -317,6 +318,7 @@ export default {
             if (!val && this.$refs.moreTip) {
                 this.$refs.moreTip.updatePopper()
             }
+            this.$emit('on-more-visible-change', val)
         },
 
         dialogInputCache() {
@@ -365,6 +367,7 @@ export default {
                         mentionDenotationChars: ["@", "#"],
                         defaultMenuOrientation: this.defaultMenuOrientation,
                         isolateCharacter: true,
+                        positioningStrategy: 'fixed',
                         renderItem: (data) => {
                             if (data.disabled === true) {
                                 return `<div class="mention-item-disabled">${data.value}</div>`;
@@ -381,6 +384,13 @@ export default {
                             return "Loading...";
                         },
                         source: (searchTerm, renderList, mentionChar) => {
+                            const mentionName = mentionChar == "@" ? 'user-mention' : 'task-mention';
+                            const containers = document.getElementsByClassName("ql-mention-list-container");
+                            for (let i = 0; i < containers.length; i++) {
+                                containers[i].classList.remove("user-mention");
+                                containers[i].classList.remove("task-mention");
+                                containers[i].classList.add(mentionName);
+                            }
                             this.getSource(mentionChar).then(array => {
                                 let values = [];
                                 array.some(item => {
@@ -492,7 +502,18 @@ export default {
                         this.recordDuration = duration;
                     }
                 })
-                this.recordReady = true;
+                if (window.Recorder.Support()) {
+                    this.recordReady = true;
+                    this.$nextTick(_ => {
+                        this.recordWave = window.Recorder.FrequencyHistogramView({
+                            elem: this.$refs.recwave,
+                            lineCount: 90,
+                            position: 0,
+                            minHeight: 1,
+                            stripeEnable: false
+                        })
+                    })
+                }
             });
 
             // Ready event
@@ -586,24 +607,17 @@ export default {
                 this.recordState = "ready";
                 this.recordRec.open(_ => {
                     if (this.recordState === "ready") {
+                        this.recordDuration = 0;
                         this.recordState = "ing"
                         this.recordBlob = null
-                        this.$nextTick(_ => {
-                            this.$refs.recwave.innerHTML = "";
-                            this.recordWave = window.Recorder.FrequencyHistogramView({
-                                elem: this.$refs.recwave,
-                                lineCount: 90,
-                                position: 0,
-                                minHeight: 1,
-                                stripeEnable: false
-                            })
+                        setTimeout(_ => {
                             this.recordRec.start()
-                        })
+                        }, 300)
                     } else {
                         this.recordRec.close();
                     }
                 }, (msg) => {
-                    $A.modalError(msg || '打开录音失败')
+                    $A.messageError(msg || '打开录音失败')
                 });
                 return true;
             } else {
@@ -612,28 +626,33 @@ export default {
         },
 
         stopRecord(isCancel) {
-            if (this.recordState === "ing") {
-                this.recordState = "stop";
-                this.recordRec.stop((blob, duration) => {
-                    this.recordRec.close();
-                    if (isCancel === true) {
-                        return;
-                    }
-                    if (duration < 600) {
-                        // 小于 600ms 不发送
-                        $A.messageWarning("说话时间太短")
-                    } else {
-                        this.recordBlob = blob;
-                        this.uploadRecord(duration);
-                    }
-                }, (msg) => {
-                    this.recordRec.close();
-                    $A.modalError("录音失败: " + msg);
-                });
-                return true;
-            } else {
-                this.recordState = "stop";
-                return false;
+            switch (this.recordState) {
+                case "ing":
+                    this.recordState = "stop";
+                    this.recordRec.stop((blob, duration) => {
+                        this.recordRec.close();
+                        if (isCancel === true) {
+                            return;
+                        }
+                        if (duration < 600) {
+                            $A.messageWarning("说话时间太短") // 小于 600ms 不发送
+                        } else {
+                            this.recordBlob = blob;
+                            this.uploadRecord(duration);
+                        }
+                    }, (msg) => {
+                        this.recordRec.close();
+                        $A.messageError(msg || "录音失败");
+                    });
+                    return true;
+
+                case "ready":
+                    this.recordState = "stop";
+                    return true;
+
+                default:
+                    this.recordState = "stop";
+                    return false;
             }
         },
 

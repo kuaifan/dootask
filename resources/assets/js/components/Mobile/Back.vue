@@ -59,7 +59,9 @@ export default {
         },
 
         touchmove(event) {
-            this.getXY(event)
+            if (this.show) {
+                this.getXY(event)
+            }
         },
 
         touchend() {
