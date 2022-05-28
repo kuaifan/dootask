@@ -92,7 +92,7 @@
                 </div>
             </div>
         </div>
-        <div v-if="tabTypeActive === 'column'" class="project-column">
+        <div v-if="tabTypeActive === 'column'" class="project-column" :style="columnStyle">
             <Draggable
                 :list="columnList"
                 :animation="150"
@@ -538,6 +538,7 @@ export default {
     computed: {
         ...mapState([
             'windowWidth',
+            'touchBackInProgress',
 
             'userId',
             'cacheDialogs',
@@ -557,7 +558,7 @@ export default {
         },
 
         tabTypeStyle() {
-            let style = {}
+            const style = {}
             switch (this.tabTypeActive) {
                 case 'column':
                     style.left = '0'
@@ -570,6 +571,14 @@ export default {
                     break
                 default:
                     style.display = 'none'
+            }
+            return style
+        },
+
+        columnStyle() {
+            const style = {}
+            if (this.touchBackInProgress) {
+                style.overflow = 'hidden';
             }
             return style
         },

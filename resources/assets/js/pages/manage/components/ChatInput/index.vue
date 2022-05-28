@@ -1,5 +1,5 @@
 <template>
-    <div class="chat-input-box" :class="boxClass">
+    <div class="chat-input-box" :class="boxClass" v-clickoutside="hidePopover">
         <div class="chat-input-wrapper" @click.stop="focus">
             <!-- 输入框 -->
             <div
@@ -110,11 +110,12 @@ import "quill-mention-hi";
 import ChatEmoji from "./emoji";
 import touchmouse from "../../../../directives/touchmouse";
 import TransferDom from "../../../../directives/transfer-dom";
+import clickoutside from "../../../../directives/clickoutside";
 
 export default {
     name: 'ChatInput',
     components: {ChatEmoji},
-    directives: {touchmouse, TransferDom},
+    directives: {touchmouse, TransferDom, clickoutside},
     props: {
         dialogId: {
             type: Number,
@@ -429,6 +430,9 @@ export default {
 
             // Mark model as touched if editor lost focus
             this.quill.on('selection-change', range => {
+                if (this.timerScroll) {
+                    clearInterval(this.timerScroll);
+                }
                 if (!range) {
                     this.$emit('on-blur', this.quill)
                 } else {
@@ -438,11 +442,13 @@ export default {
                         // ios11.0-11.3 对scrollTop及scrolIntoView解释有bug
                         // 直接执行会导致输入框滚到底部被遮挡
                     } else {
-                        for (let i = 1; i <= 5; i++) {
-                            setTimeout(() => {
+                        this.timerScroll = setInterval(() => {
+                            if (this.quill.hasFocus()) {
                                 $A.scrollToView(this.$refs.editor, true)
-                            }, 200 * i);
-                        }
+                            } else {
+                                clearInterval(this.timerScroll);
+                            }
+                        }, 200);
                     }
                 }
             })

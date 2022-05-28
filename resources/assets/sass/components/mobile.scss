@@ -232,6 +232,9 @@
 
 .mobile-dialog-leave-active {
     transition: all 0.3s ease;
+    .dialog-wrapper {
+        bottom: -60px;
+    }
 }
 
 .mobile-dialog-enter,

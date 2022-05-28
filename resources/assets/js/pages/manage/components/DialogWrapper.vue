@@ -221,19 +221,19 @@ export default {
             dialogDrag: false,
             groupInfoShow: false,
 
-            windowScrollY: 0
+            wrapperStyle: {},
         }
     },
 
     mounted() {
         if ($A.isIos()) {
-            window.addEventListener('scroll', this.onScrollEvent);
+            window.addEventListener('scroll', this.onWindowScroll);
         }
     },
 
     beforeDestroy() {
         if ($A.isIos()) {
-            window.removeEventListener('scroll', this.onScrollEvent);
+            window.removeEventListener('scroll', this.onWindowScroll);
         }
     },
 
@@ -321,13 +321,6 @@ export default {
         isMyDialog() {
             const {dialogData, userId} = this;
             return dialogData.dialog_user && dialogData.dialog_user.userid == userId
-        },
-
-        wrapperStyle() {
-            const {windowScrollY} = this;
-            return {
-                top: windowScrollY + 'px'
-            }
         }
     },
 
@@ -695,8 +688,16 @@ export default {
             }, 100)
         },
 
-        onScrollEvent() {
-            this.windowScrollY = window.scrollY
+        onWindowScroll() {
+            const {scrollE} = this.scrollInfo();
+            this.wrapperStyle =  {
+                top: window.scrollY + 'px'
+            }
+            if (scrollE <= 10) {
+                this.$nextTick(_ => {
+                    this.onToBottom();
+                })
+            }
         }
     }
 }

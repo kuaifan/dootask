@@ -45,6 +45,12 @@ export default {
         },
     },
 
+    watch: {
+        show(s) {
+            this.$store.state.touchBackInProgress = s;
+        }
+    },
+
     methods: {
         getXY(event) {
             let touch = event.touches[0]

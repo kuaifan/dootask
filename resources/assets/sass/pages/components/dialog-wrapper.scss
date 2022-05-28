@@ -979,6 +979,7 @@
         .dialog-scroller {
             padding-right: 14px;
             padding-left: 14px;
+            overscroll-behavior: none;
         }
         .dialog-footer {
             background-color: #f8f8f8;
