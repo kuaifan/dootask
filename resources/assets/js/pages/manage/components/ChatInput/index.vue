@@ -86,7 +86,7 @@
         <!-- 移动端表情（底部） -->
         <ChatEmoji v-if="emojiBottom && showEmoji" @on-select="onSelectEmoji"/>
 
-        <!-- 录音取消 -->
+        <!-- 录音浮窗 -->
         <transition name="fade">
             <div
                 v-if="recordState === 'ing'"
@@ -95,7 +95,8 @@
                 class="chat-input-record-transfer"
                 :class="{cancel: touchLimitY}"
                 @click="stopRecord">
-                <div class="record-duration">{{recordFormatDuration}}</div>
+                <div v-if="recordDuration > 0" class="record-duration">{{recordFormatDuration}}</div>
+                <div v-else class="record-loading"><Loading/></div>
                 <div class="record-cancel" @click.stop="stopRecord(true)">{{$L(touchLimitY ? '松开取消' : '向上滑动取消')}}</div>
             </div>
         </transition>

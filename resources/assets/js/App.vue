@@ -88,8 +88,7 @@ export default {
                 if (this.userId > 0) {
                     if (this.$isEEUiApp) {
                         setTimeout(_ => {
-                            const webview = requireModuleJs("webview");
-                            webview && webview.sendMessage({
+                            $A.eeuiAppSendMessage({
                                 action: 'setUmengAlias',
                                 userid: this.userId,
                                 token: this.userToken,

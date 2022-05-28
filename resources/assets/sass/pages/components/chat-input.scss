@@ -343,9 +343,22 @@
     transition: all 0.3s ease;
     .record-duration {
         font-size: 20px;
-        padding-bottom: 6px;
+        line-height: 30px;
+    }
+    .record-loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 30px;
+        .common-loading {
+            width: 24px;
+            height: 24px;
+            margin: 0;
+            padding: 0;
+        }
     }
     .record-cancel {
+        margin-top: 6px;
         opacity: 0.6;
     }
     &.cancel {

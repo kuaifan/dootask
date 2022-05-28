@@ -53,6 +53,7 @@ export default {
             const ended = audio.ended || audio.paused;
             audio.controls = false;
             audio.loop = false;
+            audio.volume = 1;
             if (info === false) {
                 if (!ended) {
                     audio.pause()

@@ -349,17 +349,6 @@
             <ProjectArchived v-if="archivedProjectShow"/>
         </DrawerOverlay>
 
-        <!--菜单按钮-->
-        <DragBallComponent
-            :distanceLeft="0"
-            :distanceTop="60"
-            @on-click="show768Menu=!show768Menu">
-            <div class="manage-mini-menu">
-                <Icon :type="show768Menu ? 'md-close' : 'md-menu'" />
-                <Badge :count="unreadTotal"/>
-            </div>
-        </DragBallComponent>
-
         <!--移动端选项卡-->
         <transition name="mobile-slide">
             <MobileTabbar v-if="showMobileTabbar" @on-click="onTabbarClick"/>

@@ -41,13 +41,10 @@ export default {
             if (this.duration > 0) {
                 this.timer = setTimeout(this.close, this.duration)
             }
-            if (this.$isEEUiApp) {
-                const webview = requireModuleJs("webview");
-                webview && webview.sendMessage({
-                    action: 'setVibrate',
-                    time: 1000
-                });
-            }
+            $A.eeuiAppSendMessage({
+                action: 'setVibrate',
+                time: 1000
+            });
         },
 
         close() {

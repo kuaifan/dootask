@@ -89,14 +89,13 @@ export default {
 
         appAndroidEvents() {
             if (this.$isEEUiApp && $A.isAndroid()) {
-                const eeui = requireModuleJs("eeui");
-                eeui.setPageBackPressed({
+                $A.eeuiAppSetPageBackPressed({
                     pageName: 'firstPage',
                 }, _ => {
                     if (this.canBack()) {
                         this.onBack();
                     } else {
-                        eeui.goDesktop()
+                        $A.eeuiAppGoDesktop()
                     }
                 });
             }

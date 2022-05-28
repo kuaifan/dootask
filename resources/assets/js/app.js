@@ -2,6 +2,7 @@ const isElectron = window && window.process && window.process.type;
 const isEEUiApp = window && window.navigator && /eeui/i.test(window.navigator.userAgent);
 
 import './functions/common'
+import './functions/eeui'
 import './functions/web'
 
 import Vue from 'vue'

@@ -253,16 +253,6 @@
             overflow: auto;
         }
     }
-    .manage-mini-menu {
-        display: none;
-        position: relative;
-        .ivu-badge {
-            position: absolute;
-            top: -6px;
-            left: 30px;
-            transform: scale(0.9);
-        }
-    }
 }
 
 .page-manage-menu-dropdown {
@@ -447,20 +437,6 @@
             &.show768-menu {
                 transform: translateX(0);
             }
-        }
-        .manage-mini-menu {
-            //display: flex;    // todo 可以去除mini了
-            display: none;
-            align-items: center;
-            justify-content: center;
-            width: 46px;
-            height: 42px;
-            font-size: 22px;
-            background-color: #ffffff;
-            white-space: nowrap;
-            border-radius: 4px;
-            box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
-            cursor: pointer;
         }
     }
 }

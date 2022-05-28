@@ -730,8 +730,7 @@
                         }
                     }
                 }
-                const webview = requireModuleJs("webview");
-                webview.setUrl(url);
+                $A.eeuiAppSetUrl(url);
             } else {
                 window.location.reload();
             }
