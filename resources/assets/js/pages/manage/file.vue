@@ -73,7 +73,7 @@
                         <p>{{$L('没有任何文件')}}</p>
                     </div>
                     <div v-else class="file-list" @contextmenu.prevent="handleRightClick">
-                        <ul class="clearfix">
+                        <ul>
                             <li
                                 v-for="item in fileList"
                                 :class="{

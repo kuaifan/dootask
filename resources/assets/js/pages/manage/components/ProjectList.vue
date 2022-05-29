@@ -33,13 +33,17 @@
                         </div>
                     </div>
                     <div v-if="item.task_num > 0" class="item-right" @click.stop="modalPercent(item)">
-                        <EProgress
+                        <iCircle
                             type="circle"
-                            color="#8bcf70"
-                            :percentage="item.task_percent"
-                            :status="item.task_percent >= 100 ? 'success' : ''"
-                            :width="60"
-                            :stroke-width="5"/>
+                            trail-color="rgba(132, 197, 106, 0.2)"
+                            :trail-width="8"
+                            :stroke-color="item.task_percent === 100 ? 'rgba(132, 197, 106, 0)' : '#84C56A'"
+                            :stroke-width="8"
+                            :percent="item.task_percent"
+                            :size="56">
+                            <Icon v-if="item.task_percent === 100" type="ios-checkmark"></Icon>
+                            <span v-else class="percent-text">{{item.task_percent}}%</span>
+                        </iCircle>
                     </div>
                 </div>
             </li>

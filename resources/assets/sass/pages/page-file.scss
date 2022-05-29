@@ -324,11 +324,12 @@
                 margin-top: 16px;
                 overflow: auto;
                 > ul {
-                    margin-top: -12px;
+                    display: grid;
+                    justify-content: space-between;
+                    grid-template-columns: repeat(auto-fill, 100px);
+                    grid-gap: 12px;
                     > li {
                         list-style: none;
-                        float: left;
-                        margin: 12px;
                         width: 100px;
                         height: 110px;
                         position: relative;
@@ -659,6 +660,12 @@
                 margin: 0 24px 0;
             }
             .file-drag {
+                .file-list {
+                    user-select: none;
+                    > ul {
+                        grid-gap: 4px;
+                    }
+                }
                 .file-table {
                     margin: 16px 24px 24px;
                 }

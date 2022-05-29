@@ -453,6 +453,7 @@
                     overflow-x: hidden;
                     overflow-y: auto;
                     > ul {
+                        user-select: none;
                         &.dialog {
                             > li {
                                 .dialog-split {

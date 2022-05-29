@@ -54,6 +54,7 @@
         width: 100%;
         overflow: auto;
         background-color: #f8f8f8;
+        user-select: none;
         > li {
             padding: 16px;
             margin: 16px;
@@ -136,17 +137,15 @@
                     display: flex;
                     align-items: center;
                     margin-left: 28px;
-                    .el-progress {
-                        &.is-success {
-                            opacity: 0.5;
-                            .el-icon-check {
-                                font-size: 28px;
-                                font-weight: 900;
-                                color: $primary-color;
-                            }
+                    .ivu-chart-circle {
+                        .ivu-icon {
+                            font-size: 40px;
+                            font-weight: 900;
+                            color: rgba($primary-color, 0.25);
                         }
-                        .el-progress__text {
-                            font-size: 12px !important;
+                        .percent-text {
+                            color: $primary-color;
+                            font-weight: 600;
                         }
                     }
                 }
