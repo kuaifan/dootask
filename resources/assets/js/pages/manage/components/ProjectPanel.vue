@@ -230,7 +230,7 @@
                 </li>
             </Draggable>
         </div>
-        <div v-else-if="tabTypeActive === 'table'" class="project-table overlay-y">
+        <div v-else-if="tabTypeActive === 'table'" class="project-table overlay-y" :style="columnStyle">
             <div class="project-table-head">
                 <Row class="task-row">
                     <Col span="12"># {{$L('任务名称')}}</Col>
@@ -578,7 +578,7 @@ export default {
         columnStyle() {
             const style = {}
             if (this.touchBackInProgress) {
-                style.overflow = 'hidden';
+                style.overflow = 'hidden !important';
             }
             return style
         },

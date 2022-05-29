@@ -40,7 +40,7 @@
                             :stroke-color="item.task_percent === 100 ? 'rgba(132, 197, 106, 0)' : '#84C56A'"
                             :stroke-width="8"
                             :percent="item.task_percent"
-                            :size="56">
+                            :size="48">
                             <Icon v-if="item.task_percent === 100" type="ios-checkmark"></Icon>
                             <span v-else class="percent-text">{{item.task_percent}}%</span>
                         </iCircle>

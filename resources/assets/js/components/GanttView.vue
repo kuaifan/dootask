@@ -6,6 +6,7 @@
             </div>
             <ul ref="ganttItem"
                 class="gantt-item"
+                :style="ganttItemStyle"
                 @scroll="itemScrollListener"
                 @mouseenter="mouseType='item'">
                 <li v-for="(item, key) in lists" :key="key">
@@ -50,6 +51,8 @@
 </template>
 
 <script>
+import {mapState} from "vuex";
+
 export default {
     name: 'GanttView',
     props: {
@@ -100,6 +103,7 @@ export default {
         }
     },
     computed: {
+        ...mapState(['touchBackInProgress']),
         monthNum() {
             const {ganttWidth, dateWidth} = this;
             return Math.floor(ganttWidth / dateWidth / 30) + 2
@@ -227,7 +231,14 @@ export default {
                 }
                 return customStyle
             }
-        }
+        },
+        ganttItemStyle() {
+            const style = {}
+            if (this.touchBackInProgress) {
+                style.overflow = 'hidden !important';
+            }
+            return style
+        },
     },
     methods: {
         itemScrollListener(e) {
