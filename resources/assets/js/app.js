@@ -92,23 +92,40 @@ if (!isElectron && !isEEUiApp) {
     });
 }
 
-// 加载函数
+// 加载路由
 Vue.prototype.goForward = function(location, isReplace) {
-    if (typeof location === 'string') location = {name: location};
+    if (typeof location === 'string') {
+        location = {name: location};
+    }
+    if (app.$store.state.routeHistorys.length === 0) {
+        app.$store.state.routeHistorys.push(app.$route)
+    }
     if (isReplace === true) {
-        app.$router.replace(location).then(() => {}).catch(() => {});
+        app.$router.replace(location).then(to => {
+            app.$store.state.routeHistorys.pop();
+            app.$store.state.routeHistorys.push(to);
+        }).catch(_ => {});
     } else {
-        app.$router.push(location).then(() => {}).catch(() => {});
+        app.$router.push(location).then(to => {
+            const length = app.$store.state.routeHistorys.push(to)
+            length > 120 && app.$store.state.routeHistorys.splice(length - 100)
+            app.$store.state.routeHistoryLast = length >= 2 ? app.$store.state.routeHistorys[length - 2] : {};
+        }).catch(_ => {});
     }
 };
 
-// 返回函数
-Vue.prototype.goBack = function (number) {
-    let history = $A.jsonParse(window.sessionStorage['__history__'] || '{}');
-    if ($A.runNum(history['::count']) > 2) {
-        app.$router.go(typeof number === 'number' ? number : -1);
+// 返回路由
+Vue.prototype.goBack = function () {
+    if (app.$store.state.routeHistorys.length > 1) {
+        app.$router.back();
+        //
+        app.$store.state.routeHistorys.pop();
+        const length = app.$store.state.routeHistorys.length;
+        app.$store.state.routeHistoryLast = length >= 2 ? app.$store.state.routeHistorys[length - 2] : {};
     } else {
-        app.$router.replace(typeof number === "object" ? number : {path: '/'}).catch(_ => {});
+        app.$router.replace({path: '/'}).catch(_ => {});
+        app.$store.state.routeHistorys = [];
+        app.$store.state.routeHistoryLast = {};
     }
 };
 

@@ -7,9 +7,6 @@ export default [
     {
         name: 'manage',
         path: '/manage',
-        meta: {
-            slide: false
-        },
         component: () => import('./pages/manage.vue'),
         children: [
             {
@@ -94,7 +91,6 @@ export default [
     {
         name: 'valid-email',
         path: '/single/valid/email',
-        meta: {title: '验证绑定邮箱'},
         component: () => import('./pages/single/validEmail.vue')
     },
     {

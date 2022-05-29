@@ -7,6 +7,10 @@ const stateData = {
     // 浏览器宽度≤768返回true
     windowMax768: window.innerWidth <= 768,
 
+    // 路由记录
+    routeHistorys: [],
+    routeHistoryLast: {},
+
     // 加载状态
     loadDashboardTasks: false,
     loadUserBasic: false,

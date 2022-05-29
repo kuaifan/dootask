@@ -3,7 +3,7 @@
         <PageTitle :title="projectData.name"/>
         <div class="project-titbox">
             <div class="project-title">
-                <div class="project-back" @click="goBack">
+                <div class="project-back" @click="onBack">
                     <i class="taskfont">&#xe72d;</i>
                 </div>
                 <h1>{{projectData.name}}</h1>
@@ -1438,6 +1438,15 @@ export default {
                 }
             }
             this.$store.dispatch('toggleProjectParameter', data);
+        },
+
+        onBack() {
+            const {name, params} = this.$store.state.routeHistoryLast;
+            if (name === this.$route.name && /\d+/.test(params.projectId)) {
+                this.goForward({name: this.$route.name, params: {projectId: 'all'}});
+            } else {
+                this.goBack();
+            }
         }
     }
 }

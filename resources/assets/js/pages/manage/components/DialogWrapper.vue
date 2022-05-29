@@ -8,7 +8,7 @@
         @dragleave.prevent="chatDragOver(false, $event)">
         <slot name="head">
             <div class="dialog-nav" :class="{completed:$A.dialogCompleted(dialogData)}">
-                <div class="dialog-back" @click="goBack">
+                <div class="dialog-back" @click="onBack">
                     <i class="taskfont">&#xe72d;</i>
                     <div v-if="msgUnreadOnly" class="back-num">{{msgUnreadOnly}}</div>
                 </div>
@@ -698,6 +698,15 @@ export default {
                     this.msgNew = 0;
                 }
             }, 100)
+        },
+
+        onBack() {
+            const {name, params} = this.$store.state.routeHistoryLast;
+            if (name === this.$route.name && /\d+/.test(params.dialogId)) {
+                this.goForward({name: this.$route.name});
+            } else {
+                this.goBack();
+            }
         }
     }
 }

@@ -4,7 +4,7 @@
             <ProjectPanel/>
             <ProjectDialog v-if="projectData.cacheParameter.chat"/>
         </template>
-        <ProjectList v-else-if="routeName === 'manage-project'"/>
+        <ProjectList v-if="!$isDesktop" v-show="projectId === 0"/>
     </div>
 </template>
 
@@ -23,10 +23,6 @@ export default {
     computed: {
         ...mapState(['cacheProjects', 'wsOpenNum']),
         ...mapGetters(['projectData']),
-
-        routeName() {
-            return this.$route.name
-        },
 
         projectId() {
             const {projectId} = this.$route.params;
