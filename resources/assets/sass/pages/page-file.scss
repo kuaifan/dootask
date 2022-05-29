@@ -611,6 +611,7 @@
 .page-file-share-list {
     max-height: 500px;
     margin-bottom: 26px;
+    overflow: auto;
     > li {
         display: flex;
         align-items: center;
