@@ -65,10 +65,14 @@
         </slot>
         <DynamicScroller
             ref="scroller"
+            class="dialog-scroller"
+            :class="{
+                'overlay-y': !touchBackInProgress
+            }"
+            :disabled="touchBackInProgress"
             :items="allMsgs"
             :min-item-size="58"
-            @onScroll="onScroll"
-            class="dialog-scroller overlay-y">
+            @onScroll="onScroll">
             <template #before>
                 <template v-if="allMsgs.length === 0">
                     <div v-if="dialogData.loading > 0" class="dialog-item loading"><Loading/></div>
@@ -239,7 +243,8 @@ export default {
             'cacheDialogs',
             'dialogMsgs',
             'wsOpenNum',
-            'windowScrollY'
+            'windowScrollY',
+            'touchBackInProgress'
         ]),
 
         isReady() {

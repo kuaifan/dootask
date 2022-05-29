@@ -1,8 +1,10 @@
 <template>
-    <div class="mobile-back" :style="style"></div>
+    <div v-if="show" class="mobile-back" :style="style"></div>
 </template>
 
 <script>
+import {mapState} from "vuex";
+
 export default {
     name: "MobileBack",
     props: {
@@ -37,10 +39,12 @@ export default {
     },
 
     computed: {
+        ...mapState(['windowScrollY']),
+
         style() {
             return {
-                top: this.y + 'px',
-                left: this.x > 20 && this.show ? 0 : '-50px',
+                top: (this.y + this.windowScrollY) + 'px',
+                left: this.x > 20 ? 0 : '-50px',
             }
         },
     },
