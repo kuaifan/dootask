@@ -10,6 +10,12 @@
      * =============================================================================
      */
     $.extend({
+        eeuiAppAlert(object, callback) {
+            if (!$A.isEEUiApp) return;
+            if (typeof callback !== "function") callback = _ => {};
+            requireModuleJs("eeui").alert(object, callback);
+        },
+
         eeuiAppOpenPage(object, callback) {
             if (!$A.isEEUiApp) return;
             if (typeof callback !== "function") callback = _ => {};

@@ -102,7 +102,15 @@ export default {
             axios.get($A.apiUrl('../version')).then(({status, data}) => {
                 if (status === 200) {
                     this.apiVersion = data.version || ''
-                    if (this.$Electron) {
+                    if (this.$isEEUiApp) {
+                        // App 检查接口版本
+                        if (this.compareVersion(this.apiVersion, '0.14.94') === -1) {
+                            $A.eeuiAppAlert({
+                                title: '温馨提示',
+                                message: '服务器接口版本过低，有可能无法正常使用系统功能。',
+                            });
+                        }
+                    } else if (this.$Electron) {
                         // 客户端提示更新
                         this.$Electron.sendMessage('updateCheckAndDownload', {
                             apiVersion: this.apiVersion
