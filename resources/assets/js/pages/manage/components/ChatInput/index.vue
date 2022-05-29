@@ -1,5 +1,5 @@
 <template>
-    <div class="chat-input-box" :class="boxClass" v-clickoutside="hidePopover">
+    <div ref="aa" class="chat-input-box" :class="boxClass" v-clickoutside="hidePopover">
         <div class="chat-input-wrapper" @click.stop="focus">
             <!-- 输入框 -->
             <div
@@ -167,6 +167,7 @@ export default {
     data() {
         return {
             quill: null,
+            isFocus: false,
             rangeIndex: 0,
             _content: '',
             _options: {},
@@ -348,6 +349,30 @@ export default {
             this.$emit('on-more-visible-change', val)
         },
 
+        isFocus(val) {
+            if (this.timerScroll) {
+                clearInterval(this.timerScroll);
+            }
+            if (val) {
+                this.$emit('on-focus')
+                this.hidePopover()
+                if (this.isSpecVersion) {
+                    // ios11.0-11.3 对scrollTop及scrolIntoView解释有bug
+                    // 直接执行会导致输入框滚到底部被遮挡
+                } else {
+                    this.timerScroll = setInterval(() => {
+                        if (this.quill.hasFocus()) {
+                            $A.scrollToView(this.$refs.editor, true)
+                        } else {
+                            clearInterval(this.timerScroll);
+                        }
+                    }, 200);
+                }
+            } else {
+                this.$emit('on-blur')
+            }
+        },
+
         dialogInputCache() {
             this.$emit('input', this.getInputCache())
         }
@@ -455,27 +480,18 @@ export default {
 
             // Mark model as touched if editor lost focus
             this.quill.on('selection-change', range => {
-                if (this.timerScroll) {
-                    clearInterval(this.timerScroll);
-                }
                 if (!range) {
-                    this.$emit('on-blur', this.quill)
-                } else {
-                    this.$emit('on-focus', this.quill)
-                    this.hidePopover()
-                    if (this.isSpecVersion) {
-                        // ios11.0-11.3 对scrollTop及scrolIntoView解释有bug
-                        // 直接执行会导致输入框滚到底部被遮挡
-                    } else {
-                        this.timerScroll = setInterval(() => {
-                            if (this.quill.hasFocus()) {
-                                $A.scrollToView(this.$refs.editor, true)
-                            } else {
-                                clearInterval(this.timerScroll);
-                            }
-                        }, 200);
+                    // 修复光标会超出的问题
+                    if (this.quill.hasFocus()) {
+                        this.quill.setSelection(0)
+                        return
+                    }
+                    if (document.activeElement && document.activeElement.className === 'ql-clipboard') {
+                        this.quill.setSelection(this.quill.getLength())
+                        return
                     }
                 }
+                this.isFocus = !!range;
             })
 
             // Update model if text changes

@@ -585,12 +585,12 @@ export default {
             this.onActive();
         },
 
-        onEventFocus(e) {
-            this.$emit("on-focus", e)
+        onEventFocus() {
+            this.$emit("on-focus")
         },
 
-        onEventBlur(e) {
-            this.$emit("on-blur", e)
+        onEventBlur() {
+            this.$emit("on-blur")
         },
 
         onEventMore(e) {
