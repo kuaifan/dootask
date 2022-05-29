@@ -61,7 +61,7 @@
                                 <div class="dialog-title">
                                     <div v-if="$A.getDialogMention(dialog) > 0" class="mention">[@{{$A.getDialogMention(dialog)}}]</div>
                                     <template v-for="tag in $A.dialogTags(dialog)" v-if="tag.color != 'success'">
-                                        <Tag :color="tag.color" :fade="false">{{$L(tag.text)}}</Tag>
+                                        <Tag :color="tag.color" :fade="false" @on-click="openDialog(dialog.id)">{{$L(tag.text)}}</Tag>
                                     </template>
                                     <span>{{dialog.name}}</span>
                                     <Icon v-if="dialog.type == 'user' && lastMsgReadDone(dialog.last_msg) && dialog.dialog_user.userid != userId" :type="lastMsgReadDone(dialog.last_msg)"/>
