@@ -237,7 +237,7 @@
                         background-color: #F4F5F7;
                         padding: 8px;
                         min-width: 32px;
-                        border-radius: 0 6px 6px 6px;
+                        border-radius: 2px 8px 8px 8px;
                         display: flex;
                         align-items: flex-start;
 
@@ -277,6 +277,7 @@
 
                         .content-text {
                             color: #333333;
+                            padding: 2px;
 
                             > pre {
                                 display: block;
@@ -452,7 +453,7 @@
                                 justify-content: flex-end;
                                 align-content: center;
                                 color: #333333;
-                                line-height: 20px;
+                                line-height: 22px;
                                 cursor: pointer;
 
                                 .record-time {
@@ -657,7 +658,7 @@
 
                         .dialog-content {
                             background-color: $primary-color;
-                            border-radius: 6px 0 6px 6px;
+                            border-radius: 8px 2px 8px 8px;
 
                             .content-text {
                                 color: #ffffff;
