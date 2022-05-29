@@ -230,6 +230,16 @@ export default {
                 }
             }
         }, 1000)
+        //
+        if (this.$isEEUiApp) {
+            window.__onPermissionRequest = (type, result) => {
+                console.log(type, result);
+                if (type === 'recordAudio' && result === false) {
+                    // Android 录音权限被拒绝了
+                    this.stopRecord(true);
+                }
+            }
+        }
     },
     beforeDestroy() {
         if (this.quill) {
@@ -675,6 +685,7 @@ export default {
                             this.recordRec.close();
                         }
                     }, (msg) => {
+                        this.recordState = "stop";
                         $A.messageError(msg || '打开录音失败')
                     });
                 })

@@ -95,7 +95,7 @@ export default {
                         }, 6000)
                     }
                     //
-                    if (this.$openVlog) {
+                    if (this.$openLog) {
                         $A.loadScript('js/vconsole.min.js', (e) => {
                             if (e !== null || typeof window.VConsole !== 'function') {
                                 $A.modalAlert("vConsole 组件加载失败！");
@@ -109,7 +109,6 @@ export default {
                                     console.log('vConsole: onClearLog');
                                 }
                             });
-                            console.info('vConsole: Welcome');
                         });
                     }
                 }
@@ -186,14 +185,14 @@ export default {
             }
             // 页面失活
             window.__onPagePause = () => {
-                if (this.$openVlog) {
+                if (this.$openLog) {
                     console.log('onPagePause');
                 }
                 this.$store.dispatch("getBasicData", -1)
             }
             // 页面激活
             window.__onPageResume = (num) => {
-                if (this.$openVlog) {
+                if (this.$openLog) {
                     console.log('onPageResume', num);
                     console.log('ws', this.ws, this.ws ? this.ws.readyState : null);
                 }

@@ -136,7 +136,7 @@ $A.isMainElectron = false;
 $A.isSubElectron = false;
 $A.isEEUiApp = isEEUiApp;
 $A.isDesktop = $A.isDesktop();
-$A.openVlog = $A.getStorageString("vlog::open") === "open";
+$A.openLog = $A.getStorageString("log::open") === "open";
 if (isElectron) {
     $A.Electron = electron;
     $A.Platform = /macintosh|mac os x/i.test(navigator.userAgent) ? "mac" : "win";
@@ -151,7 +151,7 @@ Vue.prototype.$isMainElectron = $A.isMainElectron;
 Vue.prototype.$isSubElectron = $A.isSubElectron;
 Vue.prototype.$isEEUiApp = $A.isEEUiApp;
 Vue.prototype.$isDesktop = $A.isDesktop;
-Vue.prototype.$openVlog = $A.openVlog;
+Vue.prototype.$openLog = $A.openLog;
 
 Vue.config.productionTip = false;
 

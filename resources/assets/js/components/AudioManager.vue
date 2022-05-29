@@ -59,7 +59,7 @@ export default {
                 msg = msg == this.audioId
             }
             if (typeof msg === "boolean") {
-                if (!msg && !ended) {
+                if (msg && !ended) {
                     audio.pause()
                 }
                 return

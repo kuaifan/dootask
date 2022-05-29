@@ -311,14 +311,16 @@ export default {
     watch: {
         dialogKey(val) {
             switch (val) {
-                case 'vlog.open':
-                case 'vlog:open':
-                    $A.setStorage("vlog::open", "open");
+                case 'log.open':
+                case 'log:open':
+                case 'eruda:open':
+                    $A.setStorage("log::open", "open");
                     $A.reloadUrl();
                     break;
-                case 'vlog.close':
-                case 'vlog:close':
-                    $A.setStorage("vlog::open", "close");
+                case 'log.close':
+                case 'log:close':
+                case 'eruda:close':
+                    $A.setStorage("log::open", "close");
                     $A.reloadUrl();
                     break;
             }

@@ -2256,7 +2256,7 @@ export default {
         url = url.replace("http://", "ws://");
         url += "?action=web&token=" + state.userToken;
         //
-        const wgLog = $A.openVlog;
+        const wgLog = $A.openLog;
         const wsRandom = $A.randomString(16);
         state.wsRandom = wsRandom;
         //
