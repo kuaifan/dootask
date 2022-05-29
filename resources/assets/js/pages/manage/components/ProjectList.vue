@@ -73,7 +73,7 @@ export default {
             if (projectKeyValue) {
                 return data.filter(item => $A.strExists(`${item.name}||${item.desc}`, projectKeyValue));
             }
-            return data.map(item => {
+            /*return data.map(item => {
                 if (!$A.isArray(item.user_simple)) {
                     const arr = (item.user_simple || "").split("|");
                     if (arr.length > 1) {
@@ -85,7 +85,8 @@ export default {
                     }
                 }
                 return item;
-            });
+            });*/
+            return data;
         },
     },
 

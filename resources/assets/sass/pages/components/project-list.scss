@@ -136,12 +136,17 @@
                     display: flex;
                     align-items: center;
                     margin-left: 28px;
-                    .is-success {
-                        opacity: 0.5;
-                        .el-icon-check {
-                            font-size: 28px;
-                            font-weight: 900;
-                            color: $primary-color;
+                    .el-progress {
+                        &.is-success {
+                            opacity: 0.5;
+                            .el-icon-check {
+                                font-size: 28px;
+                                font-weight: 900;
+                                color: $primary-color;
+                            }
+                        }
+                        .el-progress__text {
+                            font-size: 12px !important;
                         }
                     }
                 }
