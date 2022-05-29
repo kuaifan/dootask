@@ -661,11 +661,11 @@ export default {
 
         startRecord() {
             if (this.sendClass === 'recorder') {
+                this.recordDuration = 0;
                 this.recordState = "ready";
                 this.$nextTick(_ => {
                     this.recordRec.open(_ => {
                         if (this.recordState === "ready") {
-                            this.recordDuration = 0;
                             this.recordState = "ing"
                             this.recordBlob = null
                             setTimeout(_ => {
