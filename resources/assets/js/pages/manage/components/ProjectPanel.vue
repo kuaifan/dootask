@@ -860,7 +860,8 @@ export default {
                 return;
             }
             $A.modalInfo({
-                title: '项目描述',
+                language: false,
+                title: this.$L('项目描述'),
                 content: this.projectData.desc
             })
         },

@@ -50,6 +50,7 @@ import {
     Dropdown,
     DropdownMenu,
     DropdownItem,
+    Progress,
 } from 'element-ui';
 
 Vue.component('EAvatar', Avatar);
@@ -58,6 +59,7 @@ Vue.component('EPopover', Popover);
 Vue.component('EDropdown', Dropdown);
 Vue.component('EDropdownMenu', DropdownMenu);
 Vue.component('EDropdownItem', DropdownItem);
+Vue.component('EProgress', Progress);
 
 const originalPush = VueRouter.prototype.push
 VueRouter.prototype.push = function push(location) {

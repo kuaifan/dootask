@@ -22,24 +22,24 @@
                 v-for="(item, key) in projectLists"
                 :key="key"
                 @click="toggleRoute('project', {projectId: item.id})">
-                <div class="project-h1">
-                    {{item.name}}
-                </div>
-                <div class="project-h2">
-                    {{item.desc}}
-                </div>
-                <div class="project-percent">
-                    <Progress :percent="item.task_my_percent" :stroke-width="5" hide-info />
-                    <div class="percent-info" @click.stop="modalPercent(item)">{{item.task_my_complete}}<span><em>/</em>{{item.task_my_num}}</span></div>
-                </div>
-                <div class="project-footer">
-                    <div class="footer-percent" @click.stop="modalPercent(item)">
-                        <i class="taskfont">&#xe6e4;</i>
-                        {{item.task_complete}}<span><em>/</em>{{item.task_num}}</span>
+                <div class="project-item">
+                    <div class="item-left">
+                        <div class="project-h1">
+                            <span>{{item.name}}</span>
+                            <em v-if="item.task_my_num > 0">{{item.task_my_num}}</em>
+                        </div>
+                        <div class="project-h2">
+                            {{item.desc}}
+                        </div>
                     </div>
-                    <div class="footer-user">
-                        <UserAvatar v-for="(uid, ukey) in item.user_simple" :key="ukey" :userid="uid" :size="26" :borderWitdh="2"/>
-                        <div v-if="item.user_count > 3" class="footer-user-more">{{item.user_count > 99 ? '99+' : `${item.user_count}+`}}</div>
+                    <div v-if="item.task_num > 0" class="item-right" @click.stop="modalPercent(item)">
+                        <EProgress
+                            type="circle"
+                            color="#8bcf70"
+                            :percentage="item.task_percent"
+                            :status="item.task_percent >= 100 ? 'success' : ''"
+                            :width="60"
+                            :stroke-width="5"/>
                     </div>
                 </div>
             </li>
@@ -123,9 +123,16 @@ export default {
         },
 
         modalPercent(item) {
+            let content = `<p><strong>${this.$L('总进度')}</strong></p>`
+            content += `<p>${this.$L('总数量')}: ${item.task_num}</p>`
+            content += `<p>${this.$L('已完成')}: ${item.task_complete}</p>`
+            content += `<p style="margin-top:12px"><strong>${this.$L('我的任务')}</strong></p>`
+            content += `<p>${this.$L('总数量')}: ${item.task_my_num}</p>`
+            content += `<p>${this.$L('已完成')}: ${item.task_my_complete}</p>`
             $A.modalInfo({
-                title: `${item.name} 项目进度`,
-                content: `总进度：${item.task_complete}/${item.task_num}<br/>我的任务：${item.task_my_complete}/${item.task_my_num}`
+                language: false,
+                title: this.$L(`${item.name} 项目进度`),
+                content,
             });
         }
     }

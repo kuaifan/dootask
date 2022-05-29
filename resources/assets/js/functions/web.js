@@ -441,10 +441,17 @@
             } else if (typeof config === "string") {
                 config = {content: config};
             }
-            config.title = $A.L(config.title || (typeof config.render === 'undefined' ? '温馨提示' : ''));
-            config.content = $A.L(config.content || '');
-            config.okText = $A.L(config.okText || '确定');
-            config.cancelText = $A.L(config.cancelText || '取消');
+            config.title = config.title || (typeof config.render === 'undefined' ? '温馨提示' : '');
+            config.content = config.content || '';
+            config.okText = config.okText || '确定';
+            config.cancelText = config.cancelText || '取消';
+            if (config.language !== false) {
+                delete config.language;
+                config.title = $A.L(config.title);
+                config.content = $A.L(config.content);
+                config.okText = $A.L(config.okText);
+                config.cancelText = $A.L(config.cancelText);
+            }
             return config;
         },
 

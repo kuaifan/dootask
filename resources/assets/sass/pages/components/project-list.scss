@@ -79,80 +79,70 @@
                     margin: 1px;
                 }
             }
-            .project-h1 {
-                font-size: 16px;
-                line-height: 22px;
-                font-weight: 600;
-                word-break: break-all;
-                text-overflow: ellipsis;
-                overflow: hidden;
-                display: -webkit-box;
-                -webkit-line-clamp: 2;
-                -webkit-box-orient: vertical;
-            }
-            .project-h2 {
-                margin-top: 8px;
-                line-height: 22px;
-                word-break: break-all;
-                text-overflow: ellipsis;
-                overflow: hidden;
-                display: -webkit-box;
-                -webkit-line-clamp: 2;
-                -webkit-box-orient: vertical;
-            }
-            .project-percent {
-                margin-top: 12px;
+            .project-item {
                 display: flex;
                 align-items: center;
-                .percent-info {
-                    margin-left: 12px;
-                    min-width: 28px;
-                    text-align: right;
-                    > span {
-                        opacity: 0.7;
-                        > em {
-                            padding: 0 1px;
-                            font-style: normal;
-                        }
-                    }
-                }
-            }
-            .project-footer {
-                margin-top: 12px;
-                margin-bottom: -2px;
-                display: flex;
-                align-items: center;
-                .footer-percent {
-                    flex-shrink: 0;
-                    margin-right: 12px;
-                    min-width: 28px;
-                    text-align: left;
-                    display: flex;
-                    align-items: center;
-                    .taskfont {
-                        font-size: 14px;
-                        padding-right: 4px;
-                    }
-                    > span {
-                        opacity: 0.7;
-                        > em {
-                            padding: 0 1px;
-                            font-style: normal;
-                        }
-                    }
-                }
-                .footer-user {
+                .item-left {
                     flex: 1;
+                    width: 0;
+                    .project-h1 {
+                        display: flex;
+                        align-items: flex-start;
+                        > span {
+                            font-size: 16px;
+                            line-height: 22px;
+                            font-weight: 600;
+                            word-break: break-all;
+                            text-overflow: ellipsis;
+                            overflow: hidden;
+                            display: -webkit-box;
+                            -webkit-line-clamp: 2;
+                            -webkit-box-orient: vertical;
+                        }
+                        > em {
+                            margin-top: 1px;
+                            margin-left: 6px;
+                            flex-shrink: 0;
+                            font-style: normal;
+                            display: inline-block;
+                            background-color: rgba(253, 156, 155, 0.15);
+                            color: #FF7559;
+                            padding: 0 5px;
+                            min-width: 10px;
+                            height: 20px;
+                            line-height: 20px;
+                            text-align: center;
+                            border-radius: 10px;
+                            box-sizing: content-box;
+                            font-weight: 500;
+                            font-size: 14px;
+                            white-space: nowrap;
+                        }
+                    }
+                    .project-h2 {
+                        margin-top: 8px;
+                        line-height: 22px;
+                        word-break: break-all;
+                        text-overflow: ellipsis;
+                        overflow: hidden;
+                        display: -webkit-box;
+                        -webkit-line-clamp: 2;
+                        -webkit-box-orient: vertical;
+                        color: #999999;
+                    }
+                }
+                .item-right {
+                    flex-shrink: 0;
                     display: flex;
                     align-items: center;
-                    justify-content: flex-end;
-                    .common-avatar {
-                        margin-left: -4px;
-                    }
-                    .footer-user-more {
-                        padding-left: 6px;
-                        font-weight: 500;
-                        color: $primary-color;
+                    margin-left: 28px;
+                    .is-success {
+                        opacity: 0.5;
+                        .el-icon-check {
+                            font-size: 28px;
+                            font-weight: 900;
+                            color: $primary-color;
+                        }
                     }
                 }
             }
