@@ -48,10 +48,12 @@ export default {
         setInterval(this.searchEnter, 1000);
         //
         window.addEventListener('resize', this.windowSizeListener);
+        window.addEventListener('scroll', this.windowScrollListener);
     },
 
     beforeDestroy() {
         window.removeEventListener('resize', this.windowSizeListener);
+        window.removeEventListener('scroll', this.windowScrollListener);
     },
 
     computed: {
@@ -223,6 +225,10 @@ export default {
             this.$store.state.windowWidth = window.innerWidth
             this.$store.state.windowHeight = window.innerHeight
             this.$store.state.windowMax768 = window.innerWidth <= 768
+        },
+
+        windowScrollListener() {
+            this.$store.state.windowScrollY = window.scrollY
         },
 
         electronEvents() {

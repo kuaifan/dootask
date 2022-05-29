@@ -94,6 +94,7 @@
                 :data-transfer="true"
                 class="chat-input-record-transfer"
                 :class="{cancel: touchLimitY}"
+                :style="recordTransferStyle"
                 @click="stopRecord">
                 <div v-if="recordDuration > 0" class="record-duration">{{recordFormatDuration}}</div>
                 <div v-else class="record-loading"><Loading/></div>
@@ -238,7 +239,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(['dialogInputCache', 'cacheProjects', 'cacheTasks', 'cacheUserBasic', 'userId']),
+        ...mapState(['dialogInputCache', 'cacheProjects', 'cacheTasks', 'cacheUserBasic', 'userId', 'windowScrollY']),
 
         editorStyle() {
             const {wrapperWidth, editorHeight} = this;
@@ -251,6 +252,13 @@ export default {
             } else {
                 return {};
             }
+        },
+
+        recordTransferStyle() {
+            const {windowScrollY} = this;
+            return windowScrollY > 0 ? {
+                marginTop: (windowScrollY / 2) + 'px'
+            } : null
         },
 
         boxClass() {

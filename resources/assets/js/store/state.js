@@ -1,7 +1,8 @@
 const stateData = {
-    // 浏览器宽高
+    // 浏览器尺寸信息
     windowWidth: window.innerWidth,
     windowHeight: window.innerHeight,
+    windowScrollY: 0,
 
     // 浏览器宽度≤768返回true
     windowMax768: window.innerWidth <= 768,

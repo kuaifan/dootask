@@ -226,15 +226,11 @@ export default {
     },
 
     mounted() {
-        if ($A.isIos()) {
-            window.addEventListener('scroll', this.onWindowScroll);
-        }
+
     },
 
     beforeDestroy() {
-        if ($A.isIos()) {
-            window.removeEventListener('scroll', this.onWindowScroll);
-        }
+
     },
 
     computed: {
@@ -243,6 +239,7 @@ export default {
             'cacheDialogs',
             'dialogMsgs',
             'wsOpenNum',
+            'windowScrollY'
         ]),
 
         isReady() {
@@ -387,6 +384,20 @@ export default {
                 }
             })
         },
+
+        windowScrollY(val) {
+            if ($A.isIos()) {
+                const {scrollE} = this.scrollInfo();
+                this.wrapperStyle = {
+                    top: val + 'px'
+                }
+                if (scrollE <= 10) {
+                    this.$nextTick(_ => {
+                        this.onToBottom();
+                    })
+                }
+            }
+        }
     },
 
     methods: {
@@ -686,18 +697,6 @@ export default {
                     this.msgNew = 0;
                 }
             }, 100)
-        },
-
-        onWindowScroll() {
-            const {scrollE} = this.scrollInfo();
-            this.wrapperStyle =  {
-                top: window.scrollY + 'px'
-            }
-            if (scrollE <= 10) {
-                this.$nextTick(_ => {
-                    this.onToBottom();
-                })
-            }
         }
     }
 }
