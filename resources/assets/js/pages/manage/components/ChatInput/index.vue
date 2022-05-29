@@ -527,11 +527,15 @@ export default {
                 }
                 this.recordRec = window.Recorder({
                     type: "mp3",
-                    bitRate: 16,
+                    bitRate: 32,
                     sampleRate: 16000,
                     onProcess: (buffers, powerLevel, duration, sampleRate, newBufferIdx, asyncEnd) => {
                         this.recordWave.input(buffers[buffers.length - 1], powerLevel, sampleRate);
                         this.recordDuration = duration;
+                        if (duration >= 3 * 60 * 1000) {
+                            // 最长录3分钟
+                            this.stopRecord(false);
+                        }
                     }
                 })
                 if (window.Recorder.Support()) {
