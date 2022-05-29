@@ -89,7 +89,7 @@
         <!-- 录音浮窗 -->
         <transition name="fade">
             <div
-                v-if="recordState === 'ing'"
+                v-if="['ready', 'ing'].includes(recordState)"
                 v-transfer-dom
                 :data-transfer="true"
                 class="chat-input-record-transfer"
@@ -184,9 +184,10 @@ export default {
 
             recordReady: false,
             recordRec: null,
-            recordState: "stop",
             recordBlob: null,
             recordWave: null,
+            recordInter: null,
+            recordState: "stop",
             recordDuration: 0,
 
             touchStart: {},
@@ -210,6 +211,19 @@ export default {
         });
         this.observer.observe(this.$el);
         this.observer.observe(this.$refs.editor);
+        //
+        this.recordInter = setInterval(_ => {
+            if (this.recordState === 'ing') {
+                // 录音中，但录音时长不增加则取消录音
+                if (this.__recordDuration && this.__recordDuration === this.recordDuration) {
+                    this.__recordDuration = null;
+                    this.stopRecord(true);
+                    $A.messageWarning("录音失败，请重试")
+                } else {
+                    this.__recordDuration = this.recordDuration;
+                }
+            }
+        }, 1000)
     },
     beforeDestroy() {
         if (this.quill) {
@@ -218,6 +232,9 @@ export default {
         if (this.observer) {
             this.observer.disconnect()
             this.observer = null
+        }
+        if (this.recordInter) {
+            clearInterval(this.recordInter)
         }
     },
     computed: {
@@ -612,20 +629,22 @@ export default {
         startRecord() {
             if (this.sendClass === 'recorder') {
                 this.recordState = "ready";
-                this.recordRec.open(_ => {
-                    if (this.recordState === "ready") {
-                        this.recordDuration = 0;
-                        this.recordState = "ing"
-                        this.recordBlob = null
-                        setTimeout(_ => {
-                            this.recordRec.start()
-                        }, 300)
-                    } else {
-                        this.recordRec.close();
-                    }
-                }, (msg) => {
-                    $A.messageError(msg || '打开录音失败')
-                });
+                this.$nextTick(_ => {
+                    this.recordRec.open(_ => {
+                        if (this.recordState === "ready") {
+                            this.recordDuration = 0;
+                            this.recordState = "ing"
+                            this.recordBlob = null
+                            setTimeout(_ => {
+                                this.recordRec.start()
+                            }, 300)
+                        } else {
+                            this.recordRec.close();
+                        }
+                    }, (msg) => {
+                        $A.messageError(msg || '打开录音失败')
+                    });
+                })
                 return true;
             } else {
                 return false;
