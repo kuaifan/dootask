@@ -2097,6 +2097,7 @@ export default {
         ids.some(id => {
             let index = state.dialogMsgs.findIndex(item => item.id == id);
             if (index > -1) {
+                Store.set('audioSubscribe', id);
                 state.dialogMsgs.splice(index, 1);
             }
         })

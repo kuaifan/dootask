@@ -132,9 +132,7 @@ export default {
     },
 
     beforeDestroy() {
-        if (this.recordPlay) {
-            Store.set('audioSubscribe', false);
-        }
+        Store.set('audioSubscribe', this.msgData.id);
     },
 
     computed: {
@@ -304,6 +302,7 @@ export default {
 
         playRecord() {
             Store.set('audioSubscribe', {
+                id: this.msgData.id,
                 src: this.msgData.msg.path,
                 callback: (play) => {
                     this.recordPlay = play;

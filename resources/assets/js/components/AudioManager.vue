@@ -27,6 +27,7 @@ export default {
         return {
             audioSubscribe: null,
             audioPlay: false,
+            audioId: 0,
             audioSrc: null,
             callback: null,
         }
@@ -48,19 +49,22 @@ export default {
         }
     },
     methods: {
-        setAudioPlay(info) {
+        setAudioPlay(msg) {
             const audio = this.$refs.audio;
             const ended = audio.ended || audio.paused;
             audio.controls = false;
             audio.loop = false;
             audio.volume = 1;
-            if (info === false) {
-                if (!ended) {
+            if (/\d+/.test(msg)) {
+                msg = msg == this.audioId
+            }
+            if (typeof msg === "boolean") {
+                if (!msg && !ended) {
                     audio.pause()
                 }
                 return
             }
-            const {src, callback} = info
+            const {id, src, callback} = msg
             this.callback = callback || null;
             if (src === this.audioSrc) {
                 if (ended) {
@@ -69,6 +73,7 @@ export default {
                     audio.pause();
                 }
             } else {
+                this.audioId = id;
                 this.audioSrc = src;
                 if (!ended) {
                     audio.pause()
