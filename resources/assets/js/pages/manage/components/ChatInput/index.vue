@@ -138,6 +138,10 @@ export default {
             type: Boolean,
             default: false
         },
+        disabledRecord: {
+            type: Boolean,
+            default: false
+        },
         loading: {
             type: Boolean,
             default: false
@@ -532,44 +536,46 @@ export default {
                 return delta
             })
 
-            // Load recorder
-            $A.loadScriptS([
-                'js/recorder/recorder.mp3.min.js',
-                'js/recorder/lib.fft.js',
-                'js/recorder/frequency.histogram.view.js',
-            ], (e) => {
-                if (e !== null || typeof window.Recorder !== 'function') {
-                    return;
-                }
-                this.recordRec = window.Recorder({
-                    type: "mp3",
-                    bitRate: 32,
-                    sampleRate: 16000,
-                    onProcess: (buffers, powerLevel, duration, sampleRate, newBufferIdx, asyncEnd) => {
-                        this.recordWave.input(buffers[buffers.length - 1], powerLevel, sampleRate);
-                        this.recordDuration = duration;
-                        if (duration >= 3 * 60 * 1000) {
-                            // 最长录3分钟
-                            this.stopRecord(false);
-                        }
-                    }
-                })
-                if (window.Recorder.Support()) {
-                    this.recordReady = true;
-                    this.$nextTick(_ => {
-                        this.recordWave = window.Recorder.FrequencyHistogramView({
-                            elem: this.$refs.recwave,
-                            lineCount: 90,
-                            position: 0,
-                            minHeight: 1,
-                            stripeEnable: false
-                        })
-                    })
-                }
-            });
-
             // Ready event
             this.$emit('on-ready', this.quill)
+
+            // Load recorder
+            if (!this.disabledRecord) {
+                $A.loadScriptS([
+                    'js/recorder/recorder.mp3.min.js',
+                    'js/recorder/lib.fft.js',
+                    'js/recorder/frequency.histogram.view.js',
+                ], (e) => {
+                    if (e !== null || typeof window.Recorder !== 'function') {
+                        return;
+                    }
+                    this.recordRec = window.Recorder({
+                        type: "mp3",
+                        bitRate: 32,
+                        sampleRate: 16000,
+                        onProcess: (buffers, powerLevel, duration, sampleRate, newBufferIdx, asyncEnd) => {
+                            this.recordWave.input(buffers[buffers.length - 1], powerLevel, sampleRate);
+                            this.recordDuration = duration;
+                            if (duration >= 3 * 60 * 1000) {
+                                // 最长录3分钟
+                                this.stopRecord(false);
+                            }
+                        }
+                    })
+                    if (window.Recorder.Support()) {
+                        this.recordReady = true;
+                        this.$nextTick(_ => {
+                            this.recordWave = window.Recorder.FrequencyHistogramView({
+                                elem: this.$refs.recwave,
+                                lineCount: 90,
+                                position: 0,
+                                minHeight: 1,
+                                stripeEnable: false
+                            })
+                        })
+                    }
+                });
+            }
         },
 
         setText(value) {
@@ -721,13 +727,10 @@ export default {
             }
             const reader = new FileReader();
             reader.onloadend = () => {
-                this.$emit('on-send', {
-                    type: 'record',
-                    data: {
-                        type: this.recordBlob.type,
-                        base64: reader.result,
-                        duration,
-                    }
+                this.$emit('on-record', {
+                    type: this.recordBlob.type,
+                    base64: reader.result,
+                    duration,
                 })
             };
             reader.readAsDataURL(this.recordBlob);

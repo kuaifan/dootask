@@ -571,7 +571,7 @@
                 position: relative;
                 margin: 22px 0 0 36px;
                 background-color: #F4F5F7;
-                padding: 10px 8px;
+                padding: 10px 4px 10px 6px;
                 border-radius: 10px;
                 .chat-input-box {
                     .chat-input-wrapper {
@@ -588,11 +588,21 @@
                 }
                 .input-badge {
                     position: absolute;
-                    transform: scale(0.6) translateX(100%);
+                    transform: scale(0.8) translateX(100%);
                     transform-origin: right center;
                     top: 2px;
-                    right: 25px;
+                    right: 22px;
                     z-index: 2;
+                    height: 20px;
+                    border-radius: 10px;
+                    min-width: 20px;
+                    background: #ed4014;
+                    color: #fff;
+                    line-height: 20px;
+                    text-align: center;
+                    padding: 0 6px;
+                    font-size: 12px;
+                    white-space: nowrap;
                 }
             }
             .drag-over {

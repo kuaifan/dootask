@@ -120,6 +120,7 @@
                 @on-blur="onEventBlur"
                 @on-more="onEventMore"
                 @on-file="sendFileMsg"
+                @on-record="sendRecord"
                 @on-send="sendMsg"
                 @on-emoji-visible-change="onEventEmojiVisibleChange"
                 :placeholder="$L('输入消息...')"/>
@@ -330,11 +331,13 @@ export default {
         '$route': {
             handler (route) {
                 if ($A.isJson(window.__sendDialogMsg) && window.__sendDialogMsg.time > $A.Time()) {
-                    const {msgFile, msgText} = window.__sendDialogMsg;
+                    const {msgFile, msgRecord, msgText} = window.__sendDialogMsg;
                     window.__sendDialogMsg = null;
                     this.$nextTick(() => {
                         if ($A.isArray(msgFile) && msgFile.length > 0) {
                             this.sendFileMsg(msgFile);
+                        } else if ($A.isJson(msgRecord) && msgRecord.duration > 0) {
+                            this.sendRecord(msgRecord);
                         } else if (msgText) {
                             this.sendMsg(msgText);
                         }
@@ -411,13 +414,6 @@ export default {
          * @param text
          */
         sendMsg(text) {
-            if ($A.isJson(text)) {
-                if (text.type === 'record') {
-                    // 发送录音 text.record
-                    this.sendRecordMsg(text.data);
-                }
-                return;
-            }
             let msgText;
             if (typeof text === "string" && text) {
                 msgText = text;
@@ -465,7 +461,7 @@ export default {
          * 发送录音
          * @param msg {base64, duration}
          */
-        sendRecordMsg(msg) {
+        sendRecord(msg) {
             this.onToBottom();
             this.onActive();
             //

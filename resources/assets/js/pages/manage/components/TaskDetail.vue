@@ -409,8 +409,9 @@
                             :placeholder="$L('输入消息...')"
                             @on-more="onEventMore"
                             @on-file="onSelectFile"
+                            @on-record="onRecord"
                             @on-send="onSend"/>
-                        <Badge class="input-badge" :count="taskDetail.msg_num"/>
+                        <div v-if="taskDetail.msg_num" class="input-badge" @click.stop="onSend">{{taskDetail.msg_num > 99 ? '99+' : taskDetail.msg_num}}</div>
                     </div>
                     <div v-if="dialogDrag" class="drag-over" @click="dialogDrag=false">
                         <div class="drag-text">{{$L('拖动到这里发送')}}</div>
@@ -492,6 +493,7 @@ export default {
 
             msgText: '',
             msgFile: [],
+            msgRecord: {},
             navActive: 'dialog',
             logLoadIng: false,
 
@@ -1106,8 +1108,10 @@ export default {
                                 window.__sendDialogMsg = {
                                     time: $A.Time() + 10,
                                     msgText: this.msgText,
-                                    msgFile: this.msgFile
+                                    msgFile: this.msgFile,
+                                    msgRecord: this.msgRecord
                                 };
+                                this.msgRecord = {};
                                 this.msgFile = [];
                                 this.msgText = "";
                                 this.goForward({name: 'manage-messenger', params: {dialogId: data.dialog_id}, query: {_: $A.randomString(6)}});
@@ -1170,6 +1174,11 @@ export default {
 
         onSelectFile(row) {
             this.msgFile = $A.isArray(row) ? row : [row];
+            this.msgDialog()
+        },
+
+        onRecord(row) {
+            this.msgRecord = row;
             this.msgDialog()
         },
 
