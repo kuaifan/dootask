@@ -479,7 +479,7 @@
                     }
                 }
                 &:hover {
-                    color: #999999;
+                    color: $primary-desc-color;
                 }
             }
         }
@@ -521,7 +521,7 @@
                 align-items: center;
                 padding-left: 18px;
                 font-weight: 500;
-                color: #666666;
+                color: $primary-text-color;
                 > p {
                     display: flex;
                     align-items: center;
@@ -628,7 +628,7 @@
                 .drag-text {
                     padding: 12px;
                     font-size: 18px;
-                    color: #666666;
+                    color: $primary-text-color;
                 }
             }
         }
@@ -721,7 +721,7 @@
                     align-items: center;
                     justify-content: center;
                     margin-left: 18px;
-                    color: #999999;
+                    color: $primary-desc-color;
                 }
                 .no-input {
                     margin: 0 0 0 18px;

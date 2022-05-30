@@ -104,7 +104,7 @@
                                 }
                                 .title {
                                     flex: 1;
-                                    color: #333333;
+                                    color: $primary-title-color;
                                     overflow: hidden;
                                     text-overflow: ellipsis;
                                     white-space: nowrap;
@@ -338,7 +338,7 @@
         align-items: center;
         justify-content: space-between;
         .ivu-icon {
-            color: #666666;
+            color: $primary-text-color;
         }
     }
 

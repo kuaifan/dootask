@@ -14,7 +14,7 @@
                 align-items: center;
                 > h1 {
                     flex: 1;
-                    color: #333333;
+                    color: $primary-title-color;
                     font-size: 28px;
                     font-weight: 600;
                 }
@@ -142,7 +142,7 @@
                 }
             }
             .information {
-                color: #999999;
+                color: $primary-desc-color;
             }
         }
         .setting-template {

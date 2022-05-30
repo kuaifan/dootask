@@ -280,7 +280,7 @@
                         }
 
                         .content-text {
-                            color: #333333;
+                            color: $primary-title-color;
                             padding: 2px;
 
                             > pre {
@@ -412,7 +412,7 @@
                                         justify-content: center;
 
                                         .file-name {
-                                            color: #333333;
+                                            color: $primary-title-color;
                                             font-size: 14px;
                                             line-height: 18px;
                                             word-break: break-all;
@@ -425,7 +425,7 @@
 
                                         .file-size {
                                             padding-top: 4px;
-                                            color: #666666;
+                                            color: $primary-text-color;
                                             font-size: 14px;
                                         }
                                     }
@@ -456,7 +456,7 @@
                                 flex-direction: row-reverse;
                                 justify-content: flex-end;
                                 align-content: center;
-                                color: #333333;
+                                color: $primary-title-color;
                                 line-height: 22px;
                                 cursor: pointer;
 
@@ -641,7 +641,7 @@
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
-                color: #999999;
+                color: $primary-desc-color;
             }
 
             &.bottom {
@@ -669,7 +669,7 @@
 
                                 > pre {
                                     .mention {
-                                        color: #333333;
+                                        color: $primary-title-color;
 
                                         &.me {
                                             font-size: 14px;
@@ -810,7 +810,7 @@
         .drag-text {
             padding: 12px;
             font-size: 18px;
-            color: #666666;
+            color: $primary-text-color;
         }
     }
 }

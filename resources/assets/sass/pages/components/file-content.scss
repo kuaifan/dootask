@@ -71,7 +71,7 @@
         z-index: 99;
         .header-title {
             flex: 1;
-            color: #333333;
+            color: $primary-title-color;
             padding-left: 24px;
             padding-right: 24px;
             line-height: 24px;
@@ -80,7 +80,7 @@
             text-overflow:ellipsis;
             white-space: nowrap;
             .file-unsave-tip {
-                color: #333333;
+                color: $primary-title-color;
                 padding-right: 6px;
                 font-weight: 500;
                 cursor: pointer;

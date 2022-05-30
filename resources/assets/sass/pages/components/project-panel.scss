@@ -13,7 +13,7 @@
                 display: none;
             }
             > h1 {
-                color: #333333;
+                color: $primary-title-color;
                 font-size: 28px;
                 font-weight: 600;
             }
@@ -136,7 +136,7 @@
         padding: 0 32px;
         .project-subtitle {
             float: left;
-            color: #999999;
+            color: $primary-desc-color;
             line-height: 24px;
             margin: 6px 0;
         }
@@ -479,7 +479,7 @@
                         }
                         .task-desc {
                             > pre {
-                                color: #999999;
+                                color: $primary-desc-color;
                                 padding: 0;
                                 margin: 10px 0 0 0;
                                 line-height: 20px;
@@ -721,7 +721,7 @@
                     &.row-title {
                         font-size: 14px;
                         font-weight: 500;
-                        color: #333333;
+                        color: $primary-title-color;
                         padding-left: 14px;
                         .taskfont {
                             cursor: pointer;
@@ -732,7 +732,7 @@
                             padding-left: 18px;
                         }
                         .row-num {
-                            color: #999999;
+                            color: $primary-desc-color;
                             padding-left: 6px;
                         }
                     }

@@ -20,7 +20,7 @@
                 display: flex;
                 align-items: center;
                 > h1 {
-                    color: #333333;
+                    color: $primary-title-color;
                     font-size: 28px;
                     font-weight: 600;
                 }
@@ -476,7 +476,7 @@
                 .drag-text {
                     padding: 12px;
                     font-size: 18px;
-                    color: #666666;
+                    color: $primary-text-color;
                 }
             }
         }

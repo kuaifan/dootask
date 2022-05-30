@@ -154,7 +154,7 @@
                                     }
                                     > span {
                                         flex: 1;
-                                        color: #333333;
+                                        color: $primary-title-color;
                                         font-size: 14px;
                                         white-space: nowrap;
                                         overflow: hidden;
@@ -176,12 +176,12 @@
                                         flex-shrink: 0;
                                         margin-left: 8px;
                                         font-style: normal;
-                                        color: #999999;
+                                        color: $primary-desc-color;
                                         font-size: 12px;
                                     }
                                 }
                                 .dialog-text {
-                                    color: #999999;
+                                    color: $primary-desc-color;
                                     font-size: 12px;
                                     line-height: 24px;
                                     display: flex;

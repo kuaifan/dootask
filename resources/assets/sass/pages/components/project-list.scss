@@ -111,7 +111,7 @@
                         .project-name {
                             font-size: 14px;
                             line-height: 22px;
-                            color: #333333;
+                            color: $primary-title-color;
                             word-break: break-all;
                             text-overflow: ellipsis;
                             overflow: hidden;
@@ -158,7 +158,7 @@
                         display: -webkit-box;
                         -webkit-line-clamp: 2;
                         -webkit-box-orient: vertical;
-                        color: #999999;
+                        color: $primary-desc-color;
                     }
                 }
                 .item-right {
