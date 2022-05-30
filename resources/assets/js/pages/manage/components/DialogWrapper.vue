@@ -65,10 +65,7 @@
         </slot>
         <DynamicScroller
             ref="scroller"
-            class="dialog-scroller"
-            :class="{
-                'overlay-y': !touchBackInProgress
-            }"
+            class="dialog-scroller scrollbar-overlay"
             :disabled="touchBackInProgress"
             :items="allMsgs"
             :min-item-size="58"

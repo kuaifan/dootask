@@ -1,6 +1,17 @@
 body {
     overflow: hidden;
 
+    &.touch-back {
+        .dialog-wrapper .vue-recycle-scroller.direction-vertical:not(.page-mode),
+        .common-gantt .gantt-left .gantt-item,
+        .project-panel .project-column,
+        .project-panel .project-table,
+        .scrollbar-overlay,
+        .ivu-modal-wrap {
+            overflow: hidden;
+        }
+    }
+
     .form-tip {
         color: #999999;
         line-height: 22px;

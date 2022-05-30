@@ -22,7 +22,7 @@
             margin-top: 16px;
             display: flex;
             flex-direction: column;
-            overflow: hidden !important;
+            overflow: hidden;
             > li {
                 flex-shrink: 0;
                 display: flex;
@@ -67,7 +67,6 @@
                     width: 100%;
                     > ul {
                         width: 100%;
-                        overflow: auto;
                         > li {
                             display: flex;
                             flex-direction: column;
@@ -174,22 +173,30 @@
                             &.operate {
                                 border-color: $primary-color;
                             }
+                            &.loading {
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                padding: 6px;
+                                .common-loading {
+                                    margin: 6px;
+                                    width: 22px;
+                                    height: 22px;
+                                }
+                            }
                         }
-                    }
-                    .common-loading {
-                        margin: 6px;
-                        width: 22px;
-                        height: 22px;
-                    }
-                    .top-operate {
-                        position: absolute;
-                        top: 0;
-                        right: 0;
-                        opacity: 0;
-                        display: flex;
                     }
                 }
             }
+        }
+        .operate-position {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 1px;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
         }
         .manage-project-search {
             width: 80%;
@@ -400,14 +407,14 @@
     .page-manage {
         .manage-box-menu {
             > ul {
-                overflow: auto !important;
-                &.overlay-y {
-                    overflow-y: overlay !important;
+                overflow: auto;
+                &.scrollbar-overlay {
+                    overflow-y: overlay;
                 }
                 > li {
                     &.menu-project {
                         > ul {
-                            overflow: visible !important;
+                            overflow: visible;
                         }
                     }
                 }

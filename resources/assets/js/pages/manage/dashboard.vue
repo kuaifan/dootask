@@ -32,7 +32,7 @@
                     </div>
                 </li>
             </ul>
-            <div class="dashboard-list overlay-y">
+            <div class="dashboard-list scrollbar-overlay">
                 <template
                     v-for="column in columns"
                     v-if="column.list.length > 0">

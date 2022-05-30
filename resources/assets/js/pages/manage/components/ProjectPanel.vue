@@ -92,7 +92,7 @@
                 </div>
             </div>
         </div>
-        <div v-if="tabTypeActive === 'column'" class="project-column" :style="columnStyle">
+        <div v-if="tabTypeActive === 'column'" class="project-column">
             <Draggable
                 :list="columnList"
                 :animation="150"
@@ -138,7 +138,7 @@
                             <Icon class="last" type="md-add" @click="addTopShow(column.id, true)" />
                         </div>
                     </div>
-                    <div :ref="'column_' + column.id" class="column-task overlay-y">
+                    <div :ref="'column_' + column.id" class="column-task scrollbar-overlay">
                         <div v-if="!!columnTopShow[column.id]" class="task-item additem">
                             <TaskAddSimple
                                 :column-id="column.id"
@@ -230,7 +230,7 @@
                 </li>
             </Draggable>
         </div>
-        <div v-else-if="tabTypeActive === 'table'" class="project-table overlay-y" :style="columnStyle">
+        <div v-else-if="tabTypeActive === 'table'" class="project-table scrollbar-overlay">
             <div class="project-table-head">
                 <Row class="task-row">
                     <Col span="12"># {{$L('任务名称')}}</Col>
@@ -538,7 +538,6 @@ export default {
     computed: {
         ...mapState([
             'windowWidth',
-            'touchBackInProgress',
 
             'userId',
             'cacheDialogs',
@@ -571,14 +570,6 @@ export default {
                     break
                 default:
                     style.display = 'none'
-            }
-            return style
-        },
-
-        columnStyle() {
-            const style = {}
-            if (this.touchBackInProgress) {
-                style.overflow = 'hidden !important';
             }
             return style
         },

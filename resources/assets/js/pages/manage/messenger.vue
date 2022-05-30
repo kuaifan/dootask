@@ -27,7 +27,7 @@
                 <ScrollerY
                     ref="list"
                     class="messenger-list"
-                    :class="overlayClass"
+                    :class="listClassName"
                     @on-scroll="listScroll"
                     static>
                     <ul
@@ -45,11 +45,13 @@
                             :class="{
                                 top: dialog.top_at,
                                 active: dialog.id == dialogId,
-                                operate: dialog.id == topOperateItem.id && topOperateVisible,
+                                operate: dialog.id == operateItem.id && operateVisible,
                                 completed: $A.dialogCompleted(dialog)
                             }"
+                            :data-id="dialog.id"
                             @click="openDialog(dialog.id)"
-                            @contextmenu.prevent.stop="handleRightClick($event, dialog)">
+                            v-longpress="handleLongpress"
+                            @contextmenu.prevent.stop="handleContextmenu($event, dialog)">
                             <template v-if="dialog.type=='group'">
                                 <i v-if="dialog.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
                                 <i v-else-if="dialog.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
@@ -99,21 +101,22 @@
                             <li class="loaded">{{$L('共' + contactsFilter.length + '位联系人')}}</li>
                         </template>
                     </ul>
-                    <div class="top-operate" :style="topOperateStyles">
+                    <div class="operate-position" :style="operateStyles">
                         <Dropdown
                             trigger="custom"
-                            :visible="topOperateVisible"
-                            transfer-class-name="page-file-dropdown-menu"
-                            @on-clickoutside="handleClickTopOperateOutside"
-                            transfer>
+                            :transfer="true"
+                            :placement="$isDesktop ? 'bottom' : 'top'"
+                            :visible="operateVisible"
+                            @on-clickoutside="operateVisible = false">
+                            <div :style="{userSelect:operateVisible ? 'none' : 'auto', height: operateStyles.height}"></div>
                             <DropdownMenu slot="list">
                                 <DropdownItem @click.native="handleTopClick">
-                                    {{ $L(topOperateItem.top_at ? '取消置顶' : '置顶该聊天') }}
+                                    {{ $L(operateItem.top_at ? '取消置顶' : '置顶该聊天') }}
                                 </DropdownItem>
-                                <DropdownItem @click.native="updateRead('read')" v-if="$A.getDialogUnread(topOperateItem) > 0">
+                                <DropdownItem @click.native="handleReadClick('read')" v-if="$A.getDialogUnread(operateItem) > 0">
                                     {{ $L('标记已读') }}
                                 </DropdownItem>
-                                <DropdownItem @click.native="updateRead('unread')" v-else>
+                                <DropdownItem @click.native="handleReadClick('unread')" v-else>
                                     {{ $L('标记未读') }}
                                 </DropdownItem>
                             </DropdownMenu>
@@ -149,9 +152,11 @@
 import {mapState} from "vuex";
 import DialogWrapper from "./components/DialogWrapper";
 import ScrollerY from "../../components/ScrollerY";
+import longpress from "../../directives/longpress";
 
 export default {
     components: {ScrollerY, DialogWrapper},
+    directives: {longpress},
     data() {
         return {
             tabActive: 'dialog',
@@ -171,9 +176,9 @@ export default {
             contactsCurrentPage: 1,
             contactsHasMorePages: false,
 
-            topOperateStyles: {},
-            topOperateVisible: false,
-            topOperateItem: {},
+            operateItem: {},
+            operateStyles: {},
+            operateVisible: false,
         }
     },
 
@@ -300,10 +305,10 @@ export default {
             }
         },
 
-        overlayClass() {
+        listClassName() {
             return {
-                'overlay-y': true,
-                'overlay-none': this.topOperateVisible === true,
+                'scrollbar-overlay': true,
+                'scrollbar-hidden': this.operateVisible === true,
             }
         }
     },
@@ -371,7 +376,7 @@ export default {
                     }
                     break;
             }
-            this.topOperateVisible = false;
+            this.operateVisible = false;
         },
 
         onActive(type) {
@@ -389,6 +394,9 @@ export default {
         },
 
         openDialog(dialogId) {
+            if (this.operateVisible) {
+                return
+            }
             if (dialogId > 0) {
                 this.goForward({name: 'manage-messenger', params: {dialogId}});
             } else {
@@ -507,18 +515,18 @@ export default {
         scrollIntoActive() {
             this.$nextTick(() => {
                 if (this.$isDesktop && this.$refs.list) {
-                    let active = this.$refs.list.querySelector(".active")
+                    const active = this.$refs.list.querySelector(".active")
                     if (active) {
                         $A.scrollToView(active, {
                             behavior: 'instant',
                             scrollMode: 'if-needed',
                         });
                     } else {
-                        let dialog = this.cacheDialogs.find(({id}) => id == this.dialogId)
+                        const dialog = this.cacheDialogs.find(({id}) => id == this.dialogId)
                         if (dialog && this.dialogActive) {
                             this.dialogActive = '';
                             this.$nextTick(() => {
-                                let active = this.$refs.list.querySelector(".active")
+                                const active = this.$refs.list.querySelector(".active")
                                 if (active) {
                                     $A.scrollToView(active, {
                                         behavior: 'instant',
@@ -532,29 +540,44 @@ export default {
             })
         },
 
-        handleRightClick(event, item) {
-            this.handleClickTopOperateOutside();
-            this.topOperateItem = $A.isJson(item) ? item : {};
-            this.$nextTick(() => {
-                const dialogWrap = this.$refs.dialogWrapper;
-                const dialogBounding = dialogWrap.getBoundingClientRect();
-                this.topOperateStyles = {
-                    left: `${event.clientX - dialogBounding.left}px`,
-                    top: `${event.clientY - dialogBounding.top + 100 - this.$refs.list.scrollInfo().scrollY}px`
-                };
-                this.topOperateVisible = true;
-            })
+        handleLongpress(touchEvent, el) {
+            if (this.$isDesktop) {
+                return
+            }
+            const dialogId = $A.getAttr(el, 'data-id')
+            const dialogItem = this.dialogList.find(item => item.id == dialogId)
+            if (dialogItem) {
+                this.handleTopOperateShow(touchEvent.touches[0], dialogItem)
+            }
         },
 
-        handleClickTopOperateOutside() {
-            this.topOperateVisible = false;
+        handleContextmenu(event, dialog) {
+            if (!this.$isDesktop) {
+                return
+            }
+            this.handleTopOperateShow(event, dialog);
+        },
+
+        handleTopOperateShow(event, dialog) {
+            this.operateVisible = false;
+            this.operateItem = $A.isJson(dialog) ? dialog : {};
+            this.$nextTick(() => {
+                const dialogRect = this.$refs[`dialog_${dialog.id}`][0].getBoundingClientRect();
+                const wrapRect = this.$refs.dialogWrapper.getBoundingClientRect();
+                this.operateStyles = {
+                    left: `${event.clientX - wrapRect.left}px`,
+                    top: `${dialogRect.top}px`,
+                    height: dialogRect.height + 'px',
+                }
+                this.operateVisible = true;
+            })
         },
 
         handleTopClick() {
             this.$store.dispatch("call", {
                 url: 'dialog/top',
                 data: {
-                    dialog_id: this.topOperateItem.id,
+                    dialog_id: this.operateItem.id,
                 },
             }).then(({data}) => {
                 this.$store.dispatch("saveDialog", data);
@@ -564,11 +587,11 @@ export default {
             });
         },
 
-        updateRead(type) {
+        handleReadClick(type) {
             this.$store.dispatch("call", {
                 url: 'dialog/msg/mark',
                 data: {
-                    dialog_id: this.topOperateItem.id,
+                    dialog_id: this.operateItem.id,
                     type: type
                 },
             }).then(({data}) => {

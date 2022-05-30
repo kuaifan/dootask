@@ -1077,6 +1077,17 @@
                 return {width: parseInt(tempWidth), height: parseInt(tempHeight)};
             }
             return {width, height};
+        },
+
+        /**
+         * 获取元素属性
+         * @param el
+         * @param attrName
+         * @param def
+         * @returns {Property<any>|string|string}
+         */
+        getAttr(el, attrName, def = "") {
+            return el ? el.getAttribute(attrName) : def;
         }
     });
 

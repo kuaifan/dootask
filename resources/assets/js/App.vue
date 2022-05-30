@@ -1,7 +1,7 @@
 <template>
     <div id="app">
         <keep-alive>
-            <router-view class="child-view" :class="{'view-768': $store.state.windowMax768}"></router-view>
+            <router-view class="child-view"></router-view>
         </keep-alive>
         <Spinner/>
         <RightBottom/>
@@ -58,7 +58,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['ws', 'userId', 'userToken']),
+        ...mapState(['ws', 'userId', 'userToken', 'windowMax768']),
     },
 
     watch: {

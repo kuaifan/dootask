@@ -1,5 +1,6 @@
-.overlay-y {
-    overflow-y: overlay !important;
+.scrollbar-overlay {
+    overflow-y: auto;
+    overflow-y: overlay;
 
     /* 滚动条美化 */
     &::-webkit-scrollbar {
@@ -38,11 +39,9 @@
         background: rgba(0, 0, 0, 0);
     }
 }
-.overlay-none {
+
+.scrollbar-hidden {
     &::-webkit-scrollbar {
         display: none;
     }
-}
-.overlay-hidden {
-    overflow: hidden !important;
 }

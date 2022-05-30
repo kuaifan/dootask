@@ -1,6 +1,6 @@
 <template>
     <div class="chat-emoji-wrapper">
-        <ul class="chat-emoji-box overlay-y" :class="[type, 'no-dark-content']">
+        <ul class="chat-emoji-box scrollbar-overlay" :class="[type, 'no-dark-content']">
             <li v-for="item in list" @click="onSelect(item)">
                 <img v-if="item.type === 'emoticon'" :src="item.src" :title="item.name" :alt="item.name"/>
                 <span v-else v-html="item.html" :title="item.name"></span>

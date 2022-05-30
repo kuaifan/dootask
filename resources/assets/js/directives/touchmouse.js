@@ -18,17 +18,29 @@ export default {
                 binding.value("up");
             }
         };
-        el.addEventListener(isSupportTouch ? 'touchstart' : 'mousedown', el.__touchMouseDown__);
-        document.addEventListener(isSupportTouch ? 'touchmove' : 'mousemove', el.__touchMouseMove__);
-        document.addEventListener(isSupportTouch ? 'touchend' : 'mouseup', el.__touchMouseUp__);
+        if (isSupportTouch) {
+            el.addEventListener('touchstart', el.__touchMouseDown__);
+            el.addEventListener('touchmove', el.__touchMouseMove__);
+            el.addEventListener('touchend', el.__touchMouseUp__);
+        } else {
+            el.addEventListener('mousedown', el.__touchMouseDown__);
+            document.addEventListener('mousemove', el.__touchMouseMove__);
+            document.addEventListener('mouseup', el.__touchMouseUp__);
+        }
     },
     update () {
 
     },
     unbind (el) {
-        el.removeEventListener(isSupportTouch ? 'touchstart' : 'mousedown', el.__touchMouseDown__);
-        document.removeEventListener(isSupportTouch ? 'touchmove' : 'mousemove', el.__touchMouseMove__);
-        document.removeEventListener(isSupportTouch ? 'touchend' : 'mouseup', el.__touchMouseUp__);
+        if (isSupportTouch) {
+            el.removeEventListener('touchstart', el.__touchMouseDown__);
+            el.removeEventListener('touchmove', el.__touchMouseMove__);
+            el.removeEventListener('touchend', el.__touchMouseUp__);
+        } else {
+            el.removeEventListener('mousedown', el.__touchMouseDown__);
+            document.removeEventListener('mousemove', el.__touchMouseMove__);
+            document.removeEventListener('mouseup', el.__touchMouseUp__);
+        }
         delete el.__touchMouseDown__;
         delete el.__touchMouseMove__;
         delete el.__touchMouseUp__;

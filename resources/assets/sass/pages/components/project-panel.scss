@@ -380,7 +380,6 @@
                     display: flex;
                     flex-direction: column;
                     overflow-x: hidden;
-                    overflow-y: auto;
                     .task-list {
                         > div:last-child {
                             margin-bottom: 16px;
@@ -614,7 +613,7 @@
     .project-table {
         height: 100%;
         margin-top: 18px;
-        overflow: auto;
+        overflow-x: auto;
         .task-row {
             background-color: #ffffff;
             border-bottom: 1px solid #F4F4F5;
@@ -1082,7 +1081,6 @@
             }
         }
         .project-table {
-            overflow-x: auto;
             .project-table-head,
             .project-table-body {
                 min-width: 768px;

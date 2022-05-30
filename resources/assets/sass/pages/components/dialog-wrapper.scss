@@ -9,6 +9,10 @@
     background-color: #ffffff;
     z-index: 1;
 
+    .vue-recycle-scroller.direction-vertical:not(.page-mode) {
+        overflow-y: overlay;
+    }
+
     .dialog-nav {
         display: flex;
         align-items: center;
@@ -823,7 +827,6 @@
         .unread {
             flex: 1;
             max-height: 300px;
-            overflow: auto;
 
             > li {
                 min-height: 26px;

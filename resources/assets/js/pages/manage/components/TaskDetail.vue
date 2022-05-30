@@ -135,7 +135,7 @@
                     </div>
                 </div>
             </div>
-            <div class="scroller overlay-y">
+            <div class="scroller scrollbar-overlay">
                 <div class="title">
                     <Input
                         v-model="taskDetail.name"

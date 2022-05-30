@@ -33,7 +33,9 @@
             </div>
             <div class="setting-content">
                 <div class="setting-content-title">{{$L(titleNameRoute)}}</div>
-                <div class="setting-content-view"><router-view class="setting-router-view"></router-view></div>
+                <div class="setting-content-view">
+                    <router-view class="setting-router-view"></router-view>
+                </div>
             </div>
         </div>
     </div>

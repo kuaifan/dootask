@@ -105,7 +105,6 @@
             width: 100%;
             margin-top: 48px;
             padding-bottom: 6%;
-            overflow: auto;
             .dashboard-ref {
                 height: 0;
             }
@@ -298,8 +297,8 @@
                 }
             }
             .dashboard-list {
-                overflow: visible !important;
                 padding-bottom: 2px;
+                overflow: visible;
                 .dashboard-ul {
                     margin-bottom: 36px;
                     user-select: none;

@@ -89,7 +89,6 @@
                 height: 0;
                 width: 100%;
                 overflow-x: hidden;
-                overflow-y: auto;
                 > ul {
                     &.dialog {
                         > li {
@@ -336,12 +335,14 @@
                         }
                     }
                 }
-                .top-operate {
+                .operate-position {
                     position: absolute;
                     top: 0;
                     right: 0;
+                    width: 1px;
                     opacity: 0;
-                    display: flex;
+                    visibility: hidden;
+                    pointer-events: none;
                 }
             }
             .messenger-menu {
@@ -447,15 +448,23 @@
                     opacity: 0;
                 }
                 .messenger-list {
-                    flex: 1;
-                    height: 0;
-                    width: 100%;
-                    overflow-x: hidden;
-                    overflow-y: auto;
                     > ul {
                         user-select: none;
                         &.dialog {
                             > li {
+                                .user-avatar {
+                                    .common-avatar {
+                                        &:after {
+                                            content: "";
+                                            position: absolute;
+                                            top: 0;
+                                            left: 0;
+                                            right: 0;
+                                            bottom: 0;
+                                            z-index: 1;
+                                        }
+                                    }
+                                }
                                 .dialog-split {
                                     display: block;
                                     position: absolute;

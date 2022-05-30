@@ -135,7 +135,7 @@
                     </template>
                 </DropdownMenu>
             </Dropdown>
-            <ul :class="overlayClass" @scroll="handleClickTopOperateOutside">
+            <ul :class="listClassName" @scroll="operateVisible = false">
                 <li @click="toggleRoute('dashboard')" :class="classNameRoute('dashboard')">
                     <i class="taskfont">&#xe6fb;</i>
                     <div class="menu-title">{{$L('仪表盘')}}</div>
@@ -156,14 +156,15 @@
                     <i class="taskfont">&#xe6f3;</i>
                     <div class="menu-title">{{$L('文件')}}</div>
                 </li>
-                <li ref="projectWrapper" class="menu-project">
-                    <ul :class="overlayClass" @scroll="handleClickTopOperateOutside">
+                <li class="menu-project">
+                    <ul ref="projectWrapper" :class="listClassName" @scroll="operateVisible = false">
                         <li
                             v-for="(item, key) in projectLists"
+                            :ref="`project_${item.id}`"
                             :key="key"
                             :class="classNameProject(item)"
                             @click="toggleRoute('project', {projectId: item.id})"
-                            @contextmenu.prevent.stop="handleRightClick($event, item)">
+                            @contextmenu.prevent.stop="handleContextmenu($event, item)">
                             <div class="project-h1">
                                 <em @click.stop="toggleOpenMenu(item.id)"></em>
                                 <div class="title">{{item.name}}</div>
@@ -183,24 +184,24 @@
                                 </p>
                             </div>
                         </li>
+                        <li v-if="loadIng > 0" class="loading"><Loading/></li>
                     </ul>
-                    <Loading v-if="loadIng > 0"/>
-                    <div class="top-operate" :style="topOperateStyles">
-                        <Dropdown
-                            trigger="custom"
-                            :visible="topOperateVisible"
-                            transfer-class-name="page-file-dropdown-menu"
-                            @on-clickoutside="handleClickTopOperateOutside"
-                            transfer>
-                            <DropdownMenu slot="list">
-                                <DropdownItem @click.native="handleTopClick">
-                                    {{ $L(topOperateItem.top_at ? '取消置顶' : '置顶该项目') }}
-                                </DropdownItem>
-                            </DropdownMenu>
-                        </Dropdown>
-                    </div>
                 </li>
             </ul>
+            <div class="operate-position" :style="operateStyles">
+                <Dropdown
+                    trigger="custom"
+                    :visible="operateVisible"
+                    @on-clickoutside="operateVisible = false"
+                    transfer>
+                    <div :style="{height: operateStyles.height}"></div>
+                    <DropdownMenu slot="list">
+                        <DropdownItem @click.native="handleTopClick">
+                            {{ $L(operateItem.top_at ? '取消置顶' : '置顶该项目') }}
+                        </DropdownItem>
+                    </DropdownMenu>
+                </Dropdown>
+            </div>
             <div
                 v-if="projectTotal > 20"
                 class="manage-project-search">
@@ -226,7 +227,7 @@
 
         <div class="manage-box-main">
             <keep-alive>
-                <router-view class="manage-box-view overlay"></router-view>
+                <router-view class="manage-box-view"></router-view>
             </keep-alive>
         </div>
 
@@ -437,9 +438,9 @@ export default {
             reportTabs: "my",
             reportUnreadNumber: 0,
 
-            topOperateStyles: {},
-            topOperateVisible: false,
-            topOperateItem: {},
+            operateStyles: {},
+            operateVisible: false,
+            operateItem: {},
         }
     },
 
@@ -620,10 +621,10 @@ export default {
             return data;
         },
 
-        overlayClass() {
+        listClassName() {
             return {
-                'overlay-y': true,
-                'overlay-none': this.topOperateVisible === true,
+                'scrollbar-overlay': true,
+                'scrollbar-hidden': this.operateVisible === true,
             }
         },
 
@@ -805,7 +806,7 @@ export default {
             return {
                 "active": this.routeName === 'manage-project' && this.$route.params.projectId == item.id,
                 "open-menu": this.openMenu[item.id] === true,
-                "operate": item.id == this.topOperateItem.id && this.topOperateVisible
+                "operate": item.id == this.operateItem.id && this.operateVisible
             };
         },
 
@@ -963,34 +964,31 @@ export default {
             }, typeof timeout === "number" ? timeout : 1000)
         },
 
-        handleRightClick(event, item) {
-            this.handleClickTopOperateOutside();
-            this.topOperateItem = item;
+        handleContextmenu(event, item) {
+            this.operateVisible = false;
+            this.operateItem = $A.isJson(item) ? item : {};
             this.$nextTick(() => {
-                const projectWrap = this.$refs.projectWrapper;
-                const projectBounding = projectWrap.getBoundingClientRect();
-                this.topOperateStyles = {
-                    left: `${event.clientX - projectBounding.left}px`,
-                    top: `${event.clientY - projectBounding.top}px`
-                };
-                this.topOperateVisible = true;
+                const dialogRect = this.$refs[`project_${item.id}`][0].getBoundingClientRect();
+                const wrapRect = this.$refs.projectWrapper.getBoundingClientRect();
+                this.operateStyles = {
+                    left: `${event.clientX - wrapRect.left}px`,
+                    top: `${dialogRect.top}px`,
+                    height: dialogRect.height + 'px',
+                }
+                this.operateVisible = true;
             })
-        },
-
-        handleClickTopOperateOutside() {
-            this.topOperateVisible = false;
         },
 
         handleTopClick() {
             this.$store.dispatch("call", {
                 url: 'project/top',
                 data: {
-                    project_id: this.topOperateItem.id,
+                    project_id: this.operateItem.id,
                 },
             }).then(({data}) => {
                 this.$store.dispatch("saveProject", data);
                 this.$nextTick(() => {
-                    let active = this.$refs.projectWrapper.querySelector(".active")
+                    const active = this.$refs.projectWrapper.querySelector(".active")
                     if (active) {
                         $A.scrollToView(active, {
                             behavior: 'instant',

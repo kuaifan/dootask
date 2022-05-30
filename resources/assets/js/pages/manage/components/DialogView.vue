@@ -65,13 +65,13 @@
                         popper-class="dialog-wrapper-read-poptip"
                         placement="left-end">
                         <div class="read-poptip-content">
-                            <ul class="read overlay-y">
+                            <ul class="read scrollbar-overlay">
                                 <li class="read-title"><em>{{ readList.length }}</em>{{ $L('已读') }}</li>
                                 <li v-for="item in readList">
                                     <UserAvatar :userid="item.userid" :size="26" showName/>
                                 </li>
                             </ul>
-                            <ul class="unread overlay-y">
+                            <ul class="unread scrollbar-overlay">
                                 <li class="read-title"><em>{{ unreadList.length }}</em>{{ $L('未读') }}</li>
                                 <li v-for="item in unreadList">
                                     <UserAvatar :userid="item.userid" :size="26" showName/>

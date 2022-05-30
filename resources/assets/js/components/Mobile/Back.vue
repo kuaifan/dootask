@@ -50,8 +50,13 @@ export default {
     },
 
     watch: {
-        show(s) {
-            this.$store.state.touchBackInProgress = s;
+        show(state) {
+            if (state) {
+                document.body.classList.add("touch-back");
+            } else {
+                document.body.classList.remove("touch-back");
+            }
+            this.$store.state.touchBackInProgress = state;
         }
     },
 
