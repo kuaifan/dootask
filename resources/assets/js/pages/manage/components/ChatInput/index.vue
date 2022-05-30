@@ -278,7 +278,7 @@ export default {
 
         boxClass() {
             const array = [];
-            if (this.recordState === 'ing') {
+            if (this.recordState === 'ing' && this.recordDuration > 0) {
                 array.push('record-ing');
             }
             if (this.mentionMode) {

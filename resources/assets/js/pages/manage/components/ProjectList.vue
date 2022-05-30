@@ -40,9 +40,9 @@
                         <iCircle
                             type="circle"
                             trail-color="rgba(132, 197, 106, 0.2)"
-                            :trail-width="6"
+                            :trail-width="7"
                             :stroke-color="item.task_percent === 100 ? 'rgba(132, 197, 106, 0)' : '#84C56A'"
-                            :stroke-width="6"
+                            :stroke-width="7"
                             :percent="item.task_percent"
                             :size="44">
                             <Icon v-if="item.task_percent === 100" type="ios-checkmark"></Icon>
