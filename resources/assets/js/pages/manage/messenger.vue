@@ -547,7 +547,7 @@ export default {
             const dialogId = $A.getAttr(el, 'data-id')
             const dialogItem = this.dialogList.find(item => item.id == dialogId)
             if (dialogItem) {
-                this.handleTopOperateShow(touchEvent.touches[0], dialogItem)
+                this.handleOperateShow(touchEvent.touches[0], dialogItem)
             }
         },
 
@@ -555,10 +555,10 @@ export default {
             if (!this.$isDesktop) {
                 return
             }
-            this.handleTopOperateShow(event, dialog);
+            this.handleOperateShow(event, dialog);
         },
 
-        handleTopOperateShow(event, dialog) {
+        handleOperateShow(event, dialog) {
             this.operateVisible = false;
             this.operateItem = $A.isJson(dialog) ? dialog : {};
             this.$nextTick(() => {

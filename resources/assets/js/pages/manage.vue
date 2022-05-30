@@ -194,7 +194,7 @@
                     :visible="operateVisible"
                     @on-clickoutside="operateVisible = false"
                     transfer>
-                    <div :style="{height: operateStyles.height}"></div>
+                    <div :style="{userSelect:operateVisible ? 'none' : 'auto', height: operateStyles.height}"></div>
                     <DropdownMenu slot="list">
                         <DropdownItem @click.native="handleTopClick">
                             {{ $L(operateItem.top_at ? '取消置顶' : '置顶该项目') }}

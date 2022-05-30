@@ -11,7 +11,7 @@
                 </Input>
             </div>
         </div>
-        <ul>
+        <ul ref="projectWrapper" @scroll="operateVisible = false">
             <template v-if="projectLists.length === 0">
                 <li v-if="projectKeyLoading > 0" class="loading"><Loading/></li>
                 <li v-else class="nothing">
@@ -21,12 +21,15 @@
             <li
                 v-for="(item, key) in projectLists"
                 :key="key"
+                :data-id="item.id"
+                v-longpress="handleLongpress"
                 @click="toggleRoute('project', {projectId: item.id})">
                 <div class="project-item">
                     <div class="item-left">
                         <div class="project-h1">
-                            <span>{{item.name}}</span>
-                            <em v-if="item.task_my_num > 0">{{item.task_my_num}}</em>
+                            <div class="project-name">{{item.name}}</div>
+                            <div v-if="item.top_at" class="icon-top"></div>
+                            <div v-if="item.task_my_num > 0" class="num">{{item.task_my_num}}</div>
                         </div>
                         <div class="project-h2">
                             {{item.desc}}
@@ -48,18 +51,39 @@
                 </div>
             </li>
         </ul>
+        <div class="operate-position" :style="operateStyles">
+            <Dropdown
+                trigger="custom"
+                placement="top"
+                :visible="operateVisible"
+                @on-clickoutside="operateVisible = false"
+                transfer>
+                <div :style="{userSelect:operateVisible ? 'none' : 'auto', height: operateStyles.height}"></div>
+                <DropdownMenu slot="list">
+                    <DropdownItem @click.native="handleTopClick">
+                        {{ $L(operateItem.top_at ? '取消置顶' : '置顶该项目') }}
+                    </DropdownItem>
+                </DropdownMenu>
+            </Dropdown>
+        </div>
     </div>
 </template>
 
 <script>
 import {mapState} from "vuex";
+import longpress from "../../../directives/longpress";
 
 export default {
     name: "ProjectList",
+    directives: {longpress},
     data() {
         return {
             projectKeyValue: '',
             projectKeyLoading: 0,
+
+            operateStyles: {},
+            operateVisible: false,
+            operateItem: {},
         }
     },
 
@@ -139,7 +163,41 @@ export default {
                 title: this.$L(`${item.name} 项目进度`),
                 content,
             });
-        }
+        },
+
+        handleLongpress(touchEvent, el) {
+            const projectId = $A.getAttr(el, 'data-id')
+            const projectItem = this.projectLists.find(item => item.id == projectId)
+            if (!projectItem) {
+                return
+            }
+            const event = touchEvent.touches[0];
+            this.operateVisible = false;
+            this.operateItem = $A.isJson(projectItem) ? projectItem : {};
+            this.$nextTick(() => {
+                const projectRect = el.getBoundingClientRect();
+                const wrapRect = this.$refs.projectWrapper.getBoundingClientRect();
+                this.operateStyles = {
+                    left: `${event.clientX - wrapRect.left}px`,
+                    top: `${projectRect.top}px`,
+                    height: projectRect.height + 'px',
+                }
+                this.operateVisible = true;
+            })
+        },
+
+        handleTopClick() {
+            this.$store.dispatch("call", {
+                url: 'project/top',
+                data: {
+                    project_id: this.operateItem.id,
+                },
+            }).then(({data}) => {
+                this.$store.dispatch("saveProject", data);
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            });
+        },
     }
 }
 </script>
