@@ -664,7 +664,11 @@
                 .file-list {
                     user-select: none;
                     > ul {
+                        grid-template-columns: repeat(auto-fill, 80px);
                         grid-gap: 4px;
+                        > li {
+                            width: 80px;
+                        }
                     }
                 }
                 .file-table {

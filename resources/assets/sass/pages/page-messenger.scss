@@ -95,12 +95,10 @@
                             display: flex;
                             flex-direction: row;
                             align-items: flex-start;
-                            padding: 14px 10px;
+                            padding: 16px 12px;
                             position: relative;
                             cursor: pointer;
                             list-style: none;
-                            margin-right: 1px;
-                            border: 2px solid transparent;
                             .user-avatar,
                             .icon-avatar {
                                 width: 42px;
@@ -218,8 +216,27 @@
                                 left: 42px;
                                 transform: scale(0.8);
                             }
-                            .dialog-split {
+                            .dialog-line {
                                 display: none;
+                                position: absolute;
+                                bottom: 0;
+                                right: 0;
+                                left: 68px;
+                                height: 1px;
+                                background-color: #f2f2f2;
+                                transform: scaleY(0.5);
+                            }
+                            &:before {
+                                display: none;
+                                position: absolute;
+                                content: "";
+                                top: 0;
+                                left: 0;
+                                right: 0;
+                                bottom: 0;
+                                z-index: 1;
+                                border: 2px solid $primary-color;
+                                pointer-events: none;
                             }
                             &.top {
                                 background-color: #EEEFF1;
@@ -228,7 +245,9 @@
                                 background-color: #F4F5F7;
                             }
                             &.operate {
-                                border-color: $primary-color;
+                                &:before {
+                                    display: block;
+                                }
                             }
                             &.loading {
                                 margin: 0;
@@ -433,6 +452,9 @@
                 max-width: none;
                 background-color: #ffffff;
                 z-index: 48;
+                &:after {
+                    display: none;
+                }
                 .messenger-search {
                     background-color: #f8f8f8;
                     .search-wrapper {
@@ -465,18 +487,11 @@
                                         }
                                     }
                                 }
-                                .dialog-split {
+                                .dialog-line {
                                     display: block;
-                                    position: absolute;
-                                    bottom: 0;
-                                    right: 0;
-                                    left: 68px;
-                                    height: 1px;
-                                    background-color: #f2f2f2;
-                                    transform: scaleY(0.5);
                                 }
                                 &:last-child {
-                                    .dialog-split {
+                                    .dialog-line {
                                         display: none;
                                     }
                                 }

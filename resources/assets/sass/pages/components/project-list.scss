@@ -56,12 +56,25 @@
         background-color: #f8f8f8;
         user-select: none;
         > li {
-            padding: 14px;
+            padding: 16px;
             margin: 16px;
             border-radius: 12px;
             background-color: #ffffff;
-            border: 2px solid transparent;
             list-style: none;
+            position: relative;
+            &:before {
+                display: none;
+                position: absolute;
+                content: "";
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 1;
+                border: 2px solid $primary-color;
+                pointer-events: none;
+                border-radius: 12px;
+            }
             &.nothing,
             &.loading {
                 text-align: center;
@@ -82,7 +95,9 @@
                 }
             }
             &.operate {
-                border-color: $primary-color;
+                &:before {
+                    display: block;
+                }
             }
             .project-item {
                 display: flex;
@@ -94,9 +109,9 @@
                         display: flex;
                         align-items: flex-start;
                         .project-name {
-                            font-size: 16px;
+                            font-size: 14px;
                             line-height: 22px;
-                            font-weight: 600;
+                            color: #333333;
                             word-break: break-all;
                             text-overflow: ellipsis;
                             overflow: hidden;
@@ -134,8 +149,9 @@
                         }
                     }
                     .project-h2 {
-                        margin-top: 8px;
-                        line-height: 22px;
+                        margin-top: 4px;
+                        line-height: 20px;
+                        font-size: 12px;
                         word-break: break-all;
                         text-overflow: ellipsis;
                         overflow: hidden;
@@ -158,7 +174,7 @@
                         }
                         .percent-text {
                             color: $primary-color;
-                            font-weight: 600;
+                            font-weight: 500;
                         }
                     }
                 }
