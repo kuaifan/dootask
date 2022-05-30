@@ -56,10 +56,11 @@
         background-color: #f8f8f8;
         user-select: none;
         > li {
-            padding: 16px;
+            padding: 14px;
             margin: 16px;
             border-radius: 12px;
             background-color: #ffffff;
+            border: 2px solid transparent;
             list-style: none;
             &.nothing,
             &.loading {
@@ -79,6 +80,9 @@
                     height: 20px;
                     margin: 1px;
                 }
+            }
+            &.operate {
+                border-color: $primary-color;
             }
             .project-item {
                 display: flex;

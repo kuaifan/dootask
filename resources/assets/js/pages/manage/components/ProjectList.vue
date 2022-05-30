@@ -22,6 +22,7 @@
                 v-for="(item, key) in projectLists"
                 :key="key"
                 :data-id="item.id"
+                :class="{operate: item.id == operateItem.id && operateVisible}"
                 v-longpress="handleLongpress"
                 @click="toggleRoute('project', {projectId: item.id})">
                 <div class="project-item">
@@ -147,8 +148,10 @@ export default {
         },
 
         toggleRoute(path, params) {
-            let location = {name: 'manage-' + path, params: params || {}};
-            this.goForward(location);
+            if (this.operateVisible) {
+                return
+            }
+            this.goForward({name: 'manage-' + path, params: params || {}});
         },
 
         modalPercent(item) {
