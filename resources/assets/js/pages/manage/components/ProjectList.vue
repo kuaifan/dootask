@@ -155,6 +155,9 @@ export default {
         },
 
         modalPercent(item) {
+            if (this.operateVisible) {
+                return
+            }
             let content = `<p><strong>${this.$L('总进度')}</strong></p>`
             content += `<p>${this.$L('总数量')}: ${item.task_num}</p>`
             content += `<p>${this.$L('已完成')}: ${item.task_complete}</p>`
