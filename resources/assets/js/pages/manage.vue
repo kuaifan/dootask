@@ -350,6 +350,9 @@
             <ProjectArchived v-if="archivedProjectShow"/>
         </DrawerOverlay>
 
+        <!--会议管理-->
+        <MeetingManager/>
+
         <!--移动端选项卡-->
         <transition name="mobile-slide">
             <MobileTabbar v-if="showMobileTabbar" @on-click="onTabbarClick"/>
@@ -376,9 +379,11 @@ import {Store} from "le5le-store";
 import MobileBack from "../components/Mobile/Back";
 import TaskMenu from "./manage/components/TaskMenu";
 import MobileNotification from "../components/Mobile/Notification";
+import MeetingManager from "./manage/components/MeetingManager";
 
 export default {
     components: {
+        MeetingManager,
         MobileNotification,
         TaskMenu,
         MobileBack,

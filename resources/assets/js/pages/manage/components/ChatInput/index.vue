@@ -51,13 +51,17 @@
                         <ETooltip slot="reference" ref="moreTip" :disabled="!$isDesktop || showMore" placement="top" :content="$L('展开')">
                             <i class="taskfont">&#xe790;</i>
                         </ETooltip>
+                        <div v-if="recordReady" class="chat-input-popover-item" @click="onToolbar('meeting')">
+                            <i class="taskfont">&#xe7c1;</i>
+                            {{$L('新会议')}}
+                        </div>
                         <div class="chat-input-popover-item" @click="onToolbar('image')">
-                            <i class="taskfont">&#xe64a;</i>
-                            {{$L('图片')}}
+                            <i class="taskfont">&#xe7bc;</i>
+                            {{$L('发送图片')}}
                         </div>
                         <div class="chat-input-popover-item" @click="onToolbar('file')">
-                            <i class="taskfont">&#xe786;</i>
-                            {{$L('文件')}}
+                            <i class="taskfont">&#xe7c0;</i>
+                            {{$L('上传文件')}}
                         </div>
                     </EPopover>
                 </li>
@@ -112,6 +116,7 @@ import ChatEmoji from "./emoji";
 import touchmouse from "../../../../directives/touchmouse";
 import TransferDom from "../../../../directives/transfer-dom";
 import clickoutside from "../../../../directives/clickoutside";
+import {Store} from "le5le-store";
 
 export default {
     name: 'ChatInput',
@@ -779,6 +784,12 @@ export default {
 
                 case 'task':
                     this.openMenu("#");
+                    break;
+
+                case 'meeting':
+                    Store.set('addMeeting', {
+                        userids: [this.userId]
+                    }); // todo 加入当前会话人员
                     break;
 
                 case 'image':

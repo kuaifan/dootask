@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\UserEmailVerification;
 use App\Models\UserTransfer;
 use App\Models\WebSocket;
+use App\Module\AgoraIO\AgoraTokenGenerator;
 use App\Module\Base;
 use Arr;
 use Cache;
@@ -759,5 +760,44 @@ class UsersController extends AbstractController
         } else {
             return Base::retError('not exist');
         }
+    }
+
+    /**
+     * @api {get} api/users/agoraio/token          16. 【agoraio】获取 token
+     *
+     * @apiDescription  需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName agoraio__token
+     *
+     * @apiParam {Number} dialog_id             会话ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function agoraio__token()
+    {
+        $user = User::auth();
+        //
+        $appid = '342c604542484b0d9659527f79aefcdb';
+        $app_certificate = '920eb911c1f549948366e44d6dcabcbe';
+        $channel = "DooTask:" . md5(env("APP_KEY"));
+        $uid = $user->userid;
+        try {
+            $service = new AgoraTokenGenerator($appid, $app_certificate, $channel, $uid);
+        } catch (\Exception $e) {
+            return Base::retError($e->getMessage());
+        }
+        $token = $service->buildToken();
+        if (empty($token)) {
+            return Base::retError('Generated token failed');
+        }
+        return Base::retSuccess('success', [
+            'appid' => $appid,
+            'channel' => $channel,
+            'uid' => $uid,
+            'token' => $token
+        ]);
     }
 }
