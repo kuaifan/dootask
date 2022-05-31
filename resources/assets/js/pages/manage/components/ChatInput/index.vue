@@ -375,7 +375,7 @@ export default {
                     // 直接执行会导致输入框滚到底部被遮挡
                 } else {
                     this.timerScroll = setInterval(() => {
-                        if (this.quill.hasFocus()) {
+                        if (this.quill?.hasFocus()) {
                             $A.scrollToView(this.$refs.editor, true)
                         } else {
                             clearInterval(this.timerScroll);

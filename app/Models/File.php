@@ -341,6 +341,8 @@ class File extends AbstractModel
             $content = Base::json2array(FileContent::whereFid($item['id'])->orderByDesc('id')->value('content'));
             if ($content) {
                 $item['image_url'] = Base::fillUrl($content['url']);
+                $item['image_width'] = intval($content['width']);
+                $item['image_height'] = intval($content['height']);
             }
         }
         return $item;

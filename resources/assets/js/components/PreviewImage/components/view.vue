@@ -72,6 +72,10 @@
             z-index: 2;
             transform: translateY(-50%);
 
+            @media (max-width: 640px) {
+                display: none;
+            }
+
             &.is-disabled {
                 cursor: no-drop;
 
@@ -208,7 +212,11 @@ export default {
             return this.index === this.urlList.length - 1;
         },
         currentImg() {
-            return $A.rightDelete(this.urlList[this.index], "_thumb.jpg");
+            let item = this.urlList[this.index];
+            if ($A.isJson(item)) {
+                item = item.src;
+            }
+            return $A.rightDelete(item, "_thumb.jpg");
         },
         imgStyle() {
             const {scale, deg, offsetX, offsetY, enableTransition} = this.transform;

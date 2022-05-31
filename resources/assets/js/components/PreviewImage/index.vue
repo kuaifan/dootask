@@ -5,16 +5,19 @@
         :mask-closable="false"
         :footer-hide="true"
         :transition-names="['', '']"
-        fullscreen
-        class-name="common-preview-image">
-        <PreviewImageView v-if="list.length > 0" :initial-index="index" :url-list="list" infinite/>
+        :class-name="mode === 'desktop' ? 'common-preview-image-view' : 'common-preview-image-swipe'"
+        fullscreen>
+        <template v-if="list.length > 0">
+            <PreviewImageView v-if="mode === 'desktop'" :initial-index="index" :url-list="list" infinite/>
+            <PreviewImageSwipe v-if="mode === 'mobile'" :initial-index="index" :url-list="list" @on-destroy="show=false"/>
+        </template>
     </Modal>
 </template>
 
 <style lang="scss">
 body {
     .ivu-modal-wrap {
-        &.common-preview-image {
+        &.common-preview-image-view {
             .ivu-modal {
                 margin: 0;
                 padding: 0;
@@ -34,6 +37,11 @@ body {
                         top: 40px;
                         width: 40px;
 
+                        @media (max-width: 640px) {
+                            right: 24px;
+                            top: 24px;
+                        }
+
                         .ivu-icon-ios-close {
                             top: 0;
                             right: 0;
@@ -48,16 +56,20 @@ body {
                 }
             }
         }
+        &.common-preview-image-swipe {
+            display: none;
+        }
     }
 }
 </style>
 
 <script>
-import PreviewImageView from "./view";
+const PreviewImageView = () => import('./components/view');
+const PreviewImageSwipe = () => import('./components/swipe');
 
 export default {
     name: 'PreviewImage',
-    components: {PreviewImageView},
+    components: {PreviewImageSwipe, PreviewImageView},
     props: {
         value: {
             type: Boolean,
@@ -71,6 +83,12 @@ export default {
             type: Array,
             default: () => {
                 return [];
+            }
+        },
+        mode: {
+            type: String,
+            default: () => {
+                return $A.isDesktop ? 'desktop' : 'mobile';
             }
         }
     },

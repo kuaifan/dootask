@@ -951,7 +951,16 @@ export default {
                 const list = this.fileList.filter(({image_url}) => !!image_url)
                 if (list.length > 0) {
                     this.imageIndex = list.findIndex(({id}) => item.id === id)
-                    this.imageList = list.map(item => item.image_url)
+                    this.imageList = list.map(item => {
+                        if (item.image_width) {
+                            return {
+                                src: item.image_url,
+                                width: item.image_width,
+                                height: item.image_height,
+                            }
+                        }
+                        return item.image_url;
+                    })
                     this.imageShow = true
                     return;
                 }

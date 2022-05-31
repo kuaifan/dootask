@@ -758,14 +758,19 @@ class FileController extends AbstractController
             $file->saveBeforePids();
             //
             $data = Base::uploadMove($data, "uploads/file/" . $file->type . "/" . date("Ym") . "/" . $file->id . "/");
+            $content = [
+                'from' => '',
+                'type' => $type,
+                'ext' => $data['ext'],
+                'url' => $data['path'],
+            ];
+            if (isset($data['width'])) {
+                $content['width'] = $data['width'];
+                $content['height'] = $data['height'];
+            }
             $content = FileContent::createInstance([
                 'fid' => $file->id,
-                'content' => [
-                    'from' => '',
-                    'type' => $type,
-                    'ext' => $data['ext'],
-                    'url' => $data['path']
-                ],
+                'content' => $content,
                 'text' => '',
                 'size' => $file->size,
                 'userid' => $user->userid,

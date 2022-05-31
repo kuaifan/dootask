@@ -152,7 +152,7 @@ export default {
 
         contentClass() {
             const {type, msg} = this.msgData;
-            let classArray = [];
+            const classArray = [];
             if (type === 'text') {
                 if (/^<img\s+class="emoticon"[^>]*?>$/.test(msg.text)) {
                     classArray.push('an-emoticon')
@@ -243,15 +243,19 @@ export default {
             // 处理图片显示尺寸
             const array = text.match(/<img\s+[^>]*?>/g);
             if (array) {
-                const widthReg = new RegExp("width=\"(\\d+)\"")
-                const heightReg = new RegExp("height=\"(\\d+)\"")
+                const widthReg = new RegExp("width=\"(\\d+)\""),
+                    heightReg = new RegExp("height=\"(\\d+)\"")
                 array.some(res => {
-                    if (widthReg.test(res) && heightReg.test(res)) {
-                        let width = parseInt(res.match(widthReg)[1]),
-                            height = parseInt(res.match(heightReg)[1]),
+                    const widthMatch = res.match(widthReg),
+                        heightMatch = res.match(heightReg);
+                    if (widthMatch && heightMatch) {
+                        const width = parseInt(widthMatch[1]),
+                            height = parseInt(heightMatch[1]),
                             maxSize = res.indexOf("emoticon") > -1 ? 150 : 220;
-                        let scale = $A.scaleToScale(width, height, maxSize, maxSize);
-                        let value = res.replace(widthReg, `width=${scale.width}`).replace(heightReg, `height=${scale.height}`)
+                        const scale = $A.scaleToScale(width, height, maxSize, maxSize);
+                        const value = res
+                            .replace(widthReg, `original-width="${width}" width="${scale.width}"`)
+                            .replace(heightReg, `original-height="${height}" height="${scale.height}"`)
                         text = text.replace(res, value)
                     }
                 })
@@ -261,14 +265,14 @@ export default {
 
         recordStyle(info) {
             const {duration} = info;
-            let width = 50 + Math.min(180, Math.floor(duration / 150));
+            const width = 50 + Math.min(180, Math.floor(duration / 150));
             return {
                 width: width + 'px',
             };
         },
 
         recordDuration(duration) {
-            let minute = Math.floor(duration / 60000),
+            const minute = Math.floor(duration / 60000),
                 seconds = Math.floor(duration / 1000) % 60;
             if (minute > 0) {
                 return `${minute}:${seconds}″`
@@ -340,7 +344,7 @@ export default {
                         this.viewPicture(target.currentSrc);
                     } else {
                         this.$store.state.previewImageIndex = 0;
-                        this.$store.state.previewImageList = [target.currentSrc];
+                        this.$store.state.previewImageList = this.getTextImageInfos(target.outerHTML);
                     }
                     break;
 
@@ -400,20 +404,20 @@ export default {
                 return a.id - b.id;
             });
             //
-            let list = [];
+            const list = [];
             data.some(({type, msg}) => {
                 if (type === 'file') {
-                    list.push(msg.path)
-                } else if (type === 'text') {
-                    const baseUrl = $A.apiUrl('../');
-                    const array = msg.text.match(/<img\s+class="browse"[^>]*?src="(.*?)"[^>]*?>/g);
-                    array && array.some(res => {
-                        list.push(res.match(/<img\s+class="browse"[^>]*?src="(.*?)"[^>]*?>/)[1].replace(/\{\{RemoteURL\}\}/g, baseUrl))
+                    list.push({
+                        src: msg.path,
+                        width: msg.width,
+                        height: msg.height,
                     })
+                } else if (type === 'text') {
+                    list.push(...this.getTextImageInfos(msg.text))
                 }
             })
             //
-            let index = list.findIndex(item => item === currentUrl);
+            const index = list.findIndex(({src}) => src === currentUrl);
             if (index > -1) {
                 this.$store.state.previewImageIndex = index;
                 this.$store.state.previewImageList = list;
@@ -421,6 +425,30 @@ export default {
                 this.$store.state.previewImageIndex = 0;
                 this.$store.state.previewImageList = [currentUrl];
             }
+        },
+
+        getTextImageInfos(text) {
+            const baseUrl = $A.apiUrl('../');
+            const array = text.match(new RegExp(`<img[^>]*?>`, "g"));
+            const list = [];
+            if (array) {
+                const srcReg = new RegExp("src=\"(.*?)\""),
+                    widthReg = new RegExp("(original-)?width=\"(\\d+)\""),
+                    heightReg = new RegExp("(original-)?height=\"(\\d+)\"")
+                array.some(res => {
+                    const srcMatch = res.match(srcReg),
+                        widthMatch = res.match(widthReg),
+                        heightMatch = res.match(heightReg);
+                    if (srcMatch && widthMatch && heightMatch) {
+                        list.push({
+                            src: srcMatch[1].replace(/\{\{RemoteURL\}\}/g, baseUrl),
+                            width: widthMatch[2],
+                            height: heightMatch[2],
+                        })
+                    }
+                })
+            }
+            return list;
         },
 
         downFile() {
