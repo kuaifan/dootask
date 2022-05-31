@@ -300,7 +300,17 @@
                                 margin-bottom: 6px;
                                 height: 34px;
                                 line-height: 34px;
-                                border-bottom: 1px solid #efefef;
+                                position: relative;
+                                &:after {
+                                    content: "";
+                                    position: absolute;
+                                    bottom: 0;
+                                    right: 0;
+                                    left: 0;
+                                    height: 1px;
+                                    background-color: #f2f2f2;
+                                    transform: scaleY(0.5);
+                                }
                             }
                             &.nothing,
                             &.loading {

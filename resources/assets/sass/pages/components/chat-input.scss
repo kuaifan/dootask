@@ -7,6 +7,21 @@
 
     &.record-ing {
         .chat-input-wrapper {
+            .chat-toolbar {
+                > li {
+                    &.chat-send {
+                        &:before {
+                            transition: all 1s ease;
+                            transform: translate(-50%, -50%) scale(2);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    &.record-progress {
+        .chat-input-wrapper {
             .ql-container {
                 opacity: 0;
             }
@@ -14,7 +29,8 @@
                 > li {
                     &.chat-send {
                         &:before {
-                            transform: translate(-50%, -50%) scale(1.5);
+                            transition: all 0.3s ease;
+                            transform: translate(-50%, -50%) scale(2.5);
                         }
                     }
                     &.chat-record-recwave {
@@ -139,6 +155,7 @@
                         left: 50%;
                         z-index: 3;
                         transform: translate(-50%, -50%) scale(1);
+                        transition: all 0.3s ease;
                         color: #ffffff;
                     }
                 }

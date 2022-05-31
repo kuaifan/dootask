@@ -209,10 +209,18 @@ export default {
             this.calendarWeek = {daynames};
             this.calendarMonth = {daynames};
             this.calendarTheme = {
-                'common.border': '1px solid #f4f5f5',
+                'common.border': '1px solid rgba(0,0,0,0)',
                 'month.dayname.fontSize': '14px',
-                'month.dayname.borderLeft': '1px solid #f4f5f5',
+                'month.dayname.borderLeft': '1px solid rgba(0,0,0,0)',
                 'month.dayname.height': '50px',
+            }
+            if (this.$isDesktop) {
+                this.calendarTheme = {
+                    'common.border': '1px solid #f4f5f5',
+                    'month.dayname.fontSize': '14px',
+                    'month.dayname.borderLeft': '1px solid #f4f5f5',
+                    'month.dayname.height': '50px',
+                }
             }
             this.calendarTemplate = {
                 titlePlaceholder: () => {
