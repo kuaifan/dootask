@@ -11,7 +11,7 @@
                         <Input v-model="addData.name" disabled/>
                     </FormItem>
                     <FormItem prop="meetingid" :label="$L('会议频道ID')">
-                        <Input v-model="addData.meetingid" :placeholder="$L('请输入会议频道ID')"/>
+                        <Input v-model="addData.meetingid" :disabled="addData.meetingdisabled === true" :placeholder="$L('请输入会议频道ID')"/>
                     </FormItem>
                 </template>
                 <template v-else>

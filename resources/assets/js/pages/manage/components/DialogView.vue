@@ -336,6 +336,7 @@ export default {
                 type: 'join',
                 name: this.msgData.msg.name,
                 meetingid: this.msgData.msg.meetingid,
+                meetingdisabled: true,
             });
         },
 
