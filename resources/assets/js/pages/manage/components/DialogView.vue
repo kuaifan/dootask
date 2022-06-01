@@ -249,8 +249,9 @@ export default {
                 return ""
             }
             text = text.trim().replace(/(\n\x20*){3,}/g, "\n\n");
-            text = text.replace(/\{\{RemoteURL\}\}/g, $A.apiUrl('../'))
+            text = text.replace(/&nbsp;/g, ' ')
             text = text.replace(/<p><\/p>/g, '<p><br/></p>')
+            text = text.replace(/\{\{RemoteURL\}\}/g, $A.apiUrl('../'))
             text = text.replace(this.atUserReg, `<span class="mention me" data-id="${this.userId}">`)
             // 处理内容连接
             if (/https*:\/\//.test(text)) {
