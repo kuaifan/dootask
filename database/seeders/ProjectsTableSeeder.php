@@ -27,6 +27,7 @@ class ProjectsTableSeeder extends Seeder
                 'name' => '测试',
                 'desc' => '',
                 'userid' => 1,
+                'user_simple' => '',
                 'dialog_id' => 3,
                 'archived_at' => NULL,
                 'archived_userid' => 0,

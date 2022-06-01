@@ -229,7 +229,7 @@
             htmlOk() {
                 $A.loadScript('js/html2md.js', (e) => {
                     if (e !== null || typeof toMarkdown !== 'function') {
-                        $A.modalAlert("组件加载失败！");
+                        $A.modalError("组件加载失败！");
                         return;
                     }
                     if (this.transfer) {

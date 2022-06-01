@@ -1,6 +1,6 @@
 {
     "name": "DooTask",
-    "version": "0.15.60",
+    "version": "0.15.77",
     "description": "DooTask is task management system.",
     "scripts": {
         "start": "./cmd dev",
@@ -97,8 +97,5 @@
                 "url": "https://t.hitosea.com/desktop/publish"
             }
         }
-    ],
-    "dependencies": {
-        "grapheme-splitter": "^1.0.4"
-    }
+    ]
 }
