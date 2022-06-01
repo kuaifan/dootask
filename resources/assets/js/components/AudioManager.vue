@@ -61,6 +61,9 @@ export default {
             if (typeof msg === "boolean") {
                 if (msg && !ended) {
                     audio.pause()
+                    audio.src = null
+                    this.audioSrc = null
+                    this.audioPlay = false;
                 }
                 return
             }
@@ -71,6 +74,9 @@ export default {
                     audio.play()
                 } else {
                     audio.pause();
+                    audio.src = null
+                    this.audioSrc = null
+                    this.audioPlay = false;
                 }
             } else {
                 this.audioId = id;

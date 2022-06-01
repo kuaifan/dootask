@@ -766,7 +766,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/meeting/open          16. 【会议】新会议
+     * @api {get} api/users/meeting/open          16. 【会议】创建会议、加入会议
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -793,14 +793,14 @@ class UsersController extends AbstractController
         $name = trim(Request::input('name'));
         $userids = Request::input('userids');
         $isCreate = false;
-        //
+        // 创建、加入
         if ($type === 'join') {
             $meeting = Meeting::whereMeetingid($meetingid)->first();
             if (empty($meeting)) {
                 return Base::retError('频道ID不存在');
             }
         } elseif ($type === 'create') {
-            $meetingid = strtoupper(Base::generatePassword());
+            $meetingid = strtoupper(Base::generatePassword(11, 1));
             $name = $name ?: "{$user->nickname} 发起的会议";
             $channel = "DooTask:" . substr(md5($meetingid . env("APP_KEY")), 16);
             $meeting = Meeting::createInstance([
@@ -814,6 +814,7 @@ class UsersController extends AbstractController
         } else {
             return Base::retError('参数错误');
         }
+        $data = $meeting->toArray();
         // 创建令牌
         $meetingSetting = Base::setting('meetingSetting');
         if ($meetingSetting['open'] !== 'open') {
@@ -841,7 +842,7 @@ class UsersController extends AbstractController
                 }
                 $dialog = WebSocketDialog::checkUserDialog($user->userid, $userid);
                 if ($dialog) {
-                    $res = WebSocketDialogMsg::sendMsg($dialog->id, 'meeting', $meeting, $user->userid);
+                    $res = WebSocketDialogMsg::sendMsg($dialog->id, 'meeting', $data, $user->userid);
                     if (Base::isSuccess($res)) {
                         $msgs[] = $res['data'];
                     }
@@ -849,11 +850,56 @@ class UsersController extends AbstractController
             }
         }
         //
-        $data = $meeting->toArray();
         $data['appid'] = $meetingSetting['appid'];
         $data['uid'] = $uid;
         $data['token'] = $token;
         $data['msgs'] = $msgs;
         return Base::retSuccess('success', $data);
+    }
+
+    /**
+     * @api {get} api/users/meeting/invitation          17. 【会议】发送邀请
+     *
+     * @apiDescription  需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName meeting__invitation
+     *
+     * @apiParam {String} meetingid               频道ID（不是数字）
+     * @apiParam {Array} userids                  邀请成员
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function meeting__invitation()
+    {
+        $user = User::auth();
+        //
+        $meetingid = trim(Request::input('meetingid'));
+        $userids = Request::input('userids');
+        //
+        $meeting = Meeting::whereMeetingid($meetingid)->first();
+        if (empty($meeting)) {
+            return Base::retError('频道ID不存在');
+        }
+        $data = $meeting->toArray();
+        // 发送给邀请人
+        $msgs = [];
+        foreach ($userids as $userid) {
+            if (!User::whereUserid($userid)->exists()) {
+                continue;
+            }
+            $dialog = WebSocketDialog::checkUserDialog($user->userid, $userid);
+            if ($dialog) {
+                $res = WebSocketDialogMsg::sendMsg($dialog->id, 'meeting', $data, $user->userid);
+                if (Base::isSuccess($res)) {
+                    $msgs[] = $res['data'];
+                }
+            }
+        }
+        //
+        $data['msgs'] = $msgs;
+        return Base::retSuccess('发送邀请成功', $data);
     }
 }

@@ -40,11 +40,15 @@
                             {{msgData.msg.name}}
                         </li>
                         <li>
+                            <em>{{$L('会议创建人')}}</em>
+                            <UserAvatar :userid="msgData.msg.userid" :show-icon="false" :show-name="true" tooltip-disabled/>
+                        </li>
+                        <li>
                             <em>{{$L('频道ID')}}</em>
-                            {{msgData.msg.meetingid}}
+                            {{msgData.msg.meetingid.replace(/^(.{3})(.{3})(.*)$/, '$1 $2 $3')}}
                         </li>
                         <li class="meeting-operation">
-                            {{$L('点击进入会议')}}
+                            {{$L('点击加入会议')}}
                             <i class="taskfont">&#xe68b;</i>
                         </li>
                     </ul>

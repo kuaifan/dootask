@@ -451,13 +451,13 @@
 
                         .content-record {
                             display: flex;
+                            color: $primary-title-color;
 
                             .dialog-record {
                                 display: flex;
                                 flex-direction: row-reverse;
                                 justify-content: flex-end;
                                 align-content: center;
-                                color: $primary-title-color;
                                 line-height: 22px;
                                 cursor: pointer;
 
@@ -499,34 +499,44 @@
                         }
 
                         .content-meeting {
+                            padding: 4px 6px;
+                            color: $primary-title-color;
                             .dialog-meeting {
                                 cursor: pointer;
-                                min-width: 200px;
-                                color: $primary-title-color;
+                                min-width: 220px;
                                 > li {
                                     list-style: none;
                                     display: flex;
                                     flex-direction: column;
                                     align-items: flex-start;
-                                    margin-bottom: 12px;
+                                    margin-bottom: 16px;
                                     &.meeting-operation {
-                                        border-top: 1px solid #cccccc;
                                         margin-bottom: 0;
-                                        padding: 8px 0 4px;
+                                        padding: 12px 0 0;
                                         display: flex;
                                         flex-direction: row;
                                         align-items: center;
                                         font-size: 12px;
-                                        opacity: 0.8;
+                                        position: relative;
+                                        &:before {
+                                            content: "";
+                                            position: absolute;
+                                            top: 0;
+                                            left: 0;
+                                            right: 0;
+                                            height: 1px;
+                                            background-color: rgba(204, 204, 204, 0.8);
+                                            transform: scaleY(0.5);
+                                        }
                                         .taskfont {
                                             font-size: 12px;
                                             padding-left: 2px;
-                                            transform: scale(0.6);
+                                            transform: scale(0.8);
                                         }
                                     }
                                     > em {
                                         font-style: normal;
-                                        font-weight: 500;
+                                        font-weight: bold;
                                         padding-bottom: 2px;
                                     }
                                 }
@@ -729,10 +739,10 @@
                             }
 
                             .content-record {
+                                color: #ffffff;
 
                                 .dialog-record {
                                     flex-direction: row;
-                                    color: #ffffff;
 
                                     .record-time {
                                         padding: 0 4px 0 0;
@@ -745,13 +755,14 @@
                             }
 
                             .content-meeting {
+                                color: #ffffff;
+
                                 .dialog-meeting {
-                                    min-width: 200px;
-                                    color: #ffffff;
                                     > li {
                                         &.meeting-operation {
-                                            border-top: 1px solid #ffffff;
-                                            opacity: 1;
+                                            &:before {
+                                                background-color: rgba(255, 255, 255, 0.8);
+                                            }
                                         }
                                     }
                                 }

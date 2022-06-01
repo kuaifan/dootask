@@ -36,6 +36,7 @@
 
 <script>
 import {mapGetters, mapState} from "vuex";
+import {Store} from "le5le-store";
 
 export default {
     name: "MobileTabbar",
@@ -60,6 +61,8 @@ export default {
                 [
                     {icon: '&#xe7b9;', name: 'addProject', label: '创建项目'},
                     {icon: '&#xe7b8;', name: 'addTask', label: '添加任务'},
+                    {icon: '&#xe7c1;', name: 'createMeeting', label: '新会议'},
+                    {icon: '&#xe794;', name: 'joinMeeting', label: '加入会议'},
                 ]
             ],
         };
@@ -78,7 +81,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheDialogs']),
+        ...mapState(['cacheDialogs', 'userId']),
         ...mapGetters(['dashboardTask']),
 
         routeName() {
@@ -146,6 +149,19 @@ export default {
                 case 'addTask':
                 case 'addProject':
                     return;
+
+                case 'createMeeting':
+                    Store.set('addMeeting', {
+                        type: 'create',
+                        userids: [this.userId],
+                    });
+                    break;
+
+                case 'joinMeeting':
+                    Store.set('addMeeting', {
+                        type: 'join',
+                    });
+                    break;
 
                 case 'project':
                     location = {name: 'manage-project', params: {projectId: 'all'}};

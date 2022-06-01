@@ -1,5 +1,6 @@
 <template>
     <div v-show="false">
+        <!-- 加入/新建 -->
         <Modal
             v-model="addShow"
             :title="$L(addData.type === 'join' ? '加入会议' : '新会议')"
@@ -36,9 +37,10 @@
             </Form>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="addShow=false">{{$L('取消')}}</Button>
-                <Button type="primary" :loading="loadIng > 0" @click="onSubmit">{{$L(addData.type === 'join' ? '进入会议' : '开始会议')}}</Button>
+                <Button type="primary" :loading="loadIng > 0" @click="onSubmit">{{$L(addData.type === 'join' ? '加入会议' : '开始会议')}}</Button>
             </div>
         </Modal>
+        <!-- 会议中 -->
         <Modal
             v-model="meetingShow"
             :title="addData.name"
@@ -64,7 +66,23 @@
                 <Button type="primary" :loading="videoLoad" @click="onVideo">
                     <i class="taskfont" v-html="localUser.videoTrack ? '&#xe7c1;' : '&#xe7c8;'"></i>
                 </Button>
-                <Button type="warning" :loading="loadIng > 0" @click="onClose">{{$L('退出会议')}}</Button>
+                <Button type="primary" @click="onInvitation('open')">{{$L('邀请')}}</Button>
+                <Button type="warning" :loading="loadIng > 0" @click="onClose">{{$L('离开会议')}}</Button>
+            </div>
+        </Modal>
+        <!-- 邀请 -->
+        <Modal
+            v-model="invitationShow"
+            :title="$L('邀请加入')"
+            :mask-closable="false">
+            <Form ref="invitationForm" :model="invitationData" label-width="auto" @submit.native.prevent>
+                <FormItem prop="userids" :label="$L('邀请成员')">
+                    <UserInput v-model="invitationData.userids" :multiple-max="20" :placeholder="$L('选择邀请成员')"/>
+                </FormItem>
+            </Form>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="invitationShow=false">{{$L('取消')}}</Button>
+                <Button type="primary" :loading="invitationLoad" @click="onInvitation('submit')">{{$L('发送邀请')}}</Button>
             </div>
         </Modal>
     </div>
@@ -88,6 +106,12 @@ export default {
             addData: {
                 userids: [],
                 tracks: ['audio']
+            },
+
+            invitationShow: false,
+            invitationLoad: false,
+            invitationData: {
+                userids: [],
             },
 
             meetingShow: false,
@@ -162,7 +186,9 @@ export default {
                         data: this.addData
                     }).then(({data}) => {
                         this.$set(this.addData, 'name', data.name);
+                        this.$set(this.addData, 'meetingid', data.meetingid);
                         this.$store.dispatch("saveDialogMsg", data.msgs);
+                        this.$store.dispatch("updateDialogLastMsg", data.msgs);
                         delete data.name;
                         delete data.msgs;
                         //
@@ -199,10 +225,35 @@ export default {
             }
         },
 
+        onInvitation(type) {
+            if (type === 'open') {
+                this.invitationData = {
+                    userids: [],
+                    meetingid: this.addData.meetingid
+                };
+                this.invitationShow = true;
+            } else if (type === 'submit') {
+                this.invitationLoad = true;
+                this.$store.dispatch("call", {
+                    url: 'users/meeting/invitation',
+                    data: this.invitationData
+                }).then(({data, msg}) => {
+                    this.invitationShow = false;
+                    this.$store.dispatch("saveDialogMsg", data.msgs);
+                    this.$store.dispatch("updateDialogLastMsg", data.msgs);
+                    $A.messageSuccess(msg);
+                }).catch(({msg}) => {
+                    $A.modalError(msg);
+                }).finally(_ => {
+                    this.invitationLoad = false;
+                });
+            }
+        },
+
         onClose() {
             return new Promise(resolve => {
                 $A.modalConfirm({
-                    content: '确定要退出会议吗？',
+                    content: '确定要离开会议吗？',
                     cancelText: '继续',
                     okText: '退出',
                     onOk: async _ => {

@@ -181,7 +181,9 @@ body.dark-mode-reverse {
                     .dialog-head {
                         .dialog-content {
                             background-color: #e1e1e1;
-                            .content-text {
+                            .content-text,
+                            .content-record,
+                            .content-meeting {
                                 color: #ffffff;
                             }
                         }

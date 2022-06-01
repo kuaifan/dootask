@@ -1926,15 +1926,21 @@ export default {
     updateDialogLastMsg({state, dispatch}, data) {
         $A.execMainDispatch("updateDialogLastMsg", data)
         //
-        let dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
-        if (dialog) {
-            dispatch("saveDialog", {
-                id: data.dialog_id,
-                last_msg: data,
-                last_at: $A.formatDate("Y-m-d H:i:s")
+        if ($A.isArray(data)) {
+            data.forEach((msg) => {
+                dispatch("updateDialogLastMsg", msg)
             });
-        } else {
-            dispatch("getDialogOne", data.dialog_id).catch(() => {})
+        } else if ($A.isJson(data)) {
+            let dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
+            if (dialog) {
+                dispatch("saveDialog", {
+                    id: data.dialog_id,
+                    last_msg: data,
+                    last_at: $A.formatDate("Y-m-d H:i:s")
+                });
+            } else {
+                dispatch("getDialogOne", data.dialog_id).catch(() => {})
+            }
         }
     },
 
