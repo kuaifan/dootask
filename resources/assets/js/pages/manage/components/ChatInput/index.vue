@@ -788,8 +788,9 @@ export default {
 
                 case 'meeting':
                     Store.set('addMeeting', {
-                        userids: [this.userId]
-                    }); // todo 加入当前会话人员
+                        dialog_id: this.dialogId,
+                        userids: [this.userId],
+                    });
                     break;
 
                 case 'image':
@@ -872,7 +873,7 @@ export default {
                         if (this.dialogId > 0) {
                             // 根据会话ID获取成员
                             this.$store.dispatch("call", {
-                                url: 'dialog/group/user',
+                                url: 'dialog/user',
                                 data: {
                                     dialog_id: this.dialogId,
                                     getuser: 1

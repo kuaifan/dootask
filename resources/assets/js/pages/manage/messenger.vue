@@ -490,6 +490,8 @@ export default {
                         return $A.getMsgTextPreview(data.msg.text)
                     case 'record':
                         return `[${this.$L('语音')}]`
+                    case 'meeting':
+                        return `[${this.$L('会议')}] ${data.msg.name}`
                     case 'file':
                         if (data.msg.type == 'img') {
                             return `[${this.$L('图片')}]`

@@ -2,42 +2,68 @@
     <div v-show="false">
         <Modal
             v-model="addShow"
-            :title="$L('新会议')"
+            :title="$L(addData.meetingid ? '加入会议' : '新会议')"
             :mask-closable="false">
-            <Form ref="addForm" :model="addData" :rules="addRule" label-width="auto" @submit.native.prevent>
-                <FormItem prop="userids" :label="$L('会议成员')">
-                    <UserInput v-model="addData.userids" :multiple-max="10" :placeholder="$L('选择会议成员')"/>
-                </FormItem>
-                <FormItem prop="video" :label="$L('开启视频')">
-                    <RadioGroup v-model="addData.video">
-                        <Radio label="open">{{$L('开启')}}</Radio>
-                        <Radio label="close">{{$L('关闭')}}</Radio>
-                    </RadioGroup>
+            <Form ref="addForm" :model="addData" label-width="auto" @submit.native.prevent>
+                <template v-if="addData.meetingid">
+                    <!-- 加入会议 -->
+                    <FormItem prop="userids" :label="$L('会议主题')">
+                        <Input v-model="addData.name" disabled/>
+                    </FormItem>
+                    <FormItem prop="meetingid" :label="$L('会议频道')">
+                        <Input v-model="addData.meetingid" disabled/>
+                    </FormItem>
+                </template>
+                <template v-else>
+                    <!-- 新会议 -->
+                    <FormItem prop="name" :label="$L('会议主题')">
+                        <Input v-model="addData.name" :maxlength="50" :placeholder="$L('选填')"/>
+                    </FormItem>
+                    <FormItem prop="userids" :label="$L('邀请成员')">
+                        <UserInput v-model="addData.userids" :uncancelable="[userId]" :multiple-max="20" :placeholder="$L('选择邀请成员')"/>
+                    </FormItem>
+                </template>
+                <FormItem prop="tracks">
+                    <CheckboxGroup v-model="addData.tracks">
+                        <Checkbox label="audio">
+                            <span>{{$L('麦克风')}}</span>
+                        </Checkbox>
+                        <Checkbox label="video">
+                            <span>{{$L('摄像头')}}</span>
+                        </Checkbox>
+                    </CheckboxGroup>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="addShow=false">{{$L('取消')}}</Button>
-                <Button type="primary" :loading="loadIng > 0" @click="onSubmit">{{$L('开始会议')}}</Button>
+                <Button type="primary" :loading="loadIng > 0" @click="onSubmit">{{$L(addData.meetingid ? '进入会议' : '开始会议')}}</Button>
             </div>
         </Modal>
         <Modal
             v-model="meetingShow"
-            :title="$L('会议中')"
+            :title="addData.name"
             :mask="false"
             :mask-closable="false"
             :closable="false"
             :transition-names="['', '']"
+            :beforeClose="onClose"
             class-name="meeting-manager"
             fullscreen>
             <ul>
-                <li v-if="localTracks.uid">
-                    <MeetingPlayer :player="localTracks"/>
+                <li v-if="localUser.uid">
+                    <MeetingPlayer :ref="`meeting_${localUser.uid}`" :player="localUser"/>
                 </li>
-                <li v-for="item in remoteUsers">
-                    <MeetingPlayer :player="item"/>
+                <li v-for="user in remoteUsers">
+                    <MeetingPlayer :ref="`meeting_${user.uid}`" :player="user"/>
                 </li>
             </ul>
-            <div slot="footer" class="adaption">
+            <div slot="footer" class="adaption meeting-button-group">
+                <Button type="primary" :loading="audioLoad" @click="onAudio">
+                    <i class="taskfont" v-html="localUser.audioTrack ? '&#xe7c3;' : '&#xe7c7;'"></i>
+                </Button>
+                <Button type="primary" :loading="videoLoad" @click="onVideo">
+                    <i class="taskfont" v-html="localUser.videoTrack ? '&#xe7c1;' : '&#xe7c8;'"></i>
+                </Button>
                 <Button type="warning" :loading="loadIng > 0" @click="onClose">{{$L('退出会议')}}</Button>
             </div>
         </Modal>
@@ -61,17 +87,17 @@ export default {
             addShow: false,
             addData: {
                 userids: [],
-                video: 'close'
+                tracks: ['audio']
             },
-            addRule: {},
 
             meetingShow: false,
+            audioLoad: false,
+            videoLoad: false,
 
             agoraClient: null,
             remoteUsers: [],
-            localTracks: {
+            localUser: {
                 uid: null,
-                mediaType: null,
                 audioTrack: null,
                 videoTrack: null,
             },
@@ -95,9 +121,35 @@ export default {
 
     methods: {
         onAdd(data) {
-            this.addData = Object.assign({}, this.addData, $A.isJson(data) ? data : {
-                'userids': [this.userId],
-            });
+            data = $A.isJson(data) ? data : {};
+            // 获取会话成员
+            if (!data.meetingid && /\d+/.test(data.dialog_id)) {
+                this.loadIng++;
+                this.$store.dispatch("call", {
+                    url: 'dialog/user',
+                    data: {
+                        dialog_id: data.dialog_id
+                    }
+                }).then(({data}) => {
+                    this.$set(this.addData, 'userids', data.map(item => item.userid))
+                }).finally(_ => {
+                    this.loadIng--;
+                });
+                delete data.dialog_id;
+            }
+            // 加上自己
+            if (!$A.isArray(data.userids)) {
+                data.userids = [this.userId]
+            } else if (!data.userids.includes(this.userId)) {
+                data.userids.push(this.userId)
+            }
+            // 加上音频
+            if (!$A.isArray(data.tracks)) {
+                data.tracks = ['audio']
+            } else if (!data.tracks.includes('audio')) {
+                data.tracks.push('audio')
+            }
+            this.addData = data;
             this.addShow = true;
         },
 
@@ -106,19 +158,21 @@ export default {
                 if (valid) {
                     this.loadIng++;
                     this.$store.dispatch("call", {
-                        url: 'users/agoraio/token',
+                        url: 'users/meeting/open',
+                        data: this.addData
                     }).then(({data}) => {
+                        this.$set(this.addData, 'name', data.name);
+                        this.$store.dispatch("saveDialogMsg", data.msgs);
+                        delete data.name;
+                        delete data.msgs;
+                        //
                         $A.loadScript('//download.agora.io/sdk/release/AgoraRTC_N.js', e => {
                             if (e !== null || typeof AgoraRTC !== 'object') {
-                                this.loadIng--;
                                 $A.modalError("会议组件加载失败！");
-                                return;
+                            } else {
+                                this.join(data)
                             }
-                            this.join(data).then(_ => {
-                                this.loadIng--;
-                                this.addShow = false;
-                                this.meetingShow = true;
-                            })
+                            this.loadIng--;
                         });
                     }).catch(({msg}) => {
                         this.loadIng--;
@@ -129,96 +183,149 @@ export default {
             });
         },
 
+        onAudio() {
+            if (this.localUser.audioTrack) {
+                this.closeAudio();
+            } else {
+                this.openAudio();
+            }
+        },
+
+        onVideo() {
+            if (this.localUser.videoTrack) {
+                this.closeVideo();
+            } else {
+                this.openVideo();
+            }
+        },
+
         onClose() {
-            $A.modalConfirm({
-                content: '确定要退出会议吗？',
-                cancelText: '继续',
-                okText: '退出',
-                onOk: () => {
-                    this.loadIng++;
-                    this.leave().then(_ => {
-                        this.loadIng--;
-                        this.meetingShow = false;
-                    })
-                }
-            });
-        },
-
-        join(options) {
-            return new Promise(async resolve => {
-                AgoraRTC.onAutoplayFailed = () => {
-                    // alert("click to start autoplay!")
-                }
-                AgoraRTC.onMicrophoneChanged = async (changedDevice) => {
-                    // When plugging in a device, switch to a device that is newly plugged in.
-                    if (changedDevice.state === "ACTIVE") {
-                        this.localTracks.audioTrack.setDevice(changedDevice.device.deviceId);
-                        // Switch to an existing device when the current device is unplugged.
-                    } else if (changedDevice.device.label === this.localTracks.audioTrack.getTrackLabel()) {
-                        const oldMicrophones = await AgoraRTC.getMicrophones();
-                        oldMicrophones[0] && this.localTracks.audioTrack.setDevice(oldMicrophones[0].deviceId);
+            return new Promise(resolve => {
+                $A.modalConfirm({
+                    content: '确定要退出会议吗？',
+                    cancelText: '继续',
+                    okText: '退出',
+                    onOk: async _ => {
+                        await this.leave()
+                        resolve()
                     }
-                }
-                AgoraRTC.onCameraChanged = async (changedDevice) => {
-                    // When plugging in a device, switch to a device that is newly plugged in.
-                    if (changedDevice.state === "ACTIVE") {
-                        this.localTracks.videoTrack.setDevice(changedDevice.device.deviceId);
-                        // Switch to an existing device when the current device is unplugged.
-                    } else if (changedDevice.device.label === this.localTracks.videoTrack.getTrackLabel()) {
-                        const oldCameras = await AgoraRTC.getCameras();
-                        oldCameras[0] && this.localTracks.videoTrack.setDevice(oldCameras[0].deviceId);
-                    }
-                }
-                //
-                this.agoraClient = AgoraRTC.createClient({
-                    mode: "rtc",
-                    codec: "vp8"
                 });
-                // Add an event listener to play remote tracks when remote user publishes.
-                this.agoraClient.on("user-published", this.handleUserPublished);
-                this.agoraClient.on("user-unpublished", this.handleUserUnpublished);
-                // Join a channel and create local tracks. Best practice is to use Promise.all and run them concurrently.
-                [options.uid, this.localTracks.audioTrack, this.localTracks.videoTrack] = await Promise.all([
-                    // Join the channel.
-                    this.agoraClient.join(options.appid, options.channel, options.token || null, options.uid || null),
-                    // Create tracks to the local microphone and camera.
-                    AgoraRTC.createMicrophoneAudioTrack(),
-                    AgoraRTC.createCameraVideoTrack()
-                ]);
-                // Play the local video track to the local browser and update the UI with the user ID.
-                this.localTracks.uid = options.uid;
-                this.localTracks.mediaType = 'video';
-                // Publish the local video and audio tracks to the channel.
-                await this.agoraClient.publish([this.localTracks.audioTrack, this.localTracks.videoTrack]);
-                resolve()
             })
         },
 
-        leave() {
-            return new Promise(async resolve => {
-                for (let trackName in this.localTracks) {
-                    const track = this.localTracks[trackName];
-                    if (track) {
-                        if (['audioTrack', 'videoTrack'].includes(trackName)) {
-                            track.stop();
-                            track.close();
-                        }
-                        this.localTracks[trackName] = null;
-                    }
+        async join(options) {
+            this.loadIng++;
+            // 音频采集设备状态变化回调
+            AgoraRTC.onMicrophoneChanged = async (changedDevice) => {
+                // When plugging in a device, switch to a device that is newly plugged in.
+                if (changedDevice.state === "ACTIVE") {
+                    this.localUser.audioTrack.setDevice(changedDevice.device.deviceId);
+                    // Switch to an existing device when the current device is unplugged.
+                } else if (changedDevice.device.label === this.localUser.audioTrack.getTrackLabel()) {
+                    const oldMicrophones = await AgoraRTC.getMicrophones();
+                    oldMicrophones[0] && this.localUser.audioTrack.setDevice(oldMicrophones[0].deviceId);
                 }
-                // Remove remote users and player views.
-                this.remoteUsers = [];
-                // leave the channel
-                await this.agoraClient.leave();
-                resolve();
-            })
+            }
+            // 视频采集设备状态变化回调
+            AgoraRTC.onCameraChanged = async (changedDevice) => {
+                // When plugging in a device, switch to a device that is newly plugged in.
+                if (changedDevice.state === "ACTIVE") {
+                    this.localUser.videoTrack.setDevice(changedDevice.device.deviceId);
+                    // Switch to an existing device when the current device is unplugged.
+                } else if (changedDevice.device.label === this.localUser.videoTrack.getTrackLabel()) {
+                    const oldCameras = await AgoraRTC.getCameras();
+                    oldCameras[0] && this.localUser.videoTrack.setDevice(oldCameras[0].deviceId);
+                }
+            }
+            // 音频或视频轨道自动播放失败回调
+            AgoraRTC.onAutoplayFailed = () => {
+                //
+            }
+
+            // 创建客户端
+            this.agoraClient = AgoraRTC.createClient({mode: "rtc", codec: "vp8"});
+            // 添加事件侦听器
+            this.agoraClient.on("user-joined", this.handleUserJoined);
+            this.agoraClient.on("user-left", this.handleUserLeft);
+            this.agoraClient.on("user-published", this.handleUserPublished);
+            this.agoraClient.on("user-unpublished", this.handleUserUnpublished);
+            // 加入频道、开启音视频
+            const localTracks = [];
+            this.localUser.uid = await this.agoraClient.join(options.appid, options.channel, options.token, options.uid)
+            if (this.addData.tracks.includes("audio")) {
+                localTracks.push(this.localUser.audioTrack = await AgoraRTC.createMicrophoneAudioTrack())
+            }
+            if (this.addData.tracks.includes("video")) {
+                localTracks.push(this.localUser.videoTrack = await AgoraRTC.createCameraVideoTrack())
+                this.$refs[`meeting_${this.localUser.uid}`].play('video')
+            }
+            // 将本地视频曲目播放到本地浏览器、将本地音频和视频发布到频道。
+            await this.agoraClient.publish(localTracks);
+            //
+            this.loadIng--;
+            this.addShow = false;
+            this.meetingShow = true;
         },
 
-        async handleUserPublished(user, mediaType) {
-            // subscribe to a remote user
-            await this.agoraClient.subscribe(user, mediaType);
-            // add remote
-            user.mediaType = mediaType
+        async leave() {
+            this.loadIng++;
+            // 删除本地用户和播放器视图。
+            ['audioTrack', 'videoTrack'].some(trackName => {
+                this.localUser[trackName]?.stop();
+                this.localUser[trackName]?.close();
+            })
+            this.localUser = {
+                uid: null,
+                audioTrack: null,
+                videoTrack: null,
+            }
+            // 删除远程用户和播放器视图。
+            this.remoteUsers = [];
+            // 离开频道
+            await this.agoraClient.leave();
+            //
+            this.loadIng--;
+            this.meetingShow = false;
+        },
+
+        async openAudio() {
+            if (this.audioLoad || this.localUser.audioTrack) return;
+            this.audioLoad = true;
+            this.localUser.audioTrack = await AgoraRTC.createMicrophoneAudioTrack()
+            await this.agoraClient.publish([this.localUser.audioTrack]);
+            this.audioLoad = false;
+        },
+
+        async closeAudio() {
+            if (this.audioLoad || !this.localUser.audioTrack) return;
+            this.audioLoad = true;
+            await this.agoraClient.unpublish([this.localUser.audioTrack]);
+            this.localUser.audioTrack.stop();
+            this.localUser.audioTrack.close();
+            this.localUser.audioTrack = null;
+            this.audioLoad = false;
+        },
+
+        async openVideo() {
+            if (this.videoLoad || this.localUser.videoTrack) return;
+            this.videoLoad = true;
+            this.localUser.videoTrack = await AgoraRTC.createCameraVideoTrack()
+            this.$refs[`meeting_${this.localUser.uid}`].play('video');
+            await this.agoraClient.publish([this.localUser.videoTrack]);
+            this.videoLoad = false;
+        },
+
+        async closeVideo() {
+            if (this.videoLoad || !this.localUser.videoTrack) return;
+            this.videoLoad = true;
+            await this.agoraClient.unpublish([this.localUser.videoTrack]);
+            this.localUser.videoTrack.stop();
+            this.localUser.videoTrack.close();
+            this.localUser.videoTrack = null;
+            this.videoLoad = false;
+        },
+
+        async handleUserJoined(user) {
             const index = this.remoteUsers.findIndex(item => item.uid == user.uid)
             if (index > -1) {
                 this.remoteUsers.splice(index, 1, user)
@@ -227,10 +334,25 @@ export default {
             }
         },
 
-        handleUserUnpublished(user) {
+        async handleUserLeft(user) {
             const index = this.remoteUsers.findIndex(item => item.uid == user.uid)
             if (index > -1) {
                 this.remoteUsers.splice(index, 1)
+            }
+        },
+
+        async handleUserPublished(user, mediaType) {
+            const index = this.remoteUsers.findIndex(item => item.uid == user.uid)
+            if (index > -1) {
+                await this.agoraClient.subscribe(user, mediaType);
+                this.$refs[`meeting_${user.uid}`][0].play(mediaType)
+            }
+        },
+
+        async handleUserUnpublished(user, mediaType) {
+            const index = this.remoteUsers.findIndex(item => item.uid == user.uid)
+            if (index > -1) {
+                await this.agoraClient.unsubscribe(user, mediaType);
             }
         }
     }

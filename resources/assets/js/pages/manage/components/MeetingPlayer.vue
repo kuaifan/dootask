@@ -1,11 +1,17 @@
 <template>
-    <div class="meeting-player">
-        <div :id="id" class="player"></div>
-        <UserAvatar :userid="player.uid" show-name/>
+    <div v-if="userid" class="meeting-player">
+        <div :id="id" class="player" :style="playerStyle"></div>
+        <UserAvatar :userid="userid" :size="36" :borderWitdh="2"/>
+        <div class="player-state">
+            <i v-if="!audio" class="taskfont">&#xe7c7;</i>
+            <i v-if="!video" class="taskfont">&#xe7c8;</i>
+        </div>
     </div>
 </template>
 
 <script>
+
+import {mapState} from "vuex";
 
 export default {
     name: "MeetingPlayer",
@@ -25,21 +31,37 @@ export default {
 
         }
     },
-    watch: {
-        player: {
-            handler(e) {
-                this.$nextTick(_ => {
-                    switch (e.mediaType) {
-                        case 'video':
-                            e.videoTrack.play(this.id);
-                            break;
-                        case 'audio':
-                            e.audioTrack.play();
-                            break;
-                    }
-                })
-            },
-            immediate: true
+    computed: {
+        ...mapState(['cacheUserBasic']),
+        userid() {
+            if (this.player.uid) {
+                return parseInt($A.getMiddle(this.player.uid, null, '-'))
+            }
+            return 0
+        },
+        playerStyle() {
+            const user = this.cacheUserBasic.find(({userid}) => userid == this.userid);
+            if (user) {
+                return {
+                    backgroundImage: `url("${user.userimg}")`
+                }
+            }
+            return null;
+        },
+        audio() {
+            return !!this.player.audioTrack
+        },
+        video() {
+            return !!this.player.videoTrack
+        }
+    },
+    methods: {
+        play(type) {
+            if (type === 'audio') {
+                this.player.audioTrack?.play();
+            } else if (type === 'video') {
+                this.player.videoTrack?.play(this.id);
+            }
         }
     }
 }

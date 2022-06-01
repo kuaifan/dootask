@@ -4,33 +4,55 @@ body {
             .ivu-modal {
                 .ivu-modal-content {
                     .ivu-modal-body {
-                        padding: 16px 12px 0;
+                        padding: 16px 24px 0;
                         > ul {
                             display: grid;
-                            justify-content: center;
-                            grid-template-columns: repeat(auto-fill, 180px);
-                            grid-gap: 16px;
+                            justify-content: space-between;
+                            grid-template-columns: repeat(auto-fill, 220px);
+                            grid-gap: 24px;
                             > li {
                                 list-style: none;
-                                width: 180px;
-                                height: 230px;
                                 position: relative;
-                                display: flex;
-                                flex-direction: column;
-                                align-items: center;
                                 .meeting-player {
-                                    flex: 1;
-                                    width: 100%;
-                                    display: flex;
-                                    flex-direction: column;
-                                    align-items: center;
+                                    position: relative;
                                     .player {
-                                        flex: 1;
-                                        width: 100%;
-                                        background-color: #f1f1f1;
+                                        width: 220px;
+                                        height: 220px;;
+                                        border-radius: 12px;
+                                        overflow: hidden;
+                                        background-color: #e1e1e1;
+                                        background-size: 136%;
+                                        background-position: center;
+                                        background-repeat: no-repeat
+                                    }
+                                    .player-state {
+                                        position: absolute;
+                                        top: 4px;
+                                        right: 8px;
+                                        z-index: 2;
+                                        .taskfont {
+                                            color: #ff0000;
+                                            font-size: 22px;
+                                            margin-left: 6px;
+                                        }
                                     }
                                     .common-avatar {
-                                        margin-top: 12px;
+                                        position: absolute;
+                                        bottom: -8px;
+                                        right: -8px;
+                                        z-index: 2;
+                                    }
+                                }
+                            }
+                            @media (max-width: 768px) {
+                                grid-template-columns: repeat(auto-fill, 176px);
+                                grid-gap: 12px;
+                                > li {
+                                    .meeting-player {
+                                        .player {
+                                            width: 176px;
+                                            height: 176px;;
+                                        }
                                     }
                                 }
                             }
@@ -38,6 +60,27 @@ body {
                     }
                 }
             }
+        }
+    }
+}
+.meeting-button-group {
+    display: flex;
+    justify-content: flex-end;
+
+    .taskfont {
+        font-size: 20px;
+    }
+    .ivu-btn {
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        > span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px !important;
         }
     }
 }

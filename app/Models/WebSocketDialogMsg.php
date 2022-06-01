@@ -214,6 +214,8 @@ class WebSocketDialogMsg extends AbstractModel
                 return $this->previewTextMsg($this->msg['text'], $preserveHtml);
             case 'record':
                 return "[语音]";
+            case 'meeting':
+                return "[会议] ${$this->msg['name']}";
             case 'file':
                 if ($this->msg['type'] == 'img') {
                     return "[图片]";

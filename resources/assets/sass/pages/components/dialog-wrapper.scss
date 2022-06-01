@@ -498,6 +498,41 @@
                             }
                         }
 
+                        .content-meeting {
+                            .dialog-meeting {
+                                cursor: pointer;
+                                min-width: 200px;
+                                color: $primary-title-color;
+                                > li {
+                                    list-style: none;
+                                    display: flex;
+                                    flex-direction: column;
+                                    align-items: flex-start;
+                                    margin-bottom: 12px;
+                                    &.meeting-operation {
+                                        border-top: 1px solid #cccccc;
+                                        margin-bottom: 0;
+                                        padding: 8px 0 4px;
+                                        display: flex;
+                                        flex-direction: row;
+                                        align-items: center;
+                                        font-size: 12px;
+                                        opacity: 0.8;
+                                        .taskfont {
+                                            font-size: 12px;
+                                            padding-left: 2px;
+                                            transform: scale(0.6);
+                                        }
+                                    }
+                                    > em {
+                                        font-style: normal;
+                                        font-weight: 500;
+                                        padding-bottom: 2px;
+                                    }
+                                }
+                            }
+                        }
+
                         .content-loading {
                             display: flex;
 
@@ -705,6 +740,19 @@
 
                                     .record-icon {
                                         transform: rotate(0) scale(0.9);
+                                    }
+                                }
+                            }
+
+                            .content-meeting {
+                                .dialog-meeting {
+                                    min-width: 200px;
+                                    color: #ffffff;
+                                    > li {
+                                        &.meeting-operation {
+                                            border-top: 1px solid #ffffff;
+                                            opacity: 1;
+                                        }
                                     }
                                 }
                             }

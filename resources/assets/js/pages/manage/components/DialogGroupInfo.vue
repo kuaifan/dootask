@@ -154,7 +154,7 @@ export default {
             }
             this.loadIng++;
             this.$store.dispatch("call", {
-                url: 'dialog/group/user',
+                url: 'dialog/user',
                 data: {
                     dialog_id: this.dialogId
                 }

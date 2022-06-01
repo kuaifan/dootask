@@ -93,6 +93,51 @@ class DialogController extends AbstractController
     }
 
     /**
+     * @api {get} api/dialog/user          16. 获取会话成员
+     *
+     * @apiDescription  需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName user
+     *
+     * @apiParam {Number} dialog_id            会话ID
+     * @apiParam {Number} [getuser]            获取会员详情（1: 返回会员昵称、邮箱等基本信息，0: 默认不返回）
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function user()
+    {
+        User::auth();
+        //
+        $dialog_id = intval(Request::input('dialog_id'));
+        $getuser = intval(Request::input('getuser', 0));
+        //
+        $dialog = WebSocketDialog::checkDialog($dialog_id);
+        //
+        $data = $dialog->dialogUser->toArray();
+        if ($getuser === 1) {
+            $array = [];
+            foreach ($data as $item) {
+                $res = User::userid2basic($item['userid']);
+                if ($res) {
+                    $array[] = array_merge($item, $res->toArray());
+                }
+            }
+            $data = $array;
+        }
+        //
+        $array = [];
+        foreach ($data as $item) {
+            if ($item['userid'] > 0) {
+                $array[] = $item;
+            }
+        }
+        return Base::retSuccess('success', $array);
+    }
+
+    /**
      * @api {get} api/dialog/msg/user          03. 打开会话
      *
      * @apiDescription 需要token身份
@@ -693,44 +738,6 @@ class DialogController extends AbstractController
             'id' => $dialog->id,
             'name' => $dialog->name,
         ]);
-    }
-
-    /**
-     * @api {get} api/dialog/group/user          16. 获取群成员
-     *
-     * @apiDescription  需要token身份
-     * @apiVersion 1.0.0
-     * @apiGroup dialog
-     * @apiName group__user
-     *
-     * @apiParam {Number} dialog_id            会话ID
-     * @apiParam {Number} [getuser]            获取会员详情（1: 返回会员昵称、邮箱等基本信息，0: 默认不返回）
-     *
-     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据
-     */
-    public function group__user()
-    {
-        User::auth();
-        //
-        $dialog_id = intval(Request::input('dialog_id'));
-        $getuser = intval(Request::input('getuser', 0));
-        //
-        $dialog = WebSocketDialog::checkDialog($dialog_id);
-        //
-        $data = $dialog->dialogUser->toArray();
-        if ($getuser === 1) {
-            $array = [];
-            foreach ($data as $item) {
-                $res = User::userid2basic($item['userid']);
-                if ($res) {
-                    $array[] = array_merge($item, $res->toArray());
-                }
-            }
-            $data = $array;
-        }
-        return Base::retSuccess('success', $data);
     }
 
     /**

@@ -32,6 +32,23 @@
                         <div class="record-icon taskfont"></div>
                     </div>
                 </div>
+                <!--会议-->
+                <div v-else-if="msgData.type === 'meeting'" class="content-meeting no-dark-content">
+                    <ul class="dialog-meeting" @click="openMeeting">
+                        <li>
+                            <em>{{$L('会议主题')}}</em>
+                            {{msgData.msg.name}}
+                        </li>
+                        <li>
+                            <em>{{$L('频道ID')}}</em>
+                            {{msgData.msg.meetingid}}
+                        </li>
+                        <li class="meeting-operation">
+                            {{$L('点击进入会议')}}
+                            <i class="taskfont">&#xe68b;</i>
+                        </li>
+                    </ul>
+                </div>
                 <!--等待-->
                 <div v-else-if="msgData.type === 'loading'" class="content-loading">
                     <Loading/>
@@ -312,6 +329,10 @@ export default {
                     this.recordPlay = play;
                 }
             });
+        },
+
+        openMeeting() {
+            Store.set('addMeeting', this.msgData.msg);
         },
 
         withdraw() {

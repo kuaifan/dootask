@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\AbstractModel;
+use App\Models\Meeting;
 use App\Models\UmengAlias;
 use App\Models\User;
 use App\Models\UserEmailVerification;
 use App\Models\UserTransfer;
 use App\Models\WebSocket;
+use App\Models\WebSocketDialog;
+use App\Models\WebSocketDialogMsg;
 use App\Module\AgoraIO\AgoraTokenGenerator;
 use App\Module\Base;
 use Arr;
@@ -763,27 +766,53 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/agoraio/token          16. 【agoraio】获取 token
+     * @api {get} api/users/meeting/open          16. 【会议】新会议
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
      * @apiGroup users
-     * @apiName agoraio__token
+     * @apiName meeting__open
      *
-     * @apiParam {Number} dialog_id             会话ID
+     * @apiParam {String} [meetingid]              会议ID（不是数字，留空自动创建）
+     * @apiParam {String} [name]                   会话ID
+     * @apiParam {Array} [userids]                 邀请成员
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
      */
-    public function agoraio__token()
+    public function meeting__open()
     {
         $user = User::auth();
         //
+        $meetingid = trim(Request::input('meetingid'));
+        $name = trim(Request::input('name'));
+        $userids = Request::input('userids');
+        $isCreate = false;
+        //
+        if ($meetingid) {
+            $meeting = Meeting::whereMeetingid($meetingid)->first();
+            if (empty($meeting)) {
+                return Base::retError('会议不存在');
+            }
+        } else {
+            $meetingid = strtoupper(Base::generatePassword());
+            $name = $name ?: "{$user->nickname} 发起的会议";
+            $channel = "DooTask:" . substr(md5($meetingid . env("APP_KEY")), 16);
+            $meeting = Meeting::createInstance([
+                'meetingid' => $meetingid,
+                'name' => $name,
+                'channel' => $channel,
+                'userid' => $user->userid
+            ]);
+            $meeting->save();
+            $isCreate = true;
+        }
+        // 创建令牌
         $appid = '342c604542484b0d9659527f79aefcdb';
         $app_certificate = '920eb911c1f549948366e44d6dcabcbe';
-        $channel = "DooTask:" . md5(env("APP_KEY"));
-        $uid = $user->userid;
+        $channel = $meeting->channel;
+        $uid = $user->userid . '_' . Request::header('fd');
         try {
             $service = new AgoraTokenGenerator($appid, $app_certificate, $channel, $uid);
         } catch (\Exception $e) {
@@ -791,13 +820,30 @@ class UsersController extends AbstractController
         }
         $token = $service->buildToken();
         if (empty($token)) {
-            return Base::retError('Generated token failed');
+            return Base::retError('会议令牌创建失败');
         }
-        return Base::retSuccess('success', [
-            'appid' => $appid,
-            'channel' => $channel,
-            'uid' => $uid,
-            'token' => $token
-        ]);
+        // 发送给邀请人
+        $msgs = [];
+        if ($isCreate) {
+            foreach ($userids as $userid) {
+                if (!User::whereUserid($userid)->exists()) {
+                    continue;
+                }
+                $dialog = WebSocketDialog::checkUserDialog($user->userid, $userid);
+                if ($dialog) {
+                    $res = WebSocketDialogMsg::sendMsg($dialog->id, 'meeting', $meeting, $user->userid);
+                    if (Base::isSuccess($res)) {
+                        $msgs[] = $res['data'];
+                    }
+                }
+            }
+        }
+        //
+        $data = $meeting->toArray();
+        $data['appid'] = $appid;
+        $data['uid'] = $uid;
+        $data['token'] = $token;
+        $data['msgs'] = $msgs;
+        return Base::retSuccess('success', $data);
     }
 }
