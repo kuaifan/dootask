@@ -154,6 +154,49 @@ class SystemController extends AbstractController
     }
 
     /**
+     * @api {get} api/system/setting/meeting          03. 获取会议设置、保存会议设置（限管理员）
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName setting__meeting
+     *
+     * @apiParam {String} type
+     * - get: 获取（默认）
+     * - save: 保存设置（参数：['open', 'appid', 'app_certificate']）
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function setting__meeting()
+    {
+        User::auth('admin');
+        //
+        $type = trim(Request::input('type'));
+        if ($type == 'save') {
+            if (env("SYSTEM_SETTING") == 'disabled') {
+                return Base::retError('当前环境禁止修改');
+            }
+            $all = Request::input();
+            foreach ($all as $key => $value) {
+                if (!in_array($key, [
+                    'open',
+                    'appid',
+                    'app_certificate',
+                ])) {
+                    unset($all[$key]);
+                }
+            }
+            $setting = Base::setting('meetingSetting', Base::newTrim($all));
+        } else {
+            $setting = Base::setting('meetingSetting');
+        }
+        //
+        $setting['open'] = $setting['open'] ?: 'close';
+        //
+        return Base::retSuccess('success', $setting ?: json_decode('{}'));
+    }
+
+    /**
      * @api {get} api/system/setting/apppush          03. 获取APP推送设置、保存APP推送设置（限管理员）
      *
      * @apiVersion 1.0.0

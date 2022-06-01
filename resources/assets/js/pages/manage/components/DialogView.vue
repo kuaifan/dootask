@@ -332,7 +332,11 @@ export default {
         },
 
         openMeeting() {
-            Store.set('addMeeting', this.msgData.msg);
+            Store.set('addMeeting', {
+                type: 'join',
+                name: this.msgData.msg.name,
+                meetingid: this.msgData.msg.meetingid,
+            });
         },
 
         withdraw() {

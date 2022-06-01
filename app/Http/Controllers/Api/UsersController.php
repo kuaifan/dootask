@@ -773,9 +773,12 @@ class UsersController extends AbstractController
      * @apiGroup users
      * @apiName meeting__open
      *
-     * @apiParam {String} [meetingid]              会议ID（不是数字，留空自动创建）
-     * @apiParam {String} [name]                   会话ID
-     * @apiParam {Array} [userids]                 邀请成员
+     * @apiParam {String} type                      类型
+     * - create: 创建会议，有效参数：name、userids
+     * - join: 加入会议，有效参数：meetingid (必填)
+     * @apiParam {String} [meetingid]               频道ID（不是数字）
+     * @apiParam {String} [name]                    会话ID
+     * @apiParam {Array} [userids]                  邀请成员
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -785,17 +788,18 @@ class UsersController extends AbstractController
     {
         $user = User::auth();
         //
+        $type = trim(Request::input('type'));
         $meetingid = trim(Request::input('meetingid'));
         $name = trim(Request::input('name'));
         $userids = Request::input('userids');
         $isCreate = false;
         //
-        if ($meetingid) {
+        if ($type === 'join') {
             $meeting = Meeting::whereMeetingid($meetingid)->first();
             if (empty($meeting)) {
-                return Base::retError('会议不存在');
+                return Base::retError('频道ID不存在');
             }
-        } else {
+        } elseif ($type === 'create') {
             $meetingid = strtoupper(Base::generatePassword());
             $name = $name ?: "{$user->nickname} 发起的会议";
             $channel = "DooTask:" . substr(md5($meetingid . env("APP_KEY")), 16);
@@ -807,14 +811,20 @@ class UsersController extends AbstractController
             ]);
             $meeting->save();
             $isCreate = true;
+        } else {
+            return Base::retError('参数错误');
         }
         // 创建令牌
-        $appid = '342c604542484b0d9659527f79aefcdb';
-        $app_certificate = '920eb911c1f549948366e44d6dcabcbe';
-        $channel = $meeting->channel;
+        $meetingSetting = Base::setting('meetingSetting');
+        if ($meetingSetting['open'] !== 'open') {
+            return Base::retError('会议功能未开启，请联系管理员开启');
+        }
+        if (empty($meetingSetting['appid']) || empty($meetingSetting['app_certificate'])) {
+            return Base::retError('会议功能配置错误，请联系管理员');
+        }
         $uid = $user->userid . '_' . Request::header('fd');
         try {
-            $service = new AgoraTokenGenerator($appid, $app_certificate, $channel, $uid);
+            $service = new AgoraTokenGenerator($meetingSetting['appid'], $meetingSetting['app_certificate'], $meeting->channel, $uid);
         } catch (\Exception $e) {
             return Base::retError($e->getMessage());
         }
@@ -840,7 +850,7 @@ class UsersController extends AbstractController
         }
         //
         $data = $meeting->toArray();
-        $data['appid'] = $appid;
+        $data['appid'] = $meetingSetting['appid'];
         $data['uid'] = $uid;
         $data['token'] = $token;
         $data['msgs'] = $msgs;

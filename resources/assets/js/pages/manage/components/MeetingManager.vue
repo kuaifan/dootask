@@ -2,16 +2,16 @@
     <div v-show="false">
         <Modal
             v-model="addShow"
-            :title="$L(addData.meetingid ? '加入会议' : '新会议')"
+            :title="$L(addData.type === 'join' ? '加入会议' : '新会议')"
             :mask-closable="false">
             <Form ref="addForm" :model="addData" label-width="auto" @submit.native.prevent>
-                <template v-if="addData.meetingid">
+                <template v-if="addData.type === 'join'">
                     <!-- 加入会议 -->
-                    <FormItem prop="userids" :label="$L('会议主题')">
+                    <FormItem v-if="addData.name" prop="userids" :label="$L('会议主题')">
                         <Input v-model="addData.name" disabled/>
                     </FormItem>
-                    <FormItem prop="meetingid" :label="$L('会议频道')">
-                        <Input v-model="addData.meetingid" disabled/>
+                    <FormItem prop="meetingid" :label="$L('会议频道ID')">
+                        <Input v-model="addData.meetingid" :placeholder="$L('请输入会议频道ID')"/>
                     </FormItem>
                 </template>
                 <template v-else>
@@ -36,7 +36,7 @@
             </Form>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="addShow=false">{{$L('取消')}}</Button>
-                <Button type="primary" :loading="loadIng > 0" @click="onSubmit">{{$L(addData.meetingid ? '进入会议' : '开始会议')}}</Button>
+                <Button type="primary" :loading="loadIng > 0" @click="onSubmit">{{$L(addData.type === 'join' ? '进入会议' : '开始会议')}}</Button>
             </div>
         </Modal>
         <Modal
@@ -123,7 +123,7 @@ export default {
         onAdd(data) {
             data = $A.isJson(data) ? data : {};
             // 获取会话成员
-            if (!data.meetingid && /\d+/.test(data.dialog_id)) {
+            if (/\d+/.test(data.dialog_id)) {
                 this.loadIng++;
                 this.$store.dispatch("call", {
                     url: 'dialog/user',

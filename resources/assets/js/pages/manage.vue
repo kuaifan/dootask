@@ -214,12 +214,14 @@
             </div>
             <ButtonGroup class="manage-box-new-group">
                 <Button class="manage-box-new" type="primary" icon="md-add" @click="onAddShow">{{$L('新建项目')}}</Button>
-                <Dropdown @on-click="onAddTask(0)">
+                <Dropdown @on-click="onAddMenu" trigger="click">
                     <Button type="primary">
                         <Icon type="ios-arrow-down"></Icon>
                     </Button>
                     <DropdownMenu slot="list">
-                        <DropdownItem>{{$L('新建任务')}} ({{mateName}}+K)</DropdownItem>
+                        <DropdownItem name="task">{{$L('新建任务')}} ({{mateName}}+K)</DropdownItem>
+                        <DropdownItem name="createMeeting">{{$L('新会议')}} ({{mateName}}+J)</DropdownItem>
+                        <DropdownItem name="joinMeeting">{{$L('加入会议')}}</DropdownItem>
                     </DropdownMenu>
                 </Dropdown>
             </ButtonGroup>
@@ -815,6 +817,27 @@ export default {
             };
         },
 
+        onAddMenu(name) {
+            switch (name) {
+                case 'task':
+                    this.onAddTask(0)
+                    break;
+
+                case 'createMeeting':
+                    Store.set('addMeeting', {
+                        type: 'create',
+                        userids: [this.userId],
+                    });
+                    break;
+
+                case 'joinMeeting':
+                    Store.set('addMeeting', {
+                        type: 'join',
+                    });
+                    break;
+            }
+        },
+
         onAddShow() {
             this.$store.dispatch("getColumnTemplate").catch(() => {})
             this.addShow = true;
@@ -866,9 +889,12 @@ export default {
 
         shortcutEvent(e) {
             if (e.metaKey || e.ctrlKey) {
-                if (e.keyCode === 75 || e.keyCode === 78) {
+                if (e.keyCode === 74) {
                     e.preventDefault();
-                    this.onAddTask(0)
+                    this.onAddMenu('createMeeting')
+                } else if (e.keyCode === 75 || e.keyCode === 78) {
+                    e.preventDefault();
+                    this.onAddMenu('task')
                 } else if (e.keyCode === 83 && this.taskId > 0) {
                     e.preventDefault();
                     this.$refs.taskDetail.checkUpdate(true)

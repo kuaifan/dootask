@@ -788,6 +788,7 @@ export default {
 
                 case 'meeting':
                     Store.set('addMeeting', {
+                        type: 'create',
                         dialog_id: this.dialogId,
                         userids: [this.userId],
                     });

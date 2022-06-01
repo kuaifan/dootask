@@ -10,6 +10,9 @@
             <TabPane :label="$L('项目模板')" name="columnTemplate">
                 <SystemColumnTemplate/>
             </TabPane>
+            <TabPane :label="$L('会议功能')" name="meeting">
+                <SystemMeeting/>
+            </TabPane>
             <TabPane :label="$L('邮件设置')" name="emailSetting">
                 <SystemEmailSetting/>
             </TabPane>
@@ -26,9 +29,12 @@ import SystemTaskPriority from "./components/SystemTaskPriority";
 import SystemColumnTemplate from "./components/SystemColumnTemplate";
 import SystemEmailSetting from "./components/SystemEmailSetting";
 import SystemAppPush from "./components/SystemAppPush";
+import SystemMeeting from "./components/SystemMeeting";
 
 export default {
-    components: {SystemAppPush, SystemColumnTemplate, SystemTaskPriority, SystemSetting, SystemEmailSetting},
+    components: {
+        SystemMeeting,
+        SystemAppPush, SystemColumnTemplate, SystemTaskPriority, SystemSetting, SystemEmailSetting},
     data() {
         return {
             tabAction: 'setting',
