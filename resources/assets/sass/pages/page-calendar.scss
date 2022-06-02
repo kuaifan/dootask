@@ -230,3 +230,15 @@
         }
     }
 }
+
+@media (max-width: 640px) {
+    .page-calendar {
+        .calendar-box {
+            .calendar-wrapper {
+                .tui-full-calendar-popup-arrow {
+                    display: none;
+                }
+            }
+        }
+    }
+}
