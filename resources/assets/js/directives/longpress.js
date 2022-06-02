@@ -1,10 +1,7 @@
 const isSupportTouch = "ontouchend" in document;
-// 长按指令
+// 长按或右键指令
 const longpress = {
     bind: function (el, binding) {
-        if (!isSupportTouch) {
-            return
-        }
         let delay = 500,
             callback = binding.value;
         if ($A.isJson(binding.value)) {
@@ -13,6 +10,17 @@ const longpress = {
         }
         if (typeof callback !== 'function') {
             throw 'callback must be a function'
+        }
+
+        // 不支持touch时使用右键
+        if (!isSupportTouch) {
+            el.__longpressContextmenu__ = (e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                callback(e, el)
+            }
+            el.addEventListener('contextmenu', el.__longpressContextmenu__);
+            return
         }
 
         // 定义变量
@@ -27,7 +35,7 @@ const longpress = {
             if (pressTimer === null) {
                 pressTimer = setTimeout(() => {
                     isCall = true
-                    callback(e, el)
+                    callback(e.touches[0], el)
                 }, delay)
             }
         }
@@ -50,20 +58,25 @@ const longpress = {
         el.addEventListener('touchstart', el.__longpressStart__)
         // 取消计时器
         el.addEventListener('click', el.__longpressClick__)
-        el.addEventListener('touchmove', el.__longpressCancel__);
+        el.addEventListener('touchmove', el.__longpressCancel__)
         el.addEventListener('touchend', el.__longpressCancel__)
         el.addEventListener('touchcancel', el.__longpressCancel__)
     },
     // 指令与元素解绑的时候，移除事件绑定
     unbind(el) {
+        if (!isSupportTouch) {
+            el.removeEventListener('contextmenu', el.__longpressContextmenu__)
+            delete el.__longpressContextmenu__
+            return
+        }
         el.removeEventListener('touchstart', el.__longpressStart__)
         el.removeEventListener('click', el.__longpressClick__)
         el.removeEventListener('touchmove', el.__longpressCancel__)
         el.removeEventListener('touchend', el.__longpressCancel__)
         el.removeEventListener('touchcancel', el.__longpressCancel__)
-        delete el.__longpressStart__;
-        delete el.__longpressClick__;
-        delete el.__longpressCancel__;
+        delete el.__longpressStart__
+        delete el.__longpressClick__
+        delete el.__longpressCancel__
     }
 }
 

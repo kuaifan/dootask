@@ -163,8 +163,9 @@
                             :ref="`project_${item.id}`"
                             :key="key"
                             :class="classNameProject(item)"
+                            :data-id="item.id"
                             @click="toggleRoute('project', {projectId: item.id})"
-                            @contextmenu.prevent.stop="handleContextmenu($event, item)">
+                            v-longpress="handleLongpress">
                             <div class="project-h1">
                                 <em @click.stop="toggleOpenMenu(item.id)"></em>
                                 <div class="title">{{item.name}}</div>
@@ -382,6 +383,7 @@ import MobileBack from "../components/Mobile/Back";
 import TaskMenu from "./manage/components/TaskMenu";
 import MobileNotification from "../components/Mobile/Notification";
 import MeetingManager from "./manage/components/MeetingManager";
+import longpress from "../directives/longpress";
 
 export default {
     components: {
@@ -399,6 +401,7 @@ export default {
         ProjectManagement,
         TeamManagement,
         ProjectArchived},
+    directives: {longpress},
     data() {
         return {
             loadIng: 0,
@@ -995,16 +998,21 @@ export default {
             }, typeof timeout === "number" ? timeout : 1000)
         },
 
-        handleContextmenu(event, item) {
+        handleLongpress(event, el) {
+            const projectId = $A.getAttr(el, 'data-id')
+            const projectItem = this.projectLists.find(item => item.id == projectId)
+            if (!projectItem) {
+                return
+            }
             this.operateVisible = false;
-            this.operateItem = $A.isJson(item) ? item : {};
+            this.operateItem = $A.isJson(projectItem) ? projectItem : {};
             this.$nextTick(() => {
-                const dialogRect = this.$refs[`project_${item.id}`][0].getBoundingClientRect();
+                const projectRect = el.getBoundingClientRect();
                 const wrapRect = this.$refs.projectWrapper.getBoundingClientRect();
                 this.operateStyles = {
                     left: `${event.clientX - wrapRect.left}px`,
-                    top: `${dialogRect.top}px`,
-                    height: dialogRect.height + 'px',
+                    top: `${projectRect.top}px`,
+                    height: projectRect.height + 'px',
                 }
                 this.operateVisible = true;
             })

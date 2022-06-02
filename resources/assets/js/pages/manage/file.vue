@@ -80,7 +80,8 @@
                                     shear: shearIds.includes(item.id),
                                     highlight: selectIds.includes(item.id),
                                 }"
-                                @contextmenu.prevent.stop="handleRightClick($event, item)"
+                                :data-id="item.id"
+                                v-longpress="handleLongpress"
                                 @click="dropFile(item, 'openCheckMenu')">
                                 <div class="file-check" :class="{'file-checked':selectIds.includes(item.id)}" @click.stop="dropFile(item, 'select')">
                                     <Checkbox :value="selectIds.includes(item.id)"/>
@@ -369,12 +370,14 @@ import {sortBy} from "lodash";
 import UserInput from "../../components/UserInput";
 import DrawerOverlay from "../../components/DrawerOverlay";
 import PreviewImage from "../../components/PreviewImage";
+import longpress from "../../directives/longpress";
 
 const FilePreview = () => import('./components/FilePreview');
 const FileContent = () => import('./components/FileContent');
 
 export default {
     components: {PreviewImage, FilePreview, DrawerOverlay, UserInput, FileContent},
+    directives: {longpress},
     data() {
         return {
             loadIng: 0,
@@ -892,6 +895,15 @@ export default {
                 newname: this.$L('未命名')
             });
             this.autoBlur(id)
+        },
+
+        handleLongpress(event, el) {
+            const fileId = $A.getAttr(el, 'data-id')
+            const fileItem = this.fileList.find(item => item.id == fileId)
+            if (!fileItem) {
+                return
+            }
+            this.handleRightClick(event, fileItem)
         },
 
         handleRightClick(event, item, isAddButton) {

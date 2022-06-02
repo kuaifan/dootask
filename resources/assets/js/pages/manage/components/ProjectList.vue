@@ -171,13 +171,12 @@ export default {
             });
         },
 
-        handleLongpress(touchEvent, el) {
+        handleLongpress(event, el) {
             const projectId = $A.getAttr(el, 'data-id')
             const projectItem = this.projectLists.find(item => item.id == projectId)
             if (!projectItem) {
                 return
             }
-            const event = touchEvent.touches[0];
             this.operateVisible = false;
             this.operateItem = $A.isJson(projectItem) ? projectItem : {};
             this.$nextTick(() => {

@@ -50,8 +50,7 @@
                             }"
                             :data-id="dialog.id"
                             @click="openDialog(dialog.id)"
-                            v-longpress="handleLongpress"
-                            @contextmenu.prevent.stop="handleContextmenu($event, dialog)">
+                            v-longpress="handleLongpress">
                             <template v-if="dialog.type=='group'">
                                 <i v-if="dialog.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
                                 <i v-else-if="dialog.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
@@ -542,29 +541,16 @@ export default {
             })
         },
 
-        handleLongpress(touchEvent, el) {
-            if (this.$isDesktop) {
-                return
-            }
+        handleLongpress(event, el) {
             const dialogId = $A.getAttr(el, 'data-id')
             const dialogItem = this.dialogList.find(item => item.id == dialogId)
-            if (dialogItem) {
-                this.handleOperateShow(touchEvent.touches[0], dialogItem)
-            }
-        },
-
-        handleContextmenu(event, dialog) {
-            if (!this.$isDesktop) {
+            if (!dialogItem) {
                 return
             }
-            this.handleOperateShow(event, dialog);
-        },
-
-        handleOperateShow(event, dialog) {
             this.operateVisible = false;
-            this.operateItem = $A.isJson(dialog) ? dialog : {};
+            this.operateItem = $A.isJson(dialogItem) ? dialogItem : {};
             this.$nextTick(() => {
-                const dialogRect = this.$refs[`dialog_${dialog.id}`][0].getBoundingClientRect();
+                const dialogRect = el.getBoundingClientRect();
                 const wrapRect = this.$refs.dialogWrapper.getBoundingClientRect();
                 this.operateStyles = {
                     left: `${event.clientX - wrapRect.left}px`,
