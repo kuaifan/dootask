@@ -220,81 +220,8 @@ class ProjectController extends AbstractController
      */
     public function add()
     {
-        $user = User::auth();
-        // 项目名称
-        $name = trim(Request::input('name', ''));
-        $desc = trim(Request::input('desc', ''));
-        $flow = trim(Request::input('flow', 'close'));
-        $isPersonal = intval(Request::input('personal'));
-        if (mb_strlen($name) < 2) {
-            return Base::retError('项目名称不可以少于2个字');
-        } elseif (mb_strlen($name) > 32) {
-            return Base::retError('项目名称最多只能设置32个字');
-        }
-        if (mb_strlen($desc) > 255) {
-            return Base::retError('项目介绍最多只能设置255个字');
-        }
-        // 列表
-        $columns = explode(",", Request::input('columns'));
-        $insertColumns = [];
-        $sort = 0;
-        foreach ($columns AS $column) {
-            $column = trim($column);
-            if ($column) {
-                $insertColumns[] = [
-                    'name' => $column,
-                    'sort' => $sort++,
-                ];
-            }
-        }
-        if (empty($insertColumns)) {
-            $insertColumns[] = [
-                'name' => 'Default',
-                'sort' => 0,
-            ];
-        }
-        if (count($insertColumns) > 30) {
-            return Base::retError('项目列表最多不能超过30个');
-        }
-        // 开始创建
-        $project = Project::createInstance([
-            'name' => $name,
-            'desc' => $desc,
-            'userid' => $user->userid,
-        ]);
-        if ($isPersonal) {
-            if (Project::whereUserid($user->userid)->wherePersonal(1)->exists()) {
-                return Base::retError('个人项目已存在，无须重复创建');
-            }
-            $project->personal = 1;
-        }
-        AbstractModel::transaction(function() use ($flow, $insertColumns, $project) {
-            $project->save();
-            ProjectUser::createInstance([
-                'project_id' => $project->id,
-                'userid' => $project->userid,
-                'owner' => 1,
-            ])->save();
-            foreach ($insertColumns AS $column) {
-                $column['project_id'] = $project->id;
-                ProjectColumn::createInstance($column)->save();
-            }
-            $dialog = WebSocketDialog::createGroup(null, $project->userid, 'project');
-            if (empty($dialog)) {
-                throw new ApiException('创建项目聊天室失败');
-            }
-            $project->dialog_id = $dialog->id;
-            $project->save();
-            //
-            if ($flow == 'open') {
-                $project->addFlow(Base::json2array('[{"id":-10,"name":"待处理","status":"start","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0},{"id":-11,"name":"进行中","status":"progress","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0},{"id":-12,"name":"待测试","status":"test","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0},{"id":-13,"name":"已完成","status":"end","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0},{"id":-14,"name":"已取消","status":"end","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0}]'));
-            }
-        });
-        //
-        $data = Project::find($project->id);
-        $data->addLog("创建项目");
-        $data->pushMsg('add', $data);
-        return Base::retSuccess('添加成功', $data);
+        User::auth();
+        return Project::createProject(Request::all());
     }
 
     /**

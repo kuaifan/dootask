@@ -466,9 +466,9 @@ export default {
                 this.$store.dispatch("call", {
                     url: 'project/add',
                     data: {
-                        personal: 1,
                         name: this.$L('个人项目'),
                         desc: this.$L('注册时系统自动创建项目，你可以自由删除。'),
+                        personal: 1,
                     },
                 }).then(() => {
                     this.goNext2();

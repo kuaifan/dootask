@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\AbstractModel;
 use App\Models\Meeting;
+use App\Models\Project;
 use App\Models\UmengAlias;
 use App\Models\User;
 use App\Models\UserEmailVerification;
@@ -113,6 +114,15 @@ class UsersController extends AbstractController
         $user->updateInstance($array);
         $user->save();
         User::token($user);
+        //
+        if (!Project::whereUserid($user->userid)->wherePersonal(1)->exists()) {
+            Project::createProject([
+                'name' => Base::Lang('个人项目'),
+                'desc' => Base::Lang('注册时系统自动创建项目，你可以自由删除。'),
+                'personal' => 1,
+            ]);
+        }
+        //
         return Base::retSuccess($type == 'reg' ? "注册成功" : "登录成功", $user);
     }
 
