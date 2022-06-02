@@ -43,6 +43,16 @@
             requireModuleJs("eeui").goDesktop();
         },
 
+        eeuiAppKeepScreenOn() {
+            if (!$A.isEEUiApp) return;
+            requireModuleJs("eeui").keepScreenOn();
+        },
+
+        eeuiAppKeepScreenOff() {
+            if (!$A.isEEUiApp) return;
+            requireModuleJs("eeui").keepScreenOff();
+        },
+
         eeuiAppSendMessage(object) {
             if (!$A.isEEUiApp) return;
             requireModuleJs("webview").sendMessage(object);

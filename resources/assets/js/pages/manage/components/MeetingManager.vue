@@ -143,6 +143,16 @@ export default {
         ...mapState(['userId'])
     },
 
+    watch: {
+        meetingShow(val) {
+            if (val) {
+                $A.eeuiAppKeepScreenOn()
+            } else {
+                $A.eeuiAppKeepScreenOff()
+            }
+        }
+    },
+
     methods: {
         onAdd(data) {
             data = $A.isJson(data) ? data : {};
