@@ -204,6 +204,10 @@ export default {
             type: Number,
             default: 0
         },
+        desktopAutoFocus: {
+            type: Boolean,
+            default: false
+        },
     },
 
     data() {
@@ -370,6 +374,12 @@ export default {
                         cacheTimer && clearTimeout(cacheTimer);
                         setTimeout(this.onToBottom, Math.max(0, 100 - (new Date().getTime() - startTime)));
                     }).catch(_ => {});
+                    //
+                    if (this.$isDesktop && this.desktopAutoFocus) {
+                        this.$nextTick(_ => {
+                            this.$refs.input.focus()
+                        })
+                    }
                 }
             },
             immediate: true

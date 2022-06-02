@@ -1,5 +1,5 @@
 <template>
-    <div ref="aa" class="chat-input-box" :class="boxClass" v-clickoutside="hidePopover">
+    <div class="chat-input-box" :class="boxClass" v-clickoutside="hidePopover">
         <div class="chat-input-wrapper" @click.stop="focus">
             <!-- 输入框 -->
             <div
@@ -631,7 +631,10 @@ export default {
 
         focus() {
             this.$nextTick(() => {
-                this.quill && this.quill.focus()
+                if (this.quill) {
+                    this.quill.setSelection(this.quill.getLength())
+                    this.quill.focus()
+                }
             })
         },
 

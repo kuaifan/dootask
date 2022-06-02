@@ -88,6 +88,13 @@
                     }
                 }
 
+                a {
+                    &:before,
+                    &:after {
+                        display: none;
+                    }
+                }
+
                 &.ql-blank {
                     &::before {
                         left: 7px;
