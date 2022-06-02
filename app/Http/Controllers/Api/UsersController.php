@@ -115,7 +115,7 @@ class UsersController extends AbstractController
         $user->save();
         User::token($user);
         //
-        if (!Project::whereUserid($user->userid)->wherePersonal(1)->exists()) {
+        if (!Project::withTrashed()->whereUserid($user->userid)->wherePersonal(1)->exists()) {
             Project::createProject([
                 'name' => Base::Lang('个人项目'),
                 'desc' => Base::Lang('注册时系统自动创建项目，你可以自由删除。'),
