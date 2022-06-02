@@ -120,7 +120,7 @@ class UsersController extends AbstractController
                 'name' => Base::Lang('个人项目'),
                 'desc' => Base::Lang('注册时系统自动创建项目，你可以自由删除。'),
                 'personal' => 1,
-            ]);
+            ], $user->userid);
         }
         //
         return Base::retSuccess($type == 'reg' ? "注册成功" : "登录成功", $user);

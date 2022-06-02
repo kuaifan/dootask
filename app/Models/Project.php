@@ -476,7 +476,7 @@ class Project extends AbstractModel
      * - columns
      * @return array
      */
-    public static function createProject($params)
+    public static function createProject($params, $userid)
     {
         $name = trim(Arr::get($params, 'name', ''));
         $desc = trim(Arr::get($params, 'desc', ''));
@@ -516,10 +516,10 @@ class Project extends AbstractModel
         $project = Project::createInstance([
             'name' => $name,
             'desc' => $desc,
-            'userid' => User::userid(),
+            'userid' => $userid,
         ]);
         if ($isPersonal) {
-            if (Project::whereUserid(User::userid())->wherePersonal(1)->exists()) {
+            if (Project::whereUserid($userid)->wherePersonal(1)->exists()) {
                 return Base::retError('个人项目已存在，无须重复创建');
             }
             $project->personal = 1;

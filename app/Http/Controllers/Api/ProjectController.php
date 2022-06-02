@@ -220,8 +220,9 @@ class ProjectController extends AbstractController
      */
     public function add()
     {
-        User::auth();
-        return Project::createProject(Request::all());
+        $user = User::auth();
+        //
+        return Project::createProject(Request::all(), $user->userid);
     }
 
     /**
