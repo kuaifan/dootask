@@ -168,6 +168,9 @@
             :size="380">
             <DialogGroupInfo v-if="groupInfoShow" :dialogId="dialogId"/>
         </DrawerOverlay>
+
+        <!--滑动拦截-->
+        <div ref="back" v-show="isFocus" class="dialog-wrapper-back"></div>
     </div>
 </template>
 
@@ -208,6 +211,7 @@ export default {
             msgText: '',
             msgNew: 0,
             topId: 0,
+            isFocus: false,
 
             allMsgs: [],
             tempMsgs: [],
@@ -228,11 +232,11 @@ export default {
     },
 
     mounted() {
-
+        this.$refs.back.addEventListener('touchmove', this.backListener)
     },
 
     beforeDestroy() {
-
+        this.$refs.back.removeEventListener('touchmove', this.backListener)
     },
 
     computed: {
@@ -584,10 +588,12 @@ export default {
         },
 
         onEventFocus() {
+            this.isFocus = true;
             this.$emit("on-focus")
         },
 
         onEventBlur() {
+            this.isFocus = false;
             this.$emit("on-blur")
         },
 
@@ -704,7 +710,11 @@ export default {
             } else {
                 this.goBack();
             }
-        }
+        },
+
+        backListener(e) {
+            e.preventDefault()
+        },
     }
 }
 </script>

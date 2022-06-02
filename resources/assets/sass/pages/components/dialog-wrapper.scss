@@ -934,7 +934,6 @@
     }
 }
 
-
 .dialog-wrapper-paste {
     display: flex;
     flex-direction: column;
@@ -964,6 +963,15 @@
             margin-top: 20px;
         }
     }
+}
+
+.dialog-wrapper-back {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 20px;
+    z-index: 9998;
 }
 
 @media (max-width: 768px) {
