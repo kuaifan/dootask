@@ -436,9 +436,9 @@ export default {
                     this.codeNeed = false;
                     $A.setStorage("cacheLoginEmail", this.email)
                     this.$store.dispatch("handleClearCache", data).then(() => {
-                        this.goNext1();
+                        this.goNext();
                     }).catch(_ => {
-                        this.goNext1();
+                        this.goNext();
                     });
                 }).catch(({data, msg}) => {
                     if (data.code === 'email') {
@@ -457,35 +457,15 @@ export default {
             })
         },
 
-        goNext1() {
+        goNext() {
             this.loginJump = true;
-            if (this.loginType == 'login') {
-                this.goNext2();
-            } else {
-                // 新注册自动创建项目
-                this.$store.dispatch("call", {
-                    url: 'project/add',
-                    data: {
-                        name: this.$L('个人项目'),
-                        desc: this.$L('注册时系统自动创建项目，你可以自由删除。'),
-                        personal: 1,
-                    },
-                }).then(() => {
-                    this.goNext2();
-                }).catch(_ => {
-                    this.goNext2();
-                });
-            }
-        },
-
-        goNext2() {
-            let fromUrl = decodeURIComponent($A.getObject(this.$route.query, 'from'));
+            const fromUrl = decodeURIComponent($A.getObject(this.$route.query, 'from'));
             if (fromUrl) {
                 window.location.replace(fromUrl);
             } else {
                 this.goForward({name: 'manage-dashboard'}, true);
             }
-        }
+        },
     }
 }
 </script>

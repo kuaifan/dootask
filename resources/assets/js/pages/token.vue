@@ -20,11 +20,11 @@
 <script>
 export default {
     mounted() {
-        this.goNext();
+        this.goNext1();
     },
 
     methods: {
-        goNext() {
+        goNext1() {
             const params = $A.urlParameterAll();
             if (params.token) {
                 this.$store.dispatch("call", {
