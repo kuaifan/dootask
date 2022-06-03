@@ -385,7 +385,7 @@ export default {
                 } else if (!this.$isDesktop) {
                     this.timerScroll = setInterval(() => {
                         if (this.quill?.hasFocus()) {
-                            this.$refs.editor.scrollIntoViewIfNeeded();
+                            $A.scrollIntoViewIfNeeded(this.$refs.editor);
                         } else {
                             clearInterval(this.timerScroll);
                         }

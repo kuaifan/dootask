@@ -10,7 +10,10 @@
             <div
                 class="dialog-content"
                 :class="contentClass"
-                v-longpress="handleLongpress">
+                v-longpress="{
+                    delay: 300,
+                    callback: handleLongpress
+                }">
                 <!--文本-->
                 <div v-if="msgData.type === 'text'" class="content-text no-dark-content">
                     <pre @click="viewText" v-html="textMsg(msgData.msg.text)"></pre>

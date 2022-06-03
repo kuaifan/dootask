@@ -1030,10 +1030,7 @@ export default {
                 this.$nextTick(() => {
                     const active = this.$refs.menuProject.querySelector(".active")
                     if (active) {
-                        $A.scrollToView(active, {
-                            behavior: 'instant',
-                            scrollMode: 'if-needed',
-                        });
+                        $A.scrollIntoViewIfNeeded(active);
                     }
                 });
             }).catch(({msg}) => {

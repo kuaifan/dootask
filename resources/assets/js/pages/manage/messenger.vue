@@ -382,10 +382,7 @@ export default {
                 // 再次点击滚动到未读条目
                 const dialog = this.dialogList.find(dialog => $A.getDialogUnread(dialog) > 0)
                 if (dialog) {
-                    $A.scrollToView(this.$refs[`dialog_${dialog.id}`][0], {
-                        behavior: 'smooth',
-                        scrollMode: 'if-needed',
-                    })
+                    $A.scrollIntoViewIfNeeded(this.$refs[`dialog_${dialog.id}`][0])
                 }
             }
             this.dialogActive = type
@@ -517,10 +514,7 @@ export default {
                 if (this.$isDesktop && this.$refs.list) {
                     const active = this.$refs.list.querySelector(".active")
                     if (active) {
-                        $A.scrollToView(active, {
-                            behavior: 'instant',
-                            scrollMode: 'if-needed',
-                        });
+                        $A.scrollIntoViewIfNeeded(active);
                     } else {
                         const dialog = this.cacheDialogs.find(({id}) => id == this.dialogId)
                         if (dialog && this.dialogActive) {
@@ -528,10 +522,7 @@ export default {
                             this.$nextTick(() => {
                                 const active = this.$refs.list.querySelector(".active")
                                 if (active) {
-                                    $A.scrollToView(active, {
-                                        behavior: 'instant',
-                                        scrollMode: 'if-needed',
-                                    });
+                                    $A.scrollIntoViewIfNeeded(active);
                                 }
                             });
                         }

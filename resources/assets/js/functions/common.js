@@ -1046,6 +1046,21 @@
         },
 
         /**
+         * 按需滚动到View
+         * @param element
+         */
+        scrollIntoViewIfNeeded(element) {
+            if (!element) {
+                return;
+            }
+            if (typeof element.scrollIntoViewIfNeeded === "function") {
+                element.scrollIntoViewIfNeeded()
+            } else {
+                $A.scrollToView(element, {block: "nearest", inline: "nearest"})
+            }
+        },
+
+        /**
          * 等比缩放尺寸
          * @param width
          * @param height
