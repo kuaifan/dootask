@@ -403,15 +403,16 @@
                             ref="chatInput"
                             :task-id="taskId"
                             v-model="msgText"
-                            :disabled="sendLoad > 0"
-                            :loading="sendLoad > 0"
                             :maxlength="20000"
                             :placeholder="$L('输入消息...')"
                             @on-more="onEventMore"
                             @on-file="onSelectFile"
                             @on-record="onRecord"
                             @on-send="onSend"/>
-                        <div v-if="taskDetail.msg_num" class="input-badge" @click.stop="onSend">{{taskDetail.msg_num > 99 ? '99+' : taskDetail.msg_num}}</div>
+                        <div v-if="sendLoad > 0 || taskDetail.msg_num" class="input-badge" @click.stop="onSend">
+                            <Loading v-if="sendLoad > 0"/>
+                            <em v-else>{{taskDetail.msg_num > 99 ? '99+' : taskDetail.msg_num}}</em>
+                        </div>
                     </div>
                     <div v-if="dialogDrag" class="drag-over" @click="dialogDrag=false">
                         <div class="drag-text">{{$L('拖动到这里发送')}}</div>
