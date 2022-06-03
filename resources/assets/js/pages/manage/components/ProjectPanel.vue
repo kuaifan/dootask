@@ -80,7 +80,7 @@
                     <Checkbox :value="projectData.cacheParameter.completedTask" @on-change="toggleCompleted">{{$L('显示已完成')}}</Checkbox>
                 </div>
                 <div v-if="flowList.length > 0" class="project-select">
-                    <Cascader :data="flowData" @on-change="flowChange" transfer-class-name="project-panel-flow-cascader" transfer>
+                    <Cascader ref="flow" :data="flowData" @on-change="flowChange" transfer-class-name="project-panel-flow-cascader" transfer>
                         <span :class="`project-flow ${flowInfo.status || ''}`">{{ flowTitle }}</span>
                     </Cascader>
                 </div>
@@ -1307,13 +1307,14 @@ export default {
                 },
             }).then(({data}) => {
                 this.flowList = data;
+                this.$refs.flow?.clearSelect();
             }).catch(() => {
                 this.flowList = [];
             });
         },
 
         flowChange(value, data) {
-            this.flowInfo = data.pop();
+            this.flowInfo = data.pop() || {};
         },
 
         inviteCopy() {
