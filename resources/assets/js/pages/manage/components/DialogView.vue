@@ -1,5 +1,5 @@
 <template>
-    <div :class="`dialog-view ${msgData.type}`" :data-id="msgData.id">
+    <div class="dialog-view" :class="viewClass" :data-id="msgData.id">
         <!--昵称-->
         <div v-if="dialogType === 'group'" class="dialog-username">
             <UserAvatar :userid="msgData.userid" :show-icon="false" :show-name="true" :tooltip-disabled="true"/>
@@ -130,6 +130,14 @@ export default {
             type: Boolean,
             default: false
         },
+        operateVisible: {
+            type: Boolean,
+            default: false
+        },
+        operateAction: {
+            type: Boolean,
+            default: false
+        },
     },
 
     data() {
@@ -152,6 +160,17 @@ export default {
 
     computed: {
         ...mapState(['userToken', 'userId', 'dialogMsgs']),
+
+        viewClass() {
+            const array = [];
+            if (this.msgData.type) {
+                array.push(this.msgData.type)
+            }
+            if (this.operateAction) {
+                array.push('operate-action')
+            }
+            return array
+        },
 
         readList() {
             return this.allList.filter(({read_at}) => read_at)
@@ -325,6 +344,9 @@ export default {
         },
 
         playRecord() {
+            if (this.operateVisible) {
+                return
+            }
             Store.set('audioSubscribe', {
                 id: this.msgData.id,
                 src: this.msgData.msg.path,
@@ -335,6 +357,9 @@ export default {
         },
 
         openMeeting() {
+            if (this.operateVisible) {
+                return
+            }
             Store.set('addMeeting', {
                 type: 'join',
                 name: this.msgData.msg.name,
@@ -367,6 +392,9 @@ export default {
         },
 
         viewText({target}) {
+            if (this.operateVisible) {
+                return
+            }
             switch (target.nodeName) {
                 case "IMG":
                     if (target.classList.contains('browse')) {
@@ -386,6 +414,9 @@ export default {
         },
 
         viewFile() {
+            if (this.operateVisible) {
+                return
+            }
             const {msg} = this.msgData;
             if (['jpg', 'jpeg', 'gif', 'png'].includes(msg.ext)) {
                 this.viewPicture(msg.path);

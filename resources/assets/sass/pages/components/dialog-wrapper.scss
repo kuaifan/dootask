@@ -219,6 +219,14 @@
                     max-width: 70%;
                 }
 
+                &.operate-action {
+                    .dialog-head {
+                        .dialog-content {
+                            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
+                        }
+                    }
+                }
+
                 .dialog-username {
                     max-width: 100%;
                     height: 22px;
@@ -237,6 +245,7 @@
                         border-radius: 2px 8px 8px 8px;
                         display: flex;
                         align-items: flex-start;
+                        transition: box-shadow 0.3s ease;
 
                         &.an-emoticon,
                         &.an-emoji,
@@ -931,6 +940,18 @@
     }
 }
 
+.dialog-wrapper-operate {
+    .operate-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-width: 80px;
+        .taskfont {
+            margin-left: 24px;
+        }
+    }
+}
+
 @media (max-width: 768px) {
     .dialog-wrapper {
         .dialog-nav {
@@ -1009,6 +1030,18 @@
             padding-right: 14px;
             padding-left: 14px;
             overscroll-behavior: none;
+
+            .dialog-item {
+                .dialog-view {
+                    user-select: none;
+
+                    &.operate-action {
+                        .content-text {
+                            user-select: text;
+                        }
+                    }
+                }
+            }
         }
         .dialog-footer {
             background-color: #f8f8f8;

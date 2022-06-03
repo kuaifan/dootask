@@ -430,10 +430,10 @@ export default {
             if (!this.linkData.url) {
                 return;
             }
-            this.$copyText(this.linkData.url).then(() => {
-                $A.messageSuccess(this.$L('复制成功！'));
-            }, () => {
-                $A.messageError(this.$L('复制失败！'));
+            this.$copyText(this.linkData.url).then(_ => {
+                $A.messageSuccess('复制成功');
+            }).catch(_ => {
+                $A.messageError('复制失败');
             });
         },
 

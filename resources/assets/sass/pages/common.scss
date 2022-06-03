@@ -58,6 +58,7 @@ body {
     }
 
     .ivu-select-dropdown {
+        user-select: none;
         max-height: 360px;
 
         &.select-node {

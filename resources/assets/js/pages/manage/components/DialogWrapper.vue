@@ -99,6 +99,8 @@
                         :msg-data="item"
                         :dialog-type="dialogData.type"
                         :hide-percentage="isMyDialog"
+                        :operate-visible="operateVisible"
+                        :operate-action="operateVisible && item.id === operateItem.id"
                         @on-longpress="onLongpress"/>
                 </DynamicScrollerItem>
             </template>
@@ -137,14 +139,41 @@
                 :visible="operateVisible"
                 @on-clickoutside="operateVisible = false"
                 @on-click="onOperate"
+                transferClassName="dialog-wrapper-operate"
                 transfer>
                 <div :style="{userSelect:operateVisible ? 'none' : 'auto', height: operateStyles.height}"></div>
                 <DropdownMenu slot="list">
-                    <DropdownItem name="forward">{{ $L('转发') }}</DropdownItem>
-                    <DropdownItem v-if="operateItem.userid == userId" name="withdraw">{{ $L('撤回') }}</DropdownItem>
+                    <DropdownItem v-if="operateHasText" name="copy">
+                        <div class="operate-item">
+                            <span>{{ $L('复制') }}</span>
+                            <i class="taskfont">&#xe77f;</i>
+                        </div>
+                    </DropdownItem>
+                    <DropdownItem name="forward">
+                        <div class="operate-item">
+                            <span>{{ $L('转发') }}</span>
+                            <i class="taskfont">&#xe75e;</i>
+                        </div>
+                    </DropdownItem>
+                    <DropdownItem v-if="operateItem.userid == userId" name="withdraw">
+                        <div class="operate-item">
+                            <span>{{ $L('撤回') }}</span>
+                            <i class="taskfont">&#xe637;</i>
+                        </div>
+                    </DropdownItem>
                     <template v-if="operateItem.type === 'file'">
-                        <DropdownItem name="view" divided>{{ $L('查看文件') }}</DropdownItem>
-                        <DropdownItem name="down">{{ $L('下载文件') }}</DropdownItem>
+                        <DropdownItem name="view" divided>
+                            <div class="operate-item">
+                                <span>{{ $L('查看') }}</span>
+                                <i class="taskfont">&#xe77b;</i>
+                            </div>
+                        </DropdownItem>
+                        <DropdownItem name="down">
+                            <div class="operate-item">
+                                <span>{{ $L('下载') }}</span>
+                                <i class="taskfont">&#xe7a8;</i>
+                            </div>
+                        </DropdownItem>
                     </template>
                 </DropdownMenu>
             </Dropdown>
@@ -275,8 +304,9 @@ export default {
 
             wrapperStyle: {},
 
-            operateStyles: {},
             operateVisible: false,
+            operateHasText: false,
+            operateStyles: {},
             operateItem: {},
         }
     },
@@ -785,8 +815,9 @@ export default {
         },
 
         onLongpress({event, el, msgData}) {
-            this.operateVisible = false;
+            this.operateVisible = this.operateItem.id === msgData.id;
             this.operateItem = $A.isJson(msgData) ? msgData : {};
+            this.operateHasText = msgData.type === 'text' && msgData.msg.text.replace(/<[^>]+>/g,"").length > 0
             this.$nextTick(() => {
                 const projectRect = el.getBoundingClientRect();
                 const wrapRect = this.$el.getBoundingClientRect();
@@ -801,6 +832,19 @@ export default {
 
         onOperate(name) {
             switch (name) {
+                case "copy":
+                    if (this.operateHasText) {
+                        const text = this.operateItem.msg.text.replace(/<[^>]+>/g,"");
+                        this.$copyText(text).then(_ => {
+                            $A.messageSuccess('复制成功');
+                        }).catch(_ => {
+                            $A.messageError('复制失败');
+                        });
+                    } else {
+                        $A.messageWarning('不可复制的内容');
+                    }
+                    break;
+
                 case "forward":
                     this.onForward('open')
                     break;

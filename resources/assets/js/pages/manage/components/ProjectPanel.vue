@@ -1321,10 +1321,10 @@ export default {
             if (!this.inviteData.url) {
                 return;
             }
-            this.$copyText(this.inviteData.url).then(() => {
-                $A.messageSuccess(this.$L('复制成功！'));
-            }, () => {
-                $A.messageError(this.$L('复制失败！'));
+            this.$copyText(this.inviteData.url).then(_ => {
+                $A.messageSuccess('复制成功');
+            }).catch(_ => {
+                $A.messageError('复制失败');
             });
         },
 
