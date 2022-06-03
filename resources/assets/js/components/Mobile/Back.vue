@@ -44,11 +44,14 @@ export default {
     },
 
     computed: {
-        ...mapState(['windowScrollY']),
+        ...mapState(['windowHeight', 'windowScrollY']),
 
         style() {
+            const offset = 135;
+            const top = Math.max(offset, this.y) + this.windowScrollY,
+                maxTop = this.windowHeight - offset;
             return {
-                top: (this.y + this.windowScrollY) + 'px',
+                top: Math.min(top, maxTop) + 'px',
                 left: this.x > 20 ? 0 : '-50px',
             }
         },
