@@ -30,7 +30,6 @@
                 </template>
             </li>
         </ul>
-        <div class="mobile-back"></div>
     </div>
 </template>
 

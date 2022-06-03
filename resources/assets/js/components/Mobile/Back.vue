@@ -1,5 +1,8 @@
 <template>
-    <div v-if="show" class="mobile-back" :style="style"></div>
+    <div class="mobile-back">
+        <div v-show="windowScrollY > 0" ref="bar" class="back-bar"></div>
+        <div v-if="show" class="back-semicircle" :style="style"></div>
+    </div>
 </template>
 
 <script>
@@ -27,12 +30,14 @@ export default {
     },
 
     mounted() {
+        this.$refs.bar.addEventListener('touchmove', this.barListener)
         document.addEventListener('touchstart', this.touchstart)
         document.addEventListener('touchmove', this.touchmove)
         document.addEventListener('touchend', this.touchend)
     },
 
     beforeDestroy() {
+        this.$refs.bar.removeEventListener('touchmove', this.barListener)
         document.removeEventListener('touchstart', this.touchstart)
         document.removeEventListener('touchmove', this.touchmove)
         document.removeEventListener('touchend', this.touchend)
@@ -65,6 +70,10 @@ export default {
             let touch = event.touches[0]
             this.x = touch.clientX
             this.y = touch.clientY
+        },
+
+        barListener(event) {
+            event.preventDefault()
         },
 
         touchstart(event) {

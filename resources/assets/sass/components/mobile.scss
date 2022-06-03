@@ -129,19 +129,31 @@
 
 .mobile-back {
     display: none;
-    position: fixed;
-    top: 200px;
-    left: -50px;
-    width: 500px;
-    height: 500px;
-    background-color: rgba(0, 0, 0, 0.1);
-    z-index: 9999;
-    border-radius: 50%;
-    transform: translate(-460px, -50%);
-    transition: left 0.2s;
 
-    &.show-back {
+    .back-bar {
+        position: fixed;
+        top: 0;
         left: 0;
+        bottom: 0;
+        width: 20px;
+        z-index: 9998;
+    }
+
+    .back-semicircle {
+        position: fixed;
+        top: 200px;
+        left: -50px;
+        width: 500px;
+        height: 500px;
+        background-color: rgba(0, 0, 0, 0.1);
+        z-index: 9999;
+        border-radius: 50%;
+        transform: translate(-460px, -50%);
+        transition: left 0.2s;
+
+        &.show-back {
+            left: 0;
+        }
     }
 }
 
