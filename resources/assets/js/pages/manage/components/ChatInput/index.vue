@@ -382,10 +382,10 @@ export default {
                 if (this.isSpecVersion) {
                     // ios11.0-11.3 对scrollTop及scrolIntoView解释有bug
                     // 直接执行会导致输入框滚到底部被遮挡
-                } else {
+                } else if (!this.$isDesktop) {
                     this.timerScroll = setInterval(() => {
                         if (this.quill?.hasFocus()) {
-                            $A.scrollToView(this.$refs.editor, true)
+                            this.$refs.editor.scrollIntoViewIfNeeded();
                         } else {
                             clearInterval(this.timerScroll);
                         }

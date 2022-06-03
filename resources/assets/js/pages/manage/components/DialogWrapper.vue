@@ -6,6 +6,7 @@
         @drop.prevent="chatPasteDrag($event, 'drag')"
         @dragover.prevent="chatDragOver(true, $event)"
         @dragleave.prevent="chatDragOver(false, $event)">
+        <!--顶部导航-->
         <slot name="head">
             <div class="dialog-nav" :class="{completed:$A.dialogCompleted(dialogData)}">
                 <div class="dialog-back" @click="onBack">
@@ -63,6 +64,8 @@
                 </ETooltip>
             </div>
         </slot>
+
+        <!--消息列表-->
         <DynamicScroller
             ref="scroller"
             class="dialog-scroller scrollbar-overlay"
@@ -105,6 +108,8 @@
                 </DynamicScrollerItem>
             </template>
         </DynamicScroller>
+
+        <!--底部输入-->
         <div class="dialog-footer" :class="{newmsg: msgNew > 0 && allMsgs.length > 0}" @click="onActive">
             <div class="dialog-newmsg" @click="onToBottom">{{$L('有' + msgNew + '条新消息')}}</div>
             <DialogUpload
@@ -129,9 +134,8 @@
                 @on-emoji-visible-change="onEventEmojiVisibleChange"
                 :placeholder="$L('输入消息...')"/>
         </div>
-        <div v-if="dialogDrag" class="drag-over" @click="dialogDrag=false">
-            <div class="drag-text">{{$L('拖动到这里发送')}}</div>
-        </div>
+
+        <!--长按、右键-->
         <div class="operate-position" :style="operateStyles">
             <Dropdown
                 trigger="custom"
@@ -177,6 +181,11 @@
                     </template>
                 </DropdownMenu>
             </Dropdown>
+        </div>
+
+        <!--拖动提示-->
+        <div v-if="dialogDrag" class="drag-over" @click="dialogDrag=false">
+            <div class="drag-text">{{$L('拖动到这里发送')}}</div>
         </div>
 
         <!--拖动发送提示-->
