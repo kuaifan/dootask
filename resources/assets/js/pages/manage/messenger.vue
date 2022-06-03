@@ -32,7 +32,6 @@
                     static>
                     <ul
                         v-if="tabActive==='dialog'"
-                        ref="dialogWrapper"
                         class="dialog">
                         <li v-if="dialogList.length === 0" class="nothing">
                             {{$L(dialogKey ? `没有任何与"${dialogKey}"相关的会话` : `没有任何会话`)}}
@@ -103,10 +102,10 @@
                     <div class="operate-position" :style="operateStyles">
                         <Dropdown
                             trigger="custom"
-                            :transfer="true"
                             :placement="$isDesktop ? 'bottom' : 'top'"
                             :visible="operateVisible"
-                            @on-clickoutside="operateVisible = false">
+                            @on-clickoutside="operateVisible = false"
+                            transfer>
                             <div :style="{userSelect:operateVisible ? 'none' : 'auto', height: operateStyles.height}"></div>
                             <DropdownMenu slot="list">
                                 <DropdownItem @click.native="handleTopClick">
@@ -551,7 +550,7 @@ export default {
             this.operateItem = $A.isJson(dialogItem) ? dialogItem : {};
             this.$nextTick(() => {
                 const dialogRect = el.getBoundingClientRect();
-                const wrapRect = this.$refs.dialogWrapper.getBoundingClientRect();
+                const wrapRect = this.$refs.list.$el.getBoundingClientRect();
                 this.operateStyles = {
                     left: `${event.clientX - wrapRect.left}px`,
                     top: `${dialogRect.top}px`,

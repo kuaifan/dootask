@@ -219,14 +219,6 @@
                     max-width: 70%;
                 }
 
-                &:hover {
-                    .dialog-head {
-                        .dialog-menu {
-                            opacity: 1;
-                        }
-                    }
-                }
-
                 .dialog-username {
                     max-width: 100%;
                     height: 22px;
@@ -557,37 +549,6 @@
                             text-decoration: underline;
                         }
                     }
-
-                    .dialog-menu {
-                        opacity: 0;
-                        margin-left: 6px;
-                        transition: all 0.3s;
-
-                        .menu-icon {
-                            display: flex;
-                            align-items: center;
-                            border-radius: 4px;
-                            border: 1px solid #ddd;
-                            background-color: #ffffff;
-
-                            > i {
-                                flex: 1;
-                                display: inline-block;
-                                padding: 4px 6px;
-                                color: #999;
-                                font-size: 13px;
-                                cursor: pointer;
-
-                                & + i {
-                                    border-left: 1px solid #ddd;
-                                }
-
-                                &:hover {
-                                    color: #777;
-                                }
-                            }
-                        }
-                    }
                 }
 
                 .dialog-foot {
@@ -768,11 +729,6 @@
                                 }
                             }
                         }
-
-                        .dialog-menu {
-                            margin-left: 0;
-                            margin-right: 6px;
-                        }
                     }
 
                     .dialog-foot {
@@ -872,6 +828,16 @@
             font-size: 18px;
             color: $primary-text-color;
         }
+    }
+
+    .operate-position {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 1px;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
     }
 }
 

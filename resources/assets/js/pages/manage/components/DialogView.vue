@@ -7,7 +7,10 @@
 
         <div class="dialog-head">
             <!--详情-->
-            <div class="dialog-content" :class="contentClass">
+            <div
+                class="dialog-content"
+                :class="contentClass"
+                v-longpress="handleLongpress">
                 <!--文本-->
                 <div v-if="msgData.type === 'text'" class="content-text no-dark-content">
                     <pre @click="viewText" v-html="textMsg(msgData.msg.text)"></pre>
@@ -60,17 +63,6 @@
                 <!--未知-->
                 <div v-else class="content-unknown">{{$L("未知的消息类型")}}</div>
             </div>
-
-            <!--菜单-->
-            <div v-if="showMenu" class="dialog-menu">
-                <div class="menu-icon">
-                    <Icon v-if="msgData.userid == userId" @click="withdraw" type="md-undo" :title="$L('撤回')"/>
-                    <template v-if="msgData.type === 'file'">
-                        <Icon @click="viewFile" type="md-eye" :title="$L('查看')"/>
-                        <Icon @click="downFile" type="md-arrow-round-down" :title="$L('下载')"/>
-                    </template>
-                </div>
-            </div>
         </div>
 
         <!--时间/阅读-->
@@ -117,10 +109,12 @@
 import WCircle from "../../../components/WCircle";
 import {mapState} from "vuex";
 import {Store} from "le5le-store";
+import longpress from "../../../directives/longpress";
 
 export default {
     name: "DialogView",
     components: {WCircle},
+    directives: {longpress},
     props: {
         msgData: {
             type: Object,
@@ -167,10 +161,6 @@ export default {
             return this.allList.filter(({read_at}) => !read_at)
         },
 
-        showMenu() {
-            return this.msgData.userid == this.userId || this.msgData.type === 'file'
-        },
-
         contentClass() {
             const {type, msg} = this.msgData;
             const classArray = [];
@@ -203,6 +193,14 @@ export default {
     },
 
     methods: {
+        handleLongpress(event, el) {
+            this.$emit("on-longpress", {
+                event,
+                el,
+                msgData: this.msgData
+            })
+        },
+
         msgRead() {
             if (this.msgData._r === true) {
                 return;

@@ -94,7 +94,12 @@
                     <div class="dialog-avatar">
                         <UserAvatar :userid="item.userid" :tooltipDisabled="item.userid == userId" :size="30"/>
                     </div>
-                    <DialogView :msg-data="item" :dialog-type="dialogData.type" :hide-percentage="isMyDialog"/>
+                    <DialogView
+                        :ref="`msg_${item.id}`"
+                        :msg-data="item"
+                        :dialog-type="dialogData.type"
+                        :hide-percentage="isMyDialog"
+                        @on-longpress="onLongpress"/>
                 </DynamicScrollerItem>
             </template>
         </DynamicScroller>
@@ -124,6 +129,25 @@
         </div>
         <div v-if="dialogDrag" class="drag-over" @click="dialogDrag=false">
             <div class="drag-text">{{$L('拖动到这里发送')}}</div>
+        </div>
+        <div class="operate-position" :style="operateStyles">
+            <Dropdown
+                trigger="custom"
+                :placement="$isDesktop ? 'bottom' : 'top'"
+                :visible="operateVisible"
+                @on-clickoutside="operateVisible = false"
+                @on-click="onOperate"
+                transfer>
+                <div :style="{userSelect:operateVisible ? 'none' : 'auto', height: operateStyles.height}"></div>
+                <DropdownMenu slot="list">
+                    <DropdownItem name="forward">{{ $L('转发') }}</DropdownItem>
+                    <DropdownItem v-if="operateItem.userid == userId" name="withdraw">{{ $L('撤回') }}</DropdownItem>
+                    <template v-if="operateItem.type === 'file'">
+                        <DropdownItem name="view" divided>{{ $L('查看文件') }}</DropdownItem>
+                        <DropdownItem name="down">{{ $L('下载文件') }}</DropdownItem>
+                    </template>
+                </DropdownMenu>
+            </Dropdown>
         </div>
 
         <!--拖动发送提示-->
@@ -232,6 +256,10 @@ export default {
             groupInfoShow: false,
 
             wrapperStyle: {},
+
+            operateStyles: {},
+            operateVisible: false,
+            operateItem: {},
         }
     },
 
@@ -704,6 +732,7 @@ export default {
         },
 
         onScroll() {
+            this.operateVisible = false;
             this.__onScroll && clearTimeout(this.__onScroll);
             this.__onScroll = setTimeout(_ => {
                 const {scrollE} = this.scrollInfo();
@@ -719,6 +748,41 @@ export default {
                 this.goForward({name: this.$route.name});
             } else {
                 this.goBack();
+            }
+        },
+
+        onLongpress({event, el, msgData}) {
+            this.operateVisible = false;
+            this.operateItem = $A.isJson(msgData) ? msgData : {};
+            this.$nextTick(() => {
+                const projectRect = el.getBoundingClientRect();
+                const wrapRect = this.$el.getBoundingClientRect();
+                this.operateStyles = {
+                    left: `${event.clientX - wrapRect.left}px`,
+                    top: `${projectRect.top}px`,
+                    height: projectRect.height + 'px',
+                }
+                this.operateVisible = true;
+            })
+        },
+
+        onOperate(name) {
+            switch (name) {
+                case "forward":
+                    // todo 转发功能
+                    break;
+
+                case "withdraw":
+                    this.$refs[`msg_${this.operateItem.id}`].withdraw()
+                    break;
+
+                case "view":
+                    this.$refs[`msg_${this.operateItem.id}`].viewFile()
+                    break;
+
+                case "down":
+                    this.$refs[`msg_${this.operateItem.id}`].downFile()
+                    break;
             }
         },
 

@@ -11,7 +11,7 @@
                 </Input>
             </div>
         </div>
-        <ul ref="projectWrapper" @scroll="operateVisible = false">
+        <ul @scroll="operateVisible = false">
             <template v-if="projectLists.length === 0">
                 <li v-if="projectKeyLoading > 0" class="loading"><Loading/></li>
                 <li v-else class="nothing">
@@ -55,7 +55,7 @@
         <div class="operate-position" :style="operateStyles">
             <Dropdown
                 trigger="custom"
-                placement="top"
+                :placement="$isDesktop ? 'bottom' : 'top'"
                 :visible="operateVisible"
                 @on-clickoutside="operateVisible = false"
                 transfer>
@@ -181,7 +181,7 @@ export default {
             this.operateItem = $A.isJson(projectItem) ? projectItem : {};
             this.$nextTick(() => {
                 const projectRect = el.getBoundingClientRect();
-                const wrapRect = this.$refs.projectWrapper.getBoundingClientRect();
+                const wrapRect = this.$el.getBoundingClientRect();
                 this.operateStyles = {
                     left: `${event.clientX - wrapRect.left}px`,
                     top: `${projectRect.top}px`,

@@ -156,8 +156,8 @@
                     <i class="taskfont">&#xe6f3;</i>
                     <div class="menu-title">{{$L('文件')}}</div>
                 </li>
-                <li class="menu-project">
-                    <ul ref="projectWrapper" :class="listClassName" @scroll="operateVisible = false">
+                <li ref="menuProject" class="menu-project">
+                    <ul :class="listClassName" @scroll="operateVisible = false">
                         <li
                             v-for="(item, key) in projectLists"
                             :ref="`project_${item.id}`"
@@ -192,6 +192,7 @@
             <div class="operate-position" :style="operateStyles">
                 <Dropdown
                     trigger="custom"
+                    :placement="$isDesktop ? 'bottom' : 'top'"
                     :visible="operateVisible"
                     @on-clickoutside="operateVisible = false"
                     transfer>
@@ -1008,7 +1009,7 @@ export default {
             this.operateItem = $A.isJson(projectItem) ? projectItem : {};
             this.$nextTick(() => {
                 const projectRect = el.getBoundingClientRect();
-                const wrapRect = this.$refs.projectWrapper.getBoundingClientRect();
+                const wrapRect = this.$refs.menuProject.getBoundingClientRect();
                 this.operateStyles = {
                     left: `${event.clientX - wrapRect.left}px`,
                     top: `${projectRect.top}px`,
@@ -1027,7 +1028,7 @@ export default {
             }).then(({data}) => {
                 this.$store.dispatch("saveProject", data);
                 this.$nextTick(() => {
-                    const active = this.$refs.projectWrapper.querySelector(".active")
+                    const active = this.$refs.menuProject.querySelector(".active")
                     if (active) {
                         $A.scrollToView(active, {
                             behavior: 'instant',
