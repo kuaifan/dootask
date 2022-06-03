@@ -162,6 +162,34 @@ class WebSocketDialogMsg extends AbstractModel
     }
 
     /**
+     * 转发消息
+     * @param $userids
+     * @param int $sender       发送的会员ID
+     * @return mixed
+     */
+    public function forwardMsg($userids, $sender)
+    {
+        return AbstractModel::transaction(function() use ($sender, $userids) {
+            $msgs = [];
+            foreach ($userids as $userid) {
+                if (!User::whereUserid($userid)->exists()) {
+                    continue;
+                }
+                $dialog = WebSocketDialog::checkUserDialog($sender, $userid);
+                if ($dialog) {
+                    $res = self::sendMsg($dialog->id, $this->type, $this->getOriginal('msg'), $sender);
+                    if (Base::isSuccess($res)) {
+                        $msgs[] = $res['data'];
+                    }
+                }
+            }
+            return Base::retSuccess('转发成功', [
+                'msgs' => $msgs
+            ]);
+        });
+    }
+
+    /**
      * 删除消息
      * @return void
      */

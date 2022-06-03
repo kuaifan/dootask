@@ -651,6 +651,35 @@ class DialogController extends AbstractController
     }
 
     /**
+     * @api {get} api/dialog/msg/forward          13. 转发消息给
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__forward
+     *
+     * @apiParam {Number} msg_id            消息ID
+     * @apiParam {Array} userids            转发给的成员
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__forward()
+    {
+        $user = User::auth();
+        //
+        $msg_id = intval(Request::input("msg_id"));
+        $userids = Request::input('userids');
+        //
+        $msg = WebSocketDialogMsg::whereId($msg_id)->whereUserid($user->userid)->first();
+        if (empty($msg)) {
+            return Base::retError("消息不存在或已被删除");
+        }
+        return $msg->forwardMsg($userids, $user->userid);
+    }
+
+    /**
      * @api {get} api/dialog/group/add          16. 新增群组
      *
      * @apiDescription  需要token身份

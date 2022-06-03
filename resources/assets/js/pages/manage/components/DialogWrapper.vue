@@ -185,6 +185,22 @@
             </div>
         </Modal>
 
+        <!-- 转发 -->
+        <Modal
+            v-model="forwardShow"
+            :title="$L('转发')"
+            :mask-closable="false">
+            <Form ref="forwardForm" :model="forwardData" label-width="auto" @submit.native.prevent>
+                <FormItem prop="userids" :label="$L('转发给')">
+                    <UserInput v-model="forwardData.userids" :multiple-max="20" :placeholder="$L('选择转发成员')"/>
+                </FormItem>
+            </Form>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="forwardShow=false">{{$L('取消')}}</Button>
+                <Button type="primary" :loading="forwardLoad" @click="onForward('submit')">{{$L('转发')}}</Button>
+            </div>
+        </Modal>
+
         <!--群设置-->
         <DrawerOverlay
             v-model="groupInfoShow"
@@ -251,6 +267,12 @@ export default {
             createGroupShow: false,
             createGroupData: {},
             createGroupLoad: 0,
+
+            forwardShow: false,
+            forwardLoad: false,
+            forwardData: {
+                userids: [],
+            },
 
             dialogDrag: false,
             groupInfoShow: false,
@@ -711,6 +733,31 @@ export default {
             });
         },
 
+        onForward(type) {
+            if (type === 'open') {
+                this.forwardData = {
+                    userids: [],
+                    msg_id: this.operateItem.id
+                };
+                this.forwardShow = true;
+            } else if (type === 'submit') {
+                this.forwardLoad = true;
+                this.$store.dispatch("call", {
+                    url: 'dialog/msg/forward',
+                    data: this.forwardData
+                }).then(({data, msg}) => {
+                    this.forwardShow = false;
+                    this.$store.dispatch("saveDialogMsg", data.msgs);
+                    this.$store.dispatch("updateDialogLastMsg", data.msgs);
+                    $A.messageSuccess(msg);
+                }).catch(({msg}) => {
+                    $A.modalError(msg);
+                }).finally(_ => {
+                    this.forwardLoad = false;
+                });
+            }
+        },
+
         scrollInfo() {
             if (!this.isReady) {
                 return {
@@ -769,7 +816,7 @@ export default {
         onOperate(name) {
             switch (name) {
                 case "forward":
-                    // todo 转发功能
+                    this.onForward('open')
                     break;
 
                 case "withdraw":
