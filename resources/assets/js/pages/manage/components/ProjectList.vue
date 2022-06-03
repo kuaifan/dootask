@@ -30,7 +30,7 @@
                         <div class="project-h1">
                             <div class="project-name">{{item.name}}</div>
                             <div v-if="item.top_at" class="icon-top"></div>
-                            <div v-if="item.task_my_num > 0" class="num">{{item.task_my_num}}</div>
+                            <div v-if="item.task_my_num - item.task_my_complete > 0" class="num">{{item.task_my_num - item.task_my_complete}}</div>
                         </div>
                         <div class="project-h2">
                             {{item.desc}}
