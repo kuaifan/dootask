@@ -5,7 +5,7 @@
             <UserAvatar :userid="msgData.userid" :show-icon="false" :show-name="true" :tooltip-disabled="true"/>
         </div>
 
-        <div class="dialog-head" v-longpress="{delay: 300, callback: handleLongpress}">
+        <div class="dialog-head" v-longpress="handleLongpress">
             <!--详情-->
             <div class="dialog-content" :class="contentClass">
                 <!--文本-->
