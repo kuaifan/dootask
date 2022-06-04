@@ -675,7 +675,7 @@ class DialogController extends AbstractController
             return Base::retError("参数错误");
         }
         //
-        $msg = WebSocketDialogMsg::whereId($msg_id)->whereUserid($user->userid)->first();
+        $msg = WebSocketDialogMsg::whereId($msg_id)->first();   // 不限制会员身份
         if (empty($msg)) {
             return Base::retError("消息不存在或已被删除");
         }
