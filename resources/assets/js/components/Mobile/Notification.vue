@@ -1,6 +1,11 @@
 <template>
     <transition v-if="show && userid > 0" name="mobile-notify">
-        <div class="mobile-notification" :class="{show}" @click.stop="onClick">
+        <div
+            class="mobile-notification"
+            :class="{show}"
+            @click.stop="onClick"
+            @touchstart="onTouchstart"
+            @touchmove="onTouchmove">
             <UserAvatar :userid="userid" :size="40" show-name/>
             <div class="notification-desc">{{desc}}</div>
         </div>
@@ -19,6 +24,8 @@ export default {
 
             show: false,
             timer: null,
+
+            startY: 0,
         };
     },
 
@@ -56,7 +63,18 @@ export default {
             if (typeof this.callback === "function") {
                 this.callback();
             }
-        }
+        },
+
+        onTouchstart(e) {
+            this.startY = e.touches[0].clientY;
+        },
+
+        onTouchmove(e) {
+            if (this.startY > 0 && this.startY - e.touches[0].clientY > 10) {
+                this.startY = 0;
+                this.close();
+            }
+        },
     },
 };
 </script>
