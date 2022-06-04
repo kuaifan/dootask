@@ -17,6 +17,9 @@ body {
             max-height: 100%;
         }
     }
+    div.pswp__img--placeholder {
+        background: transparent;
+    }
 }
 </style>
 <script>
