@@ -988,6 +988,18 @@
             background-color: transparent;
         }
     }
+    .dropdown-emoji {
+        position: relative;
+        &:before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background-color: #f4f5f5;
+        }
+    }
     .operate-action {
         width: 316px;
         padding: 8px;
@@ -1018,16 +1030,6 @@
         display: flex;
         align-items: center;
         overflow: auto;
-        position: relative;
-        &:after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background-color: #f4f5f5;
-        }
         > li {
             list-style: none;
             width: 44px;

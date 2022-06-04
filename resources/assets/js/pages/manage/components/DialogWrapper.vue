@@ -180,7 +180,7 @@
                             </template>
                         </ul>
                     </DropdownItem>
-                    <DropdownItem name="emoji">
+                    <DropdownItem name="emoji" class="dropdown-emoji">
                         <ul class="operate-emoji scrollbar-hidden">
                             <li
                                 v-for="(emoji, key) in operateEmojis"
