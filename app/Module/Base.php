@@ -2209,7 +2209,7 @@ class Base
 
     /**
      * image64图片保存
-     * @param array $param [ image64=带前缀的base64, path=>文件路径, fileName=>文件名称, scale=>[压缩原图宽,高, 压缩方式] ]
+     * @param array $param [ image64=带前缀的base64, path=>文件路径, fileName=>文件名称, scale=>[压缩原图宽,高, 压缩方式], autoThumb=>false不要自动生成缩略图 ]
      * @return array [name=>文件名, size=>文件大小(单位KB),file=>绝对地址, path=>相对地址, url=>全路径地址, ext=>文件后缀名]
      */
     public static function image64save($param)
@@ -2290,8 +2290,13 @@ class Base
                 }
                 //生成缩略图
                 $array['thumb'] = $array['path'];
-                if (Base::imgThumb($array['file'], $array['file'] . "_thumb.jpg", 180, 0)) {
-                    $array['thumb'] .= "_thumb.jpg";
+                if ($extension === 'gif' && !isset($param['autoThumb'])) {
+                    $param['autoThumb'] = false;
+                }
+                if ($param['autoThumb'] !== false) {
+                    if (Base::imgThumb($array['file'], $array['file'] . "_thumb.jpg", 320, 0)) {
+                        $array['thumb'] .= "_thumb.jpg";
+                    }
                 }
                 $array['thumb'] = Base::fillUrl($array['thumb']);
                 return Base::retSuccess('success', $array);
@@ -2483,7 +2488,9 @@ class Base
                 }
                 //生成缩略图
                 $array['thumb'] = $array['path'];
-                if ($param['autoThumb'] === "false") $param['autoThumb'] = false;
+                if ($extension === 'gif' && !isset($param['autoThumb'])) {
+                    $param['autoThumb'] = false;
+                }
                 if ($param['autoThumb'] !== false) {
                     if (Base::imgThumb($array['file'], $array['file'] . "_thumb.jpg", 320, 0)) {
                         $array['thumb'] .= "_thumb.jpg";
