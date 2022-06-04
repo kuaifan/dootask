@@ -569,7 +569,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/mark          15. 消息标记操作
+     * @api {get} api/dialog/msg/mark          14. 消息标记操作
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -621,7 +621,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/forward          13. 转发消息给
+     * @api {get} api/dialog/msg/forward          15. 转发消息给
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -650,7 +650,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/emoji          13. emoji回复
+     * @api {get} api/dialog/msg/emoji          16. emoji回复
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -683,7 +683,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/top          14. 会话置顶
+     * @api {get} api/dialog/top          17. 会话置顶
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -713,7 +713,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/add          16. 新增群组
+     * @api {get} api/dialog/group/add          18. 新增群组
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -764,7 +764,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/edit          17. 修改群组
+     * @api {get} api/dialog/group/edit          19. 修改群组
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -803,7 +803,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/adduser          18. 添加群成员
+     * @api {get} api/dialog/group/adduser          20. 添加群成员
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -837,7 +837,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/deluser          19. 移出（退出）群成员
+     * @api {get} api/dialog/group/deluser          21. 移出（退出）群成员
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -879,7 +879,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/disband          20. 解散群组
+     * @api {get} api/dialog/group/disband          22. 解散群组
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0

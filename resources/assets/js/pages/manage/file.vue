@@ -22,7 +22,7 @@
             </div>
 
             <div class="file-navigator">
-                <ul>
+                <ul class="scrollbar-hidden">
                     <li @click="browseFolder(0)">
                         <span>{{$L('全部文件')}}</span>
                     </li>

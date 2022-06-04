@@ -159,7 +159,7 @@
                                 </li>
                             </template>
                             <li @click="onOperate('forward')">
-                                <i class="taskfont">&#xe75e;</i>
+                                <i class="taskfont">&#xe638;</i>
                                 <span>{{ $L('转发') }}</span>
                             </li>
                             <template v-if="operateItem.userid == userId">
