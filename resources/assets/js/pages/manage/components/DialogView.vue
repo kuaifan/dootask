@@ -5,7 +5,13 @@
             <UserAvatar :userid="msgData.userid" :show-icon="false" :show-name="true" :tooltip-disabled="true"/>
         </div>
 
-        <div class="dialog-head" v-longpress="handleLongpress">
+        <div
+            class="dialog-head"
+            :class="headClass"
+            v-longpress="{
+                callback: handleLongpress,
+                delay: 300,
+            }">
             <!--详情-->
             <div class="dialog-content" :class="contentClass">
                 <!--文本-->
@@ -34,7 +40,7 @@
                 </div>
                 <!--会议-->
                 <div v-else-if="msgData.type === 'meeting'" class="content-meeting no-dark-content">
-                    <ul class="dialog-meeting" @click="openMeeting">
+                    <ul class="dialog-meeting">
                         <li>
                             <em>{{$L('会议主题')}}</em>
                             {{msgData.msg.name}}
@@ -47,7 +53,7 @@
                             <em>{{$L('频道ID')}}</em>
                             {{msgData.msg.meetingid.replace(/^(.{3})(.{3})(.*)$/, '$1 $2 $3')}}
                         </li>
-                        <li class="meeting-operation">
+                        <li class="meeting-operation" @click="openMeeting">
                             {{$L('点击加入会议')}}
                             <i class="taskfont">&#xe68b;</i>
                         </li>
@@ -59,9 +65,11 @@
                 </div>
                 <!--未知-->
                 <div v-else class="content-unknown">{{$L("未知的消息类型")}}</div>
+                <!--覆盖-->
+                <div class="content-cover"></div>
             </div>
             <!--emoji-->
-            <ul v-if="msgData.emoji.length > 0" class="dialog-emoji">
+            <ul v-if="$A.arrayLength(msgData.emoji) > 0" class="dialog-emoji">
                 <li
                     v-for="(item, index) in msgData.emoji"
                     :key="index"
@@ -154,6 +162,7 @@ export default {
             popperShow: false,
             timeShow: false,
             recordPlay: false,
+            operateEnter: false,
             allList: [],
         }
     },
@@ -170,12 +179,16 @@ export default {
         ...mapState(['userToken', 'userId', 'dialogMsgs']),
 
         viewClass() {
+            const {msgData, operateAction, operateEnter} = this;
             const array = [];
-            if (this.msgData.type) {
-                array.push(this.msgData.type)
+            if (msgData.type) {
+                array.push(msgData.type)
             }
-            if (this.operateAction) {
+            if (operateAction) {
                 array.push('operate-action')
+                if (operateEnter) {
+                    array.push('operate-enter')
+                }
             }
             return array
         },
@@ -186,6 +199,20 @@ export default {
 
         unreadList() {
             return this.allList.filter(({read_at}) => !read_at)
+        },
+
+        headClass() {
+            const {type, msg, emoji} = this.msgData;
+            const array = [];
+            if ($A.arrayLength(emoji) === 0) {
+                if (type === 'text') {
+                    if (/^<img\s+class="emoticon"[^>]*?>$/.test(msg.text)
+                        || /^\s*<p>\s*([\uD800-\uDBFF][\uDC00-\uDFFF]){1,3}\s*<\/p>\s*$/.test(msg.text)) {
+                        array.push('transparent')
+                    }
+                }
+            }
+            return array;
         },
 
         contentClass() {
@@ -216,6 +243,14 @@ export default {
                 this.msgRead();
             },
             immediate: true,
+        },
+        operateAction(val) {
+            this.operateEnter = false;
+            if (val) {
+                setTimeout(_ => {
+                    this.operateEnter = true;
+                }, 400)
+            }
         }
     },
 

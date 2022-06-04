@@ -186,6 +186,7 @@
                                 v-for="(emoji, key) in operateEmojis"
                                 :key="key"
                                 v-html="emoji"
+                                class="no-dark-content"
                                 @click="onOperate('emoji', emoji)"></li>
                         </ul>
                     </DropdownItem>

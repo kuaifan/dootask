@@ -241,16 +241,14 @@
                     border-radius: 2px 8px 8px 8px;
                     transition: box-shadow 0.3s ease;
 
+                    &.transparent {
+                        background-color: transparent !important;
+                    }
+
                     .dialog-content {
                         display: flex;
                         align-items: flex-start;
-
-                        &.an-emoticon,
-                        &.an-emoji,
-                        &.two-emoji,
-                        &.three-emoji {
-                            background-color: transparent !important;
-                        }
+                        position: relative;
 
                         &.an-emoji {
                             .content-text {
@@ -266,6 +264,7 @@
                                 > pre {
                                     font-size: 52px;
                                     line-height: 1;
+                                    letter-spacing: 4px;
                                 }
                             }
                         }
@@ -275,6 +274,7 @@
                                 > pre {
                                     font-size: 32px;
                                     line-height: 1;
+                                    letter-spacing: 4px;
                                 }
                             }
                         }
@@ -438,7 +438,6 @@
                                 max-width: 220px;
                                 max-height: 220px;
                                 border-radius: 6px;
-                                background-color: transparent;
                                 overflow: hidden;
 
                                 .file-img {
@@ -501,7 +500,6 @@
                             padding: 4px 6px;
                             color: $primary-title-color;
                             .dialog-meeting {
-                                cursor: pointer;
                                 min-width: 220px;
                                 > li {
                                     list-style: none;
@@ -517,6 +515,12 @@
                                         align-items: center;
                                         font-size: 12px;
                                         position: relative;
+                                        cursor: pointer;
+                                        &:hover {
+                                            .taskfont {
+                                                padding-left: 4px;
+                                            }
+                                        }
                                         &:before {
                                             content: "";
                                             position: absolute;
@@ -531,6 +535,7 @@
                                             font-size: 12px;
                                             padding-left: 2px;
                                             transform: scale(0.8);
+                                            transition: all 0.2s;
                                         }
                                     }
                                     > em {
@@ -554,6 +559,17 @@
 
                         .content-unknown {
                             text-decoration: underline;
+                        }
+
+                        .content-cover {
+                            display: none;
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            right: 0;
+                            bottom: 0;
+                            z-index: 1;
+                            user-select: none;
                         }
                     }
 
@@ -718,17 +734,6 @@
                                             background-color: transparent;
                                         }
                                     }
-                                }
-                            }
-
-                            .content-file {
-                                &.file {
-                                    background-color: #F4F5F7;
-                                }
-
-                                &.img {
-                                    border-radius: 6px;
-                                    background-color: transparent;
                                 }
                             }
 
@@ -1117,11 +1122,20 @@
 
             .dialog-item {
                 .dialog-view {
-                    user-select: none;
-
-                    &.operate-action {
-                        .content-text {
-                            user-select: text;
+                    .dialog-head {
+                        .dialog-content {
+                            .content-cover {
+                                display: block;
+                            }
+                        }
+                    }
+                    &.operate-enter {
+                        .dialog-head {
+                            .dialog-content {
+                                .content-cover {
+                                    display: none;
+                                }
+                            }
                         }
                     }
                 }

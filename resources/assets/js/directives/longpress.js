@@ -2,10 +2,10 @@ const isSupportTouch = "ontouchend" in document;
 // 长按或右键指令
 const longpress = {
     bind: function (el, binding) {
-        let delay = 501,
+        let delay = 500,
             callback = binding.value;
         if ($A.isJson(binding.value)) {
-            delay = binding.value.delay || 501;
+            delay = binding.value.delay || 500;
             callback = binding.value.callback;
         }
         if (typeof callback !== 'function') {

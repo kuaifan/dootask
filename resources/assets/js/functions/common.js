@@ -600,6 +600,22 @@
         },
 
         /**
+         * 获取数组长度（处理数组不存在）
+         * @param array
+         * @returns {number|*}
+         */
+        arrayLength(array) {
+            if (array) {
+                try {
+                    return array.length;
+                } catch (e) {
+                    return 0
+                }
+            }
+            return 0;
+        },
+
+        /**
          * 将数组或对象内容部分拼成字符串
          * @param obj
          * @returns {string}
