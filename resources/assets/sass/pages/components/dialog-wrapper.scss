@@ -560,17 +560,6 @@
                         .content-unknown {
                             text-decoration: underline;
                         }
-
-                        .content-cover {
-                            display: none;
-                            position: absolute;
-                            top: 0;
-                            left: 0;
-                            right: 0;
-                            bottom: 0;
-                            z-index: 1;
-                            user-select: none;
-                        }
                     }
 
                     .dialog-emoji {
@@ -1121,22 +1110,24 @@
             padding-right: 14px;
             padding-left: 14px;
             overscroll-behavior: none;
+            user-select: none;
 
             .dialog-item {
                 .dialog-view {
                     .dialog-head {
                         .dialog-content {
-                            .content-cover {
-                                display: block;
+                            a, img {
+                                -webkit-touch-callout: none;
                             }
                         }
                     }
                     &.operate-enter {
                         .dialog-head {
                             .dialog-content {
-                                .content-cover {
-                                    display: none;
+                                a, img {
+                                    -webkit-touch-callout: default;
                                 }
+                                user-select: text;
                             }
                         }
                     }

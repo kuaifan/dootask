@@ -65,8 +65,6 @@
                 </div>
                 <!--未知-->
                 <div v-else class="content-unknown">{{$L("未知的消息类型")}}</div>
-                <!--覆盖-->
-                <div class="content-cover"></div>
             </div>
             <!--emoji-->
             <ul v-if="$A.arrayLength(msgData.emoji) > 0" class="dialog-emoji">
@@ -249,7 +247,7 @@ export default {
             if (val) {
                 setTimeout(_ => {
                     this.operateEnter = true;
-                }, 400)
+                }, 500)
             }
         }
     },
