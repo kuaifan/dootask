@@ -26,7 +26,7 @@
                     v-if="i === index"
                     ref="img"
                     class="preview-view-img"
-                    :key="url"
+                    :key="i"
                     :src="currentImg"
                     :style="imgStyle"
                     @load="handleImgLoad"
