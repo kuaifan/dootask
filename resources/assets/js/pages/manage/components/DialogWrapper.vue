@@ -506,6 +506,12 @@ export default {
                     })
                 }
             }
+        },
+
+        dialogDrag(val) {
+            if (val) {
+                this.operateVisible = false;
+            }
         }
     },
 

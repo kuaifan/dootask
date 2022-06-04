@@ -564,13 +564,14 @@
 
                     .dialog-emoji {
                         display: flex;
+                        flex-wrap: wrap;
                         align-items: center;
-                        margin-top: 4px;
                         > li {
                             list-style: none;
                             display: flex;
                             align-items: center;
                             padding: 2px 7px;
+                            margin-top: 6px;
                             margin-right: 8px;
                             border-radius: 14px;
                             line-height: 22px;
