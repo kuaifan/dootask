@@ -853,48 +853,51 @@ export default {
         },
 
         onOperate(name, value = null) {
-            switch (name) {
-                case "copy":
-                    if (this.operateHasText) {
-                        this.$copyText(this.operateItem.msg.text.replace(/<[^>]+>/g, "")).then(_ => {
-                            $A.messageSuccess('复制成功');
-                        }).catch(_ => {
-                            $A.messageError('复制失败');
-                        });
-                    } else {
-                        $A.messageWarning('不可复制的内容');
-                    }
-                    break;
+            this.operateVisible = false;
+            this.$nextTick(_ => {
+                switch (name) {
+                    case "copy":
+                        if (this.operateHasText) {
+                            this.$copyText(this.operateItem.msg.text.replace(/<[^>]+>/g, "")).then(_ => {
+                                $A.messageSuccess('复制成功');
+                            }).catch(_ => {
+                                $A.messageError('复制失败');
+                            });
+                        } else {
+                            $A.messageWarning('不可复制的内容');
+                        }
+                        break;
 
-                case "newTask":
-                    if (this.operateHasText) {
-                        Store.set('addTask', {
-                            owner: [this.userId],
-                            name: this.operateItem.msg.text.replace(/<[^>]+>/g, "")
-                        });
-                    }
-                    break;
+                    case "newTask":
+                        if (this.operateHasText) {
+                            Store.set('addTask', {
+                                owner: [this.userId],
+                                name: this.operateItem.msg.text.replace(/<[^>]+>/g, "")
+                            });
+                        }
+                        break;
 
-                case "forward":
-                    this.onForward('open')
-                    break;
+                    case "forward":
+                        this.onForward('open')
+                        break;
 
-                case "withdraw":
-                    this.$refs[`msg_${this.operateItem.id}`].withdraw()
-                    break;
+                    case "withdraw":
+                        this.$refs[`msg_${this.operateItem.id}`].withdraw()
+                        break;
 
-                case "view":
-                    this.$refs[`msg_${this.operateItem.id}`].viewFile()
-                    break;
+                    case "view":
+                        this.$refs[`msg_${this.operateItem.id}`].viewFile()
+                        break;
 
-                case "down":
-                    this.$refs[`msg_${this.operateItem.id}`].downFile()
-                    break;
+                    case "down":
+                        this.$refs[`msg_${this.operateItem.id}`].downFile()
+                        break;
 
-                case "emoji":
-                    this.$refs[`msg_${this.operateItem.id}`].setEmoji(value)
-                    break;
-            }
+                    case "emoji":
+                        this.$refs[`msg_${this.operateItem.id}`].setEmoji(value)
+                        break;
+                }
+            })
         },
     }
 }
