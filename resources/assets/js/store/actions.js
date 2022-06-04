@@ -2378,8 +2378,9 @@ export default {
                                         // 更新最后消息
                                         dispatch("updateDialogLastMsg", data);
                                         break;
+                                    case 'update':
                                     case 'readed':
-                                        // 已读回执
+                                        // 更新、已读回执
                                         if (state.dialogMsgs.find(({id}) => id == data.id)) {
                                             dispatch("saveDialogMsg", data)
                                         }

@@ -139,46 +139,56 @@
         <div class="operate-position" :style="operateStyles">
             <Dropdown
                 trigger="custom"
-                :placement="$isDesktop ? 'bottom' : 'top'"
+                placement="top"
                 :visible="operateVisible"
                 @on-clickoutside="operateVisible = false"
-                @on-click="onOperate"
                 transferClassName="dialog-wrapper-operate"
                 transfer>
                 <div :style="{userSelect:operateVisible ? 'none' : 'auto', height: operateStyles.height}"></div>
                 <DropdownMenu slot="list">
-                    <DropdownItem v-if="operateHasText" name="copy">
-                        <div class="operate-item">
-                            <span>{{ $L('复制') }}</span>
-                            <i class="taskfont">&#xe77f;</i>
-                        </div>
+                    <DropdownItem name="action">
+                        <ul class="operate-action">
+                            <template v-if="operateHasText">
+                                <li @click="onOperate('copy')">
+                                    <i class="taskfont">&#xe77f;</i>
+                                    <span>{{ $L('复制') }}</span>
+                                </li>
+                                <li @click="onOperate('newTask')">
+                                    <i class="taskfont">&#xe7b8;</i>
+                                    <span>{{ $L('新任务') }}</span>
+                                </li>
+                            </template>
+                            <li @click="onOperate('forward')">
+                                <i class="taskfont">&#xe75e;</i>
+                                <span>{{ $L('转发') }}</span>
+                            </li>
+                            <template v-if="operateItem.userid == userId">
+                                <li @click="onOperate('withdraw')">
+                                    <i class="taskfont">&#xe637;</i>
+                                    <span>{{ $L('撤回') }}</span>
+                                </li>
+                            </template>
+                            <template v-if="operateItem.type === 'file'">
+                                <li @click="onOperate('view')">
+                                    <i class="taskfont">&#xe77b;</i>
+                                    <span>{{ $L('查看') }}</span>
+                                </li>
+                                <li @click="onOperate('down')">
+                                    <i class="taskfont">&#xe7a8;</i>
+                                    <span>{{ $L('下载') }}</span>
+                                </li>
+                            </template>
+                        </ul>
                     </DropdownItem>
-                    <DropdownItem name="forward">
-                        <div class="operate-item">
-                            <span>{{ $L('转发') }}</span>
-                            <i class="taskfont">&#xe75e;</i>
-                        </div>
+                    <DropdownItem name="emoji">
+                        <ul class="operate-emoji scrollbar-hidden">
+                            <li
+                                v-for="(emoji, key) in operateEmojis"
+                                :key="key"
+                                v-html="emoji"
+                                @click="onOperate('emoji', emoji)"></li>
+                        </ul>
                     </DropdownItem>
-                    <DropdownItem v-if="operateItem.userid == userId" name="withdraw">
-                        <div class="operate-item">
-                            <span>{{ $L('撤回') }}</span>
-                            <i class="taskfont">&#xe637;</i>
-                        </div>
-                    </DropdownItem>
-                    <template v-if="operateItem.type === 'file'">
-                        <DropdownItem name="view" divided>
-                            <div class="operate-item">
-                                <span>{{ $L('查看') }}</span>
-                                <i class="taskfont">&#xe77b;</i>
-                            </div>
-                        </DropdownItem>
-                        <DropdownItem name="down">
-                            <div class="operate-item">
-                                <span>{{ $L('下载') }}</span>
-                                <i class="taskfont">&#xe7a8;</i>
-                            </div>
-                        </DropdownItem>
-                    </template>
                 </DropdownMenu>
             </Dropdown>
         </div>
@@ -260,6 +270,7 @@ import ChatInput from "./ChatInput";
 
 import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller-hi'
 import 'vue-virtual-scroller-hi/dist/vue-virtual-scroller.css'
+import {Store} from "le5le-store";
 
 export default {
     name: "DialogWrapper",
@@ -317,6 +328,7 @@ export default {
             operateHasText: false,
             operateStyles: {},
             operateItem: {},
+            operateEmojis: ['👌', '🤝', '🤔', '👍', '👎', '👏', '✋', '✅', '❌', '❤️', '❓']
         }
     },
 
@@ -839,18 +851,26 @@ export default {
             })
         },
 
-        onOperate(name) {
+        onOperate(name, value = null) {
             switch (name) {
                 case "copy":
                     if (this.operateHasText) {
-                        const text = this.operateItem.msg.text.replace(/<[^>]+>/g,"");
-                        this.$copyText(text).then(_ => {
+                        this.$copyText(this.operateItem.msg.text.replace(/<[^>]+>/g, "")).then(_ => {
                             $A.messageSuccess('复制成功');
                         }).catch(_ => {
                             $A.messageError('复制失败');
                         });
                     } else {
                         $A.messageWarning('不可复制的内容');
+                    }
+                    break;
+
+                case "newTask":
+                    if (this.operateHasText) {
+                        Store.set('addTask', {
+                            owner: [this.userId],
+                            name: this.operateItem.msg.text.replace(/<[^>]+>/g, "")
+                        });
                     }
                     break;
 
@@ -868,6 +888,10 @@ export default {
 
                 case "down":
                     this.$refs[`msg_${this.operateItem.id}`].downFile()
+                    break;
+
+                case "emoji":
+                    this.$refs[`msg_${this.operateItem.id}`].setEmoji(value)
                     break;
             }
         },

@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int|null $userid 发送会员ID
  * @property string|null $type 消息类型
  * @property array|mixed $msg 详细消息
+ * @property array|mixed $emoji emoji回复
  * @property int|null $read 已阅数量
  * @property int|null $send 发送数量
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -34,6 +35,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereDialogId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereDialogType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereEmoji($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereMsg($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereRead($value)
@@ -99,6 +101,19 @@ class WebSocketDialogMsg extends AbstractModel
     }
 
     /**
+     * emoji回复格式化
+     * @param $value
+     * @return array|mixed
+     */
+    public function getEmojiAttribute($value)
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+        return Base::json2array($value);
+    }
+
+    /**
      * 获取占比
      * @param bool|int $increment 是否新增阅读数
      * @return int
@@ -159,6 +174,53 @@ class WebSocketDialogMsg extends AbstractModel
             }
         });
         return true;
+    }
+
+    /**
+     * emoji回复
+     * @param $emoji
+     * @param int $sender       发送的会员ID
+     * @return mixed
+     */
+    public function emojiMsg($emoji, $sender)
+    {
+        $exist = false;
+        $array = $this->emoji;
+        foreach ($array as $index => &$item) {
+            if ($item['symbol'] === $emoji) {
+                if (in_array($sender, $item['userids'])) {
+                    // 已存在 去除
+                    $item['userids'] = array_values(array_diff($item['userids'], [$sender]));
+                    if (empty($item['userids'])) {
+                        unset($array[$index]);
+                        $array = array_values($array);
+                    }
+                } else {
+                    // 未存在 添加
+                    array_unshift($item['userids'], $sender);
+                }
+                $exist = true;
+                break;
+            }
+        }
+        if (!$exist) {
+            array_unshift($array, [
+                'symbol' => $emoji,
+                'userids' => [$sender]
+            ]);
+        }
+        //
+        $this->emoji = Base::array2json($array);
+        $this->save();
+        $resData = [
+            'id' => $this->id,
+            'emoji' => $array,
+        ];
+        //
+        $dialog = WebSocketDialog::find($this->dialog_id);
+        $dialog?->pushMsg('update', $resData);
+        //
+        return Base::retSuccess('sucess', $resData);
     }
 
     /**

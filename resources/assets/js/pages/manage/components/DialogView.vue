@@ -5,15 +5,9 @@
             <UserAvatar :userid="msgData.userid" :show-icon="false" :show-name="true" :tooltip-disabled="true"/>
         </div>
 
-        <div class="dialog-head">
+        <div class="dialog-head" v-longpress="{delay: 300, callback: handleLongpress}">
             <!--详情-->
-            <div
-                class="dialog-content"
-                :class="contentClass"
-                v-longpress="{
-                    delay: 300,
-                    callback: handleLongpress
-                }">
+            <div class="dialog-content" :class="contentClass">
                 <!--文本-->
                 <div v-if="msgData.type === 'text'" class="content-text no-dark-content">
                     <pre @click="viewText" v-html="textMsg(msgData.msg.text)"></pre>
@@ -66,6 +60,17 @@
                 <!--未知-->
                 <div v-else class="content-unknown">{{$L("未知的消息类型")}}</div>
             </div>
+            <!--emoji-->
+            <ul v-if="msgData.emoji.length > 0" class="dialog-emoji">
+                <li
+                    v-for="(item, index) in msgData.emoji"
+                    :key="index"
+                    :class="{hasme: item.userids.includes(userId)}"
+                    @click="setEmoji(item.symbol)">
+                    <div class="emoji-symbol no-dark-content">{{item.symbol}}</div>
+                    <div class="emoji-num">{{item.userids.length}}</div>
+                </li>
+            </ul>
         </div>
 
         <!--时间/阅读-->
@@ -522,6 +527,20 @@ export default {
                 onOk: () => {
                     this.$store.dispatch('downUrl', $A.apiUrl(`dialog/msg/download?msg_id=${this.msgData.id}`))
                 }
+            });
+        },
+
+        setEmoji(emoji) {
+            this.$store.dispatch("call", {
+                url: 'dialog/msg/emoji',
+                data: {
+                    msg_id: this.msgData.id,
+                    emoji,
+                },
+            }).then(({data}) => {
+                this.$store.dispatch("saveDialogMsg", data);
+            }).catch(({msg}) => {
+                $A.messageError(msg);
             });
         }
     }

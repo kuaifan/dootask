@@ -221,9 +221,7 @@
 
                 &.operate-action {
                     .dialog-head {
-                        .dialog-content {
-                            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
-                        }
+                        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
                     }
                 }
 
@@ -236,16 +234,16 @@
 
                 .dialog-head {
                     display: flex;
-                    align-items: flex-start;
+                    flex-direction: column;
+                    background-color: #F4F5F7;
+                    padding: 8px;
+                    min-width: 32px;
+                    border-radius: 2px 8px 8px 8px;
+                    transition: box-shadow 0.3s ease;
 
                     .dialog-content {
-                        background-color: #F4F5F7;
-                        padding: 8px;
-                        min-width: 32px;
-                        border-radius: 2px 8px 8px 8px;
                         display: flex;
                         align-items: flex-start;
-                        transition: box-shadow 0.3s ease;
 
                         &.an-emoticon,
                         &.an-emoji,
@@ -558,6 +556,34 @@
                             text-decoration: underline;
                         }
                     }
+
+                    .dialog-emoji {
+                        display: flex;
+                        align-items: center;
+                        margin-top: 4px;
+                        > li {
+                            list-style: none;
+                            display: flex;
+                            align-items: center;
+                            padding: 2px 7px;
+                            margin-right: 8px;
+                            border-radius: 14px;
+                            line-height: 22px;
+                            cursor: pointer;
+                            background-color: rgba(#e1e1e1, 0.5);
+                            &.hasme {
+                                background-color: #e1e1e1;
+                            }
+                            .emoji-symbol {
+                                font-size: 16px;
+                            }
+                            .emoji-num {
+                                font-size: 12px;
+                                padding-left: 4px;
+                                color: #818181;
+                            }
+                        }
+                    }
                 }
 
                 .dialog-foot {
@@ -674,12 +700,10 @@
                     margin: 0 8px 0 0;
 
                     .dialog-head {
-                        flex-direction: row-reverse;
+                        background-color: $primary-color;
+                        border-radius: 8px 2px 8px 8px;
 
                         .dialog-content {
-                            background-color: $primary-color;
-                            border-radius: 8px 2px 8px 8px;
-
                             .content-text {
                                 color: #ffffff;
 
@@ -735,6 +759,18 @@
                                             }
                                         }
                                     }
+                                }
+                            }
+                        }
+
+                        .dialog-emoji {
+                            > li {
+                                background-color: rgba(#5ba93c, 0.5);
+                                &.hasme {
+                                    background-color: #5ba93c;
+                                }
+                                .emoji-num {
+                                    color: #ffffff;
                                 }
                             }
                         }
@@ -842,7 +878,7 @@
     .operate-position {
         position: absolute;
         top: 0;
-        right: 0;
+        left: 0;
         width: 1px;
         opacity: 0;
         visibility: hidden;
@@ -941,13 +977,61 @@
 }
 
 .dialog-wrapper-operate {
-    .operate-item {
+    .ivu-dropdown-item {
+        padding: 0;
+        &:hover {
+            background-color: transparent;
+        }
+    }
+    .operate-action {
+        width: 316px;
+        padding: 8px;
+        margin-bottom: -8px;
+        display: grid;
+        justify-content: space-between;
+        grid-template-columns: repeat(auto-fill, 50px);
+        > li {
+            list-style: none;
+            width: 50px;
+            height: 48px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            .taskfont {
+                font-size: 20px;
+            }
+            > span {
+                font-size: 12px;
+            }
+        }
+    }
+    .operate-emoji {
+        width: 316px;
+        padding: 8px 4px 2px;
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        min-width: 80px;
-        .taskfont {
-            margin-left: 24px;
+        overflow: auto;
+        position: relative;
+        &:after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background-color: #f4f5f5;
+        }
+        > li {
+            list-style: none;
+            width: 44px;
+            box-sizing: content-box;
+            display: flex;
+            flex-shrink: 0;
+            font-size: 24px;
+            justify-content: center;
+            align-items: center;
         }
     }
 }

@@ -569,36 +569,6 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/top          14. 会话置顶
-     *
-     * @apiDescription 需要token身份
-     * @apiVersion 1.0.0
-     * @apiGroup dialog
-     * @apiName top
-     *
-     * @apiParam {Number} dialog_id            会话ID
-     *
-     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据
-     */
-    public function top()
-    {
-        $user = User::auth();
-        $dialogId = intval(Request::input('dialog_id'));
-        $dialogUser = WebSocketDialogUser::whereUserid($user->userid)->whereDialogId($dialogId)->first();
-        if (!$dialogUser) {
-            return Base::retError("会话不存在");
-        }
-        $dialogUser->top_at = $dialogUser->top_at ? null : Carbon::now();
-        $dialogUser->save();
-        return Base::retSuccess("success", [
-            'id' => $dialogUser->dialog_id,
-            'top_at' => $dialogUser->top_at?->toDateTimeString(),
-        ]);
-    }
-
-    /**
      * @api {get} api/dialog/msg/mark          15. 消息标记操作
      *
      * @apiDescription  需要token身份
@@ -677,6 +647,69 @@ class DialogController extends AbstractController
             return Base::retError("消息不存在或已被删除");
         }
         return $msg->forwardMsg($userids, $user->userid);
+    }
+
+    /**
+     * @api {get} api/dialog/msg/emoji          13. emoji回复
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__forward
+     *
+     * @apiParam {Number} msg_id            消息ID
+     * @apiParam {String} emoji             回复或取消的emoji表情
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__emoji()
+    {
+        $user = User::auth();
+        //
+        $msg_id = intval(Request::input("msg_id"));
+        $emoji = Request::input("emoji");
+        //
+        if (!preg_match("/^[\u{d800}-\u{dbff}]|[\u{dc00}-\u{dfff}]$/", $emoji)) {
+            return Base::retError("参数错误");
+        }
+        //
+        $msg = WebSocketDialogMsg::whereId($msg_id)->whereUserid($user->userid)->first();
+        if (empty($msg)) {
+            return Base::retError("消息不存在或已被删除");
+        }
+        return $msg->emojiMsg($emoji, $user->userid);
+    }
+
+    /**
+     * @api {get} api/dialog/top          14. 会话置顶
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName top
+     *
+     * @apiParam {Number} dialog_id            会话ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function top()
+    {
+        $user = User::auth();
+        $dialogId = intval(Request::input('dialog_id'));
+        $dialogUser = WebSocketDialogUser::whereUserid($user->userid)->whereDialogId($dialogId)->first();
+        if (!$dialogUser) {
+            return Base::retError("会话不存在");
+        }
+        $dialogUser->top_at = $dialogUser->top_at ? null : Carbon::now();
+        $dialogUser->save();
+        return Base::retSuccess("success", [
+            'id' => $dialogUser->dialog_id,
+            'top_at' => $dialogUser->top_at?->toDateTimeString(),
+        ]);
     }
 
     /**
