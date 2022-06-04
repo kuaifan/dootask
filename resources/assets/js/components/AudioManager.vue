@@ -27,6 +27,7 @@ export default {
         return {
             audioSubscribe: null,
             audioPlay: false,
+            audioTimer: null,
             audioId: 0,
             audioSrc: null,
             callback: null,
@@ -46,6 +47,16 @@ export default {
             if (typeof this.callback === "function") {
                 this.callback(play)
             }
+            //
+            this.audioTimer && clearTimeout(this.audioTimer);
+            if (!play) {
+                this.audioTimer = setTimeout(_ => {
+                    if (!play) {
+                        this.$refs.audio.src = null
+                        this.audioSrc = null
+                    }
+                }, 3000)
+            }
         }
     },
     methods: {
@@ -61,9 +72,6 @@ export default {
             if (typeof msg === "boolean") {
                 if (msg && !ended) {
                     audio.pause()
-                    audio.src = null
-                    this.audioSrc = null
-                    this.audioPlay = false;
                 }
                 return
             }
@@ -74,9 +82,6 @@ export default {
                     audio.play()
                 } else {
                     audio.pause();
-                    audio.src = null
-                    this.audioSrc = null
-                    this.audioPlay = false;
                 }
             } else {
                 this.audioId = id;
