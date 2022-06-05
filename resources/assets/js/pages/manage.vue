@@ -322,6 +322,9 @@
             </div>
         </Modal>
 
+        <!--聊天窗口（移动端）-->
+        <DialogModal/>
+
         <!--工作报告-->
         <DrawerOverlay
             v-model="workReportShow"
@@ -385,9 +388,11 @@ import TaskMenu from "./manage/components/TaskMenu";
 import MobileNotification from "../components/Mobile/Notification";
 import MeetingManager from "./manage/components/MeetingManager";
 import longpress from "../directives/longpress";
+import DialogModal from "./manage/components/DialogModal";
 
 export default {
     components: {
+        DialogModal,
         MeetingManager,
         MobileNotification,
         TaskMenu,

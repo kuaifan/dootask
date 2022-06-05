@@ -97,6 +97,14 @@ Vue.prototype.goForward = function(location, isReplace) {
     if (typeof location === 'string') {
         location = {name: location};
     }
+    // 打开聊天窗口（移动端）
+    if (app.$store.state.windowMax768
+        && location.name === 'manage-messenger'
+        && /\d+/.test(location.params.dialogId)) {
+        app.$store.state.dialogModalId = location.params.dialogId;
+        return
+    }
+    //
     if (app.$store.state.routeHistorys.length === 0) {
         app.$store.state.routeHistorys.push(app.$route)
     }

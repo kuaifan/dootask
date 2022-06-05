@@ -132,16 +132,13 @@
                 </div>
             </div>
 
-            <transition :name="windowMax768 ? 'mobile-dialog' : ''">
-                <div v-if="dialogId || !windowMax768" class="messenger-msg">
-                    <div class="msg-dialog-bg">
-                        <div class="msg-dialog-bg-icon"><Icon type="ios-chatbubbles" /></div>
-                        <div class="msg-dialog-bg-text">{{$L('选择一个会话开始聊天')}}</div>
-                    </div>
-                    <DialogWrapper v-if="dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive" desktop-auto-focus/>
+            <div class="messenger-msg">
+                <div class="msg-dialog-bg">
+                    <div class="msg-dialog-bg-icon"><Icon type="ios-chatbubbles" /></div>
+                    <div class="msg-dialog-bg-text">{{$L('选择一个会话开始聊天')}}</div>
                 </div>
-            </transition>
-
+                <DialogWrapper v-if="dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive" desktop-auto-focus/>
+            </div>
         </div>
     </div>
 </template>

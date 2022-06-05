@@ -297,6 +297,7 @@ export default {
             type: Boolean,
             default: false
         },
+        beforeBack: Function
     },
 
     data() {
@@ -853,6 +854,20 @@ export default {
         },
 
         onBack() {
+            if (!this.beforeBack) {
+                return this.handleBack();
+            }
+            const before = this.beforeBack();
+            if (before && before.then) {
+                before.then(() => {
+                    this.handleBack();
+                });
+            } else {
+                this.handleBack();
+            }
+        },
+
+        handleBack() {
             const {name, params} = this.$store.state.routeHistoryLast;
             if (name === this.$route.name && /\d+/.test(params.dialogId)) {
                 this.goForward({name: this.$route.name});

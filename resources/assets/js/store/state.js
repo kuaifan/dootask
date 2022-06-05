@@ -66,8 +66,9 @@ const stateData = {
 
     // 会话聊天
     dialogMsgs: [],
-    dialogMsgTransfer: {time: 0},
     dialogInputCache: $A.getStorageArray("cacheDialogInput"),
+    dialogMsgTransfer: {time: 0},
+    dialogModalId: 0,
 
     // 文件
     files: [],
