@@ -128,6 +128,10 @@ export default {
     components: {ChatEmoji},
     directives: {touchmouse, TransferDom, clickoutside},
     props: {
+        value: {
+            type: [String, Number],
+            default: ''
+        },
         dialogId: {
             type: Number,
             default: 0
@@ -135,10 +139,6 @@ export default {
         taskId: {
             type: Number,
             default: 0
-        },
-        value: {
-            type: [String, Number],
-            default: ''
         },
         placeholder: {
             type: String,
@@ -528,7 +528,8 @@ export default {
                     this.quill.deleteText(this.maxlength, this.quill.getLength());
                 }
                 let html = this.$refs.editor.children[0].innerHTML
-                html = html.replace(/^(<p><br><\/p>)+|(<p><br><\/p>)+$/gi, '')
+                html = html.replace(/^(<p>\s*<\/p>)+|(<p>\s*<\/p>)+$/gi, '')
+                html = html.replace(/^(<p><br\/*><\/p>)+|(<p><br\/*><\/p>)+$/gi, '')
                 this._content = html
                 this.$emit('input', this._content)
                 this.$nextTick(_ => {
