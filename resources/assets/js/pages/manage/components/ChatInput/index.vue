@@ -69,7 +69,12 @@
                 <!-- 发送按钮 -->
                 <li class="chat-send" :class="sendClass" v-touchmouse="clickSend">
                     <ETooltip placement="top" :disabled="!$isDesktop" :content="$L('发送')">
-                        <div>
+                        <div v-if="loading">
+                            <div class="chat-load">
+                                <Loading/>
+                            </div>
+                        </div>
+                        <div v-else>
                             <transition name="mobile-send">
                                 <i v-if="sendClass === 'recorder'" class="taskfont">&#xe609;</i>
                             </transition>

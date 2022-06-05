@@ -165,6 +165,20 @@
                         transition: all 0.3s ease;
                         color: #ffffff;
                     }
+                    .chat-load {
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        z-index: 3;
+                        transform: translate(-50%, -50%) scale(1);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        .common-loading {
+                            width: 20px;
+                            height: 20px;
+                        }
+                    }
                 }
                 &.chat-record-recwave {
                     position: absolute;

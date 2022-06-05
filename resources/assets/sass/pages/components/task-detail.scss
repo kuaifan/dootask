@@ -592,25 +592,16 @@
                     top: 2px;
                     right: 22px;
                     z-index: 2;
-                    .common-loading {
-                        width: 20px;
-                        height: 20px;
-                        margin: 0;
-                    }
-                    > em {
-                        display: inline-block;
-                        height: 20px;
-                        border-radius: 10px;
-                        min-width: 20px;
-                        background: #ed4014;
-                        color: #fff;
-                        line-height: 20px;
-                        text-align: center;
-                        padding: 0 6px;
-                        font-size: 12px;
-                        font-style: normal;
-                        white-space: nowrap;
-                    }
+                    height: 20px;
+                    border-radius: 10px;
+                    min-width: 20px;
+                    background: #ed4014;
+                    color: #fff;
+                    line-height: 20px;
+                    text-align: center;
+                    padding: 0 6px;
+                    font-size: 12px;
+                    white-space: nowrap;
                 }
             }
             .drag-over {
