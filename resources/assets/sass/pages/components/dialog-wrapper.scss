@@ -7,8 +7,11 @@
     display: flex;
     flex-direction: column;
     background-color: #ffffff;
-    overflow: hidden;
     z-index: 1;
+
+    &.record-ing {
+        overflow: hidden;
+    }
 
     .vue-recycle-scroller.direction-vertical:not(.page-mode) {
         overflow-y: overlay;

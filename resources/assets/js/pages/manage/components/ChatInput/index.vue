@@ -401,6 +401,10 @@ export default {
             }
         },
 
+        recordState(state) {
+            this.$emit('on-record-state', state)
+        },
+
         dialogInputCache() {
             this.$emit('input', this.getInputCache())
         }

@@ -2,6 +2,7 @@
     <div
         v-if="isReady"
         class="dialog-wrapper"
+        :class="wrapperClass"
         :style="wrapperStyle"
         @drop.prevent="chatPasteDrag($event, 'drag')"
         @dragover.prevent="chatDragOver(true, $event)"
@@ -129,8 +130,9 @@
                 @on-blur="onEventBlur"
                 @on-more="onEventMore"
                 @on-file="sendFileMsg"
-                @on-record="sendRecord"
                 @on-send="sendMsg"
+                @on-record="sendRecord"
+                @on-record-state="onRecordState"
                 @on-emoji-visible-change="onEventEmojiVisibleChange"
                 :placeholder="$L('输入消息...')"/>
         </div>
@@ -329,7 +331,9 @@ export default {
             operateHasText: false,
             operateStyles: {},
             operateItem: {},
-            operateEmojis: ['👌', '🤝', '🤔', '👍', '👎', '👏', '✋', '✅', '❌', '❤️', '❓']
+            operateEmojis: ['👌', '🤝', '🤔', '👍', '👎', '👏', '✋', '✅', '❌', '❤️', '❓'],
+
+            recordState: '',
         }
     },
 
@@ -393,6 +397,13 @@ export default {
                 return '发送图片'
             }
             return '发送文件'
+        },
+
+        wrapperClass() {
+            if (['ready', 'ing'].includes(this.recordState)) {
+                return ['record-ing']
+            }
+            return null
         },
 
         pasteWrapperClass() {
@@ -620,6 +631,10 @@ export default {
                     }
                 });
             }
+        },
+
+        onRecordState(state) {
+            this.recordState = state;
         },
 
         chatPasteDrag(e, type) {
