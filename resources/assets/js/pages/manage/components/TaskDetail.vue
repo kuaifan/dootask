@@ -1107,7 +1107,7 @@ export default {
                     } else {
                         this.$nextTick(() => {
                             if (this.windowMax768) {
-                                window.__sendDialogMsg = {
+                                this.$store.state.dialogMsgTransfer = {
                                     time: $A.Time() + 10,
                                     msgText: this.msgText,
                                     msgFile: this.msgFile,

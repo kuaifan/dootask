@@ -436,9 +436,9 @@ export default {
     watch: {
         '$route': {
             handler (route) {
-                if ($A.isJson(window.__sendDialogMsg) && window.__sendDialogMsg.time > $A.Time()) {
-                    const {msgFile, msgRecord, msgText} = window.__sendDialogMsg;
-                    window.__sendDialogMsg = null;
+                if (this.$store.state.dialogMsgTransfer.time > $A.Time()) {
+                    this.$store.state.dialogMsgTransfer.time = 0;
+                    const {msgFile, msgRecord, msgText} = this.$store.state.dialogMsgTransfer;
                     this.$nextTick(() => {
                         if ($A.isArray(msgFile) && msgFile.length > 0) {
                             this.sendFileMsg(msgFile);
