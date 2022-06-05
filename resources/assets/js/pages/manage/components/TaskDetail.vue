@@ -746,6 +746,9 @@ export default {
                     this.$refs.owner && this.$refs.owner.handleClose();
                     this.$refs.assist && this.$refs.assist.handleClose();
                     this.$refs.chatInput && this.$refs.chatInput.hidePopover();
+                    if (!this.$isDesktop) {
+                        document.activeElement.blur();
+                    }
                 }
             },
             immediate: true
