@@ -7,6 +7,9 @@ const stateData = {
     // 浏览器宽度≤768返回true
     windowMax768: window.innerWidth <= 768,
 
+    // 播放中的音频地址
+    audioPlaying: null,
+
     // 路由记录
     routeHistorys: [],
     routeHistoryLast: {},

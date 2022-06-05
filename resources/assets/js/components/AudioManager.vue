@@ -30,7 +30,6 @@ export default {
             audioTimer: null,
             audioId: 0,
             audioSrc: null,
-            callback: null,
         }
     },
     mounted() {
@@ -44,9 +43,7 @@ export default {
     },
     watch: {
         audioPlay(play) {
-            if (typeof this.callback === "function") {
-                this.callback(play)
-            }
+            this.updateState();
             //
             this.audioTimer && clearTimeout(this.audioTimer);
             if (!play) {
@@ -57,6 +54,9 @@ export default {
                     }
                 }, 3000)
             }
+        },
+        audioSrc() {
+            this.updateState();
         }
     },
     methods: {
@@ -75,8 +75,7 @@ export default {
                 }
                 return
             }
-            const {id, src, callback} = msg
-            this.callback = callback || null;
+            const {id, src} = msg
             if (src === this.audioSrc) {
                 if (ended) {
                     audio.play()
@@ -92,6 +91,10 @@ export default {
                 audio.src = src
                 audio.play()
             }
+        },
+
+        updateState() {
+            this.$store.state.audioPlaying = this.audioPlay && this.audioSrc ? this.audioSrc : null;
         },
 
         overAudio() {

@@ -33,7 +33,7 @@
                 </div>
                 <!--录音-->
                 <div v-else-if="msgData.type === 'record'" class="content-record no-dark-content">
-                    <div class="dialog-record" :class="{playing: recordPlay}" :style="recordStyle(msgData.msg)" @click="playRecord">
+                    <div class="dialog-record" :class="{playing: audioPlaying === msgData.msg.path}" :style="recordStyle(msgData.msg)" @click="playRecord">
                         <div class="record-time">{{recordDuration(msgData.msg.duration)}}</div>
                         <div class="record-icon taskfont"></div>
                     </div>
@@ -159,7 +159,6 @@ export default {
             popperLoad: 0,
             popperShow: false,
             timeShow: false,
-            recordPlay: false,
             operateEnter: false,
             allList: [],
         }
@@ -174,7 +173,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userToken', 'userId', 'dialogMsgs']),
+        ...mapState(['userToken', 'userId', 'dialogMsgs', 'audioPlaying']),
 
         viewClass() {
             const {msgData, operateAction, operateEnter} = this;
@@ -391,9 +390,6 @@ export default {
             Store.set('audioSubscribe', {
                 id: this.msgData.id,
                 src: this.msgData.msg.path,
-                callback: (play) => {
-                    this.recordPlay = play;
-                }
             });
         },
 
