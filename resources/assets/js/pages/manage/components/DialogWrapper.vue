@@ -785,6 +785,10 @@ export default {
                 };
                 this.forwardShow = true;
             } else if (type === 'submit') {
+                if ($A.arrayLength(this.forwardData.userids) === 0) {
+                    $A.messageWarning("请选择转发成员");
+                    return
+                }
                 this.forwardLoad = true;
                 this.$store.dispatch("call", {
                     url: 'dialog/msg/forward',

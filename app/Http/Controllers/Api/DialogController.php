@@ -646,6 +646,10 @@ class DialogController extends AbstractController
         if (empty($msg)) {
             return Base::retError("消息不存在或已被删除");
         }
+        if (empty($userids)) {
+            return Base::retError("请选择转发成员");
+        }
+        //
         return $msg->forwardMsg($userids, $user->userid);
     }
 
