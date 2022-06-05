@@ -120,7 +120,7 @@
                         </div>
                         <Button slot="reference" :loading="ownerLoad > 0" class="pick" type="primary">{{$L('我要领取任务')}}</Button>
                     </EPopover>
-                    <ETooltip v-if="$Electron" :disabled="!$isDesktop" :content="$L('新窗口打开')">
+                    <ETooltip v-if="$Electron" :disabled="windowSmall" :content="$L('新窗口打开')">
                         <i class="taskfont open" @click="openNewWin">&#xe776;</i>
                     </ETooltip>
                     <div class="menu">
@@ -548,17 +548,12 @@ export default {
 
     computed: {
         ...mapState([
-            'userId',
-            'userToken',
             'cacheProjects',
             'cacheColumns',
             'cacheTasks',
             'taskContents',
             'taskFiles',
             'taskPriority',
-
-            'windowMax768',
-            'windowHeight'
         ]),
 
         projectName() {
@@ -614,7 +609,7 @@ export default {
         },
 
         hasOpenDialog() {
-            return this.taskDetail.dialog_id > 0 && !this.windowMax768;
+            return this.taskDetail.dialog_id > 0 && this.windowLarge;
         },
 
         dialogStyle() {
@@ -746,7 +741,7 @@ export default {
                     this.$refs.owner && this.$refs.owner.handleClose();
                     this.$refs.assist && this.$refs.assist.handleClose();
                     this.$refs.chatInput && this.$refs.chatInput.hidePopover();
-                    if (!this.$isDesktop) {
+                    if (this.windowSmall) {
                         document.activeElement.blur();
                     }
                 }
@@ -1106,7 +1101,7 @@ export default {
                         });
                     } else {
                         this.$nextTick(() => {
-                            if (this.windowMax768) {
+                            if (this.windowSmall) {
                                 this.$store.state.dialogMsgTransfer = {
                                     time: $A.Time() + 10,
                                     msgText: this.msgText,

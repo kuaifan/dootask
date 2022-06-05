@@ -5,11 +5,11 @@
         :mask-closable="false"
         :footer-hide="true"
         :transition-names="['', '']"
-        :class-name="mode === 'desktop' ? 'common-preview-image-view' : 'common-preview-image-swipe'"
+        :class-name="viewMode === 'desktop' ? 'common-preview-image-view' : 'common-preview-image-swipe'"
         fullscreen>
         <template v-if="list.length > 0">
-            <PreviewImageView v-if="mode === 'desktop'" :initial-index="index" :url-list="list" infinite/>
-            <PreviewImageSwipe v-if="mode === 'mobile'" :initial-index="index" :url-list="list" @on-destroy="show=false"/>
+            <PreviewImageView v-if="viewMode === 'desktop'" :initial-index="index" :url-list="list" infinite/>
+            <PreviewImageSwipe v-if="viewMode === 'mobile'" :initial-index="index" :url-list="list" @on-destroy="show=false"/>
         </template>
     </Modal>
 </template>
@@ -87,9 +87,7 @@ export default {
         },
         mode: {
             type: String,
-            default: () => {
-                return $A.isDesktop ? 'desktop' : 'mobile';
-            }
+            default: null
         }
     },
     data() {
@@ -103,6 +101,14 @@ export default {
         },
         show(v) {
             this.value !== v && this.$emit("input", v)
+        }
+    },
+    computed: {
+        viewMode() {
+            if (this.mode) {
+                return this.mode
+            }
+            return this.$store.state.windowLarge ? 'desktop' : 'mobile'
         }
     }
 };

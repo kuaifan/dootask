@@ -1,13 +1,13 @@
 <template>
     <div class="minder-editor-container">
         <div class="quickbar">
-            <ETooltip :disabled="!$isDesktop" placement="top" effect="light">
+            <ETooltip :disabled="windowSmall" placement="top" effect="light">
                 <div><i class="ft icon" :title="$L('缩放')">&#xE7B3;</i></div>
                 <div slot="content" class="minder-editor-slider">
                     <Slider v-model="zoom" :min="10" :max="300"></Slider>
                 </div>
             </ETooltip>
-            <ETooltip v-if="readOnly!==true" :disabled="!$isDesktop" placement="top" effect="light">
+            <ETooltip v-if="readOnly!==true" :disabled="windowSmall" placement="top" effect="light">
                 <div><i class="ft icon" :title="$L('图形')">&#xE621;</i></div>
                 <div slot="content">
                     <ul class="minder-editor-quickul mold">
@@ -20,7 +20,7 @@
                     </ul>
                 </div>
             </ETooltip>
-            <ETooltip v-if="readOnly!==true" :disabled="!$isDesktop" placement="top" effect="light">
+            <ETooltip v-if="readOnly!==true" :disabled="windowSmall" placement="top" effect="light">
                 <div><i class="ft icon" :title="$L('样式')">&#xE678;</i></div>
                 <div slot="content">
                     <ul class="minder-editor-quickul">
@@ -36,7 +36,7 @@
                     </ul>
                 </div>
             </ETooltip>
-            <ETooltip :disabled="!$isDesktop" placement="top" effect="light">
+            <ETooltip :disabled="windowSmall" placement="top" effect="light">
                 <div><i class="ft icon" :title="$L('折叠')">&#xE779;</i></div>
                 <div slot="content">
                     <ul class="minder-editor-quickul">
@@ -49,10 +49,10 @@
                     </ul>
                 </div>
             </ETooltip>
-            <ETooltip :disabled="!$isDesktop" placement="top" :content="$L('居中')">
+            <ETooltip :disabled="windowSmall" placement="top" :content="$L('居中')">
                 <div @click="minder.execCommand('camera', minder.getRoot(), 600)"><i class="ft icon">&#xE61F;</i></div>
             </ETooltip>
-            <ETooltip :disabled="!$isDesktop" placement="top" :content="$L('移动')">
+            <ETooltip :disabled="windowSmall" placement="top" :content="$L('移动')">
                 <div @click="[minder.execCommand('Hand'),isHand=!isHand]"><i class="ft icon" :class="{active:isHand}">&#xE6CF;</i></div>
             </ETooltip>
         </div>

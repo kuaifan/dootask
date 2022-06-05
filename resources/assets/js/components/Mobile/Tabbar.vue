@@ -80,7 +80,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheDialogs', 'userId']),
+        ...mapState(['cacheDialogs']),
         ...mapGetters(['dashboardTask']),
 
         routeName() {

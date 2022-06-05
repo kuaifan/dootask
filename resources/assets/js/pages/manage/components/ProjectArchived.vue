@@ -43,7 +43,7 @@
                 :current="page"
                 :page-size="pageSize"
                 :disabled="loadIng > 0"
-                :simple="windowMax768"
+                :simple="windowSmall"
                 :page-size-opts="[10,20,30,50,100]"
                 show-elevator
                 show-sizer
@@ -77,9 +77,6 @@ export default {
     },
     mounted() {
         this.getLists();
-    },
-    computed: {
-        ...mapState(['windowMax768'])
     },
     watch: {
         keyIs(v) {

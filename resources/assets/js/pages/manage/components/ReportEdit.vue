@@ -12,13 +12,13 @@
                 <Radio label="daily" :disabled="id > 0 && reportData.type =='weekly'">{{ $L("日报") }}</Radio>
             </RadioGroup>
             <ButtonGroup v-if="id === 0" class="report-buttongroup">
-                <ETooltip :disabled="!$isDesktop" :content="prevCycleText" placement="bottom">
+                <ETooltip :disabled="windowSmall" :content="prevCycleText" placement="bottom">
                     <Button type="primary" @click="prevCycle">
                         <Icon type="ios-arrow-back" />
                     </Button>
                 </ETooltip>
                 <div class="report-buttongroup-vertical"></div>
-                <ETooltip :disabled="!$isDesktop || reportData.offset >= 0" :content="nextCycleText" placement="bottom">
+                <ETooltip :disabled="windowSmall || reportData.offset >= 0" :content="nextCycleText" placement="bottom">
                     <Button type="primary" @click="nextCycle" :disabled="reportData.offset >= 0">
                         <Icon type="ios-arrow-forward" />
                     </Button>
@@ -92,9 +92,6 @@ export default {
             },
             immediate: true
         },
-    },
-    computed: {
-        ...mapState(["userId"])
     },
     mounted() {
         //

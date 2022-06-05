@@ -85,7 +85,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheDialogs', 'userId']),
+        ...mapState(['cacheDialogs']),
 
         dialogData() {
             return this.cacheDialogs.find(({id}) => id == this.dialogId) || {};

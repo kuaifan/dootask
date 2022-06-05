@@ -173,7 +173,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userToken', 'userId', 'dialogMsgs', 'audioPlaying']),
+        ...mapState(['dialogMsgs', 'audioPlaying']),
 
         viewClass() {
             const {msgData, operateAction, operateEnter} = this;

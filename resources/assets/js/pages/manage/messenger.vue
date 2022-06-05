@@ -102,7 +102,7 @@
                     <div class="operate-position" :style="operateStyles">
                         <Dropdown
                             trigger="custom"
-                            :placement="$isDesktop ? 'bottom' : 'top'"
+                            :placement="windowLarge ? 'bottom' : 'top'"
                             :visible="operateVisible"
                             @on-clickoutside="operateVisible = false"
                             transfer>
@@ -186,7 +186,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'cacheDialogs', 'loadDialogs', 'windowMax768']),
+        ...mapState(['cacheDialogs', 'loadDialogs']),
 
         dialogId() {
             const {dialogId} = this.$route.params;
@@ -397,7 +397,7 @@ export default {
         },
 
         openContacts(user) {
-            if (this.$isDesktop) {
+            if (this.windowLarge) {
                 this.tabActive = 'dialog';
             }
             this.$store.dispatch("openDialogUserid", user.userid).then(({data}) => {
@@ -508,7 +508,7 @@ export default {
 
         scrollIntoActive() {
             this.$nextTick(() => {
-                if (this.$isDesktop && this.$refs.list) {
+                if (this.windowLarge && this.$refs.list) {
                     const active = this.$refs.list.querySelector(".active")
                     if (active) {
                         $A.scrollIntoViewIfNeeded(active);

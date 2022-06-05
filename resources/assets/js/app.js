@@ -14,6 +14,7 @@ import VueClipboard from 'vue-clipboard2'
 import ViewUI from 'view-design-hi';
 import Language from './language/index'
 import store from './store/index'
+import mixin from "./store/mixin";
 
 Vue.use(Vuex);
 Vue.use(ViewUI, {
@@ -98,7 +99,7 @@ Vue.prototype.goForward = function(location, isReplace) {
         location = {name: location};
     }
     // 打开聊天窗口（移动端）
-    if (app.$store.state.windowMax768
+    if (app.$store.state.windowSmall
         && location.name === 'manage-messenger'
         && /\d+/.test(location.params.dialogId)) {
         app.$store.state.dialogModalId = location.params.dialogId;
@@ -143,7 +144,6 @@ $A.Platform = "web";
 $A.isMainElectron = false;
 $A.isSubElectron = false;
 $A.isEEUiApp = isEEUiApp;
-$A.isDesktop = $A.isDesktop();
 $A.openLog = $A.getStorageString("log::open") === "open";
 if (isElectron) {
     $A.Electron = electron;
@@ -158,10 +158,10 @@ Vue.prototype.$Platform = $A.Platform;
 Vue.prototype.$isMainElectron = $A.isMainElectron;
 Vue.prototype.$isSubElectron = $A.isSubElectron;
 Vue.prototype.$isEEUiApp = $A.isEEUiApp;
-Vue.prototype.$isDesktop = $A.isDesktop;
 Vue.prototype.$openLog = $A.openLog;
 
 Vue.config.productionTip = false;
+Vue.mixin(mixin)
 
 const app = new Vue({
     el: '#app',

@@ -88,7 +88,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'cacheTasks', 'taskCompleteTemps', 'wsOpenNum', 'themeIsDark']),
+        ...mapState(['cacheTasks', 'taskCompleteTemps', 'wsOpenNum', 'themeIsDark']),
 
         ...mapGetters(['transforTasks']),
 
@@ -214,7 +214,7 @@ export default {
                 'month.dayname.borderLeft': '1px solid rgba(0,0,0,0)',
                 'month.dayname.height': '50px',
             }
-            if (this.$isDesktop) {
+            if (this.windowLarge) {
                 this.calendarTheme = {
                     'common.border': '1px solid #f4f5f5',
                     'month.dayname.fontSize': '14px',

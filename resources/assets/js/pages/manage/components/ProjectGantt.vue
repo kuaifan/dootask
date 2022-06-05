@@ -106,7 +106,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'windowWidth', 'taskPriority']),
+        ...mapState(['taskPriority']),
 
         ...mapGetters(['projectData']),
 

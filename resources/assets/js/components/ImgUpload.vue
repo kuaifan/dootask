@@ -164,8 +164,6 @@
             }
         },
         computed: {
-            ...mapState(['userToken']),
-
             uploadHeaders() {
                 return {
                     fd: $A.getSessionStorageString("userWsFd"),

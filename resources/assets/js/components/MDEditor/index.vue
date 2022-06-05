@@ -169,8 +169,6 @@
             this.content = this.value;
         },
         computed: {
-            ...mapState(['userToken']),
-
             headers() {
                 return {
                     fd: $A.getSessionStorageString("userWsFd"),

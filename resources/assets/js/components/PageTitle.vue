@@ -24,11 +24,6 @@ export default {
         this.updateTitle()
     },
 
-
-    computed: {
-        ...mapState(['userId']),
-    },
-
     watch: {
         title: {
             handler() {

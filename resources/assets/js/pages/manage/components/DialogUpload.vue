@@ -63,8 +63,6 @@ export default {
     },
 
     computed: {
-        ...mapState(['userToken']),
-
         headers() {
             return {
                 fd: $A.getSessionStorageString("userWsFd"),

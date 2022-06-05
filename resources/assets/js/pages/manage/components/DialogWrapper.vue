@@ -54,13 +54,13 @@
                     <ETooltip
                         v-if="dialogData.group_type === 'user'"
                         placement="top"
-                        :disabled="!$isDesktop"
+                        :disabled="windowSmall"
                         :openDelay="600"
                         :content="$L('群设置')">
                         <i class="taskfont dialog-create" @click="groupInfoShow = true">&#xe6e9;</i>
                     </ETooltip>
                 </template>
-                <ETooltip v-else-if="dialogData.type === 'user' && !isMyDialog" placement="top" :disabled="!$isDesktop" :content="$L('创建群组')">
+                <ETooltip v-else-if="dialogData.type === 'user' && !isMyDialog" placement="top" :disabled="windowSmall" :content="$L('创建群组')">
                     <i class="taskfont dialog-create" @click="openCreateGroup">&#xe646;</i>
                 </ETooltip>
             </div>
@@ -124,7 +124,7 @@
                 ref="input"
                 v-model="msgText"
                 :dialog-id="dialogId"
-                :emoji-bottom="!$isDesktop"
+                :emoji-bottom="windowSmall"
                 :maxlength="20000"
                 @on-focus="onEventFocus"
                 @on-blur="onEventBlur"
@@ -340,11 +340,9 @@ export default {
 
     computed: {
         ...mapState([
-            'userId',
             'cacheDialogs',
             'dialogMsgs',
             'wsOpenNum',
-            'windowScrollY',
             'touchBackInProgress'
         ]),
 
@@ -477,7 +475,7 @@ export default {
                         setTimeout(this.onToBottom, Math.max(0, 100 - (new Date().getTime() - startTime)));
                     }).catch(_ => {});
                     //
-                    if (this.$isDesktop && this.desktopAutoFocus) {
+                    if (this.windowLarge && this.desktopAutoFocus) {
                         this.$nextTick(_ => {
                             this.$refs.input.focus()
                         })
@@ -724,7 +722,7 @@ export default {
         },
 
         onEventEmojiVisibleChange(val) {
-            if (val && !this.$isDesktop) {
+            if (val && this.windowSmall) {
                 this.onToBottom();
             }
         },

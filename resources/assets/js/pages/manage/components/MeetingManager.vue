@@ -139,10 +139,6 @@ export default {
         }
     },
 
-    computed: {
-        ...mapState(['userId'])
-    },
-
     watch: {
         meetingShow(val) {
             if (val) {

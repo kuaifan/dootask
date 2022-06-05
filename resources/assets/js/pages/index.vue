@@ -190,7 +190,7 @@ export default {
         };
     },
     computed: {
-        ...mapState(['userId', 'windowWidth', 'themeMode', 'themeIsDark', 'themeList',]),
+        ...mapState(['themeMode', 'themeIsDark', 'themeList',]),
 
         isSoftware() {
             return this.$Electron || this.$isEEUiApp;

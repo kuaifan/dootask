@@ -4,7 +4,7 @@
             <ProjectPanel/>
             <ProjectDialog v-if="projectData.cacheParameter.chat"/>
         </template>
-        <ProjectList v-if="!$isDesktop" v-show="projectId === 0"/>
+        <ProjectList v-if="windowSmall" v-show="projectId === 0"/>
     </div>
 </template>
 

@@ -516,7 +516,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'userToken', 'userIsAdmin', 'userInfo', 'files', 'wsOpenNum', 'windowHeight']),
+        ...mapState(['userIsAdmin', 'userInfo', 'files', 'wsOpenNum']),
 
         pid() {
             const {folderId} = this.$route.params;

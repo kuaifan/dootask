@@ -19,24 +19,24 @@
                         :visibleArrow="false"
                         placement="top"
                         popperClass="chat-input-emoji-popover">
-                        <ETooltip slot="reference" ref="emojiTip" :disabled="!$isDesktop || showEmoji" placement="top" :content="$L('表情')">
+                        <ETooltip slot="reference" ref="emojiTip" :disabled="windowSmall || showEmoji" placement="top" :content="$L('表情')">
                             <i class="taskfont">&#xe7ad;</i>
                         </ETooltip>
                         <ChatEmoji @on-select="onSelectEmoji"/>
                     </EPopover>
-                    <ETooltip v-else ref="emojiTip" :disabled="!$isDesktop || showEmoji" placement="top" :content="$L('表情')">
+                    <ETooltip v-else ref="emojiTip" :disabled="windowSmall || showEmoji" placement="top" :content="$L('表情')">
                         <i class="taskfont" @click="showEmoji=!showEmoji">&#xe7ad;</i>
                     </ETooltip>
                 </li>
 
                 <!-- @ # -->
                 <li>
-                    <ETooltip placement="top" :disabled="!$isDesktop" :content="$L('选择会员')">
+                    <ETooltip placement="top" :disabled="windowSmall" :content="$L('选择会员')">
                         <i class="taskfont" @click="onToolbar('user')">&#xe78f;</i>
                     </ETooltip>
                 </li>
                 <li>
-                    <ETooltip placement="top" :disabled="!$isDesktop" :content="$L('选择任务')">
+                    <ETooltip placement="top" :disabled="windowSmall" :content="$L('选择任务')">
                         <i class="taskfont" @click="onToolbar('task')">&#xe7d6;</i>
                     </ETooltip>
                 </li>
@@ -48,7 +48,7 @@
                         :visibleArrow="false"
                         placement="top"
                         popperClass="chat-input-more-popover">
-                        <ETooltip slot="reference" ref="moreTip" :disabled="!$isDesktop || showMore" placement="top" :content="$L('展开')">
+                        <ETooltip slot="reference" ref="moreTip" :disabled="windowSmall || showMore" placement="top" :content="$L('展开')">
                             <i class="taskfont">&#xe790;</i>
                         </ETooltip>
                         <div v-if="recordReady" class="chat-input-popover-item" @click="onToolbar('meeting')">
@@ -68,7 +68,7 @@
 
                 <!-- 发送按钮 -->
                 <li class="chat-send" :class="sendClass" v-touchmouse="clickSend">
-                    <ETooltip placement="top" :disabled="!$isDesktop" :content="$L('发送')">
+                    <ETooltip placement="top" :disabled="windowSmall" :content="$L('发送')">
                         <div v-if="loading">
                             <div class="chat-load">
                                 <Loading/>
@@ -157,10 +157,8 @@ export default {
             default: false
         },
         enterSend: {
-            type: Boolean,
-            default: () => {
-                return $A.isDesktop
-            }
+            type: [String, Boolean],
+            default: null
         },
         emojiBottom: {
             type: Boolean,
@@ -264,7 +262,15 @@ export default {
         }
     },
     computed: {
-        ...mapState(['dialogInputCache', 'cacheProjects', 'cacheTasks', 'cacheUserBasic', 'userId', 'windowScrollY']),
+        ...mapState(['dialogInputCache', 'cacheProjects', 'cacheTasks', 'cacheUserBasic']),
+
+        isEnterSend() {
+            if (typeof this.enterSend === "boolean") {
+                return this.enterSend;
+            } else {
+                return this.$store.state.windowLarge
+            }
+        },
 
         editorStyle() {
             const {wrapperWidth, editorHeight} = this;
@@ -387,7 +393,7 @@ export default {
                 if (this.isSpecVersion) {
                     // ios11.0-11.3 对scrollTop及scrolIntoView解释有bug
                     // 直接执行会导致输入框滚到底部被遮挡
-                } else if (!this.$isDesktop) {
+                } else if (this.windowSmall) {
                     this.timerScroll = setInterval(() => {
                         if (this.quill?.hasFocus()) {
                             $A.scrollIntoViewIfNeeded(this.$refs.editor);
@@ -426,7 +432,7 @@ export default {
                                 key: 13,
                                 shortKey: true,
                                 handler: _ => {
-                                    if (!this.enterSend) {
+                                    if (!this.isEnterSend) {
                                         this.onSend();
                                         return false;
                                     }
@@ -437,7 +443,7 @@ export default {
                                 key: 13,
                                 shiftKey: false,
                                 handler: _ => {
-                                    if (this.enterSend) {
+                                    if (this.isEnterSend) {
                                         this.onSend();
                                         return false;
                                     }
@@ -778,7 +784,7 @@ export default {
                 this.quill.insertText(this.rangeIndex, element.innerHTML);
                 this.rangeIndex += element.innerHTML.length
                 element = null;
-                if (this.$isDesktop) {
+                if (this.windowLarge) {
                     this.showEmoji = false;
                     this.quill.setSelection(this.rangeIndex)
                 }

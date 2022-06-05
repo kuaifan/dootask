@@ -132,8 +132,6 @@ export default {
     },
 
     computed: {
-        ...mapState(['userToken', 'windowHeight']),
-
         fileId() {
             return this.file.id || 0
         },

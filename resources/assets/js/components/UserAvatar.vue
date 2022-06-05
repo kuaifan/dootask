@@ -3,7 +3,7 @@
         v-if="user"
         class="common-avatar"
         :open-delay="openDelay"
-        :disabled="!$isDesktop || tooltipDisabled"
+        :disabled="windowSmall || tooltipDisabled"
         :placement="tooltipPlacement">
         <div slot="content" class="common-avatar-transfer">
             <slot/>
@@ -107,7 +107,7 @@
             }
         },
         computed: {
-            ...mapState(["userId", "userInfo", "userOnline", "cacheUserBasic"]),
+            ...mapState(['userInfo', 'userOnline', 'cacheUserBasic']),
 
             boxStyle() {
                 const style = {};

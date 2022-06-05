@@ -16,7 +16,7 @@
                 <div v-if="parentId == 0" class="priority">
                     <ul>
                         <li v-for="(item, key) in taskPriority" :key="key">
-                            <ETooltip v-if="active" :disabled="!$isDesktop" :content="taskPriorityContent(item)">
+                            <ETooltip v-if="active" :disabled="windowSmall" :content="taskPriorityContent(item)">
                                 <i
                                     class="taskfont"
                                     :style="{color:item.color}"
@@ -55,7 +55,7 @@
         <div class="priority">
             <ul>
                 <li v-for="(item, key) in taskPriority" :key="key">
-                    <ETooltip v-if="active" :disabled="!$isDesktop" :content="taskPriorityContent(item)">
+                    <ETooltip v-if="active" :disabled="windowSmall" :content="taskPriorityContent(item)">
                         <i
                             class="taskfont"
                             :style="{color:item.color}"
@@ -126,7 +126,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'taskPriority']),
+        ...mapState(['taskPriority']),
 
         typeName() {
             return (this.parentId > 0 ? '子任务' : '任务');

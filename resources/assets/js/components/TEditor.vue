@@ -166,7 +166,7 @@
             $A(this.$refs.myTextarea).show();
         },
         computed: {
-            ...mapState(['userToken', 'themeIsDark']),
+            ...mapState(['themeIsDark']),
 
             headers() {
                 return {

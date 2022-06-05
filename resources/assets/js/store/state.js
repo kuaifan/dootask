@@ -4,8 +4,9 @@ const stateData = {
     windowHeight: window.innerHeight,
     windowScrollY: 0,
 
-    // 浏览器宽度≤768返回true
-    windowMax768: window.innerWidth <= 768,
+    // 浏览器窗口类型
+    windowLarge: window.innerWidth > 768, // 大窗口
+    windowSmall: window.innerWidth <= 768, // 小窗口
 
     // 播放中的音频地址
     audioPlaying: null,

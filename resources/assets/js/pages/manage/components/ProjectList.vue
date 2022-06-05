@@ -55,7 +55,7 @@
         <div class="operate-position" :style="operateStyles">
             <Dropdown
                 trigger="custom"
-                :placement="$isDesktop ? 'bottom' : 'top'"
+                :placement="windowLarge ? 'bottom' : 'top'"
                 :visible="operateVisible"
                 @on-clickoutside="operateVisible = false"
                 transfer>

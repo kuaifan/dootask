@@ -21,7 +21,7 @@
                         </li>
                         <template v-if="!(windowWidth <= 980 || projectData.cacheParameter.chat) && projectUser.length > 0" v-for="item in projectUser">
                             <li v-if="item.userid === -1" class="more">
-                                <ETooltip :disabled="!$isDesktop" :content="$L('共' + (projectData.project_user.length) + '个成员')">
+                                <ETooltip :disabled="windowSmall" :content="$L('共' + (projectData.project_user.length) + '个成员')">
                                     <Icon type="ios-more"/>
                                 </ETooltip>
                             </li>
@@ -32,7 +32,7 @@
                     </ul>
                 </li>
                 <li class="project-icon" @click="addTaskOpen(0)">
-                    <ETooltip :disabled="!$isDesktop" :content="$L('添加任务')">
+                    <ETooltip :disabled="windowSmall" :content="$L('添加任务')">
                         <Icon class="menu-icon" type="md-add" />
                     </ETooltip>
                 </li>
@@ -96,7 +96,7 @@
             <Draggable
                 :list="columnList"
                 :animation="150"
-                :disabled="sortDisabled || !$isDesktop"
+                :disabled="sortDisabled || windowSmall"
                 class="column-list"
                 tag="ul"
                 draggable=".column-item"
@@ -151,7 +151,7 @@
                         <Draggable
                             :list="column.tasks"
                             :animation="150"
-                            :disabled="sortDisabled || !$isDesktop"
+                            :disabled="sortDisabled || windowSmall"
                             class="task-list"
                             draggable=".task-draggable"
                             filter=".complete"
@@ -196,7 +196,7 @@
                                     <ETooltip
                                         v-if="item.end_at"
                                         :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
-                                        :disabled="!$isDesktop"
+                                        :disabled="windowSmall"
                                         :open-delay="600"
                                         :content="item.end_at">
                                         <div v-if="!item.complete_at"><i class="taskfont">&#xe71d;</i>{{ expiresFormat(item.end_at) }}</div>
@@ -537,9 +537,6 @@ export default {
 
     computed: {
         ...mapState([
-            'windowWidth',
-
-            'userId',
             'cacheDialogs',
 
             'projectId',
@@ -847,7 +844,7 @@ export default {
 
     methods: {
         showDesc() {
-            if (this.$isDesktop) {
+            if (this.windowLarge) {
                 return;
             }
             $A.modalInfo({
@@ -1424,7 +1421,7 @@ export default {
             if (data === 'completedTask') {
                 this.$store.dispatch("forgetTaskCompleteTemp", true);
             } else if (data === 'chat') {
-                if (!this.$isDesktop) {
+                if (this.windowSmall) {
                     this.goForward({name: 'manage-messenger', params: {dialogId: this.projectData.dialog_id}});
                     return;
                 }

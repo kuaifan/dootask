@@ -12,7 +12,7 @@
                 v-if="item.hidden !== true"
                 placement="top"
                 :key="key"
-                :disabled="!$isDesktop || !item.title"
+                :disabled="windowSmall || !item.title"
                 :content="item.title"
                 :enterable="false"
                 :open-delay="600">

@@ -111,7 +111,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userToken', 'userInfo', 'themeIsDark']),
+        ...mapState(['userInfo', 'themeIsDark']),
 
         fileType() {
             return this.getType(this.value.type);

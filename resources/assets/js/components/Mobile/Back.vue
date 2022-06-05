@@ -44,8 +44,6 @@ export default {
     },
 
     computed: {
-        ...mapState(['windowHeight', 'windowScrollY']),
-
         style() {
             const offset = 135;
             const top = Math.max(offset, this.y) + this.windowScrollY,
