@@ -340,33 +340,18 @@ export default {
         }
     },
 
-    mounted() {
-        if (this.$store.state.dialogMsgTransfer.time > $A.Time()) {
-            this.$store.state.dialogMsgTransfer.time = 0;
-            const {msgFile, msgRecord, msgText} = this.$store.state.dialogMsgTransfer;
-            this.$nextTick(() => {
-                if ($A.isArray(msgFile) && msgFile.length > 0) {
-                    this.sendFileMsg(msgFile);
-                } else if ($A.isJson(msgRecord) && msgRecord.duration > 0) {
-                    this.sendRecord(msgRecord);
-                } else if (msgText) {
-                    this.sendMsg(msgText);
-                }
-            });
-        }
-    },
-
     beforeDestroy() {
         this.$store.dispatch('forgetInDialog', this._uid)
     },
 
     computed: {
         ...mapState([
-            'cacheDialogs',
+            'taskId',
             'dialogMsgs',
+            'dialogMsgTransfer',
+            'cacheDialogs',
             'wsOpenNum',
             'touchBackInProgress',
-            'taskId',
         ]),
 
         isReady() {
@@ -485,6 +470,24 @@ export default {
                             this.$refs.input.focus()
                         })
                     }
+                }
+            },
+            immediate: true
+        },
+
+        dialogMsgTransfer: {
+            handler({time, msgFile, msgRecord, msgText}) {
+                if (time > $A.Time()) {
+                    this.$store.state.dialogMsgTransfer.time = 0;
+                    this.$nextTick(() => {
+                        if ($A.isArray(msgFile) && msgFile.length > 0) {
+                            this.sendFileMsg(msgFile);
+                        } else if ($A.isJson(msgRecord) && msgRecord.duration > 0) {
+                            this.sendRecord(msgRecord);
+                        } else if (msgText) {
+                            this.sendMsg(msgText);
+                        }
+                    });
                 }
             },
             immediate: true

@@ -1110,6 +1110,20 @@
          */
         getAttr(el, attrName, def = "") {
             return el ? el.getAttribute(attrName) : def;
+        },
+
+        /**
+         * 主动失去焦点
+         * @param el
+         */
+        onBlur(el = null) {
+            if (el) {
+                el.blur();
+            } else {
+                if (document.activeElement && typeof document.activeElement.blur === "function") {
+                    document.activeElement.blur();
+                }
+            }
         }
     });
 

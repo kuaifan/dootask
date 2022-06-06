@@ -611,7 +611,11 @@ export default {
         },
 
         tableHeight() {
-            return Math.max(300, this.windowHeight - 160)
+            if (this.windowLarge) {
+                return Math.max(300, this.windowHeight - 160)
+            } else {
+                return Math.max(300, this.windowHeight - 200)
+            }
         }
     },
 

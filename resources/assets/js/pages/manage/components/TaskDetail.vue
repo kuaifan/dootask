@@ -734,6 +734,9 @@ export default {
                 if (id > 0) {
                     this.ready = true;
                 } else {
+                    if (this.windowSmall) {
+                        $A.onBlur();
+                    }
                     this.timeOpen = false;
                     this.timeForce = false;
                     this.assistForce = false;
@@ -742,9 +745,6 @@ export default {
                     this.$refs.owner && this.$refs.owner.handleClose();
                     this.$refs.assist && this.$refs.assist.handleClose();
                     this.$refs.chatInput && this.$refs.chatInput.hidePopover();
-                    if (this.windowSmall) {
-                        document.activeElement.blur();
-                    }
                 }
             },
             immediate: true
@@ -1103,6 +1103,7 @@ export default {
                     } else {
                         this.$nextTick(() => {
                             if (this.windowSmall) {
+                                $A.onBlur();
                                 this.$store.state.dialogMsgTransfer = {
                                     time: $A.Time() + 10,
                                     msgText: this.msgText,

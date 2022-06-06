@@ -286,6 +286,10 @@
                             }
                         }
                     }
+                    .ivu-table-overflowY,
+                    .ivu-table-overflowX {
+                        -webkit-overflow-scrolling: touch;
+                    }
                 }
                 .file-nbox {
                     display: flex;
@@ -669,11 +673,15 @@
                         grid-gap: 4px;
                         > li {
                             width: 80px;
+                            .file-check,
+                            .file-menu {
+                                display: none;
+                            }
                         }
                     }
                 }
                 .file-table {
-                    margin: 16px 24px 24px;
+                    margin: 16px 0 0;
                 }
             }
         }
