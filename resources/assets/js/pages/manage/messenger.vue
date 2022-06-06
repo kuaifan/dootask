@@ -356,6 +356,14 @@ export default {
             },
             immediate: true
         },
+        windowSmall: {
+            handler(is) {
+                if (is && this.dialogId > 0) {
+                    this.goForward({name: 'manage-messenger', params: {dialogId: 'dialog'}}, true);
+                }
+            },
+            immediate: true
+        },
     },
 
     methods: {

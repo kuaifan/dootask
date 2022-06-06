@@ -6,7 +6,8 @@
         :style="wrapperStyle"
         @drop.prevent="chatPasteDrag($event, 'drag')"
         @dragover.prevent="chatDragOver(true, $event)"
-        @dragleave.prevent="chatDragOver(false, $event)">
+        @dragleave.prevent="chatDragOver(false, $event)"
+        @touchmove="onTouchmove">
         <!--顶部导航-->
         <slot name="head">
             <div class="dialog-nav" :class="{completed:$A.dialogCompleted(dialogData)}">
@@ -659,6 +660,12 @@ export default {
                     return;
                 }
                 this.dialogDrag = true;
+            }
+        },
+
+        onTouchmove(e) {
+            if (this.windowSmall && !this.$refs.scroller.$el.contains(e.target)) {
+                e.preventDefault();
             }
         },
 

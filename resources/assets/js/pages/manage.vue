@@ -515,6 +515,8 @@ export default {
 
             'clientNewVersion',
             'cacheTaskBrowse',
+
+            'dialogModalId',
         ]),
 
         ...mapGetters(['taskData', 'dashboardTask']),
@@ -927,7 +929,7 @@ export default {
             }
             if (!this.natificationHidden
                 && this.routeName === 'manage-messenger'
-                && this.$route.params.dialogId == data.dialog_id) {
+                && (this.$route.params.dialogId == data.dialog_id || this.dialogModalId === data.dialog_id)) {
                 return; // 可见 且 路由匹配时
             }
             //

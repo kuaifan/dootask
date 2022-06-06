@@ -8,9 +8,7 @@
         :beforeClose="onBeforeClose"
         class-name="dialog-modal"
         fullscreen>
-        <transition name="mobile-dialog">
-            <DialogWrapper v-if="dialogModalId > 0" :dialogId="dialogModalId" :beforeBack="onBeforeClose"/>
-        </transition>
+        <DialogWrapper v-if="dialogModalId > 0" :dialogId="dialogModalId" :beforeBack="onBeforeClose"/>
     </Modal>
 </template>
 
@@ -66,7 +64,15 @@ export default {
                 this.show = id > 0;
             },
             immediate: true
-        }
+        },
+        windowLarge: {
+            handler(is) {
+                if (is && this.dialogModalId > 0) {
+                    this.$store.state.dialogModalId = 0;
+                }
+            },
+            immediate: true
+        },
     },
 
     methods: {
