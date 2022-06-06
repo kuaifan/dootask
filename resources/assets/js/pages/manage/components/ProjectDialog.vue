@@ -1,33 +1,30 @@
 <template>
-    <div class="project-dialog">
-        <DialogWrapper :dialog-id="projectData.dialog_id" class="project-dialog-wrapper">
-            <div slot="head">
-                <div class="dialog-user">
-                    <div class="member-head">
-                        <div class="member-title">{{$L('项目成员')}}<span @click="memberShowAll=!memberShowAll">({{projectData.project_user.length}})</span></div>
-                        <div class="member-close" @click="onClose">
-                            <Icon type="ios-close"/>
-                        </div>
+    <DialogWrapper v-if="projectData.cacheParameter.chat" :dialog-id="projectData.dialog_id" class="project-dialog">
+        <template slot="head">
+            <div class="dialog-user">
+                <div class="member-head">
+                    <div class="member-title">{{$L('项目成员')}}<span @click="memberShowAll=!memberShowAll">({{projectData.project_user.length}})</span></div>
+                    <div class="member-close" @click="onClose">
+                        <Icon type="ios-close"/>
                     </div>
-                    <ul :class="['member-list', memberShowAll ? 'member-all' : '']">
-                        <li v-for="item in projectData.project_user">
-                            <UserAvatar :userid="item.userid" :size="36"/>
-                        </li>
-                    </ul>
                 </div>
-                <div class="dialog-nav">
-                    <div class="dialog-title">
-                        <h2>{{$L('群聊')}}</h2>
-                    </div>
+                <ul :class="['member-list', memberShowAll ? 'member-all' : '']">
+                    <li v-for="item in projectData.project_user">
+                        <UserAvatar :userid="item.userid" :size="36"/>
+                    </li>
+                </ul>
+            </div>
+            <div class="dialog-nav">
+                <div class="dialog-title">
+                    <h2>{{$L('群聊')}}</h2>
                 </div>
             </div>
-        </DialogWrapper>
-    </div>
+        </template>
+    </DialogWrapper>
 </template>
 
 <script>
 import {mapGetters} from "vuex";
-import {Store} from 'le5le-store';
 import DialogWrapper from "./DialogWrapper";
 
 export default {

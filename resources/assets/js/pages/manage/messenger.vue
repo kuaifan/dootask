@@ -90,7 +90,7 @@
                             <li v-for="items in contactsList">
                                 <div class="label">{{items.az}}</div>
                                 <ul>
-                                    <li v-for="(user, index) in items.list" :key="index" @click="openContacts(user)">
+                                    <li v-for="(user, index) in items.list" :key="index" @click="openContacts(user.userid)">
                                         <div class="avatar"><UserAvatar :userid="user.userid" :size="30"/></div>
                                         <div class="nickname">{{user.nickname}}</div>
                                     </li>
@@ -132,12 +132,12 @@
                 </div>
             </div>
 
-            <div class="messenger-msg">
+            <div v-if="routeName === 'manage-messenger'" class="messenger-msg">
                 <div class="msg-dialog-bg">
                     <div class="msg-dialog-bg-icon"><Icon type="ios-chatbubbles" /></div>
                     <div class="msg-dialog-bg-text">{{$L('选择一个会话开始聊天')}}</div>
                 </div>
-                <DialogWrapper v-if="dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive" desktop-auto-focus/>
+                <DialogWrapper v-if="windowLarge && dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive" auto-focus/>
             </div>
         </div>
     </div>
@@ -186,14 +186,10 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheDialogs', 'loadDialogs']),
+        ...mapState(['cacheDialogs', 'loadDialogs', 'dialogId']),
 
-        dialogId() {
-            const {dialogId} = this.$route.params;
-            if (['dialog', 'contacts'].includes(dialogId)) {
-                this.tabActive = dialogId
-            }
-            return parseInt(/^\d+$/.test(dialogId) ? dialogId : 0);
+        routeName() {
+            return this.$route.name
         },
 
         dialogList() {
@@ -309,6 +305,12 @@ export default {
     },
 
     watch: {
+        '$route' ({params}) {
+            if (['dialog', 'contacts'].includes(params.dialogAction)) {
+                this.tabActive = params.dialogAction
+            }
+        },
+
         dialogKey(val) {
             switch (val) {
                 case 'log.open':
@@ -350,16 +352,7 @@ export default {
         dialogId: {
             handler(id) {
                 if (id > 0) {
-                    $A.setStorage("messenger::dialogId", id);
                     this.scrollIntoActive()
-                }
-            },
-            immediate: true
-        },
-        windowSmall: {
-            handler(is) {
-                if (is && this.dialogId > 0) {
-                    this.goForward({name: 'manage-messenger', params: {dialogId: 'dialog'}}, true);
                 }
             },
             immediate: true
@@ -397,20 +390,14 @@ export default {
             if (this.operateVisible) {
                 return
             }
-            if (dialogId > 0) {
-                this.goForward({name: 'manage-messenger', params: {dialogId}});
-            } else {
-                this.goForward({name: 'manage-messenger'});
-            }
+            this.$store.dispatch("openDialog", dialogId)
         },
 
-        openContacts(user) {
+        openContacts(userid) {
             if (this.windowLarge) {
                 this.tabActive = 'dialog';
             }
-            this.$store.dispatch("openDialogUserid", user.userid).then(({data}) => {
-                this.openDialog(data.id)
-            });
+            this.$store.dispatch("openDialogUserid", userid);
         },
 
         filterDialog(dialog) {

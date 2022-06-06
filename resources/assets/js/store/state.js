@@ -66,10 +66,11 @@ const stateData = {
     userAvatar: {},
 
     // 会话聊天
+    dialogId: 0,
+    dialogIns: [],
     dialogMsgs: [],
     dialogInputCache: $A.getStorageArray("cacheDialogInput"),
     dialogMsgTransfer: {time: 0},
-    dialogModalId: 0,
 
     // 文件
     files: [],

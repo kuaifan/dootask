@@ -294,7 +294,7 @@ export default {
             type: Number,
             default: 0
         },
-        desktopAutoFocus: {
+        autoFocus: {
             type: Boolean,
             default: false
         },
@@ -337,6 +337,26 @@ export default {
 
             recordState: '',
         }
+    },
+
+    mounted() {
+        if (this.$store.state.dialogMsgTransfer.time > $A.Time()) {
+            this.$store.state.dialogMsgTransfer.time = 0;
+            const {msgFile, msgRecord, msgText} = this.$store.state.dialogMsgTransfer;
+            this.$nextTick(() => {
+                if ($A.isArray(msgFile) && msgFile.length > 0) {
+                    this.sendFileMsg(msgFile);
+                } else if ($A.isJson(msgRecord) && msgRecord.duration > 0) {
+                    this.sendRecord(msgRecord);
+                } else if (msgText) {
+                    this.sendMsg(msgText);
+                }
+            });
+        }
+    },
+
+    beforeDestroy() {
+        this.$store.dispatch('forgetInDialog', this._uid)
     },
 
     computed: {
@@ -434,35 +454,12 @@ export default {
     },
 
     watch: {
-        '$route': {
-            handler (route) {
-                if (this.$store.state.dialogMsgTransfer.time > $A.Time()) {
-                    this.$store.state.dialogMsgTransfer.time = 0;
-                    const {msgFile, msgRecord, msgText} = this.$store.state.dialogMsgTransfer;
-                    this.$nextTick(() => {
-                        if ($A.isArray(msgFile) && msgFile.length > 0) {
-                            this.sendFileMsg(msgFile);
-                        } else if ($A.isJson(msgRecord) && msgRecord.duration > 0) {
-                            this.sendRecord(msgRecord);
-                        } else if (msgText) {
-                            this.sendMsg(msgText);
-                        }
-                    });
-                }
-                if (route.query && route.query._) {
-                    let query = $A.cloneJSON(route.query);
-                    delete query._;
-                    this.goForward({query}, true);
-                }
-            },
-            immediate: true
-        },
-
         dialogId: {
             handler(id) {
                 if (id) {
                     this.msgNew = 0;
                     this.topId = -1;
+                    //
                     let cacheTimer = null;
                     if (this.allMsgList.length > 0) {
                         cacheTimer = setTimeout(_ => {
@@ -476,7 +473,12 @@ export default {
                         setTimeout(this.onToBottom, Math.max(0, 100 - (new Date().getTime() - startTime)));
                     }).catch(_ => {});
                     //
-                    if (this.windowLarge && this.desktopAutoFocus) {
+                    this.$store.dispatch('saveInDialog', {
+                        uid: this._uid,
+                        dialog_id: id,
+                    })
+                    //
+                    if (this.autoFocus) {
                         this.$nextTick(_ => {
                             this.$refs.input.focus()
                         })
@@ -741,7 +743,7 @@ export default {
         onToBottom() {
             this.msgNew = 0;
             if (this.isReady) {
-                this.$refs.scroller.scrollToBottom();
+                this.$refs.scroller?.scrollToBottom();
             }
         },
 
@@ -790,7 +792,7 @@ export default {
                 this.createGroupShow = false;
                 this.createGroupData = {};
                 this.$store.dispatch("saveDialog", data);
-                this.goForward({name: 'manage-messenger', params: {dialogId: data.id}});
+                this.$store.dispatch('openDialog', data.id)
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {

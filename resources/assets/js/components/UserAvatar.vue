@@ -251,15 +251,13 @@
                 this.userResult(info);
             },
 
+            openDialog() {
+                this.$store.dispatch("openDialogUserid", this.userid);
+            },
+
             onError() {
                 return true
             },
-
-            openDialog() {
-                this.$store.dispatch("openDialogUserid", this.userid).then(({data}) => {
-                    this.goForward({name: 'manage-messenger', params: {dialogId: data.id}});
-                });
-            }
         }
     };
 </script>

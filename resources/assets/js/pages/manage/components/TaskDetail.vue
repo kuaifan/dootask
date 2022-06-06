@@ -1111,7 +1111,7 @@ export default {
                                 this.msgRecord = {};
                                 this.msgFile = [];
                                 this.msgText = "";
-                                this.goForward({name: 'manage-messenger', params: {dialogId: data.dialog_id}, query: {_: $A.randomString(6)}});
+                                this.$store.dispatch('openDialog', data.dialog_id)
                             } else {
                                 this.sendDialogMsg();
                             }

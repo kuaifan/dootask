@@ -2018,6 +2018,16 @@ export default {
     },
 
     /**
+     * 打开会话
+     * @param state
+     * @param dispatch
+     * @param dialog_id
+     */
+    openDialog({state, dispatch}, dialog_id) {
+        state.dialogId = /\d+/.test(dialog_id) ? dialog_id : 0;
+    },
+
+    /**
      * 打开个人会话
      * @param state
      * @param dispatch
@@ -2032,6 +2042,7 @@ export default {
                 },
             }).then(result => {
                 dispatch("saveDialog", result.data);
+                dispatch("openDialog", result.data.id);
                 resolve(result);
             }).catch(e => {
                 console.warn(e);
@@ -2055,13 +2066,45 @@ export default {
                 state.cacheDialogs.splice(index, 1);
             }
         })
-        if (ids.includes($A.getStorageInt("messenger::dialogId"))) {
-            $A.setStorage("messenger::dialogId", 0)
+        if (ids.includes(state.dialogId)) {
+            state.dialogId = 0
         }
         //
         setTimeout(() => {
             $A.setStorage("cacheDialogs", state.cacheDialogs);
         })
+    },
+
+    /**
+     * 保存正在会话
+     * @param state
+     * @param dispatch
+     * @param data {uid, dialog_id}
+     */
+    saveInDialog({state, dispatch}, data) {
+        $A.execMainDispatch("saveInDialog", data)
+        //
+        const index = state.dialogIns.findIndex(item => item.uid == data.uid);
+        if (index > -1) {
+            state.dialogIns.splice(index, 1, Object.assign({}, state.dialogIns[index], data));
+        } else {
+            state.dialogIns.push(data);
+        }
+    },
+
+    /**
+     * 忘记正在会话
+     * @param state
+     * @param dispatch
+     * @param uid
+     */
+    forgetInDialog({state, dispatch}, uid) {
+        $A.execMainDispatch("forgetInDialog", uid)
+        //
+        const index = state.dialogIns.findIndex(item => item.uid == uid);
+        if (index > -1) {
+            state.dialogIns.splice(index, 1);
+        }
     },
 
     /** *****************************************************************************************/

@@ -122,7 +122,7 @@ export default {
                 return 'project';
             }
             if (this.routeName === 'manage-messenger') {
-                if (this.$route.params.dialogId === 'contacts') {
+                if (this.$route.params.dialogAction === 'contacts') {
                     return 'contacts'
                 } else {
                     return 'dialog'
@@ -167,11 +167,11 @@ export default {
                     break;
 
                 case 'dialog':
-                    location = {name: 'manage-messenger', params: {dialogId: 'dialog'}};
+                    location = {name: 'manage-messenger', params: {dialogAction: 'dialog'}};
                     break;
 
                 case 'contacts':
-                    location = {name: 'manage-messenger', params: {dialogId: 'contacts'}};
+                    location = {name: 'manage-messenger', params: {dialogAction: 'contacts'}};
                     break;
 
                 default:

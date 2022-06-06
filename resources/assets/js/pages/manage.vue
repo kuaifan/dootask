@@ -516,7 +516,7 @@ export default {
             'clientNewVersion',
             'cacheTaskBrowse',
 
-            'dialogModalId',
+            'dialogIns',
         ]),
 
         ...mapGetters(['taskData', 'dashboardTask']),
@@ -654,10 +654,7 @@ export default {
             if (this.routeName === 'manage-project' && !/^\d+$/.test(this.$route.params.projectId)) {
                 return true;
             }
-            if (this.routeName === 'manage-messenger' && !/^\d+$/.test(this.$route.params.dialogId)) {
-                return true;
-            }
-            return ['manage-dashboard', 'manage-calendar', 'manage-file', 'manage-setting'].includes(this.routeName)
+            return ['manage-dashboard', 'manage-calendar', 'manage-messenger', 'manage-file', 'manage-setting'].includes(this.routeName)
         },
     },
 
@@ -750,9 +747,6 @@ export default {
             let location = {name: 'manage-' + path, params: params || {}};
             if (path === 'file' && $A.getStorageInt("file::folderId") > 0) {
                 location.params.folderId = $A.getStorageInt("file::folderId")
-            }
-            if (path === 'messenger' && $A.getStorageInt("messenger::dialogId") > 0) {
-                location.params.dialogId = $A.getStorageInt("messenger::dialogId")
             }
             this.goForward(location);
         },
@@ -927,10 +921,8 @@ export default {
             if (!this.natificationReady && !this.$isEEUiApp) {
                 return; // 通知未准备好
             }
-            if (!this.natificationHidden
-                && this.routeName === 'manage-messenger'
-                && (this.$route.params.dialogId == data.dialog_id || this.dialogModalId === data.dialog_id)) {
-                return; // 可见 且 路由匹配时
+            if ($A.last(this.dialogIns)?.dialog_id === data.dialog_id) {
+                return; // 最后打开的会话是通知的会话时不通知
             }
             //
             const {id, dialog_id, type, msg, userid} = data;
@@ -956,7 +948,8 @@ export default {
                             userid: userid,
                             desc: body,
                             callback: () => {
-                                this.goForward({name: 'manage-messenger', params: {dialogId: dialog_id}});
+                                this.goForward({name: 'manage-messenger'});
+                                this.$store.dispatch('openDialog', dialog_id)
                             }
                         })
                     } else {
@@ -1087,11 +1080,8 @@ export default {
                             if (!$A.isJson(data)) {
                                 return;
                             }
-                            if (data.dialog_id) {
-                                this.goForward({name: 'manage-messenger', params: {dialogId: data.dialog_id}});
-                            } else {
-                                this.goForward({name: 'manage-messenger'});
-                            }
+                            this.goForward({name: 'manage-messenger'});
+                            this.$store.dispatch('openDialog', data.dialog_id)
                         }
                     },
                 });

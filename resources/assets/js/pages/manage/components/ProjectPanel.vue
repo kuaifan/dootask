@@ -1420,11 +1420,6 @@ export default {
         toggleParameter(data) {
             if (data === 'completedTask') {
                 this.$store.dispatch("forgetTaskCompleteTemp", true);
-            } else if (data === 'chat') {
-                if (this.windowSmall) {
-                    this.goForward({name: 'manage-messenger', params: {dialogId: this.projectData.dialog_id}});
-                    return;
-                }
             }
             this.$store.dispatch('toggleProjectParameter', data);
         },

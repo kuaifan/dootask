@@ -8,7 +8,7 @@
         :beforeClose="onBeforeClose"
         class-name="dialog-modal"
         fullscreen>
-        <DialogWrapper v-if="dialogModalId > 0" :dialogId="dialogModalId" :beforeBack="onBeforeClose"/>
+        <DialogWrapper v-if="windowSmall && dialogId > 0" :dialogId="dialogId" :beforeBack="onBeforeClose"/>
     </Modal>
 </template>
 
@@ -55,30 +55,25 @@ export default {
     },
 
     computed: {
-        ...mapState(['dialogModalId'])
+        ...mapState(['dialogId'])
     },
 
     watch: {
-        dialogModalId: {
+        dialogId: {
             handler(id) {
-                this.show = id > 0;
+                this.show = id > 0 && this.windowSmall;
             },
             immediate: true
         },
-        windowLarge: {
-            handler(is) {
-                if (is && this.dialogModalId > 0) {
-                    this.$store.state.dialogModalId = 0;
-                }
-            },
-            immediate: true
-        },
+        windowSmall(small) {
+            this.show = this.dialogId > 0 && small;
+        }
     },
 
     methods: {
         onBeforeClose() {
             return new Promise(_ => {
-                this.$store.state.dialogModalId = 0;
+                this.$store.state.dialogId = 0;
             })
         },
     }

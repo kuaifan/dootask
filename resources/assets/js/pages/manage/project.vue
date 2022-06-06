@@ -2,14 +2,14 @@
     <div class="page-project">
         <template v-if="projectId > 0">
             <ProjectPanel/>
-            <ProjectDialog v-if="projectData.cacheParameter.chat"/>
+            <ProjectDialog/>
         </template>
         <ProjectList v-if="windowSmall" v-show="projectId === 0"/>
     </div>
 </template>
 
 <script>
-import {mapState, mapGetters} from "vuex";
+import {mapState} from "vuex";
 import ProjectPanel from "./components/ProjectPanel";
 import ProjectDialog from "./components/ProjectDialog";
 import ProjectList from "./components/ProjectList";
@@ -22,7 +22,6 @@ export default {
 
     computed: {
         ...mapState(['cacheProjects', 'wsOpenNum']),
-        ...mapGetters(['projectData']),
 
         projectId() {
             const {projectId} = this.$route.params;
