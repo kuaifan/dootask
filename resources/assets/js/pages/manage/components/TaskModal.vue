@@ -4,13 +4,22 @@
         :styles="styles"
         :mask-closable="false"
         :footer-hide="true"
-        :beforeClose="onBeforeClose">
-        <div class="page-manage-task-modal">
-            <TaskDetail ref="taskDetail" :task-id="taskId" :open-task="taskData" modalMode/>
-        </div>
+        :beforeClose="onBeforeClose"
+        class-name="task-modal">
+        <TaskDetail ref="taskDetail" :task-id="taskId" :open-task="taskData" modalMode/>
     </Modal>
 </template>
 
+<style lang="scss">
+body {
+    .ivu-modal-wrap {
+        &.task-modal {
+            display: flex;
+            flex-direction: column;
+        }
+    }
+}
+</style>
 <script>
 import {mapGetters, mapState} from "vuex";
 import TaskDetail from "./TaskDetail";

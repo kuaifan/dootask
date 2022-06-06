@@ -18,6 +18,7 @@
 body {
     .ivu-modal-wrap {
         &.dialog-modal {
+            position: absolute;
             overflow: hidden;
 
             .ivu-modal {
