@@ -157,19 +157,21 @@ body.dark-mode-reverse {
 
     .dialog-wrapper {
         .dialog-nav {
-            .dialog-block {
-                .dialog-avatar {
-                    .icon-avatar {
-                        color: #1c1917;
-                    }
-                }
-                .dialog-title {
-                    .main-title {
-                        > h2 {
-                            color: #555;
+            .nav-wrapper {
+                .dialog-block {
+                    .dialog-avatar {
+                        .icon-avatar {
+                            color: #1c1917;
                         }
-                        .top-text {
-                            color: #000000;
+                    }
+                    .dialog-title {
+                        .main-title {
+                            > h2 {
+                                color: #555;
+                            }
+                            .top-text {
+                                color: #000000;
+                            }
                         }
                     }
                 }

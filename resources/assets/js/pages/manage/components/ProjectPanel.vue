@@ -44,7 +44,7 @@
                         </div>
                     </Tooltip>
                 </li>
-                <li :class="['project-icon', projectData.cacheParameter.chat ? 'active' : '']" @click="toggleParameter('chat')">
+                <li :class="['project-icon', windowLarge && projectData.cacheParameter.chat ? 'active' : '']" @click="toggleParameter('chat')">
                     <Icon class="menu-icon" type="ios-chatbubbles" />
                     <Badge class="menu-badge" :count="msgUnread"></Badge>
                 </li>
@@ -1420,6 +1420,11 @@ export default {
         toggleParameter(data) {
             if (data === 'completedTask') {
                 this.$store.dispatch("forgetTaskCompleteTemp", true);
+            } else if (data === 'chat') {
+                if (this.windowSmall) {
+                    this.$store.dispatch('openDialog', this.projectData.dialog_id)
+                    return;
+                }
             }
             this.$store.dispatch('toggleProjectParameter', data);
         },

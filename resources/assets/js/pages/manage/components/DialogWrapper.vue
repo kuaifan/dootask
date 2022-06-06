@@ -3,69 +3,70 @@
         v-if="isReady"
         class="dialog-wrapper"
         :class="wrapperClass"
-        :style="wrapperStyle"
         @drop.prevent="chatPasteDrag($event, 'drag')"
         @dragover.prevent="chatDragOver(true, $event)"
         @dragleave.prevent="chatDragOver(false, $event)"
         @touchmove="onTouchmove">
         <!--顶部导航-->
-        <slot name="head">
-            <div class="dialog-nav" :class="{completed:$A.dialogCompleted(dialogData)}">
-                <div class="dialog-back" @click="onBack">
-                    <i class="taskfont">&#xe72d;</i>
-                    <div v-if="msgUnreadOnly" class="back-num">{{msgUnreadOnly}}</div>
-                </div>
-
-                <div class="dialog-block">
-                    <div class="dialog-avatar">
-                        <template v-if="dialogData.type=='group'">
-                            <i v-if="dialogData.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
-                            <i v-else-if="dialogData.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
-                            <Icon v-else class="icon-avatar" type="ios-people" />
-                        </template>
-                        <div v-else-if="dialogData.dialog_user" class="user-avatar">
-                            <UserAvatar :online.sync="dialogData.online_state" :userid="dialogData.dialog_user.userid" :size="42"/>
-                        </div>
-                        <Icon v-else class="icon-avatar" type="md-person" />
+        <div class="dialog-nav" :style="navStyle">
+            <slot name="head">
+                <div class="nav-wrapper" :class="{completed:$A.dialogCompleted(dialogData)}">
+                    <div class="dialog-back" @click="onBack">
+                        <i class="taskfont">&#xe72d;</i>
+                        <div v-if="msgUnreadOnly" class="back-num">{{msgUnreadOnly}}</div>
                     </div>
-                    <div class="dialog-title">
-                        <div class="main-title">
-                            <template v-for="tag in $A.dialogTags(dialogData)" v-if="tag.color != 'success'">
-                                <Tag :color="tag.color" :fade="false">{{$L(tag.text)}}</Tag>
+
+                    <div class="dialog-block">
+                        <div class="dialog-avatar">
+                            <template v-if="dialogData.type=='group'">
+                                <i v-if="dialogData.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
+                                <i v-else-if="dialogData.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
+                                <Icon v-else class="icon-avatar" type="ios-people" />
                             </template>
-                            <h2>{{dialogData.name}}</h2>
-                            <em v-if="peopleNum > 0">({{peopleNum}})</em>
-                            <label v-if="dialogData.top_at" class="top-text">{{$L('置顶')}}</label>
+                            <div v-else-if="dialogData.dialog_user" class="user-avatar">
+                                <UserAvatar :online.sync="dialogData.online_state" :userid="dialogData.dialog_user.userid" :size="42"/>
+                            </div>
+                            <Icon v-else class="icon-avatar" type="md-person" />
                         </div>
-                        <template v-if="dialogData.type === 'group'">
-                            <div v-if="dialogData.group_type === 'project'" class="sub-title pointer" @click="openProject">
-                                {{$L('项目聊天室')}} {{$L('打开项目管理')}}
+                        <div class="dialog-title">
+                            <div class="main-title">
+                                <template v-for="tag in $A.dialogTags(dialogData)" v-if="tag.color != 'success'">
+                                    <Tag :color="tag.color" :fade="false">{{$L(tag.text)}}</Tag>
+                                </template>
+                                <h2>{{dialogData.name}}</h2>
+                                <em v-if="peopleNum > 0">({{peopleNum}})</em>
+                                <label v-if="dialogData.top_at" class="top-text">{{$L('置顶')}}</label>
                             </div>
-                            <div v-else-if="dialogData.group_type === 'task'" class="sub-title pointer" @click="openTask">
-                                {{$L('任务聊天室')}} {{$L('查看任务详情')}}
+                            <template v-if="dialogData.type === 'group'">
+                                <div v-if="dialogData.group_type === 'project'" class="sub-title pointer" @click="openProject">
+                                    {{$L('项目聊天室')}} {{$L('打开项目管理')}}
+                                </div>
+                                <div v-else-if="dialogData.group_type === 'task'" class="sub-title pointer" @click="openTask">
+                                    {{$L('任务聊天室')}} {{$L('查看任务详情')}}
+                                </div>
+                            </template>
+                            <div v-else-if="dialogData.type === 'user'" :class="['sub-title', dialogData.online_state === true ? 'online' : 'offline']">
+                                {{$L(dialogData.online_state === true ? '在线' : dialogData.online_state)}}
                             </div>
-                        </template>
-                        <div v-else-if="dialogData.type === 'user'" :class="['sub-title', dialogData.online_state === true ? 'online' : 'offline']">
-                            {{$L(dialogData.online_state === true ? '在线' : dialogData.online_state)}}
                         </div>
                     </div>
-                </div>
 
-                <template v-if="dialogData.type === 'group'">
-                    <ETooltip
-                        v-if="dialogData.group_type === 'user'"
-                        placement="top"
-                        :disabled="windowSmall"
-                        :openDelay="600"
-                        :content="$L('群设置')">
-                        <i class="taskfont dialog-create" @click="groupInfoShow = true">&#xe6e9;</i>
+                    <template v-if="dialogData.type === 'group'">
+                        <ETooltip
+                            v-if="dialogData.group_type === 'user'"
+                            placement="top"
+                            :disabled="windowSmall"
+                            :openDelay="600"
+                            :content="$L('群设置')">
+                            <i class="taskfont dialog-create" @click="groupInfoShow = true">&#xe6e9;</i>
+                        </ETooltip>
+                    </template>
+                    <ETooltip v-else-if="dialogData.type === 'user' && !isMyDialog" placement="top" :disabled="windowSmall" :content="$L('创建群组')">
+                        <i class="taskfont dialog-create" @click="openCreateGroup">&#xe646;</i>
                     </ETooltip>
-                </template>
-                <ETooltip v-else-if="dialogData.type === 'user' && !isMyDialog" placement="top" :disabled="windowSmall" :content="$L('创建群组')">
-                    <i class="taskfont dialog-create" @click="openCreateGroup">&#xe646;</i>
-                </ETooltip>
-            </div>
-        </slot>
+                </div>
+            </slot>
+        </div>
 
         <!--消息列表-->
         <DynamicScroller
@@ -327,7 +328,7 @@ export default {
             dialogDrag: false,
             groupInfoShow: false,
 
-            wrapperStyle: {},
+            navStyle: {},
 
             operateVisible: false,
             operateHasText: false,
@@ -364,7 +365,8 @@ export default {
             'cacheDialogs',
             'dialogMsgs',
             'wsOpenNum',
-            'touchBackInProgress'
+            'touchBackInProgress',
+            'taskId',
         ]),
 
         isReady() {
@@ -510,8 +512,8 @@ export default {
         windowScrollY(val) {
             if ($A.isIos()) {
                 const {scrollE} = this.scrollInfo();
-                this.wrapperStyle = {
-                    top: val + 'px'
+                this.navStyle = {
+                    marginTop: val + 'px'
                 }
                 if (scrollE <= 10) {
                     this.$nextTick(_ => {
@@ -751,12 +753,18 @@ export default {
             if (!this.dialogData.group_info) {
                 return;
             }
+            if (this.windowSmall) {
+                this.$store.dispatch("openDialog", 0);
+            }
             this.goForward({name: 'manage-project', params: {projectId:this.dialogData.group_info.id}});
         },
 
         openTask() {
             if (!this.dialogData.group_info) {
                 return;
+            }
+            if (this.taskId > 0) {
+                this.$store.dispatch("openDialog", 0);
             }
             this.$store.dispatch("openTask", this.dialogData.group_info.id);
         },

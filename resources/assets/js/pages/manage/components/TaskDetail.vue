@@ -554,6 +554,7 @@ export default {
             'taskContents',
             'taskFiles',
             'taskPriority',
+            'dialogId',
         ]),
 
         projectName() {
@@ -1111,6 +1112,9 @@ export default {
                                 this.msgRecord = {};
                                 this.msgFile = [];
                                 this.msgText = "";
+                                if (this.dialogId > 0) {
+                                    this.$store.dispatch("openTask", 0);
+                                }
                                 this.$store.dispatch('openDialog', data.dialog_id)
                             } else {
                                 this.sendDialogMsg();

@@ -1,14 +1,16 @@
 <template>
     <Modal
-        :value="show"
+        :value="visible"
         :mask="false"
         :mask-closable="false"
         :footer-hide="true"
-        :transition-names="['mobile-dialog', '']"
+        :transition-names="['', '']"
         :beforeClose="onBeforeClose"
         class-name="dialog-modal"
         fullscreen>
-        <DialogWrapper v-if="windowSmall && dialogId > 0" :dialogId="dialogId" :beforeBack="onBeforeClose"/>
+        <transition name="mobile-dialog">
+            <DialogWrapper v-if="windowSmall && dialogId > 0" :dialogId="dialogId" :beforeBack="onBeforeClose"/>
+        </transition>
     </Modal>
 </template>
 
@@ -23,6 +25,7 @@ body {
                 padding: 0;
 
                 .ivu-modal-content {
+                    background: transparent;
 
                     .ivu-modal-close {
                         display: none;
@@ -49,11 +52,31 @@ export default {
     name: "DialogModal",
     components: {DialogWrapper},
 
+    data() {
+        return {
+            timer: null,
+            visible: false,
+        }
+    },
+
     computed: {
         ...mapState(['dialogId']),
 
         show() {
             return this.dialogId > 0 && this.windowSmall
+        }
+    },
+
+    watch: {
+        show(v) {
+            this.timer && clearTimeout(this.timer);
+            if (v) {
+                this.visible = true;
+            } else {
+                this.timer = setTimeout(_ => {
+                    this.visible = false;
+                }, 300);
+            }
         }
     },
 

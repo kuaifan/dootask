@@ -18,176 +18,180 @@
     }
 
     .dialog-nav {
-        display: flex;
-        align-items: center;
-        padding: 0 22px;
-        height: 68px;
-        position: relative;
+        width: 100%;
 
-        &:before {
-            content: "";
-            position: absolute;
-            left: 0;
-            bottom: 0;
-            width: 100%;
-            height: 1px;
-            background-color: #f4f5f5;
-        }
-
-        &.completed {
-            &:after {
-                content: "\f373";
-                font-family: Ionicons, serif;
-                pointer-events: none;
-                position: absolute;
-                top: 50%;
-                right: 22px;
-                transform: translateY(-50%);
-                font-size: 40px;
-                color: #19be6b;
-                opacity: .2;
-                z-index: 1;
-            }
-
-            .dialog-title {
-                padding-right: 52px;
-            }
-        }
-
-        .dialog-block {
-            flex: 1;
-            width: 0;
+        .nav-wrapper {
             display: flex;
             align-items: center;
+            padding: 0 22px;
+            height: 68px;
+            position: relative;
 
-            .dialog-avatar {
-                flex-shrink: 0;
-                margin-right: 12px;
+            &:before {
+                content: "";
+                position: absolute;
+                left: 0;
+                bottom: 0;
+                width: 100%;
+                height: 1px;
+                background-color: #f4f5f5;
+            }
 
-                .user-avatar,
-                .icon-avatar {
-                    width: 42px;
-                    height: 42px;
-                    margin: 2px;
-                    flex-grow: 0;
-                    flex-shrink: 0;
+            &.completed {
+                &:after {
+                    content: "\f373";
+                    font-family: Ionicons, serif;
+                    pointer-events: none;
+                    position: absolute;
+                    top: 50%;
+                    right: 22px;
+                    transform: translateY(-50%);
+                    font-size: 40px;
+                    color: #19be6b;
+                    opacity: .2;
+                    z-index: 1;
                 }
 
-                .icon-avatar {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    border-radius: 50%;
-                    font-size: 26px;
-                    background-color: #61B2F9;
-                    color: #ffffff;
-
-                    &.project {
-                        background-color: #6E99EB;
-                    }
-
-                    &.task {
-                        background-color: #9B96DF;
-                        font-size: 24px;
-                    }
+                .dialog-title {
+                    padding-right: 52px;
                 }
             }
 
-            .dialog-title {
+            .dialog-block {
                 flex: 1;
                 width: 0;
                 display: flex;
-                flex-direction: column;
-                justify-content: center;
+                align-items: center;
 
-                .main-title {
-                    display: flex;
-                    align-items: center;
-                    line-height: 22px;
-                    max-width: 100%;
+                .dialog-avatar {
+                    flex-shrink: 0;
+                    margin-right: 12px;
 
-                    .ivu-tag {
+                    .user-avatar,
+                    .icon-avatar {
+                        width: 42px;
+                        height: 42px;
+                        margin: 2px;
+                        flex-grow: 0;
                         flex-shrink: 0;
-                        margin: 0 6px 0 0;
-                        padding: 0 5px;
+                    }
 
-                        &.ivu-tag-success {
+                    .icon-avatar {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        border-radius: 50%;
+                        font-size: 26px;
+                        background-color: #61B2F9;
+                        color: #ffffff;
+
+                        &.project {
+                            background-color: #6E99EB;
+                        }
+
+                        &.task {
+                            background-color: #9B96DF;
+                            font-size: 24px;
+                        }
+                    }
+                }
+
+                .dialog-title {
+                    flex: 1;
+                    width: 0;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+
+                    .main-title {
+                        display: flex;
+                        align-items: center;
+                        line-height: 22px;
+                        max-width: 100%;
+
+                        .ivu-tag {
+                            flex-shrink: 0;
+                            margin: 0 6px 0 0;
+                            padding: 0 5px;
+
+                            &.ivu-tag-success {
+                                padding: 0 6px;
+                            }
+                        }
+
+                        .ivu-icon {
+                            font-size: 18px;
+                            margin-right: 6px;
+
+                            &.completed {
+                                color: $primary-color;
+                            }
+                        }
+
+                        > h2 {
+                            font-size: 17px;
+                            font-weight: 600;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                        }
+
+                        > em {
+                            flex-shrink: 0;
+                            font-style: normal;
+                            font-size: 17px;
+                            font-weight: 500;
+                            padding-left: 6px;
+                        }
+
+                        .top-text {
+                            flex-shrink: 0;
+                            height: 24px;
+                            line-height: 24px;
                             padding: 0 6px;
+                            border-radius: 4px;
+                            margin-left: 10px;
+                            background-color: $primary-color;
+                            color: #FFFFFF;
+                            text-align: center;
+                            white-space: nowrap;
                         }
                     }
 
-                    .ivu-icon {
-                        font-size: 18px;
-                        margin-right: 6px;
+                    .sub-title {
+                        flex-shrink: 0;
+                        font-size: 12px;
+                        line-height: 20px;
+                        padding-top: 2px;
+                        color: #aaaaaa;
+                        white-space: normal;
 
-                        &.completed {
+                        &.pointer {
+                            cursor: pointer;
+
+                            &:hover {
+                                color: #888888;
+                            }
+                        }
+
+                        &.online {
                             color: $primary-color;
                         }
                     }
-
-                    > h2 {
-                        font-size: 17px;
-                        font-weight: 600;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                        white-space: nowrap;
-                    }
-
-                    > em {
-                        flex-shrink: 0;
-                        font-style: normal;
-                        font-size: 17px;
-                        font-weight: 500;
-                        padding-left: 6px;
-                    }
-
-                    .top-text {
-                        flex-shrink: 0;
-                        height: 24px;
-                        line-height: 24px;
-                        padding: 0 6px;
-                        border-radius: 4px;
-                        margin-left: 10px;
-                        background-color: $primary-color;
-                        color: #FFFFFF;
-                        text-align: center;
-                        white-space: nowrap;
-                    }
-                }
-
-                .sub-title {
-                    flex-shrink: 0;
-                    font-size: 12px;
-                    line-height: 20px;
-                    padding-top: 2px;
-                    color: #aaaaaa;
-                    white-space: normal;
-
-                    &.pointer {
-                        cursor: pointer;
-
-                        &:hover {
-                            color: #888888;
-                        }
-                    }
-
-                    &.online {
-                        color: $primary-color;
-                    }
                 }
             }
-        }
 
-        .dialog-back,
-        .dialog-create {
-            cursor: pointer;
-            margin-left: 24px;
-            font-size: 22px;
-            color: $primary-text-color;
-        }
+            .dialog-back,
+            .dialog-create {
+                cursor: pointer;
+                margin-left: 24px;
+                font-size: 22px;
+                color: $primary-text-color;
+            }
 
-        .dialog-back {
-            display: none;
+            .dialog-back {
+                display: none;
+            }
         }
     }
 
@@ -1038,74 +1042,76 @@
 
 @media (max-width: 768px) {
     .dialog-wrapper {
+        background-color: #f8f8f8;
         .dialog-nav {
-            height: 52px;
-            padding: 0;
-            justify-content: center;
-            background-color: #f8f8f8;
-
-            &.completed {
-                &:after {
-                    right: 14px;
-                }
-                .dialog-title {
-                    padding-right: 0;
-                }
-            }
-
-            .dialog-back,
-            .dialog-create {
-                position: absolute;
-                top: 0;
-                bottom: 0;
-                right: 0;
-                margin: 0;
-                width: 52px;
-                display: flex;
-                align-items: center;
+            .nav-wrapper {
+                height: 52px;
+                padding: 0;
                 justify-content: center;
-            }
-            .dialog-back {
-                padding-right: 6px;
-                right: auto;
-                left: 0;
-                > i {
-                    font-size: 26px;
-                }
-                .back-num {
-                    font-family: "Source Sans Pro", "Helvetica Neue", Arial, sans-serif;
-                    position: absolute;
-                    top: 50%;
-                    left: 32px;
-                    background: #e6ebf1;
-                    color: $primary-title-color;
-                    transform: translate(0, -50%);
-                    font-weight: 500;
-                    font-size: 14px;
-                    border-radius: 12px;
-                    min-width: 24px;
-                    height: 24px;
-                    line-height: 24px;
-                    text-align: center;
-                    padding: 0 6px;
-                }
-            }
-            .dialog-block {
-                margin: 0 80px;
-                justify-content: center;
-                .dialog-avatar {
-                    display: none;
-                }
-                .dialog-title {
-                    flex: unset;
-                    width: unset;
-                    overflow: hidden;
-                    text-align: center;
-                    .main-title {
-                        justify-content: center;
+
+                &.completed {
+                    &:after {
+                        right: 14px;
                     }
-                    .sub-title {
-                        line-height: 18px;
+                    .dialog-title {
+                        padding-right: 0;
+                    }
+                }
+
+                .dialog-back,
+                .dialog-create {
+                    position: absolute;
+                    top: 0;
+                    bottom: 0;
+                    right: 0;
+                    margin: 0;
+                    width: 52px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .dialog-back {
+                    padding-right: 6px;
+                    right: auto;
+                    left: 0;
+                    > i {
+                        font-size: 26px;
+                    }
+                    .back-num {
+                        font-family: "Source Sans Pro", "Helvetica Neue", Arial, sans-serif;
+                        position: absolute;
+                        top: 50%;
+                        left: 32px;
+                        background: #e6ebf1;
+                        color: $primary-title-color;
+                        transform: translate(0, -50%);
+                        font-weight: 500;
+                        font-size: 14px;
+                        border-radius: 12px;
+                        min-width: 24px;
+                        height: 24px;
+                        line-height: 24px;
+                        text-align: center;
+                        padding: 0 6px;
+                    }
+                }
+                .dialog-block {
+                    margin: 0 80px;
+                    justify-content: center;
+                    .dialog-avatar {
+                        display: none;
+                    }
+                    .dialog-title {
+                        flex: unset;
+                        width: unset;
+                        overflow: hidden;
+                        text-align: center;
+                        .main-title {
+                            justify-content: center;
+                        }
+                        .sub-title {
+                            line-height: 18px;
+                        }
                     }
                 }
             }
@@ -1115,6 +1121,7 @@
             padding-left: 14px;
             overscroll-behavior: none;
             user-select: none;
+            background-color: #ffffff;
 
             .dialog-item {
                 .dialog-view {

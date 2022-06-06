@@ -64,22 +64,8 @@
         }
     }
     .dialog-nav {
-        padding: 0 20px;
-    }
-}
-
-@media (max-width: 768px) {
-    .project-dialog {
-        .dialog-user {
-            margin-top: 16px;
-            padding: 0 12px;
-            .member-list {
-                display: none;
-            }
-        }
-        .dialog-nav {
-            padding: 0 12px;
-            height: 64px;
+        .nav-wrapper {
+            padding: 0 20px;
         }
     }
 }

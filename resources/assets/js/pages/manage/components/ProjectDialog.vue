@@ -1,5 +1,5 @@
 <template>
-    <DialogWrapper v-if="projectData.cacheParameter.chat" :dialog-id="projectData.dialog_id" class="project-dialog">
+    <DialogWrapper v-if="windowLarge && projectData.cacheParameter.chat" :dialog-id="projectData.dialog_id" class="project-dialog">
         <template slot="head">
             <div class="dialog-user">
                 <div class="member-head">
@@ -14,7 +14,7 @@
                     </li>
                 </ul>
             </div>
-            <div class="dialog-nav">
+            <div class="nav-wrapper">
                 <div class="dialog-title">
                     <h2>{{$L('群聊')}}</h2>
                 </div>
