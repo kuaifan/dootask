@@ -642,13 +642,15 @@ class DialogController extends AbstractController
         $msg_id = intval(Request::input("msg_id"));
         $userids = Request::input('userids');
         //
-        $msg = WebSocketDialogMsg::whereId($msg_id)->whereUserid($user->userid)->first();
-        if (empty($msg)) {
-            return Base::retError("消息不存在或已被删除");
-        }
         if (empty($userids)) {
             return Base::retError("请选择转发成员");
         }
+        //
+        $msg = WebSocketDialogMsg::whereId($msg_id)->first();
+        if (empty($msg)) {
+            return Base::retError("消息不存在或已被删除");
+        }
+        WebSocketDialog::checkDialog($msg->dialog_id);
         //
         return $msg->forwardMsg($userids, $user->userid);
     }
@@ -679,10 +681,12 @@ class DialogController extends AbstractController
             return Base::retError("参数错误");
         }
         //
-        $msg = WebSocketDialogMsg::whereId($msg_id)->first();   // 不限制会员身份
+        $msg = WebSocketDialogMsg::whereId($msg_id)->first();
         if (empty($msg)) {
             return Base::retError("消息不存在或已被删除");
         }
+        WebSocketDialog::checkDialog($msg->dialog_id);
+        //
         return $msg->emojiMsg($emoji, $user->userid);
     }
 
