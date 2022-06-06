@@ -8,7 +8,7 @@
         :beforeClose="onBeforeClose"
         class-name="dialog-modal"
         fullscreen>
-        <transition name="mobile-dialog">
+        <transition :name="transition">
             <DialogWrapper v-if="windowSmall && dialogId > 0" :dialogId="dialogId" :beforeBack="onBeforeClose"/>
         </transition>
     </Modal>
@@ -56,6 +56,7 @@ export default {
         return {
             timer: null,
             visible: false,
+            transition: $A.isIos() ? 'mobile-dialog' : ''
         }
     },
 

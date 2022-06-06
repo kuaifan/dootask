@@ -353,11 +353,20 @@
                                         height: 30px;
                                     }
                                     .nickname {
+                                        flex: 1;
                                         padding: 0 12px;
                                         font-size: 14px;
                                         white-space: nowrap;
                                         overflow: hidden;
                                         text-overflow: ellipsis;
+                                    }
+                                    .loading {
+                                        margin-right: 12px;
+                                        width: 16px;
+                                        height: 16px;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
                                     }
                                 }
                             }

@@ -79,11 +79,13 @@
             </ul>
         </div>
 
-        <!--时间/阅读-->
-        <div v-if="msgData.created_at" class="dialog-foot">
+        <!--等待/时间/阅读-->
+        <div v-if="emojiLoad > 0 || !msgData.created_at" class="dialog-foot"><Loading/></div>
+        <div v-else class="dialog-foot">
+            <!--时间-->
             <div v-if="timeShow" class="time" @click="timeShow=false">{{msgData.created_at}}</div>
             <div v-else class="time" :title="msgData.created_at" @click="timeShow=true">{{$A.formatTime(msgData.created_at)}}</div>
-
+            <!--阅读-->
             <template v-if="!hidePercentage">
                 <div v-if="msgData.send > 1 || dialogType === 'group'" class="percent" @click="openReadPercentage">
                     <EPopover
@@ -114,8 +116,6 @@
                 <Icon v-else class="done" type="md-checkmark"/>
             </template>
         </div>
-        <div v-else class="dialog-foot"><Loading/></div>
-
     </div>
 </template>
 
@@ -160,6 +160,7 @@ export default {
             popperShow: false,
             timeShow: false,
             operateEnter: false,
+            emojiLoad: 0,
             allList: [],
         }
     },
@@ -560,6 +561,9 @@ export default {
         },
 
         setEmoji(emoji) {
+            setTimeout(_ => {
+                this.emojiLoad++;
+            }, 600);
             this.$store.dispatch("call", {
                 url: 'dialog/msg/emoji',
                 data: {
@@ -570,6 +574,8 @@ export default {
                 this.$store.dispatch("saveDialogMsg", data);
             }).catch(({msg}) => {
                 $A.messageError(msg);
+            }).finally(_ => {
+                this.emojiLoad--;
             });
         }
     }

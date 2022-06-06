@@ -105,7 +105,7 @@
             let now = $A.Time(),
                 time = $A.Date(date, true),
                 string = '';
-            if (now - time < 3600 * 6 || $A.formatDate('Ymd', now) === $A.formatDate('Ymd', time)) {
+            if (Math.abs(now - time) < 3600 * 6 || $A.formatDate('Ymd', now) === $A.formatDate('Ymd', time)) {
                 string = $A.formatDate('H:i', time)
             } else if ($A.formatDate('Y', now) === $A.formatDate('Y', time)) {
                 string = $A.formatDate('m-d', time)

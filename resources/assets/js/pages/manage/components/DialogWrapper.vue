@@ -6,6 +6,7 @@
         @drop.prevent="chatPasteDrag($event, 'drag')"
         @dragover.prevent="chatDragOver(true, $event)"
         @dragleave.prevent="chatDragOver(false, $event)"
+        @touchstart="onTouchstart"
         @touchmove="onTouchmove">
         <!--顶部导航-->
         <div class="dialog-nav" :style="navStyle">
@@ -337,6 +338,7 @@ export default {
             operateEmojis: ['👌', '🤝', '🤔', '👍', '👎', '👏', '✋', '✅', '❌', '❤️', '❓'],
 
             recordState: '',
+            wrapperStart: 0,
         }
     },
 
@@ -670,9 +672,25 @@ export default {
             }
         },
 
+        onTouchstart(e) {
+            this.wrapperStart = Object.assign(this.scrollInfo(), {
+                clientY: e.touches[0].clientY
+            });
+        },
+
         onTouchmove(e) {
-            if (this.windowSmall && !this.$refs.scroller.$el.contains(e.target)) {
-                e.preventDefault();
+            if (this.windowSmall && this.windowScrollY > 0) {
+                if (this.wrapperStart.clientY > e.touches[0].clientY) {
+                    // 向上滑动
+                    if (this.wrapperStart.scrollE === 0) {
+                        e.preventDefault();
+                    }
+                } else {
+                    // 向下滑动
+                    if (this.wrapperStart.scrollY === 0) {
+                        e.preventDefault();
+                    }
+                }
             }
         },
 

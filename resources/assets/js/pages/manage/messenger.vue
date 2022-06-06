@@ -90,9 +90,10 @@
                             <li v-for="items in contactsList">
                                 <div class="label">{{items.az}}</div>
                                 <ul>
-                                    <li v-for="(user, index) in items.list" :key="index" @click="openContacts(user.userid)">
+                                    <li v-for="(user, index) in items.list" :key="index" @click="openContacts(user)">
                                         <div class="avatar"><UserAvatar :userid="user.userid" :size="30"/></div>
                                         <div class="nickname">{{user.nickname}}</div>
+                                        <div v-if="user.loading" class="loading"><Loading/></div>
                                     </li>
                                 </ul>
                             </li>
@@ -393,11 +394,17 @@ export default {
             this.$store.dispatch("openDialog", dialogId)
         },
 
-        openContacts(userid) {
-            if (this.windowLarge) {
-                this.tabActive = 'dialog';
+        openContacts(user) {
+            if (user.loading) {
+                return
             }
-            this.$store.dispatch("openDialogUserid", userid);
+            this.$set(user, 'loading', true);
+            this.$store.dispatch("openDialogUserid", user.userid).then(_ => {
+                this.$set(user, 'loading', false);
+                if (this.windowLarge) {
+                    this.tabActive = 'dialog';
+                }
+            });
         },
 
         filterDialog(dialog) {
