@@ -1,6 +1,6 @@
 <template>
     <Modal
-        v-model="show"
+        :value="show"
         :mask="false"
         :mask-closable="false"
         :footer-hide="true"
@@ -40,40 +40,27 @@ body {
     }
 }
 </style>
-<script>
 
+<script>
 import {mapState} from "vuex";
 import DialogWrapper from "./DialogWrapper";
 
 export default {
     name: "DialogModal",
     components: {DialogWrapper},
-    data() {
-        return {
-            show: false
-        }
-    },
 
     computed: {
-        ...mapState(['dialogId'])
-    },
+        ...mapState(['dialogId']),
 
-    watch: {
-        dialogId: {
-            handler(id) {
-                this.show = id > 0 && this.windowSmall;
-            },
-            immediate: true
-        },
-        windowSmall(small) {
-            this.show = this.dialogId > 0 && small;
+        show() {
+            return this.dialogId > 0 && this.windowSmall
         }
     },
 
     methods: {
         onBeforeClose() {
             return new Promise(_ => {
-                this.$store.state.dialogId = 0;
+                this.$store.dispatch("openDialog", 0)
             })
         },
     }

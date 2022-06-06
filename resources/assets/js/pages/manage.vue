@@ -308,22 +308,10 @@
         </Modal>
 
         <!--任务详情-->
-        <Modal
-            :value="taskId > 0"
-            :styles="{
-                width: '90%',
-                maxWidth: taskData.dialog_id ? '1200px' : '700px'
-            }"
-            :mask-closable="false"
-            :footer-hide="true"
-            @on-visible-change="taskVisibleChange">
-            <div class="page-manage-task-modal">
-                <TaskDetail ref="taskDetail" :task-id="taskId" :open-task="taskData" modalMode/>
-            </div>
-        </Modal>
+        <TaskModal ref="taskModal"/>
 
         <!--聊天窗口（移动端）-->
-        <DialogModal/>
+        <DialogModal ref="dialogModal"/>
 
         <!--工作报告-->
         <DrawerOverlay
@@ -371,38 +359,34 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex'
-import TaskDetail from "./manage/components/TaskDetail";
 import ProjectArchived from "./manage/components/ProjectArchived";
 import TeamManagement from "./manage/components/TeamManagement";
 import ProjectManagement from "./manage/components/ProjectManagement";
 import DrawerOverlay from "../components/DrawerOverlay";
-import DragBallComponent from "../components/DragBallComponent";
 import MobileTabbar from "../components/Mobile/Tabbar";
 import UserInput from "../components/UserInput";
 import TaskAdd from "./manage/components/TaskAdd";
 import Report from "./manage/components/Report";
-import notificationKoro from "notification-koro1";
-import {Store} from "le5le-store";
 import MobileBack from "../components/Mobile/Back";
-import TaskMenu from "./manage/components/TaskMenu";
 import MobileNotification from "../components/Mobile/Notification";
 import MeetingManager from "./manage/components/MeetingManager";
 import longpress from "../directives/longpress";
 import DialogModal from "./manage/components/DialogModal";
+import TaskModal from "./manage/components/TaskModal";
+import notificationKoro from "notification-koro1";
+import {Store} from "le5le-store";
 
 export default {
     components: {
+        TaskModal,
         DialogModal,
         MeetingManager,
         MobileNotification,
-        TaskMenu,
         MobileBack,
         MobileTabbar,
         UserInput,
         TaskAdd,
-        TaskDetail,
         Report,
-        DragBallComponent,
         DrawerOverlay,
         ProjectManagement,
         TeamManagement,
@@ -504,7 +488,6 @@ export default {
             'cacheDialogs',
             'cacheProjects',
             'projectTotal',
-            'taskId',
             'wsOpenNum',
             'columnTemplate',
 
@@ -519,7 +502,7 @@ export default {
             'dialogIns',
         ]),
 
-        ...mapGetters(['taskData', 'dashboardTask']),
+        ...mapGetters(['dashboardTask']),
 
         routeName() {
             return this.$route.name
@@ -897,9 +880,8 @@ export default {
                 } else if (e.keyCode === 75 || e.keyCode === 78) {
                     e.preventDefault();
                     this.onAddMenu('task')
-                } else if (e.keyCode === 83 && this.taskId > 0) {
+                } else if (e.keyCode === 83 && this.$refs.taskModal.checkUpdate()) {
                     e.preventDefault();
-                    this.$refs.taskDetail.checkUpdate(true)
                 }
             }
         },
@@ -972,12 +954,6 @@ export default {
                 this.$store.dispatch("getDialogOne", dialog_id).then(({data}) => {
                     notificationFunc(data.name)
                 }).catch(() => {})
-            }
-        },
-
-        taskVisibleChange(visible) {
-            if (!visible) {
-                this.openTask(0)
             }
         },
 
