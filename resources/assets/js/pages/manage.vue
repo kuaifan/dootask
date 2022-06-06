@@ -236,20 +236,7 @@
         </div>
 
         <!--等待覆盖层-->
-        <div v-if="userLoad" class="manage-box-load">
-            <div class="app-view-loading">
-                <div>
-                    <div>PAGE LOADING</div>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-            </div>
-        </div>
+        <PageLoading v-if="userLoad" class="manage-box-load"/>
 
         <!--新建项目-->
         <Modal
@@ -391,9 +378,11 @@ import DialogModal from "./manage/components/DialogModal";
 import TaskModal from "./manage/components/TaskModal";
 import notificationKoro from "notification-koro1";
 import {Store} from "le5le-store";
+import PageLoading from "../components/PageLoading";
 
 export default {
     components: {
+        PageLoading,
         TaskModal,
         DialogModal,
         MeetingManager,

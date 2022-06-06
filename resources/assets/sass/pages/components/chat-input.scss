@@ -42,6 +42,15 @@
         }
     }
 
+    &.show-more,
+    &.show-emoji {
+        .chat-input-wrapper {
+            .chat-cover {
+                display: block;
+            }
+        }
+    }
+
     .chat-input-wrapper {
         position: relative;
         display: inline-block;
@@ -200,6 +209,16 @@
                     }
                 }
             }
+        }
+
+        .chat-cover {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 4;
         }
     }
 

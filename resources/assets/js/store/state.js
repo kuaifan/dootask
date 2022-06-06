@@ -1,12 +1,12 @@
 const stateData = {
     // 浏览器尺寸信息
-    windowWidth: window.innerWidth,
-    windowHeight: window.innerHeight,
+    windowWidth: window.outerWidth,
+    windowHeight: window.outerHeight,
     windowScrollY: 0,
 
     // 浏览器窗口类型
-    windowLarge: window.innerWidth > 768, // 大窗口
-    windowSmall: window.innerWidth <= 768, // 小窗口
+    windowLarge: window.outerWidth > 768, // 大窗口
+    windowSmall: window.outerWidth <= 768, // 小窗口
 
     // 播放中的音频地址
     audioPlaying: null,

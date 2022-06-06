@@ -68,11 +68,11 @@
                 @dragover.prevent="fileDragOver(true, $event)"
                 @dragleave.prevent="fileDragOver(false, $event)">
                 <template v-if="tableMode === 'block'">
-                    <div v-if="fileList.length == 0 && loadIng == 0" class="file-no" @contextmenu.prevent="handleRightClick">
+                    <div v-if="fileList.length == 0 && loadIng == 0" class="file-no" @contextmenu.prevent="handleContextmenu">
                         <i class="taskfont">&#xe60b;</i>
                         <p>{{$L('没有任何文件')}}</p>
                     </div>
-                    <div v-else class="file-list" @contextmenu.prevent="handleRightClick">
+                    <div v-else class="file-list" @contextmenu.prevent="handleContextmenu">
                         <ul>
                             <li
                                 v-for="item in fileList"
@@ -120,7 +120,7 @@
                         </ul>
                     </div>
                 </template>
-                <div v-else class="file-table" @contextmenu.prevent="handleRightClick">
+                <div v-else class="file-table" @contextmenu.prevent="handleContextmenu">
                     <Table
                         :columns="columns"
                         :data="fileList"
@@ -908,6 +908,12 @@ export default {
                 return
             }
             this.handleRightClick(event, fileItem)
+        },
+
+        handleContextmenu(event) {
+            if (this.windowLarge) {
+                this.handleRightClick(event)
+            }
         },
 
         handleRightClick(event, item, isAddButton) {

@@ -674,12 +674,17 @@ export default {
 
         onTouchstart(e) {
             this.wrapperStart = Object.assign(this.scrollInfo(), {
-                clientY: e.touches[0].clientY
+                clientY: e.touches[0].clientY,
+                exclud: !this.$refs.scroller.$el.contains(e.target),
             });
         },
 
         onTouchmove(e) {
             if (this.windowSmall && this.windowScrollY > 0) {
+                if (this.wrapperStart.exclud) {
+                    e.preventDefault();
+                    return;
+                }
                 if (this.wrapperStart.clientY > e.touches[0].clientY) {
                     // 向上滑动
                     if (this.wrapperStart.scrollE === 0) {

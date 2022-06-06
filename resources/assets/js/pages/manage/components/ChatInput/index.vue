@@ -90,6 +90,9 @@
                     <div ref="recwave"></div>
                 </li>
             </ul>
+
+            <!-- 覆盖层 -->
+            <div class="chat-cover" @click.stop="onClickCover"></div>
         </div>
 
         <!-- 移动端表情（底部） -->
@@ -301,6 +304,12 @@ export default {
                     array.push('record-progress');
                 }
             }
+            if (this.showMore) {
+                array.push('show-more');
+            }
+            if (this.showEmoji) {
+                array.push('show-emoji');
+            }
             if (this.mentionMode) {
                 array.push(this.mentionMode);
             }
@@ -396,7 +405,7 @@ export default {
                 } else if (this.windowSmall) {
                     this.timerScroll = setInterval(() => {
                         if (this.quill?.hasFocus()) {
-                            $A.scrollIntoViewIfNeeded(this.$refs.editor);
+                            this.windowScrollY > 0 && $A.scrollIntoViewIfNeeded(this.$refs.editor);
                         } else {
                             clearInterval(this.timerScroll);
                         }
@@ -757,6 +766,13 @@ export default {
         hidePopover() {
             this.showEmoji = false;
             this.showMore = false;
+        },
+
+        onClickCover() {
+            this.hidePopover();
+            this.$nextTick(_ => {
+                this.quill?.focus()
+            })
         },
 
         uploadRecord(duration) {

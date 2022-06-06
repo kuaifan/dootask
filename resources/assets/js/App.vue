@@ -151,10 +151,10 @@ export default {
         },
 
         windowSizeListener() {
-            this.$store.state.windowWidth = window.innerWidth
-            this.$store.state.windowHeight = window.innerHeight
-            this.$store.state.windowLarge = window.innerWidth > 768
-            this.$store.state.windowSmall = window.innerWidth <= 768
+            this.$store.state.windowWidth = window.outerWidth
+            this.$store.state.windowHeight = window.outerHeight
+            this.$store.state.windowLarge = window.outerWidth > 768
+            this.$store.state.windowSmall = window.outerWidth <= 768
         },
 
         windowScrollListener() {

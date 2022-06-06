@@ -4317,7 +4317,7 @@ function maybeScrollWindow(cm, rect) {
     var display = cm.display, box = display.sizer.getBoundingClientRect(), doScroll = null;
     if (rect.top + box.top < 0) {
         doScroll = true;
-    } else if (rect.bottom + box.top > (window.innerHeight || document.documentElement.clientHeight)) {
+    } else if (rect.bottom + box.top > (window.outerHeight || document.documentElement.clientHeight)) {
         doScroll = false;
     }
     if (doScroll != null && !phantom) {
@@ -11172,7 +11172,7 @@ function findPosH(doc, pos, dir, unit, visually) {
 function findPosV(cm, pos, dir, unit) {
     var doc = cm.doc, x = pos.left, y;
     if (unit == "page") {
-        var pageSize = Math.min(cm.display.wrapper.clientHeight, window.innerHeight || document.documentElement.clientHeight);
+        var pageSize = Math.min(cm.display.wrapper.clientHeight, window.outerHeight || document.documentElement.clientHeight);
         var moveAmount = Math.max(pageSize - .5 * textHeight(cm.display), 3);
         y = (dir > 0 ? pos.bottom : pos.top) + dir * moveAmount;
 
