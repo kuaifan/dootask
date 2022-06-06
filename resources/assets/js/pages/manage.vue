@@ -235,6 +235,22 @@
             </keep-alive>
         </div>
 
+        <!--等待覆盖层-->
+        <div v-if="userLoad" class="manage-box-load">
+            <div class="app-view-loading">
+                <div>
+                    <div>PAGE LOADING</div>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+
         <!--新建项目-->
         <Modal
             v-model="addShow"
@@ -395,6 +411,7 @@ export default {
     data() {
         return {
             loadIng: 0,
+            userLoad: true,
 
             mateName: /macintosh|mac os x/i.test(navigator.userAgent) ? '⌘' : 'Ctrl',
 
@@ -450,8 +467,10 @@ export default {
             $A.messageSuccess("清除成功");
         }
         //
-        this.$store.dispatch("getUserInfo").catch(() => {})
-        this.$store.dispatch("getTaskPriority").catch(() => {})
+        this.$store.dispatch("getUserInfo").then(_ => {
+            this.userLoad = false;
+        }).catch(_ => {})
+        this.$store.dispatch("getTaskPriority").catch(_ => {})
         //
         this.getReportUnread(0);
         this.notificationInit();
