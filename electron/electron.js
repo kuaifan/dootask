@@ -402,6 +402,7 @@ ipcMain.on('setDockBadge', (event, args) => {
 let autoUpdating = 0
 autoUpdater.logger = log
 autoUpdater.autoDownload = false
+autoUpdater.autoInstallOnAppQuit = true
 autoUpdater.on('update-available', info => {
     mainWindow.webContents.send("updateAvailable", info)
 })
@@ -425,7 +426,8 @@ ipcMain.on('updateCheckAndDownload', (event, args) => {
             return
         }
         if (args.apiVersion) {
-            if (utils.compareVersion(info.updateInfo.version, args.apiVersion) === 0) {
+            if (utils.compareVersion(info.updateInfo.version, args.apiVersion) <= 0) {
+                // 客户端版本 <= 接口版本
                 autoUpdating = utils.Time()
                 autoUpdater.downloadUpdate().then(_ => {}).catch(_ => {})
             }

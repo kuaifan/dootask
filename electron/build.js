@@ -51,10 +51,12 @@ function changeLog() {
     if (!array) {
         return ""
     }
+    let start = content.indexOf(array[0]);
     if (array.length > 5) {
-        content = content.substr(content.indexOf(array[0]), content.indexOf(array[5]))
+        let length = content.indexOf(array[5]) - start;
+        content = content.substr(start, length)
     } else {
-        content = content.substr(content.indexOf(array[0]))
+        content = content.substr(start)
     }
     return content;
 }
@@ -97,7 +99,7 @@ function genericPublish({url, version, output}) {
 }
 
 // 生成配置、编译应用
-function startBuild(data, publish) {
+function startBuild(data, publish, release) {
     const systemInfo = {
         title: data.name,
         version: config.version,
@@ -134,7 +136,7 @@ function startBuild(data, publish) {
         if (argv[3] === "setting") {
             child_process.spawnSync("eeui", ["setting"], {stdio: "inherit", cwd: "resources/mobile"});
         }
-        child_process.spawnSync("eeui", ["build"], {stdio: "inherit", cwd: "resources/mobile"});
+        child_process.spawnSync("eeui", ["build", "--simple"], {stdio: "inherit", cwd: "resources/mobile"});
         return;
     }
     // package.json Backup
@@ -154,6 +156,9 @@ function startBuild(data, publish) {
         econfig.build.releaseInfo.releaseNotes = process.env.RELEASE_BODY
     } else {
         econfig.build.releaseInfo.releaseNotes = changeLog()
+    }
+    if (release) {
+        econfig.build.releaseInfo.releaseNotes = econfig.build.releaseInfo.releaseNotes.replace(`## [${config.version}]`, `## [${config.version}-Release]`)
     }
     if (utils.isJson(data.publish)) {
         econfig.build.publish = data.publish
@@ -190,13 +195,13 @@ if (["dev"].includes(argv[2])) {
         id: 'app',
         platform: '',
         url: 'http://public/',
-    }, false)
+    }, false, false)
 } else if (platform.includes(argv[2])) {
     // 自动编译
     let data = config.app.find(({id, publish}) => id === process.env.APPID && publish.provider === process.env.PROVIDER);
     if (data) {
         data.platform = argv[2];
-        startBuild(data, true)
+        startBuild(data, true, false)
     } else {
         console.warn("not build appid!");
     }
@@ -246,6 +251,18 @@ if (["dev"].includes(argv[2])) {
                 name: "Yes",
                 value: true
             }]
+        },
+        {
+            type: 'list',
+            name: 'release',
+            message: "选择是否弹出升级提示框",
+            choices: [{
+                name: "No",
+                value: false
+            }, {
+                name: "Yes",
+                value: true
+            }]
         }
     ];
     inquirer.prompt(questions).then(answers => {
@@ -258,7 +275,7 @@ if (["dev"].includes(argv[2])) {
             }
             array.forEach(data => {
                 data.platform = platform
-                startBuild(data, answers.publish)
+                startBuild(data, answers.publish, answers.release)
             })
         });
     });

@@ -69,9 +69,10 @@ export default {
                 this.updateShow = true
             })
             this.$Electron.registerMsgListener('updateDownloaded', info => {
+                this.$store.state.clientNewVersion = info.version
                 this.updateVersion = info.version;
                 this.updateNote = info.releaseNotes || this.$L('没有更新描述。');
-                this.updateShow = true;
+                this.updateShow = $A.strExists(this.updateNote, `[${this.updateVersion}-Release]`);
             })
         }
     },
