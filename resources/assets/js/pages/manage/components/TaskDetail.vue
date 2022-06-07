@@ -1082,7 +1082,7 @@ export default {
             this.$refs.upload.handleClick()
         },
 
-        msgDialog() {
+        msgDialog(msgText = null) {
             if (this.sendLoad > 0) {
                 return;
             }
@@ -1106,14 +1106,15 @@ export default {
                                 $A.onBlur();
                                 this.$store.state.dialogMsgTransfer = {
                                     time: $A.Time() + 10,
-                                    msgText: this.msgText,
+                                    msgRecord: this.msgRecord,
                                     msgFile: this.msgFile,
-                                    msgRecord: this.msgRecord
+                                    msgText: typeof msgText === 'string' && msgText ? msgText : this.msgText,
                                 };
                                 this.msgRecord = {};
                                 this.msgFile = [];
                                 this.msgText = "";
                                 if (this.dialogId > 0) {
+                                    // 如果当前打开着对话窗口则关闭任务窗口
                                     this.$store.dispatch("openTask", 0);
                                 }
                                 this.$store.dispatch('openDialog', data.dialog_id)
@@ -1183,9 +1184,9 @@ export default {
             this.msgDialog()
         },
 
-        onSend() {
+        onSend(msgText) {
             this.$refs.chatInput && this.$refs.chatInput.hidePopover();
-            this.msgDialog();
+            this.msgDialog(msgText);
         },
 
         deleteFile(file) {

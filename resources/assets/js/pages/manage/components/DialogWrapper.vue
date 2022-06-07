@@ -790,6 +790,7 @@ export default {
                 return;
             }
             if (this.taskId > 0) {
+                // 如果当前打开着任务窗口则关闭对话窗口
                 this.$store.dispatch("openDialog", 0);
             }
             this.$store.dispatch("openTask", this.dialogData.group_info.id);
