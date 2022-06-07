@@ -623,7 +623,7 @@ export default {
                 return {};
             }
             return {
-                minHeight: (height - (height > 900 ? 200 : 70) - 48) + 'px'
+                minHeight: (height - (height > 900 ? 200 : 150) - 48) + 'px'
             }
         },
 
@@ -632,7 +632,7 @@ export default {
             let height = Math.min(1100, windowHeight)
             if (modalMode && hasOpenDialog) {
                 return {
-                    maxHeight: (height - (height > 900 ? 200 : 70) - 30) + 'px'
+                    maxHeight: (height - (height > 900 ? 200 : 150) - 30) + 'px'
                 }
             }
             return {}
