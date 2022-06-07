@@ -22,7 +22,10 @@ export default {
     },
     watch: {
         show(v) {
-            if (!v) {
+            if (v) {
+                this.$store.state.previewImageIndex = Math.max(this.$store.state.previewImageIndex, 0)
+                this.$store.state.previewImageIndex = Math.min(this.$store.state.previewImageIndex, this.$store.state.previewImageList.length - 1)
+            } else {
                 this.$store.state.previewImageIndex = 0;
                 this.$store.state.previewImageList = [];
             }

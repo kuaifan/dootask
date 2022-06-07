@@ -306,7 +306,7 @@
                                 let index = 0;
                                 const imgElm = editor.selection.getNode();
                                 if (imgElm && imgElm.nodeName === "IMG") {
-                                    index = array.findIndex(item => item === imgElm.getAttribute("src"));
+                                    index = array.findIndex(item => item.src === imgElm.getAttribute("src"));
                                 }
                                 this.$store.state.previewImageIndex = index;
                                 this.$store.state.previewImageList = array;
