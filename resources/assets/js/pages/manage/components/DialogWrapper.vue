@@ -73,6 +73,7 @@
         <DynamicScroller
             ref="scroller"
             class="dialog-scroller scrollbar-overlay"
+            :style="{visibility: scrollerShow ? 'visible' : 'hidden'}"
             :disabled="touchBackInProgress"
             :items="allMsgs"
             :min-item-size="58"
@@ -328,6 +329,7 @@ export default {
 
             dialogDrag: false,
             groupInfoShow: false,
+            scrollerShow: false,
 
             navStyle: {},
 
@@ -449,6 +451,7 @@ export default {
         dialogId: {
             handler(id) {
                 if (id) {
+                    this.scrollerShow = false;
                     this.msgNew = 0;
                     this.topId = -1;
                     //
@@ -456,13 +459,19 @@ export default {
                     if (this.allMsgList.length > 0) {
                         cacheTimer = setTimeout(_ => {
                             this.allMsgs = this.allMsgList;
-                            this.onToBottom();
+                            this.onToBottom().then(_ => {
+                                this.scrollerShow = true
+                            });
                         }, 1);
                     }
                     const startTime = new Date().getTime();
                     this.$store.dispatch("getDialogMsgs", id).then(_ => {
                         cacheTimer && clearTimeout(cacheTimer);
-                        setTimeout(this.onToBottom, Math.max(0, 100 - (new Date().getTime() - startTime)));
+                        setTimeout(_ => {
+                            this.onToBottom().then(_ => {
+                                this.scrollerShow = true
+                            });
+                        }, Math.max(0, 100 - (new Date().getTime() - startTime)));
                     }).catch(_ => {});
                     //
                     this.$store.dispatch('saveInDialog', {
@@ -773,9 +782,14 @@ export default {
 
         onToBottom() {
             this.msgNew = 0;
-            if (this.isReady) {
-                this.$refs.scroller?.scrollToBottom();
-            }
+            return new Promise(resolve => {
+                if (this.isReady) {
+                    this.$refs.scroller?.scrollToBottom();
+                    requestAnimationFrame(resolve)
+                } else {
+                    resolve();
+                }
+            })
         },
 
         openProject() {
