@@ -182,13 +182,13 @@ export default {
                 let top = e.clientY - this.record.y;
                 if (left < 0) {
                     left = 0
-                } else if (left > (window.outerWidth - this.floatDrag.offsetWidth)) {
-                    left = window.outerWidth - this.floatDrag.offsetWidth
+                } else if (left > (window.innerWidth - this.floatDrag.offsetWidth)) {
+                    left = window.innerWidth - this.floatDrag.offsetWidth
                 }
                 if (top < 0) {
                     top = 0
-                } else if (top > (window.outerHeight - this.floatDrag.offsetHeight)) {
-                    top = window.outerHeight - this.floatDrag.offsetHeight
+                } else if (top > (window.innerHeight - this.floatDrag.offsetHeight)) {
+                    top = window.innerHeight - this.floatDrag.offsetHeight
                 }
                 this.left = left;
                 this.top = top;
@@ -219,13 +219,13 @@ export default {
                 let top = touch.clientY - this.floatDrag.offsetHeight / 2;
                 if (left < 0) {
                     left = 0
-                } else if (left > (window.outerWidth - this.floatDrag.offsetWidth)) {
-                    left = window.outerWidth - this.floatDrag.offsetWidth
+                } else if (left > (window.innerWidth - this.floatDrag.offsetWidth)) {
+                    left = window.innerWidth - this.floatDrag.offsetWidth
                 }
                 if (top < 0) {
                     top = 0
-                } else if (top > (window.outerHeight - this.floatDrag.offsetHeight)) {
-                    top = window.outerHeight - this.floatDrag.offsetHeight
+                } else if (top > (window.innerHeight - this.floatDrag.offsetHeight)) {
+                    top = window.innerHeight - this.floatDrag.offsetHeight
                 }
                 this.left = left;
                 this.top = top;

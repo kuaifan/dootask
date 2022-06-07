@@ -622,24 +622,26 @@ export default {
 
         dialogStyle() {
             const {windowHeight, hasOpenDialog} = this;
-            let height = Math.min(1100, windowHeight)
+            const height = Math.min(1100, windowHeight)
             if (!height) {
                 return {};
             }
             if (!hasOpenDialog) {
                 return {};
             }
+            const factor = height > 900 ? 200 : 70;
             return {
-                minHeight: (height - (height > 900 ? 200 : 150) - 48) + 'px'
+                minHeight: (height - factor - 48) + 'px'
             }
         },
 
         taskDetailStyle() {
             const {modalMode, windowHeight, hasOpenDialog} = this;
-            let height = Math.min(1100, windowHeight)
+            const height = Math.min(1100, windowHeight)
             if (modalMode && hasOpenDialog) {
+                const factor = height > 900 ? 200 : 70;
                 return {
-                    maxHeight: (height - (height > 900 ? 200 : 150) - 30) + 'px'
+                    maxHeight: (height - factor - 30) + 'px'
                 }
             }
             return {}
@@ -1242,8 +1244,8 @@ export default {
         resizeDialog() {
             return new Promise(resolve => {
                 this.$Electron.sendSyncMessage('windowSize', {
-                    width: Math.max(1100, window.outerWidth),
-                    height: Math.max(720, window.outerHeight),
+                    width: Math.max(1100, this.windowWidth),
+                    height: Math.max(720, this.windowHeight),
                     minWidth: 800,
                     minHeight: 600,
                     autoZoom: true,
