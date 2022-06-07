@@ -508,15 +508,23 @@
             },
 
             getValueImages() {
-                let imgs = [];
-                let imgReg = /<img.*?(?:>|\/>)/gi;
-                let srcReg = /src=['"]?([^'"]*)['"]?/i;
-                let array = (this.getContent() + "").match(imgReg);
+                const imgs = [];
+                const imgReg = /<img.*?(?:>|\/>)/gi,
+                    srcReg = new RegExp("src=([\"'])([^'\"]*)\\1"),
+                    widthReg = new RegExp("original-width=\"(\\d+)\""),
+                    heightReg = new RegExp("original-height=\"(\\d+)\"")
+                const array = (this.getContent() + "").match(imgReg);
                 if (array) {
                     for (let i = 0; i < array.length; i++) {
-                        let src = array[i].match(srcReg);
-                        if(src[1]){
-                            imgs.push(src[1]);
+                        const src = array[i].match(srcReg);
+                        const width = array[i].match(widthReg);
+                        const height = array[i].match(heightReg);
+                        if(src){
+                            imgs.push({
+                                src: src[2],
+                                width: width ? width[1] : -1,
+                                height: height ? height[1] : -1,
+                            });
                         }
                     }
                 }

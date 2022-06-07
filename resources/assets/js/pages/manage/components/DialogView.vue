@@ -530,18 +530,18 @@ export default {
             const array = text.match(new RegExp(`<img[^>]*?>`, "g"));
             const list = [];
             if (array) {
-                const srcReg = new RegExp("src=\"(.*?)\""),
+                const srcReg = new RegExp("src=([\"'])([^'\"]*)\\1"),
                     widthReg = new RegExp("(original-)?width=\"(\\d+)\""),
                     heightReg = new RegExp("(original-)?height=\"(\\d+)\"")
                 array.some(res => {
                     const srcMatch = res.match(srcReg),
                         widthMatch = res.match(widthReg),
                         heightMatch = res.match(heightReg);
-                    if (srcMatch && widthMatch && heightMatch) {
+                    if (srcMatch) {
                         list.push({
-                            src: srcMatch[1].replace(/\{\{RemoteURL\}\}/g, baseUrl),
-                            width: widthMatch[2],
-                            height: heightMatch[2],
+                            src: srcMatch[2].replace(/\{\{RemoteURL\}\}/g, baseUrl),
+                            width: widthMatch ? widthMatch[2] : -1,
+                            height: heightMatch ? heightMatch[2] : -1,
                         })
                     }
                 })

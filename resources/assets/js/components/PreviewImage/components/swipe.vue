@@ -54,7 +54,10 @@ export default {
                         if (item.src) {
                             item.src = $A.rightDelete(item.src, "_thumb.jpg");
                         }
-                        return item
+                        if (parseInt(item.width) > 0 && parseInt(item.height) > 0) {
+                            return item
+                        }
+                        item = item.src;
                     }
                     return {
                         html: `<div class="preview-image-swipe"><img src="${$A.rightDelete(item, "_thumb.jpg")}"/></div>`,
