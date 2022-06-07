@@ -236,7 +236,7 @@
         </div>
 
         <!--等待覆盖层-->
-        <PageLoading v-if="userLoad" class="manage-box-load"/>
+        <ManageLoad :user-state="userState" class="manage-box-load" @on-click="loadUser"/>
 
         <!--新建项目-->
         <Modal
@@ -381,13 +381,13 @@ import DialogModal from "./manage/components/DialogModal";
 import TaskModal from "./manage/components/TaskModal";
 import notificationKoro from "notification-koro1";
 import {Store} from "le5le-store";
-import PageLoading from "../components/PageLoading";
+import ManageLoad from "../components/ManageLoad";
 import TaskOperation from "./manage/components/TaskOperation";
 
 export default {
     components: {
         TaskOperation,
-        PageLoading,
+        ManageLoad,
         TaskModal,
         DialogModal,
         MeetingManager,
@@ -405,7 +405,7 @@ export default {
     data() {
         return {
             loadIng: 0,
-            userLoad: true,
+            userState: 0,
 
             mateName: /macintosh|mac os x/i.test(navigator.userAgent) ? '⌘' : 'Ctrl',
 
@@ -461,9 +461,7 @@ export default {
             $A.messageSuccess("清除成功");
         }
         //
-        this.$store.dispatch("getUserInfo").then(_ => {
-            this.userLoad = false;
-        }).catch(_ => {})
+        this.loadUser();
         this.$store.dispatch("getTaskPriority").catch(_ => {})
         //
         this.getReportUnread(0);
@@ -726,6 +724,15 @@ export default {
                     { type: 'string', min: 2, message: this.$L('项目名称至少2个字！'), trigger: 'change' }
                 ]
             };
+        },
+
+        loadUser() {
+            this.userState = 0;
+            this.$store.dispatch("getUserInfo").then(_ => {
+                this.userState = 1;
+            }).catch(_ => {
+                this.userState = -1;
+            })
         },
 
         chackPass() {
