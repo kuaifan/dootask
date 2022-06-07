@@ -29,7 +29,6 @@ const stateData = {
 
     // Dialog
     cacheDialogs: $A.getStorageArray("cacheDialogs").map(item => Object.assign(item, {loading: false})),
-    cacheUnreads: {},
 
     // Project
     cacheProjects: $A.getStorageArray("cacheProjects"),

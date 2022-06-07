@@ -85,11 +85,10 @@ class DialogController extends AbstractController
             ->where('web_socket_dialogs.id', $dialog_id)
             ->where('u.userid', $user->userid)
             ->first();
-        if ($item) {
-            $item = $item->formatData($user->userid);
+        if (empty($item)) {
+            return Base::retError('会话不存在或已被删除', ['dialog_id' => $dialog_id], -4003);
         }
-        //
-        return Base::retSuccess('success', $item);
+        return Base::retSuccess('success', $item->formatData($user->userid));
     }
 
     /**
@@ -138,7 +137,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/user          04. 打开会话
+     * @api {get} api/dialog/open/user          04. 打开会话
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -165,9 +164,6 @@ class DialogController extends AbstractController
             return Base::retError('打开会话失败');
         }
         $data = WebSocketDialog::find($dialog->id)?->formatData($user->userid);
-        if (empty($data)) {
-            return Base::retError('打开会话错误');
-        }
         return Base::retSuccess('success', $data);
     }
 
@@ -237,6 +233,11 @@ class DialogController extends AbstractController
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
+     * @apiSuccessExample {json} data:
+    {
+        "unread": 43,       // 未读消息数
+        "last_umid": 308    // 最新的一条未读消息ID，用于判断是否更新前端的未读数量
+    }
      */
     public function msg__unread()
     {
@@ -246,9 +247,9 @@ class DialogController extends AbstractController
         if ($dialog_id > 0) {
             $builder->whereDialogId($dialog_id);
         }
-        $unread = $builder->count();
         return Base::retSuccess('success', [
-            'unread' => $unread,
+            'unread' => $builder->count(),
+            'last_umid' => intval($builder->orderByDesc('msg_id')->value('msg_id')),
         ]);
     }
 

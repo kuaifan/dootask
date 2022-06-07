@@ -1905,9 +1905,15 @@ export default {
                 dispatch("saveDialog", dialog)
             });
         } else if ($A.isJson(data)) {
-            let index = state.cacheDialogs.findIndex(({id}) => id == data.id);
+            const index = state.cacheDialogs.findIndex(({id}) => id == data.id);
             if (index > -1) {
-                state.cacheDialogs.splice(index, 1, Object.assign({}, state.cacheDialogs[index], data));
+                const original = state.cacheDialogs[index];
+                if (typeof data.unread === "number" && data.unread > original.unread && data.last_umid <= original.last_umid) {
+                    // 增加未读数时：新数据的最后一条未读消息id <= 原数据，则不更新未读数
+                    data.unread = original.unread;
+                    data.mention = original.mention;
+                }
+                state.cacheDialogs.splice(index, 1, Object.assign({}, original, data));
             } else {
                 state.cacheDialogs.push(data);
             }
@@ -1931,8 +1937,8 @@ export default {
                 dispatch("updateDialogLastMsg", msg)
             });
         } else if ($A.isJson(data)) {
-            let dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
-            if (dialog) {
+            const index = state.cacheDialogs.findIndex(({id}) => id == data.dialog_id);
+            if (index > -1) {
                 dispatch("saveDialog", {
                     id: data.dialog_id,
                     last_msg: data,
@@ -2190,7 +2196,6 @@ export default {
                 dialog.loading = false;
                 dialog.currentPage = result.data.current_page;
                 dialog.hasMorePages = !!result.data.next_page_url;
-                dispatch("saveDialog", dialog);
                 //
                 const ids = result.data.data.map(({id}) => id)
                 state.dialogMsgs = state.dialogMsgs.filter((item) => item.dialog_id != dialog_id || ids.includes(item.id));
@@ -2261,14 +2266,17 @@ export default {
         if (data.read_at) return;
         data.read_at = $A.formatDate();
         //
-        let dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
+        const dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
         if (dialog && dialog.unread > 0) {
-            dialog.mark_unread = 0
-            dialog.unread--
-            if (data.mention) {
-                dialog.mention--
+            const newData = {
+                id: data.dialog_id,
+                mark_unread: 0,
             }
-            dispatch("saveDialog", dialog)
+            newData.unread = dialog.unread - 1;
+            if (data.mention) {
+                newData.mention = dialog.mention - 1;
+            }
+            dispatch("saveDialog", newData)
         }
         //
         state.wsReadWaitList.push(data.id);
@@ -2375,22 +2383,26 @@ export default {
                                         // 删除消息
                                         dispatch("forgetDialogMsg", data.id)
                                         //
-                                        let dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
+                                        const dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
                                         if (dialog) {
                                             // 更新最后消息
-                                            dialog.last_at = data.last_msg && data.last_msg.created_at;
-                                            dialog.last_msg = data.last_msg;
+                                            const newData = {
+                                                id: data.dialog_id,
+                                                last_at: data.last_msg && data.last_msg.created_at,
+                                                last_msg: data.last_msg,
+                                            }
                                             if (data.update_read) {
                                                 // 更新未读数量
                                                 dispatch("call", {
                                                     url: 'dialog/msg/unread',
                                                     dialog_id: data.dialog_id
                                                 }).then(result => {
-                                                    dialog.unread = result.data.unread
-                                                    dispatch("saveDialog", dialog)
+                                                    newData.unread = result.data.unread
+                                                    newData.last_umid = result.data.last_umid
+                                                    dispatch("saveDialog", newData)
                                                 }).catch(() => {});
                                             } else {
-                                                dispatch("saveDialog", dialog)
+                                                dispatch("saveDialog", newData)
                                             }
                                         }
                                         break;
@@ -2404,14 +2416,17 @@ export default {
                                             }
                                             if (data.userid !== state.userId) {
                                                 // 更新对话新增未读数
-                                                let dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
-                                                if (dialog && state.cacheUnreads[data.id] === undefined) {
-                                                    state.cacheUnreads[data.id] = true;
-                                                    dialog.unread++;
-                                                    if (data.mention) {
-                                                        dialog.mention++;
+                                                const dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
+                                                if (dialog) {
+                                                    const newData = {
+                                                        id: data.dialog_id,
+                                                        last_umid: data.id,
                                                     }
-                                                    dispatch("saveDialog", dialog)
+                                                    newData.unread = dialog.unread + 1;
+                                                    if (data.mention) {
+                                                        newData.mention = dialog.mention + 1;
+                                                    }
+                                                    dispatch("saveDialog", newData)
                                                 }
                                             }
                                             Store.set('dialogMsgPush', data);

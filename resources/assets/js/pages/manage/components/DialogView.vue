@@ -165,10 +165,6 @@ export default {
         }
     },
 
-    activated() {
-        this.msgRead()
-    },
-
     beforeDestroy() {
         Store.set('audioSubscribe', this.msgData.id);
     },
@@ -266,14 +262,7 @@ export default {
                 return;
             }
             this.msgData._r = true;
-            //
-            setTimeout(() => {
-                if (!this.$el.offsetParent) {
-                    this.msgData._r = false;
-                    return
-                }
-                this.$store.dispatch("dialogMsgRead", this.msgData);
-            }, 50)
+            this.$store.dispatch("dialogMsgRead", this.msgData);
         },
 
         openReadPercentage() {
