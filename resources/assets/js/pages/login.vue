@@ -319,7 +319,7 @@ export default {
                     url = url + ($A.rightExists(url, "/") ? "api/" : "/api/");
                 }
                 if (!/^https*:\/\//i.test(url)) {
-                    url = `http://${url}`;
+                    url = `https://${url}`;
                 }
                 this.$store.dispatch("call", {
                     url: `${url}system/setting`,
@@ -330,7 +330,7 @@ export default {
                 }).catch(({ret, msg}) => {
                     if (ret === -1001) {
                         if (!/^https*:\/\//i.test(value)) {
-                            this.inputServerChack(`https://${value}`).then(resolve);
+                            this.inputServerChack(`http://${value}`).then(resolve);
                             return;
                         }
                         msg = "服务器地址无效";

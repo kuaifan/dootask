@@ -138,6 +138,9 @@
                     margin-left: 12px;
                     display: flex;
                     align-items: center;
+                    .task-menu-icon {
+                        margin-right: 0;
+                    }
                     .ivu-icon {
                         font-size: 22px;
                         color: $primary-text-color;
@@ -496,7 +499,7 @@
         .head {
             display: flex;
             align-items: center;
-            height: 40px;
+            height: 42px;
             padding-bottom: 10px;
             color: #888888;
             position: relative;

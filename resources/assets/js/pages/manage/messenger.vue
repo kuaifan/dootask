@@ -306,10 +306,13 @@ export default {
     },
 
     watch: {
-        '$route' ({params}) {
-            if (['dialog', 'contacts'].includes(params.dialogAction)) {
-                this.tabActive = params.dialogAction
-            }
+        '$route': {
+            handler({params}) {
+                if (['dialog', 'contacts'].includes(params.dialogAction)) {
+                    this.tabActive = params.dialogAction
+                }
+            },
+            immediate: true
         },
 
         dialogKey(val) {
