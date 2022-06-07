@@ -10,7 +10,7 @@
                 @on-update="getLogLists"/>
         </div>
         <div v-if="taskDetail.flow_item_name" class="subtask-flow">
-            <span :class="taskDetail.flow_item_status" @click.stop="openMenu(taskDetail)">{{taskDetail.flow_item_name}}</span>
+            <span :class="taskDetail.flow_item_status" @click.stop="openMenu($event, taskDetail)">{{taskDetail.flow_item_name}}</span>
         </div>
         <div class="subtask-name">
             <Input
@@ -83,10 +83,10 @@
                     :color-show="false"
                     @on-update="getLogLists"/>
                 <div v-if="taskDetail.flow_item_name" class="flow">
-                    <span :class="taskDetail.flow_item_status" @click.stop="openMenu(taskDetail)">{{taskDetail.flow_item_name}}</span>
+                    <span :class="taskDetail.flow_item_status" @click.stop="openMenu($event, taskDetail)">{{taskDetail.flow_item_name}}</span>
                 </div>
                 <div v-if="taskDetail.archived_at" class="flow">
-                    <span class="archived" @click.stop="openMenu(taskDetail)">{{$L('已归档')}}</span>
+                    <span class="archived" @click.stop="openMenu($event, taskDetail)">{{$L('已归档')}}</span>
                 </div>
                 <div class="nav">
                     <p v-if="projectName"><span>{{projectName}}</span></p>
@@ -1203,9 +1203,9 @@ export default {
             });
         },
 
-        openMenu(task) {
+        openMenu(event, task) {
             const el = this.$refs[`taskMenu_${task.id}`];
-            el && el.handleClick()
+            el && el.handleClick(event)
         },
 
         openNewWin() {

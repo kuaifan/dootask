@@ -122,7 +122,7 @@
             }
             .dashboard-ul {
                 margin: 0 auto 18px;
-                padding: 0 12px;
+                padding: 6px 12px 0;
                 overflow: hidden;
                 > li {
                     position: relative;
@@ -133,9 +133,8 @@
                     margin-bottom: 8px;
                     border-radius: 6px;
                     cursor: pointer;
-                    transition: transform 0.3s ease-out 0s, box-shadow 0.3s ease-out 0s;
+                    transition: box-shadow 0.3s ease-out 0s;
                     &:hover {
-                        transform: translateX(-2px);
                         box-shadow: 0 0 6px #dfdfdf;
                     }
                     &.complete {
@@ -155,7 +154,7 @@
                         height: 12px;
                         width: 2px;
                     }
-                    .el-dropdown {
+                    .item-select {
                         flex-shrink: 0;
                         width: 22px;
                         height: 22px;

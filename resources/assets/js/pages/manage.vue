@@ -310,6 +310,9 @@
             </div>
         </Modal>
 
+        <!--任务操作-->
+        <TaskOperation/>
+
         <!--任务详情-->
         <TaskModal ref="taskModal"/>
 
@@ -379,9 +382,11 @@ import TaskModal from "./manage/components/TaskModal";
 import notificationKoro from "notification-koro1";
 import {Store} from "le5le-store";
 import PageLoading from "../components/PageLoading";
+import TaskOperation from "./manage/components/TaskOperation";
 
 export default {
     components: {
+        TaskOperation,
         PageLoading,
         TaskModal,
         DialogModal,

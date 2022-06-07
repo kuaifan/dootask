@@ -25,25 +25,23 @@
                 height: 1px;
                 background-color: #f4f5f5;
             }
-            .icon {
+            .task-menu-icon {
                 margin-right: 18px;
-                .task-menu-icon {
-                    display: flex;
-                    align-items: center;
-                    .ivu-icon {
-                        font-size: 18px;
+                display: flex;
+                align-items: center;
+                .ivu-icon {
+                    font-size: 18px;
+                }
+                .loading {
+                    width: 18px;
+                    height: 18px;
+                    .common-loading {
+                        width: 16px;
+                        height: 16px;
                     }
-                    .loading {
-                        width: 18px;
-                        height: 18px;
-                        .common-loading {
-                            width: 16px;
-                            height: 16px;
-                        }
-                    }
-                    .uncomplete {
-                        color: #888888;
-                    }
+                }
+                .uncomplete {
+                    color: #888888;
                 }
             }
             .flow {

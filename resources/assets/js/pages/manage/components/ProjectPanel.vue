@@ -166,7 +166,7 @@
                                 <div :class="['task-head', item.desc ? 'has-desc' : '']">
                                     <div class="task-title">
                                         <!--工作流状态-->
-                                        <span v-if="item.flow_item_name" :class="item.flow_item_status" @click.stop="openMenu(item)">{{item.flow_item_name}}</span>
+                                        <span v-if="item.flow_item_name" :class="item.flow_item_status" @click.stop="openMenu($event, item)">{{item.flow_item_name}}</span>
                                         <!--任务描述-->
                                         <pre>{{item.name}}</pre>
                                     </div>
@@ -1245,10 +1245,10 @@ export default {
             }
         },
 
-        openMenu(task) {
+        openMenu(event, task) {
             const el = this.$refs[`taskMenu_${task.id}`];
             if (el) {
-                el[0].handleClick()
+                el[0].handleClick(event)
             }
         },
 
