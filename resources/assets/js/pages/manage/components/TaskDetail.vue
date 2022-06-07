@@ -527,6 +527,13 @@ export default {
         }
     },
 
+    created() {
+        const navActive = $A.getObject(this.$route.query, 'navActive')
+        if (['dialog', 'log'].includes(navActive)) {
+            this.navActive = navActive;
+        }
+    },
+
     mounted() {
         this.nowInterval = setInterval(() => {
             this.nowTime = $A.Time();
@@ -1225,7 +1232,7 @@ export default {
             }
             this.$Electron.sendMessage('windowRouter', {
                 name: `task-${this.taskDetail.id}`,
-                path: `/single/task/${this.taskDetail.id}`,
+                path: `/single/task/${this.taskDetail.id}?navActive=${this.navActive}`,
                 force: false,
                 config
             });
