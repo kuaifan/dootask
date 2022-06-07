@@ -286,26 +286,38 @@ class DialogController extends AbstractController
         WebSocketDialog::checkDialog($dialog_id);
         //
         $text = WebSocketDialogMsg::formatMsg($text, $dialog_id);
-        if (mb_strlen($text) < 1) {
+        $strlen = mb_strlen($text);
+        if ($strlen < 1) {
             return Base::retError('消息内容不能为空');
-        } elseif (mb_strlen($text) > 20000) {
-            return Base::retError('消息内容最大不能超过20000字');
+        } elseif ($strlen > 200000) {
+            return Base::retError('消息内容最大不能超过200000字');
         }
-        if (mb_strlen($text) > 2000) {
-            $array = mb_str_split($text, 2000);
-        } else {
-            $array = [$text];
-        }
-        //
-        $list = [];
-        foreach ($array as $item) {
-            $res = WebSocketDialogMsg::sendMsg($dialog_id, 'text', ['text' => $item], $user->userid);
-            if (Base::isSuccess($res)) {
-                $list[] = $res['data'];
+        if ($strlen > 2000) {
+            // 内容过长转成文件发送
+            $path = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
+            Base::makeDir(public_path($path));
+            $path = $path . md5($text) . ".txt";
+            $file = public_path($path);
+            file_put_contents($file, $text);
+            $size = filesize(public_path($path));
+            if (empty($size)) {
+                return Base::retError('消息发送保存失败');
             }
+            $fileData = [
+                'name' => "LongText-{$strlen}.txt",
+                'size' => $size,
+                'file' => $file,
+                'path' => $path,
+                'url' => Base::fillUrl($path),
+                'thumb' => '',
+                'width' => -1,
+                'height' => -1,
+                'ext' => 'txt',
+            ];
+            return WebSocketDialogMsg::sendMsg($dialog_id, 'file', $fileData, $user->userid);
         }
         //
-        return Base::retSuccess('发送成功', $list);
+        return WebSocketDialogMsg::sendMsg($dialog_id, 'text', ['text' => $text], $user->userid);
     }
 
     /**

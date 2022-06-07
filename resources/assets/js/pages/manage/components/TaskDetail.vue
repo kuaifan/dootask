@@ -404,7 +404,7 @@
                             :task-id="taskId"
                             v-model="msgText"
                             :loading="sendLoad > 0"
-                            :maxlength="20000"
+                            :maxlength="200000"
                             :placeholder="$L('输入消息...')"
                             @on-more="onEventMore"
                             @on-file="onSelectFile"

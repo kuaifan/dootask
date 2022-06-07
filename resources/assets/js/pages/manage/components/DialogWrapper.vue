@@ -128,7 +128,7 @@
                 v-model="msgText"
                 :dialog-id="dialogId"
                 :emoji-bottom="windowSmall"
-                :maxlength="20000"
+                :maxlength="200000"
                 @on-focus="onEventFocus"
                 @on-blur="onEventBlur"
                 @on-more="onEventMore"
@@ -368,9 +368,9 @@ export default {
             if (!this.isReady) {
                 return [];
             }
-            return $A.cloneJSON(this.dialogMsgs.filter(({dialog_id}) => {
+            return this.dialogMsgs.filter(({dialog_id}) => {
                 return dialog_id == this.dialogId;
-            })).sort((a, b) => {
+            }).sort((a, b) => {
                 return a.id - b.id;
             });
         },
@@ -379,15 +379,18 @@ export default {
             if (!this.isReady) {
                 return [];
             }
-            return $A.cloneJSON(this.tempMsgs.filter(({dialog_id}) => {
+            return this.tempMsgs.filter(({dialog_id}) => {
                 return dialog_id == this.dialogId;
-            }));
+            });
         },
 
         allMsgList() {
             const {dialogMsgList, tempMsgList} = this;
             if (tempMsgList.length > 0) {
-                dialogMsgList.push(...tempMsgList);
+                const array = [];
+                array.push(...dialogMsgList);
+                array.push(...tempMsgList)
+                return array;
             }
             return dialogMsgList;
         },
