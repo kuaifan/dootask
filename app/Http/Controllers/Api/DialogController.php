@@ -297,7 +297,7 @@ class DialogController extends AbstractController
             // 内容过长转成文件发送
             $path = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
             Base::makeDir(public_path($path));
-            $path = $path . md5($text) . ".txt";
+            $path = $path . md5($text) . ".htm";
             $file = public_path($path);
             file_put_contents($file, $text);
             $size = filesize(public_path($path));
@@ -305,7 +305,7 @@ class DialogController extends AbstractController
                 return Base::retError('消息发送保存失败');
             }
             $fileData = [
-                'name' => "LongText-{$strlen}.txt",
+                'name' => "LongText-{$strlen}.htm",
                 'size' => $size,
                 'file' => $file,
                 'path' => $path,
@@ -313,7 +313,7 @@ class DialogController extends AbstractController
                 'thumb' => '',
                 'width' => -1,
                 'height' => -1,
-                'ext' => 'txt',
+                'ext' => 'htm',
             ];
             return WebSocketDialogMsg::sendMsg($dialog_id, 'file', $fileData, $user->userid);
         }
