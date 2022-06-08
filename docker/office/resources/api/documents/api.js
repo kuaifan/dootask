@@ -3,7 +3,7 @@
  *
  * http://www.onlyoffice.com
  *
- * Version: 7.1.0 (build:215)
+ * Version: 7.1.1 (build:23)
  */
 
 ;(function(window) {
@@ -792,7 +792,7 @@
     };
 
     DocsAPI.DocEditor.version = function() {
-        return '7.1.0';
+        return '7.1.1';
     };
 
     MessageDispatcher = function(fn, scope) {
@@ -930,7 +930,7 @@
     }
 
     function getAppParameters(config) {
-        var params = "?_dc=7.1.0-215";
+        var params = "?_dc=7.1.1-23";
 
         if (config.editorConfig && config.editorConfig.lang)
             params += "&lang=" + config.editorConfig.lang;

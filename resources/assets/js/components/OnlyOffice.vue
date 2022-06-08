@@ -184,7 +184,7 @@ export default {
             //
             let codeId = this.code || this.value.id;
             let fileName = $A.strExists(this.fileName, '.') ? this.fileName : (this.fileName + '.' + this.fileType);
-            let fileKey = `${this.fileType}-${fileKey}-${keyAppend}`;
+            let fileKey = `${this.fileType}-${keyAppend||codeId}`;
             let fileUrl = `http://nginx/api/file/content/?id=${codeId}&token=${this.userToken}`;
             if (this.historyId > 0) {
                 fileKey += `-${this.historyId}`

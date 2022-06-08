@@ -468,7 +468,7 @@ export default {
                         only_update_at: 'yes'
                     },
                 }).then(({data}) => {
-                    resolve($A.Date(data.update_at, true))
+                    resolve(`${data.id}-${$A.Time(data.update_at)}`)
                 }).catch(() => {
                     resolve(0)
                 });
