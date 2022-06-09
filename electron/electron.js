@@ -444,7 +444,7 @@ ipcMain.on('updateCheckAndDownload', (event, args) => {
 ipcMain.on('updateQuitAndInstall', (event) => {
     event.returnValue = "ok"
     willQuitApp = true
-    setTimeout(() => autoUpdater.quitAndInstall(), 1)
+    setTimeout(() => autoUpdater.quitAndInstall(true, true), 1)
 })
 
 //================================================================

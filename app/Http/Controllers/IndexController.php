@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Module\Base;
+use App\Module\Ihttp;
 use App\Tasks\AutoArchivedTask;
 use App\Tasks\DeleteTmpTask;
 use App\Tasks\EmailNoticeTask;
 use Arr;
+use Cache;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Redirect;
 use Request;
@@ -209,6 +211,28 @@ class IndexController extends InvokeController
             }
         }
         return abort(404);
+    }
+
+    /**
+     * Drawio 图标搜索
+     * @return array|mixed
+     */
+    public function drawio__iconsearch()
+    {
+        $query = Request::input('q');
+        $page = Request::input('p');
+        $size = Request::input('c');
+        $url = "https://app.diagrams.net/iconSearch?q={$query}&p={$page}&c={$size}";
+        $result = Cache::remember("drawioIconsearch::" . md5($url), now()->addDays(15), function () use ($url) {
+            return Ihttp::ihttp_get($url);
+        });
+        if (Base::isSuccess($result)) {
+            return $result['data'];
+        }
+        return [
+            'icons' => [],
+            'total_count' => 0
+        ];
     }
 
     /**
