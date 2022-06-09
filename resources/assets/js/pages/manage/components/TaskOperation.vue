@@ -124,6 +124,10 @@ export default {
     watch: {
         taskOperation(data) {
             if (data.event && data.task) {
+                if (this.$refs.dropdown.visible && this.element === data.event.target) {
+                    this.hide();
+                    return;
+                }
                 const eventRect = data.event.target.getBoundingClientRect();
                 this.styles = {
                     left: `${eventRect.left}px`,

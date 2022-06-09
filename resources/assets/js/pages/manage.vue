@@ -310,9 +310,6 @@
             </div>
         </Modal>
 
-        <!--任务操作-->
-        <TaskOperation/>
-
         <!--任务详情-->
         <TaskModal ref="taskModal"/>
 
@@ -382,11 +379,9 @@ import TaskModal from "./manage/components/TaskModal";
 import notificationKoro from "notification-koro1";
 import {Store} from "le5le-store";
 import ManageLoad from "../components/ManageLoad";
-import TaskOperation from "./manage/components/TaskOperation";
 
 export default {
     components: {
-        TaskOperation,
         ManageLoad,
         TaskModal,
         DialogModal,
@@ -461,10 +456,6 @@ export default {
             $A.messageSuccess("清除成功");
         }
         //
-        this.loadUser();
-        this.$store.dispatch("getTaskPriority").catch(_ => {})
-        //
-        this.getReportUnread(0);
         this.notificationInit();
         this.onVisibilityChange();
         //
@@ -472,6 +463,12 @@ export default {
         this.dialogMsgSubscribe = Store.subscribe('dialogMsgPush', this.addDialogMsg);
         //
         document.addEventListener('keydown', this.shortcutEvent);
+    },
+
+    activated() {
+        this.loadUser();
+        this.getReportUnread(0);
+        this.$store.dispatch("getTaskPriority").catch(_ => {})
     },
 
     beforeDestroy() {

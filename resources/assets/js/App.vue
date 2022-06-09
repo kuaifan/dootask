@@ -3,11 +3,26 @@
         <keep-alive>
             <router-view class="child-view"></router-view>
         </keep-alive>
+
+        <!--任务操作-->
+        <TaskOperation/>
+
+        <!--右下角加载提示-->
         <Spinner/>
+
+        <!--右下角客户端-->
         <RightBottom/>
+
+        <!--网络提示-->
         <NetworkException/>
+
+        <!--图片预览-->
         <PreviewImageState/>
+
+        <!--音频播放-->
         <AudioManager/>
+
+        <!--Manifest-->
         <iframe v-if="manifestUrl" v-show="false" :src="manifestUrl"></iframe>
     </div>
 </template>
@@ -27,10 +42,11 @@ import RightBottom from "./components/RightBottom";
 import PreviewImageState from "./components/PreviewImage/state";
 import NetworkException from "./components/NetworkException";
 import AudioManager from "./components/AudioManager";
+import TaskOperation from "./pages/manage/components/TaskOperation";
 import {mapState} from "vuex";
 
 export default {
-    components: {AudioManager, NetworkException, PreviewImageState, RightBottom, Spinner},
+    components: {TaskOperation, AudioManager, NetworkException, PreviewImageState, RightBottom, Spinner},
 
     data() {
         return {
