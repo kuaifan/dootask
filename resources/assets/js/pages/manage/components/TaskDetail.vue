@@ -1103,43 +1103,43 @@ export default {
                     task_id: this.taskDetail.id,
                 },
             }).then(({data}) => {
-                this.$store.dispatch("saveTask", data);
-                this.$store.dispatch("getDialogOne", data.dialog_id).then(() => {
-                    if ($A.isSubElectron) {
-                        this.resizeDialog().then(() => {
-                            this.sendDialogMsg();
-                        });
-                    } else {
-                        this.$nextTick(() => {
-                            if (this.windowSmall) {
-                                $A.onBlur();
-                                this.$store.state.dialogMsgTransfer = {
-                                    time: $A.Time() + 10,
-                                    msgRecord: this.msgRecord,
-                                    msgFile: this.msgFile,
-                                    msgText: typeof msgText === 'string' && msgText ? msgText : this.msgText,
-                                };
-                                this.msgRecord = {};
-                                this.msgFile = [];
-                                this.msgText = "";
-                                if (this.dialogId > 0) {
-                                    // 如果当前打开着对话窗口则关闭任务窗口
-                                    this.$store.dispatch("openTask", 0);
-                                }
-                                this.$store.dispatch('openDialog', data.dialog_id)
-                            } else {
-                                this.sendDialogMsg();
-                            }
-                        });
-                    }
-                }).catch(({msg}) => {
-                    $A.modalError(msg);
-                }).finally(_ => {
-                    this.sendLoad--;
+                this.$store.dispatch("saveTask", {
+                    id: data.id,
+                    dialog_id: data.dialog_id,
                 });
+                this.$store.dispatch("saveDialog", data.dialog_data);
+                //
+                if ($A.isSubElectron) {
+                    this.resizeDialog().then(() => {
+                        this.sendDialogMsg();
+                    });
+                } else {
+                    this.$nextTick(() => {
+                        if (this.windowSmall) {
+                            $A.onBlur();
+                            this.$store.state.dialogMsgTransfer = {
+                                time: $A.Time() + 10,
+                                msgRecord: this.msgRecord,
+                                msgFile: this.msgFile,
+                                msgText: typeof msgText === 'string' && msgText ? msgText : this.msgText,
+                            };
+                            this.msgRecord = {};
+                            this.msgFile = [];
+                            this.msgText = "";
+                            if (this.dialogId > 0) {
+                                // 如果当前打开着对话窗口则关闭任务窗口
+                                this.$store.dispatch("openTask", 0);
+                            }
+                            this.$store.dispatch('openDialog', data.dialog_id)
+                        } else {
+                            this.sendDialogMsg();
+                        }
+                    });
+                }
             }).catch(({msg}) => {
-                this.sendLoad--;
                 $A.modalError(msg);
+            }).finally(_ => {
+                this.sendLoad--;
             });
         },
 

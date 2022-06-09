@@ -1504,7 +1504,7 @@ class ProjectController extends AbstractController
      */
     public function task__dialog()
     {
-        User::auth();
+        $user = User::auth();
         //
         $task_id = intval(Request::input('task_id'));
         //
@@ -1529,9 +1529,11 @@ class ProjectController extends AbstractController
         });
         //
         $task->pushMsg('dialog');
+        $dialogData = WebSocketDialog::find($task->dialog_id)?->formatData($user->userid);
         return Base::retSuccess('success', [
             'id' => $task->id,
             'dialog_id' => $task->dialog_id,
+            'dialog_data' => $dialogData,
         ]);
     }
 
