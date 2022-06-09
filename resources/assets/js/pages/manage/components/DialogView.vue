@@ -124,6 +124,7 @@ import WCircle from "../../../components/WCircle";
 import {mapState} from "vuex";
 import {Store} from "le5le-store";
 import longpress from "../../../directives/longpress";
+import {textMsgFormat} from "../../../functions/utils";
 
 export default {
     name: "DialogView",
@@ -224,10 +225,6 @@ export default {
                 }
             }
             return classArray;
-        },
-
-        atUserReg() {
-            return new RegExp(`<span class="mention user" data-id="${this.userId}">`, "g")
         }
     },
 
@@ -292,44 +289,7 @@ export default {
         },
 
         textMsg(text) {
-            if (!text) {
-                return ""
-            }
-            text = text.trim().replace(/(\n\x20*){3,}/g, "\n\n");
-            text = text.replace(/&nbsp;/g, ' ')
-            text = text.replace(/<p><\/p>/g, '<p><br/></p>')
-            text = text.replace(/\{\{RemoteURL\}\}/g, $A.apiUrl('../'))
-            text = text.replace(this.atUserReg, `<span class="mention me" data-id="${this.userId}">`)
-            // 处理内容连接
-            if (/https*:\/\//.test(text)) {
-                text = text.split(/(<[^>]*>)/g).map(string => {
-                    if (string && !/<[^>]*>/.test(string)) {
-                        string = string.replace(/(https*:\/\/)((\w|=|\?|\.|\/|&|-|:|\+|%|;)+)/g, "<a href=\"$1$2\" target=\"_blank\">$1$2</a>")
-                    }
-                    return string;
-                }).join("")
-            }
-            // 处理图片显示尺寸
-            const array = text.match(/<img\s+[^>]*?>/g);
-            if (array) {
-                const widthReg = new RegExp("width=\"(\\d+)\""),
-                    heightReg = new RegExp("height=\"(\\d+)\"")
-                array.some(res => {
-                    const widthMatch = res.match(widthReg),
-                        heightMatch = res.match(heightReg);
-                    if (widthMatch && heightMatch) {
-                        const width = parseInt(widthMatch[1]),
-                            height = parseInt(heightMatch[1]),
-                            maxSize = res.indexOf("emoticon") > -1 ? 150 : 220;
-                        const scale = $A.scaleToScale(width, height, maxSize, maxSize);
-                        const value = res
-                            .replace(widthReg, `original-width="${width}" width="${scale.width}"`)
-                            .replace(heightReg, `original-height="${height}" height="${scale.height}"`)
-                        text = text.replace(res, value)
-                    }
-                })
-            }
-            return text;
+            return textMsgFormat(text, this.userId);
         },
 
         recordStyle(info) {

@@ -570,15 +570,20 @@ export default {
             this.onActive();
             //
             let tempId = $A.randomString(16);
-            this.tempMsgs.push({
+            let tempMsg = {
                 id: tempId,
                 dialog_id: this.dialogData.id,
                 type: 'text',
                 userid: this.userId,
                 msg: {
-                    text: msgText,
+                    text: $A.stringLength(msgText) > 2000 ? '' : msgText,
                 },
-            });
+            };
+            if (msgText.length > 2000) {
+                tempMsg.type = 'loading';
+                tempMsg.msg = { };
+            }
+            this.tempMsgs.push(tempMsg);
             //
             this.$store.dispatch("call", {
                 url: 'dialog/msg/sendtext',
