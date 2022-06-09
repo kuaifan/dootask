@@ -25,7 +25,7 @@
                         </div>
                         <span slot="reference">[{{$L('未保存')}}*]</span>
                     </EPopover>
-                    {{$A.getFileName(file)}}
+                    {{fileName}}
                 </div>
                 <div class="header-user">
                     <ul>
@@ -37,8 +37,8 @@
                 </div>
                 <div v-if="file.type=='document' && contentDetail" class="header-hint">
                     <ButtonGroup size="small" shape="circle">
-                        <Button :type="`${contentDetail.type=='md'?'primary':'default'}`" @click="$set(contentDetail, 'type', 'md')">{{$L('MD编辑器')}}</Button>
-                        <Button :type="`${contentDetail.type!='md'?'primary':'default'}`" @click="$set(contentDetail, 'type', 'text')">{{$L('文本编辑器')}}</Button>
+                        <Button :type="`${contentDetail.type=='md'?'primary':'default'}`" @click="setTextType('md')">{{$L('MD编辑器')}}</Button>
+                        <Button :type="`${contentDetail.type!='md'?'primary':'default'}`" @click="setTextType('text')">{{$L('文本编辑器')}}</Button>
                     </ButtonGroup>
                 </div>
                 <div v-if="file.type=='mind'" class="header-hint">
@@ -150,6 +150,7 @@ export default {
 
             unsaveTip: false,
 
+            fileExt: null,
             contentDetail: null,
             contentBak: {},
 
@@ -203,6 +204,7 @@ export default {
                     this.linkShow = false;
                     this.historyShow = false;
                     this.officeReady = false;
+                    this.fileExt = null;
                 }
             },
             immediate: true,
@@ -248,6 +250,15 @@ export default {
 
         fileId() {
             return this.file.id || 0
+        },
+
+        fileName() {
+            if (this.fileExt) {
+                return $A.getFileName(Object.assign(this.file, {
+                    ext: this.fileExt
+                }))
+            }
+            return $A.getFileName(this.file)
         },
 
         equalContent() {
@@ -360,10 +371,15 @@ export default {
                         },
                     }).then(({data, msg}) => {
                         $A.messageSuccess(msg);
-                        this.$store.dispatch("saveFile", {
+                        const newData = {
                             id: this.fileId,
                             size: data.size,
-                        });
+                        };
+                        if (this.fileExt) {
+                            newData.ext = this.fileExt;
+                            this.fileExt = null;
+                        }
+                        this.$store.dispatch("saveFile", newData);
                     }).catch(({msg}) => {
                         $A.modalError(msg);
                         this.getContent();
@@ -457,6 +473,11 @@ export default {
         onSaveSave() {
             this.handleClick('save');
             this.unsaveTip = false;
+        },
+
+        setTextType(type) {
+            this.fileExt = type
+            this.$set(this.contentDetail, 'type', type)
         },
 
         documentKey() {
