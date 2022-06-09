@@ -204,7 +204,19 @@ export default {
             return  window.systemInfo.title || "DooTask";
         },
     },
+
     mounted() {
+        if (this.$router.mode === "hash") {
+            if ($A.stringLength(window.location.pathname) > 2) {
+                window.location.href = `${window.location.origin}/#${window.location.pathname}${window.location.search}`
+                return
+            }
+        } else if (this.$router.mode === "history") {
+            if ($A.strExists(window.location.href, "/#/")) {
+                window.location.href = window.location.href.replace("/#/", "/")
+                return
+            }
+        }
         this.getNeedStartHome();
     },
 
