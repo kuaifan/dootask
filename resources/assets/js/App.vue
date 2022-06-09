@@ -22,8 +22,8 @@
         <!--音频播放-->
         <AudioManager/>
 
-        <!--Manifest-->
-        <iframe v-if="manifestUrl" v-show="false" :src="manifestUrl"></iframe>
+        <!--Hidden IFrame-->
+        <iframe v-for="item in iframes" :key="item.key" v-if="item.url" v-show="false" :src="item.url"></iframe>
     </div>
 </template>
 
@@ -51,8 +51,8 @@ export default {
     data() {
         return {
             routePath: null,
-            manifestUrl: null,
-            inter: null,
+            searchInter: null,
+            iframes: [],
         }
     },
 
@@ -62,19 +62,20 @@ export default {
     },
 
     mounted() {
-        this.inter = setInterval(this.searchEnter, 1000);
         window.addEventListener('resize', this.windowSizeListener);
         window.addEventListener('scroll', this.windowScrollListener);
+        this.searchInter = setInterval(this.searchEnter, 1000);
+        this.synchThemeLanguage();
     },
 
     beforeDestroy() {
-        this.inter && clearInterval(this.inter);
         window.removeEventListener('resize', this.windowSizeListener);
         window.removeEventListener('scroll', this.windowScrollListener);
+        this.searchInter && clearInterval(this.searchInter);
     },
 
     computed: {
-        ...mapState(['ws']),
+        ...mapState(['ws', 'themeMode']),
     },
 
     watch: {
@@ -131,6 +132,14 @@ export default {
             },
             immediate: true
         },
+
+        themeMode() {
+            this.synchThemeLanguage();
+        },
+
+        languageType() {
+            this.synchThemeLanguage();
+        }
     },
 
     methods: {
@@ -193,7 +202,10 @@ export default {
                 let {action, data} = args;
                 this.$store.dispatch(action, data);
             })
-            this.manifestUrl = $A.apiUrl("../manifest")
+            this.iframes.push({
+                key: 'manifest',
+                url: $A.apiUrl("../manifest")
+            })
         },
 
         eeuiEvents() {
@@ -226,7 +238,17 @@ export default {
                     }
                 }
             }
-        }
+        },
+
+        synchThemeLanguage() {
+            if (this.$Electron || this.$isEEUiApp) {
+                this.iframes = this.iframes.filter(({key}) => key != 'synchThemeLanguage')
+                this.iframes.push({
+                    key: 'synchThemeLanguage',
+                    url: $A.apiUrl(`../setting/theme_language?theme=${this.themeMode}&language=${this.languageType}`)
+                })
+            }
+        },
     }
 }
 </script>

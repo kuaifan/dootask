@@ -236,6 +236,18 @@ class IndexController extends InvokeController
     }
 
     /**
+     * 设置语言和皮肤
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
+     */
+    public function setting__theme_language()
+    {
+        return view('setting', [
+            'theme' => Request::input('theme'),
+            'language' => Request::input('language')
+        ]);
+    }
+
+    /**
      * 提取所有中文
      * @return array|string
      */

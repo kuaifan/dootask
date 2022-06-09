@@ -591,6 +591,18 @@
         },
 
         /**
+         * 获取文本长度
+         * @param string
+         * @returns {number}
+         */
+        stringLength(string) {
+            if (typeof string === "number" || typeof string === "string") {
+                return (string + "").length
+            }
+            return 0;
+        },
+
+        /**
          * 获取数组长度（处理数组不存在）
          * @param array
          * @returns {number|*}

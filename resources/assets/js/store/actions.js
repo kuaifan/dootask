@@ -245,7 +245,7 @@ export default {
         }
         state.themeMode = mode;
         state.themeIsDark = $A.dark.isDarkEnabled();
-        $A.setStorage("cacheThemeMode", mode);
+        window.localStorage['__theme:mode__'] = mode;
     },
 
     /**
@@ -493,7 +493,6 @@ export default {
         return new Promise(function (resolve) {
             try {
                 const cacheLoginEmail = $A.getStorageString("cacheLoginEmail");
-                const cacheThemeMode = $A.getStorageString("cacheThemeMode");
                 const cacheFileSort = $A.getStorageJson("cacheFileSort");
                 //
                 window.localStorage.clear();
@@ -507,7 +506,6 @@ export default {
                 $A.setStorage("cacheProjectParameter", state.cacheProjectParameter);
                 $A.setStorage("cacheServerUrl", state.cacheServerUrl);
                 $A.setStorage("cacheLoginEmail", cacheLoginEmail);
-                $A.setStorage("cacheThemeMode", cacheThemeMode);
                 $A.setStorage("cacheFileSort", cacheFileSort);
                 $A.setStorage("cacheTaskBrowse", state.cacheTaskBrowse);
                 dispatch("saveUserInfo", $A.isJson(userInfo) ? userInfo : state.userInfo);

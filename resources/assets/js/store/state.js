@@ -124,7 +124,7 @@ const stateData = {
     ],
 
     // 主题皮肤
-    themeMode: $A.getStorageString("cacheThemeMode"),
+    themeMode: window.localStorage['__theme:mode__'],
     themeList: [
         {name: '跟随系统', value: 'auto'},
         {name: '明亮', value: 'light'},
