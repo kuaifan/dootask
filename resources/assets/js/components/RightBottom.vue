@@ -99,7 +99,15 @@ export default {
     },
 
     methods: {
+        isNotServer() {
+            let apiHome = $A.getDomain(window.systemInfo.apiUrl)
+            return this.isSoftware && (apiHome == "" || apiHome == "public")
+        },
+        
         checkVersion() {
+            if (this.isNotServer()) {
+                return;
+            }
             axios.get($A.apiUrl('../version')).then(({status, data}) => {
                 if (status === 200) {
                     this.apiVersion = data.version || ''

@@ -73,6 +73,7 @@
         <DynamicScroller
             ref="scroller"
             class="dialog-scroller scrollbar-overlay"
+            :style="{opacity: scrollerShow ? 1 : 0}"
             :disabled="touchBackInProgress"
             :items="allMsgs"
             :min-item-size="58"
@@ -328,6 +329,7 @@ export default {
 
             dialogDrag: false,
             groupInfoShow: false,
+            scrollerShow: true,
 
             navStyle: {},
 
@@ -498,6 +500,9 @@ export default {
 
         allMsgList(newList, oldList) {
             const {scrollE} = this.scrollInfo();
+            if (oldList.length === 0) {
+                this.scrollerShow = false;
+            }
             this.allMsgs = newList;
             //
             if (scrollE > 10 && oldList.length > 0) {
@@ -506,6 +511,13 @@ export default {
                 this.msgNew += tmpList.length
             } else {
                 requestAnimationFrame(this.onToBottom)
+            }
+            //
+            this.allMsgTimer && clearTimeout(this.allMsgTimer);
+            if (!this.scrollerShow) {
+                this.allMsgTimer = setTimeout(_=>{
+                    this.scrollerShow = true;
+                },100)
             }
         },
 
