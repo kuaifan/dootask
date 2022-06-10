@@ -297,11 +297,11 @@ export default {
 
         boxClass() {
             const array = [];
-            if (this.recordState === 'ing') {
-                if (this.recordDuration === 0) {
-                    array.push('record-ing');
-                } else {
+            if (['ready', 'ing'].includes(this.recordState)) {
+                if (this.recordState === 'ing' && this.recordDuration > 0) {
                     array.push('record-progress');
+                } else {
+                    array.push('record-ready');
                 }
             }
             if (this.showMore) {

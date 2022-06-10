@@ -413,7 +413,7 @@ export default {
 
         wrapperClass() {
             if (['ready', 'ing'].includes(this.recordState)) {
-                return ['record-ing']
+                return ['record-ready']
             }
             return null
         },

@@ -5,13 +5,13 @@
     display: inline-block;
     width: 100%;
 
-    &.record-ing {
+    &.record-ready {
         .chat-input-wrapper {
             .chat-toolbar {
                 > li {
                     &.chat-send {
                         &:before {
-                            transition: all 1s ease;
+                            transition: all 0.6s ease;
                             transform: translate(-50%, -50%) scale(2);
                         }
                     }
