@@ -1127,15 +1127,20 @@
         /**
          * 主动失去焦点（关闭键盘）
          * @param el
+         * @param inputMode
          */
-        onBlur(el = null) {
+        onBlur(el = null, inputMode = false) {
             setTimeout(_ => {
                 $A.eeuiAppKeyboardHide();
+                if (typeof el === "boolean") {
+                    inputMode = el;
+                    el = null;
+                }
                 if (el) {
                     el.blur();
                 } else {
                     if (document.activeElement) {
-                        if (document.activeElement.tagName === "BODY") {
+                        if (inputMode === true && document.activeElement.tagName === "BODY") {
                             let inputElement = document.getElementById("toLoseFocusInput")
                             if (!inputElement) {
                                 inputElement = document.createElement("input");
@@ -1151,7 +1156,9 @@
                                 });
                                 document.body.appendChild(inputElement);
                             }
-                            inputElement.focus()
+                            setTimeout(_ => {
+                                inputElement.focus()
+                            }, 1)
                         } else {
                             document.activeElement.blur();
                         }
