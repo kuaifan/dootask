@@ -2,17 +2,15 @@
     <div v-if="ready" class="file-content">
         <iframe v-if="isPreview" ref="myPreview" class="preview-iframe" :src="previewUrl"></iframe>
         <template v-else>
-            <div v-if="['word', 'excel', 'ppt'].includes(file.type)" class="office-header">
-                <div v-if="!file.only_view && officeReady" class="header-icons">
-                    <div class="header-icon" @click="handleClick('link')"><i class="taskfont">&#xe785;</i></div>
-                    <EPopover v-model="historyShow" trigger="click">
-                        <div class="file-content-history">
-                            <FileHistory :value="historyShow" :file="file" @on-restore="onRestoreHistory"/>
-                        </div>
-                        <div slot="reference" class="header-icon"><i class="taskfont">&#xe71d;</i></div>
-                    </EPopover>
+            <EPopover
+                v-if="['word', 'excel', 'ppt'].includes(file.type)"
+                v-model="historyShow"
+                trigger="click">
+                <div class="file-content-history">
+                    <FileHistory :value="historyShow" :file="file" @on-restore="onRestoreHistory"/>
                 </div>
-            </div>
+                <div slot="reference" ref="officeHeader" class="office-header"></div>
+            </EPopover>
             <div v-else class="edit-header">
                 <div class="header-title">
                     <EPopover v-if="!equalContent" v-model="unsaveTip" class="file-unsave-tip">
@@ -289,6 +287,24 @@ export default {
     methods: {
         handleMessage (event) {
             const data = event.data;
+            if (data.source === 'onlyoffice') {
+                switch (data.act) {
+                    case 'link':
+                        this.handleClick('link')
+                        break;
+
+                    case 'history':
+                        if (this.$refs.officeHeader) {
+                            this.$refs.officeHeader.style.top = `${data.rect.top}px`;
+                            this.$refs.officeHeader.style.left = `${data.rect.left}px`;
+                            this.$refs.officeHeader.style.width = `${data.rect.width}px`;
+                            this.$refs.officeHeader.style.height = `${data.rect.height}px`;
+                            this.$refs.officeHeader.click();
+                        }
+                        break;
+                }
+                return
+            }
             switch (data.act) {
                 case 'ready':
                     this.loadPreview = false;

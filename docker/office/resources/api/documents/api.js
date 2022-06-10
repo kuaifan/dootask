@@ -10,6 +10,28 @@
     try {
         window.localStorage.removeItem('ui-theme-id')
     } catch (e) {}
+    //
+    window._toolbarClick = function(el, type) {
+        window.parent.postMessage({
+            source: 'onlyoffice',
+            act: type,
+            rect: el.getBoundingClientRect()
+        }, "*");
+    };
+    window._toolbarInter = setInterval(function() {
+        if (typeof $ === "function") {
+            var toolbar = $("#toolbar");
+            if (toolbar.find(".hedset").length > 0 && toolbar.find(".hedico").length === 0) {
+                var linkSvg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGNsYXNzPSJpb25pY29uIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiI+PHRpdGxlPkxpbms8L3RpdGxlPjxwYXRoIGQ9Ik0yMDggMzUyaC02NGE5NiA5NiAwIDAxMC0xOTJoNjRNMzA0IDE2MGg2NGE5NiA5NiAwIDAxMCAxOTJoLTY0TTE2My4yOSAyNTZoMTg3LjQyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmNWY1ZjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLXdpZHRoPSIzNiIvPjwvc3ZnPg==';
+                var historySvg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGNsYXNzPSJpb25pY29uIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiI+PHRpdGxlPlRpbWVyPC90aXRsZT48cGF0aCBkPSJNMTEyLjkxIDEyOEExOTEuODUgMTkxLjg1IDAgMDA2NCAyNTRjLTEuMTggMTA2LjM1IDg1LjY1IDE5My44IDE5MiAxOTQgMTA2LjIuMiAxOTItODUuODMgMTkyLTE5MiAwLTEwNC41NC04My41NS0xODkuNjEtMTg3LjUtMTkyYTQuMzYgNC4zNiAwIDAwLTQuNSA0LjM3VjE1MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZjVmNWY1IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMzIiLz48cGF0aCBkPSJNMjMzLjM4IDI3OC42M2wtNzktMTEzYTguMTMgOC4xMyAwIDAxMTEuMzItMTEuMzJsMTEzIDc5YTMyLjUgMzIuNSAwIDAxLTM3LjI1IDUzLjI2IDMzLjIxIDMzLjIxIDAgMDEtOC4wNy03Ljk0eiIgZmlsbD0iI0Y1RjVGNSIvPjwvc3ZnPg==';
+                toolbar.find(".hedset").eq(0).before('<div class="hedico" style="display:flex;flex-direction:row;align-items:center;justify-content:center">' +
+                    '<button onclick="_toolbarClick(this, \'link\')" type="button" class="btn btn-header"><div style="background-image:url(' + linkSvg + ');background-size:19px;background-position:center;background-repeat:no-repeat;height:100%"></div></button>' +
+                    '<button onclick="_toolbarClick(this, \'history\')" type="button" class="btn btn-header"><div style="background-image:url(' + historySvg + ');background-size:17px;background-position:center;background-repeat:no-repeat;height:100%"></div></button>' +
+                    '</div>')
+                clearInterval(window._toolbarInter);
+            }
+        }
+    }, 1000);
 })(window);
 
 ;(function(DocsAPI, window, document, undefined) {
