@@ -163,6 +163,14 @@
             display: flex;
         }
 
+        .teditor-wrapper {
+            .tox-editor-header {
+                .tox-toolbar--scrolling {
+                    flex-wrap: wrap;
+                }
+            }
+        }
+
         .mdeditor-box {
             position: relative;
             width: 100%;
@@ -301,6 +309,21 @@
     }
     .content-body {
         overflow: hidden;
+        .teditor-wrapper {
+            .tox-editor-header,
+            .tox-statusbar {
+                display: none;
+            }
+        }
+        .teditor-loadedstyle {
+            .tox-menubar,
+            .tox-toolbar-overlord {
+                padding: 0;
+            }
+            .tox-sidebar-wrap {
+                margin: 0;
+            }
+        }
         .markdown-preview-warp {
             flex: 1;
             overflow: auto;
@@ -323,11 +346,6 @@
         .content-body {
             min-width: 768px;
             overflow-x: auto;
-            .tox {
-                .tox-toolbar--scrolling {
-                    flex-wrap: wrap;
-                }
-            }
             .teditor-loadedstyle {
                 .tox-menubar,
                 .tox-toolbar-overlord {

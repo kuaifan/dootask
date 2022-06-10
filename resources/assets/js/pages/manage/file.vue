@@ -336,7 +336,7 @@
             class="page-file-drawer"
             :beforeClose="fileBeforeClose"
             :mask-closable="false">
-            <FilePreview v-if="fileInfo.permission === 0" :file="fileInfo"/>
+            <FilePreview v-if="isPreview" :file="fileInfo"/>
             <FileContent v-else ref="fileContent" v-model="fileShow" :file="fileInfo"/>
         </DrawerOverlay>
 
@@ -584,6 +584,10 @@ export default {
                 }
             }
             return array;
+        },
+
+        isPreview() {
+            return this.windowSmall || this.fileInfo.permission === 0
         },
 
         isParentShare() {
