@@ -73,7 +73,7 @@
         <DynamicScroller
             ref="scroller"
             class="dialog-scroller scrollbar-overlay"
-            :style="{opacity: scrollerShow ? 1 : 0}"
+            :style="{opacity: scrollOpacity ? 1 : 0}"
             :disabled="touchBackInProgress"
             :items="allMsgs"
             :min-item-size="58"
@@ -329,7 +329,7 @@ export default {
 
             dialogDrag: false,
             groupInfoShow: false,
-            scrollerShow: true,
+            scrollOpacity: true,
 
             navStyle: {},
 
@@ -501,7 +501,7 @@ export default {
         allMsgList(newList, oldList) {
             const {scrollE} = this.scrollInfo();
             if (oldList.length === 0) {
-                this.scrollerShow = false;
+                this.scrollOpacity = false;
             }
             this.allMsgs = newList;
             //
@@ -514,9 +514,9 @@ export default {
             }
             //
             this.allMsgTimer && clearTimeout(this.allMsgTimer);
-            if (!this.scrollerShow) {
+            if (!this.scrollOpacity) {
                 this.allMsgTimer = setTimeout(_=>{
-                    this.scrollerShow = true;
+                    this.scrollOpacity = true;
                 },100)
             }
         },
