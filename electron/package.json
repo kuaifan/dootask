@@ -109,7 +109,8 @@
                         "arm64"
                     ]
                 }
-            ]
+            ],
+            "verifyUpdateCodeSignature": false
         },
         "nsis": {
             "oneClick": false,
