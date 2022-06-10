@@ -255,14 +255,13 @@
             align-items: center;
 
             .title-name {
-                flex: 1;
-                width: 0;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
             }
 
             .ivu-tag {
+                flex-shrink: 0;
                 margin-left: 6px;
                 padding: 0 6px;
                 line-height: 20px;
