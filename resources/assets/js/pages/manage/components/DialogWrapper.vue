@@ -73,7 +73,6 @@
         <DynamicScroller
             ref="scroller"
             class="dialog-scroller scrollbar-overlay"
-            :style="{visibility: scrollerShow ? 'visible' : 'hidden'}"
             :disabled="touchBackInProgress"
             :items="allMsgs"
             :min-item-size="58"
@@ -329,7 +328,6 @@ export default {
 
             dialogDrag: false,
             groupInfoShow: false,
-            scrollerShow: false,
 
             navStyle: {},
 
@@ -451,28 +449,14 @@ export default {
         dialogId: {
             handler(id) {
                 if (id) {
-                    this.scrollerShow = false;
                     this.msgNew = 0;
                     this.topId = -1;
                     //
-                    let cacheTimer = null;
                     if (this.allMsgList.length > 0) {
-                        cacheTimer = setTimeout(_ => {
-                            this.allMsgs = this.allMsgList;
-                            this.onToBottom().then(_ => {
-                                this.scrollerShow = true
-                            });
-                        }, 1);
+                        this.allMsgs = this.allMsgList;
+                        requestAnimationFrame(this.onToBottom);
                     }
-                    const startTime = new Date().getTime();
-                    this.$store.dispatch("getDialogMsgs", id).then(_ => {
-                        cacheTimer && clearTimeout(cacheTimer);
-                        setTimeout(_ => {
-                            this.onToBottom().then(_ => {
-                                this.scrollerShow = true
-                            });
-                        }, Math.max(0, 100 - (new Date().getTime() - startTime)));
-                    }).catch(_ => {});
+                    this.$store.dispatch("getDialogMsgs", id).catch(_ => {});
                     //
                     this.$store.dispatch('saveInDialog', {
                         uid: this._uid,
@@ -515,15 +499,14 @@ export default {
         allMsgList(newList, oldList) {
             const {scrollE} = this.scrollInfo();
             this.allMsgs = newList;
-            this.$nextTick(_ => {
-                if (scrollE > 10 && oldList.length > 0) {
-                    const lastId = oldList[oldList.length - 1].id
-                    const tmpList = newList.filter(item => item.id && item.id > lastId)
-                    this.msgNew += tmpList.length
-                } else {
-                    this.onToBottom();
-                }
-            })
+            //
+            if (scrollE > 10 && oldList.length > 0) {
+                const lastId = oldList[oldList.length - 1].id
+                const tmpList = newList.filter(item => item.id && item.id > lastId)
+                this.msgNew += tmpList.length
+            } else {
+                requestAnimationFrame(this.onToBottom)
+            }
         },
 
         windowScrollY(val) {
@@ -533,9 +516,7 @@ export default {
                     marginTop: val + 'px'
                 }
                 if (scrollE <= 10) {
-                    this.$nextTick(_ => {
-                        this.onToBottom();
-                    })
+                    requestAnimationFrame(this.onToBottom)
                 }
             }
         },
@@ -787,14 +768,9 @@ export default {
 
         onToBottom() {
             this.msgNew = 0;
-            return new Promise(resolve => {
-                if (this.isReady) {
-                    this.$refs.scroller?.scrollToBottom();
-                    requestAnimationFrame(resolve)
-                } else {
-                    resolve();
-                }
-            })
+            if (this.isReady) {
+                this.$refs.scroller?.scrollToBottom();
+            }
         },
 
         openProject() {
