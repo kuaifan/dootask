@@ -1125,17 +1125,39 @@
         },
 
         /**
-         * 主动失去焦点
+         * 主动失去焦点（关闭键盘）
          * @param el
          */
         onBlur(el = null) {
-            if (el) {
-                el.blur();
-            } else {
-                if (document.activeElement && typeof document.activeElement.blur === "function") {
-                    document.activeElement.blur();
+            setTimeout(_ => {
+                $A.eeuiAppKeyboardHide();
+                if (el) {
+                    el.blur();
+                } else {
+                    if (document.activeElement) {
+                        if (document.activeElement.tagName === "BODY") {
+                            let inputElement = document.getElementById("toLoseFocusInput")
+                            if (!inputElement) {
+                                inputElement = document.createElement("input");
+                                inputElement.id = "toLoseFocusInput";
+                                inputElement.type = "text";
+                                inputElement.style.position = "fixed";
+                                inputElement.style.top = "0px";
+                                inputElement.style.left = "0px";
+                                inputElement.style.zIndex = "-1";
+                                inputElement.style.opacity = "0";
+                                inputElement.addEventListener("focus", e => {
+                                    document.activeElement.blur();
+                                });
+                                document.body.appendChild(inputElement);
+                            }
+                            inputElement.focus()
+                        } else {
+                            document.activeElement.blur();
+                        }
+                    }
                 }
-            }
+            }, 1);
         }
     });
 

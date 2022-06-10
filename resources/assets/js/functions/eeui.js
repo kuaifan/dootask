@@ -53,6 +53,11 @@
             requireModuleJs("eeui").keepScreenOff();
         },
 
+        eeuiAppKeyboardHide() {
+            if (!$A.isEEUiApp) return;
+            requireModuleJs("eeui").keyboardHide();
+        },
+
         eeuiAppSendMessage(object) {
             if (!$A.isEEUiApp) return;
             requireModuleJs("webview").sendMessage(object);

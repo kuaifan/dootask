@@ -641,6 +641,7 @@ export default {
         fileShow(val) {
             if (!val) {
                 this.browseFile(0)
+                $A.onBlur()
             }
         },
 
