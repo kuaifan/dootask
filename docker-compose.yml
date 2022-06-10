@@ -61,7 +61,7 @@ services:
 
   mariadb:
     container_name: "dootask-mariadb-${APP_ID}"
-    image: "mariadb"
+    image: "mariadb:10.7.3"
     ports: # mysql ports item
       - "33062:3306" # mysql ports value
     volumes:
