@@ -19,7 +19,7 @@ module.exports = {
         if (/https*:\/\//.test(text)) {
             text = text.split(/(<[^>]*>)/g).map(string => {
                 if (string && !/<[^>]*>/.test(string)) {
-                    string = string.replace(/(https*:\/\/)((\w|=|\?|\.|\/|&|-|:|\+|%|;)+)/g, "<a href=\"$1$2\" target=\"_blank\">$1$2</a>")
+                    string = string.replace(/(https*:\/\/)((\w|=|\?|\.|\/|&|-|:|\+|%|;|#)+)/g, "<a href=\"$1$2\" target=\"_blank\">$1$2</a>")
                 }
                 return string;
             }).join("")

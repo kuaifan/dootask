@@ -4,7 +4,7 @@
         <template v-else>
             <div v-show="!['word', 'excel', 'ppt'].includes(file.type)" class="edit-header">
                 <div class="header-title">
-                    {{$A.getFileName(file)}}
+                    <div class="title-name">{{$A.getFileName(file)}}</div>
                     <Tag color="default">{{$L('只读')}}</Tag>
                     <div class="refresh">
                         <Loading v-if="contentLoad"/>

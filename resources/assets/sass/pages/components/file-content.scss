@@ -10,6 +10,7 @@
     flex-direction: column;
     border-radius: 18px 18px 0 0;
     overflow: hidden;
+    transform: translateZ(0);
 
     .preview-iframe {
         position: absolute;
@@ -253,6 +254,14 @@
             display: flex;
             align-items: center;
 
+            .title-name {
+                flex: 1;
+                width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
             .ivu-tag {
                 margin-left: 6px;
                 padding: 0 6px;
@@ -302,6 +311,16 @@
         .markdown-preview-warp {
             flex: 1;
             overflow: auto;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .file-preview {
+        .edit-header {
+            .header-hint {
+                display: none;
+            }
         }
     }
 }

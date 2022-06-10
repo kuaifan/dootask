@@ -224,6 +224,9 @@ export default {
                 config.document.url = `http://nginx/api/project/task/filedown/?file_id=${$A.leftDelete(codeId, "taskFile_")}&token=${this.userToken}`;
             }
             if (this.readOnly || this.historyId > 0) {
+                if (this.windowSmall) {
+                    config.type = "mobile";
+                }
                 config.editorConfig.mode = "view";
                 config.editorConfig.callbackUrl = null;
                 if (!config.editorConfig.user.id) {
