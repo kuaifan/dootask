@@ -14,7 +14,7 @@
             </div>
         </div>
         <div class="avatar-wrapper">
-            <div v-if="showIcon" :class="['avatar-box', userId === userid || user.online ? 'online' : '']" :style="boxStyle">
+            <div v-if="showIcon" :class="boxClass" :style="boxStyle">
                 <em :style="spotStyle"></em>
                 <EAvatar v-if="showImg" ref="avatar" :class="{'avatar-default':isDefault}" :src="user.userimg" :size="avatarSize" :error="onError">
                     <span class="avatar-char" :style="spotStyle">{{nickname}}</span>
@@ -23,7 +23,10 @@
                     <span class="avatar-char" :style="spotStyle">{{nickname}}</span>
                 </EAvatar>
             </div>
-            <div v-if="showName" class="avatar-name" :style="nameStyle">{{user.nickname}}</div>
+            <template v-if="showName">
+                <div class="avatar-name" :style="nameStyle">{{user.nickname}}</div>
+                <div v-if="user.disable_at" class="avatar-disable">{{$L('离职')}}</div>
+            </template>
         </div>
     </ETooltip>
 </template>
@@ -108,6 +111,14 @@
         },
         computed: {
             ...mapState(['userInfo', 'userOnline', 'cacheUserBasic']),
+
+            boxClass() {
+                return {
+                    'avatar-box': true,
+                    'online': this.userId === this.userid || this.user.online,
+                    'disable': this.user.disable_at
+                }
+            },
 
             boxStyle() {
                 const style = {};

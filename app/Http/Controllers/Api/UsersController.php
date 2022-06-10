@@ -361,7 +361,7 @@ class UsersController extends AbstractController
      */
     public function search()
     {
-        $builder = User::select(['userid', 'email', 'nickname', 'profession', 'userimg', 'az']);
+        $builder = User::select(['userid', 'email', 'nickname', 'profession', 'userimg', 'az', 'line_at', 'disable_at']);
         //
         $keys = Request::input('keys');
         $sorts = Request::input('sorts');
