@@ -366,6 +366,7 @@ export default {
         taskId() {
             this.userList = null;
             this.taskList = null;
+            this.$emit('input', this.getInputCache())
         },
 
         showEmoji(val) {
@@ -634,13 +635,13 @@ export default {
         },
 
         getInputCache() {
-            const key = this.dialogId;
+            const key = this.dialogId || this.taskId;
             const item = this.dialogInputCache.find(item => item.key == key);
             return item ? item.cache : '';
         },
 
         setInputCache(cache) {
-            const key = this.dialogId;
+            const key = this.dialogId || this.taskId;
             const index = this.dialogInputCache.findIndex(item => item.key == key);
             const data = {key, cache}
             if (index > -1) {
