@@ -1,10 +1,10 @@
 <template>
     <div class="component-only-office">
-        <IFrame v-if="isPreviewAndMobile" class="preview-iframe" :src="mobilePreviewUrl" @on-message="onMessage"/>
-        <template v-else>
+        <template v-if="$A.isDesktop()">
             <Alert v-if="loadError" class="load-error" type="error" show-icon>{{$L('组件加载失败！')}}</Alert>
             <div :id="id" class="placeholder"></div>
         </template>
+        <IFrame v-else class="preview-iframe" :src="previewUrl" @on-message="onMessage"/>
         <div v-if="loading" class="office-loading"><Loading/></div>
     </div>
 </template>
@@ -60,6 +60,7 @@
 }
 </style>
 <script>
+// 只有桌面端才使用 OnlyOffice
 
 import {mapState} from "vuex";
 import IFrame from "../pages/manage/components/IFrame";
@@ -104,13 +105,6 @@ export default {
         }
     },
 
-    mounted() {
-        if (this.isPreviewAndMobile) {
-            this.loading = true;
-        }
-    },
-
-
     beforeDestroy() {
         if (this.docEditor !== null) {
             this.docEditor.destroyEditor();
@@ -138,11 +132,7 @@ export default {
             return fileUrl;
         },
 
-        isPreviewAndMobile() {
-            return (this.readOnly || this.historyId > 0) && this.windowSmall
-        },
-
-        mobilePreviewUrl() {
+        previewUrl() {
             return $A.apiUrl(this.fileUrl) + "&down=preview"
         }
     },
@@ -153,7 +143,7 @@ export default {
                 if (!id) {
                     return;
                 }
-                if (this.isPreviewAndMobile) {
+                if (!$A.isDesktop()) {
                     return;
                 }
                 this.loading = true;
@@ -177,6 +167,15 @@ export default {
                 })
             },
             immediate: true,
+        },
+
+        previewUrl: {
+            handler() {
+                if (!$A.isDesktop()) {
+                    this.loading = true;
+                }
+            },
+            immediate: true
         }
     },
 
