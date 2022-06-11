@@ -41,6 +41,40 @@ class FileContent extends AbstractModel
     use SoftDeletes;
 
     /**
+     * 转预览地址
+     * @param File $file
+     * @param $content
+     * @return string
+     */
+    public static function formatPreview($file, $content)
+    {
+        $content = Base::json2array($content ?: []);
+        $filePath = $content['url'];
+        if (in_array($file->type, ['word', 'excel', 'ppt'])) {
+            if (empty($content)) {
+                $filePath = 'assets/office/empty.' . str_replace(['word', 'excel', 'ppt'], ['docx', 'xlsx', 'pptx'], $file->type);
+            }
+        }
+        $fileExt = $file->ext;
+        $fileName = $file->name;
+        $fileSize = $file->size;
+        if (in_array($fileExt, File::localExt)) {
+            $url = Base::fillUrl($filePath);
+        } else {
+            $url = 'http://' . env('APP_IPPR') . '.3/' . $filePath;
+        }
+        if ($fileExt != 'pdf') {
+            $fileDotExt = ".{$fileExt}";
+            $fullFileName = Base::rightDelete($fileName, $fileDotExt) . $fileDotExt;
+            $url = Base::urlAddparameter($url, [
+                'fullfilename' => $fullFileName
+            ]);
+        }
+        $previewType = $fileSize < 10 * 1024 * 1024 ? 'pdf' : 'image';  // 10M以下使用pdf预览模式
+        return Base::fillUrl("fileview/onlinePreview?url=" . urlencode(base64_encode($url)) . "&officePreviewType=" . $previewType);
+    }
+
+    /**
      * 获取格式内容（或下载）
      * @param File $file
      * @param $content
@@ -53,7 +87,7 @@ class FileContent extends AbstractModel
         $content = Base::json2array($content ?: []);
         if (in_array($file->type, ['word', 'excel', 'ppt'])) {
             if (empty($content)) {
-                return Response::download(resource_path('assets/statics/office/empty.' . str_replace(['word', 'excel', 'ppt'], ['docx', 'xlsx', 'pptx'], $file->type)), $name);
+                return Response::download(public_path('assets/office/empty.' . str_replace(['word', 'excel', 'ppt'], ['docx', 'xlsx', 'pptx'], $file->type)), $name);
             }
             return Response::download(public_path($content['url']), $name);
         }

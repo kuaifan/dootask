@@ -381,6 +381,7 @@ class File extends AbstractModel
      */
     public static function formatFileData(array $data)
     {
+        $fileName = $data['name'];
         $filePath = $data['path'];
         $fileSize = $data['size'];
         $fileExt = $data['ext'];
@@ -436,9 +437,9 @@ class File extends AbstractModel
                     }
                     if ($fileExt != 'pdf') {
                         $fileDotExt = ".{$fileExt}";
-                        $fileName = Base::rightDelete($data['name'], $fileDotExt) . $fileDotExt;
+                        $fullFileName = Base::rightDelete($fileName, $fileDotExt) . $fileDotExt;
                         $url = Base::urlAddparameter($url, [
-                            'fullfilename' => $fileName
+                            'fullfilename' => $fullFileName
                         ]);
                     }
                     $data['content'] = [

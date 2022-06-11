@@ -13,6 +13,7 @@ use App\Module\Base;
 use App\Module\Ihttp;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Redirect;
 use Request;
 
 /**
@@ -447,7 +448,8 @@ class FileController extends AbstractController
      * - yes
      * @apiParam {String} down                  直接下载
      * - no: 浏览（默认）
-     * - yes: 下载（office文件直接下载）
+     * - yes: 下载（office文件直接下载，除非是preview）
+     * - preview: 转预览地址
      * @apiParam {Number} [history_id]          读取历史记录ID
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
@@ -486,6 +488,9 @@ class FileController extends AbstractController
             $builder->whereId($history_id);
         }
         $content = $builder->orderByDesc('id')->first();
+        if ($down === 'preview') {
+            return Redirect::to(FileContent::formatPreview($file, $content?->content));
+        }
         return FileContent::formatContent($file, $content?->content, $down == 'yes');
     }
 

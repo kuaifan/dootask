@@ -121,7 +121,8 @@ export default {
         },
 
         previewUrl() {
-            return $A.apiUrl("../fileview/onlinePreview?url=" + encodeURIComponent(this.fileDetail.content.url))
+            const previewType = this.fileDetail.size < 10 * 1024 * 1024 ? 'pdf' : 'image';  // 10M以下使用pdf预览模式
+            return $A.apiUrl(`../fileview/onlinePreview?url=${encodeURIComponent(this.fileDetail.content.url)}&officePreviewType=${previewType}`)
         }
     },
     methods: {

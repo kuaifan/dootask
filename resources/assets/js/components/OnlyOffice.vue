@@ -1,8 +1,11 @@
 <template>
     <div class="component-only-office">
-        <Alert v-if="loadError" class="load-error" type="error" show-icon>{{$L('组件加载失败！')}}</Alert>
-        <div :id="id" class="placeholder"></div>
-        <div v-if="loadIng > 0" class="office-loading"><Loading/></div>
+        <iframe v-if="isPreviewAndMobile" ref="myPreview" class="preview-iframe" :src="mobilePreviewUrl"></iframe>
+        <template v-else>
+            <Alert v-if="loadError" class="load-error" type="error" show-icon>{{$L('组件加载失败！')}}</Alert>
+            <div :id="id" class="placeholder"></div>
+        </template>
+        <div v-if="loading" class="office-loading"><Loading/></div>
     </div>
 </template>
 
@@ -92,7 +95,7 @@ export default {
 
     data() {
         return {
-            loadIng: 0,
+            loading: false,
             loadError: false,
 
             docEditor: null,
@@ -100,14 +103,19 @@ export default {
     },
 
     mounted() {
-        //
+        if (this.isPreviewAndMobile) {
+            this.loading = true;
+        }
+        window.addEventListener('message', this.handleMessage)
     },
+
 
     beforeDestroy() {
         if (this.docEditor !== null) {
             this.docEditor.destroyEditor();
             this.docEditor = null;
         }
+        window.removeEventListener('message', this.handleMessage)
     },
 
     computed: {
@@ -120,6 +128,23 @@ export default {
         fileName() {
             return this.value.name;
         },
+
+        fileUrl() {
+            const codeId = this.code || this.value.id;
+            let fileUrl = `file/content/?id=${codeId}&token=${this.userToken}`;
+            if (this.historyId > 0) {
+                fileUrl += `&history_id=${this.historyId}`
+            }
+            return fileUrl;
+        },
+
+        isPreviewAndMobile() {
+            return (this.readOnly || this.historyId > 0) && this.windowSmall
+        },
+
+        mobilePreviewUrl() {
+            return $A.apiUrl(this.fileUrl) + "&down=preview"
+        }
     },
 
     watch: {
@@ -128,10 +153,13 @@ export default {
                 if (!id) {
                     return;
                 }
-                this.loadIng++;
+                if (this.isPreviewAndMobile) {
+                    return;
+                }
+                this.loading = true;
                 this.loadError = false;
                 $A.loadScript($A.apiUrl("../office/web-apps/apps/api/documents/api.js"), (e) => {
-                    this.loadIng--;
+                    this.loading = false;
                     if (e !== null) {
                         this.loadError = true;
                         return;
@@ -153,6 +181,15 @@ export default {
     },
 
     methods: {
+        handleMessage(event) {
+            const data = event.data;
+            switch (data.act) {
+                case 'ready':
+                    this.loading = false;
+                    break
+            }
+        },
+
         getType(type) {
             switch (type) {
                 case 'word':
@@ -185,17 +222,15 @@ export default {
             let codeId = this.code || this.value.id;
             let fileName = $A.strExists(this.fileName, '.') ? this.fileName : (this.fileName + '.' + this.fileType);
             let fileKey = `${this.fileType}-${keyAppend||codeId}`;
-            let fileUrl = `http://nginx/api/file/content/?id=${codeId}&token=${this.userToken}`;
             if (this.historyId > 0) {
                 fileKey += `-${this.historyId}`
-                fileUrl += `&history_id=${this.historyId}`
             }
             const config = {
                 "document": {
                     "fileType": this.fileType,
                     "title": fileName,
                     "key": fileKey,
-                    "url": fileUrl,
+                    "url": `http://nginx/api/${this.fileUrl}`,
                 },
                 "editorConfig": {
                     "mode": "edit",
@@ -224,9 +259,6 @@ export default {
                 config.document.url = `http://nginx/api/project/task/filedown/?file_id=${$A.leftDelete(codeId, "taskFile_")}&token=${this.userToken}`;
             }
             if (this.readOnly || this.historyId > 0) {
-                if (this.windowSmall) {
-                    config.type = "mobile";
-                }
                 config.editorConfig.mode = "view";
                 config.editorConfig.callbackUrl = null;
                 if (!config.editorConfig.user.id) {
