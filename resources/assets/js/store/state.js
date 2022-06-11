@@ -87,6 +87,7 @@ const stateData = {
 
     // 任务等待状态
     taskLoading: [],
+    taskOneLoad: {},
 
     // 任务流程信息
     taskFlows: [],

@@ -105,13 +105,11 @@ export default {
                 task_id: this.taskId,
                 archived: 'all'
             }).then(() => {
-                this.loadIng--;
                 this.$store.dispatch("getTaskContent", this.taskId);
                 this.$store.dispatch("getTaskFiles", this.taskId);
                 this.$store.dispatch("getTaskForParent", this.taskId).catch(() => {})
                 this.$store.dispatch("getTaskPriority").catch(() => {})
             }).catch(({msg}) => {
-                this.loadIng--;
                 $A.modalError({
                     content: msg,
                     onOk: () => {
@@ -120,6 +118,8 @@ export default {
                         }
                     }
                 });
+            }).finally(_ => {
+                this.loadIng--;
             });
         },
         shortcutEvent(e) {

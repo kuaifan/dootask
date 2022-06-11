@@ -48,6 +48,7 @@ export default {
                 const {ret, data, msg} = result;
                 if (ret === -1 && params.checkRole !== false) {
                     //身份丢失
+                    state.userId = 0;
                     $A.modalError({
                         content: msg,
                         onOk: () => {
@@ -494,6 +495,8 @@ export default {
             try {
                 const cacheLoginEmail = $A.getStorageString("cacheLoginEmail");
                 const cacheFileSort = $A.getStorageJson("cacheFileSort");
+                const languageType = window.localStorage['__language:type__'];
+                const themeMode = window.localStorage['__theme:mode__'];
                 //
                 window.localStorage.clear();
                 //
@@ -503,6 +506,8 @@ export default {
                 state.cacheColumns = [];
                 state.cacheTasks = [];
                 //
+                window.localStorage['__language:type__'] = languageType;
+                window.localStorage['__theme:mode__'] = themeMode;
                 $A.setStorage("cacheProjectParameter", state.cacheProjectParameter);
                 $A.setStorage("cacheServerUrl", state.cacheServerUrl);
                 $A.setStorage("cacheLoginEmail", cacheLoginEmail);
@@ -1192,15 +1197,30 @@ export default {
                 reject({msg: 'Parameter error'});
                 return;
             }
+            //
+            if ($A.isArray(state.taskOneLoad[data.task_id])) {
+                state.taskOneLoad[data.task_id].push({resolve, reject})
+                return;
+            }
+            state.taskOneLoad[data.task_id] = []
+            //
             dispatch("call", {
                 url: 'project/task/one',
                 data,
             }).then(result => {
                 dispatch("saveTask", result.data);
                 resolve(result)
+                state.taskOneLoad[data.task_id].some(item => {
+                    item.resolve(result)
+                })
             }).catch(e => {
                 console.warn(e);
                 reject(e)
+                state.taskOneLoad[data.task_id].some(item => {
+                    item.reject(e)
+                })
+            }).finally(_ => {
+                delete state.taskOneLoad[data.task_id]
             });
         });
     },
