@@ -70,8 +70,7 @@ class FileContent extends AbstractModel
                 'fullfilename' => $fullFileName
             ]);
         }
-        $previewType = $fileSize < 10 * 1024 * 1024 ? 'pdf' : 'image';  // 10M以下使用pdf预览模式
-        return Base::fillUrl("fileview/onlinePreview?url=" . urlencode(base64_encode($url)) . "&officePreviewType=" . $previewType);
+        return Base::fillUrl("fileview/onlinePreview?url=" . urlencode(base64_encode($url)));
     }
 
     /**

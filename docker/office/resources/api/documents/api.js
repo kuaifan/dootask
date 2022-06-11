@@ -11,10 +11,10 @@
         window.localStorage.removeItem('ui-theme-id')
     } catch (e) {}
     //
-    window._toolbarClick = function(el, type) {
+    window._toolbarClick = function(el, action) {
         window.parent.postMessage({
             source: 'onlyoffice',
-            act: type,
+            action: action,
             rect: el.getBoundingClientRect()
         }, "*");
     };

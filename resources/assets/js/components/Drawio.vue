@@ -1,6 +1,6 @@
 <template>
     <div class="drawio-content">
-        <iframe ref="myFlow" class="drawio-iframe" :src="url"></iframe>
+        <IFrame ref="frame" class="drawio-iframe" :src="url" @on-message="onMessage"/>
         <div v-if="loadIng" class="drawio-loading"><Loading/></div>
     </div>
 </template>
@@ -36,9 +36,11 @@
 </style>
 <script>
 import {mapState} from "vuex";
+import IFrame from "../pages/manage/components/IFrame";
 
 export default {
     name: "Drawio",
+    components: {IFrame},
     props: {
         value: {
             type: Object,
@@ -109,20 +111,15 @@ export default {
         },
 
         updateContent() {
-            this.$refs.myFlow.contentWindow.postMessage(JSON.stringify({
+            this.$refs.frame.postMessage(JSON.stringify({
                 action: "load",
                 autosave: 1,
                 xml: this.value.xml,
-            }), "*");
+            }));
         },
 
-        handleMessage(event) {
-            const editWindow = this.$refs.myFlow.contentWindow;
-            if (event.source !== editWindow) {
-                return;
-            }
-            const payload = $A.jsonParse(event.data);
-            switch (payload.event) {
+        onMessage(data) {
+            switch (data.event) {
                 case "init":
                     this.loadIng = false;
                     this.updateContent();
@@ -130,15 +127,15 @@ export default {
 
                 case "load":
                     if (typeof this.value.xml === "undefined") {
-                        editWindow.postMessage(JSON.stringify({
+                        this.$refs.frame.postMessage(JSON.stringify({
                             action: "template"
-                        }), "*");
+                        }));
                     }
                     break;
 
                 case "autosave":
                     const content = {
-                        xml: payload.xml,
+                        xml: data.xml,
                     }
                     this.bakData = $A.jsonStringify(content);
                     this.$emit('input', content);

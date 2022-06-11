@@ -1,6 +1,6 @@
 <template>
     <div v-if="ready" class="file-content">
-        <iframe v-if="isPreview" ref="myPreview" class="preview-iframe" :src="previewUrl"></iframe>
+        <IFrame v-if="isPreview" class="preview-iframe" :src="previewUrl" @on-message="onMessage"/>
         <template v-else>
             <EPopover
                 v-if="['word', 'excel', 'ppt'].includes(file.type)"
@@ -115,6 +115,7 @@ import Vue from 'vue'
 import Minder from '../../../components/Minder'
 import {mapState} from "vuex";
 import FileHistory from "./FileHistory";
+import IFrame from "./IFrame";
 Vue.use(Minder)
 
 const MDEditor = () => import('../../../components/MDEditor/index');
@@ -125,7 +126,7 @@ const Drawio = () => import('../../../components/Drawio');
 
 export default {
     name: "FileContent",
-    components: {FileHistory, AceEditor, TEditor, MDEditor, OnlyOffice, Drawio},
+    components: {IFrame, FileHistory, AceEditor, TEditor, MDEditor, OnlyOffice, Drawio},
     props: {
         value: {
             type: Boolean,
@@ -167,7 +168,7 @@ export default {
 
     mounted() {
         document.addEventListener('keydown', this.keySave)
-        window.addEventListener('message', this.handleMessage)
+        window.addEventListener('message', this.handleOfficeMessage)
         //
         if (this.$isSubElectron) {
             window.__onBeforeUnload = () => {
@@ -188,7 +189,7 @@ export default {
 
     beforeDestroy() {
         document.removeEventListener('keydown', this.keySave)
-        window.removeEventListener('message', this.handleMessage)
+        window.removeEventListener('message', this.handleOfficeMessage)
     },
 
     watch: {
@@ -277,8 +278,7 @@ export default {
 
         previewUrl() {
             if (this.isPreview) {
-                const previewType = this.file.size < 10 * 1024 * 1024 ? 'pdf' : 'image'; // 10M以下使用pdf预览模式
-                return $A.apiUrl(`../fileview/onlinePreview?url=${encodeURIComponent(this.contentDetail.url)}&officePreviewType=${previewType}`)
+                return $A.apiUrl("../fileview/onlinePreview?url=" + encodeURIComponent(this.contentDetail.url))
             } else {
                 return '';
             }
@@ -286,10 +286,9 @@ export default {
     },
 
     methods: {
-        handleMessage (event) {
-            const data = event.data;
+        handleOfficeMessage({data}) {
             if (data.source === 'onlyoffice') {
-                switch (data.act) {
+                switch (data.action) {
                     case 'link':
                         this.handleClick('link')
                         break;
@@ -304,9 +303,11 @@ export default {
                         }
                         break;
                 }
-                return
             }
-            switch (data.act) {
+        },
+
+        onMessage(data) {
+            switch (data.action) {
                 case 'ready':
                     this.loadPreview = false;
                     break

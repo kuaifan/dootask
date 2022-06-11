@@ -1,6 +1,6 @@
 <template>
     <div class="component-only-office">
-        <iframe v-if="isPreviewAndMobile" ref="myPreview" class="preview-iframe" :src="mobilePreviewUrl"></iframe>
+        <IFrame v-if="isPreviewAndMobile" class="preview-iframe" :src="mobilePreviewUrl" @on-message="onMessage"/>
         <template v-else>
             <Alert v-if="loadError" class="load-error" type="error" show-icon>{{$L('组件加载失败！')}}</Alert>
             <div :id="id" class="placeholder"></div>
@@ -62,9 +62,11 @@
 <script>
 
 import {mapState} from "vuex";
+import IFrame from "../pages/manage/components/IFrame";
 
 export default {
     name: "OnlyOffice",
+    components: {IFrame},
     props: {
         id: {
             type: String,
@@ -106,7 +108,6 @@ export default {
         if (this.isPreviewAndMobile) {
             this.loading = true;
         }
-        window.addEventListener('message', this.handleMessage)
     },
 
 
@@ -115,7 +116,6 @@ export default {
             this.docEditor.destroyEditor();
             this.docEditor = null;
         }
-        window.removeEventListener('message', this.handleMessage)
     },
 
     computed: {
@@ -181,9 +181,8 @@ export default {
     },
 
     methods: {
-        handleMessage(event) {
-            const data = event.data;
-            switch (data.act) {
+        onMessage(data) {
+            switch (data.action) {
                 case 'ready':
                     this.loading = false;
                     break

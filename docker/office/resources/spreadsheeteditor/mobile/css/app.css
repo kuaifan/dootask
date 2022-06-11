@@ -7,5 +7,5 @@
 /*# sourceMappingURL=app.css.map */
 
 
-body{margin-top:-26px;height:calc(100% + 26px)}
-body .settings-popup{margin-top:26px;height:calc(100% - 26px}
+body .navbar.main-navbar.navbar-with-logo{height:0px}
+body .page.page-with-subnavbar.page-with-logo .page-content{--f7-page-subnavbar-offset:0px}

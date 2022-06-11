@@ -1,6 +1,6 @@
 <template>
     <div class="file-preview">
-        <iframe v-if="isPreview" ref="myPreview" class="preview-iframe" :src="previewUrl"></iframe>
+        <IFrame v-if="isPreview" class="preview-iframe" :src="previewUrl" @on-message="onMessage"/>
         <template v-else>
             <div v-show="!['word', 'excel', 'ppt'].includes(file.type)" class="edit-header">
                 <div class="header-title">
@@ -11,10 +11,11 @@
                         <Icon v-else type="ios-refresh" @click="getContent" />
                     </div>
                 </div>
-                <Dropdown v-if="file.type=='mind'"
-                          trigger="click"
-                          class="header-hint"
-                          @on-click="exportMenu">
+                <Dropdown
+                    v-if="file.type=='mind'"
+                    trigger="click"
+                    class="header-hint"
+                    @on-click="exportMenu">
                     <a href="javascript:void(0)">{{$L('导出')}}<Icon type="ios-arrow-down"></Icon></a>
                     <DropdownMenu slot="list">
                         <DropdownItem name="png">{{$L('导出PNG图片')}}</DropdownItem>
@@ -40,6 +41,7 @@
 <script>
 import Vue from 'vue'
 import Minder from '../../../components/Minder'
+import IFrame from "./IFrame";
 Vue.use(Minder)
 
 const MDPreview = () => import('../../../components/MDEditor/preview');
@@ -50,7 +52,7 @@ const Drawio = () => import('../../../components/Drawio');
 
 export default {
     name: "FilePreview",
-    components: {AceEditor, TEditor, MDPreview, OnlyOffice, Drawio},
+    components: {IFrame, AceEditor, TEditor, MDPreview, OnlyOffice, Drawio},
     props: {
         code: {
             type: String,
@@ -74,13 +76,6 @@ export default {
             contentDetail: null,
             loadPreview: true,
         }
-    },
-
-    mounted() {
-        window.addEventListener('message', this.handleMessage)
-    },
-    beforeDestroy() {
-        window.removeEventListener('message', this.handleMessage)
     },
 
     watch: {
@@ -111,8 +106,7 @@ export default {
 
         previewUrl() {
             if (this.isPreview) {
-                const previewType = this.file.size < 10 * 1024 * 1024 ? 'pdf' : 'image'; // 10M以下使用pdf预览模式
-                return $A.apiUrl(`../fileview/onlinePreview?url=${encodeURIComponent(this.contentDetail.url)}&officePreviewType=${previewType}`)
+                return $A.apiUrl("../fileview/onlinePreview?url=" + encodeURIComponent(this.contentDetail.url))
             } else {
                 return '';
             }
@@ -120,9 +114,8 @@ export default {
     },
 
     methods: {
-        handleMessage (event) {
-            const data = event.data;
-            switch (data.act) {
+        onMessage(data) {
+            switch (data.action) {
                 case 'ready':
                     this.loadPreview = false;
                     break
