@@ -21,6 +21,11 @@
             requireModuleJs("eeui").toast(object);
         },
 
+        eeuiAppRewriteUrl(val) {
+            if (!$A.isEEUiApp) return;
+            return requireModuleJs("eeui").rewriteUrl(val);
+        },
+
         eeuiAppOpenPage(object, callback) {
             if (!$A.isEEUiApp) return;
             if (typeof callback !== "function") callback = _ => {};
