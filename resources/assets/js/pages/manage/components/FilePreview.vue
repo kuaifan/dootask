@@ -2,7 +2,7 @@
     <div class="file-preview">
         <IFrame v-if="isPreview" class="preview-iframe" :src="previewUrl" @on-message="onMessage"/>
         <template v-else>
-            <div v-show="!['word', 'excel', 'ppt'].includes(file.type)" class="edit-header">
+            <div v-show="headerShow && !['word', 'excel', 'ppt'].includes(file.type)" class="edit-header">
                 <div class="header-title">
                     <div class="title-name">{{$A.getFileName(file)}}</div>
                     <Tag color="default">{{$L('只读')}}</Tag>
@@ -67,6 +67,10 @@ export default {
             default: () => {
                 return {};
             }
+        },
+        headerShow: {
+            type: Boolean,
+            default: true
         },
     },
 

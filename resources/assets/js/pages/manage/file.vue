@@ -995,7 +995,7 @@ export default {
                 }
             }
             // 客户端打开独立窗口
-            if (this.$Electron) {
+            if (this.$Electron || this.$isEEUiApp) {
                 this.openFileSingle(item);
                 return;
             }
@@ -1005,22 +1005,37 @@ export default {
         },
 
         openFileSingle(item) {
-            this.$Electron.sendMessage('windowRouter', {
-                name: `file-${item.id}`,
-                path: `/single/file/${item.id}`,
-                userAgent: "/hideenOfficeTitle/",
-                force: false, // 如果窗口已存在不重新加载
-                config: {
-                    title: $A.getFileName(item),
-                    titleFixed: true,
-                    parent: null,
-                    width: Math.min(window.screen.availWidth, 1440),
-                    height: Math.min(window.screen.availHeight, 900),
-                },
-                webPreferences: {
-                    nodeIntegrationInSubFrames: item.type === 'drawio'
-                },
-            });
+            const uri = `/single/file/${item.id}`;
+            if (this.$Electron) {
+                this.$Electron.sendMessage('windowRouter', {
+                    name: `file-${item.id}`,
+                    path: uri,
+                    userAgent: "/hideenOfficeTitle/",
+                    force: false, // 如果窗口已存在不重新加载
+                    config: {
+                        title: $A.getFileName(item),
+                        titleFixed: true,
+                        parent: null,
+                        width: Math.min(window.screen.availWidth, 1440),
+                        height: Math.min(window.screen.availHeight, 900),
+                    },
+                    webPreferences: {
+                        nodeIntegrationInSubFrames: item.type === 'drawio'
+                    },
+                });
+            } else if (this.$isEEUiApp) {
+                $A.eeuiAppOpenPage({
+                    pageType: 'app',
+                    pageTitle: $A.getFileName(item),
+                    url: 'web.js',
+                    params: {
+                        titleFixed: true,
+                        url: $A.apiUrl(`../token?token=${this.userToken}&from=${encodeURIComponent($A.apiUrl(`..${uri}`))}`)
+                    },
+                });
+            } else {
+                window.open($A.apiUrl(`..${uri}`))
+            }
             this.browseFile(0);
         },
 

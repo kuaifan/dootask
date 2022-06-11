@@ -200,10 +200,13 @@ export default {
                         });
                     } else if (this.$isEEUiApp) {
                         $A.eeuiAppOpenPage({
-                            pageType: 'web',
+                            pageType: 'app',
                             pageTitle: $A.getFileName(this.file) + ` [${row.created_at}]`,
-                            statusBarStyle: false,
-                            url: $A.apiUrl(`../token?token=${this.userToken}&from=${encodeURIComponent($A.apiUrl(`..${uri}`))}`)
+                            url: 'web.js',
+                            params: {
+                                titleFixed: true,
+                                url: $A.apiUrl(`../token?token=${this.userToken}&from=${encodeURIComponent($A.apiUrl(`..${uri}`))}`)
+                            },
                         });
                     } else {
                         window.open($A.apiUrl(`..${uri}`))

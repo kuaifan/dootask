@@ -426,10 +426,13 @@ export default {
                 });
             } else if (this.$isEEUiApp) {
                 $A.eeuiAppOpenPage({
-                    pageType: 'web',
+                    pageType: 'app',
                     pageTitle: `${this.msgData.msg.name} (${$A.bytesToSize(this.msgData.msg.size)})`,
-                    statusBarStyle: false,
-                    url: $A.apiUrl(`../token?token=${this.userToken}&from=${encodeURIComponent($A.apiUrl(`..${uri}`))}`)
+                    url: 'web.js',
+                    params: {
+                        titleFixed: true,
+                        url: $A.apiUrl(`../token?token=${this.userToken}&from=${encodeURIComponent($A.apiUrl(`..${uri}`))}`)
+                    },
                 });
             } else {
                 window.open($A.apiUrl(`..${uri}`))
