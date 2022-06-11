@@ -124,10 +124,17 @@ export default {
         },
 
         fileUrl() {
-            const codeId = this.code || this.value.id;
-            let fileUrl = `file/content/?id=${codeId}&token=${this.userToken}`;
-            if (this.historyId > 0) {
-                fileUrl += `&history_id=${this.historyId}`
+            let codeId = this.code || this.value.id;
+            let fileUrl
+            if ($A.leftExists(codeId, "msgFile_")) {
+                fileUrl = `dialog/msg/download/?msg_id=${$A.leftDelete(codeId, "msgFile_")}&token=${this.userToken}`;
+            } else if ($A.leftExists(codeId, "taskFile_")) {
+                fileUrl = `project/task/filedown/?file_id=${$A.leftDelete(codeId, "taskFile_")}&token=${this.userToken}`;
+            } else {
+                fileUrl = `file/content/?id=${codeId}&token=${this.userToken}`;
+                if (this.historyId > 0) {
+                    fileUrl += `&history_id=${this.historyId}`
+                }
             }
             return fileUrl;
         },
@@ -250,11 +257,6 @@ export default {
             };
             if (/\/hideenOfficeTitle\//.test(window.navigator.userAgent)) {
                 config.document.title = " ";
-            }
-            if ($A.leftExists(codeId, "msgFile_")) {
-                config.document.url = `http://nginx/api/dialog/msg/download/?msg_id=${$A.leftDelete(codeId, "msgFile_")}&token=${this.userToken}`;
-            } else if ($A.leftExists(codeId, "taskFile_")) {
-                config.document.url = `http://nginx/api/project/task/filedown/?file_id=${$A.leftDelete(codeId, "taskFile_")}&token=${this.userToken}`;
             }
             if (this.readOnly || this.historyId > 0) {
                 config.editorConfig.mode = "view";

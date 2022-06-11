@@ -12,13 +12,13 @@
                 <AceEditor v-else v-model="msgDetail.content.content" :ext="msgDetail.msg.ext" class="view-editor" readOnly/>
             </template>
             <OnlyOffice v-else-if="isType('office')" v-model="officeContent" :code="officeCode" :documentKey="documentKey" readOnly/>
-            <iframe v-else-if="isType('preview')" class="preview-iframe" :src="previewUrl"/>
+            <IFrame v-else-if="isType('preview')" class="preview-iframe" :src="previewUrl"/>
             <div v-else class="no-support">{{$L('不支持单独查看此消息')}}</div>
         </template>
     </div>
 </template>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .single-file-msg {
     display: flex;
     align-items: center;
@@ -43,6 +43,11 @@
         float: none;
         max-width: none;
     }
+    .teditor-wrapper {
+        .teditor-box {
+            height: 100%;
+        }
+    }
     .view-code {
         white-space: pre-wrap;
         word-wrap: break-word;
@@ -56,20 +61,12 @@
     }
 }
 </style>
-<style lang="scss">
-.single-file-msg {
-    .teditor-wrapper {
-        .teditor-box {
-            height: 100%;
-        }
-    }
-}
-</style>
 <script>
 import Vue from 'vue'
 import Minder from '../../components/Minder'
 import {textMsgFormat} from "../../functions/utils";
 import {mapState} from "vuex";
+import IFrame from "../manage/components/IFrame";
 Vue.use(Minder)
 
 const MDPreview = () => import('../../components/MDEditor/preview');
@@ -79,7 +76,7 @@ const OnlyOffice = () => import('../../components/OnlyOffice');
 const Drawio = () => import('../../components/Drawio');
 
 export default {
-    components: {AceEditor, TEditor, MDPreview, OnlyOffice, Drawio},
+    components: {IFrame, AceEditor, TEditor, MDPreview, OnlyOffice, Drawio},
     data() {
         return {
             loadIng: 0,

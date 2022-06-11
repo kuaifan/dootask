@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Exceptions\ApiException;
 use App\Models\AbstractModel;
 use App\Models\File;
+use App\Models\FileContent;
 use App\Models\Project;
 use App\Models\ProjectColumn;
 use App\Models\ProjectFlow;
@@ -22,6 +23,7 @@ use App\Module\BillExport;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Madzipper;
+use Redirect;
 use Request;
 use Response;
 use Session;
@@ -1306,6 +1308,9 @@ class ProjectController extends AbstractController
      * @apiName task__filedown
      *
      * @apiParam {Number} file_id            文件ID
+     * @apiParam {String} down                  直接下载
+     * - yes: 下载（默认）
+     * - preview: 转预览地址
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -1316,6 +1321,7 @@ class ProjectController extends AbstractController
         User::auth();
         //
         $file_id = intval(Request::input('file_id'));
+        $down = Request::input('down', 'yes');
         //
         $file = ProjectTaskFile::find($file_id);
         if (empty($file)) {
@@ -1326,6 +1332,14 @@ class ProjectController extends AbstractController
             ProjectTask::userTask($file->task_id, null);
         } catch (\Throwable $e) {
             abort(403, $e->getMessage() ?: "This file not support download.");
+        }
+        //
+        if ($down === 'preview') {
+            return Redirect::to(FileContent::toPreviewUrl([
+                'ext' => $file->ext,
+                'name' => $file->name,
+                'path' => $file->getRawOriginal('path'),
+            ]));
         }
         //
         return Response::download(public_path($file->getRawOriginal('path')), $file->name);

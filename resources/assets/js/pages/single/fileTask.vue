@@ -9,13 +9,13 @@
             <Minder v-else-if="isType('mind')" :value="fileDetail.content" readOnly/>
             <AceEditor v-else-if="isType('code')" v-model="fileDetail.content.content" :ext="fileDetail.ext" class="view-editor" readOnly/>
             <OnlyOffice v-else-if="isType('office')" v-model="officeContent" :code="officeCode" :documentKey="documentKey" readOnly/>
-            <iframe v-else-if="isType('preview')" class="preview-iframe" :src="previewUrl"/>
+            <IFrame v-else-if="isType('preview')" class="preview-iframe" :src="previewUrl"/>
             <div v-else class="no-support">{{$L('不支持单独查看此消息')}}</div>
         </template>
     </div>
 </template>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .single-file-task {
     display: flex;
     align-items: center;
@@ -39,6 +39,11 @@
         float: none;
         max-width: none;
     }
+    .teditor-wrapper {
+        .teditor-box {
+            height: 100%;
+        }
+    }
     .view-editor,
     .no-support {
         display: flex;
@@ -47,18 +52,10 @@
     }
 }
 </style>
-<style lang="scss">
-.single-file-task {
-    .teditor-wrapper {
-        .teditor-box {
-            height: 100%;
-        }
-    }
-}
-</style>
 <script>
 import Vue from 'vue'
 import Minder from '../../components/Minder'
+import IFrame from "../manage/components/IFrame";
 Vue.use(Minder)
 
 const MDPreview = () => import('../../components/MDEditor/preview');
@@ -68,7 +65,7 @@ const OnlyOffice = () => import('../../components/OnlyOffice');
 const Drawio = () => import('../../components/Drawio');
 
 export default {
-    components: {AceEditor, TEditor, MDPreview, OnlyOffice, Drawio},
+    components: {IFrame, AceEditor, TEditor, MDPreview, OnlyOffice, Drawio},
     data() {
         return {
             loadIng: 0,

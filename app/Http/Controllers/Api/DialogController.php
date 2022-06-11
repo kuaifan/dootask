@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\File;
+use App\Models\FileContent;
 use App\Models\ProjectTask;
 use App\Models\ProjectTaskFile;
 use App\Models\User;
@@ -13,6 +14,7 @@ use App\Models\WebSocketDialogUser;
 use App\Module\Base;
 use Carbon\Carbon;
 use DB;
+use Redirect;
 use Request;
 use Response;
 
@@ -531,7 +533,10 @@ class DialogController extends AbstractController
      * @apiGroup dialog
      * @apiName msg__download
      *
-     * @apiParam {Number} msg_id            消息ID
+     * @apiParam {Number} msg_id                消息ID
+     * @apiParam {String} down                  直接下载
+     * - yes: 下载（默认）
+     * - preview: 转预览地址
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -542,6 +547,7 @@ class DialogController extends AbstractController
         User::auth();
         //
         $msg_id = intval(Request::input('msg_id'));
+        $down = Request::input('down', 'yes');
         //
         $msg = WebSocketDialogMsg::whereId($msg_id)->first();
         if (empty($msg)) {
@@ -551,6 +557,10 @@ class DialogController extends AbstractController
             abort(403, "This file not support download.");
         }
         $array = Base::json2array($msg->getRawOriginal('msg'));
+        //
+        if ($down === 'preview') {
+            return Redirect::to(FileContent::toPreviewUrl($array));
+        }
         //
         return Response::download(public_path($array['path']), $array['name']);
     }

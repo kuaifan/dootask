@@ -42,22 +42,14 @@ class FileContent extends AbstractModel
 
     /**
      * 转预览地址
-     * @param File $file
-     * @param $content
+     * @param array $array
      * @return string
      */
-    public static function formatPreview($file, $content)
+    public static function toPreviewUrl($array)
     {
-        $content = Base::json2array($content ?: []);
-        $filePath = $content['url'];
-        if (in_array($file->type, ['word', 'excel', 'ppt'])) {
-            if (empty($content)) {
-                $filePath = 'assets/office/empty.' . str_replace(['word', 'excel', 'ppt'], ['docx', 'xlsx', 'pptx'], $file->type);
-            }
-        }
-        $fileExt = $file->ext;
-        $fileName = $file->name;
-        $fileSize = $file->size;
+        $fileExt = $array['ext'];
+        $fileName = $array['name'];
+        $filePath = $array['path'];
         if (in_array($fileExt, File::localExt)) {
             $url = Base::fillUrl($filePath);
         } else {
@@ -71,6 +63,28 @@ class FileContent extends AbstractModel
             ]);
         }
         return Base::fillUrl("fileview/onlinePreview?url=" . urlencode(base64_encode($url)));
+    }
+
+    /**
+     * 转预览地址
+     * @param File $file
+     * @param $content
+     * @return string
+     */
+    public static function formatPreview($file, $content)
+    {
+        $content = Base::json2array($content ?: []);
+        $filePath = $content['url'];
+        if (in_array($file->type, ['word', 'excel', 'ppt'])) {
+            if (empty($content)) {
+                $filePath = 'assets/office/empty.' . str_replace(['word', 'excel', 'ppt'], ['docx', 'xlsx', 'pptx'], $file->type);
+            }
+        }
+        return self::toPreviewUrl([
+            'ext' => $file->ext,
+            'name' => $file->name,
+            'path' => $filePath,
+        ]);
     }
 
     /**
