@@ -5,7 +5,7 @@
         :closable="escClosable"
         :mask-closable="maskClosable"
         :footer-hide="true"
-        :transition-names="[`drawer-slide-${placement}`, '']"
+        :transition-names="[$A.isAndroid() ? '' : `drawer-slide-${placement}`, '']"
         :beforeClose="beforeClose"
         fullscreen
         :class-name="`common-drawer-overlay ${placement}`">
