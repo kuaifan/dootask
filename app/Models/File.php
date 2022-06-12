@@ -198,6 +198,35 @@ class File extends AbstractModel
     }
 
     /**
+     * 检查文件名
+     * @param boolean $rename 重复是否自动重命名
+     * @return bool
+     */
+    public function checkName($rename = true)
+    {
+        $exist = self::wherePid($this->pid)->whereUserid($this->userid)->whereName($this->name)->exists();
+        if (!$exist) {
+            return true;    // 未重名
+        }
+        if (!$rename) {
+            return false;   // 重名不需要自动重命名
+        }
+        // 自动重命名
+        $nextNum = 2;
+        if (preg_match("/(.*?)(\s+\(\d+\))*$/", $this->name)) {
+            $preName = preg_replace("/(.*?)(\s+\(\d+\))*$/", "$1", $this->name);
+            $nextNum = self::wherePid($this->pid)->whereUserid($this->userid)->where("name", "LIKE", "{$preName}%")->count() + 1;
+        }
+        $newName = "{$this->name} ({$nextNum})";
+        if (self::wherePid($this->pid)->whereUserid($this->userid)->whereName($newName)->exists()) {
+            $nextNum = rand(100, 9999);
+            $newName = "{$this->name} ({$nextNum})";
+        }
+        $this->name = $newName;
+        return true;
+    }
+
+    /**
      * 保存前更新pids
      * @return bool
      */
@@ -475,6 +504,7 @@ class File extends AbstractModel
             'userid' => $newUserid,
             'created_id' => 0,
         ]);
+        $file->checkName();
         $file->saveBeforePids();
 
         // 移交文件
