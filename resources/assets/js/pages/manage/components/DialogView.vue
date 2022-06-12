@@ -431,7 +431,7 @@ export default {
                     url: 'web.js',
                     params: {
                         titleFixed: true,
-                        url: $A.apiUrl(`../token?token=${this.userToken}&from=${encodeURIComponent($A.apiUrl(`..${uri}`))}`)
+                        url: $A.eeuiAppRewriteUrl(`../public/index.html#${uri}`)
                     },
                 });
             } else {
