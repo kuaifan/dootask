@@ -28,6 +28,12 @@ import 'photoswipe/style.css';
 
 export default {
     props: {
+        className: {
+            type: String,
+            default: () => {
+                return "preview-image-swipe-" + Math.round(Math.random() * 10000);
+            }
+        },
         urlList: {
             type: Array,
             default: () => []
@@ -48,6 +54,8 @@ export default {
     watch: {
         urlList: {
             handler(array) {
+                let dragIng = false
+                let htmlZoom = false;
                 this.lightbox?.destroy();
                 const dataSource = array.map(item => {
                     if ($A.isJson(item)) {
@@ -59,6 +67,7 @@ export default {
                         }
                         item = item.src;
                     }
+                    htmlZoom = true;
                     return {
                         html: `<div class="preview-image-swipe"><img src="${$A.rightDelete(item, "_thumb.jpg")}"/></div>`,
                     }
@@ -66,8 +75,37 @@ export default {
                 this.lightbox = new PhotoSwipeLightbox({
                     dataSource,
                     escKey: false,
+                    mainClass: this.className,
                     showHideAnimationType: 'none',
                     pswpModule: () => import('photoswipe'),
+                });
+                this.lightbox.on('change', () => {
+                    if (htmlZoom) {
+                        $A.loadScript('js/pinch-zoom.umd.min.js', _ => {
+                            if (PinchZoom !== 'object') {
+                                const swiperItems = document.querySelector(`.${this.className}`).querySelectorAll(".preview-image-swipe")
+                                swiperItems.forEach(swipeItem => {
+                                    if (swipeItem.getAttribute("data-init-pinch-zoom") !== "init") {
+                                        swipeItem.setAttribute("data-init-pinch-zoom", "init")
+                                        swipeItem.querySelector("img").addEventListener("pointermove", e => {
+                                            if (dragIng) {
+                                                e.stopPropagation();
+                                            }
+                                        })
+                                        new PinchZoom.default(swipeItem, {
+                                            draggableUnzoomed: false,
+                                            onDragStart: () => {
+                                                dragIng = true;
+                                            },
+                                            onDragEnd: () => {
+                                                dragIng = false;
+                                            }
+                                        })
+                                    }
+                                })
+                            }
+                        })
+                    }
                 });
                 this.lightbox.on('close', () => {
                     this.$emit("on-close")
