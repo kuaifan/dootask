@@ -198,32 +198,28 @@ class File extends AbstractModel
     }
 
     /**
-     * 检查文件名
-     * @param boolean $rename 重复是否自动重命名
-     * @return bool
+     * 处理重名
+     * @return void
      */
-    public function checkName($rename = true)
+    public function handleDuplicateName()
     {
-        $exist = self::wherePid($this->pid)->whereUserid($this->userid)->whereName($this->name)->exists();
+        $builder = self::wherePid($this->pid)->whereUserid($this->userid)->whereExt($this->ext);
+        $exist = $builder->clone()->whereName($this->name)->exists();
         if (!$exist) {
-            return true;    // 未重名
+            return;    // 未重名，不需要处理
         }
-        if (!$rename) {
-            return false;   // 重名不需要自动重命名
-        }
-        // 自动重命名
+        // 发现重名，自动重命名
         $nextNum = 2;
         if (preg_match("/(.*?)(\s+\(\d+\))*$/", $this->name)) {
             $preName = preg_replace("/(.*?)(\s+\(\d+\))*$/", "$1", $this->name);
-            $nextNum = self::wherePid($this->pid)->whereUserid($this->userid)->where("name", "LIKE", "{$preName}%")->count() + 1;
+            $nextNum = $builder->clone()->where("name", "LIKE", "{$preName}%")->count() + 1;
         }
         $newName = "{$this->name} ({$nextNum})";
-        if (self::wherePid($this->pid)->whereUserid($this->userid)->whereName($newName)->exists()) {
+        if ($builder->clone()->whereName($newName)->exists()) {
             $nextNum = rand(100, 9999);
             $newName = "{$this->name} ({$nextNum})";
         }
         $this->name = $newName;
-        return true;
     }
 
     /**
@@ -504,7 +500,7 @@ class File extends AbstractModel
             'userid' => $newUserid,
             'created_id' => 0,
         ]);
-        $file->checkName();
+        $file->handleDuplicateName();
         $file->saveBeforePids();
 
         // 移交文件

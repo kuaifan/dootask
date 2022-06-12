@@ -257,7 +257,7 @@ class FileController extends AbstractController
                 'userid' => $userid,
                 'created_id' => $user->userid,
             ]);
-            $file->checkName();
+            $file->handleDuplicateName();
             $file->saveBeforePids();
             //
             $data = File::find($file->id);
@@ -308,7 +308,7 @@ class FileController extends AbstractController
             'userid' => $userid,
             'created_id' => $user->userid,
         ]);
-        $file->checkName();
+        $file->handleDuplicateName();
         $data = AbstractModel::transaction(function() use ($file) {
             $content = FileContent::select(['content', 'text', 'size'])->whereFid($file->cid)->orderByDesc('id')->first();
             $file->size = $content?->size ?: 0;
@@ -385,7 +385,7 @@ class FileController extends AbstractController
                 }
                 //
                 $file->pid = $pid;
-                $file->checkName();
+                $file->handleDuplicateName();
                 $file->saveBeforePids();
                 $files[] = $file;
             }
@@ -695,7 +695,7 @@ class FileController extends AbstractController
                             'userid' => $userid,
                             'created_id' => $user->userid,
                         ]);
-                        $dirRow->checkName();
+                        $dirRow->handleDuplicateName();
                         if ($dirRow->saveBeforePids()) {
                             $addItem[] = File::find($dirRow->id);
                         }
@@ -762,7 +762,7 @@ class FileController extends AbstractController
             'userid' => $userid,
             'created_id' => $user->userid,
         ]);
-        $file->checkName();
+        $file->handleDuplicateName();
         // 开始创建
         return AbstractModel::transaction(function () use ($addItem, $webkitRelativePath, $type, $user, $data, $file) {
             $file->size = $data['size'] * 1024;
