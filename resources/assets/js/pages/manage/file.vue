@@ -1030,7 +1030,7 @@ export default {
                     url: 'web.js',
                     params: {
                         titleFixed: true,
-                        url: $A.eeuiAppRewriteUrl(`../public/index.html#${uri}`)
+                        url: $A.rightDelete(window.location.href, window.location.hash) + `#${uri}`
                     },
                 });
             } else {

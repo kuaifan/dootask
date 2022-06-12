@@ -2,7 +2,7 @@
     <div class="single-file-task">
         <PageTitle :title="title"/>
         <Loading v-if="loadIng > 0"/>
-        <template v-else>
+        <template v-else-if="!isWait">
             <MDPreview v-if="isType('md')" :initialValue="fileDetail.content.content"/>
             <TEditor v-else-if="isType('text')" :value="fileDetail.content.content" height="100%" readOnly/>
             <Drawio v-else-if="isType('drawio')" v-model="fileDetail.content" :title="fileDetail.name" readOnly/>
@@ -69,6 +69,7 @@ export default {
     data() {
         return {
             loadIng: 0,
+            isWait: false,
 
             fileDetail: {},
         }
@@ -126,7 +127,10 @@ export default {
             if (this.fileId <= 0) {
                 return;
             }
-            this.loadIng++;
+            setTimeout(_ => {
+                this.loadIng++;
+            }, 600)
+            this.isWait = true;
             this.$store.dispatch("call", {
                 url: 'project/task/filedetail',
                 data: {
@@ -145,6 +149,7 @@ export default {
                 });
             }).finally(_ => {
                 this.loadIng--;
+                this.isWait = false;
             });
         },
         documentKey() {

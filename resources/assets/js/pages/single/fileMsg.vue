@@ -2,7 +2,7 @@
     <div class="single-file-msg">
         <PageTitle :title="title"/>
         <Loading v-if="loadIng > 0"/>
-        <template v-else>
+        <template v-else-if="!isWait">
             <MDPreview v-if="isType('md')" :initialValue="msgDetail.content.content"/>
             <TEditor v-else-if="isType('text')" :value="msgDetail.content.content" height="100%" readOnly/>
             <Drawio v-else-if="isType('drawio')" v-model="msgDetail.content" :title="msgDetail.msg.name" readOnly/>
@@ -80,6 +80,7 @@ export default {
     data() {
         return {
             loadIng: 0,
+            isWait: false,
 
             msgDetail: {},
         }
@@ -139,7 +140,10 @@ export default {
             if (this.msgId <= 0) {
                 return;
             }
-            this.loadIng++;
+            setTimeout(_ => {
+                this.loadIng++;
+            }, 600)
+            this.isWait = true;
             this.$store.dispatch("call", {
                 url: 'dialog/msg/detail',
                 data: {
@@ -158,6 +162,7 @@ export default {
                 });
             }).finally(_ => {
                 this.loadIng--;
+                this.isWait = false;
             });
         },
 

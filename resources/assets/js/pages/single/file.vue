@@ -72,7 +72,9 @@ export default {
             } else {
                 return;
             }
-            this.loadIng++;
+            setTimeout(_ => {
+                this.loadIng++;
+            }, 600)
             this.$store.dispatch("call", {
                 url: 'file/one',
                 data,
