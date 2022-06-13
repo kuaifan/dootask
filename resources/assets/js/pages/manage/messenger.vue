@@ -414,7 +414,7 @@ export default {
             if ($A.getDialogUnread(dialog) > 0 || dialog.id == this.dialogId || dialog.top_at) {
                 return true
             }
-            if (dialog.name === undefined) {
+            if (dialog.name === undefined || dialog.dialog_delete === 1) {
                 return false;
             }
             if (!dialog.last_at) {

@@ -84,16 +84,32 @@ class WebSocketDialog extends AbstractModel
                 if ($dialog_user->userid === 0) {
                     $dialog_user->userid = $userid;
                 }
-                $this->name = User::userid2nickname($dialog_user->userid);
+                $basic = User::userid2basic($dialog_user->userid);
+                if ($basic) {
+                    $this->name = $basic->nickname;
+                } else {
+                    $this->name = 'non-existent';
+                    $this->dialog_delete = 1;
+                }
                 $this->dialog_user = $dialog_user;
                 break;
             case "group":
                 if ($this->group_type === 'project') {
                     $this->group_info = Project::withTrashed()->select(['id', 'name', 'archived_at', 'deleted_at'])->whereDialogId($this->id)->first()?->cancelAppend()->cancelHidden();
-                    $this->name = $this->group_info ? $this->group_info->name : '';
+                    if ($this->group_info) {
+                        $this->name = $this->group_info->name;
+                    } else {
+                        $this->name = '[Delete]';
+                        $this->dialog_delete = 1;
+                    }
                 } elseif ($this->group_type === 'task') {
                     $this->group_info = ProjectTask::withTrashed()->select(['id', 'name', 'complete_at', 'archived_at', 'deleted_at'])->whereDialogId($this->id)->first()?->cancelAppend()->cancelHidden();
-                    $this->name = $this->group_info ? $this->group_info->name : '';
+                    if ($this->group_info) {
+                        $this->name = $this->group_info->name;
+                    } else {
+                        $this->name = '[Delete]';
+                        $this->dialog_delete = 1;
+                    }
                 }
                 break;
         }
