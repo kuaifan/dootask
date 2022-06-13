@@ -171,6 +171,7 @@ export default {
             contactsData: null,
             contactsCurrentPage: 1,
             contactsHasMorePages: false,
+            contactsLastTime: 0,
 
             operateItem: {},
             operateStyles: {},
@@ -346,7 +347,14 @@ export default {
         tabActive: {
             handler(val) {
                 if (val == 'contacts') {
-                    this.contactsData === null && this.getContactsList(1);
+                    if ($A.Time() - this.contactsLastTime > 24 * 3600) {
+                        this.contactsData = null;   // 24个小时重新加载列表
+                    }
+                    if (this.contactsData === null) {
+                        this.getContactsList(1);
+                    } else {
+                        this.updateContactsList(1000);
+                    }
                 } else {
                     this.updateDialogs(1000);
                 }
@@ -477,7 +485,36 @@ export default {
                 this.contactsHasMorePages = false;
             }).finally(_ => {
                 this.contactsLoad--;
+                this.contactsLastTime = $A.Time()
             });
+        },
+
+        updateContactsList(timeout) {
+            this.__updateContactsList && clearTimeout(this.__updateContactsList)
+            if (timeout > -1) {
+                this.__updateContactsList = setTimeout(_ => {
+                    if (this.tabActive === 'contacts') {
+                        this.$store.dispatch("call", {
+                            url: 'users/search',
+                            data: {
+                                updated_time: this.contactsLastTime,
+                                take: 100
+                            },
+                        }).then(({data}) => {
+                            data.some((user) => {
+                                const index = this.contactsData.findIndex(item => item.userid == user.userid);
+                                if (index > -1) {
+                                    this.contactsData.splice(index, 1, user);
+                                } else {
+                                    this.contactsData.push(user);
+                                }
+                            });
+                        }).finally(_ => {
+                            this.contactsLastTime = $A.Time()
+                        });
+                    }
+                }, timeout)
+            }
         },
 
         formatLastMsg(data) {

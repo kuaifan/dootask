@@ -350,6 +350,7 @@ class UsersController extends AbstractController
      * - keys.no_project_id                 不在指定项目ID
      * @apiParam {Object} sorts         排序方式
      * - sorts.az                           按字母：asc|desc
+     * @apiParam {Number} updated_time  在这个时间戳之后更新的
      *
      * @apiParam {Number} [take]        获取数量，10-100
      * @apiParam {Number} [page]        当前页，默认:1（赋值分页模式，take参数无效）
@@ -365,6 +366,7 @@ class UsersController extends AbstractController
         //
         $keys = Request::input('keys');
         $sorts = Request::input('sorts');
+        $updatedTime = intval(Request::input('updated_time'));
         $keys = is_array($keys) ? $keys : [];
         $sorts = is_array($sorts) ? $sorts : [];
         //
@@ -378,6 +380,9 @@ class UsersController extends AbstractController
             $builder->whereNull("disable_at");
         } elseif (intval($keys['disable']) == 2) {
             $builder->whereNotNull("disable_at");
+        }
+        if ($updatedTime > 0) {
+            $builder->where("updated_at", ">=", Carbon::createFromTimestamp($updatedTime));
         }
         if (intval($keys['project_id']) > 0) {
             $builder->whereIn('userid', function ($query) use ($keys) {
