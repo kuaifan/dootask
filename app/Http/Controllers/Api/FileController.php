@@ -69,6 +69,22 @@ class FileController extends AbstractController
                 $temp['permission'] = $file->getPermission($user->userid);
                 $array[] = $temp;
             }
+            // 去除没有权限的文件
+            $isUnset = false;
+            foreach ($array as $index1 => $item1) {
+                if ($item1['permission'] === -1) {
+                    foreach ($array as $index2 => $item2) {
+                        if ($item2['pid'] === $item1['id']) {
+                            $array[$index2]['pid'] = 0;
+                        }
+                    }
+                    $isUnset = true;
+                    unset($array[$index1]);
+                }
+            }
+            if ($isUnset) {
+                $array = array_values($array);
+            }
         } else {
             // 获取共享相关
             DB::statement("SET SQL_MODE=''");
