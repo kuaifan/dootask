@@ -286,20 +286,25 @@ export default {
     },
 
     methods: {
-        handleOfficeMessage({data}) {
+        handleOfficeMessage({data, source}) {
             if (data.source === 'onlyoffice') {
                 switch (data.action) {
+                    case 'ready':
+                        source.postMessage("createMenu", "*");
+                        break;
+
                     case 'link':
                         this.handleClick('link')
                         break;
 
                     case 'history':
-                        if (this.$refs.officeHeader) {
-                            this.$refs.officeHeader.style.top = `${data.rect.top}px`;
-                            this.$refs.officeHeader.style.left = `${data.rect.left}px`;
-                            this.$refs.officeHeader.style.width = `${data.rect.width}px`;
-                            this.$refs.officeHeader.style.height = `${data.rect.height}px`;
-                            this.$refs.officeHeader.click();
+                        const dom = this.$refs.officeHeader;
+                        if (dom) {
+                            dom.style.top = `${data.rect.top}px`;
+                            dom.style.left = `${data.rect.left}px`;
+                            dom.style.width = `${data.rect.width}px`;
+                            dom.style.height = `${data.rect.height}px`;
+                            dom.click();
                         }
                         break;
                 }
