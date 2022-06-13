@@ -7,7 +7,6 @@ use App\Module\Base;
 use Guanguans\Notify\Factory;
 use Guanguans\Notify\Messages\EmailMessage;
 use Request;
-use Response;
 
 /**
  * @apiDefine system
