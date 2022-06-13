@@ -17,9 +17,10 @@
     <meta name="mobile-web-app-capable" content="yes">
 	<meta name="theme-color" content="#d89000">
 	<script type="text/javascript">
-        window.EXPORT_URL = window.location.origin + "/drawio/export/";
-        window.DRAWIO_LIGHTBOX_URL = window.location.origin + "/drawio/webapp";
-        setInterval(function() {window.ICONSEARCH_PATH = window.location.origin + "/drawio/iconsearch";}, 1000)
+        window.SERVER_HOME_URL = window.location.origin + "/"
+        window.EXPORT_URL = window.SERVER_HOME_URL + "drawio/export/";
+        window.DRAWIO_LIGHTBOX_URL = window.SERVER_HOME_URL + "drawio/webapp";
+        setInterval(function() {window.ICONSEARCH_PATH = window.SERVER_HOME_URL + "drawio/iconsearch";}, 1000)
 
         /**
 		 * URL Parameters and protocol description are here:
