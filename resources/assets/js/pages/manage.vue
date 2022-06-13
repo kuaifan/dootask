@@ -957,7 +957,7 @@ export default {
                             body: body,
                             data: data,
                             tag: "dialog",
-                            requireInteraction: true
+                            // requireInteraction: true // true为通知不自动关闭
                         });
                         this.notificationManage.replaceTitle(title);
                         this.notificationManage.userAgreed();
