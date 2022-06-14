@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Module\Base;
 use App\Module\Ihttp;
+use App\Module\RandomColor;
 use App\Tasks\AutoArchivedTask;
 use App\Tasks\DeleteTmpTask;
 use App\Tasks\EmailNoticeTask;
 use Arr;
 use Cache;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
+use LasseRafn\InitialAvatarGenerator\InitialAvatar;
 use Redirect;
 use Request;
 
@@ -121,6 +123,39 @@ class IndexController extends InvokeController
             }
         }
         return $array;
+    }
+
+    /**
+     * 头像
+     * @return \Psr\Http\Message\StreamInterface
+     */
+    public function avatar()
+    {
+        $name = Request::input('name', 'H');
+        $size = Request::input('size', 128);
+        $color = Request::input('color');
+        $background = Request::input('background');
+        //
+        if (preg_match('/^[\x{4e00}-\x{9fa5}]+$/u', $name)) {
+            $name = mb_substr($name, mb_strlen($name) - 2);
+        }
+        if (empty($color)) {
+            $color = '#ffffff';
+            $cacheKey = "avatarBackgroundColor::" . md5($name);
+            $background = Cache::rememberForever($cacheKey, function() {
+                return RandomColor::one(['luminosity' => 'dark']);
+            });
+        }
+        //
+        $avatar = new InitialAvatar();
+        return $avatar->name($name)
+            ->size($size)
+            ->color($color)
+            ->background($background)
+            ->fontSize(0.35)
+            ->autoFont()
+            ->generate()
+            ->stream('png', 100);
     }
 
     /**

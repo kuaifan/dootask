@@ -173,7 +173,7 @@
 
             isDefault() {
                 const {userimg} = this.user
-                return $A.strExists(userimg, '/avatar/default_');
+                return $A.strExists(userimg, '/avatar');
             },
 
             nickname() {

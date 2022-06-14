@@ -67,6 +67,8 @@ class User extends AbstractModel
         'updated_at',
     ];
 
+    protected $defaultAvatarMode = 'auto'; // auto自动生成，system系统默认
+
     /**
      * 更新数据校验
      * @param array $param
@@ -97,11 +99,17 @@ class User extends AbstractModel
      */
     public function getUserimgAttribute($value)
     {
-        if ($value) {
+        if ($value && !str_starts_with($value, 'images/avatar/default')) {
             return Base::fillUrl($value);
         }
-        $name = ($this->userid - 1) % 21 + 1;
-        return url("images/avatar/default_{$name}.png");
+        if ($this->defaultAvatarMode === 'auto') {
+            // 自动生成头像
+            return url("avatar?name=" . urlencode($this->nickname));
+        } else {
+            // 系统默认头像
+            $name = ($this->userid - 1) % 21 + 1;
+            return url("images/avatar/default_{$name}.png");
+        }
     }
 
     /**

@@ -62,7 +62,7 @@ export default {
         },
 
         initData() {
-            if (!$A.strExists(this.userInfo.userimg, '/avatar/default_')) {
+            if (!$A.strExists(this.userInfo.userimg, '/avatar')) {
                 this.$set(this.formData, 'userimg', this.userInfo.userimg);
             }
             const nickname = typeof this.userInfo.nickname_original !== "undefined" ? this.userInfo.nickname_original : this.userInfo.nickname;
