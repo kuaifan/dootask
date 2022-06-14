@@ -90,7 +90,7 @@
             :mask-closable="false">
             <div>
                 <Input ref="linkInput" v-model="linkData.url" type="textarea" :rows="3" @on-focus="linkFocus" readonly/>
-                <div class="form-tip" style="padding-top:6px">{{$L('可通过此链接浏览文件。')}}</div>
+                <div class="form-tip" style="padding-top:6px">{{$L('可通过此链接浏览文件。')}}<a href="javascript:void(0)" @click="linkCopy">{{$L('点击复制链接')}}</a></div>
             </div>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="linkShow=false">{{$L('取消')}}</Button>
@@ -458,7 +458,7 @@ export default {
                 this.linkData = Object.assign(data, {
                     id: this.linkData.id
                 });
-                this.linkCopy();
+                this.linkFocus();
             }).catch(({msg}) => {
                 this.linkShow = false
                 $A.modalError(msg);
@@ -471,6 +471,7 @@ export default {
             if (!this.linkData.url) {
                 return;
             }
+            this.linkFocus();
             this.$copyText(this.linkData.url).then(_ => {
                 $A.messageSuccess('复制成功');
             }).catch(_ => {
@@ -479,7 +480,9 @@ export default {
         },
 
         linkFocus() {
-            this.$refs.linkInput.focus({cursor:'all'});
+            this.$nextTick(_ => {
+                this.$refs.linkInput.focus({cursor:'all'});
+            });
         },
 
         exportMenu(act) {
