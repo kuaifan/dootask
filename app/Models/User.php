@@ -99,7 +99,7 @@ class User extends AbstractModel
      */
     public function getUserimgAttribute($value)
     {
-        if ($value && !str_starts_with($value, 'images/avatar/default')) {
+        if ($value && !str_contains($value, 'avatar/')) {
             return Base::fillUrl($value);
         }
         if ($this->defaultAvatarMode === 'auto') {

@@ -256,17 +256,15 @@ class UsersController extends AbstractController
         $user = User::auth();
         $data = Request::all();
         $user->checkSystem(1);
-        //头像
+        // 头像
         if (Arr::exists($data, 'userimg')) {
             $userimg = Request::input('userimg');
-            if ($userimg) {
-                $userimg = is_array($userimg) ? $userimg[0]['path'] : $userimg;
-                $user->userimg = Base::unFillUrl($userimg);
-            } else {
-                $user->userimg = Base::unFillUrl($user->getUserimgAttribute(null));
+            $user->userimg = $userimg ? Base::unFillUrl(is_array($userimg) ? $userimg[0]['path'] : $userimg) : '';
+            if (str_contains($user->userimg, 'avatar/')) {
+                $user->userimg = '';
             }
         }
-        //昵称
+        // 昵称
         if (Arr::exists($data, 'nickname')) {
             $nickname = trim(Request::input('nickname'));
             if ($nickname && mb_strlen($nickname) < 2) {
@@ -277,7 +275,7 @@ class UsersController extends AbstractController
                 $user->nickname = $nickname;
             }
         }
-        //职位/职称
+        // 职位/职称
         if (Arr::exists($data, 'profession')) {
             $profession = trim(Request::input('profession'));
             if ($profession && mb_strlen($profession) < 2) {
@@ -292,6 +290,10 @@ class UsersController extends AbstractController
         $user->save();
         User::token($user);
         User::AZUpdate($user->userid);
+        //
+        if (empty($user->userimg)) {
+            $user->userimg = $user->getUserimgAttribute(null);
+        }
         return Base::retSuccess('修改成功', $user);
     }
 

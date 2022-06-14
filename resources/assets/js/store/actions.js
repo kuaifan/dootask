@@ -315,6 +315,9 @@ export default {
             state.userIsAdmin = $A.inArray('admin', userInfo.identity);
             $A.setStorage("userInfo", state.userInfo);
             dispatch("getBasicData", null);
+            if (state.userId > 0) {
+                dispatch("saveUserBasic", state.userInfo);
+            }
             resolve()
         });
     },
