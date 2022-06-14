@@ -385,7 +385,7 @@ ipcMain.on('sendForwardMain', (event, args) => {
  * @param args
  */
 ipcMain.on('setDockBadge', (event, args) => {
-    if(process.platform !== 'darwin'){
+    if (process.platform !== 'darwin') {
         // Mac only
         return;
     }
@@ -452,6 +452,10 @@ ipcMain.on('updateCheckAndDownload', (event, args) => {
 ipcMain.on('updateQuitAndInstall', (event) => {
     event.returnValue = "ok"
     willQuitApp = true
+    if(process.platform == 'darwin'){
+        // Mac 触发升级时跳动Dock图标
+        app.dock.bounce('critical');
+    }
     setTimeout(() => autoUpdater.quitAndInstall(true, true), 1)
 })
 
