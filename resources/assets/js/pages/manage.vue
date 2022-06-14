@@ -235,9 +235,6 @@
             </keep-alive>
         </div>
 
-        <!--等待覆盖层-->
-        <ManageLoad :user-state="userState" class="manage-box-load" @on-click="loadUser"/>
-
         <!--新建项目-->
         <Modal
             v-model="addShow"
@@ -378,11 +375,9 @@ import DialogModal from "./manage/components/DialogModal";
 import TaskModal from "./manage/components/TaskModal";
 import notificationKoro from "notification-koro1";
 import {Store} from "le5le-store";
-import ManageLoad from "../components/ManageLoad";
 
 export default {
     components: {
-        ManageLoad,
         TaskModal,
         DialogModal,
         MeetingManager,
@@ -400,7 +395,6 @@ export default {
     data() {
         return {
             loadIng: 0,
-            userState: 0,
 
             mateName: /macintosh|mac os x/i.test(navigator.userAgent) ? '⌘' : 'Ctrl',
 
@@ -466,9 +460,9 @@ export default {
     },
 
     activated() {
-        this.loadUser();
-        this.getReportUnread(0);
+        this.$store.dispatch("getUserInfo").catch(_ => {})
         this.$store.dispatch("getTaskPriority").catch(_ => {})
+        this.getReportUnread(0);
     },
 
     beforeDestroy() {
@@ -721,15 +715,6 @@ export default {
                     { type: 'string', min: 2, message: this.$L('项目名称至少2个字！'), trigger: 'change' }
                 ]
             };
-        },
-
-        loadUser() {
-            this.userState = 0;
-            this.$store.dispatch("getUserInfo").then(_ => {
-                this.userState = 1;
-            }).catch(_ => {
-                this.userState = -1;
-            })
         },
 
         chackPass() {
