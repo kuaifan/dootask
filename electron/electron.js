@@ -40,6 +40,10 @@ function createMainWindow() {
         }
     })
     mainWindow.webContents.setUserAgent(mainWindow.webContents.getUserAgent() + " MainTaskWindow/" + process.platform + "/" + os.arch() + "/1.0");
+    mainWindow.webContents.setWindowOpenHandler(({url}) => {
+        openExternal(url)
+        return {action: 'deny'}
+    })
 
     if (devloadUrl) {
         mainWindow.loadURL(devloadUrl).then(_ => {
@@ -135,6 +139,10 @@ function createSubWindow(args) {
         subWindow.push({ name, browser })
     }
     browser.webContents.setUserAgent(browser.webContents.getUserAgent() + " SubTaskWindow/" + process.platform + "/" + os.arch() + "/1.0" + (args.userAgent ? (" " + args.userAgent) : ""));
+    browser.webContents.setWindowOpenHandler(({url}) => {
+        openExternal(url)
+        return {action: 'deny'}
+    })
 
     if (devloadUrl) {
         browser.loadURL(devloadUrl + '#' + (args.hash || args.path)).then(_ => {
