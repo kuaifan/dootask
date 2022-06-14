@@ -1,7 +1,7 @@
 <template>
     <div v-if="ready" class="file-content">
         <IFrame v-if="isPreview" class="preview-iframe" :src="previewUrl" @on-message="onMessage"/>
-        <template v-else>
+        <template v-else-if="contentDetail">
             <EPopover
                 v-if="['word', 'excel', 'ppt'].includes(file.type)"
                 v-model="historyShow"
@@ -69,7 +69,7 @@
                     <Button :disabled="equalContent" :loading="loadSave > 0" class="header-button" size="small" type="primary" @click="handleClick('save')">{{$L('保存')}}</Button>
                 </template>
             </div>
-            <div v-if="contentDetail" class="content-body">
+            <div class="content-body">
                 <div v-if="historyShow" class="content-mask"></div>
                 <template v-if="file.type=='document'">
                     <MDEditor v-if="contentDetail.type=='md'" v-model="contentDetail.content" height="100%"/>
@@ -340,7 +340,9 @@ export default {
                 return;
             }
             this.loadSave++;
-            this.loadContent++;
+            setTimeout(_ => {
+                this.loadContent++;
+            }, 600)
             this.$store.dispatch("call", {
                 url: 'file/content',
                 data: {

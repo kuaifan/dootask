@@ -651,7 +651,7 @@
                 justify-content: center;
                 font-size: 13px;
                 padding: 3px 0;
-                margin: 0 0 12px;
+                margin: 0 0 16px;
                 opacity: 0.6;
                 transition: opacity 0.2s;
 
@@ -681,7 +681,7 @@
             }
 
             &.loading {
-                padding: 0 0 12px;
+                padding: 0 0 16px;
                 justify-content: center;
 
                 .common-loading {

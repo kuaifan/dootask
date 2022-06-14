@@ -1,7 +1,7 @@
 <template>
     <div class="file-preview">
         <IFrame v-if="isPreview" class="preview-iframe" :src="previewUrl" @on-message="onMessage"/>
-        <template v-else>
+        <template v-else-if="contentDetail">
             <div v-show="headerShow && !['word', 'excel', 'ppt'].includes(file.type)" class="edit-header">
                 <div class="header-title">
                     <div class="title-name">{{$A.getFileName(file)}}</div>
@@ -23,7 +23,7 @@
                     </DropdownMenu>
                 </Dropdown>
             </div>
-            <div v-if="contentDetail" class="content-body">
+            <div class="content-body">
                 <template v-if="file.type=='document'">
                     <MDPreview v-if="contentDetail.type=='md'" :initialValue="contentDetail.content"/>
                     <TEditor v-else :value="contentDetail.content" height="100%" readOnly/>
@@ -131,7 +131,9 @@ export default {
                 this.contentDetail = $A.cloneJSON(this.file);
                 return;
             }
-            this.loadContent++;
+            setTimeout(_ => {
+                this.loadContent++;
+            }, 600)
             this.$store.dispatch("call", {
                 url: 'file/content',
                 data: {

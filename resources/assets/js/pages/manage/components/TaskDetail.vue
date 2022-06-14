@@ -1286,11 +1286,11 @@ export default {
                 }
                 return
             }
-            const uri = `/single/file/task/${file.id}`;
+            const path = `/single/file/task/${file.id}`;
             if (this.$Electron) {
                 this.$Electron.sendMessage('windowRouter', {
                     name: `file-task-${file.id}`,
-                    path: uri,
+                    path: path,
                     userAgent: "/hideenOfficeTitle/",
                     force: false,
                     config: {
@@ -1299,7 +1299,10 @@ export default {
                         parent: null,
                         width: Math.min(window.screen.availWidth, 1440),
                         height: Math.min(window.screen.availHeight, 900),
-                    }
+                    },
+                    webPreferences: {
+                        nodeIntegrationInSubFrames: file.ext === 'drawio'
+                    },
                 });
             } else if (this.$isEEUiApp) {
                 $A.eeuiAppOpenPage({
@@ -1308,11 +1311,11 @@ export default {
                     url: 'web.js',
                     params: {
                         titleFixed: true,
-                        url: $A.rightDelete(window.location.href, window.location.hash) + `#${uri}`
+                        url: $A.rightDelete(window.location.href, window.location.hash) + `#${path}`
                     },
                 });
             } else {
-                window.open($A.apiUrl(`..${uri}`))
+                window.open($A.apiUrl(`..${path}`))
             }
         },
 

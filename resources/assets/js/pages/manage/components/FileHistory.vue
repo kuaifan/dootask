@@ -180,11 +180,11 @@ export default {
                     break;
 
                 case 'preview':
-                    const uri = `/single/file/${this.fileId}?history_id=${row.id}&history_at=${row.created_at}`;
+                    const path = `/single/file/${this.fileId}?history_id=${row.id}&history_at=${row.created_at}`;
                     if (this.$Electron) {
                         this.$Electron.sendMessage('windowRouter', {
                             name: `file-${this.fileId}-${row.id}`,
-                            path: uri,
+                            path: path,
                             userAgent: "/hideenOfficeTitle/",
                             force: false,
                             config: {
@@ -205,11 +205,11 @@ export default {
                             url: 'web.js',
                             params: {
                                 titleFixed: true,
-                                url: $A.rightDelete(window.location.href, window.location.hash) + `#${uri}`
+                                url: $A.rightDelete(window.location.href, window.location.hash) + `#${path}`
                             },
                         });
                     } else {
-                        window.open($A.apiUrl(`..${uri}`))
+                        window.open($A.apiUrl(`..${path}`))
                     }
                     break;
             }

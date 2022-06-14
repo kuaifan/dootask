@@ -452,10 +452,6 @@ ipcMain.on('updateCheckAndDownload', (event, args) => {
 ipcMain.on('updateQuitAndInstall', (event) => {
     event.returnValue = "ok"
     willQuitApp = true
-    if(process.platform == 'darwin'){
-        // Mac 触发升级时跳动Dock图标
-        app.dock.bounce('critical');
-    }
     setTimeout(() => autoUpdater.quitAndInstall(true, true), 1)
 })
 

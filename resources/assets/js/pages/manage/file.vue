@@ -27,7 +27,7 @@
                         <span>{{$L('全部文件')}}</span>
                     </li>
                     <li v-if="searchKey">{{$L('搜索')}} "{{searchKey}}"</li>
-                    <li v-else v-for="item in navigator" @click="browseFolder(item.id)">
+                    <li v-else v-for="item in navigator" :ref="`nav_${item.id}`" @click="browseFolder(item.id)">
                         <i v-if="item.share" class="taskfont">&#xe63f;</i>
                         <span :title="item.name">{{item.name}}</span>
                         <span v-if="item.share && item.permission == 0" class="readonly">{{$L('只读')}}</span>
@@ -653,6 +653,17 @@ export default {
             }
         },
 
+        navigator: {
+            handler() {
+                this.$nextTick(_ => {
+                    if (this.$refs[`nav_${this.pid}`]) {
+                        $A.scrollToView(this.$refs[`nav_${this.pid}`][0], false)
+                    }
+                });
+            },
+            immediate: true
+        },
+
         selectIds: {
             handler(ids) {
                 if (ids.length > 0) {
@@ -692,7 +703,7 @@ export default {
                 {
                     title: this.$L('文件名'),
                     key: 'name',
-                    minWidth: 200,
+                    minWidth: 300,
                     sortable: true,
                     render: (h, {row}) => {
                         let array = [];
@@ -763,7 +774,11 @@ export default {
                                     }
                                 }
                             }, [
-                                h('AutoTip', $A.getFileName(row))
+                                h('AutoTip', {
+                                    props: {
+                                        placement: 'right'
+                                    }
+                                }, $A.getFileName(row))
                             ]));
                             //
                             const iconArray = [];
@@ -1005,11 +1020,11 @@ export default {
         },
 
         openFileSingle(item) {
-            const uri = `/single/file/${item.id}`;
+            const path = `/single/file/${item.id}`;
             if (this.$Electron) {
                 this.$Electron.sendMessage('windowRouter', {
                     name: `file-${item.id}`,
-                    path: uri,
+                    path: path,
                     userAgent: "/hideenOfficeTitle/",
                     force: false, // 如果窗口已存在不重新加载
                     config: {
@@ -1030,11 +1045,11 @@ export default {
                     url: 'web.js',
                     params: {
                         titleFixed: true,
-                        url: $A.rightDelete(window.location.href, window.location.hash) + `#${uri}`
+                        url: $A.rightDelete(window.location.href, window.location.hash) + `#${path}`
                     },
                 });
             } else {
-                window.open($A.apiUrl(`..${uri}`))
+                window.open($A.apiUrl(`..${path}`))
             }
             this.browseFile(0);
         },
