@@ -211,6 +211,12 @@ class WebSocketService implements WebSocketHandlerInterface
             /** @var WebSocket $item */
             foreach ($list as $item) {
                 $item->delete();
+                if ($item->userid) {
+                    // 离线时更新会员最后在线时间
+                    User::whereUserid($item->userid)->update([
+                        'line_at' => Carbon::now()
+                    ]);
+                }
                 if ($item->path && str_starts_with($item->path, "/single/file/")) {
                     $array[$item->path] = $item->path;
                 }
