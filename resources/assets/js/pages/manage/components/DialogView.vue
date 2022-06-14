@@ -171,7 +171,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['dialogMsgs', 'audioPlaying']),
+        ...mapState(['dialogMsgs', 'audioPlaying', 'windowActive']),
 
         viewClass() {
             const {msgData, operateAction, operateEnter} = this;
@@ -235,6 +235,11 @@ export default {
             },
             immediate: true,
         },
+        windowActive(active) {
+            if (active) {
+                this.msgRead();
+            }
+        },
         operateAction(val) {
             this.operateEnter = false;
             if (val) {
@@ -255,7 +260,7 @@ export default {
         },
 
         msgRead() {
-            if (this.msgData._r === true) {
+            if (!this.windowActive || this.msgData._r === true) {
                 return;
             }
             this.msgData._r = true;

@@ -8,6 +8,9 @@ const stateData = {
     windowLarge: $A(window).width() > 768, // 大窗口
     windowSmall: $A(window).width() <= 768, // 小窗口
 
+    // 窗口是否激活
+    windowActive: true,
+
     // 播放中的音频地址
     audioPlaying: null,
 

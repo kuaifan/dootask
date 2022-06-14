@@ -59,13 +59,14 @@ export default {
     created() {
         this.electronEvents();
         this.eeuiEvents();
+        this.otherEvents();
+        this.synchThemeLanguage();
     },
 
     mounted() {
         window.addEventListener('resize', this.windowSizeListener);
         window.addEventListener('scroll', this.windowScrollListener);
         this.searchInter = setInterval(this.searchEnter, 1000);
-        this.synchThemeLanguage();
     },
 
     beforeDestroy() {
@@ -76,6 +77,10 @@ export default {
 
     computed: {
         ...mapState(['ws', 'themeMode']),
+
+        isSoftware() {
+            return this.$Electron || this.$isEEUiApp;
+        },
     },
 
     watch: {
@@ -175,6 +180,16 @@ export default {
             });
         },
 
+        synchThemeLanguage() {
+            if (this.isSoftware) {
+                this.iframes = this.iframes.filter(({key}) => key != 'synchThemeLanguage')
+                this.iframes.push({
+                    key: 'synchThemeLanguage',
+                    url: $A.apiUrl(`../setting/theme_language?theme=${this.themeMode}&language=${this.languageType}`)
+                })
+            }
+        },
+
         windowSizeListener() {
             this.$store.state.windowWidth = $A(window).width()
             this.$store.state.windowHeight = $A(window).height()
@@ -202,6 +217,12 @@ export default {
                 let {action, data} = args;
                 this.$store.dispatch(action, data);
             })
+            this.$Electron.registerMsgListener('browserWindowBlur', _ => {
+                this.$store.state.windowActive = false;
+            })
+            this.$Electron.registerMsgListener('browserWindowFocus', _ => {
+                this.$store.state.windowActive = true;
+            })
             this.iframes.push({
                 key: 'manifest',
                 url: $A.apiUrl("../manifest")
@@ -214,17 +235,12 @@ export default {
             }
             // 页面失活
             window.__onPagePause = () => {
-                if (this.$openLog) {
-                    console.log('onPagePause');
-                }
-                this.$store.dispatch("getBasicData", -1)
+                this.$store.state.windowActive = false;
+                this.$store.dispatch("getBasicData", -1);
             }
             // 页面激活
             window.__onPageResume = (num) => {
-                if (this.$openLog) {
-                    console.log('onPageResume', num);
-                    console.log('ws', this.ws, this.ws ? this.ws.readyState : null);
-                }
+                this.$store.state.windowActive = true;
                 if (num > 0) {
                     this.$store.dispatch("getBasicData", 600)
                     if (this.ws === null) {
@@ -240,13 +256,14 @@ export default {
             }
         },
 
-        synchThemeLanguage() {
-            if (this.$Electron || this.$isEEUiApp) {
-                this.iframes = this.iframes.filter(({key}) => key != 'synchThemeLanguage')
-                this.iframes.push({
-                    key: 'synchThemeLanguage',
-                    url: $A.apiUrl(`../setting/theme_language?theme=${this.themeMode}&language=${this.languageType}`)
-                })
+        otherEvents() {
+            if (!this.isSoftware) {
+                // 非客户端监听窗口激活
+                const hiddenProperty = 'hidden' in document ? 'hidden' : 'webkitHidden' in document ? 'webkitHidden' : 'mozHidden' in document ? 'mozHidden' : null;
+                const visibilityChangeEvent = hiddenProperty.replace(/hidden/i, 'visibilitychange');
+                document.addEventListener(visibilityChangeEvent, () => {
+                    this.$store.state.windowActive = !document[hiddenProperty]
+                });
             }
         },
     }

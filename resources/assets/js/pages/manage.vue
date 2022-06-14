@@ -431,7 +431,6 @@ export default {
             allProjectShow: false,
             archivedProjectShow: false,
 
-            natificationHidden: false,
             natificationReady: false,
             notificationManage: null,
 
@@ -451,7 +450,6 @@ export default {
         }
         //
         this.notificationInit();
-        this.onVisibilityChange();
         //
         this.addTaskSubscribe = Store.subscribe('addTask', this.onAddTask);
         this.dialogMsgSubscribe = Store.subscribe('dialogMsgPush', this.addDialogMsg);
@@ -501,6 +499,7 @@ export default {
             'clientNewVersion',
             'cacheTaskBrowse',
 
+            'windowActive',
             'dialogIns',
         ]),
 
@@ -661,15 +660,6 @@ export default {
                     this.searchProject();
                 }
             }, 600);
-        },
-
-        natificationHidden(val) {
-            clearTimeout(this.notificationTimeout);
-            if (!val && this.notificationManage) {
-                this.notificationTimeout = setTimeout(() => {
-                    this.notificationManage.close();
-                }, 6000);
-            }
         },
 
         wsOpenNum(num) {
@@ -903,17 +893,17 @@ export default {
 
         addDialogMsg(data) {
             if (!this.natificationReady && !this.$isEEUiApp) {
-                return; // 通知未准备好
+                return; // 通知未准备好不通知
             }
-            if ($A.last(this.dialogIns)?.dialog_id === data.dialog_id) {
-                return; // 最后打开的会话是通知的会话时不通知
+            if (this.windowActive && data.dialog_id === $A.last(this.dialogIns)?.dialog_id) {
+                return; // 窗口激活且最后打开的会话是通知的会话时不通知
             }
             //
             const {id, dialog_id, type, msg, userid} = data;
             if (userid == this.userId) {
-                return; // 自己的消息不弹出通知
+                return; // 自己的消息不通知
             }
-            let body = '';
+            let body;
             switch (type) {
                 case 'text':
                     body = $A.getMsgTextPreview(msg.text)
@@ -1091,15 +1081,6 @@ export default {
                 }
             };
             this.notificationManage.initNotification(userSelectFn);
-        },
-
-        onVisibilityChange() {
-            let hiddenProperty = 'hidden' in document ? 'hidden' : 'webkitHidden' in document ? 'webkitHidden' : 'mozHidden' in document ? 'mozHidden' : null;
-            let visibilityChangeEvent = hiddenProperty.replace(/hidden/i, 'visibilitychange');
-            let visibilityChangeListener = () => {
-                this.natificationHidden = !!document[hiddenProperty]
-            }
-            document.addEventListener(visibilityChangeEvent, visibilityChangeListener);
         },
     }
 }

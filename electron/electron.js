@@ -206,6 +206,14 @@ app.on('before-quit', () => {
     willQuitApp = true
 })
 
+app.on('browser-window-blur', () => {
+    mainWindow.webContents.send("browserWindowBlur", {})
+})
+
+app.on('browser-window-focus', () => {
+    mainWindow.webContents.send("browserWindowFocus", {})
+})
+
 /**
  * 打开文件
  * @param args {path}

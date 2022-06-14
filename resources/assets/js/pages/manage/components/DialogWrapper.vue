@@ -116,7 +116,7 @@
 
         <!--底部输入-->
         <div class="dialog-footer" :class="{newmsg: msgNew > 0 && allMsgs.length > 0}" @click="onActive">
-            <div class="dialog-newmsg" @click="onToBottom">{{$L('有' + msgNew + '条新消息')}}</div>
+            <div class="dialog-newmsg" @click="onToBottom">{{$L(`有${msgNew}条新消息`)}}</div>
             <DialogUpload
                 ref="chatUpload"
                 class="chat-upload"
@@ -356,6 +356,7 @@ export default {
             'cacheDialogs',
             'wsOpenNum',
             'touchBackInProgress',
+            'windowActive',
         ]),
 
         isReady() {
@@ -505,7 +506,7 @@ export default {
             }
             this.allMsgs = newList;
             //
-            if (scrollE > 10 && oldList.length > 0) {
+            if (!this.windowActive || (scrollE > 10 && oldList.length > 0)) {
                 const lastId = oldList[oldList.length - 1].id
                 const tmpList = newList.filter(item => item.id && item.id > lastId)
                 this.msgNew += tmpList.length
