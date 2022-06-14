@@ -2211,20 +2211,22 @@ export default {
                     page: dialog.currentPage
                 },
             }).then(result => {
-                dialog.loading = false;
-                dialog.currentPage = result.data.current_page;
-                dialog.hasMorePages = !!result.data.next_page_url;
+                const resData = result.data;
+                dialog.currentPage = resData.current_page;
+                dialog.hasMorePages = !!resData.next_page_url;
+                dialog = Object.assign(dialog, resData.dialog)
                 //
-                const ids = result.data.data.map(({id}) => id)
+                const ids = resData.data.map(({id}) => id)
                 state.dialogMsgs = state.dialogMsgs.filter((item) => item.dialog_id != dialog_id || ids.includes(item.id));
                 //
-                dispatch("saveDialog", result.data.dialog);
-                dispatch("saveDialogMsg", result.data.data);
+                dispatch("saveDialogMsg", resData.data);
                 resolve()
             }).catch(e => {
                 console.warn(e);
-                dialog.loading = false;
                 resolve()
+            }).finally(_ => {
+                dialog.loading = false;
+                dispatch("saveDialog", dialog);
             });
         });
     },
@@ -2260,10 +2262,11 @@ export default {
                     page: dialog.currentPage
                 },
             }).then(result => {
+                const resData = result.data;
                 dialog.loading = false;
-                dialog.currentPage = result.data.current_page;
-                dialog.hasMorePages = !!result.data.next_page_url;
-                dispatch("saveDialogMsg", result.data.data);
+                dialog.currentPage = resData.current_page;
+                dialog.hasMorePages = !!resData.next_page_url;
+                dispatch("saveDialogMsg", resData.data);
                 resolve(result)
             }).catch(e => {
                 console.warn(e);
