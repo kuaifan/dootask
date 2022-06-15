@@ -70,49 +70,19 @@
         </div>
 
         <!--消息列表-->
-        <DynamicScroller
+        <VirtualList
             ref="scroller"
             class="dialog-scroller scrollbar-overlay"
-            :style="{opacity: scrollOpacity ? 1 : 0}"
-            :disabled="touchBackInProgress"
-            :items="allMsgs"
-            :min-item-size="58"
-            @onScroll="onScroll">
-            <template #before>
-                <template v-if="allMsgs.length === 0">
-                    <div v-if="dialogData.loading > 0" class="dialog-item loading"><Loading/></div>
-                    <div v-else class="dialog-item nothing">{{$L('暂无消息')}}</div>
-                </template>
-                <div v-else-if="dialogData.hasMorePages" class="dialog-item history" @click="loadNextPage">{{$L('加载历史消息')}}</div>
-            </template>
-            <template v-slot="{ item, index, active }">
-                <DynamicScrollerItem
-                    :item="item"
-                    :active="active"
-                    :size-dependencies="[item.msg]"
-                    :data-index="index"
-                    :data-active="active"
-                    :class="{
-                        'dialog-item': true,
-                        'self': item.userid == userId,
-                        'history-tip': topId == item.id
-                    }"
-                    @click.native="">
-                    <em v-if="topId == item.id" class="history-text">{{$L('历史消息')}}</em>
-                    <div class="dialog-avatar">
-                        <UserAvatar :userid="item.userid" :tooltipDisabled="item.userid == userId" :size="30"/>
-                    </div>
-                    <DialogView
-                        :ref="`msg_${item.id}`"
-                        :msg-data="item"
-                        :dialog-type="dialogData.type"
-                        :hide-percentage="isMyDialog"
-                        :operate-visible="operateVisible"
-                        :operate-action="operateVisible && item.id === operateItem.id"
-                        @on-longpress="onLongpress"/>
-                </DynamicScrollerItem>
-            </template>
-        </DynamicScroller>
+            :data-key="'id'"
+            :data-sources="allMsgs"
+            :data-component="msgItem"
+            :extra-props="{dialogData, isMyDialog, operateVisible, operateItem}"
+            :estimate-size="78"
+            :keeps="80"
+            @scroll="onScroll"
+            @totop="loadNextPage">
+            <div slot="header" v-if="!dialogData.loading && allMsgs.length === 0" class="dialog-item nothing">{{$L('暂无消息')}}</div>
+        </VirtualList>
 
         <!--底部输入-->
         <div class="dialog-footer" :class="{newmsg: msgNew > 0 && allMsgs.length > 0}" @click="onActive">
@@ -268,28 +238,25 @@
 
 <script>
 import {mapState} from "vuex";
-import DialogView from "./DialogView";
+import DialogItem from "./DialogItem";
 import DialogUpload from "./DialogUpload";
 import UserInput from "../../../components/UserInput";
 import DrawerOverlay from "../../../components/DrawerOverlay";
 import DialogGroupInfo from "./DialogGroupInfo";
 import ChatInput from "./ChatInput";
 
-import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller-hi'
-import 'vue-virtual-scroller-hi/dist/vue-virtual-scroller.css'
+import VirtualList from 'vue-virtual-scroll-list'
 import {Store} from "le5le-store";
 
 export default {
     name: "DialogWrapper",
     components: {
-        DynamicScroller,
-        DynamicScrollerItem,
+        VirtualList,
         ChatInput,
         DialogGroupInfo,
         DrawerOverlay,
         UserInput,
-        DialogUpload,
-        DialogView
+        DialogUpload
     },
 
     props: {
@@ -306,9 +273,9 @@ export default {
 
     data() {
         return {
+            msgItem: DialogItem,
             msgText: '',
             msgNew: 0,
-            topId: 0,
 
             allMsgs: [],
             tempMsgs: [],
@@ -329,7 +296,7 @@ export default {
 
             dialogDrag: false,
             groupInfoShow: false,
-            scrollOpacity: true,
+            dialogSubscribe: null,
 
             navStyle: {},
 
@@ -344,8 +311,13 @@ export default {
         }
     },
 
+    mounted () {
+        this.dialogSubscribe = Store.subscribe('dialogLongpress', this.onLongpress)
+    },
+
     beforeDestroy() {
         this.$store.dispatch('forgetInDialog', this._uid)
+        this.dialogSubscribe.unsubscribe();
     },
 
     computed: {
@@ -453,7 +425,6 @@ export default {
             handler(id) {
                 if (id) {
                     this.msgNew = 0;
-                    this.topId = -1;
                     //
                     if (this.allMsgList.length > 0) {
                         this.allMsgs = this.allMsgList;
@@ -500,35 +471,25 @@ export default {
         },
 
         allMsgList(newList, oldList) {
-            const {scrollE} = this.scrollInfo();
-            if (oldList.length === 0) {
-                this.scrollOpacity = false;
-            }
+            const {balance} = this.scrollInfo();
             this.allMsgs = newList;
             //
-            if (!this.windowActive || (scrollE > 10 && oldList.length > 0)) {
+            if (!this.windowActive || (balance > 10 && oldList.length > 0)) {
                 const lastId = oldList[oldList.length - 1].id
                 const tmpList = newList.filter(item => item.id && item.id > lastId)
                 this.msgNew += tmpList.length
             } else {
                 requestAnimationFrame(this.onToBottom)
             }
-            //
-            this.allMsgTimer && clearTimeout(this.allMsgTimer);
-            if (!this.scrollOpacity) {
-                this.allMsgTimer = setTimeout(_=>{
-                    this.scrollOpacity = true;
-                },100)
-            }
         },
 
         windowScrollY(val) {
             if ($A.isIos()) {
-                const {scrollE} = this.scrollInfo();
+                const {balance} = this.scrollInfo();
                 this.navStyle = {
                     marginTop: val + 'px'
                 }
-                if (scrollE <= 10) {
+                if (balance <= 10) {
                     requestAnimationFrame(this.onToBottom)
                 }
             }
@@ -698,12 +659,12 @@ export default {
                 }
                 if (this.wrapperStart.clientY > e.touches[0].clientY) {
                     // 向上滑动
-                    if (this.wrapperStart.scrollE === 0) {
+                    if (this.wrapperStart.balance === 0) {
                         e.preventDefault();
                     }
                 } else {
                     // 向下滑动
-                    if (this.wrapperStart.scrollY === 0) {
+                    if (this.wrapperStart.offset === 0) {
                         e.preventDefault();
                     }
                 }
@@ -808,14 +769,16 @@ export default {
         },
 
         loadNextPage() {
-            let tmpId = this.allMsgs[0].id;
-            this.$store.dispatch('getDialogMoreMsgs', this.dialogId).then(() => {
+            this.$store.dispatch('getDialogMoreMsgs', this.dialogId).then(result => {
+                const resData = result.data;
+                const ids = resData.data.map(item => item.id)
                 this.$nextTick(() => {
-                    this.topId = tmpId;
-                    const index = this.allMsgs.findIndex(({id}) => id == tmpId);
-                    if (index > -1) {
-                        this.$refs.scroller.scrollToItem(index);
-                    }
+                    const scroller = this.$refs.scroller
+                    const offset = ids.reduce((previousValue, currentId) => {
+                        const previousSize = typeof previousValue === "object" ? previousValue.size : scroller.getSize(previousValue)
+                        return {size: previousSize + scroller.getSize(currentId)}
+                    })
+                    scroller.scrollToOffset(offset.size);
                 });
             }).catch(() => {})
         },
@@ -876,22 +839,21 @@ export default {
         },
 
         scrollInfo() {
-            if (!this.isReady) {
+            const scroller = this.$refs.scroller
+            if (!scroller) {
                 return {
                     scale: 0,       //已滚动比例
-                    scrollY: 0,     //滚动的距离
-                    scrollE: 0,     //与底部距离
+                    offset: 0,      //滚动的距离
+                    balance: 0,     //与底部距离
                 }
             }
-            const scrollerView = this.$refs.scroller.$el;
-            let wInnerH = scrollerView.clientHeight;
-            let wScrollY = scrollerView.scrollTop;
-            let bScrollH = scrollerView.scrollHeight;
-            this.scrollY = wScrollY;
+            let clientSize = scroller.getClientSize();
+            let offset = scroller.getOffset();
+            let scrollSize = scroller.getScrollSize();
             return {
-                scale: wScrollY / (bScrollH - wInnerH),
-                scrollY: wScrollY,
-                scrollE: bScrollH - wInnerH - wScrollY,
+                scale: offset / (scrollSize - clientSize),
+                offset: offset,
+                balance: scrollSize - clientSize - offset,
             }
         },
 
@@ -899,8 +861,8 @@ export default {
             this.operateVisible = false;
             this.__onScroll && clearTimeout(this.__onScroll);
             this.__onScroll = setTimeout(_ => {
-                const {scrollE} = this.scrollInfo();
-                if (scrollE <= 10) {
+                const {balance} = this.scrollInfo();
+                if (balance <= 10) {
                     this.msgNew = 0;
                 }
             }, 100)
@@ -945,10 +907,10 @@ export default {
             })
         },
 
-        onOperate(name, value = null) {
+        onOperate(action, value = null) {
             this.operateVisible = false;
             this.$nextTick(_ => {
-                switch (name) {
+                switch (action) {
                     case "copy":
                         if (this.operateHasText) {
                             this.$copyText(this.operateItem.msg.text.replace(/<[^>]+>/g, "")).then(_ => {
@@ -975,19 +937,10 @@ export default {
                         break;
 
                     case "withdraw":
-                        this.$refs[`msg_${this.operateItem.id}`].withdraw()
-                        break;
-
                     case "view":
-                        this.$refs[`msg_${this.operateItem.id}`].viewFile()
-                        break;
-
                     case "down":
-                        this.$refs[`msg_${this.operateItem.id}`].downFile()
-                        break;
-
                     case "emoji":
-                        this.$refs[`msg_${this.operateItem.id}`].setEmoji(value)
+                        Store.set('dialogOperate', {id: this.operateItem.id, action, value});
                         break;
                 }
             })
