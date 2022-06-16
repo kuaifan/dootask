@@ -179,6 +179,13 @@ export default {
         }
     },
 
+    mounted() {
+        const id = $A.runNum(this.$route.query.dialog_id);
+        if (id > 0) {
+            this.openDialog(id)
+        }
+    },
+
     activated() {
         this.updateDialogs(1000);
     },
@@ -332,6 +339,7 @@ export default {
                     break;
             }
         },
+
         contactsKey(val) {
             if (val == '') {
                 return;
@@ -344,6 +352,7 @@ export default {
                 this.contactsLoad--;
             }, 600);
         },
+
         tabActive: {
             handler(val) {
                 if (val == 'contacts') {
@@ -361,6 +370,7 @@ export default {
             },
             immediate: true
         },
+
         dialogId: {
             handler(id) {
                 if (id > 0) {

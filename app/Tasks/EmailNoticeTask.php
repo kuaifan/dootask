@@ -239,7 +239,7 @@ class EmailNoticeTask extends AbstractTask
                 }
                 $content .= view('email.unread', [
                     'type' => 'content',
-                    'dialogUrl' => config("app.url") . "/manage/messenger/{$dialogId}",
+                    'dialogUrl' => config("app.url") . "/manage/messenger?dialog_id={$dialogId}",
                     'dialogName' => $dialogName,
                     'unread' => count($items),
                     'items' => $items,

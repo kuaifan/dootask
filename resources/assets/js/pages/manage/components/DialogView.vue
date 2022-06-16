@@ -8,10 +8,7 @@
         <div
             class="dialog-head"
             :class="headClass"
-            v-longpress="{
-                callback: handleLongpress,
-                delay: 300,
-            }">
+            v-longpress="{callback: handleLongpress, delay: 300}">
             <!--详情-->
             <div class="dialog-content" :class="contentClass">
                 <!--文本-->
@@ -170,7 +167,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['dialogMsgs', 'audioPlaying', 'windowActive']),
+        ...mapState(['audioPlaying', 'windowActive']),
 
         viewClass() {
             const {msgData, operateAction, operateEnter} = this;
@@ -251,18 +248,13 @@ export default {
 
     methods: {
         handleLongpress(event, el) {
-            this.$emit("on-longpress", {
-                event,
-                el,
-                msgData: this.msgData
-            })
+            this.$emit("on-longpress", {event, el, msgData: this.msgData})
         },
 
         msgRead() {
-            if (!this.windowActive || this.msgData._r === true) {
+            if (!this.windowActive) {
                 return;
             }
-            this.msgData._r = true;
             this.$store.dispatch("dialogMsgRead", this.msgData);
         },
 
