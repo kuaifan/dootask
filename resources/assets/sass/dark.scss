@@ -86,11 +86,6 @@ body.dark-mode-reverse {
 
     .project-panel {
         .project-titbox {
-            .project-title {
-                .top-text {
-                    color: #000000;
-                }
-            }
             .project-icons {
                 > li {
                     &.project-icon {
@@ -158,9 +153,6 @@ body.dark-mode-reverse {
                         .main-title {
                             > h2 {
                                 color: #555;
-                            }
-                            .top-text {
-                                color: #000000;
                             }
                         }
                     }
