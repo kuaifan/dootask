@@ -45,5 +45,34 @@ module.exports = {
             })
         }
         return text;
+    },
+
+    /**
+     * 获取文本消息图片
+     * @param text
+     * @returns {*[]}
+     */
+    textImagesInfo(text) {
+        const baseUrl = $A.apiUrl('../');
+        const array = text.match(new RegExp(`<img[^>]*?>`, "g"));
+        const list = [];
+        if (array) {
+            const srcReg = new RegExp("src=([\"'])([^'\"]*)\\1"),
+                widthReg = new RegExp("(original-)?width=\"(\\d+)\""),
+                heightReg = new RegExp("(original-)?height=\"(\\d+)\"")
+            array.some(res => {
+                const srcMatch = res.match(srcReg),
+                    widthMatch = res.match(widthReg),
+                    heightMatch = res.match(heightReg);
+                if (srcMatch) {
+                    list.push({
+                        src: srcMatch[2].replace(/\{\{RemoteURL\}\}/g, baseUrl),
+                        width: widthMatch ? widthMatch[2] : -1,
+                        height: heightMatch ? heightMatch[2] : -1,
+                    })
+                }
+            })
+        }
+        return list;
     }
 }

@@ -72,7 +72,7 @@
                     v-for="(item, index) in msgData.emoji"
                     :key="index"
                     :class="{hasme: item.userids.includes(userId)}"
-                    @click="setEmoji(item.symbol)">
+                    @click="onEmoji(item.symbol)">
                     <div class="emoji-symbol no-dark-content">{{item.symbol}}</div>
                     <div class="emoji-num">{{item.userids.length}}</div>
                 </li>
@@ -80,7 +80,7 @@
         </div>
 
         <!--等待/时间/阅读-->
-        <div v-if="emojiLoad > 0 || !msgData.created_at" class="dialog-foot"><Loading/></div>
+        <div v-if="!msgData.created_at" class="dialog-foot"><Loading/></div>
         <div v-else class="dialog-foot">
             <!--时间-->
             <div v-if="timeShow" class="time" @click="timeShow=false">{{msgData.created_at}}</div>
@@ -161,7 +161,6 @@ export default {
             popperShow: false,
             timeShow: false,
             operateEnter: false,
-            emojiLoad: 0,
             allList: [],
         }
     },
@@ -360,184 +359,17 @@ export default {
             });
         },
 
-        withdraw() {
-            $A.modalConfirm({
-                content: `确定撤回此信息吗？`,
-                okText: '撤回',
-                loading: true,
-                onOk: () => {
-                    this.$store.dispatch("call", {
-                        url: 'dialog/msg/withdraw',
-                        data: {
-                            msg_id: this.msgData.id
-                        },
-                    }).then(() => {
-                        $A.messageSuccess("消息已撤回");
-                        this.$store.dispatch("forgetDialogMsg", this.msgData.id);
-                    }).catch(({msg}) => {
-                        $A.messageError(msg, 301);
-                    }).finally(_ => {
-                        this.$Modal.remove();
-                    });
-                }
-            });
+        viewText(e) {
+            this.$emit("on-view-text", e)
         },
 
-        viewText({target}) {
-            if (this.operateVisible) {
-                return
-            }
-            switch (target.nodeName) {
-                case "IMG":
-                    if (target.classList.contains('browse')) {
-                        this.viewPicture(target.currentSrc);
-                    } else {
-                        this.$store.state.previewImageIndex = 0;
-                        this.$store.state.previewImageList = this.getTextImageInfos(target.outerHTML);
-                    }
-                    break;
-
-                case "SPAN":
-                    if (target.classList.contains('mention') && target.classList.contains('task')) {
-                        this.$store.dispatch("openTask", $A.runNum(target.getAttribute("data-id")));
-                    }
-                    break;
-            }
+        viewFile(e) {
+            this.$emit("on-view-file", e)
         },
 
-        viewFile() {
-            if (this.operateVisible) {
-                return
-            }
-            const {msg} = this.msgData;
-            if (['jpg', 'jpeg', 'gif', 'png'].includes(msg.ext)) {
-                this.viewPicture(msg.path);
-                return
-            }
-            const path = `/single/file/msg/${this.msgData.id}`;
-            if (this.$Electron) {
-                this.$Electron.sendMessage('windowRouter', {
-                    name: `file-msg-${this.msgData.id}`,
-                    path: path,
-                    userAgent: "/hideenOfficeTitle/",
-                    force: false,
-                    config: {
-                        title: `${this.msgData.msg.name} (${$A.bytesToSize(this.msgData.msg.size)})`,
-                        titleFixed: true,
-                        parent: null,
-                        width: Math.min(window.screen.availWidth, 1440),
-                        height: Math.min(window.screen.availHeight, 900),
-                    },
-                    webPreferences: {
-                        nodeIntegrationInSubFrames: msg.ext === 'drawio'
-                    },
-                });
-            } else if (this.$isEEUiApp) {
-                $A.eeuiAppOpenPage({
-                    pageType: 'app',
-                    pageTitle: `${this.msgData.msg.name} (${$A.bytesToSize(this.msgData.msg.size)})`,
-                    url: 'web.js',
-                    params: {
-                        titleFixed: true,
-                        url: $A.rightDelete(window.location.href, window.location.hash) + `#${path}`
-                    },
-                });
-            } else {
-                window.open($A.apiUrl(`..${path}`))
-            }
+        onEmoji(emoji) {
+            this.$emit("on-emoji", emoji)
         },
-
-        viewPicture(currentUrl) {
-            const {dialog_id} = this.msgData;
-            const data = $A.cloneJSON(this.dialogMsgs.filter(item => {
-                if (item.dialog_id === dialog_id) {
-                    if (item.type === 'file') {
-                        return ['jpg', 'jpeg', 'gif', 'png'].includes(item.msg.ext);
-                    } else if (item.type === 'text') {
-                        return item.msg.text.match(/<img\s+class="browse"[^>]*?>/);
-                    }
-                }
-                return false;
-            })).sort((a, b) => {
-                return a.id - b.id;
-            });
-            //
-            const list = [];
-            data.some(({type, msg}) => {
-                if (type === 'file') {
-                    list.push({
-                        src: msg.path,
-                        width: msg.width,
-                        height: msg.height,
-                    })
-                } else if (type === 'text') {
-                    list.push(...this.getTextImageInfos(msg.text))
-                }
-            })
-            //
-            const index = list.findIndex(({src}) => src === currentUrl);
-            if (index > -1) {
-                this.$store.state.previewImageIndex = index;
-                this.$store.state.previewImageList = list;
-            } else {
-                this.$store.state.previewImageIndex = 0;
-                this.$store.state.previewImageList = [currentUrl];
-            }
-        },
-
-        getTextImageInfos(text) {
-            const baseUrl = $A.apiUrl('../');
-            const array = text.match(new RegExp(`<img[^>]*?>`, "g"));
-            const list = [];
-            if (array) {
-                const srcReg = new RegExp("src=([\"'])([^'\"]*)\\1"),
-                    widthReg = new RegExp("(original-)?width=\"(\\d+)\""),
-                    heightReg = new RegExp("(original-)?height=\"(\\d+)\"")
-                array.some(res => {
-                    const srcMatch = res.match(srcReg),
-                        widthMatch = res.match(widthReg),
-                        heightMatch = res.match(heightReg);
-                    if (srcMatch) {
-                        list.push({
-                            src: srcMatch[2].replace(/\{\{RemoteURL\}\}/g, baseUrl),
-                            width: widthMatch ? widthMatch[2] : -1,
-                            height: heightMatch ? heightMatch[2] : -1,
-                        })
-                    }
-                })
-            }
-            return list;
-        },
-
-        downFile() {
-            $A.modalConfirm({
-                title: '下载文件',
-                content: `${this.msgData.msg.name} (${$A.bytesToSize(this.msgData.msg.size)})`,
-                okText: '立即下载',
-                onOk: () => {
-                    this.$store.dispatch('downUrl', $A.apiUrl(`dialog/msg/download?msg_id=${this.msgData.id}`))
-                }
-            });
-        },
-
-        setEmoji(emoji) {
-            setTimeout(_ => {
-                this.emojiLoad++;
-            }, 600);
-            this.$store.dispatch("call", {
-                url: 'dialog/msg/emoji',
-                data: {
-                    msg_id: this.msgData.id,
-                    emoji,
-                },
-            }).then(({data}) => {
-                this.$store.dispatch("saveDialogMsg", data);
-            }).catch(({msg}) => {
-                $A.messageError(msg);
-            }).finally(_ => {
-                this.emojiLoad--;
-            });
-        }
     }
 }
 </script>

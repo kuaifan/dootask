@@ -76,12 +76,22 @@
             :data-key="'id'"
             :data-sources="allMsgs"
             :data-component="msgItem"
+
             :extra-props="{dialogData, isMyDialog, operateVisible, operateItem}"
             :estimate-size="78"
             :keeps="80"
             @scroll="onScroll"
-            @totop="loadNextPage">
-            <div slot="header" v-if="!dialogData.loading && allMsgs.length === 0" class="dialog-item nothing">{{$L('暂无消息')}}</div>
+            @totop="loadNextPage"
+
+            @on-longpress="onLongpress"
+            @on-view-text="onViewText"
+            @on-view-file="onViewFile"
+            @on-emoji="onEmoji">
+            <template slot="header">
+                <div v-if="(allMsgs.length === 0 && dialogData.loading > 0) || dialogData.hasMorePages" class="dialog-item loading"><Loading/></div>
+                <div v-else-if="allMsgs.length > 0" class="dialog-item loaded">{{$L('已加载全部消息')}}</div>
+                <div v-else class="dialog-item nothing">{{$L('暂无消息')}}</div>
+            </template>
         </VirtualList>
 
         <!--底部输入-->
@@ -247,6 +257,7 @@ import ChatInput from "./ChatInput";
 
 import VirtualList from 'vue-virtual-scroll-list'
 import {Store} from "le5le-store";
+import {textImagesInfo} from "../../../functions/utils";
 
 export default {
     name: "DialogWrapper",
@@ -296,7 +307,6 @@ export default {
 
             dialogDrag: false,
             groupInfoShow: false,
-            dialogSubscribe: null,
 
             navStyle: {},
 
@@ -311,13 +321,8 @@ export default {
         }
     },
 
-    mounted () {
-        this.dialogSubscribe = Store.subscribe('dialogLongpress', this.onLongpress)
-    },
-
     beforeDestroy() {
         this.$store.dispatch('forgetInDialog', this._uid)
-        this.dialogSubscribe.unsubscribe();
     },
 
     computed: {
@@ -937,14 +942,172 @@ export default {
                         break;
 
                     case "withdraw":
+                        this.onWithdraw()
+                        break;
+
                     case "view":
+                        this.onViewFile()
+                        break;
+
                     case "down":
+                        this.onDownFile()
+                        break;
+
                     case "emoji":
-                        Store.set('dialogOperate', {id: this.operateItem.id, action, value});
+                        this.onEmoji(value)
                         break;
                 }
             })
         },
+
+        onWithdraw() {
+            $A.modalConfirm({
+                content: `确定撤回此信息吗？`,
+                okText: '撤回',
+                loading: true,
+                onOk: () => {
+                    this.$store.dispatch("call", {
+                        url: 'dialog/msg/withdraw',
+                        data: {
+                            msg_id: this.operateItem.id
+                        },
+                    }).then(() => {
+                        $A.messageSuccess("消息已撤回");
+                        this.$store.dispatch("forgetDialogMsg", this.operateItem.id);
+                    }).catch(({msg}) => {
+                        $A.messageError(msg, 301);
+                    }).finally(_ => {
+                        this.$Modal.remove();
+                    });
+                }
+            });
+        },
+
+        onViewText({target}) {
+            if (this.operateVisible) {
+                return
+            }
+            switch (target.nodeName) {
+                case "IMG":
+                    if (target.classList.contains('browse')) {
+                        this.onViewPicture(target.currentSrc);
+                    } else {
+                        this.$store.state.previewImageIndex = 0;
+                        this.$store.state.previewImageList = textImagesInfo(target.outerHTML);
+                    }
+                    break;
+
+                case "SPAN":
+                    if (target.classList.contains('mention') && target.classList.contains('task')) {
+                        this.$store.dispatch("openTask", $A.runNum(target.getAttribute("data-id")));
+                    }
+                    break;
+            }
+        },
+
+        onViewFile() {
+            if (this.operateVisible) {
+                return
+            }
+            const {msg} = this.operateItem;
+            if (['jpg', 'jpeg', 'gif', 'png'].includes(msg.ext)) {
+                this.onViewPicture(msg.path);
+                return
+            }
+            const path = `/single/file/msg/${this.operateItem.id}`;
+            if (this.$Electron) {
+                this.$Electron.sendMessage('windowRouter', {
+                    name: `file-msg-${this.operateItem.id}`,
+                    path: path,
+                    userAgent: "/hideenOfficeTitle/",
+                    force: false,
+                    config: {
+                        title: `${msg.name} (${$A.bytesToSize(msg.size)})`,
+                        titleFixed: true,
+                        parent: null,
+                        width: Math.min(window.screen.availWidth, 1440),
+                        height: Math.min(window.screen.availHeight, 900),
+                    },
+                    webPreferences: {
+                        nodeIntegrationInSubFrames: msg.ext === 'drawio'
+                    },
+                });
+            } else if (this.$isEEUiApp) {
+                $A.eeuiAppOpenPage({
+                    pageType: 'app',
+                    pageTitle: `${msg.name} (${$A.bytesToSize(msg.size)})`,
+                    url: 'web.js',
+                    params: {
+                        titleFixed: true,
+                        url: $A.rightDelete(window.location.href, window.location.hash) + `#${path}`
+                    },
+                });
+            } else {
+                window.open($A.apiUrl(`..${path}`))
+            }
+        },
+
+        onViewPicture(currentUrl) {
+            const data = $A.cloneJSON(this.dialogMsgs.filter(item => {
+                if (item.dialog_id === this.dialogId) {
+                    if (item.type === 'file') {
+                        return ['jpg', 'jpeg', 'gif', 'png'].includes(item.msg.ext);
+                    } else if (item.type === 'text') {
+                        return item.msg.text.match(/<img\s+class="browse"[^>]*?>/);
+                    }
+                }
+                return false;
+            })).sort((a, b) => {
+                return a.id - b.id;
+            });
+            //
+            const list = [];
+            data.some(({type, msg}) => {
+                if (type === 'file') {
+                    list.push({
+                        src: msg.path,
+                        width: msg.width,
+                        height: msg.height,
+                    })
+                } else if (type === 'text') {
+                    list.push(...textImagesInfo(msg.text))
+                }
+            })
+            //
+            const index = list.findIndex(({src}) => src === currentUrl);
+            if (index > -1) {
+                this.$store.state.previewImageIndex = index;
+                this.$store.state.previewImageList = list;
+            } else {
+                this.$store.state.previewImageIndex = 0;
+                this.$store.state.previewImageList = [currentUrl];
+            }
+        },
+
+        onDownFile() {
+            $A.modalConfirm({
+                title: '下载文件',
+                content: `${this.operateItem.msg.name} (${$A.bytesToSize(this.operateItem.msg.size)})`,
+                okText: '立即下载',
+                onOk: () => {
+                    this.$store.dispatch('downUrl', $A.apiUrl(`dialog/msg/download?msg_id=${this.operateItem.id}`))
+                }
+            });
+        },
+
+        onEmoji(emoji) {
+            this.$store.dispatch("call", {
+                url: 'dialog/msg/emoji',
+                data: {
+                    msg_id: this.operateItem.id,
+                    emoji,
+                },
+            }).then(({data}) => {
+                this.$store.dispatch("saveDialogMsg", data);
+            }).catch(({msg}) => {
+                $A.messageError(msg);
+            });
+        }
     }
 }
 </script>

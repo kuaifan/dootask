@@ -4,21 +4,21 @@
             <UserAvatar :userid="source.userid" :tooltipDisabled="source.userid == userId" :size="30"/>
         </div>
         <DialogView
-            ref="view"
             :msg-data="source"
             :dialog-type="dialogData.type"
             :hide-percentage="isMyDialog"
             :operate-visible="operateVisible"
             :operate-action="operateVisible && source.id === operateItem.id"
-            @on-longpress="onLongpress"/>
+            @on-longpress="onLongpress"
+            @on-view-text="onViewText"
+            @on-view-file="onViewFile"
+            @on-emoji="onEmoji"/>
     </div>
 </template>
 
 <script>
-
 import {mapState} from "vuex";
 import DialogView from "./DialogView";
-import {Store} from "le5le-store";
 
 export default {
     name: "DialogItem",
@@ -58,14 +58,6 @@ export default {
         }
     },
 
-    mounted() {
-        this.subscribe = Store.subscribe('dialogOperate', this.onOperate);
-    },
-
-    beforeDestroy() {
-        this.subscribe.unsubscribe();
-    },
-
     computed: {
         ...mapState(['userId']),
 
@@ -79,30 +71,36 @@ export default {
 
     methods: {
         onLongpress(e) {
-            Store.set('dialogLongpress', e);
+            this.dispatch("on-longpress", e)
         },
 
-        onOperate({id, action, value}) {
-            if (id === this.source.id) {
-                switch (action) {
-                    case "withdraw":
-                        this.$refs.view.withdraw()
-                        break;
+        onViewText(e) {
+            this.dispatch("on-view-text", e)
+        },
 
-                    case "view":
-                        this.$refs.view.viewFile()
-                        break;
+        onViewFile(e) {
+            this.dispatch("on-view-file", e)
+        },
 
-                    case "down":
-                        this.$refs.view.downFile()
-                        break;
+        onEmoji(e) {
+            this.dispatch("on-emoji", e)
+        },
 
-                    case "emoji":
-                        this.$refs.view.setEmoji(value)
-                        break;
+        dispatch(event, arg) {
+            let parent = this.$parent
+            let name = parent.$options.name
+
+            while (parent && (!name || name !== 'virtual-list')) {
+                parent = parent.$parent
+                if (parent) {
+                    name = parent.$options.name
                 }
             }
-        },
+
+            if (parent) {
+                parent.$emit(event, arg)
+            }
+        }
     }
 }
 </script>

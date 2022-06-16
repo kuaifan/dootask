@@ -646,6 +646,21 @@
 
             }
 
+            &.loading,
+            &.loaded {
+                color: rgba($primary-desc-color, 0.6);
+                font-size: 13px;
+                height: 20px;
+                box-sizing: content-box;
+                justify-content: center;
+
+                .common-loading {
+                    margin: 0;
+                    width: 18px;
+                    height: 18px;
+                }
+            }
+
             &.nothing {
                 position: absolute;
                 top: 50%;
