@@ -12,4 +12,10 @@
  * @license  MIT
  */
 
+/*!
+ * vue-virtual-scroll-list v2.3.3
+ * open source under the MIT license
+ * https://github.com/tangbc/vue-virtual-scroll-list#readme
+ */
+
 /*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
