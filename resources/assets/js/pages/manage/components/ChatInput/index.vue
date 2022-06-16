@@ -125,6 +125,7 @@ import touchmouse from "../../../../directives/touchmouse";
 import TransferDom from "../../../../directives/transfer-dom";
 import clickoutside from "../../../../directives/clickoutside";
 import {Store} from "le5le-store";
+import {scrollPreventThrough} from "../../../../functions/utils";
 
 export default {
     name: 'ChatInput',
@@ -490,6 +491,7 @@ export default {
                                 containers[i].classList.remove("user-mention");
                                 containers[i].classList.remove("task-mention");
                                 containers[i].classList.add(mentionName);
+                                scrollPreventThrough(containers[i]);
                             }
                             this.getSource(mentionChar).then(array => {
                                 let values = [];

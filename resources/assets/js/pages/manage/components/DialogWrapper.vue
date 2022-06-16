@@ -6,8 +6,8 @@
         @drop.prevent="chatPasteDrag($event, 'drag')"
         @dragover.prevent="chatDragOver(true, $event)"
         @dragleave.prevent="chatDragOver(false, $event)"
-        @touchstart="onTouchstart"
-        @touchmove="onTouchmove">
+        @touchstart="onTouchStart"
+        @touchmove="onTouchMove">
         <!--顶部导航-->
         <div class="dialog-nav" :style="navStyle">
             <slot name="head">
@@ -649,14 +649,14 @@ export default {
             }
         },
 
-        onTouchstart(e) {
+        onTouchStart(e) {
             this.wrapperStart = Object.assign(this.scrollInfo(), {
                 clientY: e.touches[0].clientY,
                 exclud: !this.$refs.scroller.$el.contains(e.target),
             });
         },
 
-        onTouchmove(e) {
+        onTouchMove(e) {
             if (this.windowSmall && this.windowScrollY > 0) {
                 if (this.wrapperStart.exclud) {
                     e.preventDefault();
