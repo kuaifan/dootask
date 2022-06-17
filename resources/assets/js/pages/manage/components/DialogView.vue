@@ -172,7 +172,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['dialogMsgs', 'audioPlaying', 'windowActive']),
+        ...mapState(['dialogMsgs', 'dialogReplys', 'audioPlaying', 'windowActive']),
 
         viewClass() {
             const {msgData, replyData, operateAction, operateEnter} = this;
@@ -234,7 +234,15 @@ export default {
         replyData() {
             const {reply_id} = this.msgData;
             if (reply_id > 0) {
-                return this.dialogMsgs.find(item => item.id === reply_id) || null;
+                let data = this.dialogMsgs.find(item => item.id === reply_id)
+                if (data) {
+                    return data;
+                }
+                data = this.dialogReplys.find(item => item.id === reply_id)
+                if (data) {
+                    return data;
+                }
+                this.$store.dispatch("getDialogReply", reply_id)
             }
             return null;
         }

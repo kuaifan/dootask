@@ -223,6 +223,36 @@ class DialogController extends AbstractController
     }
 
     /**
+     * @api {get} api/dialog/msg/one          05. 获取单个消息
+     *
+     * @apiDescription 主要用于获取回复消息的详情，需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__one
+     *
+     * @apiParam {Number} msg_id         消息ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__one()
+    {
+        User::auth();
+        //
+        $msg_id = intval(Request::input('msg_id'));
+        //
+        $dialogMsg = WebSocketDialogMsg::find($msg_id);
+        if (empty($dialogMsg)) {
+            return Base::retError('消息不存在或已被删除');
+        }
+        //
+        WebSocketDialog::checkDialog($dialogMsg->dialog_id);
+        //
+        return Base::retSuccess('success', $dialogMsg);
+    }
+
+    /**
      * @api {get} api/dialog/msg/unread          06. 获取未读消息数量
      *
      * @apiDescription 需要token身份

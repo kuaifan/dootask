@@ -100,7 +100,7 @@
                 ref="chatUpload"
                 class="chat-upload"
                 :dialog-id="dialogId"
-                :reply-id="replyItem.id"
+                :reply-id="replyId"
                 @on-progress="chatFile('progress', $event)"
                 @on-success="chatFile('success', $event)"
                 @on-error="chatFile('error', $event)"/>
@@ -108,7 +108,7 @@
                 ref="input"
                 v-model="msgText"
                 :dialog-id="dialogId"
-                :reply-item="replyItem"
+                :reply-id="replyId"
                 :emoji-bottom="windowSmall"
                 :maxlength="200000"
                 @on-focus="onEventFocus"
@@ -325,7 +325,7 @@ export default {
             recordState: '',
             wrapperStart: 0,
 
-            replyItem: {},
+            replyId: 0,
         }
     },
 
@@ -539,7 +539,7 @@ export default {
             let tempMsg = {
                 id: tempId,
                 dialog_id: this.dialogData.id,
-                reply_id: this.replyItem.id,
+                reply_id: this.replyId,
                 type: 'text',
                 userid: this.userId,
                 msg: {
@@ -556,7 +556,7 @@ export default {
                 url: 'dialog/msg/sendtext',
                 data: {
                     dialog_id: this.dialogId,
-                    reply_id: this.replyItem.id,
+                    reply_id: this.replyId,
                     text: msgText,
                 },
                 method: 'post'
@@ -581,7 +581,7 @@ export default {
             this.tempMsgs.push({
                 id: tempId,
                 dialog_id: this.dialogData.id,
-                reply_id: this.replyItem.id,
+                reply_id: this.replyId,
                 type: 'loading',
                 userid: this.userId,
                 msg,
@@ -591,7 +591,7 @@ export default {
                 url: 'dialog/msg/sendrecord',
                 data: Object.assign(msg, {
                     dialog_id: this.dialogId,
-                    reply_id: this.replyItem.id,
+                    reply_id: this.replyId,
                 }),
                 method: 'post'
             }).then(({data}) => {
@@ -707,7 +707,7 @@ export default {
                     this.tempMsgs.push({
                         id: file.tempId,
                         dialog_id: this.dialogData.id,
-                        reply_id: this.replyItem.id,
+                        reply_id: this.replyId,
                         type: 'loading',
                         userid: this.userId,
                         msg: { },
@@ -983,12 +983,12 @@ export default {
         },
 
         onReply() {
-            this.replyItem = this.operateItem;
+            this.replyId = this.operateItem.id;
             this.inputFocus()
         },
 
         onCancelReply() {
-            this.replyItem = {};
+            this.replyId = 0;
         },
 
         onWithdraw() {

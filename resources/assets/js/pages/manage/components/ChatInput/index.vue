@@ -2,9 +2,9 @@
     <div class="chat-input-box" :class="boxClass" v-clickoutside="hidePopover">
         <div class="chat-input-wrapper" @click.stop="focus">
             <!-- 回复 -->
-            <div v-if="replyItem.id" class="chat-reply">
-                <UserAvatar :userid="replyItem.userid" :show-icon="false" :show-name="true" :tooltip-disabled="true"/>
-                <div class="reply-desc">{{formatMsgDesc(replyItem)}}</div>
+            <div v-if="replyData" class="chat-reply">
+                <UserAvatar :userid="replyData.userid" :show-icon="false" :show-name="true" :tooltip-disabled="true"/>
+                <div class="reply-desc">{{formatMsgDesc(replyData)}}</div>
                 <i class="taskfont" @click.stop="onCancelReply">&#xe6e5;</i>
             </div>
 
@@ -186,9 +186,9 @@ export default {
             type: String,
             default: "top"
         },
-        replyItem: {
-            type: Object,
-            default: () => ({})
+        replyId: {
+            type: Number,
+            default: 0
         },
     },
     data() {
@@ -277,7 +277,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(['dialogInputCache', 'cacheProjects', 'cacheTasks', 'cacheUserBasic']),
+        ...mapState(['dialogInputCache', 'cacheProjects', 'cacheTasks', 'cacheUserBasic', 'dialogMsgs', 'dialogReplys']),
 
         isEnterSend() {
             if (typeof this.enterSend === "boolean") {
@@ -346,6 +346,22 @@ export default {
             if (minute < 10) minute = `0${minute}`
             if (seconds < 10) seconds = `0${seconds}`
             return `${minute}:${seconds}″${millisecond}`
+        },
+
+        replyData() {
+            const {replyId} = this;
+            if (replyId > 0) {
+                let data = this.dialogMsgs.find(item => item.id === replyId)
+                if (data) {
+                    return data;
+                }
+                data = this.dialogReplys.find(item => item.id === replyId)
+                if (data) {
+                    return data;
+                }
+                this.$store.dispatch("getDialogReply", replyId)
+            }
+            return null;
         }
     },
     watch: {

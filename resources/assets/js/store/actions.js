@@ -403,7 +403,7 @@ export default {
     saveUserBasic({state}, data) {
         $A.execMainDispatch("saveUserBasic", data)
         //
-        let index = state.cacheUserBasic.findIndex(({userid}) => userid == data.userid);
+        const index = state.cacheUserBasic.findIndex(({userid}) => userid == data.userid);
         if (index > -1) {
             data = Object.assign({}, state.cacheUserBasic[index], data)
             state.cacheUserBasic.splice(index, 1, data);
@@ -544,7 +544,7 @@ export default {
             });
         } else if ($A.isJson(data)) {
             let base = {_load: false, _edit: false};
-            let index = state.files.findIndex(({id}) => id == data.id);
+            const index = state.files.findIndex(({id}) => id == data.id);
             if (index > -1) {
                 state.files.splice(index, 1, Object.assign(base, state.files[index], data));
             } else {
@@ -646,7 +646,7 @@ export default {
                 dispatch("saveColumn", data.project_column)
                 delete data.project_column;
             }
-            let index = state.cacheProjects.findIndex(({id}) => id == data.id);
+            const index = state.cacheProjects.findIndex(({id}) => id == data.id);
             if (index > -1) {
                 state.cacheProjects.splice(index, 1, Object.assign({}, state.cacheProjects[index], data));
             } else {
@@ -684,7 +684,7 @@ export default {
         //
         let ids = $A.isArray(project_id) ? project_id : [project_id];
         ids.some(id => {
-            let index = state.cacheProjects.findIndex(project => project.id == id);
+            const index = state.cacheProjects.findIndex(project => project.id == id);
             if (index > -1) {
                 state.cacheProjects.splice(index, 1);
             }
@@ -874,7 +874,7 @@ export default {
                 dispatch("saveColumn", column)
             });
         } else if ($A.isJson(data)) {
-            let index = state.cacheColumns.findIndex(({id}) => id == data.id);
+            const index = state.cacheColumns.findIndex(({id}) => id == data.id);
             if (index > -1) {
                 state.cacheColumns.splice(index, 1, Object.assign({}, state.cacheColumns[index], data));
             } else {
@@ -898,7 +898,7 @@ export default {
         let ids = $A.isArray(column_id) ? column_id : [column_id];
         let project_ids = [];
         ids.some(id => {
-            let index = state.cacheColumns.findIndex(column => column.id == id);
+            const index = state.cacheColumns.findIndex(column => column.id == id);
             if (index > -1) {
                 project_ids.push(state.cacheColumns[index].project_id)
                 dispatch('getProjectOne', state.cacheColumns[index].project_id).catch(() => {})
@@ -1026,7 +1026,7 @@ export default {
                 delete data.update_marking;
             }
             //
-            let index = state.cacheTasks.findIndex(({id}) => id == data.id);
+            const index = state.cacheTasks.findIndex(({id}) => id == data.id);
             if (index > -1) {
                 state.cacheTasks.splice(index, 1, Object.assign({}, state.cacheTasks[index], data));
             } else {
@@ -1077,7 +1077,7 @@ export default {
         let parent_ids = [];
         let project_ids = [];
         ids.some(id => {
-            let index = state.cacheTasks.findIndex(task => task.id == id);
+            const index = state.cacheTasks.findIndex(task => task.id == id);
             if (index > -1) {
                 if (state.cacheTasks[index].parent_id) {
                     parent_ids.push(state.cacheTasks[index].parent_id)
@@ -1448,7 +1448,7 @@ export default {
                 dispatch("saveTaskContent", item)
             });
         } else if ($A.isJson(data)) {
-            let index = state.taskContents.findIndex(({task_id}) => task_id == data.task_id);
+            const index = state.taskContents.findIndex(({task_id}) => task_id == data.task_id);
             if (index > -1) {
                 state.taskContents.splice(index, 1, Object.assign({}, state.taskContents[index], data));
             } else {
@@ -1474,7 +1474,7 @@ export default {
             },
         }).then(result => {
             result.data.forEach((data) => {
-                let index = state.taskFiles.findIndex(({id}) => id == data.id)
+                const index = state.taskFiles.findIndex(({id}) => id == data.id)
                 if (index > -1) {
                     state.taskFiles.splice(index, 1, data)
                 } else {
@@ -1499,7 +1499,7 @@ export default {
     forgetTaskFile({state, dispatch}, file_id) {
         let ids = $A.isArray(file_id) ? file_id : [file_id];
         ids.some(id => {
-            let index = state.taskFiles.findIndex(file => file.id == id)
+            const index = state.taskFiles.findIndex(file => file.id == id)
             if (index > -1) {
                 state.taskFiles.splice(index, 1)
             }
@@ -1789,7 +1789,7 @@ export default {
                 let task = state.cacheTasks.find(({id}) => id == task_id)
                 let {data} = result
                 data.turns.some(item => {
-                    let index = state.taskFlowItems.findIndex(({id}) => id == item.id);
+                    const index = state.taskFlowItems.findIndex(({id}) => id == item.id);
                     if (index > -1) {
                         state.taskFlowItems.splice(index, 1, item);
                     } else {
@@ -1808,7 +1808,7 @@ export default {
                 })
                 //
                 delete data.turns;
-                let index = state.taskFlows.findIndex(({task_id}) => task_id == data.task_id);
+                const index = state.taskFlows.findIndex(({task_id}) => task_id == data.task_id);
                 if (index > -1) {
                     state.taskFlows.splice(index, 1, data);
                 } else {
@@ -1892,7 +1892,7 @@ export default {
      * @param task_id
      */
     saveTaskBrowse({state}, task_id) {
-        let index = state.cacheTaskBrowse.findIndex(({id}) => id == task_id)
+        const index = state.cacheTaskBrowse.findIndex(({id}) => id == task_id)
         if (index > -1) {
             state.cacheTaskBrowse.splice(index, 1)
         }
@@ -2088,7 +2088,7 @@ export default {
         //
         let ids = $A.isArray(dialog_id) ? dialog_id : [dialog_id];
         ids.some(id => {
-            let index = state.cacheDialogs.findIndex(dialog => dialog.id == id);
+            const index = state.cacheDialogs.findIndex(dialog => dialog.id == id);
             if (index > -1) {
                 state.cacheDialogs.splice(index, 1);
             }
@@ -2152,7 +2152,7 @@ export default {
                 dispatch("saveDialogMsg", msg)
             });
         } else if ($A.isJson(data)) {
-            let index = state.dialogMsgs.findIndex(({id}) => id == data.id);
+            const index = state.dialogMsgs.findIndex(({id}) => id == data.id);
             if (index > -1) {
                 state.dialogMsgs.splice(index, 1, Object.assign({}, state.dialogMsgs[index], data));
             } else {
@@ -2171,12 +2171,31 @@ export default {
         //
         let ids = $A.isArray(msg_id) ? msg_id : [msg_id];
         ids.some(id => {
-            let index = state.dialogMsgs.findIndex(item => item.id == id);
+            const index = state.dialogMsgs.findIndex(item => item.id == id);
             if (index > -1) {
                 Store.set('audioSubscribe', id);
                 state.dialogMsgs.splice(index, 1);
             }
         })
+    },
+
+    /**
+     * 获取回复消息
+     * @param state
+     * @param dispatch
+     * @param msg_id
+     */
+    getDialogReply({state, dispatch}, msg_id) {
+        dispatch("call", {
+            url: 'dialog/msg/one',
+            data: {
+                msg_id: msg_id,
+            },
+        }).then(({data}) => {
+            state.dialogReplys.push(data)
+        }).catch(e => {
+            console.warn(e);
+        });
     },
 
     /**

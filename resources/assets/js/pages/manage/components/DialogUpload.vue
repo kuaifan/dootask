@@ -25,7 +25,7 @@ export default {
             default: 0
         },
         replyId: {
-            type: [Number, String],
+            type: Number,
             default: 0
         },
         maxSize: {
