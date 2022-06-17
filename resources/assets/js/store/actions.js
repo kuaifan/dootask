@@ -48,7 +48,6 @@ export default {
                 const {ret, data, msg} = result;
                 if (ret === -1 && params.checkRole !== false) {
                     //身份丢失
-                    state.userId = 0;
                     $A.modalError({
                         content: msg,
                         onOk: () => {

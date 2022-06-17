@@ -127,7 +127,7 @@ class IndexController extends InvokeController
 
     /**
      * 头像
-     * @return \Psr\Http\Message\StreamInterface
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\Response
      */
     public function avatar()
     {
@@ -148,7 +148,7 @@ class IndexController extends InvokeController
         }
         //
         $avatar = new InitialAvatar();
-        return $avatar->name($name)
+        $content = $avatar->name($name)
             ->size($size)
             ->color($color)
             ->background($background)
@@ -156,6 +156,12 @@ class IndexController extends InvokeController
             ->autoFont()
             ->generate()
             ->stream('png', 100);
+        //
+        return response($content)
+            ->header('Pragma', 'public')
+            ->header('Cache-Control', 'max-age=1814400')
+            ->header('Content-type', 'image/png')
+            ->header('Expires', gmdate('D, d M Y H:i:s \G\M\T', time() + 1814400));
     }
 
     /**
