@@ -96,8 +96,9 @@
         </VirtualList>
 
         <!--底部输入-->
-        <div class="dialog-footer" :class="{newmsg: msgNew > 0 && allMsgs.length > 0}" @click="onActive">
+        <div class="dialog-footer" :class="footerClass" @click="onActive">
             <div class="dialog-newmsg" @click="onToBottom">{{$L(`有${msgNew}条新消息`)}}</div>
+            <div class="dialog-goto" @click="onToBottom"><i class="taskfont">&#xe72b;</i></div>
             <DialogUpload
                 ref="chatUpload"
                 class="chat-upload"
@@ -326,6 +327,8 @@ export default {
 
             recordState: '',
             wrapperStart: 0,
+
+            scrollBalance: 0,
             scrollMoreLoad: false,
 
             replyId: 0,
@@ -426,6 +429,17 @@ export default {
                 return ['multiple'];
             }
             return [];
+        },
+
+        footerClass() {
+            const array = [];
+            if (this.msgNew > 0 && this.allMsgs.length > 0) {
+                array.push('newmsg')
+            }
+            if (this.scrollBalance > 50) {
+                array.push('goto')
+            }
+            return array
         },
 
         msgUnreadOnly() {
@@ -910,29 +924,28 @@ export default {
             this.__onScroll && clearTimeout(this.__onScroll);
             this.__onScroll = setTimeout(_ => {
                 const {balance} = this.scrollInfo();
-                if (balance <= 10) {
+                this.scrollBalance = balance;
+                if (this.scrollBalance <= 10) {
                     this.msgNew = 0;
                 }
-            }, 100)
-            //
-            if (!this.scrollMoreLoad) {
-                let tmpPage = 0;
-                for (let i = range.start; i <= range.end; i++) {
-                    if (tmpPage - parseInt(this.allMsgs[i]._page) > 1) {
-                        this.scrollMoreLoad = true
-                        setTimeout(_ => {
+                //
+                if (!this.scrollMoreLoad) {
+                    let tmpPage = 0;
+                    for (let i = range.start; i <= range.end; i++) {
+                        if (tmpPage - parseInt(this.allMsgs[i]._page) > 1) {
+                            this.scrollMoreLoad = true
                             this.$store.dispatch("getDialogMoreMsgs", {
                                 dialog_id: this.dialogId,
                                 page: tmpPage - 1
                             }).finally(_ => {
                                 this.scrollMoreLoad = false
                             })
-                        }, 100)
-                        break;
+                            break;
+                        }
+                        tmpPage = parseInt(this.allMsgs[i]._page);
                     }
-                    tmpPage = parseInt(this.allMsgs[i]._page);
                 }
-            }
+            }, 100)
         },
 
         onBack() {

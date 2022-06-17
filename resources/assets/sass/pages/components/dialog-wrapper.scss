@@ -188,7 +188,7 @@
         padding: 16px 32px 0;
 
         .dialog-shake {
-            animation: ani-dialog-shake 500ms ease-in-out;
+            animation: ani-dialog-shake 600ms ease-in-out;
             animation-delay: 200ms;
         }
 
@@ -799,21 +799,47 @@
         margin-bottom: 16px;
 
         .dialog-newmsg {
-            display: none;
+            display: block;
             position: absolute;
-            top: -38px;
-            right: 24px;
+            top: -44px;
+            left: 50%;
             height: 30px;
             line-height: 30px;
             color: #ffffff;
             font-size: 12px;
             background-color: #555555;
             padding: 0 12px;
-            margin-bottom: 20px;
-            margin-right: 10px;
             border-radius: 16px;
             cursor: pointer;
             z-index: 2;
+            transition: all 0.3s;
+            pointer-events: none;
+            opacity: 0;
+            transform: translate(-50%, 120%);
+        }
+
+        .dialog-goto {
+            display: flex;
+            align-content: center;
+            justify-content: center;
+            position: absolute;
+            top: -48px;
+            right: 8px;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            color: #ffffff;
+            background-color: #555555;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 2;
+            transition: all 0.3s;
+            pointer-events: none;
+            opacity: 0;
+            transform: translate(120%, 0);
+            .taskfont {
+                font-size: 24px;
+            }
         }
 
         .chat-upload {
@@ -844,7 +870,17 @@
 
         &.newmsg {
             .dialog-newmsg {
-                display: block;
+                pointer-events: auto;
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+
+        &.goto {
+            .dialog-goto {
+                pointer-events: auto;
+                opacity: 1;
+                transform: translate(0, 0);
             }
         }
     }
