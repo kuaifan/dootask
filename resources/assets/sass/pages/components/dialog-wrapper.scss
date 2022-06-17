@@ -812,10 +812,10 @@
             border-radius: 16px;
             cursor: pointer;
             z-index: 2;
-            transition: all 0.3s;
+            transition: all 0.2s;
             pointer-events: none;
             opacity: 0;
-            transform: translate(-50%, 120%);
+            transform: scale(0);
         }
 
         .dialog-goto {
@@ -824,7 +824,7 @@
             justify-content: center;
             position: absolute;
             top: -48px;
-            right: 8px;
+            right: 30px;
             width: 40px;
             height: 40px;
             line-height: 40px;
@@ -836,7 +836,7 @@
             transition: all 0.3s;
             pointer-events: none;
             opacity: 0;
-            transform: translate(120%, 0);
+            transform: scale(0);
             .taskfont {
                 font-size: 24px;
             }
@@ -872,7 +872,7 @@
             .dialog-newmsg {
                 pointer-events: auto;
                 opacity: 1;
-                transform: translate(-50%, 0);
+                transform: scale(1);
             }
         }
 
@@ -880,7 +880,7 @@
             .dialog-goto {
                 pointer-events: auto;
                 opacity: 1;
-                transform: translate(0, 0);
+                transform: scale(1);
             }
         }
     }
@@ -1213,6 +1213,9 @@
                     margin-bottom: -8px;
                     width: calc(100% + 20px);
                 }
+            }
+            .dialog-goto {
+                right: 8px;
             }
         }
     }
