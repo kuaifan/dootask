@@ -1362,19 +1362,22 @@ export default {
                 reject({msg: 'Parameter error'});
                 return;
             }
-            dispatch("taskLoadStart", data.task_id)
+            dispatch("setLoad", {
+                key: `task-${data.task_id}`,
+                delay: 300
+            })
             dispatch("call", {
                 url: 'project/task/remove',
                 data,
             }).then(result => {
                 dispatch("forgetTask", data.task_id)
-                dispatch("taskLoadEnd", data.task_id)
                 resolve(result)
             }).catch(e => {
                 console.warn(e);
                 dispatch("getTaskOne", data.task_id).catch(() => {})
-                dispatch("taskLoadEnd", data.task_id)
                 reject(e)
+            }).finally(_ => {
+                dispatch("cancelLoad", `task-${data.task_id}`)
             });
         });
     },
@@ -1395,19 +1398,22 @@ export default {
                 reject({msg: 'Parameter error'});
                 return;
             }
-            dispatch("taskLoadStart", data.task_id)
+            dispatch("setLoad", {
+                key: `task-${data.task_id}`,
+                delay: 300
+            })
             dispatch("call", {
                 url: 'project/task/archived',
                 data,
             }).then(result => {
                 dispatch("saveTask", result.data)
-                dispatch("taskLoadEnd", data.task_id)
                 resolve(result)
             }).catch(e => {
                 console.warn(e);
                 dispatch("getTaskOne", data.task_id).catch(() => {})
-                dispatch("taskLoadEnd", data.task_id)
                 reject(e)
+            }).finally(_ => {
+                dispatch("cancelLoad", `task-${data.task_id}`)
             });
         });
     },
@@ -1613,20 +1619,23 @@ export default {
     taskUpdate({state, dispatch}, data) {
         return new Promise(function (resolve, reject) {
             dispatch("taskBeforeUpdate", data).then(({confirm, post}) => {
-                dispatch("taskLoadStart", post.task_id)
+                dispatch("setLoad", {
+                    key: `task-${post.task_id}`,
+                    delay: 300
+                })
                 dispatch("call", {
                     url: 'project/task/update',
                     data: post,
                     method: 'post',
                 }).then(result => {
-                    dispatch("taskLoadEnd", post.task_id)
                     dispatch("saveTask", result.data)
                     resolve(result)
                 }).catch(e => {
                     console.warn(e);
-                    dispatch("taskLoadEnd", post.task_id)
                     dispatch("getTaskOne", post.task_id).catch(() => {})
                     setTimeout(() => { reject(e) }, confirm === true ? 301 : 0)
+                }).finally(_ => {
+                    dispatch("cancelLoad", `task-${post.task_id}`)
                 });
             }).catch(reject)
         });
@@ -1733,42 +1742,6 @@ export default {
                 }
             });
         });
-    },
-
-    /**
-     * 任务增加等待
-     * @param state
-     * @param task_id
-     */
-    taskLoadStart({state}, task_id) {
-        setTimeout(() => {
-            const load = state.taskLoading.find(({id}) => id == task_id)
-            if (!load) {
-                state.taskLoading.push({
-                    id: task_id,
-                    num: 1
-                })
-            } else {
-                load.num++;
-            }
-        }, 300)
-    },
-
-    /**
-     * 任务减少等待
-     * @param state
-     * @param task_id
-     */
-    taskLoadEnd({state}, task_id) {
-        const load = state.taskLoading.find(({id}) => id == task_id)
-        if (!load) {
-            state.taskLoading.push({
-                id: task_id,
-                num: -1
-            })
-        } else {
-            load.num--;
-        }
     },
 
     /**
@@ -2334,6 +2307,49 @@ export default {
             state.wsReadWaitList = [];
         }, 50);
     },
+
+    /** *****************************************************************************************/
+    /** ************************************* loads *********************************************/
+    /** *****************************************************************************************/
+
+    /**
+     * 设置等待
+     * @param state
+     * @param dispatch
+     * @param key
+     */
+    setLoad({state, dispatch}, key) {
+        if ($A.isJson(key)) {
+            setTimeout(_ => {
+                dispatch("setLoad", key.key)
+            }, key.delay || 0)
+            return;
+        }
+        const load = state.loads.find(item => item.key == key)
+        if (!load) {
+            state.loads.push({key, num: 1})
+        } else {
+            load.num++;
+        }
+    },
+
+    /**
+     * 取消等待
+     * @param state
+     * @param key
+     */
+    cancelLoad({state}, key) {
+        const load = state.loads.find(item => item.key == key)
+        if (!load) {
+            state.loads.push({key, num: -1})
+        } else {
+            load.num--;
+        }
+    },
+
+    /** *****************************************************************************************/
+    /** *********************************** websocket *******************************************/
+    /** *****************************************************************************************/
 
     /**
      * 初始化 websocket

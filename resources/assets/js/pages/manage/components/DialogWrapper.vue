@@ -1127,16 +1127,23 @@ export default {
         },
 
         onEmoji(emoji) {
+            const msg_id = this.operateItem.id;
+            this.$store.dispatch("setLoad", {
+                key: `msg-${msg_id}`,
+                delay: 600
+            })
             this.$store.dispatch("call", {
                 url: 'dialog/msg/emoji',
                 data: {
-                    msg_id: this.operateItem.id,
+                    msg_id,
                     emoji,
                 },
             }).then(({data}) => {
                 this.$store.dispatch("saveDialogMsg", data);
             }).catch(({msg}) => {
                 $A.messageError(msg);
+            }).finally(_ => {
+                this.$store.dispatch("cancelLoad", `msg-${msg_id}`)
             });
         }
     }

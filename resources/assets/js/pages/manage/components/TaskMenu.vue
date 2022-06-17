@@ -50,13 +50,13 @@ export default {
         },
     },
     computed: {
-        ...mapState(['taskLoading', 'taskFlows']),
+        ...mapState(['loads', 'taskFlows']),
 
         loadIng() {
             if (this.loadStatus) {
                 return true;
             }
-            const load = this.taskLoading.find(({id}) => id == this.task.id);
+            const load = this.loads.find(({key}) => key === `task-${this.task.id}`);
             return load && load.num > 0
         },
     },

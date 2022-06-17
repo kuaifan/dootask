@@ -19,6 +19,7 @@ const stateData = {
     routeHistoryLast: {},
 
     // 加载状态
+    loads: [],
     loadDashboardTasks: false,
     loadUserBasic: false,
     loadProjects: 0,
@@ -90,7 +91,6 @@ const stateData = {
     taskOperation: {},
 
     // 任务等待状态
-    taskLoading: [],
     taskOneLoad: {},
 
     // 任务流程信息

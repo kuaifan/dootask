@@ -82,7 +82,7 @@
         </div>
 
         <!--等待/时间/阅读-->
-        <div v-if="!msgData.created_at" class="dialog-foot"><Loading/></div>
+        <div v-if="isLoading" class="dialog-foot"><Loading/></div>
         <div v-else class="dialog-foot">
             <!--时间-->
             <div v-if="timeShow" class="time" @click="timeShow=false">{{msgData.created_at}}</div>
@@ -172,7 +172,15 @@ export default {
     },
 
     computed: {
-        ...mapState(['dialogMsgs', 'dialogReplys', 'audioPlaying', 'windowActive']),
+        ...mapState(['loads', 'dialogMsgs', 'dialogReplys', 'audioPlaying', 'windowActive']),
+
+        isLoading() {
+            if (!this.msgData.created_at) {
+                return true;
+            }
+            const load = this.loads.find(({key}) => key === `msg-${this.msgData.id}`);
+            return load && load.num > 0
+        },
 
         viewClass() {
             const {msgData, replyData, operateAction, operateEnter} = this;
