@@ -90,8 +90,7 @@
             @on-emoji="onEmoji">
             <template slot="header">
                 <div v-if="(allMsgs.length === 0 && dialogData.loading > 0) || nextPage > 0" class="dialog-item loading"><Loading/></div>
-                <div v-else-if="allMsgs.length > 0" class="dialog-item loaded">{{$L('已加载全部消息')}}</div>
-                <div v-else class="dialog-item nothing">{{$L('暂无消息')}}</div>
+                <div v-else-if="allMsgs.length === 0" class="dialog-item nothing">{{$L('暂无消息')}}</div>
             </template>
         </VirtualList>
 
@@ -839,7 +838,15 @@ export default {
                         const previousSize = typeof previousValue === "object" ? previousValue.size : scroller.getSize(previousValue)
                         return {size: previousSize + scroller.getSize(currentId)}
                     })
-                    scroller.scrollToOffset(offset.size);
+                    let size = this.$refs.scroller.getOffset() + offset.size;
+                    if (this.nextPage === 0) {
+                        size -= 36
+                    }
+                    scroller.scrollToOffset(size);
+                    setTimeout(_ => {
+                        // 预防出现白屏的情况
+                        scroller.scrollToOffset(size);
+                    }, 1)
                 });
             }).catch(() => {})
         },

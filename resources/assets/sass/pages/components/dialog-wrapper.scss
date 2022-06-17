@@ -672,10 +672,7 @@
 
             }
 
-            &.loading,
-            &.loaded {
-                color: rgba($primary-desc-color, 0.6);
-                font-size: 13px;
+            &.loading {
                 height: 20px;
                 box-sizing: content-box;
                 justify-content: center;
