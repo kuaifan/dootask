@@ -79,9 +79,9 @@
             :item-class-add="itemClassAdd"
             :extra-props="{dialogData, isMyDialog, operateVisible, operateItem}"
             :estimate-size="78"
-            :keeps="80"
+            :keeps="70"
             @scroll="onScroll"
-            @totop="loadNextPage"
+            @totop="onNextPage"
 
             @on-longpress="onLongpress"
             @on-view-reply="onViewReply"
@@ -89,7 +89,7 @@
             @on-view-file="onViewFile"
             @on-emoji="onEmoji">
             <template slot="header">
-                <div v-if="(allMsgs.length === 0 && dialogData.loading > 0) || dialogData.hasMorePages" class="dialog-item loading"><Loading/></div>
+                <div v-if="(allMsgs.length === 0 && dialogData.loading > 0) || nextPage > 0" class="dialog-item loading"><Loading/></div>
                 <div v-else-if="allMsgs.length > 0" class="dialog-item loaded">{{$L('已加载全部消息')}}</div>
                 <div v-else class="dialog-item nothing">{{$L('暂无消息')}}</div>
             </template>
@@ -326,6 +326,7 @@ export default {
 
             recordState: '',
             wrapperStart: 0,
+            scrollMoreLoad: false,
 
             replyId: 0,
             replyActiveIndex: -1,
@@ -384,6 +385,17 @@ export default {
                 return array;
             }
             return dialogMsgList;
+        },
+
+        nextPage() {
+            if (this.allMsgs.length > 0) {
+                let topMsgPage = $A.runNum(this.allMsgs[0]._page);
+                let {lastPage} = this.dialogData;
+                if (topMsgPage < lastPage && lastPage > 1) {
+                    return topMsgPage + 1
+                }
+            }
+            return 0
         },
 
         peopleNum() {
@@ -798,8 +810,14 @@ export default {
             this.$store.dispatch("openTask", this.dialogData.group_info.id);
         },
 
-        loadNextPage() {
-            this.$store.dispatch('getDialogMoreMsgs', this.dialogId).then(result => {
+        onNextPage() {
+            if (this.nextPage === 0) {
+                return
+            }
+            this.$store.dispatch('getDialogMoreMsgs', {
+                dialog_id: this.dialogId,
+                page: this.nextPage
+            }).then(result => {
                 const resData = result.data;
                 const ids = resData.data.map(item => item.id)
                 this.$nextTick(() => {
@@ -887,7 +905,7 @@ export default {
             }
         },
 
-        onScroll() {
+        onScroll(evt, range) {
             this.operateVisible = false;
             this.__onScroll && clearTimeout(this.__onScroll);
             this.__onScroll = setTimeout(_ => {
@@ -896,6 +914,25 @@ export default {
                     this.msgNew = 0;
                 }
             }, 100)
+            //
+            if (!this.scrollMoreLoad) {
+                let tmpPage = 0;
+                for (let i = range.start; i <= range.end; i++) {
+                    if (tmpPage - parseInt(this.allMsgs[i]._page) > 1) {
+                        this.scrollMoreLoad = true
+                        setTimeout(_ => {
+                            this.$store.dispatch("getDialogMoreMsgs", {
+                                dialog_id: this.dialogId,
+                                page: tmpPage - 1
+                            }).finally(_ => {
+                                this.scrollMoreLoad = false
+                            })
+                        }, 100)
+                        break;
+                    }
+                    tmpPage = parseInt(this.allMsgs[i]._page);
+                }
+            }
         },
 
         onBack() {
@@ -1021,19 +1058,45 @@ export default {
             });
         },
 
-        onViewReply(replyId) {
+        onViewReply(data) {
             if (this.operateVisible) {
                 return
             }
-            const index = this.allMsgs.findIndex(item => item.id === replyId)
-            if (index > -1) {
-                this.$refs.scroller?.scrollToIndex(index);
+            const toIndex = (index) => {
+                this.$refs.scroller?.scrollToIndex(index)
                 requestAnimationFrame(_ => {
-                    this.replyActiveIndex = index;
+                    this.replyActiveIndex = index
                     setTimeout(_ => {
-                        this.replyActiveIndex = -1;
+                        this.replyActiveIndex = -1
                     }, 800)
-                });
+                })
+            }
+            const index = this.allMsgs.findIndex(item => item.id === data.reply_id)
+            if (index > -1) {
+                toIndex(index)
+            } else {
+                this.$store.dispatch("setLoad", {
+                    key: `msg-${data.msg_id}`,
+                    delay: 600
+                })
+                this.$store.dispatch("getDialogMoreMsgs", {
+                    dialog_id: this.dialogId,
+                    position_id: data.reply_id
+                }).then(_ => {
+                    let i = 0;
+                    let inter = setInterval(_ => {
+                        i++
+                        const index = this.allMsgs.findIndex(item => item.id === data.reply_id)
+                        if (i > 10 || index > -1) {
+                            clearInterval(inter)
+                            if (index > -1) {
+                                toIndex(index)
+                            }
+                        }
+                    }, 100)
+                }).finally(_ => {
+                    this.$store.dispatch("cancelLoad", `msg-${data.msg_id}`)
+                })
             }
         },
 

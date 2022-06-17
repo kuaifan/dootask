@@ -75,8 +75,8 @@ export default {
             this.dispatch("on-longpress", e)
         },
 
-        onViewReply(replyId) {
-            this.dispatch("on-view-reply", replyId)
+        onViewReply(data) {
+            this.dispatch("on-view-reply", data)
         },
 
         onViewText(e) {

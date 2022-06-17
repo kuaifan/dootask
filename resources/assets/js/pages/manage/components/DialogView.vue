@@ -388,7 +388,10 @@ export default {
         },
 
         viewReply() {
-            this.$emit("on-view-reply", this.replyData.id)
+            this.$emit("on-view-reply", {
+                msg_id: this.msgData.id,
+                reply_id: this.replyData.id
+            })
         },
 
         viewText(e) {

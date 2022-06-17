@@ -178,6 +178,7 @@ class DialogController extends AbstractController
      * @apiName msg__lists
      *
      * @apiParam {Number} dialog_id         对话ID
+     * @apiParam {String} [position_id]     定位消息ID（填写时page无效）
      *
      * @apiParam {Number} [page]            当前页，默认:1
      * @apiParam {Number} [pagesize]        每页显示数量，默认:50，最大:100
@@ -191,10 +192,11 @@ class DialogController extends AbstractController
         $user = User::auth();
         //
         $dialog_id = intval(Request::input('dialog_id'));
+        $position_id = intval(Request::input('position_id'));
         //
         $dialog = WebSocketDialog::checkDialog($dialog_id);
         //
-        $list = WebSocketDialogMsg::select([
+        $builder = WebSocketDialogMsg::select([
             'web_socket_dialog_msgs.*',
             'read.mention',
             'read.read_at',
@@ -202,7 +204,15 @@ class DialogController extends AbstractController
             $leftJoin
                 ->on('read.userid', '=', DB::raw($user->userid))
                 ->on('read.msg_id', '=', 'web_socket_dialog_msgs.id');
-        })->where('web_socket_dialog_msgs.dialog_id', $dialog_id)->orderByDesc('web_socket_dialog_msgs.id')->paginate(Base::getPaginate(100, 50));
+        })->where('web_socket_dialog_msgs.dialog_id', $dialog_id)->orderByDesc('web_socket_dialog_msgs.id');
+        //
+        $perPage = Base::getPaginate(100, 50);
+        if ($position_id > 0) {
+            $position_count = $builder->clone()->where('web_socket_dialog_msgs.id', '>=', $position_id)->count();
+            $list = $builder->paginate($perPage, [], 'page', ceil($position_count / $perPage));
+        } else {
+            $list = $builder->paginate($perPage);
+        }
         //
         if ($dialog->type == 'group' && $dialog->group_type == 'task') {
             $user->task_dialog_id = $dialog->id;

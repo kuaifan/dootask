@@ -2196,25 +2196,22 @@ export default {
                 return;
             }
             dialog.loading = true;
-            dialog.currentPage = 1;
-            dialog.hasMorePages = false;
             //
             dispatch("call", {
                 url: 'dialog/msg/lists',
                 data: {
                     dialog_id: dialog_id,
-                    page: dialog.currentPage
+                    page: 1
                 },
             }).then(result => {
                 const resData = result.data;
-                dialog.currentPage = resData.current_page;
-                dialog.hasMorePages = !!resData.next_page_url;
+                dialog.lastPage = resData.last_page;
                 dialog = Object.assign(dialog, resData.dialog)
                 //
                 const ids = resData.data.map(({id}) => id)
                 state.dialogMsgs = state.dialogMsgs.filter((item) => item.dialog_id != dialog_id || ids.includes(item.id));
                 //
-                dispatch("saveDialogMsg", resData.data);
+                dispatch("saveDialogMsg", resData.data.map(item => Object.assign(item, {_page: resData.current_page})));
                 resolve()
             }).catch(e => {
                 console.warn(e);
@@ -2227,20 +2224,16 @@ export default {
     },
 
     /**
-     * 获取更多(下一页)会话消息
+     * 获取更多会话消息（指定页|定位页）
      * @param state
      * @param dispatch
-     * @param dialog_id
+     * @param data {dialog_id, ?page, ?position_id}
      */
-    getDialogMoreMsgs({state, dispatch}, dialog_id) {
+    getDialogMoreMsgs({state, dispatch}, data) {
         return new Promise(function (resolve, reject) {
-            const dialog = state.cacheDialogs.find(({id}) => id == dialog_id);
+            const dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
             if (!dialog) {
                 reject({msg: 'Parameter error'});
-                return;
-            }
-            if (!dialog.hasMorePages) {
-                reject({msg: 'No more page'});
                 return;
             }
             if (dialog.loading) {
@@ -2248,25 +2241,20 @@ export default {
                 return;
             }
             dialog.loading = true;
-            dialog.currentPage++;
             //
             dispatch("call", {
                 url: 'dialog/msg/lists',
-                data: {
-                    dialog_id: dialog_id,
-                    page: dialog.currentPage
-                },
+                data,
             }).then(result => {
                 const resData = result.data;
-                dialog.loading = false;
-                dialog.currentPage = resData.current_page;
-                dialog.hasMorePages = !!resData.next_page_url;
-                dispatch("saveDialogMsg", resData.data);
+                dialog.lastPage = resData.last_page;
+                dispatch("saveDialogMsg", resData.data.map(item => Object.assign(item, {_page: resData.current_page})));
                 resolve(result)
             }).catch(e => {
                 console.warn(e);
-                dialog.loading = false;
                 reject(e)
+            }).finally(_ => {
+                dialog.loading = false;
             });
         });
     },
