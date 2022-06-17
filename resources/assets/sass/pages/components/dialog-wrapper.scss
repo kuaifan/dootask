@@ -798,18 +798,12 @@
         padding: 0 24px;
         margin-bottom: 16px;
 
-        .dialog-newmsg {
-            display: block;
+        .dialog-newmsg,
+        .dialog-goto {
             position: absolute;
-            top: -44px;
-            left: 50%;
-            height: 30px;
-            line-height: 30px;
+            right: 30px;
             color: #ffffff;
-            font-size: 12px;
             background-color: #555555;
-            padding: 0 12px;
-            border-radius: 16px;
             cursor: pointer;
             z-index: 2;
             transition: all 0.2s;
@@ -818,25 +812,26 @@
             transform: scale(0);
         }
 
+        .dialog-newmsg {
+            display: block;
+            top: -44px;
+            height: 30px;
+            line-height: 30px;
+            font-size: 12px;
+            padding: 0 12px;
+            border-radius: 16px;
+        }
+
         .dialog-goto {
             display: flex;
             align-content: center;
             justify-content: center;
-            position: absolute;
             top: -48px;
-            right: 30px;
             width: 40px;
             height: 40px;
             line-height: 40px;
-            color: #ffffff;
-            background-color: #555555;
             border-radius: 50%;
-            cursor: pointer;
-            z-index: 2;
-            transition: all 0.3s;
-            pointer-events: none;
-            opacity: 0;
-            transform: scale(0);
+
             .taskfont {
                 font-size: 24px;
             }
@@ -1214,8 +1209,9 @@
                     width: calc(100% + 20px);
                 }
             }
+            .dialog-newmsg,
             .dialog-goto {
-                right: 8px;
+                right: 16px;
             }
         }
     }

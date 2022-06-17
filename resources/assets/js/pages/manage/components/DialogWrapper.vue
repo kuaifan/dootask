@@ -432,14 +432,13 @@ export default {
         },
 
         footerClass() {
-            const array = [];
             if (this.msgNew > 0 && this.allMsgs.length > 0) {
-                array.push('newmsg')
+                return 'newmsg'
             }
             if (this.scrollBalance > 50) {
-                array.push('goto')
+                return 'goto'
             }
-            return array
+            return null
         },
 
         msgUnreadOnly() {
