@@ -10,6 +10,7 @@
             :operate-visible="operateVisible"
             :operate-action="operateVisible && source.id === operateItem.id"
             @on-longpress="onLongpress"
+            @on-view-reply="onViewReply"
             @on-view-text="onViewText"
             @on-view-file="onViewFile"
             @on-emoji="onEmoji"/>
@@ -72,6 +73,10 @@ export default {
     methods: {
         onLongpress(e) {
             this.dispatch("on-longpress", e)
+        },
+
+        onViewReply(replyId) {
+            this.dispatch("on-view-reply", replyId)
         },
 
         onViewText(e) {

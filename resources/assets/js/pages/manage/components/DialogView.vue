@@ -10,7 +10,7 @@
             :class="headClass"
             v-longpress="{callback: handleLongpress, delay: 300}">
             <!--回复-->
-            <div v-if="replyData" class="dialog-reply no-dark-content">
+            <div v-if="replyData" class="dialog-reply no-dark-content" @click="viewReply">
                 <UserAvatar :userid="replyData.userid" :show-icon="false" :show-name="true" :tooltip-disabled="true"/>
                 <div class="reply-desc">{{formatMsgDesc(replyData)}}</div>
             </div>
@@ -385,6 +385,10 @@ export default {
                 meetingid: this.msgData.msg.meetingid,
                 meetingdisabled: true,
             });
+        },
+
+        viewReply() {
+            this.$emit("on-view-reply", this.replyData.id)
         },
 
         viewText(e) {

@@ -76,6 +76,7 @@
             :data-sources="allMsgs"
             :data-component="msgItem"
 
+            :item-class-add="itemClassAdd"
             :extra-props="{dialogData, isMyDialog, operateVisible, operateItem}"
             :estimate-size="78"
             :keeps="80"
@@ -83,6 +84,7 @@
             @totop="loadNextPage"
 
             @on-longpress="onLongpress"
+            @on-view-reply="onViewReply"
             @on-view-text="onViewText"
             @on-view-file="onViewFile"
             @on-emoji="onEmoji">
@@ -326,6 +328,7 @@ export default {
             wrapperStart: 0,
 
             replyId: 0,
+            replyActiveIndex: -1,
         }
     },
 
@@ -627,6 +630,10 @@ export default {
                     }
                 });
             }
+        },
+
+        itemClassAdd(index) {
+            return index === this.replyActiveIndex ? 'dialog-shake' : '';
         },
 
         inputFocus() {
@@ -1012,6 +1019,22 @@ export default {
                     });
                 }
             });
+        },
+
+        onViewReply(replyId) {
+            if (this.operateVisible) {
+                return
+            }
+            const index = this.allMsgs.findIndex(item => item.id === replyId)
+            if (index > -1) {
+                this.$refs.scroller?.scrollToIndex(index);
+                requestAnimationFrame(_ => {
+                    this.replyActiveIndex = index;
+                    setTimeout(_ => {
+                        this.replyActiveIndex = -1;
+                    }, 800)
+                });
+            }
         },
 
         onViewText({target}) {

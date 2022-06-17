@@ -187,6 +187,11 @@
         position: relative;
         padding: 16px 32px 0;
 
+        .dialog-shake {
+            animation: ani-dialog-shake 500ms ease-in-out;
+            animation-delay: 200ms;
+        }
+
         .dialog-item {
             display: flex;
             flex-direction: row;
@@ -243,6 +248,8 @@
                         position: relative;
                         padding-left: 9px;
                         margin-bottom: 4px;
+                        cursor: pointer;
+
                         &:after {
                             content: "";
                             position: absolute;
@@ -1033,6 +1040,14 @@
             align-items: center;
         }
     }
+}
+
+@keyframes ani-dialog-shake {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(+2px, 0, 0); }
+    30%, 70% { transform: translate3d(-4px, 0, 0); }
+    40%, 60% { transform: translate3d(+4px, 0, 0); }
+    50% { transform: translate3d(-4px, 0, 0); }
 }
 
 @media (max-width: 768px) {
