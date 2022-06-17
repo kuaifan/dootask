@@ -164,6 +164,11 @@ body.dark-mode-reverse {
                 .dialog-view {
                     .dialog-head {
                         background-color: #e1e1e1;
+                        .dialog-reply {
+                            .reply-desc {
+                                color: #ffffff;
+                            }
+                        }
                         .dialog-content {
                             .content-text,
                             .content-record,

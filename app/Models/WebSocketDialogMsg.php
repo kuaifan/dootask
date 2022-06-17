@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property array|mixed $emoji emoji回复
  * @property int|null $read 已阅数量
  * @property int|null $send 发送数量
+ * @property int|null $reply_id 回复ID
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
@@ -39,6 +40,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereMsg($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereRead($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereReplyId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereSend($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereUpdatedAt($value)
@@ -239,7 +241,7 @@ class WebSocketDialogMsg extends AbstractModel
                 }
                 $dialog = WebSocketDialog::checkUserDialog($sender, $userid);
                 if ($dialog) {
-                    $res = self::sendMsg($dialog->id, $this->type, $this->getOriginal('msg'), $sender);
+                    $res = self::sendMsg($dialog->id, 0, $this->type, $this->getOriginal('msg'), $sender);
                     if (Base::isSuccess($res)) {
                         $msgs[] = $res['data'];
                     }
@@ -420,28 +422,30 @@ class WebSocketDialogMsg extends AbstractModel
     /**
      * 发送消息
      * @param int $dialog_id    会话ID（即 聊天室ID）
+     * @param int $reply_id     回复ID
      * @param string $type      消息类型
      * @param array $msg        发送的消息
      * @param int $sender       发送的会员ID（默认自己，0为系统）
      * @return array
      */
-    public static function sendMsg($dialog_id, $type, $msg, $sender = 0)
+    public static function sendMsg($dialog_id, $reply_id, $type, $msg, $sender = 0)
     {
         $dialogMsg = self::createInstance([
+            'dialog_id' => $dialog_id,
+            'reply_id' => $reply_id,
             'userid' => $sender ?: User::userid(),
             'type' => $type,
             'msg' => $msg,
             'read' => 0,
         ]);
-        AbstractModel::transaction(function () use ($dialog_id, $msg, $dialogMsg) {
-            $dialog = WebSocketDialog::find($dialog_id);
+        AbstractModel::transaction(function () use ($dialogMsg) {
+            $dialog = WebSocketDialog::find($dialogMsg->dialog_id);
             if (empty($dialog)) {
                 throw new ApiException('获取会话失败');
             }
             $dialog->last_at = Carbon::now();
             $dialog->save();
             $dialogMsg->send = 1;
-            $dialogMsg->dialog_id = $dialog->id;
             $dialogMsg->dialog_type = $dialog->type;
             $dialogMsg->save();
         });

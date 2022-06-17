@@ -9,6 +9,11 @@
             class="dialog-head"
             :class="headClass"
             v-longpress="{callback: handleLongpress, delay: 300}">
+            <!--回复-->
+            <div v-if="replyData" class="dialog-reply no-dark-content">
+                <UserAvatar :userid="replyData.userid" :show-icon="false" :show-name="true" :tooltip-disabled="true"/>
+                <div class="reply-desc">{{formatMsgDesc(replyData)}}</div>
+            </div>
             <!--详情-->
             <div class="dialog-content" :class="contentClass">
                 <!--文本-->
@@ -121,7 +126,7 @@ import WCircle from "../../../components/WCircle";
 import {mapState} from "vuex";
 import {Store} from "le5le-store";
 import longpress from "../../../directives/longpress";
-import {textMsgFormat} from "../../../functions/utils";
+import {textMsgFormat, msgSimpleDesc} from "../../../functions/utils";
 
 export default {
     name: "DialogView",
@@ -167,13 +172,16 @@ export default {
     },
 
     computed: {
-        ...mapState(['audioPlaying', 'windowActive']),
+        ...mapState(['dialogMsgs', 'audioPlaying', 'windowActive']),
 
         viewClass() {
-            const {msgData, operateAction, operateEnter} = this;
+            const {msgData, replyData, operateAction, operateEnter} = this;
             const array = [];
             if (msgData.type) {
                 array.push(msgData.type)
+            }
+            if (replyData) {
+                array.push('reply-view')
             }
             if (operateAction) {
                 array.push('operate-action')
@@ -193,9 +201,9 @@ export default {
         },
 
         headClass() {
-            const {type, msg, emoji} = this.msgData;
+            const {reply_id, type, msg, emoji} = this.msgData;
             const array = [];
-            if ($A.arrayLength(emoji) === 0) {
+            if (reply_id === 0 && $A.arrayLength(emoji) === 0) {
                 if (type === 'text') {
                     if (/^<img\s+class="emoticon"[^>]*?>$/.test(msg.text)
                         || /^\s*<p>\s*([\uD800-\uDBFF][\uDC00-\uDFFF]){1,3}\s*<\/p>\s*$/.test(msg.text)) {
@@ -221,6 +229,14 @@ export default {
                 }
             }
             return classArray;
+        },
+
+        replyData() {
+            const {reply_id} = this.msgData;
+            if (reply_id > 0) {
+                return this.dialogMsgs.find(item => item.id === reply_id) || null;
+            }
+            return null;
         }
     },
 
@@ -327,6 +343,10 @@ export default {
                 };
             }
             return {};
+        },
+
+        formatMsgDesc(data) {
+            return msgSimpleDesc(data)
         },
 
         playRecord() {

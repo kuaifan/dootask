@@ -859,7 +859,7 @@ class UsersController extends AbstractController
                 }
                 $dialog = WebSocketDialog::checkUserDialog($user->userid, $userid);
                 if ($dialog) {
-                    $res = WebSocketDialogMsg::sendMsg($dialog->id, 'meeting', $data, $user->userid);
+                    $res = WebSocketDialogMsg::sendMsg($dialog->id, 0, 'meeting', $data, $user->userid);
                     if (Base::isSuccess($res)) {
                         $msgs[] = $res['data'];
                     }
@@ -909,7 +909,7 @@ class UsersController extends AbstractController
             }
             $dialog = WebSocketDialog::checkUserDialog($user->userid, $userid);
             if ($dialog) {
-                $res = WebSocketDialogMsg::sendMsg($dialog->id, 'meeting', $data, $user->userid);
+                $res = WebSocketDialogMsg::sendMsg($dialog->id, 0, 'meeting', $data, $user->userid);
                 if (Base::isSuccess($res)) {
                     $msgs[] = $res['data'];
                 }

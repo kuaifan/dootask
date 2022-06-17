@@ -100,6 +100,7 @@
                 ref="chatUpload"
                 class="chat-upload"
                 :dialog-id="dialogId"
+                :reply-id="replyItem.id"
                 @on-progress="chatFile('progress', $event)"
                 @on-success="chatFile('success', $event)"
                 @on-error="chatFile('error', $event)"/>
@@ -107,6 +108,7 @@
                 ref="input"
                 v-model="msgText"
                 :dialog-id="dialogId"
+                :reply-item="replyItem"
                 :emoji-bottom="windowSmall"
                 :maxlength="200000"
                 @on-focus="onEventFocus"
@@ -117,6 +119,7 @@
                 @on-record="sendRecord"
                 @on-record-state="onRecordState"
                 @on-emoji-visible-change="onEventEmojiVisibleChange"
+                @on-cancel-reply="onCancelReply"
                 :placeholder="$L('输入消息...')"/>
         </div>
 
@@ -133,6 +136,14 @@
                 <DropdownMenu slot="list">
                     <DropdownItem name="action">
                         <ul class="operate-action">
+                            <li @click="onOperate('reply')">
+                                <i class="taskfont">&#xe6eb;</i>
+                                <span>{{ $L('回复') }}</span>
+                            </li>
+                            <li @click="onOperate('forward')">
+                                <i class="taskfont">&#xe638;</i>
+                                <span>{{ $L('转发') }}</span>
+                            </li>
                             <template v-if="operateHasText">
                                 <li @click="onOperate('copy')">
                                     <i class="taskfont">&#xe77f;</i>
@@ -143,10 +154,6 @@
                                     <span>{{ $L('新任务') }}</span>
                                 </li>
                             </template>
-                            <li @click="onOperate('forward')">
-                                <i class="taskfont">&#xe638;</i>
-                                <span>{{ $L('转发') }}</span>
-                            </li>
                             <template v-if="operateItem.userid == userId">
                                 <li @click="onOperate('withdraw')">
                                     <i class="taskfont">&#xe637;</i>
@@ -317,6 +324,8 @@ export default {
 
             recordState: '',
             wrapperStart: 0,
+
+            replyItem: {},
         }
     },
 
@@ -442,9 +451,7 @@ export default {
                     })
                     //
                     if (this.autoFocus) {
-                        this.$nextTick(_ => {
-                            this.$refs.input.focus()
-                        })
+                        this.inputFocus()
                     }
                 }
             },
@@ -520,7 +527,7 @@ export default {
                 this.msgText = '';
             }
             if (msgText == '') {
-                this.$refs.input.focus();
+                this.inputFocus();
                 return;
             }
             msgText = msgText.replace(/<\/span> <\/p>$/, "</span></p>")
@@ -532,6 +539,7 @@ export default {
             let tempMsg = {
                 id: tempId,
                 dialog_id: this.dialogData.id,
+                reply_id: this.replyItem.id,
                 type: 'text',
                 userid: this.userId,
                 msg: {
@@ -548,6 +556,7 @@ export default {
                 url: 'dialog/msg/sendtext',
                 data: {
                     dialog_id: this.dialogId,
+                    reply_id: this.replyItem.id,
                     text: msgText,
                 },
                 method: 'post'
@@ -572,6 +581,7 @@ export default {
             this.tempMsgs.push({
                 id: tempId,
                 dialog_id: this.dialogData.id,
+                reply_id: this.replyItem.id,
                 type: 'loading',
                 userid: this.userId,
                 msg,
@@ -581,6 +591,7 @@ export default {
                 url: 'dialog/msg/sendrecord',
                 data: Object.assign(msg, {
                     dialog_id: this.dialogId,
+                    reply_id: this.replyItem.id,
                 }),
                 method: 'post'
             }).then(({data}) => {
@@ -616,6 +627,12 @@ export default {
                     }
                 });
             }
+        },
+
+        inputFocus() {
+            this.$nextTick(_ => {
+                this.$refs.input.focus()
+            })
         },
 
         onRecordState(state) {
@@ -690,6 +707,7 @@ export default {
                     this.tempMsgs.push({
                         id: file.tempId,
                         dialog_id: this.dialogData.id,
+                        reply_id: this.replyItem.id,
                         type: 'loading',
                         userid: this.userId,
                         msg: { },
@@ -717,6 +735,7 @@ export default {
             this.$store.dispatch("saveDialogMsg", data);
             this.$store.dispatch("increaseTaskMsgNum", this.dialogId);
             this.$store.dispatch("updateDialogLastMsg", data);
+            this.onCancelReply();
             this.onActive();
         },
 
@@ -936,6 +955,10 @@ export default {
                         }
                         break;
 
+                    case "reply":
+                        this.onReply()
+                        break;
+
                     case "forward":
                         this.onForward('open')
                         break;
@@ -957,6 +980,15 @@ export default {
                         break;
                 }
             })
+        },
+
+        onReply() {
+            this.replyItem = this.operateItem;
+            this.inputFocus()
+        },
+
+        onCancelReply() {
+            this.replyItem = {};
         },
 
         onWithdraw() {

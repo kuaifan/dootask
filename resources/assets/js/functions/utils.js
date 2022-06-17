@@ -77,6 +77,32 @@ module.exports = {
     },
 
     /**
+     * 消息简单描述
+     * @param data
+     * @returns {string|*}
+     */
+    msgSimpleDesc(data) {
+        if ($A.isJson(data)) {
+            switch (data.type) {
+                case 'text':
+                    return $A.getMsgTextPreview(data.msg.text)
+                case 'record':
+                    return `[${$A.L('语音')}]`
+                case 'meeting':
+                    return `[${$A.L('会议')}] ${data.msg.name}`
+                case 'file':
+                    if (data.msg.type == 'img') {
+                        return `[${$A.L('图片')}]`
+                    }
+                    return `[${$A.L('文件')}] ${data.msg.name}`
+                default:
+                    return `[${$A.L('未知的消息')}]`
+            }
+        }
+        return '';
+    },
+
+    /**
      * 阻止滑动穿透
      * @param el
      */

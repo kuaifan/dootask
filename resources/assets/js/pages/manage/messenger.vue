@@ -72,7 +72,7 @@
                                         <div v-if="dialog.last_msg.userid == userId" class="last-self">{{$L('你')}}</div>
                                         <UserAvatar v-else :userid="dialog.last_msg.userid" :show-name="true" :show-icon="false" tooltip-disabled/>
                                     </template>
-                                    <div class="last-text">{{formatLastMsg(dialog.last_msg)}}</div>
+                                    <div class="last-text">{{formatMsgDesc(dialog.last_msg)}}</div>
                                 </div>
                             </div>
                             <Badge class="dialog-num" :count="$A.getDialogUnread(dialog)"/>
@@ -138,7 +138,7 @@
                     <div class="msg-dialog-bg-icon"><Icon type="ios-chatbubbles" /></div>
                     <div class="msg-dialog-bg-text">{{$L('选择一个会话开始聊天')}}</div>
                 </div>
-                <DialogWrapper v-if="windowLarge && dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive" auto-focus/>
+                <DialogWrapper v-if="windowLarge && dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive" :auto-focus="$A.isDesktop()"/>
             </div>
         </div>
     </div>
@@ -149,6 +149,7 @@ import {mapState} from "vuex";
 import DialogWrapper from "./components/DialogWrapper";
 import ScrollerY from "../../components/ScrollerY";
 import longpress from "../../directives/longpress";
+import {msgSimpleDesc} from "../../functions/utils";
 
 export default {
     components: {ScrollerY, DialogWrapper},
@@ -527,25 +528,8 @@ export default {
             }
         },
 
-        formatLastMsg(data) {
-            if ($A.isJson(data)) {
-                switch (data.type) {
-                    case 'text':
-                        return $A.getMsgTextPreview(data.msg.text)
-                    case 'record':
-                        return `[${this.$L('语音')}]`
-                    case 'meeting':
-                        return `[${this.$L('会议')}] ${data.msg.name}`
-                    case 'file':
-                        if (data.msg.type == 'img') {
-                            return `[${this.$L('图片')}]`
-                        }
-                        return `[${this.$L('文件')}] ${data.msg.name}`
-                    default:
-                        return `[${this.$L('未知的消息')}]`
-                }
-            }
-            return '';
+        formatMsgDesc(data) {
+            return msgSimpleDesc(data);
         },
 
         lastMsgReadDone(data) {

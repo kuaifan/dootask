@@ -264,6 +264,7 @@ class DialogController extends AbstractController
      * @apiName msg__sendtext
      *
      * @apiParam {Number} dialog_id         对话ID
+     * @apiParam {Number} [reply_id]        回复ID
      * @apiParam {String} text              消息内容
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
@@ -284,10 +285,14 @@ class DialogController extends AbstractController
         }
         //
         $dialog_id = Base::getPostInt('dialog_id');
+        $reply_id = Base::getPostInt('reply_id');
         $text = trim(Base::getPostValue('text'));
         //
         WebSocketDialog::checkDialog($dialog_id);
         //
+        if ($reply_id > 0 && !WebSocketDialogMsg::whereId($reply_id)->whereDialogId($dialog_id)->exists()) {
+            return Base::retError('回复的消息不存在');
+        }
         $text = WebSocketDialogMsg::formatMsg($text, $dialog_id);
         $strlen = mb_strlen($text);
         if ($strlen < 1) {
@@ -317,10 +322,10 @@ class DialogController extends AbstractController
                 'height' => -1,
                 'ext' => 'htm',
             ];
-            return WebSocketDialogMsg::sendMsg($dialog_id, 'file', $fileData, $user->userid);
+            return WebSocketDialogMsg::sendMsg($dialog_id, $reply_id, 'file', $fileData, $user->userid);
         }
         //
-        return WebSocketDialogMsg::sendMsg($dialog_id, 'text', ['text' => $text], $user->userid);
+        return WebSocketDialogMsg::sendMsg($dialog_id, $reply_id, 'text', ['text' => $text], $user->userid);
     }
 
     /**
@@ -332,6 +337,7 @@ class DialogController extends AbstractController
      * @apiName msg__sendrecord
      *
      * @apiParam {Number} dialog_id             对话ID
+     * @apiParam {Number} [reply_id]            回复ID
      * @apiParam {String} base64                语音base64
      * @apiParam {Number} duration              语音时长（毫秒）
      *
@@ -344,9 +350,13 @@ class DialogController extends AbstractController
         $user = User::auth();
         //
         $dialog_id = Base::getPostInt('dialog_id');
+        $reply_id = Base::getPostInt('reply_id');
         //
         WebSocketDialog::checkDialog($dialog_id);
         //
+        if ($reply_id > 0 && !WebSocketDialogMsg::whereId($reply_id)->whereDialogId($dialog_id)->exists()) {
+            return Base::retError('回复的消息不存在');
+        }
         $path = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
         $base64 = Base::getPostValue('base64');
         $duration = Base::getPostInt('duration');
@@ -363,7 +373,7 @@ class DialogController extends AbstractController
             $recordData = $data['data'];
             $recordData['size'] *= 1024;
             $recordData['duration'] = $duration;
-            return WebSocketDialogMsg::sendMsg($dialog_id, 'record', $recordData, $user->userid);
+            return WebSocketDialogMsg::sendMsg($dialog_id, $reply_id, 'record', $recordData, $user->userid);
         }
     }
 
@@ -376,6 +386,7 @@ class DialogController extends AbstractController
      * @apiName msg__sendfile
      *
      * @apiParam {Number} dialog_id             对话ID
+     * @apiParam {Number} [reply_id]            回复ID
      * @apiParam {Number} [image_attachment]    图片是否也存到附件
      * @apiParam {String} [filename]            post-文件名称
      * @apiParam {String} [image64]             post-base64图片（二选一）
@@ -390,10 +401,14 @@ class DialogController extends AbstractController
         $user = User::auth();
         //
         $dialog_id = Base::getPostInt('dialog_id');
+        $reply_id = Base::getPostInt('reply_id');
         $image_attachment = Base::getPostInt('image_attachment');
         //
         $dialog = WebSocketDialog::checkDialog($dialog_id);
         //
+        if ($reply_id > 0 && !WebSocketDialogMsg::whereId($reply_id)->whereDialogId($dialog_id)->exists()) {
+            return Base::retError('回复的消息不存在');
+        }
         $path = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
         $image64 = Base::getPostValue('image64');
         $fileName = Base::getPostValue('filename');
@@ -438,7 +453,7 @@ class DialogController extends AbstractController
                 }
             }
             //
-            $result = WebSocketDialogMsg::sendMsg($dialog_id, 'file', $fileData, $user->userid);
+            $result = WebSocketDialogMsg::sendMsg($dialog_id, $reply_id, 'file', $fileData, $user->userid);
             if (Base::isSuccess($result)) {
                 if (isset($task)) {
                     $result['data']['task_id'] = $task->id;

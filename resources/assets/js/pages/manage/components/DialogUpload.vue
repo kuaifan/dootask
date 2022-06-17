@@ -17,13 +17,15 @@
 </template>
 
 <script>
-import {mapState} from "vuex";
-
 export default {
     name: 'DialogUpload',
     props: {
         dialogId: {
             type: Number,
+            default: 0
+        },
+        replyId: {
+            type: [Number, String],
             default: 0
         },
         maxSize: {
@@ -73,6 +75,7 @@ export default {
         params() {
             return {
                 dialog_id: this.dialogId,
+                reply_id: this.replyId,
             }
         }
     },

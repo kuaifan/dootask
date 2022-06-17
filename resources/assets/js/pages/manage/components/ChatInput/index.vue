@@ -1,6 +1,13 @@
 <template>
     <div class="chat-input-box" :class="boxClass" v-clickoutside="hidePopover">
         <div class="chat-input-wrapper" @click.stop="focus">
+            <!-- 回复 -->
+            <div v-if="replyItem.id" class="chat-reply">
+                <UserAvatar :userid="replyItem.userid" :show-icon="false" :show-name="true" :tooltip-disabled="true"/>
+                <div class="reply-desc">{{formatMsgDesc(replyItem)}}</div>
+                <i class="taskfont" @click.stop="onCancelReply">&#xe6e5;</i>
+            </div>
+
             <!-- 输入框 -->
             <div
                 ref="editor"
@@ -125,7 +132,7 @@ import touchmouse from "../../../../directives/touchmouse";
 import TransferDom from "../../../../directives/transfer-dom";
 import clickoutside from "../../../../directives/clickoutside";
 import {Store} from "le5le-store";
-import {scrollPreventThrough} from "../../../../functions/utils";
+import {scrollPreventThrough, msgSimpleDesc} from "../../../../functions/utils";
 
 export default {
     name: 'ChatInput',
@@ -178,6 +185,10 @@ export default {
         defaultMenuOrientation: {
             type: String,
             default: "top"
+        },
+        replyItem: {
+            type: Object,
+            default: () => ({})
         },
     },
     data() {
@@ -813,6 +824,10 @@ export default {
             }
         },
 
+        onCancelReply() {
+            this.$emit('on-cancel-reply')
+        },
+
         onToolbar(action) {
             this.hidePopover();
             switch (action) {
@@ -1041,7 +1056,11 @@ export default {
                 e.preventDefault()
                 this.$emit('on-file', postFiles)
             }
-        }
+        },
+
+        formatMsgDesc(data) {
+            return msgSimpleDesc(data);
+        },
     }
 }
 </script>

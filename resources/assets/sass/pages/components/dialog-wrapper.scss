@@ -239,6 +239,38 @@
                         background-color: transparent !important;
                     }
 
+                    .dialog-reply {
+                        position: relative;
+                        padding-left: 9px;
+                        margin-bottom: 4px;
+                        &:after {
+                            content: "";
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            bottom: 0;
+                            width: 3px;
+                            border-radius: 2px;
+                            transform: scaleX(0.8);
+                            transform-origin: left center;
+                            background-color: rgba($primary-color, 0.7);
+                        }
+                        .common-avatar {
+                            font-weight: 500;
+                            font-size: 13px;
+                            color: $primary-color;
+                        }
+                        .reply-desc {
+                            font-size: 13px;
+                            word-break: break-all;
+                            text-overflow: ellipsis;
+                            overflow: hidden;
+                            display: -webkit-box;
+                            -webkit-line-clamp: 2;
+                            -webkit-box-orient: vertical;
+                        }
+                    }
+
                     .dialog-content {
                         display: flex;
                         align-items: flex-start;
@@ -667,6 +699,16 @@
                     .dialog-head {
                         background-color: $primary-color;
                         border-radius: 8px 2px 8px 8px;
+
+                        .dialog-reply {
+                            color: #ffffff;
+                            .common-avatar {
+                                color: #ffffff;
+                            }
+                            &:after {
+                                background-color: #ffffff;
+                            }
+                        }
 
                         .dialog-content {
                             .content-text {
