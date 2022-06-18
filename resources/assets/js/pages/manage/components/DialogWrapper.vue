@@ -650,16 +650,24 @@ export default {
                 this.pasteFile = [];
                 this.pasteItem = [];
                 files.some(file => {
-                    let reader = new FileReader();
-                    reader.readAsDataURL(file);
-                    reader.onload = ({target}) => {
+                    const item = {
+                        type: $A.getMiddle(file.type, null, '/'),
+                        name: file.name,
+                        size: file.size,
+                        result: null
+                    }
+                    if (item.type === 'image') {
+                        const reader = new FileReader();
+                        reader.readAsDataURL(file);
+                        reader.onload = ({target}) => {
+                            item.result = target.result
+                            this.pasteFile.push(file)
+                            this.pasteItem.push(item)
+                            this.pasteShow = true
+                        }
+                    } else {
                         this.pasteFile.push(file)
-                        this.pasteItem.push({
-                            type: $A.getMiddle(file.type, null, '/'),
-                            name: file.name,
-                            size: file.size,
-                            result: target.result
-                        })
+                        this.pasteItem.push(item)
                         this.pasteShow = true
                     }
                 });
