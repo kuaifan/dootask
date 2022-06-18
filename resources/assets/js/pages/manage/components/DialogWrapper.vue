@@ -81,6 +81,7 @@
             :estimate-size="78"
             :keeps="70"
             @scroll="onScroll"
+            @range="onRange"
             @totop="onNextPage"
 
             @on-longpress="onLongpress"
@@ -263,7 +264,7 @@ import DrawerOverlay from "../../../components/DrawerOverlay";
 import DialogGroupInfo from "./DialogGroupInfo";
 import ChatInput from "./ChatInput";
 
-import VirtualList from 'vue-virtual-scroll-list'
+import VirtualList from 'vue-virtual-scroll-list-hi'
 import {Store} from "le5le-store";
 import {textImagesInfo} from "../../../functions/utils";
 
@@ -325,10 +326,11 @@ export default {
             operateEmojis: ['👌', '🤝', '🤔', '👍', '👎', '👏', '✋', '✅', '❌', '❤️', '❓'],
 
             recordState: '',
-            wrapperStart: 0,
+            wrapperStart: {},
 
-            scrollBalance: 0,
-            scrollMoreLoad: false,
+            scrollTail: 0,
+            preventMoreLoad: false,
+            preventToBottom: false,
 
             replyId: 0,
             replyActiveIndex: -1,
@@ -434,7 +436,7 @@ export default {
             if (this.msgNew > 0 && this.allMsgs.length > 0) {
                 return 'newmsg'
             }
-            if (this.scrollBalance > 50) {
+            if (this.scrollTail > 50) {
                 return 'goto'
             }
             return null
@@ -509,25 +511,27 @@ export default {
         },
 
         allMsgList(newList, oldList) {
-            const {balance} = this.scrollInfo();
+            const {tail} = this.scrollInfo();
             this.allMsgs = newList;
             //
-            if (!this.windowActive || (balance > 10 && oldList.length > 0)) {
+            if (!this.windowActive || (tail > 10 && oldList.length > 0)) {
                 const lastId = oldList[oldList.length - 1].id
                 const tmpList = newList.filter(item => item.id && item.id > lastId)
                 this.msgNew += tmpList.length
             } else {
-                requestAnimationFrame(this.onToBottom)
+                if (!this.preventToBottom) {
+                    requestAnimationFrame(this.onToBottom)
+                }
             }
         },
 
         windowScrollY(val) {
             if ($A.isIos()) {
-                const {balance} = this.scrollInfo();
+                const {tail} = this.scrollInfo();
                 this.navStyle = {
                     marginTop: val + 'px'
                 }
-                if (balance <= 10) {
+                if (tail <= 10) {
                     requestAnimationFrame(this.onToBottom)
                 }
             }
@@ -536,6 +540,12 @@ export default {
         dialogDrag(val) {
             if (val) {
                 this.operateVisible = false;
+            }
+        },
+
+        replyActiveIndex(index) {
+            if (index > -1) {
+                setTimeout(_ => this.replyActiveIndex = -1, 800)
             }
         }
     },
@@ -711,7 +721,7 @@ export default {
                 }
                 if (this.wrapperStart.clientY > e.touches[0].clientY) {
                     // 向上滑动
-                    if (this.wrapperStart.balance === 0) {
+                    if (this.wrapperStart.tail === 0) {
                         e.preventDefault();
                     }
                 } else {
@@ -796,8 +806,39 @@ export default {
 
         onToBottom() {
             this.msgNew = 0;
-            if (this.isReady) {
-                this.$refs.scroller?.scrollToBottom();
+            const scroller = this.$refs.scroller;
+            if (scroller) {
+                scroller.scrollToBottom();
+                requestAnimationFrame(_ => scroller.scrollToBottom())    // 确保滚动到
+            }
+        },
+
+        onToIndex(index, addOffset) {
+            const scroller = this.$refs.scroller;
+            if (scroller) {
+                scroller.scrollToIndex(index, addOffset);
+                requestAnimationFrame(_ => scroller.scrollToIndex(index, addOffset))    // 确保滚动到
+            }
+        },
+
+        onToOffset(offset) {
+            const scroller = this.$refs.scroller;
+            if (scroller) {
+                scroller.scrollToOffset(offset);
+                setTimeout(_ => scroller.scrollToOffset(offset), 10)  // 预防出现白屏的情况
+            }
+        },
+
+        scrollInfo() {
+            const scroller = this.$refs.scroller;
+            if (scroller) {
+                return scroller.scrollInfo();
+            } else {
+                return {
+                    offset: 0,
+                    scale: 0,
+                    tail: 0
+                }
             }
         },
 
@@ -838,15 +879,11 @@ export default {
                         const previousSize = typeof previousValue === "object" ? previousValue.size : scroller.getSize(previousValue)
                         return {size: previousSize + scroller.getSize(currentId)}
                     })
-                    let size = this.$refs.scroller.getOffset() + offset.size;
+                    let size = scroller.getOffset() + offset.size;
                     if (this.nextPage === 0) {
                         size -= 36
                     }
-                    scroller.scrollToOffset(size);
-                    setTimeout(_ => {
-                        // 预防出现白屏的情况
-                        scroller.scrollToOffset(size);
-                    }, 1)
+                    this.onToOffset(size);
                 });
             }).catch(() => {})
         },
@@ -906,52 +943,34 @@ export default {
             }
         },
 
-        scrollInfo() {
-            const scroller = this.$refs.scroller
-            if (!scroller) {
-                return {
-                    scale: 0,       //已滚动比例
-                    offset: 0,      //滚动的距离
-                    balance: 0,     //与底部距离
-                }
-            }
-            let clientSize = scroller.getClientSize();
-            let offset = scroller.getOffset();
-            let scrollSize = scroller.getScrollSize();
-            return {
-                scale: offset / (scrollSize - clientSize),
-                offset: offset,
-                balance: scrollSize - clientSize - offset,
+        onScroll() {
+            this.operateVisible = false;
+            //
+            const {tail} = this.scrollInfo();
+            this.scrollTail = tail;
+            if (this.scrollTail <= 10) {
+                this.msgNew = 0;
             }
         },
 
-        onScroll(evt, range) {
-            this.operateVisible = false;
-            this.__onScroll && clearTimeout(this.__onScroll);
-            this.__onScroll = setTimeout(_ => {
-                const {balance} = this.scrollInfo();
-                this.scrollBalance = balance;
-                if (this.scrollBalance <= 10) {
-                    this.msgNew = 0;
+        onRange(range) {
+            if (this.preventMoreLoad) {
+                return
+            }
+            let tmpPage = 0;
+            for (let i = range.start; i <= range.end; i++) {
+                if (tmpPage - parseInt(this.allMsgs[i]._page) > 1) {
+                    this.preventMoreLoad = true
+                    this.$store.dispatch("getDialogMoreMsgs", {
+                        dialog_id: this.dialogId,
+                        page: tmpPage - 1
+                    }).finally(_ => {
+                        this.preventMoreLoad = false
+                    })
+                    break;
                 }
-                //
-                if (!this.scrollMoreLoad) {
-                    let tmpPage = 0;
-                    for (let i = range.start; i <= range.end; i++) {
-                        if (tmpPage - parseInt(this.allMsgs[i]._page) > 1) {
-                            this.scrollMoreLoad = true
-                            this.$store.dispatch("getDialogMoreMsgs", {
-                                dialog_id: this.dialogId,
-                                page: tmpPage - 1
-                            }).finally(_ => {
-                                this.scrollMoreLoad = false
-                            })
-                            break;
-                        }
-                        tmpPage = parseInt(this.allMsgs[i]._page);
-                    }
-                }
-            }, 100)
+                tmpPage = parseInt(this.allMsgs[i]._page);
+            }
         },
 
         onBack() {
@@ -1081,40 +1100,29 @@ export default {
             if (this.operateVisible) {
                 return
             }
-            const toIndex = (index) => {
-                this.$refs.scroller?.scrollToIndex(index)
-                requestAnimationFrame(_ => {
-                    this.replyActiveIndex = index
-                    setTimeout(_ => {
-                        this.replyActiveIndex = -1
-                    }, 800)
-                })
+            const runToIndex = (index) => {
+                this.onToIndex(index, -100)
+                requestAnimationFrame(_ => this.replyActiveIndex = index)
             }
             const index = this.allMsgs.findIndex(item => item.id === data.reply_id)
             if (index > -1) {
-                toIndex(index)
+                runToIndex(index)
             } else {
                 this.$store.dispatch("setLoad", {
                     key: `msg-${data.msg_id}`,
                     delay: 600
                 })
+                this.preventToBottom = true;
                 this.$store.dispatch("getDialogMoreMsgs", {
                     dialog_id: this.dialogId,
                     position_id: data.reply_id
-                }).then(_ => {
-                    let i = 0;
-                    let inter = setInterval(_ => {
-                        i++
-                        const index = this.allMsgs.findIndex(item => item.id === data.reply_id)
-                        if (i > 10 || index > -1) {
-                            clearInterval(inter)
-                            if (index > -1) {
-                                toIndex(index)
-                            }
-                        }
-                    }, 100)
                 }).finally(_ => {
+                    const index = this.allMsgs.findIndex(item => item.id === data.reply_id)
+                    if (index > -1) {
+                        runToIndex(index)
+                    }
                     this.$store.dispatch("cancelLoad", `msg-${data.msg_id}`)
+                    this.preventToBottom = false;
                 })
             }
         },

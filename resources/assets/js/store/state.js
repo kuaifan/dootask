@@ -72,7 +72,6 @@ const stateData = {
     dialogId: 0,
     dialogIns: [],
     dialogMsgs: [],
-    dialogReplys: [],
     dialogInputCache: $A.getStorageArray("cacheDialogInput"),
     dialogMsgTransfer: {time: 0},
 

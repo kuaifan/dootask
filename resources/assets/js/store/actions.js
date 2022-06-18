@@ -2152,25 +2152,6 @@ export default {
     },
 
     /**
-     * 获取回复消息
-     * @param state
-     * @param dispatch
-     * @param msg_id
-     */
-    getDialogReply({state, dispatch}, msg_id) {
-        dispatch("call", {
-            url: 'dialog/msg/one',
-            data: {
-                msg_id: msg_id,
-            },
-        }).then(({data}) => {
-            state.dialogReplys.push(data)
-        }).catch(e => {
-            console.warn(e);
-        });
-    },
-
-    /**
      * 获取会话消息
      * @param state
      * @param dispatch

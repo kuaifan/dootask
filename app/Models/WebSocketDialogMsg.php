@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read int|mixed $percentage
+ * @property-read \App\Models\WebSocketDialogMsg|null $reply_data
  * @property-read \App\Models\WebSocketDialog|null $webSocketDialog
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg newQuery()
@@ -55,6 +56,7 @@ class WebSocketDialogMsg extends AbstractModel
 
     protected $appends = [
         'percentage',
+        'reply_data',
     ];
 
     protected $hidden = [
@@ -79,6 +81,21 @@ class WebSocketDialogMsg extends AbstractModel
             $this->generatePercentage();
         }
         return $this->appendattrs['percentage'];
+    }
+
+    /**
+     * 回复消息详情
+     * @return WebSocketDialogMsg|null
+     */
+    public function getReplyDataAttribute()
+    {
+        if (!isset($this->appendattrs['reply_data'])) {
+            $this->appendattrs['reply_data'] = null;
+            if ($this->reply_id > 0) {
+                $this->appendattrs['reply_data'] = self::find($this->reply_id, ['id', 'userid', 'type', 'msg'])?->cancelAppend() ?: null;
+            }
+        }
+        return $this->appendattrs['reply_data'];
     }
 
     /**

@@ -218,7 +218,7 @@ class DialogController extends AbstractController
             $user->task_dialog_id = $dialog->id;
             $user->save();
         }
-        //去掉标记未读
+        // 去掉标记未读
         $isMarkDialogUser = WebSocketDialogUser::whereDialogId($dialog->id)->whereUserid($user->userid)->whereMarkUnread(1)->first();
         if ($isMarkDialogUser) {
             $isMarkDialogUser->mark_unread = 0;

@@ -277,7 +277,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(['dialogInputCache', 'cacheProjects', 'cacheTasks', 'cacheUserBasic', 'dialogMsgs', 'dialogReplys']),
+        ...mapState(['dialogInputCache', 'cacheProjects', 'cacheTasks', 'cacheUserBasic', 'dialogMsgs']),
 
         isEnterSend() {
             if (typeof this.enterSend === "boolean") {
@@ -351,15 +351,7 @@ export default {
         replyData() {
             const {replyId} = this;
             if (replyId > 0) {
-                let data = this.dialogMsgs.find(item => item.id === replyId)
-                if (data) {
-                    return data;
-                }
-                data = this.dialogReplys.find(item => item.id === replyId)
-                if (data) {
-                    return data;
-                }
-                this.$store.dispatch("getDialogReply", replyId)
+                return this.dialogMsgs.find(item => item.id === replyId)
             }
             return null;
         }

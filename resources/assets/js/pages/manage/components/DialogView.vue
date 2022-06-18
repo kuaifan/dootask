@@ -10,9 +10,9 @@
             :class="headClass"
             v-longpress="{callback: handleLongpress, delay: 300}">
             <!--回复-->
-            <div v-if="replyData" class="dialog-reply no-dark-content" @click="viewReply">
-                <UserAvatar :userid="replyData.userid" :show-icon="false" :show-name="true" :tooltip-disabled="true"/>
-                <div class="reply-desc">{{formatMsgDesc(replyData)}}</div>
+            <div v-if="msgData.reply_data" class="dialog-reply no-dark-content" @click="viewReply">
+                <UserAvatar :userid="msgData.reply_data.userid" :show-icon="false" :show-name="true" :tooltip-disabled="true"/>
+                <div class="reply-desc">{{formatMsgDesc(msgData.reply_data)}}</div>
             </div>
             <!--详情-->
             <div class="dialog-content" :class="contentClass">
@@ -172,7 +172,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['loads', 'dialogMsgs', 'dialogReplys', 'audioPlaying', 'windowActive']),
+        ...mapState(['loads', 'audioPlaying', 'windowActive']),
 
         isLoading() {
             if (!this.msgData.created_at) {
@@ -183,12 +183,12 @@ export default {
         },
 
         viewClass() {
-            const {msgData, replyData, operateAction, operateEnter} = this;
+            const {msgData, operateAction, operateEnter} = this;
             const array = [];
             if (msgData.type) {
                 array.push(msgData.type)
             }
-            if (replyData) {
+            if (msgData.reply_data) {
                 array.push('reply-view')
             }
             if (operateAction) {
@@ -237,22 +237,6 @@ export default {
                 }
             }
             return classArray;
-        },
-
-        replyData() {
-            const {reply_id} = this.msgData;
-            if (reply_id > 0) {
-                let data = this.dialogMsgs.find(item => item.id === reply_id)
-                if (data) {
-                    return data;
-                }
-                data = this.dialogReplys.find(item => item.id === reply_id)
-                if (data) {
-                    return data;
-                }
-                this.$store.dispatch("getDialogReply", reply_id)
-            }
-            return null;
         }
     },
 
@@ -390,7 +374,7 @@ export default {
         viewReply() {
             this.$emit("on-view-reply", {
                 msg_id: this.msgData.id,
-                reply_id: this.replyData.id
+                reply_id: this.msgData.reply_id
             })
         },
 
