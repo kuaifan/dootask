@@ -7,8 +7,8 @@
         <!--任务操作-->
         <TaskOperation/>
 
-        <!--右下角加载提示-->
-        <Spinner/>
+        <!--全局浮窗加载器-->
+        <FloatSpinner/>
 
         <!--右下角客户端-->
         <RightBottom/>
@@ -37,7 +37,7 @@
 }
 </style>
 <script>
-import Spinner from "./components/Spinner";
+import FloatSpinner from "./components/FloatSpinner";
 import RightBottom from "./components/RightBottom";
 import PreviewImageState from "./components/PreviewImage/state";
 import NetworkException from "./components/NetworkException";
@@ -46,7 +46,7 @@ import TaskOperation from "./pages/manage/components/TaskOperation";
 import {mapState} from "vuex";
 
 export default {
-    components: {TaskOperation, AudioManager, NetworkException, PreviewImageState, RightBottom, Spinner},
+    components: {TaskOperation, AudioManager, NetworkException, PreviewImageState, RightBottom, FloatSpinner},
 
     data() {
         return {

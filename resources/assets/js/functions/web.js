@@ -412,28 +412,6 @@
      * =============================================================================
      */
     $.extend({
-        // 加载器
-        spinnerShow() {
-            $A.spinnerLoadNum++
-            if ($A.spinnerLoadNum > 0) {
-                const spinner = document.getElementById("common-spinner");
-                if (spinner) {
-                    spinner.style.display = "block"
-                }
-            }
-        },
-
-        spinnerHide() {
-            $A.spinnerLoadNum--
-            if ($A.spinnerLoadNum <= 0) {
-                const spinner = document.getElementById("common-spinner");
-                if (spinner) {
-                    spinner.style.display = "none"
-                }
-            }
-        },
-        spinnerLoadNum: 0,
-
         // 弹窗
         modalConfig(config) {
             if (typeof config === "undefined") {

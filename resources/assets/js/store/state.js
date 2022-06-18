@@ -24,6 +24,7 @@ const stateData = {
     loadUserBasic: false,
     loadProjects: 0,
     loadDialogs: 0,
+    floatSpinnerLoad: 0,
     touchBackInProgress: false,
 
     // User

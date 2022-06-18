@@ -29,12 +29,15 @@ export default {
         const cloneParams = $A.cloneJSON(params);
         return new Promise(function (resolve, reject) {
             if (params.spinner === true) {
+                const {before, complete, spinnerDelay} = params;
                 params.before = () => {
-                    $A.spinnerShow();
+                    dispatch("showSpinner", spinnerDelay)
+                    typeof before === "function" && before()
                 };
                 //
                 params.complete = () => {
-                    $A.spinnerHide();
+                    dispatch("hiddenSpinner")
+                    typeof complete === "function" && complete()
                 };
             }
             //
@@ -2315,6 +2318,23 @@ export default {
         } else {
             load.num--;
         }
+    },
+
+    /**
+     * 显示全局浮窗加载器
+     * @param state
+     * @param delay
+     */
+    showSpinner({state}, delay) {
+        setTimeout(_ => state.floatSpinnerLoad++, typeof delay === "number" ? delay : 0)
+    },
+
+    /**
+     * 隐藏全局浮窗加载器
+     * @param state
+     */
+    hiddenSpinner({state}) {
+        state.floatSpinnerLoad--
     },
 
     /** *****************************************************************************************/
