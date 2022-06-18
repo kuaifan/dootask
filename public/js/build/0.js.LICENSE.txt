@@ -8,12 +8,12 @@
 /*!
  * The buffer module from node.js, for the browser.
  *
- * @author   Feross Aboukhadijeh <https://feross.org>
+ * @author   Feross Aboukhadijeh <http://feross.org>
  * @license  MIT
  */
 
 /*!
- * vue-virtual-scroll-list v2.3.3
+ * vue-virtual-scroll-list v2.3.3-2
  * open source under the MIT license
  * https://github.com/tangbc/vue-virtual-scroll-list#readme
  */
