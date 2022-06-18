@@ -1073,8 +1073,12 @@ export default {
         },
 
         onReply() {
-            this.replyId = this.operateItem.id;
+            const {tail} = this.scrollInfo()
+            this.replyId = this.operateItem.id
             this.inputFocus()
+            if (tail <= 10) {
+                requestAnimationFrame(this.onToBottom)
+            }
         },
 
         onCancelReply() {
