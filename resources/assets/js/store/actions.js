@@ -2183,6 +2183,7 @@ export default {
                     dialog_id: dialog_id,
                     page: 1
                 },
+                complete: _ => dialog.loading = false
             }).then(result => {
                 const resData = result.data;
                 dialog.lastPage = resData.last_page;
@@ -2197,7 +2198,6 @@ export default {
                 console.warn(e);
                 resolve()
             }).finally(_ => {
-                dialog.loading = false;
                 dispatch("saveDialog", dialog);
             });
         });
@@ -2225,16 +2225,18 @@ export default {
             dispatch("call", {
                 url: 'dialog/msg/lists',
                 data,
+                complete: _ => dialog.loading = false
             }).then(result => {
                 const resData = result.data;
                 dialog.lastPage = resData.last_page;
+                //
                 dispatch("saveDialogMsg", resData.data.map(item => Object.assign(item, {_page: resData.current_page})));
                 resolve(result)
             }).catch(e => {
                 console.warn(e);
                 reject(e)
             }).finally(_ => {
-                dialog.loading = false;
+                dispatch("saveDialog", dialog);
             });
         });
     },
