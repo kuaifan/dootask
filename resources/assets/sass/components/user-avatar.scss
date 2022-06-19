@@ -22,6 +22,8 @@
             .el-avatar {
                 > img {
                     margin: 0 auto;
+                    pointer-events: none;
+                    -webkit-touch-callout: none;
                 }
             }
             > em {

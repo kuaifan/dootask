@@ -356,6 +356,8 @@
             > img {
                 max-width: 100%;
                 max-height: 100%;
+                pointer-events: none;
+                -webkit-touch-callout: none;
             }
             &:hover {
                 transform: scale(1.4);
