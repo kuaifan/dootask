@@ -58,29 +58,34 @@ class WebSocketDialog extends AbstractModel
      */
     public function formatData($userid)
     {
-        // 最后消息
-        $last_msg = WebSocketDialogMsg::whereDialogId($this->id)->orderByDesc('id')->first();
-        $this->last_msg = $last_msg;
-        // 未读信息
-        $unreadBuilder = WebSocketDialogMsgRead::whereDialogId($this->id)->whereUserid($userid)->whereReadAt(null);
-        $this->unread = $unreadBuilder->count();
-        $this->mention = 0;
-        $this->last_umid = 0;
-        if ($this->unread > 0) {
-            $this->mention = $unreadBuilder->clone()->whereMention(1)->count();
-            $this->last_umid = intval($unreadBuilder->clone()->orderByDesc('msg_id')->value('msg_id'));
+        if (isset($this->search_msg_id)) {
+            // 最后消息 (搜索预览消息)
+            $this->last_msg = WebSocketDialogMsg::whereDialogId($this->id)->find($this->search_msg_id);
+            $this->last_at = $this->last_msg?->created_at;
+        } else {
+            // 最后消息
+            $this->last_msg = WebSocketDialogMsg::whereDialogId($this->id)->orderByDesc('id')->first();
+            // 未读信息
+            $unreadBuilder = WebSocketDialogMsgRead::whereDialogId($this->id)->whereUserid($userid)->whereReadAt(null);
+            $this->unread = $unreadBuilder->count();
+            $this->mention = 0;
+            $this->last_umid = 0;
+            if ($this->unread > 0) {
+                $this->mention = $unreadBuilder->clone()->whereMention(1)->count();
+                $this->last_umid = intval($unreadBuilder->clone()->orderByDesc('msg_id')->value('msg_id'));
+            }
+            $this->mark_unread = $this->mark_unread ?? WebSocketDialogUser::whereDialogId($this->id)->whereUserid($userid)->value('mark_unread');
+            // 对话人数
+            $builder = WebSocketDialogUser::whereDialogId($this->id);
+            $this->people = $builder->count();
         }
-        $this->mark_unread = $this->mark_unread ?? WebSocketDialogUser::whereDialogId($this->id)->whereUserid($userid)->value('mark_unread');
-        // 对话人数
-        $builder = WebSocketDialogUser::whereDialogId($this->id);
-        $this->people = $builder->count();
         // 对方信息
         $this->dialog_user = null;
         $this->group_info = null;
         $this->top_at = $this->top_at ?? WebSocketDialogUser::whereDialogId($this->id)->whereUserid($userid)->value('top_at');
         switch ($this->type) {
             case "user":
-                $dialog_user = $builder->where('userid', '!=', $userid)->first();
+                $dialog_user = WebSocketDialogUser::whereDialogId($this->id)->where('userid', '!=', $userid)->first();
                 if ($dialog_user->userid === 0) {
                     $dialog_user->userid = $userid;
                 }

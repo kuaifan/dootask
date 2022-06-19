@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $type 消息类型
  * @property array|mixed $msg 详细消息
  * @property array|mixed $emoji emoji回复
+ * @property string|null $key 搜索关键词
  * @property int|null $read 已阅数量
  * @property int|null $send 发送数量
  * @property int|null $reply_id 回复ID
@@ -39,6 +40,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereDialogType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereEmoji($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereKey($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereMsg($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereRead($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereReplyId($value)
@@ -60,6 +62,7 @@ class WebSocketDialogMsg extends AbstractModel
     ];
 
     protected $hidden = [
+        'key',
         'updated_at',
     ];
 
@@ -336,6 +339,19 @@ class WebSocketDialogMsg extends AbstractModel
     }
 
     /**
+     * 生成关键词
+     * @return string
+     */
+    public function generateMsgKey()
+    {
+        return match ($this->type) {
+            'text' => strip_tags($this->msg['text']),
+            'meeting', 'file' => $this->msg['name'],
+            default => '',
+        };
+    }
+
+    /**
      * 返回文本预览消息
      * @param $text
      * @param bool $preserveHtml    保留html格式
@@ -464,6 +480,7 @@ class WebSocketDialogMsg extends AbstractModel
             $dialog->save();
             $dialogMsg->send = 1;
             $dialogMsg->dialog_type = $dialog->type;
+            $dialogMsg->key = $dialogMsg->generateMsgKey();
             $dialogMsg->save();
         });
         Task::deliver(new WebSocketDialogMsgTask($dialogMsg->id));

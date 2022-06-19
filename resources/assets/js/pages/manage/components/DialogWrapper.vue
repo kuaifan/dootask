@@ -285,6 +285,10 @@ export default {
             type: Number,
             default: 0
         },
+        searchMsgId: {
+            type: Number,
+            default: 0
+        },
         autoFocus: {
             type: Boolean,
             default: false
@@ -315,6 +319,7 @@ export default {
                 userids: [],
             },
 
+            confirmId: 0,
             dialogDrag: false,
             groupInfoShow: false,
 
@@ -473,7 +478,10 @@ export default {
                         this.allMsgs = this.allMsgList;
                         requestAnimationFrame(this.onToBottom);
                     }
-                    this.$store.dispatch("getDialogMsgs", id).catch(_ => {});
+                    this.$store.dispatch("getDialogMsgs", id).then(_ => {
+                        this.confirmId = id;
+                        setTimeout(this.onSearchMsgId, 100)
+                    }).catch(_ => {});
                     //
                     this.$store.dispatch('saveInDialog', {
                         uid: this._uid,
@@ -486,6 +494,10 @@ export default {
                 }
             },
             immediate: true
+        },
+
+        searchMsgId() {
+            this.onSearchMsgId();
         },
 
         dialogMsgTransfer: {
@@ -675,6 +687,44 @@ export default {
             }
         },
 
+        onSearchMsgId() {
+            if (this.searchMsgId > 0 && this.confirmId === this.dialogId) {
+                this.onPositionId(this.searchMsgId)
+                this.$store.state.searchMsgId = 0
+            }
+        },
+
+        onPositionId(position_id, msg_id = 0) {
+            if (position_id === 0) {
+                return
+            }
+            const index = this.allMsgs.findIndex(item => item.id === position_id)
+            if (index > -1) {
+                this.onToIndex(index)
+            } else {
+                if (msg_id > 0) {
+                    this.$store.dispatch("setLoad", {
+                        key: `msg-${msg_id}`,
+                        delay: 600
+                    })
+                }
+                this.preventToBottom = true;
+                this.$store.dispatch("getDialogMoreMsgs", {
+                    dialog_id: this.dialogId,
+                    position_id
+                }).finally(_ => {
+                    const index = this.allMsgs.findIndex(item => item.id === position_id)
+                    if (index > -1) {
+                        this.onToIndex(index)
+                    }
+                    if (msg_id > 0) {
+                        this.$store.dispatch("cancelLoad", `msg-${msg_id}`)
+                    }
+                    this.preventToBottom = false;
+                })
+            }
+        },
+
         itemClassAdd(index) {
             return index === this.replyActiveIndex ? 'dialog-shake' : '';
         },
@@ -832,12 +882,13 @@ export default {
             }
         },
 
-        onToIndex(index, addOffset) {
+        onToIndex(index) {
             const scroller = this.$refs.scroller;
             if (scroller) {
-                scroller.scrollToIndex(index, addOffset);
-                requestAnimationFrame(_ => scroller.scrollToIndex(index, addOffset))    // 确保滚动到
+                scroller.scrollToIndex(index, -100);
+                requestAnimationFrame(_ => scroller.scrollToIndex(index, -100))    // 确保滚动到
             }
+            requestAnimationFrame(_ => this.replyActiveIndex = index)
         },
 
         onToOffset(offset) {
@@ -1123,31 +1174,7 @@ export default {
             if (this.operateVisible) {
                 return
             }
-            const runToIndex = (index) => {
-                this.onToIndex(index, -100)
-                requestAnimationFrame(_ => this.replyActiveIndex = index)
-            }
-            const index = this.allMsgs.findIndex(item => item.id === data.reply_id)
-            if (index > -1) {
-                runToIndex(index)
-            } else {
-                this.$store.dispatch("setLoad", {
-                    key: `msg-${data.msg_id}`,
-                    delay: 600
-                })
-                this.preventToBottom = true;
-                this.$store.dispatch("getDialogMoreMsgs", {
-                    dialog_id: this.dialogId,
-                    position_id: data.reply_id
-                }).finally(_ => {
-                    const index = this.allMsgs.findIndex(item => item.id === data.reply_id)
-                    if (index > -1) {
-                        runToIndex(index)
-                    }
-                    this.$store.dispatch("cancelLoad", `msg-${data.msg_id}`)
-                    this.preventToBottom = false;
-                })
-            }
+            this.onPositionId(data.reply_id, data.msg_id)
         },
 
         onViewText({target}) {

@@ -63,6 +63,42 @@ class DialogController extends AbstractController
     }
 
     /**
+     * @api {get} api/dialog/search          02. 搜索会话
+     *
+     * @apiDescription 根据消息关键词搜索相关会话，需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName search
+     *
+     * @apiParam {String} key         消息关键词
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function search()
+    {
+        $user = User::auth();
+        //
+        $key = trim(Request::input('key'));
+        //
+        $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'm.id as search_msg_id'])
+            ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
+            ->join('web_socket_dialog_msgs as m', 'web_socket_dialogs.id', '=', 'm.dialog_id')
+            ->where('u.userid', $user->userid)
+            ->where('m.key', 'LIKE', "%{$key}%")
+            ->orderByDesc('m.id')
+            ->take(20)
+            ->get();
+        //
+        $list->transform(function (WebSocketDialog $item) use ($user) {
+            return $item->formatData($user->userid);
+        });
+        //
+        return Base::retSuccess('success', $list);
+    }
+
+    /**
      * @api {get} api/dialog/one          02. 获取单个会话信息
      *
      * @apiDescription 需要token身份

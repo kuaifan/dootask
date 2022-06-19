@@ -33,22 +33,20 @@
                     <ul
                         v-if="tabActive==='dialog'"
                         class="dialog">
-                        <li v-if="dialogList.length === 0" class="nothing">
-                            {{$L(dialogKey ? `没有任何与"${dialogKey}"相关的会话` : `没有任何会话`)}}
-                        </li>
+                        <template v-if="dialogList.length === 0">
+                            <li v-if="dialogLoad > 0" class="loading"><Loading/></li>
+                            <li v-else class="nothing">
+                                {{$L(dialogKey ? `没有任何与"${dialogKey}"相关的会话` : `没有任何会话`)}}
+                            </li>
+                        </template>
                         <li
                             v-else
                             v-for="(dialog, key) in dialogList"
                             :ref="`dialog_${dialog.id}`"
                             :key="key"
-                            :class="{
-                                top: dialog.top_at,
-                                active: dialog.id == dialogId,
-                                operate: operateVisible && dialog.id == operateItem.id,
-                                completed: $A.dialogCompleted(dialog)
-                            }"
                             :data-id="dialog.id"
-                            @click="openDialog(dialog.id)"
+                            :class="dialogClass(dialog)"
+                            @click="openDialog(dialog.id, dialog.search_msg_id)"
                             v-longpress="handleLongpress">
                             <template v-if="dialog.type=='group'">
                                 <i v-if="dialog.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
@@ -141,7 +139,12 @@
                     <div class="msg-dialog-bg-icon"><Icon type="ios-chatbubbles" /></div>
                     <div class="msg-dialog-bg-text">{{$L('选择一个会话开始聊天')}}</div>
                 </div>
-                <DialogWrapper v-if="windowLarge && dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive" :auto-focus="$A.isDesktop()"/>
+                <DialogWrapper
+                    v-if="windowLarge && dialogId > 0"
+                    :dialogId="dialogId"
+                    :searchMsgId="dialogSearchMsgId"
+                    @on-active="scrollIntoActive"
+                    :auto-focus="$A.isDesktop()"/>
             </div>
         </div>
     </div>
@@ -161,14 +164,17 @@ export default {
         return {
             tabActive: 'dialog',
 
+            dialogLoad: 0,
+            dialogKey: '',
+            dialogSearch: [],
+
+            dialogActive: '',
             dialogType: [
                 {type: '', name: '全部'},
                 {type: 'project', name: '项目'},
                 {type: 'task', name: '任务'},
                 {type: 'user', name: '个人'},
             ],
-            dialogActive: '',
-            dialogKey: '',
 
             contactsKey: '',
             contactsLoad: 0,
@@ -199,14 +205,14 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheDialogs', 'loadDialogs', 'dialogId']),
+        ...mapState(['cacheDialogs', 'loadDialogs', 'dialogId', 'dialogSearchMsgId']),
 
         routeName() {
             return this.$route.name
         },
 
         dialogList() {
-            const {dialogActive, dialogKey} = this;
+            const {dialogActive, dialogKey, dialogSearch} = this;
             if (dialogActive == '' && dialogKey == '') {
                 return this.cacheDialogs.filter(dialog => this.filterDialog(dialog)).sort((a, b) => {
                     if (a.top_at || b.top_at) {
@@ -215,7 +221,7 @@ export default {
                     return $A.Date(b.last_at) - $A.Date(a.last_at);
                 });
             }
-            return this.cacheDialogs.filter(dialog => {
+            const list = this.cacheDialogs.filter(dialog => {
                 if (!this.filterDialog(dialog)) {
                     return false;
                 }
@@ -243,7 +249,11 @@ export default {
                     }
                 }
                 return true;
-            }).sort((a, b) => {
+            })
+            if (dialogSearch.length > 0) {
+                list.push(...dialogSearch.map(item => Object.assign(item, {is_search: true})))
+            }
+            return list.sort((a, b) => {
                 if (a.top_at || b.top_at) {
                     return $A.Date(b.top_at) - $A.Date(a.top_at);
                 }
@@ -263,7 +273,7 @@ export default {
         },
 
         contactsList() {
-            let list = [];
+            const list = [];
             this.contactsFilter.some(user => {
                 let az = user.az ? user.az.toUpperCase() : "#";
                 let item = list.find(item => item.az == az);
@@ -342,6 +352,18 @@ export default {
                     $A.reloadUrl();
                     break;
             }
+            //
+            this.dialogSearch = [];
+            if (val == '') {
+                return;
+            }
+            this.dialogLoad++;
+            setTimeout(() => {
+                if (this.dialogKey == val) {
+                    this.searchDialog(val);
+                }
+                this.dialogLoad--;
+            }, 600);
         },
 
         contactsKey(val) {
@@ -412,11 +434,27 @@ export default {
             this.dialogActive = type
         },
 
-        openDialog(dialogId) {
+        dialogClass(dialog) {
+            if (this.dialogKey) {
+                return null
+            }
+            return {
+                top: dialog.top_at,
+                active: dialog.id == this.dialogId,
+                operate: this.operateVisible && dialog.id == this.operateItem.id,
+                completed: $A.dialogCompleted(dialog)
+            }
+        },
+
+        openDialog(dialogId, searchMsgId = null) {
             if (this.operateVisible) {
                 return
             }
-            this.$store.dispatch("openDialog", dialogId)
+            this.dialogKey = "";
+            this.$store.dispatch("openDialog", {
+                dialog_id: dialogId,
+                search_msg_id: searchMsgId
+            })
         },
 
         openContacts(user) {
@@ -468,6 +506,18 @@ export default {
                 }
             }
             return true;
+        },
+
+        searchDialog(key) {
+            this.dialogLoad++;
+            this.$store.dispatch("call", {
+                url: 'dialog/search',
+                data: {key},
+            }).then(({data}) => {
+                this.dialogSearch = data;
+            }).finally(_ => {
+                this.dialogLoad--;
+            });
         },
 
         getContactsList(page) {

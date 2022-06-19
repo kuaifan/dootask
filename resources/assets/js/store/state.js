@@ -71,6 +71,7 @@ const stateData = {
 
     // 会话聊天
     dialogId: 0,
+    dialogSearchMsgId: 0,
     dialogIns: [],
     dialogMsgs: [],
     dialogInputCache: $A.getStorageArray("cacheDialogInput"),

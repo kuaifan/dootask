@@ -2026,6 +2026,12 @@ export default {
      * @param dialog_id
      */
     openDialog({state, dispatch}, dialog_id) {
+        let search_msg_id;
+        if ($A.isJson(dialog_id)) {
+            search_msg_id = dialog_id.search_msg_id;
+            dialog_id = dialog_id.dialog_id;
+        }
+        state.dialogSearchMsgId = /\d+/.test(search_msg_id) ? search_msg_id : 0;
         state.dialogId = /\d+/.test(dialog_id) ? dialog_id : 0;
     },
 
