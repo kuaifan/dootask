@@ -46,7 +46,10 @@
                             :key="key"
                             :data-id="dialog.id"
                             :class="dialogClass(dialog)"
-                            @click="openDialog(dialog.id, dialog.search_msg_id)"
+                            @click="openDialog({
+                                dialog_id: dialog.id,
+                                search_msg_id: dialog.search_msg_id
+                            })"
                             v-longpress="handleLongpress">
                             <template v-if="dialog.type=='group'">
                                 <i v-if="dialog.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
@@ -139,12 +142,7 @@
                     <div class="msg-dialog-bg-icon"><Icon type="ios-chatbubbles" /></div>
                     <div class="msg-dialog-bg-text">{{$L('选择一个会话开始聊天')}}</div>
                 </div>
-                <DialogWrapper
-                    v-if="windowLarge && dialogId > 0"
-                    :dialogId="dialogId"
-                    :searchMsgId="dialogSearchMsgId"
-                    @on-active="scrollIntoActive"
-                    :auto-focus="$A.isDesktop()"/>
+                <DialogWrapper v-if="windowLarge && dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive" :auto-focus="$A.isDesktop()"/>
             </div>
         </div>
     </div>
@@ -205,7 +203,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheDialogs', 'loadDialogs', 'dialogId', 'dialogSearchMsgId']),
+        ...mapState(['cacheDialogs', 'loadDialogs', 'dialogId']),
 
         routeName() {
             return this.$route.name
@@ -446,15 +444,12 @@ export default {
             }
         },
 
-        openDialog(dialogId, searchMsgId = null) {
+        openDialog(dialogId) {
             if (this.operateVisible) {
                 return
             }
             this.dialogKey = "";
-            this.$store.dispatch("openDialog", {
-                dialog_id: dialogId,
-                search_msg_id: searchMsgId
-            })
+            this.$store.dispatch("openDialog", dialogId)
         },
 
         openContacts(user) {

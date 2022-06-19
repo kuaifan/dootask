@@ -285,10 +285,6 @@ export default {
             type: Number,
             default: 0
         },
-        searchMsgId: {
-            type: Number,
-            default: 0
-        },
         autoFocus: {
             type: Boolean,
             default: false
@@ -319,7 +315,7 @@ export default {
                 userids: [],
             },
 
-            confirmId: 0,
+            openId: 0,
             dialogDrag: false,
             groupInfoShow: false,
 
@@ -350,6 +346,7 @@ export default {
     computed: {
         ...mapState([
             'taskId',
+            'dialogSearchMsgId',
             'dialogMsgs',
             'dialogMsgTransfer',
             'cacheDialogs',
@@ -479,7 +476,7 @@ export default {
                         requestAnimationFrame(this.onToBottom);
                     }
                     this.$store.dispatch("getDialogMsgs", id).then(_ => {
-                        this.confirmId = id;
+                        this.openId = id;
                         setTimeout(this.onSearchMsgId, 100)
                     }).catch(_ => {});
                     //
@@ -496,7 +493,7 @@ export default {
             immediate: true
         },
 
-        searchMsgId() {
+        dialogSearchMsgId() {
             this.onSearchMsgId();
         },
 
@@ -688,9 +685,9 @@ export default {
         },
 
         onSearchMsgId() {
-            if (this.searchMsgId > 0 && this.confirmId === this.dialogId) {
-                this.onPositionId(this.searchMsgId)
-                this.$store.state.searchMsgId = 0
+            if (this.dialogSearchMsgId > 0 && this.openId === this.dialogId) {
+                this.onPositionId(this.dialogSearchMsgId)
+                this.$store.state.dialogSearchMsgId = 0
             }
         },
 
