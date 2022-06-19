@@ -103,7 +103,7 @@ export default {
             let apiHome = $A.getDomain(window.systemInfo.apiUrl)
             return this.isSoftware && (apiHome == "" || apiHome == "public")
         },
-        
+
         checkVersion() {
             if (this.isNotServer()) {
                 return;
@@ -143,7 +143,7 @@ export default {
             //
             switch (publish.provider) {
                 case 'generic':
-                    this.downloadUrl = `${publish.url}/${this.apiVersion}`
+                    this.downloadUrl = `${publish.url}/latest`
                     break;
 
                 case 'github':

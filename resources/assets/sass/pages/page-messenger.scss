@@ -208,12 +208,12 @@
                                         align-items: center;
                                         > em {
                                             flex-shrink: 0;
-                                            background-color: rgba($primary-desc-color, 0.3);
-                                            height: 18px;
-                                            width: 24px;
-                                            line-height: 18px;
+                                            background-color: rgba($primary-desc-color, 0.25);
+                                            height: 20px;
+                                            width: 26px;
+                                            line-height: 20px;
                                             text-align: center;
-                                            border-radius: 9px;
+                                            border-radius: 10px;
                                             font-size: 14px;
                                             font-style: normal;
                                             margin-right: 4px;
@@ -267,18 +267,6 @@
                                     display: block;
                                 }
                             }
-                            &.loading {
-                                margin: 0;
-                                height: 52px;
-                                display: flex;
-                                align-items: center;
-                                justify-content: center;
-                                .common-loading {
-                                    width: 20px;
-                                    height: 20px;
-                                    margin: 0;
-                                }
-                            }
                             &.completed {
                                 &:after {
                                     content: "\f373";
@@ -298,12 +286,24 @@
                                     }
                                 }
                             }
-                            &.nothing {
+                            &.nothing,
+                            &.loading {
                                 justify-content: center;
                                 padding: 24px;
                                 margin: 0;
                                 border: 0;
                                 line-height: 22px;
+                                cursor: default;
+                            }
+                            &.loading {
+                                display: flex;
+                                align-items: flex-start;
+                                justify-content: center;
+                                .common-loading {
+                                    width: 20px;
+                                    height: 20px;
+                                    margin: 1px;
+                                }
                             }
                         }
                     }
