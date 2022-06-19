@@ -446,6 +446,7 @@
                         &.highlight {
                             background-color: #f4f5f7;
                         }
+                        &.operation,
                         &:hover {
                             background-color: #f4f5f7;
                             .file-menu,
@@ -594,6 +595,19 @@
             margin-right: 8px;
         }
     }
+    .ivu-dropdown-menu {
+        .item-open {
+            display: flex;
+            align-items: center;
+            .open-name {
+                padding-left: 4px;
+                max-width: 160px;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
+        }
+    }
 }
 
 .page-file-share-form {
@@ -609,11 +623,13 @@
         }
     }
 }
+
 .page-file-share-title {
     margin-top: -8px;
     margin-bottom: 14px;
     padding: 0 2px;
 }
+
 .page-file-share-list {
     max-height: 500px;
     margin-bottom: 26px;
@@ -678,6 +694,14 @@
                             .file-menu {
                                 display: none;
                             }
+                            &:hover {
+                                background-color: transparent;
+                            }
+                            &.operation {
+                                &:hover {
+                                    background-color: #f4f5f7;
+                                }
+                            }
                         }
                     }
                 }
@@ -688,6 +712,16 @@
         }
         .file-upload-list {
             bottom: 86px
+        }
+    }
+
+    .page-file-dropdown-menu {
+        .ivu-dropdown-menu {
+            .ivu-dropdown-item {
+                &:hover {
+                    background: transparent;
+                }
+            }
         }
     }
 }

@@ -79,6 +79,7 @@
                                 :class="{
                                     shear: shearIds.includes(item.id),
                                     highlight: selectIds.includes(item.id),
+                                    operation: contextMenuVisible && item.id === contextMenuItem.id,
                                 }"
                                 :data-id="item.id"
                                 v-longpress="handleLongpress"
@@ -151,7 +152,10 @@
                     transfer>
                     <DropdownMenu slot="list">
                         <template v-if="contextMenuItem.id">
-                            <DropdownItem @click.native="handleContextClick('open')">{{$L('打开')}}</DropdownItem>
+                            <DropdownItem @click.native="handleContextClick('open')" class="item-open">
+                                {{$L('打开')}}
+                                <div class="open-name">“{{contextMenuItem.name}}”</div>
+                            </DropdownItem>
                             <DropdownItem @click.native="handleContextClick('select')">{{$L(selectIds.includes(contextMenuItem.id) ? '取消选择' : '选择')}}</DropdownItem>
 
                             <Dropdown placement="right-start" transfer>
