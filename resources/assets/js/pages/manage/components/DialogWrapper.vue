@@ -122,6 +122,7 @@
                 @on-record="sendRecord"
                 @on-record-state="onRecordState"
                 @on-emoji-visible-change="onEventEmojiVisibleChange"
+                @on-height-change="onHeightChange"
                 @on-cancel-reply="onCancelReply"
                 :placeholder="$L('输入消息...')"/>
         </div>
@@ -436,7 +437,7 @@ export default {
             if (this.msgNew > 0 && this.allMsgs.length > 0) {
                 return 'newmsg'
             }
-            if (this.scrollTail > 50) {
+            if (this.scrollTail > 500) {
                 return 'goto'
             }
             return null
@@ -805,6 +806,16 @@ export default {
         onEventEmojiVisibleChange(val) {
             if (val && this.windowSmall) {
                 this.onToBottom();
+            }
+        },
+
+        onHeightChange({newVal, oldVal}) {
+            const diff = newVal - oldVal;
+            if (diff !== 0) {
+                const {offset, tail} = this.scrollInfo()
+                if (tail > 0) {
+                    this.onToOffset(offset + diff)
+                }
             }
         },
 

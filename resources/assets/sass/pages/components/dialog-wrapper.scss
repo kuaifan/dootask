@@ -823,10 +823,14 @@
             display: flex;
             align-content: center;
             justify-content: center;
+            color: $primary-text-color;
+            background-color: #ffffff;
+            border: 1px solid #eeeeee;
+            box-shadow: 0 4px 8px 0 rgba($primary-text-color, 0.2);
             top: -48px;
             width: 40px;
             height: 40px;
-            line-height: 40px;
+            line-height: 38px;
             border-radius: 50%;
 
             .taskfont {

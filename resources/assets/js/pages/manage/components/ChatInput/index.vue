@@ -209,6 +209,7 @@ export default {
 
             observer: null,
             wrapperWidth: 0,
+            wrapperHeight: 0,
             editorHeight: 0,
 
             recordReady: false,
@@ -233,6 +234,7 @@ export default {
             entries.some(({target, contentRect}) => {
                 if (target === this.$el) {
                     this.wrapperWidth = contentRect.width;
+                    this.wrapperHeight = contentRect.height;
                 } else if (target === this.$refs.editor) {
                     this.editorHeight = contentRect.height;
                 }
@@ -443,6 +445,10 @@ export default {
 
         dialogInputCache() {
             this.$emit('input', this.getInputCache())
+        },
+
+        wrapperHeight(newVal, oldVal) {
+            this.$emit('on-height-change', {newVal, oldVal})
         }
     },
     methods: {
