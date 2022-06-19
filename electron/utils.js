@@ -304,6 +304,8 @@ module.exports = {
                     } else if (options !== true) {
                         resolve()
                     }
+                }).catch(_ => {
+                    resolve()
                 })
                 event.preventDefault()
             }
