@@ -224,9 +224,18 @@ export default {
                     return false;
                 }
                 if (dialogKey) {
-                    let existName = $A.strExists(dialog.name, dialogKey);
-                    let existMsg = dialog.last_msg && dialog.last_msg.type === 'text' && $A.strExists(dialog.last_msg.msg.text, dialogKey);
-                    if (!existName && !existMsg) {
+                    const {name, last_msg} = dialog;
+                    let msgKey;
+                    switch (last_msg.type) {
+                        case 'text':
+                            msgKey = last_msg.msg.text.replace(/<[^>]+>/g,"")
+                            break
+                        case 'meeting':
+                        case 'file':
+                            msgKey = last_msg.msg.name
+                            break
+                    }
+                    if (!$A.strExists(name, dialogKey) && !$A.strExists(msgKey, dialogKey)) {
                         return false;
                     }
                 } else if (dialogActive) {
