@@ -260,7 +260,17 @@ export default {
                 return true;
             })
             if (dialogSearch.length > 0) {
-                list.push(...dialogSearch.map(item => Object.assign(item, {is_search: true})))
+                const msgIds = [];
+                list.forEach(item => {
+                    if (item.last_msg && !msgIds.includes(item.last_msg.id)) {
+                        msgIds.push(item.last_msg.id)
+                    }
+                })
+                dialogSearch.forEach(item => {
+                    if (!msgIds.includes(item.last_msg.id)) {
+                        list.push(Object.assign(item, {is_search: true}))
+                    }
+                })
             }
             return list.sort((a, b) => {
                 if (a.top_at || b.top_at) {
