@@ -233,7 +233,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/one          05. 获取单个消息
+     * @api {get} api/dialog/msg/one          06. 获取单个消息
      *
      * @apiDescription 主要用于获取回复消息的详情，需要token身份
      * @apiVersion 1.0.0
@@ -263,7 +263,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/unread          06. 获取未读消息数量
+     * @api {get} api/dialog/msg/unread          07. 获取未读消息数量
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -296,7 +296,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {post} api/dialog/msg/sendtext          07. 发送消息
+     * @api {post} api/dialog/msg/sendtext          08. 发送消息
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -369,7 +369,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {post} api/dialog/msg/sendrecord          08. 发送语音
+     * @api {post} api/dialog/msg/sendrecord          09. 发送语音
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -418,7 +418,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {post} api/dialog/msg/sendfile          09. 文件上传
+     * @api {post} api/dialog/msg/sendfile          10. 文件上传
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -504,7 +504,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/readlist          10. 获取消息阅读情况
+     * @api {get} api/dialog/msg/readlist          11. 获取消息阅读情况
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -533,7 +533,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/detail          11. 消息详情
+     * @api {get} api/dialog/msg/detail          12. 消息详情
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -581,7 +581,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/download          12. 文件下载
+     * @api {get} api/dialog/msg/download          13. 文件下载
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -621,7 +621,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/withdraw          13. 聊天消息撤回
+     * @api {get} api/dialog/msg/withdraw          14. 聊天消息撤回
      *
      * @apiDescription 消息撤回限制24小时内，需要token身份
      * @apiVersion 1.0.0
@@ -647,7 +647,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/mark          14. 消息标记操作
+     * @api {get} api/dialog/msg/mark          15. 消息标记操作
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -699,7 +699,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/forward          15. 转发消息给
+     * @api {get} api/dialog/msg/forward          16. 转发消息给
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -734,7 +734,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/emoji          16. emoji回复
+     * @api {get} api/dialog/msg/emoji          17. emoji回复
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -750,6 +750,7 @@ class DialogController extends AbstractController
      */
     public function msg__emoji()
     {
+        Base::checkClientVersion('0.17.67');
         $user = User::auth();
         //
         $msg_id = intval(Request::input("msg_id"));
@@ -769,7 +770,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/top          17. 会话置顶
+     * @api {get} api/dialog/top          18. 会话置顶
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -799,7 +800,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/add          18. 新增群组
+     * @api {get} api/dialog/group/add          19. 新增群组
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -850,7 +851,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/edit          19. 修改群组
+     * @api {get} api/dialog/group/edit          20. 修改群组
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -889,7 +890,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/adduser          20. 添加群成员
+     * @api {get} api/dialog/group/adduser          21. 添加群成员
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -923,7 +924,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/deluser          21. 移出（退出）群成员
+     * @api {get} api/dialog/group/deluser          22. 移出（退出）群成员
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -965,7 +966,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/disband          22. 解散群组
+     * @api {get} api/dialog/group/disband          23. 解散群组
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
