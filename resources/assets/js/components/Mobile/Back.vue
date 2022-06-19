@@ -6,6 +6,8 @@
 </template>
 
 <script>
+import {mapState} from "vuex";
+
 export default {
     name: "MobileBack",
     props: {
@@ -42,6 +44,8 @@ export default {
     },
 
     computed: {
+        ...mapState(['files']),
+
         style() {
             const offset = 135;
             const top = Math.max(offset, this.y) + this.windowScrollY,
@@ -50,6 +54,15 @@ export default {
                 top: Math.min(top, maxTop) + 'px',
                 left: this.x > 20 ? 0 : '-50px',
             }
+        },
+
+        routeName() {
+            return this.$route.name
+        },
+
+        fileFolderId() {
+            const {folderId} = this.$route.params;
+            return parseInt(/^\d+$/.test(folderId) ? folderId : 0);
         },
     },
 
@@ -100,11 +113,29 @@ export default {
             if (!this.showTabbar) {
                 return true;
             }
-            return this.$Modal.visibles().length > 0;
+            if (this.$Modal.visibles().length > 0) {
+                return true;
+            }
+            if (this.fileFolderId > 0) {
+                return true;
+            }
+            return false;
         },
 
         onBack() {
             if (this.$Modal.removeLast()) {
+                return;
+            }
+            if (this.fileFolderId > 0) {
+                const file = this.files.find(({id, permission}) => id == this.fileFolderId && permission > -1)
+                if (file) {
+                    const prevFile = this.files.find(({id, permission}) => id == file.pid && permission > -1)
+                    if (prevFile) {
+                        this.goForward({name: 'manage-file', params: {folderId: prevFile.id, fileId: null}});
+                        return;
+                    }
+                }
+                this.goForward({name: 'manage-file'});
                 return;
             }
             this.goBack();
