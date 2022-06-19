@@ -742,7 +742,7 @@ class DialogController extends AbstractController
      * @apiName msg__forward
      *
      * @apiParam {Number} msg_id            消息ID
-     * @apiParam {String} emoji             回复或取消的emoji表情
+     * @apiParam {String} symbol            回复或取消的emoji表情
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -753,9 +753,9 @@ class DialogController extends AbstractController
         $user = User::auth();
         //
         $msg_id = intval(Request::input("msg_id"));
-        $emoji = Request::input("emoji");
+        $symbol = Request::input("symbol");
         //
-        if (!preg_match("/^[\u{d800}-\u{dbff}]|[\u{dc00}-\u{dfff}]$/", $emoji)) {
+        if (!preg_match("/^[\u{d800}-\u{dbff}]|[\u{dc00}-\u{dfff}]$/", $symbol)) {
             return Base::retError("参数错误");
         }
         //
@@ -765,7 +765,7 @@ class DialogController extends AbstractController
         }
         WebSocketDialog::checkDialog($msg->dialog_id);
         //
-        return $msg->emojiMsg($emoji, $user->userid);
+        return $msg->emojiMsg($symbol, $user->userid);
     }
 
     /**

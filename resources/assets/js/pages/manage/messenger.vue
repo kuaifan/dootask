@@ -44,7 +44,7 @@
                             :class="{
                                 top: dialog.top_at,
                                 active: dialog.id == dialogId,
-                                operate: dialog.id == operateItem.id && operateVisible,
+                                operate: operateVisible && dialog.id == operateItem.id,
                                 completed: $A.dialogCompleted(dialog)
                             }"
                             :data-id="dialog.id"
@@ -72,7 +72,10 @@
                                         <div v-if="dialog.last_msg.userid == userId" class="last-self">{{$L('你')}}</div>
                                         <UserAvatar v-else :userid="dialog.last_msg.userid" :show-name="true" :show-icon="false" tooltip-disabled/>
                                     </template>
-                                    <div class="last-text">{{formatMsgDesc(dialog.last_msg)}}</div>
+                                    <div class="last-text">
+                                        <em v-if="formatMsgEmojiDesc(dialog.last_msg)">{{formatMsgEmojiDesc(dialog.last_msg)}}</em>
+                                        <span>{{formatMsgDesc(dialog.last_msg)}}</span>
+                                    </div>
                                 </div>
                             </div>
                             <Badge class="dialog-num" :count="$A.getDialogUnread(dialog)"/>
@@ -526,6 +529,13 @@ export default {
                     }
                 }, timeout)
             }
+        },
+
+        formatMsgEmojiDesc(data) {
+            if ($A.isJson(data) && $A.arrayLength(data.emoji) > 0) {
+                return data.emoji[0].symbol;
+            }
+            return null;
         },
 
         formatMsgDesc(data) {

@@ -197,16 +197,16 @@ class WebSocketDialogMsg extends AbstractModel
 
     /**
      * emoji回复
-     * @param $emoji
+     * @param $symbol
      * @param int $sender       发送的会员ID
      * @return mixed
      */
-    public function emojiMsg($emoji, $sender)
+    public function emojiMsg($symbol, $sender)
     {
         $exist = false;
         $array = $this->emoji;
         foreach ($array as $index => &$item) {
-            if ($item['symbol'] === $emoji) {
+            if ($item['symbol'] === $symbol) {
                 if (in_array($sender, $item['userids'])) {
                     // 已存在 去除
                     $item['userids'] = array_values(array_diff($item['userids'], [$sender]));
@@ -224,7 +224,7 @@ class WebSocketDialogMsg extends AbstractModel
         }
         if (!$exist) {
             array_unshift($array, [
-                'symbol' => $emoji,
+                'symbol' => $symbol,
                 'userids' => [$sender]
             ]);
         }

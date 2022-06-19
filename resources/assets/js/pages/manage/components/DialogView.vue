@@ -386,8 +386,11 @@ export default {
             this.$emit("on-view-file", e)
         },
 
-        onEmoji(emoji) {
-            this.$emit("on-emoji", emoji)
+        onEmoji(symbol) {
+            this.$emit("on-emoji", {
+                msg_id: this.msgData.id,
+                symbol
+            })
         },
     }
 }

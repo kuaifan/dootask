@@ -204,9 +204,27 @@
                                     }
                                     .last-text {
                                         flex: 1;
-                                        white-space: nowrap;
-                                        overflow: hidden;
-                                        text-overflow: ellipsis;
+                                        display: flex;
+                                        align-items: center;
+                                        > em {
+                                            flex-shrink: 0;
+                                            background-color: rgba($primary-desc-color, 0.3);
+                                            height: 18px;
+                                            width: 24px;
+                                            line-height: 18px;
+                                            text-align: center;
+                                            border-radius: 9px;
+                                            font-size: 14px;
+                                            font-style: normal;
+                                            margin-right: 4px;
+                                        }
+                                        > span {
+                                            flex: 1;
+                                            width: 0;
+                                            white-space: nowrap;
+                                            overflow: hidden;
+                                            text-overflow: ellipsis;
+                                        }
                                     }
                                 }
                             }

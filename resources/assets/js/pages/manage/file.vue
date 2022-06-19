@@ -79,7 +79,7 @@
                                 :class="{
                                     shear: shearIds.includes(item.id),
                                     highlight: selectIds.includes(item.id),
-                                    operation: contextMenuVisible && item.id === contextMenuItem.id,
+                                    operate: contextMenuVisible && item.id === contextMenuItem.id,
                                 }"
                                 :data-id="item.id"
                                 v-longpress="handleLongpress"

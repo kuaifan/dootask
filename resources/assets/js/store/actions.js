@@ -2128,10 +2128,19 @@ export default {
             });
         } else if ($A.isJson(data)) {
             const index = state.dialogMsgs.findIndex(({id}) => id == data.id);
+            data = Object.assign({}, state.dialogMsgs[index], data)
             if (index > -1) {
-                state.dialogMsgs.splice(index, 1, Object.assign({}, state.dialogMsgs[index], data));
+                state.dialogMsgs.splice(index, 1, data);
             } else {
                 state.dialogMsgs.push(data);
+            }
+            //
+            const dialog = state.cacheDialogs.find(({id, last_msg}) => id == data.dialog_id && last_msg && last_msg.id === data.id);
+            if (dialog) {
+                dispatch("saveDialog", {
+                    id: data.dialog_id,
+                    last_msg: Object.assign({}, dialog.last_msg, data),
+                })
             }
         }
     },

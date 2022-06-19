@@ -87,8 +87,8 @@ export default {
             this.dispatch("on-view-file", e)
         },
 
-        onEmoji(e) {
-            this.dispatch("on-emoji", e)
+        onEmoji(data) {
+            this.dispatch("on-emoji", data)
         },
 
         dispatch(event, arg) {
