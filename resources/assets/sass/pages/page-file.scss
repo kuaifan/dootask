@@ -492,6 +492,7 @@
         position: fixed;
         right: 16px;
         bottom: 16px;
+        z-index: 1;
         background-color: #fff;
         box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
         transition: opacity .3s, transform .3s, left .3s, right .3s, top .4s, bottom .3s;
