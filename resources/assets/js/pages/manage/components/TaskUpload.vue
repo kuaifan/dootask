@@ -19,7 +19,7 @@ export default {
     props: {
         maxSize: {
             type: Number,
-            default: 204800
+            default: 1024000
         }
     },
 

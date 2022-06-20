@@ -28,7 +28,7 @@ export default {
         },
         maxSize: {
             type: Number,
-            default: 204800
+            default: 1024000
         }
     },
 
@@ -39,8 +39,8 @@ export default {
                 'drawio',
                 'mind',
                 'docx', 'wps', 'doc', 'xls', 'xlsx', 'ppt', 'pptx',
-                'jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'raw',
-                'rar', 'zip', 'jar', '7-zip', 'tar', 'gzip', '7z',
+                'jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'raw', 'svg',
+                'rar', 'zip', 'jar', '7-zip', 'tar', 'gzip', '7z', 'gz', 'apk', 'dmg',
                 'tif', 'tiff',
                 'dwg', 'dxf',
                 'ofd',

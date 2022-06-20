@@ -300,9 +300,9 @@ return [
         'log_level'          => 4,
         'log_file'           => storage_path(sprintf('logs/swoole-%s.log', date('Y-m'))),
         'document_root'      => base_path('public'),
-        'buffer_output_size' => 512 * 1024 * 1024,
-        'socket_buffer_size' => 512 * 1024 * 1024,
-        'package_max_length' => 512 * 1024 * 1024,
+        'buffer_output_size' => 2 * 1024 * 1024,
+        'socket_buffer_size' => 8 * 1024 * 1024,
+        'package_max_length' => 1024 * 1024 * 1024, // 1GB
         'reload_async'       => true,
         'max_wait_time'      => 60,
         'enable_reuse_port'  => true,
