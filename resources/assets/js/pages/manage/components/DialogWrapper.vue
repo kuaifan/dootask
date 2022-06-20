@@ -587,6 +587,7 @@ export default {
                 id: tempId,
                 dialog_id: this.dialogData.id,
                 reply_id: this.replyId,
+                reply_data: this.replyId ? this.dialogMsgs.find(({id}) => id === this.replyId) : null,
                 type: 'text',
                 userid: this.userId,
                 msg: {
@@ -604,6 +605,7 @@ export default {
                 data: {
                     dialog_id: this.dialogId,
                     reply_id: this.replyId,
+                    reply_data: this.replyId ? this.dialogMsgs.find(({id}) => id === this.replyId) : null,
                     text: msgText,
                 },
                 method: 'post'
@@ -629,6 +631,7 @@ export default {
                 id: tempId,
                 dialog_id: this.dialogData.id,
                 reply_id: this.replyId,
+                reply_data: this.replyId ? this.dialogMsgs.find(({id}) => id === this.replyId) : null,
                 type: 'loading',
                 userid: this.userId,
                 msg,
@@ -882,6 +885,7 @@ export default {
         onToIndex(index) {
             const scroller = this.$refs.scroller;
             if (scroller) {
+                scroller.stopToBottom();
                 scroller.scrollToIndex(index, -100);
                 requestAnimationFrame(_ => scroller.scrollToIndex(index, -100))    // 确保滚动到
             }
@@ -891,6 +895,7 @@ export default {
         onToOffset(offset) {
             const scroller = this.$refs.scroller;
             if (scroller) {
+                scroller.stopToBottom();
                 scroller.scrollToOffset(offset);
                 setTimeout(_ => scroller.scrollToOffset(offset), 10)  // 预防出现白屏的情况
             }
