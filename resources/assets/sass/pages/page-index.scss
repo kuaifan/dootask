@@ -12,7 +12,7 @@
 
         .page-header {
             width: 100%;
-            background: #8bcf70;
+            background: $primary-color;
             position: relative;
             padding-bottom: 40px;
 
@@ -38,27 +38,43 @@
                         background-size: contain;
                     }
 
-                    .header-right-one {
+                    .header-right-pro {
+                        padding: 0 10px;
+                        font-size: 12px;
+                        color: #f6ca9d;
+                        background: #1d1e23;
+                        background: linear-gradient(90deg, #1d1e23, #3f4045);
+                        border: 0;
+                    }
+
+                    .header-right-1 {
+                        margin-left: 30px;
                         display: flex;
 
-                        .header-right-one-language {
-                            margin-right: 8px;
-                            font-size: 26px;
-                        }
-
-                        .header-right-one-dropdown {
+                        .header-right-1-dropdown {
                             color: #ffffff;
                             font-size: 16px;
                         }
                     }
 
-                    .header-right-two {
+                    .header-right-2 {
+                        font-size: 16px;
+                        margin-left: 30px;
+                        cursor: pointer;
+
+                        .header-right-2-dropdown {
+                            color: #ffffff;
+                            font-size: 16px;
+                        }
+                    }
+
+                    .header-right-3 {
                         font-size: 16px;
                         margin: 0 30px 0 30px;
                         cursor: pointer;
                     }
 
-                    .header-right-three {
+                    .header-right-4 {
                         font-size: 16px;
                         min-width: 100px;
                         height: 36px;
@@ -68,21 +84,6 @@
                         line-height: 36px;
                         cursor: pointer;
                         padding: 0 10px 0 10px;
-                    }
-
-                    .header-right-four {
-                        font-size: 16px;
-                        margin-left: 30px;
-                        cursor: pointer;
-
-                        .ivu-dropdown {
-                            .ivu-dropdown-rel {
-                                .header-right-one-dropdown {
-                                    color: #ffffff;
-                                    font-size: 16px;
-                                }
-                            }
-                        }
                     }
                 }
 
@@ -151,7 +152,7 @@
             position: relative;
             background: #FFFFFF url("../images/index/bg-bottom.svg") no-repeat;
             background-size: 100%;
-            margin-bottom: 190px;
+            margin-bottom: 160px;
             margin-top: -2px;
 
             .page-header-bottoms {
@@ -327,7 +328,7 @@
             }
 
             .page-header-bottom {
-                margin-bottom: 100px;
+                margin-bottom: 80px;
             }
 
             .page-main {

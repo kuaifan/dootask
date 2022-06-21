@@ -6,6 +6,7 @@
                 ref="input"
                 v-model="content"
                 :disabled="isLoad"
+                enterkeyhint="done"
                 @on-keydown="onKeydown"
                 @on-blur="onBlur"/>
             <Input
@@ -13,6 +14,7 @@
                 ref="input"
                 v-model="content"
                 :disabled="isLoad"
+                enterkeyhint="done"
                 @on-keydown="onKeydown"
                 @on-blur="onBlur"/>
             <div v-if="isLoad" class="quick-loading"><Loading/></div>

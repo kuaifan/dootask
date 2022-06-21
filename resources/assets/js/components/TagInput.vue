@@ -9,6 +9,7 @@
             v-model="content"
             :style="{ minWidth: minWidth + 'px' }"
             :placeholder="tis || placeholderText"
+            :enterkeyhint="enterkeyhint"
             @keydown.enter="downEnter($event)"
             @keydown.delete="delTag(false)"
             @keyup="onKeyup"
@@ -43,6 +44,10 @@
             },
             max: {
                 default: 0
+            },
+            enterkeyhint: {
+                type: String,
+                default: ''
             },
         },
         data() {

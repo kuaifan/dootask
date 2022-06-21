@@ -20,6 +20,7 @@
                 :rows="1"
                 :autosize="{ minRows: 1, maxRows: 8 }"
                 :maxlength="255"
+                enterkeyhint="done"
                 @on-blur="updateBlur('name')"
                 @on-keydown="onNameKeydown"/>
         </div>
@@ -144,6 +145,7 @@
                         :rows="1"
                         :autosize="{ minRows: 1, maxRows: 8 }"
                         :maxlength="255"
+                        enterkeyhint="done"
                         @on-blur="updateBlur('name')"
                         @on-keydown="onNameKeydown"/>
                 </div>
@@ -332,6 +334,7 @@
                                     :placeholder="$L('+ 输入子任务，回车添加子任务')"
                                     :icon="addsubLoad > 0 ? 'ios-loading' : ''"
                                     :class="{loading: addsubLoad > 0}"
+                                    enterkeyhint="done"
                                     @on-blur="addsubChackClose"
                                     @on-keydown="addsubKeydown"/>
                                 <div v-else class="add-button" @click="addsubOpen">

@@ -10,6 +10,7 @@
                     :autosize="{ minRows: 1, maxRows: 3 }"
                     :maxlength="255"
                     :placeholder="$L(typeName + '描述，回车创建')"
+                    enterkeyhint="done"
                     @on-focus="onFocus=true"
                     @on-blur="onFocus=false"
                     @on-keydown="onKeydown"/>
@@ -46,6 +47,7 @@
             :autosize="{ minRows: 2, maxRows: 3 }"
             :maxlength="255"
             :placeholder="$L(typeName + '描述，回车创建')"
+            enterkeyhint="done"
             @on-focus="onFocus=true"
             @on-blur="onFocus=false"
             @on-keydown="onKeydown"/>

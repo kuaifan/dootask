@@ -1,5 +1,6 @@
 <template>
     <div v-if="needStartHome" class="page-index">
+        <PageTitle :title="appTitle"/>
         <div class="page-warp">
             <div class="page-header">
                 <div class="header-nav">
@@ -7,9 +8,11 @@
                         <div class="logo no-dark-content"></div>
                     </div>
                     <div class="header-nav-box header-nav-boxs" v-if="windowWidth > 780">
-                        <div class="header-right-one">
+                        <Button v-if="proShow" class="header-right-pro no-dark-content" size="small" @click="onPro">{{$L('Pro版')}}</Button>
+
+                        <div class="header-right-1">
                             <Dropdown trigger="click" @on-click="setLanguage">
-                                <a href="javascript:void(0)" class="header-right-one-dropdown">
+                                <a href="javascript:void(0)" class="header-right-1-dropdown">
                                     {{ currentLanguage }}
                                     <Icon type="ios-arrow-down"></Icon>
                                 </a>
@@ -22,9 +25,9 @@
                                 </DropdownMenu>
                             </Dropdown>
                         </div>
-                        <div class="header-right-four">
+                        <div class="header-right-2">
                             <Dropdown trigger="click" @on-click="setTheme">
-                                <a href="javascript:void(0)" class="header-right-one-dropdown">
+                                <a href="javascript:void(0)" class="header-right-2-dropdown">
                                     {{$L('主题皮肤')}}
                                     <Icon type="ios-arrow-down"></Icon>
                                 </a>
@@ -37,8 +40,8 @@
                                 </DropdownMenu>
                             </Dropdown>
                         </div>
-                        <div class="header-right-two" @click="register">{{ $L("注册帐号") }}</div>
-                        <div class="header-right-three no-dark-content" @click="login">{{ $L("登录") }}</div>
+                        <div class="header-right-3" @click="register">{{ $L("注册帐号") }}</div>
+                        <div class="header-right-4 no-dark-content" @click="login">{{ $L("登录") }}</div>
                     </div>
                     <div class="header-nav-box header-nav-boxs" v-else>
                         <Dropdown trigger="click">
@@ -162,6 +165,21 @@
                         <p>{{$L('通过灵活的任务日历，轻松安排每一天的日程，把任务拆解到每天，让工作目标更清晰，时间分配更合理。')}}</p>
                     </Col>
                 </Row>
+
+                <Row :class="windowWidth > 1200 ? 'page-main-row':'page-main-rows'">
+                    <Col :class="windowWidth > 1200 ? 'page-main-img':'page-main-imgs'" :xs="24" :sm="24" :xl="12">
+                        <ImgView :src="themeIsDark ? 'images/index/dark/6.png':'images/index/light/6.png'"/>
+                    </Col>
+                    <Col class="page-main-text" :xs="24" :sm="24" :xl="12" v-if="windowWidth > 1200">
+                        <ImgView src="images/index/square.png"/>
+                        <h3>{{$L('支持多平台应用')}}</h3>
+                        <p>{{$L('多平台应用支持，打开客户端即可跟进项目任务进度， 同时让你在工作中每一个步骤都能拥有更高效愉悦的体验。')}}</p>
+                    </Col>
+                    <Col class="page-main-text page-main-texts" :xs="24" :sm="24" :xl="12" v-else>
+                        <h3><ImgView src="images/index/square.png"/>{{$L('支持多平台应用')}}</h3>
+                        <p>{{$L('多平台应用支持，打开客户端即可跟进项目任务进度， 同时让你在工作中每一个步骤都能拥有更高效愉悦的体验。')}}</p>
+                    </Col>
+                </Row>
             </div>
             <div class="page-footer">
                 <div class="footer-service no-dark-content">
@@ -173,7 +191,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="footer-copyright" v-if="this.homeFooter" v-html="this.homeFooter"></div>
+                <div class="footer-copyright" v-if="homeFooter" v-html="homeFooter"></div>
             </div>
         </div>
     </div>
@@ -185,6 +203,7 @@ import {mapState} from "vuex";
 export default {
     data() {
         return {
+            proShow: false,
             needStartHome: false,
             homeFooter: '',
         };
@@ -219,10 +238,15 @@ export default {
                 }
             }
         }
+        this.proShow = $A.strExists(window.location.host, "dootask.com") || $A.strExists(window.location.host, "127.0.0.1")
         this.getNeedStartHome();
     },
 
     methods: {
+        onPro() {
+            this.goForward({name: 'pro'});
+        },
+
         setTheme(mode) {
             this.$store.dispatch("setTheme", mode)
         },

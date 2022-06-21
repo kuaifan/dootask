@@ -185,7 +185,7 @@
                                 </p>
                             </div>
                         </li>
-                        <li v-if="loadIng > 0" class="loading"><Loading/></li>
+                        <li v-if="projectKeyLoading > 0" class="loading"><Loading/></li>
                     </ul>
                 </li>
             </ul>
@@ -205,9 +205,9 @@
                 </Dropdown>
             </div>
             <div
-                v-if="projectTotal > 20"
+                v-if="(projectSearchShow || projectTotal > 20) && windowHeight > 600"
                 class="manage-project-search">
-                <Input v-model="projectKeyValue" :placeholder="$L('共' + projectTotal + '个项目，搜索...')" clearable>
+                <Input v-model="projectKeyValue" :placeholder="$L(`共${projectTotal || cacheProjects.length}个项目，搜索...`)" clearable>
                     <div class="search-pre" slot="prefix">
                         <Loading v-if="projectKeyLoading > 0"/>
                         <Icon v-else type="ios-search" />
@@ -421,6 +421,7 @@ export default {
 
             projectKeyValue: '',
             projectKeyLoading: 0,
+            projectSearchShow: false,
 
             openMenu: {},
             visibleMenu: false,
@@ -500,6 +501,7 @@ export default {
             'cacheTaskBrowse',
 
             'windowActive',
+            'windowHeight',
             'dialogIns',
         ]),
 
@@ -671,6 +673,25 @@ export default {
             if (show) {
                 this.getReportUnread(0);
             }
+        },
+
+        'cacheProjects.length': {
+            handler() {
+                this.$nextTick(_ => {
+                    const menuProject = this.$refs.menuProject
+                    const lastEl = $A.last($A.getObject(menuProject, 'children.0.children'))
+                    if (lastEl) {
+                        const lastRect = lastEl.getBoundingClientRect()
+                        const menuRect = menuProject.getBoundingClientRect()
+                        if (lastRect.top > menuRect.top + menuRect.height) {
+                            this.projectSearchShow = true
+                            return
+                        }
+                    }
+                    this.projectSearchShow = false
+                })
+            },
+            immediate: true
         },
 
         unreadTotal: {

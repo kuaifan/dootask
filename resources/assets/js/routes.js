@@ -5,6 +5,11 @@ export default [
         component: () => import('./pages/index.vue')
     },
     {
+        name: 'pro',
+        path: '/pro',
+        component: () => import('./pages/pro.vue'),
+    },
+    {
         name: 'manage',
         path: '/manage',
         component: () => import('./pages/manage.vue'),

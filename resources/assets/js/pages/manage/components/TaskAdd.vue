@@ -22,6 +22,7 @@
                     :autosize="{ minRows: 1, maxRows: 8 }"
                     :maxlength="255"
                     :placeholder="$L('任务描述')"
+                    enterkeyhint="done"
                     @on-keydown="onKeydown"/>
             </div>
             <div class="desc">
