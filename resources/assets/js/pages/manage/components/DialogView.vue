@@ -378,12 +378,12 @@ export default {
             })
         },
 
-        viewText(e) {
-            this.$emit("on-view-text", e)
+        viewText(el) {
+            this.$emit("on-view-text", el)
         },
 
-        viewFile(e) {
-            this.$emit("on-view-file", e)
+        viewFile() {
+            this.$emit("on-view-file", this.msgData)
         },
 
         onEmoji(symbol) {

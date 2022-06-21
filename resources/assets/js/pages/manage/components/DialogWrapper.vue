@@ -1201,19 +1201,22 @@ export default {
             }
         },
 
-        onViewFile() {
+        onViewFile(data) {
             if (this.operateVisible) {
                 return
             }
-            const {msg} = this.operateItem;
+            if (!$A.isJson(data)) {
+                data = this.operateItem
+            }
+            const {msg} = data;
             if (['jpg', 'jpeg', 'gif', 'png'].includes(msg.ext)) {
                 this.onViewPicture(msg.path);
                 return
             }
-            const path = `/single/file/msg/${this.operateItem.id}`;
+            const path = `/single/file/msg/${data.id}`;
             if (this.$Electron) {
                 this.$Electron.sendMessage('windowRouter', {
-                    name: `file-msg-${this.operateItem.id}`,
+                    name: `file-msg-${data.id}`,
                     path: path,
                     userAgent: "/hideenOfficeTitle/",
                     force: false,

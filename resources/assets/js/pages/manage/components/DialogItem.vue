@@ -79,12 +79,12 @@ export default {
             this.dispatch("on-view-reply", data)
         },
 
-        onViewText(e) {
-            this.dispatch("on-view-text", e)
+        onViewText(el) {
+            this.dispatch("on-view-text", el)
         },
 
-        onViewFile(e) {
-            this.dispatch("on-view-file", e)
+        onViewFile(data) {
+            this.dispatch("on-view-file", data)
         },
 
         onEmoji(data) {
