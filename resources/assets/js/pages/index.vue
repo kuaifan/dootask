@@ -248,20 +248,27 @@ export default {
             this.$store.dispatch("call", {
                 url: "system/get/starthome",
             }).then(({data}) => {
-                this.homeFooter = data.home_footer;
-                if (this.userId > 0) {
-                    this.goForward({name: 'manage-dashboard'}, true);
-                } else {
-                    this.needStartHome = !!data.need_start;
-                    if (this.needStartHome === false) {
-                        this.goForward({name: 'login'}, true);
-                    }
+                const homeFooter = data.home_footer
+                const needStart = !!data.need_start
+                if (needStart && (this.userId === 0 || this.$route.query.action === 'index')) {
+                    this.homeFooter = homeFooter;
+                    this.needStartHome = needStart;
+                    return
                 }
+                this.goNext();
             }).catch(_ => {
                 this.needStartHome = false;
-                this.goForward({name: 'login'}, true);
+                this.goNext();
             });
         },
+
+        goNext() {
+            if (this.userId > 0) {
+                this.goForward({name: 'manage-dashboard'}, true);
+            } else {
+                this.goForward({name: 'login'}, true);
+            }
+        }
     },
 };
 </script>
