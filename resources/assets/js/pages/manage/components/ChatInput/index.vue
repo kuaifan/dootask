@@ -1092,7 +1092,7 @@ export default {
 
         getMoreUser(key, existIds) {
             return new Promise(resolve => {
-                if (this.dialogId > 0 || this.taskId > 0 || this.dialogData.type === 'group') {
+                if (this.taskId > 0 || this.dialogData.type === 'group') {
                     this.__getMoreTimer && clearTimeout(this.__getMoreTimer)
                     this.__getMoreTimer = setTimeout(_ => {
                         this.$store.dispatch("call", {

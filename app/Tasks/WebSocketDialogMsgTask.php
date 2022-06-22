@@ -61,7 +61,7 @@ class WebSocketDialogMsgTask extends AbstractTask
         // 将会话以外的成员加入会话内
         $userids = $dialog->dialogUser->pluck('userid')->toArray();
         $diffids = array_values(array_diff($mentions, $userids));
-        if ($diffids) {
+        if ($diffids && $dialog->type === 'group') {
             $dialog->joinGroup($diffids, $msg->userid);
             $dialog->pushMsg("groupJoin", null, $diffids);
             $userids = array_values(array_unique(array_merge($mentions, $userids)));
