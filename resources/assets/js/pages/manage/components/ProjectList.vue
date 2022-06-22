@@ -184,7 +184,7 @@ export default {
                 const wrapRect = this.$el.getBoundingClientRect();
                 this.operateStyles = {
                     left: `${event.clientX - wrapRect.left}px`,
-                    top: `${projectRect.top}px`,
+                    top: `${projectRect.top + this.windowScrollY}px`,
                     height: projectRect.height + 'px',
                 }
                 this.operateVisible = true;

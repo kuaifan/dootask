@@ -998,7 +998,7 @@ export default {
                 const wrapRect = this.$refs.menuProject.getBoundingClientRect();
                 this.operateStyles = {
                     left: `${event.clientX - wrapRect.left}px`,
-                    top: `${projectRect.top}px`,
+                    top: `${projectRect.top + this.windowScrollY}px`,
                     height: projectRect.height + 'px',
                 }
                 this.operateVisible = true;

@@ -653,7 +653,7 @@ export default {
                 const wrapRect = this.$refs.list.$el.getBoundingClientRect();
                 this.operateStyles = {
                     left: `${event.clientX - wrapRect.left}px`,
-                    top: `${dialogRect.top}px`,
+                    top: `${dialogRect.top + this.windowScrollY}px`,
                     height: dialogRect.height + 'px',
                 }
                 this.operateVisible = true;
