@@ -134,6 +134,8 @@ class WebSocketDialog extends AbstractModel
                     WebSocketDialogUser::updateInsert([
                         'dialog_id' => $this->id,
                         'userid' => $value,
+                    ], [
+                        'inviter' => User::userid(),
                     ]);
                 }
             }
@@ -144,27 +146,34 @@ class WebSocketDialog extends AbstractModel
     /**
      * 退出聊天室
      * @param int|array $userid     加入的会员ID或会员ID组
-     * @return bool
+     * @param $type
      */
-    public function exitGroup($userid)
+    public function exitGroup($userid, $type = 'exit')
     {
-        $builder = WebSocketDialogUser::whereDialogId($this->id);
-        if (is_array($userid)) {
-            $builder->whereIn('userid', $userid);
-        } else {
-            $builder->whereUserid($userid);
-        }
-        $builder->chunkById(100, function($list) {
-            /** @var WebSocketDialogUser $item */
-            foreach ($list as $item) {
-                if ($item->userid == $this->owner_id) {
-                    // 群主不可退出
-                    continue;
-                }
-                $item->delete();
+        $typeDesc = $type === 'remove' ? '移出' : '退出';
+        AbstractModel::transaction(function () use ($typeDesc, $type, $userid) {
+            $builder = WebSocketDialogUser::whereDialogId($this->id);
+            if (is_array($userid)) {
+                $builder->whereIn('userid', $userid);
+            } else {
+                $builder->whereUserid($userid);
             }
+            $builder->chunkById(100, function($list) use ($typeDesc, $type) {
+                /** @var WebSocketDialogUser $item */
+                foreach ($list as $item) {
+                    if ($type === 'remove' && !in_array(User::userid(), [$this->owner_id, $item->inviter])) {
+                        throw new ApiException('只有群主或邀请人可以移出成员');
+                    }
+                    if ($item->userid == $this->owner_id) {
+                        throw new ApiException('群主不可' . $typeDesc);
+                    }
+                    if ($item->important) {
+                        throw new ApiException('项目人员或任务人员不可' . $typeDesc);
+                    }
+                    $item->delete();
+                }
+            });
         });
-        return true;
     }
 
     /**
@@ -196,15 +205,19 @@ class WebSocketDialog extends AbstractModel
 
     /**
      * 检查群组类型
+     * @param string|array|null $groupType
      * @return void
      */
-    public function checkGroup($groupType = 'user')
+    public function checkGroup($groupType = null)
     {
         if ($this->type !== 'group') {
             throw new ApiException('仅限群组操作');
         }
-        if ($this->group_type !== $groupType) {
-            throw new ApiException('操作的群组类型错误');
+        if ($groupType) {
+            $groupTypes = is_array($groupType) ? $groupType : [$groupType];
+            if (!in_array($this->group_type, $groupTypes)) {
+                throw new ApiException('操作的群组类型错误');
+            }
         }
     }
 
@@ -260,7 +273,7 @@ class WebSocketDialog extends AbstractModel
     /**
      * 获取对话（同时检验对话身份）
      * @param $dialog_id
-     * @param bool $checkOwner 是否校验群组身份
+     * @param bool|string $checkOwner 是否校验群组身份，'auto'时有群主为true无群主为false
      * @return self
      */
     public static function checkDialog($dialog_id, $checkOwner = false)
@@ -271,11 +284,14 @@ class WebSocketDialog extends AbstractModel
         }
         //
         $userid = User::userid();
+        if ($checkOwner === 'auto') {
+            $checkOwner = $dialog->owner_id > 0;
+        }
         if ($checkOwner === true && $dialog->owner_id != $userid) {
             throw new ApiException('仅限群主操作');
         }
         //
-        if ($dialog->type === 'group' && $dialog->group_type === 'task') {
+        if ($dialog->group_type === 'task') {
             // 任务群对话校验是否在项目内
             $project_id = intval(ProjectTask::whereDialogId($dialog->id)->value('project_id'));
             if ($project_id > 0) {

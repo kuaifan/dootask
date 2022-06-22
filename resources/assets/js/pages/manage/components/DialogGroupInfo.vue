@@ -19,9 +19,9 @@
         <div class="group-info-user">
             <ul>
                 <li v-for="(item, index) in userList" :key="index">
-                    <UserAvatar :userid="item.userid" :size="32" :user-result="userResult" showName tooltipDisabled/>
+                    <UserAvatar :userid="item.userid" :size="32" showName tooltipDisabled/>
                     <div v-if="item.userid === dialogData.owner_id" class="user-tag">{{ $L("群主") }}</div>
-                    <Icon v-else-if="dialogData.owner_id == userId" class="user-exit" type="md-exit" @click="onExit(item)"/>
+                    <Icon v-else-if="dialogData.owner_id == userId || item.inviter == userId" class="user-exit" type="md-exit" @click="onExit(item)"/>
                 </li>
                 <li v-if="userList.length === 0" class="no">
                     <Loading v-if="loadIng > 0"/>
@@ -30,12 +30,10 @@
             </ul>
         </div>
 
-        <div v-if="dialogData.owner_id == userId" class="group-info-button">
-            <Button @click="openAdd" type="primary">{{ $L("添加成员") }}</Button>
-            <Button @click="onDisband" type="error" ghost>{{ $L("解散群组") }}</Button>
-        </div>
-        <div v-else class="group-info-button">
-            <Button @click="onExit" type="error" ghost>{{ $L("退出群组") }}</Button>
+        <div class="group-info-button">
+            <Button v-if="dialogData.owner_id == userId || dialogData.owner_id == 0" @click="openAdd" type="primary">{{ $L("添加成员") }}</Button>
+            <Button v-if="dialogData.owner_id == userId" @click="onDisband" type="error" ghost>{{ $L("解散群组") }}</Button>
+            <Button v-else @click="onExit" type="error" ghost>{{ $L("退出群组") }}</Button>
         </div>
 
         <!--添加成员-->
@@ -85,7 +83,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheDialogs']),
+        ...mapState(['cacheDialogs', 'cacheUserBasic']),
 
         dialogData() {
             return this.cacheDialogs.find(({id}) => id == this.dialogId) || {};
@@ -100,8 +98,15 @@ export default {
         },
 
         userList() {
-            const {dialogUser, searchKey, dialogData} = this;
-            const list = dialogUser.filter(item => {
+            const {dialogUser, searchKey, cacheUserBasic, dialogData} = this;
+            const list = dialogUser.map(item => {
+                const userBasic = cacheUserBasic.find(basic => basic.userid == item.userid)
+                if (userBasic) {
+                    item.nickname = userBasic.nickname
+                    item.email = userBasic.email
+                }
+                return item
+            }).filter(item => {
                 if (searchKey && item.nickname) {
                     if (!$A.strExists(item.nickname, searchKey) && !$A.strExists(item.email, searchKey)) {
                         return false;
@@ -169,16 +174,6 @@ export default {
             }).finally(_ => {
                 this.loadIng--;
             });
-        },
-
-        userResult(user) {
-            let index = this.dialogUser.findIndex(({userid}) => userid === user.userid);
-            if (index > -1) {
-                this.dialogUser.splice(index, 1, Object.assign(user, {
-                    id: this.dialogUser[index].id,
-                    created_at: this.dialogUser[index].created_at
-                }))
-            }
         },
 
         openAdd() {

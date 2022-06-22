@@ -876,9 +876,11 @@ class ProjectTask extends AbstractModel
                 WebSocketDialogUser::updateInsert([
                     'dialog_id' => $this->dialog_id,
                     'userid' => $userid,
+                ], [
+                    'important' => 1
                 ]);
             }
-            WebSocketDialogUser::whereDialogId($this->dialog_id)->whereNotIn('userid', $userids)->delete();
+            WebSocketDialogUser::whereDialogId($this->dialog_id)->whereNotIn('userid', $userids)->whereImportant(1)->delete();
         });
     }
 

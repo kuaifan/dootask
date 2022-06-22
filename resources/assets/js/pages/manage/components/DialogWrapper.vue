@@ -53,7 +53,6 @@
 
                     <template v-if="dialogData.type === 'group'">
                         <ETooltip
-                            v-if="dialogData.group_type === 'user'"
                             placement="top"
                             :disabled="windowSmall"
                             :openDelay="600"
@@ -250,7 +249,7 @@
         <DrawerOverlay
             v-model="groupInfoShow"
             placement="right"
-            :size="380">
+            :size="400">
             <DialogGroupInfo v-if="groupInfoShow" :dialogId="dialogId"/>
         </DrawerOverlay>
     </div>

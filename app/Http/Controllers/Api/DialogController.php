@@ -929,6 +929,8 @@ class DialogController extends AbstractController
      * @api {get} api/dialog/group/adduser          21. 添加群成员
      *
      * @apiDescription  需要token身份
+     * - 有群主时：只有群主可以邀请
+     * - 没有群主时：群内成员都可以邀请
      * @apiVersion 1.0.0
      * @apiGroup dialog
      * @apiName group__adduser
@@ -951,7 +953,7 @@ class DialogController extends AbstractController
             return Base::retError('请选择群成员');
         }
         //
-        $dialog = WebSocketDialog::checkDialog($dialog_id, true);
+        $dialog = WebSocketDialog::checkDialog($dialog_id, "auto");
         //
         $dialog->checkGroup();
         $dialog->joinGroup($userids);
@@ -963,6 +965,8 @@ class DialogController extends AbstractController
      * @api {get} api/dialog/group/deluser          22. 移出（退出）群成员
      *
      * @apiDescription  需要token身份
+     * - 只有群主、邀请人可以踢人
+     * - 群主、任务人员、项目人员不可被踢或退出
      * @apiVersion 1.0.0
      * @apiGroup dialog
      * @apiName group__adduser
@@ -993,10 +997,10 @@ class DialogController extends AbstractController
             return Base::retError('请选择群成员');
         }
         //
-        $dialog = WebSocketDialog::checkDialog($dialog_id, $type === 'remove');
+        $dialog = WebSocketDialog::checkDialog($dialog_id);
         //
         $dialog->checkGroup();
-        $dialog->exitGroup($userids);
+        $dialog->exitGroup($userids, $type);
         $dialog->pushMsg("groupExit", null, $userids);
         return Base::retSuccess($type === 'remove' ? '移出成功' : '退出成功');
     }
@@ -1005,6 +1009,7 @@ class DialogController extends AbstractController
      * @api {get} api/dialog/group/disband          23. 解散群组
      *
      * @apiDescription  需要token身份
+     * - 只有群主且是个人类型群可以解散
      * @apiVersion 1.0.0
      * @apiGroup dialog
      * @apiName group__disband
@@ -1023,7 +1028,7 @@ class DialogController extends AbstractController
         //
         $dialog = WebSocketDialog::checkDialog($dialog_id, true);
         //
-        $dialog->checkGroup();
+        $dialog->checkGroup('user');
         $dialog->deleteDialog();
         $dialog->pushMsg("groupDelete");
         return Base::retSuccess('解散成功');
