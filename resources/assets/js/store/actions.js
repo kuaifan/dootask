@@ -2510,7 +2510,13 @@ export default {
                                     case 'groupAdd':
                                     case 'groupJoin':
                                         // 群组添加、加入
-                                        dispatch("saveDialog", data)
+                                        dispatch("getDialogOne", data.id).catch(() => {})
+                                        break;
+                                    case 'groupUpdate':
+                                        // 群组更新
+                                        if (state.cacheDialogs.find(({id}) => id == data.id)) {
+                                            dispatch("saveDialog", data)
+                                        }
                                         break;
                                     case 'groupExit':
                                     case 'groupDelete':

@@ -557,6 +557,7 @@
         }
 
         .mention-item-at {
+            flex-shrink: 0;
             width: 28px;
             height: 28px;
             line-height: 28px;
@@ -568,6 +569,7 @@
         }
 
         .mention-item-img {
+            flex-shrink: 0;
             position: relative;
             display: flex;
             align-items: center;
@@ -601,6 +603,7 @@
         }
 
         .mention-item-name {
+            flex-shrink: 0;
             padding: 0 8px;
             font-size: 14px;
             overflow: hidden;
@@ -609,6 +612,8 @@
         }
 
         .mention-item-tip {
+            flex: 1;
+            text-align: right;
             color: #8f8f8e;
             font-size: 12px;
             font-style: normal;
@@ -618,6 +623,7 @@
         }
 
         .mention-item-disabled {
+            flex-shrink: 0;
             color: #aaa;
             font-size: 12px;
             padding: 0 4px;

@@ -269,36 +269,6 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/one          06. 获取单个消息
-     *
-     * @apiDescription 主要用于获取回复消息的详情，需要token身份
-     * @apiVersion 1.0.0
-     * @apiGroup dialog
-     * @apiName msg__one
-     *
-     * @apiParam {Number} msg_id         消息ID
-     *
-     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据
-     */
-    public function msg__one()
-    {
-        User::auth();
-        //
-        $msg_id = intval(Request::input('msg_id'));
-        //
-        $dialogMsg = WebSocketDialogMsg::find($msg_id);
-        if (empty($dialogMsg)) {
-            return Base::retError('消息不存在或已被删除');
-        }
-        //
-        WebSocketDialog::checkDialog($dialogMsg->dialog_id);
-        //
-        return Base::retSuccess('success', $dialogMsg);
-    }
-
-    /**
      * @api {get} api/dialog/msg/unread          07. 获取未读消息数量
      *
      * @apiDescription 需要token身份
@@ -882,7 +852,8 @@ class DialogController extends AbstractController
             return Base::retError('创建群组失败');
         }
         $data = WebSocketDialog::find($dialog->id)?->formatData($user->userid);
-        $dialog->pushMsg("groupAdd", $data, $userids);
+        $userids = array_values(array_diff($userids, [$user->userid]));
+        $dialog->pushMsg("groupAdd", null, $userids);
         return Base::retSuccess('创建成功', $data);
     }
 
@@ -956,8 +927,8 @@ class DialogController extends AbstractController
         $dialog = WebSocketDialog::checkDialog($dialog_id, "auto");
         //
         $dialog->checkGroup();
-        $dialog->joinGroup($userids);
-        $dialog->pushMsg("groupJoin", $dialog->formatData($user->userid), $userids);
+        $dialog->joinGroup($userids, $user->userid);
+        $dialog->pushMsg("groupJoin", null, $userids);
         return Base::retSuccess('添加成功');
     }
 

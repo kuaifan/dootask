@@ -124,22 +124,27 @@ class WebSocketDialog extends AbstractModel
     /**
      * 加入聊天室
      * @param int|array $userid     加入的会员ID或会员ID组
+     * @param int $inviter          邀请人
      * @return bool
      */
-    public function joinGroup($userid)
+    public function joinGroup($userid, $inviter)
     {
-        AbstractModel::transaction(function () use ($userid) {
+        AbstractModel::transaction(function () use ($inviter, $userid) {
             foreach (is_array($userid) ? $userid : [$userid] as $value) {
                 if ($value > 0) {
                     WebSocketDialogUser::updateInsert([
                         'dialog_id' => $this->id,
                         'userid' => $value,
                     ], [
-                        'inviter' => User::userid(),
+                        'inviter' => $inviter,
                     ]);
                 }
             }
         });
+        $this->pushMsg("groupUpdate", [
+            'id' => $this->id,
+            'people' => WebSocketDialogUser::whereDialogId($this->id)->count()
+        ]);
         return true;
     }
 
@@ -174,6 +179,11 @@ class WebSocketDialog extends AbstractModel
                 }
             });
         });
+        //
+        $this->pushMsg("groupUpdate", [
+            'id' => $this->id,
+            'people' => WebSocketDialogUser::whereDialogId($this->id)->count()
+        ]);
     }
 
     /**
@@ -244,7 +254,7 @@ class WebSocketDialog extends AbstractModel
     /**
      * 推送消息
      * @param $action
-     * @param array $data           发送内容，默认为[id=>项目ID]
+     * @param array $data           发送内容，默认为[id=>会话ID]
      * @param array $userid         指定会员，默认为群组所有成员
      * @return void
      */

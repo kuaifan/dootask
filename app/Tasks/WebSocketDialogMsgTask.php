@@ -13,7 +13,7 @@ use Request;
 
 
 /**
- * 推送回话消息
+ * 推送会话消息
  * Class WebSocketDialogMsgTask
  * @package App\Tasks
  */
@@ -38,6 +38,7 @@ class WebSocketDialogMsgTask extends AbstractTask
         $_A = [
             '__fill_url_remote_url' => true,
         ];
+
         //
         $msg = WebSocketDialogMsg::find($this->id);
         if (empty($msg)) {
@@ -48,14 +49,31 @@ class WebSocketDialogMsgTask extends AbstractTask
             return;
         }
 
+        // 提及会员
+        $mentions = [];
+        if ($msg->type === 'text') {
+            preg_match_all("/<span class=\"mention user\" data-id=\"(\d+)\">/", $msg->msg['text'], $matchs);
+            if ($matchs) {
+                $mentions = array_values(array_filter(array_unique($matchs[1])));
+            }
+        }
+
+        // 将会话以外的成员加入会话内
+        $userids = $dialog->dialogUser->pluck('userid')->toArray();
+        $diffids = array_values(array_diff($mentions, $userids));
+        if ($diffids) {
+            $dialog->joinGroup($diffids, $msg->userid);
+            $dialog->pushMsg("groupJoin", null, $diffids);
+            $userids = array_values(array_unique(array_merge($mentions, $userids)));
+        }
+
         // 推送目标①：会话成员/群成员
         $array = [];
-        $userids = $dialog->dialogUser->pluck('userid')->toArray();
         foreach ($userids AS $userid) {
             if ($userid == $msg->userid) {
                 $array[$userid] = false;
             } else {
-                $mention = preg_match("/<span class=\"mention user\" data-id=\"[0|{$userid}]\">/", $msg->type === 'text' ? $msg->msg['text'] : '');
+                $mention = array_intersect([0, $userid], $mentions) ? 1 : 0;
                 WebSocketDialogMsgRead::createInstance([
                     'dialog_id' => $msg->dialog_id,
                     'msg_id' => $msg->id,

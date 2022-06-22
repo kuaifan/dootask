@@ -202,6 +202,7 @@ export default {
             mentionMode: '',
 
             userList: null,
+            userCache: null,
             taskList: null,
 
             showMore: false,
@@ -279,7 +280,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(['dialogInputCache', 'cacheProjects', 'cacheTasks', 'cacheUserBasic', 'dialogMsgs']),
+        ...mapState(['dialogInputCache', 'cacheProjects', 'cacheTasks', 'cacheUserBasic', 'dialogMsgs', 'cacheDialogs']),
 
         isEnterSend() {
             if (typeof this.enterSend === "boolean") {
@@ -350,6 +351,10 @@ export default {
             return `${minute}:${seconds}″${millisecond}`
         },
 
+        dialogData() {
+            return this.dialogId > 0 ? (this.cacheDialogs.find(({id}) => id == this.dialogId) || {}) : {};
+        },
+
         replyData() {
             const {replyId} = this;
             if (replyId > 0) {
@@ -382,11 +387,13 @@ export default {
         // Reset lists
         dialogId() {
             this.userList = null;
+            this.userCache = null;
             this.taskList = null;
             this.$emit('input', this.getInputCache())
         },
         taskId() {
             this.userList = null;
+            this.userCache = null;
             this.taskList = null;
             this.$emit('input', this.getInputCache())
         },
@@ -499,7 +506,7 @@ export default {
                                 return `<div class="mention-item-disabled">${data.value}</div>`;
                             }
                             if (data.id === 0) {
-                                return `<div class="mention-item-at">@</div><div class="mention-item-name">${data.value}</div><div class="mention-item-tip">${this.$L('提示所有成员')}</div>`;
+                                return `<div class="mention-item-at">@</div><div class="mention-item-name">${data.value}</div><div class="mention-item-tip">${data.tip}</div>`;
                             }
                             if (data.avatar) {
                                 return `<div class="mention-item-img${data.online ? ' online' : ''}"><img src="${data.avatar}"/><em></em></div><div class="mention-item-name">${data.value}</div>`;
@@ -518,14 +525,14 @@ export default {
                                 containers[i].classList.add(mentionName);
                                 scrollPreventThrough(containers[i]);
                             }
-                            this.getSource(mentionChar).then(array => {
-                                let values = [];
+                            this.getMentionSource(mentionChar, searchTerm, array => {
+                                const values = [];
                                 array.some(item => {
                                     let list = item.list;
-                                    if (searchTerm && !item.ignoreSearch) {
+                                    if (searchTerm) {
                                         list = list.filter(({value}) => $A.strExists(value, searchTerm));
                                     }
-                                    if (list.length > 0 || item.ignoreSearch) {
+                                    if (list.length > 0) {
                                         item.label && values.push(...item.label)
                                         list.length > 0 && values.push(...list)
                                     }
@@ -908,149 +915,210 @@ export default {
             return 0;
         },
 
-        getSource(mentionChar) {
-            return new Promise(resolve => {
-                switch (mentionChar) {
-                    case "@": // @成员
-                        this.mentionMode = "user-mention";
-                        if (this.userList !== null) {
-                            resolve(this.userList)
-                            return;
-                        }
-                        const atCallback = (list) => {
-                            if (list.length > 2) {
-                                this.userList = [{
-                                    ignoreSearch: true,
-                                    label: null,
-                                    list: [{id: 0, value: this.$L('所有人')}]
-                                }, {
-                                    ignoreSearch: false,
+        getMentionSource(mentionChar, searchTerm, resultCallback) {
+            switch (mentionChar) {
+                case "@": // @成员
+                    this.mentionMode = "user-mention";
+                    const atCallback = (list) => {
+                        this.getMoreUser(searchTerm, list.map(item => item.id)).then(moreUser => {
+                            this.userList = list
+                            this.userCache = [];
+                            if (moreUser.length > 0) {
+                                if (list.length > 2) {
+                                    this.userCache.push({
+                                        label: null,
+                                        list: [{id: 0, value: this.$L('所有人'), tip: this.$L('仅提示会话内成员')}]
+                                    })
+                                }
+                                this.userCache.push(...[{
                                     label: [{id: 0, value: this.$L('会话内成员'), disabled: true}],
                                     list,
-                                }]
+                                }, {
+                                    label: [{id: 0, value: this.$L('会话以外成员'), disabled: true}],
+                                    list: moreUser,
+                                }])
                             } else {
-                                this.userList = [{
-                                    ignoreSearch: false,
-                                    label: null,
-                                    list
-                                }]
+                                if (list.length > 2) {
+                                    this.userCache.push(...[{
+                                        label: null,
+                                        list: [{id: 0, value: this.$L('所有人'), tip: this.$L('提示所有成员')}]
+                                    }, {
+                                        label: [{id: 0, value: this.$L('会话内成员'), disabled: true}],
+                                        list,
+                                    }])
+                                } else {
+                                    this.userCache.push({
+                                        label: null,
+                                        list
+                                    })
+                                }
                             }
-                            resolve(this.userList)
-                        }
-                        let array = [];
-                        if (this.dialogId > 0) {
-                            // 根据会话ID获取成员
-                            this.$store.dispatch("call", {
-                                url: 'dialog/user',
-                                data: {
-                                    dialog_id: this.dialogId,
-                                    getuser: 1
-                                }
-                            }).then(({data}) => {
-                                if (data.length > 0) {
-                                    array.push(...data.map(item => {
-                                        return {
-                                            id: item.userid,
-                                            value: item.nickname,
-                                            avatar: item.userimg,
-                                            online: item.online,
-                                        }
-                                    }))
-                                }
-                                atCallback(array)
-                            }).catch(_ => {
-                                atCallback(array)
-                            });
-                        } else if (this.taskId > 0) {
-                            // 根据任务ID获取成员
-                            const task = this.cacheTasks.find(({id}) => id == this.taskId)
-                            if (task && $A.isArray(task.task_user)) {
-                                task.task_user.some(tmp => {
-                                    let item = this.cacheUserBasic.find(({userid}) => userid == tmp.userid);
-                                    if (item) {
-                                        array.push({
-                                            id: item.userid,
-                                            value: item.nickname,
-                                            avatar: item.userimg,
-                                            online: item.online,
-                                        })
-                                    }
+                            resultCallback(this.userCache)
+                        })
+                    }
+                    //
+                    if (this.dialogData.people && $A.arrayLength(this.userList) !== this.dialogData.people) {
+                        this.userList = null;
+                        this.userCache = null;
+                    }
+                    if (this.userCache !== null) {
+                        resultCallback(this.userCache)
+                    }
+                    if (this.userList !== null) {
+                        atCallback(this.userList)
+                        return;
+                    }
+                    //
+                    const array = [];
+                    if (this.dialogId > 0) {
+                        // 根据会话ID获取成员
+                        this.$store.dispatch("call", {
+                            url: 'dialog/user',
+                            data: {
+                                dialog_id: this.dialogId,
+                                getuser: 1
+                            }
+                        }).then(({data}) => {
+                            if (this.cacheDialogs.find(({id}) => id == this.dialogId)) {
+                                this.$store.dispatch("saveDialog", {
+                                    id: this.dialogId,
+                                    people: data.length
                                 })
                             }
+                            if (data.length > 0) {
+                                array.push(...data.map(item => {
+                                    return {
+                                        id: item.userid,
+                                        value: item.nickname,
+                                        avatar: item.userimg,
+                                        online: item.online,
+                                    }
+                                }))
+                            }
                             atCallback(array)
+                        }).catch(_ => {
+                            atCallback(array)
+                        });
+                    } else if (this.taskId > 0) {
+                        // 根据任务ID获取成员
+                        const task = this.cacheTasks.find(({id}) => id == this.taskId)
+                        if (task && $A.isArray(task.task_user)) {
+                            task.task_user.some(tmp => {
+                                const item = this.cacheUserBasic.find(({userid}) => userid == tmp.userid);
+                                if (item) {
+                                    array.push({
+                                        id: item.userid,
+                                        value: item.nickname,
+                                        avatar: item.userimg,
+                                        online: item.online,
+                                    })
+                                }
+                            })
                         }
-                        break;
+                        atCallback(array)
+                    }
+                    break;
 
-                    case "#": // #任务
-                        this.mentionMode = "task-mention";
-                        if (this.taskList !== null) {
-                            resolve(this.taskList)
-                            return;
+                case "#": // #任务
+                    this.mentionMode = "task-mention";
+                    if (this.taskList !== null) {
+                        resultCallback(this.taskList)
+                        return;
+                    }
+                    const taskCallback = (list) => {
+                        this.taskList = [];
+                        // 项目任务
+                        if (list.length > 0) {
+                            list = list.map(item => {
+                                return {
+                                    id: item.id,
+                                    value: item.name
+                                }
+                            })
+                            this.taskList.push({
+                                label: [{id: 0, value: this.$L('项目未完成任务'), disabled: true}],
+                                list,
+                            })
                         }
-                        const taskCallback = (list) => {
-                            this.taskList = [];
-                            // 项目任务
-                            if (list.length > 0) {
-                                list = list.map(item => {
+                        // 待完成任务
+                        let data = this.$store.getters.transforTasks(this.$store.getters.dashboardTask['all']);
+                        if (data.length > 0) {
+                            data = data.sort((a, b) => {
+                                return $A.Date(a.end_at || "2099-12-31 23:59:59") - $A.Date(b.end_at || "2099-12-31 23:59:59");
+                            })
+                            this.taskList.push({
+                                label: [{id: 0, value: this.$L('我的待完成任务'), disabled: true}],
+                                list: data.map(item => {
                                     return {
                                         id: item.id,
                                         value: item.name
                                     }
-                                })
-                                this.taskList.push({
-                                    ignoreSearch: false,
-                                    label: [{id: 0, value: this.$L('项目未完成任务'), disabled: true}],
-                                    list,
-                                })
-                            }
-                            // 待完成任务
-                            let data = this.$store.getters.transforTasks(this.$store.getters.dashboardTask['all']);
-                            if (data.length > 0) {
-                                data = data.sort((a, b) => {
-                                    return $A.Date(a.end_at || "2099-12-31 23:59:59") - $A.Date(b.end_at || "2099-12-31 23:59:59");
-                                })
-                                this.taskList.push({
-                                    ignoreSearch: false,
-                                    label: [{id: 0, value: this.$L('我的待完成任务'), disabled: true}],
-                                    list: data.map(item => {
-                                        return {
-                                            id: item.id,
-                                            value: item.name
-                                        }
-                                    }),
-                                })
-                            }
-                            resolve(this.taskList)
-                        }
-                        //
-                        const projectId = this.getProjectId();
-                        if (projectId > 0) {
-                            this.$store.dispatch("getTaskForProject", projectId).then(_ => {
-                                let tasks = this.cacheTasks.filter(task => {
-                                    if (task.archived_at) {
-                                        return false;
-                                    }
-                                    return task.project_id == projectId
-                                        && task.parent_id === 0
-                                        && !task.archived_at
-                                        && !task.complete_at
-                                })
-                                if (tasks.length > 0) {
-                                    taskCallback(tasks);
-                                } else {
-                                    taskCallback([])
-                                }
-                            }).catch(_ => {
-                                taskCallback([])
+                                }),
                             })
-                            return;
                         }
-                        taskCallback([])
-                        break;
+                        resultCallback(this.taskList)
+                    }
+                    //
+                    const projectId = this.getProjectId();
+                    if (projectId > 0) {
+                        this.$store.dispatch("getTaskForProject", projectId).then(_ => {
+                            const tasks = this.cacheTasks.filter(task => {
+                                if (task.archived_at) {
+                                    return false;
+                                }
+                                return task.project_id == projectId
+                                    && task.parent_id === 0
+                                    && !task.archived_at
+                                    && !task.complete_at
+                            })
+                            if (tasks.length > 0) {
+                                taskCallback(tasks);
+                            } else {
+                                taskCallback([])
+                            }
+                        }).catch(_ => {
+                            taskCallback([])
+                        })
+                        return;
+                    }
+                    taskCallback([])
+                    break;
 
-                    default:
-                        resolve([])
-                        break;
+                default:
+                    resultCallback([])
+                    break;
+            }
+        },
+
+        getMoreUser(key, existIds) {
+            return new Promise(resolve => {
+                if (this.dialogId > 0 || this.taskId > 0 || this.dialogData.type === 'group') {
+                    this.__getMoreTimer && clearTimeout(this.__getMoreTimer)
+                    this.__getMoreTimer = setTimeout(_ => {
+                        this.$store.dispatch("call", {
+                            url: 'users/search',
+                            data: {
+                                keys: {
+                                    key,
+                                },
+                                take: 30
+                            },
+                        }).then(({data}) => {
+                            const moreUser = data.filter(item => !existIds.includes(item.userid))
+                            resolve(moreUser.map(item => {
+                                return {
+                                    id: item.userid,
+                                    value: item.nickname,
+                                    avatar: item.userimg,
+                                    online: !!item.online,
+                                }
+                            }))
+                        }).catch(_ => {
+                            resolve([])
+                        });
+                    }, this.userCache === null ? 0 : 600)
+                } else {
+                    resolve([])
                 }
             })
         },

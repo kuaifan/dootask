@@ -928,11 +928,18 @@ class ProjectTask extends AbstractModel
 
     /**
      * 权限版本
-     * @param int $level 1-负责人，2-协助人/负责人，3-创建人/协助人/负责人
+     * @param int $level
+     * 1：负责人
+     * 2：协助人/负责人
+     * 3：创建人/协助人/负责人
+     * 4：任务群聊成员/3
      * @return bool
      */
     public function permission($level = 1)
     {
+        if ($level >= 4) {
+            return $this->permission(3) || $this->existDialogUser();
+        }
         if ($level >= 3 && $this->isCreater()) {
             return true;
         }
@@ -940,6 +947,15 @@ class ProjectTask extends AbstractModel
             return true;
         }
         return $this->isOwner();
+    }
+
+    /**
+     * 判断是否在任务对话里
+     * @return bool
+     */
+    public function existDialogUser()
+    {
+        return $this->dialog_id && WebSocketDialogUser::whereDialogId($this->dialog_id)->whereUserid(User::userid())->exists();
     }
 
     /**
@@ -1218,7 +1234,10 @@ class ProjectTask extends AbstractModel
      * @param int $task_id
      * @param bool $archived true:仅限未归档, false:仅限已归档, null:不限制
      * @param bool $trashed true:仅限未删除, false:仅限已删除, null:不限制
-     * @param int|bool $permission 0|false:不限制, 1|true:限制项目负责人、任务负责人、协助人员及任务创建者, 2:已有负责人才限制true (子任务时如果是主任务负责人也可以)
+     * @param int|bool $permission
+     * - 0|false   限制：项目成员、任务成员、任务群聊成员（任务成员 = 任务创建人+任务协助人+任务负责人）
+     * - 1|true    限制：项目负责人、任务成员
+     * - 2         已有负责人才限制true (子任务时如果是主任务负责人也可以)
      * @param array $with
      * @return self
      */
@@ -1245,19 +1264,20 @@ class ProjectTask extends AbstractModel
         try {
             $project = Project::userProject($task->project_id);
         } catch (\Throwable $e) {
-            if ($task->owner === null) {
+            if ($task->owner !== null || (!$permission && $task->permission(4))) {
+                $project = Project::find($task->project_id);
+                if (empty($project)) {
+                    throw new ApiException('项目不存在或已被删除', [ 'task_id' => $task_id ], -4002);
+                }
+            } else {
                 throw new ApiException($e->getMessage(), [ 'task_id' => $task_id ], -4002);
-            }
-            $project = Project::find($task->project_id);
-            if (empty($project)) {
-                throw new ApiException('项目不存在或已被删除', [ 'task_id' => $task_id ], -4002);
             }
         }
         //
-        if ($permission === 2) {
+        if ($permission >= 2) {
             $permission = $task->hasOwner() ? 1 : 0;
         }
-        if (($permission === 1 || $permission === true) && !$project->owner && !$task->permission(3)) {
+        if ($permission && !$project->owner && !$task->permission(3)) {
             throw new ApiException('仅限项目负责人、任务负责人、协助人员或任务创建者操作');
         }
         //

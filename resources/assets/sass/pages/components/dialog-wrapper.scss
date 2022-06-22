@@ -44,7 +44,7 @@
                     pointer-events: none;
                     position: absolute;
                     top: 50%;
-                    right: 22px;
+                    right: 52px;
                     transform: translateY(-50%);
                     font-size: 40px;
                     color: #19be6b;
@@ -151,7 +151,9 @@
                         line-height: 20px;
                         padding-top: 2px;
                         color: #aaaaaa;
-                        white-space: normal;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
 
                         &.pointer {
                             cursor: pointer;
@@ -1093,7 +1095,8 @@
 
                 &.completed {
                     &:after {
-                        right: 14px;
+                        font-size: 36px;
+                        right: 40px;
                     }
                     .dialog-title {
                         padding-right: 0;
