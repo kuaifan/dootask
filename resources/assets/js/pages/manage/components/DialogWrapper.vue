@@ -324,7 +324,7 @@ export default {
             operateHasText: false,
             operateStyles: {},
             operateItem: {},
-            operateEmojis: ['👌', '🤝', '🤔', '👍', '👎', '👏', '✋', '✅', '❌', '❤️', '❓'],
+            operateEmojis: ['👌', '🤝', '🥳', '❤️', '👍', '👎', '🥰', '🥶', '✅', '❌', '❓'],
 
             recordState: '',
             wrapperStart: {},
