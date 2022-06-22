@@ -116,8 +116,12 @@
                             <div class="plans-table-td">{{$L('项目搜索')}}</div>
                             <div class="plans-table-td">{{$L('任务类型')}}</div>
                             <div class="plans-table-td">{{$L('文件搜索')}}</div>
+                            <div class="plans-table-td">{{$L('Mac/PC客户端')}}</div>
+                            <div class="plans-table-td">{{$L('iOS/Android客户端')}}</div>
                         </div>
                         <div @mouseenter="active=1" class="plans-table-item" :class="{active:active==1}">
+                            <div class="plans-table-td"><Icon type="md-checkmark" /></div>
+                            <div class="plans-table-td"><Icon type="md-checkmark" /></div>
                             <div class="plans-table-td"><Icon type="md-checkmark" /></div>
                             <div class="plans-table-td"><Icon type="md-checkmark" /></div>
                             <div class="plans-table-td"><Icon type="md-checkmark" /></div>
@@ -152,8 +156,12 @@
                             <div class="plans-table-td"><Icon type="md-checkmark" /></div>
                             <div class="plans-table-td"><Icon type="md-checkmark" /></div>
                             <div class="plans-table-td"><Icon type="md-checkmark" /></div>
+                            <div class="plans-table-td"><Icon type="md-checkmark" /></div>
+                            <div class="plans-table-td"><Icon type="md-checkmark" /></div>
                         </div>
                         <div @mouseenter="active=3" class="plans-table-item" :class="{active:active==3}">
+                            <div class="plans-table-td"><Icon type="md-checkmark" /></div>
+                            <div class="plans-table-td"><Icon type="md-checkmark" /></div>
                             <div class="plans-table-td"><Icon type="md-checkmark" /></div>
                             <div class="plans-table-td"><Icon type="md-checkmark" /></div>
                             <div class="plans-table-td"><Icon type="md-checkmark" /></div>

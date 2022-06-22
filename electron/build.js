@@ -41,7 +41,7 @@ function cloneDrawio(systemInfo) {
 }
 
 function changeLog() {
-    child_process.execSync("docker run -t -v \"$(pwd)\":/app/ orhunp/git-cliff:latest > CHANGELOG.md", {stdio: "inherit"});
+    child_process.execSync("docker run -t --rm -v \"$(pwd)\":/app/ orhunp/git-cliff:latest > CHANGELOG.md", {stdio: "inherit"});
     let filePath = path.resolve(__dirname, "../CHANGELOG.md");
     if (!fse.existsSync(filePath)) {
         return "";
