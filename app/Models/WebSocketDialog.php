@@ -340,6 +340,7 @@ class WebSocketDialog extends AbstractModel
                     WebSocketDialogUser::createInstance([
                         'dialog_id' => $dialog->id,
                         'userid' => $value,
+                        'important' => $group_type != 'user'
                     ])->save();
                 }
             }
