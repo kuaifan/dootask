@@ -14,6 +14,7 @@ use Carbon\Carbon;
  * @property int $userid
  * @property array $identity 身份
  * @property string|null $az A-Z
+ * @property string|null $pinyin 拼音（主要用于搜索）
  * @property string|null $email 邮箱
  * @property string $nickname 昵称
  * @property string|null $profession 职位/职称
@@ -52,6 +53,7 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereLoginNum($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereNickname($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User wherePassword($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User wherePinyin($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereProfession($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereTaskDialogId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUpdatedAt($value)
@@ -226,8 +228,9 @@ class User extends AbstractModel
             $inArray = array_merge($inArray, $other);
         }
         $user = User::createInstance($inArray);
+        $user->az = Base::getFirstCharter($user->nickname);
+        $user->pinyin = Base::cn2pinyin($user->nickname);
         $user->save();
-        User::AZUpdate($user->userid);
         return $user->find($user->userid);
     }
 
@@ -427,7 +430,7 @@ class User extends AbstractModel
         if (isset($_A["__static_userid2basic_" . $userid])) {
             return $_A["__static_userid2basic_" . $userid];
         }
-        $fields = ['userid', 'email', 'nickname', 'profession', 'userimg', 'az', 'line_at', 'disable_at'];
+        $fields = ['userid', 'email', 'nickname', 'profession', 'userimg', 'az', 'pinyin', 'line_at', 'disable_at'];
         $userInfo = self::whereUserid($userid)->select($fields)->first();
         if ($userInfo) {
             $userInfo->online = $userInfo->getOnlineStatus();
@@ -445,19 +448,6 @@ class User extends AbstractModel
     {
         $basic = self::userid2basic($userid);
         return $basic ? $basic->nickname : '';
-    }
-
-    /**
-     * 更新首字母
-     * @param $userid
-     */
-    public static function AZUpdate($userid)
-    {
-        $row = self::whereUserid($userid)->first();
-        if ($row) {
-            $row->az = Base::getFirstCharter($row->nickname);
-            $row->save();
-        }
     }
 
     /**

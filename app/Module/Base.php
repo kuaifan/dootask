@@ -2850,6 +2850,23 @@ class Base
     }
 
     /**
+     * 中文转拼音
+     * @param $str
+     * @return string
+     */
+    public static function cn2pinyin($str)
+    {
+        if (empty($str)) {
+            return '';
+        }
+        if (!preg_match("/^[a-zA-Z0-9_.]+$/", $str)) {
+            $pinyin = new Pinyin();
+            $str = $pinyin->permalink($str, '');
+        }
+        return $str;
+    }
+
+    /**
      * 缓存数据
      * @param $name
      * @param null $value

@@ -271,8 +271,10 @@ class UsersController extends AbstractController
                 return Base::retError('昵称不可以少于2个字');
             } elseif (mb_strlen($nickname) > 20) {
                 return Base::retError('昵称最多只能设置20个字');
-            } else {
+            } elseif ($nickname != $user->nickname) {
                 $user->nickname = $nickname;
+                $user->az = Base::getFirstCharter($nickname);
+                $user->pinyin = Base::cn2pinyin($nickname);
             }
         }
         // 职位/职称
@@ -289,7 +291,6 @@ class UsersController extends AbstractController
         //
         $user->save();
         User::token($user);
-        User::AZUpdate($user->userid);
         //
         if (empty($user->userimg)) {
             $user->userimg = $user->getUserimgAttribute(null);
@@ -367,7 +368,7 @@ class UsersController extends AbstractController
      */
     public function search()
     {
-        $builder = User::select(['userid', 'email', 'nickname', 'profession', 'userimg', 'az', 'line_at', 'disable_at']);
+        $builder = User::select(['userid', 'email', 'nickname', 'profession', 'userimg', 'az', 'pinyin', 'line_at', 'disable_at']);
         //
         $keys = Request::input('keys');
         $sorts = Request::input('sorts');
@@ -640,6 +641,8 @@ class UsersController extends AbstractController
                 return Base::retError('昵称最多只能设置20个字');
             } else {
                 $upArray['nickname'] = $nickname;
+                $upArray['az'] = Base::getFirstCharter($nickname);
+                $upArray['pinyin'] = Base::cn2pinyin($nickname);
             }
         }
         // 职位/职称
