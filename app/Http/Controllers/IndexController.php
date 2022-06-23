@@ -293,7 +293,8 @@ class IndexController extends InvokeController
             parse_str($data['query'], $query);
             $name = Arr::get($query, 'name');
             $ext = strtolower(Arr::get($query, 'ext'));
-            if ($ext === 'pdf') {
+            if ($ext === 'pdf'
+                && str_contains(strtolower(Request::server('HTTP_USER_AGENT')), 'electron')) {
                 return response()->download($file, $name, [], 'inline');
             }
             //
