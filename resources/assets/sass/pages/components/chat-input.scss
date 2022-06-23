@@ -165,6 +165,10 @@
                         text-overflow: ellipsis;
                     }
                 }
+
+                .mention {
+                    -webkit-user-select: auto;
+                }
             }
         }
 

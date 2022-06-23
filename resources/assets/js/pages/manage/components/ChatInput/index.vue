@@ -451,6 +451,9 @@ export default {
         },
 
         dialogInputCache() {
+            if (this.isFocus) {
+                return
+            }
             this.$emit('input', this.getInputCache())
         },
 
@@ -669,13 +672,13 @@ export default {
         },
 
         getInputCache() {
-            const key = this.dialogId || this.taskId;
+            const key = this.dialogId || `t_${this.taskId}`;
             const item = this.dialogInputCache.find(item => item.key == key);
             return item ? item.cache : '';
         },
 
         setInputCache(cache) {
-            const key = this.dialogId || this.taskId;
+            const key = this.dialogId || `t_${this.taskId}`;
             const index = this.dialogInputCache.findIndex(item => item.key == key);
             const data = {key, cache}
             if (index > -1) {

@@ -1069,7 +1069,7 @@
             box-sizing: content-box;
             display: flex;
             flex-shrink: 0;
-            font-size: 24px;
+            font-size: 22px;
             justify-content: center;
             align-items: center;
         }
@@ -1216,6 +1216,14 @@
             .dialog-newmsg,
             .dialog-goto {
                 right: 16px;
+            }
+        }
+    }
+
+    .dialog-wrapper-operate {
+        .operate-emoji {
+            > li {
+                font-size: 24px;
             }
         }
     }
