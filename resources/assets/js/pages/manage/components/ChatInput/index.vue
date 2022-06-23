@@ -1107,6 +1107,7 @@ export default {
                                 keys: {
                                     key,
                                 },
+                                state: 1,
                                 take: 30
                             },
                         }).then(({data}) => {

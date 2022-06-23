@@ -353,6 +353,9 @@ class UsersController extends AbstractController
      * @apiParam {Object} sorts         排序方式
      * - sorts.az                           按字母：asc|desc
      * @apiParam {Number} updated_time  在这个时间戳之后更新的
+     * @apiParam {Number} state         获取在线状态
+     * - 0: 不获取（默认）
+     * - 1: 获取会员在线状态，返回数据多一个online值
      *
      * @apiParam {Number} [take]        获取数量，10-100
      * @apiParam {Number} [page]        当前页，默认:1（赋值分页模式，take参数无效）
@@ -369,6 +372,7 @@ class UsersController extends AbstractController
         $keys = Request::input('keys');
         $sorts = Request::input('sorts');
         $updatedTime = intval(Request::input('updated_time'));
+        $state = intval(Request::input('state', 0));
         $keys = is_array($keys) ? $keys : [];
         $sorts = is_array($sorts) ? $sorts : [];
         //
@@ -404,6 +408,13 @@ class UsersController extends AbstractController
             $list = $builder->orderBy('userid')->paginate(Base::getPaginate(100, 10));
         } else {
             $list = $builder->orderBy('userid')->take(Base::getPaginate(100, 10, 'take'))->get();
+        }
+        //
+        if ($state === 1) {
+            $list->transform(function (User $userInfo) {
+                $userInfo->online = $userInfo->getOnlineStatus();
+                return $userInfo;
+            });
         }
         return Base::retSuccess('success', $list);
     }
