@@ -61,10 +61,13 @@ class WebSocketDialogMsgTask extends AbstractTask
         // 将会话以外的成员加入会话内
         $userids = $dialog->dialogUser->pluck('userid')->toArray();
         $diffids = array_values(array_diff($mentions, $userids));
-        if ($diffids && $dialog->type === 'group') {
-            $dialog->joinGroup($diffids, $msg->userid);
-            $dialog->pushMsg("groupJoin", null, $diffids);
-            $userids = array_values(array_unique(array_merge($mentions, $userids)));
+        if ($diffids) {
+            // 仅(群聊)且(是群主或没有群主)才可以@成员以外的人
+            if ($dialog->type === 'group' && in_array($dialog->owner_id, [0, $msg->userid])) {
+                $dialog->joinGroup($diffids, $msg->userid);
+                $dialog->pushMsg("groupJoin", null, $diffids);
+                $userids = array_values(array_unique(array_merge($mentions, $userids)));
+            }
         }
 
         // 推送目标①：会话成员/群成员

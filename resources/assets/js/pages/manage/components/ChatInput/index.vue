@@ -1095,7 +1095,10 @@ export default {
 
         getMoreUser(key, existIds) {
             return new Promise(resolve => {
-                if (this.taskId > 0 || this.dialogData.type === 'group') {
+                const {owner_id, type} = this.dialogData
+                const permission = type === 'group' && [0, this.userId].includes(owner_id)
+                if (this.taskId > 0 || permission) {
+                    console.log(this.dialogData);
                     this.__getMoreTimer && clearTimeout(this.__getMoreTimer)
                     this.__getMoreTimer = setTimeout(_ => {
                         this.$store.dispatch("call", {
