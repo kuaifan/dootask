@@ -2447,11 +2447,11 @@ export default {
                                         // 删除消息
                                         dispatch("forgetDialogMsg", data.id)
                                         //
-                                        const dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
+                                        const dialog = state.cacheDialogs.find(({id}) => id == dialog_id);
                                         if (dialog) {
                                             // 更新最后消息
                                             const newData = {
-                                                id: data.dialog_id,
+                                                id: dialog_id,
                                                 last_at: data.last_msg && data.last_msg.created_at,
                                                 last_msg: data.last_msg,
                                             }
@@ -2459,7 +2459,7 @@ export default {
                                                 // 更新未读数量
                                                 dispatch("call", {
                                                     url: 'dialog/msg/unread',
-                                                    dialog_id: data.dialog_id
+                                                    data: {dialog_id}
                                                 }).then(result => {
                                                     newData.unread = result.data.unread
                                                     newData.last_umid = result.data.last_umid
@@ -2480,10 +2480,10 @@ export default {
                                             }
                                             if (data.userid !== state.userId) {
                                                 // 更新对话新增未读数
-                                                const dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
+                                                const dialog = state.cacheDialogs.find(({id}) => id == dialog_id);
                                                 if (dialog) {
                                                     const newData = {
-                                                        id: data.dialog_id,
+                                                        id: dialog_id,
                                                         last_umid: data.id,
                                                     }
                                                     newData.unread = dialog.unread + 1;
