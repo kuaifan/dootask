@@ -4,7 +4,7 @@
             <Alert v-if="loadError" class="load-error" type="error" show-icon>{{$L('组件加载失败！')}}</Alert>
             <div :id="id" class="placeholder"></div>
         </template>
-        <IFrame v-else class="preview-iframe" :src="previewUrl" @on-message="onMessage"/>
+        <IFrame v-else class="preview-iframe" :src="previewUrl" @on-load="onFrameLoad"/>
         <div v-if="loading" class="office-loading"><Loading/></div>
     </div>
 </template>
@@ -187,12 +187,8 @@ export default {
     },
 
     methods: {
-        onMessage(data) {
-            switch (data.action) {
-                case 'ready':
-                    this.loading = false;
-                    break
-            }
+        onFrameLoad() {
+            this.loading = false;
         },
 
         getType(type) {

@@ -455,21 +455,14 @@ class File extends AbstractModel
                 else
                 {
                     // 其他预览
-                    if (in_array($fileExt, File::localExt)) {
-                        $url = Base::fillUrl($filePath);
-                    } else {
-                        $url = 'http://' . env('APP_IPPR') . '.3/' . $filePath;
-                    }
-                    if ($fileExt != 'pdf') {
-                        $fileDotExt = ".{$fileExt}";
-                        $fullFileName = Base::rightDelete($fileName, $fileDotExt) . $fileDotExt;
-                        $url = Base::urlAddparameter($url, [
-                            'fullfilename' => $fullFileName
-                        ]);
-                    }
+                    $name = Base::rightDelete($fileName, ".{$fileExt}") . ".{$fileExt}";
                     $data['content'] = [
                         'preview' => true,
-                        'url' => base64_encode($url),
+                        'name' => $name,
+                        'key' => urlencode(Base::urlAddparameter($filePath, [
+                            'name' => $name,
+                            'ext' => $fileExt
+                        ])),
                     ];
                     $data['file_mode'] = 'preview';
                 }

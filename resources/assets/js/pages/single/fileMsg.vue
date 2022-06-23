@@ -132,7 +132,8 @@ export default {
         },
 
         previewUrl() {
-            return $A.apiUrl("../fileview/onlinePreview?url=" + encodeURIComponent(this.msgDetail.content.url))
+            const {name, key} = this.msgDetail.content;
+            return $A.apiUrl(`../online/preview/${name}?key=${key}`)
         }
     },
     methods: {

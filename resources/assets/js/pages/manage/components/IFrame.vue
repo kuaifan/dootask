@@ -1,5 +1,5 @@
 <template>
-    <iframe v-if="src" ref="iframe" :src="src"></iframe>
+    <iframe v-show="src" ref="iframe" :src="src"></iframe>
 </template>
 
 <script>
@@ -13,14 +13,20 @@ export default {
     },
 
     mounted() {
+        this.$refs.iframe.addEventListener('load', this.handleLoad)
         window.addEventListener('message', this.handleMessage)
     },
 
     beforeDestroy() {
+        this.$refs.iframe.removeEventListener('load', this.handleLoad)
         window.removeEventListener('message', this.handleMessage)
     },
 
     methods: {
+        handleLoad() {
+            this.$emit("on-load")
+        },
+
         handleMessage({data, source}) {
             if (source !== this.$refs.iframe?.contentWindow) {
                 return;

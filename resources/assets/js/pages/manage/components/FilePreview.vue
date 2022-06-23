@@ -1,6 +1,6 @@
 <template>
     <div class="file-preview">
-        <IFrame v-if="isPreview" class="preview-iframe" :src="previewUrl" @on-message="onMessage"/>
+        <IFrame v-if="isPreview" class="preview-iframe" :src="previewUrl" @on-load="onFrameLoad"/>
         <template v-else-if="contentDetail">
             <div v-show="headerShow && !['word', 'excel', 'ppt'].includes(file.type)" class="edit-header">
                 <div class="header-title">
@@ -110,20 +110,16 @@ export default {
 
         previewUrl() {
             if (this.isPreview) {
-                return $A.apiUrl("../fileview/onlinePreview?url=" + encodeURIComponent(this.contentDetail.url))
-            } else {
-                return '';
+                const {name, key} = this.contentDetail;
+                return $A.apiUrl(`../online/preview/${name}?key=${key}`)
             }
+            return '';
         },
     },
 
     methods: {
-        onMessage(data) {
-            switch (data.action) {
-                case 'ready':
-                    this.loadPreview = false;
-                    break
-            }
+        onFrameLoad() {
+            this.loadPreview = false;
         },
 
         getContent() {

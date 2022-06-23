@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\File;
 use App\Module\Base;
 use App\Module\Ihttp;
 use App\Module\RandomColor;
@@ -274,6 +275,40 @@ class IndexController extends InvokeController
             'icons' => [],
             'total_count' => 0
         ];
+    }
+
+    /**
+     * 预览文件
+     * @return array|mixed
+     */
+    public function online__preview()
+    {
+        $key = trim(Request::input('key'));
+        //
+        $data = parse_url($key);
+        $path = Arr::get($data, 'path');
+        $file = public_path($path);
+        //
+        if (file_exists($file)) {
+            parse_str($data['query'], $query);
+            $name = Arr::get($query, 'name');
+            $ext = strtolower(Arr::get($query, 'ext'));
+            if ($ext === 'pdf') {
+                return response()->download($file, $name, [], 'inline');
+            }
+            //
+            if (in_array($ext, File::localExt)) {
+                $url = Base::fillUrl($path);
+            } else {
+                $url = 'http://' . env('APP_IPPR') . '.3/' . $path;
+            }
+            $url = Base::urlAddparameter($url, [
+                'fullfilename' => $name
+            ]);
+            $toUrl = Base::fillUrl("fileview/onlinePreview?url=" . urlencode(base64_encode($url)));
+            return Redirect::to($toUrl, 301);
+        }
+        return abort(404);
     }
 
     /**

@@ -50,19 +50,12 @@ class FileContent extends AbstractModel
         $fileExt = $array['ext'];
         $fileName = $array['name'];
         $filePath = $array['path'];
-        if (in_array($fileExt, File::localExt)) {
-            $url = Base::fillUrl($filePath);
-        } else {
-            $url = 'http://' . env('APP_IPPR') . '.3/' . $filePath;
-        }
-        if ($fileExt != 'pdf') {
-            $fileDotExt = ".{$fileExt}";
-            $fullFileName = Base::rightDelete($fileName, $fileDotExt) . $fileDotExt;
-            $url = Base::urlAddparameter($url, [
-                'fullfilename' => $fullFileName
-            ]);
-        }
-        return Base::fillUrl("fileview/onlinePreview?url=" . urlencode(base64_encode($url)));
+        $name = Base::rightDelete($fileName, ".{$fileExt}") . ".{$fileExt}";
+        $key = urlencode(Base::urlAddparameter($filePath, [
+            'name' => $name,
+            'ext' => $fileExt
+        ]));
+        return Base::fillUrl("online/preview/{$name}?key={$key}");
     }
 
     /**
