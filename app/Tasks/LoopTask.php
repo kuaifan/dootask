@@ -2,7 +2,10 @@
 
 namespace App\Tasks;
 
+use App\Models\ProjectFlow;
+use App\Models\ProjectFlowItem;
 use App\Models\ProjectTask;
+use App\Models\ProjectTaskUser;
 use Carbon\Carbon;
 
 @error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
@@ -28,14 +31,41 @@ class LoopTask extends AbstractTask
             foreach ($list as $item) {
                 try {
                     $task = $item->copyTask();
-                    if ($item->start_at) {
-                        $diffSecond = Carbon::parse($item->start_at)->diffInSeconds(Carbon::parse($item->end_at), true);
-                        $task->start_at = Carbon::parse($item->loop_at);
+                    // 工作流
+                    $projectFlow = ProjectFlow::whereProjectId($task->project_id)->orderByDesc('id')->first();
+                    if ($projectFlow) {
+                        $projectFlowItem = ProjectFlowItem::whereFlowId($projectFlow->id)->orderBy('sort')->get();
+                        // 赋一个开始状态
+                        foreach ($projectFlowItem as $flowItem) {
+                            if ($flowItem->status == 'start') {
+                                $task->flow_item_id = $flowItem->id;
+                                $task->flow_item_name = $flowItem->status . "|" . $flowItem->name;
+                                if ($flowItem->userids) {
+                                    $userids = array_values(array_unique($flowItem->userids));
+                                    foreach ($userids as $uid) {
+                                        ProjectTaskUser::updateInsert([
+                                            'task_id' => $task->id,
+                                            'userid' => $uid,
+                                        ], [
+                                            'project_id' => $task->project_id,
+                                            'task_pid' => $task->id,
+                                            'owner' => 1,
+                                        ]);
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    // 新任务时间、周期
+                    if ($task->start_at) {
+                        $diffSecond = Carbon::parse($task->start_at)->diffInSeconds(Carbon::parse($task->end_at), true);
+                        $task->start_at = Carbon::parse($task->loop_at);
                         $task->end_at = $task->start_at->addSeconds($diffSecond);
                     }
                     $task->refreshLoop(true);
-                    $task->addLog("创建任务来自周期任务ID：" . $item->id, [], $item->userid);
-                    //
+                    $task->addLog("创建任务来自周期任务ID：" . $item->id, [], $task->userid);
+                    // 清空旧周期
                     $item->loop = '';
                     $item->loop_at = null;
                     $item->save();
