@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $key 搜索关键词
  * @property int|null $read 已阅数量
  * @property int|null $send 发送数量
+ * @property int|null $reply_num 有多少条回复
  * @property int|null $reply_id 回复ID
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -44,6 +45,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereMsg($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereRead($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereReplyId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereReplyNum($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereSend($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereUpdatedAt($value)
@@ -287,6 +289,10 @@ class WebSocketDialogMsg extends AbstractModel
             $deleteRead = WebSocketDialogMsgRead::whereMsgId($this->id)->whereNull('read_at')->delete();    // 未阅读记录不需要软删除，直接删除即可
             $this->delete();
             //
+            if ($this->reply_id > 0) {
+                self::whereId($this->reply_id)->decrement('reply_num');
+            }
+            //
             $last_msg = null;
             if ($this->webSocketDialog) {
                 $last_msg = WebSocketDialogMsg::whereDialogId($this->dialog_id)->orderByDesc('id')->first();
@@ -471,6 +477,9 @@ class WebSocketDialogMsg extends AbstractModel
             'msg' => $msg,
             'read' => 0,
         ]);
+        if ($reply_id > 0) {
+            self::whereId($reply_id)->increment('reply_num');
+        }
         AbstractModel::transaction(function () use ($dialogMsg) {
             $dialog = WebSocketDialog::find($dialogMsg->dialog_id);
             if (empty($dialog)) {
