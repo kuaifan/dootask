@@ -277,7 +277,7 @@
                     </FormItem>
                     <FormItem v-if="(taskDetail.loop && taskDetail.loop != 'never') || loopForce">
                         <div class="item-label" slot="label">
-                            <i class="taskfont">&#xe68c;</i>{{$L('重复周期')}}
+                            <i class="taskfont">&#xe93f;</i>{{$L('重复周期')}}
                         </div>
                         <ul class="item-content">
                             <li>
@@ -750,7 +750,7 @@ export default {
             if (!taskDetail.loop || taskDetail.loop == 'never') {
                 list.push({
                     command: 'loop',
-                    icon: '&#xe68c;',
+                    icon: '&#xe93f;',
                     name: '重复周期',
                 });
             }

@@ -879,41 +879,42 @@ class ProjectTask extends AbstractModel
      */
     public function refreshLoop($save = false)
     {
-        if (!$this->start_at) {
-            return false;
-        }
-        //
         $success = true;
-        $start = Carbon::parse($this->start_at);
-        if ($start->lt(Carbon::today())) {
-            // 如果任务开始时间小于今天则重复周期开始时间为今天
-            $start = Carbon::parse(date("Y-m-d {$start->toTimeString()}"));
+        if ($this->start_at) {
+            $base = Carbon::parse($this->start_at);
+            if ($base->lt(Carbon::today())) {
+                // 如果任务开始时间小于今天则基数时间为今天
+                $base = Carbon::parse(date("Y-m-d {$base->toTimeString()}"));
+            }
+        } else {
+            // 未设置任务时间时基数时间为今天
+            $base = Carbon::today();
         }
         switch ($this->loop) {
             case "day":
-                $this->loop_at = $start->addDay();
+                $this->loop_at = $base->addDay();
                 break;
             case "weekdays":
-                $this->loop_at = $start->addWeekday();
+                $this->loop_at = $base->addWeekday();
                 break;
             case "week":
-                $this->loop_at = $start->addWeek();
+                $this->loop_at = $base->addWeek();
                 break;
             case "twoweeks":
-                $this->loop_at = $start->addWeeks(2);
+                $this->loop_at = $base->addWeeks(2);
                 break;
             case "month":
-                $this->loop_at = $start->addMonth();
+                $this->loop_at = $base->addMonth();
                 break;
             case "year":
-                $this->loop_at = $start->addYear();
+                $this->loop_at = $base->addYear();
                 break;
             case "never":
                 $this->loop_at = null;
                 break;
             default:
                 if (Base::isNumber($this->loop)) {
-                    $this->loop_at = $start->addDays($this->loop);
+                    $this->loop_at = $base->addDays($this->loop);
                 } else {
                     $success = false;
                 }
