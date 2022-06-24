@@ -9,6 +9,7 @@ use App\Module\RandomColor;
 use App\Tasks\AutoArchivedTask;
 use App\Tasks\DeleteTmpTask;
 use App\Tasks\EmailNoticeTask;
+use App\Tasks\LoopTask;
 use Arr;
 use Cache;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
@@ -191,6 +192,8 @@ class IndexController extends InvokeController
         // 删除过期的临时表数据
         Task::deliver(new DeleteTmpTask('wg_tmp_msgs', 1));
         Task::deliver(new DeleteTmpTask('tmp', 24));
+        // 周期任务
+        Task::deliver(new LoopTask());
 
         return "success";
     }

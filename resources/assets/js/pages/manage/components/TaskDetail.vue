@@ -275,6 +275,29 @@
                             </li>
                         </ul>
                     </FormItem>
+                    <FormItem v-if="(taskDetail.loop && taskDetail.loop != 'never') || loopForce">
+                        <div class="item-label" slot="label">
+                            <i class="taskfont">&#xe68c;</i>{{$L('重复周期')}}
+                        </div>
+                        <ul class="item-content">
+                            <li>
+                                <EDropdown
+                                    ref="loop"
+                                    trigger="click"
+                                    placement="bottom"
+                                    @command="updateData('loop', $event)">
+                                    <ETooltip :disabled="windowSmall || !taskDetail.loop_at" :content="`${$L('下个周期')}: ${taskDetail.loop_at}`" placement="right">
+                                        <span>{{$L(loopLabel(taskDetail.loop))}}</span>
+                                    </ETooltip>
+                                    <EDropdownMenu slot="dropdown" class="task-detail-loop">
+                                        <EDropdownItem v-for="item in loops" :key="item.key" :command="item.key">
+                                            {{$L(item.label)}}
+                                        </EDropdownItem>
+                                    </EDropdownMenu>
+                                </EDropdown>
+                            </li>
+                        </ul>
+                    </FormItem>
                     <FormItem v-if="fileList.length > 0">
                         <div class="item-label" slot="label">
                             <i class="taskfont">&#xe6e6;</i>{{$L('附件')}}
@@ -490,6 +513,8 @@ export default {
             timeValue: [],
             timeOptions: {shortcuts:$A.timeOptionShortcuts()},
 
+            loopForce: false,
+
             nowTime: $A.Time(),
             nowInterval: null,
 
@@ -527,6 +552,17 @@ export default {
             dialogDrag: false,
             imageAttachment: true,
             receiveTaskSubscribe: null,
+
+            loops: [
+                {key: 'never', label: '从不'},
+                {key: 'day', label: '每天'},
+                {key: 'weekdays', label: '每个工作日'},
+                {key: 'week', label: '每周'},
+                {key: 'twoweeks', label: '每两周'},
+                {key: 'month', label: '每月'},
+                {key: 'year', label: '每年'},
+                {key: 'custom', label: '自定义'},
+            ]
         }
     },
 
@@ -711,6 +747,13 @@ export default {
                     name: '截止时间',
                 });
             }
+            if (!taskDetail.loop || taskDetail.loop == 'never') {
+                list.push({
+                    command: 'loop',
+                    icon: '&#xe68c;',
+                    name: '重复周期',
+                });
+            }
             if (this.fileList.length == 0) {
                 list.push({
                     command: 'file',
@@ -751,6 +794,7 @@ export default {
                     }
                     this.timeOpen = false;
                     this.timeForce = false;
+                    this.loopForce = false;
                     this.assistForce = false;
                     this.addsubForce = false;
                     this.receiveShow = false;
@@ -782,6 +826,14 @@ export default {
                 return true;
             }
             return $A.Date(taskDetail.end_at, true) < this.nowTime;
+        },
+
+        loopLabel(loop) {
+            const item = this.loops.find(item => item.key === loop)
+            if (item) {
+                return item.label
+            }
+            return loop ? `每${loop}天` : '从不'
         },
 
         onNameKeydown(e) {
@@ -850,6 +902,14 @@ export default {
                     this.$set(this.taskDetail, 'times', [params.start_at, params.end_at])
                     break;
 
+                case 'loop':
+                    if (params === 'custom') {
+                        this.customLoop()
+                        return;
+                    }
+                    this.$set(this.taskDetail, 'loop', params)
+                    break;
+
                 case 'content':
                     const content = this.$refs.desc.getContent();
                     if (content == this.taskContent) {
@@ -881,6 +941,51 @@ export default {
             }).catch(({msg}) => {
                 $A.modalError(msg);
             })
+        },
+
+        customLoop() {
+            let value = this.taskDetail.loop || 1
+            $A.Modal.confirm({
+                render: (h) => {
+                    return h('div', [
+                        h('div', {
+                            style: {
+                                fontSize: '16px',
+                                fontWeight: '500',
+                                marginBottom: '20px',
+                            }
+                        }, this.$L('重复周期')),
+                        h('Input', {
+                            style: {
+                                width: '160px',
+                                margin: '0 auto',
+                            },
+                            props: {
+                                type: 'number',
+                                value,
+                                maxlength: 3
+                            },
+                            on: {
+                                input: (val) => {
+                                    value = $.runNum(val)
+                                }
+                            }
+                        }, [
+                            h('span', {slot: 'prepend'}, this.$L('每')),
+                            h('span', {slot: 'append'}, this.$L('天'))
+                        ])
+                    ])
+                },
+                onOk: _ => {
+                    this.$Modal.remove()
+                    if (value > 0) {
+                        this.updateData('loop', value)
+                    }
+                },
+                loading: true,
+                okText: this.$L('确定'),
+                cancelText: this.$L('取消'),
+            });
         },
 
         openOwner() {
@@ -1067,6 +1172,13 @@ export default {
                     this.timeForce = true;
                     this.$nextTick(() => {
                         this.openTime()
+                    })
+                    break;
+
+                case 'loop':
+                    this.loopForce = true;
+                    this.$nextTick(() => {
+                        this.$refs.loop.show();
                     })
                     break;
 

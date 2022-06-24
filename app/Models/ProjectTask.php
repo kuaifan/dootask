@@ -36,6 +36,8 @@ use Request;
  * @property string|null $p_name 优先级名称
  * @property string|null $p_color 优先级颜色
  * @property int|null $sort 排序(ASC)
+ * @property string|null $loop 重复周期
+ * @property string|null $loop_at 下一次重复时间
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
@@ -78,6 +80,8 @@ use Request;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereFlowItemId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereFlowItemName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereLoop($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereLoopAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask wherePColor($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask wherePLevel($value)
@@ -760,11 +764,21 @@ class ProjectTask extends AbstractModel
                     'change' => [$oldStringAt, $newStringAt]
                 ]);
 
-                //修改计划时间需要重置任务邮件提醒日志
+                // 修改计划时间需要重置任务邮件提醒日志
                 ProjectTaskMailLog::whereTaskId($this->id)->delete();
             }
             // 以下紧顶级任务可修改
             if ($this->parent_id === 0) {
+                // 重复周期
+                if (Arr::exists($data, 'loop')) {
+                    $this->loop = $data['loop'];
+                    if (!$this->refreshLoop()) {
+                        throw new ApiException('重复周期选择错误');
+                    }
+                } elseif (Arr::exists($data, 'times')) {
+                    // 更新任务时间也要更新重复周期
+                    $this->refreshLoop();
+                }
                 // 协助人员
                 if (Arr::exists($data, 'assist')) {
                     $array = [];
@@ -856,6 +870,105 @@ class ProjectTask extends AbstractModel
             if ($this->end_at instanceof \DateTimeInterface) $this->end_at = $this->end_at->format('Y-m-d H:i:s');
         });
         return true;
+    }
+
+    /**
+     * 刷新重复周期时间
+     * @param bool $save 是否执行保存
+     * @return bool
+     */
+    public function refreshLoop($save = false)
+    {
+        if (!$this->start_at) {
+            return false;
+        }
+        //
+        $success = true;
+        $start = Carbon::parse($this->start_at);
+        if ($start->lt(Carbon::today())) {
+            // 如果任务开始时间小于今天则重复周期开始时间为今天
+            $start = Carbon::parse(date("Y-m-d {$start->toTimeString()}"));
+        }
+        switch ($this->loop) {
+            case "day":
+                $this->loop_at = $start->addDay();
+                break;
+            case "weekdays":
+                $this->loop_at = $start->addWeekday();
+                break;
+            case "week":
+                $this->loop_at = $start->addWeek();
+                break;
+            case "twoweeks":
+                $this->loop_at = $start->addWeeks(2);
+                break;
+            case "month":
+                $this->loop_at = $start->addMonth();
+                break;
+            case "year":
+                $this->loop_at = $start->addYear();
+                break;
+            case "never":
+                $this->loop_at = null;
+                break;
+            default:
+                if (Base::isNumber($this->loop)) {
+                    $this->loop_at = $start->addDays($this->loop);
+                } else {
+                    $success = false;
+                }
+                break;
+        }
+        if ($success && $save) {
+            $this->save();
+        }
+        return $success;
+    }
+
+    /**
+     * 复制任务
+     * @return self
+     */
+    public function copyTask()
+    {
+        if ($this->parent_id > 0) {
+            throw new ApiException('子任务禁止复制');
+        }
+        return AbstractModel::transaction(function() {
+            // 复制任务
+            $task = $this->replicate();
+            $task->dialog_id = 0;
+            $task->archived_at = null;
+            $task->archived_userid = 0;
+            $task->archived_follow = 0;
+            $task->complete_at = null;
+            $task->created_at = Carbon::now();
+            $task->save();
+            // 复制任务内容
+            if ($this->content) {
+                $tmp = $this->content->replicate();
+                $tmp->task_id = $task->id;
+                $tmp->created_at = Carbon::now();
+                $tmp->save();
+            }
+            // 复制任务附件
+            foreach ($this->taskFile as $taskFile) {
+                $tmp = $taskFile->replicate();
+                $tmp->task_id = $task->id;
+                $tmp->created_at = Carbon::now();
+                $tmp->save();
+            }
+            // 复制任务成员
+            foreach ($this->taskUser as $taskUser) {
+                $tmp = $taskUser->replicate();
+                $tmp->task_id = $task->id;
+                $tmp->task_pid = $task->id;
+                $tmp->created_at = Carbon::now();
+                $tmp->save();
+            }
+            //
+            return $task;
+        });
     }
 
     /**

@@ -1467,6 +1467,7 @@ class ProjectController extends AbstractController
      * @apiParam {Number} task_id               任务ID
      * @apiParam {String} [name]                任务描述
      * @apiParam {Array} [times]                计划时间（格式：开始时间,结束时间；如：2020-01-01 00:00,2020-01-01 23:59）
+     * @apiParam {String} [loop]                重复周期，数字代表天数（子任务不支持）
      * @apiParam {Array} [owner]                修改负责人
      * @apiParam {String} [content]             任务详情（子任务不支持）
      * @apiParam {String} [color]               背景色（子任务不支持）
