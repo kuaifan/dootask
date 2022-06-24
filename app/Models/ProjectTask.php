@@ -300,6 +300,7 @@ class ProjectTask extends AbstractModel
                 'project_tasks.*',
                 'project_task_users.owner'
             ])
+            ->selectRaw("1 AS assist")
             ->join('project_task_users', 'project_tasks.id', '=', 'project_task_users.task_id')
             ->where('project_task_users.userid', $userid);
         if ($owner !== null) {

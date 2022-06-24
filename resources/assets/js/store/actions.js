@@ -1238,62 +1238,36 @@ export default {
      * @param timeout
      */
     getTaskForDashboard({state, dispatch, getters}, timeout) {
+        window.__getTaskForDashboard && clearTimeout(window.__getTaskForDashboard)
         if (typeof timeout === "number") {
-            window.__getTaskForDashboard && clearTimeout(window.__getTaskForDashboard)
             if (timeout > -1) {
-                window.__getTaskForDashboard = setTimeout(() => {
-                    dispatch("getTaskForDashboard", null)
-                }, timeout)
+                window.__getTaskForDashboard = setTimeout(_ => dispatch("getTaskForDashboard", null), timeout)
             }
             return;
         }
+        //
         if (state.loadDashboardTasks === true) {
             return;
         }
         state.loadDashboardTasks = true;
         //
         const time = $A.Time()
-        const {today, overdue,all} = getters.dashboardTask;
+        const {today, overdue, all} = getters.dashboardTask;
         const currentIds = today.map(({id}) => id)
         currentIds.push(...overdue.map(({id}) => id))
         currentIds.push(...all.map(({id}) => id))
         //
-        let loadIng = 3;
-        let call = () => {
-            if (loadIng <= 0) {
-                state.loadDashboardTasks = false;
-                //
-                const {today, overdue,all} = getters.dashboardTask;
-                const newIds = today.filter(task => task._time >= time).map(({id}) => id)
-                newIds.push(...overdue.filter(task => task._time >= time).map(({id}) => id))
-                newIds.push(...all.filter(task => task._time >= time).map(({id}) => id))
-                dispatch("forgetTask", currentIds.filter(v => newIds.indexOf(v) == -1))
-                return;
-            }
-            loadIng--;
-            if (loadIng == 2) {
-                // 获取今日任务
-                dispatch("getTasks", {
-                    complete: "no",
-                    time: [
-                        $A.formatDate("Y-m-d 00:00:00"),
-                        $A.formatDate("Y-m-d 23:59:59")
-                    ],
-                }).then(call).catch(call)
-            } else if (loadIng == 1) {
-                // 获取过期任务
-                dispatch("getTasks", {
-                    complete: "no",
-                    time_before: $A.formatDate("Y-m-d H:i:s"),
-                }).then(call).catch(call)
-            } else if((loadIng == 0)) {
-                // 获取待处理任务
-                dispatch("getTasks", {
-                    complete: "no",
-                }).then(call).catch(call)
-            }
-        }
-        call();
+        dispatch("getTasks", {
+            complete: "no",
+        }).finally(_ => {
+            state.loadDashboardTasks = false;
+            //
+            const {today, overdue, all} = getters.dashboardTask;
+            const newIds = today.filter(task => task._time >= time).map(({id}) => id)
+            newIds.push(...overdue.filter(task => task._time >= time).map(({id}) => id))
+            newIds.push(...all.filter(task => task._time >= time).map(({id}) => id))
+            dispatch("forgetTask", currentIds.filter(v => newIds.indexOf(v) == -1))
+        })
     },
 
     /**
