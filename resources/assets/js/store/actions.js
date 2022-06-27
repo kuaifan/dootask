@@ -2203,7 +2203,7 @@ export default {
             dispatch("setLoad", loadKey)
             //
             dispatch("call", {
-                url: 'dialog/msg/lists',
+                url: 'dialog/msg/list',
                 data,
                 complete: _ => dispatch("cancelLoad", loadKey)
             }).then(result => {

@@ -71,7 +71,7 @@
 </template>
 
 <script>
-import {mapState} from "vuex";
+import {mapGetters, mapState} from "vuex";
 
 export default {
     name: "TaskOperation",
@@ -97,13 +97,13 @@ export default {
     },
     computed: {
         ...mapState(['loads', 'taskOperation', 'taskColorList', 'taskFlows', 'taskFlowItems']),
+        ...mapGetters(['isLoad']),
 
         loadIng() {
             if (this.loadStatus) {
                 return true;
             }
-            const load = this.loads.find(({key}) => key === `task-${this.task.id}`);
-            return load && load.num > 0
+            return this.isLoad(`task-${this.task.id}`)
         },
 
         flow() {

@@ -107,7 +107,7 @@ class Base
     public static function checkClientVersion($min)
     {
         if (version_compare(Base::getClientVersion(), $min, '<')) {
-            throw new ApiException('当前版本 (v' . Base::getClientVersion() . ') 过低');
+            throw new ApiException('当前版本 (v' . Base::getClientVersion() . ') 过低，最低版本要求 (v' . $min . ')。');
         }
     }
 

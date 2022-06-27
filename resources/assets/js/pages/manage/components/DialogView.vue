@@ -130,7 +130,7 @@
 
 <script>
 import WCircle from "../../../components/WCircle";
-import {mapState} from "vuex";
+import {mapGetters, mapState} from "vuex";
 import {Store} from "le5le-store";
 import longpress from "../../../directives/longpress";
 import {textMsgFormat, msgSimpleDesc} from "../../../functions/utils";
@@ -180,13 +180,13 @@ export default {
 
     computed: {
         ...mapState(['loads', 'audioPlaying', 'windowActive']),
+        ...mapGetters(['isLoad']),
 
         isLoading() {
             if (!this.msgData.created_at) {
                 return true;
             }
-            const load = this.loads.find(({key}) => key === `msg-${this.msgData.id}`);
-            return load && load.num > 0
+            return this.isLoad(`msg-${this.msgData.id}`)
         },
 
         viewClass() {
