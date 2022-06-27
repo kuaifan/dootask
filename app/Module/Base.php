@@ -1011,7 +1011,7 @@ class Base
      */
     public static function isNumber($str)
     {
-        if (preg_match("/^\d*$/", $str)) {
+        if (preg_match("/^\d+$/", $str)) {
             return true;
         } else {
             return false;

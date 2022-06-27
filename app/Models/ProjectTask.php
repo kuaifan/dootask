@@ -770,6 +770,7 @@ class ProjectTask extends AbstractModel
             // 以下紧顶级任务可修改
             if ($this->parent_id === 0) {
                 // 重复周期
+                $loopAt = $this->loop_at;
                 if (Arr::exists($data, 'loop')) {
                     $this->loop = $data['loop'];
                     if (!$this->refreshLoop()) {
@@ -778,6 +779,11 @@ class ProjectTask extends AbstractModel
                 } elseif (Arr::exists($data, 'times')) {
                     // 更新任务时间也要更新重复周期
                     $this->refreshLoop();
+                }
+                if ($loopAt !== $this->loop_at) {
+                    $this->addLog("修改{任务}重复周期", [
+                        'change' => [$loopAt, $this->loop_at]
+                    ]);
                 }
                 // 协助人员
                 if (Arr::exists($data, 'assist')) {
@@ -916,6 +922,7 @@ class ProjectTask extends AbstractModel
                 if (Base::isNumber($this->loop)) {
                     $this->loop_at = $base->addDays($this->loop);
                 } else {
+                    $this->loop_at = null;
                     $success = false;
                 }
                 break;
