@@ -2181,88 +2181,45 @@ export default {
      * 获取会话消息
      * @param state
      * @param dispatch
-     * @param dialog_id
+     * @param getters
+     * @param data {dialog_id, ?reply_id, ?position_id, ?prev_id, ?next_id}
      * @returns {Promise<unknown>}
      */
-    getDialogMsgs({state, dispatch}, dialog_id) {
-        return new Promise(resolve => {
-            if (!dialog_id) {
-                resolve()
-                return;
-            }
-            let dialog = state.cacheDialogs.find(({id}) => id == dialog_id);
-            if (!dialog) {
-                dialog = {
-                    id: dialog_id,
-                };
-                state.cacheDialogs.push(dialog);
-            }
-            if (dialog.loading) {
-                resolve()
-                return;
-            }
-            dialog.loading = true;
-            //
-            dispatch("call", {
-                url: 'dialog/msg/lists',
-                data: {
-                    dialog_id: dialog_id,
-                    page: 1
-                },
-                complete: _ => dialog.loading = false
-            }).then(result => {
-                const resData = result.data;
-                dialog.lastPage = resData.last_page;
-                dialog = Object.assign(dialog, resData.dialog)
-                //
-                const ids = resData.data.map(({id}) => id)
-                state.dialogMsgs = state.dialogMsgs.filter((item) => item.dialog_id != dialog_id || ids.includes(item.id));
-                //
-                dispatch("saveDialogMsg", resData.data.map(item => Object.assign(item, {_page: resData.current_page})));
-                resolve()
-            }).catch(e => {
-                console.warn(e);
-                resolve()
-            }).finally(_ => {
-                dispatch("saveDialog", dialog);
-            });
-        });
-    },
-
-    /**
-     * 获取更多会话消息（指定页|定位页）
-     * @param state
-     * @param dispatch
-     * @param data {dialog_id, ?page, ?position_id}
-     */
-    getDialogMoreMsgs({state, dispatch}, data) {
-        return new Promise(function (resolve, reject) {
+    getDialogMsgs({state, dispatch, getters}, data) {
+        return new Promise((resolve, reject) => {
             const dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
             if (!dialog) {
                 reject({msg: 'Parameter error'});
                 return;
             }
-            if (dialog.loading) {
-                reject({msg: 'Loading'});
-                return;
+            if (!/^d+$/.test(data.reply_id)) {
+                data.reply_id = 0;
             }
-            dialog.loading = true;
+            const loadKey = `msg::${data.dialog_id}-${data.reply_id}`
+            if (getters.isLoad(loadKey)) {
+                reject({msg: 'Loading'});
+                return
+            }
+            dispatch("setLoad", loadKey)
             //
             dispatch("call", {
                 url: 'dialog/msg/lists',
                 data,
-                complete: _ => dialog.loading = false
+                complete: _ => dispatch("cancelLoad", loadKey)
             }).then(result => {
                 const resData = result.data;
-                dialog.lastPage = resData.last_page;
+                if ($A.isJson(resData.dialog)) {
+                    dispatch("saveDialog", resData.dialog);
+                    //
+                    const ids = resData.list.map(({id}) => id)
+                    state.dialogMsgs = state.dialogMsgs.filter(item => item.dialog_id != data.dialog_id || ids.includes(item.id));
+                }
                 //
-                dispatch("saveDialogMsg", resData.data.map(item => Object.assign(item, {_page: resData.current_page})));
+                dispatch("saveDialogMsg", resData.list);
                 resolve(result)
             }).catch(e => {
                 console.warn(e);
                 reject(e)
-            }).finally(_ => {
-                dispatch("saveDialog", dialog);
             });
         });
     },

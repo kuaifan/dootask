@@ -214,10 +214,11 @@ class DialogController extends AbstractController
      * @apiName msg__lists
      *
      * @apiParam {Number} dialog_id         对话ID
-     * @apiParam {String} [position_id]     定位消息ID（填写时page无效）
+     * @apiParam {String} [position_id]     此消息ID前后的数据，优先级1
+     * @apiParam {Number} [prev_id]         此消息ID之前的数据，优先级2
+     * @apiParam {Number} [next_id]         此消息ID之后的数据，优先级3
      *
-     * @apiParam {Number} [page]            当前页，默认:1
-     * @apiParam {Number} [pagesize]        每页显示数量，默认:50，最大:100
+     * @apiParam {Number} [take]            获取条数，默认:50，最大:100
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -229,6 +230,9 @@ class DialogController extends AbstractController
         //
         $dialog_id = intval(Request::input('dialog_id'));
         $position_id = intval(Request::input('position_id'));
+        $prev_id = intval(Request::input('prev_id'));
+        $next_id = intval(Request::input('next_id'));
+        $take = Base::getPaginate(100, 50, 'take');
         //
         $dialog = WebSocketDialog::checkDialog($dialog_id);
         //
@@ -240,16 +244,40 @@ class DialogController extends AbstractController
             $leftJoin
                 ->on('read.userid', '=', DB::raw($user->userid))
                 ->on('read.msg_id', '=', 'web_socket_dialog_msgs.id');
-        })->where('web_socket_dialog_msgs.dialog_id', $dialog_id)->orderByDesc('web_socket_dialog_msgs.id');
+        })->where('web_socket_dialog_msgs.dialog_id', $dialog_id);
         //
-        $perPage = Base::getPaginate(100, 50);
         if ($position_id > 0) {
-            $position_count = $builder->clone()->where('web_socket_dialog_msgs.id', '>=', $position_id)->count();
-            $list = $builder->paginate($perPage, [], 'page', ceil($position_count / $perPage));
-        } else {
-            $list = $builder->paginate($perPage);
+            $array = $builder->clone()
+                ->where('web_socket_dialog_msgs.id', '>=', $position_id)
+                ->orderBy('web_socket_dialog_msgs.id')
+                ->take(intval($take / 2))
+                ->get();
+            $prev_id = intval($array->last()?->id);
         }
         //
+        $cloner = $builder->clone();
+        if ($prev_id > 0) {
+            $cloner->where('web_socket_dialog_msgs.id', '<=', $prev_id)->orderByDesc('web_socket_dialog_msgs.id');
+        } elseif ($next_id > 0) {
+            $cloner->where('web_socket_dialog_msgs.id', '>=', $next_id)->orderBy('web_socket_dialog_msgs.id');
+        } else {
+            $cloner->orderByDesc('web_socket_dialog_msgs.id');
+        }
+        $list = $cloner->take($take)->get()->sortByDesc('id', SORT_NUMERIC)->values();
+        //
+        if ($list->isNotEmpty()) {
+            $first = $list->first();
+            $first->next_id = intval($builder->clone()
+                ->where('web_socket_dialog_msgs.id', '>', $first->id)
+                ->orderBy('web_socket_dialog_msgs.id')
+                ->value('id'));
+            $last = $list->last();
+            $last->prev_id = intval($builder->clone()
+                ->where('web_socket_dialog_msgs.id', '<', $last->id)
+                ->orderByDesc('web_socket_dialog_msgs.id')
+                ->value('id'));
+        }
+        // 记录当前打开的任务对话
         if ($dialog->type == 'group' && $dialog->group_type == 'task') {
             $user->task_dialog_id = $dialog->id;
             $user->save();
@@ -261,8 +289,9 @@ class DialogController extends AbstractController
             $isMarkDialogUser->save();
         }
         //
-        $data = $list->toArray();
-        if ($list->currentPage() === 1) {
+        $data = [];
+        $data['list'] = $list;
+        if ($prev_id === 0 && $next_id === 0) {
             $data['dialog'] = $dialog->formatData($user->userid);
         }
         return Base::retSuccess('success', $data);

@@ -1,5 +1,17 @@
 export default {
     /**
+     * 是否加载中
+     * @param state
+     * @returns {function(*)}
+     */
+    isLoad(state) {
+        return function (key) {
+            const load = state.loads.find(item => item.key === key);
+            return load && load.num > 0
+        }
+    },
+
+    /**
      * 当前打开的项目
      * @param state
      * @returns {{cacheParameter: {}}}

@@ -81,7 +81,7 @@
             :keeps="70"
             @scroll="onScroll"
             @range="onRange"
-            @totop="onNextPage"
+            @totop="onPrevPage"
 
             @on-longpress="onLongpress"
             @on-view-reply="onViewReply"
@@ -89,7 +89,7 @@
             @on-view-file="onViewFile"
             @on-emoji="onEmoji">
             <template slot="header">
-                <div v-if="(allMsgs.length === 0 && dialogData.loading > 0) || nextPage > 0" class="dialog-item loading"><Loading/></div>
+                <div v-if="loadMsg || prevId > 0" class="dialog-item loading"><Loading/></div>
                 <div v-else-if="allMsgs.length === 0" class="dialog-item nothing">{{$L('暂无消息')}}</div>
             </template>
         </VirtualList>
@@ -256,7 +256,7 @@
 </template>
 
 <script>
-import {mapState} from "vuex";
+import {mapGetters, mapState} from "vuex";
 import DialogItem from "./DialogItem";
 import DialogUpload from "./DialogUpload";
 import UserInput from "../../../components/UserInput";
@@ -335,6 +335,10 @@ export default {
 
             replyId: 0,
             replyActiveIndex: -1,
+
+            scrollDirection: null,
+            scrollAction: 0,
+            scrollTmp: 0,
         }
     },
 
@@ -353,6 +357,8 @@ export default {
             'touchBackInProgress',
             'windowActive',
         ]),
+
+        ...mapGetters(['isLoad']),
 
         isReady() {
             return this.dialogId > 0 && this.dialogData.id > 0
@@ -393,13 +399,13 @@ export default {
             return dialogMsgList;
         },
 
-        nextPage() {
+        loadMsg() {
+            return this.isLoad(`msg::${this.dialogId}-0`)
+        },
+
+        prevId() {
             if (this.allMsgs.length > 0) {
-                let topMsgPage = $A.runNum(this.allMsgs[0]._page);
-                let {lastPage} = this.dialogData;
-                if (topMsgPage < lastPage && lastPage > 1) {
-                    return topMsgPage + 1
-                }
+                return $A.runNum(this.allMsgs[0].prev_id)
             }
             return 0
         },
@@ -466,22 +472,22 @@ export default {
 
     watch: {
         dialogId: {
-            handler(id) {
-                if (id) {
+            handler(dialog_id) {
+                if (dialog_id) {
                     this.msgNew = 0;
                     //
                     if (this.allMsgList.length > 0) {
                         this.allMsgs = this.allMsgList;
                         requestAnimationFrame(this.onToBottom);
                     }
-                    this.$store.dispatch("getDialogMsgs", id).then(_ => {
-                        this.openId = id;
+                    this.$store.dispatch("getDialogMsgs", {dialog_id}).then(_ => {
+                        this.openId = dialog_id;
                         setTimeout(this.onSearchMsgId, 100)
                     }).catch(_ => {});
                     //
                     this.$store.dispatch('saveInDialog', {
                         uid: this._uid,
-                        dialog_id: id,
+                        dialog_id,
                     })
                     //
                     if (this.autoFocus) {
@@ -516,7 +522,9 @@ export default {
 
         wsOpenNum(num) {
             if (num <= 1) return
-            this.$store.dispatch("getDialogMsgs", this.dialogId).catch(_ => {});
+            this.$store.dispatch("getDialogMsgs", {
+                dialog_id: this.dialogId
+            }).catch(_ => {});
         },
 
         allMsgList(newList, oldList) {
@@ -708,7 +716,7 @@ export default {
                     })
                 }
                 this.preventToBottom = true;
-                this.$store.dispatch("getDialogMoreMsgs", {
+                this.$store.dispatch("getDialogMsgs", {
                     dialog_id: this.dialogId,
                     position_id
                 }).finally(_ => {
@@ -935,16 +943,15 @@ export default {
             this.$store.dispatch("openTask", this.dialogData.group_info.id);
         },
 
-        onNextPage() {
-            if (this.nextPage === 0) {
+        onPrevPage() {
+            if (this.prevId === 0) {
                 return
             }
-            this.$store.dispatch('getDialogMoreMsgs', {
+            this.$store.dispatch('getDialogMsgs', {
                 dialog_id: this.dialogId,
-                page: this.nextPage
-            }).then(result => {
-                const resData = result.data;
-                const ids = resData.data.map(item => item.id)
+                prev_id: this.prevId
+            }).then(({data}) => {
+                const ids = data.list.map(item => item.id)
                 this.$nextTick(() => {
                     const scroller = this.$refs.scroller
                     const offset = ids.reduce((previousValue, currentId) => {
@@ -952,7 +959,7 @@ export default {
                         return {size: previousSize + scroller.getSize(currentId)}
                     })
                     let size = scroller.getOffset() + offset.size;
-                    if (this.nextPage === 0) {
+                    if (this.prevId === 0) {
                         size -= 36
                     }
                     this.onToOffset(size);
@@ -1015,7 +1022,7 @@ export default {
             }
         },
 
-        onScroll() {
+        onScroll(event) {
             this.operateVisible = false;
             //
             const {tail} = this.scrollInfo();
@@ -1023,25 +1030,31 @@ export default {
             if (this.scrollTail <= 10) {
                 this.msgNew = 0;
             }
+            //
+            this.scrollAction = event.target.scrollTop;
+            this.scrollDirection = this.scrollTmp <= this.scrollAction ? 'down' : 'up';
+            setTimeout(_ => this.scrollTmp = this.scrollAction, 0);
         },
 
         onRange(range) {
             if (this.preventMoreLoad) {
                 return
             }
-            let tmpPage = 0;
+            const key = this.scrollDirection === 'down' ? 'next_id' : 'prev_id';
             for (let i = range.start; i <= range.end; i++) {
-                if (tmpPage - parseInt(this.allMsgs[i]._page) > 1) {
-                    this.preventMoreLoad = true
-                    this.$store.dispatch("getDialogMoreMsgs", {
-                        dialog_id: this.dialogId,
-                        page: tmpPage - 1
-                    }).finally(_ => {
-                        this.preventMoreLoad = false
-                    })
-                    break;
+                const rangeValue = this.allMsgs[i][key]
+                if (rangeValue) {
+                    const nearMsg = this.allMsgs[i + (key === 'next_id' ? 1 : -1)]
+                    if (nearMsg && nearMsg.id != rangeValue) {
+                        this.preventMoreLoad = true
+                        this.$store.dispatch("getDialogMsgs", {
+                            [key]: rangeValue,
+                            dialog_id: this.dialogId,
+                        }).finally(_ => {
+                            this.preventMoreLoad = false
+                        })
+                    }
                 }
-                tmpPage = parseInt(this.allMsgs[i]._page);
             }
         },
 
