@@ -640,6 +640,19 @@
                         height: 10px;
                     }
 
+                    .reply {
+                        display: flex;
+                        align-items: center;
+                        font-size: 12px;
+                        margin-right: 6px;
+                        color: $primary-color;
+                        cursor: pointer;
+                        > i {
+                            font-size: 13px;
+                            padding-right: 2px;
+                        }
+                    }
+
                     .time {
                         color: #bbbbbb;
                         font-size: 12px;

@@ -1119,6 +1119,24 @@ export default {
     },
 
     /**
+     * 新增回复数量
+     * @param state
+     * @param dispatch
+     * @param reply_id
+     */
+    increaseMsgReplyNum({state, dispatch}, reply_id) {
+        $A.execMainDispatch("increaseMsgReplyNum", reply_id)
+        //
+        if (reply_id > 0) {
+            const msg = state.dialogMsgs.find(({id}) => id == reply_id)
+            if (msg) {
+                msg.reply_num++
+                dispatch("saveDialogMsg", msg)
+            }
+        }
+    },
+
+    /**
      * 获取任务
      * @param state
      * @param dispatch
@@ -2449,6 +2467,9 @@ export default {
                                         if (!state.dialogMsgs.find(({id}) => id == data.id)) {
                                             // 新增任务消息数量
                                             dispatch("increaseTaskMsgNum", dialog_id);
+                                            // 新增回复数量
+                                            dispatch("increaseMsgReplyNum", data.reply_id);
+                                            //
                                             if (mode === "chat") {
                                                 return;
                                             }

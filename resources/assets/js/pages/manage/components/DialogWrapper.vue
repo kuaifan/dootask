@@ -833,6 +833,7 @@ export default {
             }
             this.$store.dispatch("saveDialogMsg", data);
             this.$store.dispatch("increaseTaskMsgNum", this.dialogId);
+            this.$store.dispatch("increaseMsgReplyNum", data.reply_id);
             this.$store.dispatch("updateDialogLastMsg", data);
             this.onCancelReply();
             this.onActive();
