@@ -76,7 +76,7 @@
             :data-component="msgItem"
 
             :item-class-add="itemClassAdd"
-            :extra-props="{dialogData, isMyDialog, operateVisible, operateItem}"
+            :extra-props="{dialogData, operateVisible, operateItem, hidePercentage: isMyDialog}"
             :estimate-size="78"
             :keeps="70"
             @scroll="onScroll"

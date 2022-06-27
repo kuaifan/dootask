@@ -6,7 +6,7 @@
         <DialogView
             :msg-data="source"
             :dialog-type="dialogData.type"
-            :hide-percentage="isMyDialog"
+            :hide-percentage="hidePercentage"
             :operate-visible="operateVisible"
             :operate-action="operateVisible && source.id === operateItem.id"
             @on-longpress="onLongpress"
@@ -37,7 +37,7 @@ export default {
                 return {}
             }
         },
-        isMyDialog: {
+        hidePercentage: {
             type: Boolean,
             default: false
         },
