@@ -1114,8 +1114,10 @@ export default {
     increaseTaskMsgNum({state}, dialog_id) {
         $A.execMainDispatch("increaseTaskMsgNum", dialog_id)
         //
-        const task = state.cacheTasks.find(task => task.dialog_id === dialog_id);
-        if (task) task.msg_num++;
+        if (dialog_id) {
+            const task = state.cacheTasks.find(task => task.dialog_id === dialog_id);
+            if (task) task.msg_num++;
+        }
     },
 
     /**
@@ -1129,10 +1131,22 @@ export default {
         //
         if (reply_id > 0) {
             const msg = state.dialogMsgs.find(({id}) => id == reply_id)
-            if (msg) {
-                msg.reply_num++
-                dispatch("saveDialogMsg", msg)
-            }
+            if (msg) msg.reply_num++;
+        }
+    },
+
+    /**
+     * 减少回复数量
+     * @param state
+     * @param dispatch
+     * @param reply_id
+     */
+    decrementMsgReplyNum({state, dispatch}, reply_id) {
+        $A.execMainDispatch("decrementMsgReplyNum", reply_id)
+        //
+        if (reply_id > 0) {
+            const msg = state.dialogMsgs.find(({id}) => id == reply_id)
+            if (msg) msg.reply_num--;
         }
     },
 
@@ -2146,15 +2160,17 @@ export default {
     /**
      * 忘记消息数据
      * @param state
+     * @param dispatch
      * @param msg_id
      */
-    forgetDialogMsg({state}, msg_id) {
+    forgetDialogMsg({state, dispatch}, msg_id) {
         $A.execMainDispatch("forgetDialogMsg", msg_id)
         //
-        let ids = $A.isArray(msg_id) ? msg_id : [msg_id];
+        const ids = $A.isArray(msg_id) ? msg_id : [msg_id];
         ids.some(id => {
             const index = state.dialogMsgs.findIndex(item => item.id == id);
             if (index > -1) {
+                dispatch("decrementMsgReplyNum", state.dialogMsgs[index].reply_id);
                 Store.set('audioSubscribe', id);
                 state.dialogMsgs.splice(index, 1);
             }

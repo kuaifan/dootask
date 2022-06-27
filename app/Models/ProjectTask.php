@@ -781,14 +781,11 @@ class ProjectTask extends AbstractModel
                     // 更新任务时间也要更新重复周期
                     $this->refreshLoop();
                 }
-                $oldLoop = Carbon::parse($loopAt);
-                $newLoop = Carbon::parse($this->loop_at);
-                if ($oldLoop->ne($newLoop)) {
-                    $this->addLog("修改{任务}下一个周期", [
-                        'change' => [
-                            $loopAt ? $oldLoop->toDateTimeString() : null,
-                            $this->loop_at ? $newLoop->toDateTimeString() : null,
-                        ]
+                $oldLoop = $loopAt ? Carbon::parse($loopAt)->toDateTimeString() : null;
+                $newLoop = $this->loop_at ? Carbon::parse($this->loop_at)->toDateTimeString() : null;
+                if ($oldLoop != $newLoop) {
+                    $this->addLog("修改{任务}下个周期", [
+                        'change' => [$oldLoop, $newLoop]
                     ]);
                 }
                 if ($loopDesc != $this->loopDesc()) {

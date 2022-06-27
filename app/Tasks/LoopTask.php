@@ -61,7 +61,7 @@ class LoopTask extends AbstractTask
                     if ($task->start_at) {
                         $diffSecond = Carbon::parse($task->start_at)->diffInSeconds(Carbon::parse($task->end_at), true);
                         $task->start_at = Carbon::parse($task->loop_at);
-                        $task->end_at = $task->start_at->addSeconds($diffSecond);
+                        $task->end_at = $task->start_at->clone()->addSeconds($diffSecond);
                     }
                     $task->refreshLoop(true);
                     $task->addLog("创建任务来自周期任务ID：" . $item->id, [], $task->userid);
