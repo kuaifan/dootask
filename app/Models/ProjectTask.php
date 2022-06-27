@@ -771,6 +771,7 @@ class ProjectTask extends AbstractModel
             if ($this->parent_id === 0) {
                 // 重复周期
                 $loopAt = $this->loop_at;
+                $loopDesc = $this->loopDesc();
                 if (Arr::exists($data, 'loop')) {
                     $this->loop = $data['loop'];
                     if (!$this->refreshLoop()) {
@@ -780,9 +781,19 @@ class ProjectTask extends AbstractModel
                     // 更新任务时间也要更新重复周期
                     $this->refreshLoop();
                 }
-                if ($loopAt !== $this->loop_at) {
+                $oldLoop = Carbon::parse($loopAt);
+                $newLoop = Carbon::parse($this->loop_at);
+                if ($oldLoop->ne($newLoop)) {
+                    $this->addLog("修改{任务}下一个周期", [
+                        'change' => [
+                            $loopAt ? $oldLoop->toDateTimeString() : null,
+                            $this->loop_at ? $newLoop->toDateTimeString() : null,
+                        ]
+                    ]);
+                }
+                if ($loopDesc != $this->loopDesc()) {
                     $this->addLog("修改{任务}重复周期", [
-                        'change' => [$loopAt, $this->loop_at]
+                        'change' => [$loopDesc, $this->loopDesc()]
                     ]);
                 }
                 // 协助人员
@@ -931,6 +942,40 @@ class ProjectTask extends AbstractModel
             $this->save();
         }
         return $success;
+    }
+
+    /**
+     * 获取周期描述
+     * @return string
+     */
+    public function loopDesc() {
+        $loopDesc = "从不";
+        switch ($this->loop) {
+            case "day":
+                $loopDesc = "每天";
+                break;
+            case "weekdays":
+                $loopDesc = "每个工作日";
+                break;
+            case "week":
+                $loopDesc = "每周";
+                break;
+            case "twoweeks":
+                $loopDesc = "每两周";
+                break;
+            case "month":
+                $loopDesc = "每月";
+                break;
+            case "year":
+                $loopDesc = "每年";
+                break;
+            default:
+                if (Base::isNumber($this->loop)) {
+                    $loopDesc = "每{$this->loop}天";
+                }
+                break;
+        }
+        return $loopDesc;
     }
 
     /**
