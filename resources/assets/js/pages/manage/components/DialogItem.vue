@@ -7,12 +7,14 @@
             :msg-data="source"
             :dialog-type="dialogData.type"
             :hide-percentage="hidePercentage"
+            :hide-reply="hideReply"
             :operate-visible="operateVisible"
             :operate-action="operateVisible && source.id === operateItem.id"
             @on-longpress="onLongpress"
             @on-view-reply="onViewReply"
             @on-view-text="onViewText"
             @on-view-file="onViewFile"
+            @on-reply-list="onReplyList"
             @on-emoji="onEmoji"/>
     </div>
 </template>
@@ -41,6 +43,14 @@ export default {
             type: Boolean,
             default: false
         },
+        hideReply: {
+            type: Boolean,
+            default: false
+        },
+        isReply: {
+            type: Boolean,  // 是否回复对象
+            default: false
+        },
         operateVisible: {
             type: Boolean,
             default: false
@@ -65,7 +75,7 @@ export default {
         classArray() {
             return {
                 'dialog-item': true,
-                'self': this.source.userid == this.userId,
+                'self': !this.isReply && this.source.userid == this.userId,
             }
         }
     },
@@ -87,11 +97,20 @@ export default {
             this.dispatch("on-view-file", data)
         },
 
+        onReplyList(data) {
+            this.dispatch("on-reply-list", data)
+        },
+
         onEmoji(data) {
             this.dispatch("on-emoji", data)
         },
 
         dispatch(event, arg) {
+            if (this.isReply) {
+                this.$emit(event, arg)
+                return
+            }
+
             let parent = this.$parent
             let name = parent.$options.name
 

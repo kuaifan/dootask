@@ -279,9 +279,11 @@ class DialogController extends AbstractController
      * @apiName msg__list
      *
      * @apiParam {Number} dialog_id         对话ID
-     * @apiParam {Number} [position_id]     此消息ID前后的数据，优先级1
-     * @apiParam {Number} [prev_id]         此消息ID之前的数据，优先级2
-     * @apiParam {Number} [next_id]         此消息ID之后的数据，优先级3
+     * @apiParam {Number} msg_id            消息ID
+     * @apiParam {Number} [position_id]     此消息ID前后的数据
+     * @apiParam {Number} [prev_id]         此消息ID之前的数据
+     * @apiParam {Number} [next_id]         此消息ID之后的数据
+     * - position_id、prev_id、next_id 只有一个有效，优先循序为：position_id > prev_id > next_id
      *
      * @apiParam {Number} [take]            获取条数，默认:50，最大:100
      *
@@ -295,6 +297,7 @@ class DialogController extends AbstractController
         $user = User::auth();
         //
         $dialog_id = intval(Request::input('dialog_id'));
+        $msg_id = intval(Request::input('msg_id'));
         $position_id = intval(Request::input('position_id'));
         $prev_id = intval(Request::input('prev_id'));
         $next_id = intval(Request::input('next_id'));
@@ -302,6 +305,7 @@ class DialogController extends AbstractController
         $data = [];
         //
         $dialog = WebSocketDialog::checkDialog($dialog_id);
+        $reDialog = true;
         //
         $builder = WebSocketDialogMsg::select([
             'web_socket_dialog_msgs.*',
@@ -312,6 +316,11 @@ class DialogController extends AbstractController
                 ->on('read.userid', '=', DB::raw($user->userid))
                 ->on('read.msg_id', '=', 'web_socket_dialog_msgs.id');
         })->where('web_socket_dialog_msgs.dialog_id', $dialog_id);
+        //
+        if ($msg_id > 0) {
+            $builder->whereReplyId($msg_id);
+            $reDialog = false;
+        }
         //
         if ($position_id > 0) {
             $array = $builder->clone()
@@ -325,11 +334,12 @@ class DialogController extends AbstractController
         $cloner = $builder->clone();
         if ($prev_id > 0) {
             $cloner->where('web_socket_dialog_msgs.id', '<=', $prev_id)->orderByDesc('web_socket_dialog_msgs.id');
+            $reDialog = false;
         } elseif ($next_id > 0) {
             $cloner->where('web_socket_dialog_msgs.id', '>=', $next_id)->orderBy('web_socket_dialog_msgs.id');
+            $reDialog = false;
         } else {
             $cloner->orderByDesc('web_socket_dialog_msgs.id');
-            $data['dialog'] = $dialog->formatData($user->userid);
         }
         $list = $cloner->take($take)->get()->sortByDesc('id', SORT_NUMERIC)->values();
         //
@@ -358,6 +368,9 @@ class DialogController extends AbstractController
             $isMarkDialogUser->save();
         }
         //
+        if ($reDialog) {
+            $data['dialog'] = $dialog->formatData($user->userid);
+        }
         return Base::retSuccess('success', $data);
     }
 

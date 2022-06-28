@@ -75,7 +75,7 @@
 
                 <!-- 发送按钮 -->
                 <li class="chat-send" :class="sendClass" v-touchmouse="clickSend">
-                    <ETooltip placement="top" :disabled="windowSmall" :content="$L('发送')">
+                    <ETooltip placement="top" :disabled="windowSmall" :content="$L(sendClass === 'recorder' ? '长按录音' : '发送')">
                         <div v-if="loading">
                             <div class="chat-load">
                                 <Loading/>

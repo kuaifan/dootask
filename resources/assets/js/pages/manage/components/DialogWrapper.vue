@@ -76,7 +76,7 @@
             :data-component="msgItem"
 
             :item-class-add="itemClassAdd"
-            :extra-props="{dialogData, operateVisible, operateItem, hidePercentage: isMyDialog}"
+            :extra-props="{dialogData, operateVisible, operateItem, hidePercentage: isMyDialog, hideReply: msgId > 0}"
             :estimate-size="78"
             :keeps="70"
             @scroll="onScroll"
@@ -87,6 +87,7 @@
             @on-view-reply="onViewReply"
             @on-view-text="onViewText"
             @on-view-file="onViewFile"
+            @on-reply-list="onReplyList"
             @on-emoji="onEmoji">
             <template slot="header">
                 <div v-if="loadMsg || prevId > 0" class="dialog-item loading"><Loading/></div>
@@ -110,7 +111,7 @@
                 ref="input"
                 v-model="msgText"
                 :dialog-id="dialogId"
-                :reply-id="replyId"
+                :reply-id="replyActiveId"
                 :emoji-bottom="windowSmall"
                 :maxlength="200000"
                 @on-focus="onEventFocus"
@@ -139,7 +140,7 @@
                 <DropdownMenu slot="list">
                     <DropdownItem name="action">
                         <ul class="operate-action">
-                            <li @click="onOperate('reply')">
+                            <li v-if="msgId === 0" @click="onOperate('reply')">
                                 <i class="taskfont">&#xe6eb;</i>
                                 <span>{{ $L('回复') }}</span>
                             </li>
@@ -252,6 +253,29 @@
             :size="400">
             <DialogGroupInfo v-if="groupInfoShow" :dialogId="dialogId"/>
         </DrawerOverlay>
+
+        <!--回复列表-->
+        <DrawerOverlay
+            v-model="replyListShow"
+            placement="right"
+            :size="500">
+            <DialogWrapper
+                v-if="replyListShow && replyListItem"
+                :dialogId="dialogId"
+                :msgId="replyListId"
+                class="reply-list">
+                <div slot="head" class="dialog-scroller">
+                    <DialogItem
+                        :source="replyListItem"
+                        @on-view-text="onViewText"
+                        @on-view-file="onViewFile"
+                        @on-emoji="onEmoji"
+                        hidePercentage
+                        hideReply
+                        isReply/>
+                </div>
+            </DialogWrapper>
+        </DrawerOverlay>
     </div>
 </template>
 
@@ -271,6 +295,7 @@ import {textImagesInfo} from "../../../functions/utils";
 export default {
     name: "DialogWrapper",
     components: {
+        DialogItem,
         VirtualList,
         ChatInput,
         DialogGroupInfo,
@@ -281,6 +306,10 @@ export default {
 
     props: {
         dialogId: {
+            type: Number,
+            default: 0
+        },
+        msgId: {
             type: Number,
             default: 0
         },
@@ -333,8 +362,11 @@ export default {
             preventMoreLoad: false,
             preventToBottom: false,
 
-            replyId: 0,
+            replyActiveId: 0,
             replyActiveIndex: -1,
+
+            replyListShow: false,
+            replyListId: 0,
 
             scrollDirection: null,
             scrollAction: 0,
@@ -372,8 +404,11 @@ export default {
             if (!this.isReady) {
                 return [];
             }
-            return this.dialogMsgs.filter(({dialog_id}) => {
-                return dialog_id == this.dialogId;
+            return this.dialogMsgs.filter(item => {
+                if (this.msgId) {
+                    return item.reply_id == this.msgId;
+                }
+                return item.dialog_id == this.dialogId;
             }).sort((a, b) => {
                 return a.id - b.id;
             });
@@ -383,8 +418,11 @@ export default {
             if (!this.isReady) {
                 return [];
             }
-            return this.tempMsgs.filter(({dialog_id}) => {
-                return dialog_id == this.dialogId;
+            return this.tempMsgs.filter(item => {
+                if (this.msgId) {
+                    return item.reply_id == this.msgId;
+                }
+                return item.dialog_id == this.dialogId;
             });
         },
 
@@ -400,7 +438,7 @@ export default {
         },
 
         loadMsg() {
-            return this.isLoad(`msg::${this.dialogId}-0`)
+            return this.isLoad(`msg::${this.dialogId}-${this.msgId}`)
         },
 
         prevId() {
@@ -467,6 +505,18 @@ export default {
         isMyDialog() {
             const {dialogData, userId} = this;
             return dialogData.dialog_user && dialogData.dialog_user.userid == userId
+        },
+
+        replyId() {
+            return parseInt(this.msgId > 0 ? this.msgId : this.replyActiveId)
+        },
+
+        replyItem() {
+            return this.replyId ? this.dialogMsgs.find(({id}) => id === this.replyId) : null
+        },
+
+        replyListItem() {
+            return this.replyListId ? this.dialogMsgs.find(item => item.id == this.replyListId) : null
         }
     },
 
@@ -480,7 +530,10 @@ export default {
                         this.allMsgs = this.allMsgList;
                         requestAnimationFrame(this.onToBottom);
                     }
-                    this.$store.dispatch("getDialogMsgs", {dialog_id}).then(_ => {
+                    this.$store.dispatch("getDialogMsgs", {
+                        dialog_id,
+                        msg_id: this.msgId
+                    }).then(_ => {
                         this.openId = dialog_id;
                         setTimeout(this.onSearchMsgId, 100)
                     }).catch(_ => {});
@@ -523,7 +576,8 @@ export default {
         wsOpenNum(num) {
             if (num <= 1) return
             this.$store.dispatch("getDialogMsgs", {
-                dialog_id: this.dialogId
+                dialog_id: this.dialogId,
+                msg_id: this.msgId,
             }).catch(_ => {});
         },
 
@@ -594,7 +648,7 @@ export default {
                 id: tempId,
                 dialog_id: this.dialogData.id,
                 reply_id: this.replyId,
-                reply_data: this.replyId ? this.dialogMsgs.find(({id}) => id === this.replyId) : null,
+                reply_data: this.replyItem,
                 type: 'text',
                 userid: this.userId,
                 msg: {
@@ -612,7 +666,6 @@ export default {
                 data: {
                     dialog_id: this.dialogId,
                     reply_id: this.replyId,
-                    reply_data: this.replyId ? this.dialogMsgs.find(({id}) => id === this.replyId) : null,
                     text: msgText,
                 },
                 method: 'post'
@@ -638,7 +691,7 @@ export default {
                 id: tempId,
                 dialog_id: this.dialogData.id,
                 reply_id: this.replyId,
-                reply_data: this.replyId ? this.dialogMsgs.find(({id}) => id === this.replyId) : null,
+                reply_data: this.replyItem,
                 type: 'loading',
                 userid: this.userId,
                 msg,
@@ -718,6 +771,7 @@ export default {
                 this.preventToBottom = true;
                 this.$store.dispatch("getDialogMsgs", {
                     dialog_id: this.dialogId,
+                    msg_id: this.msgId,
                     position_id
                 }).finally(_ => {
                     const index = this.allMsgs.findIndex(item => item.id === position_id)
@@ -949,6 +1003,7 @@ export default {
             }
             this.$store.dispatch('getDialogMsgs', {
                 dialog_id: this.dialogId,
+                msg_id: this.msgId,
                 prev_id: this.prevId
             }).then(({data}) => {
                 const ids = data.list.map(item => item.id)
@@ -1048,8 +1103,9 @@ export default {
                     if (nearMsg && nearMsg.id != rangeValue) {
                         this.preventMoreLoad = true
                         this.$store.dispatch("getDialogMsgs", {
-                            [key]: rangeValue,
                             dialog_id: this.dialogId,
+                            msg_id: this.msgId,
+                            [key]: rangeValue,
                         }).finally(_ => {
                             this.preventMoreLoad = false
                         })
@@ -1151,7 +1207,7 @@ export default {
 
         onReply() {
             const {tail} = this.scrollInfo()
-            this.replyId = this.operateItem.id
+            this.replyActiveId = this.operateItem.id
             this.inputFocus()
             if (tail <= 10) {
                 requestAnimationFrame(this.onToBottom)
@@ -1159,7 +1215,7 @@ export default {
         },
 
         onCancelReply() {
-            this.replyId = 0;
+            this.replyActiveId = 0;
         },
 
         onWithdraw() {
@@ -1305,6 +1361,14 @@ export default {
                     this.$store.dispatch('downUrl', $A.apiUrl(`dialog/msg/download?msg_id=${this.operateItem.id}`))
                 }
             });
+        },
+
+        onReplyList(data) {
+            if (this.operateVisible) {
+                return
+            }
+            this.replyListId = data.msg_id
+            this.replyListShow = true
         },
 
         onEmoji(data) {

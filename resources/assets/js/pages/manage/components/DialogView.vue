@@ -10,7 +10,7 @@
             :class="headClass"
             v-longpress="{callback: handleLongpress, delay: 300}">
             <!--回复-->
-            <div v-if="msgData.reply_data" class="dialog-reply no-dark-content" @click="viewReply">
+            <div v-if="!hideReply && msgData.reply_data" class="dialog-reply no-dark-content" @click="viewReply">
                 <UserAvatar :userid="msgData.reply_data.userid" :show-icon="false" :show-name="true" :tooltip-disabled="true"/>
                 <div class="reply-desc">{{formatMsgDesc(msgData.reply_data)}}</div>
             </div>
@@ -83,7 +83,7 @@
 
         <div class="dialog-foot">
             <!--回复数-->
-            <div v-if="msgData.reply_num > 0" class="reply">
+            <div v-if="!hideReply && msgData.reply_num > 0" class="reply" @click="replyList">
                 <i class="taskfont">&#xe6eb;</i>
                 {{msgData.reply_num}}条回复
             </div>
@@ -151,6 +151,10 @@ export default {
             default: ''
         },
         hidePercentage: {
+            type: Boolean,
+            default: false
+        },
+        hideReply: {
             type: Boolean,
             default: false
         },
@@ -391,6 +395,12 @@ export default {
 
         viewFile() {
             this.$emit("on-view-file", this.msgData)
+        },
+
+        replyList() {
+            this.$emit("on-reply-list", {
+                msg_id: this.msgData.id,
+            })
         },
 
         onEmoji(symbol) {
