@@ -160,4 +160,30 @@ export default {
         }
         return result
     },
+
+    /**
+     * 协助任务
+     * @param state
+     * @returns {*}
+     */
+    assistTask(state) {
+        const filterTask = (task, chackCompleted = true) => {
+            if (task.archived_at) {
+                return false;
+            }
+            if (task.complete_at && chackCompleted === true) {
+                return false;
+            }
+            return task.assist && !task.owner;
+        }
+        let array = state.cacheTasks.filter(task => filterTask(task));
+        if (state.taskCompleteTemps.length > 0) {
+            let tmps = state.cacheTasks.filter(task => state.taskCompleteTemps.includes(task.id) && filterTask(task, false));
+            if (tmps.length > 0) {
+                array = $A.cloneJSON(array)
+                array.push(...tmps);
+            }
+        }
+        return array
+    }
 }

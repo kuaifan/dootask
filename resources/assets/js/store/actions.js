@@ -1288,6 +1288,7 @@ export default {
         const currentIds = today.map(({id}) => id)
         currentIds.push(...overdue.map(({id}) => id))
         currentIds.push(...all.map(({id}) => id))
+        currentIds.push(...getters.assistTask.map(({id}) => id))
         //
         dispatch("getTasks", {
             complete: "no",
@@ -1298,6 +1299,7 @@ export default {
             const newIds = today.filter(task => task._time >= time).map(({id}) => id)
             newIds.push(...overdue.filter(task => task._time >= time).map(({id}) => id))
             newIds.push(...all.filter(task => task._time >= time).map(({id}) => id))
+            newIds.push(...getters.assistTask.filter(task => task._time >= time).map(({id}) => id))
             dispatch("forgetTask", currentIds.filter(v => newIds.indexOf(v) == -1))
         })
     },

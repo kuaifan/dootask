@@ -120,7 +120,7 @@ export default {
     computed: {
         ...mapState(['userInfo', 'cacheTasks', 'taskCompleteTemps', 'loadDashboardTasks']),
 
-        ...mapGetters(['dashboardTask', 'transforTasks']),
+        ...mapGetters(['dashboardTask', 'assistTask', 'transforTasks']),
 
         columns() {
             const list = [];
@@ -137,32 +137,11 @@ export default {
             list.push({
                 type: 'assist',
                 title: this.getTitle('assist'),
-                list: this.assistList.sort((a, b) => {
+                list: this.assistTask.sort((a, b) => {
                     return $A.Date(a.end_at || "2099-12-31 23:59:59") - $A.Date(b.end_at || "2099-12-31 23:59:59");
                 })
             })
             return list;
-        },
-
-        assistList() {
-            const filterTask = (task, chackCompleted = true) => {
-                if (task.archived_at) {
-                    return false;
-                }
-                if (task.complete_at && chackCompleted === true) {
-                    return false;
-                }
-                return task.assist && !task.owner;
-            }
-            let array = this.cacheTasks.filter(task => filterTask(task));
-            if (this.taskCompleteTemps.length > 0) {
-                let tmps = this.cacheTasks.filter(task => this.taskCompleteTemps.includes(task.id) && filterTask(task, false));
-                if (tmps.length > 0) {
-                    array = $A.cloneJSON(array)
-                    array.push(...tmps);
-                }
-            }
-            return array
         },
 
         total() {
