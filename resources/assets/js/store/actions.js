@@ -2195,12 +2195,26 @@ export default {
             if (!/^d+$/.test(data.reply_id)) {
                 data.reply_id = 0;
             }
+            //
             const loadKey = `msg::${data.dialog_id}-${data.reply_id}`
             if (getters.isLoad(loadKey)) {
                 reject({msg: 'Loading'});
                 return
             }
             dispatch("setLoad", loadKey)
+            //
+            if (data.prev_id) {
+                const prevMsg = state.dialogMsgs.find(({prev_id}) => prev_id == data.prev_id)
+                if (prevMsg) {
+                    prevMsg.prev_id = 0
+                }
+            }
+            if (data.next_id) {
+                const nextMsg = state.dialogMsgs.find(({next_id}) => next_id == data.next_id)
+                if (nextMsg) {
+                    nextMsg.next_id = 0
+                }
+            }
             //
             dispatch("call", {
                 url: 'dialog/msg/list',

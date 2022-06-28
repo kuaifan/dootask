@@ -222,6 +222,8 @@ class DialogController extends AbstractController
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
+     *
+     * @deprecated
      */
     public function msg__lists()
     {
@@ -277,7 +279,7 @@ class DialogController extends AbstractController
      * @apiName msg__list
      *
      * @apiParam {Number} dialog_id         对话ID
-     * @apiParam {String} [position_id]     此消息ID前后的数据，优先级1
+     * @apiParam {Number} [position_id]     此消息ID前后的数据，优先级1
      * @apiParam {Number} [prev_id]         此消息ID之前的数据，优先级2
      * @apiParam {Number} [next_id]         此消息ID之后的数据，优先级3
      *
@@ -297,6 +299,7 @@ class DialogController extends AbstractController
         $prev_id = intval(Request::input('prev_id'));
         $next_id = intval(Request::input('next_id'));
         $take = Base::getPaginate(100, 50, 'take');
+        $data = [];
         //
         $dialog = WebSocketDialog::checkDialog($dialog_id);
         //
@@ -326,6 +329,7 @@ class DialogController extends AbstractController
             $cloner->where('web_socket_dialog_msgs.id', '>=', $next_id)->orderBy('web_socket_dialog_msgs.id');
         } else {
             $cloner->orderByDesc('web_socket_dialog_msgs.id');
+            $data['dialog'] = $dialog->formatData($user->userid);
         }
         $list = $cloner->take($take)->get()->sortByDesc('id', SORT_NUMERIC)->values();
         //
@@ -341,6 +345,7 @@ class DialogController extends AbstractController
                 ->orderByDesc('web_socket_dialog_msgs.id')
                 ->value('id'));
         }
+        $data['list'] = $list;
         // 记录当前打开的任务对话
         if ($dialog->type == 'group' && $dialog->group_type == 'task') {
             $user->task_dialog_id = $dialog->id;
@@ -353,11 +358,6 @@ class DialogController extends AbstractController
             $isMarkDialogUser->save();
         }
         //
-        $data = [];
-        $data['list'] = $list;
-        if ($prev_id === 0 && $next_id === 0) {
-            $data['dialog'] = $dialog->formatData($user->userid);
-        }
         return Base::retSuccess('success', $data);
     }
 
