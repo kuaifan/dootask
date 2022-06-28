@@ -147,6 +147,10 @@ export default {
                     Store.set('updateNotification', null);
                     break;
 
+                case 'privacy':
+                    window.open($A.apiUrl('../privacy.html'))
+                    break;
+
                 case 'index':
                     this.goForward({name: 'manage-setting'});
                     break;

@@ -8,7 +8,7 @@
         :transition-names="[$A.isAndroid() ? '' : `drawer-slide-${placement}`, '']"
         :beforeClose="beforeClose"
         fullscreen
-        :class-name="`common-drawer-overlay ${placement}`">
+        :class-name="modalClass">
         <DrawerOverlayView
             :placement="placement"
             :size="size"
@@ -57,6 +57,9 @@ export default {
             type: Boolean,
             default: true
         },
+        className: {
+            type: String
+        },
         beforeClose: Function
     },
     data() {
@@ -70,6 +73,15 @@ export default {
         },
         show(v) {
             this.value !== v && this.$emit("input", v)
+        }
+    },
+    computed: {
+        modalClass() {
+            if (this.className) {
+                return `common-drawer-overlay ${this.className} ${this.placement}`
+            } else {
+                return `common-drawer-overlay ${this.placement}`
+            }
         }
     },
     methods: {

@@ -258,6 +258,7 @@
         <DrawerOverlay
             v-model="replyListShow"
             placement="right"
+            class-name="dialog-wrapper-reply-list"
             :size="500">
             <DialogWrapper
                 v-if="replyListShow && replyListItem"

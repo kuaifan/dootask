@@ -2200,19 +2200,6 @@ export default {
             }
             dispatch("setLoad", loadKey)
             //
-            if (data.prev_id) {
-                const prevMsg = state.dialogMsgs.find(({prev_id}) => prev_id == data.prev_id)
-                if (prevMsg) {
-                    prevMsg.prev_id = 0
-                }
-            }
-            if (data.next_id) {
-                const nextMsg = state.dialogMsgs.find(({next_id}) => next_id == data.next_id)
-                if (nextMsg) {
-                    nextMsg.next_id = 0
-                }
-            }
-            //
             dispatch("call", {
                 url: 'dialog/msg/list',
                 data,
@@ -2231,6 +2218,20 @@ export default {
             }).catch(e => {
                 console.warn(e);
                 reject(e)
+            }).finally(_ => {
+                // 将原数据清除，避免死循环
+                if (data.prev_id) {
+                    const prevMsg = state.dialogMsgs.find(({prev_id}) => prev_id == data.prev_id)
+                    if (prevMsg) {
+                        prevMsg.prev_id = 0
+                    }
+                }
+                if (data.next_id) {
+                    const nextMsg = state.dialogMsgs.find(({next_id}) => next_id == data.next_id)
+                    if (nextMsg) {
+                        nextMsg.next_id = 0
+                    }
+                }
             });
         });
     },
