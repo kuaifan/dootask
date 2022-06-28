@@ -296,8 +296,9 @@ class IndexController extends InvokeController
             parse_str($data['query'], $query);
             $name = Arr::get($query, 'name');
             $ext = strtolower(Arr::get($query, 'ext'));
+            $userAgent = strtolower(Request::server('HTTP_USER_AGENT'));
             if ($ext === 'pdf'
-                && str_contains(strtolower(Request::server('HTTP_USER_AGENT')), 'electron')) {
+                && (str_contains($userAgent, 'electron') || str_contains($userAgent, 'chrome'))) {
                 return response()->download($file, $name, [], 'inline');
             }
             //
@@ -306,9 +307,11 @@ class IndexController extends InvokeController
             } else {
                 $url = 'http://' . env('APP_IPPR') . '.3/' . $path;
             }
-            $url = Base::urlAddparameter($url, [
-                'fullfilename' => $name
-            ]);
+            if ($ext !== 'pdf') {
+                $url = Base::urlAddparameter($url, [
+                    'fullfilename' => $name . '.' . $ext
+                ]);
+            }
             $toUrl = Base::fillUrl("fileview/onlinePreview?url=" . urlencode(base64_encode($url)));
             return Redirect::to($toUrl, 301);
         }
