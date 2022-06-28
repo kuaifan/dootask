@@ -9,11 +9,14 @@
                 <Icon type="md-download"/>
                 {{ $L('客户端下载') }}
             </a>
-            <div v-else-if="updateVersion && $Electron" class="common-right-bottom-link" @click="updateShow=true">
+            <div v-else-if="updateVersion && updateBottomShow && $Electron" class="common-right-bottom-link" @click="updateShow=true">
                 <Icon type="md-download"/>
                 {{ $L('更新客户端') }}
             </div>
         </template>
+        <a v-if="showPrivacy" class="common-right-bottom-link" target="_blank" :href="$A.apiUrl('../privacy.html')">
+            《{{ $L('隐私政策') }}》
+        </a>
         <Modal
             v-model="updateShow"
             :closable="false"
@@ -55,6 +58,7 @@ export default {
             updateVersion: '',
             updateNote: '',
             updateShow: false,
+            updateBottomShow: false,
             updateIng: false,
 
             downloadUrl: '',
@@ -84,6 +88,14 @@ export default {
         }
     },
 
+    watch: {
+        updateShow(show) {
+            if (show) {
+                this.updateBottomShow = true
+            }
+        }
+    },
+
     computed: {
         isSoftware() {
             return this.$Electron || this.$isEEUiApp;
@@ -95,6 +107,15 @@ export default {
 
         showDown() {
             return this.windowLarge && ['login', 'index', 'manage-dashboard'].includes(this.$route.name)
+        },
+
+        showPrivacy() {
+            return [
+                '127.0.0.1:2222',
+                't.hitosea.com',
+                'dootask.com',
+                'www.dootask.com'
+            ].includes($A.getDomain($A.apiUrl('../'))) && this.$isEEUiApp && ['login'].includes(this.$route.name)
         }
     },
 

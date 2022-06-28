@@ -48,17 +48,9 @@ export default {
             't.hitosea.com',
             'dootask.com',
             'www.dootask.com'
-        ].includes(this.getDomain($A.apiUrl('../')))) {
+        ].includes($A.getDomain($A.apiUrl('../')))) {
             this.appPush = true;
         }
     },
-
-    methods: {
-        getDomain(weburl) {
-            let urlReg = /http(s)?:\/\/([^\/]+)/i;
-            let domain = (weburl + "").match(urlReg);
-            return ((domain != null && domain.length > 0) ? domain[2] : "");
-        }
-    }
 }
 </script>
