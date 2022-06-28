@@ -64,11 +64,12 @@ class LoopTask extends AbstractTask
                         $task->end_at = $task->start_at->clone()->addSeconds($diffSecond);
                     }
                     $task->refreshLoop(true);
-                    $task->addLog("创建任务来自周期任务ID：" . $item->id, [], $task->userid);
+                    $task->addLog("创建任务来自周期任务ID：{$item->id}", [], $task->userid);
                     // 清空旧周期
                     $item->loop = '';
                     $item->loop_at = null;
                     $item->save();
+                    $item->addLog("已创建新的周期任务ID：{$task->id}，此任务关闭周期", [], $task->userid);
                 } catch (\Throwable $e) {
                     $item->addLog("生成重复任务失败：" . $e->getMessage(), [], $item->userid);
                 }

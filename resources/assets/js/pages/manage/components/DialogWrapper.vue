@@ -90,7 +90,7 @@
             @on-reply-list="onReplyList"
             @on-emoji="onEmoji">
             <template slot="header">
-                <div v-if="loadMsg || prevId > 0" class="dialog-item loading"><Loading/></div>
+                <div v-if="(allMsgs.length === 0 && loadMsg) || prevId > 0" class="dialog-item loading"><Loading/></div>
                 <div v-else-if="allMsgs.length === 0" class="dialog-item nothing">{{$L('暂无消息')}}</div>
             </template>
         </VirtualList>
