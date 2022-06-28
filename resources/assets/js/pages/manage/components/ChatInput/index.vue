@@ -593,7 +593,7 @@ export default {
                     const range = this.quill.getSelection();
                     if (range) {
                         const endText = this.quill.getText(range.index);
-                        /\n\n/.test(endText) && this.quill.deleteText(range.index, 1);
+                        /^\n\n$/.test(endText) && this.quill.deleteText(range.index, 1);
                     }
                 })
             })
