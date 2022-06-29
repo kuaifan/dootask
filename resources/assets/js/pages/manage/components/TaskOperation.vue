@@ -303,17 +303,16 @@ export default {
                 loading: true,
                 onOk: () => {
                     if (this.loadIng) {
-                        this.$Modal.remove();
                         return;
                     }
-                    this.$store.dispatch(typeDispatch, typeData).then(({msg}) => {
-                        $A.messageSuccess(msg);
-                        this.$store.dispatch("saveTaskBrowse", typeData.task_id);
-                    }).catch(({msg}) => {
-                        $A.modalError(msg, 301);
-                    }).finally(_ => {
-                        this.$Modal.remove();
-                    });
+                    return new Promise((resolve, reject) => {
+                        this.$store.dispatch(typeDispatch, typeData).then(({msg}) => {
+                            resolve(msg);
+                            this.$store.dispatch("saveTaskBrowse", typeData.task_id);
+                        }).catch(({msg}) => {
+                            reject(msg);
+                        });
+                    })
                 }
             });
         },

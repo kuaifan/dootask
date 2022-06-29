@@ -367,14 +367,14 @@ export default {
                         content: '你确定要删除任务【' + data.name + '】吗？',
                         loading: true,
                         onOk: () => {
-                            this.$store.dispatch("removeTask", {task_id: data.id}).then(({msg}) => {
-                                $A.messageSuccess(msg);
-                            }).catch(({msg}) => {
-                                $A.modalError(msg, 301);
-                                this.setRenderRange();
-                            }).finally(_ => {
-                                this.$Modal.remove();
-                            });
+                            return new Promise((resolve, reject) => {
+                                this.$store.dispatch("removeTask", {task_id: data.id}).then(({msg}) => {
+                                    resolve(msg);
+                                }).catch(({msg}) => {
+                                    reject(msg);
+                                    this.setRenderRange();
+                                });
+                            })
                         }
                     });
                     break;

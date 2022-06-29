@@ -336,31 +336,30 @@ export default {
                 loading: true,
                 onOk: () => {
                     if (data.id > 0) {
-                        this.loadIng++;
-                        this.$store.dispatch("call", {
-                            url: 'project/flow/delete',
-                            data: {
-                                project_id: this.projectId,
-                            },
-                        }).then(({msg}) => {
-                            $.messageSuccess(msg);
-                            //
-                            let index = this.list.findIndex(({id}) => id == data.id)
-                            if (index > -1) {
-                                this.list.splice(index, 1)
-                            }
-                        }).catch(({msg}) => {
-                            $A.modalError(msg, 301);
-                        }).finally(_ => {
-                            this.$Modal.remove();
-                            this.loadIng--;
-                        });
-                    } else {
-                        let index = this.list.findIndex(({id}) => id == data.id)
-                        if (index > -1) {
-                            this.list.splice(index, 1)
-                        }
-                        this.$Modal.remove();
+                        return new Promise((resolve, reject) => {
+                            this.loadIng++;
+                            this.$store.dispatch("call", {
+                                url: 'project/flow/delete',
+                                data: {
+                                    project_id: this.projectId,
+                                },
+                            }).then(({msg}) => {
+                                resolve(msg);
+                                //
+                                let index = this.list.findIndex(({id}) => id == data.id)
+                                if (index > -1) {
+                                    this.list.splice(index, 1)
+                                }
+                            }).catch(({msg}) => {
+                                reject(msg);
+                            }).finally(_ => {
+                                this.loadIng--;
+                            });
+                        })
+                    }
+                    const index = this.list.findIndex(({id}) => id == data.id)
+                    if (index > -1) {
+                        this.list.splice(index, 1)
                     }
                 }
             });

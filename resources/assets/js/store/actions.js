@@ -452,7 +452,7 @@ export default {
                             });
                         })
                     },
-                    onCancel: _ => setTimeout(nameReject, 301)
+                    onCancel: _ => nameReject
                 });
             }, 100)
         });
@@ -1629,7 +1629,7 @@ export default {
                 }).catch(e => {
                     console.warn(e);
                     dispatch("getTaskOne", post.task_id).catch(() => {})
-                    setTimeout(() => { reject(e) }, confirm === true ? 301 : 0)
+                    reject(e)
                 }).finally(_ => {
                     dispatch("cancelLoad", `task-${post.task_id}`)
                 });

@@ -1225,19 +1225,19 @@ export default {
                 okText: '撤回',
                 loading: true,
                 onOk: () => {
-                    this.$store.dispatch("call", {
-                        url: 'dialog/msg/withdraw',
-                        data: {
-                            msg_id: this.operateItem.id
-                        },
-                    }).then(() => {
-                        $A.messageSuccess("消息已撤回");
-                        this.$store.dispatch("forgetDialogMsg", this.operateItem.id);
-                    }).catch(({msg}) => {
-                        $A.messageError(msg, 301);
-                    }).finally(_ => {
-                        this.$Modal.remove();
-                    });
+                    return new Promise((resolve, reject) => {
+                        this.$store.dispatch("call", {
+                            url: 'dialog/msg/withdraw',
+                            data: {
+                                msg_id: this.operateItem.id
+                            },
+                        }).then(() => {
+                            resolve("消息已撤回");
+                            this.$store.dispatch("forgetDialogMsg", this.operateItem.id);
+                        }).catch(({msg}) => {
+                            reject(msg);
+                        });
+                    })
                 }
             });
         },

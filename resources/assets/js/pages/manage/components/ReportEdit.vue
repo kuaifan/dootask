@@ -106,9 +106,8 @@ export default {
                 $A.modalConfirm({
                     title: '覆盖提交',
                     content: '你已提交过此日期的报告，是否覆盖提交？',
-                    loading: true,
                     onOk: () => {
-                        this.doSubmit(true);
+                        this.doSubmit();
                     }
                 });
             } else {
@@ -116,13 +115,12 @@ export default {
             }
         },
 
-        doSubmit(isModal = false) {
+        doSubmit() {
             this.$store.dispatch("call", {
                 url: 'report/store',
                 data: this.reportData,
                 method: 'post',
             }).then(({data, msg}) => {
-                isModal && this.$Modal.remove();
                 // data 结果数据
                 this.reportData.offset = 0;
                 this.reportData.type = "weekly";
@@ -132,7 +130,6 @@ export default {
                 !this.$isSubElectron && $A.messageSuccess(msg);
                 this.$emit("saveSuccess", {data, msg});
             }).catch(({msg}) => {
-                isModal && this.$Modal.remove();
                 // msg 错误原因
                 $A.messageError(msg);
             });

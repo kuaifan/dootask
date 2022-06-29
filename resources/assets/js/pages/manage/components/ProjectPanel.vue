@@ -1047,15 +1047,15 @@ export default {
                     }
                     this.$set(this.columnLoad, column.id, true);
                     //
-                    this.$store.dispatch("removeColumn", column.id).then(({data, msg}) => {
-                        $A.messageSuccess(msg);
-                        this.$set(this.columnLoad, column.id, false);
-                    }).catch(({msg}) => {
-                        $A.modalError(msg, 301);
-                        this.$set(this.columnLoad, column.id, false);
-                    }).finally(_ => {
-                        this.$Modal.remove();
-                    });
+                    return new Promise((resolve, reject) => {
+                        this.$store.dispatch("removeColumn", column.id).then(({msg}) => {
+                            resolve(msg);
+                        }).catch(({msg}) => {
+                            reject(msg);
+                        }).finally(_ => {
+                            this.$set(this.columnLoad, column.id, false);
+                        });
+                    })
                 }
             });
         },
@@ -1129,13 +1129,13 @@ export default {
                 content: '你确定要归档项目【' + this.projectData.name + '】吗？',
                 loading: true,
                 onOk: () => {
-                    this.$store.dispatch("archivedProject", this.projectId).then(({msg}) => {
-                        $A.messageSuccess(msg);
-                    }).catch(({msg}) => {
-                        $A.modalError(msg, 301);
-                    }).finally(_ => {
-                        this.$Modal.remove();
-                    });
+                    return new Promise((resolve, reject) => {
+                        this.$store.dispatch("archivedProject", this.projectId).then(({msg}) => {
+                            resolve(msg);
+                        }).catch(({msg}) => {
+                            reject(msg);
+                        });
+                    })
                 }
             });
         },
@@ -1146,13 +1146,13 @@ export default {
                 content: '你确定要删除项目【' + this.projectData.name + '】吗？',
                 loading: true,
                 onOk: () => {
-                    this.$store.dispatch("removeProject", this.projectId).then(({msg}) => {
-                        $A.messageSuccess(msg);
-                    }).catch(({msg}) => {
-                        $A.modalError(msg, 301);
-                    }).finally(_ => {
-                        this.$Modal.remove();
-                    });
+                    return new Promise((resolve, reject) => {
+                        this.$store.dispatch("removeProject", this.projectId).then(({msg}) => {
+                            resolve(msg);
+                        }).catch(({msg}) => {
+                            reject(msg);
+                        });
+                    })
                 }
             });
         },
@@ -1163,13 +1163,13 @@ export default {
                 content: '你确定要退出项目【' + this.projectData.name + '】吗？',
                 loading: true,
                 onOk: () => {
-                    this.$store.dispatch("exitProject", this.projectId).then(({msg}) => {
-                        $A.messageSuccess(msg);
-                    }).catch(({msg}) => {
-                        $A.modalError(msg, 301);
-                    }).finally(_ => {
-                        this.$Modal.remove();
-                    });
+                    return new Promise((resolve, reject) => {
+                        this.$store.dispatch("exitProject", this.projectId).then(({msg}) => {
+                            resolve(msg);
+                        }).catch(({msg}) => {
+                            reject(msg);
+                        });
+                    })
                 }
             });
         },

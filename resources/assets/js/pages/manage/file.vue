@@ -1160,19 +1160,19 @@ export default {
                         content: '你确定要退出【' + item.name + '】共享成员吗？',
                         loading: true,
                         onOk: () => {
-                            this.$store.dispatch("call", {
-                                url: 'file/share/out',
-                                data: {
-                                    id: item.id,
-                                },
-                            }).then(({msg}) => {
-                                $A.messageSuccess(msg);
-                                this.$store.dispatch("forgetFile", item.id);
-                            }).catch(({msg}) => {
-                                $A.modalError(msg, 301);
-                            }).finally(_ => {
-                                this.$Modal.remove();
-                            });
+                            return new Promise((resolve, reject) => {
+                                this.$store.dispatch("call", {
+                                    url: 'file/share/out',
+                                    data: {
+                                        id: item.id,
+                                    },
+                                }).then(({msg}) => {
+                                    resolve(msg);
+                                    this.$store.dispatch("forgetFile", item.id);
+                                }).catch(({msg}) => {
+                                    reject(msg);
+                                });
+                            })
                         }
                     });
                     break;
@@ -1288,20 +1288,20 @@ export default {
                 content: '你确定要删除' + fileName + '吗？',
                 loading: true,
                 onOk: () => {
-                    this.$store.dispatch("call", {
-                        url: 'file/remove',
-                        data: {
-                            ids,
-                        },
-                    }).then(({msg}) => {
-                        $A.messageSuccess(msg);
-                        this.$store.dispatch("forgetFile", ids);
-                        this.selectIds = this.selectIds.filter(id => !ids.includes(id))
-                    }).catch(({msg}) => {
-                        $A.modalError(msg, 301);
-                    }).finally(_ => {
-                        this.$Modal.remove();
-                    });
+                    return new Promise((resolve, reject) => {
+                        this.$store.dispatch("call", {
+                            url: 'file/remove',
+                            data: {
+                                ids,
+                            },
+                        }).then(({msg}) => {
+                            resolve(msg);
+                            this.$store.dispatch("forgetFile", ids);
+                            this.selectIds = this.selectIds.filter(id => !ids.includes(id))
+                        }).catch(({msg}) => {
+                            reject(msg);
+                        });
+                    })
                 }
             });
         },
@@ -1466,7 +1466,7 @@ export default {
                         }
                     })
                 } else {
-                    $A.modalError(msg, force === true ? 301 : 0)
+                    $A.modalError(msg)
                 }
             }).finally(_ => {
                 this.shareLoad--;
@@ -1512,7 +1512,7 @@ export default {
                     })
                 } else {
                     item.permission = item._permission;
-                    $A.modalError(msg, force === true ? 301 : 0)
+                    $A.modalError(msg)
                 }
             })
         },

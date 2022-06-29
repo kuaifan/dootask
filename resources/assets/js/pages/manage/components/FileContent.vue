@@ -423,21 +423,21 @@ export default {
                 okText: '确定',
                 loading: true,
                 onOk: () => {
-                    this.$store.dispatch("call", {
-                        url: 'file/content/restore',
-                        data: {
-                            id: this.fileId,
-                            history_id: item.id,
-                        }
-                    }).then(({msg}) => {
-                        $A.messageSuccess(msg);
-                        this.contentDetail = null;
-                        this.getContent();
-                    }).catch(({msg}) => {
-                        $A.modalError(msg, 301);
-                    }).finally(_ => {
-                        this.$Modal.remove();
-                    });
+                    return new Promise((resolve, reject) => {
+                        this.$store.dispatch("call", {
+                            url: 'file/content/restore',
+                            data: {
+                                id: this.fileId,
+                                history_id: item.id,
+                            }
+                        }).then(({msg}) => {
+                            resolve(msg);
+                            this.contentDetail = null;
+                            this.getContent();
+                        }).catch(({msg}) => {
+                            reject(msg);
+                        });
+                    })
                 }
             });
         },

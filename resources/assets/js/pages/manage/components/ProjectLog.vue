@@ -244,20 +244,20 @@ export default {
                 content: item.content,
                 loading: true,
                 onOk: () => {
-                    this.$store.dispatch("call", {
-                        url: 'project/task/resetfromlog',
-                        data: {
-                            id: item.id
-                        }
-                    }).then(({data, msg}) => {
-                        $A.messageSuccess(msg);
-                        this.$store.dispatch("saveTask", data);
-                        this.getLists(true);
-                    }).catch(({msg}) => {
-                        $A.modalError(msg, 301);
-                    }).finally(_ => {
-                        this.$Modal.remove();
-                    });
+                    return new Promise((resolve, reject) => {
+                        this.$store.dispatch("call", {
+                            url: 'project/task/resetfromlog',
+                            data: {
+                                id: item.id
+                            }
+                        }).then(({data, msg}) => {
+                            resolve(msg);
+                            this.$store.dispatch("saveTask", data);
+                            this.getLists(true);
+                        }).catch(({msg}) => {
+                            reject(msg);
+                        });
+                    })
                 }
             });
         },
