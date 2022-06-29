@@ -45,11 +45,11 @@ class FileController extends AbstractController
         $pid = intval($data['pid']);
         //
         $permission = 1000;
+        $builder = File::wherePid($pid);
         if ($pid > 0) {
             File::permissionFind($pid, 0, $permission);
-            $builder = File::wherePid($pid);
         } else {
-            $builder = File::whereUserid($user->userid);
+            $builder->whereUserid($user->userid);
         }
         //
         $array = $builder->take(500)->get()->toArray();
