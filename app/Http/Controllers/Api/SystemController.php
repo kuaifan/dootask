@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\User;
 use App\Module\Base;
+use Arr;
 use Guanguans\Notify\Factory;
 use Guanguans\Notify\Messages\EmailMessage;
 use Request;
@@ -713,5 +714,34 @@ class SystemController extends AbstractController
                 return Base::retError($e->getMessage());
             }
         }
+    }
+
+    /**
+     * @api {get} api/system/version          18. 获取版本号
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName version
+     *
+     * @apiSuccess {String} version
+     * @apiSuccess {String} publish
+     */
+    public function version()
+    {
+        $url = url('');
+        $package = Base::getPackage();
+        $array = [
+            'version' => Base::getVersion(),
+            'publish' => Arr::get($package, 'app.0.publish'),
+        ];
+        if (is_array($package['app'])) {
+            foreach ($package['app'] as $item) {
+                $urls = $item['urls'] && is_array($item['urls']) ? $item['urls'] : $item['url'];
+                if (is_array($item['publish']) && Base::hostContrast($url, $urls)) {
+                    $array['publish'] = $item['publish'];
+                }
+            }
+        }
+        return $array;
     }
 }
