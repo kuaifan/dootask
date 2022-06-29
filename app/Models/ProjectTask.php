@@ -1354,28 +1354,62 @@ class ProjectTask extends AbstractModel
             $data = $data->toArray();
         }
         //
-        $array = [$userid, []];
+        $userids = [];
         if ($userid === null) {
-            $array[0] = $this->project->relationUserids();
+            $userids = $this->project->relationUserids();
         } elseif (!is_array($userid)) {
-            $array[0] = [$userid];
+            $userids = [$userid];
         }
         //
-        if (isset($data['owner'])) {
-            $owners = ProjectTaskUser::whereTaskId($data['id'])->whereOwner(1)->pluck('userid')->toArray();
-            $array = [array_intersect($array[0], $owners), array_diff($array[0], $owners)];
-        }
-        foreach ($array as $index => $item) {
-            if ($index > 0) {
-                $data['owner'] = 0;
+        $array = [];
+        if (empty($data['parent_id'])) {
+            if (Arr::exists($data, 'owner') || Arr::exists($data, 'assist')) {
+                $taskUser = ProjectTaskUser::select(['userid', 'owner'])->whereTaskId($data['id'])->get();
+                // 负责人
+                $owners = $taskUser->where('owner', 1)->pluck('userid')->toArray();
+                $owners = array_intersect($userids, $owners);
+                if ($owners) {
+                    $array[] = [
+                        'userid' => array_values($owners),
+                        'data' => array_merge($data, [
+                            'owner' => 1,
+                            'assist' => 1,
+                        ])
+                    ];
+                }
+                // 协助人
+                $assists = $taskUser->pluck('userid')->toArray();
+                $assists = array_intersect($userids, array_diff($assists, $owners));
+                if ($assists) {
+                    $array[] = [
+                        'userid' => array_values($assists),
+                        'data' => array_merge($data, [
+                            'owner' => 0,
+                            'assist' => 1,
+                        ])
+                    ];
+                }
+                // 项目成员（其他人）
+                $userids = array_diff($userids, $owners, $assists);
+                $data = array_merge($data, [
+                    'owner' => 0,
+                    'assist' => 0,
+                ]);
             }
+        }
+        $array[] = [
+            'userid' => array_values($userids),
+            'data' => $data
+        ];
+        //
+        foreach ($array as $item) {
             $params = [
                 'ignoreFd' => Request::header('fd'),
                 'userid' => array_values($item),
                 'msg' => [
                     'type' => 'projectTask',
                     'action' => $action,
-                    'data' => $data,
+                    'data' => $item['data'],
                 ]
             ];
             $task = new PushTask($params, false);
@@ -1390,7 +1424,15 @@ class ProjectTask extends AbstractModel
      */
     public static function oneTask($task_id)
     {
-        return self::with(['taskUser', 'taskTag'])->allData()->where("project_tasks.id", intval($task_id))->first();
+        $data = self::with(['taskUser', 'taskTag'])->allData()->where("project_tasks.id", intval($task_id))->first();
+        if ($data && $data->parent_id === 0) {
+            if ($data->owner || ProjectTaskUser::select(['owner'])->whereTaskId($data->id)->whereUserid(User::userid())->exists()) {
+                $data->assist = 1;
+            } else {
+                $data->assist = 0;
+            }
+        }
+        return $data;
     }
 
     /**
