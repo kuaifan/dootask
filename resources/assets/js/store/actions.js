@@ -66,8 +66,8 @@ export default {
                         dispatch("call", Object.assign(cloneParams, {
                             checkNick: false
                         })).then(resolve).catch(reject);
-                    }).catch(({msg}) => {
-                        reject({ret: -1, data, msg: msg || $A.L('请设置昵称！')})
+                    }).catch(err => {
+                        reject({ret: -1, data, msg: err || $A.L('请设置昵称！')})
                     });
                     return;
                 }
@@ -425,26 +425,17 @@ export default {
      * @returns {Promise<unknown>}
      */
     userNickNameInput({dispatch}) {
-        return new Promise(function (resolve, reject) {
-            let callback = (cb, result) => {
-                if (typeof cb === "function") {
-                    cb();
-                }
-                if (result === true) {
-                    setTimeout(resolve, 301)
-                } else {
-                    setTimeout(_ => {
-                        reject(result === false ? {} : {msg: result})
-                    }, 301)
-                }
-            }
+        return new Promise(function (nameResolve, nameReject) {
             setTimeout(_ => {
                 $A.modalInput({
                     title: "设置昵称",
                     placeholder: "请输入昵称",
                     okText: "保存",
-                    onOk: (value, cb) => {
-                        if (value) {
+                    onOk: (value) => {
+                        if (!value) {
+                            return '请输入昵称'
+                        }
+                        return new Promise((inResolve, inReject) => {
                             dispatch("call", {
                                 url: 'users/editdata',
                                 data: {
@@ -452,21 +443,16 @@ export default {
                                 },
                                 checkNick: false,
                             }).then(() => {
-                                dispatch('getUserInfo').then(() => {
-                                    callback(cb, true);
-                                }).catch(() => {
-                                    callback(cb, false);
+                                dispatch('getUserInfo').finally(_ => {
+                                    inResolve()
+                                    nameResolve()
                                 });
                             }).catch(({msg}) => {
-                                callback(cb, msg);
+                                inReject(msg)
                             });
-                        } else {
-                            callback(cb, false);
-                        }
+                        })
                     },
-                    onCancel: () => {
-                        callback(null, false);
-                    }
+                    onCancel: _ => setTimeout(nameReject, 301)
                 });
             }, 100)
         });

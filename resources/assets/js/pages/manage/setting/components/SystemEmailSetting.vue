@@ -163,28 +163,25 @@ export default {
             $A.modalInput({
                 title: "测试邮件",
                 placeholder: "请输入收件人地址",
-                onOk: (value, cb) => {
+                onOk: (value) => {
                     if (!value) {
-                        cb()
-                        return
+                        return '请输入收件人地址'
                     }
                     if (!$A.isEmail(value)) {
-                        $A.modalError("请输入正确的收件人地址", 301)
-                        cb()
-                        return
+                        return '请输入正确的收件人地址'
                     }
-                    this.$store.dispatch("call", {
-                        url: 'system/email/check',
-                        data: Object.assign(this.formData, {
-                            to: value
-                        }),
-                    }).then(({msg}) => {
-                        $A.messageSuccess(msg)
-                        cb()
-                    }).catch(({msg}) => {
-                        $A.modalError(msg, 301)
-                        cb()
-                    });
+                    return new Promise((resolve, reject) => {
+                        this.$store.dispatch("call", {
+                            url: 'system/email/check',
+                            data: Object.assign(this.formData, {
+                                to: value
+                            }),
+                        }).then(({msg}) => {
+                            resolve(msg)
+                        }).catch(({msg}) => {
+                            reject(msg)
+                        });
+                    })
                 }
             });
         }

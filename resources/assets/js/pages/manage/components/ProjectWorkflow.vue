@@ -403,12 +403,12 @@ export default {
             $A.modalInput({
                 value: item.name,
                 title: "修改名称",
-                placeholder: "输入流程名称",
+                placeholder: "请输入流程名称",
                 onOk: (name) => {
-                    if (name) {
-                        this.$set(item, 'name', name);
+                    if (!name) {
+                        return '请输入流程名称';
                     }
-                    return true;
+                    this.$set(item, 'name', name);
                 }
             });
         },
@@ -429,25 +429,25 @@ export default {
         onAdd(data) {
             $A.modalInput({
                 title: "添加状态",
-                placeholder: "输入状态名称",
+                placeholder: "请输入状态名称",
                 onOk: (name) => {
-                    if (name) {
-                        let id = $A.randNum(100000, 999999) * -1;
-                        let turns = data.project_flow_item.map(({id}) => id)
-                        data.project_flow_item.push({
-                            id,
-                            name,
-                            status: 'end',
-                            turns,
-                            userids: [],
-                            usertype: 'add',
-                            userlimit: 0,
-                        })
-                        data.project_flow_item.some(item => {
-                            item.turns.push(id)
-                        })
+                    if (!name) {
+                        return '请输入状态名称'
                     }
-                    return true;
+                    const id = $A.randNum(100000, 999999) * -1;
+                    const turns = data.project_flow_item.map(({id}) => id)
+                    data.project_flow_item.push({
+                        id,
+                        name,
+                        status: 'end',
+                        turns,
+                        userids: [],
+                        usertype: 'add',
+                        userlimit: 0,
+                    })
+                    data.project_flow_item.some(item => {
+                        item.turns.push(id)
+                    })
                 }
             });
         },

@@ -302,18 +302,17 @@ export default {
                 title: "使用 SSO 登录",
                 value,
                 placeholder: "请输入服务器地址",
-                onOk: (value, cb) => {
-                    if (value) {
-                        this.inputServerChack($A.trim(value)).then(cb)
-                    } else {
-                        this.clearServerUrl();
+                onOk: (value) => {
+                    if (!value) {
+                        return '请输入服务器地址'
                     }
+                    return this.inputServerChack($A.trim(value))
                 }
             });
         },
 
         inputServerChack(value) {
-            return new Promise(resolve => {
+            return new Promise((resolve, reject) => {
                 let url = value;
                 if (!/\/api\/$/.test(url)) {
                     url = url + ($A.rightExists(url, "/") ? "api/" : "/api/");
@@ -330,18 +329,12 @@ export default {
                 }).catch(({ret, msg}) => {
                     if (ret === -1001) {
                         if (!/^https*:\/\//i.test(value)) {
-                            this.inputServerChack(`http://${value}`).then(resolve);
+                            this.inputServerChack(`http://${value}`).then(resolve).catch(reject);
                             return;
                         }
                         msg = "服务器地址无效";
                     }
-                    $A.modalError({
-                        content: msg,
-                        onOk: () => {
-                            setTimeout(this.inputServerUrl, 301)
-                        }
-                    }, 301);
-                    resolve()
+                    reject(msg)
                 });
             })
         },

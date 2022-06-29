@@ -115,7 +115,7 @@
                     confirm
                     placement="bottom"
                     style="margin-left:8px"
-                    @on-ok="operationUser(disableData)"
+                    @on-ok="operationUser(disableData, true)"
                     transfer>
                     <div slot="title">
                         <p>{{$L('注意：离职操作不可逆！')}}</p>
@@ -236,7 +236,7 @@ export default {
                                     this.operationUser({
                                         userid: row.userid,
                                         nickname: val
-                                    }).then(cb);
+                                    }, true).finally(cb);
                                 }
                             }
                         }, [
@@ -258,7 +258,7 @@ export default {
                                     this.operationUser({
                                         userid: row.userid,
                                         profession: val
-                                    }).then(cb);
+                                    }, true).finally(cb);
                                 }
                             }
                         }, [
@@ -291,6 +291,12 @@ export default {
                                 },
                             }, [h('div', this.$L('设为管理员'))]));
                         }
+
+                        dropdownItems.push(h('EDropdownItem', {
+                            props: {
+                                command: 'email',
+                            },
+                        }, [h('div', this.$L('修改邮箱'))]))
 
                         dropdownItems.push(h('EDropdownItem', {
                             props: {
@@ -401,18 +407,34 @@ export default {
 
         dropUser(name, row) {
             switch (name) {
+                case 'email':
+                    $A.modalInput({
+                        title: "修改邮箱",
+                        placeholder: `请输入新的邮箱（${row.email}）`,
+                        onOk: (value) => {
+                            if (!value) {
+                                return '请输入新的邮箱地址'
+                            }
+                            return this.operationUser({
+                                userid: row.userid,
+                                email: value
+                            });
+                        }
+                    });
+                    break;
+
                 case 'password':
                     $A.modalInput({
                         title: "修改密码",
                         placeholder: "请输入新的密码",
                         onOk: (value) => {
-                            if (value) {
-                                this.operationUser({
-                                    userid: row.userid,
-                                    password: value
-                                });
+                            if (!value) {
+                                return '请输入新的密码'
                             }
-                            return true;
+                            return this.operationUser({
+                                userid: row.userid,
+                                password: value
+                            });
                         }
                     });
                     break;
@@ -429,8 +451,9 @@ export default {
                 case 'cleardisable':
                     $A.modalConfirm({
                         content: `你确定恢复已离职帐号【ID:${row.userid}，${row.nickname}】吗？（注：此操作仅恢复帐号状态，无法恢复操作离职时移交的数据）`,
+                        loading: true,
                         onOk: () => {
-                            this.operationUser({
+                            return this.operationUser({
                                 userid: row.userid,
                                 type: name
                             });
@@ -441,8 +464,9 @@ export default {
                 case 'delete':
                     $A.modalConfirm({
                         content: `你确定要删除帐号【ID:${row.userid}，${row.nickname}】吗？`,
+                        loading: true,
                         onOk: () => {
-                            this.operationUser({
+                            return this.operationUser({
                                 userid: row.userid,
                                 type: name,
                             });
@@ -454,13 +478,13 @@ export default {
                     this.operationUser({
                         userid: row.userid,
                         type: name
-                    });
+                    }, true);
                     break;
             }
         },
 
-        operationUser(data) {
-            return new Promise((resolve) => {
+        operationUser(data, tipErr) {
+            return new Promise((resolve, reject) => {
                 if (data.type == 'setdisable') {
                     this.disableLoading++;
                 } else {
@@ -477,9 +501,11 @@ export default {
                         this.disableShow = false;
                     }
                 }).catch(({msg}) => {
-                    $A.modalError(msg, 301);
+                    if (tipErr === true) {
+                        $A.modalError(msg);
+                    }
                     this.getLists();
-                    resolve()
+                    reject(msg)
                 }).finally(_ => {
                     if (data.type == 'setdisable') {
                         this.disableLoading--;

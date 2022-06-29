@@ -129,7 +129,7 @@ export default {
             if (this.isNotServer()) {
                 return;
             }
-            axios.get($A.apiUrl('../version')).then(({status, data}) => {
+            axios.get($A.apiUrl('system/version')).then(({status, data}) => {
                 if (status === 200) {
                     this.apiVersion = data.version || ''
                     // 检查接口版本

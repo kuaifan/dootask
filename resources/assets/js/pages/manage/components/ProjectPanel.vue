@@ -989,7 +989,7 @@ export default {
             else if (command.name) {
                 this.updateColumn(column, {
                     color: command.color
-                });
+                }).catch($A.modalError);
             }
         },
 
@@ -999,37 +999,41 @@ export default {
                 title: "修改列表",
                 placeholder: "输入列表名称",
                 onOk: (value) => {
-                    if (value) {
-                        this.updateColumn(column, {
-                            name: value
-                        });
+                    if (!value) {
+                        return '列表名称不能为空'
                     }
-                    return true;
+                    return this.updateColumn(column, {
+                        name: value
+                    })
                 }
             });
         },
 
         updateColumn(column, updata) {
-            if (this.columnLoad[column.id] === true) {
-                return;
-            }
-            this.$set(this.columnLoad, column.id, true);
-            //
-            Object.keys(updata).forEach(key => this.$set(column, key, updata[key]));
-            //
-            this.$store.dispatch("call", {
-                url: 'project/column/update',
-                data: Object.assign(updata, {
-                    column_id: column.id,
-                }),
-            }).then(({data}) => {
-                this.$set(this.columnLoad, column.id, false);
-                this.$store.dispatch("saveColumn", data);
-            }).catch(({msg}) => {
-                this.$set(this.columnLoad, column.id, false);
-                this.$store.dispatch("getColumns", this.projectId).catch(() => {})
-                $A.modalError(msg);
-            });
+            return new Promise((resolve, reject) => {
+                if (this.columnLoad[column.id] === true) {
+                    resolve()
+                    return;
+                }
+                this.$set(this.columnLoad, column.id, true);
+                //
+                Object.keys(updata).forEach(key => this.$set(column, key, updata[key]));
+                //
+                this.$store.dispatch("call", {
+                    url: 'project/column/update',
+                    data: Object.assign(updata, {
+                        column_id: column.id,
+                    }),
+                }).then(({data}) => {
+                    this.$set(this.columnLoad, column.id, false);
+                    this.$store.dispatch("saveColumn", data);
+                    resolve()
+                }).catch(({msg}) => {
+                    this.$set(this.columnLoad, column.id, false);
+                    this.$store.dispatch("getColumns", this.projectId).catch(() => {})
+                    reject(msg);
+                });
+            })
         },
 
         removeColumn(column) {

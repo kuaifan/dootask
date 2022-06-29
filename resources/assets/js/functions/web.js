@@ -441,15 +441,29 @@
             if (typeof config === "string") config = {title:config};
             let inputId = "modalInput_" + $A.randomString(6);
             const onOk = () => {
-                if (typeof config.onOk === "function") {
-                    if (config.onOk(config.value, () => {
-                        $A.Modal.remove();
-                    }) === true) {
-                        $A.Modal.remove();
+                return new Promise((resolve, reject) => {
+                    if (!config.onOk) {
+                        reject()    // 没有返回：取消等待
+                        return
                     }
-                } else {
-                    $A.Modal.remove();
-                }
+                    const call = config.onOk(config.value);
+                    if (!call) {
+                        resolve()   // 返回无内容：关闭弹窗
+                        return
+                    }
+                    if (call.then) {
+                        call.then(msg => {
+                            msg && $A.messageSuccess(msg)
+                            resolve()
+                        }).catch(err => {
+                            err && $A.messageError(err)
+                            reject()
+                        });
+                    } else {
+                        typeof call === "string" && $A.messageError(call)
+                        reject()
+                    }
+                })
             };
             const onCancel = () => {
                 if (typeof config.onCancel === "function") {
@@ -501,6 +515,35 @@
             if (millisecond > 0) {
                 setTimeout(() => { $A.modalConfirm(config) }, millisecond);
                 return;
+            }
+            config = $A.modalConfig(config);
+            if (config.loading) {
+                const {onOk} = config;
+                config.onOk = () => {
+                    return new Promise((resolve, reject) => {
+                        if (!onOk) {
+                            reject()    // 没有返回：取消等待
+                            return
+                        }
+                        const call = onOk();
+                        if (!call) {
+                            resolve()   // 返回无内容：关闭弹窗
+                            return
+                        }
+                        if (call.then) {
+                            call.then(msg => {
+                                msg && $A.messageSuccess(msg)
+                                resolve()
+                            }).catch(err => {
+                                err && $A.messageError(err)
+                                reject()
+                            });
+                        } else {
+                            typeof call === "string" && $A.messageError(call)
+                            reject()
+                        }
+                    })
+                }
             }
             $A.Modal.confirm($A.modalConfig(config));
         },
