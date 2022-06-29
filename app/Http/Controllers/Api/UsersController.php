@@ -553,6 +553,7 @@ class UsersController extends AbstractController
      * - setdisable           设为离职（需要参数 disable_time、transfer_userid）
      * - cleardisable         取消离职
      * - delete               删除会员
+     * @apiParam {String} [email]               邮箱地址
      * @apiParam {String} [password]            新的密码
      * @apiParam {String} [nickname]            昵称
      * @apiParam {String} [profession]          职位
@@ -623,6 +624,14 @@ class UsersController extends AbstractController
         }
         if (isset($upArray['identity'])) {
             $upArray['identity'] = "," . implode(",", $upArray['identity']) . ",";
+        }
+        // 邮箱
+        if (Arr::exists($data, 'email')) {
+            $email = trim($data['email']);
+            if (User::whereEmail($email)->where('userid', '!=', $userInfo->userid)->exists()) {
+                return Base::retError('邮箱地址已存在');
+            }
+            $upArray['email'] = $email;
         }
         // 密码
         if (Arr::exists($data, 'password')) {
