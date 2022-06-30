@@ -226,6 +226,20 @@
             list-style: none;
             padding-bottom: 16px;
 
+            .dialog-tag {
+                max-width: 80%;
+                margin: 0 auto;
+                padding: 4px 8px;
+                border-radius: 8px;
+                background-color: #efefef;
+                word-wrap: break-word;
+                cursor: pointer;
+
+                .tag-user {
+                    display: inline-block;
+                }
+            }
+
             .dialog-avatar {
                 position: relative;
                 margin-bottom: 20px;
@@ -678,6 +692,15 @@
                         }
                     }
 
+                    .tag {
+                        display: flex;
+                        align-items: center;
+                        margin-right: 6px;
+                        > i {
+                            font-size: 13px;
+                        }
+                    }
+
                     .time {
                         color: #bbbbbb;
                         font-size: 12px;
@@ -1091,7 +1114,13 @@
                 font-size: 20px;
             }
             > span {
+                padding: 0 1px;
                 font-size: 12px;
+                max-width: 100%;
+                text-align: center;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
         }
     }

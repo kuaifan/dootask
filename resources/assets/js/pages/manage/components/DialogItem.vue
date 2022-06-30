@@ -1,27 +1,35 @@
 <template>
     <div :class="classArray">
-        <div class="dialog-avatar">
-            <UserAvatar :userid="source.userid" :tooltipDisabled="source.userid == userId" :size="30"/>
+        <div v-if="source.type === 'tag'" class="dialog-tag" @click="onViewTag">
+            <div class="tag-user"><UserAvatar :userid="source.userid" :tooltipDisabled="source.userid == userId" :show-name="true" :show-icon="false"/></div>
+            {{$L(source.msg.action === 'remove' ? '取消标注' : '标注了')}}
+            "{{formatMsgDesc(source.msg.data)}}"
         </div>
-        <DialogView
-            :msg-data="source"
-            :dialog-type="dialogData.type"
-            :hide-percentage="hidePercentage"
-            :hide-reply="hideReply"
-            :operate-visible="operateVisible"
-            :operate-action="operateVisible && source.id === operateItem.id"
-            @on-longpress="onLongpress"
-            @on-view-reply="onViewReply"
-            @on-view-text="onViewText"
-            @on-view-file="onViewFile"
-            @on-reply-list="onReplyList"
-            @on-emoji="onEmoji"/>
+        <template v-else>
+            <div class="dialog-avatar">
+                <UserAvatar :userid="source.userid" :tooltipDisabled="source.userid == userId" :size="30"/>
+            </div>
+            <DialogView
+                :msg-data="source"
+                :dialog-type="dialogData.type"
+                :hide-percentage="hidePercentage"
+                :hide-reply="hideReply"
+                :operate-visible="operateVisible"
+                :operate-action="operateVisible && source.id === operateItem.id"
+                @on-longpress="onLongpress"
+                @on-view-reply="onViewReply"
+                @on-view-text="onViewText"
+                @on-view-file="onViewFile"
+                @on-reply-list="onReplyList"
+                @on-emoji="onEmoji"/>
+        </template>
     </div>
 </template>
 
 <script>
 import {mapState} from "vuex";
 import DialogView from "./DialogView";
+import {msgSimpleDesc} from "../../../functions/utils";
 
 export default {
     name: "DialogItem",
@@ -81,6 +89,17 @@ export default {
     },
 
     methods: {
+        formatMsgDesc(data) {
+            return msgSimpleDesc(data)
+        },
+
+        onViewTag() {
+            this.onViewReply({
+                msg_id: this.source.id,
+                reply_id: this.source.msg.data.id
+            })
+        },
+
         onLongpress(e) {
             this.dispatch("on-longpress", e)
         },

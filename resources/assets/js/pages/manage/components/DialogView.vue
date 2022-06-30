@@ -87,6 +87,10 @@
                 <i class="taskfont">&#xe6eb;</i>
                 {{msgData.reply_num}}条回复
             </div>
+            <!--标注-->
+            <div v-if="msgData.tag" class="tag">
+                <i class="taskfont">&#xe61e;</i>
+            </div>
             <!--等待/时间/阅读-->
             <Loading v-if="isLoading"/>
             <template v-else>

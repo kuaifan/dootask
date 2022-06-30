@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $key 搜索关键词
  * @property int|null $read 已阅数量
  * @property int|null $send 发送数量
+ * @property int|null $tag 标注会员ID
  * @property int|null $reply_num 有多少条回复
  * @property int|null $reply_id 回复ID
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -47,6 +48,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereReplyId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereReplyNum($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereSend($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereTag($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereUserid($value)
@@ -248,6 +250,44 @@ class WebSocketDialogMsg extends AbstractModel
     }
 
     /**
+     * 标注、取消标注
+     * @param int $sender       标注的会员ID
+     * @return mixed
+     */
+    public function toggleTagMsg($sender)
+    {
+        if ($this->type === 'tag') {
+            return Base::retError('此消息不支持标注');
+        }
+        $this->tag = $this->tag ? 0 : $sender;
+        $this->save();
+        $resData = [
+            'id' => $this->id,
+            'tag' => $this->tag,
+        ];
+        //
+        $dialog = WebSocketDialog::find($this->dialog_id);
+        $dialog?->pushMsg('update', $resData);
+        //
+        $data = [
+            'update' => $resData
+        ];
+        $res = self::sendMsg($this->dialog_id, 0, 'tag', [
+            'action' => $this->tag ? 'add' : 'remove',
+            'data' => [
+                'id' => $this->id,
+                'type' => $this->type,
+                'msg' => $this->msg,
+            ]
+        ], $sender);
+        if (Base::isSuccess($res)) {
+            $data['add'] = $res['data'];
+        }
+        //
+        return Base::retSuccess('sucess', $data);
+    }
+
+    /**
      * 转发消息
      * @param $userids
      * @param int $sender       发送的会员ID
@@ -323,22 +363,32 @@ class WebSocketDialogMsg extends AbstractModel
     /**
      * 预览消息
      * @param bool $preserveHtml    保留html格式
+     * @param null|array $data
      * @return string
      */
-    public function previewMsg($preserveHtml = false)
+    public function previewMsg($preserveHtml = false, $data = null)
     {
-        switch ($this->type) {
+        if ($data === null) {
+            $data = [
+                'type' => $this->type,
+                'msg' => $this->msg,
+            ];
+        }
+        switch ($data['type']) {
             case 'text':
-                return $this->previewTextMsg($this->msg['text'], $preserveHtml);
+                return $this->previewTextMsg($data['msg']['text'], $preserveHtml);
             case 'record':
                 return "[语音]";
             case 'meeting':
-                return "[会议] ${$this->msg['name']}";
+                return "[会议] ${$data['msg']['name']}";
             case 'file':
-                if ($this->msg['type'] == 'img') {
+                if ($data['msg']['type'] == 'img') {
                     return "[图片]";
                 }
-                return "[文件] {$this->msg['name']}";
+                return "[文件] {$data['msg']['name']}";
+            case 'tag':
+                $action = $data['msg']['action'] === 'remove' ? '取消标注' : '标注';
+                return "[{$action}] {$this->previewMsg(false, $data['msg']['data'])}";
             default:
                 return "[未知的消息]";
         }

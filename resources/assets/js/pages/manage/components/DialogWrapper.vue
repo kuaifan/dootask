@@ -174,6 +174,10 @@
                                     <span>{{ $L('下载') }}</span>
                                 </li>
                             </template>
+                            <li @click="onOperate('tag')">
+                                <i class="taskfont">&#xe61e;</i>
+                                <span>{{ $L(operateItem.tag ? '取消标注' : '标注') }}</span>
+                            </li>
                         </ul>
                     </DropdownItem>
                     <DropdownItem name="emoji" class="dropdown-emoji">
@@ -1202,6 +1206,10 @@ export default {
                     case "emoji":
                         this.onEmoji(value)
                         break;
+
+                    case "tag":
+                        this.onTag()
+                        break;
                 }
             })
         },
@@ -1388,6 +1396,34 @@ export default {
                 data,
             }).then(({data}) => {
                 this.$store.dispatch("saveDialogMsg", data);
+            }).catch(({msg}) => {
+                $A.messageError(msg);
+            }).finally(_ => {
+                this.$store.dispatch("cancelLoad", `msg-${data.msg_id}`)
+            });
+        },
+
+        onTag() {
+            if (this.operateVisible) {
+                return
+            }
+            const data = {
+                msg_id: this.operateItem.id,
+            }
+            //
+            this.$store.dispatch("setLoad", {
+                key: `msg-${data.msg_id}`,
+                delay: 600
+            })
+            this.$store.dispatch("call", {
+                url: 'dialog/msg/tag',
+                data,
+            }).then(({data}) => {
+                this.$store.dispatch("saveDialogMsg", data.update);
+                if (data.add) {
+                    this.$store.dispatch("saveDialogMsg", data.add);
+                    this.$store.dispatch("updateDialogLastMsg", data.add);
+                }
             }).catch(({msg}) => {
                 $A.messageError(msg);
             }).finally(_ => {

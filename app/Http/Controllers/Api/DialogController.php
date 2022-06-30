@@ -851,7 +851,7 @@ class DialogController extends AbstractController
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
      * @apiGroup dialog
-     * @apiName msg__forward
+     * @apiName msg__emoji
      *
      * @apiParam {Number} msg_id            消息ID
      * @apiParam {String} symbol            回复或取消的emoji表情
@@ -879,6 +879,35 @@ class DialogController extends AbstractController
         WebSocketDialog::checkDialog($msg->dialog_id);
         //
         return $msg->emojiMsg($symbol, $user->userid);
+    }
+
+    /**
+     * @api {get} api/dialog/msg/tag          18. 标注/取消标注
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__tag
+     *
+     * @apiParam {Number} msg_id            消息ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__tag()
+    {
+        $user = User::auth();
+        //
+        $msg_id = intval(Request::input("msg_id"));
+        //
+        $msg = WebSocketDialogMsg::whereId($msg_id)->first();
+        if (empty($msg)) {
+            return Base::retError("消息不存在或已被删除");
+        }
+        WebSocketDialog::checkDialog($msg->dialog_id);
+        //
+        return $msg->toggleTagMsg($user->userid);
     }
 
     /**

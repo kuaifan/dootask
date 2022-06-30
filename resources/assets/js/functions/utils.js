@@ -1,4 +1,4 @@
-module.exports = {
+const assetsFunctionUtils = {
     /**
      * 消息格式化处理
      * @param text
@@ -95,6 +95,8 @@ module.exports = {
                         return `[${$A.L('图片')}]`
                     }
                     return `[${$A.L('文件')}] ${data.msg.name}`
+                case 'tag':
+                    return `[${$A.L(data.msg.action === 'remove' ? '取消标注' : '标注')}] ${assetsFunctionUtils.msgSimpleDesc(data.msg.data)}`
                 default:
                     return `[${$A.L('未知的消息')}]`
             }
@@ -135,3 +137,5 @@ module.exports = {
         }, false);
     },
 }
+
+module.exports = assetsFunctionUtils
