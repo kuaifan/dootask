@@ -207,12 +207,54 @@
                 display: none;
             }
         }
+
+        .nav-tags {
+            position: absolute;
+            top: 78px;
+            left: 0;
+            width: 100%;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+
+            > li {
+                list-style: none;
+                display: flex;
+                align-items: center;
+                margin: 0 8px;
+                padding: 3px 8px;
+                background-color: #c0c4cc;
+                color: #fff;
+                border-radius: 6px;
+                font-size: 12px;
+                cursor: pointer;
+                box-shadow: 0 1px 6px rgba(255, 255, 255, 0.2);
+
+
+                .taskfont {
+                    font-size: 13px;
+                    padding-right: 6px;
+                }
+
+                > span {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
+
+                &.active {
+                    background-color: $primary-color;
+                }
+            }
+        }
     }
 
     .dialog-scroller {
         flex: 1;
         position: relative;
-        padding: 16px 32px 0;
+        padding: 48px 32px 0;
 
         .dialog-shake {
             animation: ani-dialog-shake 600ms ease-in-out;
@@ -1231,6 +1273,9 @@
                         }
                     }
                 }
+            }
+            .nav-tags {
+                top: 60px;
             }
         }
         .dialog-scroller {

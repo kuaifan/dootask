@@ -214,7 +214,7 @@ class DialogController extends AbstractController
      * @apiName msg__lists
      *
      * @apiParam {Number} dialog_id         对话ID
-     * @apiParam {String} [position_id]     定位消息ID（填写时page无效）
+     * @apiParam {Number} [position_id]     定位消息ID（填写时page无效）
      *
      * @apiParam {Number} [page]            当前页，默认:1
      * @apiParam {Number} [pagesize]        每页显示数量，默认:50，最大:100
@@ -284,6 +284,13 @@ class DialogController extends AbstractController
      * @apiParam {Number} [prev_id]         此消息ID之前的数据
      * @apiParam {Number} [next_id]         此消息ID之后的数据
      * - position_id、prev_id、next_id 只有一个有效，优先循序为：position_id > prev_id > next_id
+     * @apiParam {String} [mtype]           消息类型
+     * - tag: 标记
+     * - text: 文本
+     * - image: 图片
+     * - file: 文件
+     * - record: 录音
+     * - meeting: 会议
      *
      * @apiParam {Number} [take]            获取条数，默认:50，最大:100
      *
@@ -301,6 +308,7 @@ class DialogController extends AbstractController
         $position_id = intval(Request::input('position_id'));
         $prev_id = intval(Request::input('prev_id'));
         $next_id = intval(Request::input('next_id'));
+        $mtype = trim(Request::input('mtype'));
         $take = Base::getPaginate(100, 50, 'take');
         $data = [];
         //
@@ -317,6 +325,11 @@ class DialogController extends AbstractController
                 ->on('read.msg_id', '=', 'web_socket_dialog_msgs.id');
         })->where('web_socket_dialog_msgs.dialog_id', $dialog_id);
         //
+        if ($mtype === 'tag') {
+            $builder->where('tag', '>', 0);
+        } elseif (in_array($mtype, ['text', 'image', 'file', 'record', 'meeting'])) {
+            $builder->whereMtype($mtype);
+        }
         if ($msg_id > 0) {
             $builder->whereReplyId($msg_id);
             $reDialog = false;

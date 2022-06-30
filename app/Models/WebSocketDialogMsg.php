@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $dialog_type 对话类型
  * @property int|null $userid 发送会员ID
  * @property string|null $type 消息类型
+ * @property string|null $mtype 消息类型（用于搜索）
  * @property array|mixed $msg 详细消息
  * @property array|mixed $emoji emoji回复
  * @property string|null $key 搜索关键词
@@ -44,6 +45,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereKey($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereMsg($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereMtype($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereRead($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereReplyId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereReplyNum($value)
@@ -519,11 +521,20 @@ class WebSocketDialogMsg extends AbstractModel
      */
     public static function sendMsg($dialog_id, $reply_id, $type, $msg, $sender = 0)
     {
+        $mtype = $type;
+        if ($type === 'text' && str_contains($msg['text'], '<img ')) {
+            $mtype = 'image';
+        }
+        if ($type === 'file' && in_array($msg['ext'], ['jpg', 'jpeg', 'png', 'gif'])) {
+            $mtype = 'image';
+        }
+        //
         $dialogMsg = self::createInstance([
             'dialog_id' => $dialog_id,
             'reply_id' => $reply_id,
             'userid' => $sender ?: User::userid(),
             'type' => $type,
+            'mtype' => $mtype,
             'msg' => $msg,
             'read' => 0,
         ]);

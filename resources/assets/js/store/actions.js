@@ -2170,7 +2170,7 @@ export default {
      * @param state
      * @param dispatch
      * @param getters
-     * @param data {dialog_id, msg_id, ?position_id, ?prev_id, ?next_id}
+     * @param data {dialog_id, msg_id, ?msg_type, ?position_id, ?prev_id, ?next_id}
      * @returns {Promise<unknown>}
      */
     getDialogMsgs({state, dispatch, getters}, data) {
@@ -2181,7 +2181,7 @@ export default {
                 return;
             }
             //
-            const loadKey = `msg::${data.dialog_id}-${data.msg_id}`
+            const loadKey = `msg::${data.dialog_id}-${data.msg_id}-${data.msg_type || ''}`
             if (getters.isLoad(loadKey)) {
                 reject({msg: 'Loading'});
                 return

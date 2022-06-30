@@ -11,7 +11,7 @@
         <!--顶部导航-->
         <div class="dialog-nav" :style="navStyle">
             <slot name="head">
-                <div class="nav-wrapper" :class="{completed:$A.dialogCompleted(dialogData)}">
+                <div class="nav-wrapper" :class="{completed: $A.dialogCompleted(dialogData)}">
                     <div class="dialog-back" @click="onBack">
                         <i class="taskfont">&#xe72d;</i>
                         <div v-if="msgUnreadOnly" class="back-num">{{msgUnreadOnly}}</div>
@@ -64,6 +64,16 @@
                         <i class="taskfont dialog-create" @click="openCreateGroup">&#xe646;</i>
                     </ETooltip>
                 </div>
+                <ul class="nav-tags">
+                    <li
+                        v-for="item in msgTags"
+                        :key="item.type"
+                        :class="{active: msgType === item.type}"
+                        @click="msgType=item.type">
+                        <i class="taskfont" v-html="item.icon"></i>
+                        <span>{{$L(item.label)}}</span>
+                    </li>
+                </ul>
             </slot>
         </div>
 
@@ -78,6 +88,7 @@
             :item-class-add="itemClassAdd"
             :extra-props="{dialogData, operateVisible, operateItem, hidePercentage: isMyDialog, hideReply: msgId > 0}"
             :estimate-size="78"
+            :top-threshold="120"
             :keeps="70"
             @scroll="onScroll"
             @range="onRange"
@@ -330,6 +341,14 @@ export default {
             msgText: '',
             msgNew: 0,
 
+            msgType: '',
+            msgTags: [
+                {icon: '&#xe6eb;', type: '', label: '消息'},
+                {icon: '&#xe61e;', type: 'tag', label: '标注'},
+                {icon: '&#xe7bc;', type: 'image', label: '图片'},
+                {icon: '&#xe7c0;', type: 'file', label: '文件'},
+            ],
+
             allMsgs: [],
             tempMsgs: [],
 
@@ -408,12 +427,7 @@ export default {
             if (!this.isReady) {
                 return [];
             }
-            return this.dialogMsgs.filter(item => {
-                if (this.msgId) {
-                    return item.reply_id == this.msgId;
-                }
-                return item.dialog_id == this.dialogId;
-            }).sort((a, b) => {
+            return this.dialogMsgs.filter(item => this.msgFilter(item)).sort((a, b) => {
                 return a.id - b.id;
             });
         },
@@ -422,12 +436,7 @@ export default {
             if (!this.isReady) {
                 return [];
             }
-            return this.tempMsgs.filter(item => {
-                if (this.msgId) {
-                    return item.reply_id == this.msgId;
-                }
-                return item.dialog_id == this.dialogId;
-            });
+            return this.tempMsgs.filter(item => this.msgFilter(item));
         },
 
         allMsgList() {
@@ -442,7 +451,7 @@ export default {
         },
 
         loadMsg() {
-            return this.isLoad(`msg::${this.dialogId}-${this.msgId}`)
+            return this.isLoad(`msg::${this.dialogId}-${this.msgId}-${this.msgType}`)
         },
 
         prevId() {
@@ -534,6 +543,7 @@ export default {
                         this.allMsgs = this.allMsgList;
                         requestAnimationFrame(this.onToBottom);
                     }
+                    this.msgType = '';
                     this.$store.dispatch("getDialogMsgs", {
                         dialog_id,
                         msg_id: this.msgId
@@ -553,6 +563,15 @@ export default {
                 }
             },
             immediate: true
+        },
+
+        msgType(type) {
+            if (!type) return
+            this.$store.dispatch("getDialogMsgs", {
+                dialog_id: this.dialogId,
+                msg_id: this.msgId,
+                msg_type: this.msgType,
+            }).catch(_ => {});
         },
 
         dialogSearchMsgId() {
@@ -582,6 +601,7 @@ export default {
             this.$store.dispatch("getDialogMsgs", {
                 dialog_id: this.dialogId,
                 msg_id: this.msgId,
+                msg_type: this.msgType,
             }).catch(_ => {});
         },
 
@@ -644,6 +664,7 @@ export default {
             }
             msgText = msgText.replace(/<\/span> <\/p>$/, "</span></p>")
             //
+            this.msgType = '';
             this.onToBottom();
             this.onActive();
             //
@@ -687,6 +708,7 @@ export default {
          * @param msg {base64, duration}
          */
         sendRecord(msg) {
+            this.msgType = '';
             this.onToBottom();
             this.onActive();
             //
@@ -724,6 +746,7 @@ export default {
         sendFileMsg(row) {
             const files = $A.isArray(row) ? row : [row];
             if (files.length > 0) {
+                this.msgType = '';
                 this.pasteFile = [];
                 this.pasteItem = [];
                 files.some(file => {
@@ -751,6 +774,24 @@ export default {
             }
         },
 
+        msgFilter(item) {
+            if (this.msgType) {
+                if (this.msgType === 'tag') {
+                    if (!item.tag) {
+                        return false
+                    }
+                } else if (this.msgType !== item.mtype) {
+                    return false
+                }
+            }
+            if (this.msgId) {
+                if (item.reply_id != this.msgId) {
+                    return false
+                }
+            }
+            return item.dialog_id == this.dialogId;
+        },
+
         onSearchMsgId() {
             if (this.dialogSearchMsgId > 0 && this.openId === this.dialogId) {
                 this.onPositionId(this.dialogSearchMsgId)
@@ -772,6 +813,7 @@ export default {
                         delay: 600
                     })
                 }
+                this.msgType = '';
                 this.preventToBottom = true;
                 this.$store.dispatch("getDialogMsgs", {
                     dialog_id: this.dialogId,
@@ -1008,6 +1050,7 @@ export default {
             this.$store.dispatch('getDialogMsgs', {
                 dialog_id: this.dialogId,
                 msg_id: this.msgId,
+                msg_type: this.msgType,
                 prev_id: this.prevId
             }).then(({data}) => {
                 const ids = data.list.map(item => item.id)
@@ -1109,6 +1152,7 @@ export default {
                         this.$store.dispatch("getDialogMsgs", {
                             dialog_id: this.dialogId,
                             msg_id: this.msgId,
+                            msg_type: this.msgType,
                             [key]: rangeValue,
                         }).finally(_ => {
                             this.preventMoreLoad = false
