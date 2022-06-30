@@ -75,7 +75,7 @@
                                     </template>
                                     <div class="last-text">
                                         <em v-if="formatMsgEmojiDesc(dialog.last_msg)">{{formatMsgEmojiDesc(dialog.last_msg)}}</em>
-                                        <span>{{formatMsgDesc(dialog.last_msg)}}</span>
+                                        <span>{{$A.getMsgSimpleDesc(dialog.last_msg)}}</span>
                                     </div>
                                 </div>
                             </div>
@@ -153,7 +153,6 @@ import {mapState} from "vuex";
 import DialogWrapper from "./components/DialogWrapper";
 import ScrollerY from "../../components/ScrollerY";
 import longpress from "../../directives/longpress";
-import {msgSimpleDesc} from "../../functions/utils";
 
 export default {
     components: {ScrollerY, DialogWrapper},
@@ -602,10 +601,6 @@ export default {
                 return data.emoji[0].symbol;
             }
             return null;
-        },
-
-        formatMsgDesc(data) {
-            return msgSimpleDesc(data);
         },
 
         lastMsgReadDone(data) {

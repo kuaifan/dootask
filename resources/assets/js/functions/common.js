@@ -1123,6 +1123,39 @@
         },
 
         /**
+         * 阻止滑动穿透
+         * @param el
+         */
+        scrollPreventThrough(el) {
+            if (!el) {
+                return;
+            }
+            if (el.getAttribute("data-prevent-through") === "yes") {
+                return;
+            }
+            el.setAttribute("data-prevent-through", "yes")
+            //
+            let targetY = null;
+            el.addEventListener('touchstart', function (e) {
+                targetY = Math.floor(e.targetTouches[0].clientY);
+            });
+            el.addEventListener('touchmove', function (e) {
+                // 检测可滚动区域的滚动事件，如果滑到了顶部或底部，阻止默认事件
+                let NewTargetY = Math.floor(e.targetTouches[0].clientY),    //本次移动时鼠标的位置，用于计算
+                    sTop = el.scrollTop,        //当前滚动的距离
+                    sH = el.scrollHeight,       //可滚动区域的高度
+                    lyBoxH = el.clientHeight;   //可视区域的高度
+                if (sTop <= 0 && NewTargetY - targetY > 0) {
+                    // 下拉页面到顶
+                    e.preventDefault();
+                } else if (sTop >= sH - lyBoxH && NewTargetY - targetY < 0) {
+                    // 上翻页面到底
+                    e.preventDefault();
+                }
+            }, false);
+        },
+
+        /**
          * 获取元素属性
          * @param el
          * @param attrName

@@ -4,7 +4,7 @@
             <!-- 回复 -->
             <div v-if="replyData" class="chat-reply">
                 <UserAvatar :userid="replyData.userid" :show-icon="false" :show-name="true" :tooltip-disabled="true"/>
-                <div class="reply-desc">{{formatMsgDesc(replyData)}}</div>
+                <div class="reply-desc">{{$A.getMsgSimpleDesc(replyData)}}</div>
                 <i class="taskfont" @click.stop="onCancelReply">&#xe6e5;</i>
             </div>
 
@@ -132,7 +132,6 @@ import touchmouse from "../../../../directives/touchmouse";
 import TransferDom from "../../../../directives/transfer-dom";
 import clickoutside from "../../../../directives/clickoutside";
 import {Store} from "le5le-store";
-import {scrollPreventThrough, msgSimpleDesc} from "../../../../functions/utils";
 
 export default {
     name: 'ChatInput',
@@ -526,7 +525,7 @@ export default {
                                 containers[i].classList.remove("user-mention");
                                 containers[i].classList.remove("task-mention");
                                 containers[i].classList.add(mentionName);
-                                scrollPreventThrough(containers[i]);
+                                $A.scrollPreventThrough(containers[i]);
                             }
                             this.getMentionSource(mentionChar, searchTerm, array => {
                                 const values = [];
@@ -1145,10 +1144,6 @@ export default {
                 e.preventDefault()
                 this.$emit('on-file', postFiles)
             }
-        },
-
-        formatMsgDesc(data) {
-            return msgSimpleDesc(data);
         },
     }
 }

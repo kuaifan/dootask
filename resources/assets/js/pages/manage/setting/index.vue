@@ -148,7 +148,7 @@ export default {
                     break;
 
                 case 'privacy':
-                    window.open($A.apiUrl('../privacy.html'))
+                    this.openPrivacy();
                     break;
 
                 case 'index':
@@ -158,6 +158,24 @@ export default {
                 default:
                     this.goForward({name: 'manage-setting-' + path});
                     break;
+            }
+        },
+
+        openPrivacy() {
+            const url = $A.apiUrl('../privacy.html')
+            if (this.$isEEUiApp) {
+                $A.eeuiAppOpenPage({
+                    pageType: 'app',
+                    pageTitle: ' ',
+                    url: 'web.js',
+                    params: {
+                        url,
+                        browser: true,
+                        showProgress: true,
+                    },
+                });
+            } else {
+                window.open(url)
             }
         },
 

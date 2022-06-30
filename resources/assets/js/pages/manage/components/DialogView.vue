@@ -12,13 +12,13 @@
             <!--回复-->
             <div v-if="!hideReply && msgData.reply_data" class="dialog-reply no-dark-content" @click="viewReply">
                 <UserAvatar :userid="msgData.reply_data.userid" :show-icon="false" :show-name="true" :tooltip-disabled="true"/>
-                <div class="reply-desc">{{formatMsgDesc(msgData.reply_data)}}</div>
+                <div class="reply-desc">{{$A.getMsgSimpleDesc(msgData.reply_data)}}</div>
             </div>
             <!--详情-->
             <div class="dialog-content" :class="contentClass">
                 <!--文本-->
                 <div v-if="msgData.type === 'text'" class="content-text no-dark-content">
-                    <pre @click="viewText" v-html="textMsg(msgData.msg.text)"></pre>
+                    <pre @click="viewText" v-html="$A.formatTextMsg(msgData.msg.text, userId)"></pre>
                 </div>
                 <!--文件-->
                 <div v-else-if="msgData.type === 'file'" :class="`content-file ${msgData.msg.type}`">
@@ -137,7 +137,6 @@ import WCircle from "../../../components/WCircle";
 import {mapGetters, mapState} from "vuex";
 import {Store} from "le5le-store";
 import longpress from "../../../directives/longpress";
-import {textMsgFormat, msgSimpleDesc} from "../../../functions/utils";
 
 export default {
     name: "DialogView",
@@ -315,10 +314,6 @@ export default {
             });
         },
 
-        textMsg(text) {
-            return textMsgFormat(text, this.userId);
-        },
-
         recordStyle(info) {
             const {duration} = info;
             const width = 50 + Math.min(180, Math.floor(duration / 150));
@@ -358,10 +353,6 @@ export default {
                 };
             }
             return {};
-        },
-
-        formatMsgDesc(data) {
-            return msgSimpleDesc(data)
         },
 
         playRecord() {

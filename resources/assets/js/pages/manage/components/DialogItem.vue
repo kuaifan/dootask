@@ -3,7 +3,7 @@
         <div v-if="source.type === 'tag'" class="dialog-tag" @click="onViewTag">
             <div class="tag-user"><UserAvatar :userid="source.userid" :tooltipDisabled="source.userid == userId" :show-name="true" :show-icon="false"/></div>
             {{$L(source.msg.action === 'remove' ? '取消标注' : '标注了')}}
-            "{{formatMsgDesc(source.msg.data)}}"
+            "{{$A.getMsgSimpleDesc(source.msg.data)}}"
         </div>
         <template v-else>
             <div class="dialog-avatar">
@@ -29,7 +29,6 @@
 <script>
 import {mapState} from "vuex";
 import DialogView from "./DialogView";
-import {msgSimpleDesc} from "../../../functions/utils";
 
 export default {
     name: "DialogItem",
@@ -89,10 +88,6 @@ export default {
     },
 
     methods: {
-        formatMsgDesc(data) {
-            return msgSimpleDesc(data)
-        },
-
         onViewTag() {
             this.onViewReply({
                 msg_id: this.source.id,

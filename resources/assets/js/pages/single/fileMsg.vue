@@ -8,7 +8,7 @@
             <Drawio v-else-if="isType('drawio')" v-model="msgDetail.content" :title="msgDetail.msg.name" readOnly/>
             <Minder v-else-if="isType('mind')" :value="msgDetail.content" readOnly/>
             <template v-else-if="isType('code')">
-                <div v-if="isLongText(msgDetail.msg.name)" class="view-code" v-html="longTextFormat(msgDetail.content.content)"></div>
+                <div v-if="isLongText(msgDetail.msg.name)" class="view-code" v-html="$A.formatTextMsg(msgDetail.content.content, userId)"></div>
                 <AceEditor v-else v-model="msgDetail.content.content" :ext="msgDetail.msg.ext" class="view-editor" readOnly/>
             </template>
             <OnlyOffice v-else-if="isType('office')" v-model="officeContent" :code="officeCode" :documentKey="documentKey" readOnly/>
@@ -64,7 +64,6 @@
 <script>
 import Vue from 'vue'
 import Minder from '../../components/Minder'
-import {textMsgFormat} from "../../functions/utils";
 import {mapState} from "vuex";
 import IFrame from "../manage/components/IFrame";
 Vue.use(Minder)
@@ -185,10 +184,6 @@ export default {
 
         isLongText(name) {
             return /^LongText-/.test(name)
-        },
-
-        longTextFormat(text) {
-            return textMsgFormat(text, this.userId)
         },
     }
 }

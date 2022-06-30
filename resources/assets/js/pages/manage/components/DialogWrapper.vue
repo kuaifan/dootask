@@ -295,7 +295,6 @@ import ChatInput from "./ChatInput";
 
 import VirtualList from 'vue-virtual-scroll-list-hi'
 import {Store} from "le5le-store";
-import {textImagesInfo} from "../../../functions/utils";
 
 export default {
     name: "DialogWrapper",
@@ -1267,7 +1266,7 @@ export default {
                         this.onViewPicture(target.currentSrc);
                     } else {
                         this.$store.state.previewImageIndex = 0;
-                        this.$store.state.previewImageList = textImagesInfo(target.outerHTML);
+                        this.$store.state.previewImageList = $A.getTextImagesInfo(target.outerHTML);
                     }
                     break;
 
@@ -1347,7 +1346,7 @@ export default {
                         height: msg.height,
                     })
                 } else if (type === 'text') {
-                    list.push(...textImagesInfo(msg.text))
+                    list.push(...$A.getTextImagesInfo(msg.text))
                 }
             })
             //
