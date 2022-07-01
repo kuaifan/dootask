@@ -210,41 +210,96 @@
 
         .nav-tags {
             position: absolute;
-            top: 78px;
+            top: 70px;
             left: 0;
             width: 100%;
             z-index: 2;
+            padding: 4px 0;
             display: flex;
             align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
+            justify-content: flex-start;
+            overflow-x: auto;
 
-            > li {
-                list-style: none;
+            > ul {
+                margin: 0 auto;
                 display: flex;
                 align-items: center;
-                margin: 0 7px;
-                padding: 3px 8px;
-                background-color: #c0c4cc;
-                color: #fff;
-                border-radius: 6px;
-                font-size: 12px;
-                cursor: pointer;
-                box-shadow: 0 1px 6px rgba(255, 255, 255, 0.2);
+                justify-content: center;
 
-                .taskfont {
-                    font-size: 13px;
-                    padding-right: 6px;
-                }
+                > li {
+                    list-style: none;
+                    display: flex;
+                    align-items: center;
+                    margin: 0 8px;
+                    padding: 4px 8px;
+                    color: $primary-title-color;
+                    background-color: #F2F2F2;
+                    border: 1px solid #F2F2F2;
+                    border-radius: 6px;
+                    font-size: 12px;
+                    cursor: pointer;
+                    box-shadow: 0 1px 6px rgba(255, 255, 255, 0.2);
 
-                > span {
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
-                }
+                    > i {
+                        width: 14px;
+                        height: 14px;
+                        margin-right: 4px;
+                        background-repeat: no-repeat;
+                        background-size: contain;
+                        background-position: center center;
+                    }
 
-                &.active {
-                    background-color: $primary-color;
+                    > span {
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                    }
+
+                    &.tag-file i {
+                        background-image: url("../images/dialog/file.svg");
+                    }
+
+                    &.tag-image i {
+                        background-image: url("../images/dialog/image.svg");
+                    }
+
+                    &.tag-link i {
+                        background-image: url("../images/dialog/link.svg");
+                    }
+
+                    &.tag-msg i {
+                        background-image: url("../images/dialog/msg.svg");
+                    }
+
+                    &.tag-tag i {
+                        background-image: url("../images/dialog/tag.svg");
+                    }
+
+                    &.active {
+                        color: #ffffff;
+                        background-color: $primary-color;
+                        border-color: $primary-color;
+
+                        &.tag-file i {
+                            background-image: url("../images/dialog/file-white.svg");
+                        }
+
+                        &.tag-image i {
+                            background-image: url("../images/dialog/image-white.svg");
+                        }
+
+                        &.tag-link i {
+                            background-image: url("../images/dialog/link-white.svg");
+                        }
+
+                        &.tag-msg i {
+                            background-image: url("../images/dialog/msg-white.svg");
+                        }
+
+                        &.tag-tag i {
+                            background-image: url("../images/dialog/tag-white.svg");
+                        }
+                    }
                 }
             }
         }
@@ -1278,10 +1333,11 @@
                 }
             }
             .nav-tags {
-                top: 60px;
-
-                > li {
-                    margin: 0 5px;
+                top: 58px;
+                > ul {
+                    > li {
+                        margin: 0 5px;
+                    }
                 }
             }
         }

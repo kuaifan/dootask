@@ -65,16 +65,21 @@
                     </ETooltip>
                 </div>
                 <transition name="fade">
-                    <ul v-if="dialogMsgList.length > 10 && msgTags.length > 1 && windowScrollY === 0" class="nav-tags">
-                        <li
-                            v-for="item in msgTags"
-                            :key="item.type"
-                            :class="{active: msgType === item.type}"
-                            @click="msgType=item.type">
-                            <i class="taskfont" v-html="item.icon"></i>
-                            <span>{{$L(item.label)}}</span>
-                        </li>
-                    </ul>
+                    <div v-if="dialogMsgList.length > 10 && msgTags.length > 1 && windowScrollY === 0" class="nav-tags scrollbar-hidden">
+                        <ul>
+                            <li
+                                v-for="item in msgTags"
+                                :key="item.type"
+                                :class="{
+                                    [`tag-${item.type||'msg'}`]: true,
+                                    active: msgType === item.type,
+                                }"
+                                @click="msgType=item.type">
+                                <i></i>
+                                <span>{{$L(item.label)}}</span>
+                            </li>
+                        </ul>
+                    </div>
                 </transition>
             </slot>
         </div>
@@ -91,7 +96,6 @@
             :item-class-add="itemClassAdd"
             :extra-props="{dialogData, operateVisible, operateItem, hidePercentage: isMyDialog, hideReply: msgId > 0}"
             :estimate-size="78"
-            :top-threshold="120"
             :keeps="70"
             @scroll="onScroll"
             @range="onRange"
@@ -586,13 +590,14 @@ export default {
         },
 
         msgType(type) {
-            if (!type) return
             this.onToBottom()
-            this.$store.dispatch("getDialogMsgs", {
-                dialog_id: this.dialogId,
-                msg_id: this.msgId,
-                msg_type: this.msgType,
-            }).catch(_ => {});
+            if (type) {
+                this.$store.dispatch("getDialogMsgs", {
+                    dialog_id: this.dialogId,
+                    msg_id: this.msgId,
+                    msg_type: this.msgType,
+                }).catch(_ => {});
+            }
         },
 
         dialogSearchMsgId() {
