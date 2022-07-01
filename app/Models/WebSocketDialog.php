@@ -121,7 +121,7 @@ class WebSocketDialog extends AbstractModel
         }
         if ($hasData === true) {
             $msgBuilder = WebSocketDialogMsg::whereDialogId($this->id);
-            $this->has_tag = $msgBuilder->clone()->where('tag', '>', 0)->exists();
+            $this->has_tag = $msgBuilder->clone()->whereMtype('tag')->exists();
             $this->has_image = $msgBuilder->clone()->whereMtype('image')->exists();
             $this->has_file = $msgBuilder->clone()->whereMtype('file')->exists();
             $this->has_link = $msgBuilder->clone()->whereLink(1)->exists();

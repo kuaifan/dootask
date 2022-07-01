@@ -1929,11 +1929,24 @@ export default {
         } else if ($A.isJson(data)) {
             const index = state.cacheDialogs.findIndex(({id}) => id == data.dialog_id);
             if (index > -1) {
-                dispatch("saveDialog", {
+                const updateData = {
                     id: data.dialog_id,
                     last_msg: data,
                     last_at: $A.formatDate("Y-m-d H:i:s")
-                });
+                }
+                if (data.mtype == 'tag') {
+                    updateData.has_tag = true;
+                }
+                if (data.mtype == 'image') {
+                    updateData.has_image = true;
+                }
+                if (data.mtype == 'file') {
+                    updateData.has_file = true;
+                }
+                if (data.link) {
+                    updateData.has_link = true;
+                }
+                dispatch("saveDialog", updateData);
             } else {
                 dispatch("getDialogOne", data.dialog_id).catch(() => {})
             }
