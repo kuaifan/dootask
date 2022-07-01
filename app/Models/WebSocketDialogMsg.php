@@ -533,7 +533,7 @@ class WebSocketDialogMsg extends AbstractModel
                 $link = 1;
             }
             if (str_contains($msg['text'], '<img ')) {
-                $mtype = 'image';
+                $mtype = str_contains($msg['text'], '"emoticon"') ? 'emoticon' : 'image';
             }
         } elseif ($type === 'file') {
             if (in_array($msg['ext'], ['jpg', 'jpeg', 'png', 'gif'])) {
