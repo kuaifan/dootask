@@ -24,7 +24,7 @@
                 <div v-else-if="msgData.type === 'file'" :class="`content-file ${msgData.msg.type}`">
                     <div class="dialog-file">
                         <img v-if="msgData.msg.type === 'img'" class="file-img" :style="imageStyle(msgData.msg)" :src="msgData.msg.thumb" @click="viewFile"/>
-                        <div v-else class="file-box">
+                        <div v-else class="file-box" @click="downFile">
                             <img class="file-thumb" :src="msgData.msg.thumb"/>
                             <div class="file-info">
                                 <div class="file-name">{{msgData.msg.name}}</div>
@@ -390,6 +390,10 @@ export default {
 
         viewFile() {
             this.$emit("on-view-file", this.msgData)
+        },
+
+        downFile() {
+            this.$emit("on-down-file", this.msgData)
         },
 
         replyList() {

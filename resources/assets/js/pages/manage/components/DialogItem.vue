@@ -23,6 +23,7 @@
                 @on-view-reply="onViewReply"
                 @on-view-text="onViewText"
                 @on-view-file="onViewFile"
+                @on-down-file="onDownFile"
                 @on-reply-list="onReplyList"
                 @on-emoji="onEmoji"/>
         </template>
@@ -112,6 +113,10 @@ export default {
 
         onViewFile(data) {
             this.dispatch("on-view-file", data)
+        },
+
+        onDownFile(data) {
+            this.dispatch("on-down-file", data)
         },
 
         onReplyList(data) {

@@ -105,6 +105,7 @@
             @on-view-reply="onViewReply"
             @on-view-text="onViewText"
             @on-view-file="onViewFile"
+            @on-down-file="onDownFile"
             @on-reply-list="onReplyList"
             @on-emoji="onEmoji">
             <template slot="header">
@@ -1434,13 +1435,19 @@ export default {
             }
         },
 
-        onDownFile() {
+        onDownFile(data) {
+            if (this.operateVisible) {
+                return
+            }
+            if (!$A.isJson(data)) {
+                data = this.operateItem
+            }
             $A.modalConfirm({
                 title: '下载文件',
-                content: `${this.operateItem.msg.name} (${$A.bytesToSize(this.operateItem.msg.size)})`,
+                content: `${data.msg.name} (${$A.bytesToSize(data.msg.size)})`,
                 okText: '立即下载',
                 onOk: () => {
-                    this.$store.dispatch('downUrl', $A.apiUrl(`dialog/msg/download?msg_id=${this.operateItem.id}`))
+                    this.$store.dispatch('downUrl', $A.apiUrl(`dialog/msg/download?msg_id=${data.id}`))
                 }
             });
         },
