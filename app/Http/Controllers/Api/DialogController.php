@@ -365,6 +365,11 @@ class DialogController extends AbstractController
         $list = $cloner->take($take)->get()->sortByDesc('id', SORT_NUMERIC)->values();
         //
         if ($list->isNotEmpty()) {
+            $list->transform(function (WebSocketDialogMsg $item) {
+                $item->next_id = 0;
+                $item->prev_id = 0;
+                return $item;
+            });
             $first = $list->first();
             $first->next_id = intval($builder->clone()
                 ->where('web_socket_dialog_msgs.id', '>', $first->id)
