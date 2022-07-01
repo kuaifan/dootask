@@ -54,9 +54,10 @@ class WebSocketDialog extends AbstractModel
     /**
      * 格式化对话
      * @param int $userid   会员ID
+     * @param bool $hasData
      * @return $this
      */
-    public function formatData($userid)
+    public function formatData($userid, $hasData = false)
     {
         if (isset($this->search_msg_id)) {
             // 最后消息 (搜索预览消息)
@@ -117,6 +118,13 @@ class WebSocketDialog extends AbstractModel
                     }
                 }
                 break;
+        }
+        if ($hasData === true) {
+            $msgBuilder = WebSocketDialogMsg::whereDialogId($this->id);
+            $this->has_tag = $msgBuilder->clone()->where('tag', '>', 0)->exists();
+            $this->has_image = $msgBuilder->clone()->whereMtype('image')->exists();
+            $this->has_file = $msgBuilder->clone()->whereMtype('file')->exists();
+            $this->has_link = $msgBuilder->clone()->whereLink(1)->exists();
         }
         return $this;
     }

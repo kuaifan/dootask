@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int|null $read 已阅数量
  * @property int|null $send 发送数量
  * @property int|null $tag 标注会员ID
+ * @property int|null $link 是否存在链接
  * @property int|null $reply_num 有多少条回复
  * @property int|null $reply_id 回复ID
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -44,6 +45,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereEmoji($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereKey($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereLink($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereMsg($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereMtype($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereRead($value)
@@ -521,12 +523,19 @@ class WebSocketDialogMsg extends AbstractModel
      */
     public static function sendMsg($dialog_id, $reply_id, $type, $msg, $sender = 0)
     {
+        $link = 0;
         $mtype = $type;
-        if ($type === 'text' && str_contains($msg['text'], '<img ')) {
-            $mtype = 'image';
-        }
-        if ($type === 'file' && in_array($msg['ext'], ['jpg', 'jpeg', 'png', 'gif'])) {
-            $mtype = 'image';
+        if ($type === 'text') {
+            if (str_contains($msg['text'], '<a ') || preg_match("/https*:\/\//", $msg['text'])) {
+                $link = 1;
+            }
+            if (str_contains($msg['text'], '<img ')) {
+                $mtype = 'image';
+            }
+        } elseif ($type === 'file') {
+            if (in_array($msg['ext'], ['jpg', 'jpeg', 'png', 'gif'])) {
+                $mtype = 'image';
+            }
         }
         //
         $dialogMsg = self::createInstance([
@@ -535,6 +544,7 @@ class WebSocketDialogMsg extends AbstractModel
             'userid' => $sender ?: User::userid(),
             'type' => $type,
             'mtype' => $mtype,
+            'link' => $link,
             'msg' => $msg,
             'read' => 0,
         ]);

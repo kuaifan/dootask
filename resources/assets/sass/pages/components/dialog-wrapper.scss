@@ -32,7 +32,7 @@
             }
 
             .dialog-scroller {
-                padding: 16px 16px 0;
+                padding-right: 16px;
             }
 
         }
@@ -223,7 +223,7 @@
                 list-style: none;
                 display: flex;
                 align-items: center;
-                margin: 0 8px;
+                margin: 0 7px;
                 padding: 3px 8px;
                 background-color: #c0c4cc;
                 color: #fff;
@@ -231,7 +231,6 @@
                 font-size: 12px;
                 cursor: pointer;
                 box-shadow: 0 1px 6px rgba(255, 255, 255, 0.2);
-
 
                 .taskfont {
                     font-size: 13px;
@@ -254,7 +253,11 @@
     .dialog-scroller {
         flex: 1;
         position: relative;
-        padding: 48px 32px 0;
+        padding: 16px 32px 0;
+
+        &.default-header {
+            padding-top: 48px;
+        }
 
         .dialog-shake {
             animation: ani-dialog-shake 600ms ease-in-out;
@@ -1276,6 +1279,10 @@
             }
             .nav-tags {
                 top: 60px;
+
+                > li {
+                    margin: 0 5px;
+                }
             }
         }
         .dialog-scroller {

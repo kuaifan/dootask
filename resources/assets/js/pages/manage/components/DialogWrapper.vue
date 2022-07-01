@@ -64,16 +64,18 @@
                         <i class="taskfont dialog-create" @click="openCreateGroup">&#xe646;</i>
                     </ETooltip>
                 </div>
-                <ul class="nav-tags">
-                    <li
-                        v-for="item in msgTags"
-                        :key="item.type"
-                        :class="{active: msgType === item.type}"
-                        @click="msgType=item.type">
-                        <i class="taskfont" v-html="item.icon"></i>
-                        <span>{{$L(item.label)}}</span>
-                    </li>
-                </ul>
+                <transition name="fade">
+                    <ul v-if="dialogMsgList.length > 10 && msgTags.length > 1 && windowScrollY === 0" class="nav-tags">
+                        <li
+                            v-for="item in msgTags"
+                            :key="item.type"
+                            :class="{active: msgType === item.type}"
+                            @click="msgType=item.type">
+                            <i class="taskfont" v-html="item.icon"></i>
+                            <span>{{$L(item.label)}}</span>
+                        </li>
+                    </ul>
+                </transition>
             </slot>
         </div>
 
@@ -81,6 +83,7 @@
         <VirtualList
             ref="scroller"
             class="dialog-scroller scrollbar-overlay"
+            :class="scrollerClass"
             :data-key="'id'"
             :data-sources="allMsgs"
             :data-component="msgItem"
@@ -340,14 +343,7 @@ export default {
             msgItem: DialogItem,
             msgText: '',
             msgNew: 0,
-
             msgType: '',
-            msgTags: [
-                {icon: '&#xe6eb;', type: '', label: '消息'},
-                {icon: '&#xe61e;', type: 'tag', label: '标注'},
-                {icon: '&#xe7bc;', type: 'image', label: '图片'},
-                {icon: '&#xe7c0;', type: 'file', label: '文件'},
-            ],
 
             allMsgs: [],
             tempMsgs: [],
@@ -427,20 +423,21 @@ export default {
             if (!this.isReady) {
                 return [];
             }
-            return this.dialogMsgs.filter(item => this.msgFilter(item)).sort((a, b) => {
-                return a.id - b.id;
-            });
+            return this.dialogMsgs.filter(item => item.dialog_id == this.dialogId);
         },
 
         tempMsgList() {
             if (!this.isReady) {
                 return [];
             }
-            return this.tempMsgs.filter(item => this.msgFilter(item));
+            return this.tempMsgs.filter(item => item.dialog_id == this.dialogId);
         },
 
         allMsgList() {
-            const {dialogMsgList, tempMsgList} = this;
+            const dialogMsgList = this.dialogMsgList.filter(item => this.msgFilter(item)).sort((a, b) => {
+                return a.id - b.id;
+            })
+            const tempMsgList = this.tempMsgList.filter(item => this.msgFilter(item))
             if (tempMsgList.length > 0) {
                 const array = [];
                 array.push(...dialogMsgList);
@@ -477,11 +474,34 @@ export default {
             return '发送文件'
         },
 
+        msgTags() {
+            const array = [
+                {icon: '&#xe6eb;', type: '', label: '消息'},
+            ];
+            if (this.dialogData.has_tag) {
+                array.push({icon: '&#xe61e;', type: 'tag', label: '标注'})
+            }
+            if (this.dialogData.has_image) {
+                array.push({icon: '&#xe7bc;', type: 'image', label: '图片'})
+            }
+            if (this.dialogData.has_file) {
+                array.push({icon: '&#xe7c0;', type: 'file', label: '文件'})
+            }
+            if (this.dialogData.has_link) {
+                array.push({icon: '&#xe786;', type: 'link', label: '链接'})
+            }
+            return array
+        },
+
         wrapperClass() {
             if (['ready', 'ing'].includes(this.recordState)) {
                 return ['record-ready']
             }
             return null
+        },
+
+        scrollerClass() {
+            return !this.$slots.head && this.msgTags.length > 1 && this.windowScrollY === 0 ? 'default-header' : null
         },
 
         pasteWrapperClass() {
@@ -567,6 +587,7 @@ export default {
 
         msgType(type) {
             if (!type) return
+            this.onToBottom()
             this.$store.dispatch("getDialogMsgs", {
                 dialog_id: this.dialogId,
                 msg_id: this.msgId,
@@ -780,6 +801,10 @@ export default {
                     if (!item.tag) {
                         return false
                     }
+                } else if (this.msgType === 'link') {
+                    if (!item.link) {
+                        return false
+                    }
                 } else if (this.msgType !== item.mtype) {
                     return false
                 }
@@ -789,7 +814,7 @@ export default {
                     return false
                 }
             }
-            return item.dialog_id == this.dialogId;
+            return true
         },
 
         onSearchMsgId() {

@@ -286,6 +286,7 @@ class DialogController extends AbstractController
      * - position_id、prev_id、next_id 只有一个有效，优先循序为：position_id > prev_id > next_id
      * @apiParam {String} [mtype]           消息类型
      * - tag: 标记
+     * - link: 链接
      * - text: 文本
      * - image: 图片
      * - file: 文件
@@ -327,6 +328,8 @@ class DialogController extends AbstractController
         //
         if ($mtype === 'tag') {
             $builder->where('tag', '>', 0);
+        } elseif ($mtype === 'link') {
+            $builder->whereLink(1);
         } elseif (in_array($mtype, ['text', 'image', 'file', 'record', 'meeting'])) {
             $builder->whereMtype($mtype);
         }
@@ -382,7 +385,7 @@ class DialogController extends AbstractController
         }
         //
         if ($reDialog) {
-            $data['dialog'] = $dialog->formatData($user->userid);
+            $data['dialog'] = $dialog->formatData($user->userid, true);
         }
         return Base::retSuccess('success', $data);
     }
