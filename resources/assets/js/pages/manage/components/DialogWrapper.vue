@@ -65,7 +65,7 @@
                     </ETooltip>
                 </div>
                 <transition name="fade">
-                    <div v-if="dialogMsgList.length > 10 && msgTags.length > 1 && windowScrollY === 0" class="nav-tags scrollbar-hidden">
+                    <div v-if="navTagShow" class="nav-tags scrollbar-hidden">
                         <ul>
                             <li
                                 v-for="item in msgTags"
@@ -505,8 +505,12 @@ export default {
             return null
         },
 
+        navTagShow() {
+            return this.dialogMsgList.length > 10 && this.msgTags.length > 1 && this.windowScrollY === 0
+        },
+
         scrollerClass() {
-            return !this.$slots.head && this.msgTags.length > 1 && this.windowScrollY === 0 ? 'default-header' : null
+            return !this.$slots.head && this.navTagShow ? 'default-header' : null
         },
 
         pasteWrapperClass() {
