@@ -284,7 +284,7 @@ class DialogController extends AbstractController
      * @apiParam {Number} [prev_id]         此消息ID之前的数据
      * @apiParam {Number} [next_id]         此消息ID之后的数据
      * - position_id、prev_id、next_id 只有一个有效，优先循序为：position_id > prev_id > next_id
-     * @apiParam {String} [mtype]           消息类型
+     * @apiParam {String} [msg_type]        消息类型
      * - tag: 标记
      * - link: 链接
      * - text: 文本
@@ -309,7 +309,7 @@ class DialogController extends AbstractController
         $position_id = intval(Request::input('position_id'));
         $prev_id = intval(Request::input('prev_id'));
         $next_id = intval(Request::input('next_id'));
-        $mtype = trim(Request::input('mtype'));
+        $msg_type = trim(Request::input('msg_type'));
         $take = Base::getPaginate(100, 50, 'take');
         $data = [];
         //
@@ -326,12 +326,17 @@ class DialogController extends AbstractController
                 ->on('read.msg_id', '=', 'web_socket_dialog_msgs.id');
         })->where('web_socket_dialog_msgs.dialog_id', $dialog_id);
         //
-        if ($mtype === 'tag') {
-            $builder->where('tag', '>', 0);
-        } elseif ($mtype === 'link') {
-            $builder->whereLink(1);
-        } elseif (in_array($mtype, ['text', 'image', 'file', 'record', 'meeting'])) {
-            $builder->whereMtype($mtype);
+        if ($msg_type) {
+            if ($msg_type === 'tag') {
+                $builder->where('tag', '>', 0);
+            } elseif ($msg_type === 'link') {
+                $builder->whereLink(1);
+            } elseif (in_array($msg_type, ['text', 'image', 'file', 'record', 'meeting'])) {
+                $builder->whereMtype($msg_type);
+            } else {
+                return Base::retError('参数错误');
+            }
+            $reDialog = false;
         }
         if ($msg_id > 0) {
             $builder->whereReplyId($msg_id);

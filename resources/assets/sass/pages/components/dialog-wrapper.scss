@@ -210,7 +210,7 @@
 
         .nav-tags {
             position: absolute;
-            top: 70px;
+            top: 74px;
             left: 0;
             width: 100%;
             z-index: 2;
@@ -326,11 +326,14 @@
             list-style: none;
             padding-bottom: 16px;
 
-            .dialog-tag {
+            .dialog-tag,
+            .dialog-notice {
+                font-size: 12px;
                 max-width: 80%;
                 margin: 0 auto;
                 padding: 4px 8px;
                 border-radius: 8px;
+                color: $primary-desc-color;
                 background-color: #efefef;
                 word-wrap: break-word;
                 cursor: pointer;

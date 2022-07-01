@@ -5,6 +5,9 @@
             {{$L(source.msg.action === 'remove' ? '取消标注' : '标注了')}}
             "{{$A.getMsgSimpleDesc(source.msg.data)}}"
         </div>
+        <div v-else-if="source.type === 'notice'" class="dialog-notice">
+            {{source.msg.notice}}
+        </div>
         <template v-else>
             <div class="dialog-avatar">
                 <UserAvatar :userid="source.userid" :tooltipDisabled="source.userid == userId" :size="30"/>

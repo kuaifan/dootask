@@ -32,6 +32,14 @@ class WebSocketDialogMsgTask extends AbstractTask
         $this->ignoreFd = Request::header('fd');
     }
 
+    /**
+     * @param $ignoreFd
+     */
+    public function setIgnoreFd($ignoreFd)
+    {
+        $this->ignoreFd = $ignoreFd;
+    }
+
     public function start()
     {
         global $_A;

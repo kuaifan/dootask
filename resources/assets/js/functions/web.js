@@ -489,6 +489,8 @@
                         return `[${$A.L('文件')}] ${data.msg.name}`
                     case 'tag':
                         return `[${$A.L(data.msg.action === 'remove' ? '取消标注' : '标注')}] ${$A.getMsgSimpleDesc(data.msg.data)}`
+                    case 'notice':
+                        return data.msg.notice
                     default:
                         return `[${$A.L('未知的消息')}]`
                 }

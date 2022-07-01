@@ -146,6 +146,9 @@ class WebSocketDialog extends AbstractModel
                     ], [
                         'inviter' => $inviter,
                     ]);
+                    WebSocketDialogMsg::sendMsg($this->id, 0, 'notice', [
+                        'notice' => User::userid2nickname($value) . " 已加入群组"
+                    ], $inviter, true);
                 }
             }
         });
@@ -158,7 +161,7 @@ class WebSocketDialog extends AbstractModel
 
     /**
      * 退出聊天室
-     * @param int|array $userid     加入的会员ID或会员ID组
+     * @param int|array $userid     退出的会员ID或会员ID组
      * @param $type
      */
     public function exitGroup($userid, $type = 'exit')
@@ -184,6 +187,13 @@ class WebSocketDialog extends AbstractModel
                         throw new ApiException('项目人员或任务人员不可' . $typeDesc);
                     }
                     $item->delete();
+                    //
+                    if ($type === 'remove') {
+                        $notice = User::nickname() . " 将 " . User::userid2nickname($item->userid) . " 移出群组";
+                    } else {
+                        $notice = User::userid2nickname($item->userid) . " 退出群组";
+                    }
+                    WebSocketDialogMsg::sendMsg($this->id, 0, 'notice', ['notice' => $notice], User::userid(), true);
                 }
             });
         });

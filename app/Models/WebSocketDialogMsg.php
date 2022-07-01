@@ -393,6 +393,8 @@ class WebSocketDialogMsg extends AbstractModel
             case 'tag':
                 $action = $data['msg']['action'] === 'remove' ? '取消标注' : '标注';
                 return "[{$action}] {$this->previewMsg(false, $data['msg']['data'])}";
+            case 'notice':
+                return $data['msg']['notice'];
             default:
                 return "[未知的消息]";
         }
@@ -519,9 +521,10 @@ class WebSocketDialogMsg extends AbstractModel
      * @param string $type      消息类型
      * @param array $msg        发送的消息
      * @param int $sender       发送的会员ID（默认自己，0为系统）
+     * @param bool $push_self   是否推送给自己
      * @return array
      */
-    public static function sendMsg($dialog_id, $reply_id, $type, $msg, $sender = 0)
+    public static function sendMsg($dialog_id, $reply_id, $type, $msg, $sender = 0, $push_self = false)
     {
         $link = 0;
         $mtype = $type;
@@ -563,7 +566,13 @@ class WebSocketDialogMsg extends AbstractModel
             $dialogMsg->key = $dialogMsg->generateMsgKey();
             $dialogMsg->save();
         });
-        Task::deliver(new WebSocketDialogMsgTask($dialogMsg->id));
+        //
+        $task = new WebSocketDialogMsgTask($dialogMsg->id);
+        if ($push_self) {
+            $task->setIgnoreFd(null);
+        }
+        Task::deliver($task);
+        //
         return Base::retSuccess('发送成功', $dialogMsg);
     }
 }

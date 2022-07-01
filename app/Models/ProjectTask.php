@@ -1182,10 +1182,16 @@ class ProjectTask extends AbstractModel
     public function completeTask($complete_at)
     {
         AbstractModel::transaction(function () use ($complete_at) {
+            $addMsg = empty($this->parent_id) && $this->dialog_id > 0;
             if ($complete_at === null) {
                 // 标记未完成
                 $this->complete_at = null;
                 $this->addLog("标记{任务}未完成");
+                if ($addMsg) {
+                    WebSocketDialogMsg::sendMsg($this->dialog_id, 0, 'notice', [
+                        'notice' => '标记任务未完成'
+                    ]);
+                }
             } else {
                 // 标记已完成
                 if ($this->parent_id == 0) {
@@ -1198,6 +1204,11 @@ class ProjectTask extends AbstractModel
                 }
                 $this->complete_at = $complete_at;
                 $this->addLog("标记{任务}已完成");
+                if ($addMsg) {
+                    WebSocketDialogMsg::sendMsg($this->dialog_id, 0, 'notice', [
+                        'notice' => '标记任务已完成'
+                    ]);
+                }
             }
             $this->save();
         });
