@@ -96,7 +96,8 @@
             :item-class-add="itemClassAdd"
             :extra-props="{dialogData, operateVisible, operateItem, hidePercentage: isMyDialog, hideReply: msgId > 0}"
             :estimate-size="78"
-            :keeps="70"
+            :keeps="50"
+            :disabled="scrollDisabled"
             @scroll="onScroll"
             @range="onRange"
             @totop="onPrevPage"
@@ -392,6 +393,7 @@ export default {
             replyListShow: false,
             replyListId: 0,
 
+            scrollDisabled: false,
             scrollDirection: null,
             scrollAction: 0,
             scrollTmp: 0,
@@ -595,7 +597,7 @@ export default {
         },
 
         msgType(type) {
-            this.onToBottom()
+            requestAnimationFrame(this.onToBottom)
             if (type) {
                 this.$store.dispatch("getDialogMsgs", {
                     dialog_id: this.dialogId,
@@ -1086,7 +1088,10 @@ export default {
                 dialog_id: this.dialogId,
                 msg_id: this.msgId,
                 msg_type: this.msgType,
-                prev_id: this.prevId
+                prev_id: this.prevId,
+                save_before: _ => {
+                    this.scrollDisabled = true
+                }
             }).then(({data}) => {
                 const ids = data.list.map(item => item.id)
                 this.$nextTick(() => {
@@ -1099,7 +1104,8 @@ export default {
                     if (this.prevId === 0) {
                         size -= 36
                     }
-                    this.onToOffset(size);
+                    this.onToOffset(size)
+                    this.scrollDisabled = false
                 });
             }).catch(() => {})
         },

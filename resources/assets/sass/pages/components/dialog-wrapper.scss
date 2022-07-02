@@ -210,7 +210,7 @@
 
         .nav-tags {
             position: absolute;
-            top: 74px;
+            top: 78px;
             left: 0;
             width: 100%;
             z-index: 2;
@@ -311,7 +311,7 @@
         padding: 16px 32px 0;
 
         &.default-header {
-            padding-top: 48px;
+            padding-top: 56px;
         }
 
         .dialog-shake {
@@ -1351,6 +1351,10 @@
             overscroll-behavior: none;
             user-select: none;
             background-color: #ffffff;
+
+            &.default-header {
+                padding-top: 48px;
+            }
 
             .dialog-item {
                 .dialog-view {

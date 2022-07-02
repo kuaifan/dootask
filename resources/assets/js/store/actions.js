@@ -2183,7 +2183,7 @@ export default {
      * @param state
      * @param dispatch
      * @param getters
-     * @param data {dialog_id, msg_id, ?msg_type, ?position_id, ?prev_id, ?next_id}
+     * @param data {dialog_id, msg_id, ?msg_type, ?position_id, ?prev_id, ?next_id, ?save_before, ?save_after}
      * @returns {Promise<unknown>}
      */
     getDialogMsgs({state, dispatch, getters}, data) {
@@ -2193,6 +2193,11 @@ export default {
                 reject({msg: 'Parameter error'});
                 return;
             }
+            //
+            const saveBefore = typeof data.save_before === "function" ? data.save_before : _ => {}
+            const saveAfter = typeof data.save_after === "function" ? data.save_after : _ => {}
+            if (typeof data.save_before !== "undefined") delete data.save_before
+            if (typeof data.save_after !== "undefined") delete data.save_after
             //
             const loadKey = `msg::${data.dialog_id}-${data.msg_id}-${data.msg_type || ''}`
             if (getters.isLoad(loadKey)) {
@@ -2214,7 +2219,9 @@ export default {
                     state.dialogMsgs = state.dialogMsgs.filter(item => item.dialog_id != data.dialog_id || ids.includes(item.id));
                 }
                 //
-                dispatch("saveDialogMsg", resData.list);
+                saveBefore()
+                dispatch("saveDialogMsg", resData.list)
+                saveAfter()
                 resolve(result)
             }).catch(e => {
                 console.warn(e);
