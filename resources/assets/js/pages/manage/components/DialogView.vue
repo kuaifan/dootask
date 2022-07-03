@@ -91,6 +91,10 @@
             <div v-if="msgData.tag" class="tag">
                 <i class="taskfont">&#xe61e;</i>
             </div>
+            <!--编辑-->
+            <div v-if="msgData.modify" class="modify">
+                <i class="taskfont">&#xe779;</i>
+            </div>
             <!--等待/时间/阅读-->
             <Loading v-if="isLoading"/>
             <template v-else>

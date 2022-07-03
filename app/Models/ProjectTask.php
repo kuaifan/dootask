@@ -1188,7 +1188,7 @@ class ProjectTask extends AbstractModel
                 $this->complete_at = null;
                 $this->addLog("标记{任务}未完成");
                 if ($addMsg) {
-                    WebSocketDialogMsg::sendMsg($this->dialog_id, 0, 'notice', [
+                    WebSocketDialogMsg::sendMsg(null, $this->dialog_id, 'notice', [
                         'notice' => '标记任务未完成'
                     ]);
                 }
@@ -1205,7 +1205,7 @@ class ProjectTask extends AbstractModel
                 $this->complete_at = $complete_at;
                 $this->addLog("标记{任务}已完成");
                 if ($addMsg) {
-                    WebSocketDialogMsg::sendMsg($this->dialog_id, 0, 'notice', [
+                    WebSocketDialogMsg::sendMsg(null, $this->dialog_id, 'notice', [
                         'notice' => '标记任务已完成'
                     ]);
                 }

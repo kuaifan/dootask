@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int|null $send 发送数量
  * @property int|null $tag 标注会员ID
  * @property int|null $link 是否存在链接
+ * @property int|null $modify 是否编辑
  * @property int|null $reply_num 有多少条回复
  * @property int|null $reply_id 回复ID
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -46,6 +47,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereKey($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereLink($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereModify($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereMsg($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereMtype($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereRead($value)
@@ -276,7 +278,7 @@ class WebSocketDialogMsg extends AbstractModel
         $data = [
             'update' => $resData
         ];
-        $res = self::sendMsg($this->dialog_id, 0, 'tag', [
+        $res = self::sendMsg(null, $this->dialog_id, 'tag', [
             'action' => $this->tag ? 'add' : 'remove',
             'data' => [
                 'id' => $this->id,
@@ -307,7 +309,7 @@ class WebSocketDialogMsg extends AbstractModel
                 }
                 $dialog = WebSocketDialog::checkUserDialog($sender, $userid);
                 if ($dialog) {
-                    $res = self::sendMsg($dialog->id, 0, $this->type, $this->getOriginal('msg'), $sender);
+                    $res = self::sendMsg(null, $dialog->id, $this->type, $this->getOriginal('msg'), $sender);
                     if (Base::isSuccess($res)) {
                         $msgs[] = $res['data'];
                     }
@@ -515,16 +517,18 @@ class WebSocketDialogMsg extends AbstractModel
     }
 
     /**
-     * 发送消息
-     * @param int $dialog_id    会话ID（即 聊天室ID）
-     * @param int $reply_id     回复ID
-     * @param string $type      消息类型
-     * @param array $msg        发送的消息
-     * @param int $sender       发送的会员ID（默认自己，0为系统）
-     * @param bool $push_self   是否推送给自己
+     * 发送消息、修改消息
+     * @param string $action        动作
+     * - reply-98：回复消息ID-98
+     * - update-99：更新消息ID-99
+     * @param int $dialog_id        会话ID（即 聊天室ID）
+     * @param string $type          消息类型
+     * @param array $msg            发送的消息
+     * @param int $sender           发送的会员ID（默认自己，0为系统）
+     * @param bool $push_self       是否推送给自己
      * @return array
      */
-    public static function sendMsg($dialog_id, $reply_id, $type, $msg, $sender = 0, $push_self = false)
+    public static function sendMsg($action, $dialog_id, $type, $msg, $sender = 0, $push_self = false)
     {
         $link = 0;
         $mtype = $type;
@@ -541,38 +545,75 @@ class WebSocketDialogMsg extends AbstractModel
             }
         }
         //
-        $dialogMsg = self::createInstance([
-            'dialog_id' => $dialog_id,
-            'reply_id' => $reply_id,
-            'userid' => $sender ?: User::userid(),
-            'type' => $type,
-            'mtype' => $mtype,
-            'link' => $link,
-            'msg' => $msg,
-            'read' => 0,
-        ]);
-        if ($reply_id > 0) {
-            self::whereId($reply_id)->increment('reply_num');
+        $update_id = preg_match("/^update-(\d+)$/", $action, $match) ? $match[1] : 0;
+        $reply_id = preg_match("/^reply-(\d+)$/", $action, $match) ? $match[1] : 0;
+        $sender = $sender ?: User::userid();
+        //
+        $dialog = WebSocketDialog::find($dialog_id);
+        if (empty($dialog)) {
+            throw new ApiException('获取会话失败');
         }
-        AbstractModel::transaction(function () use ($dialogMsg) {
-            $dialog = WebSocketDialog::find($dialogMsg->dialog_id);
-            if (empty($dialog)) {
-                throw new ApiException('获取会话失败');
+        //
+        if ($update_id) {
+            // 修改
+            $dialogMsg = self::whereId($update_id)->whereDialogId($dialog_id)->first();
+            if (empty($dialogMsg)) {
+                throw new ApiException('消息不存在');
             }
-            $dialog->last_at = Carbon::now();
-            $dialog->save();
-            $dialogMsg->send = 1;
-            $dialogMsg->dialog_type = $dialog->type;
+            if ($dialogMsg->type !== 'text') {
+                throw new ApiException('此消息不支持此操作');
+            }
+            if ($dialogMsg->userid != $sender) {
+                throw new ApiException('仅支持修改自己的消息');
+            }
+            //
+            $updateData = [
+                'mtype' => $mtype,
+                'link' => $link,
+                'msg' => $msg,
+                'modify' => 1,
+            ];
+            $dialogMsg->updateInstance($updateData);
             $dialogMsg->key = $dialogMsg->generateMsgKey();
             $dialogMsg->save();
-        });
-        //
-        $task = new WebSocketDialogMsgTask($dialogMsg->id);
-        if ($push_self) {
-            $task->setIgnoreFd(null);
+            //
+            $dialog->pushMsg('update', array_merge($updateData, [
+                'id' => $dialogMsg->id
+            ]));
+            //
+            return Base::retSuccess('修改成功', $dialogMsg);
+        } else {
+            // 发送
+            if ($reply_id && !self::whereId($reply_id)->increment('reply_num')) {
+                throw new ApiException('回复的消息不存在');
+            }
+            //
+            $dialogMsg = self::createInstance([
+                'dialog_id' => $dialog_id,
+                'dialog_type' => $dialog->type,
+                'reply_id' => $reply_id,
+                'userid' => $sender,
+                'type' => $type,
+                'mtype' => $mtype,
+                'link' => $link,
+                'msg' => $msg,
+                'read' => 0,
+            ]);
+            AbstractModel::transaction(function () use ($dialog, $dialogMsg) {
+                $dialog->last_at = Carbon::now();
+                $dialog->save();
+                $dialogMsg->send = 1;
+                $dialogMsg->key = $dialogMsg->generateMsgKey();
+                $dialogMsg->save();
+            });
+            //
+            $task = new WebSocketDialogMsgTask($dialogMsg->id);
+            if ($push_self) {
+                $task->setIgnoreFd(null);
+            }
+            Task::deliver($task);
+            //
+            return Base::retSuccess('发送成功', $dialogMsg);
         }
-        Task::deliver($task);
-        //
-        return Base::retSuccess('发送成功', $dialogMsg);
     }
 }

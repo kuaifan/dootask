@@ -164,26 +164,22 @@
                                 <i class="taskfont">&#xe6eb;</i>
                                 <span>{{ $L('回复') }}</span>
                             </li>
+                            <li v-if="operateItem.userid == userId && operateItem.type === 'text'" @click="onOperate('update')">
+                                <i class="taskfont">&#xe779;</i>
+                                <span>{{ $L('编辑') }}</span>
+                            </li>
+                            <li v-if="operateHasText" @click="onOperate('copy')">
+                                <i class="taskfont">&#xe77f;</i>
+                                <span>{{ $L('复制') }}</span>
+                            </li>
                             <li @click="onOperate('forward')">
                                 <i class="taskfont">&#xe638;</i>
                                 <span>{{ $L('转发') }}</span>
                             </li>
-                            <template v-if="operateHasText">
-                                <li @click="onOperate('copy')">
-                                    <i class="taskfont">&#xe77f;</i>
-                                    <span>{{ $L('复制') }}</span>
-                                </li>
-                                <li @click="onOperate('newTask')">
-                                    <i class="taskfont">&#xe7b8;</i>
-                                    <span>{{ $L('新任务') }}</span>
-                                </li>
-                            </template>
-                            <template v-if="operateItem.userid == userId">
-                                <li @click="onOperate('withdraw')">
-                                    <i class="taskfont">&#xe637;</i>
-                                    <span>{{ $L('撤回') }}</span>
-                                </li>
-                            </template>
+                            <li v-if="operateItem.userid == userId" @click="onOperate('withdraw')">
+                                <i class="taskfont">&#xe637;</i>
+                                <span>{{ $L('撤回') }}</span>
+                            </li>
                             <template v-if="operateItem.type === 'file'">
                                 <li @click="onOperate('view')">
                                     <i class="taskfont">&#xe77b;</i>
@@ -197,6 +193,10 @@
                             <li @click="onOperate('tag')">
                                 <i class="taskfont">&#xe61e;</i>
                                 <span>{{ $L(operateItem.tag ? '取消标注' : '标注') }}</span>
+                            </li>
+                            <li v-if="operateItem.type === 'text'" @click="onOperate('newTask')">
+                                <i class="taskfont">&#xe7b8;</i>
+                                <span>{{ $L('新任务') }}</span>
                             </li>
                         </ul>
                     </DropdownItem>
@@ -389,6 +389,7 @@ export default {
 
             replyActiveId: 0,
             replyActiveIndex: -1,
+            replyActiveUpdate: false,
 
             replyListShow: false,
             replyListId: 0,
@@ -717,43 +718,67 @@ export default {
             }
             msgText = msgText.replace(/<\/span> <\/p>$/, "</span></p>")
             //
-            this.msgType = '';
-            this.onToBottom();
-            this.onActive();
-            //
-            let tempId = $A.randomString(16);
-            let tempMsg = {
-                id: tempId,
-                dialog_id: this.dialogData.id,
-                reply_id: this.replyId,
-                reply_data: this.replyItem,
-                type: 'text',
-                userid: this.userId,
-                msg: {
-                    text: $A.stringLength(msgText) > 2000 ? '' : msgText,
-                },
-            };
-            if (msgText.length > 2000) {
-                tempMsg.type = 'loading';
-                tempMsg.msg = { };
-            }
-            this.tempMsgs.push(tempMsg);
-            //
-            this.$store.dispatch("call", {
-                url: 'dialog/msg/sendtext',
-                data: {
-                    dialog_id: this.dialogId,
+            if (this.replyActiveUpdate) {
+                // 修改
+                const update_id = this.replyId
+                this.$store.dispatch("setLoad", {
+                    key: `msg-${update_id}`,
+                    delay: 600
+                })
+                this.$store.dispatch("call", {
+                    url: 'dialog/msg/sendtext',
+                    data: {
+                        dialog_id: this.dialogId,
+                        update_id,
+                        text: msgText,
+                    },
+                    method: 'post',
+                    complete: _ => this.$store.dispatch("cancelLoad", `msg-${update_id}`)
+                }).then(({data}) => {
+                    this.sendSuccess(data)
+                    this.onPositionId(update_id)
+                }).catch(({msg}) => {
+                    $A.modalError(msg)
+                });
+            } else {
+                // 发送
+                this.msgType = '';
+                this.onActive();
+                this.onToBottom();
+                //
+                const tempId = $A.randNum(1000000000, 9999999999);
+                const tempMsg = {
+                    id: tempId,
+                    dialog_id: this.dialogData.id,
                     reply_id: this.replyId,
-                    text: msgText,
-                },
-                method: 'post'
-            }).then(({data}) => {
-                this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
-                this.sendSuccess(data);
-            }).catch(({msg}) => {
-                $A.modalError(msg);
-                this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
-            });
+                    reply_data: this.replyItem,
+                    type: 'text',
+                    userid: this.userId,
+                    msg: {
+                        text: $A.stringLength(msgText) > 2000 ? '' : msgText,
+                    },
+                };
+                if (msgText.length > 2000) {
+                    tempMsg.type = 'loading';
+                    tempMsg.msg = { };
+                }
+                this.tempMsgs.push(tempMsg);
+                //
+                this.$store.dispatch("call", {
+                    url: 'dialog/msg/sendtext',
+                    data: {
+                        dialog_id: this.dialogId,
+                        reply_id: this.replyId,
+                        text: msgText,
+                    },
+                    method: 'post',
+                    complete: _ => this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
+                }).then(({data}) => {
+                    this.sendSuccess(data)
+                }).catch(({msg}) => {
+                    $A.modalError(msg)
+                });
+            }
         },
 
         /**
@@ -762,11 +787,11 @@ export default {
          */
         sendRecord(msg) {
             this.msgType = '';
-            this.onToBottom();
             this.onActive();
+            this.onToBottom();
             //
-            let tempId = $A.randomString(16);
-            this.tempMsgs.push({
+            const tempId = $A.randNum(1000000000, 9999999999);
+            const tempMsg = {
                 id: tempId,
                 dialog_id: this.dialogData.id,
                 reply_id: this.replyId,
@@ -774,7 +799,8 @@ export default {
                 type: 'loading',
                 userid: this.userId,
                 msg,
-            });
+            }
+            this.tempMsgs.push(tempMsg);
             //
             this.$store.dispatch("call", {
                 url: 'dialog/msg/sendrecord',
@@ -782,13 +808,12 @@ export default {
                     dialog_id: this.dialogId,
                     reply_id: this.replyId,
                 }),
-                method: 'post'
+                method: 'post',
+                complete: _ => this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
             }).then(({data}) => {
-                this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
                 this.sendSuccess(data);
             }).catch(({msg}) => {
                 $A.modalError(msg);
-                this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
             });
         },
 
@@ -965,8 +990,8 @@ export default {
         chatFile(type, file) {
             switch (type) {
                 case 'progress':
-                    this.onToBottom();
                     this.onActive();
+                    this.onToBottom();
                     //
                     this.tempMsgs.push({
                         id: file.tempId,
@@ -991,15 +1016,15 @@ export default {
 
         sendSuccess(data) {
             if ($A.isArray(data)) {
-                data.some(item => {
-                    this.sendSuccess(item)
-                })
+                data.some(this.sendSuccess)
                 return;
             }
             this.$store.dispatch("saveDialogMsg", data);
-            this.$store.dispatch("increaseTaskMsgNum", this.dialogId);
-            this.$store.dispatch("increaseMsgReplyNum", data.reply_id);
-            this.$store.dispatch("updateDialogLastMsg", data);
+            if (!this.replyActiveUpdate) {
+                this.$store.dispatch("increaseTaskMsgNum", this.dialogId);
+                this.$store.dispatch("increaseMsgReplyNum", data.reply_id);
+                this.$store.dispatch("updateDialogLastMsg", data);
+            }
             this.onCancelReply();
             this.onActive();
         },
@@ -1264,29 +1289,21 @@ export default {
             this.operateVisible = false;
             this.$nextTick(_ => {
                 switch (action) {
+                    case "reply":
+                        this.onReply()
+                        break;
+
+                    case "update":
+                        this.onUpdate()
+                        break;
+
                     case "copy":
                         if (this.operateHasText) {
-                            this.$copyText(this.operateItem.msg.text.replace(/<[^>]+>/g, "")).then(_ => {
-                                $A.messageSuccess('复制成功');
-                            }).catch(_ => {
-                                $A.messageError('复制失败');
-                            });
+                            const text = this.operateItem.msg.text.replace(/<[^>]+>/g, "")
+                            this.$copyText(text).then(_ => $A.messageSuccess('复制成功')).catch(_ => $A.messageError('复制失败'));
                         } else {
                             $A.messageWarning('不可复制的内容');
                         }
-                        break;
-
-                    case "newTask":
-                        if (this.operateHasText) {
-                            Store.set('addTask', {
-                                owner: [this.userId],
-                                name: this.operateItem.msg.text.replace(/<[^>]+>/g, "")
-                            });
-                        }
-                        break;
-
-                    case "reply":
-                        this.onReply()
                         break;
 
                     case "forward":
@@ -1305,12 +1322,19 @@ export default {
                         this.onDownFile()
                         break;
 
-                    case "emoji":
-                        this.onEmoji(value)
-                        break;
-
                     case "tag":
                         this.onTag()
+                        break;
+
+                    case "newTask":
+                        Store.set('addTask', {
+                            owner: [this.userId],
+                            content: $A.formatMsgBasic(this.operateItem.msg.text)
+                        });
+                        break;
+
+                    case "emoji":
+                        this.onEmoji(value)
                         break;
                 }
             })
@@ -1325,7 +1349,19 @@ export default {
             }
         },
 
+        onUpdate() {
+            this.onReply()
+            if (this.operateItem.type === 'text') {
+                this.replyActiveUpdate = true
+                this.msgText = $A.formatMsgBasic(this.operateItem.msg.text)
+            }
+        },
+
         onCancelReply() {
+            if (this.replyActiveUpdate) {
+                this.replyActiveUpdate = false
+                this.msgText = ''
+            }
             this.replyActiveId = 0;
         },
 

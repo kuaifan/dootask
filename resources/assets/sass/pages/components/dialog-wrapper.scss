@@ -792,25 +792,23 @@
                         height: 10px;
                     }
 
-                    .reply {
+                    .tag,
+                    .reply,
+                    .modify {
                         display: flex;
                         align-items: center;
-                        font-size: 12px;
                         margin-right: 6px;
-                        color: $primary-color;
-                        cursor: pointer;
                         > i {
                             font-size: 13px;
-                            padding-right: 2px;
                         }
                     }
 
-                    .tag {
-                        display: flex;
-                        align-items: center;
-                        margin-right: 6px;
+                    .reply {
+                        font-size: 12px;
+                        color: $primary-color;
+                        cursor: pointer;
                         > i {
-                            font-size: 13px;
+                            padding-right: 2px;
                         }
                     }
 

@@ -442,6 +442,7 @@ class DialogController extends AbstractController
      * @apiName msg__sendtext
      *
      * @apiParam {Number} dialog_id         对话ID
+     * @apiParam {Number} [update_id]       更新消息ID（优先大于reply_id）
      * @apiParam {Number} [reply_id]        回复ID
      * @apiParam {String} text              消息内容
      *
@@ -463,14 +464,20 @@ class DialogController extends AbstractController
         }
         //
         $dialog_id = Base::getPostInt('dialog_id');
+        $update_id = Base::getPostInt('update_id');
         $reply_id = Base::getPostInt('reply_id');
         $text = trim(Base::getPostValue('text'));
         //
         WebSocketDialog::checkDialog($dialog_id);
         //
-        if ($reply_id > 0 && !WebSocketDialogMsg::whereId($reply_id)->whereDialogId($dialog_id)->exists()) {
-            return Base::retError('回复的消息不存在');
+        if ($update_id > 0) {
+            $action = "update-$update_id";
+        } elseif ($reply_id > 0) {
+            $action = "reply-$reply_id";
+        } else {
+            $action = "";
         }
+        //
         $text = WebSocketDialogMsg::formatMsg($text, $dialog_id);
         $strlen = mb_strlen($text);
         if ($strlen < 1) {
@@ -500,10 +507,10 @@ class DialogController extends AbstractController
                 'height' => -1,
                 'ext' => 'htm',
             ];
-            return WebSocketDialogMsg::sendMsg($dialog_id, $reply_id, 'file', $fileData, $user->userid);
+            return WebSocketDialogMsg::sendMsg($action, $dialog_id, 'file', $fileData, $user->userid);
         }
         //
-        return WebSocketDialogMsg::sendMsg($dialog_id, $reply_id, 'text', ['text' => $text], $user->userid);
+        return WebSocketDialogMsg::sendMsg($action, $dialog_id, 'text', ['text' => $text], $user->userid);
     }
 
     /**
@@ -532,9 +539,7 @@ class DialogController extends AbstractController
         //
         WebSocketDialog::checkDialog($dialog_id);
         //
-        if ($reply_id > 0 && !WebSocketDialogMsg::whereId($reply_id)->whereDialogId($dialog_id)->exists()) {
-            return Base::retError('回复的消息不存在');
-        }
+        $action = $reply_id > 0 ? "reply-$reply_id" : "";
         $path = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
         $base64 = Base::getPostValue('base64');
         $duration = Base::getPostInt('duration');
@@ -551,7 +556,7 @@ class DialogController extends AbstractController
             $recordData = $data['data'];
             $recordData['size'] *= 1024;
             $recordData['duration'] = $duration;
-            return WebSocketDialogMsg::sendMsg($dialog_id, $reply_id, 'record', $recordData, $user->userid);
+            return WebSocketDialogMsg::sendMsg($action, $dialog_id, 'record', $recordData, $user->userid);
         }
     }
 
@@ -584,9 +589,7 @@ class DialogController extends AbstractController
         //
         $dialog = WebSocketDialog::checkDialog($dialog_id);
         //
-        if ($reply_id > 0 && !WebSocketDialogMsg::whereId($reply_id)->whereDialogId($dialog_id)->exists()) {
-            return Base::retError('回复的消息不存在');
-        }
+        $action = $reply_id > 0 ? "reply-$reply_id" : "";
         $path = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
         $image64 = Base::getPostValue('image64');
         $fileName = Base::getPostValue('filename');
@@ -631,7 +634,7 @@ class DialogController extends AbstractController
                 }
             }
             //
-            $result = WebSocketDialogMsg::sendMsg($dialog_id, $reply_id, 'file', $fileData, $user->userid);
+            $result = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'file', $fileData, $user->userid);
             if (Base::isSuccess($result)) {
                 if (isset($task)) {
                     $result['data']['task_id'] = $task->id;
