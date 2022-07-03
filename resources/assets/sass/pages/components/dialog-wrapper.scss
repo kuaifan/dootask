@@ -210,15 +210,16 @@
 
         .nav-tags {
             position: absolute;
-            top: 78px;
-            left: 0;
-            width: 100%;
+            top: 68px;
+            left: 12px;
+            right: 12px;
             z-index: 2;
-            padding: 4px 0;
+            height: 56px;
             display: flex;
             align-items: center;
             justify-content: flex-start;
             overflow-x: auto;
+            background-color: #ffffff;
 
             > ul {
                 margin: 0 auto;
@@ -239,6 +240,14 @@
                     font-size: 12px;
                     cursor: pointer;
                     box-shadow: 0 1px 6px rgba(255, 255, 255, 0.2);
+
+                    @media (max-width: 640px) {
+                        margin: 0 6px;
+                    }
+
+                    @media (max-width: 375px) {
+                        margin: 0 4px;
+                    }
 
                     > i {
                         width: 14px;
@@ -843,6 +852,7 @@
                 height: 20px;
                 box-sizing: content-box;
                 justify-content: center;
+                padding-top: 16px;
 
                 .common-loading {
                     margin: 0;
@@ -1336,13 +1346,10 @@
                     }
                 }
             }
+
             .nav-tags {
-                top: 58px;
-                > ul {
-                    > li {
-                        margin: 0 5px;
-                    }
-                }
+                top: 52px;
+                height: 46px;
             }
         }
         .dialog-scroller {
@@ -1353,7 +1360,7 @@
             background-color: #ffffff;
 
             &.default-header {
-                padding-top: 48px;
+                padding-top: 46px;
             }
 
             .dialog-item {

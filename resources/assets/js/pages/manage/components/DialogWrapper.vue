@@ -75,7 +75,7 @@
                                     active: msgType === item.type,
                                 }"
                                 @click="msgType=item.type">
-                                <i></i>
+                                <i class="no-dark-content"></i>
                                 <span>{{$L(item.label)}}</span>
                             </li>
                         </ul>
@@ -573,11 +573,12 @@ export default {
         dialogId: {
             handler(dialog_id) {
                 if (dialog_id) {
-                    this.msgNew = 0;
+                    this.tempMsgs = []
+                    this.msgNew = 0
                     //
                     if (this.allMsgList.length > 0) {
-                        this.allMsgs = this.allMsgList;
-                        requestAnimationFrame(this.onToBottom);
+                        this.allMsgs = this.allMsgList
+                        requestAnimationFrame(this.onToBottom)
                     }
                     this.msgType = '';
                     this.$store.dispatch("getDialogMsgs", {
@@ -602,9 +603,6 @@ export default {
         },
 
         msgType(msg_type) {
-            this.tempMsgs = this.tempMsgs.filter(({is_msg_type}) => is_msg_type !== true)
-            requestAnimationFrame(this.onToBottom)
-            //
             if (msg_type) {
                 this.$store.dispatch("getDialogMsgs", {
                     dialog_id: this.dialogId,
@@ -613,12 +611,19 @@ export default {
                     save_cancel: true,
                 }).then(({data}) => {
                     if (data.list.length > 0) {
-                        this.tempMsgs.push(...data.list.map(item => Object.assign(item, {
-                            is_msg_type: true
-                        })))
+                        const ids = this.tempMsgs.map(item => item.id)
+                        const list = data.list.filter(item => !ids.includes(item.id))
+                        if (list.length > 0) {
+                            this.tempMsgs.push(...list.map(item => Object.assign(item, {
+                                isMsgType: true
+                            })))
+                        }
                     }
                 }).catch(_ => {});
+            } else {
+                this.tempMsgs = this.tempMsgs.filter(({isMsgType}) => isMsgType !== true)
             }
+            requestAnimationFrame(this.onToBottom)
         },
 
         dialogSearchMsgId() {
@@ -644,11 +649,12 @@ export default {
         },
 
         wsOpenNum(num) {
-            if (num <= 1) return
+            if (num <= 1 || this.msgType) {
+                return
+            }
             this.$store.dispatch("getDialogMsgs", {
                 dialog_id: this.dialogId,
                 msg_id: this.msgId,
-                msg_type: this.msgType,
             }).catch(_ => {});
         },
 
@@ -1103,22 +1109,20 @@ export default {
                 msg_id: this.msgId,
                 msg_type: this.msgType,
                 prev_id: this.prevId,
-                save_before: _ => {
-                    this.scrollDisabled = true
-                }
+                save_before: _ => this.scrollDisabled = true
             }).then(({data}) => {
                 const ids = data.list.map(item => item.id)
                 this.$nextTick(() => {
                     const scroller = this.$refs.scroller
-                    const offset = ids.reduce((previousValue, currentId) => {
+                    const reducer = ids.reduce((previousValue, currentId) => {
                         const previousSize = typeof previousValue === "object" ? previousValue.size : scroller.getSize(previousValue)
                         return {size: previousSize + scroller.getSize(currentId)}
                     })
-                    let size = scroller.getOffset() + offset.size;
+                    let offset = scroller.getOffset() + reducer.size
                     if (this.prevId === 0) {
-                        size -= 36
+                        offset -= 52
                     }
-                    this.onToOffset(size)
+                    this.onToOffset(offset)
                     this.scrollDisabled = false
                 });
             }).catch(() => {})
