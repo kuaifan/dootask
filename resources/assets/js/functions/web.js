@@ -77,26 +77,6 @@
         },
 
         /**
-         * 格式化websocket的消息
-         * @param data
-         */
-        formatWebsocketMessageDetail(data) {
-            if ($A.isJson(data)) {
-                for (let key in data) {
-                    if (!data.hasOwnProperty(key)) continue;
-                    data[key] = $A.formatWebsocketMessageDetail(data[key]);
-                }
-            } else if ($A.isArray(data)) {
-                data.forEach((val, index) => {
-                    data[index] = $A.formatWebsocketMessageDetail(val);
-                });
-            } else if (typeof data === "string") {
-                data = data.replace(/\{\{RemoteURL\}\}/g, this.apiUrl('../'))
-            }
-            return data;
-        },
-
-        /**
          * 格式化时间
          * @param date
          * @returns {*|string}
@@ -389,6 +369,29 @@
             text = text.replace(/<img\s+class="emoticon"[^>]*?>/g, `[${$A.L('表情')}]`)
             text = text.replace(/<img\s+class="browse"[^>]*?>/g, `[${$A.L('图片')}]`)
             return text.replace(/<[^>]+>/g,"")
+        },
+
+        /**
+         * 消息格式化处理（将消息内的RemoteURL换成真实地址）
+         * @param data
+         */
+        formatMsgBasic(data) {
+            if (!data) {
+                return data
+            }
+            if ($A.isJson(data)) {
+                for (let key in data) {
+                    if (!data.hasOwnProperty(key)) continue;
+                    data[key] = $A.formatMsgBasic(data[key]);
+                }
+            } else if ($A.isArray(data)) {
+                data.forEach((val, index) => {
+                    data[index] = $A.formatMsgBasic(val);
+                });
+            } else if (typeof data === "string") {
+                data = data.replace(/\{\{RemoteURL\}\}/g, this.apiUrl('../'))
+            }
+            return data
         },
 
         /**

@@ -84,8 +84,8 @@ export default {
         handleProgress(event, file) {
             //上传时
             if (file.tempId === undefined) {
-                file.tempId = $A.randomString(8);
-                this.$emit('on-progress', file);
+                file.tempId = $A.randNum(1000000000, 9999999999)
+                this.$emit('on-progress', file)
             }
         },
 

@@ -2392,7 +2392,7 @@ export default {
         };
         state.ws.onmessage = (e) => {
             wgLog && console.log("[WS] Message", e);
-            const msgDetail = $A.formatWebsocketMessageDetail($A.jsonParse(e.data));
+            const msgDetail = $A.formatMsgBasic($A.jsonParse(e.data));
             const {type, msgId} = msgDetail;
             switch (type) {
                 case "open":
