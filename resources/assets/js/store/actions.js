@@ -2183,7 +2183,7 @@ export default {
      * @param state
      * @param dispatch
      * @param getters
-     * @param data {dialog_id, msg_id, ?msg_type, ?position_id, ?prev_id, ?next_id, ?save_before, ?save_after}
+     * @param data {dialog_id, msg_id, ?msg_type, ?position_id, ?prev_id, ?next_id, ?save_before, ?save_cancel}
      * @returns {Promise<unknown>}
      */
     getDialogMsgs({state, dispatch, getters}, data) {
@@ -2195,9 +2195,9 @@ export default {
             }
             //
             const saveBefore = typeof data.save_before === "function" ? data.save_before : _ => {}
-            const saveAfter = typeof data.save_after === "function" ? data.save_after : _ => {}
+            const saveCancel = typeof data.save_cancel === "boolean" ? data.save_cancel : false
             if (typeof data.save_before !== "undefined") delete data.save_before
-            if (typeof data.save_after !== "undefined") delete data.save_after
+            if (typeof data.save_cancel !== "undefined") delete data.save_cancel
             //
             const loadKey = `msg::${data.dialog_id}-${data.msg_id}-${data.msg_type || ''}`
             if (getters.isLoad(loadKey)) {
@@ -2211,17 +2211,18 @@ export default {
                 data,
                 complete: _ => dispatch("cancelLoad", loadKey)
             }).then(result => {
-                const resData = result.data;
-                if ($A.isJson(resData.dialog)) {
-                    dispatch("saveDialog", resData.dialog);
-                    //
-                    const ids = resData.list.map(({id}) => id)
-                    state.dialogMsgs = state.dialogMsgs.filter(item => item.dialog_id != data.dialog_id || ids.includes(item.id));
-                }
-                //
                 saveBefore()
-                dispatch("saveDialogMsg", resData.list)
-                saveAfter()
+                if (!saveCancel) {
+                    const resData = result.data;
+                    if ($A.isJson(resData.dialog)) {
+                        dispatch("saveDialog", resData.dialog);
+                        //
+                        const ids = resData.list.map(({id}) => id)
+                        state.dialogMsgs = state.dialogMsgs.filter(item => item.dialog_id != data.dialog_id || ids.includes(item.id));
+                    }
+                    //
+                    dispatch("saveDialogMsg", resData.list)
+                }
                 resolve(result)
             }).catch(e => {
                 console.warn(e);

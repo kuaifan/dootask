@@ -441,17 +441,22 @@ export default {
         },
 
         allMsgList() {
-            const dialogMsgList = this.dialogMsgList.filter(item => this.msgFilter(item)).sort((a, b) => {
-                return a.id - b.id;
-            })
-            const tempMsgList = this.tempMsgList.filter(item => this.msgFilter(item))
-            if (tempMsgList.length > 0) {
-                const array = [];
-                array.push(...dialogMsgList);
-                array.push(...tempMsgList)
-                return array;
+            const dialogMsgList = this.dialogMsgList.filter(item => this.msgFilter(item))
+            if (this.tempMsgList.length > 0) {
+                const ids = dialogMsgList.map(({id}) => id)
+                const tempMsgList = this.tempMsgList.filter(item => !ids.includes(item.id) && this.msgFilter(item))
+                if (tempMsgList.length > 0) {
+                    const array = [];
+                    array.push(...dialogMsgList);
+                    array.push(...tempMsgList)
+                    return array.sort((a, b) => {
+                        return a.id - b.id;
+                    });
+                }
             }
-            return dialogMsgList;
+            return dialogMsgList.sort((a, b) => {
+                return a.id - b.id;
+            });
         },
 
         loadMsg() {
@@ -596,13 +601,22 @@ export default {
             immediate: true
         },
 
-        msgType(type) {
+        msgType(msg_type) {
+            this.tempMsgs = this.tempMsgs.filter(({is_msg_type}) => is_msg_type !== true)
             requestAnimationFrame(this.onToBottom)
-            if (type) {
+            //
+            if (msg_type) {
                 this.$store.dispatch("getDialogMsgs", {
                     dialog_id: this.dialogId,
                     msg_id: this.msgId,
-                    msg_type: this.msgType,
+                    msg_type,
+                    save_cancel: true,
+                }).then(({data}) => {
+                    if (data.list.length > 0) {
+                        this.tempMsgs.push(...data.list.map(item => Object.assign(item, {
+                            is_msg_type: true
+                        })))
+                    }
                 }).catch(_ => {});
             }
         },
