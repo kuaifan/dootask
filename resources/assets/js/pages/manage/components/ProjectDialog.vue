@@ -1,5 +1,5 @@
 <template>
-    <DialogWrapper v-if="windowLarge && projectData.cacheParameter.chat" :dialog-id="projectData.dialog_id" class="project-dialog">
+    <DialogWrapper v-if="dialogShow" :dialog-id="projectData.dialog_id" class="project-dialog">
         <template slot="head">
             <div class="dialog-user">
                 <div class="member-head">
@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import {mapGetters} from "vuex";
+import {mapGetters, mapState} from "vuex";
 import DialogWrapper from "./DialogWrapper";
 
 export default {
@@ -32,12 +32,38 @@ export default {
     components: {DialogWrapper},
     data() {
         return {
+            loadIng: false,
             memberShowAll: false,
         }
     },
 
     computed: {
-        ...mapGetters(['projectData'])
+        ...mapState(['cacheDialogs']),
+        ...mapGetters(['projectData']),
+
+        dialogShow() {
+            return this.windowLarge && this.projectData.dialog_id && this.projectData.cacheParameter.chat
+        }
+    },
+
+    watch: {
+        dialogShow: {
+            handler(show) {
+                if (show) {
+                    const {dialog_id} = this.projectData
+                    if (!this.cacheDialogs.find(({id}) => id == dialog_id)) {
+                        if (this.loadIng === true) {
+                            return
+                        }
+                        this.loadIng = true
+                        this.$store.dispatch("getDialogOne", dialog_id).catch(() => {}).finally(_ => {
+                            this.loadIng = false
+                        })
+                    }
+                }
+            },
+            immediate: true
+        }
     },
 
     methods: {
