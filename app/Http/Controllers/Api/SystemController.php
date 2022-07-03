@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Setting;
 use App\Models\User;
 use App\Module\Base;
 use Arr;
@@ -99,7 +100,7 @@ class SystemController extends AbstractController
      *
      * @apiParam {String} type
      * - get: 获取（默认）
-     * - save: 保存设置（参数：['smtp_server', 'port', 'account', 'password', 'reg_verify', 'notice', 'task_start_minute', 'task_remind_hours', 'task_remind_hours2', 'notice_msg', 'msg_unread_user_minute', 'msg_unread_group_minute']）
+     * - save: 保存设置（参数：['smtp_server', 'port', 'account', 'password', 'reg_verify', 'notice', 'task_start_minute', 'task_remind_hours', 'task_remind_hours2', 'notice_msg', 'msg_unread_user_minute', 'msg_unread_group_minute', 'ignore_addr']）
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
@@ -127,7 +128,8 @@ class SystemController extends AbstractController
                     'task_remind_hours2',
                     'notice_msg',
                     'msg_unread_user_minute',
-                    'msg_unread_group_minute'
+                    'msg_unread_group_minute',
+                    'ignore_addr'
                 ])) {
                     unset($all[$key]);
                 }
@@ -149,6 +151,7 @@ class SystemController extends AbstractController
         $setting['notice_msg'] = $setting['notice_msg'] ?: 'close';
         $setting['msg_unread_user_minute'] = intval($setting['msg_unread_user_minute'] ?? -1);
         $setting['msg_unread_group_minute'] = intval($setting['msg_unread_group_minute'] ?? -1);
+        $setting['ignore_addr'] = $setting['ignore_addr'] ?: '';
         //
         return Base::retSuccess('success', $setting ?: json_decode('{}'));
     }
@@ -695,14 +698,18 @@ class SystemController extends AbstractController
             return Base::retError('请输入正确的收件人地址');
         }
         try {
-            Factory::mailer()
-                ->setDsn("smtp://{$all['account']}:{$all['password']}@{$all['smtp_server']}:{$all['port']}?verify_peer=0")
-                ->setMessage(EmailMessage::create()
-                    ->from(env('APP_NAME', 'Task') . " <{$all['account']}>")
-                    ->to($all['to'])
-                    ->subject('Mail sending test')
-                    ->html('<p>收到此电子邮件意味着您的邮箱配置正确。</p><p>Receiving this email means that your mailbox is configured correctly.</p>'))
-                ->send();
+            Setting::validateAddr($all['to'], function($to) use ($all) {
+                Factory::mailer()
+                    ->setDsn("smtp://{$all['account']}:{$all['password']}@{$all['smtp_server']}:{$all['port']}?verify_peer=0")
+                    ->setMessage(EmailMessage::create()
+                        ->from(env('APP_NAME', 'Task') . " <{$all['account']}>")
+                        ->to($to)
+                        ->subject('Mail sending test')
+                        ->html('<p>收到此电子邮件意味着您的邮箱配置正确。</p><p>Receiving this email means that your mailbox is configured correctly.</p>'))
+                    ->send();
+            }, function () {
+                throw new \Exception("收件人地址错误或已被忽略");
+            });
             return Base::retSuccess('成功发送');
         } catch (\Throwable $e) {
             // 一般是请求超时

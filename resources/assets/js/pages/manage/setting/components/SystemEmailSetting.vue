@@ -80,6 +80,16 @@
                     </Form>
                 </FormItem>
             </div>
+
+            <div class="block-setting-placeholder"></div>
+
+            <div class="block-setting-box">
+                <h3>{{ $L('忽略邮箱地址') }}</h3>
+                <FormItem :label="$L('忽略邮箱')" prop="ignore_addr">
+                    <Input v-model="formData.ignore_addr" type="textarea" :autosize="{ minRows: 3, maxRows: 50 }" />
+                    <div class="form-tip">{{$L('不会向忽略的邮箱地址发送邮件，可使用换行分割多个地址。')}}</div>
+                </FormItem>
+            </div>
         </Form>
         <div class="setting-footer">
             <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{ $L('提交') }}</Button>
@@ -107,6 +117,7 @@ export default {
                 notice_msg: 'open',
                 msg_unread_user_minute: -1,
                 msg_unread_group_minute: -1,
+                ignore_addr: '',
             },
             ruleData: {},
         }

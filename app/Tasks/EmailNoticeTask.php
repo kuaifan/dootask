@@ -4,6 +4,7 @@ namespace App\Tasks;
 
 use App\Models\ProjectTask;
 use App\Models\ProjectTaskMailLog;
+use App\Models\Setting;
 use App\Models\User;
 use App\Models\WebSocketDialogMsg;
 use App\Models\WebSocketDialogMsgRead;
@@ -150,14 +151,16 @@ class EmailNoticeTask extends AbstractTask
                     'task' => $task,
                     'setting' => $setting,
                 ])->render();
-                Factory::mailer()
-                    ->setDsn("smtp://{$setting['account']}:{$setting['password']}@{$setting['smtp_server']}:{$setting['port']}?verify_peer=0")
-                    ->setMessage(EmailMessage::create()
-                        ->from(env('APP_NAME', 'Task') . " <{$setting['account']}>")
-                        ->to($user->email)
-                        ->subject($subject)
-                        ->html($content))
-                    ->send();
+                Setting::validateAddr($user->email, function($to) use ($content, $subject, $setting) {
+                    Factory::mailer()
+                        ->setDsn("smtp://{$setting['account']}:{$setting['password']}@{$setting['smtp_server']}:{$setting['port']}?verify_peer=0")
+                        ->setMessage(EmailMessage::create()
+                            ->from(env('APP_NAME', 'Task') . " <{$setting['account']}>")
+                            ->to($to)
+                            ->subject($subject)
+                            ->html($content))
+                        ->send();
+                });
                 $data['is_send'] = 1;
             } catch (\Throwable $e) {
                 $data['send_error'] = $e->getMessage();
@@ -247,14 +250,16 @@ class EmailNoticeTask extends AbstractTask
                 $content = str_replace("{{RemoteURL}}", config("app.url") . "/", $content);
             }
             try {
-                Factory::mailer()
-                    ->setDsn("smtp://{$setting['account']}:{$setting['password']}@{$setting['smtp_server']}:{$setting['port']}?verify_peer=0")
-                    ->setMessage(EmailMessage::create()
-                        ->from(env('APP_NAME', 'Task') . " <{$setting['account']}>")
-                        ->to($user->email)
-                        ->subject($subject)
-                        ->html($content))
-                    ->send();
+                Setting::validateAddr($user->email, function($to) use ($content, $subject, $setting) {
+                    Factory::mailer()
+                        ->setDsn("smtp://{$setting['account']}:{$setting['password']}@{$setting['smtp_server']}:{$setting['port']}?verify_peer=0")
+                        ->setMessage(EmailMessage::create()
+                            ->from(env('APP_NAME', 'Task') . " <{$setting['account']}>")
+                            ->to($to)
+                            ->subject($subject)
+                            ->html($content))
+                        ->send();
+                });
             } catch (\Throwable $e) {
                 info("unreadMsgEmail: " . $e->getMessage());
             }

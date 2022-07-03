@@ -59,14 +59,16 @@ class UserEmailVerification extends AbstractModel
             }
             $subject = env('APP_NAME') . " 绑定邮箱验证";
             $content = "<p>{$user->nickname} 您好，您正在绑定 " . env('APP_NAME') . " 的邮箱，请于30分钟之内点击以下链接完成验证 :</p><p style='display: flex; justify-content: center;'><a href='{$url}' target='_blank'>{$url}</a></p>";
-            Factory::mailer()
-                ->setDsn("smtp://{$setting['account']}:{$setting['password']}@{$setting['smtp_server']}:{$setting['port']}?verify_peer=0")
-                ->setMessage(EmailMessage::create()
-                    ->from(env('APP_NAME', 'Task') . " <{$setting['account']}>")
-                    ->to($user->email)
-                    ->subject($subject)
-                    ->html($content))
-                ->send();
+            Setting::validateAddr($user->email, function ($to) use ($content, $subject, $setting) {
+                Factory::mailer()
+                    ->setDsn("smtp://{$setting['account']}:{$setting['password']}@{$setting['smtp_server']}:{$setting['port']}?verify_peer=0")
+                    ->setMessage(EmailMessage::create()
+                        ->from(env('APP_NAME', 'Task') . " <{$setting['account']}>")
+                        ->to($to)
+                        ->subject($subject)
+                        ->html($content))
+                    ->send();
+            });
         } catch (\Throwable $e) {
             if (str_contains($e->getMessage(), "Timed Out")) {
                 throw new ApiException("language.TimedOut");
