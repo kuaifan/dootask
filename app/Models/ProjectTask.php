@@ -1190,7 +1190,7 @@ class ProjectTask extends AbstractModel
                 if ($addMsg) {
                     WebSocketDialogMsg::sendMsg(null, $this->dialog_id, 'notice', [
                         'notice' => '标记任务未完成'
-                    ]);
+                    ], 0, true);
                 }
             } else {
                 // 标记已完成
@@ -1207,7 +1207,7 @@ class ProjectTask extends AbstractModel
                 if ($addMsg) {
                     WebSocketDialogMsg::sendMsg(null, $this->dialog_id, 'notice', [
                         'notice' => '标记任务已完成'
-                    ]);
+                    ], 0, true);
                 }
             }
             $this->save();
