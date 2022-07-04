@@ -94,8 +94,8 @@
 
                     .user-avatar,
                     .icon-avatar {
-                        width: 44px;
-                        height: 44px;
+                        width: 42px;
+                        height: 42px;
                         margin-right: 2px;
                         flex-grow: 0;
                         flex-shrink: 0;
@@ -199,16 +199,17 @@
                         > li {
                             font-size: 12px;
                             list-style: none;
-                            line-height: 22px;
-                            margin-top: 5px;
-                            margin-right: 5px;
+                            line-height: 24px;
+                            margin-top: 4px;
+                            margin-right: 6px;
+                            margin-bottom: -6px;
                             overflow: hidden;
                             text-overflow: ellipsis;
                             white-space: nowrap;
                             cursor: pointer;
                             display: flex;
                             align-items: center;
-                            padding: 0 5px;
+                            padding: 0 6px;
                             color: $primary-title-color;
                             border-radius: 5px;
 
@@ -218,7 +219,7 @@
                                 height: 14px;
                                 line-height: 14px;
                                 font-size: 14px;
-                                margin-right: 3px;
+                                margin-right: 4px;
                                 background-repeat: no-repeat;
                                 background-size: contain;
                                 background-position: center center;
@@ -259,6 +260,7 @@
                             }
 
                             &.active {
+                                font-weight: 500;
                                 color: $primary-color;
                                 background-color: rgba($primary-color, 0.18);
                             }
@@ -1326,7 +1328,17 @@
 
                             > li {
                                 flex-shrink: 0;
-                                line-height: 24px;
+                                line-height: 28px;
+                                padding: 0 8px;
+                                font-size: 14px;
+
+                                > i {
+                                    width: 16px;
+                                    height: 16px;
+                                    line-height: 16px;
+                                    font-size: 16px;
+                                    margin-right: 3px;
+                                }
                             }
                         }
                     }
@@ -1341,7 +1353,7 @@
             background-color: #ffffff;
 
             &.default-header {
-                margin-top: 30px;
+                margin-top: 34px;
             }
 
             .dialog-item {

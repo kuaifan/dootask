@@ -25,7 +25,7 @@
                                 <Icon v-else class="icon-avatar" type="ios-people" />
                             </template>
                             <div v-else-if="dialogData.dialog_user" class="user-avatar">
-                                <UserAvatar :online.sync="dialogData.online_state" :userid="dialogData.dialog_user.userid" :size="44">
+                                <UserAvatar :online.sync="dialogData.online_state" :userid="dialogData.dialog_user.userid" :size="42">
                                     <p v-if="dialogData.type === 'user' && dialogData.online_state !== true" slot="end">
                                         {{$L(dialogData.online_state)}}
                                     </p>
