@@ -38,31 +38,10 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheDialogs']),
         ...mapGetters(['projectData']),
 
         dialogShow() {
             return this.windowLarge && this.projectData.dialog_id && this.projectData.cacheParameter.chat
-        }
-    },
-
-    watch: {
-        dialogShow: {
-            handler(show) {
-                if (show) {
-                    const {dialog_id} = this.projectData
-                    if (!this.cacheDialogs.find(({id}) => id == dialog_id)) {
-                        if (this.loadIng === true) {
-                            return
-                        }
-                        this.loadIng = true
-                        this.$store.dispatch("getDialogOne", dialog_id).catch(() => {}).finally(_ => {
-                            this.loadIng = false
-                        })
-                    }
-                }
-            },
-            immediate: true
         }
     },
 
