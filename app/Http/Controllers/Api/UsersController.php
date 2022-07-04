@@ -666,7 +666,7 @@ class UsersController extends AbstractController
             }
         }
         if ($upArray) {
-            AbstractModel::transaction(function() use ($type, $upArray, $userInfo, $transferUser) {
+            AbstractModel::transaction(function() use ($user, $type, $upArray, $userInfo, $transferUser) {
                 $userInfo->updateInstance($upArray);
                 $userInfo->save();
                 if ($type === 'setdisable') {
@@ -676,6 +676,13 @@ class UsersController extends AbstractController
                     ]);
                     $userTransfer->save();
                     $userTransfer->start();
+                    // 离职移出全员群组
+                    $dialog = WebSocketDialog::whereGroupType('all')->orderByDesc('id')->first();
+                    $dialog?->exitGroup($userInfo->userid, 'remove');
+                } elseif ($type === 'cleardisable') {
+                    // 取消离职重新加入全员群组
+                    $dialog = WebSocketDialog::whereGroupType('all')->orderByDesc('id')->first();
+                    $dialog?->joinGroup($userInfo->userid, $user->userid);
                 }
             });
         }

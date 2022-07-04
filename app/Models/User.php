@@ -230,7 +230,11 @@ class User extends AbstractModel
         $user = User::createInstance($inArray);
         $user->az = Base::getFirstCharter($user->nickname);
         $user->pinyin = Base::cn2pinyin($user->nickname);
-        $user->save();
+        if ($user->save()) {
+            // 加入全员群组
+            $dialog = WebSocketDialog::whereGroupType('all')->orderByDesc('id')->first();
+            $dialog?->joinGroup($user->userid, 0);
+        }
         return $user->find($user->userid);
     }
 

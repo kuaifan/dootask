@@ -982,6 +982,14 @@
             overflow: hidden;
         }
 
+        .chat-mute {
+            color: $primary-desc-color;
+            background-color: #F4F5F7;
+            padding: 8px 12px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
         .chat-input-box {
             .chat-input-wrapper {
                 background-color: #F4F5F7;
@@ -1362,6 +1370,9 @@
             background-color: #f8f8f8;
             padding: 8px 10px;
             margin-bottom: 0;
+            .chat-mute {
+                background-color: #ffffff;
+            }
             .chat-input-box {
                 .chat-input-wrapper {
                     background-color: #ffffff;

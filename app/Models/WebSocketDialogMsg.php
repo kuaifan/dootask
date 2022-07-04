@@ -553,6 +553,7 @@ class WebSocketDialogMsg extends AbstractModel
         if (empty($dialog)) {
             throw new ApiException('获取会话失败');
         }
+        $dialog->checkMute($sender);
         //
         if ($update_id) {
             // 修改

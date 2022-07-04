@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Exceptions\ApiException;
+use App\Module\Base;
 use App\Tasks\PushTask;
 use Carbon\Carbon;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
@@ -116,6 +117,9 @@ class WebSocketDialog extends AbstractModel
                         $this->name = '[Delete]';
                         $this->dialog_delete = 1;
                     }
+                } elseif ($this->group_type === 'all') {
+                    $this->name = Base::Lang('全体成员');
+                    $this->all_group_mute = Base::settingFind('system', 'all_group_mute');
                 }
                 break;
         }
@@ -250,6 +254,26 @@ class WebSocketDialog extends AbstractModel
     }
 
     /**
+     * 检查禁言
+     * @param $userid
+     * @return void
+     */
+    public function checkMute($userid)
+    {
+        if ($this->group_type === 'all') {
+            $allGroupMute = Base::settingFind('system', 'all_group_mute');
+            switch ($allGroupMute) {
+                case 'all':
+                    throw new ApiException('当前会话全员禁言');
+                case 'user':
+                    if (!User::find($userid)?->isAdmin()) {
+                        throw new ApiException('当前会话禁言');
+                    }
+            }
+        }
+    }
+
+    /**
      * 获取群组名称
      * @return mixed|string|null
      */
@@ -350,7 +374,7 @@ class WebSocketDialog extends AbstractModel
                 'name' => $name ?: '',
                 'group_type' => $group_type,
                 'owner_id' => $owner_id,
-                'last_at' => $group_type === 'user' ? Carbon::now() : null,
+                'last_at' => in_array($group_type, ['user', 'all']) ? Carbon::now() : null,
             ]);
             $dialog->save();
             foreach (is_array($userid) ? $userid : [$userid] as $value) {
@@ -358,7 +382,7 @@ class WebSocketDialog extends AbstractModel
                     WebSocketDialogUser::createInstance([
                         'dialog_id' => $dialog->id,
                         'userid' => $value,
-                        'important' => $group_type != 'user'
+                        'important' => !in_array($group_type, ['user', 'all'])
                     ])->save();
                 }
             }

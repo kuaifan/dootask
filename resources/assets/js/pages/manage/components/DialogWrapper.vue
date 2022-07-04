@@ -121,7 +121,11 @@
                 @on-progress="chatFile('progress', $event)"
                 @on-success="chatFile('success', $event)"
                 @on-error="chatFile('error', $event)"/>
+            <div v-if="isMute" class="chat-mute">
+                {{$L('禁言发言')}}
+            </div>
             <ChatInput
+                v-else
                 ref="input"
                 v-model="msgText"
                 :dialog-id="dialogId"
@@ -401,6 +405,7 @@ export default {
 
     computed: {
         ...mapState([
+            'userIsAdmin',
             'taskId',
             'dialogSearchMsgId',
             'dialogMsgs',
@@ -551,6 +556,19 @@ export default {
         isMyDialog() {
             const {dialogData, userId} = this;
             return dialogData.dialog_user && dialogData.dialog_user.userid == userId
+        },
+
+        isMute() {
+            if (this.dialogData.group_type === 'all') {
+                if (this.dialogData.all_group_mute === 'all') {
+                    return true
+                } else if (this.dialogData.all_group_mute === 'user') {
+                    if (!this.userIsAdmin) {
+                        return true
+                    }
+                }
+            }
+            return false
         },
 
         replyId() {
@@ -914,7 +932,7 @@ export default {
 
         inputFocus() {
             this.$nextTick(_ => {
-                this.$refs.input.focus()
+                this.$refs.input && this.$refs.input.focus()
             })
         },
 

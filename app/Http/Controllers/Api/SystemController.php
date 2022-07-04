@@ -28,7 +28,7 @@ class SystemController extends AbstractController
      * @apiParam {String} type
      * - get: 获取（默认）
      * - all: 获取所有（需要管理员权限）
-     * - save: 保存设置（参数：['reg', 'reg_invite', 'login_code', 'password_policy', 'project_invite', 'chat_nickname', 'auto_archived', 'archived_day', 'start_home', 'home_footer']）
+     * - save: 保存设置（参数：['reg', 'reg_invite', 'login_code', 'password_policy', 'project_invite', 'chat_nickname', 'auto_archived', 'archived_day', 'all_group_mute', 'start_home', 'home_footer']）
 
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -53,6 +53,7 @@ class SystemController extends AbstractController
                     'chat_nickname',
                     'auto_archived',
                     'archived_day',
+                    'all_group_mute',
                     'start_home',
                     'home_footer'
                 ])) {
@@ -86,6 +87,7 @@ class SystemController extends AbstractController
         $setting['chat_nickname'] = $setting['chat_nickname'] ?: 'optional';
         $setting['auto_archived'] = $setting['auto_archived'] ?: 'close';
         $setting['archived_day'] = floatval($setting['archived_day']) ?: 7;
+        $setting['all_group_mute'] = $setting['all_group_mute'] ?: 'open';
         $setting['start_home'] = $setting['start_home'] ?: 'close';
         //
         return Base::retSuccess('success', $setting ?: json_decode('{}'));

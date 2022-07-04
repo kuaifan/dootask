@@ -30,7 +30,7 @@
             </ul>
         </div>
 
-        <div class="group-info-button">
+        <div v-if="dialogData.group_type !== 'all'" class="group-info-button">
             <Button v-if="dialogData.owner_id == userId || dialogData.owner_id == 0" @click="openAdd" type="primary">{{ $L("添加成员") }}</Button>
             <Button v-if="dialogData.owner_id == userId" @click="onDisband" type="error" ghost>{{ $L("解散群组") }}</Button>
             <Button v-else @click="onExit" type="error" ghost>{{ $L("退出群组") }}</Button>
@@ -94,6 +94,7 @@ export default {
             if (group_type === 'project') return '项目群组'
             if (group_type === 'task') return '任务群组'
             if (group_type === 'user') return '个人群组'
+            if (group_type === 'all') return '全员群组'
             return '未知'
         },
 
