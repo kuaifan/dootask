@@ -162,7 +162,7 @@
                                 project_id: this.projectId,
                                 no_project_id: this.noProjectId,
                             },
-                            take: 30
+                            take: 50
                         },
                     }).then(({data}) => {
                         this.list = data;

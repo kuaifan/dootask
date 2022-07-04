@@ -911,7 +911,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/tag          18. 标注/取消标注
+     * @api {get} api/dialog/msg/tag          19. 标注/取消标注
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -940,7 +940,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/top          19. 会话置顶
+     * @api {get} api/dialog/top          20. 会话置顶
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -970,7 +970,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/add          20. 新增群组
+     * @api {get} api/dialog/group/add          21. 新增群组
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -1022,7 +1022,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/edit          21. 修改群组
+     * @api {get} api/dialog/group/edit          22. 修改群组
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -1061,7 +1061,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/adduser          22. 添加群成员
+     * @api {get} api/dialog/group/adduser          23. 添加群成员
      *
      * @apiDescription  需要token身份
      * - 有群主时：只有群主可以邀请
@@ -1097,7 +1097,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/deluser          23. 移出（退出）群成员
+     * @api {get} api/dialog/group/deluser          24. 移出（退出）群成员
      *
      * @apiDescription  需要token身份
      * - 只有群主、邀请人可以踢人
@@ -1141,7 +1141,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/disband          24. 解散群组
+     * @api {get} api/dialog/group/disband          25. 解散群组
      *
      * @apiDescription  需要token身份
      * - 只有群主且是个人类型群可以解散
