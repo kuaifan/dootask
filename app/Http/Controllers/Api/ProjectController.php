@@ -44,6 +44,10 @@ class ProjectController extends AbstractController
      * @apiName lists
      *
      * @apiParam {String} [all]              是否查看所有项目（限制管理员）
+     * @apiParam {String} [type]             项目类型
+     * - all：全部（默认）
+     * - team：团队项目
+     * - personal：个人项目
      * @apiParam {String} [archived]         归档状态
      * - all：全部
      * - no：未归档（默认）
@@ -96,6 +100,7 @@ class ProjectController extends AbstractController
         $user = User::auth();
         //
         $all = Request::input('all');
+        $type = Request::input('type', 'all');
         $archived = Request::input('archived', 'no');
         $getcolumn = Request::input('getcolumn', 'no');
         //
@@ -108,6 +113,12 @@ class ProjectController extends AbstractController
         //
         if ($getcolumn == 'yes') {
             $builder->with(['projectColumn']);
+        }
+        //
+        if ($type === 'team') {
+            $builder->where('projects.personal', 0);
+        } elseif ($type === 'personal') {
+            $builder->where('projects.personal', 1);
         }
         //
         if ($archived == 'yes') {

@@ -18,13 +18,25 @@
                 </li>
                 <li>
                     <div class="search-label">
+                        {{$L("项目类型")}}
+                    </div>
+                    <div class="search-content">
+                        <Select v-model="keys.type" :placeholder="$L('团队项目')">
+                            <Option value="">{{$L('团队项目')}}</Option>
+                            <Option value="personal">{{$L('个人项目')}}</Option>
+                            <Option value="all">{{$L('全部项目')}}</Option>
+                        </Select>
+                    </div>
+                </li>
+                <li>
+                    <div class="search-label">
                         {{$L("项目状态")}}
                     </div>
                     <div class="search-content">
-                        <Select v-model="keys.status" :placeholder="$L('全部')">
-                            <Option value="">{{$L('全部')}}</Option>
-                            <Option value="unarchived">{{$L('未归档')}}</Option>
+                        <Select v-model="keys.status" :placeholder="$L('未归档')">
+                            <Option value="">{{$L('未归档')}}</Option>
                             <Option value="archived">{{$L('已归档')}}</Option>
+                            <Option value="all">{{$L('全部')}}</Option>
                         </Select>
                     </div>
                 </li>
@@ -192,11 +204,17 @@ export default {
         },
 
         getLists() {
-            let archived = 'all';
-            if (this.keys.status == 'archived') {
+            let type = 'team';
+            if (this.keys.type == 'all') {
+                type = 'all';
+            } else if (this.keys.type == 'personal') {
+                type = 'personal';
+            }
+            let archived = 'no';
+            if (this.keys.status == 'all') {
+                archived = 'all';
+            } else if (this.keys.status == 'archived') {
                 archived = 'yes';
-            } else if (this.keys.status == 'unarchived') {
-                archived = 'no';
             }
             this.loadIng++;
             this.keyIs = $A.objImplode(this.keys) != "";
@@ -206,6 +224,7 @@ export default {
                     keys: this.keys,
                     all: 1,
                     archived,
+                    type,
                     page: Math.max(this.page, 1),
                     pagesize: Math.max($A.runNum(this.pageSize), 10),
                 },
