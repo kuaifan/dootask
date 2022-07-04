@@ -389,6 +389,7 @@ class FileController extends AbstractController
                         if ($file->isSubShare()) {
                             throw new ApiException("{$file->name} 内含有共享文件，无法移动到另一个共享文件夹内");
                         }
+                        $file->userid = $toShareFile->userid;
                     }
                     //
                     $tmpId = $pid;
