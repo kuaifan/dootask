@@ -25,7 +25,11 @@
                                 <Icon v-else class="icon-avatar" type="ios-people" />
                             </template>
                             <div v-else-if="dialogData.dialog_user" class="user-avatar">
-                                <UserAvatar :online.sync="dialogData.online_state" :userid="dialogData.dialog_user.userid" :size="42"/>
+                                <UserAvatar :online.sync="dialogData.online_state" :userid="dialogData.dialog_user.userid" :size="44">
+                                    <p v-if="dialogData.type === 'user' && dialogData.online_state !== true" slot="end">
+                                        {{$L(dialogData.online_state)}}
+                                    </p>
+                                </UserAvatar>
                             </div>
                             <Icon v-else class="icon-avatar" type="md-person" />
                         </div>
@@ -37,17 +41,24 @@
                                 <h2>{{dialogData.name}}</h2>
                                 <em v-if="peopleNum > 0">({{peopleNum}})</em>
                             </div>
-                            <template v-if="dialogData.type === 'group'">
-                                <div v-if="dialogData.group_type === 'project'" class="sub-title pointer" @click="openProject">
-                                    {{$L('项目聊天室')}} {{$L('打开项目管理')}}
-                                </div>
-                                <div v-else-if="dialogData.group_type === 'task'" class="sub-title pointer" @click="openTask">
-                                    {{$L('任务聊天室')}} {{$L('查看任务详情')}}
-                                </div>
-                            </template>
-                            <div v-else-if="dialogData.type === 'user'" :class="['sub-title', dialogData.online_state === true ? 'online' : 'offline']">
-                                {{$L(dialogData.online_state === true ? '在线' : dialogData.online_state)}}
-                            </div>
+                            <ul class="title-desc">
+                                <li v-if="dialogData.type === 'user'" :class="[dialogData.online_state === true ? 'online' : 'offline']">
+                                    {{$L(dialogData.online_state === true ? '在线' : dialogData.online_state)}}
+                                </li>
+                            </ul>
+                            <ul v-if="msgTags.length > 1" class="title-tags scrollbar-hidden">
+                                <li
+                                    v-for="item in msgTags"
+                                    :key="item.type"
+                                    :class="{
+                                        [item.type || 'msg']: true,
+                                        active: msgType === item.type,
+                                    }"
+                                    @click="onMsgType(item.type)">
+                                    <i class="no-dark-content"></i>
+                                    <span>{{$L(item.label)}}</span>
+                                </li>
+                            </ul>
                         </div>
                     </div>
 
@@ -64,23 +75,6 @@
                         <i class="taskfont dialog-create" @click="openCreateGroup">&#xe646;</i>
                     </ETooltip>
                 </div>
-                <transition name="fade">
-                    <div v-if="navTagShow" class="nav-tags scrollbar-hidden">
-                        <ul>
-                            <li
-                                v-for="item in msgTags"
-                                :key="item.type"
-                                :class="{
-                                    [`tag-${item.type||'msg'}`]: true,
-                                    active: msgType === item.type,
-                                }"
-                                @click="msgType=item.type">
-                                <i class="no-dark-content"></i>
-                                <span>{{$L(item.label)}}</span>
-                            </li>
-                        </ul>
-                    </div>
-                </transition>
             </slot>
         </div>
 
@@ -489,19 +483,25 @@ export default {
 
         msgTags() {
             const array = [
-                {icon: '&#xe6eb;', type: '', label: '消息'},
+                {type: '', label: '消息'},
             ];
             if (this.dialogData.has_tag) {
-                array.push({icon: '&#xe61e;', type: 'tag', label: '标注'})
+                array.push({type: 'tag', label: '标注'})
             }
             if (this.dialogData.has_image) {
-                array.push({icon: '&#xe7bc;', type: 'image', label: '图片'})
+                array.push({type: 'image', label: '图片'})
             }
             if (this.dialogData.has_file) {
-                array.push({icon: '&#xe7c0;', type: 'file', label: '文件'})
+                array.push({type: 'file', label: '文件'})
             }
             if (this.dialogData.has_link) {
-                array.push({icon: '&#xe786;', type: 'link', label: '链接'})
+                array.push({type: 'link', label: '链接'})
+            }
+            if (this.dialogData.group_type === 'project') {
+                array.push({type: 'project', label: '打开项目'})
+            }
+            if (this.dialogData.group_type === 'task') {
+                array.push({type: 'task', label: '打开任务'})
             }
             return array
         },
@@ -513,12 +513,8 @@ export default {
             return null
         },
 
-        navTagShow() {
-            return this.dialogMsgList.length > 10 && this.msgTags.length > 1 && this.windowScrollY === 0
-        },
-
         scrollerClass() {
-            return !this.$slots.head && this.navTagShow ? 'default-header' : null
+            return !this.$slots.head && this.msgTags.length > 1 ? 'default-header' : null
         },
 
         pasteWrapperClass() {
@@ -742,10 +738,6 @@ export default {
                 });
             } else {
                 // 发送
-                this.msgType = '';
-                this.onActive();
-                this.onToBottom();
-                //
                 const tempId = $A.randNum(1000000000, 9999999999);
                 const tempMsg = {
                     id: tempId,
@@ -762,7 +754,10 @@ export default {
                     tempMsg.type = 'loading';
                     tempMsg.msg = { };
                 }
-                this.tempMsgs.push(tempMsg);
+                this.tempMsgs.push(tempMsg)
+                this.msgType = ''
+                this.onActive();
+                this.$nextTick(this.onToBottom)
                 //
                 this.$store.dispatch("call", {
                     url: 'dialog/msg/sendtext',
@@ -786,10 +781,6 @@ export default {
          * @param msg {base64, duration}
          */
         sendRecord(msg) {
-            this.msgType = '';
-            this.onActive();
-            this.onToBottom();
-            //
             const tempId = $A.randNum(1000000000, 9999999999);
             const tempMsg = {
                 id: tempId,
@@ -800,7 +791,10 @@ export default {
                 userid: this.userId,
                 msg,
             }
-            this.tempMsgs.push(tempMsg);
+            this.tempMsgs.push(tempMsg)
+            this.msgType = ''
+            this.onActive()
+            this.$nextTick(this.onToBottom)
             //
             this.$store.dispatch("call", {
                 url: 'dialog/msg/sendrecord',
@@ -990,9 +984,6 @@ export default {
         chatFile(type, file) {
             switch (type) {
                 case 'progress':
-                    this.onActive();
-                    this.onToBottom();
-                    //
                     this.tempMsgs.push({
                         id: file.tempId,
                         dialog_id: this.dialogData.id,
@@ -1000,7 +991,9 @@ export default {
                         type: 'loading',
                         userid: this.userId,
                         msg: { },
-                    });
+                    })
+                    this.onActive()
+                    this.$nextTick(this.onToBottom)
                     break;
 
                 case 'error':
@@ -1266,6 +1259,22 @@ export default {
                 this.goForward({name: this.$route.name});
             } else {
                 this.goBack();
+            }
+        },
+
+        onMsgType(type) {
+            switch (type) {
+                case 'project':
+                    this.openProject()
+                    break;
+
+                case 'task':
+                    this.openTask()
+                    break;
+
+                default:
+                    this.msgType = type
+                    break;
             }
         },
 

@@ -94,9 +94,9 @@
 
                     .user-avatar,
                     .icon-avatar {
-                        width: 42px;
-                        height: 42px;
-                        margin: 2px;
+                        width: 44px;
+                        height: 44px;
+                        margin-right: 2px;
                         flex-grow: 0;
                         flex-shrink: 0;
                     }
@@ -170,26 +170,98 @@
                         }
                     }
 
-                    .sub-title {
-                        flex-shrink: 0;
-                        font-size: 12px;
-                        line-height: 20px;
-                        padding-top: 2px;
-                        color: #aaaaaa;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                        white-space: nowrap;
+                    .title-desc {
+                        display: none;
+                        align-items: center;
 
-                        &.pointer {
-                            cursor: pointer;
+                        > li {
+                            font-size: 12px;
+                            list-style: none;
+                            line-height: 16px;
+                            padding-top: 2px;
+                            color: #aaaaaa;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                            text-align: center;
+                            transform: scale(0.9);
 
-                            &:hover {
-                                color: #888888;
+                            &.online {
+                                color: $primary-color;
                             }
                         }
+                    }
 
-                        &.online {
-                            color: $primary-color;
+                    .title-tags {
+                        display: flex;
+                        align-items: center;
+
+                        > li {
+                            font-size: 12px;
+                            list-style: none;
+                            line-height: 22px;
+                            margin-top: 5px;
+                            margin-right: 5px;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                            cursor: pointer;
+                            display: flex;
+                            align-items: center;
+                            padding: 0 5px;
+                            color: $primary-title-color;
+                            border-radius: 5px;
+
+                            > i {
+                                flex-shrink: 0;
+                                width: 14px;
+                                height: 14px;
+                                line-height: 14px;
+                                font-size: 14px;
+                                margin-right: 3px;
+                                background-repeat: no-repeat;
+                                background-size: contain;
+                                background-position: center center;
+                            }
+
+                            > span {
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                                white-space: nowrap;
+                            }
+
+                            &.file i {
+                                background-image: url("../images/dialog/file.svg");
+                            }
+
+                            &.image i {
+                                background-image: url("../images/dialog/image.svg");
+                            }
+
+                            &.link i {
+                                background-image: url("../images/dialog/link.svg");
+                            }
+
+                            &.msg i {
+                                background-image: url("../images/dialog/msg.svg");
+                            }
+
+                            &.tag i {
+                                background-image: url("../images/dialog/tag.svg");
+                            }
+
+                            &.project i {
+                                background-image: url("../images/dialog/project.svg");
+                            }
+
+                            &.task i {
+                                background-image: url("../images/dialog/task.svg");
+                            }
+
+                            &.active {
+                                color: $primary-color;
+                                background-color: rgba($primary-color, 0.18);
+                            }
                         }
                     }
                 }
@@ -207,121 +279,12 @@
                 display: none;
             }
         }
-
-        .nav-tags {
-            position: absolute;
-            top: 68px;
-            left: 12px;
-            right: 12px;
-            z-index: 2;
-            height: 56px;
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            overflow-x: auto;
-            background-color: #ffffff;
-
-            > ul {
-                margin: 0 auto;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-
-                > li {
-                    list-style: none;
-                    display: flex;
-                    align-items: center;
-                    margin: 0 8px;
-                    padding: 4px 8px;
-                    color: $primary-title-color;
-                    background-color: #F2F2F2;
-                    border: 1px solid #F2F2F2;
-                    border-radius: 6px;
-                    font-size: 12px;
-                    cursor: pointer;
-                    box-shadow: 0 1px 6px rgba(255, 255, 255, 0.2);
-
-                    @media (max-width: 640px) {
-                        margin: 0 6px;
-                    }
-
-                    @media (max-width: 375px) {
-                        margin: 0 4px;
-                    }
-
-                    > i {
-                        width: 14px;
-                        height: 14px;
-                        margin-right: 4px;
-                        background-repeat: no-repeat;
-                        background-size: contain;
-                        background-position: center center;
-                    }
-
-                    > span {
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                        white-space: nowrap;
-                    }
-
-                    &.tag-file i {
-                        background-image: url("../images/dialog/file.svg");
-                    }
-
-                    &.tag-image i {
-                        background-image: url("../images/dialog/image.svg");
-                    }
-
-                    &.tag-link i {
-                        background-image: url("../images/dialog/link.svg");
-                    }
-
-                    &.tag-msg i {
-                        background-image: url("../images/dialog/msg.svg");
-                    }
-
-                    &.tag-tag i {
-                        background-image: url("../images/dialog/tag.svg");
-                    }
-
-                    &.active {
-                        color: #ffffff;
-                        background-color: $primary-color;
-                        border-color: $primary-color;
-
-                        &.tag-file i {
-                            background-image: url("../images/dialog/file-white.svg");
-                        }
-
-                        &.tag-image i {
-                            background-image: url("../images/dialog/image-white.svg");
-                        }
-
-                        &.tag-link i {
-                            background-image: url("../images/dialog/link-white.svg");
-                        }
-
-                        &.tag-msg i {
-                            background-image: url("../images/dialog/msg-white.svg");
-                        }
-
-                        &.tag-tag i {
-                            background-image: url("../images/dialog/tag-white.svg");
-                        }
-                    }
-                }
-            }
-        }
     }
 
     .dialog-scroller {
         flex: 1;
         position: relative;
         padding: 16px 32px 0;
-
-        &.default-header {
-            padding-top: 56px;
-        }
 
         .dialog-shake {
             animation: ani-dialog-shake 600ms ease-in-out;
@@ -850,7 +813,6 @@
                 height: 20px;
                 box-sizing: content-box;
                 justify-content: center;
-                padding-top: 16px;
 
                 .common-loading {
                     margin: 0;
@@ -1338,16 +1300,29 @@
                         .main-title {
                             justify-content: center;
                         }
-                        .sub-title {
-                            line-height: 18px;
+                        .title-desc {
+                            display: flex;
+                            justify-content: center;
+                        }
+                        .title-tags {
+                            position: absolute;
+                            left: 0;
+                            right: 0;
+                            top: 48px;
+                            z-index: 1;
+                            padding: 0 8px;
+                            background-color: #f8f8f8;
+                            height: 32px;
+                            align-items: flex-start;
+                            overflow-x: auto;
+
+                            > li {
+                                flex-shrink: 0;
+                                line-height: 24px;
+                            }
                         }
                     }
                 }
-            }
-
-            .nav-tags {
-                top: 52px;
-                height: 46px;
             }
         }
         .dialog-scroller {
@@ -1358,7 +1333,7 @@
             background-color: #ffffff;
 
             &.default-header {
-                padding-top: 46px;
+                margin-top: 30px;
             }
 
             .dialog-item {

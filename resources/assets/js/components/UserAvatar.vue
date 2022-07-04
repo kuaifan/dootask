@@ -10,6 +10,7 @@
             <p>{{$L('昵称')}}: {{user.nickname}}</p>
             <p>{{$L('职位/职称')}}: {{user.profession || '-'}}</p>
             <p v-if="user.disable_at"><strong>{{$L('离职时间')}}: {{user.disable_at}}</strong></p>
+            <slot name="end"/>
             <div v-if="userId != userid && showIconMenu" class="avatar-icons">
                 <Icon type="ios-chatbubbles" @click="openDialog"/>
             </div>
