@@ -4,7 +4,7 @@
         <div class="project-titbox">
             <div class="project-title">
                 <div class="project-back" @click="onBack">
-                    <i class="taskfont">&#xe72d;</i>
+                    <i class="taskfont">&#xe676;</i>
                 </div>
                 <h1>{{projectData.name}}</h1>
                 <div v-if="loading" class="project-load"><Loading/></div>

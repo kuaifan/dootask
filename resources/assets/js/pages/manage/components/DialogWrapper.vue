@@ -13,7 +13,7 @@
             <slot name="head">
                 <div class="nav-wrapper" :class="{completed: $A.dialogCompleted(dialogData)}">
                     <div class="dialog-back" @click="onBack">
-                        <i class="taskfont">&#xe72d;</i>
+                        <i class="taskfont">&#xe676;</i>
                         <div v-if="msgUnreadOnly" class="back-num">{{msgUnreadOnly}}</div>
                     </div>
 
@@ -46,7 +46,7 @@
                                     {{$L(dialogData.online_state === true ? '在线' : dialogData.online_state)}}
                                 </li>
                             </ul>
-                            <ul v-if="msgTags.length > 1" class="title-tags scrollbar-hidden">
+                            <ul v-if="msgTags.length > 1 && windowScrollY === 0" class="title-tags scrollbar-hidden">
                                 <li
                                     v-for="item in msgTags"
                                     :key="item.type"
@@ -519,7 +519,7 @@ export default {
         },
 
         scrollerClass() {
-            return !this.$slots.head && this.msgTags.length > 1 ? 'default-header' : null
+            return !this.$slots.head && this.msgTags.length > 1 && this.windowScrollY === 0 ? 'default-header' : null
         },
 
         pasteWrapperClass() {
