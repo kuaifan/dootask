@@ -91,7 +91,28 @@ export default {
         }
     },
 
+    watch: {
+        source: {
+            handler() {
+                this.msgRead();
+            },
+            immediate: true,
+        },
+        windowActive(active) {
+            if (active) {
+                this.msgRead();
+            }
+        }
+    },
+
     methods: {
+        msgRead() {
+            if (!this.windowActive) {
+                return;
+            }
+            this.$store.dispatch("dialogMsgRead", this.source);
+        },
+
         onViewTag() {
             this.onViewReply({
                 msg_id: this.source.id,

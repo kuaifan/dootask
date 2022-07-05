@@ -190,7 +190,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['loads', 'audioPlaying', 'windowActive']),
+        ...mapState(['loads', 'audioPlaying']),
         ...mapGetters(['isLoad']),
 
         isLoading() {
@@ -259,17 +259,6 @@ export default {
     },
 
     watch: {
-        msgData: {
-            handler() {
-                this.msgRead();
-            },
-            immediate: true,
-        },
-        windowActive(active) {
-            if (active) {
-                this.msgRead();
-            }
-        },
         operateAction(val) {
             this.operateEnter = false;
             if (val) {
@@ -283,13 +272,6 @@ export default {
     methods: {
         handleLongpress(event, el) {
             this.$emit("on-longpress", {event, el, msgData: this.msgData})
-        },
-
-        msgRead() {
-            if (!this.windowActive) {
-                return;
-            }
-            this.$store.dispatch("dialogMsgRead", this.msgData);
         },
 
         openReadPercentage() {
