@@ -682,7 +682,7 @@ export default {
                 this.msgNew += tmpList.length
             } else {
                 if (!this.preventToBottom) {
-                    requestAnimationFrame(this.onToBottom)
+                    this.$nextTick(this.onToBottom)
                 }
             }
         },

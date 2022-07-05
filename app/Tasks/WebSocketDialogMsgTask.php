@@ -21,15 +21,17 @@ class WebSocketDialogMsgTask extends AbstractTask
 {
     protected $id;
     protected $ignoreFd;
+    protected $msgNotExistRetry = false;
 
     /**
      * WebSocketDialogMsgTask constructor.
      * @param int $id         消息ID
+     * @param mixed $ignoreFd
      */
-    public function __construct($id)
+    public function __construct($id, $ignoreFd = null)
     {
         $this->id = $id;
-        $this->ignoreFd = Request::header('fd');
+        $this->ignoreFd = $ignoreFd === null ? Request::header('fd') : $ignoreFd;
     }
 
     /**
@@ -38,6 +40,14 @@ class WebSocketDialogMsgTask extends AbstractTask
     public function setIgnoreFd($ignoreFd)
     {
         $this->ignoreFd = $ignoreFd;
+    }
+
+    /**
+     * @param bool $msgNotExistRetry
+     */
+    public function setMsgNotExistRetry(bool $msgNotExistRetry): void
+    {
+        $this->msgNotExistRetry = $msgNotExistRetry;
     }
 
     public function start()
@@ -50,6 +60,11 @@ class WebSocketDialogMsgTask extends AbstractTask
         //
         $msg = WebSocketDialogMsg::find($this->id);
         if (empty($msg)) {
+            if ($this->msgNotExistRetry) {
+                $task = new WebSocketDialogMsgTask($this->id, $this->ignoreFd || '');
+                $task->delay(1);
+                $this->addTask($task);
+            }
             return;
         }
         $dialog = WebSocketDialog::find($msg->dialog_id);

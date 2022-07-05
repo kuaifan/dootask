@@ -152,7 +152,7 @@ class WebSocketDialog extends AbstractModel
                     ]);
                     WebSocketDialogMsg::sendMsg(null, $this->id, 'notice', [
                         'notice' => User::userid2nickname($value) . " 已加入群组"
-                    ], $inviter, true);
+                    ], $inviter, true, true);
                 }
             }
         });
@@ -197,7 +197,9 @@ class WebSocketDialog extends AbstractModel
                     } else {
                         $notice = User::userid2nickname($item->userid) . " 退出群组";
                     }
-                    WebSocketDialogMsg::sendMsg(null, $this->id, 'notice', ['notice' => $notice], User::userid(), true);
+                    WebSocketDialogMsg::sendMsg(null, $this->id, 'notice', [
+                        'notice' => $notice
+                    ], User::userid(), true, true);
                 }
             });
         });

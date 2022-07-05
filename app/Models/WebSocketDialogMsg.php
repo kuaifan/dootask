@@ -526,9 +526,10 @@ class WebSocketDialogMsg extends AbstractModel
      * @param array $msg            发送的消息
      * @param int $sender           发送的会员ID（默认自己，0为系统）
      * @param bool $push_self       是否推送给自己
+     * @param bool $push_retry      推送失败后重试1次（有时候在事务里执行，数据还没生成时会出现找不到消息的情况）
      * @return array
      */
-    public static function sendMsg($action, $dialog_id, $type, $msg, $sender = 0, $push_self = false)
+    public static function sendMsg($action, $dialog_id, $type, $msg, $sender = 0, $push_self = false, $push_retry = false)
     {
         $link = 0;
         $mtype = $type;
@@ -611,6 +612,9 @@ class WebSocketDialogMsg extends AbstractModel
             $task = new WebSocketDialogMsgTask($dialogMsg->id);
             if ($push_self) {
                 $task->setIgnoreFd(null);
+            }
+            if ($push_retry) {
+                $task->setMsgNotExistRetry(true);
             }
             Task::deliver($task);
             //
