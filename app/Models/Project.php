@@ -537,7 +537,7 @@ class Project extends AbstractModel
                 $column['project_id'] = $project->id;
                 ProjectColumn::createInstance($column)->save();
             }
-            $dialog = WebSocketDialog::createGroup(null, $project->userid, 'project');
+            $dialog = WebSocketDialog::createGroup($project->name, $project->userid, 'project');
             if (empty($dialog)) {
                 throw new ApiException('创建项目聊天室失败');
             }

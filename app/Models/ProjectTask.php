@@ -649,6 +649,9 @@ class ProjectTask extends AbstractModel
                     'change' => [$this->name, $data['name']]
                 ]);
                 $this->name = $data['name'];
+                if ($this->dialog_id) {
+                    WebSocketDialog::updateData(['id' => $this->dialog_id], ['name' => $this->name]);
+                }
             }
             // 负责人
             if (Arr::exists($data, 'owner')) {

@@ -266,7 +266,7 @@ export default {
                     }
                 })
                 dialogSearch.forEach(item => {
-                    if (!msgIds.includes(item.last_msg.id)) {
+                    if (!item.last_msg || !msgIds.includes(item.last_msg.id)) {
                         list.push(Object.assign(item, {is_search: true}))
                     }
                 })

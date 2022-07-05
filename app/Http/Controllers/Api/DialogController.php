@@ -81,19 +81,35 @@ class DialogController extends AbstractController
         $user = User::auth();
         //
         $key = trim(Request::input('key'));
+        if (empty($key)) {
+            return Base::retError('请输入搜索关键词');
+        }
         //
-        $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'm.id as search_msg_id'])
+        $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
-            ->join('web_socket_dialog_msgs as m', 'web_socket_dialogs.id', '=', 'm.dialog_id')
+            ->where('web_socket_dialogs.name', 'LIKE', "%{$key}%")
             ->where('u.userid', $user->userid)
-            ->where('m.key', 'LIKE', "%{$key}%")
-            ->orderByDesc('m.id')
+            ->orderByDesc('u.top_at')
+            ->orderByDesc('web_socket_dialogs.last_at')
             ->take(20)
             ->get();
-        //
         $list->transform(function (WebSocketDialog $item) use ($user) {
             return $item->formatData($user->userid);
         });
+        if (count($list) < 20) {
+            $msgs = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'm.id as search_msg_id'])
+                ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
+                ->join('web_socket_dialog_msgs as m', 'web_socket_dialogs.id', '=', 'm.dialog_id')
+                ->where('u.userid', $user->userid)
+                ->where('m.key', 'LIKE', "%{$key}%")
+                ->orderByDesc('m.id')
+                ->take(20 - count($list))
+                ->get();
+            $msgs->transform(function (WebSocketDialog $item) use ($user) {
+                return $item->formatData($user->userid);
+            });
+            $list = array_merge($list->toArray(), $msgs->toArray());
+        }
         //
         return Base::retSuccess('success', $list);
     }

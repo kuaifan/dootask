@@ -427,5 +427,4 @@ class WebSocketDialog extends AbstractModel
             return $dialog;
         });
     }
-
 }

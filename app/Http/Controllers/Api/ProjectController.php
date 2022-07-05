@@ -271,18 +271,22 @@ class ProjectController extends AbstractController
         }
         //
         $project = Project::userProject($project_id, true, true);
-        //
-        if ($project->name != $name) {
-            $project->addLog("修改项目名称", [
-                'change' => [$project->name, $name]
-            ]);
-            $project->name = $name;
-        }
-        if ($project->desc != $desc) {
-            $project->desc = $desc;
-            $project->addLog("修改项目介绍");
-        }
-        $project->save();
+        AbstractModel::transaction(function () use ($desc, $name, $project) {
+            if ($project->name != $name) {
+                $project->addLog("修改项目名称", [
+                    'change' => [$project->name, $name]
+                ]);
+                $project->name = $name;
+                if ($project->dialog_id) {
+                    WebSocketDialog::updateData(['id' => $project->dialog_id], ['name' => $project->name]);
+                }
+            }
+            if ($project->desc != $desc) {
+                $project->desc = $desc;
+                $project->addLog("修改项目介绍");
+            }
+            $project->save();
+        });
         $project->pushMsg('update', $project);
         //
         return Base::retSuccess('修改成功', $project);
@@ -1543,7 +1547,7 @@ class ProjectController extends AbstractController
         AbstractModel::transaction(function() use ($task) {
             if (empty($task->dialog_id)) {
                 $task->lockForUpdate();
-                $dialog = WebSocketDialog::createGroup(null, $task->relationUserids(), 'task');
+                $dialog = WebSocketDialog::createGroup($task->name, $task->relationUserids(), 'task');
                 if ($dialog) {
                     $task->dialog_id = $dialog->id;
                     $task->save();
