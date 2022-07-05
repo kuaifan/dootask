@@ -500,8 +500,6 @@ export default {
             'clientNewVersion',
             'cacheTaskBrowse',
 
-            'windowActive',
-            'windowHeight',
             'dialogIns',
         ]),
 

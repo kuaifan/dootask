@@ -5,6 +5,8 @@ export default {
         ...mapState([
             'windowWidth',
             'windowHeight',
+
+            'windowActive',
             'windowScrollY',
 
             'windowLarge',

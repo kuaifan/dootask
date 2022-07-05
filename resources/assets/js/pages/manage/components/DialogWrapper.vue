@@ -413,7 +413,6 @@ export default {
             'cacheDialogs',
             'wsOpenNum',
             'touchBackInProgress',
-            'windowActive',
         ]),
 
         ...mapGetters(['isLoad']),
