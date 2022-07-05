@@ -738,6 +738,9 @@ export default {
                     key: `msg-${update_id}`,
                     delay: 600
                 })
+                this.replyActiveId = 0;
+                this.onActive();
+                //
                 this.$store.dispatch("call", {
                     url: 'dialog/msg/sendtext',
                     data: {
@@ -773,14 +776,15 @@ export default {
                 }
                 this.tempMsgs.push(tempMsg)
                 this.msgType = ''
+                this.replyActiveId = 0;
                 this.onActive();
                 this.$nextTick(this.onToBottom)
                 //
                 this.$store.dispatch("call", {
                     url: 'dialog/msg/sendtext',
                     data: {
-                        dialog_id: this.dialogId,
-                        reply_id: this.replyId,
+                        dialog_id: tempMsg.dialog_id,
+                        reply_id: tempMsg.reply_id,
                         text: msgText,
                     },
                     method: 'post',
@@ -1009,6 +1013,7 @@ export default {
                         userid: this.userId,
                         msg: { },
                     })
+                    this.replyActiveId = 0;
                     this.onActive()
                     this.$nextTick(this.onToBottom)
                     break;
