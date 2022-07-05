@@ -359,7 +359,7 @@ class FileController extends AbstractController
      */
     public function move()
     {
-        User::auth();
+        $user = User::auth();
         //
         $ids = Request::input('ids');
         $pid = intval(Request::input('pid'));
@@ -377,7 +377,7 @@ class FileController extends AbstractController
         }
         //
         $files = [];
-        AbstractModel::transaction(function() use ($pid, $ids, $toShareFile, &$files) {
+        AbstractModel::transaction(function() use ($user, $pid, $ids, $toShareFile, &$files) {
             foreach ($ids as $id) {
                 $file = File::permissionFind($id, 1000);
                 //
@@ -390,6 +390,7 @@ class FileController extends AbstractController
                             throw new ApiException("{$file->name} 内含有共享文件，无法移动到另一个共享文件夹内");
                         }
                         $file->userid = $toShareFile->userid;
+                        File::where('pids', 'LIKE', "%,{$file->id},%")->update(['userid' => $toShareFile->userid]);
                     }
                     //
                     $tmpId = $pid;
@@ -399,6 +400,9 @@ class FileController extends AbstractController
                         }
                         $tmpId = intval(File::whereId($tmpId)->value('pid'));
                     }
+                } else {
+                    $file->userid = $user->userid;
+                    File::where('pids', 'LIKE', "%,{$file->id},%")->update(['userid' => $user->userid]);
                 }
                 //
                 $file->pid = $pid;
