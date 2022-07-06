@@ -2188,12 +2188,6 @@ export default {
      */
     getDialogMsgs({state, dispatch, getters}, data) {
         return new Promise((resolve, reject) => {
-            const dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
-            if (!dialog) {
-                reject({msg: 'Parameter error'});
-                return;
-            }
-            //
             const saveBefore = typeof data.save_before === "function" ? data.save_before : _ => {}
             const saveCancel = typeof data.save_cancel === "boolean" ? data.save_cancel : false
             if (typeof data.save_before !== "undefined") delete data.save_before

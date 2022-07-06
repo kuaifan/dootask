@@ -597,7 +597,6 @@ export default {
             'cacheProjects',
             'cacheColumns',
             'cacheTasks',
-            'cacheDialogs',
             'taskContents',
             'taskFiles',
             'taskPriority',
@@ -809,11 +808,6 @@ export default {
         receiveShow(val) {
             if (val) {
                 this.timeValue = this.taskDetail.end_at ? [this.taskDetail.start_at, this.taskDetail.end_at] : [];
-            }
-        },
-        'taskDetail.dialog_id'(dialog_id) {
-            if (dialog_id > 0 && !this.cacheDialogs.find(({id}) => id == dialog_id)) {
-                this.$store.dispatch("getDialogOne", dialog_id).catch(() => {})
             }
         },
     },

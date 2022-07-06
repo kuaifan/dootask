@@ -1424,9 +1424,6 @@ export default {
             if (data === 'completedTask') {
                 this.$store.dispatch("forgetTaskCompleteTemp", true);
             } else if (data === 'chat') {
-                if (!this.cacheDialogs.find(({id}) => id == this.projectData.dialog_id)) {
-                    this.$store.dispatch("getDialogOne", this.projectData.dialog_id).catch(() => {})
-                }
                 if (this.windowSmall) {
                     this.$store.dispatch('openDialog', this.projectData.dialog_id)
                     return;
