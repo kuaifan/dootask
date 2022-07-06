@@ -536,7 +536,7 @@ export default {
                                     }
                                     if (list.length > 0) {
                                         item.label && values.push(...item.label)
-                                        list.length > 0 && values.push(...list)
+                                        values.push(...list)
                                     }
                                 })
                                 renderList(values, searchTerm);
@@ -1043,14 +1043,30 @@ export default {
                             })
                         }
                         // 待完成任务
-                        let data = this.$store.getters.transforTasks(this.$store.getters.dashboardTask['all']);
-                        if (data.length > 0) {
-                            data = data.sort((a, b) => {
+                        let dataA = this.$store.getters.transforTasks(this.$store.getters.dashboardTask['all']);
+                        if (dataA.length > 0) {
+                            dataA = dataA.sort((a, b) => {
                                 return $A.Date(a.end_at || "2099-12-31 23:59:59") - $A.Date(b.end_at || "2099-12-31 23:59:59");
                             })
                             this.taskList.push({
                                 label: [{id: 0, value: this.$L('我的待完成任务'), disabled: true}],
-                                list: data.map(item => {
+                                list: dataA.map(item => {
+                                    return {
+                                        id: item.id,
+                                        value: item.name
+                                    }
+                                }),
+                            })
+                        }
+                        // 我协助的任务
+                        let dataB = this.$store.getters.assistTask;
+                        if (dataB.length > 0) {
+                            dataB = dataB.sort((a, b) => {
+                                return $A.Date(a.end_at || "2099-12-31 23:59:59") - $A.Date(b.end_at || "2099-12-31 23:59:59");
+                            })
+                            this.taskList.push({
+                                label: [{id: 0, value: this.$L('我协助的任务'), disabled: true}],
+                                list: dataB.map(item => {
                                     return {
                                         id: item.id,
                                         value: item.name
