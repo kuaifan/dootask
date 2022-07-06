@@ -816,6 +816,9 @@ export default {
                             const shareClass = row.share ? ' share' : '';
                             return h('div', {
                                 class: `file-nbox${shearClass}`,
+                                attrs: {
+                                    'data-id': row.id
+                                }
                             }, [
                                 h('div', {
                                     class: `no-dark-before file-name file-icon ${row.type}${shareClass}`,
@@ -1370,6 +1373,7 @@ export default {
                 this.$store.dispatch("saveFile", data);
                 if (isCreate) {
                     this.$store.dispatch("forgetFile", item.id);
+                    this.shakeFile(data.id);
                 }
             }).catch(({msg}) => {
                 $A.modalError(msg)
@@ -1537,6 +1541,17 @@ export default {
             this.shearIds = [];
         },
 
+        shakeFile(fileId) {
+            this.$nextTick(_ => {
+                const dom = $A(this.$el).find(`[data-id="${fileId}"]`)
+                if (dom.length > 0) {
+                    $A.scrollIntoViewIfNeeded(dom[0])
+                    $A(dom[0]).addClass("common-shake")
+                    setTimeout(_ => $A(dom[0]).removeClass("common-shake"), 800)
+                }
+            })
+        },
+
         /********************拖动上传部分************************/
 
         pasteDragNext(e, type) {
@@ -1594,8 +1609,12 @@ export default {
         },
 
         pasteSend() {
+            const names = []
             this.pasteFile.some(file => {
-                this.$refs.fileUpload.upload(file)
+                if (!names.find(name => name === file.name)) {
+                    names.push(file.name)
+                    this.$refs.fileUpload.upload(file)
+                }
             });
         },
 

@@ -288,11 +288,6 @@
         position: relative;
         padding: 16px 32px 0;
 
-        .dialog-shake {
-            animation: ani-dialog-shake 600ms ease-in-out;
-            animation-delay: 200ms;
-        }
-
         .dialog-item {
             display: flex;
             flex-direction: row;
@@ -1233,14 +1228,6 @@
 .dialog-wrapper-reply-list {
     position: absolute !important;
     overflow: hidden !important;
-}
-
-@keyframes ani-dialog-shake {
-    10%, 90% { transform: translate3d(-1px, 0, 0); }
-    20%, 80% { transform: translate3d(+2px, 0, 0); }
-    30%, 70% { transform: translate3d(-4px, 0, 0); }
-    40%, 60% { transform: translate3d(+4px, 0, 0); }
-    50% { transform: translate3d(-4px, 0, 0); }
 }
 
 @media (max-width: 768px) {

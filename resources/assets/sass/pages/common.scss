@@ -652,17 +652,24 @@ body {
 }
 
 .icon-loading {
-    animation: icon-loading-load 0.6s infinite linear;
+    animation: animation-icon-loading 0.6s infinite linear;
 }
 
-@keyframes icon-loading-load {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+@keyframes animation-icon-loading {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
+.common-shake {
+    animation: animation-common-shake 600ms ease-in-out;
+    animation-delay: 200ms;
+}
 
+@keyframes animation-common-shake {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(+2px, 0, 0); }
+    30%, 70% { transform: translate3d(-4px, 0, 0); }
+    40%, 60% { transform: translate3d(+4px, 0, 0); }
+    50% { transform: translate3d(-4px, 0, 0); }
+}
 

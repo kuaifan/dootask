@@ -934,7 +934,7 @@ export default {
         },
 
         itemClassAdd(index) {
-            return index === this.replyActiveIndex ? 'dialog-shake' : '';
+            return index === this.replyActiveIndex ? 'common-shake' : '';
         },
 
         inputFocus() {
