@@ -46,7 +46,7 @@
                                     {{$L(dialogData.online_state === true ? '在线' : dialogData.online_state)}}
                                 </li>
                             </ul>
-                            <ul v-if="msgTags.length > 1 && windowScrollY === 0" class="title-tags scrollbar-hidden">
+                            <ul v-if="tagShow" class="title-tags scrollbar-hidden">
                                 <li
                                     v-for="item in msgTags"
                                     :key="item.type"
@@ -517,8 +517,12 @@ export default {
             return null
         },
 
+        tagShow() {
+            return this.msgTags.length > 1 && this.windowScrollY === 0
+        },
+
         scrollerClass() {
-            return !this.$slots.head && this.msgTags.length > 1 && this.windowScrollY === 0 ? 'default-header' : null
+            return !this.$slots.head && this.tagShow ? 'default-header' : null
         },
 
         pasteWrapperClass() {
@@ -1160,7 +1164,7 @@ export default {
                     })
                     let offset = scroller.getOffset() + reducer.size
                     if (this.prevId === 0) {
-                        offset -= 52
+                        offset -= 36
                     }
                     this.onToOffset(offset)
                     this.scrollDisabled = false

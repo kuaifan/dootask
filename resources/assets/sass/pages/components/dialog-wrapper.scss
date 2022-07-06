@@ -1252,6 +1252,10 @@
                 padding: 0;
                 justify-content: center;
 
+                &:before {
+                    display: none;
+                }
+
                 &.completed {
                     &:after {
                         font-size: 36px;
