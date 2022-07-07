@@ -290,10 +290,16 @@ class WebSocketDialog extends AbstractModel
         if (!isset($this->appendattrs['groupName'])) {
             $name = $this->name;
             if ($this->type == "group") {
-                if ($this->group_type === 'project') {
-                    $name = \DB::table('projects')->where('dialog_id', $this->id)->value('name');
-                } elseif ($this->group_type === 'task') {
-                    $name = \DB::table('project_tasks')->where('dialog_id', $this->id)->value('name');
+                switch ($this->group_type) {
+                    case 'project':
+                        $name = \DB::table('projects')->where('dialog_id', $this->id)->value('name');
+                        break;
+                    case 'task':
+                        $name = \DB::table('project_tasks')->where('dialog_id', $this->id)->value('name');
+                        break;
+                    case 'all':
+                        $name = Base::Lang('全体成员');
+                        break;
                 }
             }
             $this->appendattrs['groupName'] = $name;
