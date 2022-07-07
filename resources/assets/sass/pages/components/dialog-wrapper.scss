@@ -13,28 +13,46 @@
         overflow: hidden;
     }
 
-    &.reply-list {
+    &.drawer-list {
         border-radius: 18px 0 0 18px;
         overflow: hidden;
 
         .dialog-nav {
-            position: relative;
+            .drawer-title {
+                text-align: center;
+                height: 56px;
+                line-height: 56px;
+                border-bottom: 1px solid #eeeeee;
+                font-size: 16px;
+                font-weight: 500;
+            }
+        }
 
-            &:before {
-                content: "";
-                position: absolute;
-                left: 0;
-                bottom: 0;
-                width: 100%;
-                height: 1px;
-                z-index: 1;
-                background-color: #f4f5f5;
+        .dialog-scroller {
+            padding: 16px 20px 0;
+
+            .reply-item {
+                border-bottom: 1px solid #eeeeee;
+                margin-bottom: 16px;
             }
 
-            .dialog-scroller {
-                padding-right: 16px;
+            .original-button {
+                display: block;
+                margin: 0 auto;
+                box-shadow: none;
             }
+        }
 
+        .todo-button {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 18px 24px;
+            cursor: pointer;
+            > button {
+                margin: 0 8px;
+            }
         }
     }
 
@@ -791,9 +809,6 @@
                         .common-loading {
                             margin: 0 3px 0 0;
                         }
-                        > i {
-                            color: $primary-color;
-                        }
                     }
 
                     .reply {
@@ -1041,29 +1056,12 @@
                     cursor: pointer;
                     display: flex;
                     align-items: center;
+
                     .todo-desc {
                         max-width: 150px;
                         overflow: hidden;
                         text-overflow: ellipsis;
                         white-space: nowrap;
-                    }
-                    .todo-done {
-                        flex-shrink: 1;
-                        font-weight: 500;
-                        color: $primary-color;
-                        position: relative;
-                        margin-left: 7px;
-                        padding-left: 8px;
-                        &:before {
-                            content: "";
-                            position: absolute;
-                            top: 50%;
-                            left: 0;
-                            height: 10px;
-                            width: 1px;
-                            transform: translateY(-50%) scaleX(0.5);
-                            background-color: #cccccc;
-                        }
                     }
                 }
             }
@@ -1312,7 +1310,7 @@
     }
 }
 
-.dialog-wrapper-reply-list {
+.dialog-wrapper-drawer-list {
     position: absolute !important;
     overflow: hidden !important;
 }
@@ -1320,6 +1318,15 @@
 @media (max-width: 768px) {
     .dialog-wrapper {
         background-color: #f8f8f8;
+        &.drawer-list {
+            .dialog-nav {
+                .drawer-title {
+                    height: 52px;
+                    line-height: 52px;
+                    border-bottom: 0;
+                }
+            }
+        }
         .dialog-nav {
             .nav-wrapper {
                 height: 52px;

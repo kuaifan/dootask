@@ -88,7 +88,7 @@
             :data-component="msgItem"
 
             :item-class-add="itemClassAdd"
-            :extra-props="{dialogData, operateVisible, operateItem, hidePercentage: isMyDialog, hideReply: msgId > 0}"
+            :extra-props="{dialogData, operateVisible, operateItem, isMyDialog, msgId}"
             :estimate-size="78"
             :keeps="50"
             :disabled="scrollDisabled"
@@ -124,9 +124,8 @@
             <div v-if="todoShow" class="chat-todo">
                 <div class="todo-label">{{$L('待办')}}:</div>
                 <ul class="scrollbar-hidden">
-                    <li v-for="item in todoList" @click.stop="onClickTodo(item, $event)">
+                    <li v-for="item in todoList" @click.stop="onViewTodo(item)">
                         <div class="todo-desc">{{$A.getMsgSimpleDesc(item.msg_data)}}</div>
-                        <div v-if="item.click" class="todo-done">{{$L('完成')}}</div>
                     </li>
                 </ul>
             </div>
@@ -293,24 +292,41 @@
         <DrawerOverlay
             v-model="replyListShow"
             placement="right"
-            class-name="dialog-wrapper-reply-list"
+            class-name="dialog-wrapper-drawer-list"
             :size="500">
             <DialogWrapper
-                v-if="replyListShow && replyListItem"
+                v-if="replyListShow"
                 :dialogId="dialogId"
                 :msgId="replyListId"
-                class="reply-list">
-                <div slot="head" class="dialog-scroller">
+                class="drawer-list">
+                <div slot="head" class="drawer-title">{{$L('回复消息')}}</div>
+            </DialogWrapper>
+        </DrawerOverlay>
+
+        <!--待办完成-->
+        <DrawerOverlay
+            v-model="todoViewShow"
+            placement="right"
+            class-name="dialog-wrapper-drawer-list"
+            :size="500">
+            <div class="dialog-wrapper drawer-list">
+                <div class="dialog-nav">
+                    <div class="drawer-title">{{$L('待办消息')}}</div>
+                </div>
+                <div class="dialog-scroller scrollbar-overlay">
                     <DialogItem
-                        :source="replyListItem"
+                        v-if="todoViewMsg"
+                        :source="todoViewMsg"
                         @on-view-text="onViewText"
                         @on-view-file="onViewFile"
                         @on-emoji="onEmoji"
-                        hidePercentage
-                        hideReply
-                        isReply/>
+                        simpleView/>
+                    <Button class="original-button" icon="md-exit" type="text" @click="onPosTodo">{{ $L("回到原文") }}</Button>
                 </div>
-            </DialogWrapper>
+                <div class="todo-button">
+                    <Button type="primary" size="large" icon="md-checkbox-outline" @click="onDoneTodo" :loading="todoViewLoad" long>{{ $L("完成") }}</Button>
+                </div>
+            </div>
         </DrawerOverlay>
     </div>
 </template>
@@ -405,6 +421,11 @@ export default {
             replyListShow: false,
             replyListId: 0,
 
+            todoViewLoad: false,
+            todoViewShow: false,
+            todoViewMid: 0,
+            todoViewId: 0,
+
             scrollDisabled: false,
             scrollDirection: null,
             scrollAction: 0,
@@ -454,22 +475,24 @@ export default {
         },
 
         allMsgList() {
-            const dialogMsgList = this.dialogMsgList.filter(item => this.msgFilter(item))
-            if (this.tempMsgList.length > 0) {
-                const ids = dialogMsgList.map(({id}) => id)
-                const tempMsgList = this.tempMsgList.filter(item => !ids.includes(item.id) && this.msgFilter(item))
-                if (tempMsgList.length > 0) {
-                    const array = [];
-                    array.push(...dialogMsgList);
-                    array.push(...tempMsgList)
-                    return array.sort((a, b) => {
-                        return a.id - b.id;
-                    });
+            const array = [];
+            array.push(...this.dialogMsgList.filter(item => this.msgFilter(item)));
+            if (this.msgId > 0) {
+                const msgItem = this.dialogMsgs.find(item => item.id == this.msgId)
+                if (msgItem) {
+                    array.unshift(msgItem)
                 }
             }
-            return dialogMsgList.sort((a, b) => {
+            if (this.tempMsgList.length > 0) {
+                const ids = array.map(({id}) => id)
+                const tempMsgList = this.tempMsgList.filter(item => !ids.includes(item.id) && this.msgFilter(item))
+                if (tempMsgList.length > 0) {
+                    array.push(...tempMsgList)
+                }
+            }
+            return array.sort((a, b) => {
                 return a.id - b.id;
-            });
+            })
         },
 
         loadMsg() {
@@ -609,8 +632,8 @@ export default {
             return this.replyId ? this.dialogMsgs.find(({id}) => id === this.replyId) : null
         },
 
-        replyListItem() {
-            return this.replyListId ? this.dialogMsgs.find(item => item.id == this.replyListId) : null
+        todoViewMsg() {
+            return this.todoViewMid ? this.dialogMsgs.find(item => item.id == this.todoViewMid) : null
         }
     },
 
@@ -964,43 +987,57 @@ export default {
             })
         },
 
-        onClickTodo(item, event) {
-            if (event && event.target.classList.contains('todo-done')) {
-                // 完成
-                this.$store.dispatch("setLoad", {
-                    key: `msg-${item.msg_id}`,
-                    delay: 600
-                })
-                this.$store.dispatch("call", {
-                    url: 'dialog/msg/done',
-                    data: {
-                        id: item.id,
-                    },
-                }).then(({data}) => {
-                    this.$store.dispatch("saveDialogTodo", {
-                        id: item.id,
-                        done_at: $A.formatDate("Y-m-d H:i:s")
-                    })
-                    if (data.add) {
-                        this.sendSuccess(data.add)
-                    }
-                    if (this.todoList.length === 0) {
-                        this.$store.dispatch("getDialogTodo", item.dialog_id)
-                    }
-                }).catch(({msg}) => {
-                    $A.modalError(msg)
-                }).finally(_ => {
-                    this.$store.dispatch("cancelLoad", `msg-${item.msg_id}`)
-                });
-            } else {
-                // 定位
-                this.onPositionId(item.msg_id).then(_ => {
-                    this.$store.dispatch("saveDialogTodo", {
-                        id: item.id,
-                        click: true
-                    })
-                })
+        onViewTodo(item) {
+            if (this.operateVisible) {
+                return
             }
+            this.todoViewId = item.id
+            this.todoViewMid = item.msg_id
+            this.todoViewShow = true
+        },
+
+        onCloseTodo() {
+            this.todoViewLoad = false
+            this.todoViewShow = false
+            this.todoViewMid = 0
+            this.todoViewId = 0
+        },
+
+        onPosTodo() {
+            if (!this.todoViewMid) {
+                return
+            }
+            this.onPositionId(this.todoViewMid).then(this.onCloseTodo)
+        },
+
+        onDoneTodo() {
+            if (!this.todoViewId || this.todoViewLoad) {
+                return
+            }
+            this.todoViewLoad = true
+            //
+            this.$store.dispatch("call", {
+                url: 'dialog/msg/done',
+                data: {
+                    id: this.todoViewId,
+                },
+            }).then(({data}) => {
+                this.$store.dispatch("saveDialogTodo", {
+                    id: this.todoViewId,
+                    done_at: $A.formatDate("Y-m-d H:i:s")
+                })
+                if (data.add) {
+                    this.sendSuccess(data.add)
+                }
+                if (this.todoList.length === 0) {
+                    this.$store.dispatch("getDialogTodo", this.dialogId)
+                }
+                this.onCloseTodo()
+            }).catch(({msg}) => {
+                $A.modalError(msg)
+            }).finally(_ => {
+                this.todoViewLoad = false
+            });
         },
 
         itemClassAdd(index) {
@@ -1452,6 +1489,7 @@ export default {
         onReply() {
             const {tail} = this.scrollInfo()
             this.replyActiveId = this.operateItem.id
+            this.replyActiveUpdate = false
             this.inputFocus()
             if (tail <= 10) {
                 requestAnimationFrame(this.onToBottom)

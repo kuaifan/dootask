@@ -56,18 +56,6 @@ export default {
                 return {}
             }
         },
-        hidePercentage: {
-            type: Boolean,
-            default: false
-        },
-        hideReply: {
-            type: Boolean,
-            default: false
-        },
-        isReply: {
-            type: Boolean,  // 是否回复对象
-            default: false
-        },
         operateVisible: {
             type: Boolean,
             default: false
@@ -77,6 +65,18 @@ export default {
             default() {
                 return {}
             }
+        },
+        simpleView: {
+            type: Boolean,
+            default: false
+        },
+        isMyDialog: {
+            type: Boolean,
+            default: false
+        },
+        msgId: {
+            type: Number,
+            default: 0
         },
     },
 
@@ -90,15 +90,28 @@ export default {
         ...mapState(['userId']),
 
         isRightMsg() {
-            return !this.isReply && this.source.userid == this.userId
+            return this.source.userid == this.userId
+        },
+
+        isReply() {
+            return this.simpleView || this.msgId === this.source.id
+        },
+
+        hidePercentage() {
+            return this.simpleView || this.isMyDialog || this.isReply
+        },
+
+        hideReply() {
+            return this.simpleView || this.msgId > 0
         },
 
         classArray() {
             return {
                 'dialog-item': true,
+                'reply-item': this.isReply,
                 'self': this.isRightMsg,
             }
-        }
+        },
     },
 
     watch: {
