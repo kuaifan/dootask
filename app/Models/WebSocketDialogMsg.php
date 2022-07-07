@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int|null $read 已阅数量
  * @property int|null $send 发送数量
  * @property int|null $tag 标注会员ID
+ * @property int|null $todo 设为待办会员ID
  * @property int|null $link 是否存在链接
  * @property int|null $modify 是否编辑
  * @property int|null $reply_num 有多少条回复
@@ -55,6 +56,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereReplyNum($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereSend($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereTag($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereTodo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereUserid($value)
@@ -265,15 +267,13 @@ class WebSocketDialogMsg extends AbstractModel
         if ($this->type === 'tag') {
             return Base::retError('此消息不支持标注');
         }
-        $this->tag = $this->tag ? 0 : $sender;
+        $before = $this->tag;
+        $this->tag = $before ? 0 : $sender;
         $this->save();
         $resData = [
             'id' => $this->id,
             'tag' => $this->tag,
         ];
-        //
-        $dialog = WebSocketDialog::find($this->dialog_id);
-        $dialog?->pushMsg('update', $resData);
         //
         $data = [
             'update' => $resData
@@ -288,6 +288,65 @@ class WebSocketDialogMsg extends AbstractModel
         ], $sender);
         if (Base::isSuccess($res)) {
             $data['add'] = $res['data'];
+            $dialog = WebSocketDialog::find($this->dialog_id);
+            $dialog->pushMsg('update', $data['update']);
+        } else {
+            $this->tag = $before;
+            $this->save();
+        }
+        //
+        return Base::retSuccess('sucess', $data);
+    }
+
+    /**
+     * 设待办、取消待办
+     * @param int $sender       设待办的会员ID
+     * @return mixed
+     */
+    public function toggleTodoMsg($sender)
+    {
+        if ($this->type === 'todo') {
+            return Base::retError('此消息不支持社待办');
+        }
+        $before = $this->todo;
+        $this->todo = $before ? 0 : $sender;
+        $this->save();
+        $resData = [
+            'id' => $this->id,
+            'todo' => $this->todo,
+        ];
+        //
+        $data = [
+            'update' => $resData
+        ];
+        $res = self::sendMsg(null, $this->dialog_id, 'todo', [
+            'action' => $this->todo ? 'add' : 'remove',
+            'data' => [
+                'id' => $this->id,
+                'type' => $this->type,
+                'msg' => $this->msg,
+            ]
+        ], $sender);
+        if (Base::isSuccess($res)) {
+            $data['add'] = $res['data'];
+            $dialog = WebSocketDialog::find($this->dialog_id);
+            $dialog->pushMsg('update', array_merge($data['update'], ['dialog_id' => $this->dialog_id]));
+            //
+            if ($this->todo) {
+                $userids = $dialog->dialogUser->pluck('userid')->toArray();
+                foreach ($userids as $userid) {
+                    WebSocketDialogMsgTodo::createInstance([
+                        'dialog_id' => $this->dialog_id,
+                        'msg_id' => $this->id,
+                        'userid' => $userid,
+                    ])->saveOrIgnore();
+                }
+            } else {
+                WebSocketDialogMsgTodo::whereMsgId($this->id)->delete();
+            }
+        } else {
+            $this->todo = $before;
+            $this->save();
         }
         //
         return Base::retSuccess('sucess', $data);
@@ -394,6 +453,9 @@ class WebSocketDialogMsg extends AbstractModel
                 return "[文件] {$data['msg']['name']}";
             case 'tag':
                 $action = $data['msg']['action'] === 'remove' ? '取消标注' : '标注';
+                return "[{$action}] {$this->previewMsg(false, $data['msg']['data'])}";
+            case 'todo':
+                $action = $data['msg']['action'] === 'remove' ? '取消待办' : '设待办';
                 return "[{$action}] {$this->previewMsg(false, $data['msg']['data'])}";
             case 'notice':
                 return $data['msg']['notice'];

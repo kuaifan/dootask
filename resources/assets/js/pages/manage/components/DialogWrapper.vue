@@ -121,6 +121,14 @@
                 @on-progress="chatFile('progress', $event)"
                 @on-success="chatFile('success', $event)"
                 @on-error="chatFile('error', $event)"/>
+            <div v-if="todoList.length > 0" class="chat-todo">
+                <div class="todo-label">{{$L('待办')}}:</div>
+                <ul class="scrollbar-hidden">
+                    <li v-for="todoItem in todoList" @click="onPositionId(todoItem.msg_id)">
+                        {{$A.getMsgSimpleDesc(todoItem.msg_data)}}
+                    </li>
+                </ul>
+            </div>
             <div v-if="isMute" class="chat-mute">
                 {{$L('禁言发言')}}
             </div>
@@ -195,6 +203,10 @@
                             <li v-if="operateItem.type === 'text'" @click="onOperate('newTask')">
                                 <i class="taskfont">&#xe7b8;</i>
                                 <span>{{ $L('新任务') }}</span>
+                            </li>
+                            <li @click="onOperate('todo')">
+                                <i class="taskfont">&#xe7b7;</i>
+                                <span>{{ $L(operateItem.todo ? '取消待办' : '设待办') }}</span>
                             </li>
                         </ul>
                     </DropdownItem>
@@ -409,6 +421,7 @@ export default {
             'taskId',
             'dialogSearchMsgId',
             'dialogMsgs',
+            'dialogTodos',
             'dialogMsgTransfer',
             'cacheDialogs',
             'wsOpenNum',
@@ -508,6 +521,15 @@ export default {
                 array.push({type: 'task', label: '打开任务'})
             }
             return array
+        },
+
+        todoList() {
+            if (!this.dialogData.has_todo) {
+                return []
+            }
+            return this.dialogTodos.filter(item => !item.done_at && item.dialog_id == this.dialogId).sort((a, b) => {
+                return b.id - a.id;
+            });
         },
 
         wrapperClass() {
@@ -1368,6 +1390,10 @@ export default {
                         });
                         break;
 
+                    case "todo":
+                        this.onTodo()
+                        break;
+
                     case "emoji":
                         this.onEmoji(value)
                         break;
@@ -1598,17 +1624,57 @@ export default {
                 url: 'dialog/msg/tag',
                 data,
             }).then(({data}) => {
-                this.$store.dispatch("saveDialogMsg", data.update);
-                if (data.add) {
-                    this.$store.dispatch("saveDialogMsg", data.add);
-                    this.$store.dispatch("updateDialogLastMsg", data.add);
-                }
+                this.tagOrTodoSuccess(data)
             }).catch(({msg}) => {
                 $A.messageError(msg);
             }).finally(_ => {
                 this.$store.dispatch("cancelLoad", `msg-${data.msg_id}`)
             });
-        }
+        },
+
+        onTodo() {
+            if (this.operateVisible) {
+                return
+            }
+            const data = {
+                msg_id: this.operateItem.id,
+            }
+            //
+            $A.modalConfirm({
+                title: this.operateItem.todo ? '取消待办' : '设置待办',
+                content: this.operateItem.todo ? "撤回待办后，会话其他成员的待办也将消失。" : "设置为待办后，将通知会话所有成员。",
+                cancelText: '取消',
+                okText: '确定',
+                loading: true,
+                onOk: () => {
+                    return new Promise((resolve, reject) => {
+                        this.$store.dispatch("setLoad", {
+                            key: `msg-${data.msg_id}`,
+                            delay: 600
+                        })
+                        this.$store.dispatch("call", {
+                            url: 'dialog/msg/todo',
+                            data,
+                        }).then(({data, msg}) => {
+                            resolve(msg)
+                            this.tagOrTodoSuccess(data)
+                        }).catch(({msg}) => {
+                            reject(msg);
+                        }).finally(_ => {
+                            this.$store.dispatch("cancelLoad", `msg-${data.msg_id}`)
+                        });
+                    })
+                }
+            });
+        },
+
+        tagOrTodoSuccess(data) {
+            this.$store.dispatch("saveDialogMsg", data.update);
+            if (data.add) {
+                this.$store.dispatch("saveDialogMsg", data.add);
+                this.$store.dispatch("updateDialogLastMsg", data.add);
+            }
+        },
     }
 }
 </script>

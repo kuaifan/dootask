@@ -91,6 +91,10 @@
             <div v-if="msgData.tag" class="tag">
                 <i class="taskfont">&#xe61e;</i>
             </div>
+            <!--待办-->
+            <div v-if="msgData.todo" class="todo">
+                <i class="taskfont">&#xe7b7;</i>
+            </div>
             <!--编辑-->
             <div v-if="msgData.modify" class="modify">
                 <i class="taskfont">&#xe779;</i>

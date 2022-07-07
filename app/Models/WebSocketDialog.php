@@ -80,6 +80,8 @@ class WebSocketDialog extends AbstractModel
             // 对话人数
             $builder = WebSocketDialogUser::whereDialogId($this->id);
             $this->people = $builder->count();
+            // 有待办
+            $this->has_todo = WebSocketDialogMsgTodo::whereDialogId($this->id)->whereDoneAt(null)->exists();
         }
         // 对方信息
         $this->dialog_user = null;
@@ -101,25 +103,29 @@ class WebSocketDialog extends AbstractModel
                 $this->dialog_user = $dialog_user;
                 break;
             case "group":
-                if ($this->group_type === 'project') {
-                    $this->group_info = Project::withTrashed()->select(['id', 'name', 'archived_at', 'deleted_at'])->whereDialogId($this->id)->first()?->cancelAppend()->cancelHidden();
-                    if ($this->group_info) {
-                        $this->name = $this->group_info->name;
-                    } else {
-                        $this->name = '[Delete]';
-                        $this->dialog_delete = 1;
-                    }
-                } elseif ($this->group_type === 'task') {
-                    $this->group_info = ProjectTask::withTrashed()->select(['id', 'name', 'complete_at', 'archived_at', 'deleted_at'])->whereDialogId($this->id)->first()?->cancelAppend()->cancelHidden();
-                    if ($this->group_info) {
-                        $this->name = $this->group_info->name;
-                    } else {
-                        $this->name = '[Delete]';
-                        $this->dialog_delete = 1;
-                    }
-                } elseif ($this->group_type === 'all') {
-                    $this->name = Base::Lang('全体成员');
-                    $this->all_group_mute = Base::settingFind('system', 'all_group_mute');
+                switch ($this->group_type) {
+                    case 'project':
+                        $this->group_info = Project::withTrashed()->select(['id', 'name', 'archived_at', 'deleted_at'])->whereDialogId($this->id)->first()?->cancelAppend()->cancelHidden();
+                        if ($this->group_info) {
+                            $this->name = $this->group_info->name;
+                        } else {
+                            $this->name = '[Delete]';
+                            $this->dialog_delete = 1;
+                        }
+                        break;
+                    case 'task':
+                        $this->group_info = ProjectTask::withTrashed()->select(['id', 'name', 'complete_at', 'archived_at', 'deleted_at'])->whereDialogId($this->id)->first()?->cancelAppend()->cancelHidden();
+                        if ($this->group_info) {
+                            $this->name = $this->group_info->name;
+                        } else {
+                            $this->name = '[Delete]';
+                            $this->dialog_delete = 1;
+                        }
+                        break;
+                    case 'all':
+                        $this->name = Base::Lang('全体成员');
+                        $this->all_group_mute = Base::settingFind('system', 'all_group_mute');
+                        break;
                 }
                 break;
         }

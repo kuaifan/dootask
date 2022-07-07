@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Models\WebSocketDialogMsgRead;
+use App\Models\WebSocketDialogMsgTodo;
 use App\Models\WebSocketDialogUser;
 use App\Module\Base;
 use Carbon\Carbon;
@@ -188,6 +189,62 @@ class DialogController extends AbstractController
             }
         }
         return Base::retSuccess('success', $array);
+    }
+
+    /**
+     * @api {get} api/dialog/todo          20. 获取会话待办
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName todo
+     *
+     * @apiParam {Number} dialog_id            会话ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function todo()
+    {
+        $user = User::auth();
+        //
+        $dialog_id = intval(Request::input('dialog_id'));
+        //
+        WebSocketDialog::checkDialog($dialog_id);
+        //
+        $list = WebSocketDialogMsgTodo::whereDialogId($dialog_id)->whereUserid($user->userid)->whereDoneAt(null)->orderByDesc('id')->take(50)->get();
+        return Base::retSuccess("success", $list);
+    }
+
+    /**
+     * @api {get} api/dialog/top          20. 会话置顶
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName top
+     *
+     * @apiParam {Number} dialog_id            会话ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function top()
+    {
+        $user = User::auth();
+        $dialogId = intval(Request::input('dialog_id'));
+        $dialogUser = WebSocketDialogUser::whereUserid($user->userid)->whereDialogId($dialogId)->first();
+        if (!$dialogUser) {
+            return Base::retError("会话不存在");
+        }
+        $dialogUser->top_at = $dialogUser->top_at ? null : Carbon::now();
+        $dialogUser->save();
+        return Base::retSuccess("success", [
+            'id' => $dialogUser->dialog_id,
+            'top_at' => $dialogUser->top_at?->toDateTimeString(),
+        ]);
     }
 
     /**
@@ -412,6 +469,7 @@ class DialogController extends AbstractController
         //
         if ($reDialog) {
             $data['dialog'] = $dialog->formatData($user->userid, true);
+            $data['todo'] = $data['dialog']->has_todo ? WebSocketDialogMsgTodo::whereDialogId($dialog->id)->whereUserid($user->userid)->whereDoneAt(null)->orderByDesc('id')->take(50)->get() : [];
         }
         return Base::retSuccess('success', $data);
     }
@@ -956,33 +1014,32 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/top          20. 会话置顶
+     * @api {get} api/dialog/msg/todo          19. 设待办/取消待办
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
      * @apiGroup dialog
-     * @apiName top
+     * @apiName msg__todo
      *
-     * @apiParam {Number} dialog_id            会话ID
+     * @apiParam {Number} msg_id            消息ID
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
      */
-    public function top()
+    public function msg__todo()
     {
         $user = User::auth();
-        $dialogId = intval(Request::input('dialog_id'));
-        $dialogUser = WebSocketDialogUser::whereUserid($user->userid)->whereDialogId($dialogId)->first();
-        if (!$dialogUser) {
-            return Base::retError("会话不存在");
+        //
+        $msg_id = intval(Request::input("msg_id"));
+        //
+        $msg = WebSocketDialogMsg::whereId($msg_id)->first();
+        if (empty($msg)) {
+            return Base::retError("消息不存在或已被删除");
         }
-        $dialogUser->top_at = $dialogUser->top_at ? null : Carbon::now();
-        $dialogUser->save();
-        return Base::retSuccess("success", [
-            'id' => $dialogUser->dialog_id,
-            'top_at' => $dialogUser->top_at?->toDateTimeString(),
-        ]);
+        WebSocketDialog::checkDialog($msg->dialog_id);
+        //
+        return $msg->toggleTodoMsg($user->userid);
     }
 
     /**

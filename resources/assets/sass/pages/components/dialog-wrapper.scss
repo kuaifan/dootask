@@ -296,6 +296,7 @@
             padding-bottom: 16px;
 
             .dialog-tag,
+            .dialog-todo,
             .dialog-notice {
                 font-size: 12px;
                 max-width: 80%;
@@ -311,6 +312,14 @@
                 cursor: pointer;
 
                 .tag-user {
+                    display: inline-block;
+                }
+            }
+
+            .dialog-todo {
+                cursor: pointer;
+
+                .todo-user {
                     display: inline-block;
                 }
             }
@@ -756,6 +765,7 @@
                     }
 
                     .tag,
+                    .todo,
                     .reply,
                     .modify {
                         display: flex;
@@ -980,6 +990,39 @@
             width: 0;
             height: 0;
             overflow: hidden;
+        }
+
+        .chat-todo {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+
+            .todo-label {
+                flex-shrink: 0;
+                padding-right: 8px;
+            }
+
+            > ul {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                overflow-x: auto;
+
+                > li {
+                    flex-shrink: 0;
+                    list-style: none;
+                    margin-right: 8px;
+                    background-color: #f0f1f3;
+                    padding: 0 8px;
+                    border-radius: 6px;
+                    line-height: 24px;
+                    max-width: 150px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    cursor: pointer;
+                }
+            }
         }
 
         .chat-mute {

@@ -2027,6 +2027,35 @@ export default {
     },
 
     /**
+     * 获取会话待办
+     * @param state
+     * @param dispatch
+     * @param dialog_id
+     */
+    getDialogTodo({state, dispatch}, dialog_id) {
+        dispatch("call", {
+            url: 'dialog/todo',
+            data: {
+                dialog_id,
+            },
+        }).then(({data}) => {
+            if ($A.arrayLength(data) > 0) {
+                dispatch("saveDialog", {
+                    id: dialog_id,
+                    has_todo: true
+                });
+                state.dialogTodos = state.dialogTodos.filter(item => item.dialog_id != dialog_id)
+                state.dialogTodos.push(...data)
+            } else {
+                dispatch("saveDialog", {
+                    id: dialog_id,
+                    has_todo: false
+                });
+            }
+        }).catch(console.warn);
+    },
+
+    /**
      * 打开会话
      * @param state
      * @param dispatch
@@ -2213,6 +2242,10 @@ export default {
                         //
                         const ids = resData.list.map(({id}) => id)
                         state.dialogMsgs = state.dialogMsgs.filter(item => item.dialog_id != data.dialog_id || ids.includes(item.id));
+                    }
+                    if ($A.isArray(resData.todo)) {
+                        state.dialogTodos = state.dialogTodos.filter(item => item.dialog_id != data.dialog_id)
+                        state.dialogTodos.push(...resData.todo)
                     }
                     //
                     dispatch("saveDialogMsg", resData.list)
@@ -2488,6 +2521,10 @@ export default {
                                         // 更新、已读回执
                                         if (state.dialogMsgs.find(({id}) => id == data.id)) {
                                             dispatch("saveDialogMsg", data)
+                                            // 更新待办
+                                            if (typeof data.todo !== "undefined") {
+                                                dispatch("getDialogTodo", dialog_id)
+                                            }
                                         }
                                         break;
                                     case 'groupAdd':
