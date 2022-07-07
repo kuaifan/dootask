@@ -308,6 +308,9 @@ class WebSocketDialogMsg extends AbstractModel
         if (in_array($this->type, ['tag', 'todo', 'notice'])) {
             return Base::retError('此消息不支持社待办');
         }
+        if ($this->todo && $this->todo != $sender) {
+            return Base::retError('仅支持设此待办人员【' . User::userid2nickname($this->todo) . '】取消');
+        }
         $before = $this->todo;
         $this->todo = $before ? 0 : $sender;
         $this->save();
