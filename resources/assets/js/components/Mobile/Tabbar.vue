@@ -88,6 +88,9 @@ export default {
         },
 
         msgUnreadMention() {
+            if (this.cacheDialogs.find(item => item.has_todo)) {
+                return this.$L("待办")
+            }
             let num = 0;
             let mention = 0;
             this.cacheDialogs.some(dialog => {

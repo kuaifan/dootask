@@ -135,6 +135,7 @@
                                     align-items: center;
                                     justify-content: space-between;
                                     line-height: 24px;
+                                    .todo,
                                     .mention {
                                         color: #ff0000;
                                         background-color: transparent;
@@ -144,6 +145,7 @@
                                         padding: 0;
                                         height: auto;
                                         width: auto;
+                                        user-select: none;
                                     }
                                     .ivu-tag {
                                         margin: 0 4px 0 0;
