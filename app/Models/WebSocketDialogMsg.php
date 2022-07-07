@@ -457,7 +457,7 @@ class WebSocketDialogMsg extends AbstractModel
                 $action = $data['msg']['action'] === 'remove' ? '取消标注' : '标注';
                 return "[{$action}] {$this->previewMsg(false, $data['msg']['data'])}";
             case 'todo':
-                $action = $data['msg']['action'] === 'remove' ? '取消待办' : ($data['msg']['action'] === 'done' ? '完成了' : '设待办');
+                $action = $data['msg']['action'] === 'remove' ? '取消待办' : ($data['msg']['action'] === 'done' ? '完成' : '设待办');
                 return "[{$action}] {$this->previewMsg(false, $data['msg']['data'])}";
             case 'notice':
                 return $data['msg']['notice'];

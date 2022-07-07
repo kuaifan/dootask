@@ -10,6 +10,7 @@ namespace App\Models;
  * @property int|null $msg_id 消息ID
  * @property int|null $userid 接收会员ID
  * @property string|null $done_at 完成时间
+ * @property-read array|mixed $msg_data
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsgTodo newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsgTodo newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsgTodo query()

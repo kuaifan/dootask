@@ -121,7 +121,7 @@
                 @on-progress="chatFile('progress', $event)"
                 @on-success="chatFile('success', $event)"
                 @on-error="chatFile('error', $event)"/>
-            <div v-if="todoList.length > 0" class="chat-todo">
+            <div v-if="todoShow" class="chat-todo">
                 <div class="todo-label">{{$L('待办')}}:</div>
                 <ul class="scrollbar-hidden">
                     <li v-for="item in todoList" @click.stop="onClickTodo(item, $event)">
@@ -531,6 +531,10 @@ export default {
             return this.dialogTodos.filter(item => !item.done_at && item.dialog_id == this.dialogId).sort((a, b) => {
                 return b.id - a.id;
             });
+        },
+
+        todoShow() {
+            return this.todoList.length > 0 && this.windowScrollY === 0 && this.replyId === 0
         },
 
         wrapperClass() {
@@ -1702,6 +1706,7 @@ export default {
                         }).then(({data, msg}) => {
                             resolve(msg)
                             this.tagOrTodoSuccess(data)
+                            this.onActive()
                         }).catch(({msg}) => {
                             reject(msg);
                         }).finally(_ => {

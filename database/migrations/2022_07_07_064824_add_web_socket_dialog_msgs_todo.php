@@ -18,6 +18,11 @@ class AddWebSocketDialogMsgsTodo extends Migration
                 $table->bigInteger('todo')->nullable()->default(0)->after('tag')->comment('设为待办会员ID');
             }
         });
+        Schema::table('web_socket_dialog_msg_reads', function (Blueprint $table) {
+            if (Schema::hasColumn('web_socket_dialog_msg_reads', 'userid')) {
+                $table->bigInteger('userid')->nullable()->default(0)->comment('接收会员ID')->change();
+            }
+        });
     }
 
     /**
