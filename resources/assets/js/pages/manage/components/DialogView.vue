@@ -92,8 +92,30 @@
                 <i class="taskfont">&#xe61e;</i>
             </div>
             <!--待办-->
-            <div v-if="msgData.todo" class="todo">
-                <i class="taskfont">&#xe7b7;</i>
+            <div v-if="msgData.todo" class="todo" @click="openTodo">
+                <EPopover
+                    v-model="todoShow"
+                    ref="todo"
+                    popper-class="dialog-wrapper-read-poptip"
+                    :placement="isRightMsg ? 'bottom-end' : 'bottom-start'">
+                    <div class="read-poptip-content">
+                        <ul class="read scrollbar-overlay">
+                            <li class="read-title"><em>{{ todoDoneList.length }}</em>{{ $L('完成') }}</li>
+                            <li v-for="item in todoDoneList">
+                                <UserAvatar :userid="item.userid" :size="26" showName tooltipDisabled/>
+                            </li>
+                        </ul>
+                        <ul class="unread scrollbar-overlay">
+                            <li class="read-title"><em>{{ todoUndoneList.length }}</em>{{ $L('待办') }}</li>
+                            <li v-for="item in todoUndoneList">
+                                <UserAvatar :userid="item.userid" :size="26" showName tooltipDisabled/>
+                            </li>
+                        </ul>
+                    </div>
+                    <div slot="reference" class="popover-reference"></div>
+                </EPopover>
+                <Loading v-if="todoLoad > 0"/>
+                <i v-else class="taskfont">&#xe7b7;</i>
             </div>
             <!--编辑-->
             <div v-if="msgData.modify" class="modify">
@@ -109,27 +131,27 @@
                 <template v-if="!hidePercentage">
                     <div v-if="msgData.send > 1 || dialogType === 'group'" class="percent" @click="openReadPercentage">
                         <EPopover
-                            v-model="popperShow"
+                            v-model="percentageShow"
                             ref="percent"
                             popper-class="dialog-wrapper-read-poptip"
-                            placement="left-end">
+                            :placement="isRightMsg ? 'bottom-end' : 'bottom-start'">
                             <div class="read-poptip-content">
                                 <ul class="read scrollbar-overlay">
                                     <li class="read-title"><em>{{ readList.length }}</em>{{ $L('已读') }}</li>
                                     <li v-for="item in readList">
-                                        <UserAvatar :userid="item.userid" :size="26" showName/>
+                                        <UserAvatar :userid="item.userid" :size="26" showName tooltipDisabled/>
                                     </li>
                                 </ul>
                                 <ul class="unread scrollbar-overlay">
                                     <li class="read-title"><em>{{ unreadList.length }}</em>{{ $L('未读') }}</li>
                                     <li v-for="item in unreadList">
-                                        <UserAvatar :userid="item.userid" :size="26" showName/>
+                                        <UserAvatar :userid="item.userid" :size="26" showName tooltipDisabled/>
                                     </li>
                                 </ul>
                             </div>
-                            <div slot="reference"></div>
+                            <div slot="reference" class="popover-reference"></div>
                         </EPopover>
-                        <Loading v-if="popperLoad > 0"/>
+                        <Loading v-if="percentageLoad > 0"/>
                         <WCircle v-else :percent="msgData.percentage" :size="14"/>
                     </div>
                     <Icon v-else-if="msgData.percentage === 100" class="done" type="md-done-all"/>
@@ -177,15 +199,24 @@ export default {
             type: Boolean,
             default: false
         },
+        isRightMsg: {
+            type: Boolean,
+            default: false
+        },
     },
 
     data() {
         return {
-            popperLoad: 0,
-            popperShow: false,
             timeShow: false,
             operateEnter: false,
-            allList: [],
+
+            percentageLoad: 0,
+            percentageShow: false,
+            percentageList: [],
+
+            todoLoad: 0,
+            todoShow: false,
+            todoList: [],
         }
     },
 
@@ -223,11 +254,19 @@ export default {
         },
 
         readList() {
-            return this.allList.filter(({read_at}) => read_at)
+            return this.percentageList.filter(({read_at}) => read_at)
         },
 
         unreadList() {
-            return this.allList.filter(({read_at}) => !read_at)
+            return this.percentageList.filter(({read_at}) => !read_at)
+        },
+
+        todoDoneList() {
+            return this.todoList.filter(({done_at}) => done_at)
+        },
+
+        todoUndoneList() {
+            return this.todoList.filter(({done_at}) => !done_at)
         },
 
         headClass() {
@@ -266,9 +305,7 @@ export default {
         operateAction(val) {
             this.operateEnter = false;
             if (val) {
-                setTimeout(_ => {
-                    this.operateEnter = true;
-                }, 500)
+                setTimeout(_ => this.operateEnter = true, 500)
             }
         }
     },
@@ -278,28 +315,54 @@ export default {
             this.$emit("on-longpress", {event, el, msgData: this.msgData})
         },
 
+        openTodo() {
+            if (this.todoLoad > 0) {
+                return;
+            }
+            if (this.todoShow) {
+                this.todoShow = false;
+                return;
+            }
+            this.todoLoad++;
+            this.$store.dispatch("call", {
+                url: 'dialog/msg/todolist',
+                data: {
+                    msg_id: this.msgData.id,
+                },
+            }).then(({data}) => {
+                this.todoList = data;
+            }).catch(() => {
+                this.todoList = [];
+            }).finally(_ => {
+                setTimeout(() => {
+                    this.todoLoad--;
+                    this.todoShow = true
+                }, 100)
+            });
+        },
+
         openReadPercentage() {
-            if (this.popperLoad > 0) {
+            if (this.percentageLoad > 0) {
                 return;
             }
-            if (this.popperShow) {
-                this.popperShow = false;
+            if (this.percentageShow) {
+                this.percentageShow = false;
                 return;
             }
-            this.popperLoad++;
+            this.percentageLoad++;
             this.$store.dispatch("call", {
                 url: 'dialog/msg/readlist',
                 data: {
                     msg_id: this.msgData.id,
                 },
             }).then(({data}) => {
-                this.allList = data;
+                this.percentageList = data;
             }).catch(() => {
-                this.allList = [];
+                this.percentageList = [];
             }).finally(_ => {
                 setTimeout(() => {
-                    this.popperLoad--;
-                    this.popperShow = true
+                    this.percentageLoad--;
+                    this.percentageShow = true
                 }, 100)
             });
         },

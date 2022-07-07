@@ -764,6 +764,15 @@
                         height: 10px;
                     }
 
+                    .popover-reference {
+                        position: absolute;
+                        left: 65%;
+                        bottom: 0;
+                        width: 0;
+                        height: 100%;
+                        pointer-events: none;
+                    }
+
                     .tag,
                     .todo,
                     .reply,
@@ -773,6 +782,17 @@
                         margin-right: 6px;
                         > i {
                             font-size: 13px;
+                        }
+                    }
+
+                    .todo {
+                        position: relative;
+                        cursor: pointer;
+                        .common-loading {
+                            margin: 0 3px 0 0;
+                        }
+                        > i {
+                            color: $primary-color;
                         }
                     }
 
@@ -802,6 +822,7 @@
                         display: none;
                         margin-left: 4px;
                         align-items: center;
+                        position: relative;
                         cursor: pointer;
                     }
                 }

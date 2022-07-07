@@ -1043,6 +1043,36 @@ class DialogController extends AbstractController
     }
 
     /**
+     * @api {get} api/dialog/msg/todolist          14. 获取消息待办情况
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__todolist
+     *
+     * @apiParam {Number} msg_id            消息ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__todolist()
+    {
+        User::auth();
+        //
+        $msg_id = intval(Request::input('msg_id'));
+        //
+        $msg = WebSocketDialogMsg::whereId($msg_id)->first();
+        if (empty($msg)) {
+            return Base::retError("消息不存在或已被删除");
+        }
+        WebSocketDialog::checkDialog($msg->dialog_id);
+        //
+        $todo = WebSocketDialogMsgTodo::whereMsgId($msg_id)->get();
+        return Base::retSuccess('success', $todo ?: []);
+    }
+
+    /**
      * @api {get} api/dialog/msg/done          23. 完成待办
      *
      * @apiDescription 需要token身份

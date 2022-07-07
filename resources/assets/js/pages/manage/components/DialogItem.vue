@@ -24,6 +24,7 @@
                 :hide-reply="hideReply"
                 :operate-visible="operateVisible"
                 :operate-action="operateVisible && source.id === operateItem.id"
+                :is-right-msg="isRightMsg"
                 @on-longpress="onLongpress"
                 @on-view-reply="onViewReply"
                 @on-view-text="onViewText"
@@ -88,10 +89,14 @@ export default {
     computed: {
         ...mapState(['userId']),
 
+        isRightMsg() {
+            return !this.isReply && this.source.userid == this.userId
+        },
+
         classArray() {
             return {
                 'dialog-item': true,
-                'self': !this.isReply && this.source.userid == this.userId,
+                'self': this.isRightMsg,
             }
         }
     },
