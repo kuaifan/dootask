@@ -7,7 +7,7 @@
         </div>
         <div v-else-if="source.type === 'todo'" class="dialog-todo" @click="onViewTodo">
             <div class="todo-user"><UserAvatar :userid="source.userid" :tooltipDisabled="source.userid == userId" :show-name="true" :show-icon="false"/></div>
-            {{$L(source.msg.action === 'remove' ? '取消待办' : '设待办')}}
+            {{$L(source.msg.action === 'remove' ? '取消待办' : (source.msg.action === 'done' ? '完成了' : '设待办'))}}
             "{{$A.getMsgSimpleDesc(source.msg.data)}}"
         </div>
         <div v-else-if="source.type === 'notice'" class="dialog-notice">

@@ -1043,6 +1043,53 @@ class DialogController extends AbstractController
     }
 
     /**
+     * @api {get} api/dialog/msg/done          19. 完成待办
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__done
+     *
+     * @apiParam {Number} id            待办数据ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__done()
+    {
+        $user = User::auth();
+        //
+        $id = intval(Request::input("id"));
+        //
+        $add = [];
+        $todo = WebSocketDialogMsgTodo::whereId($id)->whereUserid($user->userid)->first();
+        if ($todo && empty($todo->done_at)) {
+            $todo->done_at = Carbon::now();
+            $todo->save();
+            //
+            $msg = WebSocketDialogMsg::find($todo->msg_id);
+            if ($msg) {
+                $res = WebSocketDialogMsg::sendMsg(null, $todo->dialog_id, 'todo', [
+                    'action' => 'done',
+                    'data' => [
+                        'id' => $msg->id,
+                        'type' => $msg->type,
+                        'msg' => $msg->msg,
+                    ]
+                ]);
+                if (Base::isSuccess($res)) {
+                    $add = $res['data'];
+                }
+            }
+        }
+        //
+        return Base::retSuccess("待办已完成", [
+            'add' => $add ?: null
+        ]);
+    }
+
+    /**
      * @api {get} api/dialog/group/add          21. 新增群组
      *
      * @apiDescription  需要token身份

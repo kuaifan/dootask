@@ -1013,14 +1013,37 @@
                     list-style: none;
                     margin-right: 8px;
                     background-color: #f0f1f3;
-                    padding: 0 8px;
-                    border-radius: 6px;
-                    line-height: 24px;
-                    max-width: 150px;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
+                    padding: 0 12px;
+                    border-radius: 13px;
+                    line-height: 26px;
+                    font-size: 13px;
                     cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    .todo-desc {
+                        max-width: 150px;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                    }
+                    .todo-done {
+                        flex-shrink: 1;
+                        font-weight: 500;
+                        color: $primary-color;
+                        position: relative;
+                        margin-left: 7px;
+                        padding-left: 8px;
+                        &:before {
+                            content: "";
+                            position: absolute;
+                            top: 50%;
+                            left: 0;
+                            height: 10px;
+                            width: 1px;
+                            transform: translateY(-50%) scaleX(0.5);
+                            background-color: #cccccc;
+                        }
+                    }
                 }
             }
         }
@@ -1419,6 +1442,17 @@
             background-color: #f8f8f8;
             padding: 8px 10px;
             margin-bottom: 0;
+            .chat-todo {
+                padding-top: 0;
+                > ul {
+                    > li {
+                        background-color: #ffffff;
+                        .todo-desc {
+                            max-width: 120px;
+                        }
+                    }
+                }
+            }
             .chat-mute {
                 background-color: #ffffff;
             }

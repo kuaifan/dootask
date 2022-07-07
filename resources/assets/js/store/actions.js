@@ -2045,7 +2045,7 @@ export default {
                     has_todo: true
                 });
                 state.dialogTodos = state.dialogTodos.filter(item => item.dialog_id != dialog_id)
-                state.dialogTodos.push(...data)
+                dispatch("saveDialogTodo", data)
             } else {
                 dispatch("saveDialog", {
                     id: dialog_id,
@@ -2151,6 +2151,44 @@ export default {
         }
     },
 
+    /**
+     * 保存待办数据
+     * @param state
+     * @param dispatch
+     * @param data
+     */
+    saveDialogTodo({state, dispatch}, data) {
+        $A.execMainDispatch("saveDialogTodo", data)
+        //
+        if ($A.isArray(data)) {
+            data.forEach(item => {
+                dispatch("saveDialogTodo", item)
+            });
+        } else if ($A.isJson(data)) {
+            const index = state.dialogTodos.findIndex(item => item.id == data.id);
+            if (index > -1) {
+                state.dialogTodos.splice(index, 1, Object.assign({}, state.dialogTodos[index], data));
+            } else {
+                state.dialogTodos.push(data);
+            }
+        }
+    },
+
+    /**
+     * 忘记待办数据
+     * @param state
+     * @param dispatch
+     * @param msg_id
+     */
+    forgetDialogTodoForMsgId({state, dispatch}, msg_id) {
+        $A.execMainDispatch("forgetDialogTodoForMsgId", msg_id)
+        //
+        const index = state.dialogTodos.findIndex(item => item.msg_id == msg_id);
+        if (index > -1) {
+            state.dialogTodos.splice(index, 1);
+        }
+    },
+
     /** *****************************************************************************************/
     /** ************************************** 消息 **********************************************/
     /** *****************************************************************************************/
@@ -2205,6 +2243,7 @@ export default {
                 state.dialogMsgs.splice(index, 1);
             }
         })
+        dispatch("forgetDialogTodoForMsgId", msg_id)
     },
 
     /**
@@ -2245,7 +2284,7 @@ export default {
                     }
                     if ($A.isArray(resData.todo)) {
                         state.dialogTodos = state.dialogTodos.filter(item => item.dialog_id != data.dialog_id)
-                        state.dialogTodos.push(...resData.todo)
+                        dispatch("saveDialogTodo", resData.todo)
                     }
                     //
                     dispatch("saveDialogMsg", resData.list)

@@ -264,7 +264,7 @@ class WebSocketDialogMsg extends AbstractModel
      */
     public function toggleTagMsg($sender)
     {
-        if ($this->type === 'tag') {
+        if (in_array($this->type, ['tag', 'todo', 'notice'])) {
             return Base::retError('此消息不支持标注');
         }
         $before = $this->tag;
@@ -289,13 +289,13 @@ class WebSocketDialogMsg extends AbstractModel
         if (Base::isSuccess($res)) {
             $data['add'] = $res['data'];
             $dialog = WebSocketDialog::find($this->dialog_id);
-            $dialog->pushMsg('update', $data['update']);
+            $dialog->pushMsg('update', $resData);
         } else {
             $this->tag = $before;
             $this->save();
         }
         //
-        return Base::retSuccess('sucess', $data);
+        return Base::retSuccess($this->tag ? '标注成功' : '取消成功', $data);
     }
 
     /**
@@ -305,7 +305,7 @@ class WebSocketDialogMsg extends AbstractModel
      */
     public function toggleTodoMsg($sender)
     {
-        if ($this->type === 'todo') {
+        if (in_array($this->type, ['tag', 'todo', 'notice'])) {
             return Base::retError('此消息不支持社待办');
         }
         $before = $this->todo;
@@ -330,7 +330,7 @@ class WebSocketDialogMsg extends AbstractModel
         if (Base::isSuccess($res)) {
             $data['add'] = $res['data'];
             $dialog = WebSocketDialog::find($this->dialog_id);
-            $dialog->pushMsg('update', array_merge($data['update'], ['dialog_id' => $this->dialog_id]));
+            $dialog->pushMsg('update', array_merge($resData, ['dialog_id' => $this->dialog_id]));
             //
             if ($this->todo) {
                 $userids = $dialog->dialogUser->pluck('userid')->toArray();
@@ -349,7 +349,7 @@ class WebSocketDialogMsg extends AbstractModel
             $this->save();
         }
         //
-        return Base::retSuccess('sucess', $data);
+        return Base::retSuccess($this->todo ? '设置成功' : '取消成功', $data);
     }
 
     /**
@@ -422,6 +422,8 @@ class WebSocketDialogMsg extends AbstractModel
                     ]
                 ]);
             }
+            //
+            WebSocketDialogMsgTodo::whereMsgId($this->id)->delete();
         });
     }
 
@@ -455,7 +457,7 @@ class WebSocketDialogMsg extends AbstractModel
                 $action = $data['msg']['action'] === 'remove' ? '取消标注' : '标注';
                 return "[{$action}] {$this->previewMsg(false, $data['msg']['data'])}";
             case 'todo':
-                $action = $data['msg']['action'] === 'remove' ? '取消待办' : '设待办';
+                $action = $data['msg']['action'] === 'remove' ? '取消待办' : ($data['msg']['action'] === 'done' ? '完成了' : '设待办');
                 return "[{$action}] {$this->previewMsg(false, $data['msg']['data'])}";
             case 'notice':
                 return $data['msg']['notice'];

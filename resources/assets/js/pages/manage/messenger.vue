@@ -60,6 +60,7 @@
                             <Icon v-else class="icon-avatar" type="md-person" />
                             <div class="dialog-box">
                                 <div class="dialog-title">
+                                    <div v-if="dialog.has_todo" class="mention">[{{$L('待办')}}]</div>
                                     <div v-if="$A.getDialogMention(dialog) > 0" class="mention">[@{{$A.getDialogMention(dialog)}}]</div>
                                     <template v-for="tag in $A.dialogTags(dialog)" v-if="tag.color != 'success'">
                                         <Tag :color="tag.color" :fade="false" @on-click="openDialog(dialog.id)">{{$L(tag.text)}}</Tag>
@@ -215,6 +216,9 @@ export default {
                     if (a.top_at || b.top_at) {
                         return $A.Date(b.top_at) - $A.Date(a.top_at);
                     }
+                    if (a.has_todo || b.has_todo) {
+                        return (b.has_todo ? 1 : 0) - (a.has_todo ? 1 : 0);
+                    }
                     return $A.Date(b.last_at) - $A.Date(a.last_at);
                 });
             }
@@ -274,6 +278,9 @@ export default {
             return list.sort((a, b) => {
                 if (a.top_at || b.top_at) {
                     return $A.Date(b.top_at) - $A.Date(a.top_at);
+                }
+                if (a.has_todo || b.has_todo) {
+                    return (b.has_todo ? 1 : 0) - (a.has_todo ? 1 : 0);
                 }
                 return $A.Date(b.last_at) - $A.Date(a.last_at);
             })

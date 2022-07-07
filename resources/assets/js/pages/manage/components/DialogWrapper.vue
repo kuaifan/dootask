@@ -124,8 +124,9 @@
             <div v-if="todoList.length > 0" class="chat-todo">
                 <div class="todo-label">{{$L('待办')}}:</div>
                 <ul class="scrollbar-hidden">
-                    <li v-for="todoItem in todoList" @click="onPositionId(todoItem.msg_id)">
-                        {{$A.getMsgSimpleDesc(todoItem.msg_data)}}
+                    <li v-for="item in todoList" @click.stop="onClickTodo(item, $event)">
+                        <div class="todo-desc">{{$A.getMsgSimpleDesc(item.msg_data)}}</div>
+                        <div v-if="item.click" class="todo-done">{{$L('完成')}}</div>
                     </li>
                 </ul>
             </div>
@@ -923,34 +924,77 @@ export default {
         },
 
         onPositionId(position_id, msg_id = 0) {
-            if (position_id === 0) {
-                return
-            }
-            const index = this.allMsgs.findIndex(item => item.id === position_id)
-            if (index > -1) {
-                this.onToIndex(index)
-            } else {
-                if (msg_id > 0) {
-                    this.$store.dispatch("setLoad", {
-                        key: `msg-${msg_id}`,
-                        delay: 600
+            return new Promise(resolve => {
+                if (position_id === 0) {
+                    return
+                }
+                const index = this.allMsgs.findIndex(item => item.id === position_id)
+                if (index > -1) {
+                    this.onToIndex(index)
+                    resolve()
+                } else {
+                    if (msg_id > 0) {
+                        this.$store.dispatch("setLoad", {
+                            key: `msg-${msg_id}`,
+                            delay: 600
+                        })
+                    }
+                    this.msgType = '';
+                    this.preventToBottom = true;
+                    this.$store.dispatch("getDialogMsgs", {
+                        dialog_id: this.dialogId,
+                        msg_id: this.msgId,
+                        position_id
+                    }).finally(_ => {
+                        const index = this.allMsgs.findIndex(item => item.id === position_id)
+                        if (index > -1) {
+                            this.onToIndex(index)
+                            resolve()
+                        }
+                        if (msg_id > 0) {
+                            this.$store.dispatch("cancelLoad", `msg-${msg_id}`)
+                        }
+                        this.preventToBottom = false;
                     })
                 }
-                this.msgType = '';
-                this.preventToBottom = true;
-                this.$store.dispatch("getDialogMsgs", {
-                    dialog_id: this.dialogId,
-                    msg_id: this.msgId,
-                    position_id
+            })
+        },
+
+        onClickTodo(item, event) {
+            if (event && event.target.classList.contains('todo-done')) {
+                // 完成
+                this.$store.dispatch("setLoad", {
+                    key: `msg-${item.msg_id}`,
+                    delay: 600
+                })
+                this.$store.dispatch("call", {
+                    url: 'dialog/msg/done',
+                    data: {
+                        id: item.id,
+                    },
+                }).then(({data}) => {
+                    this.$store.dispatch("saveDialogTodo", {
+                        id: item.id,
+                        done_at: $A.formatDate("Y-m-d H:i:s")
+                    })
+                    if (data.add) {
+                        this.sendSuccess(data.add)
+                    }
+                    if (this.todoList.length === 0) {
+                        this.$store.dispatch("getDialogTodo", item.dialog_id)
+                    }
+                }).catch(({msg}) => {
+                    $A.modalError(msg)
                 }).finally(_ => {
-                    const index = this.allMsgs.findIndex(item => item.id === position_id)
-                    if (index > -1) {
-                        this.onToIndex(index)
-                    }
-                    if (msg_id > 0) {
-                        this.$store.dispatch("cancelLoad", `msg-${msg_id}`)
-                    }
-                    this.preventToBottom = false;
+                    this.$store.dispatch("cancelLoad", `msg-${item.msg_id}`)
+                });
+            } else {
+                // 定位
+                this.onPositionId(item.msg_id).then(_ => {
+                    this.$store.dispatch("saveDialogTodo", {
+                        id: item.id,
+                        click: true
+                    })
                 })
             }
         },
