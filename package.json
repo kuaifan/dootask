@@ -64,11 +64,7 @@
         {
             "id": "com.dootask.task",
             "name": "DooTask",
-            "url": "https://dootask.com/",
-            "urls": [
-                "https://dootask.com/",
-                "https://www.dootask.com/"
-            ],
+            "url": "http://public/",
             "publish": {
                 "provider": "github",
                 "owner": "kuaifan",
@@ -78,23 +74,15 @@
         {
             "id": "com.dootask.task",
             "name": "DooTask",
-            "url": "https://dootask.com/",
+            "url": "http://public/",
             "urls": [
                 "https://dootask.com/",
-                "https://www.dootask.com/"
+                "https://www.dootask.com/",
+                "https://t.hitosea.com/"
             ],
             "publish": {
                 "provider": "generic",
                 "url": "https://dootask.com/desktop/publish"
-            }
-        },
-        {
-            "id": "com.hitosea.task",
-            "name": "HitoseaTask",
-            "url": "https://t.hitosea.com/",
-            "publish": {
-                "provider": "generic",
-                "url": "https://t.hitosea.com/desktop/publish"
             }
         }
     ]
