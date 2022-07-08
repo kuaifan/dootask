@@ -150,7 +150,7 @@ class UmengAlias extends AbstractModel
      */
     public static function pushMsgToUserid($userid, $array)
     {
-        $builder = self::select(['id', 'platform', 'alias']);
+        $builder = self::select(['id', 'platform', 'alias'])->where('updated_at', '>', Carbon::now()->subMonth());
         if (is_array($userid)) {
             $builder->whereIn('userid', $userid);
         } elseif (Base::isNumber($userid)) {

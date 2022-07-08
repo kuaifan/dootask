@@ -782,7 +782,9 @@ class UsersController extends AbstractController
             'alias' => $data['alias'],
             'platform' => $platform,
         ];
-        if (UmengAlias::where($inArray)->exists()) {
+        $row = UmengAlias::where($inArray);
+        if ($row->exists()) {
+            $row->update(['updated_at' => Carbon::now()]);
             return Base::retSuccess('别名已存在');
         }
         $row = UmengAlias::createInstance($inArray);
