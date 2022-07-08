@@ -479,6 +479,7 @@ export default {
             'cacheDialogs',
             'wsOpenNum',
             'touchBackInProgress',
+            'dialogIns'
         ]),
 
         ...mapGetters(['isLoad']),
@@ -789,6 +790,15 @@ export default {
                 }
                 if (tail <= 10) {
                     requestAnimationFrame(this.onToBottom)
+                }
+            }
+        },
+
+        windowActive(active) {
+            if (active && this.autoFocus) {
+                const lastDialog = $A.last(this.dialogIns)
+                if (lastDialog && lastDialog.uid === this._uid) {
+                    this.inputFocus()
                 }
             }
         },
