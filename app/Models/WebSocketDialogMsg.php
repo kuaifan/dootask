@@ -593,18 +593,20 @@ class WebSocketDialogMsg extends AbstractModel
 
     /**
      * 发送消息、修改消息
-     * @param string $action        动作
-     * - reply-98：回复消息ID-98
-     * - update-99：更新消息ID-99
-     * @param int $dialog_id        会话ID（即 聊天室ID）
-     * @param string $type          消息类型
-     * @param array $msg            发送的消息
-     * @param int $sender           发送的会员ID（默认自己，0为系统）
-     * @param bool $push_self       是否推送给自己
-     * @param bool $push_retry      推送失败后重试1次（有时候在事务里执行，数据还没生成时会出现找不到消息的情况）
+     * @param string $action            动作
+     * - reply-98：回复消息ID=98
+     * - update-99：更新消息ID=99
+     * @param int $dialog_id            会话ID（即 聊天室ID）
+     * @param string $type              消息类型
+     * @param array $msg                发送的消息
+     * @param int $sender               发送的会员ID（默认自己，0为系统）
+     * @param bool $push_self           推送-是否推给自己
+     * @param bool $push_retry          推送-失败后重试1次（有时候在事务里执行，数据还没生成时会出现找不到消息的情况）
+     * @param bool|null $push_silence   推送-静默
+     * - type = [notice|tag|todo] 默认为：true
      * @return array
      */
-    public static function sendMsg($action, $dialog_id, $type, $msg, $sender = 0, $push_self = false, $push_retry = false)
+    public static function sendMsg($action, $dialog_id, $type, $msg, $sender = 0, $push_self = false, $push_retry = false, $push_silence = null)
     {
         $link = 0;
         $mtype = $type;
@@ -619,6 +621,9 @@ class WebSocketDialogMsg extends AbstractModel
             if (in_array($msg['ext'], ['jpg', 'jpeg', 'png', 'gif'])) {
                 $mtype = 'image';
             }
+        }
+        if ($push_silence === null) {
+            $push_silence = in_array($type, ['notice', 'tag', 'todo']);
         }
         //
         $update_id = preg_match("/^update-(\d+)$/", $action, $match) ? $match[1] : 0;
@@ -690,6 +695,9 @@ class WebSocketDialogMsg extends AbstractModel
             }
             if ($push_retry) {
                 $task->setMsgNotExistRetry(true);
+            }
+            if ($push_silence) {
+                $task->setSilence($push_silence);
             }
             Task::deliver($task);
             //

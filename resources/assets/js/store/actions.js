@@ -2492,7 +2492,7 @@ export default {
                          */
                         case "dialog": // 更新会话
                             (function (msg) {
-                                const {mode, data} = msg;
+                                const {mode, silence, data} = msg;
                                 const {dialog_id} = data;
                                 switch (mode) {
                                     case 'delete':
@@ -2548,7 +2548,9 @@ export default {
                                                     dispatch("saveDialog", newData)
                                                 }
                                             }
-                                            Store.set('dialogMsgPush', data);
+                                            if (!silence) {
+                                                Store.set('dialogMsgPush', data);
+                                            }
                                         }
                                         // 更新消息列表
                                         dispatch("saveDialogMsg", data)
