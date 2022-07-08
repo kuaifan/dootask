@@ -729,10 +729,16 @@
         },
 
         messageWarning(msg) {
+            if (typeof msg === "string" && msg === "Network exception") {
+                return;
+            }
             $A.Message.warning($A.L(msg));
         },
 
         messageError(msg) {
+            if (typeof msg === "string" && msg === "Network exception") {
+                return;
+            }
             $A.Message.error($A.L(msg));
         },
 
