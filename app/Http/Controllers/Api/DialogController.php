@@ -356,6 +356,7 @@ class DialogController extends AbstractController
      */
     public function msg__list()
     {
+        Base::checkClientVersion('0.19.0');
         $user = User::auth();
         //
         $dialog_id = intval(Request::input('dialog_id'));
