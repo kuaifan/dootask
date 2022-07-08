@@ -119,7 +119,12 @@ class IndexController extends InvokeController
      */
     public function avatar()
     {
-        $name = Request::input('name', 'H');
+        $segment = Request::segment(2);
+        if ($segment && preg_match('/.*?\.png$/i', $segment)) {
+            $name = substr($segment, 0, -4);
+        } else {
+            $name = Request::input('name', 'H');
+        }
         $size = Request::input('size', 128);
         $color = Request::input('color');
         $background = Request::input('background');

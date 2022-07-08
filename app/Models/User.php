@@ -108,7 +108,7 @@ class User extends AbstractModel
         }
         if ($this->defaultAvatarMode === 'auto') {
             // 自动生成头像
-            return url("avatar?name=" . urlencode($this->nickname));
+            return url("avatar/" . urlencode($this->nickname) . ".png");
         } else {
             // 系统默认头像
             $name = ($this->userid - 1) % 21 + 1;
