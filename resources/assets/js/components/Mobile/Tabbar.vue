@@ -88,8 +88,8 @@ export default {
         },
 
         msgUnreadMention() {
-            if (this.cacheDialogs.find(item => item.has_todo)) {
-                return this.$L("待办")
+            if (this.msgTodoTotal) {
+                return this.msgTodoTotal
             }
             let num = 0;
             let mention = 0;
@@ -110,6 +110,15 @@ export default {
                 return `${num}·@${mention}`
             }
             return String(num);
+        },
+
+        msgTodoTotal() {
+            let todoNum = this.cacheDialogs.reduce((total, current) => total + (current.todo_num || 0), 0)
+            if (todoNum > 0) {
+                if (todoNum > 99) todoNum = "99+"
+                return `${this.$L("待办")}${todoNum}`
+            }
+            return null;
         },
 
         activeName() {

@@ -579,7 +579,7 @@ export default {
         },
 
         todoList() {
-            if (!this.dialogData.has_todo) {
+            if (!this.dialogData.todo_num) {
                 return []
             }
             return this.dialogTodos.filter(item => !item.done_at && item.dialog_id == this.dialogId).sort((a, b) => {
@@ -1078,6 +1078,10 @@ export default {
                 this.$store.dispatch("saveDialogTodo", {
                     id: this.todoViewId,
                     done_at: $A.formatDate("Y-m-d H:i:s")
+                })
+                this.$store.dispatch("saveDialog", {
+                    id: this.dialogId,
+                    todo_num: this.todoList.length
                 })
                 if (data.add) {
                     this.sendSuccess(data.add)

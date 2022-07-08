@@ -510,8 +510,8 @@ export default {
         },
 
         msgUnreadMention() {
-            if (this.cacheDialogs.find(item => item.has_todo)) {
-                return this.$L("待办")
+            if (this.msgTodoTotal) {
+                return this.msgTodoTotal
             }
             let num = 0;
             let mention = 0;
@@ -542,8 +542,20 @@ export default {
             return num;
         },
 
+        msgTodoTotal() {
+            let todoNum = this.cacheDialogs.reduce((total, current) => total + (current.todo_num || 0), 0)
+            if (todoNum > 0) {
+                if (todoNum > 9) todoNum = "9+"
+                return `${this.$L("待办")}${todoNum}`
+            }
+            return null;
+        },
+
         unreadTotal() {
             if (this.userId > 0) {
+                if (this.msgTodoTotal) {
+                    return this.msgTodoTotal
+                }
                 return this.msgAllUnread + this.dashboardTask.overdue_count + this.reportUnreadNumber
             } else {
                 return 0
@@ -696,9 +708,9 @@ export default {
         },
 
         unreadTotal: {
-            handler(num) {
+            handler(val) {
                 if (this.$Electron) {
-                    this.$Electron.sendMessage('setDockBadge', num);
+                    this.$Electron.sendMessage('setDockBadge', val);
                 }
             },
             immediate: true

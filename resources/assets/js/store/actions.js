@@ -2042,14 +2042,14 @@ export default {
             if ($A.arrayLength(data) > 0) {
                 dispatch("saveDialog", {
                     id: dialog_id,
-                    has_todo: true
+                    todo_num: $A.arrayLength(data)
                 });
                 state.dialogTodos = state.dialogTodos.filter(item => item.dialog_id != dialog_id)
                 dispatch("saveDialogTodo", data)
             } else {
                 dispatch("saveDialog", {
                     id: dialog_id,
-                    has_todo: false
+                    todo_num: 0
                 });
             }
         }).catch(console.warn);

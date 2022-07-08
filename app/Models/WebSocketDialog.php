@@ -81,7 +81,7 @@ class WebSocketDialog extends AbstractModel
             $builder = WebSocketDialogUser::whereDialogId($this->id);
             $this->people = $builder->count();
             // 有待办
-            $this->has_todo = WebSocketDialogMsgTodo::whereDialogId($this->id)->whereUserid($userid)->whereDoneAt(null)->exists();
+            $this->todo_num = WebSocketDialogMsgTodo::whereDialogId($this->id)->whereUserid($userid)->whereDoneAt(null)->count();
         }
         // 对方信息
         $this->dialog_user = null;
