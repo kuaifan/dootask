@@ -301,9 +301,10 @@ class WebSocketDialogMsg extends AbstractModel
     /**
      * 设待办、取消待办
      * @param int $sender       设待办的会员ID
+     * @param array $userids    设置给指定会员
      * @return mixed
      */
-    public function toggleTodoMsg($sender)
+    public function toggleTodoMsg($sender, $userids = [])
     {
         if (in_array($this->type, ['tag', 'todo', 'notice'])) {
             return Base::retError('此消息不支持社待办');
@@ -328,6 +329,7 @@ class WebSocketDialogMsg extends AbstractModel
                 'id' => $this->id,
                 'type' => $this->type,
                 'msg' => $this->msg,
+                'userids' => implode(",", $userids),
             ]
         ], $sender);
         if (Base::isSuccess($res)) {
@@ -336,8 +338,11 @@ class WebSocketDialogMsg extends AbstractModel
             $dialog->pushMsg('update', array_merge($resData, ['dialog_id' => $this->dialog_id]));
             //
             if ($this->todo) {
-                $userids = $dialog->dialogUser->pluck('userid')->toArray();
-                foreach ($userids as $userid) {
+                $useridList = $dialog->dialogUser->pluck('userid')->toArray();
+                foreach ($useridList as $userid) {
+                    if ($userids && !in_array($userid, $userids)) {
+                        continue;
+                    }
                     WebSocketDialogMsgTodo::createInstance([
                         'dialog_id' => $this->dialog_id,
                         'msg_id' => $this->id,

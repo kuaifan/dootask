@@ -86,6 +86,10 @@
                 type: Number,
                 default: 0
             },
+            dialogId: {
+                type: Number,
+                default: 0
+            },
         },
         data() {
             return {
@@ -161,6 +165,7 @@
                                 key,
                                 project_id: this.projectId,
                                 no_project_id: this.noProjectId,
+                                dialog_id: this.dialogId,
                             },
                             take: 50
                         },

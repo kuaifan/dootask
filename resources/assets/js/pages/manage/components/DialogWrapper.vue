@@ -280,6 +280,28 @@
             </div>
         </Modal>
 
+        <!-- 设置待办 -->
+        <Modal
+            v-model="todoSettingShow"
+            :title="$L('设置待办')"
+            :mask-closable="false">
+            <Form ref="todoSettingForm" :model="todoSettingData" label-width="auto" @submit.native.prevent>
+                <FormItem prop="type" :label="$L('当前会话')">
+                    <RadioGroup v-model="todoSettingData.type">
+                        <Radio label="all">{{$L('所有成员')}}</Radio>
+                        <Radio label="user">{{$L('指定成员')}}</Radio>
+                    </RadioGroup>
+                </FormItem>
+                <FormItem v-if="todoSettingData.type === 'user'" prop="userids">
+                    <UserInput v-model="todoSettingData.userids" :dialog-id="dialogId" :placeholder="$L('选择指定成员')"/>
+                </FormItem>
+            </Form>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="todoSettingShow=false">{{$L('取消')}}</Button>
+                <Button type="primary" :loading="todoSettingLoad > 0" @click="onTodo('submit')">{{$L('确定')}}</Button>
+            </div>
+        </Modal>
+
         <!--群设置-->
         <DrawerOverlay
             v-model="groupInfoShow"
@@ -420,6 +442,13 @@ export default {
 
             replyListShow: false,
             replyListId: 0,
+
+            todoSettingShow: false,
+            todoSettingLoad: 0,
+            todoSettingData: {
+                type: 'all',
+                userids: [],
+            },
 
             todoViewLoad: false,
             todoViewShow: false,
@@ -1718,41 +1747,61 @@ export default {
             });
         },
 
-        onTodo() {
+        onTodo(type) {
             if (this.operateVisible) {
                 return
             }
-            const data = {
-                msg_id: this.operateItem.id,
-            }
-            //
-            $A.modalConfirm({
-                title: this.operateItem.todo ? '取消待办' : '设置待办',
-                content: this.operateItem.todo ? "撤回待办后，会话其他成员的待办也将消失。" : "设置为待办后，将通知会话所有成员。",
-                cancelText: '取消',
-                okText: '确定',
-                loading: true,
-                onOk: () => {
-                    return new Promise((resolve, reject) => {
-                        this.$store.dispatch("setLoad", {
-                            key: `msg-${data.msg_id}`,
-                            delay: 600
-                        })
-                        this.$store.dispatch("call", {
-                            url: 'dialog/msg/todo',
-                            data,
-                        }).then(({data, msg}) => {
-                            resolve(msg)
-                            this.tagOrTodoSuccess(data)
-                            this.onActive()
-                        }).catch(({msg}) => {
-                            reject(msg);
-                        }).finally(_ => {
-                            this.$store.dispatch("cancelLoad", `msg-${data.msg_id}`)
-                        });
-                    })
+            if (type === 'submit') {
+                if ($A.arrayLength(this.todoSettingData.userids) === 0) {
+                    $A.messageWarning("选择指定成员");
+                    return
                 }
-            });
+                this.todoSettingLoad++
+                this.onTodoSubmit(this.todoSettingData).then(msg => {
+                    $A.messageSuccess(msg)
+                    this.todoSettingShow = false
+                }).catch($A.messageError).finally(_ => {
+                    this.todoSettingLoad--
+                })
+            } else {
+                this.todoSettingData = {
+                    type: 'all',
+                    userids: [],
+                    msg_id: this.operateItem.id,
+                }
+                if (this.operateItem.todo) {
+                    $A.modalConfirm({
+                        content: "你确定取消待办吗？",
+                        cancelText: '取消',
+                        okText: '确定',
+                        loading: true,
+                        onOk: () => this.onTodoSubmit(this.todoSettingData)
+                    });
+                } else {
+                    this.todoSettingShow = true
+                }
+            }
+        },
+
+        onTodoSubmit(data) {
+            return new Promise((resolve, reject) => {
+                this.$store.dispatch("setLoad", {
+                    key: `msg-${data.msg_id}`,
+                    delay: 600
+                })
+                this.$store.dispatch("call", {
+                    url: 'dialog/msg/todo',
+                    data,
+                }).then(({data, msg}) => {
+                    resolve(msg)
+                    this.tagOrTodoSuccess(data)
+                    this.onActive()
+                }).catch(({msg}) => {
+                    reject(msg);
+                }).finally(_ => {
+                    this.$store.dispatch("cancelLoad", `msg-${data.msg_id}`)
+                });
+            })
         },
 
         tagOrTodoSuccess(data) {

@@ -9,6 +9,13 @@
             <div class="todo-user"><UserAvatar :userid="source.userid" :tooltipDisabled="source.userid == userId" :show-name="true" :show-icon="false"/></div>
             {{$L(source.msg.action === 'remove' ? '取消待办' : (source.msg.action === 'done' ? '完成' : '设待办'))}}
             "{{$A.getMsgSimpleDesc(source.msg.data)}}"
+            <div v-if="formatTodoUser(source.msg.data).length > 0" class="todo-users">
+                <span>{{$L('给')}}</span>
+                <template v-for="(item, index) in formatTodoUser(source.msg.data)">
+                    <div v-if="index < 3" class="todo-user"><UserAvatar :userid="item" :tooltipDisabled="item == userId" :show-name="true" :show-icon="false"/></div>
+                    <div v-else-if="index == 3" class="todo-user">+{{formatTodoUser(source.msg.data).length - 3}}</div>
+                </template>
+            </div>
         </div>
         <div v-else-if="source.type === 'notice'" class="dialog-notice">
             {{source.msg.notice}}
@@ -134,6 +141,16 @@ export default {
                 return;
             }
             this.$store.dispatch("dialogMsgRead", this.source);
+        },
+
+        formatTodoUser(data) {
+            if ($A.isJson(data)) {
+                const {userids} = data
+                if (userids) {
+                    return userids.split(",")
+                }
+            }
+            return []
         },
 
         onViewTag() {

@@ -337,6 +337,22 @@
             .dialog-todo {
                 cursor: pointer;
 
+                .todo-users {
+                    display: inline-block;
+
+                    > div + div {
+                        padding-left: 8px;
+                        position: relative;
+
+                        &:before {
+                            content: "、";
+                            position: absolute;
+                            left: 0;
+                            bottom: 0;
+                        }
+                    }
+                }
+
                 .todo-user {
                     display: inline-block;
                 }

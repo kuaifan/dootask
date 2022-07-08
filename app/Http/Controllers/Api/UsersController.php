@@ -351,6 +351,7 @@ class UsersController extends AbstractController
      * - keys.disable                       0-排除禁止（默认），1-含禁止，2-仅禁止
      * - keys.project_id                    在指定项目ID
      * - keys.no_project_id                 不在指定项目ID
+     * - keys.dialog_id                     在指定对话ID
      * @apiParam {Object} sorts         排序方式
      * - sorts.az                           按字母：asc|desc
      * @apiParam {Number} updated_time  在这个时间戳之后更新的
@@ -399,6 +400,11 @@ class UsersController extends AbstractController
         if (intval($keys['no_project_id']) > 0) {
             $builder->whereNotIn('userid', function ($query) use ($keys) {
                 $query->select('userid')->from('project_users')->where('project_id', $keys['no_project_id']);
+            });
+        }
+        if (intval($keys['dialog_id']) > 0) {
+            $builder->whereIn('userid', function ($query) use ($keys) {
+                $query->select('userid')->from('web_socket_dialog_users')->where('dialog_id', $keys['dialog_id']);
             });
         }
         if (in_array($sorts['az'], ['asc', 'desc'])) {

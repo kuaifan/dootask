@@ -1022,6 +1022,10 @@ class DialogController extends AbstractController
      * @apiName msg__todo
      *
      * @apiParam {Number} msg_id            消息ID
+     * @apiParam {String} type              设待办对象
+     * - all: 会话全部成员（默认）
+     * - user: 会话指定成员
+     * @apiParam {Array} userids            会员ID组（type=user有效，格式: [userid1, userid2, userid3]）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -1032,6 +1036,16 @@ class DialogController extends AbstractController
         $user = User::auth();
         //
         $msg_id = intval(Request::input("msg_id"));
+        $type = trim(Request::input("type", "all"));
+        $userids = Request::input('userids');
+        //
+        if ($type === 'user') {
+            if (empty($userids)) {
+                return Base::retError("选择指定成员");
+            }
+        } else {
+            $userids = [];
+        }
         //
         $msg = WebSocketDialogMsg::whereId($msg_id)->first();
         if (empty($msg)) {
@@ -1039,7 +1053,7 @@ class DialogController extends AbstractController
         }
         WebSocketDialog::checkDialog($msg->dialog_id);
         //
-        return $msg->toggleTodoMsg($user->userid);
+        return $msg->toggleTodoMsg($user->userid, $userids);
     }
 
     /**
