@@ -545,7 +545,11 @@ export default {
         msgTodoTotal() {
             let todoNum = this.cacheDialogs.reduce((total, current) => total + (current.todo_num || 0), 0)
             if (todoNum > 0) {
-                if (todoNum > 9) todoNum = "9+"
+                if (todoNum > 99) {
+                    todoNum = "99+"
+                } else if (todoNum === 1) {
+                    todoNum = ""
+                }
                 return `${this.$L("待办")}${todoNum}`
             }
             return null;
