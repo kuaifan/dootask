@@ -192,7 +192,7 @@ export default {
                 // 修改列表
                 el[0].updateTask({
                     column_id: $A.leftDelete(command, 'column::')
-                }).catch(() => {})
+                })
                 return;
             }
             if ($A.leftExists(command, 'priority::')) {
@@ -203,7 +203,7 @@ export default {
                         p_level: data.priority,
                         p_name: data.name,
                         p_color: data.color,
-                    }).catch(() => {})
+                    })
                 }
             }
         },

@@ -75,6 +75,26 @@ export default {
                 }
             }
         },
+
+        updateTask(updata) {
+            if (this.loadIng) {
+                return;
+            }
+            //
+            Object.keys(updata).forEach(key => this.$set(this.task, key, updata[key]));
+            //
+            const updateData = Object.assign(updata, {
+                task_id: this.task.id,
+            });
+            this.$store.dispatch("taskUpdate", updateData).then(({data, msg}) => {
+                $A.messageSuccess(msg);
+                this.$store.dispatch("saveTaskBrowse", updateData.task_id);
+                this.$emit("on-update", data)
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+                this.$store.dispatch("getTaskOne", updateData.task_id).catch(() => {})
+            });
+        },
     },
 }
 </script>
