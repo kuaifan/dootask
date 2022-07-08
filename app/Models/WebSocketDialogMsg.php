@@ -343,6 +343,9 @@ class WebSocketDialogMsg extends AbstractModel
                     if ($userids && !in_array($userid, $userids)) {
                         continue;
                     }
+                    if (empty($userid)) {
+                        continue;
+                    }
                     WebSocketDialogMsgTodo::createInstance([
                         'dialog_id' => $this->dialog_id,
                         'msg_id' => $this->id,

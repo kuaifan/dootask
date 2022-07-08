@@ -279,72 +279,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/lists          08. 获取消息列表
-     *
-     * @apiDescription 需要token身份
-     * @apiVersion 1.0.0
-     * @apiGroup dialog
-     * @apiName msg__lists
-     *
-     * @apiParam {Number} dialog_id         对话ID
-     * @apiParam {Number} [position_id]     定位消息ID（填写时page无效）
-     *
-     * @apiParam {Number} [page]            当前页，默认:1
-     * @apiParam {Number} [pagesize]        每页显示数量，默认:50，最大:100
-     *
-     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据
-     *
-     * @deprecated
-     */
-    public function msg__lists()
-    {
-        $user = User::auth();
-        //
-        $dialog_id = intval(Request::input('dialog_id'));
-        $position_id = intval(Request::input('position_id'));
-        //
-        $dialog = WebSocketDialog::checkDialog($dialog_id);
-        //
-        $builder = WebSocketDialogMsg::select([
-            'web_socket_dialog_msgs.*',
-            'read.mention',
-            'read.read_at',
-        ])->leftJoin('web_socket_dialog_msg_reads as read', function ($leftJoin) use ($user) {
-            $leftJoin
-                ->on('read.userid', '=', DB::raw($user->userid))
-                ->on('read.msg_id', '=', 'web_socket_dialog_msgs.id');
-        })->where('web_socket_dialog_msgs.dialog_id', $dialog_id)->orderByDesc('web_socket_dialog_msgs.id');
-        //
-        $perPage = Base::getPaginate(100, 50);
-        if ($position_id > 0) {
-            $position_count = $builder->clone()->where('web_socket_dialog_msgs.id', '>=', $position_id)->count();
-            $list = $builder->paginate($perPage, [], 'page', ceil($position_count / $perPage));
-        } else {
-            $list = $builder->paginate($perPage);
-        }
-        //
-        if ($dialog->type == 'group' && $dialog->group_type == 'task') {
-            $user->task_dialog_id = $dialog->id;
-            $user->save();
-        }
-        // 去掉标记未读
-        $isMarkDialogUser = WebSocketDialogUser::whereDialogId($dialog->id)->whereUserid($user->userid)->whereMarkUnread(1)->first();
-        if ($isMarkDialogUser) {
-            $isMarkDialogUser->mark_unread = 0;
-            $isMarkDialogUser->save();
-        }
-        //
-        $data = $list->toArray();
-        if ($list->currentPage() === 1) {
-            $data['dialog'] = $dialog->formatData($user->userid);
-        }
-        return Base::retSuccess('success', $data);
-    }
-
-    /**
-     * @api {get} api/dialog/msg/list          09. 获取消息列表（新）
+     * @api {get} api/dialog/msg/list          08. 获取消息列表
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -374,7 +309,6 @@ class DialogController extends AbstractController
      */
     public function msg__list()
     {
-        Base::checkClientVersion('0.18.12');
         $user = User::auth();
         //
         $dialog_id = intval(Request::input('dialog_id'));
@@ -472,6 +406,43 @@ class DialogController extends AbstractController
             $data['todo'] = $data['dialog']->has_todo ? WebSocketDialogMsgTodo::whereDialogId($dialog->id)->whereUserid($user->userid)->whereDoneAt(null)->orderByDesc('id')->take(50)->get() : [];
         }
         return Base::retSuccess('success', $data);
+    }
+
+    /**
+     * @deprecated
+     */
+    public function msg__lists()
+    {
+        Base::checkClientVersion('0.18.12');
+    }
+
+    /**
+     * @api {get} api/dialog/msg/one          09. 获取单条消息
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__one
+     *
+     * @apiParam {Number} msg_id            消息ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__one()
+    {
+        User::auth();
+        //
+        $msg_id = intval(Request::input('msg_id'));
+        //
+        $msg = WebSocketDialogMsg::whereId($msg_id)->first();
+        if (empty($msg)) {
+            return Base::retError("消息不存在或已被删除");
+        }
+        WebSocketDialog::checkDialog($msg->dialog_id);
+        //
+        return Base::retSuccess('success', $msg);
     }
 
     /**

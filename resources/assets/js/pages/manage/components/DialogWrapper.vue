@@ -341,6 +341,7 @@
                         :source="todoViewMsg"
                         @on-view-text="onViewText"
                         @on-view-file="onViewFile"
+                        @on-down-file="onDownFile"
                         @on-emoji="onEmoji"
                         simpleView/>
                     <Button class="original-button" icon="md-exit" type="text" @click="onPosTodo">{{ $L("回到原文") }}</Button>
@@ -452,6 +453,7 @@ export default {
 
             todoViewLoad: false,
             todoViewShow: false,
+            todoViewTmp: {},
             todoViewMid: 0,
             todoViewId: 0,
 
@@ -662,7 +664,16 @@ export default {
         },
 
         todoViewMsg() {
-            return this.todoViewMid ? this.dialogMsgs.find(item => item.id == this.todoViewMid) : null
+            if (this.todoViewMid) {
+                const msg = this.dialogMsgs.find(item => item.id == this.todoViewMid)
+                if (msg) {
+                    return msg
+                }
+                if (this.todoViewTmp.id === this.todoViewMid) {
+                    return this.todoViewTmp
+                }
+            }
+            return null
         }
     },
 
@@ -1023,11 +1034,24 @@ export default {
             this.todoViewId = item.id
             this.todoViewMid = item.msg_id
             this.todoViewShow = true
+            //
+            const index = this.allMsgs.findIndex(item => item.id === this.todoViewMid)
+            if (index === -1) {
+                this.$store.dispatch("call", {
+                    url: 'dialog/msg/one',
+                    data: {
+                        msg_id: this.todoViewMid
+                    },
+                }).then(({data}) => {
+                    this.todoViewTmp = data
+                })
+            }
         },
 
         onCloseTodo() {
             this.todoViewLoad = false
             this.todoViewShow = false
+            this.todoViewTmp = {}
             this.todoViewMid = 0
             this.todoViewId = 0
         },
@@ -1715,7 +1739,12 @@ export default {
                 url: 'dialog/msg/emoji',
                 data,
             }).then(({data}) => {
-                this.$store.dispatch("saveDialogMsg", data);
+                const index = this.dialogMsgs.findIndex(item => item.id == data.id)
+                if (index > -1) {
+                    this.$store.dispatch("saveDialogMsg", data);
+                } else if (this.todoViewTmp.id === data.id) {
+                    this.todoViewTmp = Object.assign({}, this.todoViewTmp, data)
+                }
             }).catch(({msg}) => {
                 $A.messageError(msg);
             }).finally(_ => {
@@ -1752,7 +1781,7 @@ export default {
                 return
             }
             if (type === 'submit') {
-                if ($A.arrayLength(this.todoSettingData.userids) === 0) {
+                if (this.todoSettingData.type === 'user' && $A.arrayLength(this.todoSettingData.userids) === 0) {
                     $A.messageWarning("选择指定成员");
                     return
                 }
