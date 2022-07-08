@@ -143,12 +143,14 @@ function startBuild(data, publish, release) {
     fse.copySync(packageFile, packageBakFile)
     // package.json Generated
     const econfig = require('./package.json')
+    let appName = utils.getDomain(data.url)
+    if (appName === "public") appName = "DooTask"
     econfig.name = data.name;
     econfig.version = config.version;
     econfig.build.appId = data.id;
     econfig.build.directories.output = `dist/${data.id}/${data.platform}`;
-    econfig.build.artifactName = utils.getDomain(data.url) + "-v${version}-${os}-${arch}.${ext}";
-    econfig.build.nsis.artifactName = utils.getDomain(data.url) + "-v${version}-${os}-${arch}.${ext}";
+    econfig.build.artifactName = appName + "-v${version}-${os}-${arch}.${ext}";
+    econfig.build.nsis.artifactName = appName + "-v${version}-${os}-${arch}.${ext}";
     if (!process.env.APPLEID || !process.env.APPLEIDPASS || publish !== true) {
         delete econfig.build.afterSign;
     }

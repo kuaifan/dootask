@@ -864,6 +864,7 @@ class ProjectController extends AbstractController
      */
     public function task__lists()
     {
+        Base::checkClientVersion('0.19.0');
         User::auth();
         //
         $builder = ProjectTask::with(['taskUser', 'taskTag']);
