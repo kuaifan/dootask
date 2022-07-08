@@ -603,7 +603,7 @@ class WebSocketDialogMsg extends AbstractModel
      * @param bool $push_self           推送-是否推给自己
      * @param bool $push_retry          推送-失败后重试1次（有时候在事务里执行，数据还没生成时会出现找不到消息的情况）
      * @param bool|null $push_silence   推送-静默
-     * - type = [notice|tag|todo] 默认为：true
+     * - type = [text|file|record|meeting]  默认为：false
      * @return array
      */
     public static function sendMsg($action, $dialog_id, $type, $msg, $sender = 0, $push_self = false, $push_retry = false, $push_silence = null)
@@ -623,7 +623,7 @@ class WebSocketDialogMsg extends AbstractModel
             }
         }
         if ($push_silence === null) {
-            $push_silence = in_array($type, ['notice', 'tag', 'todo']);
+            $push_silence = !in_array($type, ["text", "file", "record", "meeting"]);
         }
         //
         $update_id = preg_match("/^update-(\d+)$/", $action, $match) ? $match[1] : 0;

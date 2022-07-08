@@ -82,6 +82,7 @@ class EmailNoticeTask extends AbstractTask
             if ($userMinute > -1) {
                 $builder->clone()
                     ->where("web_socket_dialog_msgs.dialog_type", "user")
+                    ->whereIn("web_socket_dialog_msgs.type", ["text", "file", "record", "meeting"])
                     ->whereBetween("web_socket_dialog_msgs.created_at", [
                         Carbon::now()->subMinutes($userMinute + 10),
                         Carbon::now()->subMinutes($userMinute)
@@ -94,6 +95,7 @@ class EmailNoticeTask extends AbstractTask
             if ($groupMinute > -1) {
                 $builder->clone()
                     ->where("web_socket_dialog_msgs.dialog_type", "group")
+                    ->whereIn("web_socket_dialog_msgs.type", ["text", "file", "record", "meeting"])
                     ->whereBetween("web_socket_dialog_msgs.created_at", [
                         Carbon::now()->subMinutes($groupMinute + 10),
                         Carbon::now()->subMinutes($groupMinute)
@@ -186,6 +188,7 @@ class EmailNoticeTask extends AbstractTask
                 ->where("r.email", 0)
                 ->where("r.userid", $userid)
                 ->where("web_socket_dialog_msgs.dialog_type", $dialogType)
+                ->whereIn("web_socket_dialog_msgs.type", ["text", "file", "record", "meeting"])
                 ->take(100)
                 ->get();
             if (empty($data)) {
