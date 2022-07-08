@@ -536,7 +536,6 @@ class FileController extends AbstractController
      */
     public function content__save()
     {
-        Base::checkClientVersion('0.13.68');
         $user = User::auth();
         //
         $id = Base::getPostInt('id');

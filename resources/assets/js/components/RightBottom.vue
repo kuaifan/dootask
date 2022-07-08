@@ -133,7 +133,7 @@ export default {
                 if (status === 200) {
                     this.apiVersion = data.version || ''
                     // 检查接口版本
-                    if (this.compareVersion(this.apiVersion, '0.14.94') === -1) {
+                    if (this.compareVersion(this.apiVersion, '0.19.0') === -1) {
                         $A.modalWarning({
                             title: '温馨提示',
                             message: '服务器接口版本过低，部分功能可能无法正常使用。',

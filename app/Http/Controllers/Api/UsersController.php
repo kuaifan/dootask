@@ -227,6 +227,8 @@ class UsersController extends AbstractController
      */
     public function info()
     {
+        Base::checkClientVersion('0.19.0');
+        //
         $user = User::auth();
         User::token($user);
         //

@@ -456,14 +456,6 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @deprecated
-     */
-    public function msg__lists()
-    {
-        Base::checkClientVersion('0.18.12');
-    }
-
-    /**
      * @api {get} api/dialog/msg/one          10. 获取单条消息
      *
      * @apiDescription 需要token身份
@@ -544,7 +536,6 @@ class DialogController extends AbstractController
      */
     public function msg__sendtext()
     {
-        Base::checkClientVersion('0.13.33');
         $user = User::auth();
         //
         $chat_information = Base::settingFind('system', 'chat_information');
@@ -985,7 +976,6 @@ class DialogController extends AbstractController
      */
     public function msg__emoji()
     {
-        Base::checkClientVersion('0.17.67');
         $user = User::auth();
         //
         $msg_id = intval(Request::input("msg_id"));
