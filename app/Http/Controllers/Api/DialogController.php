@@ -248,6 +248,53 @@ class DialogController extends AbstractController
     }
 
     /**
+     * @api {get} api/dialog/tel          06. 获取对方联系电话
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName tel
+     *
+     * @apiParam {Number} dialog_id            会话ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function tel()
+    {
+        $user = User::auth();
+        //
+        $dialog_id = intval(Request::input('dialog_id'));
+        //
+        $dialog = WebSocketDialog::checkDialog($dialog_id);
+        if ($dialog->type !== 'user') {
+            return Base::retError("会话类型错误");
+        }
+        $dialogUser = $dialog->dialogUser->where('userid', '!=', $user->userid)->first();
+        if (empty($dialogUser)) {
+            return Base::retError("会话对象不存在");
+        }
+        $callUser = User::find($dialogUser->userid);
+        if (empty($callUser) || empty($callUser->tel)) {
+            return Base::retError("对方未设置联系电话");
+        }
+        //
+        $add = null;
+        $res = WebSocketDialogMsg::sendMsg(null, $dialog->id, 'notice', [
+            'notice' => $user->nickname . " 查看了 " . $callUser->nickname . " 的联系电话"
+        ]);
+        if (Base::isSuccess($res)) {
+            $add = $res['data'];
+        }
+        //
+        return Base::retSuccess("success", [
+            'tel' => $callUser->tel,
+            'add' => $add ?: null
+        ]);
+    }
+
+    /**
      * @api {get} api/dialog/open/user          07. 打开会话
      *
      * @apiDescription 需要token身份

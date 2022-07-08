@@ -62,6 +62,10 @@
                             <i class="taskfont">&#xe7c1;</i>
                             {{$L('新会议')}}
                         </div>
+                        <div v-if="dialogData.type === 'user' && $isEEUiApp" class="chat-input-popover-item" @click="onToolbar('call')">
+                            <i class="taskfont">&#xe7ba;</i>
+                            {{$L('拨打电话')}}
+                        </div>
                         <div class="chat-input-popover-item" @click="onToolbar('image')">
                             <i class="taskfont">&#xe7bc;</i>
                             {{$L('发送图片')}}
@@ -870,6 +874,7 @@ export default {
                     });
                     break;
 
+                case 'call':
                 case 'image':
                 case 'file':
                     this.$emit('on-more', action)
@@ -1113,7 +1118,6 @@ export default {
                 const {owner_id, type} = this.dialogData
                 const permission = type === 'group' && [0, this.userId].includes(owner_id)
                 if (this.taskId > 0 || permission) {
-                    console.log(this.dialogData);
                     this.__getMoreTimer && clearTimeout(this.__getMoreTimer)
                     this.__getMoreTimer = setTimeout(_ => {
                         this.$store.dispatch("call", {

@@ -28,10 +28,10 @@ export default {
         //
         const cloneParams = $A.cloneJSON(params);
         return new Promise(function (resolve, reject) {
-            if (params.spinner === true) {
-                const {before, complete, spinnerDelay} = params;
+            if (params.spinner === true || (typeof params.spinner === "number" && params.spinner > 0)) {
+                const {before, complete} = params;
                 params.before = () => {
-                    dispatch("showSpinner", spinnerDelay)
+                    dispatch("showSpinner", typeof params.spinner === "number" ? params.spinner : 0)
                     typeof before === "function" && before()
                 };
                 //

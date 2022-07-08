@@ -1221,9 +1221,40 @@ export default {
         },
 
         onEventMore(e) {
-            if (['image', 'file'].includes(e)) {
-                this.$refs.chatUpload.handleClick()
+            switch (e) {
+                case 'call':
+                    this.onCallTel()
+                    break;
+
+                case 'image':
+                case 'file':
+                    this.$refs.chatUpload.handleClick()
+                    break;
             }
+        },
+
+        onCallTel() {
+            this.$store.dispatch("call", {
+                url: 'dialog/tel',
+                data: {
+                    dialog_id: this.dialogId,
+                },
+                spinner: 300,
+            }).then(({data}) => {
+                if (data.tel) {
+                    $A.eeuiAppSendMessage({
+                        action: 'callTel',
+                        tel: data.tel
+                    });
+                }
+                if (data.add) {
+                    this.$store.dispatch("saveDialogMsg", data.add);
+                    this.$store.dispatch("updateDialogLastMsg", data.add);
+                    this.onActive();
+                }
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            });
         },
 
         onEventEmojiVisibleChange(val) {
