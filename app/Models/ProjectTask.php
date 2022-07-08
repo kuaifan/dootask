@@ -531,7 +531,7 @@ class ProjectTask extends AbstractModel
     {
         AbstractModel::transaction(function () use ($data, &$updateMarking) {
             // 判断版本
-            Base::checkClientVersion('0.6.0');
+            Base::checkClientVersion('0.19.0');
             // 主任务
             $mainTask = $this->parent_id > 0 ? self::find($this->parent_id) : null;
             // 工作流
