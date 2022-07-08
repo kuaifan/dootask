@@ -1501,6 +1501,7 @@ class ProjectController extends AbstractController
      */
     public function task__update()
     {
+        Base::checkClientVersion('0.19.0');
         User::auth();
         //
         parse_str(Request::getContent(), $data);

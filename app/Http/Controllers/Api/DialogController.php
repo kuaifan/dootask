@@ -618,6 +618,7 @@ class DialogController extends AbstractController
      */
     public function msg__sendrecord()
     {
+        Base::checkClientVersion('0.19.0');
         $user = User::auth();
         //
         $dialog_id = Base::getPostInt('dialog_id');
@@ -667,6 +668,7 @@ class DialogController extends AbstractController
      */
     public function msg__sendfile()
     {
+        Base::checkClientVersion('0.19.0');
         $user = User::auth();
         //
         $dialog_id = Base::getPostInt('dialog_id');

@@ -216,10 +216,12 @@ if (["dev"].includes(argv[2])) {
             value: data
         })
     })
-    appChoices.push({
-        name: "All generic",
-        value: 'generic'
-    })
+    if (config.app.filter(({publish}) => publish.provider === 'generic').length > 1) {
+        appChoices.push({
+            name: "All generic",
+            value: 'generic'
+        })
+    }
     const questions = [
         {
             type: 'list',
