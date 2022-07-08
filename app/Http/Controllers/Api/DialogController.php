@@ -500,11 +500,13 @@ class DialogController extends AbstractController
         Base::checkClientVersion('0.13.33');
         $user = User::auth();
         //
-        $chat_nickname = Base::settingFind('system', 'chat_nickname');
-        if ($chat_nickname == 'required') {
-            $nickname = User::select(['nickname as nickname_original'])->whereUserid($user->userid)->value('nickname_original');
-            if (empty($nickname)) {
+        $chat_information = Base::settingFind('system', 'chat_information');
+        if ($chat_information == 'required') {
+            if (empty($user->getRawOriginal('nickname'))) {
                 return Base::retError('请设置昵称', [], -2);
+            }
+            if (empty($user->getRawOriginal('tel'))) {
+                return Base::retError('请设置联系电话', [], -3);
             }
         }
         //

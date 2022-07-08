@@ -62,12 +62,19 @@ export default {
                 }
                 if (ret === -2 && params.checkNick !== false) {
                     // 需要昵称
-                    dispatch("userNickNameInput").then(() => {
-                        dispatch("call", Object.assign(cloneParams, {
-                            checkNick: false
-                        })).then(resolve).catch(reject);
+                    dispatch("userEditInput", 'nickname').then(() => {
+                        dispatch("call", cloneParams).then(resolve).catch(reject);
                     }).catch(err => {
                         reject({ret: -1, data, msg: err || $A.L('请设置昵称！')})
+                    });
+                    return;
+                }
+                if (ret === -3 && params.checkTel !== false) {
+                    // 需要联系电话
+                    dispatch("userEditInput", 'tel').then(() => {
+                        dispatch("call", cloneParams).then(resolve).catch(reject);
+                    }).catch(err => {
+                        reject({ret: -1, data, msg: err || $A.L('请设置联系电话！')})
                     });
                     return;
                 }
@@ -420,39 +427,50 @@ export default {
     },
 
     /**
-     * 设置用户昵称
+     * 设置用户信息
      * @param dispatch
+     * @param type
      * @returns {Promise<unknown>}
      */
-    userNickNameInput({dispatch}) {
-        return new Promise(function (nameResolve, nameReject) {
+    userEditInput({dispatch}, type) {
+        return new Promise(function (userResolve, userReject) {
+            let desc = '';
+            if (type === 'nickname') {
+                desc = '昵称';
+            } else if (type === 'tel') {
+                desc = '联系电话';
+            } else {
+                userReject('参数错误')
+                return
+            }
             setTimeout(_ => {
                 $A.modalInput({
-                    title: "设置昵称",
-                    placeholder: "请输入昵称",
+                    title: `设置${desc}`,
+                    placeholder: `请输入${desc}`,
                     okText: "保存",
                     onOk: (value) => {
                         if (!value) {
-                            return '请输入昵称'
+                            return `请输入${desc}`
                         }
                         return new Promise((inResolve, inReject) => {
                             dispatch("call", {
                                 url: 'users/editdata',
                                 data: {
-                                    nickname: value,
+                                    [type]: value,
                                 },
                                 checkNick: false,
+                                checkTel: false,
                             }).then(() => {
                                 dispatch('getUserInfo').finally(_ => {
                                     inResolve()
-                                    nameResolve()
+                                    userResolve()
                                 });
                             }).catch(({msg}) => {
                                 inReject(msg)
                             });
                         })
                     },
-                    onCancel: _ => nameReject
+                    onCancel: _ => userReject
                 });
             }, 100)
         });

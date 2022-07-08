@@ -5,8 +5,11 @@
                 <ImgUpload v-model="formData.userimg" :num="1" :width="512" :height="512" :whcut="1"></ImgUpload>
                 <span class="form-tip">{{$L('建议尺寸：200x200')}}</span>
             </FormItem>
-            <FormItem :label="$L('邮箱')">
+            <FormItem :label="$L('邮箱')" prop="email">
                 <Input v-model="userInfo.email" disabled></Input>
+            </FormItem>
+            <FormItem :label="$L('电话')" prop="tel">
+                <Input v-model="formData.tel" :maxlength="20" :placeholder="$L('请输入联系电话')"></Input>
             </FormItem>
             <FormItem :label="$L('昵称')" prop="nickname">
                 <Input v-model="formData.nickname" :maxlength="20" :placeholder="$L('请输入昵称')"></Input>
@@ -33,6 +36,8 @@ export default {
 
             formData: {
                 userimg: '',
+                email: '',
+                tel: '',
                 nickname: '',
                 profession: ''
             },
@@ -54,6 +59,13 @@ export default {
     methods: {
         initLanguage() {
             this.ruleData = {
+                email: [
+                    {required: true, message: this.$L('请输入邮箱地址！'), trigger: 'change'},
+                ],
+                tel: [
+                    {required: true, message: this.$L('请输入联系电话！'), trigger: 'change'},
+                    {type: 'string', min: 6, message: this.$L('电话长度至少6位！'), trigger: 'change'}
+                ],
                 nickname: [
                     {required: true, message: this.$L('请输入昵称！'), trigger: 'change'},
                     {type: 'string', min: 2, message: this.$L('昵称长度至少2位！'), trigger: 'change'}
@@ -62,11 +74,10 @@ export default {
         },
 
         initData() {
-            if (!$A.strExists(this.userInfo.userimg, '/avatar')) {
-                this.$set(this.formData, 'userimg', this.userInfo.userimg);
-            }
-            const nickname = typeof this.userInfo.nickname_original !== "undefined" ? this.userInfo.nickname_original : this.userInfo.nickname;
-            this.$set(this.formData, 'nickname', nickname);
+            this.$set(this.formData, 'userimg', $A.strExists(this.userInfo.userimg, '/avatar') ? '' : this.userInfo.userimg);
+            this.$set(this.formData, 'email', this.userInfo.email);
+            this.$set(this.formData, 'tel', this.userInfo.tel);
+            this.$set(this.formData, 'nickname', typeof this.userInfo.nickname_original !== "undefined" ? this.userInfo.nickname_original : this.userInfo.nickname);
             this.$set(this.formData, 'profession', this.userInfo.profession);
             this.formData_bak = $A.cloneJSON(this.formData);
         },

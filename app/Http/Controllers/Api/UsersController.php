@@ -244,6 +244,7 @@ class UsersController extends AbstractController
      * @apiName editdata
      *
      * @apiParam {Object} [userimg]             会员头像（地址）
+     * @apiParam {String} [tel]                 电话
      * @apiParam {String} [nickname]            昵称
      * @apiParam {String} [profession]          职位/职称
      *
@@ -263,6 +264,17 @@ class UsersController extends AbstractController
             if (str_contains($user->userimg, 'avatar/')) {
                 $user->userimg = '';
             }
+        }
+        // 电话
+        if (Arr::exists($data, 'tel')) {
+            $tel = trim(Request::input('tel'));
+            if (strlen($tel) < 6 || strlen($tel) > 20) {
+                return Base::retError('联系电话长度错误');
+            }
+            if ($tel != $user->tel && User::whereTel($tel)->exists()) {
+                return Base::retError('联系电话已存在');
+            }
+            $user->tel = $tel;
         }
         // 昵称
         if (Arr::exists($data, 'nickname')) {
@@ -469,8 +481,9 @@ class UsersController extends AbstractController
      * @apiName lists
      *
      * @apiParam {Object} [keys]        搜索条件
-     * - keys.key               邮箱/昵称/职位（赋值后keys.email、keys.nickname、keys.profession失效）
+     * - keys.key               邮箱/电话/昵称/职位（赋值后keys.email、keys.tel、keys.nickname、keys.profession失效）
      * - keys.email             邮箱
+     * - keys.tel               电话
      * - keys.nickname          昵称
      * - keys.profession        职位
      * - keys.identity          身份（如：admin、noadmin）
@@ -504,6 +517,7 @@ class UsersController extends AbstractController
                 } else {
                     $builder->where(function($query) use ($keys) {
                         $query->where("email", "like", "%{$keys['key']}%")
+                            ->orWhere("tel", "like", "%{$keys['key']}%")
                             ->orWhere("nickname", "like", "%{$keys['key']}%")
                             ->orWhere("profession", "like", "%{$keys['key']}%");
                     });
@@ -511,6 +525,9 @@ class UsersController extends AbstractController
             } else {
                 if ($keys['email']) {
                     $builder->where("email", "like", "%{$keys['email']}%");
+                }
+                if ($keys['tel']) {
+                    $builder->where("tel", "like", "%{$keys['tel']}%");
                 }
                 if ($keys['nickname']) {
                     $builder->where("nickname", "like", "%{$keys['nickname']}%");
@@ -560,6 +577,7 @@ class UsersController extends AbstractController
      * - cleardisable         取消离职
      * - delete               删除会员
      * @apiParam {String} [email]               邮箱地址
+     * @apiParam {String} [tel]                 联系电话
      * @apiParam {String} [password]            新的密码
      * @apiParam {String} [nickname]            昵称
      * @apiParam {String} [profession]          职位
@@ -638,6 +656,14 @@ class UsersController extends AbstractController
                 return Base::retError('邮箱地址已存在');
             }
             $upArray['email'] = $email;
+        }
+        // 电话
+        if (Arr::exists($data, 'tel')) {
+            $tel = trim($data['tel']);
+            if (User::whereTel($tel)->where('userid', '!=', $userInfo->userid)->exists()) {
+                return Base::retError('联系电话已存在');
+            }
+            $upArray['tel'] = $tel;
         }
         // 密码
         if (Arr::exists($data, 'password')) {

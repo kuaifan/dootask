@@ -16,6 +16,7 @@ use Carbon\Carbon;
  * @property string|null $az A-Z
  * @property string|null $pinyin 拼音（主要用于搜索）
  * @property string|null $email 邮箱
+ * @property string|null $tel 联系电话
  * @property string $nickname 昵称
  * @property string|null $profession 职位/职称
  * @property string $userimg 头像
@@ -56,6 +57,7 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|User wherePinyin($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereProfession($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereTaskDialogId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereTel($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUserid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUserimg($value)

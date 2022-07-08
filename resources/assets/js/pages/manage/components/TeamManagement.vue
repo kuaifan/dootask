@@ -223,6 +223,28 @@ export default {
                     }
                 },
                 {
+                    title: this.$L('电话'),
+                    key: 'tel',
+                    minWidth: 80,
+                    render: (h, {row}) => {
+                        return h('QuickEdit', {
+                            props: {
+                                value: row.tel,
+                            },
+                            on: {
+                                'on-update': (val, cb) => {
+                                    this.operationUser({
+                                        userid: row.userid,
+                                        tel: val
+                                    }, true).finally(cb);
+                                }
+                            }
+                        }, [
+                            h('AutoTip', row.tel || '-')
+                        ]);
+                    }
+                },
+                {
                     title: this.$L('昵称'),
                     key: 'nickname',
                     minWidth: 80,

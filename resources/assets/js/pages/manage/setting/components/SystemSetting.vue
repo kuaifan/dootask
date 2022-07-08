@@ -38,13 +38,13 @@
                 </RadioGroup>
                 <div v-if="formDatum.project_invite == 'open'" class="form-tip">{{$L('开启：项目管理员可生成链接邀请成员加入项目。')}}</div>
             </FormItem>
-            <FormItem :label="$L('聊天昵称')" prop="chatNickname">
-                <RadioGroup v-model="formDatum.chat_nickname">
+            <FormItem :label="$L('聊天资料')" prop="chatInformation">
+                <RadioGroup v-model="formDatum.chat_information">
                     <Radio label="optional">{{$L('可选')}}</Radio>
                     <Radio label="required">{{$L('必填')}}</Radio>
                 </RadioGroup>
-                <div v-if="formDatum.chat_nickname == 'required'" class="form-tip">{{$L('必填：发送聊天内容前必须设置昵称。')}}</div>
-                <div v-else class="form-tip">{{$L('如果必填，发送聊天前必须设置昵称。')}}</div>
+                <div v-if="formDatum.chat_information == 'required'" class="form-tip">{{$L('必填：发送聊天内容前必须设置昵称、电话。')}}</div>
+                <div v-else class="form-tip">{{$L('如果必填，发送聊天前必须设置昵称、电话。')}}</div>
             </FormItem>
             <FormItem :label="$L('自动归档任务')" prop="autoArchived">
                 <RadioGroup :value="formDatum.auto_archived" @on-change="formArchived">
