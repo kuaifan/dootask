@@ -39,7 +39,8 @@ function createMainWindow() {
             nativeWindowOpen: true
         }
     })
-    mainWindow.webContents.setUserAgent(mainWindow.webContents.getUserAgent() + " MainTaskWindow/" + process.platform + "/" + os.arch() + "/1.0");
+    const originalUA = mainWindow.webContents.session.getUserAgent() || mainWindow.webContents.getUserAgent()
+    mainWindow.webContents.setUserAgent(originalUA + " MainTaskWindow/" + process.platform + "/" + os.arch() + "/1.0");
     mainWindow.webContents.setWindowOpenHandler(({url}) => {
         openExternal(url)
         return {action: 'deny'}
@@ -138,7 +139,8 @@ function createSubWindow(args) {
 
         subWindow.push({ name, browser })
     }
-    browser.webContents.setUserAgent(browser.webContents.getUserAgent() + " SubTaskWindow/" + process.platform + "/" + os.arch() + "/1.0" + (args.userAgent ? (" " + args.userAgent) : ""));
+    const originalUA = browser.webContents.session.getUserAgent() || browser.webContents.getUserAgent()
+    browser.webContents.setUserAgent(originalUA + " SubTaskWindow/" + process.platform + "/" + os.arch() + "/1.0" + (args.userAgent ? (" " + args.userAgent) : ""));
     browser.webContents.setWindowOpenHandler(({url}) => {
         openExternal(url)
         return {action: 'deny'}
