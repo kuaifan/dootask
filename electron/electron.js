@@ -403,7 +403,7 @@ ipcMain.on('setDockBadge', (event, args) => {
         num = args.num
         tray = !!args.tray
     }
-    let text = utils.runNum(num) > 0 ? String(num) : ""
+    let text = typeof num === "string" ? num : (utils.runNum(num) > 0 ? String(num) : "")
     app.dock.setBadge(text)
     if (tray && mainTray) {
         mainTray.setTitle(text)
