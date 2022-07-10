@@ -484,7 +484,7 @@ class WebSocketDialogMsg extends AbstractModel
     public function generateMsgKey()
     {
         return match ($this->type) {
-            'text' => strip_tags($this->msg['text']),
+            'text' => str_replace("&nbsp;", " ", strip_tags($this->msg['text'])),
             'meeting', 'file' => $this->msg['name'],
             default => '',
         };
