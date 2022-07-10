@@ -283,7 +283,7 @@ class WebSocketDialogMsg extends AbstractModel
             'data' => [
                 'id' => $this->id,
                 'type' => $this->type,
-                'msg' => $this->msg,
+                'msg' => $this->quoteTextMsg(),
             ]
         ], $sender);
         if (Base::isSuccess($res)) {
@@ -328,7 +328,7 @@ class WebSocketDialogMsg extends AbstractModel
             'data' => [
                 'id' => $this->id,
                 'type' => $this->type,
-                'msg' => $this->msg,
+                'msg' => $this->quoteTextMsg(),
                 'userids' => implode(",", $userids),
             ]
         ], $sender);
@@ -488,6 +488,23 @@ class WebSocketDialogMsg extends AbstractModel
             'meeting', 'file' => $this->msg['name'],
             default => '',
         };
+    }
+
+    /**
+     * 返回引用消息（如果是文本消息则截取）
+     * @param int $strlen
+     * @return array|mixed
+     */
+    public function quoteTextMsg($strlen = 30)
+    {
+        $msg = $this->msg;
+        if ($this->type === 'text') {
+            $msg['text'] = $this->previewTextMsg($msg['text']);
+            if (mb_strlen($msg['text']) > $strlen) {
+                $msg['text'] = mb_substr($msg['text'], 0, $strlen - 3) . "...";
+            }
+        }
+        return $msg;
     }
 
     /**

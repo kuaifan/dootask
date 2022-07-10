@@ -1130,7 +1130,7 @@ class DialogController extends AbstractController
                     'data' => [
                         'id' => $msg->id,
                         'type' => $msg->type,
-                        'msg' => $msg->msg,
+                        'msg' => $msg->quoteTextMsg(),
                     ]
                 ]);
                 if (Base::isSuccess($res)) {
