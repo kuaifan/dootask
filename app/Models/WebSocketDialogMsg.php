@@ -502,11 +502,11 @@ class WebSocketDialogMsg extends AbstractModel
         $text = preg_replace("/<img\s+class=\"emoticon\"[^>]*?alt=\"(\S+)\"[^>]*?>/", "[$1]", $text);
         $text = preg_replace("/<img\s+class=\"emoticon\"[^>]*?>/", "[表情]", $text);
         $text = preg_replace("/<img\s+class=\"browse\"[^>]*?>/", "[图片]", $text);
-        if ($preserveHtml) {
-            return $text;
-        } else {
-            return strip_tags($text);
+        if (!$preserveHtml) {
+            $text = strip_tags($text);
+            $text = str_replace("&nbsp;", " ", $text);
         }
+        return $text;
     }
 
     /**
