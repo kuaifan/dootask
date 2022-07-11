@@ -4,7 +4,7 @@
 
         <div class="respond-user">
             <ul>
-                <li v-for="(userid, index) in respondData.userids" :key="index">
+                <li v-for="(userid, index) in respondData.userids" :key="index" @click="openUser(userid)">
                     <UserAvatar :userid="userid" :size="32" showName tooltipDisabled/>
                 </li>
             </ul>
@@ -23,5 +23,27 @@ export default {
             }
         },
     },
+
+    data() {
+        return {
+            openIng: false,
+        }
+    },
+
+    methods: {
+        openUser(userid) {
+            if (this.openIng) {
+                return
+            }
+            this.openIng = true
+            this.$store.dispatch("showSpinner", 600)
+            this.$store.dispatch("openDialogUserid", userid).then(_ => {
+                this.$emit("on-close")
+            }).finally(_ => {
+                this.openIng = false
+                this.$store.dispatch("hiddenSpinner")
+            });
+        }
+    }
 }
 </script>

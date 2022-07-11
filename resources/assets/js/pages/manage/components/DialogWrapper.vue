@@ -308,7 +308,7 @@
             v-model="groupInfoShow"
             placement="right"
             :size="400">
-            <DialogGroupInfo v-if="groupInfoShow" :dialogId="dialogId"/>
+            <DialogGroupInfo v-if="groupInfoShow" :dialogId="dialogId" @on-close="groupInfoShow=false"/>
         </DrawerOverlay>
 
         <!--回复列表-->
@@ -331,7 +331,7 @@
             v-model="respondShow"
             placement="right"
             :size="400">
-            <DialogRespond v-if="respondShow" :respond-data="respondData"/>
+            <DialogRespond v-if="respondShow" :respond-data="respondData" @on-close="respondShow=false"/>
         </DrawerOverlay>
 
         <!--待办完成-->

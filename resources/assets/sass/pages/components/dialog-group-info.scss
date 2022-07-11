@@ -49,17 +49,19 @@
     .group-info-user {
         flex: 1;
         overflow: auto;
-        margin-top: 16px;
-        padding: 0 24px;
+        margin-top: 12px;
+        padding: 0 12px;
 
         > ul {
             > li {
                 display: flex;
                 align-items: center;
                 list-style: none;
-                padding-bottom: 16px;
+                padding: 12px;
+                border-radius: 6px;
 
                 &:hover {
+                    background-color: rgba($primary-desc-color, 0.1);
                     .user-exit {
                         opacity: 1;
                         transform: translateX(0);
@@ -67,6 +69,9 @@
                 }
 
                 &.no {
+                    &:hover {
+                        background-color: transparent;
+                    }
                     justify-content: center;
                     color: #999;
                     .common-loading {

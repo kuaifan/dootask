@@ -18,7 +18,7 @@
 
         <div class="group-info-user">
             <ul>
-                <li v-for="(item, index) in userList" :key="index">
+                <li v-for="(item, index) in userList" :key="index" @click="openUser(item.userid)">
                     <UserAvatar :userid="item.userid" :size="32" showName tooltipDisabled/>
                     <div v-if="item.userid === dialogData.owner_id" class="user-tag">{{ $L("群主") }}</div>
                     <Icon v-else-if="dialogData.owner_id == userId || item.inviter == userId" class="user-exit" type="md-exit" @click="onExit(item)"/>
@@ -79,6 +79,8 @@ export default {
             addShow: false,
             addData: {},
             addLoad: 0,
+
+            openIng: false,
         }
     },
 
@@ -260,6 +262,20 @@ export default {
                 },
             });
         },
+
+        openUser(userid) {
+            if (this.openIng) {
+                return
+            }
+            this.openIng = true
+            this.$store.dispatch("showSpinner", 600)
+            this.$store.dispatch("openDialogUserid", userid).then(_ => {
+                this.$emit("on-close")
+            }).finally(_ => {
+                this.openIng = false
+                this.$store.dispatch("hiddenSpinner")
+            });
+        }
     }
 }
 </script>

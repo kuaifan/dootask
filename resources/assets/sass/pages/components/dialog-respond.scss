@@ -28,14 +28,19 @@
     .respond-user {
         flex: 1;
         overflow: auto;
-        padding: 16px;
+        padding: 6px;
 
         > ul {
             > li {
                 display: flex;
                 align-items: center;
                 list-style: none;
-                padding-bottom: 16px;
+                padding: 12px;
+                border-radius: 6px;
+
+                &:hover {
+                    background-color: rgba($primary-desc-color, 0.1);
+                }
 
                 .common-avatar {
                     width: 0;
