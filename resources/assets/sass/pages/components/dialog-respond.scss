@@ -1,0 +1,50 @@
+.dialog-respond {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    .respond-title {
+        text-align: center;
+        height: 56px;
+        line-height: 56px;
+        border-bottom: 1px solid #eeeeee;
+        font-size: 16px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        > em {
+            font-style: normal;
+            font-size: 22px;
+            margin-right: 8px;
+        }
+    }
+
+    .respond-user {
+        flex: 1;
+        overflow: auto;
+        padding: 16px;
+
+        > ul {
+            > li {
+                display: flex;
+                align-items: center;
+                list-style: none;
+                padding-bottom: 16px;
+
+                .common-avatar {
+                    width: 0;
+                    flex: 1;
+                    .avatar-name {
+                        padding-left: 8px;
+                    }
+                }
+            }
+        }
+    }
+}

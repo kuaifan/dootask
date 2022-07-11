@@ -102,7 +102,8 @@
             @on-view-file="onViewFile"
             @on-down-file="onDownFile"
             @on-reply-list="onReplyList"
-            @on-emoji="onEmoji">
+            @on-emoji="onEmoji"
+            @on-show-emoji-user="onShowEmojiUser">
             <template slot="header">
                 <div v-if="(allMsgs.length === 0 && loadMsg) || prevId > 0" class="dialog-item loading"><Loading/></div>
                 <div v-else-if="allMsgs.length === 0" class="dialog-item nothing">{{$L('暂无消息')}}</div>
@@ -325,6 +326,14 @@
             </DialogWrapper>
         </DrawerOverlay>
 
+        <!--回应详情-->
+        <DrawerOverlay
+            v-model="respondShow"
+            placement="right"
+            :size="400">
+            <DialogRespond v-if="respondShow" :respond-data="respondData"/>
+        </DrawerOverlay>
+
         <!--待办完成-->
         <DrawerOverlay
             v-model="todoViewShow"
@@ -361,6 +370,7 @@ import DialogUpload from "./DialogUpload";
 import UserInput from "../../../components/UserInput";
 import DrawerOverlay from "../../../components/DrawerOverlay";
 import DialogGroupInfo from "./DialogGroupInfo";
+import DialogRespond from "./DialogRespond";
 import ChatInput from "./ChatInput";
 
 import VirtualList from 'vue-virtual-scroll-list-hi'
@@ -369,6 +379,7 @@ import {Store} from "le5le-store";
 export default {
     name: "DialogWrapper",
     components: {
+        DialogRespond,
         DialogItem,
         VirtualList,
         ChatInput,
@@ -443,6 +454,9 @@ export default {
 
             replyListShow: false,
             replyListId: 0,
+
+            respondShow: false,
+            respondData: {},
 
             todoSettingShow: false,
             todoSettingLoad: 0,
@@ -1795,6 +1809,14 @@ export default {
             }).finally(_ => {
                 this.$store.dispatch("cancelLoad", `msg-${data.msg_id}`)
             });
+        },
+
+        onShowEmojiUser(data) {
+            if (this.operateVisible) {
+                return
+            }
+            this.respondData = data
+            this.respondShow = true
         },
 
         onTag() {

@@ -76,7 +76,14 @@
                     :class="{hasme: item.userids.includes(userId)}"
                     @click="onEmoji(item.symbol)">
                     <div class="emoji-symbol no-dark-content">{{item.symbol}}</div>
-                    <div class="emoji-num">{{item.userids.length}}</div>
+                    <div class="emoji-users">
+                        <ul>
+                            <template v-for="(uitem, uindex) in item.userids">
+                                <li v-if="uindex < 5" :class="{bold:uitem==userId}"><UserAvatar :userid="uitem" tooltip-disabled show-name :show-icon="false"/></li>
+                                <li v-else-if="uindex == 5" @click.stop="onShowEmojiUser(item)">+{{item.userids.length - 5}}位</li>
+                            </template>
+                        </ul>
+                    </div>
                 </li>
             </ul>
         </div>
@@ -460,6 +467,10 @@ export default {
                 msg_id: this.msgData.id,
                 symbol
             })
+        },
+
+        onShowEmojiUser(item) {
+            this.$emit("on-show-emoji-user", item)
         },
     }
 }

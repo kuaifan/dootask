@@ -38,7 +38,8 @@
                 @on-view-file="onViewFile"
                 @on-down-file="onDownFile"
                 @on-reply-list="onReplyList"
-                @on-emoji="onEmoji"/>
+                @on-emoji="onEmoji"
+                @on-show-emoji-user="onShowEmojiUser"/>
         </template>
     </div>
 </template>
@@ -193,6 +194,10 @@ export default {
 
         onEmoji(data) {
             this.dispatch("on-emoji", data)
+        },
+
+        onShowEmojiUser(data) {
+            this.dispatch("on-show-emoji-user", data)
         },
 
         dispatch(event, arg) {

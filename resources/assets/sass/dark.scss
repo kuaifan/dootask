@@ -208,8 +208,15 @@ body.dark-mode-reverse {
                                     &.hasme {
                                         background-color: #b2ff93;
                                     }
-                                    .emoji-num {
-                                        color: #000000;
+                                    .emoji-users {
+                                        &:before {
+                                            background-color: rgba(#000000, 0.7);
+                                        }
+                                        > ul {
+                                            > li {
+                                                color: #000000;
+                                            }
+                                        }
                                     }
                                 }
                             }

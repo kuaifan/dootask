@@ -776,10 +776,39 @@
                             .emoji-symbol {
                                 font-size: 16px;
                             }
-                            .emoji-num {
-                                font-size: 12px;
-                                padding-left: 4px;
-                                color: #818181;
+                            .emoji-users {
+                                position: relative;
+                                padding-left: 14px;
+                                &:before {
+                                    position: absolute;
+                                    content: "";
+                                    left: 7px;
+                                    top: 6px;
+                                    bottom: 6px;
+                                    width: 1px;
+                                    transform: scaleX(0.5);
+                                    background-color: rgba(#818181, 0.7);
+                                }
+                                > ul {
+                                    display: flex;
+                                    flex-wrap: wrap;
+                                    align-items: center;
+                                    > li {
+                                        display: flex;
+                                        align-items: center;
+                                        list-style: none;
+                                        color: #818181;
+                                        font-size: 12px;
+                                        &.bold {
+                                            font-weight: 600;
+                                        }
+                                        + li {
+                                            &:before {
+                                                content: "、";
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -968,8 +997,15 @@
                                 &.hasme {
                                     background-color: #5ba93c;
                                 }
-                                .emoji-num {
-                                    color: #ffffff;
+                                .emoji-users {
+                                    &:before {
+                                        background-color: rgba(#ffffff, 0.7);
+                                    }
+                                    > ul {
+                                        > li {
+                                            color: #ffffff;
+                                        }
+                                    }
                                 }
                             }
                         }
