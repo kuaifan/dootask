@@ -417,6 +417,13 @@
                             <Icon v-else type="ios-refresh" @click="getLogLists"></Icon>
                         </div>
                     </div>
+                    <div class="menu">
+                        <div v-if="navActive=='dialog' && taskDetail.msg_num > 0" class="menu-item" @click.stop="onSend">
+                            {{$L('任务聊天')}}
+                            <em>({{taskDetail.msg_num > 99 ? '99+' : taskDetail.msg_num}})</em>
+                            <i class="taskfont">&#xe703;</i>
+                        </div>
+                    </div>
                 </div>
                 <ProjectLog v-if="navActive=='log' && taskId > 0" ref="log" :task-id="taskDetail.id" :show-load="false" @on-load-change="logLoadChange"/>
                 <div v-else class="no-dialog"
@@ -436,7 +443,6 @@
                             @on-file="onSelectFile"
                             @on-record="onRecord"
                             @on-send="onSend"/>
-                        <div v-if="sendLoad === 0 && taskDetail.msg_num" class="input-badge" @click.stop="onSend">{{taskDetail.msg_num > 99 ? '99+' : taskDetail.msg_num}}</div>
                     </div>
                     <div v-if="dialogDrag" class="drag-over" @click="dialogDrag=false">
                         <div class="drag-text">{{$L('拖动到这里发送')}}</div>

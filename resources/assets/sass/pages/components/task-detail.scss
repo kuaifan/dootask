@@ -556,6 +556,21 @@
                     }
                 }
             }
+            .menu {
+                .menu-item {
+                    display: flex;
+                    align-items: center;
+                    line-height: 24px;
+                    > em {
+                        font-style: normal;
+                        padding-left: 1px;
+                    }
+                    > i {
+                        padding-left: 4px;
+                        font-size: 14px;
+                    }
+                }
+            }
         }
         .no-dialog {
             flex: 1;
@@ -585,24 +600,6 @@
                             }
                         }
                     }
-                }
-                .input-badge {
-                    position: absolute;
-                    transform: scale(0.8) translateX(100%);
-                    transform-origin: right center;
-                    bottom: 28px;
-                    right: 22px;
-                    z-index: 2;
-                    height: 20px;
-                    border-radius: 10px;
-                    min-width: 20px;
-                    background: #ed4014;
-                    color: #fff;
-                    line-height: 20px;
-                    text-align: center;
-                    padding: 0 6px;
-                    font-size: 12px;
-                    white-space: nowrap;
                 }
             }
             .drag-over {
