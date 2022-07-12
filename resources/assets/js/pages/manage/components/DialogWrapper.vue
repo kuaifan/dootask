@@ -876,21 +876,18 @@ export default {
                 });
             } else {
                 // 发送
-                const tempId = $A.randNum(1000000000, 9999999999);
+                const tempId = $A.randNum(1000000000, 9999999999)
+                const typeLoad = $A.stringLength(msgText) > 2000
                 const tempMsg = {
                     id: tempId,
                     dialog_id: this.dialogData.id,
                     reply_id: this.replyId,
                     reply_data: this.replyItem,
-                    type: 'text',
+                    type: typeLoad ? 'loading' : 'text',
                     userid: this.userId,
                     msg: {
-                        text: $A.stringLength(msgText) > 2000 ? '' : msgText,
+                        text: typeLoad ? '' : msgText,
                     },
-                };
-                if (msgText.length > 2000) {
-                    tempMsg.type = 'loading';
-                    tempMsg.msg = { };
                 }
                 this.tempMsgs.push(tempMsg)
                 this.msgType = ''

@@ -485,10 +485,11 @@ export default {
             }
             this.$set(user, 'loading', true);
             this.$store.dispatch("openDialogUserid", user.userid).then(_ => {
-                this.$set(user, 'loading', false);
                 if (this.windowLarge) {
                     this.tabActive = 'dialog';
                 }
+            }).finally(_ => {
+                this.$set(user, 'loading', false);
             });
         },
 

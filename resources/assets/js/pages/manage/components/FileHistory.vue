@@ -32,8 +32,6 @@
 }
 </style>
 <script>
-import {mapState} from "vuex";
-
 export default {
     name: "FileHistory",
     props: {
