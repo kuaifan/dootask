@@ -494,7 +494,7 @@ export default {
         },
 
         filterDialog(dialog) {
-            if ($A.getDialogUnread(dialog) > 0 || dialog.id == this.dialogId || dialog.top_at) {
+            if ($A.getDialogUnread(dialog) > 0 || dialog.id == this.dialogId || dialog.top_at || dialog.todo_num > 0) {
                 return true
             }
             if (dialog.name === undefined || dialog.dialog_delete === 1) {

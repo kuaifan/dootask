@@ -126,7 +126,7 @@
                 <div class="todo-label">{{$L('待办')}}:</div>
                 <ul class="scrollbar-hidden">
                     <li v-for="item in todoList" @click.stop="onViewTodo(item)">
-                        <div class="todo-desc">{{$A.getMsgSimpleDesc(item.msg_data)}}</div>
+                        <div class="todo-desc no-dark-content">{{$A.getMsgSimpleDesc(item.msg_data)}}</div>
                     </li>
                 </ul>
             </div>
