@@ -1555,6 +1555,9 @@
 
             .dialog-item {
                 .dialog-view {
+                    &.text {
+                        max-width: calc(100% - 40px);
+                    }
                     .dialog-head {
                         .dialog-content {
                             a, img {
