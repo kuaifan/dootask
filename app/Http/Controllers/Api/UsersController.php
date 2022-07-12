@@ -983,4 +983,100 @@ class UsersController extends AbstractController
         $data['msgs'] = $msgs;
         return Base::retSuccess('发送邀请成功', $data);
     }
+
+    /**
+     * @api {get} api/users/send/email          18. 发送邮箱验证码
+     *
+     * @apiDescription  需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName send__email
+     *
+     * @apiParam {Number} type               邮件类型
+     * @apiParam {String} email              邮箱地址
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function send__email()
+    {
+        $type = Request::input('type', 2);
+        $email = Request::input('email');
+        $user = User::auth();
+        if (!$email) {
+            return Base::retError('请输入新邮箱地址');
+        }
+        if (!Base::isEmail($email)) {
+            return Base::retError('邮箱地址错误');
+        }
+        if ($user->email == $email) {
+            return Base::retError('不能与旧邮箱一致');
+        }
+        if (User::where('userid', '<>', $user->userid)->whereEmail($email)->exists()) {
+            return Base::retError('邮箱地址已存在');
+        }
+        UserEmailVerification::userEmailSend($user, $type, $email);
+        return Base::retSuccess('发送成功');
+    }
+
+    /**
+     * @api {get} api/users/editemail         19. 修改邮箱
+     *
+     * @apiDescription  需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName editemail
+     *
+     * @apiParam {String} newEmail          新邮箱地址
+     * @apiParam {String} code              邮箱验证码
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function editemail()
+    {
+        $user = User::auth();
+        $user->checkSystem();
+        //
+        $newEmail = trim(Request::input('newEmail'));
+        $code = trim(Request::input('code'));
+        if (!$newEmail) {
+            return Base::retError('请输入新邮箱地址');
+        }
+        if (!Base::isEmail($newEmail)) {
+            return Base::retError('邮箱地址错误');
+        }
+
+        $isRegVerify = Base::settingFind('emailSetting', 'reg_verify') === 'open';
+        if ($isRegVerify) {
+            if (!$code) {
+                return Base::retError('请输入验证码');
+            }
+
+            $res = UserEmailVerification::whereEmail($newEmail)->whereCode($code)->whereType(2)->orderByDesc('id')->first();
+
+            if (empty($res)) {
+                return Base::retError('验证码错误');
+            }
+
+            $oldTime = Carbon::parse($res->created_at)->timestamp;
+            $time = Base::Time();
+
+            // 30分钟失效
+            if (abs($time - $oldTime) > 1800) {
+                return Base::retError("验证码已失效");
+            }
+
+            UserEmailVerification::whereUserid($user->userid)->whereCode($code)->whereType(2)->update([
+                'status' => 1
+            ]);
+        }
+
+        $user->email = $newEmail;
+        $user->save();
+        User::token($user);
+        return Base::retSuccess('修改成功', $user);
+    }
 }

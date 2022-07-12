@@ -753,4 +753,24 @@ class SystemController extends AbstractController
         }
         return $array;
     }
+
+    /**
+     * @api {get} api/system/get/regverify          18. 获取是否开启邮箱验证
+     *
+     * @apiDescription 获取邮箱配置是否开启注册邮箱验证
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName get__regverify
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function get__regverify()
+    {
+        User::auth();
+        $isRegVerify = Base::settingFind('emailSetting', 'reg_verify') === 'open';
+        return Base::retSuccess('success', $isRegVerify ? 1 : 0);
+    }
+
 }

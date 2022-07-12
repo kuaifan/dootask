@@ -36,39 +36,46 @@ class UserEmailVerification extends AbstractModel
     /**
      * 发验证邮箱
      * @param User $user
+     * @param int $type
+     * @param null $newEmail
      */
-    public static function userEmailSend(User $user)
+    public static function userEmailSend(User $user, $type = 1, $newEmail = null)
     {
-        $res = self::whereUserid($user->userid)->where('created_at', '>', Carbon::now()->subMinutes(30))->first();
+        $email = $type == 2 ? $newEmail : $user->email;
+        $res = self::whereEmail($email)->where('created_at', '>', Carbon::now()->subMinutes(30))->whereType($type)->first();
         if ($res) return;
         //删除
-        self::whereUserid($user->userid)->delete();
+        self::whereUserid($email)->delete();
+        $code = $type == 2 ? rand(100000, 999999) : Base::generatePassword(64);
         $userEmailVerification = self::createInstance([
             'userid' => $user->userid,
-            'email' => $user->email,
-            'code' => Base::generatePassword(64),
+            'email' => $email,
+            'code' => $code,
             'status' => 0,
+            'type' => $type
         ]);
         $userEmailVerification->save();
-
         $setting = Base::setting('emailSetting');
         $url = Base::fillUrl('single/valid/email') . '?code=' . $userEmailVerification->code;
         try {
-            if (!Base::isEmail($user->email)) {
-                throw new \Exception("User email '{$user->email}' address error");
+            if (!Base::isEmail($email)) {
+                throw new \Exception("User email '{$email}' address error");
             }
-            $subject = env('APP_NAME') . " 绑定邮箱验证";
-            $content = "<p>{$user->nickname} 您好，您正在绑定 " . env('APP_NAME') . " 的邮箱，请于30分钟之内点击以下链接完成验证 :</p><p style='display: flex; justify-content: center;'><a href='{$url}' target='_blank'>{$url}</a></p>";
-            Setting::validateAddr($user->email, function ($to) use ($content, $subject, $setting) {
-                Factory::mailer()
-                    ->setDsn("smtp://{$setting['account']}:{$setting['password']}@{$setting['smtp_server']}:{$setting['port']}?verify_peer=0")
-                    ->setMessage(EmailMessage::create()
-                        ->from(env('APP_NAME', 'Task') . " <{$setting['account']}>")
-                        ->to($to)
-                        ->subject($subject)
-                        ->html($content))
-                    ->send();
-            });
+            if($type ==2){
+                $subject = env('APP_NAME') . "修改邮箱验证";
+                $content = "<p>{$user->nickname} 您好，您正在修改 " . env('APP_NAME') . " 的邮箱，验证码如下。请在30分钟内输入验证码</p><p style='color: #0000DD; margin-left: 10%;'>$code</p><p>如果不是本人操作，您的账号可能存在风险，请及时修改密码!</p>";
+            }else{
+                $subject = env('APP_NAME') . "绑定邮箱验证";
+                $content = "<p>{$user->nickname} 您好，您正在绑定 " . env('APP_NAME') . " 的邮箱，请于30分钟之内点击以下链接完成验证 :</p><p style='display: flex; justify-content: center;'><a href='{$url}' target='_blank'>{$url}</a></p>";
+            }
+            Factory::mailer()
+                ->setDsn("smtp://{$setting['account']}:{$setting['password']}@{$setting['smtp_server']}:{$setting['port']}?verify_peer=0")
+                ->setMessage(EmailMessage::create()
+                    ->from(env('APP_NAME', 'Task') . " <{$setting['account']}>")
+                    ->to($email)
+                    ->subject($subject)
+                    ->html($content))
+                ->send();
         } catch (\Throwable $e) {
             if (str_contains($e->getMessage(), "Timed Out")) {
                 throw new ApiException("language.TimedOut");

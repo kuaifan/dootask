@@ -73,6 +73,7 @@ export default {
                 {path: 'personal', name: '个人设置'},
                 {path: 'language', name: '语言设置'},
                 {path: 'password', name: '密码设置'},
+                {path: 'email', name: '修改邮箱'},
             ]
             if ([
                 '127.0.0.1:2222',
