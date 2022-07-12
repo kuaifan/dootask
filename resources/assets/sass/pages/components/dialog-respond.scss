@@ -42,6 +42,12 @@
                     background-color: rgba($primary-desc-color, 0.1);
                 }
 
+                @media (max-width: 768px) {
+                    &:hover {
+                        background-color: transparent;
+                    }
+                }
+
                 .common-avatar {
                     width: 0;
                     flex: 1;

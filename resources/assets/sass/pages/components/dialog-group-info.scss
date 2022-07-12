@@ -68,6 +68,12 @@
                     }
                 }
 
+                @media (max-width: 768px) {
+                    &:hover {
+                        background-color: transparent;
+                    }
+                }
+
                 &.no {
                     &:hover {
                         background-color: transparent;
