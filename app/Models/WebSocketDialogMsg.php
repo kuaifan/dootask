@@ -365,23 +365,42 @@ class WebSocketDialogMsg extends AbstractModel
 
     /**
      * 转发消息
-     * @param $userids
+     * @param array|int $dialogids
+     * @param array|int $userids
      * @param int $sender       发送的会员ID
      * @return mixed
      */
-    public function forwardMsg($userids, $sender)
+    public function forwardMsg($dialogids, $userids, $sender)
     {
-        return AbstractModel::transaction(function() use ($sender, $userids) {
+        return AbstractModel::transaction(function() use ($dialogids, $sender, $userids) {
             $msgs = [];
-            foreach ($userids as $userid) {
-                if (!User::whereUserid($userid)->exists()) {
-                    continue;
+            $already = [];
+            if ($dialogids) {
+                if (!is_array($dialogids)) {
+                    $dialogids = [$dialogids];
                 }
-                $dialog = WebSocketDialog::checkUserDialog($sender, $userid);
-                if ($dialog) {
-                    $res = self::sendMsg(null, $dialog->id, $this->type, $this->getOriginal('msg'), $sender);
+                foreach ($dialogids as $dialogid) {
+                    $res = self::sendMsg(null, $dialogid, $this->type, $this->getOriginal('msg'), $sender);
                     if (Base::isSuccess($res)) {
                         $msgs[] = $res['data'];
+                        $already[] = $dialogid;
+                    }
+                }
+            }
+            if ($userids) {
+                if (!is_array($userids)) {
+                    $userids = [$userids];
+                }
+                foreach ($userids as $userid) {
+                    if (!User::whereUserid($userid)->exists()) {
+                        continue;
+                    }
+                    $dialog = WebSocketDialog::checkUserDialog($sender, $userid);
+                    if ($dialog && !in_array($dialog->id, $already)) {
+                        $res = self::sendMsg(null, $dialog->id, $this->type, $this->getOriginal('msg'), $sender);
+                        if (Base::isSuccess($res)) {
+                            $msgs[] = $res['data'];
+                        }
                     }
                 }
             }

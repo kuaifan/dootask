@@ -271,8 +271,38 @@
             :title="$L('转发')"
             :mask-closable="false">
             <Form ref="forwardForm" :model="forwardData" label-width="auto" @submit.native.prevent>
-                <FormItem prop="userids" :label="$L('转发给')">
-                    <UserInput v-model="forwardData.userids" :multiple-max="20" :placeholder="$L('选择转发成员')"/>
+                <FormItem prop="dialogids" :label="$L('最近聊天')">
+                    <Select
+                        v-model="forwardData.dialogids"
+                        :placeholder="$L('选择转发对话')"
+                        :multiple-max="20"
+                        multiple
+                        filterable
+                        transfer-class-name="dialog-wrapper-forward">
+                        <div slot="drop-prepend" class="forward-drop-prepend">{{$L('最多只能选择20个')}}</div>
+                        <Option
+                            v-for="(dialog, key) in dialogList"
+                            :value="dialog.id"
+                            :key="key"
+                            :key-value="dialog.name"
+                            :label="dialog.name">
+                            <div class="forward-option">
+                                <div class="forward-avatar">
+                                    <template v-if="dialog.type=='group'">
+                                        <i v-if="dialog.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
+                                        <i v-else-if="dialog.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
+                                        <Icon v-else class="icon-avatar" type="ios-people" />
+                                    </template>
+                                    <div v-else-if="dialog.dialog_user" class="user-avatar"><UserAvatar :userid="dialog.dialog_user.userid" :size="26"/></div>
+                                    <Icon v-else class="icon-avatar" type="md-person" />
+                                </div>
+                                <div class="forward-name">{{ dialog.name }}</div>
+                            </div>
+                        </Option>
+                    </Select>
+                </FormItem>
+                <FormItem prop="userids" :label="$L('团队成员')">
+                    <UserInput v-model="forwardData.userids" :multiple-max="20" :placeholder="`(${$L('或')}) ${$L('选择转发成员')}`"/>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
@@ -426,6 +456,7 @@ export default {
             forwardShow: false,
             forwardLoad: false,
             forwardData: {
+                dialogids: [],
                 userids: [],
             },
 
@@ -504,6 +535,20 @@ export default {
 
         dialogData() {
             return this.cacheDialogs.find(({id}) => id == this.dialogId) || {};
+        },
+
+        dialogList() {
+            return this.cacheDialogs.filter(dialog => {
+                return !(dialog.name === undefined || dialog.dialog_delete === 1);
+            }).sort((a, b) => {
+                if (a.top_at || b.top_at) {
+                    return $A.Date(b.top_at) - $A.Date(a.top_at);
+                }
+                if (a.todo_num > 0 || b.todo_num > 0) {
+                    return b.todo_num - a.todo_num;
+                }
+                return $A.Date(b.last_at) - $A.Date(a.last_at);
+            });
         },
 
         dialogMsgList() {
@@ -1417,13 +1462,14 @@ export default {
         onForward(type) {
             if (type === 'open') {
                 this.forwardData = {
+                    dialogids: [],
                     userids: [],
                     msg_id: this.operateItem.id
                 };
                 this.forwardShow = true;
             } else if (type === 'submit') {
-                if ($A.arrayLength(this.forwardData.userids) === 0) {
-                    $A.messageWarning("请选择转发成员");
+                if ($A.arrayLength(this.forwardData.dialogids) === 0 && $A.arrayLength(this.forwardData.userids) === 0) {
+                    $A.messageWarning("请选择转发对话或成员");
                     return
                 }
                 this.forwardLoad = true;
