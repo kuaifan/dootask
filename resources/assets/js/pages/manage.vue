@@ -510,28 +510,26 @@ export default {
         },
 
         msgUnreadMention() {
-            if (this.msgTodoTotal) {
-                return this.msgTodoTotal
-            }
             let num = 0;
             let mention = 0;
             this.cacheDialogs.some(dialog => {
                 num += $A.getDialogUnread(dialog);
                 mention += $A.getDialogMention(dialog);
             })
-            if (num <= 0) {
-                return '';
-            }
             if (num > 99) {
                 num = "99+"
             }
-            if (mention > 0) {
-                if (mention > 99) {
-                    return "@99+"
-                }
-                return `${num}·@${mention}`
+            if (mention > 99) {
+                mention = "99+"
             }
-            return String(num);
+            const todoNum = this.msgTodoTotal
+            if (todoNum) {
+                return mention ? `${todoNum}·@${mention}` : todoNum;
+            }
+            if (!num) {
+                return "";
+            }
+            return mention ? `${num}·@${mention}` : String(num);
         },
 
         msgAllUnread() {
@@ -557,10 +555,8 @@ export default {
 
         unreadTotal() {
             if (this.userId > 0) {
-                if (this.msgTodoTotal) {
-                    return this.msgTodoTotal
-                }
-                return this.msgAllUnread + this.dashboardTask.overdue_count + this.reportUnreadNumber
+                const todoNum = this.cacheDialogs.reduce((total, current) => total + (current.todo_num || 0), 0)
+                return this.msgAllUnread + this.dashboardTask.overdue_count + this.reportUnreadNumber + todoNum
             } else {
                 return 0
             }
