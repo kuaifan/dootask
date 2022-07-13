@@ -561,12 +561,18 @@
                     display: flex;
                     align-items: center;
                     line-height: 24px;
+                    .menu-load {
+                        margin-right: 8px;
+                        width: 14px;
+                        height: 14px;
+                        display: flex;
+                    }
                     > em {
                         font-style: normal;
                         padding-left: 1px;
                     }
                     > i {
-                        padding-left: 4px;
+                        margin-left: 4px;
                         font-size: 14px;
                     }
                 }

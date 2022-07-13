@@ -418,7 +418,8 @@
                         </div>
                     </div>
                     <div class="menu">
-                        <div v-if="navActive=='dialog' && taskDetail.msg_num > 0" class="menu-item" @click.stop="onSend">
+                        <div v-if="navActive=='dialog' && taskDetail.msg_num > 0" class="menu-item" @click.stop="onSend('open')">
+                            <div v-if="openLoad > 0" class="menu-load"><Loading/></div>
                             {{$L('任务聊天')}}
                             <em>({{taskDetail.msg_num > 99 ? '99+' : taskDetail.msg_num}})</em>
                             <i class="taskfont">&#xe703;</i>
@@ -531,6 +532,7 @@ export default {
             logLoadIng: false,
 
             sendLoad: 0,
+            openLoad: 0,
 
             taskPlugins: [
                 'advlist autolink lists link image charmap print preview hr anchor pagebreak',
@@ -1212,11 +1214,15 @@ export default {
             this.$refs.upload.handleClick()
         },
 
-        msgDialog(msgText = null) {
-            if (this.sendLoad > 0) {
+        msgDialog(msgText = null, onlyOpen = false) {
+            if (this.sendLoad > 0 || this.openLoad > 0) {
                 return;
             }
-            this.sendLoad++;
+            if (onlyOpen === true) {
+                this.openLoad++;
+            } else {
+                this.sendLoad++;
+            }
             //
             this.$store.dispatch("call", {
                 url: 'project/task/dialog',
@@ -1260,7 +1266,11 @@ export default {
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {
-                this.sendLoad--;
+                if (onlyOpen === true) {
+                    this.openLoad--;
+                } else {
+                    this.sendLoad--;
+                }
             });
         },
 
@@ -1316,7 +1326,11 @@ export default {
 
         onSend(msgText) {
             this.$refs.chatInput && this.$refs.chatInput.hidePopover();
-            this.msgDialog(msgText);
+            if (msgText === 'open') {
+                this.msgDialog(null, true);
+            } else {
+                this.msgDialog(msgText);
+            }
         },
 
         deleteFile(file) {
