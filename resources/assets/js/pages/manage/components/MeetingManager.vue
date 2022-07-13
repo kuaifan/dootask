@@ -317,7 +317,9 @@ export default {
                 this.$refs[`meeting_${this.localUser.uid}`].play('video')
             }
             // 将本地视频曲目播放到本地浏览器、将本地音频和视频发布到频道。
-            await this.agoraClient.publish(localTracks);
+            if (localTracks.length > 0) {
+                await this.agoraClient.publish(localTracks);
+            }
             //
             this.loadIng--;
             this.addShow = false;

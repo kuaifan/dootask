@@ -3,6 +3,7 @@ body {
         &.meeting-manager {
             .ivu-modal {
                 .ivu-modal-content {
+                    border-radius: 0;
                     .ivu-modal-body {
                         padding: 16px 24px 0;
                         > ul {

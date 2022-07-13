@@ -50,9 +50,19 @@ export default [
                         component: () => import('./pages/manage/setting/password.vue'),
                     },
                     {
+                        name: 'manage-setting-email',
+                        path: 'email',
+                        component: () => import('./pages/manage/setting/email.vue'),
+                    },
+                    {
                         name: 'manage-setting-system',
                         path: 'system',
                         component: () => import('./pages/manage/setting/system.vue'),
+                    },
+                    {
+                        name: 'manage-setting-delete',
+                        path: 'delete',
+                        component: () => import('./pages/manage/setting/delete.vue'),
                     },
                 ]
             },

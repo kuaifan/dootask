@@ -740,16 +740,6 @@
                             }
                         }
 
-                        .content-loading {
-                            display: flex;
-
-                            .common-loading {
-                                width: 20px;
-                                height: 20px;
-                                margin: 4px;
-                            }
-                        }
-
                         .content-unknown {
                             text-decoration: underline;
                         }
@@ -787,7 +777,7 @@
                                     bottom: 6px;
                                     width: 1px;
                                     transform: scaleX(0.5);
-                                    background-color: rgba(#818181, 0.7);
+                                    background-color: rgba(#818181, 0.5);
                                 }
                                 > ul {
                                     display: flex;
@@ -999,7 +989,7 @@
                                 }
                                 .emoji-users {
                                     &:before {
-                                        background-color: rgba(#ffffff, 0.7);
+                                        background-color: rgba(#ffffff, 0.5);
                                     }
                                     > ul {
                                         > li {
@@ -1556,7 +1546,7 @@
             .dialog-item {
                 .dialog-view {
                     &.text {
-                        max-width: calc(100% - 38px);
+                        max-width: calc(100% - 52px);
                     }
                     .dialog-head {
                         .dialog-content {
