@@ -72,7 +72,7 @@
                         <div class="plans-table-info-desc">{{$L('拥有最新版本所有功能')}}</div>
                         <div class="plans-table-info-desc">{{$L('无限制')}}</div>
                         <div class="plans-table-info-btn">
-                            <Tooltip :content="$L('账号：%、密码：%', 'admin', '123456')" transfer>
+                            <Tooltip :content="$L('帐号：%、密码：%', 'admin', '123456')" transfer>
                                 <a href="https://www.dootask.com" class="btn" target="_blank">{{$L('体验DEMO')}}</a>
                             </Tooltip>
                         </div>
@@ -247,7 +247,7 @@
                             <div class="plans-table-td"><span> - </span></div>
                             <div class="plans-table-td"><span> - </span></div>
                             <div class="plans-table-info-btn">
-                                <Tooltip :content="$L('账号：%、密码：%', 'admin', '123456')" transfer>
+                                <Tooltip :content="$L('帐号：%、密码：%', 'admin', '123456')" transfer>
                                     <a href="https://www.dootask.com" class="btn" target="_blank">{{$L('体验DEMO')}}</a>
                                 </Tooltip>
                             </div>

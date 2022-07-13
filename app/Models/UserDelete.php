@@ -9,7 +9,7 @@ namespace App\Models;
  *
  * @property int $id
  * @property int|null $userid 用户id
- * @property string|null $email 邮箱账号
+ * @property string|null $email 邮箱帐号
  * @property string|null $reason 注销原因
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at

@@ -16,7 +16,7 @@ class CreateUserDeletesTable extends Migration
         Schema::create('user_deletes', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('userid')->nullable()->default(0)->comment('用户id');
-            $table->string('email', 100)->nullable()->default('')->comment('邮箱账号');
+            $table->string('email', 100)->nullable()->default('')->comment('邮箱帐号');
             $table->text('reason')->nullable()->comment('注销原因');
             $table->timestamps();
         });

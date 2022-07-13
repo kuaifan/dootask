@@ -1074,7 +1074,7 @@ class UsersController extends AbstractController
      * @apiGroup users
      * @apiName delete__account
      *
-     * @apiParam {String} email          账号邮箱
+     * @apiParam {String} email          帐号邮箱
      * @apiParam {String} code           邮箱验证码
      * @apiParam {String} reason         注销理由
      * @apiParam {String} password       登录密码

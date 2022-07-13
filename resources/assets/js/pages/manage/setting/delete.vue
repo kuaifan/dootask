@@ -1,12 +1,12 @@
 <template>
     <div class="setting-item submit">
         <Form ref="formDatum" :model="formDatum" :rules="ruleDatum" label-width="auto" @submit.native.prevent>
-            <FormItem :label="$L('账号')" prop="email">
+            <FormItem :label="$L('帐号')" prop="email">
                 <div class="setting-email">
                     <Input v-if="isRegVerify == 1" v-model="formDatum.email"
                            :class="count > 0 ? 'setting-send-input':'setting-input'" search @on-search="sendEmailCode"
                            :enter-button="$L(sendBtnText)" :placeholder="$L('请输入邮箱')"/>
-                    <Input v-else class="setting-input" v-model="formDatum.email" :placeholder="$L('请输入邮箱账号')"/>
+                    <Input v-else class="setting-input" v-model="formDatum.email" :placeholder="$L('请输入邮箱帐号')"/>
                 </div>
             </FormItem>
             <FormItem :label="$L('邮箱验证码')" prop="code" v-if="isRegVerify == 1">
@@ -26,15 +26,15 @@
         </div>
         <Modal
             v-model="warningShow"
-            :title="$L(`删除${appTitle}账号`)"
+            :title="$L(`删除${appTitle}帐号`)"
             class="page-setting-delete-box">
-            <div class="big-text">{{ $L('账号删除后，该账号将无法正常登录且无法恢复，账号下的所有数据也将被删除。') }}</div>
+            <div class="big-text">{{ $L('帐号删除后，该帐号将无法正常登录且无法恢复，帐号下的所有数据也将被删除。') }}</div>
             <div class="small-text">
                 <div>{{ $L('注销前，请确认一下事项：') }}</div>
-                <div>{{ $L('1、您将无法查看该账号内的任何信息，包括账号信息、文件记录、聊天记录、项目信息、团队成员信息等。') }}</div>
+                <div>{{ $L('1、您将无法查看该帐号内的任何信息，包括帐号信息、文件记录、聊天记录、项目信息、团队成员信息等。') }}</div>
                 <div>{{ $L('2、若你是团队的所有者，请在注销您的账户前转移所有权。例如该账户所创建的项目（可将项目移交他人或删除项目）以及文件夹。') }}</div>
                 <div>{{ $L('3、您将退出所有群聊，无法查到过往消息和人员。') }}</div>
-                <div>{{ $L('4、请保证账号未被暂停使用。') }}</div>
+                <div>{{ $L('4、请保证帐号未被暂停使用。') }}</div>
             </div>
             <div slot="footer" class="button-box">
                 <Button type="primary" :loading="loadIng > 0" @click="submitForm('confirm')">{{ $L('已清楚风险，确定注销') }}
@@ -63,9 +63,9 @@ export default {
                     {
                         validator: (rule, value, callback) => {
                             if (value.trim() === '') {
-                                callback(new Error(this.$L('请输入邮箱账号！')));
+                                callback(new Error(this.$L('请输入邮箱帐号！')));
                             } else if (!$A.isEmail(value.trim())) {
-                                callback(new Error(this.$L('请输入正确邮箱账号！')));
+                                callback(new Error(this.$L('请输入正确邮箱帐号！')));
                             } else {
                                 callback();
                             }
