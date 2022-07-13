@@ -49,9 +49,9 @@ export default {
                 newEmail: [
                     {
                         validator: (rule, value, callback) => {
-                            if (value === '') {
+                            if (value.trim() === '') {
                                 callback(new Error(this.$L('请输入新邮箱地址！')));
-                            } else if (!$A.isEmail(value)) {
+                            } else if (!$A.isEmail(value.trim())) {
                                 callback(new Error(this.$L('请输入正确的邮箱地址！')));
                             } else {
                                 callback();
