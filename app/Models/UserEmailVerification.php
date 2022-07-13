@@ -16,6 +16,7 @@ use Guanguans\Notify\Messages\EmailMessage;
  * @property string|null $code 验证参数
  * @property string|null $email 电子邮箱
  * @property int|null $status 0-未验证，1-已验证
+ * @property int|null $type 邮件类型：1-邮箱认证，2-修改邮箱
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @method static \Illuminate\Database\Eloquent\Builder|UserEmailVerification newModelQuery()
@@ -26,11 +27,10 @@ use Guanguans\Notify\Messages\EmailMessage;
  * @method static \Illuminate\Database\Eloquent\Builder|UserEmailVerification whereEmail($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserEmailVerification whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserEmailVerification whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UserEmailVerification whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserEmailVerification whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserEmailVerification whereUserid($value)
  * @mixin \Eloquent
- * @property int|null $type 邮件类型：1-邮箱认证，2-修改邮箱，3-删除账号
- * @method static \Illuminate\Database\Eloquent\Builder|UserEmailVerification whereType($value)
  */
 class UserEmailVerification extends AbstractModel
 {

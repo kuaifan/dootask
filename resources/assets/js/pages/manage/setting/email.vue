@@ -3,8 +3,10 @@
         <Form ref="formDatum" :model="formDatum" :rules="ruleDatum" label-width="auto" @submit.native.prevent>
             <FormItem :label="$L('新邮箱地址')" prop="newEmail">
                 <div class="setting-email">
-                    <Input v-if="isRegVerify == 1" v-model="formDatum.newEmail" :class="count > 0 ? 'setting-send-input':'setting-input'" search @on-search="sendEmailCode" :enter-button="$L(sendBtnText)" :placeholder="$L('输入新邮箱地址')" />
-                    <Input v-else class="setting-input" v-model="formDatum.newEmail"  :placeholder="$L('输入新邮箱地址')"/>
+                    <Input v-if="isRegVerify == 1" v-model="formDatum.newEmail"
+                           :class="count > 0 ? 'setting-send-input':'setting-input'" search @on-search="sendEmailCode"
+                           :enter-button="$L(sendBtnText)" :placeholder="$L('输入新邮箱地址')"/>
+                    <Input v-else class="setting-input" v-model="formDatum.newEmail" :placeholder="$L('输入新邮箱地址')"/>
                 </div>
             </FormItem>
             <FormItem :label="$L('验证码')" prop="code" v-if="isRegVerify == 1">
@@ -28,20 +30,7 @@ export default {
                 newEmail: '',
                 code: '',
             },
-            ruleDatum: {},
-            count: 0,
-            isSendButtonShow: true,
-            isRegVerify: 0,
-            sendBtnText: ''
-        }
-    },
-    mounted() {
-        this.getRegVerify();
-    },
-    methods: {
-        initLanguage() {
-            this.sendBtnText =  this.$L('发送验证码');
-            this.ruleDatum = {
+            ruleDatum: {
                 newEmail: [
                     {
                         validator: (rule, value, callback) => {
@@ -57,15 +46,31 @@ export default {
                         trigger: 'change'
                     },
                 ],
-            };
-        },
+            },
+            count: 0,
+            isSendButtonShow: true,
+            isRegVerify: 0,
+            sendBtnText: this.$L('发送验证码')
+        }
+    },
+
+    mounted() {
+        this.getRegVerify();
+    },
+
+    methods: {
         sendEmailCode() {
             this.$store.dispatch("call", {
-                url: 'users/send/email',
-                data: {type: 2, email: this.formDatum.newEmail}
-            }).then(({}) => {
+                url: 'users/email/send',
+                data: {
+                    type: 2,
+                    email: this.formDatum.newEmail
+                },
+                spinner: true
+            }).then(_ => {
                 this.isSendButtonShow = false;
                 this.count = 120; //赋值120秒
+                this.sendBtnText = this.count + ' 秒';
                 let times = setInterval(() => {
                     this.count--; //递减
                     this.sendBtnText = this.count + ' 秒';
@@ -78,12 +83,13 @@ export default {
                 $A.messageError(msg);
             })
         },
+
         submitForm() {
             this.$refs.formDatum.validate((valid) => {
                 if (valid) {
                     this.loadIng++;
                     this.$store.dispatch("call", {
-                        url: 'users/edit/email',
+                        url: 'users/email/edit',
                         data: this.formDatum,
                     }).then(({data}) => {
                         $A.messageSuccess('修改成功');
@@ -105,10 +111,9 @@ export default {
 
         getRegVerify() {
             this.$store.dispatch("call", {
-                url: 'system/get/regverify',
+                url: 'system/setting/email',
             }).then(({data}) => {
-                this.isRegVerify = data;
-            }).catch(() => {
+                this.isRegVerify = data.reg_verify === 'open';
             })
         },
     },

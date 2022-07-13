@@ -986,12 +986,12 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/send/email          18. 发送邮箱验证码
+     * @api {get} api/users/email/send          18. 发送邮箱验证码
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
      * @apiGroup users
-     * @apiName send__email
+     * @apiName email__send
      *
      * @apiParam {Number} type               邮件类型
      * @apiParam {String} email              邮箱地址
@@ -1000,11 +1000,12 @@ class UsersController extends AbstractController
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
      */
-    public function send__email()
+    public function email__send()
     {
+        $user = User::auth();
+        //
         $type = Request::input('type', 2);
         $email = Request::input('email');
-        $user = User::auth();
         if (!$email) {
             return Base::retError('请输入新邮箱地址');
         }
@@ -1025,7 +1026,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/edit/email         19. 修改邮箱
+     * @api {get} api/users/email/edit         19. 修改邮箱
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -1039,9 +1040,10 @@ class UsersController extends AbstractController
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
      */
-    public function edit__email()
+    public function email__edit()
     {
         $user = User::auth();
+        //
         $user->checkSystem();
         //
         $newEmail = trim(Request::input('newEmail'));
@@ -1126,8 +1128,6 @@ class UsersController extends AbstractController
                 return Base::retError('删除失败');
             }
         }
-
         return Base::retSuccess('success', $user);
     }
-
 }

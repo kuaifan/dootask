@@ -289,17 +289,18 @@
     }
 }
 
-.warning-box {
+.page-setting-delete-box {
     .big-text {
-        margin-top: 10px;
         font-size: 16px;
+        font-weight: 500;
+        color: #f00;
     }
 
     .small-text {
         margin-top: 15px;
 
-        div {
-            margin-top: 10px;
+        > div {
+            margin: 10px 0;
         }
     }
     .button-box {
