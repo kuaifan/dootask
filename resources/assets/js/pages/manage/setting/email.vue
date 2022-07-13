@@ -1,13 +1,12 @@
 <template>
     <div class="setting-item submit">
-        <Form ref="formDatum" :model="formDatum" :rules="ruleDatum" label-width="auto" @submit.native.prevent>
+        <Loading v-if="configLoad > 0"/>
+        <Form v-else ref="formDatum" :model="formDatum" :rules="ruleDatum" label-width="auto" @submit.native.prevent>
             <FormItem :label="$L('新邮箱地址')" prop="newEmail">
-                <div class="setting-email">
-                    <Input v-if="isRegVerify == 1" v-model="formDatum.newEmail"
-                           :class="count > 0 ? 'setting-send-input':'setting-input'" search @on-search="sendEmailCode"
-                           :enter-button="$L(sendBtnText)" :placeholder="$L('输入新邮箱地址')"/>
-                    <Input v-else class="setting-input" v-model="formDatum.newEmail" :placeholder="$L('输入新邮箱地址')"/>
-                </div>
+                <Input v-if="isRegVerify == 1" v-model="formDatum.newEmail"
+                       :class="count > 0 ? 'setting-send-input':'setting-input'" search @on-search="sendEmailCode"
+                       :enter-button="$L(sendBtnText)" :placeholder="$L('输入新邮箱地址')"/>
+                <Input v-else class="setting-input" v-model="formDatum.newEmail" :placeholder="$L('输入新邮箱地址')"/>
             </FormItem>
             <FormItem :label="$L('验证码')" prop="code" v-if="isRegVerify == 1">
                 <Input v-model="formDatum.code" :placeholder="$L('输入邮箱验证码')"/>
@@ -25,6 +24,7 @@ export default {
     data() {
         return {
             loadIng: 0,
+            configLoad: 0,
 
             formDatum: {
                 newEmail: '',
@@ -110,10 +110,13 @@ export default {
         },
 
         getRegVerify() {
+            this.configLoad++
             this.$store.dispatch("call", {
                 url: 'system/setting/email',
             }).then(({data}) => {
                 this.isRegVerify = data.reg_verify === 'open';
+            }).finally(_ => {
+                this.configLoad--
             })
         },
     },

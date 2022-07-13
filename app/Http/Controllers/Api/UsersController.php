@@ -1088,12 +1088,15 @@ class UsersController extends AbstractController
      */
     public function delete__account()
     {
+        $user = User::auth();
+        //
+        $user->checkSystem(1);
+        //
         $email = Request::input('email');
         $code = Request::input('code');
         $reason = Request::input('reason');
         $password = Request::input('password');
         $type = Request::input('type');
-        $user = User::auth();
         if (!$email) {
             return Base::retError('请输入新邮箱地址');
         }
