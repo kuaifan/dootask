@@ -29,6 +29,8 @@ use Guanguans\Notify\Messages\EmailMessage;
  * @method static \Illuminate\Database\Eloquent\Builder|UserEmailVerification whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserEmailVerification whereUserid($value)
  * @mixin \Eloquent
+ * @property int|null $type 邮件类型：1-邮箱认证，2-修改邮箱，3-删除账号
+ * @method static \Illuminate\Database\Eloquent\Builder|UserEmailVerification whereType($value)
  */
 class UserEmailVerification extends AbstractModel
 {
@@ -37,16 +39,16 @@ class UserEmailVerification extends AbstractModel
      * 发验证邮箱
      * @param User $user
      * @param int $type
-     * @param null $newEmail
+     * @param null $email
      */
-    public static function userEmailSend(User $user, $type = 1, $newEmail = null)
+    public static function userEmailSend(User $user, $type = 1, $email = null)
     {
-        $email = $type == 2 ? $newEmail : $user->email;
+        $email = $type != 1 ? $email : $user->email;
         $res = self::whereEmail($email)->where('created_at', '>', Carbon::now()->subMinutes(30))->whereType($type)->first();
         if ($res) return;
         //删除
         self::whereUserid($email)->delete();
-        $code = $type == 2 ? rand(100000, 999999) : Base::generatePassword(64);
+        $code = $type != 1 ? rand(100000, 999999) : Base::generatePassword(64);
         $userEmailVerification = self::createInstance([
             'userid' => $user->userid,
             'email' => $email,
@@ -61,10 +63,13 @@ class UserEmailVerification extends AbstractModel
             if (!Base::isEmail($email)) {
                 throw new \Exception("User email '{$email}' address error");
             }
-            if($type ==2){
+            if ($type == 2) {
                 $subject = env('APP_NAME') . "修改邮箱验证";
                 $content = "<p>{$user->nickname} 您好，您正在修改 " . env('APP_NAME') . " 的邮箱，验证码如下。请在30分钟内输入验证码</p><p style='color: #0000DD; margin-left: 10%;'>$code</p><p>如果不是本人操作，您的账号可能存在风险，请及时修改密码!</p>";
-            }else{
+            } elseif ($type == 3) {
+                $subject = env('APP_NAME') . "注销账号验证";
+                $content = "<p>{$user->nickname} 您好，您正在注销 " . env('APP_NAME') . " 的账号，验证码如下。请在30分钟内输入验证码</p><p style='color: #0000DD; margin-left: 10%;'>$code</p><p>如果不是本人操作，您的账号可能存在风险，请及时修改密码!</p>";
+            } else {
                 $subject = env('APP_NAME') . "绑定邮箱验证";
                 $content = "<p>{$user->nickname} 您好，您正在绑定 " . env('APP_NAME') . " 的邮箱，请于30分钟之内点击以下链接完成验证 :</p><p style='display: flex; justify-content: center;'><a href='{$url}' target='_blank'>{$url}</a></p>";
             }
@@ -86,4 +91,39 @@ class UserEmailVerification extends AbstractModel
             }
         }
     }
+
+    /**
+     * 校验验证码
+     * @param $email
+     * @param $code
+     * @param int $type
+     * @return bool
+     */
+    public static function verify($email, $code, $type = 1)
+    {
+        if (!$code) {
+            throw new ApiException('请输入验证码');
+        }
+        /** @var UserEmailVerification $emailVerify */
+        $emailVerify = self::whereEmail($email)->whereCode($code)->whereType($type)->orderByDesc('id')->first();
+
+        if (empty($emailVerify)) {
+            throw new ApiException('验证码错误');
+        }
+
+        $oldTime = Carbon::parse($emailVerify->created_at)->timestamp;
+        $time = Base::Time();
+
+        // 30分钟失效
+        if (abs($time - $oldTime) > 1800) {
+            throw new ApiException('验证码已失效');
+        }
+
+        self::whereEmail($email)->whereCode($code)->whereType($type)->update([
+            'status' => 1
+        ]);
+
+        return true;
+    }
+
 }

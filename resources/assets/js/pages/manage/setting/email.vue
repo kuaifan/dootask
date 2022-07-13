@@ -2,15 +2,10 @@
     <div class="setting-item submit">
         <Form ref="formDatum" :model="formDatum" :rules="ruleDatum" label-width="auto" @submit.native.prevent>
             <FormItem :label="$L('新邮箱地址')" prop="newEmail">
-                <Row>
-                    <Col span="6">
-                        <Input v-model="formDatum.newEmail"></Input>
-                    </Col>
-                    <Col span="6" v-if="isRegVerify == 1">
-                        <Button v-if="isUpdateShow" @click="sendEmailCode" type="primary">{{ $L('发送验证码') }}</Button>
-                        <Button v-if="!isUpdateShow" disabled><span>{{ count }}</span>{{ $L('秒') }}</Button>
-                    </Col>
-                </Row>
+                <div class="setting-email">
+                    <Input v-if="isRegVerify == 1" v-model="formDatum.newEmail" :class="count > 0 ? 'setting-send-input':'setting-input'" search @on-search="sendEmailCode" :enter-button="$L(sendBtnText)" :placeholder="$L('输入新邮箱地址')" />
+                    <Input v-else class="setting-input" v-model="formDatum.newEmail"  :placeholder="$L('输入新邮箱地址')"/>
+                </div>
             </FormItem>
             <FormItem :label="$L('验证码')" prop="code" v-if="isRegVerify == 1">
                 <Input v-model="formDatum.code" :placeholder="$L('输入邮箱验证码')"/>
@@ -35,9 +30,9 @@ export default {
             },
             ruleDatum: {},
             count: 0,
-            isUpdateShow: true,
-            codeShow: false,
+            isSendButtonShow: true,
             isRegVerify: 0,
+            sendBtnText: ''
         }
     },
     mounted() {
@@ -45,6 +40,7 @@ export default {
     },
     methods: {
         initLanguage() {
+            this.sendBtnText =  this.$L('发送验证码');
             this.ruleDatum = {
                 newEmail: [
                     {
@@ -68,12 +64,13 @@ export default {
                 url: 'users/send/email',
                 data: {type: 2, email: this.formDatum.newEmail}
             }).then(({}) => {
-                this.isUpdateShow = false;
+                this.isSendButtonShow = false;
                 this.count = 120; //赋值120秒
                 let times = setInterval(() => {
                     this.count--; //递减
+                    this.sendBtnText = this.count + ' 秒';
                     if (this.count <= 0) {
-                        this.isUpdateShow = true;
+                        this.sendBtnText = this.$L('发送验证码')
                         clearInterval(times);
                     }
                 }, 1000); //1000毫秒后执行
@@ -86,13 +83,13 @@ export default {
                 if (valid) {
                     this.loadIng++;
                     this.$store.dispatch("call", {
-                        url: 'users/editemail',
+                        url: 'users/edit/email',
                         data: this.formDatum,
                     }).then(({data}) => {
                         $A.messageSuccess('修改成功');
                         this.$store.dispatch("saveUserInfo", data);
                         this.$refs.formDatum.resetFields();
-                        this.isUpdateShow = true;
+                        this.isSendButtonShow = true;
                     }).catch(({msg}) => {
                         $A.modalError(msg);
                     }).finally(_ => {

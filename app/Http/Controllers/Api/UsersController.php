@@ -7,6 +7,7 @@ use App\Models\Meeting;
 use App\Models\Project;
 use App\Models\UmengAlias;
 use App\Models\User;
+use App\Models\UserDelete;
 use App\Models\UserEmailVerification;
 use App\Models\UserTransfer;
 use App\Models\WebSocket;
@@ -1010,8 +1011,11 @@ class UsersController extends AbstractController
         if (!Base::isEmail($email)) {
             return Base::retError('邮箱地址错误');
         }
-        if ($user->email == $email) {
+        if ($user->email == $email && $type == 2) {
             return Base::retError('不能与旧邮箱一致');
+        }
+        if ($user->email != $email && $type == 3) {
+            return Base::retError('与当前登录邮箱不一致');
         }
         if (User::where('userid', '<>', $user->userid)->whereEmail($email)->exists()) {
             return Base::retError('邮箱地址已存在');
@@ -1021,12 +1025,12 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/editemail         19. 修改邮箱
+     * @api {get} api/users/edit/email         19. 修改邮箱
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
      * @apiGroup users
-     * @apiName editemail
+     * @apiName edit__email
      *
      * @apiParam {String} newEmail          新邮箱地址
      * @apiParam {String} code              邮箱验证码
@@ -1035,7 +1039,7 @@ class UsersController extends AbstractController
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
      */
-    public function editemail()
+    public function edit__email()
     {
         $user = User::auth();
         $user->checkSystem();
@@ -1051,27 +1055,7 @@ class UsersController extends AbstractController
 
         $isRegVerify = Base::settingFind('emailSetting', 'reg_verify') === 'open';
         if ($isRegVerify) {
-            if (!$code) {
-                return Base::retError('请输入验证码');
-            }
-
-            $res = UserEmailVerification::whereEmail($newEmail)->whereCode($code)->whereType(2)->orderByDesc('id')->first();
-
-            if (empty($res)) {
-                return Base::retError('验证码错误');
-            }
-
-            $oldTime = Carbon::parse($res->created_at)->timestamp;
-            $time = Base::Time();
-
-            // 30分钟失效
-            if (abs($time - $oldTime) > 1800) {
-                return Base::retError("验证码已失效");
-            }
-
-            UserEmailVerification::whereUserid($user->userid)->whereCode($code)->whereType(2)->update([
-                'status' => 1
-            ]);
+            UserEmailVerification::verify($newEmail, $code, 2);
         }
 
         $user->email = $newEmail;
@@ -1079,4 +1063,71 @@ class UsersController extends AbstractController
         User::token($user);
         return Base::retSuccess('修改成功', $user);
     }
+
+    /**
+     * @api {get} api/users/delete/account         20. 删除账户
+     *
+     * @apiDescription  需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName delete__account
+     *
+     * @apiParam {String} email          账号邮箱
+     * @apiParam {String} code           邮箱验证码
+     * @apiParam {String} reason         注销理由
+     * @apiParam {String} password       登录密码
+     * @apiParam {Number} type           类型
+     * - warning: 提交校验
+     * - confirm: 确认删除
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function delete__account()
+    {
+        $email = Request::input('email');
+        $code = Request::input('code');
+        $reason = Request::input('reason');
+        $password = Request::input('password');
+        $type = Request::input('type');
+        $user = User::auth();
+        if (!$email) {
+            return Base::retError('请输入新邮箱地址');
+        }
+        if (!Base::isEmail($email)) {
+            return Base::retError('邮箱地址错误');
+        }
+        if ($user->email != $email) {
+            return Base::retError('与当前登录邮箱不一致');
+        }
+
+        $isRegVerify = Base::settingFind('emailSetting', 'reg_verify') === 'open';
+        if ($isRegVerify) {
+            UserEmailVerification::verify($email, $code, 3);
+        } else {
+            if (!$password) {
+                return Base::retError('请输入登录密码');
+            }
+            if ($user->password != Base::md52($password, $user->encrypt)) {
+                return Base::retError('密码错误');
+            }
+        }
+        if ($type == 'confirm') {
+            $deleteArr = [
+                'userid' => $user->userid,
+                'email' => $user->email,
+                'reason' => $reason
+            ];
+            $userDelete = UserDelete::createInstance($deleteArr);
+            if ($userDelete->save() && $user->deleteUser()) {
+                return Base::retSuccess('删除成功', $user);
+            } else {
+                return Base::retError('删除失败');
+            }
+        }
+
+        return Base::retSuccess('success', $user);
+    }
+
 }

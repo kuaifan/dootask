@@ -59,6 +59,11 @@ export default [
                         path: 'system',
                         component: () => import('./pages/manage/setting/system.vue'),
                     },
+                    {
+                        name: 'manage-setting-delete',
+                        path: 'delete',
+                        component: () => import('./pages/manage/setting/delete.vue'),
+                    },
                 ]
             },
             {

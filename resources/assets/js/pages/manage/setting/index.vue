@@ -90,10 +90,12 @@ export default {
                 menu.push(...[
                     {path: 'system', name: '系统设置', divided: true},
                     {path: 'logout', name: '退出登录'},
+                    {path: 'delete', name: '删除账户'},
                 ])
             } else {
                 menu.push(...[
                     {path: 'logout', name: '退出登录', divided: true},
+                    {path: 'delete', name: '删除账户'},
                 ])
             }
             return menu;
