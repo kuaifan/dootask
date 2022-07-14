@@ -45,7 +45,7 @@ class UserEmailVerification extends AbstractModel
     {
         $email = $type == 1 ? $user->email : $email;
         $res = self::whereEmail($email)->where('created_at', '>', Carbon::now()->subMinutes(30))->whereType($type)->first();
-        if ($res) return;
+        if ($res && $type == 1) return;
         //删除
         self::whereUserid($email)->delete();
         $code = $type == 1 ? Base::generatePassword(64) : rand(100000, 999999);
@@ -109,9 +109,9 @@ class UserEmailVerification extends AbstractModel
             throw new ApiException('请输入验证码');
         }
         /** @var UserEmailVerification $emailVerify */
-        $emailVerify = self::whereEmail($email)->whereCode($code)->whereType($type)->orderByDesc('id')->first();
+        $emailVerify = self::whereEmail($email)->whereType($type)->orderByDesc('id')->first();
 
-        if (empty($emailVerify)) {
+        if (empty($emailVerify) || $emailVerify->code != $code) {
             throw new ApiException('验证码错误');
         }
 

@@ -74,6 +74,32 @@ export default {
                         trigger: 'change'
                     },
                 ],
+                code: [
+                    {
+                        validator: (rule, value, callback) => {
+                            if (value.trim() === '' && this.isRegVerify == 1) {
+                                callback(new Error(this.$L('请输入邮箱验证码')));
+                            } else {
+                                callback();
+                            }
+                        },
+                        required: true,
+                        trigger: 'change'
+                    },
+                ],
+                password: [
+                    {
+                        validator: (rule, value, callback) => {
+                            if (value.trim() === '' && this.isRegVerify != 1) {
+                                callback(new Error(this.$L('请输入登录密码')));
+                            } else {
+                                callback();
+                            }
+                        },
+                        required: true,
+                        trigger: 'change'
+                    },
+                ],
             },
             count: 0,
             isSendButtonShow: true,
