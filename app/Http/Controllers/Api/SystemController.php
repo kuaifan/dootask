@@ -109,13 +109,14 @@ class SystemController extends AbstractController
      */
     public function setting__email()
     {
+        $user = User::auth();
         //
         $type = trim(Request::input('type'));
         if ($type == 'save') {
-            User::auth('admin');
             if (env("SYSTEM_SETTING") == 'disabled') {
                 return Base::retError('当前环境禁止修改');
             }
+            $user->identity('admin');
             $all = Request::input();
             foreach ($all as $key => $value) {
                 if (!in_array($key, [
@@ -138,7 +139,6 @@ class SystemController extends AbstractController
             }
             $setting = Base::setting('emailSetting', Base::newTrim($all));
         } else {
-            User::auth();
             $setting = Base::setting('emailSetting');
         }
         //
@@ -155,6 +155,10 @@ class SystemController extends AbstractController
         $setting['msg_unread_user_minute'] = intval($setting['msg_unread_user_minute'] ?? -1);
         $setting['msg_unread_group_minute'] = intval($setting['msg_unread_group_minute'] ?? -1);
         $setting['ignore_addr'] = $setting['ignore_addr'] ?: '';
+        //
+        if ($type != 'save' && !in_array('admin', $user->identity)) {
+            $setting = array_intersect_key($setting, array_flip(['reg_verify']));
+        }
         //
         return Base::retSuccess('success', $setting ?: json_decode('{}'));
     }
