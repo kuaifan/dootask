@@ -934,26 +934,28 @@ export default {
                         text: typeLoad ? '' : msgText,
                     },
                 }
-                this.tempMsgs.push(tempMsg)
-                this.msgType = ''
-                this.replyActiveId = 0;
-                this.onActive();
-                this.$nextTick(this.onToBottom)
-                //
-                this.$store.dispatch("call", {
-                    url: 'dialog/msg/sendtext',
-                    data: {
-                        dialog_id: tempMsg.dialog_id,
-                        reply_id: tempMsg.reply_id,
-                        text: msgText,
-                    },
-                    method: 'post',
-                    complete: _ => this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
-                }).then(({data}) => {
-                    this.sendSuccess(data)
-                }).catch(({msg}) => {
-                    $A.modalError(msg)
-                });
+                setTimeout(_ => {
+                    this.tempMsgs.push(tempMsg)
+                    this.msgType = ''
+                    this.replyActiveId = 0;
+                    this.onActive();
+                    this.$nextTick(this.onToBottom)
+                    //
+                    this.$store.dispatch("call", {
+                        url: 'dialog/msg/sendtext',
+                        data: {
+                            dialog_id: tempMsg.dialog_id,
+                            reply_id: tempMsg.reply_id,
+                            text: msgText,
+                        },
+                        method: 'post',
+                        complete: _ => this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
+                    }).then(({data}) => {
+                        this.sendSuccess(data)
+                    }).catch(({msg}) => {
+                        $A.modalError(msg)
+                    });
+                }, 10)
             }
         },
 

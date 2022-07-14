@@ -62,8 +62,8 @@
                     </ul>
                 </div>
                 <!--等待-->
-                <div v-else-if="msgData.type === 'loading'" class="content-text no-dark-content">
-                    ......
+                <div v-else-if="msgData.type === 'loading'" class="content-loading">
+                    <Loading/>
                 </div>
                 <!--未知-->
                 <div v-else class="content-unknown">{{$L("未知的消息类型")}}</div>
