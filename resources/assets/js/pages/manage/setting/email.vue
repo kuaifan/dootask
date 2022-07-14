@@ -92,6 +92,8 @@ export default {
                         url: 'users/email/edit',
                         data: this.formDatum,
                     }).then(({data}) => {
+                        this.count = 0;
+                        this.sendBtnText = this.$L('发送验证码');
                         $A.messageSuccess('修改成功');
                         this.$store.dispatch("saveUserInfo", data);
                         this.$refs.formDatum.resetFields();
