@@ -16,7 +16,7 @@
             </FormItem>
             <FormItem :label="$L('删除原因')">
                 <Input v-model="formDatum.reason" type="textarea" :autosize="{minRows: 4,maxRows: 8}"
-                       :placeholder="$L('请输入注销原因')"></Input>
+                       :placeholder="$L('请输入删除原因')"></Input>
             </FormItem>
         </Form>
         <div class="setting-footer">
@@ -31,12 +31,12 @@
             <div class="small-text">
                 <div>{{ $L('删除前，请确认以下事项：') }}</div>
                 <div>{{ $L('1、您将无法查看该账号内的任何信息，包括账号信息、文件记录、聊天记录、项目信息、团队成员信息等。') }}</div>
-                <div>{{ $L('2、若你是团队的所有者，请在注销您的账户前转移所有权。例如该账户所创建的项目（可将项目移交他人或删除项目）以及文件夹。') }}</div>
+                <div>{{ $L('2、若你是团队的所有者，请在删除您的账户前转移所有权。例如该账户所创建的项目（可将项目移交他人或删除项目）以及文件夹。') }}</div>
                 <div>{{ $L('3、您将退出所有群聊，无法查到过往消息和人员。') }}</div>
                 <div>{{ $L('4、请保证账号未被暂停使用。') }}</div>
             </div>
             <div slot="footer" class="button-box">
-                <Button type="primary" :loading="loadIng > 0" @click="submitForm('confirm')">{{ $L('已清楚风险，确定注销') }}
+                <Button type="primary" :loading="loadIng > 0" @click="submitForm('confirm')">{{ $L('已清楚风险，确定删除') }}
                 </Button>
             </div>
         </Modal>
