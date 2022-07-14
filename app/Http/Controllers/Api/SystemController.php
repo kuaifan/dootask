@@ -109,10 +109,10 @@ class SystemController extends AbstractController
      */
     public function setting__email()
     {
-        User::auth('admin');
         //
         $type = trim(Request::input('type'));
         if ($type == 'save') {
+            User::auth('admin');
             if (env("SYSTEM_SETTING") == 'disabled') {
                 return Base::retError('当前环境禁止修改');
             }
@@ -138,6 +138,7 @@ class SystemController extends AbstractController
             }
             $setting = Base::setting('emailSetting', Base::newTrim($all));
         } else {
+            User::auth();
             $setting = Base::setting('emailSetting');
         }
         //

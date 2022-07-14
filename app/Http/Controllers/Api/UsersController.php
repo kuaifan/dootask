@@ -1043,6 +1043,9 @@ class UsersController extends AbstractController
     public function email__edit()
     {
         $user = User::auth();
+        if (env("SYSTEM_SETTING") == 'disabled') {
+            return Base::retError('当前环境禁止修改');
+        }
         //
         $user->checkSystem();
         //
@@ -1089,6 +1092,9 @@ class UsersController extends AbstractController
     public function delete__account()
     {
         $user = User::auth();
+        if (env("SYSTEM_SETTING") == 'disabled') {
+            return Base::retError('当前环境禁止删除');
+        }
         //
         $user->checkSystem(1);
         //
