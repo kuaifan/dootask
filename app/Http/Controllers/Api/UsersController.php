@@ -711,7 +711,7 @@ class UsersController extends AbstractController
                     $userTransfer->start();
                     // 离职移出全员群组
                     $dialog = WebSocketDialog::whereGroupType('all')->orderByDesc('id')->first();
-                    $dialog?->exitGroup($userInfo->userid, 'remove');
+                    $dialog?->exitGroup($userInfo->userid, 'remove', false);
                 } elseif ($type === 'cleardisable') {
                     // 取消离职重新加入全员群组
                     $dialog = WebSocketDialog::whereGroupType('all')->orderByDesc('id')->first();

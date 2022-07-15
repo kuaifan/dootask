@@ -131,7 +131,7 @@ class WebSocketDialog extends AbstractModel
         }
         if ($hasData === true) {
             $msgBuilder = WebSocketDialogMsg::whereDialogId($this->id);
-            $this->has_tag = $msgBuilder->clone()->whereMtype('tag')->exists();
+            $this->has_tag = $msgBuilder->clone()->where('tag', '>', 0)->exists();
             $this->has_image = $msgBuilder->clone()->whereMtype('image')->exists();
             $this->has_file = $msgBuilder->clone()->whereMtype('file')->exists();
             $this->has_link = $msgBuilder->clone()->whereLink(1)->exists();
@@ -172,30 +172,34 @@ class WebSocketDialog extends AbstractModel
     /**
      * 退出聊天室
      * @param int|array $userid     退出的会员ID或会员ID组
-     * @param $type
+     * @param string $type          exit|remove
+     * @param bool $checkDelete     是否检查删除
      */
-    public function exitGroup($userid, $type = 'exit')
+    public function exitGroup($userid, $type = 'exit', $checkDelete = true)
     {
         $typeDesc = $type === 'remove' ? '移出' : '退出';
-        AbstractModel::transaction(function () use ($typeDesc, $type, $userid) {
+        AbstractModel::transaction(function () use ($checkDelete, $typeDesc, $type, $userid) {
             $builder = WebSocketDialogUser::whereDialogId($this->id);
             if (is_array($userid)) {
                 $builder->whereIn('userid', $userid);
             } else {
                 $builder->whereUserid($userid);
             }
-            $builder->chunkById(100, function($list) use ($typeDesc, $type) {
+            $builder->chunkById(100, function($list) use ($checkDelete, $typeDesc, $type) {
                 /** @var WebSocketDialogUser $item */
                 foreach ($list as $item) {
-                    if ($type === 'remove' && !in_array(User::userid(), [$this->owner_id, $item->inviter])) {
-                        throw new ApiException('只有群主或邀请人可以移出成员');
+                    if ($checkDelete) {
+                        if ($type === 'remove' && !in_array(User::userid(), [$this->owner_id, $item->inviter])) {
+                            throw new ApiException('只有群主或邀请人可以移出成员');
+                        }
+                        if ($item->userid == $this->owner_id) {
+                            throw new ApiException('群主不可' . $typeDesc);
+                        }
+                        if ($item->important) {
+                            throw new ApiException('项目人员或任务人员不可' . $typeDesc);
+                        }
                     }
-                    if ($item->userid == $this->owner_id) {
-                        throw new ApiException('群主不可' . $typeDesc);
-                    }
-                    if ($item->important) {
-                        throw new ApiException('项目人员或任务人员不可' . $typeDesc);
-                    }
+                    //
                     $item->delete();
                     //
                     if ($type === 'remove') {
