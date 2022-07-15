@@ -75,27 +75,29 @@ export default {
                 {path: 'password', name: '密码设置'},
                 {path: 'email', name: '修改邮箱'},
             ]
+
             if ([
                 '127.0.0.1:2222',
-                't.hitosea.com',
                 'dootask.com',
-                'www.dootask.com'
+                'www.dootask.com',
+                't.hitosea.com',
             ].includes($A.getDomain($A.apiUrl('../'))) && this.$isEEUiApp) {
-                menu.push({path: 'privacy', name: '隐私政策'})
+                menu.push(...[
+                    {path: 'privacy', name: '隐私政策', divided: true},
+                    {path: 'delete', name: '删除帐号'},
+                ])
             }
-            if (this.windowSmall) {
-                menu.push({path: 'clearCache', name: '清除缓存'})
-            }
+
             if (this.userIsAdmin) {
                 menu.push(...[
                     {path: 'system', name: '系统设置', divided: true},
+                    {path: 'clearCache', name: '清除缓存'},
                     {path: 'logout', name: '退出登录'},
-                    {path: 'delete', name: '删除账户', divided: true},
                 ])
             } else {
                 menu.push(...[
-                    {path: 'logout', name: '退出登录', divided: true},
-                    {path: 'delete', name: '删除账户', divided: true},
+                    {path: 'clearCache', name: '清除缓存', divided: true},
+                    {path: 'logout', name: '退出登录'},
                 ])
             }
             return menu;

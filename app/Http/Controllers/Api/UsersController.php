@@ -1067,7 +1067,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/delete/account          20. 删除账户
+     * @api {get} api/users/delete/account          20. 删除帐号
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0

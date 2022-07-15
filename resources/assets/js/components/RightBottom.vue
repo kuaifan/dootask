@@ -112,9 +112,9 @@ export default {
         showPrivacy() {
             return [
                 '127.0.0.1:2222',
-                't.hitosea.com',
                 'dootask.com',
-                'www.dootask.com'
+                'www.dootask.com',
+                't.hitosea.com',
             ].includes($A.getDomain($A.apiUrl('../'))) && this.$isEEUiApp && ['login'].includes(this.$route.name)
         }
     },

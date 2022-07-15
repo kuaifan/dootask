@@ -951,10 +951,10 @@
                                         color: $primary-title-color;
 
                                         &.me {
-                                            font-size: 14px;
-                                            font-weight: normal;
-                                            padding: 3px 0;
-                                            background-color: transparent;
+                                            font-size: inherit;
+                                            font-weight: inherit;
+                                            padding: inherit;
+                                            background-color: inherit;
                                         }
                                     }
                                 }
