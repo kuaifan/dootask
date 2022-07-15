@@ -1652,7 +1652,11 @@ export default {
             this.onReply()
             if (this.operateItem.type === 'text') {
                 this.replyActiveUpdate = true
-                this.msgText = $A.formatMsgBasic(this.operateItem.msg.text)
+                let {text} = this.operateItem.msg
+                if (text.indexOf("mention") > -1) {
+                    text = text.replace(/<span class="mention (.*?)" data-id="(\d+)">@(.*?)<\/span>/g, '<span class="mention" data-denotation-char="@" data-id="$2" data-value="$3">&#xFEFF;<span contenteditable="false"><span class="ql-mention-denotation-char">@</span>$3</span>&#xFEFF;</span>')
+                }
+                this.msgText = $A.formatMsgBasic(text)
             }
         },
 
