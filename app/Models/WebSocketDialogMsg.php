@@ -373,6 +373,7 @@ class WebSocketDialogMsg extends AbstractModel
     public function forwardMsg($dialogids, $userids, $sender)
     {
         return AbstractModel::transaction(function() use ($dialogids, $sender, $userids) {
+            $originalMsg = Base::json2array($this->getRawOriginal('msg'));
             $msgs = [];
             $already = [];
             if ($dialogids) {
@@ -380,7 +381,7 @@ class WebSocketDialogMsg extends AbstractModel
                     $dialogids = [$dialogids];
                 }
                 foreach ($dialogids as $dialogid) {
-                    $res = self::sendMsg(null, $dialogid, $this->type, $this->getOriginal('msg'), $sender);
+                    $res = self::sendMsg(null, $dialogid, $this->type, $originalMsg, $sender);
                     if (Base::isSuccess($res)) {
                         $msgs[] = $res['data'];
                         $already[] = $dialogid;
@@ -397,7 +398,7 @@ class WebSocketDialogMsg extends AbstractModel
                     }
                     $dialog = WebSocketDialog::checkUserDialog($sender, $userid);
                     if ($dialog && !in_array($dialog->id, $already)) {
-                        $res = self::sendMsg(null, $dialog->id, $this->type, $this->getOriginal('msg'), $sender);
+                        $res = self::sendMsg(null, $dialog->id, $this->type, $originalMsg, $sender);
                         if (Base::isSuccess($res)) {
                             $msgs[] = $res['data'];
                         }
