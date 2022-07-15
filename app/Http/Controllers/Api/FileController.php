@@ -93,8 +93,7 @@ class FileController extends AbstractController
                 ->join('file_users', 'files.id', '=', 'file_users.file_id')
                 ->where('files.userid', '!=', $user->userid)
                 ->where(function ($query) use ($user) {
-                    $query->where('file_users.userid', 0);
-                    $query->orWhere('file_users.userid', $user->userid);
+                    $query->whereIn('file_users.userid', [0, $user->userid]);
                 })
                 ->groupBy('files.id')
                 ->take(100)
@@ -175,11 +174,36 @@ class FileController extends AbstractController
         if (empty($key)) {
             return Base::retError('请输入关键词');
         }
-        //
+        // 搜索自己的
         $builder = File::whereUserid($user->userid)->where("name", "like", "%{$key}%");
-        $list = $builder->take(50)->get();
+        $array = $builder->take(50)->get()->toArray();
+        // 搜索共享的
+        $take = 50 - count($array);
+        if ($take > 0) {
+            $list = File::where("name", "like", "%{$key}%")
+                ->whereIn('pshare', function ($queryA) use ($user) {
+                    $queryA->select('files.id')
+                        ->from('files')
+                        ->join('file_users', 'files.id', '=', 'file_users.file_id')
+                        ->where('files.userid', '!=', $user->userid)
+                        ->where(function ($queryB) use ($user) {
+                            $queryB->whereIn('file_users.userid', [0, $user->userid]);
+                        });
+                })
+                ->take($take)
+                ->get();
+            if ($list->isNotEmpty()) {
+                foreach ($list as $file) {
+                    $temp = $file->toArray();
+                    if ($file->pshare === $file->id) {
+                        $temp['pid'] = 0;
+                    }
+                    $array[] = $temp;
+                }
+            }
+        }
         //
-        return Base::retSuccess('success', $list);
+        return Base::retSuccess('success', $array);
     }
 
     /**
@@ -274,7 +298,7 @@ class FileController extends AbstractController
                 'created_id' => $user->userid,
             ]);
             $file->handleDuplicateName();
-            $file->saveBeforePids();
+            $file->saveBeforePP();
             //
             $data = File::find($file->id);
             $data->pushMsg('add', $data);
@@ -328,7 +352,7 @@ class FileController extends AbstractController
         $data = AbstractModel::transaction(function() use ($file) {
             $content = FileContent::select(['content', 'text', 'size'])->whereFid($file->cid)->orderByDesc('id')->first();
             $file->size = $content?->size ?: 0;
-            $file->saveBeforePids();
+            $file->saveBeforePP();
             if ($content) {
                 $content = $content->toArray();
                 $content['fid'] = $file->id;
@@ -407,7 +431,7 @@ class FileController extends AbstractController
                 //
                 $file->pid = $pid;
                 $file->handleDuplicateName();
-                $file->saveBeforePids();
+                $file->saveBeforePP();
                 $files[] = $file;
             }
         });
@@ -716,7 +740,7 @@ class FileController extends AbstractController
                             'created_id' => $user->userid,
                         ]);
                         $dirRow->handleDuplicateName();
-                        if ($dirRow->saveBeforePids()) {
+                        if ($dirRow->saveBeforePP()) {
                             $addItem[] = File::find($dirRow->id);
                         }
                     }
@@ -786,7 +810,7 @@ class FileController extends AbstractController
         // 开始创建
         return AbstractModel::transaction(function () use ($addItem, $webkitRelativePath, $type, $user, $data, $file) {
             $file->size = $data['size'] * 1024;
-            $file->saveBeforePids();
+            $file->saveBeforePP();
             //
             $data = Base::uploadMove($data, "uploads/file/" . $file->type . "/" . date("Ym") . "/" . $file->id . "/");
             $content = [

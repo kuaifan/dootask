@@ -13,8 +13,8 @@ use Request;
  * App\Models\File
  *
  * @property int $id
- * @property string|null $pids 上级ID递归
  * @property int|null $pid 上级ID
+ * @property string|null $pids 上级ID递归
  * @property int|null $cid 复制ID
  * @property string|null $name 名称
  * @property string|null $type 类型
@@ -22,6 +22,7 @@ use Request;
  * @property int|null $size 大小(B)
  * @property int|null $userid 拥有者ID
  * @property int|null $share 是否共享
+ * @property int|null $pshare 所属分享ID
  * @property int|null $created_id 创建者
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -39,6 +40,7 @@ use Request;
  * @method static \Illuminate\Database\Eloquent\Builder|File whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File wherePid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File wherePids($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|File wherePshare($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereShare($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereSize($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereType($value)
@@ -183,6 +185,7 @@ class File extends AbstractModel
             AbstractModel::transaction(function () use ($share) {
                 $this->share = $share;
                 $this->save();
+                File::where("pids", "like", "%,{$this->id},%")->update(['pshare' => $share ? $this->id : 0]);
                 if ($share === 0) {
                     FileUser::deleteFileAll($this->id, $this->userid);
                 }
@@ -223,16 +226,25 @@ class File extends AbstractModel
     }
 
     /**
-     * 保存前更新pids
+     * 保存前更新pids/pshare
      * @return bool
      */
-    public function saveBeforePids()
+    public function saveBeforePP()
     {
         $pid = $this->pid;
+        $pshare = $this->share ? $this->id : 0;
         $array = [];
         while ($pid > 0) {
             $array[] = $pid;
-            $pid = intval(self::whereId($pid)->value('pid'));
+            $file = self::select(['id', 'pid', 'share'])->find($pid);
+            if ($file) {
+                $pid = $file->pid;
+                if ($file->share) {
+                    $pshare = $file->id;
+                }
+            } else {
+                $pid = 0;
+            }
         }
         $opids = $this->pids;
         if ($array) {
@@ -241,6 +253,7 @@ class File extends AbstractModel
         } else {
             $this->pids = '';
         }
+        $this->pshare = $pshare;
         if (!$this->save()) {
             return false;
         }
@@ -249,7 +262,7 @@ class File extends AbstractModel
             self::wherePid($this->id)->chunkById(100, function ($lists) {
                 /** @var self $item */
                 foreach ($lists as $item) {
-                    $item->saveBeforePids();
+                    $item->saveBeforePP();
                 }
             });
         }
@@ -494,7 +507,7 @@ class File extends AbstractModel
             'created_id' => 0,
         ]);
         $file->handleDuplicateName();
-        $file->saveBeforePids();
+        $file->saveBeforePP();
 
         // 移交文件
         self::whereUserid($originalUserid)->chunkById(100, function($list) use ($file, $newUserid) {
@@ -504,7 +517,7 @@ class File extends AbstractModel
                     $item->pid = $file->id;
                 }
                 $item->userid = $newUserid;
-                $item->saveBeforePids();
+                $item->saveBeforePP();
             }
         });
 

@@ -1410,11 +1410,11 @@ export default {
         },
 
         onSearchChange() {
-            clearTimeout(this.searchTimeout);
+            this.searchTimeout && clearTimeout(this.searchTimeout);
             if (this.searchKey.trim() != '') {
                 this.searchTimeout = setTimeout(() => {
                     this.loadIng++;
-                    this.$store.dispatch("searchFiles", this.searchKey).then(() => {
+                    this.$store.dispatch("searchFiles", this.searchKey.trim()).then(() => {
                         this.loadIng--;
                     }).catch(() => {
                         this.loadIng--;

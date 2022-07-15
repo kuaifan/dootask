@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddFilesPids extends Migration
+class AddFilesPshare extends Migration
 {
     /**
      * Run the migrations.
@@ -15,23 +15,18 @@ class AddFilesPids extends Migration
     {
         $isAdd = false;
         Schema::table('files', function (Blueprint $table) use (&$isAdd) {
-            if (!Schema::hasColumn('files', 'pids')) {
+            if (!Schema::hasColumn('files', 'pshare')) {
                 $isAdd = true;
-                $table->string('pids', 255)->nullable()->default('')->after('pid')->comment('上级ID递归');
+                $table->bigInteger('pshare')->nullable()->default(0)->after('share')->comment('所属分享ID');
             }
         });
         if ($isAdd) {
-            // 更新数据
-            \App\Models\File::where('pid', '>', 0)->chunkById(100, function ($lists) {
+            \App\Models\File::whereShare(1)->chunkById(100, function ($lists) {
                 /** @var \App\Models\File $item */
                 foreach ($lists as $item) {
-                    $item->saveBeforePP();
-                }
-            });
-            \App\Models\File::whereShare(0)->chunkById(100, function ($lists) {
-                /** @var \App\Models\File $item */
-                foreach ($lists as $item) {
-                    \App\Models\FileUser::whereFileId($item->id)->delete();
+                    \App\Models\File::where("pids", "like", "%,{$item->id},%")->update(['pshare' => $item->id]);
+                    $item->pshare = $item->id;
+                    $item->save();
                 }
             });
         }
@@ -45,7 +40,7 @@ class AddFilesPids extends Migration
     public function down()
     {
         Schema::table('files', function (Blueprint $table) {
-            $table->dropColumn("pids");
+            $table->dropColumn("pshare");
         });
     }
 }
