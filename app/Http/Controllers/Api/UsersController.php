@@ -599,7 +599,7 @@ class UsersController extends AbstractController
         //
         $userInfo = User::find($userid);
         if (empty($userInfo)) {
-            return Base::retError('会员不存在或已被删除');
+            return Base::retError('成员不存在或已被删除');
         }
         $userInfo->checkSystem(1);
         //

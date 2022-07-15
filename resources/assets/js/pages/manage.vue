@@ -283,8 +283,8 @@
             :title="$L('导出任务统计')"
             :mask-closable="false">
             <Form ref="exportTask" :model="exportData" label-width="auto" @submit.native.prevent>
-                <FormItem :label="$L('导出会员')">
-                    <UserInput v-model="exportData.userid" :multiple-max="20" :placeholder="$L('请选择会员')"/>
+                <FormItem :label="$L('导出成员')">
+                    <UserInput v-model="exportData.userid" :multiple-max="20" :placeholder="$L('请选择成员')"/>
                 </FormItem>
                 <FormItem :label="$L('时间范围')">
                     <DatePicker

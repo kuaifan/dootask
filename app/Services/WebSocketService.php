@@ -69,7 +69,7 @@ class WebSocketService implements WebSocketHandlerInterface
                         $server->push($fd, Base::array2json([
                             'type' => 'error',
                             'data' => [
-                                'error' => '会员不存在'
+                                'error' => '成员不存在'
                             ],
                         ]));
                         $server->close($fd);

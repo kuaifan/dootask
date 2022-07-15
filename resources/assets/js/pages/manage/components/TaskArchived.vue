@@ -151,7 +151,7 @@ export default {
                     width: 168,
                 },
                 {
-                    title: this.$L('归档会员'),
+                    title: this.$L('归档人员'),
                     key: 'archived_userid',
                     minWidth: 100,
                     render: (h, {row}) => {

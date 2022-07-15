@@ -38,7 +38,7 @@
 
                 <!-- @ # -->
                 <li>
-                    <ETooltip placement="top" :disabled="windowSmall" :content="$L('选择会员')">
+                    <ETooltip placement="top" :disabled="windowSmall" :content="$L('选择成员')">
                         <i class="taskfont" @click="onToolbar('user')">&#xe78f;</i>
                     </ETooltip>
                 </li>

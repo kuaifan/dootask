@@ -498,7 +498,7 @@ class ProjectController extends AbstractController
         $project = Project::userProject($project_id, true, true);
         //
         if (!User::whereUserid($owner_userid)->exists()) {
-            return Base::retError('会员不存在');
+            return Base::retError('成员不存在');
         }
         //
         AbstractModel::transaction(function() use ($owner_userid, $project) {
@@ -978,7 +978,7 @@ class ProjectController extends AbstractController
             return Base::retError('参数错误');
         }
         if (count($userid) > 20) {
-            return Base::retError('导出会员限制最多20个');
+            return Base::retError('导出成员限制最多20个');
         }
         if (!(is_array($time) && Base::isDateOrTime($time[0]) && Base::isDateOrTime($time[1]))) {
             return Base::retError('时间选择错误');
