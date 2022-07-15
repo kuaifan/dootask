@@ -1597,12 +1597,7 @@ export default {
                         break;
 
                     case "copy":
-                        if (this.operateHasText) {
-                            const text = this.operateItem.msg.text.replace(/<[^>]+>/g, "")
-                            this.$copyText(text).then(_ => $A.messageSuccess('复制成功')).catch(_ => $A.messageError('复制失败'));
-                        } else {
-                            $A.messageWarning('不可复制的内容');
-                        }
+                        this.onCopy()
                         break;
 
                     case "forward":
@@ -1659,6 +1654,20 @@ export default {
                 this.replyActiveUpdate = true
                 this.msgText = $A.formatMsgBasic(this.operateItem.msg.text)
             }
+        },
+
+        onCopy() {
+            if (this.operateHasText) {
+                try {
+                    const copyEl = $A(this.$refs.scroller.$el).find(`[data-id="${this.operateItem.id}"]`).find('.dialog-content')
+                    if (copyEl.length > 0) {
+                        const text = copyEl[0].innerText.replace(/\n\n/g, "\n")
+                        this.$copyText(text).then(_ => $A.messageSuccess('复制成功')).catch(_ => $A.messageError('复制失败'));
+                        return
+                    }
+                } catch (e) {}
+            }
+            $A.messageWarning('不可复制的内容');
         },
 
         onCancelReply() {

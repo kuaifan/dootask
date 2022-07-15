@@ -11,10 +11,10 @@ import App from './App.vue'
 import routes from './routes'
 import VueRouter from 'vue-router'
 import VueClipboard from 'vue-clipboard2'
-import ViewUI from 'view-design-hi';
+import ViewUI from 'view-design-hi'
 import Language from './language/index'
 import store from './store/index'
-import mixin from "./store/mixin";
+import mixin from "./store/mixin"
 
 Vue.use(Vuex);
 Vue.use(ViewUI, {
@@ -22,7 +22,11 @@ Vue.use(ViewUI, {
         checkEscClose: true
     }
 });
-Vue.use(VueClipboard);
+Vue.use(VueClipboard, {
+    config: {
+        autoSetContainer: true
+    }
+});
 Vue.use(VueRouter);
 Vue.use(Language);
 
