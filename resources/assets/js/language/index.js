@@ -173,17 +173,17 @@ export default {
                 },
 
                 /**
-                 * 替换%遍历
+                 * 替换(*)遍历
                  * @param text
                  * @param objects
                  */
                 replaceArgumentsLanguage(text, objects) {
                     let j = 1;
-                    while (text.indexOf("%") !== -1) {
+                    while (text.indexOf("(*)") !== -1) {
                         if (typeof objects[j] === "object") {
-                            text = text.replace("%", "");
+                            text = text.replace("(*)", "");
                         } else {
-                            text = text.replace("%", objects[j]);
+                            text = text.replace("(*)", objects[j]);
                         }
                         j++;
                     }
@@ -199,7 +199,7 @@ export default {
                     if (!val || val == '') {
                         return '';
                     }
-                    return val.replace(/％/g, '%').replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                    return val.replace(/\(\*\)/g, "~%~").replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&').replace(/~%~/g, '(.*?)');
                 },
 
                 /**
@@ -220,12 +220,13 @@ export default {
                         let tmpKey = null;
                         let tmpRege = null;
                         let tmpData = this.languageData.find((obj) => {
-                            tmpKey = obj._ || obj.CN
-                            if (String(tmpKey).indexOf("%")) {
-                                tmpRege = new RegExp("^" + this.replaceEscape(tmpKey).replace(/%/g, "(.*?)") + "$", "g");
-                                return !!text.match(tmpRege);
-                            } else {
+                            tmpKey = `${obj._ || obj.CN}`
+                            if (tmpKey.indexOf("(*)") === -1) {
+                                tmpRege = null;
                                 return text == tmpKey
+                            } else {
+                                tmpRege = new RegExp("^" + this.replaceEscape(tmpKey) + "$", "g");
+                                return !!text.match(tmpRege);
                             }
                         });
                         languageCachesObjects[ascii] = {rege: tmpRege, data: tmpData};
@@ -238,14 +239,14 @@ export default {
                                 return value
                             }
                             let index = 0;
-                            value = value.replace(/%/g, function () {
+                            value = value.replace(/\(\*\)/g, function () {
                                 return "$" + (++index);
                             });
                             return text.replace(rege, value);
                         }
                     }
                     //
-                    if (this.languageType == "CN") {
+                    if (window.systemInfo.debug === "yes" && this.languageType == "CN") {
                         setTimeout(_ => {
                             try {
                                 let key = '__language:Undefined__';
@@ -255,7 +256,7 @@ export default {
                                 }
                                 let tmpRege = null;
                                 let tmpData = languageTmp.find((val) => {
-                                    tmpRege = new RegExp("^" + val.replace(/%/g, "(.*?)") + "$", "g");
+                                    tmpRege = new RegExp("^" + val.replace(/\(\*\)/g, "(.*?)") + "$", "g");
                                     return !!text.match(tmpRege);
                                 });
                                 if (!tmpData) {
