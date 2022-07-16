@@ -166,7 +166,7 @@ export default {
             content += `<p>${this.$L('已完成')}: ${item.task_my_complete}</p>`
             $A.modalInfo({
                 language: false,
-                title: this.$L(`${item.name} 项目进度`),
+                title: `${item.name} ${this.$L('项目进度')}`,
                 content,
             });
         },

@@ -388,6 +388,7 @@ export default {
             data: {
                 userid: [...new Set(array.map(({userid}) => userid))]
             },
+            checkRole: false
         }).then(result => {
             time = $A.Time();
             array.forEach(value => {

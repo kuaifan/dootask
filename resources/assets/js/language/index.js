@@ -246,7 +246,7 @@ export default {
                         }
                     }
                     //
-                    if (window.systemInfo.debug === "yes" && this.languageType == "CN") {
+                    if (window.systemInfo.debug === "yes") {
                         setTimeout(_ => {
                             try {
                                 let key = '__language:Undefined__';
