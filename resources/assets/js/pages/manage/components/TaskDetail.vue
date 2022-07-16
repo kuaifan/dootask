@@ -375,7 +375,7 @@
                         <div class="add-button">
                             <i class="taskfont">&#xe6f2;</i>
                             {{$L('添加')}}
-                            <em v-for="item in menuList">{{$L(item.name)}}</em>
+                            <em>{{menuText}}</em>
                         </div>
                         <EDropdownMenu slot="dropdown">
                             <EDropdownItem v-for="(item, key) in menuList" :key="key" :command="item.command">
@@ -733,7 +733,7 @@ export default {
 
         menuList() {
             const {taskDetail} = this;
-            let list = [];
+            const list = [];
             if (!taskDetail.p_name) {
                 list.push({
                     command: 'priority',
@@ -778,6 +778,20 @@ export default {
             }
             return list;
         },
+
+        menuText() {
+            const {menuList} = this
+            let text = ''
+            if (menuList.length > 0) {
+                menuList.forEach((item, index) => {
+                    if (index > 0) {
+                        text += " / "
+                    }
+                    text += this.$L(item.name)
+                })
+            }
+            return text
+        }
     },
 
     watch: {

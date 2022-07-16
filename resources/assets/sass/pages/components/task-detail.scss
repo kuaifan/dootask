@@ -445,6 +445,16 @@
             .add {
                 margin-top: 12px;
                 margin-bottom: 10px;
+                .el-dropdown {
+                    max-width: 100%;
+                    .add-button {
+                        > em {
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                        }
+                    }
+                }
             }
             .add-input {
                 margin-top: 6px;
