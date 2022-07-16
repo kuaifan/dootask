@@ -43,7 +43,8 @@
                     background-color: $primary-color;
                 }
             }
-            &.disable {
+            &.disabled,
+            &.deleted {
                 &:after {
                     content: "";
                     position: absolute;
@@ -56,25 +57,17 @@
                     border-radius: 50%;
                 }
             }
+            &.deleted {
+                &:after {
+                    transform: rotate(-45deg);
+                }
+            }
         }
         .avatar-name {
             padding-left: 6px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-        }
-        .avatar-disable {
-            margin-left: 2px;
-            white-space: nowrap;
-            font-size: 12px;
-            height: 20px;
-            line-height: 20px;
-            padding: 0 6px;
-            border-radius: 3px;
-            transform: scale(0.9);
-            transform-origin: right center;
-            color: #ffffff;
-            background-color: #ED4014;
         }
     }
 }
@@ -83,6 +76,24 @@
     line-height: 1.5;
     > p {
         padding: 1px 2px;
+        > em {
+            font-style: normal;
+            &.disabled,
+            &.deleted {
+                display: inline-block;
+                margin-left: 2px;
+                white-space: nowrap;
+                font-size: 12px;
+                height: 20px;
+                line-height: 20px;
+                padding: 0 6px;
+                border-radius: 3px;
+                transform: scale(0.9);
+                transform-origin: right center;
+                color: #ffffff;
+                background-color: #ED4014;
+            }
+        }
     }
     .avatar-icons {
         margin-top: 12px;

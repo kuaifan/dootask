@@ -382,7 +382,7 @@ class UsersController extends AbstractController
      */
     public function search()
     {
-        $builder = User::select(['userid', 'email', 'nickname', 'profession', 'userimg', 'az', 'pinyin', 'line_at', 'disable_at']);
+        $builder = User::select(User::$basicField);
         //
         $keys = Request::input('keys');
         $sorts = Request::input('sorts');
@@ -455,6 +455,8 @@ class UsersController extends AbstractController
      */
     public function basic()
     {
+        User::auth();
+        //
         $userid = Request::input('userid');
         $array = Base::json2array($userid);
         if (empty($array)) {
@@ -466,6 +468,9 @@ class UsersController extends AbstractController
         $retArray = [];
         foreach ($array AS $id) {
             $basic = User::userid2basic($id);
+            if (empty($basic)) {
+                $basic = UserDelete::userid2basic($id);
+            }
             if ($basic) {
                 $retArray[] = $basic;
             }
@@ -576,7 +581,7 @@ class UsersController extends AbstractController
      * - clearadmin           取消管理员
      * - setdisable           设为离职（需要参数 disable_time、transfer_userid）
      * - cleardisable         取消离职
-     * - delete               删除会员
+     * - delete               删除会员（需要参数 delete_reason）
      * @apiParam {String} [email]               邮箱地址
      * @apiParam {String} [tel]                 联系电话
      * @apiParam {String} [password]            新的密码
@@ -584,6 +589,7 @@ class UsersController extends AbstractController
      * @apiParam {String} [profession]          职位
      * @apiParam {String} [disable_time]        离职时间
      * @apiParam {String} [transfer_userid]     离职交接人
+     * @apiParam {String} [delete_reason]       删除原因
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -644,7 +650,10 @@ class UsersController extends AbstractController
                 if ($userInfo->userid === $user->userid) {
                     return Base::retError('不能删除自己');
                 }
-                $userInfo->deleteUser();
+                if (empty($data['delete_reason'])) {
+                    return Base::retError('请填写删除原因');
+                }
+                $userInfo->deleteUser($data['delete_reason']);
                 break;
         }
         if (isset($upArray['identity'])) {
@@ -1119,13 +1128,7 @@ class UsersController extends AbstractController
             }
         }
         if ($type == 'confirm') {
-            $deleteArr = [
-                'userid' => $user->userid,
-                'email' => $user->email,
-                'reason' => $reason
-            ];
-            $userDelete = UserDelete::createInstance($deleteArr);
-            if ($userDelete->save() && $user->deleteUser()) {
+            if ($user->deleteUser($reason)) {
                 return Base::retSuccess('删除成功', $user);
             } else {
                 return Base::retError('删除失败');

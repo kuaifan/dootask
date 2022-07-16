@@ -71,7 +71,11 @@ class User extends AbstractModel
         'updated_at',
     ];
 
-    protected $defaultAvatarMode = 'auto'; // auto自动生成，system系统默认
+    // 默认头像类型：auto自动生成，system系统默认
+    public static $defaultAvatarMode = 'auto';
+
+    // 基本信息的字段
+    public static $basicField = ['userid', 'email', 'nickname', 'profession', 'userimg', 'az', 'pinyin', 'line_at', 'disable_at'];
 
     /**
      * 更新数据校验
@@ -104,9 +108,9 @@ class User extends AbstractModel
     public function getUserimgAttribute($value)
     {
         if ($value && !str_contains($value, 'avatar/')) {
+            // 自定义头像
             return Base::fillUrl($value);
-        }
-        if ($this->defaultAvatarMode === 'auto') {
+        } else if (self::$defaultAvatarMode === 'auto') {
             // 自动生成头像
             return url("avatar/" . urlencode($this->nickname) . ".png");
         } else {
@@ -182,12 +186,30 @@ class User extends AbstractModel
 
     /**
      * 删除会员
+     * @param $reason
      * @return bool|null
      */
-    public function deleteUser()
+    public function deleteUser($reason)
     {
-        UserEmailVerification::whereEmail($this->email)->delete();
-        return $this->delete();
+        return AbstractModel::transaction(function () use ($reason) {
+            // 删除原因
+            $userDelete = UserDelete::createInstance([
+                'operator' => User::userid(),
+                'userid' => $this->userid,
+                'email' => $this->email,
+                'reason' => $reason,
+                'cache' => $this->getRawOriginal()
+            ]);
+            $userDelete->save();
+            // 删除未读
+            WebSocketDialogMsgRead::whereUserid($this->userid)->delete();
+            // 删除待办
+            WebSocketDialogMsgTodo::whereUserid($this->userid)->delete();
+            // 删除邮箱验证记录
+            UserEmailVerification::whereEmail($this->email)->delete();
+            //
+            return $this->delete();
+        });
     }
 
     /** ***************************************************************************************** */
@@ -436,8 +458,7 @@ class User extends AbstractModel
         if (isset($_A["__static_userid2basic_" . $userid])) {
             return $_A["__static_userid2basic_" . $userid];
         }
-        $fields = ['userid', 'email', 'nickname', 'profession', 'userimg', 'az', 'pinyin', 'line_at', 'disable_at'];
-        $userInfo = self::whereUserid($userid)->select($fields)->first();
+        $userInfo = self::whereUserid($userid)->select(User::$basicField)->first();
         if ($userInfo) {
             $userInfo->online = $userInfo->getOnlineStatus();
         }

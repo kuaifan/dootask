@@ -7,9 +7,10 @@
         :placement="tooltipPlacement">
         <div slot="content" class="common-avatar-transfer">
             <slot/>
-            <p>{{$L('昵称')}}: {{user.nickname}}</p>
+            <p>{{$L('昵称')}}: {{user.nickname}}<em v-if="user.delete_at" class="deleted no-dark-content">{{$L('已删除')}}</em><em v-else-if="user.disable_at" class="disabled no-dark-content">{{$L('已离职')}}</em></p>
             <p>{{$L('职位/职称')}}: {{user.profession || '-'}}</p>
-            <p v-if="user.disable_at"><strong>{{$L('离职时间')}}: {{user.disable_at}}</strong></p>
+            <p v-if="user.delete_at"><strong>{{$L('删除时间')}}: {{user.delete_at}}</strong></p>
+            <p v-else-if="user.disable_at"><strong>{{$L('离职时间')}}: {{user.disable_at}}</strong></p>
             <slot name="end"/>
             <div v-if="userId != userid && showIconMenu" class="avatar-icons">
                 <Icon type="ios-chatbubbles" @click="openDialog"/>
@@ -27,7 +28,6 @@
             </div>
             <template v-if="showName">
                 <div class="avatar-name" :style="nameStyle">{{user.nickname}}</div>
-                <div v-if="user.disable_at" class="avatar-disable">{{$L('离职')}}</div>
             </template>
         </div>
     </ETooltip>
@@ -118,7 +118,8 @@
                 return {
                     'avatar-box': true,
                     'online': this.userId === this.userid || this.user.online,
-                    'disable': this.user.disable_at
+                    'disabled': this.user.disable_at,
+                    'deleted': this.user.delete_at
                 }
             },
 
@@ -145,13 +146,16 @@
 
             nameStyle() {
                 const {showIcon} = this;
+                const {delete_at, disable_at} = this.user
+                const styles = {}
                 if (!showIcon) {
-                    return {
-                        paddingLeft: 0
-                    }
-                } else {
-                    return {}
+                    styles.paddingLeft = 0
                 }
+                if (delete_at || disable_at) {
+                    styles.opacity = 0.8
+                    styles.textDecoration = "line-through"
+                }
+                return styles
             },
 
             avatarSize() {

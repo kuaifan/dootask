@@ -484,16 +484,21 @@ export default {
                     break;
 
                 case 'delete':
-                    $A.modalConfirm({
-                        content: `你确定要删除帐号【ID:${row.userid}，${row.nickname}】吗？`,
-                        loading: true,
-                        onOk: () => {
+                    $A.modalInput({
+                        title: `删除帐号【ID:${row.userid}，${row.nickname}】`,
+                        placeholder: "请输入删除原因",
+                        okText: "确定删除",
+                        onOk: (value) => {
+                            if (!value) {
+                                return '删除原因不能为空'
+                            }
                             return this.operationUser({
                                 userid: row.userid,
                                 type: name,
+                                delete_reason: value
                             });
                         }
-                    });
+                    })
                     break;
 
                 default:
