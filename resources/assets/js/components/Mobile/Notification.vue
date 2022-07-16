@@ -50,7 +50,6 @@ export default {
             }
             $A.eeuiAppSendMessage({
                 action: 'setVibrate',
-                time: 1000
             });
         },
 
