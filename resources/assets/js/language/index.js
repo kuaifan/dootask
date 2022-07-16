@@ -96,6 +96,31 @@ export default {
                 },
 
                 /**
+                 * 转换Ascii编码
+                 * @param value
+                 * @returns {string}
+                 * @private
+                 */
+                __convertAscii(value) {
+                    if (typeof value !== "string") {
+                        value = String(value)
+                    }
+                    let nativecode = value.split("");
+                    let ascii = "";
+                    for (let i = 0; i < nativecode.length; i++) {
+                        let code = Number(nativecode[i].charCodeAt(0));
+                        if (code > 127) {
+                            let charAscii = code.toString(16);
+                            charAscii = String("0000").substring(charAscii.length, 4) + charAscii;
+                            ascii += "\\u" + charAscii;
+                        } else {
+                            ascii += nativecode[i];
+                        }
+                    }
+                    return ascii
+                },
+
+                /**
                  * 监听语言变化
                  * @param callback
                  */
@@ -190,53 +215,55 @@ export default {
                     }
                     this.__initLanguageData();
                     //
-                    if (typeof languageCachesObjects[text] === "undefined") {
+                    const ascii = this.__convertAscii(text)
+                    if (typeof languageCachesObjects[ascii] === "undefined") {
+                        let tmpKey = null;
                         let tmpRege = null;
                         let tmpData = this.languageData.find((obj) => {
-                            if (typeof obj._ !== "undefined") {
-                                tmpRege = new RegExp("^" + this.replaceEscape(obj._).replace(/%/g, "(.*?)") + "$", "g");
+                            tmpKey = obj._ || obj.CN
+                            if (String(tmpKey).indexOf("%")) {
+                                tmpRege = new RegExp("^" + this.replaceEscape(tmpKey).replace(/%/g, "(.*?)") + "$", "g");
                                 return !!text.match(tmpRege);
+                            } else {
+                                return text == tmpKey
                             }
-                            return Object.values(obj).find((val) => {
-                                tmpRege = new RegExp("^" + this.replaceEscape(val).replace(/%/g, "(.*?)") + "$", "g");
-                                return !!text.match(tmpRege);
-                            })
                         });
-                        languageCachesObjects[text] = {
-                            rege: tmpRege,
-                            data: tmpData,
-                        };
+                        languageCachesObjects[ascii] = {rege: tmpRege, data: tmpData};
                     }
-                    const {rege, data} = languageCachesObjects[text];
-                    if (data
-                        && typeof data === "object"
-                        && typeof data[this.languageType] !== "undefined"
-                        && data[this.languageType]) {
-                        let index = 0;
+                    const {rege, data} = languageCachesObjects[ascii];
+                    if (data) {
                         let value = data[this.languageType];
-                        value = value.replace(/%/g, function () {
-                            return "$" + (++index);
-                        });
-                        return text.replace(rege, value);
+                        if (value) {
+                            if (rege === null) {
+                                return value
+                            }
+                            let index = 0;
+                            value = value.replace(/%/g, function () {
+                                return "$" + (++index);
+                            });
+                            return text.replace(rege, value);
+                        }
                     }
                     //
                     if (this.languageType == "CN") {
-                        try {
-                            let key = '__language:Undefined__';
-                            let languageTmp = JSON.parse(window.localStorage[key] || '[]');
-                            if (!this.__isArray(languageTmp)) {
-                                languageTmp = [];
-                            }
-                            let tmpRege = null;
-                            let tmpData = languageTmp.find((val) => {
-                                tmpRege = new RegExp("^" + val.replace(/%/g, "(.*?)") + "$", "g");
-                                return !!text.match(tmpRege);
-                            });
-                            if (!tmpData) {
-                                languageTmp.push(text);
-                                window.localStorage[key] = JSON.stringify(languageTmp);
-                            }
-                        } catch (e) { }
+                        setTimeout(_ => {
+                            try {
+                                let key = '__language:Undefined__';
+                                let languageTmp = JSON.parse(window.localStorage[key] || '[]');
+                                if (!this.__isArray(languageTmp)) {
+                                    languageTmp = [];
+                                }
+                                let tmpRege = null;
+                                let tmpData = languageTmp.find((val) => {
+                                    tmpRege = new RegExp("^" + val.replace(/%/g, "(.*?)") + "$", "g");
+                                    return !!text.match(tmpRege);
+                                });
+                                if (!tmpData) {
+                                    languageTmp.push(text);
+                                    window.localStorage[key] = JSON.stringify(languageTmp);
+                                }
+                            } catch (e) { }
+                        }, 10)
                     }
                     //
                     return text;
