@@ -582,9 +582,14 @@ class WebSocketDialogMsg extends AbstractModel
         // 其他网络图片
         preg_match_all("/<img[^>]*?src=([\"'])(.*?\.(png|jpg|jpeg|gif))\\1[^>]*?>/is", $text, $matchs);
         foreach ($matchs[2] as $key => $str) {
-            $tmpPath = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
-            Base::makeDir(public_path($tmpPath));
-            $tmpPath .= md5s($str) . "." . $matchs[3][$key];
+            if (str_starts_with($str, "{{RemoteURL}}")) {
+                $tmpPath = Base::leftDelete($str, "{{RemoteURL}}");
+                $tmpPath = Base::rightDelete($tmpPath, "_thumb.jpg");
+            } else {
+                $tmpPath = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
+                Base::makeDir(public_path($tmpPath));
+                $tmpPath .= md5s($str) . "." . $matchs[3][$key];
+            }
             if (file_exists(public_path($tmpPath))) {
                 $imagesize = getimagesize(public_path($tmpPath));
                 if (Base::imgThumb(public_path($tmpPath), public_path($tmpPath) . "_thumb.jpg", 320, 0)) {

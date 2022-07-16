@@ -896,6 +896,7 @@ export default {
             //
             if (this.replyActiveUpdate) {
                 // 修改
+                msgText = msgText.replace(new RegExp(`src=(["'])${$A.apiUrl('../')}`, "g"), "src=$1{{RemoteURL}}")
                 const update_id = this.replyId
                 this.$store.dispatch("setLoad", {
                     key: `msg-${update_id}`,
