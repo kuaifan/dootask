@@ -102,6 +102,7 @@ function genericPublish({url, version, output}) {
 function startBuild(data, publish, release) {
     const systemInfo = {
         title: data.name,
+        debug: "no",
         version: config.version,
         origin: "./",
         homeUrl:  utils.formatUrl(data.url),

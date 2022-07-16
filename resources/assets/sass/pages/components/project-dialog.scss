@@ -7,10 +7,10 @@
     position: relative;
     .dialog-user {
         margin-top: 26px;
-        padding: 0 22px;
         .member-head {
             display: flex;
             align-items: center;
+            padding: 0 22px;
             .member-title {
                 flex: 1;
                 font-size: 18px;
@@ -42,6 +42,7 @@
             display: flex;
             align-items: center;
             margin-top: 12px;
+            padding: 0 22px;
             overflow: auto;
 
             &::-webkit-scrollbar {

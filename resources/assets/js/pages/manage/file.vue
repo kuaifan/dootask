@@ -850,7 +850,7 @@ export default {
                     render: (h, {row}) => {
                         let type = this.types.find(({value, name}) => value == row.type && name);
                         if (type) {
-                            return h('AutoTip', type.name);
+                            return h('AutoTip', this.$L(type.name));
                         } else {
                             return h('div', (row.ext || row.type).toUpperCase())
                         }

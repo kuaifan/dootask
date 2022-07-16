@@ -31,8 +31,8 @@
                     </RadioGroup>
                     <div v-if="formData.reg_verify == 'open'" class="form-tip">
                         {{$L('开启后：')}}<br/>
-                        {{$L('① 帐号需验证通过才可登录')}}<br/>
-                        {{$L('② 修改邮箱和删除帐号需要邮箱验证码')}}
+                        ① {{$L('帐号需验证通过才可登录')}}<br/>
+                        ② {{$L('修改邮箱和删除帐号需要邮箱验证码')}}
                     </div>
                 </FormItem>
                 <FormItem :label="$L('任务提醒')" prop="notice">
