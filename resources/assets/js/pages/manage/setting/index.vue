@@ -193,15 +193,15 @@ export default {
         },
 
         onVersion() {
-            if (!this.$Electron) {
-                return
-            }
             axios.get($A.apiUrl('system/version')).then(({status, data}) => {
                 if (status === 200) {
                     let content = `${this.$L('服务器')}: ${$A.getDomain($A.apiUrl('../'))}`
                     content += `<br/>${this.$L('服务器版本')}: v${data.version}`
                     content += `<br/>${this.$L('客户端版本')}: v${this.version}`
-                    $A.modalInfo({content})
+                    $A.modalInfo({
+                        title: '版本信息',
+                        content
+                    })
                 }
             }).catch(_ => { })
         },

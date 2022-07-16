@@ -1039,6 +1039,7 @@
             cursor: pointer;
             z-index: 2;
             transition: all 0.2s;
+            user-select: none;
             pointer-events: none;
             opacity: 0;
             transform: scale(0);
@@ -1562,6 +1563,20 @@
                         .dialog-content {
                             a, img {
                                 -webkit-touch-callout: none;
+                            }
+                            .content-text {
+                                > pre {
+                                    line-height: 1.4;
+                                    font-size: 16px;
+                                }
+                            }
+                        }
+                        .dialog-emoji {
+                            > li {
+                                .emoji-symbol {
+                                    font-size: 14px;
+                                    margin-right: -1px;
+                                }
                             }
                         }
                     }
