@@ -1613,10 +1613,9 @@ export default {
                         break;
 
                     case "newTask":
-                        Store.set('addTask', {
-                            owner: [this.userId],
-                            content: $A.formatMsgBasic(this.operateItem.msg.text)
-                        });
+                        let content = $A.formatMsgBasic(this.operateItem.msg.text)
+                        content = content.replace(/<img[^>]*?src=(["'])(.*?)(_thumb\.jpg)*\1[^>]*?>/g, `<img src="$2">`)
+                        Store.set('addTask', {owner: [this.userId], content});
                         break;
 
                     case "todo":
