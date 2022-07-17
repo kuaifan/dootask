@@ -2270,15 +2270,15 @@ export default {
      * @param state
      * @param dispatch
      * @param getters
-     * @param data {dialog_id, msg_id, ?msg_type, ?position_id, ?prev_id, ?next_id, ?save_before, ?save_cancel}
+     * @param data {dialog_id, msg_id, ?msg_type, ?position_id, ?prev_id, ?next_id, ?save_before, ?clear_before}
      * @returns {Promise<unknown>}
      */
     getDialogMsgs({state, dispatch, getters}, data) {
         return new Promise((resolve, reject) => {
             const saveBefore = typeof data.save_before === "function" ? data.save_before : _ => {}
-            const saveCancel = typeof data.save_cancel === "boolean" ? data.save_cancel : false
+            const clearBefore = typeof data.clear_before === "boolean" ? data.clear_before : false
             if (typeof data.save_before !== "undefined") delete data.save_before
-            if (typeof data.save_cancel !== "undefined") delete data.save_cancel
+            if (typeof data.clear_before !== "undefined") delete data.clear_before
             //
             const loadKey = `msg::${data.dialog_id}-${data.msg_id}-${data.msg_type || ''}`
             if (getters.isLoad(loadKey)) {
@@ -2287,27 +2287,30 @@ export default {
             }
             dispatch("setLoad", loadKey)
             //
+            if (clearBefore) {
+                state.dialogMsgs = state.dialogMsgs.filter(({dialog_id}) => dialog_id !== data.dialog_id)
+            }
+            //
             dispatch("call", {
                 url: 'dialog/msg/list',
                 data,
+                spinner: 3000,
                 complete: _ => dispatch("cancelLoad", loadKey)
             }).then(result => {
                 saveBefore()
-                if (!saveCancel) {
-                    const resData = result.data;
-                    if ($A.isJson(resData.dialog)) {
-                        dispatch("saveDialog", resData.dialog);
-                        //
-                        const ids = resData.list.map(({id}) => id)
-                        state.dialogMsgs = state.dialogMsgs.filter(item => item.dialog_id != data.dialog_id || ids.includes(item.id));
-                    }
-                    if ($A.isArray(resData.todo)) {
-                        state.dialogTodos = state.dialogTodos.filter(item => item.dialog_id != data.dialog_id)
-                        dispatch("saveDialogTodo", resData.todo)
-                    }
+                const resData = result.data;
+                if ($A.isJson(resData.dialog)) {
+                    dispatch("saveDialog", resData.dialog);
                     //
-                    dispatch("saveDialogMsg", resData.list)
+                    const ids = resData.list.map(({id}) => id)
+                    state.dialogMsgs = state.dialogMsgs.filter(item => item.dialog_id != data.dialog_id || ids.includes(item.id));
                 }
+                if ($A.isArray(resData.todo)) {
+                    state.dialogTodos = state.dialogTodos.filter(item => item.dialog_id != data.dialog_id)
+                    dispatch("saveDialogTodo", resData.todo)
+                }
+                //
+                dispatch("saveDialogMsg", resData.list)
                 resolve(result)
             }).catch(e => {
                 console.warn(e);

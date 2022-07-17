@@ -498,7 +498,7 @@ export default {
 
             todoViewLoad: false,
             todoViewShow: false,
-            todoViewTmp: {},
+            todoViewData: {},
             todoViewMid: 0,
             todoViewId: 0,
 
@@ -720,17 +720,17 @@ export default {
         },
 
         replyItem() {
-            return this.replyId ? this.dialogMsgs.find(({id}) => id === this.replyId) : null
+            return this.replyId ? this.allMsgs.find(({id}) => id === this.replyId) : null
         },
 
         todoViewMsg() {
             if (this.todoViewMid) {
-                const msg = this.dialogMsgs.find(item => item.id == this.todoViewMid)
+                const msg = this.allMsgs.find(item => item.id == this.todoViewMid)
                 if (msg) {
                     return msg
                 }
-                if (this.todoViewTmp.id === this.todoViewMid) {
-                    return this.todoViewTmp
+                if (this.todoViewData.id === this.todoViewMid) {
+                    return this.todoViewData
                 }
             }
             return null
@@ -741,7 +741,6 @@ export default {
         dialogId: {
             handler(dialog_id) {
                 if (dialog_id) {
-                    this.tempMsgs = []
                     this.msgNew = 0
                     //
                     if (this.allMsgList.length > 0) {
@@ -751,7 +750,8 @@ export default {
                     this.msgType = '';
                     this.$store.dispatch("getDialogMsgs", {
                         dialog_id,
-                        msg_id: this.msgId
+                        msg_id: this.msgId,
+                        msg_type: this.msgType,
                     }).then(_ => {
                         this.openId = dialog_id;
                         setTimeout(this.onSearchMsgId, 100)
@@ -770,28 +770,13 @@ export default {
             immediate: true
         },
 
-        msgType(msg_type) {
-            if (msg_type) {
-                this.$store.dispatch("getDialogMsgs", {
-                    dialog_id: this.dialogId,
-                    msg_id: this.msgId,
-                    msg_type,
-                    save_cancel: true,
-                }).then(({data}) => {
-                    if (data.list.length > 0) {
-                        const ids = this.tempMsgs.map(item => item.id)
-                        const list = data.list.filter(item => !ids.includes(item.id))
-                        if (list.length > 0) {
-                            this.tempMsgs.push(...list.map(item => Object.assign(item, {
-                                isMsgType: true
-                            })))
-                        }
-                    }
-                }).catch(_ => {});
-            } else {
-                this.tempMsgs = this.tempMsgs.filter(({isMsgType}) => isMsgType !== true)
-            }
-            requestAnimationFrame(this.onToBottom)
+        msgType() {
+            this.$store.dispatch("getDialogMsgs", {
+                dialog_id: this.dialogId,
+                msg_id: this.msgId,
+                msg_type: this.msgType,
+                clear_before: true
+            }).catch(_ => {})
         },
 
         dialogSearchMsgId() {
@@ -817,12 +802,13 @@ export default {
         },
 
         wsOpenNum(num) {
-            if (num <= 1 || this.msgType) {
+            if (num <= 1) {
                 return
             }
             this.$store.dispatch("getDialogMsgs", {
                 dialog_id: this.dialogId,
                 msg_id: this.msgId,
+                msg_type: this.msgType,
             }).catch(_ => {});
         },
 
@@ -1080,6 +1066,7 @@ export default {
                     this.$store.dispatch("getDialogMsgs", {
                         dialog_id: this.dialogId,
                         msg_id: this.msgId,
+                        msg_type: this.msgType,
                         position_id
                     }).finally(_ => {
                         const index = this.allMsgs.findIndex(item => item.id === position_id)
@@ -1112,7 +1099,7 @@ export default {
                         msg_id: this.todoViewMid
                     },
                 }).then(({data}) => {
-                    this.todoViewTmp = data
+                    this.todoViewData = data
                 })
             }
         },
@@ -1120,7 +1107,7 @@ export default {
         onCloseTodo() {
             this.todoViewLoad = false
             this.todoViewShow = false
-            this.todoViewTmp = {}
+            this.todoViewData = {}
             this.todoViewMid = 0
             this.todoViewId = 0
         },
@@ -1308,7 +1295,7 @@ export default {
                 data: {
                     dialog_id: this.dialogId,
                 },
-                spinner: 300,
+                spinner: 600,
             }).then(({data}) => {
                 if (data.tel) {
                     $A.eeuiAppSendMessage({
@@ -1564,7 +1551,11 @@ export default {
                     break;
 
                 default:
-                    this.msgType = type
+                    if (this.loadMsg) {
+                        $A.messageWarning("正在加载，请稍后再试...")
+                    } else {
+                        this.msgType = type
+                    }
                     break;
             }
         },
@@ -1781,17 +1772,13 @@ export default {
         },
 
         onViewPicture(currentUrl) {
-            const data = $A.cloneJSON(this.dialogMsgs.filter(item => {
-                if (item.dialog_id === this.dialogId) {
-                    if (item.type === 'file') {
-                        return ['jpg', 'jpeg', 'gif', 'png'].includes(item.msg.ext);
-                    } else if (item.type === 'text') {
-                        return item.msg.text.match(/<img\s+class="browse"[^>]*?>/);
-                    }
+            const data = this.allMsgs.filter(item => {
+                if (item.type === 'file') {
+                    return ['jpg', 'jpeg', 'gif', 'png'].includes(item.msg.ext);
+                } else if (item.type === 'text') {
+                    return item.msg.text.match(/<img\s+class="browse"[^>]*?>/);
                 }
                 return false;
-            })).sort((a, b) => {
-                return a.id - b.id;
             });
             //
             const list = [];
@@ -1860,8 +1847,8 @@ export default {
                 const index = this.dialogMsgs.findIndex(item => item.id == data.id)
                 if (index > -1) {
                     this.$store.dispatch("saveDialogMsg", data);
-                } else if (this.todoViewTmp.id === data.id) {
-                    this.todoViewTmp = Object.assign({}, this.todoViewTmp, data)
+                } else if (this.todoViewData.id === data.id) {
+                    this.todoViewData = Object.assign(this.todoViewData, data)
                 }
             }).catch(({msg}) => {
                 $A.messageError(msg);
