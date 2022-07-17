@@ -2415,7 +2415,14 @@ export default {
      * @param delay
      */
     showSpinner({state}, delay) {
-        setTimeout(_ => state.floatSpinnerLoad++, typeof delay === "number" ? delay : 0)
+        const id = $A.randomString(6)
+        state.floatSpinnerTimer.push({
+            id,
+            timer: setTimeout(_ => {
+                state.floatSpinnerTimer = state.floatSpinnerTimer.filter(item => item.id !== id)
+                state.floatSpinnerLoad++
+            }, typeof delay === "number" ? delay : 0)
+        })
     },
 
     /**
@@ -2423,7 +2430,12 @@ export default {
      * @param state
      */
     hiddenSpinner({state}) {
-        state.floatSpinnerLoad--
+        const item = state.floatSpinnerTimer.shift()
+        if (item) {
+            clearTimeout(item.timer)
+        } else {
+            state.floatSpinnerLoad--
+        }
     },
 
     /** *****************************************************************************************/
