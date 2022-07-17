@@ -2270,15 +2270,26 @@ export default {
      * @param state
      * @param dispatch
      * @param getters
-     * @param data {dialog_id, msg_id, ?msg_type, ?position_id, ?prev_id, ?next_id, ?save_before, ?clear_before}
+     * @param data {dialog_id, msg_id, ?msg_type, ?position_id, ?prev_id, ?next_id, ?save_before, ?clear_before, ?spinner}
      * @returns {Promise<unknown>}
      */
     getDialogMsgs({state, dispatch, getters}, data) {
         return new Promise((resolve, reject) => {
-            const saveBefore = typeof data.save_before === "function" ? data.save_before : _ => {}
-            const clearBefore = typeof data.clear_before === "boolean" ? data.clear_before : false
-            if (typeof data.save_before !== "undefined") delete data.save_before
-            if (typeof data.clear_before !== "undefined") delete data.clear_before
+            let saveBefore = _ => {}
+            let clearBefore = false
+            let spinner = false
+            if (typeof data.save_before !== "undefined") {
+                saveBefore = typeof data.save_before === "function" ? data.save_before : _ => {}
+                delete data.save_before
+            }
+            if (typeof data.clear_before !== "undefined") {
+                clearBefore = typeof data.clear_before === "boolean" ? data.clear_before : false
+                delete data.clear_before
+            }
+            if (typeof data.spinner !== "undefined") {
+                spinner = data.spinner
+                delete data.spinner
+            }
             //
             const loadKey = `msg::${data.dialog_id}-${data.msg_id}-${data.msg_type || ''}`
             if (getters.isLoad(loadKey)) {
@@ -2294,7 +2305,7 @@ export default {
             dispatch("call", {
                 url: 'dialog/msg/list',
                 data,
-                spinner: 3000,
+                spinner,
                 complete: _ => dispatch("cancelLoad", loadKey)
             }).then(result => {
                 saveBefore()

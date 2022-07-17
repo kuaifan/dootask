@@ -1099,7 +1099,8 @@ export default {
                         dialog_id: this.dialogId,
                         msg_id: this.msgId,
                         msg_type: this.msgType,
-                        position_id
+                        position_id,
+                        spinner: 2000
                     }).finally(_ => {
                         const index = this.allMsgs.findIndex(item => item.id === position_id)
                         if (index > -1) {
