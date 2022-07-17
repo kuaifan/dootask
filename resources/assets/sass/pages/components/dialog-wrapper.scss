@@ -1368,6 +1368,11 @@
     overflow: hidden !important;
 }
 
+.dialog-wrapper-dialogids {
+    .ivu-select-arrow {
+        display: none !important;
+    }
+}
 
 .dialog-wrapper-forward {
     .forward-option {

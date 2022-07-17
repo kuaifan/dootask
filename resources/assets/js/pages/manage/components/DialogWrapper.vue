@@ -278,10 +278,11 @@
                 <FormItem prop="dialogids" :label="$L('最近聊天')">
                     <Select
                         v-model="forwardData.dialogids"
-                        :placeholder="$L('选择转发对话')"
+                        :placeholder="$L('选择转发最近聊天')"
                         :multiple-max="20"
                         multiple
                         filterable
+                        class="dialog-wrapper-dialogids"
                         transfer-class-name="dialog-wrapper-forward">
                         <div slot="drop-prepend" class="forward-drop-prepend">{{$L('最多只能选择20个')}}</div>
                         <Option
@@ -305,8 +306,8 @@
                         </Option>
                     </Select>
                 </FormItem>
-                <FormItem prop="userids" :label="$L('团队成员')">
-                    <UserInput v-model="forwardData.userids" :multiple-max="20" :placeholder="`(${$L('或')}) ${$L('选择转发成员')}`"/>
+                <FormItem prop="userids" :label="$L('指定成员')">
+                    <UserInput v-model="forwardData.userids" :multiple-max="20" :placeholder="`(${$L('或')}) ${$L('选择转发指定成员')}`"/>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
@@ -1072,7 +1073,7 @@ export default {
                     loop_num++
                     setTimeout(_ => {
                         this.onPositionId(position_id, msg_id, loop_num).then(resolve).catch(reject)
-                    }, Math.min(600, 100 * loop_num))
+                    }, Math.min(800, 200 * loop_num))
                     return;
                 }
                 if (loop_num > 0) {
@@ -1080,9 +1081,12 @@ export default {
                 }
                 //
                 const index = this.allMsgs.findIndex(item => item.id === position_id)
-                if (index > -1) {
-                    this.onToIndex(index)
-                    resolve()
+                const gtpos = this.prevId > 0 ? 0 : -1  // 如果还有更多消息时定位的消息必须不是第一条是为了避免定位后又有新加载
+                if (index > gtpos) {
+                    setTimeout(_ => {
+                        this.onToIndex(index)
+                        resolve()
+                    }, 200)
                 } else {
                     if (msg_id > 0) {
                         this.$store.dispatch("setLoad", {
