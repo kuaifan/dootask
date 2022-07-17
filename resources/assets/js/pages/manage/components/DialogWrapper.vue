@@ -209,6 +209,10 @@
                                 <i class="taskfont">&#xe7b7;</i>
                                 <span>{{ $L(operateItem.todo ? '取消待办' : '设待办') }}</span>
                             </li>
+                            <li v-if="msgType !== ''" @click="onOperate('pos')">
+                                <i class="taskfont">&#xee15;</i>
+                                <span>{{ $L('完整对话') }}</span>
+                            </li>
                         </ul>
                     </DropdownItem>
                     <DropdownItem name="emoji" class="dropdown-emoji">
@@ -1055,7 +1059,7 @@ export default {
                     return
                 }
                 //
-                if (this.loadMsg || this.msgType != '') {
+                if (this.loadMsg || this.msgType !== '') {
                     this.msgType = ''
                     if (loop_num === 0) {
                         this.$store.dispatch("showSpinner", 600)
@@ -1649,6 +1653,10 @@ export default {
 
                     case "todo":
                         this.onTodo()
+                        break;
+
+                    case "pos":
+                        this.onPositionId(this.operateItem.id)
                         break;
 
                     case "emoji":
