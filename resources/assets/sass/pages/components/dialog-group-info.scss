@@ -58,6 +58,7 @@
                 align-items: center;
                 list-style: none;
                 padding: 12px;
+                height: 56px;
                 border-radius: 6px;
 
                 &:hover {
@@ -109,18 +110,29 @@
                 .user-exit {
                     display: flex;
                     align-items: center;
-                    justify-content: center;
+                    justify-content: flex-end;
                     cursor: pointer;
-                    margin-left: 4px;
-                    width: 22px;
-                    height: 22px;
-                    font-size: 12px;
-                    color: $primary-desc-color;
-                    border: 1px solid #dddddd;
-                    border-radius: 50%;
+                    height: 100%;
+                    width: 32px;
                     opacity: 0;
                     transform: translateX(50%);
                     transition: all 0.2s;
+                    &:hover {
+                        > i {
+                            color: $primary-text-color;
+                        }
+                    }
+                    > i {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 22px;
+                        height: 22px;
+                        font-size: 12px;
+                        color: $primary-desc-color;
+                        border: 1px solid #dddddd;
+                        border-radius: 50%;
+                    }
                 }
             }
         }

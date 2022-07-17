@@ -21,7 +21,9 @@
                 <li v-for="(item, index) in userList" :key="index" @click="openUser(item.userid)">
                     <UserAvatar :userid="item.userid" :size="32" showName tooltipDisabled/>
                     <div v-if="item.userid === dialogData.owner_id" class="user-tag">{{ $L("群主") }}</div>
-                    <Icon v-else-if="dialogData.owner_id == userId || item.inviter == userId" class="user-exit" type="md-exit" @click="onExit(item)"/>
+                    <div v-else-if="dialogData.owner_id == userId || item.inviter == userId" class="user-exit" @click.stop="onExit(item)">
+                        <Icon type="md-exit"/>
+                    </div>
                 </li>
                 <li v-if="userList.length === 0" class="no">
                     <Loading v-if="loadIng > 0"/>
