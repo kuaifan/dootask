@@ -147,19 +147,24 @@
                     trigger="custom"
                     :visible="contextMenuVisible"
                     transfer-class-name="page-file-dropdown-menu"
+                    @on-click="handleContextClick"
                     @on-clickoutside="handleClickContextMenuOutside"
                     @on-visible-change="handleVisibleChangeMenu"
                     transfer>
                     <DropdownMenu slot="list">
                         <template v-if="contextMenuItem.id">
-                            <DropdownItem @click.native="handleContextClick('open')" class="item-open">
+                            <DropdownItem name="open" class="item-open">
                                 {{$L('打开')}}
                                 <div class="open-name">“{{contextMenuItem.name}}”</div>
                             </DropdownItem>
-                            <DropdownItem @click.native="handleContextClick('select')">{{$L(selectIds.includes(contextMenuItem.id) ? '取消选择' : '选择')}}</DropdownItem>
+                            <DropdownItem v-if="searchKey" name="upperFolder" class="item-open">
+                                {{$L('在上层文件夹中显示')}}
+                            </DropdownItem>
+
+                            <DropdownItem name="select">{{$L(selectIds.includes(contextMenuItem.id) ? '取消选择' : '选择')}}</DropdownItem>
 
                             <Dropdown placement="right-start" transfer>
-                                <DropdownItem divided>
+                                <DropdownItem divided @click.native.stop="" name="new:">
                                     <div class="arrow-forward-item">{{$L('新建')}}<Icon type="ios-arrow-forward"></Icon></div>
                                 </DropdownItem>
                                 <DropdownMenu slot="list" class="page-file-dropdown-menu">
@@ -168,22 +173,22 @@
                                         v-if="type.label"
                                         :key="key"
                                         :divided="!!type.divided"
-                                        @click.native="addFile(type.value)">
+                                        :name="`new:${type.value}`">
                                         <div :class="`no-dark-before file-item file-icon ${type.value}`">{{$L(type.label)}}</div>
                                     </DropdownItem>
                                 </DropdownMenu>
                             </Dropdown>
 
-                            <DropdownItem @click.native="handleContextClick('rename')" divided>{{$L('重命名')}}</DropdownItem>
-                            <DropdownItem @click.native="handleContextClick('copy')" :disabled="contextMenuItem.type == 'folder'">{{$L('复制')}}</DropdownItem>
-                            <DropdownItem @click.native="handleContextClick('shear')" :disabled="contextMenuItem.userid != userId">{{$L('剪切')}}</DropdownItem>
+                            <DropdownItem name="rename" divided>{{$L('重命名')}}</DropdownItem>
+                            <DropdownItem name="copy" :disabled="contextMenuItem.type == 'folder'">{{$L('复制')}}</DropdownItem>
+                            <DropdownItem name="shear" :disabled="contextMenuItem.userid != userId">{{$L('剪切')}}</DropdownItem>
 
-                            <DropdownItem v-if="contextMenuItem.userid == userId" @click.native="handleContextClick('share')" divided>{{$L('共享')}}</DropdownItem>
-                            <DropdownItem v-else-if="contextMenuItem.share" @click.native="handleContextClick('outshare')" divided>{{$L('退出共享')}}</DropdownItem>
-                            <DropdownItem @click.native="handleContextClick('link')" :divided="contextMenuItem.userid != userId && !contextMenuItem.share" :disabled="contextMenuItem.type == 'folder'">{{$L('链接')}}</DropdownItem>
-                            <DropdownItem @click.native="handleContextClick('download')" :disabled="contextMenuItem.ext == ''">{{$L('下载')}}</DropdownItem>
+                            <DropdownItem v-if="contextMenuItem.userid == userId" name="share" divided>{{$L('共享')}}</DropdownItem>
+                            <DropdownItem v-else-if="contextMenuItem.share" name="outshare" divided>{{$L('退出共享')}}</DropdownItem>
+                            <DropdownItem name="link" :divided="contextMenuItem.userid != userId && !contextMenuItem.share" :disabled="contextMenuItem.type == 'folder'">{{$L('链接')}}</DropdownItem>
+                            <DropdownItem name="download" :disabled="contextMenuItem.ext == ''">{{$L('下载')}}</DropdownItem>
 
-                            <DropdownItem @click.native="handleContextClick('delete')" divided style="color:red">{{$L('删除')}}</DropdownItem>
+                            <DropdownItem name="delete" divided style="color:red">{{$L('删除')}}</DropdownItem>
                         </template>
                         <template v-else>
                             <DropdownItem
@@ -191,7 +196,7 @@
                                 v-if="type.label"
                                 :key="key"
                                 :divided="!!type.divided"
-                                @click.native="addFile(type.value)">
+                                :name="`new:${type.value}`">
                                 <div :class="`no-dark-before file-item file-icon ${type.value}`">{{$L(type.label)}}</div>
                             </DropdownItem>
                         </template>
@@ -909,7 +914,9 @@ export default {
         },
 
         addFile(command) {
-            if (command == 'upload') {
+            if (!command) {
+                return;
+            } else if (command == 'upload') {
                 this.uploadDir = false
                 this.$refs.fileUpload.handleClick();
                 return;
@@ -968,6 +975,7 @@ export default {
             if (id > 0) {
                 this.goForward({name: 'manage-file', params: {folderId: id, fileId: null}});
             } else {
+                this.searchKey = '';
                 this.goForward({name: 'manage-file'});
             }
         },
@@ -1074,7 +1082,11 @@ export default {
         },
 
         handleContextClick(command) {
-            this.dropFile(this.contextMenuItem, command)
+            if ($A.leftExists(command, "new:")) {
+                this.addFile($A.leftDelete(command, "new:"))
+            } else {
+                this.dropFile(this.contextMenuItem, command)
+            }
         },
 
         handleClickContextMenuOutside() {
@@ -1109,6 +1121,10 @@ export default {
                     } else {
                         this.browseFile(item.id)
                     }
+                    break;
+
+                case 'upperFolder':
+                    this.browseFolder(item.pid)
                     break;
 
                 case 'select':
@@ -1335,13 +1351,19 @@ export default {
             if (e.keyCode === 13) {
                 this.onEnter(item);
             } else if (e.keyCode === 27) {
-                this.setLoad(item.id, false)
-                this.setEdit(item.id, false)
+                const isCreate = !/^\d+$/.test(item.id);
+                if (isCreate) {
+                    item.newname = ''
+                    this.$store.dispatch("forgetFile", item.id);
+                } else {
+                    this.setLoad(item.id, false)
+                    this.setEdit(item.id, false)
+                }
             }
         },
 
         onEnter(item) {
-            let isCreate = !/^\d+$/.test(item.id);
+            const isCreate = !/^\d+$/.test(item.id);
             if (!item.newname) {
                 if (isCreate) {
                     this.$store.dispatch("forgetFile", item.id);
