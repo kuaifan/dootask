@@ -383,7 +383,7 @@
                         @on-down-file="onDownFile"
                         @on-emoji="onEmoji"
                         simpleView/>
-                    <Button class="original-button" icon="md-exit" type="text" @click="onPosTodo">{{ $L("回到原文") }}</Button>
+                    <Button class="original-button" icon="md-exit" type="text" :loading="todoViewPosLoad" @click="onPosTodo">{{ $L("回到原文") }}</Button>
                 </div>
                 <div class="todo-button">
                     <Button type="primary" size="large" icon="md-checkbox-outline" @click="onDoneTodo" :loading="todoViewLoad" long>{{ $L("完成") }}</Button>
@@ -497,6 +497,7 @@ export default {
             },
 
             todoViewLoad: false,
+            todoViewPosLoad: false,
             todoViewShow: false,
             todoViewData: {},
             todoViewMid: 0,
@@ -742,12 +743,13 @@ export default {
             handler(dialog_id) {
                 if (dialog_id) {
                     this.msgNew = 0
+                    this.msgType = ''
+                    this.replyActiveId = 0
                     //
                     if (this.allMsgList.length > 0) {
                         this.allMsgs = this.allMsgList
                         requestAnimationFrame(this.onToBottom)
                     }
-                    this.msgType = '';
                     this.$store.dispatch("getDialogMsgs", {
                         dialog_id,
                         msg_id: this.msgId,
@@ -924,8 +926,8 @@ export default {
                 setTimeout(_ => {
                     this.tempMsgs.push(tempMsg)
                     this.msgType = ''
-                    this.replyActiveId = 0;
-                    this.onActive();
+                    this.replyActiveId = 0
+                    this.onActive()
                     this.$nextTick(this.onToBottom)
                     //
                     this.$store.dispatch("call", {
@@ -963,6 +965,7 @@ export default {
             }
             this.tempMsgs.push(tempMsg)
             this.msgType = ''
+            this.replyActiveId = 0
             this.onActive()
             this.$nextTick(this.onToBottom)
             //
@@ -988,7 +991,6 @@ export default {
         sendFileMsg(row) {
             const files = $A.isArray(row) ? row : [row];
             if (files.length > 0) {
-                this.msgType = '';
                 this.pasteFile = [];
                 this.pasteItem = [];
                 files.some(file => {
@@ -1045,11 +1047,34 @@ export default {
             }
         },
 
-        onPositionId(position_id, msg_id = 0) {
-            return new Promise(resolve => {
+        onPositionId(position_id, msg_id = 0, loop_num = 0) {
+            return new Promise((resolve, reject) => {
                 if (position_id === 0) {
+                    $A.modalError("查看失败：参数错误")
+                    reject()
                     return
                 }
+                //
+                if (this.loadMsg || this.msgType != '') {
+                    this.msgType = ''
+                    if (loop_num === 0) {
+                        this.$store.dispatch("showSpinner", 600)
+                    } else if (loop_num > 20) {
+                        this.$store.dispatch("hiddenSpinner")
+                        $A.modalError("查看失败：请求超时")
+                        reject()
+                        return;
+                    }
+                    loop_num++
+                    setTimeout(_ => {
+                        this.onPositionId(position_id, msg_id, loop_num).then(resolve).catch(reject)
+                    }, Math.min(600, 100 * loop_num))
+                    return;
+                }
+                if (loop_num > 0) {
+                    this.$store.dispatch("hiddenSpinner")
+                }
+                //
                 const index = this.allMsgs.findIndex(item => item.id === position_id)
                 if (index > -1) {
                     this.onToIndex(index)
@@ -1061,7 +1086,6 @@ export default {
                             delay: 600
                         })
                     }
-                    this.msgType = '';
                     this.preventToBottom = true;
                     this.$store.dispatch("getDialogMsgs", {
                         dialog_id: this.dialogId,
@@ -1116,7 +1140,10 @@ export default {
             if (!this.todoViewMid) {
                 return
             }
-            this.onPositionId(this.todoViewMid).then(this.onCloseTodo)
+            this.todoViewPosLoad = true
+            this.onPositionId(this.todoViewMid).then(this.onCloseTodo).finally(_ => {
+                this.todoViewPosLoad = false
+            })
         },
 
         onDoneTodo() {
@@ -1229,15 +1256,17 @@ export default {
         chatFile(type, file) {
             switch (type) {
                 case 'progress':
-                    this.tempMsgs.push({
+                    const tempMsg = {
                         id: file.tempId,
                         dialog_id: this.dialogData.id,
                         reply_id: this.replyId,
                         type: 'loading',
                         userid: this.userId,
                         msg: { },
-                    })
-                    this.replyActiveId = 0;
+                    }
+                    this.tempMsgs.push(tempMsg)
+                    this.msgType = ''
+                    this.replyActiveId = 0
                     this.onActive()
                     this.$nextTick(this.onToBottom)
                     break;
