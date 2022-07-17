@@ -749,6 +749,7 @@ export default {
 
         startRecord() {
             if (this.sendClass === 'recorder') {
+                Store.set('audioSubscribe', true);
                 this.recordDuration = 0;
                 this.recordState = "ready";
                 this.$nextTick(_ => {
