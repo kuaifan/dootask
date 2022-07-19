@@ -485,6 +485,7 @@ export default {
         ...mapState([
             'userInfo',
             'userIsAdmin',
+            'cacheUserBasic',
             'cacheTasks',
             'cacheDialogs',
             'cacheProjects',
@@ -933,7 +934,7 @@ export default {
                 return; // 窗口激活且最后打开的会话是通知的会话时不通知
             }
             //
-            const {id, dialog_id, type, msg, userid} = data;
+            const {id, dialog_id, dialog_type, type, msg, userid} = data;
             if (userid == this.userId) {
                 return; // 自己的消息不通知
             }
@@ -949,11 +950,37 @@ export default {
                     return;
             }
             this.__notificationId = id;
-            const notificationFunc = (title) => {
+            const notificationFuncA = (title) => {
+                if (dialog_type === 'group') {
+                    let tempUser = this.cacheUserBasic.find(item => item.userid == userid);
+                    if (tempUser) {
+                        notificationFuncB(`${title} (${tempUser.nickname})`)
+                    } else {
+                        this.$store.dispatch("call", {
+                            url: 'users/basic',
+                            data: {
+                                userid: [userid]
+                            },
+                            checkRole: false
+                        }).then(({data}) => {
+                            tempUser = data.find(item => item.userid == userid);
+                            if (tempUser) {
+                                notificationFuncB(`${title} (${tempUser.nickname})`)
+                            }
+                        }).catch(_ => {
+                            notificationFuncB(title)
+                        });
+                    }
+                } else {
+                    notificationFuncB(title)
+                }
+            }
+            const notificationFuncB = (title) => {
                 if (this.__notificationId === id) {
                     if (this.$isEEUiApp) {
                         this.$refs.mobileNotification.open({
                             userid: userid,
+                            title,
                             desc: body,
                             callback: () => {
                                 this.goForward({name: 'manage-messenger'});
@@ -975,11 +1002,9 @@ export default {
             }
             const dialog = this.cacheDialogs.find((item) => item.id == dialog_id);
             if (dialog) {
-                notificationFunc(dialog.name)
+                notificationFuncA(dialog.name)
             } else {
-                this.$store.dispatch("getDialogOne", dialog_id).then(({data}) => {
-                    notificationFunc(data.name)
-                }).catch(() => {})
+                this.$store.dispatch("getDialogOne", dialog_id).then(({data}) => notificationFuncA(data.name)).catch(() => {})
             }
         },
 

@@ -6,7 +6,7 @@
             @click.stop="onClick"
             @touchstart="onTouchstart"
             @touchmove="onTouchmove">
-            <UserAvatar :userid="userid" :size="40" show-name/>
+            <UserAvatar :userid="userid" :size="40" show-name :name-text="title"/>
             <div class="notification-desc">{{desc}}</div>
         </div>
     </transition>
@@ -18,6 +18,7 @@ export default {
     data() {
         return {
             userid: 0,
+            title: '',
             desc: '',
             duration: 6000,
             callback: null,
@@ -40,6 +41,7 @@ export default {
                 return;
             }
             this.userid = config.userid || 0;
+            this.title = config.title || "";
             this.desc = config.desc || "";
             this.duration = typeof config.duration === "number" ? config.duration : 6000;
             this.callback = typeof config.callback === "function" ? config.callback : null;

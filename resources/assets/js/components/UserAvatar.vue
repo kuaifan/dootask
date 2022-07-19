@@ -27,7 +27,7 @@
                 </EAvatar>
             </div>
             <template v-if="showName">
-                <div class="avatar-name" :style="nameStyle">{{user.nickname}}</div>
+                <div class="avatar-name" :style="nameStyle">{{nameText || user.nickname}}</div>
             </template>
         </div>
     </ETooltip>
@@ -55,6 +55,10 @@
             showName: {
                 type: Boolean,
                 default: false
+            },
+            nameText: {
+                type: String,
+                default: null   // showName = true 时有效，留空就显示会员昵称
             },
             tooltipDisabled: {
                 type: Boolean,
