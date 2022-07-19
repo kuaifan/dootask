@@ -61,7 +61,7 @@
                     <div slot="content">{{$L('任务完成 % 天后自动归档。', formDatum.archived_day)}}</div>
                 </ETooltip>
             </FormItem>
-            <FormItem :label="$L('全员群组禁言')" prop="disabledAllGroup">
+            <FormItem :label="$L('全员群组禁言')" prop="allGroupMute">
                 <RadioGroup v-model="formDatum.all_group_mute">
                     <Radio label="open">{{$L('开放')}}</Radio>
                     <Radio label="user">{{$L('成员禁言')}}</Radio>
@@ -70,6 +70,14 @@
                 <div v-if="formDatum.all_group_mute == 'open'" class="form-tip">{{$L('开放：所有人都可以发言。')}}</div>
                 <div v-else-if="formDatum.all_group_mute == 'user'" class="form-tip">{{$L('成员禁言：仅管理员可以发言。')}}</div>
                 <div v-else-if="formDatum.all_group_mute == 'all'" class="form-tip">{{$L('全部禁言：所有人都禁止发言。')}}</div>
+            </FormItem>
+            <FormItem :label="$L('自动进入全员群')" prop="allGroupAutoin">
+                <RadioGroup v-model="formDatum.all_group_autoin">
+                    <Radio label="yes">{{$L('自动')}}</Radio>
+                    <Radio label="no">{{$L('关闭')}}</Radio>
+                </RadioGroup>
+                <div v-if="formDatum.all_group_autoin == 'yes'" class="form-tip">{{$L('自动：注册成功后自动进入全员群。')}}</div>
+                <div v-else-if="formDatum.all_group_autoin == 'no'" class="form-tip">{{$L('关闭：其他成员通过@邀请进入。')}}</div>
             </FormItem>
             <FormItem :label="$L('是否启动首页')" prop="startHome">
                 <RadioGroup v-model="formDatum.start_home">

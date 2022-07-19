@@ -256,8 +256,10 @@ class User extends AbstractModel
         $user->pinyin = Base::cn2pinyin($user->nickname);
         if ($user->save()) {
             // 加入全员群组
-            $dialog = WebSocketDialog::whereGroupType('all')->orderByDesc('id')->first();
-            $dialog?->joinGroup($user->userid, 0);
+            if (Base::settingFind('system', 'all_group_autoin', 'yes') === 'yes') {
+                $dialog = WebSocketDialog::whereGroupType('all')->orderByDesc('id')->first();
+                $dialog?->joinGroup($user->userid, 0);
+            }
         }
         return $user->find($user->userid);
     }
