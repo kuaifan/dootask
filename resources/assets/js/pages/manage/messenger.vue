@@ -227,8 +227,8 @@ export default {
                     return false;
                 }
                 if (dialogKey) {
-                    const {name, name_py, last_msg} = dialog;
-                    let searchString = `${name} ${name_py}`
+                    const {name, pinyin, last_msg} = dialog;
+                    let searchString = `${name} ${pinyin}`
                     if (last_msg) {
                         switch (last_msg.type) {
                             case 'text':
@@ -292,7 +292,7 @@ export default {
                 return [];
             }
             if (contactsKey) {
-                return contactsData.filter(item => $A.strExists(`${item.email}||${item.nickname}||${item.profession}||${item.pinyin}`, contactsKey))
+                return contactsData.filter(item => $A.strExists(`${item.email} ${item.nickname} ${item.profession} ${item.pinyin}`, contactsKey))
             }
             return contactsData;
         },

@@ -602,7 +602,7 @@ export default {
                     list = list.filter(({flow_item_id}) => flow_item_id === flowInfo.value);
                 }
                 if (searchText) {
-                    list = list.filter(({name, desc}) => $A.strExists(`${name}||${desc}`, searchText));
+                    list = list.filter(({name, desc}) => $A.strExists(`${name} ${desc}`, searchText));
                 }
                 return list;
             }
@@ -1267,7 +1267,7 @@ export default {
                 return true;
             }
             if (searchText) {
-                if (!$A.strExists(`${name}||${desc}`, searchText)) {
+                if (!$A.strExists(`${name} ${desc}`, searchText)) {
                     return true;
                 }
             }

@@ -100,7 +100,7 @@ export default {
                 return b.id - a.id;
             });
             if (projectKeyValue) {
-                return data.filter(item => $A.strExists(`${item.name}||${item.desc}`, projectKeyValue));
+                return data.filter(item => $A.strExists(`${item.name} ${item.desc}`, projectKeyValue));
             }
             /*return data.map(item => {
                 if (!$A.isArray(item.user_simple)) {
