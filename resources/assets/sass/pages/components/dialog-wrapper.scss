@@ -1649,3 +1649,18 @@
         }
     }
 }
+
+@media (max-width: 768px) and (min-width: 390px){
+    .dialog-wrapper-operate {
+        .operate-action {
+            width: 376px;
+        }
+        .operate-emoji {
+            width: 376px;
+
+            > li {
+                width: 46px;
+            }
+        }
+    }
+}

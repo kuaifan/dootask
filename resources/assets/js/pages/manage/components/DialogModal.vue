@@ -4,13 +4,11 @@
         :mask="false"
         :mask-closable="false"
         :footer-hide="true"
-        :transition-names="['', '']"
+        :transition-names="[transition, '']"
         :beforeClose="onBeforeClose"
         class-name="dialog-modal"
         fullscreen>
-        <transition :name="transition">
-            <DialogWrapper v-if="windowSmall && dialogId > 0" :dialogId="dialogId" :beforeBack="onBeforeClose"/>
-        </transition>
+        <DialogWrapper v-if="windowSmall && dialogId > 0" :dialogId="dialogId" :beforeBack="onBeforeClose"/>
     </Modal>
 </template>
 
@@ -56,7 +54,6 @@ export default {
     data() {
         return {
             timer: null,
-            visible: false,
             transition: $A.isIos() ? 'mobile-dialog' : ''
         }
     },
@@ -64,21 +61,8 @@ export default {
     computed: {
         ...mapState(['dialogId']),
 
-        show() {
+        visible() {
             return this.dialogId > 0 && this.windowSmall
-        }
-    },
-
-    watch: {
-        show(v) {
-            this.timer && clearTimeout(this.timer);
-            if (v) {
-                this.visible = true;
-            } else {
-                this.timer = setTimeout(_ => {
-                    this.visible = false;
-                }, 300);
-            }
         }
     },
 

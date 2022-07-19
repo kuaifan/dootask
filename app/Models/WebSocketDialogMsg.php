@@ -307,7 +307,7 @@ class WebSocketDialogMsg extends AbstractModel
     public function toggleTodoMsg($sender, $userids = [])
     {
         if (in_array($this->type, ['tag', 'todo', 'notice'])) {
-            return Base::retError('此消息不支持社待办');
+            return Base::retError('此消息不支持设待办');
         }
         if ($this->todo && $this->todo != $sender) {
             return Base::retError('仅支持设此待办人员【' . User::userid2nickname($this->todo) . '】取消');
