@@ -227,20 +227,20 @@ export default {
                     return false;
                 }
                 if (dialogKey) {
-                    const {name, last_msg} = dialog;
-                    let msgKey = "";
+                    const {name, name_py, last_msg} = dialog;
+                    let searchString = `${name} ${name_py}`
                     if (last_msg) {
                         switch (last_msg.type) {
                             case 'text':
-                                msgKey = last_msg.msg.text.replace(/<[^>]+>/g,"")
+                                searchString += ` ${last_msg.msg.text.replace(/<[^>]+>/g,"")}`
                                 break
                             case 'meeting':
                             case 'file':
-                                msgKey = last_msg.msg.name
+                                searchString += ` ${last_msg.msg.name}`
                                 break
                         }
                     }
-                    if (!$A.strExists(name, dialogKey) && !$A.strExists(msgKey, dialogKey)) {
+                    if (!$A.strExists(searchString, dialogKey)) {
                         return false;
                     }
                 } else if (dialogActive) {

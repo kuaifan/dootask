@@ -2860,8 +2860,10 @@ class Base
             return '';
         }
         if (!preg_match("/^[a-zA-Z0-9_.]+$/", $str)) {
-            $pinyin = new Pinyin();
-            $str = $pinyin->permalink($str, '');
+            $str = Cache::rememberForever("cn2pinyin:" . md5($str), function() use ($str) {
+                $pinyin = new Pinyin();
+                return $pinyin->permalink($str, '');
+            });
         }
         return $str;
     }

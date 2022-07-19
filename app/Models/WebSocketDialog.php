@@ -136,6 +136,7 @@ class WebSocketDialog extends AbstractModel
             $this->has_file = $msgBuilder->clone()->whereMtype('file')->exists();
             $this->has_link = $msgBuilder->clone()->whereLink(1)->exists();
         }
+        $this->name_py = Base::cn2pinyin($this->name);
         return $this;
     }
 
