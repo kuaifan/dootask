@@ -413,6 +413,19 @@ ipcMain.on('setDockBadge', (event, args) => {
     event.returnValue = "ok"
 })
 
+/**
+ * 复制Base64图片
+ * @param args
+ */
+ipcMain.on('copyBase64Image', (event, args) => {
+    const { base64 } = args;
+    if (base64) {
+        const img = nativeImage.createFromDataURL(base64)
+        clipboard.writeImage(img)
+    }
+    event.returnValue = "ok"
+})
+
 //================================================================
 // Update
 //================================================================

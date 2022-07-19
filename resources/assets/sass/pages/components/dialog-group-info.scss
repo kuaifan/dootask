@@ -41,6 +41,7 @@
         justify-content: center;
         margin: 18px 24px;
         cursor: pointer;
+
         > button {
             margin: 0 8px;
         }
@@ -63,6 +64,7 @@
 
                 &:hover {
                     background-color: rgba($primary-desc-color, 0.1);
+
                     .user-exit {
                         opacity: 1;
                         transform: translateX(0);
@@ -79,8 +81,10 @@
                     &:hover {
                         background-color: transparent;
                     }
+
                     justify-content: center;
                     color: #999;
+
                     .common-loading {
                         width: 16px;
                         height: 16px;
@@ -90,6 +94,7 @@
                 .common-avatar {
                     width: 0;
                     flex: 1;
+
                     .avatar-name {
                         padding-left: 8px;
                     }
@@ -117,11 +122,18 @@
                     opacity: 0;
                     transform: translateX(50%);
                     transition: all 0.2s;
+
+                    @media (max-width: 768px) {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+
                     &:hover {
                         > i {
                             color: $primary-text-color;
                         }
                     }
+
                     > i {
                         display: flex;
                         align-items: center;

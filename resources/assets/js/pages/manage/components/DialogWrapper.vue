@@ -175,9 +175,9 @@
                                 <i class="taskfont">&#xe779;</i>
                                 <span>{{ $L('编辑') }}</span>
                             </li>
-                            <li v-if="operateHasText" @click="onOperate('copy')">
-                                <i class="taskfont">&#xe77f;</i>
-                                <span>{{ $L('复制') }}</span>
+                            <li v-for="item in operateCopys" @click="onOperate('copy', item)">
+                                <i class="taskfont" v-html="item.icon"></i>
+                                <span>{{ $L(item.label) }}</span>
                             </li>
                             <li @click="onOperate('forward')">
                                 <i class="taskfont">&#xe638;</i>
@@ -472,7 +472,7 @@ export default {
             navStyle: {},
 
             operateVisible: false,
-            operateHasText: false,
+            operateCopys: [],
             operateStyles: {},
             operateItem: {},
             operateEmojis: ['👌', '🤝', '🎉', '❤️', '👍', '🥰', '🥳️', '✅', '❌', '⭕️', '❓', '🚀', '👀'],
@@ -1601,7 +1601,30 @@ export default {
         onLongpress({event, el, msgData}) {
             this.operateVisible = this.operateItem.id === msgData.id;
             this.operateItem = $A.isJson(msgData) ? msgData : {};
-            this.operateHasText = msgData.type === 'text' && msgData.msg.text.replace(/<[^>]+>/g,"").length > 0
+            this.operateCopys = []
+            if (event.target.nodeName === 'IMG' && this.$Electron) {
+                this.operateCopys.push({
+                    type: 'image',
+                    icon: '&#xe7cd;',
+                    label: '复制图片',
+                    value: $A.rightDelete(event.target.currentSrc, '_thumb.jpg'),
+                })
+            } else if (event.target.nodeName === 'A') {
+                this.operateCopys.push({
+                    type: 'link',
+                    icon: '&#xe7cb;',
+                    label: '复制链接',
+                    value: event.target.href,
+                })
+            }
+            if (msgData.type === 'text' && msgData.msg.text.replace(/<[^>]+>/g,"").length > 0) {
+                this.operateCopys.push({
+                    type: 'text',
+                    icon: '&#xe77f;',
+                    label: this.operateCopys.length > 0 ? '复制文本' : '复制',
+                    value: '',
+                })
+            }
             this.$nextTick(() => {
                 const projectRect = el.getBoundingClientRect();
                 const wrapRect = this.$el.getBoundingClientRect();
@@ -1627,7 +1650,7 @@ export default {
                         break;
 
                     case "copy":
-                        this.onCopy()
+                        this.onCopy(value)
                         break;
 
                     case "forward":
@@ -1693,18 +1716,34 @@ export default {
             }
         },
 
-        onCopy() {
-            if (this.operateHasText) {
-                try {
+        onCopy(data) {
+            if (!$A.isJson(data)) {
+                return
+            }
+            const {type, value} = data
+            switch (type) {
+                case 'image':
+                    if (this.$Electron) {
+                        this.getBase64Image(value).then(base64 => {
+                            this.$Electron.sendMessage('copyBase64Image', {base64});
+                        })
+                    }
+                    break;
+
+                case 'link':
+                    this.$copyText(value).then(_ => $A.messageSuccess('复制成功')).catch(_ => $A.messageError('复制失败'))
+                    break;
+
+                case 'text':
                     const copyEl = $A(this.$refs.scroller.$el).find(`[data-id="${this.operateItem.id}"]`).find('.dialog-content')
                     if (copyEl.length > 0) {
                         const text = copyEl[0].innerText.replace(/\n\n/g, "\n")
-                        this.$copyText(text).then(_ => $A.messageSuccess('复制成功')).catch(_ => $A.messageError('复制失败'));
-                        return
+                        this.$copyText(text).then(_ => $A.messageSuccess('复制成功')).catch(_ => $A.messageError('复制失败'))
+                    } else {
+                        $A.messageWarning('不可复制的内容');
                     }
-                } catch (e) {}
+                    break;
             }
-            $A.messageWarning('不可复制的内容');
         },
 
         onCancelReply() {
@@ -1994,6 +2033,29 @@ export default {
                 this.$store.dispatch("updateDialogLastMsg", data.add);
             }
         },
+
+        getBase64Image(url) {
+            return new Promise(resolve => {
+                let canvas = document.createElement('CANVAS'),
+                    ctx = canvas.getContext('2d'),
+                    img = new Image;
+                img.crossOrigin = 'Anonymous';
+                img.onload = () => {
+                    canvas.height = img.height;
+                    canvas.width = img.width;
+                    ctx.drawImage(img, 0, 0);
+                    let format = "png";
+                    if ($A.rightExists(url, "jpg") || $A.rightExists(url, "jpeg")) {
+                        format = "jpeg"
+                    } else if ($A.rightExists(url, "git")) {
+                        format = "git"
+                    }
+                    resolve(canvas.toDataURL(`image/${format}`));
+                    canvas = null;
+                };
+                img.src = url;
+            })
+        }
     }
 }
 </script>
