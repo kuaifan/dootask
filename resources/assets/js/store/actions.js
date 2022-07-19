@@ -447,7 +447,7 @@ export default {
             setTimeout(_ => {
                 $A.modalInput({
                     title: `设置${desc}`,
-                    placeholder: `请输入${desc}`,
+                    placeholder: `请输入您的${desc}`,
                     okText: "保存",
                     onOk: (value) => {
                         if (!value) {
