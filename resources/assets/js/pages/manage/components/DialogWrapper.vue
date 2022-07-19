@@ -947,7 +947,16 @@ export default {
                     }).then(({data}) => {
                         this.sendSuccess(data)
                     }).catch(({msg}) => {
-                        $A.modalError(msg)
+                        $A.modalConfirm({
+                            icon: 'error',
+                            title: '发送失败',
+                            content: msg,
+                            cancelText: '取消',
+                            okText: '再次编辑',
+                            onOk: () => {
+                                this.msgText = msgText
+                            }
+                        })
                     });
                 }, 10)
             }
@@ -984,8 +993,17 @@ export default {
                 complete: _ => this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
             }).then(({data}) => {
                 this.sendSuccess(data);
-            }).catch(({msg}) => {
-                $A.modalError(msg);
+            }).catch(error => {
+                $A.modalConfirm({
+                    icon: 'error',
+                    title: '发送失败',
+                    content: error.msg,
+                    cancelText: '取消',
+                    okText: '重新发送',
+                    onOk: () => {
+                        this.sendRecord(msg)
+                    }
+                })
             });
         },
 
