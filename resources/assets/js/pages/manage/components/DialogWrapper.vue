@@ -875,11 +875,12 @@ export default {
          */
         sendMsg(text) {
             let msgText;
+            let emptied = false;
             if (typeof text === "string" && text) {
                 msgText = text;
             } else {
                 msgText = this.msgText;
-                this.msgText = '';
+                emptied = true;
             }
             if (msgText == '') {
                 this.inputFocus();
@@ -928,37 +929,38 @@ export default {
                         text: typeLoad ? '' : msgText,
                     },
                 }
-                setTimeout(_ => {
-                    this.tempMsgs.push(tempMsg)
-                    this.msgType = ''
-                    this.replyActiveId = 0
-                    this.onActive()
-                    this.$nextTick(this.onToBottom)
-                    //
-                    this.$store.dispatch("call", {
-                        url: 'dialog/msg/sendtext',
-                        data: {
-                            dialog_id: tempMsg.dialog_id,
-                            reply_id: tempMsg.reply_id,
-                            text: msgText,
-                        },
-                        method: 'post',
-                        complete: _ => this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
-                    }).then(({data}) => {
-                        this.sendSuccess(data)
-                    }).catch(({msg}) => {
-                        $A.modalConfirm({
-                            icon: 'error',
-                            title: '发送失败',
-                            content: msg,
-                            cancelText: '取消',
-                            okText: '再次编辑',
-                            onOk: () => {
-                                this.msgText = msgText
-                            }
-                        })
-                    });
-                }, 10)
+                this.tempMsgs.push(tempMsg)
+                this.msgType = ''
+                this.replyActiveId = 0
+                this.onActive()
+                this.$nextTick(this.onToBottom)
+                //
+                this.$store.dispatch("call", {
+                    url: 'dialog/msg/sendtext',
+                    data: {
+                        dialog_id: tempMsg.dialog_id,
+                        reply_id: tempMsg.reply_id,
+                        text: msgText,
+                    },
+                    method: 'post',
+                    complete: _ => this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
+                }).then(({data}) => {
+                    this.sendSuccess(data)
+                }).catch(({msg}) => {
+                    $A.modalConfirm({
+                        icon: 'error',
+                        title: '发送失败',
+                        content: msg,
+                        cancelText: '取消',
+                        okText: '再次编辑',
+                        onOk: () => {
+                            this.msgText = msgText
+                        }
+                    })
+                });
+            }
+            if (emptied) {
+                requestAnimationFrame(_ => this.msgText = '')
             }
         },
 
