@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import {mapGetters, mapState} from "vuex";
+import {mapGetters} from "vuex";
 import DialogWrapper from "./DialogWrapper";
 
 export default {

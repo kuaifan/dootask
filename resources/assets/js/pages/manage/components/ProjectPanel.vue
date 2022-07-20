@@ -456,7 +456,6 @@
 <script>
 import Draggable from 'vuedraggable'
 import TaskPriority from "./TaskPriority";
-import TaskAdd from "./TaskAdd";
 import {mapGetters, mapState} from "vuex";
 import {Store} from 'le5le-store';
 import UserInput from "../../../components/UserInput";
@@ -476,7 +475,7 @@ export default {
         TaskMenu,
         ProjectWorkflow,
         DrawerOverlay,
-        ProjectLog, TaskArchived, TaskRow, Draggable, TaskAddSimple, UserInput, TaskAdd, TaskPriority, TaskDeleted, ProjectGantt},
+        ProjectLog, TaskArchived, TaskRow, Draggable, TaskAddSimple, UserInput, TaskPriority, TaskDeleted, ProjectGantt},
     data() {
         return {
             loading: false,
@@ -942,8 +941,8 @@ export default {
             }
         },
 
-        addTaskOpen(column_id) {
-            Store.set('addTask', column_id);
+        addTaskOpen(params) {
+            Store.set('addTask', params);
         },
 
         addColumnOpen() {
