@@ -1159,12 +1159,50 @@ export default {
         },
 
         handlePaste(e) {
-            const {files} = e.clipboardData;
-            const postFiles = Array.prototype.slice.call(files).filter(file => !$A.leftExists(file.type, 'image/'));
+            const files = Array.prototype.slice.call(e.clipboardData.files)
+            const postFiles = files.filter(file => !$A.leftExists(file.type, 'image/'));
             if (postFiles.length > 0) {
                 e.preventDefault()
-                this.$emit('on-file', postFiles)
+                this.$emit('on-file', files)
+            } else if (this.pasteRtf(e)) {
+                e.preventDefault()
             }
+        },
+
+        pasteRtf(e) {
+            if (e && e.clipboardData && e.clipboardData.items) {
+                const imgHtml = (new DOMParser).parseFromString(e.clipboardData.getData("text/html") || "", "text/html").querySelector("img");
+                if (!imgHtml) {
+                    const array = [];
+                    let image = null;
+                    if (e.clipboardData.types && -1 != [].indexOf.call(e.clipboardData.types, "text/rtf") || e.clipboardData.getData("text/rtf")) {
+                        image = e.clipboardData.items[0].getAsFile();
+                        if (image) {
+                            array.push(image)
+                        }
+                    } else {
+                        for (let s = 0; s < e.clipboardData.items.length; s++) {
+                            image = e.clipboardData.items[s].getAsFile()
+                            if (image) {
+                                array.push(image)
+                            }
+                        }
+                    }
+                    if (array.length > 0) {
+                        array.forEach(image => {
+                            const t = new FileReader;
+                            t.onload = ({target}) => {
+                                const length = this.quill.getSelection(true).index;
+                                this.quill.insertEmbed(length, "image", target.result);
+                                this.quill.setSelection(length + 1)
+                            };
+                            t.readAsDataURL(image)
+                        })
+                        return true
+                    }
+                }
+            }
+            return false
         },
     }
 }
