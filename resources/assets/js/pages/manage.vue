@@ -913,13 +913,19 @@ export default {
             }
         },
 
-        onAddTask(data) {
-            this.$refs.addTask.defaultPriority();
-            this.$refs.addTask.setData($A.isJson(data) ? data : {
-                'owner': [this.userId],
-                'column_id': data,
-            });
-            this.addTaskShow = true;
+        onAddTask(params) {
+            this.addTaskShow = true
+            this.$nextTick(_ => {
+                let data = {
+                    owner: [this.userId],
+                }
+                if ($A.isJson(params)) {
+                    data = params
+                } else if (/^[1-9]\d*$/.test(params)) {
+                    data.column_id = params
+                }
+                this.$refs.addTask.setData(data)
+            })
         },
 
         openTask(task) {

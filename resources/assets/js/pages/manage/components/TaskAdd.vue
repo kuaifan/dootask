@@ -1,5 +1,5 @@
 <template>
-    <div v-if="ready" class="task-add">
+    <div class="task-add">
         <div class="head" :class="{empty:addData.cascader.length == 0,visible:cascaderShow}">
             <Cascader
                 v-model="addData.cascader"
@@ -157,8 +157,8 @@
 
 <script>
 import TEditor from "../../../components/TEditor";
-import {mapState} from "vuex";
 import UserInput from "../../../components/UserInput";
+import {mapState} from "vuex";
 
 export default {
     name: "TaskAdd",
@@ -171,8 +171,6 @@ export default {
     },
     data() {
         return {
-            ready: false,
-
             addData: {
                 cascader: [],
                 name: "",
@@ -229,9 +227,20 @@ export default {
             beforeClose: [],
         }
     },
-    mounted() {
 
+    mounted() {
+        this.initCascaderData();
+        this.initProjectData();
+        this.$nextTick(() => this.$refs.input.focus())
     },
+
+    beforeDestroy() {
+        this.beforeClose.some(func => {
+            typeof func === "function" && func()
+        })
+        this.beforeClose = [];
+    },
+
     computed: {
         ...mapState(['cacheProjects', 'projectId', 'cacheColumns', 'taskPriority']),
 
@@ -251,47 +260,30 @@ export default {
             return !this.addData.owner.includes(this.userId);
         }
     },
+
     watch: {
-        value(val) {
-            if (val) {
-                this.ready = true;
-                this.initCascaderData();
-                this.initProjectData();
-                this.$nextTick(() => {
-                    this.$refs.input.focus()
-                })
-            } else {
-                this.beforeClose.some(func => {
-                    typeof func === "function" && func()
-                })
-                this.beforeClose = [];
-                this.taskTimeOpen = false;
+        'addData.project_id'(projectId) {
+            if (projectId > 0) {
+                $A.setStorage("cacheAddTaskProjectId", projectId);
             }
         },
-        'addData.project_id'(id) {
-            if (id > 0) {
-                $A.setStorage("cacheAddTaskProjectId", id);
+        'addData.column_id'(columnId) {
+            if (columnId > 0) {
+                $A.setStorage("cacheAddTaskColumnId", columnId);
             }
-        },
-        'addData.column_id'(id) {
             const {project_id} = this.addData;
-            this.$nextTick(() => {
-                if (project_id && id) {
-                    this.$set(this.addData, 'cascader', [project_id, id]);
-                } else {
-                    this.$set(this.addData, 'cascader', []);
-                }
-            })
-            if (id > 0) {
-                $A.setStorage("cacheAddTaskColumnId", id);
+            if (project_id && columnId) {
+                this.$set(this.addData, 'cascader', [project_id, columnId]);
+            } else {
+                this.$set(this.addData, 'cascader', []);
             }
         }
     },
+
     methods: {
-        initLanguage() {
-
-        },
-
+        /**
+         * 初始化级联数据
+         */
         initCascaderData() {
             const data = $A.cloneJSON(this.cacheProjects).sort((a, b) => {
                 if (a.top_at || b.top_at) {
@@ -306,7 +298,7 @@ export default {
                         label: column.name
                     }
                 });
-                let data = {
+                const data = {
                     value: project.id,
                     label: project.name,
                     children,
@@ -318,42 +310,37 @@ export default {
             });
         },
 
+        /**
+         * 初始化项目、列表、优先级
+         */
         initProjectData() {
-            let column_id = this.addData.column_id;
-            if (column_id) {
-                let column = this.cacheColumns.find(({id}) => id == column_id);
+            // 项目、列表
+            let cacheAddTaskProjectId = $A.getStorageInt("cacheAddTaskProjectId");
+            let project = this.cacheProjects.find(({id}) => id == this.projectId)
+                || this.cacheProjects.find(({id}) => id == cacheAddTaskProjectId)
+                || this.cacheProjects.find(({id}) => id > 0);
+            if (project) {
+                let cacheAddTaskColumnId = $A.getStorageInt("cacheAddTaskColumnId");
+                let column = this.cacheColumns.find(({project_id, id}) => project_id == project.id && id == cacheAddTaskColumnId)
+                    || this.cacheColumns.find(({project_id}) => project_id == project.id);
                 if (column) {
                     this.addData.project_id = column.project_id;
                     this.addData.column_id = column.id;
-                }
-            } else {
-                let cacheAddTaskProjectId = $A.getStorageInt("cacheAddTaskProjectId");
-                let cacheAddTaskColumnId = $A.getStorageInt("cacheAddTaskColumnId");
-                let project = this.cacheProjects.find(({id}) => id == this.projectId)
-                    || this.cacheProjects.find(({id}) => id == cacheAddTaskProjectId)
-                    || this.cacheProjects.find(({id}) => id > 0);
-                if (project) {
-                    let column = this.cacheColumns.find(({project_id, id}) => project_id == project.id && id == cacheAddTaskColumnId)
-                        || this.cacheColumns.find(({project_id}) => project_id == project.id);
-                    if (column) {
-                        this.addData.project_id = column.project_id;
-                        this.addData.column_id = column.id;
-                    } else {
-                        this.$store.dispatch("getColumns", project.id).then(() => {
-                            column = this.cacheColumns.find(({project_id, id}) => project_id == project.id && id == cacheAddTaskColumnId)
-                                || this.cacheColumns.find(({project_id}) => project_id == project.id);
-                            if (column) {
-                                this.addData.project_id = column.project_id;
-                                this.addData.column_id = column.id;
-                            }
-                        }).catch(() => {});
-                    }
+                } else {
+                    this.$store.dispatch("getColumns", project.id).then(() => {
+                        column = this.cacheColumns.find(({project_id, id}) => project_id == project.id && id == cacheAddTaskColumnId)
+                            || this.cacheColumns.find(({project_id}) => project_id == project.id);
+                        if (column) {
+                            this.addData.project_id = column.project_id;
+                            this.addData.column_id = column.id;
+                        }
+                    }).catch(() => {});
                 }
             }
-        },
-
-        taskTimeOpenChange(val) {
-            this.taskTimeOpen = val;
+            // 优先级
+            if (this.taskPriority.length > 0) {
+                this.choosePriority(this.taskPriority[0]);
+            }
         },
 
         taskTimeChange(times) {
@@ -366,6 +353,10 @@ export default {
                     ])
                 }
             }
+        },
+
+        taskTimeOpenChange(val) {
+            this.taskTimeOpen = val;
         },
 
         onKeydown(e) {
@@ -409,16 +400,6 @@ export default {
             this.$set(this.addData, 'p_level', item.priority)
             this.$set(this.addData, 'p_name', item.name)
             this.$set(this.addData, 'p_color', item.color)
-        },
-
-        defaultPriority() {
-            if (this.taskPriority.length === 0) {
-                return;
-            }
-            if (this.addData.p_name) {
-                return;
-            }
-            this.choosePriority(this.taskPriority[0]);
         },
 
         cascaderLoadData(item, callback) {
