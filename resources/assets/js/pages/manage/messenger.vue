@@ -143,7 +143,7 @@
                     <div class="msg-dialog-bg-icon"><Icon type="ios-chatbubbles" /></div>
                     <div class="msg-dialog-bg-text">{{$L('选择一个会话开始聊天')}}</div>
                 </div>
-                <DialogWrapper v-if="windowLarge && dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive" :auto-focus="$A.isDesktop()"/>
+                <DialogWrapper v-if="windowLarge && activeNum > 0 && dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive" :auto-focus="$A.isDesktop()"/>
             </div>
         </div>
     </div>
@@ -160,6 +160,7 @@ export default {
     directives: {longpress},
     data() {
         return {
+            activeNum: 0,
             tabActive: 'dialog',
 
             dialogLoad: 0,
@@ -196,10 +197,12 @@ export default {
 
     activated() {
         this.updateDialogs(1000);
+        this.$nextTick(_ => this.activeNum++)
     },
 
     deactivated() {
         this.updateDialogs(-1);
+        this.$nextTick(_ => this.activeNum--)
     },
 
     computed: {
