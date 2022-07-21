@@ -138,12 +138,12 @@
                 </div>
             </div>
 
-            <div v-if="routeName === 'manage-messenger'" class="messenger-msg">
+            <div v-if="activeNum > 0 && routeName === 'manage-messenger'" class="messenger-msg">
                 <div class="msg-dialog-bg">
                     <div class="msg-dialog-bg-icon"><Icon type="ios-chatbubbles" /></div>
                     <div class="msg-dialog-bg-text">{{$L('选择一个会话开始聊天')}}</div>
                 </div>
-                <DialogWrapper v-if="windowLarge && activeNum > 0 && dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive" :auto-focus="$A.isDesktop()"/>
+                <DialogWrapper v-if="windowLarge && dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive" :auto-focus="$A.isDesktop()"/>
             </div>
         </div>
     </div>

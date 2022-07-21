@@ -63,7 +63,8 @@
                 </div>
                 <!--等待-->
                 <div v-else-if="msgData.type === 'loading'" class="content-loading">
-                    <Loading/>
+                    <Icon v-if="msgData.error === true" type="ios-alert-outline" />
+                    <Loading v-else/>
                 </div>
                 <!--未知-->
                 <div v-else class="content-unknown">{{$L("未知的消息类型")}}</div>

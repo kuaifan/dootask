@@ -649,7 +649,7 @@
                                 flex-direction: row-reverse;
                                 justify-content: flex-end;
                                 align-content: center;
-                                line-height: 22px;
+                                line-height: 24px;
                                 cursor: pointer;
 
                                 .record-time {
@@ -743,6 +743,12 @@
                         .content-loading {
                             display: flex;
 
+                            > i {
+                                font-size: 20px;
+                                margin: 2px;
+                                color: $primary-title-color;
+                            }
+
                             .common-loading {
                                 width: 20px;
                                 height: 20px;
@@ -752,6 +758,7 @@
 
                         .content-unknown {
                             text-decoration: underline;
+                            color: $primary-title-color;
                         }
                     }
 
@@ -996,6 +1003,16 @@
                                         }
                                     }
                                 }
+                            }
+
+                            .content-loading {
+                                > i {
+                                    color: #ffffff;
+                                }
+                            }
+
+                            .content-unknown {
+                                color: #ffffff;
                             }
                         }
 
