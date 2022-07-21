@@ -821,6 +821,14 @@
                     height: 21px;
                     line-height: 1;
 
+                    .error {
+                        cursor: pointer;
+                        color: #ED4014;
+                        > i {
+                            font-size: 14px;
+                        }
+                    }
+
                     .common-loading {
                         margin: 0 2px;
                         width: 10px;

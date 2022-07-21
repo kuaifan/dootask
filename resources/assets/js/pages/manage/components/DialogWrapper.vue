@@ -102,6 +102,7 @@
             @on-view-file="onViewFile"
             @on-down-file="onDownFile"
             @on-reply-list="onReplyList"
+            @on-error="onError"
             @on-emoji="onEmoji"
             @on-show-emoji-user="onShowEmojiUser">
             <template slot="header">
@@ -943,20 +944,12 @@ export default {
                         text: msgText,
                     },
                     method: 'post',
-                    complete: _ => this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
                 }).then(({data}) => {
+                    this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
                     this.sendSuccess(data)
-                }).catch(({msg}) => {
-                    $A.modalConfirm({
-                        icon: 'error',
-                        title: '发送失败',
-                        content: msg,
-                        cancelText: '取消',
-                        okText: '再次编辑',
-                        onOk: () => {
-                            this.msgText = msgText
-                        }
-                    })
+                }).catch(error => {
+                    this.$set(tempMsg, 'error', true)
+                    this.$set(tempMsg, 'errorData', {type: 'text', content: error.msg, msg: msgText})
                 });
             }
             if (emptied) {
@@ -992,20 +985,12 @@ export default {
                     reply_id: this.replyId,
                 }),
                 method: 'post',
-                complete: _ => this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
             }).then(({data}) => {
+                this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
                 this.sendSuccess(data);
             }).catch(error => {
-                $A.modalConfirm({
-                    icon: 'error',
-                    title: '发送失败',
-                    content: error.msg,
-                    cancelText: '取消',
-                    okText: '重新发送',
-                    onOk: () => {
-                        this.sendRecord(msg)
-                    }
-                })
+                this.$set(tempMsg, 'error', true)
+                this.$set(tempMsg, 'errorData', {type: 'record', content: error.msg, msg})
             });
         },
 
@@ -1927,6 +1912,39 @@ export default {
             }
             this.replyListId = data.msg_id
             this.replyListShow = true
+        },
+
+        onError(data) {
+            if (data.error !== true) {
+                return
+            }
+            const {type, content, msg} = data.errorData
+            const config = {
+                icon: 'error',
+                title: '发送失败',
+                content,
+                cancelText: '取消发送',
+                onCancel: _ => {
+                    this.tempMsgs = this.tempMsgs.filter(({id}) => id != data.id)
+                }
+            }
+            if (type === 'text') {
+                config.okText = '再次编辑'
+                config.onOk = () => {
+                    this.tempMsgs = this.tempMsgs.filter(({id}) => id != data.id)
+                    this.msgText = msg
+                    this.inputFocus()
+                }
+            } else if (type === 'record') {
+                config.okText = '重新发送'
+                config.onOk = () => {
+                    this.tempMsgs = this.tempMsgs.filter(({id}) => id != data.id)
+                    this.sendRecord(msg)
+                }
+            } else {
+                return
+            }
+            $A.modalConfirm(config)
         },
 
         onEmoji(data) {

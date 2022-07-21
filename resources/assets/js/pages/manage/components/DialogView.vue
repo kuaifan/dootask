@@ -128,8 +128,11 @@
             <div v-if="msgData.modify" class="modify">
                 <i class="taskfont">&#xe779;</i>
             </div>
-            <!--等待/时间/阅读-->
-            <Loading v-if="isLoading"/>
+            <!--错误/等待/时间/阅读-->
+            <div v-if="msgData.error === true" class="error" @click="onError">
+                <Icon type="ios-alert" />
+            </div>
+            <Loading v-else-if="isLoading"/>
             <template v-else>
                 <!--时间-->
                 <div v-if="timeShow" class="time" @click="timeShow=false">{{msgData.created_at}}</div>
@@ -460,6 +463,10 @@ export default {
             this.$emit("on-reply-list", {
                 msg_id: this.msgData.id,
             })
+        },
+
+        onError() {
+            this.$emit("on-error", this.msgData)
         },
 
         onEmoji(symbol) {

@@ -38,6 +38,7 @@
                 @on-view-file="onViewFile"
                 @on-down-file="onDownFile"
                 @on-reply-list="onReplyList"
+                @on-error="onError"
                 @on-emoji="onEmoji"
                 @on-show-emoji-user="onShowEmojiUser"/>
         </template>
@@ -190,6 +191,10 @@ export default {
 
         onReplyList(data) {
             this.dispatch("on-reply-list", data)
+        },
+
+        onError(data) {
+            this.dispatch("on-error", data)
         },
 
         onEmoji(data) {
