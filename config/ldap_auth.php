@@ -362,5 +362,5 @@ return [
     /**
      * ldap中的唯一属性名称，推荐使用邮箱地址
      */
-    'unique_name' => 'mail'
+    'unique_name' => env('LDAP_AUTH_USERNAME', 'mail')
 ];
