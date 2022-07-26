@@ -244,11 +244,15 @@ export default {
         },
 
         onBlur() {
+            if ( !this.username ) {
+                return;
+            }
+
             this.loadIng++;
             this.$store.dispatch("call", {
-                url: 'users/login/needcode',
+                url: 'ldap/login/needcode',
                 data: {
-                    email: this.email,
+                    username: this.username,
                 },
             }).then(() => {
                 this.loadIng--;

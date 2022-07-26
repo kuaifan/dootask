@@ -7,6 +7,8 @@ use Adldap\AdldapInterface;
 use App\Models\User;
 use App\Module\Base;
 use Arr;
+use Cache;
+use Captcha;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Request;
@@ -34,7 +36,7 @@ class LdapController extends AbstractController
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
-     * @apiGroup users
+     * @apiGroup ldap
      * @apiName login
      *
      * @apiParam {String} email          邮箱
@@ -49,11 +51,34 @@ class LdapController extends AbstractController
         $username = trim(Request::input("username"));
         $password = trim(Request::input("password"));
 
-        $provider = $this->ldap->getDefaultProvider();
-
-        $unauthorized = function ($msg) {
-            return Base::retError($msg);
+        $unauthorized = function ($msg) use ($username) {
+            Cache::forever("code::" . $username, "need");
+            $needCode = !Base::isError(User::needCode($username));
+            $needData = ['code' => $needCode ? 'need' : 'no'];
+            return Base::retError($msg, $needData);
         };
+
+        if ( empty($username) ) {
+            return $unauthorized("用户名不能为空");
+        }
+
+        if ( empty($password) ) {
+            return $unauthorized("密码不能为空");
+        }
+
+        $needCode = !Base::isError(User::needCode($username));
+
+        if ($needCode) {
+            $code = trim(Request::input('code'));
+            if (empty($code)) {
+                return Base::retError('请输入验证码', ['code' => 'need']);
+            }
+            if (!Captcha::check($code)) {
+                return Base::retError('请输入正确的验证码', ['code' => 'need']);
+            }
+        }
+
+        $provider = $this->ldap->getDefaultProvider();
 
         // ldap唯一属性
         $ldap_unique_name = config("ldap_auth.unique_name", "mail");
@@ -135,6 +160,24 @@ class LdapController extends AbstractController
         } catch (AdldapException $e){
             Log::error($e); return Base::retError("认证失败");
         }
+    }
+
+    /**
+     * @api {get} api/ldap/login/needcode          02. 是否需要验证码
+     *
+     * @apiDescription 用于判断是否需要登录验证码
+     * @apiVersion 1.0.0
+     * @apiGroup ldap
+     * @apiName login__needcode
+     *
+     * @apiParam {String} username       用户名
+     *
+     * @apiSuccess {Number} ret     返回状态码（1需要、0不需要）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function login__needcode(): array {
+        return User::needCode(trim(Request::input("username")));
     }
 
     private function createUser($user): User
