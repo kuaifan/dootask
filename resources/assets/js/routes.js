@@ -112,6 +112,11 @@ export default [
         component: () => import('./pages/login.vue'),
     },
     {
+        name: 'ldap-login',
+        path: '/ldap/login',
+        component: () => import('./pages/ldap/login'),
+    },
+    {
         name: '404',
         path: '*',
         component: () => import('./pages/404.vue')

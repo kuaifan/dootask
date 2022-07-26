@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SystemController;
 use App\Http\Controllers\Api\UsersController;
+use App\Http\Controllers\Api\LdapController;
 use App\Http\Controllers\IndexController;
 use Illuminate\Support\Facades\Route;
 
@@ -43,6 +44,9 @@ Route::prefix('api')->middleware(['webapi'])->group(function () {
     // 报告
     Route::any('report/{method}',                     ReportController::class);
     Route::any('report/{method}/{action}',            ReportController::class);
+    // ldap认证
+    Route::any("ldap/{method}", LdapController::class);
+    Route::any("ldap/{method}/{action}", LdapController::class);
 });
 
 /**
