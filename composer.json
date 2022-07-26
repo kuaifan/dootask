@@ -14,6 +14,7 @@
         "ext-json": "*",
         "ext-libxml": "*",
         "ext-simplexml": "*",
+        "adldap2/adldap2-laravel": "^6.1",
         "fideloper/proxy": "^4.4.1",
         "fruitcake/laravel-cors": "^2.0.4",
         "guanguans/notify": "^1.20",
