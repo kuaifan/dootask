@@ -1,6 +1,8 @@
 /**
  * 基础函数
  */
+import {tryAddCSRFHeader} from "./csrf";
+
 (function (window, $, undefined) {
     window.systemInfo = window.systemInfo || {};
 
@@ -1304,6 +1306,8 @@
             // Save Request URL
             xhr.requestUrl = options.url;
             xhr.requestParameters = options;
+
+            tryAddCSRFHeader(_method, options.headers);
 
             // Open XHR
             xhr.open(_method, options.url, options.async, options.user, options.password);
