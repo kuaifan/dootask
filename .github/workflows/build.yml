@@ -5,11 +5,11 @@ on:
   release:
     types: [published]
 jobs:
-  releases:
+  bundles:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [12.x]
+        node-version: [14.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
     steps:
       - uses: actions/checkout@v3
@@ -21,13 +21,32 @@ jobs:
         uses: mikeal/npx@1.0.0
       - run: npm install
       - run: npx mix --production
-      - run: cd ../ && tar --exclude-vcs --exclude .github --exclude tests --exclude node_modules -zcf dootask.tar.gz dootask/ && mv dootask.tar.gz dootask/ && cd dootask
+      - name: Setup PHP Action
+        uses: shivammathur/setup-php@2.21.0
+        with:
+          php-version: '8.0'
+      - run: php app/Http/Controllers/Api/apidoc.php
+      - run: npm install -g apidoc
+      - run: apidoc -i app/Http/Controllers/Api -o ./public/docs
+      - run: tar -zcf assets.tar.gz public
       - name: Uploading assets
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./dootask.tar.gz
-          asset_name: dootask-${{github.event.release.tag_name}}.tar.gz
+          asset_path: ./assets.tar.gz
+          asset_name: dootask-${{github.event.release.tag_name}}-assets.tar.gz
+          asset_content_type: application/tar+gzip
+      - run: composer update
+      - run: php bin/run --mode=prod
+      - run: tar -zcf dootask-bundle.tar.gz app bin bootstrap config database routes vendor artisan cmd composer.json composer.lock version.js server.php storage resources public
+      - name: Uploading bundle
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./dootask-bundle.tar.gz
+          asset_name: dootask-${{github.event.release.tag_name}}-laravel.tar.gz
           asset_content_type: application/tar+gzip
