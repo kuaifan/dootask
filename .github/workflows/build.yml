@@ -70,4 +70,4 @@ jobs:
           context: ./docker-package/php
           file: ./docker-package/php/Dockerfile
           push: true
-          tags: ${{ env.DOCKERHUB_USERNAME }}/dootask-php:${{github.event.release.tag_name}}
+          tags: ${{ env.DOCKERHUB_USERNAME }}/dootask-php:${{github.event.release.tag_name}},${{ env.DOCKERHUB_USERNAME }}/dootask-php:latest
