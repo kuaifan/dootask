@@ -1,0 +1,91 @@
+version: '3'
+
+services:
+  php:
+    container_name: "dootask-php"
+    image: "zhaotaohunan/dootask-php"
+    #    shm_size: "1024m"
+    env_file:
+      - .env
+    volumes:
+      - ./volume/dootask/storage:/var/www/storage
+    depends_on:
+      - redis
+      - mariadb
+    restart: unless-stopped
+
+  nginx:
+    container_name: "dootask-nginx"
+    image: "nginx:alpine"
+    ports:
+      - "${APP_PORT}:80"
+    volumes:
+      # 配置文件
+      - ./volume/nginx/conf.d:/etc/nginx/conf.d
+      # dootask静态资源
+      - ./volume/nginx/assets/dootask:/var/www/public
+    environment:
+      TZ: "Asia/Shanghai"
+    links:
+      - php
+      - office
+      - fileview
+      - drawio-webapp
+      - drawio-export
+    restart: unless-stopped
+
+  redis:
+    container_name: "dootask-redis"
+    image: "redis:alpine"
+    environment:
+      TZ: "Asia/Shanghai"
+    restart: unless-stopped
+
+  mariadb:
+    container_name: "dootask-mariadb"
+    image: "mariadb:10.7.3"
+#    ports: # mysql ports item
+#      - "33062:3306" # mysql ports value
+    environment:
+      TZ: "Asia/Shanghai"
+      MYSQL_PREFIX: "${DB_PREFIX}"
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
+      MYSQL_DATABASE: "${DB_DATABASE}"
+      MYSQL_USER: "${DB_USERNAME}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+    volumes:
+      - ./volume/mysql/conf.d:/etc/mysql/conf.d
+      - ./volume/mysql/data:/var/lib/mysql
+      - ./volume/mysql/bin:/volume/bin
+    restart: unless-stopped
+
+  office:
+    container_name: "dootask-office"
+    image: "onlyoffice/documentserver:7.0.0.132"
+    environment:
+      TZ: "Asia/Shanghai"
+    restart: unless-stopped
+
+  fileview:
+    container_name: "dootask-fileview"
+    image: "kuaifan/fileview:4.1.0-SNAPSHOT-RC4"
+    environment:
+      TZ: "Asia/Shanghai"
+      KK_CONTEXT_PATH: "/fileview"
+    restart: unless-stopped
+
+  drawio-webapp:
+    container_name: "dootask-drawio-webapp"
+    image: "jgraph/drawio:16.6.1"
+    environment:
+      TZ: "Asia/Shanghai"
+    depends_on:
+      - drawio-export
+    restart: unless-stopped
+
+  drawio-export:
+    container_name: "dootask-drawio-export"
+    image: "jgraph/export-server"
+    environment:
+      TZ: "Asia/Shanghai"
+    restart: unless-stopped

@@ -52,7 +52,17 @@ jobs:
           asset_path: ./dootask-laravel.tar.gz
           asset_name: dootask-${{github.event.release.tag_name}}-laravel.tar.gz
           asset_content_type: application/tar+gzip
-      - run: cp dootask-laravel.tar.gz ./docker-package/php/dootask.tar.gz
+      - run: tar --transform "s|^docker-package|dootask-docker|" --exclude images -zcvf dootask-docker.tar.gz docker-package/
+      - name: Uploading docker
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./dootask-docker.tar.gz
+          asset_name: dootask-${{github.event.release.tag_name}}-docker.tar.gz
+          asset_content_type: application/tar+gzip
+      - run: cp dootask-laravel.tar.gz ./docker-package/images/php/dootask.tar.gz
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
@@ -67,7 +77,7 @@ jobs:
         if: "${{env.DOCKERHUB_USERNAME != ''}}"
         uses: docker/build-push-action@v3
         with:
-          context: ./docker-package/php
-          file: ./docker-package/php/Dockerfile
+          context: ./docker-package/images/php
+          file: ./docker-package/images/php/Dockerfile
           push: true
           tags: ${{ env.DOCKERHUB_USERNAME }}/dootask-php:${{github.event.release.tag_name}},${{ env.DOCKERHUB_USERNAME }}/dootask-php:latest
