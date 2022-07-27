@@ -39,7 +39,7 @@ class LdapController extends AbstractController
      * @apiGroup ldap
      * @apiName login
      *
-     * @apiParam {String} email          邮箱
+     * @apiParam {String} username       用户名（推荐使用邮箱做用户名）
      * @apiParam {String} password       密码
      * @apiParam {String} [code]         登录验证码
      *
