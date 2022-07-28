@@ -412,7 +412,17 @@ class File extends AbstractModel
                     if (in_array($fileExt, File::localExt)) {
                         $url = Base::fillUrl($filePath);
                     } else {
-                        $url = 'http://' . env('APP_IPPR') . '.3/' . $filePath;
+                        // 文件预览优先使用内网地址
+                        $nginx_origin = env("NGINX_INTERNAL_ORIGIN", env("APP_URL", Request::getSchemeAndHttpHost()));
+
+                        // localhost
+                        if ( preg_match("/https?:\/\/localhost/i", $nginx_origin) ) {
+                            $nginx_origin = preg_replace('/^(https?:\/\/)[^\/]+/i', '$1' . 'nginx', $nginx_origin);
+                        } else if ( preg_match("https?:\/\/127.0.0.1", $nginx_origin) ) {
+                            $nginx_origin = preg_replace('/^(https?:\/\/)[^\/]+/i', '$1' . 'nginx', $nginx_origin);
+                        }
+
+                        $url = $nginx_origin . '/' . $filePath;
                     }
                     $data['content'] = [
                         'preview' => true,
