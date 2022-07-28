@@ -3,6 +3,7 @@
 namespace App\Module;
 
 use Exception;
+use Log;
 
 @error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 
@@ -263,7 +264,7 @@ class Ihttp
      * @param string $fileFile 保存文件路径
      * @return array
      */
-    public static function download(string $url, string $fileFile)
+    public static function download(string $url, string $fileFile): array
     {
         if ($url == '') {
             return Base::retError("url error");
@@ -276,12 +277,23 @@ class Ihttp
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
         $file = curl_exec($ch);
+
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        if ( $httpCode != 200 ) {// 错误的状态码
+            Log::warning("[HttpClient]: '$url' response code '${httpCode}'");
+
+            curl_close($ch); return Base::retError("failure", ["code" => $httpCode]);
+        }
+
         curl_close($ch);
 
         // 保存文件
         $res = fopen($fileFile, 'a');
         fwrite($res, $file);
         fclose($res);
+
+        Log::debug("[HttpClient]: save '$url' to '$fileFile'");
 
         return Base::retSuccess('success');
     }
