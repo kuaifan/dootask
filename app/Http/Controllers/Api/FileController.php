@@ -13,6 +13,7 @@ use App\Module\Base;
 use App\Module\Ihttp;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Log;
 use Request;
 
 /**
@@ -507,9 +508,9 @@ class FileController extends AbstractController
             preg_match_all("/<img\s*src=\"data:image\/(png|jpg|jpeg);base64,(.*?)\"/s", $data['content'], $matchs);
             foreach ($matchs[2] as $key => $text) {
                 $tmpPath = "uploads/file/document/" . date("Ym") . "/" . $id . "/attached/";
-                Base::makeDir(public_path($tmpPath));
+                Base::makeDir(File::getPrivatePath($tmpPath));
                 $tmpPath .= md5($text) . "." . $matchs[1][$key];
-                if (file_put_contents(public_path($tmpPath), base64_decode($text))) {
+                if (file_put_contents(File::getPrivatePath($tmpPath), base64_decode($text))) {
                     $data['content'] = str_replace($matchs[0][$key], '<img src="' . Base::fillUrl($tmpPath) . '"', $data['content']);
                     $isRep = true;
                 }
@@ -543,7 +544,7 @@ class FileController extends AbstractController
                 return Base::retError('参数错误');
         }
         $path = "uploads/file/" . $file->type . "/" . date("Ym") . "/" . $id . "/" . md5($contentString);
-        $save = public_path($path);
+        $save = File::getPrivatePath($path);
         Base::makeDir(dirname($save));
         file_put_contents($save, $contentString);
         //
@@ -595,7 +596,7 @@ class FileController extends AbstractController
             $parse = parse_url($url);
             $from = 'http://' . env('APP_IPPR') . '.3' . $parse['path'] . '?' . $parse['query'];
             $path = 'uploads/file/' . $file->type . '/' . date("Ym") . '/' . $file->id . '/' . $key;
-            $save = public_path($path);
+            $save = File::getPrivatePath($path);
             Base::makeDir(dirname($save));
             $res = Ihttp::download($from, $save);
             if (Base::isSuccess($res)) {
@@ -740,8 +741,13 @@ class FileController extends AbstractController
         return AbstractModel::transaction(function () use ($webkitRelativePath, $type, $user, $data, $file) {
             $file->size = $data['size'] * 1024;
             $file->saveBeforePids();
+            // 文件相对路径
+            $path = "uploads/file/" . $file->type . "/" . date("Ym") . "/" . $file->id . "/";
+            // 移动文件
+            $data = Base::uploadMove($data, $path);
             //
-            $data = Base::uploadMove($data, "uploads/file/" . $file->type . "/" . date("Ym") . "/" . $file->id . "/");
+            Log::debug("[FILE] - save upload file to '$path'");
+
             $content = FileContent::createInstance([
                 'fid' => $file->id,
                 'content' => [

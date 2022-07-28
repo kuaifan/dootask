@@ -308,7 +308,7 @@ class FilesTableSeeder extends Seeder
                 $file->save();
                 //
                 $path = 'uploads/file/' . $file->type . '/' . date("Ym", Carbon::parse($file->created_at)->timestamp) . '/' . $file->id . '/' . md5($contentString);
-                $save = public_path($path);
+                $save = File::getPrivatePath($path);
                 Base::makeDir(dirname($save));
                 file_put_contents($save, $contentString);
                 $content = [

@@ -55,7 +55,7 @@ class FileContent extends AbstractModel
             if (empty($content)) {
                 return Response::download(resource_path('assets/statics/office/empty.' . str_replace(['word', 'excel', 'ppt'], ['docx', 'xlsx', 'pptx'], $file->type)), $name);
             }
-            return Response::download(public_path($content['url']), $name);
+            return Response::download(File::getPrivatePath($content['url']), $name);
         }
         if (empty($content)) {
             $content = match ($file->type) {
@@ -82,7 +82,7 @@ class FileContent extends AbstractModel
                 $content['preview'] = false;
             }
             if ($download) {
-                $filePath = public_path($path);
+                $filePath = File::getPrivatePath($path);
                 if (isset($filePath)) {
                     return Response::download($filePath, $name);
                 } else {

@@ -1395,7 +1395,7 @@ class ProjectController extends AbstractController
             abort(403, $e->getMessage() ?: "This file not support download.");
         }
         //
-        return Response::download(public_path($file->getRawOriginal('path')), $file->name);
+        return Response::download(File::getPrivatePath($file->getRawOriginal('path')), $file->name);
     }
 
     /**

@@ -438,7 +438,7 @@ class DialogController extends AbstractController
         }
         $array = Base::json2array($msg->getRawOriginal('msg'));
         //
-        return Response::download(public_path($array['path']), $array['name']);
+        return Response::download(File::getPrivatePath($array['path']), $array['name']);
     }
 
     /**

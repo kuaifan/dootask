@@ -3,6 +3,7 @@
 namespace App\Module;
 
 use App\Exceptions\ApiException;
+use App\Models\File;
 use App\Models\Setting;
 use App\Models\Tmp;
 use Cache;
@@ -2208,7 +2209,7 @@ class Base
                 $scaleName = md5_file($imgBase64) . $scaleName . '.' . $extension;
             }
             $fileDir = $param['path'];
-            $filePath = public_path($fileDir);
+            $filePath = File::getPrivatePath($fileDir);
             Base::makeDir($filePath);
             if (file_put_contents($filePath . $fileName, base64_decode(str_replace($res[1], '', $imgBase64)))) {
                 $fileSize = filesize($filePath . $fileName);
@@ -2283,7 +2284,7 @@ class Base
             return Base::retError("您没有选择要上传的文件");
         }
         if ($file->isValid()) {
-            Base::makeDir(public_path($param['path']));
+            Base::makeDir(File::getPrivatePath($param['path']));
             //
             switch ($param['type']) {
                 case 'png':
@@ -2382,12 +2383,12 @@ class Base
                 $scaleName = md5_file($file) . $scaleName . '.' . $extension;
             }
             //
-            $file->move(public_path($param['path']), $fileName);
+            $file->move(File::getPrivatePath($param['path']), $fileName);
             //
             $array = [
                 "name" => $file->getClientOriginalName(),               //原文件名
                 "size" => Base::twoFloat($fileSize / 1024, true),       //大小KB
-                "file" => public_path($param['path'] . $fileName),        //文件的完整路径                "D:\www....KzZ.jpg"
+                "file" => File::getPrivatePath($param['path'] . $fileName),        //文件的完整路径                "D:\www....KzZ.jpg"
                 "path" => $param['path'] . $fileName,                     //相对路径                     "uploads/pic....KzZ.jpg"
                 "url" => Base::fillUrl($param['path'] . $fileName),       //完整的URL                    "https://.....hhsKzZ.jpg"
                 "thumb" => '',                                          //缩略图（预览图）               "https://.....hhsKzZ.jpg_thumb.jpg"
@@ -2478,7 +2479,7 @@ class Base
     public static function uploadMove($uploadResult, $newPath)
     {
         if (str_ends_with($newPath, "/") && file_exists($uploadResult['file'])) {
-            Base::makeDir(public_path($newPath));
+            Base::makeDir(File::getPrivatePath($newPath));
             $oldPath = dirname($uploadResult['path']) . "/";
             $newFile = str_replace($oldPath, $newPath, $uploadResult['file']);
             if (rename($uploadResult['file'], $newFile)) {
@@ -2491,7 +2492,7 @@ class Base
                 } elseif ($uploadResult['thumb']) {
                     $oldThumb = substr($uploadResult['thumb'], strpos($uploadResult['thumb'], $newPath));
                     $newThumb = str_replace($oldPath, $newPath, $oldThumb);
-                    if (file_exists(public_path($oldThumb)) && rename(public_path($oldThumb), public_path($newThumb))) {
+                    if (file_exists(File::getPrivatePath($oldThumb)) && rename(File::getPrivatePath($oldThumb), File::getPrivatePath($newThumb))) {
                         $uploadResult['thumb'] = str_replace($oldPath, $newPath, $uploadResult['thumb']);
                     }
                 }

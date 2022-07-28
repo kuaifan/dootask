@@ -8,6 +8,7 @@ use App\Tasks\PushTask;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Request;
+use Storage;
 
 /**
  * App\Models\File
@@ -334,6 +335,26 @@ class File extends AbstractModel
     }
 
     /**
+     * 获取公开路径
+     *
+     * @param $path string 相对路径
+     * @return string 存储路径
+     */
+    public static function getPublicPath(string $path): string {
+        return Storage::disk("public")->path($path);
+    }
+
+    /**
+     * 获取文件存在路径
+     *
+     * @param $path string 相对路径
+     * @return string 绝对路径
+     */
+    public static function getPrivatePath(string $path): string {
+        return Storage::disk("files")->path($path);
+    }
+
+    /**
      * 格式化内容数据
      * @param array $data [path, size, ext, name]
      * @return array
@@ -345,7 +366,7 @@ class File extends AbstractModel
         $fileExt = $data['ext'];
         $fileDotExt = '.' . $fileExt;
         $fileName = Base::rightDelete($data['name'], $fileDotExt) . $fileDotExt;
-        $publicPath = public_path($filePath);
+        $publicPath = File::getPrivatePath($filePath);
         //
         switch ($fileExt) {
             case 'md':
