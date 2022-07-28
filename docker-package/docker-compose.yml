@@ -9,6 +9,8 @@ services:
       - .env
     volumes:
       - ./volume/dootask/storage:/var/www/storage
+      # 用户头像等公开的资源
+      - ./volume/nginx/assets/dootask/uploads:/var/www/public/uploads
     depends_on:
       - redis
       - mariadb
