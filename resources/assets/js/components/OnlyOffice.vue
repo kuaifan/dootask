@@ -155,12 +155,14 @@ export default {
             //
             let fileKey = this.code || this.value.id;
             let fileName = $A.strExists(this.fileName, '.') ? this.fileName : (this.fileName + '.' + this.fileType);
+            //
+            const origin = window.settings.apiBaseUrl || 'http://nginx';
             const config = {
                 "document": {
                     "fileType": this.fileType,
                     "key": `${this.fileType}-${fileKey}-${keyAppend}`,
                     "title": fileName,
-                    "url": `http://nginx/api/file/content/?id=${fileKey}&token=${this.userToken}`,
+                    "url": `${origin}/api/file/content/?id=${fileKey}&token=${this.userToken}`,
                 },
                 "editorConfig": {
                     "mode": "edit",
@@ -172,16 +174,16 @@ export default {
                     "customization": {
                         "uiTheme": this.themeIsDark ? "theme-dark" : "theme-classic-light",
                     },
-                    "callbackUrl": `http://nginx/api/file/content/office?id=${fileKey}&token=${this.userToken}`,
+                    "callbackUrl": `${origin}/api/file/content/office?id=${fileKey}&token=${this.userToken}`,
                 }
             };
             if (/\/hideenOfficeTitle\//.test(window.navigator.userAgent)) {
                 config.document.title = " ";
             }
             if ($A.leftExists(fileKey, "msgFile_")) {
-                config.document.url = `http://nginx/api/dialog/msg/download/?msg_id=${$A.leftDelete(fileKey, "msgFile_")}&token=${this.userToken}`;
+                config.document.url = `${origin}/api/dialog/msg/download/?msg_id=${$A.leftDelete(fileKey, "msgFile_")}&token=${this.userToken}`;
             } else if ($A.leftExists(fileKey, "taskFile_")) {
-                config.document.url = `http://nginx/api/project/task/filedown/?file_id=${$A.leftDelete(fileKey, "taskFile_")}&token=${this.userToken}`;
+                config.document.url = `${origin}/api/project/task/filedown/?file_id=${$A.leftDelete(fileKey, "taskFile_")}&token=${this.userToken}`;
             }
             if (this.readOnly) {
                 config.editorConfig.mode = "view";

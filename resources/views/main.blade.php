@@ -18,6 +18,10 @@
     <script>
         window.csrfToken = { csrfToken : "{{ csrf_token() }}" };
         window.systemInfo = { title: "{{config('app.name', 'WebPage')}}", version : "{{ $version }}", origin: window.location.origin + "/", homeUrl: null, apiUrl: null };
+        window.settings = {
+            // 服务器之间使用的API地址
+            'apiBaseUrl': '<?php echo config('api.base_url', 'http://nginx')?>',
+        }
     </script>
 </head>
 <body>
