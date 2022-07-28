@@ -594,7 +594,12 @@ class FileController extends AbstractController
         //
         if ($status === 2) {
             $parse = parse_url($url);
-            $from = 'http://' . env('APP_IPPR') . '.3' . $parse['path'] . '?' . $parse['query'];
+            // only-office服务器地址
+            // 预留only-office配置项
+            // 默认使用镜像链接地址
+            $office_origin = env('ONLY_OFFICE_ORIGIN', 'http://office');
+            // 直接访问office镜像，不再通过nginx反向代理
+            $from = $office_origin . preg_replace('/^\/office/', "", $parse['path']) . '?' . $parse['query'];
             $path = 'uploads/file/' . $file->type . '/' . date("Ym") . '/' . $file->id . '/' . $key;
             $save = File::getPrivatePath($path);
             Base::makeDir(dirname($save));
@@ -616,6 +621,10 @@ class FileController extends AbstractController
                 $file->updated_at = Carbon::now();
                 $file->save();
                 $file->pushMsg('update', $file);
+
+                Log::debug("[Office]: save file '$save' from '$from'");
+            } else {
+                Log::warning("[Office]: save file '$save' from '$from' failed");
             }
         }
         return ['error' => 0];
