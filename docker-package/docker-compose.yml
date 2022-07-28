@@ -26,6 +26,8 @@ services:
       - ./volume/nginx/conf.d:/etc/nginx/conf.d
       # dootask静态资源
       - ./volume/nginx/assets/dootask:/var/www/public
+      # 将上传的公开资源挂载出来
+      - ./volume/dootask/storage/app/files/uploads/user:/var/www/uploads/user
     environment:
       TZ: "Asia/Shanghai"
     links:
