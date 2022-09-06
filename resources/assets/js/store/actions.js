@@ -2371,13 +2371,24 @@ export default {
         state.wsReadWaitList.push(data.id);
         clearTimeout(state.wsReadTimeout);
         state.wsReadTimeout = setTimeout(() => {
+            const id = $A.cloneJSON(state.wsReadWaitList);
+            state.wsReadWaitList = [];
+            //
             dispatch("websocketSend", {
                 type: 'readMsg',
-                data: {
-                    id: $A.cloneJSON(state.wsReadWaitList)
-                }
+                data: {id}
+            }).catch(_ => {
+                // try again later
+                setTimeout(_ => {
+                    dispatch("websocketSend", {
+                        type: 'readMsg',
+                        data: {id}
+                    }).catch(_ => {
+                        // or fail
+                        state.wsReadWaitList.push(...id)
+                    });
+                }, 1000)
             });
-            state.wsReadWaitList = [];
         }, 50);
     },
 
@@ -2735,31 +2746,37 @@ export default {
      * 发送 websocket 消息
      * @param state
      * @param params {type, data, callback}
+     * @returns {Promise<unknown>}
      */
     websocketSend({state}, params) {
-        if (!$A.isJson(params)) {
-            typeof callback === "function" && callback(null, false)
-            return;
-        }
-        const {type, data, callback} = params;
-        let msgId = undefined;
-        if (!state.ws) {
-            typeof callback === "function" && callback(null, false)
-            return;
-        }
-        if (typeof callback === "function") {
-            msgId = $A.randomString(16)
-            state.wsCall[msgId] = callback;
-        }
-        try {
-            state.ws.send(JSON.stringify({
-                type,
-                msgId,
-                data
-            }));
-        } catch (e) {
-            typeof callback === "function" && callback(null, false)
-        }
+        return new Promise((resolve, reject) => {
+            if (!$A.isJson(params)) {
+                reject()
+                return
+            }
+            const {type, data, callback} = params
+            let msgId = undefined
+            if (!state.ws) {
+                typeof callback === "function" && callback(null, false)
+                reject()
+                return
+            }
+            if (typeof callback === "function") {
+                msgId = $A.randomString(16)
+                state.wsCall[msgId] = callback
+            }
+            try {
+                state.ws.send(JSON.stringify({
+                    type,
+                    msgId,
+                    data
+                }))
+                resolve()
+            } catch (e) {
+                typeof callback === "function" && callback(null, false)
+                reject(e)
+            }
+        })
     },
 
     /**
