@@ -391,10 +391,18 @@ ipcMain.on('sendForwardMain', (event, args) => {
 })
 
 /**
- * 设置Dock标记
+ * 设置Dock标记（window闪烁、macos标记）
  * @param args
  */
 ipcMain.on('setDockBadge', (event, args) => {
+    if (process.platform === 'win32') {
+        // Window flash
+        if (!mainWindow.isFocused()) {
+            mainWindow.once('focus', () => mainWindow.flashFrame(false))
+            mainWindow.flashFrame(true)
+        }
+        return;
+    }
     if (process.platform !== 'darwin') {
         // Mac only
         return;
