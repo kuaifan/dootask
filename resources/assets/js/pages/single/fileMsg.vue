@@ -38,6 +38,9 @@
         outline: 0;
         padding: 0;
     }
+    .markdown-preview-warp {
+        overflow: auto;
+    }
     .preview-iframe {
         background: 0 0;
         float: none;
