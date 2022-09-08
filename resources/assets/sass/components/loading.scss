@@ -6,22 +6,35 @@
     max-height: 100%;
     margin: auto;
     overflow: hidden;
-    animation: rotate 2s linear infinite;
+    animation: loading-rotate 2s linear infinite;
 
     .common-path {
         fill: none;
         stroke-dasharray: 1, 200;
         stroke-dashoffset: 0;
         stroke-linecap: round;
-        animation: dash 1.5s ease-in-out infinite, color 6s ease-in-out infinite;
+        animation: path-dash 1.5s ease-in-out infinite, path-color 6s ease-in-out infinite;
     }
 }
-@keyframes rotate {
+
+.common-pureing {
+    width: 30px;
+    height: 30px;
+    border: 3px solid #eeeeee;
+    border-bottom-color: $primary-color;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: pureing-rotation 0.75s linear infinite;
+}
+
+@keyframes loading-rotate {
     to {
         transform: rotate(1turn)
     }
 }
-@keyframes dash {
+
+@keyframes path-dash {
     0% {
         stroke-dasharray: 1, 200;
         stroke-dashoffset: 0
@@ -37,7 +50,8 @@
         stroke-dashoffset: -124
     }
 }
-@keyframes color {
+
+@keyframes path-color {
     0%, to {
         stroke: #d62d20
     }
@@ -52,5 +66,14 @@
 
     80%, 90% {
         stroke: #ffa700
+    }
+}
+
+@keyframes pureing-rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
     }
 }
