@@ -920,10 +920,45 @@
                 box-sizing: content-box;
                 justify-content: center;
 
-                .common-loading {
-                    margin: 0;
+                .loading-spinner {
+                    position: relative;
                     width: 18px;
                     height: 18px;
+                    text-indent: -9999em;
+                    border-radius: 50%;
+                    background: linear-gradient(to right, #ccc 10%, rgba(255, 255, 255, 0) 42%);
+                    animation: spinner-load 1.4s infinite linear;
+                    transform: translateZ(0);
+
+                    @keyframes spinner-load {
+                        0% {transform: rotate(0deg);}
+                        100% {transform: rotate(360deg);}
+                    }
+
+                    &:before {
+                        width: 50%;
+                        height: 50%;
+                        background: #ccc;
+                        border-radius: 100% 0 0 0;
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        content: '';
+                    }
+
+                    &:after {
+                        background: #ffffff;
+                        width: 75%;
+                        height: 75%;
+                        border-radius: 50%;
+                        content: '';
+                        margin: auto;
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        bottom: 0;
+                        right: 0;
+                    }
                 }
             }
 
