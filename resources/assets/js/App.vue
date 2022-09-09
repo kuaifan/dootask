@@ -76,7 +76,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['ws', 'themeMode']),
+        ...mapState(['ws', 'windowActive', 'themeMode']),
 
         isSoftware() {
             return this.$Electron || this.$isEEUiApp;
@@ -136,6 +136,19 @@ export default {
                 }
             },
             immediate: true
+        },
+
+        windowActive(active) {
+            if (active) {
+                this.__windowTimer && clearTimeout(this.__windowTimer)
+                this.__windowTimer = setTimeout(_ => {
+                    this.$store.dispatch("websocketSend", {
+                        type: 'handshake',
+                    }).catch(_ => {
+                        this.$store.dispatch("websocketConnection");
+                    })
+                }, 600)
+            }
         },
 
         themeMode() {
@@ -243,15 +256,6 @@ export default {
                 this.$store.state.windowActive = true;
                 if (num > 0) {
                     this.$store.dispatch("getBasicData", 600)
-                    if (this.ws === null) {
-                        this.$store.dispatch("websocketConnection");
-                    } else {
-                        this.$store.dispatch("call", {
-                            url: 'users/ws/exist',
-                        }).catch(_ => {
-                            this.$store.dispatch("websocketConnection");
-                        });
-                    }
                 }
             }
         },
