@@ -76,7 +76,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['ws', 'windowActive', 'themeMode']),
+        ...mapState(['ws', 'themeMode']),
 
         isSoftware() {
             return this.$Electron || this.$isEEUiApp;
@@ -257,6 +257,10 @@ export default {
                 if (num > 0) {
                     this.$store.dispatch("getBasicData", 600)
                 }
+            }
+            // 通知权限
+            window.__onNotificationPermissionStatus = (ret) => {
+                this.$store.state.appNotificationPermission = $A.runNum(ret) == 1;
             }
         },
 

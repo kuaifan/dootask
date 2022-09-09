@@ -84,6 +84,17 @@
                     }
                 }
             }
+            .messenger-notify-permission {
+                position: sticky;
+                display: flex;
+                align-items: center;
+                padding: 6px 12px;
+                justify-content: space-between;
+                background-color: #FEF7EE;
+                border: 1px solid #FAE0B5;
+                margin: 8px 12px;
+                border-radius: 6px;
+            }
             .messenger-list {
                 flex: 1;
                 height: 0;

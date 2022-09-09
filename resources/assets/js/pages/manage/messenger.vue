@@ -24,6 +24,9 @@
                         {{$L(item.name)}}
                     </p>
                 </div>
+                <div v-if="$isEEUiApp && !appNotificationPermission" class="messenger-notify-permission" @click="onOpenAppSetting">
+                    {{$L('未开启通知权限')}}<i class="taskfont">&#xe733;</i>
+                </div>
                 <ScrollerY
                     ref="list"
                     class="messenger-list"
@@ -198,6 +201,10 @@ export default {
     activated() {
         this.updateDialogs(1000);
         this.$nextTick(_ => this.activeNum++)
+        //
+        if ($A.isEEUiApp) {
+            $A.eeuiAppSendMessage({action: 'getNotificationPermission'});
+        }
     },
 
     deactivated() {
@@ -206,7 +213,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheDialogs', 'loadDialogs', 'dialogId']),
+        ...mapState(['cacheDialogs', 'loadDialogs', 'dialogId', 'appNotificationPermission']),
 
         routeName() {
             return this.$route.name
@@ -708,6 +715,12 @@ export default {
                 }, timeout)
             }
         },
+
+        onOpenAppSetting() {
+            $A.eeuiAppSendMessage({
+                action: 'gotoSetting',
+            });
+        }
     }
 }
 </script>

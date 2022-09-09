@@ -11,6 +11,9 @@ const stateData = {
     // 窗口是否激活
     windowActive: true,
 
+    // App通知权限
+    appNotificationPermission: true,
+
     // 播放中的音频地址
     audioPlaying: null,
 
