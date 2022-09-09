@@ -1976,10 +1976,10 @@ export default {
      * 获取会话列表
      * @param state
      * @param dispatch
-     * @param atAfter
+     * @param hideLoad
      * @returns {Promise<unknown>}
      */
-    getDialogs({state, dispatch}, atAfter) {
+    getDialogs({state, dispatch}, hideLoad) {
         return new Promise(function (resolve, reject) {
             if (state.userId === 0) {
                 state.cacheDialogs = [];
@@ -1987,18 +1987,17 @@ export default {
                 return;
             }
             let data = {};
-            if (atAfter === true) {
-                if (state.cacheDialogs.length > 0) {
-                    const tmpList = state.cacheDialogs.sort((a, b) => {
-                        if (a.top_at || b.top_at) {
-                            return $A.Date(b.top_at) - $A.Date(a.top_at);
-                        }
-                        return $A.Date(b.last_at) - $A.Date(a.last_at);
-                    })
-                    data.at_after = tmpList[0].last_at;
-                }
-            } else {
+            if (hideLoad !== true) {
                 state.loadDialogs++;
+            }
+            if (state.cacheDialogs.length > 0) {
+                const tmpList = state.cacheDialogs.sort((a, b) => {
+                    if (a.top_at || b.top_at) {
+                        return $A.Date(b.top_at) - $A.Date(a.top_at);
+                    }
+                    return $A.Date(b.last_at) - $A.Date(a.last_at);
+                })
+                data.at_after = tmpList[0].last_at;
             }
             dispatch("call", {
                 url: 'dialog/lists',
@@ -2010,7 +2009,7 @@ export default {
                 console.warn(e);
                 reject(e)
             }).finally(_ => {
-                if (atAfter !== true) {
+                if (hideLoad !== true) {
                     state.loadDialogs--;
                 }
             });
