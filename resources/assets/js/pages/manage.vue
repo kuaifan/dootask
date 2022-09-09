@@ -689,15 +689,6 @@ export default {
             }
         },
 
-        windowActive(active) {
-            if (!active) {
-                $A.eeuiAppSendMessage({
-                    action: 'setBdageNotify',
-                    bdage: this.unreadTotal,
-                });
-            }
-        },
-
         'cacheProjects.length': {
             handler() {
                 this.$nextTick(_ => {

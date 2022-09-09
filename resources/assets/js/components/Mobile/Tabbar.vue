@@ -110,6 +110,14 @@ export default {
             return mention ? `${num}·@${mention}` : String(num);
         },
 
+        msgAllUnread() {
+            let num = 0;
+            this.cacheDialogs.some(dialog => {
+                num += $A.getDialogUnread(dialog);
+            })
+            return num;
+        },
+
         msgTodoTotal() {
             let todoNum = this.cacheDialogs.reduce((total, current) => total + (current.todo_num || 0), 0)
             if (todoNum > 0) {
@@ -121,6 +129,15 @@ export default {
                 return `${this.$L("待办")}${todoNum}`
             }
             return null;
+        },
+
+        unreadTotal() {
+            if (this.userId > 0) {
+                const todoNum = this.cacheDialogs.reduce((total, current) => total + (current.todo_num || 0), 0)
+                return this.msgAllUnread + this.dashboardTask.overdue_count + todoNum
+            } else {
+                return 0
+            }
         },
 
         activeName() {
@@ -143,6 +160,17 @@ export default {
                 }
             }
             return ''
+        },
+    },
+
+    watch: {
+        windowActive(active) {
+            if (!active) {
+                $A.eeuiAppSendMessage({
+                    action: 'setBdageNotify',
+                    bdage: this.unreadTotal,
+                });
+            }
         },
     },
 
