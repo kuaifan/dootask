@@ -175,18 +175,19 @@ class WebSocketDialog extends AbstractModel
      * @param int|array $userid     退出的会员ID或会员ID组
      * @param string $type          exit|remove
      * @param bool $checkDelete     是否检查删除
+     * @param bool $pushMsg         是否推送消息
      */
-    public function exitGroup($userid, $type = 'exit', $checkDelete = true)
+    public function exitGroup($userid, $type = 'exit', $checkDelete = true, $pushMsg = true)
     {
         $typeDesc = $type === 'remove' ? '移出' : '退出';
-        AbstractModel::transaction(function () use ($checkDelete, $typeDesc, $type, $userid) {
+        AbstractModel::transaction(function () use ($pushMsg, $checkDelete, $typeDesc, $type, $userid) {
             $builder = WebSocketDialogUser::whereDialogId($this->id);
             if (is_array($userid)) {
                 $builder->whereIn('userid', $userid);
             } else {
                 $builder->whereUserid($userid);
             }
-            $builder->chunkById(100, function($list) use ($checkDelete, $typeDesc, $type) {
+            $builder->chunkById(100, function($list) use ($pushMsg, $checkDelete, $typeDesc, $type) {
                 /** @var WebSocketDialogUser $item */
                 foreach ($list as $item) {
                     if ($checkDelete) {
@@ -203,14 +204,16 @@ class WebSocketDialog extends AbstractModel
                     //
                     $item->delete();
                     //
-                    if ($type === 'remove') {
-                        $notice = User::nickname() . " 将 " . User::userid2nickname($item->userid) . " 移出群组";
-                    } else {
-                        $notice = User::userid2nickname($item->userid) . " 退出群组";
+                    if ($pushMsg) {
+                        if ($type === 'remove') {
+                            $notice = User::nickname() . " 将 " . User::userid2nickname($item->userid) . " 移出群组";
+                        } else {
+                            $notice = User::userid2nickname($item->userid) . " 退出群组";
+                        }
+                        WebSocketDialogMsg::sendMsg(null, $this->id, 'notice', [
+                            'notice' => $notice
+                        ], User::userid(), true, true);
                     }
-                    WebSocketDialogMsg::sendMsg(null, $this->id, 'notice', [
-                        'notice' => $notice
-                    ], User::userid(), true, true);
                 }
             });
         });
