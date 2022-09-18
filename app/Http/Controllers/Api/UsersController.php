@@ -832,7 +832,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/meeting/open          16. 【会议】创建会议、加入会议
+     * @api {get} api/users/meeting/open          15. 【会议】创建会议、加入会议
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -924,7 +924,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/meeting/invitation          17. 【会议】发送邀请
+     * @api {get} api/users/meeting/invitation          16. 【会议】发送邀请
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -970,7 +970,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/email/send          18. 发送邮箱验证码
+     * @api {get} api/users/email/send          17. 发送邮箱验证码
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -1010,7 +1010,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/email/edit          19. 修改邮箱
+     * @api {get} api/users/email/edit          18. 修改邮箱
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -1051,7 +1051,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/delete/account          20. 删除帐号
+     * @api {get} api/users/delete/account          19. 删除帐号
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0

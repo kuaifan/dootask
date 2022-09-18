@@ -393,7 +393,7 @@ class ReportController extends AbstractController
     }
 
     /**
-     * @api {get} api/report/mark          05. 标记已读/未读
+     * @api {get} api/report/mark          06. 标记已读/未读
      *
      * @apiVersion 1.0.0
      * @apiGroup report
@@ -435,7 +435,7 @@ class ReportController extends AbstractController
     }
 
     /**
-     * @api {get} api/report/last_submitter          06. 获取最后一次提交的接收人
+     * @api {get} api/report/last_submitter          07. 获取最后一次提交的接收人
      *
      * @apiVersion 1.0.0
      * @apiGroup report
@@ -452,7 +452,7 @@ class ReportController extends AbstractController
     }
 
     /**
-     * @api {get} api/report/unread          07. 获取未读
+     * @api {get} api/report/unread          08. 获取未读
      *
      * @apiVersion 1.0.0
      * @apiGroup report
@@ -476,7 +476,7 @@ class ReportController extends AbstractController
     }
 
     /**
-     * @api {get} api/report/read          08. 标记汇报已读，可批量
+     * @api {get} api/report/read          09. 标记汇报已读，可批量
      *
      * @apiVersion 1.0.0
      * @apiGroup report
