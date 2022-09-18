@@ -485,6 +485,36 @@ class DialogController extends AbstractController
     }
 
     /**
+     * @api {get} api/dialog/msg/read          11. 标记已读
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__read
+     *
+     * @apiParam {Number} id         消息ID（组）
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__read()
+    {
+        $user = User::auth();
+        //
+        $id = Request::input('id');
+        $ids = Base::arrayRetainInt(is_array($id) ? $id : Base::explodeInt($id));
+        //
+        WebSocketDialogMsg::whereIn('id', $ids)->chunkById(20, function($list) use ($user) {
+            /** @var WebSocketDialogMsg $item */
+            foreach ($list as $item) {
+                $item->readSuccess($user->userid);
+            }
+        });
+        return Base::retSuccess('success');
+    }
+
+    /**
      * @api {get} api/dialog/msg/unread          11. 获取未读消息数量
      *
      * @apiDescription 需要token身份

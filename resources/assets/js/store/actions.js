@@ -2373,20 +2373,13 @@ export default {
             const id = $A.cloneJSON(state.wsReadWaitList);
             state.wsReadWaitList = [];
             //
-            dispatch("websocketSend", {
-                type: 'readMsg',
-                data: {id}
+            dispatch("call", {
+                url: 'dialog/msg/read',
+                data: {
+                    id: id.join(",")
+                }
             }).catch(_ => {
-                // try again later
-                setTimeout(_ => {
-                    dispatch("websocketSend", {
-                        type: 'readMsg',
-                        data: {id}
-                    }).catch(_ => {
-                        // or fail
-                        state.wsReadWaitList.push(...id)
-                    });
-                }, 1000)
+                state.wsReadWaitList.push(...id)
             });
         }, 50);
     },
