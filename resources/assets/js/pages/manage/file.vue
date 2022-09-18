@@ -320,6 +320,7 @@
             :title="$L('文件链接')"
             :mask-closable="false">
             <div>
+                <div style="margin:-10px 0 8px">{{$L('文件名称')}}: {{linkData.name}}</div>
                 <Input ref="linkInput" v-model="linkData.url" type="textarea" :rows="3" @on-focus="linkFocus" readonly/>
                 <div class="form-tip" style="padding-top:6px">{{$L('可通过此链接浏览文件。')}}<a href="javascript:void(0)" @click="linkCopy">{{$L('点击复制链接')}}</a></div>
             </div>
@@ -1198,7 +1199,8 @@ export default {
 
                 case 'link':
                     this.linkData = {
-                        id: item.id
+                        id: item.id,
+                        name: item.name
                     };
                     this.linkShow = true;
                     this.linkGet()
@@ -1234,7 +1236,8 @@ export default {
                 },
             }).then(({data}) => {
                 this.linkData = Object.assign(data, {
-                    id: this.linkData.id
+                    id: this.linkData.id,
+                    name: this.linkData.name
                 });
                 this.linkFocus();
             }).catch(({msg}) => {
