@@ -5,7 +5,7 @@
                 <ReportMy ref="report" v-if="reportTabs === 'my'" @on-view="onView" @on-edit="onEditReport"/>
             </TabPane>
             <TabPane :label="tabRebder(reportUnreadNumber)" name="receive">
-                <ReportReceive v-if="reportTabs === 'receive'" @on-view="onView"/>
+                <ReportReceive v-if="reportTabs === 'receive'" @on-view="onView" @on-read="onRead"/>
             </TabPane>
         </Tabs>
         <DrawerOverlay
@@ -112,6 +112,10 @@ export default {
             }else{
                 this.showDetailDrawer = true;
             }
+        },
+
+        onRead() {
+            this.$emit("on-read", 0)
         },
 
         onEditReport(id) {

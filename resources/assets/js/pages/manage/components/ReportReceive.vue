@@ -56,26 +56,36 @@
                 :data="lists"
                 :loading="loadIng > 0"
                 :no-data-text="$L(noDataText)"
+                @on-selection-change="selectChange"
                 stripe/>
-            <Page
-                :total="listTotal"
-                :current="listPage"
-                :page-size="listPageSize"
-                :disabled="loadIng > 0"
-                :simple="windowSmall"
-                :page-size-opts="[10,20,30,50,100]"
-                show-elevator
-                show-sizer
-                show-total
-                @on-change="setPage"
-                @on-page-size-change="setPageSize"/>
+            <div class="table-attach">
+                <!-- 选择执行 -->
+                <div class="select-box">
+                    <Select v-model="selectAction" :disabled="selectIds.length==0" @on-change="groupSelect=true" :placeholder="$L('请选择')" transfer>
+                        <Option value="read">{{ $L('标记已读') }}</Option>
+                        <Option value="unread">{{ $L('标记未读') }}</Option>
+                    </Select>
+                    <Button :loading="loadIng > 0" type="primary" @click="selectClick" :disabled="selectAction=='' || selectIds.length==0">{{$L('执行')}}</Button>
+                </div>
+                <!-- 分页 -->
+                <Page
+                    :total="listTotal"
+                    :current="listPage"
+                    :page-size="listPageSize"
+                    :disabled="loadIng > 0"
+                    :simple="windowSmall"
+                    :page-size-opts="[10,20,30,50,100]"
+                    show-elevator
+                    show-sizer
+                    show-total
+                    @on-change="setPage"
+                    @on-page-size-change="setPageSize"/>
+            </div>
         </div>
     </div>
 </template>
 
 <script>
-import {mapState} from "vuex";
-
 export default {
     name: "ReportReceive",
     data() {
@@ -90,6 +100,9 @@ export default {
 
             keys: {},
             keyIs: false,
+
+            selectIds: [],
+            selectAction: '',
 
             reportTypeList: [
                 {value: "", label: this.$L('全部')},
@@ -112,6 +125,10 @@ export default {
     methods: {
         initLanguage() {
             this.columns = [{
+                type: 'selection',
+                width: 50,
+                align: 'right'
+            }, {
                 title: this.$L("标题"),
                 key: 'title',
                 sortable: true,
@@ -221,6 +238,53 @@ export default {
                 this.listPageSize = size;
                 this.getLists();
             }
+        },
+
+        selectChange(items) {
+            this.selectIds = items.map(({id}) => id);
+        },
+
+        selectClick() {
+            if (this.selectIds.length === 0) {
+                $A.messageWarning('请选择线路');
+                return;
+            }
+            switch (this.selectAction) {
+                case 'read':
+                case 'unread':
+                    this.readReport(this.selectIds, this.selectAction)
+                    break;
+                default:
+                    $A.messageWarning('请选择执行方式');
+                    break;
+            }
+        },
+
+        readReport(id, action) {
+            const label = action === 'read' ? '标记已读' : '标记未读'
+            $A.modalConfirm({
+                content: `你确定要【${label}】吗？`,
+                cancelText: '取消',
+                okText: '确定',
+                loading: true,
+                onOk: () => {
+                    return new Promise((resolve, reject) => {
+                        this.$store.dispatch("call", {
+                            url: 'report/mark',
+                            data: {
+                                id,
+                                action,
+                            }
+                        }).then(({msg}) => {
+                            resolve(msg);
+                            this.getLists();
+                            this.$emit("on-read")
+                        }).catch(({msg}) => {
+                            reject(msg);
+                        });
+                    })
+                }
+            });
         },
     }
 }

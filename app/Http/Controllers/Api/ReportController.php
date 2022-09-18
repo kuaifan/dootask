@@ -393,6 +393,48 @@ class ReportController extends AbstractController
     }
 
     /**
+     * @api {get} api/report/mark          05. 标记已读/未读
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup report
+     * @apiName mark
+     *
+     * @apiParam {Number} id            报告id（组）
+     * @apiParam {Number} action        操作
+     * - read: 标记已读（默认）
+     * - unread: 标记未读
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function mark(): array
+    {
+        $user = User::auth();
+        //
+        $id = Request::input('id');
+        $action = Request::input('action');
+        //
+        if (is_array($id)) {
+            if (count(Base::arrayRetainInt($id)) > 100) {
+                return Base::retError("最多只能操作100条数据");
+            }
+            $builder = Report::whereIn("id", Base::arrayRetainInt($id));
+        } else {
+            $builder = Report::whereId(intval($id));
+        }
+        $builder ->chunkById(100, function ($list) use ($action, $user) {
+            /** @var Report $item */
+            foreach ($list as $item) {
+                $item->receivesUser()->updateExistingPivot($user->userid, [
+                    "read" => $action === 'unread' ? 0 : 1,
+                ]);
+            }
+        });
+        return Base::retSuccess("操作成功");
+    }
+
+    /**
      * @api {get} api/report/last_submitter          06. 获取最后一次提交的接收人
      *
      * @apiVersion 1.0.0

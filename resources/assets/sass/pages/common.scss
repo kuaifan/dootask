@@ -528,6 +528,27 @@ body {
         text-align: center;
         margin-top: 20px;
     }
+
+    .table-attach {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 20px;
+        .select-box {
+            margin-right: 12px;
+            .ivu-select {
+                width: auto;
+                max-width: 200px;
+                margin-right: 3px;
+            }
+        }
+        .ivu-page {
+            padding: 0;
+            margin-top: 0;
+            margin-left: 12px;
+        }
+    }
 }
 
 .page-container {
