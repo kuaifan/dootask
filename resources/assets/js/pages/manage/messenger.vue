@@ -286,12 +286,21 @@ export default {
                 })
             }
             return list.sort((a, b) => {
+                // 搜索结果排在后面
+                a._by_search = a.is_search === true ? 1 : 0
+                b._by_search = b.is_search === true ? 1 : 0
+                if (a._by_search || b._by_search) {
+                    return a._by_search - b._by_search
+                }
+                // 根据置顶时间排序
                 if (a.top_at || b.top_at) {
                     return $A.Date(b.top_at) - $A.Date(a.top_at);
                 }
+                // 根据未读数排序
                 if (a.todo_num > 0 || b.todo_num > 0) {
                     return b.todo_num - a.todo_num;
                 }
+                // 根据最后会话时间排序
                 return $A.Date(b.last_at) - $A.Date(a.last_at);
             })
         },
