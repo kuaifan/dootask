@@ -151,6 +151,15 @@
     }
 }
 
+.privacy-content {
+    margin-bottom: 12px;
+    line-height: 26px;
+    font-size: 16px;
+    > p {
+        text-indent: 2rem;
+    }
+}
+
 @media (max-width: 768px) {
     .page-login {
         .login-body {

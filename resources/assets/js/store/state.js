@@ -11,10 +11,6 @@ const stateData = {
     // 窗口是否激活
     windowActive: true,
 
-    // 隐私政策同意/抖动
-    privacyAgreed: false,
-    privacyShake: false,
-
     // App通知权限
     appNotificationPermission: true,
 

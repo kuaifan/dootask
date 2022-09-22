@@ -20,14 +20,6 @@
         color: #fff;
         background-color: $primary-color;
         border-color: $primary-color;
-        &.privacy {
-            .ivu-checkbox-wrapper {
-                margin-right: 2px;
-            }
-            &.shake {
-                animation: ani-privacy-agreed-shake 500ms ease-in-out;
-            }
-        }
         &:hover {
             color: #fff;
             opacity: 0.9;
@@ -94,14 +86,6 @@
             margin-left: 6px;
         }
     }
-}
-
-@keyframes ani-privacy-agreed-shake {
-    10%, 90% { transform: translate3d(-1px, 0, 0); }
-    20%, 80% { transform: translate3d(+2px, 0, 0); }
-    30%, 70% { transform: translate3d(-4px, 0, 0); }
-    40%, 60% { transform: translate3d(+4px, 0, 0); }
-    50% { transform: translate3d(-4px, 0, 0); }
 }
 
 @media (max-width: 768px) {

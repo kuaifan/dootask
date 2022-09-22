@@ -123,6 +123,21 @@
                 <div class="login-forgot">{{$L('忘记密码了？')}}<a href="javascript:void(0)" @click="forgotPassword">{{$L('重置密码')}}</a></div>
             </div>
         </div>
+
+        <!--隐私政策提醒-->
+        <Modal
+            v-model="privacyShow"
+            :title="$L('隐私协议')"
+            :mask-closable="false">
+            <div class="privacy-content">
+                <div>欢迎使用本软件！</div>
+                <p>在您使用本软件前，请您认真阅读并了解相应的<a target="_blank" :href="$A.apiUrl('../privacy.html')">《{{ $L('隐私政策') }}》</a>，以了解我们的服务内容和您相关个人信息的处理规则。我们将严格的按照隐私服务协议为您提供服务，保护您的个人信息。</p>
+            </div>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="onPrivacy(false)">{{$L('不同意')}}</Button>
+                <Button type="primary" @click="onPrivacy(true)">{{$L('同意')}}</Button>
+            </div>
+        </Modal>
     </div>
 </template>
 
@@ -152,6 +167,8 @@ export default {
             needInvite: false,
 
             subscribe: null,
+
+            privacyShow: !!this.$isEEUiApp,
         }
     },
     mounted() {
@@ -198,8 +215,6 @@ export default {
 
             'themeMode',
             'themeList',
-
-            'privacyAgreed',
         ]),
 
         isSoftware() {
@@ -221,15 +236,6 @@ export default {
                 text += "成功..."
             }
             return text
-        },
-
-        showPrivacy() {
-            return [
-                '127.0.0.1:2222',
-                'dootask.com',
-                'www.dootask.com',
-                't.hitosea.com',
-            ].includes($A.getDomain($A.apiUrl('../'))) && this.$isEEUiApp && ['login'].includes(this.$route.name)
         }
     },
 
@@ -401,12 +407,13 @@ export default {
             });
         },
 
-        onLogin() {
-            if (this.showPrivacy && !this.privacyAgreed) {
-                this.$store.state.privacyShake = true
-                $A.messageWarning("请阅读《隐私政策》并同意");
-                return;
+        onPrivacy(agree) {
+            if (!agree) {
+                $A.eeuiAppGoDesktop()
             }
+        },
+
+        onLogin() {
             this.chackServerUrl(true).then(() => {
                 this.email = $A.trim(this.email)
                 this.password = $A.trim(this.password)
