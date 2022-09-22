@@ -408,7 +408,9 @@ export default {
         },
 
         onPrivacy(agree) {
-            if (!agree) {
+            if (agree) {
+                this.privacyShow = false
+            } else {
                 $A.eeuiAppGoDesktop()
             }
         },
