@@ -313,6 +313,9 @@ export default {
         },
 
         inputServerUrl() {
+            if (this.privacyShow) {
+                return
+            }
             let value = $A.rightDelete(this.cacheServerUrl, "/api/");
             value = $A.leftDelete(value, "http://");
             $A.modalInput({
@@ -410,6 +413,7 @@ export default {
         onPrivacy(agree) {
             if (agree) {
                 this.privacyShow = false
+                this.inputServerUrl()
             } else {
                 $A.eeuiAppGoDesktop()
             }
