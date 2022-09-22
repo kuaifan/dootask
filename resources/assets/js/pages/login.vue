@@ -198,6 +198,8 @@ export default {
 
             'themeMode',
             'themeList',
+
+            'privacyAgreed',
         ]),
 
         isSoftware() {
@@ -219,6 +221,15 @@ export default {
                 text += "成功..."
             }
             return text
+        },
+
+        showPrivacy() {
+            return [
+                '127.0.0.1:2222',
+                'dootask.com',
+                'www.dootask.com',
+                't.hitosea.com',
+            ].includes($A.getDomain($A.apiUrl('../'))) && this.$isEEUiApp && ['login'].includes(this.$route.name)
         }
     },
 
@@ -391,6 +402,11 @@ export default {
         },
 
         onLogin() {
+            if (this.showPrivacy && !this.privacyAgreed) {
+                this.$store.state.privacyShake = true
+                $A.messageWarning("请阅读《隐私政策》并同意");
+                return;
+            }
             this.chackServerUrl(true).then(() => {
                 this.email = $A.trim(this.email)
                 this.password = $A.trim(this.password)

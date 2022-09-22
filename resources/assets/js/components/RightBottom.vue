@@ -14,9 +14,12 @@
                 {{ $L('更新客户端') }}
             </div>
         </template>
-        <a v-if="showPrivacy" class="common-right-bottom-link" target="_blank" :href="$A.apiUrl('../privacy.html')">
-            《{{ $L('隐私政策') }}》
-        </a>
+        <div v-if="showPrivacy" class="common-right-bottom-link privacy" :class="{shake:privacyShake}">
+            <Checkbox v-model="privacyAgreed"></Checkbox>
+            <a target="_blank" :href="$A.apiUrl('../privacy.html')" @click="privacyAgreed=true">
+                《{{ $L('隐私政策') }}》
+            </a>
+        </div>
         <Modal
             v-model="updateShow"
             :closable="false"
@@ -62,6 +65,8 @@ export default {
             updateIng: false,
 
             downloadUrl: '',
+
+            privacyAgreed: false,
         }
     },
 
@@ -93,10 +98,20 @@ export default {
             if (show) {
                 this.updateBottomShow = true
             }
-        }
+        },
+        privacyAgreed(val) {
+            this.$store.state.privacyAgreed = val
+        },
+        privacyShake(val) {
+            if (val) {
+                setTimeout(_ => this.$store.state.privacyShake = false, 600)
+            }
+        },
     },
 
     computed: {
+        ...mapState(['privacyShake']),
+
         isSoftware() {
             return this.$Electron || this.$isEEUiApp;
         },
