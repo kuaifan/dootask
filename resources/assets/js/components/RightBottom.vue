@@ -14,7 +14,7 @@
                 {{ $L('更新客户端') }}
             </div>
         </template>
-        <a v-if="showPrivacy" class="common-right-bottom-link" target="_blank" :href="$A.apiUrl('../privacy.html')">
+        <a v-if="showPrivacy" class="common-right-bottom-link" target="_blank" :href="$A.apiUrl('privacy')">
             《{{ $L('隐私政策') }}》
         </a>
         <Modal

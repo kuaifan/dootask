@@ -168,7 +168,7 @@ export default {
         },
 
         openPrivacy() {
-            const url = $A.apiUrl('../privacy.html')
+            const url = $A.apiUrl('privacy')
             if (this.$isEEUiApp) {
                 $A.eeuiAppOpenPage({
                     pageType: 'app',

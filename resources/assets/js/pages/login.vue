@@ -131,7 +131,7 @@
             :mask-closable="false">
             <div class="privacy-content">
                 <div>欢迎使用本软件！</div>
-                <p>在您使用本软件前，请您认真阅读并了解相应的<a target="_blank" :href="$A.apiUrl('../privacy.html')">《{{ $L('隐私政策') }}》</a>，以了解我们的服务内容和您相关个人信息的处理规则。我们将严格的按照隐私服务协议为您提供服务，保护您的个人信息。</p>
+                <p>在您使用本软件前，请您认真阅读并了解相应的<a target="_blank" :href="$A.apiUrl('privacy')">《{{ $L('隐私政策') }}》</a>，以了解我们的服务内容和您相关个人信息的处理规则。我们将严格的按照隐私服务协议为您提供服务，保护您的个人信息。</p>
             </div>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="onPrivacy(false)">{{$L('不同意')}}</Button>

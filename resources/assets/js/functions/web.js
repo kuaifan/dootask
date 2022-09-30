@@ -15,6 +15,12 @@
          * @returns {string|string|*}
          */
         apiUrl(str) {
+            if (str == "privacy") {
+                let apiHome = $A.getDomain(window.systemInfo.apiUrl)
+                if (apiHome == "" || apiHome == "public") {
+                    return "https://www.dootask.com/privacy.html"
+                }
+            }
             if (str.substring(0, 2) === "//" ||
                 str.substring(0, 7) === "http://" ||
                 str.substring(0, 8) === "https://" ||
