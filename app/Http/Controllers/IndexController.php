@@ -290,7 +290,9 @@ class IndexController extends InvokeController
             $userAgent = strtolower(Request::server('HTTP_USER_AGENT'));
             if ($ext === 'pdf'
                 && (str_contains($userAgent, 'electron') || str_contains($userAgent, 'chrome'))) {
-                return response()->download($file, $name, [], 'inline');
+                return response()->download($file, $name, [
+                    'Content-Type' => 'application/pdf'
+                ], 'inline');
             }
             //
             if (in_array($ext, File::localExt)) {
