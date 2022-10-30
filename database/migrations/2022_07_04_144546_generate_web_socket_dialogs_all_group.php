@@ -13,7 +13,7 @@ class GenerateWebSocketDialogsAllGroup extends Migration
      */
     public function up()
     {
-        if (!WebSocketDialog::whereGroupType('all')->exists()) {
+        if (WebSocketDialog::count() > 0 && !WebSocketDialog::whereGroupType('all')->exists()) {
             $userids = User::whereNull('disable_at')->pluck('userid')->toArray();
             WebSocketDialog::createGroup("全体成员 All members", $userids, 'all');
         }

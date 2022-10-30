@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
+use App\Models\WebSocketDialog;
 use Illuminate\Database\Seeder;
 
 class WebSocketDialogsTableSeeder extends Seeder
@@ -221,6 +223,7 @@ class WebSocketDialogsTableSeeder extends Seeder
             ),
         ));
 
-
+        $userids = User::whereNull('disable_at')->pluck('userid')->toArray();
+        WebSocketDialog::createGroup("全体成员 All members", $userids, 'all');
     }
 }
