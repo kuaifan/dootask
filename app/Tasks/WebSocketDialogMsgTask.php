@@ -23,6 +23,8 @@ class WebSocketDialogMsgTask extends AbstractTask
     protected $ignoreFd;
     protected $msgNotExistRetry = false;    // 推送失败后重试
     protected $silence = false;             // 静默推送（1:前端不通知、2:App不推送）
+    protected $endPush = [];
+    protected $endArray = [];
 
     /**
      * WebSocketDialogMsgTask constructor.
@@ -72,7 +74,7 @@ class WebSocketDialogMsgTask extends AbstractTask
             if ($this->msgNotExistRetry) {
                 $task = new WebSocketDialogMsgTask($this->id, $this->ignoreFd || '');
                 $task->delay(1);
-                $this->addTask($task);
+                $this->endArray[] = $task;
             }
             return;
         }
@@ -123,7 +125,7 @@ class WebSocketDialogMsgTask extends AbstractTask
         $msg->save();
         // 开始推送消息
         foreach ($array as $userid => $mention) {
-            PushTask::push([
+            $this->endPush[] = [
                 'userid' => $userid,
                 'ignoreFd' => $this->ignoreFd,
                 'msg' => [
@@ -134,7 +136,7 @@ class WebSocketDialogMsgTask extends AbstractTask
                         'mention' => $mention,
                     ]),
                 ]
-            ]);
+            ];
         }
         // umeng推送app
         if (!$this->silence) {
@@ -147,14 +149,13 @@ class WebSocketDialogMsgTask extends AbstractTask
             if ($dialog->type == 'group') {
                 $umengTitle = "{$dialog->getGroupName()} ($umengTitle)";
             }
-            $umengMsg = new PushUmengMsg($umengUserid, [
+            $this->endArray[] = new PushUmengMsg($umengUserid, [
                 'title' => $umengTitle,
                 'body' => $msg->previewMsg(),
                 'description' => "MID:{$msg->id}",
                 'seconds' => 3600,
                 'badge' => 1,
             ]);
-            Task::deliver($umengMsg);
         }
 
         // 推送目标②：正在打开这个任务会话的会员
@@ -168,7 +169,7 @@ class WebSocketDialogMsgTask extends AbstractTask
                     }
                 }
                 if ($array) {
-                    PushTask::push([
+                    $this->endPush[] = [
                         'userid' => $array,
                         'ignoreFd' => $this->ignoreFd,
                         'msg' => [
@@ -177,9 +178,17 @@ class WebSocketDialogMsgTask extends AbstractTask
                             'silence' => $this->silence ? 1 : 0,
                             'data' => $msg->toArray(),
                         ]
-                    ]);
+                    ];
                 }
             }
         }
+    }
+
+    public function end()
+    {
+        foreach ($this->endArray as $task) {
+            Task::deliver($task);
+        }
+        PushTask::push($this->endPush);
     }
 }

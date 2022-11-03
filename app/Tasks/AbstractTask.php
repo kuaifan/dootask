@@ -9,29 +9,6 @@ use Hhxsv5\LaravelS\Swoole\Task\Task;
  */
 abstract class AbstractTask extends Task
 {
-    protected $newTask = [];
-
-    /**
-     * 添加完成后执行的任务
-     * @param $task
-     */
-    final protected function addTask($task)
-    {
-        $this->newTask[] = $task;
-    }
-
-    /**
-     * 包装执行过程
-     */
-    final public function handle()
-    {
-        try {
-            $this->start();
-        } catch (\Throwable $e) {
-            $this->info($e);
-            $this->failed($e);
-        }
-    }
 
     /**
      * 开始执行任务
@@ -41,31 +18,41 @@ abstract class AbstractTask extends Task
     /**
      * 任务完成事件
      */
-    public function finish()
+    abstract public function end();
+
+    /**
+     * 重写执行过程
+     */
+    final public function handle()
     {
-        foreach ($this->newTask AS $task) {
-            Task::deliver($task);
+        try {
+            $this->start();
+        } catch (\Throwable $e) {
+            $this->failed("start", $e);
+
+        }
+    }
+
+    /**
+     * 重写完成事件
+     */
+    final public function finish()
+    {
+        try {
+            $this->end();
+        } catch (\Throwable $e) {
+            $this->failed("end", $e);
         }
     }
 
     /**
      * 任务失败事件
-     * @param $e
+     * @param string $type
+     * @param \Throwable $e
      */
-    public function failed($e)
+    public function failed(string $type, \Throwable $e)
     {
-        //
-    }
-
-    /**
-     * 添加日志
-     * @param $var
-     */
-    private function info($var)
-    {
-        if (!config('app.debug') || defined('DO_NOT_ADD_LOGS')) {
-            return;
-        }
-        info($var);
+        info($type);
+        info($e);
     }
 }

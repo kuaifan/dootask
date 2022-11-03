@@ -19,6 +19,7 @@ class PushTask extends AbstractTask
 {
     protected $params;
     protected $retryOffline = true;
+    protected $endPush = [];
 
     /**
      * PushTask constructor.
@@ -42,10 +43,39 @@ class PushTask extends AbstractTask
             }
             // 根据会员ID推送离线时收到的消息
             elseif (Base::leftExists($this->params, "RETRY::")) {
-                self::sendTmpMsgForUserid(intval(Base::leftDelete($this->params, "RETRY::")));
+                $this->sendTmpMsgForUserid(intval(Base::leftDelete($this->params, "RETRY::")));
             }
         }
         is_array($this->params) && self::push($this->params, $this->retryOffline);
+    }
+
+    public function end()
+    {
+        self::push($this->endPush);
+    }
+
+    /**
+     * 根据会员ID推送离线时收到的消息
+     * @param $userid
+     */
+    private function sendTmpMsgForUserid($userid)
+    {
+        if (empty($userid)) {
+            return;
+        }
+        WebSocketTmpMsg::whereCreateId($userid)
+            ->whereSend(0)
+            ->where('created_at', '>', Carbon::now()->subMinute())  // 1分钟内添加的数据
+            ->orderBy('id')
+            ->chunk(100, function($list) use ($userid) {
+                foreach ($list as $item) {
+                    $this->endPush[] = [
+                        'tmpMsgId' => $item->id,
+                        'userid' => $userid,
+                        'msg' => Base::json2array($item->msg),
+                    ];
+                }
+            });
     }
 
     /**
@@ -69,30 +99,6 @@ class PushTask extends AbstractTask
                 WebSocketTmpMsg::insertOrIgnore($inArray);
             }
         }
-    }
-
-    /**
-     * 根据会员ID推送离线时收到的消息
-     * @param $userid
-     */
-    private static function sendTmpMsgForUserid($userid)
-    {
-        if (empty($userid)) {
-            return;
-        }
-        WebSocketTmpMsg::whereCreateId($userid)
-            ->whereSend(0)
-            ->where('created_at', '>', Carbon::now()->subMinute())  // 1分钟内添加的数据
-            ->orderBy('id')
-            ->chunk(100, function($list) use ($userid) {
-                foreach ($list as $item) {
-                    self::push([
-                        'tmpMsgId' => $item->id,
-                        'userid' => $userid,
-                        'msg' => Base::json2array($item->msg),
-                    ]);
-                }
-            });
     }
 
     /**

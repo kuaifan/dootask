@@ -56,4 +56,9 @@ class DeleteTmpTask extends AbstractTask
                 break;
         }
     }
+
+    public function end()
+    {
+
+    }
 }

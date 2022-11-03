@@ -42,4 +42,9 @@ class AutoArchivedTask extends AbstractTask
             }
         }
     }
+
+    public function end()
+    {
+
+    }
 }

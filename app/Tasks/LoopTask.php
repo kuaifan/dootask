@@ -76,4 +76,9 @@ class LoopTask extends AbstractTask
             }
         });
     }
+
+    public function end()
+    {
+
+    }
 }

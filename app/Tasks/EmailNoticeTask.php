@@ -108,6 +108,11 @@ class EmailNoticeTask extends AbstractTask
         }
     }
 
+    public function end()
+    {
+
+    }
+
     /**
      * 任务过期前、超期后提醒
      * @param ProjectTask $task

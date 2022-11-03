@@ -35,4 +35,9 @@ class PushUmengMsg extends AbstractTask
         }
         UmengAlias::pushMsgToUserid($this->userid, $this->array);
     }
+
+    public function end()
+    {
+
+    }
 }
