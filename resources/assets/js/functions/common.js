@@ -3,6 +3,7 @@
  */
 (function (window, $, undefined) {
     window.systemInfo = window.systemInfo || {};
+    window.modalTransferIndex = 1000;
 
     /**
      * =============================================================================
