@@ -241,24 +241,24 @@ class IndexController extends InvokeController
             $path = "uploads/android";
             $dirPath = public_path($path);
             $lists = Base::readDir($dirPath);
-            $ipkFile = null;
+            $apkFile = null;
             foreach ($lists as $file) {
-                if (!str_ends_with($file, '.ipk')) {
+                if (!str_ends_with($file, '.apk')) {
                     continue;
                 }
-                if ($ipkFile && strtotime($ipkFile['time']) > fileatime($file)) {
+                if ($apkFile && strtotime($apkFile['time']) > fileatime($file)) {
                     continue;
                 }
                 $fileName = Base::leftDelete($file, $dirPath);
-                $ipkFile = [
+                $apkFile = [
                     'name' => substr($fileName, 1),
                     'time' => date("Y-m-d H:i:s", fileatime($file)),
                     'size' => Base::readableBytes(filesize($file)),
                     'url' => Base::fillUrl($path . $fileName),
                 ];
             }
-            if ($ipkFile) {
-                $files = array_merge([$ipkFile], $files);
+            if ($apkFile) {
+                $files = array_merge([$apkFile], $files);
             }
             return view('desktop', ['version' => $name, 'files' => $files]);
         }
