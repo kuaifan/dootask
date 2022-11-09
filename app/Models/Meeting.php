@@ -12,7 +12,7 @@ namespace App\Models;
  * @property int|null $userid 创建人
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $end_at
+ * @property string|null $end_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @method static \Illuminate\Database\Eloquent\Builder|Meeting newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Meeting newQuery()

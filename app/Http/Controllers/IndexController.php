@@ -237,6 +237,29 @@ class IndexController extends InvokeController
                     'url' => Base::fillUrl($path . $fileName),
                 ];
             }
+            //
+            $path = "uploads/android";
+            $dirPath = public_path($path);
+            $lists = Base::readDir($dirPath);
+            $ipkFile = null;
+            foreach ($lists as $file) {
+                if (!str_ends_with($file, '.ipk')) {
+                    continue;
+                }
+                if ($ipkFile && strtotime($ipkFile['time']) > fileatime($file)) {
+                    continue;
+                }
+                $fileName = Base::leftDelete($file, $dirPath);
+                $ipkFile = [
+                    'name' => substr($fileName, 1),
+                    'time' => date("Y-m-d H:i:s", fileatime($file)),
+                    'size' => Base::readableBytes(filesize($file)),
+                    'url' => Base::fillUrl($path . $fileName),
+                ];
+            }
+            if ($ipkFile) {
+                $files = array_merge([$ipkFile], $files);
+            }
             return view('desktop', ['version' => $name, 'files' => $files]);
         }
         // 下载

@@ -437,6 +437,7 @@ if [ $# -gt 0 ]; then
         e="supervisorctl $@" && run_exec php "$e"
     elif [[ "$1" == "models" ]]; then
         shift 1
+        run_exec php "php app/Models/clearHelper.php"
         run_exec php "php artisan ide-helper:models -W"
     elif [[ "$1" == "test" ]]; then
         shift 1

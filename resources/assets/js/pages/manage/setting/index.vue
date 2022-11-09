@@ -78,6 +78,7 @@ export default {
 
             if ([
                 '127.0.0.1:2222',
+                '192.168.100.88:2222',
                 'dootask.com',
                 'www.dootask.com',
                 't.hitosea.com',

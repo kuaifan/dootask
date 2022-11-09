@@ -10,7 +10,7 @@ use Carbon\Carbon;
  * @property int $id
  * @property int|null $dialog_id 对话ID
  * @property int|null $msg_id 消息ID
- * @property int|null $userid 发送会员ID
+ * @property int|null $userid 接收会员ID
  * @property int|null $mention 是否提及（被@）
  * @property int|null $email 是否发了邮件
  * @property int|null $after 在阅读之后才添加的记录
