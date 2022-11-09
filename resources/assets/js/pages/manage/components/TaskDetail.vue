@@ -1062,13 +1062,28 @@ export default {
             const list = this.getAssist.map(({userid}) => userid)
             this.$set(this.taskDetail, 'assist_userid', list)
             this.$set(this.assistData, 'assist_userid', list);
-            this.$set(this.assistData, 'disabled', this.getOwner.map(({userid}) => userid))
+            this.$set(this.assistData, 'disabled', this.getOwner.map(({userid}) => userid).filter(userid => userid != this.userId))
         },
 
         onAssist() {
             if ($A.jsonStringify(this.taskDetail.assist_userid) === $A.jsonStringify(this.assistData.assist_userid)) {
                 return;
             }
+            if (this.getOwner.find(({userid}) => userid === this.userId) && this.assistData.assist_userid.find(userid => userid === this.userId)) {
+                $A.modalConfirm({
+                    content: '你当前是负责人，确定要转为协助人员吗？',
+                    cancelText: '取消',
+                    okText: '确定',
+                    onOk: () => {
+                        this.onAssistConfirm()
+                    }
+                })
+                return
+            }
+            this.onAssistConfirm()
+        },
+
+        onAssistConfirm() {
             let assist = this.assistData.assist_userid;
             if (assist.length === 0) assist = false;
             this.assistLoad++;
