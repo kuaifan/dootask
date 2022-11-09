@@ -2301,6 +2301,7 @@ export default {
                 state.dialogMsgs = state.dialogMsgs.filter(({dialog_id}) => dialog_id !== data.dialog_id)
             }
             //
+            const callTime = $A.Time();
             dispatch("call", {
                 url: 'dialog/msg/list',
                 data,
@@ -2313,7 +2314,7 @@ export default {
                     dispatch("saveDialog", resData.dialog);
                     //
                     const ids = resData.list.map(({id}) => id)
-                    state.dialogMsgs = state.dialogMsgs.filter(item => item.dialog_id != data.dialog_id || ids.includes(item.id));
+                    state.dialogMsgs = state.dialogMsgs.filter(item => item.dialog_id != data.dialog_id || ids.includes(item.id) || $A.Time(item.created_at) >= callTime);
                 }
                 if ($A.isArray(resData.todo)) {
                     state.dialogTodos = state.dialogTodos.filter(item => item.dialog_id != data.dialog_id)
