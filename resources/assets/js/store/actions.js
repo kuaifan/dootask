@@ -171,14 +171,21 @@ export default {
             return
         }
         let url = data;
-        let params = {
-            token: state.userToken
-        };
+        let addToken = true
         if ($A.isJson(data)) {
-            url = data.url;
-            params = data.params || {};
+            url = data.url
+            addToken = !!data.token
         }
-        url = $A.urlAddParams(url, params);
+        if (addToken) {
+            let params = {
+                token: state.userToken
+            };
+            if ($A.isJson(data)) {
+                url = data.url;
+                params = data.params || {};
+            }
+            url = $A.urlAddParams(url, params);
+        }
         if ($A.Electron) {
             $A.Electron.request({action: 'openExternal', url}, () => {
                 // 成功

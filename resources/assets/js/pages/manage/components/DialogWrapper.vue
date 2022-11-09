@@ -1622,13 +1622,23 @@ export default {
                     value: event.target.href,
                 })
             }
-            if (msgData.type === 'text' && msgData.msg.text.replace(/<[^>]+>/g,"").length > 0) {
-                this.operateCopys.push({
-                    type: 'text',
-                    icon: '&#xe77f;',
-                    label: this.operateCopys.length > 0 ? '复制文本' : '复制',
-                    value: '',
-                })
+            if (msgData.type === 'text') {
+                if (event.target.nodeName === 'IMG') {
+                    this.operateCopys.push({
+                        type: 'imagedown',
+                        icon: '&#xe7a8;',
+                        label: '下载图片',
+                        value: $A.rightDelete(event.target.currentSrc, '_thumb.jpg'),
+                    })
+                }
+                if (msgData.msg.text.replace(/<[^>]+>/g,"").length > 0) {
+                    this.operateCopys.push({
+                        type: 'text',
+                        icon: '&#xe77f;',
+                        label: this.operateCopys.length > 0 ? '复制文本' : '复制',
+                        value: '',
+                    })
+                }
             }
             this.$nextTick(() => {
                 const projectRect = el.getBoundingClientRect();
@@ -1733,6 +1743,14 @@ export default {
                             this.$Electron.sendMessage('copyBase64Image', {base64});
                         })
                     }
+                    break;
+
+                case 'imagedown':
+                    this.$store.dispatch('downUrl', {
+                        url: value,
+                        token: false
+                    })
+
                     break;
 
                 case 'link':
