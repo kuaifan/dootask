@@ -1125,6 +1125,7 @@ export default {
                     break;
 
                 case 'upperFolder':
+                    this.searchKey = '';
                     this.browseFolder(item.pid)
                     break;
 
