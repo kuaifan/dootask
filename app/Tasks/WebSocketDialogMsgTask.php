@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Models\WebSocketDialogMsgRead;
+use App\Module\Base;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Request;
 
@@ -139,7 +140,9 @@ class WebSocketDialogMsgTask extends AbstractTask
             ];
         }
         // umeng推送app
-        if (!$this->silence) {
+        $setting = Base::setting('appPushSetting');
+        $pushMsg = $setting['push'] === 'open' && $setting['push_msg'] !== 'close';
+        if (!$this->silence && $pushMsg) {
             $umengUserid = $array;
             if (isset($umengUserid[$msg->userid])) {
                 unset($umengUserid[$msg->userid]);

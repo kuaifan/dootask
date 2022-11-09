@@ -6,6 +6,7 @@ use App\Models\File;
 use App\Module\Base;
 use App\Module\Ihttp;
 use App\Module\RandomColor;
+use App\Tasks\AppPushTask;
 use App\Tasks\AutoArchivedTask;
 use App\Tasks\DeleteTmpTask;
 use App\Tasks\EmailNoticeTask;
@@ -180,6 +181,8 @@ class IndexController extends InvokeController
         Task::deliver(new AutoArchivedTask());
         // 邮件通知
         Task::deliver(new EmailNoticeTask());
+        // App推送
+        Task::deliver(new AppPushTask());
         // 删除过期的临时表数据
         Task::deliver(new DeleteTmpTask('wg_tmp_msgs', 1));
         Task::deliver(new DeleteTmpTask('tmp', 24));
