@@ -32,7 +32,23 @@ export default {
         },
         previewImageList(l) {
             if (l.length > 0) {
-                this.show = true;
+                if ($A.isEEUiApp) {
+                    let position = Math.max(this.$store.state.previewImageIndex, 0)
+                    position = Math.min(position, this.$store.state.previewImageList.length - 1)
+                    let paths = l.map(item => {
+                        if ($A.isJson(item)) {
+                            return $A.rightDelete(item.src, "_thumb.jpg");
+                        }
+                        return $A.rightDelete(item, "_thumb.jpg")
+                    })
+                    $A.eeuiAppSendMessage({
+                        action: 'picturePreview',
+                        position,
+                        paths
+                    });
+                } else {
+                    this.show = true;
+                }
             }
         }
     }
