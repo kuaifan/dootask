@@ -16,10 +16,11 @@
          */
         apiUrl(str) {
             if (str == "privacy") {
-                let apiHome = $A.getDomain(window.systemInfo.apiUrl)
+                const apiHome = $A.getDomain(window.systemInfo.apiUrl)
                 if (apiHome == "" || apiHome == "public") {
                     return "https://www.dootask.com/privacy.html"
                 }
+                str = "../privacy.html"
             }
             if (str.substring(0, 2) === "//" ||
                 str.substring(0, 7) === "http://" ||

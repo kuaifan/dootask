@@ -168,7 +168,7 @@ export default {
 
             subscribe: null,
 
-            privacyShow: !!this.$isEEUiApp,
+            privacyShow: !!this.$isEEUiApp && $A.getStorageString("cachePrivacyShow") !== "no",
         }
     },
     mounted() {
@@ -374,6 +374,8 @@ export default {
         },
 
         setServerUrl(value) {
+            $A.setStorage("cachePrivacyShow", value ? "no" : "yes")
+            //
             if (value != this.cacheServerUrl) {
                 $A.setStorage("cacheServerUrl", value)
                 $A.reloadUrl();
