@@ -1,4 +1,4 @@
 /*!
-  * PhotoSwipe 5.2.8 - https://photoswipe.com
+  * PhotoSwipe 5.3.3 - https://photoswipe.com
   * (c) 2022 Dmytro Semenov
   */
