@@ -125,7 +125,7 @@ class EmailNoticeTask extends AbstractTask
         if (empty($userids)) {
             return;
         }
-        $users = User::whereIn('userid', $userids)->get();
+        $users = User::whereIn('userid', $userids)->whereNull('disable_at')->get();
         if (empty($users)) {
             return;
         }
