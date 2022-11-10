@@ -67,9 +67,22 @@
                 <Button type="primary" :loading="videoLoad" @click="onVideo">
                     <i class="taskfont" v-html="localUser.videoTrack ? '&#xe7c1;' : '&#xe7c8;'"></i>
                 </Button>
-                <Button type="primary" @click="onInvitation('open')">{{$L('邀请')}}</Button>
-                <Button type="primary" @click="meetingMini = true">{{$L('最小化')}}</Button>
-                <Button type="warning" :loading="loadIng > 0" @click="onClose">{{$L('离开会议')}}</Button>
+                <template v-if="windowSmall">
+                    <Button type="primary" @click="onInvitation('open')">
+                        <i class="taskfont">&#xe646;</i>
+                    </Button>
+                    <Button type="primary" @click="meetingMini = true">
+                        <i class="taskfont">&#xe656;</i>
+                    </Button>
+                    <Button type="warning" :loading="loadIng > 0" @click="onClose">
+                        <i class="taskfont">&#xe612;</i>
+                    </Button>
+                </template>
+                <template v-else>
+                    <Button type="primary" @click="onInvitation('open')">{{$L('邀请')}}</Button>
+                    <Button type="primary" @click="meetingMini = true">{{$L('最小化')}}</Button>
+                    <Button type="warning" :loading="loadIng > 0" @click="onClose">{{$L('离开会议')}}</Button>
+                </template>
             </div>
         </Modal>
         <DragBallComponent
