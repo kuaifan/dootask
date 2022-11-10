@@ -191,6 +191,10 @@ if (!getTheLock) {
                 mainTray.setContextMenu(trayMenu)
             }
         }
+        //
+        if (process.platform === 'win32') {
+            app.setAppUserModelId(config.name)
+        }
     })
 }
 
