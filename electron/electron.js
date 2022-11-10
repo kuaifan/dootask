@@ -68,7 +68,7 @@ function createMainWindow() {
                 if (process.platform === 'win32') {
                     mainWindow.hide()
                 } else if (process.platform === 'darwin') {
-                    app.hide()
+                    mainWindow.hide()
                 } else {
                     app.quit()
                 }
@@ -195,7 +195,11 @@ if (!getTheLock) {
 }
 
 app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createMainWindow()
+    if (BrowserWindow.getAllWindows().length === 0) {
+        createMainWindow()
+    } else if (!mainWindow.isVisible()) {
+        mainWindow.show()
+    }
 })
 
 app.on('window-all-closed', () => {
