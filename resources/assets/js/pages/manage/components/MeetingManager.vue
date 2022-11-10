@@ -149,6 +149,7 @@ export default {
 
             agoraClient: null,
             remoteUsers: [],
+            readyPlay: [],
             localUser: {
                 uid: null,
                 audioTrack: null,
@@ -352,11 +353,14 @@ export default {
             this.loadIng--;
             this.addShow = false;
             this.meetingShow = true;
-            if (this.addData.tracks.includes("video")) {
-                this.$nextTick(_ => {
+            this.$nextTick(_ => {
+                if (this.addData.tracks.includes("video")) {
                     this.$refs[`meeting_${this.localUser.uid}`].play('video')
+                }
+                this.readyPlay.forEach(item => {
+                    this.$refs[`meeting_${item.uid}`][0].play(item.mediaType)
                 })
-            }
+            })
         },
 
         async leave() {
@@ -437,7 +441,11 @@ export default {
             const index = this.remoteUsers.findIndex(item => item.uid == user.uid)
             if (index > -1) {
                 await this.agoraClient.subscribe(user, mediaType);
-                this.$refs[`meeting_${user.uid}`][0].play(mediaType)
+                if (this.$refs[`meeting_${user.uid}`]) {
+                    this.$refs[`meeting_${user.uid}`][0].play(mediaType)
+                } else {
+                    this.readyPlay.push({uid: user.uid, mediaType})
+                }
             }
         },
 
