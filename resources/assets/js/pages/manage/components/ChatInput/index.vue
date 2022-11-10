@@ -848,7 +848,7 @@ export default {
                 }
             } else if (item.type === 'emoticon') {
                 this.$emit('on-send', `<img class="emoticon" data-asset="${item.asset}" data-name="${item.name}" src="${item.src}"/>`)
-                this.showEmoji = false;
+                // this.showEmoji = false;
             }
         },
 
