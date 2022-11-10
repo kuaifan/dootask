@@ -66,6 +66,30 @@ body {
                 }
             }
         }
+        &.meeting-hidden {
+            display: none;
+        }
+    }
+}
+.meeting-drag-ball {
+    position: relative;
+    background-color: #ffffff;
+    padding: 6px 12px;
+    white-space: nowrap;
+    border-radius: 4px;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    > i {
+        font-size: 20px;
+        height: 24px;
+        line-height: 24px;
+        margin-right: 5px;
+    }
+    > em {
+        font-style: normal;
+        padding-left: 4px;
     }
 }
 .meeting-button-group {

@@ -1,5 +1,5 @@
 <template>
-    <div v-show="false">
+    <div class="meeting-warp">
         <!-- 加入/新建 -->
         <Modal
             v-model="addShow"
@@ -40,6 +40,7 @@
                 <Button type="primary" :loading="loadIng > 0" @click="onSubmit">{{$L(addData.type === 'join' ? '加入会议' : '开始会议')}}</Button>
             </div>
         </Modal>
+
         <!-- 会议中 -->
         <Modal
             v-model="meetingShow"
@@ -49,7 +50,7 @@
             :closable="false"
             :transition-names="['', '']"
             :beforeClose="onClose"
-            class-name="meeting-manager"
+            :class-name="`meeting-manager${meetingMini ? ' meeting-hidden' : ''}`"
             fullscreen>
             <ul>
                 <li v-if="localUser.uid">
@@ -67,9 +68,22 @@
                     <i class="taskfont" v-html="localUser.videoTrack ? '&#xe7c1;' : '&#xe7c8;'"></i>
                 </Button>
                 <Button type="primary" @click="onInvitation('open')">{{$L('邀请')}}</Button>
+                <Button type="primary" @click="meetingMini = true">{{$L('最小化')}}</Button>
                 <Button type="warning" :loading="loadIng > 0" @click="onClose">{{$L('离开会议')}}</Button>
             </div>
         </Modal>
+        <DragBallComponent
+            v-if="meetingMini"
+            id="meetingDragBall"
+            :z-index="3000"
+            @on-click="meetingMini=false">
+            <div class="meeting-drag-ball">
+                <i class="taskfont" v-html="localUser.audioTrack ? '&#xe7c3;' : '&#xe7c7;'"></i>
+                <i class="taskfont" v-html="localUser.videoTrack ? '&#xe7c1;' : '&#xe7c8;'"></i>
+                <em>{{$L('会议中')}}</em>
+            </div>
+        </DragBallComponent>
+
         <!-- 邀请 -->
         <Modal
             v-model="invitationShow"
@@ -93,10 +107,11 @@ import UserInput from "../../../components/UserInput";
 import {Store} from "le5le-store";
 import {mapState} from "vuex";
 import MeetingPlayer from "./MeetingPlayer";
+import DragBallComponent from "../../../components/DragBallComponent";
 
 export default {
     name: "MeetingManager",
-    components: {MeetingPlayer, UserInput},
+    components: {DragBallComponent, MeetingPlayer, UserInput},
     data() {
         return {
             loadIng: 0,
@@ -115,6 +130,7 @@ export default {
             },
 
             meetingShow: false,
+            meetingMini: false,
             audioLoad: false,
             videoLoad: false,
 
@@ -198,7 +214,7 @@ export default {
                         delete data.name;
                         delete data.msgs;
                         //
-                        $A.loadScript('js/AgoraRTC_N-4.11.1.js', e => {
+                        $A.loadScript('js/AgoraRTC_N-4.14.2.js', e => {
                             if (e !== null || typeof AgoraRTC !== 'object') {
                                 $A.modalError("会议组件加载失败！");
                             } else {
@@ -314,16 +330,20 @@ export default {
             }
             if (this.addData.tracks.includes("video")) {
                 localTracks.push(this.localUser.videoTrack = await AgoraRTC.createCameraVideoTrack())
-                this.$refs[`meeting_${this.localUser.uid}`].play('video')
             }
             // 将本地视频曲目播放到本地浏览器、将本地音频和视频发布到频道。
             if (localTracks.length > 0) {
                 await this.agoraClient.publish(localTracks);
             }
-            //
+            // 显示会议窗口后再调用播放
             this.loadIng--;
             this.addShow = false;
             this.meetingShow = true;
+            if (this.addData.tracks.includes("video")) {
+                this.$nextTick(_ => {
+                    this.$refs[`meeting_${this.localUser.uid}`].play('video')
+                })
+            }
         },
 
         async leave() {
