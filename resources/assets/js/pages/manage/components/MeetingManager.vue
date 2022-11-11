@@ -54,10 +54,10 @@
             fullscreen>
             <ul>
                 <li v-if="localUser.uid">
-                    <MeetingPlayer :ref="`meeting_${localUser.uid}`" :player="localUser"/>
+                    <MeetingPlayer :player="localUser" :mediaType="localUser.mediaType"/>
                 </li>
                 <li v-for="user in remoteUsers">
-                    <MeetingPlayer :ref="`meeting_${user.uid}`" :player="user"/>
+                    <MeetingPlayer :player="user" :mediaType="user.mediaType"/>
                 </li>
             </ul>
             <div slot="footer" class="adaption meeting-button-group">
@@ -118,7 +118,6 @@
 <script>
 import UserInput from "../../../components/UserInput";
 import {Store} from "le5le-store";
-import {mapState} from "vuex";
 import MeetingPlayer from "./MeetingPlayer";
 import DragBallComponent from "../../../components/DragBallComponent";
 
@@ -149,11 +148,11 @@ export default {
 
             agoraClient: null,
             remoteUsers: [],
-            readyPlay: [],
             localUser: {
                 uid: null,
                 audioTrack: null,
                 videoTrack: null,
+                mediaType: null
             },
         }
     },
@@ -344,23 +343,16 @@ export default {
             }
             if (this.addData.tracks.includes("video")) {
                 localTracks.push(this.localUser.videoTrack = await AgoraRTC.createCameraVideoTrack())
+                this.$set(this.localUser, 'mediaType', 'video')
             }
             // 将本地视频曲目播放到本地浏览器、将本地音频和视频发布到频道。
             if (localTracks.length > 0) {
                 await this.agoraClient.publish(localTracks);
             }
-            // 显示会议窗口后再调用播放
+            //
             this.loadIng--;
             this.addShow = false;
             this.meetingShow = true;
-            this.$nextTick(_ => {
-                if (this.addData.tracks.includes("video")) {
-                    this.$refs[`meeting_${this.localUser.uid}`].play('video')
-                }
-                this.readyPlay.forEach(item => {
-                    this.$refs[`meeting_${item.uid}`][0].play(item.mediaType)
-                })
-            })
         },
 
         async leave() {
@@ -406,7 +398,7 @@ export default {
             if (this.videoLoad || this.localUser.videoTrack) return;
             this.videoLoad = true;
             this.localUser.videoTrack = await AgoraRTC.createCameraVideoTrack()
-            this.$refs[`meeting_${this.localUser.uid}`].play('video');
+            this.$set(this.localUser, 'mediaType', 'video')
             await this.agoraClient.publish([this.localUser.videoTrack]);
             this.videoLoad = false;
         },
@@ -418,10 +410,12 @@ export default {
             this.localUser.videoTrack.stop();
             this.localUser.videoTrack.close();
             this.localUser.videoTrack = null;
+            this.$set(this.localUser, 'mediaType', null)
             this.videoLoad = false;
         },
 
         async handleUserJoined(user) {
+            this.$set(user, 'mediaType', null)
             const index = this.remoteUsers.findIndex(item => item.uid == user.uid)
             if (index > -1) {
                 this.remoteUsers.splice(index, 1, user)
@@ -438,21 +432,18 @@ export default {
         },
 
         async handleUserPublished(user, mediaType) {
-            const index = this.remoteUsers.findIndex(item => item.uid == user.uid)
-            if (index > -1) {
+            const item = this.remoteUsers.find(item => item.uid == user.uid)
+            if (item) {
                 await this.agoraClient.subscribe(user, mediaType);
-                if (this.$refs[`meeting_${user.uid}`]) {
-                    this.$refs[`meeting_${user.uid}`][0].play(mediaType)
-                } else {
-                    this.readyPlay.push({uid: user.uid, mediaType})
-                }
+                this.$set(item, 'mediaType', mediaType)
             }
         },
 
         async handleUserUnpublished(user, mediaType) {
-            const index = this.remoteUsers.findIndex(item => item.uid == user.uid)
-            if (index > -1) {
+            const item = this.remoteUsers.find(item => item.uid == user.uid)
+            if (item) {
                 await this.agoraClient.unsubscribe(user, mediaType);
+                item.mediaType = null
             }
         }
     }

@@ -1,6 +1,7 @@
 <template>
     <div v-if="userid" class="meeting-player">
         <div :id="id" class="player" :style="playerStyle"></div>
+        AA{{mediaType}}BB
         <UserAvatar :userid="userid" :size="36" :borderWitdh="2"/>
         <div class="player-state">
             <i v-if="!audio" class="taskfont">&#xe7c7;</i>
@@ -24,6 +25,11 @@ export default {
         },
         player: {
             type: Object,
+            default: () => ({})
+        },
+        mediaType: {
+            type: String,
+            default: ""
         },
     },
     data() {
@@ -55,12 +61,26 @@ export default {
             return !!this.player.videoTrack
         }
     },
+    watch: {
+        mediaType: {
+            handler(type) {
+                this.$nextTick(_ => {
+                    this.play(type)
+                })
+            },
+            immediate: true
+        }
+    },
     methods: {
         play(type) {
-            if (type === 'audio') {
-                this.player.audioTrack?.play();
-            } else if (type === 'video') {
-                this.player.videoTrack?.play(this.id);
+            try {
+                if (type === 'audio') {
+                    this.player.audioTrack.play();
+                } else if (type === 'video') {
+                    this.player.videoTrack.play(this.id);
+                }
+            } catch (e) {
+                console.log("Meeting Player Error", e);
             }
         }
     }
