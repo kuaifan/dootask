@@ -10,7 +10,6 @@
 </template>
 
 <script>
-
 import {mapState} from "vuex";
 
 export default {
@@ -26,15 +25,28 @@ export default {
             type: Object,
             default: () => ({})
         },
-        mediaType: {
-            type: String,
-            default: ""
+        isLocal: {
+            type: Boolean,
+            default: false
         },
     },
     data() {
         return {
-
+            timer: null
         }
+    },
+    mounted() {
+        this.timer = setInterval(_ => {
+            if (this.audio && !this.player.audioTrack.isPlaying) {
+                this.play('audio')
+            }
+            if (this.video && !this.player.videoTrack.isPlaying) {
+                this.play('video')
+            }
+        }, 3000)
+    },
+    beforeDestroy() {
+        clearInterval(this.timer)
     },
     computed: {
         ...mapState(['cacheUserBasic']),
@@ -61,26 +73,38 @@ export default {
         }
     },
     watch: {
-        mediaType: {
-            handler(type) {
-                this.$nextTick(_ => {
-                    this.play(type)
-                })
+        audio: {
+            handler(b) {
+                if (this.isLocal || !b) {
+                    return
+                }
+                this.play('audio')
+            },
+            immediate: true
+        },
+        video: {
+            handler(b) {
+                if (!b) {
+                    return
+                }
+                this.play('video')
             },
             immediate: true
         }
     },
     methods: {
         play(type) {
-            try {
-                if (type === 'audio') {
-                    this.player.audioTrack.play();
-                } else if (type === 'video') {
-                    this.player.videoTrack.play(this.id);
+            this.$nextTick(_ => {
+                try {
+                    if (type === 'audio') {
+                        this.player.audioTrack.play();
+                    } else if (type === 'video') {
+                        this.player.videoTrack.play(this.id);
+                    }
+                } catch (e) {
+                    console.log("Meeting Player Error", e);
                 }
-            } catch (e) {
-                console.log("Meeting Player Error", e);
-            }
+            })
         }
     }
 }

@@ -415,7 +415,7 @@ export default {
         onPrivacy(agree) {
             if (agree) {
                 this.privacyShow = false
-                this.inputServerUrl()
+                this.chackServerUrl().catch(_ => {});
             } else {
                 $A.eeuiAppGoDesktop()
             }
