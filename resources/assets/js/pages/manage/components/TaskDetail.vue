@@ -1267,7 +1267,7 @@ export default {
                 //
                 if ($A.isSubElectron) {
                     this.resizeDialog().then(() => {
-                        this.sendDialogMsg();
+                        this.sendDialogMsg(msgText);
                     });
                 } else {
                     this.$nextTick(() => {
@@ -1288,7 +1288,7 @@ export default {
                             }
                             this.$store.dispatch('openDialog', data.dialog_id)
                         } else {
-                            this.sendDialogMsg();
+                            this.sendDialogMsg(msgText);
                         }
                     });
                 }
@@ -1303,7 +1303,7 @@ export default {
             });
         },
 
-        sendDialogMsg() {
+        sendDialogMsg(msgText = null) {
             if (this.msgFile.length > 0) {
                 this.$refs.dialog.sendFileMsg(this.msgFile.map(file => Object.assign(file, {
                     ajaxExtraData: {
@@ -1312,6 +1312,8 @@ export default {
                 })));
             } else if (this.msgText) {
                 this.$refs.dialog.sendMsg(this.msgText);
+            } else if (typeof msgText === 'string' && msgText) {
+                this.$refs.dialog.sendMsg(msgText);
             }
             this.msgFile = [];
             this.msgText = "";
