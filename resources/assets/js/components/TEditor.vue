@@ -154,13 +154,22 @@
             this.content = this.value;
             this.init();
         },
+        beforeDestroy() {
+            if (this.editor !== null) {
+                this.editor.destroy()
+                this.editor = null
+            }
+            this.spinShow = true;
+            $A(this.$refs.myTextarea).show();
+        },
         activated() {
             this.content = this.value;
             this.init();
         },
         deactivated() {
             if (this.editor !== null) {
-                this.editor.destroy();
+                this.editor.destroy()
+                this.editor = null
             }
             this.spinShow = true;
             $A(this.$refs.myTextarea).show();
