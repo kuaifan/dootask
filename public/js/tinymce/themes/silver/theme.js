@@ -29781,6 +29781,7 @@
       };
       var makeSinkDefinition = function () {
         var isGridUiContainer = eq(body(), uiContainer) && get$c(uiContainer, 'display') === 'grid';
+        if(typeof window.modalTransferIndex==="number"){dirAttributes.styles={'z-index':(window.modalTransferIndex+100).toString()}}
         var sinkSpec = {
           dom: __assign({
             tag: 'div',
