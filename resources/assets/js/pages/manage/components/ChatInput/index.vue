@@ -1,5 +1,23 @@
 <template>
     <div class="chat-input-box" :class="boxClass" v-clickoutside="hidePopover">
+        <!-- 快速表情 -->
+        <div class="chat-input-quick-emoji">
+            <EPopover
+                ref="emojiQuickRef"
+                v-model="emojiQuickShow"
+                :visibleArrow="false"
+                transition=""
+                placement="top-end"
+                popperClass="chat-quick-emoji-popover">
+                <div slot="reference"></div>
+                <ul class="chat-quick-emoji-wrapper">
+                    <li v-for="emoji in emojiQuickItems" @click="onEmojiQuick(emoji)">
+                        <img :title="emoji.item.name" :alt="emoji.item.name" :src="emoji.item.src"/>
+                    </li>
+                </ul>
+            </EPopover>
+        </div>
+
         <div class="chat-input-wrapper" @click.stop="focus">
             <!-- 回复 -->
             <div v-if="replyData" class="chat-reply">
@@ -210,6 +228,9 @@ export default {
 
             showMore: false,
             showEmoji: false,
+            emojiQuickTimer: null,
+            emojiQuickShow: false,
+            emojiQuickItems: [],
 
             observer: null,
             wrapperWidth: 0,
@@ -432,6 +453,7 @@ export default {
             if (val) {
                 this.$emit('on-focus')
                 this.hidePopover()
+                this.updateEmojiQuick(this.value)
                 if (this.isSpecVersion) {
                     // ios11.0-11.3 对scrollTop及scrolIntoView解释有bug
                     // 直接执行会导致输入框滚到底部被遮挡
@@ -494,6 +516,17 @@ export default {
                                 handler: _ => {
                                     if (this.isEnterSend) {
                                         this.onSend();
+                                        return false;
+                                    }
+                                    return true;
+                                }
+                            },
+                            'esc': {
+                                key: 27,
+                                shiftKey: false,
+                                handler: _ => {
+                                    if (this.emojiQuickShow) {
+                                        this.emojiQuickShow = false;
                                         return false;
                                     }
                                     return true;
@@ -590,6 +623,7 @@ export default {
                 let html = this.$refs.editor.children[0].innerHTML
                 html = html.replace(/^(<p>\s*<\/p>)+|(<p>\s*<\/p>)+$/gi, '')
                 html = html.replace(/^(<p><br\/*><\/p>)+|(<p><br\/*><\/p>)+$/gi, '')
+                this.updateEmojiQuick(html)
                 this._content = html
                 this.$emit('input', this._content)
                 this.$nextTick(_ => {
@@ -660,6 +694,41 @@ export default {
                     }
                 });
             }
+        },
+
+        updateEmojiQuick(text) {
+            if (!this.isFocus) {
+                return
+            }
+            this.emojiQuickTimer && clearTimeout(this.emojiQuickTimer)
+            this.emojiQuickTimer = setTimeout(_ => {
+                text = text.replace(/<[^>]+>/g, "")
+                if (text
+                    && text.indexOf(" ") === -1
+                    && text.length >= 1
+                    && text.length <= 8
+                    && $A.isArray(window.emoticonData)) {
+                    // 显示快捷选择表情窗口
+                    this.emojiQuickItems = [];
+                    window.emoticonData.some(data => {
+                        let item = data.list.find(({name}) => $A.strExists(name, text))
+                        if (item) {
+                            this.emojiQuickItems.push({data, item})
+                            if (this.emojiQuickItems.length >= 3) {
+                                return true
+                            }
+                        }
+                    });
+                    if (this.emojiQuickItems.length > 0) {
+                        this.$nextTick(_ => {
+                            this.emojiQuickShow = true
+                            this.$refs.emojiQuickRef.updatePopper()
+                        })
+                        return
+                    }
+                }
+                this.emojiQuickShow = false
+            }, 100)
         },
 
         setText(value) {
@@ -832,6 +901,19 @@ export default {
             reader.readAsDataURL(this.recordBlob);
         },
 
+        onEmojiQuick({data, item}) {
+            const baseUrl = $A.apiUrl("../images/emoticon")
+            const emoji = {
+                asset: `images/emoticon/${data.path}/${item.path}`,
+                name: item.name,
+                src: `${baseUrl}/${data.path}/${item.path}`
+            }
+            this.$emit('input', "")
+            this.$emit('on-send', `<img class="emoticon" data-asset="${emoji.asset}" data-name="${emoji.name}" src="${emoji.src}"/>`)
+            this.emojiQuickShow = false
+            this.focus()
+        },
+
         onSelectEmoji(item) {
             if (!this.quill) {
                 return;
@@ -848,7 +930,9 @@ export default {
                 }
             } else if (item.type === 'emoticon') {
                 this.$emit('on-send', `<img class="emoticon" data-asset="${item.asset}" data-name="${item.name}" src="${item.src}"/>`)
-                // this.showEmoji = false;
+                if (this.windowLarge) {
+                    this.showEmoji = false;
+                }
             }
         },
 

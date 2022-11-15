@@ -51,6 +51,16 @@
         }
     }
 
+    .chat-input-quick-emoji {
+        position: absolute;
+        top: 4px;
+        right: 24px;
+        width: 0;
+        height: 0;
+        visibility: hidden;
+        z-index: -1;
+    }
+
     .chat-input-wrapper {
         position: relative;
         display: inline-block;
@@ -421,6 +431,27 @@
     overflow: hidden;
 }
 
+.chat-quick-emoji-popover {
+    padding: 0;
+    overflow: hidden;
+    min-width: 100px;
+}
+.chat-quick-emoji-wrapper {
+    display: flex;
+    > li {
+        width: 90px;
+        height: 90px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        > img {
+            width: 72%;
+            height: 72%;
+        }
+    }
+}
+
 .chat-input-more-popover {
     min-width: 100px;
     padding: 8px;
@@ -637,6 +668,9 @@
 
 @media (max-width: 768px) {
     .chat-input-box {
+        .chat-input-quick-emoji {
+            right: 10px;
+        }
         .chat-input-wrapper {
             padding-left: 6px;
             padding-right: 6px;
