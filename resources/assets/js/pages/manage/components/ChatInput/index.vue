@@ -31,7 +31,7 @@
                 ref="editor"
                 class="no-dark-content"
                 :style="editorStyle"
-                @click.stop=""
+                @click.stop="onClickEditor"
                 @paste="handlePaste"></div>
 
             <!-- 工具栏 -->
@@ -465,9 +465,6 @@ export default {
                         }
                     }, 200);
                 }
-                this.$nextTick(_ => {
-                    this.updateEmojiQuick(this.value)
-                })
             } else {
                 this.$emit('on-blur')
             }
@@ -699,11 +696,13 @@ export default {
         },
 
         updateEmojiQuick(text) {
-            if (!this.isFocus) {
+            if (!this.isFocus || !text) {
+                this.emojiQuickShow = false
                 return
             }
             this.emojiQuickTimer && clearTimeout(this.emojiQuickTimer)
             this.emojiQuickTimer = setTimeout(_ => {
+                text = text.replace(/&nbsp;/g," ")
                 text = text.replace(/<[^>]+>/g, "")
                 if (text
                     && text.indexOf(" ") === -1
@@ -730,7 +729,7 @@ export default {
                     }
                 }
                 this.emojiQuickShow = false
-            }, 200)
+            }, 100)
         },
 
         setText(value) {
@@ -764,6 +763,10 @@ export default {
             this.__setInputCache = setTimeout(_ => {
                 $A.setStorage("cacheDialogInput", this.$store.state.dialogInputCache);
             }, 600)
+        },
+
+        onClickEditor() {
+            this.updateEmojiQuick(this.value)
         },
 
         focus() {

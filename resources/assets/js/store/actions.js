@@ -2159,6 +2159,29 @@ export default {
         } else {
             state.dialogIns.push(data);
         }
+        // 会话消息总数量大于200时只保留最近打开的5个会话
+        const msg_max = 200
+        const retain_num = 5
+        if (state.dialogMsgs.length > msg_max) {
+            state.dialogHistory = state.dialogHistory.filter(id => id != data.dialog_id)
+            state.dialogHistory.push(data.dialog_id)
+            if (state.dialogHistory.length > retain_num) {
+                const historys = state.dialogHistory.slice().reverse()
+                const newIds = []
+                const delIds = []
+                historys.forEach(id => {
+                    if (newIds.length < retain_num || state.dialogIns.findIndex(item => item.dialog_id == id) > -1) {
+                        newIds.push(id)
+                    } else {
+                        delIds.push(id)
+                    }
+                })
+                if (delIds.length > 0) {
+                    state.dialogMsgs = state.dialogMsgs.filter(item => !delIds.includes(item.dialog_id));
+                }
+                state.dialogHistory = newIds
+            }
+        }
     },
 
     /**
