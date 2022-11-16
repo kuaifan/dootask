@@ -27,6 +27,7 @@ class PushTask extends AbstractTask
      */
     public function __construct($params = [],  $retryOffline = true)
     {
+        parent::__construct(...func_get_args());
         $this->params = $params;
         $this->retryOffline = $retryOffline;
     }

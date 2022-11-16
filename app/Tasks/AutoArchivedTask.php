@@ -18,7 +18,7 @@ class AutoArchivedTask extends AbstractTask
 
     public function __construct()
     {
-        //
+        parent::__construct();
     }
 
     public function start()

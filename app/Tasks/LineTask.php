@@ -25,6 +25,7 @@ class LineTask extends AbstractTask
      */
     public function __construct($userid, bool $online)
     {
+        parent::__construct(...func_get_args());
         $this->userid = $userid;
         $this->online = $online;
     }

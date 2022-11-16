@@ -20,6 +20,7 @@ class PushUmengMsg extends AbstractTask
      */
     public function __construct($userid, $array = [])
     {
+        parent::__construct(...func_get_args());
         $this->userid = $userid;
         $this->array = is_array($array) ? $array : [];
     }

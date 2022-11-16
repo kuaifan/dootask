@@ -2,6 +2,7 @@
 
 namespace App\Tasks;
 
+use App\Models\TaskWorker;
 use App\Models\Tmp;
 use App\Models\WebSocketTmpMsg;
 use Carbon\Carbon;
@@ -18,6 +19,7 @@ class DeleteTmpTask extends AbstractTask
 
     public function __construct(string $data, int $hours)
     {
+        parent::__construct(...func_get_args());
         $this->data = $data;
         $this->hours = $hours;
     }
@@ -52,6 +54,18 @@ class DeleteTmpTask extends AbstractTask
                                 $tmp->delete();
                             }
                         });
+                }
+                break;
+
+            /**
+             * 表pre_task_worker
+             */
+            case 'tw':
+                {
+                    TaskWorker::onlyTrashed()
+                        ->where('deleted_at', '<', Carbon::now()->subHours($this->hours)->toDateTimeString())
+                        ->orderBy('id')
+                        ->forceDelete();
                 }
                 break;
         }

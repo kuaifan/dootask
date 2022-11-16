@@ -34,6 +34,7 @@ class WebSocketDialogMsgTask extends AbstractTask
      */
     public function __construct($id, $ignoreFd = null)
     {
+        parent::__construct(...func_get_args());
         $this->id = $id;
         $this->ignoreFd = $ignoreFd === null ? Request::header('fd') : $ignoreFd;
     }

@@ -185,6 +185,7 @@ class IndexController extends InvokeController
         Task::deliver(new AppPushTask());
         // 删除过期的临时表数据
         Task::deliver(new DeleteTmpTask('wg_tmp_msgs', 1));
+        Task::deliver(new DeleteTmpTask('task_worker', 12));
         Task::deliver(new DeleteTmpTask('tmp', 24));
         // 周期任务
         Task::deliver(new LoopTask());

@@ -28,6 +28,7 @@ class IhttpTask extends AbstractTask
      */
     public function __construct($url, $post = [], $extra = [])
     {
+        parent::__construct(...func_get_args());
         $this->url = $url;
         $this->post = $post;
         $this->extra = $extra;
