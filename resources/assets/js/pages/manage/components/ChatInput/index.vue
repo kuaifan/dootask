@@ -453,7 +453,6 @@ export default {
             if (val) {
                 this.$emit('on-focus')
                 this.hidePopover()
-                this.updateEmojiQuick(this.value)
                 if (this.isSpecVersion) {
                     // ios11.0-11.3 对scrollTop及scrolIntoView解释有bug
                     // 直接执行会导致输入框滚到底部被遮挡
@@ -466,6 +465,9 @@ export default {
                         }
                     }, 200);
                 }
+                this.$nextTick(_ => {
+                    this.updateEmojiQuick(this.value)
+                })
             } else {
                 this.$emit('on-blur')
             }
@@ -728,7 +730,7 @@ export default {
                     }
                 }
                 this.emojiQuickShow = false
-            }, 100)
+            }, 200)
         },
 
         setText(value) {
