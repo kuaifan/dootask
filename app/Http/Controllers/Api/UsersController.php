@@ -8,6 +8,7 @@ use App\Models\Project;
 use App\Models\UmengAlias;
 use App\Models\User;
 use App\Models\UserDelete;
+use App\Models\UserDepartment;
 use App\Models\UserEmailVerification;
 use App\Models\UserTransfer;
 use App\Models\WebSocket;
@@ -1110,5 +1111,124 @@ class UsersController extends AbstractController
             }
         }
         return Base::retSuccess('success', $user);
+    }
+
+    /**
+     * @api {get} api/users/department/list          20. 部门列表（限管理员）
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName department__list
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function department__list()
+    {
+        User::auth('admin');
+        //
+        return Base::retSuccess('success', UserDepartment::orderBy('id')->get());
+    }
+
+    /**
+     * @api {get} api/users/department/add          21. 新建、修改部门（限管理员）
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName department__add
+     *
+     * @apiParam {Number} [id]             部门id，留空为创建部门
+     * @apiParam {String} name             部门名称
+     * @apiParam {Number} [parent_id]      上级部门ID
+     * @apiParam {Number} owner_userid     部门负责人ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function department__add()
+    {
+        User::auth('admin');
+        //
+        $id = intval(Request::input('id'));
+        $name = trim(Request::input('name'));
+        $parent_id = intval(Request::input('parent_id'));
+        $owner_userid = intval(Request::input('owner_userid'));
+        //
+        if (mb_strlen($name) < 2 || mb_strlen($name) > 20) {
+            return Base::retError('部门名称长度限制2-20个字');
+        }
+        //
+        if ($id > 0) {
+            $userDepartment = UserDepartment::find($id);
+            if (empty($userDepartment)) {
+                return Base::retError('部门不存在或已被删除');
+            }
+        } else {
+            if (UserDepartment::count() > 200) {
+                return Base::retError('最多只能创建200个部门');
+            }
+            $userDepartment = UserDepartment::createInstance();
+        }
+        //
+        if ($parent_id > 0) {
+            $parentDepartment = UserDepartment::find($parent_id);
+            if (empty($parentDepartment)) {
+                return Base::retError('上级部门不存在或已被删除');
+            }
+            if ($parentDepartment->parent_id > 0) {
+                return Base::retError('上级部门层级错误');
+            }
+            if (UserDepartment::whereParentId($parent_id)->count() > 20) {
+                return Base::retError('每个部门最多只能创建20个子部门');
+            }
+            if ($id > 0 && UserDepartment::whereParentId($id)->exists()) {
+                return Base::retError('含有子部门无法修改上级部门');
+            }
+        }
+        if (empty($owner_userid) || !User::whereUserid($owner_userid)->exists()) {
+            return Base::retError('请选择正确的部门负责人');
+        }
+        //
+        $userDepartment->updateInstance([
+            'name' => $name,
+            'parent_id' => $parent_id,
+            'owner_userid' => $owner_userid,
+        ]);
+        $userDepartment->saveDepartment();
+        //
+        return Base::retSuccess($parent_id > 0 ? '保存成功' : '新建成功');
+    }
+
+    /**
+     * @api {get} api/users/department/del          22. 删除部门（限管理员）
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName department__del
+     *
+     * @apiParam {Number} id             部门id
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function department__del()
+    {
+        User::auth('admin');
+        //
+        $id = intval(Request::input('id'));
+        //
+        $userDepartment = UserDepartment::find($id);
+        if (empty($userDepartment)) {
+            return Base::retError('部门不存在或已被删除');
+        }
+        $userDepartment->deleteDepartment();
+        //
+        return Base::retSuccess('删除成功');
     }
 }

@@ -325,7 +325,7 @@
         <DrawerOverlay
             v-model="allUserShow"
             placement="right"
-            :size="1200">
+            :size="1380">
             <TeamManagement v-if="allUserShow"/>
         </DrawerOverlay>
 

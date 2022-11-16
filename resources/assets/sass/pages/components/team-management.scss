@@ -31,6 +31,77 @@
         }
     }
 
+    .management-box {
+        flex: 1;
+        display: flex;
+        height: 0;
+        .management-department {
+            width: 239px;
+            border-right: 1px solid #efefef;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            > ul {
+                flex: 1;
+                overflow: auto;
+                > li {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
+                    height: 40px;
+                    display: flex;
+                    align-items: center;
+                    cursor: pointer;
+                    &:hover,
+                    &.active {
+                        background-color: #ecf5ff;
+                    }
+                    &.level-1 {
+                        font-weight: 500;
+                    }
+                    &.level-2 {
+                        margin-left: 24px;
+                    }
+                    &.level-3 {
+                        margin-left: 48px;
+                    }
+                    &.level-4 {
+                        margin-left: 72px;
+                    }
+                    .department-icon {
+                        padding: 8px;
+                        font-size: 16px;
+                    }
+                    .department-title {
+                        flex: 1;
+                        flex-shrink: 0;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                    }
+                    .department-menu {
+                        display: inline-block;
+                        padding: 12px;
+                        font-size: 16px;
+                        transform: rotate(-90deg);
+                    }
+                }
+            }
+            .department-buttons {
+                margin-top: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+        .management-user {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding-left: 20px;
+        }
+    }
+
     .team-email {
         display: flex;
         align-items: center;

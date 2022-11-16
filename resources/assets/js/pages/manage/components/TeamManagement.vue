@@ -6,87 +6,162 @@
                 <Loading v-if="loadIng > 0"/>
             </div>
         </div>
-        <div class="search-container lr">
-            <ul>
-                <li>
-                    <div class="search-label">
-                        {{$L("关键词")}}
-                    </div>
-                    <div class="search-content">
-                        <Input v-model="keys.key" :placeholder="$L('邮箱、昵称、职位')" clearable/>
-                    </div>
-                </li>
-                <li>
-                    <div class="search-label">
-                        {{$L("身份")}}
-                    </div>
-                    <div class="search-content">
-                        <Select v-model="keys.identity" :placeholder="$L('全部')">
-                            <Option value="">{{$L('全部')}}</Option>
-                            <Option value="admin">{{$L('管理员')}}</Option>
-                            <Option value="noadmin">{{$L('非管理员')}}</Option>
-                        </Select>
-                    </div>
-                </li>
-                <li>
-                    <div class="search-label">
-                        {{$L("在职状态")}}
-                    </div>
-                    <div class="search-content">
-                        <Select v-model="keys.disable" :placeholder="$L('在职')">
-                            <Option value="">{{$L('在职')}}</Option>
-                            <Option value="yes">{{$L('离职')}}</Option>
-                            <Option value="all">{{$L('全部')}}</Option>
-                        </Select>
-                    </div>
-                </li>
-                <li>
-                    <div class="search-label">
-                        {{$L("邮箱认证")}}
-                    </div>
-                    <div class="search-content">
-                        <Select v-model="keys.email_verity" :placeholder="$L('全部')">
-                            <Option value="">{{$L('全部')}}</Option>
-                            <Option value="yes">{{$L('已邮箱认证')}}</Option>
-                            <Option value="no">{{$L('未邮箱认证')}}</Option>
-                        </Select>
-                    </div>
-                </li>
-                <li class="search-button">
-                    <Tooltip
-                        theme="light"
-                        placement="bottom"
-                        transfer-class-name="search-button-clear"
-                        transfer>
-                        <Button :loading="loadIng > 0" type="primary" icon="ios-search" @click="onSearch">{{$L('搜索')}}</Button>
-                        <div slot="content">
-                            <Button v-if="keyIs" type="text" @click="keyIs=false">{{$L('取消筛选')}}</Button>
-                            <Button v-else :loading="loadIng > 0" type="text" @click="getLists">{{$L('刷新')}}</Button>
-                        </div>
-                    </Tooltip>
-                </li>
-            </ul>
+        <div class="management-box">
+            <div class="management-department">
+                <ul>
+                    <li class="level-1">
+                        <i class="taskfont department-icon">&#xe766;</i>
+                        <div class="department-title">{{$L('默认部门')}}</div>
+                        <EDropdown
+                            size="medium"
+                            trigger="click"
+                            @command="onOpDepartment">
+                            <i class="taskfont department-menu">&#xe6e9;</i>
+                            <EDropdownMenu slot="dropdown">
+                                <EDropdownItem command="add_0">
+                                    <div>{{$L('添加子部门')}}</div>
+                                </EDropdownItem>
+                            </EDropdownMenu>
+                        </EDropdown>
+                    </li>
+                    <li v-for="item in departmentList" :key="item.id" :class="`level-${item.level}`">
+                        <UserAvatar :userid="item.owner_userid" :size="20" class="department-icon">
+                            <p><strong>{{$L('部门负责人')}}</strong></p>
+                        </UserAvatar>
+                        <div class="department-title">{{item.name}}</div>
+                        <EDropdown
+                            size="medium"
+                            trigger="click"
+                            @command="onOpDepartment">
+                            <i class="taskfont department-menu">&#xe6e9;</i>
+                            <EDropdownMenu slot="dropdown">
+                                <EDropdownItem v-if="item.level <= 2" :command="`add_${item.id}`">
+                                    <div>{{$L('添加子部门')}}</div>
+                                </EDropdownItem>
+                                <EDropdownItem :command="`edit_${item.id}`">
+                                    <div>{{$L('编辑')}}</div>
+                                </EDropdownItem>
+                                <EDropdownItem :command="`del_${item.id}`">
+                                    <div style="color:#f00">{{$L('删除')}}</div>
+                                </EDropdownItem>
+                            </EDropdownMenu>
+                        </EDropdown>
+                    </li>
+                </ul>
+                <div class="department-buttons">
+                    <Button type="primary" icon="md-add" @click="onShowDepartment(null)">{{$L('新建部门')}}</Button>
+                </div>
+            </div>
+            <div class="management-user">
+                <div class="search-container lr">
+                    <ul>
+                        <li>
+                            <div class="search-label">
+                                {{$L("关键词")}}
+                            </div>
+                            <div class="search-content">
+                                <Input v-model="keys.key" :placeholder="$L('邮箱、昵称、职位')" clearable/>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="search-label">
+                                {{$L("身份")}}
+                            </div>
+                            <div class="search-content">
+                                <Select v-model="keys.identity" :placeholder="$L('全部')">
+                                    <Option value="">{{$L('全部')}}</Option>
+                                    <Option value="admin">{{$L('管理员')}}</Option>
+                                    <Option value="noadmin">{{$L('非管理员')}}</Option>
+                                </Select>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="search-label">
+                                {{$L("在职状态")}}
+                            </div>
+                            <div class="search-content">
+                                <Select v-model="keys.disable" :placeholder="$L('在职')">
+                                    <Option value="">{{$L('在职')}}</Option>
+                                    <Option value="yes">{{$L('离职')}}</Option>
+                                    <Option value="all">{{$L('全部')}}</Option>
+                                </Select>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="search-label">
+                                {{$L("邮箱认证")}}
+                            </div>
+                            <div class="search-content">
+                                <Select v-model="keys.email_verity" :placeholder="$L('全部')">
+                                    <Option value="">{{$L('全部')}}</Option>
+                                    <Option value="yes">{{$L('已邮箱认证')}}</Option>
+                                    <Option value="no">{{$L('未邮箱认证')}}</Option>
+                                </Select>
+                            </div>
+                        </li>
+                        <li class="search-button">
+                            <Tooltip
+                                theme="light"
+                                placement="bottom"
+                                transfer-class-name="search-button-clear"
+                                transfer>
+                                <Button :loading="loadIng > 0" type="primary" icon="ios-search" @click="onSearch">{{$L('搜索')}}</Button>
+                                <div slot="content">
+                                    <Button v-if="keyIs" type="text" @click="keyIs=false">{{$L('取消筛选')}}</Button>
+                                    <Button v-else :loading="loadIng > 0" type="text" @click="getLists">{{$L('刷新')}}</Button>
+                                </div>
+                            </Tooltip>
+                        </li>
+                    </ul>
+                </div>
+                <div class="table-page-box">
+                    <Table
+                        :columns="columns"
+                        :data="list"
+                        :loading="loadIng > 0"
+                        :no-data-text="$L(noText)"
+                        stripe/>
+                    <Page
+                        :total="total"
+                        :current="page"
+                        :page-size="pageSize"
+                        :disabled="loadIng > 0"
+                        :simple="windowSmall"
+                        :page-size-opts="[10,20,30,50,100]"
+                        show-elevator
+                        show-sizer
+                        show-total
+                        @on-change="setPage"
+                        @on-page-size-change="setPageSize"/>
+                </div>
+            </div>
         </div>
-        <div class="table-page-box">
-            <Table
-                :columns="columns"
-                :data="list"
-                :loading="loadIng > 0"
-                :no-data-text="$L(noText)"
-                stripe/>
-            <Page
-                :total="total"
-                :current="page"
-                :page-size="pageSize"
-                :disabled="loadIng > 0"
-                :simple="windowSmall"
-                :page-size-opts="[10,20,30,50,100]"
-                show-elevator
-                show-sizer
-                show-total
-                @on-change="setPage"
-                @on-page-size-change="setPageSize"/>
-        </div>
+
+        <!--新建部门、修改部门-->
+        <Modal
+            v-model="departmentShow"
+            :title="$L(departmentData.id > 0 ? '修改部门' : '新建部门')"
+            :mask-closable="false">
+            <Form ref="addProject" :model="departmentData" label-width="auto" @submit.native.prevent>
+                <FormItem prop="name" :label="$L('部门名称')">
+                    <Input type="text" v-model="departmentData.name" :placeholder="$L('请输入部门名称')"></Input>
+                </FormItem>
+                <FormItem prop="parent_id" :label="$L('上级部门')">
+                    <Select v-model="departmentData.parent_id" :disabled="departmentParentDisabled" :placeholder="$L('请选择上级部门')">
+                        <Option :value="0">{{ $L('默认部门') }}</Option>
+                        <Option v-for="(item, index) in departmentList" v-if="item.parent_id == 0 && item.id != departmentData.id" :value="item.id" :key="index" :label="item.name">&nbsp;&nbsp;&nbsp;&nbsp;{{ item.name }}</Option>
+                    </Select>
+                    <div v-if="departmentParentDisabled" class="form-tip" style="margin-bottom:-16px">{{$L('含有子部门无法修改上级部门')}}</div>
+                </FormItem>
+                <FormItem prop="owner_userid" :label="$L('部门负责人')">
+                    <UserInput v-model="departmentData.owner_userid" :multiple-max="1" :placeholder="$L('请选择部门负责人')"/>
+                </FormItem>
+            </Form>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="departmentShow=false">{{$L('取消')}}</Button>
+                <Button type="primary" :loading="departmentLoading > 0" @click="onSaveDepartment">{{$L(departmentData.id > 0 ? '保存' : '新建')}}</Button>
+            </div>
+        </Modal>
 
         <!--操作离职-->
         <Modal
@@ -128,7 +203,6 @@
 </template>
 
 <script>
-import {mapState} from "vuex";
 import UserInput from "../../../components/UserInput";
 
 export default {
@@ -152,10 +226,21 @@ export default {
             disableShow: false,
             disableLoading: 0,
             disableData: {},
+
+            departmentShow: false,
+            departmentLoading: 0,
+            departmentData: {
+                id: 0,
+                name: '',
+                parent_id: 0,
+                owner_userid: []
+            },
+            departmentList: [],
         }
     },
     mounted() {
         this.getLists();
+        this.getDepartmentLists();
     },
     watch: {
         keyIs(v) {
@@ -164,6 +249,11 @@ export default {
                 this.setPage(1)
             }
         }
+    },
+    computed: {
+        departmentParentDisabled() {
+            return !!(this.departmentData.id > 0 && this.departmentList.find(({parent_id}) => parent_id == this.departmentData.id));
+        },
     },
     methods: {
         initLanguage() {
@@ -541,6 +631,95 @@ export default {
                     }
                 })
             })
+        },
+
+        getDepartmentLists() {
+            this.departmentLoading++;
+            this.$store.dispatch("call", {
+                url: 'users/department/list',
+            }).then(({data}) => {
+                this.departmentList = []
+                this.generateDepartmentList(data, 0, 1)
+            }).finally(_ => {
+                this.departmentLoading--;
+            })
+        },
+
+        generateDepartmentList(data, parent_id, level) {
+            data.some(item => {
+                if (item.parent_id == parent_id) {
+                    this.departmentList.push(Object.assign(item, {
+                        level: level + 1
+                    }))
+                    this.generateDepartmentList(data, item.id, level + 1)
+                }
+            })
+        },
+
+        onShowDepartment(data) {
+            this.departmentData = Object.assign({
+                id: 0,
+                name: '',
+                parent_id: 0,
+                owner_userid: []
+            }, data || {})
+            this.departmentShow = true
+        },
+
+        onSaveDepartment() {
+            this.departmentLoading++;
+            this.$store.dispatch("call", {
+                url: 'users/department/add',
+                data: Object.assign(this.departmentData, {
+                    owner_userid: this.departmentData.owner_userid[0],
+                }),
+            }).then(({msg}) => {
+                $A.messageSuccess(msg)
+                this.getDepartmentLists()
+                this.departmentShow = false
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            }).finally(_ => {
+                this.departmentLoading--;
+            })
+        },
+
+        onOpDepartment(val) {
+            if ($A.leftExists(val, 'add_')) {
+                this.onShowDepartment({
+                    parent_id: parseInt(val.substr(4))
+                })
+            } else if ($A.leftExists(val, 'edit_')) {
+                const editItem = this.departmentList.find(({id}) => id === parseInt(val.substr(5)))
+                if (editItem) {
+                    this.onShowDepartment(editItem)
+                }
+            } else if ($A.leftExists(val, 'del_')) {
+                const delItem = this.departmentList.find(({id}) => id === parseInt(val.substr(4)))
+                if (delItem) {
+                    $A.modalConfirm({
+                        title: this.$L('删除部门'),
+                        content: `<div>${this.$L(`你确定要删除【${delItem.name}】部门吗？`)}</div><div style="color:#f00;font-weight:600">${this.$L(`注意：此操作不可恢复，部门下的成员将向上移动。`)}</div>`,
+                        language: false,
+                        loading: true,
+                        onOk: () => {
+                            return new Promise((resolve, reject) => {
+                                this.$store.dispatch("call", {
+                                    url: 'users/department/del',
+                                    data: {
+                                        id: delItem.id
+                                    },
+                                }).then(({msg}) => {
+                                    resolve(msg);
+                                    this.getDepartmentLists();
+                                }).catch(({msg}) => {
+                                    reject(msg);
+                                })
+                            })
+                        }
+                    });
+                }
+            }
         }
     }
 }
