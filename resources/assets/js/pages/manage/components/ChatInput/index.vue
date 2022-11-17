@@ -696,6 +696,7 @@ export default {
         },
 
         updateEmojiQuick(text) {
+            this.emojiSearchKey = "";
             if (!this.isFocus || !text) {
                 this.emojiQuickShow = false
                 return
@@ -709,13 +710,15 @@ export default {
                     && text.length >= 1
                     && text.length <= 8
                     && $A.isArray(window.emoticonData)) {
+                    // 搜索在线表情
+                    this.searchEmoji(text);
                     // 显示快捷选择表情窗口
                     this.emojiQuickItems = [];
                     window.emoticonData.some(data => {
                         let item = data.list.find(({name}) => $A.strExists(name, text))
                         if (item) {
                             this.emojiQuickItems.push({data, item})
-                            if (this.emojiQuickItems.length >= 3) {
+                            if (this.emojiQuickItems.length >= 2) {
                                 return true
                             }
                         }
@@ -730,6 +733,70 @@ export default {
                 }
                 this.emojiQuickShow = false
             }, 100)
+        },
+
+        searchEmoji(text) {
+            this.emojiSearchKey = text;
+            this.emojiSearchTimer && clearTimeout(this.emojiSearchTimer);
+            this.emojiSearchTimer = setTimeout(_ => {
+                if (this.emojiSearchKey !== text) {
+                    return;
+                }
+                this.$store.dispatch("call", {
+                    url: '../emo/search',
+                    data: {
+                        key: text,
+                    }
+                }).then(({data}) => {
+                    if (this.emojiSearchKey !== text) {
+                        return;
+                    }
+                    let maxNum = 3;
+                    if (this.windowWidth > 1000) maxNum = 5;
+                    else if (this.windowWidth > 900) maxNum = 4;
+                    const array = this.getRandomArrayElements(data.map(item => {
+                        return {
+                            data: {},
+                            item: {
+                                type: "online",
+                                name: this.$L("动画表情"),
+                                src: this.asciiConvertNative(item)
+                            }
+                        }
+                    }), maxNum - this.emojiQuickItems.length)
+                    if (array.length > 0) {
+                        this.emojiQuickItems.push(...array)
+                        this.$nextTick(_ => {
+                            this.emojiQuickShow = true
+                            this.$refs.emojiQuickRef.updatePopper()
+                        })
+                    }
+                });
+            }, 800)
+        },
+
+        asciiConvertNative(val) {
+            let asciicode = val.split("\\u");
+            let nativeValue = asciicode[0];
+            for (let i = 1; i < asciicode.length; i++) {
+                let code = asciicode[i];
+                nativeValue += String.fromCharCode(parseInt("0x" + code.substring(0, 4)));
+                if (code.length > 4) {
+                    nativeValue += code.substring(4, code.length);
+                }
+            }
+            return nativeValue
+        },
+
+        getRandomArrayElements(arr, count) {
+            let shuffled = arr.slice(0), i = arr.length, min = i - count, temp, index;
+            while (i-- > min) {
+                index = Math.floor((i + 1) * Math.random());
+                temp = shuffled[index];
+                shuffled[index] = shuffled[i];
+                shuffled[i] = temp;
+            }
+            return shuffled.slice(min);
         },
 
         setText(value) {
@@ -907,14 +974,19 @@ export default {
         },
 
         onEmojiQuick({data, item}) {
-            const baseUrl = $A.apiUrl("../images/emoticon")
-            const emoji = {
-                asset: `images/emoticon/${data.path}/${item.path}`,
-                name: item.name,
-                src: `${baseUrl}/${data.path}/${item.path}`
+            if (item.type === 'online') {
+                this.$emit('input', "")
+                this.$emit('on-send', `<img src="${item.src}"/>`)
+            } else {
+                const baseUrl = $A.apiUrl("../images/emoticon")
+                const emoji = {
+                    asset: `images/emoticon/${data.path}/${item.path}`,
+                    name: item.name,
+                    src: `${baseUrl}/${data.path}/${item.path}`
+                }
+                this.$emit('input', "")
+                this.$emit('on-send', `<img class="emoticon" data-asset="${emoji.asset}" data-name="${emoji.name}" src="${emoji.src}"/>`)
             }
-            this.$emit('input', "")
-            this.$emit('on-send', `<img class="emoticon" data-asset="${emoji.asset}" data-name="${emoji.name}" src="${emoji.src}"/>`)
             this.emojiQuickShow = false
             this.focus()
         },
