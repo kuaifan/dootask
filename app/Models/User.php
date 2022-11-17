@@ -13,6 +13,7 @@ use Carbon\Carbon;
  *
  * @property int $userid
  * @property array $identity 身份
+ * @property array $department 所属部门
  * @property string|null $az A-Z
  * @property string|null $pinyin 拼音（主要用于搜索）
  * @property string|null $email 邮箱
@@ -42,6 +43,7 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereChangepass($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereCreatedIp($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereDepartment($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereDisableAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereEmail($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereEmailVerity($value)
@@ -126,6 +128,19 @@ class User extends AbstractModel
      * @return array
      */
     public function getIdentityAttribute($value)
+    {
+        if (empty($value)) {
+            return [];
+        }
+        return array_filter(is_array($value) ? $value : explode(",", trim($value, ",")));
+    }
+
+    /**
+     * 部门
+     * @param $value
+     * @return array
+     */
+    public function getDepartmentAttribute($value)
     {
         if (empty($value)) {
             return [];

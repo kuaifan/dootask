@@ -502,6 +502,7 @@ class UsersController extends AbstractController
      *   - yes:     已认证
      *   - no:      未认证
      *   - 其他值:   全部（默认）
+     * - keys.department        部门ID（0表示默认部门，不赋值获取所有部门）
      *
      * @apiParam {Number} [page]        当前页，默认:1
      * @apiParam {Number} [pagesize]    每页显示数量，默认:20，最大:50
@@ -560,6 +561,15 @@ class UsersController extends AbstractController
             } elseif ($keys['email_verity'] === 'no') {
                 $builder->whereEmailVerity(0);
             }
+            if (isset($keys['department'])) {
+                if ($keys['department'] == '0') {
+                    $builder->where(function($query) {
+                        $query->where("department", "")->orWhere("department", ",,");
+                    });
+                } else {
+                    $builder->where("department", "like", "%,{$keys['department']},%");
+                }
+            }
         } else {
             $builder->whereNull('disable_at');
         }
@@ -580,6 +590,7 @@ class UsersController extends AbstractController
      * @apiParam {String} [type]                操作
      * - setadmin             设为管理员
      * - clearadmin           取消管理员
+     * - department           修改部门（需要参数 department）
      * - setdisable           设为离职（需要参数 disable_time、transfer_userid）
      * - cleardisable         取消离职
      * - delete               删除会员（需要参数 delete_reason）
@@ -588,6 +599,7 @@ class UsersController extends AbstractController
      * @apiParam {String} [password]            新的密码
      * @apiParam {String} [nickname]            昵称
      * @apiParam {String} [profession]          职位
+     * @apiParam {String} [department]          部门
      * @apiParam {String} [disable_time]        离职时间
      * @apiParam {String} [transfer_userid]     离职交接人
      * @apiParam {String} [delete_reason]       删除原因
@@ -620,6 +632,18 @@ class UsersController extends AbstractController
 
             case 'clearadmin':
                 $upArray['identity'] = array_diff($userInfo->identity, ['admin']);
+                break;
+
+            case 'department':
+                if (!is_array($data['department'])) {
+                    $data['department'] = [];
+                }
+                foreach ($data['department'] as $id) {
+                    if (!UserDepartment::whereId($id)->exists()) {
+                        return Base::retError('修改部门不存在');
+                    }
+                }
+                $upArray['department'] = $data['department'];
                 break;
 
             case 'setdisable':
@@ -659,6 +683,9 @@ class UsersController extends AbstractController
         }
         if (isset($upArray['identity'])) {
             $upArray['identity'] = "," . implode(",", $upArray['identity']) . ",";
+        }
+        if (isset($upArray['department'])) {
+            $upArray['department'] = "," . implode(",", $upArray['department']) . ",";
         }
         // 邮箱
         if (Arr::exists($data, 'email')) {
@@ -710,9 +737,29 @@ class UsersController extends AbstractController
         }
         if ($upArray) {
             AbstractModel::transaction(function() use ($user, $type, $upArray, $userInfo, $transferUser) {
+                $exitIds = array_diff($userInfo->department, Base::explodeInt($upArray['department']));
+                $joinIds = array_diff(Base::explodeInt($upArray['department']), $userInfo->department);
                 $userInfo->updateInstance($upArray);
                 $userInfo->save();
-                if ($type === 'setdisable') {
+                if ($type === 'department') {
+                    $userids = [$userInfo->userid];
+                    // 退出群组
+                    $exitDepartments = UserDepartment::whereIn('id', $exitIds)->get();
+                    foreach ($exitDepartments as $exitDepartment) {
+                        if ($exitDepartment->dialog_id > 0 && $exitDialog = WebSocketDialog::find($exitDepartment->dialog_id)) {
+                            $exitDialog->exitGroup($userids, 'remove', false);
+                            $exitDialog->pushMsg("groupExit", null, $userids);
+                        }
+                    }
+                    // 加入群组
+                    $joinDepartments = UserDepartment::whereIn('id', $joinIds)->get();
+                    foreach ($joinDepartments as $joinDepartment) {
+                        if ($joinDepartment->dialog_id > 0 && $joinDialog = WebSocketDialog::find($joinDepartment->dialog_id)) {
+                            $joinDialog->joinGroup($userids, 0, true);
+                            $joinDialog->pushMsg("groupJoin", null, $userids);
+                        }
+                    }
+                } elseif ($type === 'setdisable') {
                     $userTransfer = UserTransfer::createInstance([
                         'original_userid' => $userInfo->userid,
                         'new_userid' => $transferUser->userid,
@@ -1193,12 +1240,11 @@ class UsersController extends AbstractController
             return Base::retError('请选择正确的部门负责人');
         }
         //
-        $userDepartment->updateInstance([
+        $userDepartment->saveDepartment([
             'name' => $name,
             'parent_id' => $parent_id,
             'owner_userid' => $owner_userid,
         ]);
-        $userDepartment->saveDepartment();
         //
         return Base::retSuccess($parent_id > 0 ? '保存成功' : '新建成功');
     }

@@ -144,11 +144,12 @@ class WebSocketDialog extends AbstractModel
      * 加入聊天室
      * @param int|array $userid     加入的会员ID或会员ID组
      * @param int $inviter          邀请人
+     * @param bool $important       重要人员
      * @return bool
      */
-    public function joinGroup($userid, $inviter)
+    public function joinGroup($userid, $inviter, $important = false)
     {
-        AbstractModel::transaction(function () use ($inviter, $userid) {
+        AbstractModel::transaction(function () use ($important, $inviter, $userid) {
             foreach (is_array($userid) ? $userid : [$userid] as $value) {
                 if ($value > 0) {
                     WebSocketDialogUser::updateInsert([
@@ -156,6 +157,7 @@ class WebSocketDialog extends AbstractModel
                         'userid' => $value,
                     ], [
                         'inviter' => $inviter,
+                        'important' => $important ? 1 : 0,
                     ]);
                     WebSocketDialogMsg::sendMsg(null, $this->id, 'notice', [
                         'notice' => User::userid2nickname($value) . " 已加入群组"
@@ -198,7 +200,7 @@ class WebSocketDialog extends AbstractModel
                             throw new ApiException('群主不可' . $typeDesc);
                         }
                         if ($item->important) {
-                            throw new ApiException('项目人员或任务人员不可' . $typeDesc);
+                            throw new ApiException('部门成员、项目人员或任务人员不可' . $typeDesc);
                         }
                     }
                     //
@@ -396,7 +398,7 @@ class WebSocketDialog extends AbstractModel
                 'name' => $name ?: '',
                 'group_type' => $group_type,
                 'owner_id' => $owner_id,
-                'last_at' => in_array($group_type, ['user', 'all']) ? Carbon::now() : null,
+                'last_at' => in_array($group_type, ['user', 'department', 'all']) ? Carbon::now() : null,
             ]);
             $dialog->save();
             foreach (is_array($userid) ? $userid : [$userid] as $value) {

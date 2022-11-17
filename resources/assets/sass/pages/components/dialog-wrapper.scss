@@ -128,6 +128,10 @@
                         background-color: #61B2F9;
                         color: #ffffff;
 
+                        &.department {
+                            background-color: #5BC7B0;
+                        }
+
                         &.project {
                             background-color: #6E99EB;
                         }
@@ -159,6 +163,10 @@
 
                             &.ivu-tag-success {
                                 padding: 0 6px;
+                            }
+
+                            &.after {
+                                margin: 0 0 0 6px;
                             }
                         }
 
@@ -1420,6 +1428,9 @@
                 font-size: 18px;
                 background-color: #61B2F9;
                 color: #ffffff;
+                &.department {
+                    background-color: #5BC7B0;
+                }
                 &.project {
                     background-color: #6E99EB;
                 }

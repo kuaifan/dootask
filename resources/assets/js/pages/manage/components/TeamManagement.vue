@@ -9,14 +9,14 @@
         <div class="management-box">
             <div class="management-department">
                 <ul>
-                    <li class="level-1">
+                    <li :class="[`level-1`, departmentSelect === 0 ? 'active' : '']" @click="onSelectDepartment(0)">
                         <i class="taskfont department-icon">&#xe766;</i>
                         <div class="department-title">{{$L('默认部门')}}</div>
                         <EDropdown
                             size="medium"
                             trigger="click"
                             @command="onOpDepartment">
-                            <i class="taskfont department-menu">&#xe6e9;</i>
+                            <i @click.stop="" class="taskfont department-menu">&#xe6e9;</i>
                             <EDropdownMenu slot="dropdown">
                                 <EDropdownItem command="add_0">
                                     <div>{{$L('添加子部门')}}</div>
@@ -24,7 +24,11 @@
                             </EDropdownMenu>
                         </EDropdown>
                     </li>
-                    <li v-for="item in departmentList" :key="item.id" :class="`level-${item.level}`">
+                    <li
+                        v-for="item in departmentList"
+                        :key="item.id"
+                        :class="[`level-${item.level}`, departmentSelect === item.id ? 'active' : '']"
+                        @click="onSelectDepartment(item.id)">
                         <UserAvatar :userid="item.owner_userid" :size="20" class="department-icon">
                             <p><strong>{{$L('部门负责人')}}</strong></p>
                         </UserAvatar>
@@ -33,7 +37,7 @@
                             size="medium"
                             trigger="click"
                             @command="onOpDepartment">
-                            <i class="taskfont department-menu">&#xe6e9;</i>
+                            <i @click.stop="" class="taskfont department-menu">&#xe6e9;</i>
                             <EDropdownMenu slot="dropdown">
                                 <EDropdownItem v-if="item.level <= 2" :command="`add_${item.id}`">
                                     <div>{{$L('添加子部门')}}</div>
@@ -163,10 +167,30 @@
             </div>
         </Modal>
 
+        <!--修改部门-->
+        <Modal
+            v-model="departmentEditShow"
+            :title="$L('修改部门')">
+            <Form :model="departmentEditData" label-width="auto" @submit.native.prevent>
+                <Alert type="error" style="margin-bottom:18px">{{$L(`正在进行帐号【ID:${departmentEditData.userid}，${departmentEditData.nickname}】部门修改。`)}}</Alert>
+                <FormItem :label="$L('原部门')">
+                    <div>{{departmentEditData.old || '-'}}</div>
+                </FormItem>
+                <FormItem :label="$L('修改部门')">
+                    <Select v-model="departmentEditData.department" multiple :placeholder="$L('留空为默认部门')">
+                        <Option v-for="(item, index) in departmentList" :value="item.id" :key="index">{{ item.name }}</Option>
+                    </Select>
+                </FormItem>
+            </Form>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="departmentEditShow=false">{{$L('取消')}}</Button>
+                <Button type="primary" :loading="departmentEditLoading > 0" @click="operationUser(departmentEditData, true)">{{$L('确定修改')}}</Button>
+            </div>
+        </Modal>
+
         <!--操作离职-->
         <Modal
             v-model="disableShow"
-            class="operate-left"
             :title="$L('操作离职')">
             <Form :model="disableData" label-width="auto" @submit.native.prevent>
                 <Alert type="error" style="margin-bottom:18px">{{$L(`正在进行帐号【ID:${disableData.userid}，${disableData.nickname}】离职操作。`)}}</Alert>
@@ -223,12 +247,17 @@ export default {
             total: 0,
             noText: '',
 
+            departmentEditShow: false,
+            departmentEditLoading: 0,
+            departmentEditData: {},
+
             disableShow: false,
             disableLoading: 0,
             disableData: {},
 
             departmentShow: false,
             departmentLoading: 0,
+            departmentSelect: -1,
             departmentData: {
                 id: 0,
                 name: '',
@@ -248,6 +277,9 @@ export default {
                 this.keys = {}
                 this.setPage(1)
             }
+        },
+        departmentSelect() {
+            this.setPage(1)
         }
     },
     computed: {
@@ -379,6 +411,43 @@ export default {
                     },
                 },
                 {
+                    title: this.$L('部门'),
+                    key: 'department',
+                    minWidth: 80,
+                    render: (h, {row}) => {
+                        let departments = []
+                        row.department.some(did => {
+                            const data = this.departmentList.find(d => d.id == did)
+                            if (data) {
+                                departments.push(data.name)
+                            }
+                        })
+                        if (departments.length === 0) {
+                            return h('div', this.$L('默认部门'));
+                        } else {
+                            const tmp = []
+                            tmp.push(h('span', departments[0]))
+                            if (departments.length > 1) {
+                                departments = departments.splice(1)
+                                tmp.push(h('ETooltip', [
+                                    h('div', {
+                                        slot: 'content',
+                                        domProps: {
+                                            innerHTML: departments.join("<br/>")
+                                        }
+                                    }),
+                                    h('div', {
+                                        class: 'department-tag-num'
+                                    }, ` +${departments.length}`)
+                                ]))
+                            }
+                            return h('div', {
+                                class: 'team-table-department-warp'
+                            }, tmp);
+                        }
+                    },
+                },
+                {
                     title: this.$L('最后在线'),
                     key: 'line_at',
                     width: 168,
@@ -415,6 +484,12 @@ export default {
                                 command: 'password',
                             },
                         }, [h('div', this.$L('修改密码'))]))
+
+                        dropdownItems.push(h('EDropdownItem', {
+                            props: {
+                                command: 'department',
+                            },
+                        }, [h('div', this.$L('修改部门'))]))
 
                         if (identity.includes('disable')) {
                             dropdownItems.push(h('EDropdownItem', {
@@ -487,10 +562,16 @@ export default {
         getLists() {
             this.loadIng++;
             this.keyIs = $A.objImplode(this.keys) != "";
+            let keys = $A.cloneJSON(this.keys)
+            if (this.departmentSelect > -1) {
+                keys = Object.assign(keys, {
+                    department: this.departmentSelect
+                })
+            }
             this.$store.dispatch("call", {
                 url: 'users/lists',
                 data: {
-                    keys: this.keys,
+                    keys,
                     page: Math.max(this.page, 1),
                     pagesize: Math.max($A.runNum(this.pageSize), 10),
                 },
@@ -498,7 +579,7 @@ export default {
                 this.page = data.current_page;
                 this.total = data.total;
                 this.list = data.data;
-                this.noText = '没有相关的数据';
+                this.noText = '没有相关的成员';
             }).catch(() => {
                 this.noText = '数据加载失败';
             }).finally(_ => {
@@ -549,6 +630,24 @@ export default {
                             });
                         }
                     });
+                    break;
+
+                case 'department':
+                    let departments = []
+                    row.department.some(did => {
+                        const data = this.departmentList.find(d => d.id == did)
+                        if (data) {
+                            departments.push(data.name)
+                        }
+                    })
+                    this.departmentEditData = {
+                        type: 'department',
+                        userid: row.userid,
+                        nickname: row.nickname,
+                        department: row.department.map(id => parseInt(id)),
+                        old: departments.join(", ")
+                    };
+                    this.departmentEditShow = true;
                     break;
 
                 case 'setdisable':
@@ -602,7 +701,9 @@ export default {
 
         operationUser(data, tipErr) {
             return new Promise((resolve, reject) => {
-                if (data.type == 'setdisable') {
+                if (data.type == 'department') {
+                    this.departmentEditLoading++;
+                } else if (data.type == 'setdisable') {
                     this.disableLoading++;
                 } else {
                     this.loadIng++;
@@ -614,7 +715,9 @@ export default {
                     $A.messageSuccess(msg);
                     this.getLists();
                     resolve()
-                    if (data.type == 'setdisable') {
+                    if (data.type == 'department') {
+                        this.departmentEditShow = false;
+                    } else if (data.type == 'setdisable') {
                         this.disableShow = false;
                     }
                 }).catch(({msg}) => {
@@ -624,7 +727,9 @@ export default {
                     this.getLists();
                     reject(msg)
                 }).finally(_ => {
-                    if (data.type == 'setdisable') {
+                    if (data.type == 'department') {
+                        this.departmentEditLoading--;
+                    } else if (data.type == 'setdisable') {
                         this.disableLoading--;
                     } else {
                         this.loadIng--;
@@ -676,12 +781,21 @@ export default {
             }).then(({msg}) => {
                 $A.messageSuccess(msg)
                 this.getDepartmentLists()
+                this.getLists()
                 this.departmentShow = false
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {
                 this.departmentLoading--;
             })
+        },
+
+        onSelectDepartment(id) {
+            if (this.departmentSelect === id) {
+                this.departmentSelect = -1
+                return
+            }
+            this.departmentSelect = id
         },
 
         onOpDepartment(val) {
@@ -699,7 +813,7 @@ export default {
                 if (delItem) {
                     $A.modalConfirm({
                         title: this.$L('删除部门'),
-                        content: `<div>${this.$L(`你确定要删除【${delItem.name}】部门吗？`)}</div><div style="color:#f00;font-weight:600">${this.$L(`注意：此操作不可恢复，部门下的成员将向上移动。`)}</div>`,
+                        content: `<div>${this.$L(`你确定要删除【${delItem.name}】部门吗？`)}</div><div style="color:#f00;font-weight:600">${this.$L(`注意：此操作不可恢复，部门下的成员将移至默认部门。`)}</div>`,
                         language: false,
                         loading: true,
                         onOk: () => {
@@ -710,6 +824,9 @@ export default {
                                         id: delItem.id
                                     },
                                 }).then(({msg}) => {
+                                    if (delItem.id === this.departmentSelect) {
+                                        this.departmentSelect = -1
+                                    }
                                     resolve(msg);
                                     this.getDepartmentLists();
                                 }).catch(({msg}) => {

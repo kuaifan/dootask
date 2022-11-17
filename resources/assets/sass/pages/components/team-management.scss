@@ -130,3 +130,25 @@
         height: 0;
     }
 }
+
+.team-table-department-warp {
+    display: flex;
+    align-items: center;
+
+    .department-tag-num {
+        background-color: #515a6e;
+        border-radius: 9px;
+        color: #fff;
+        cursor: pointer;
+        flex-shrink: 0;
+        font-size: 12px;
+        height: 18px;
+        line-height: 18px;
+        margin-left: 4px;
+        min-width: 18px;
+        padding: 0 5px;
+        text-align: center;
+        transform: scale(0.9);
+        transform-origin: right center;
+    }
+}

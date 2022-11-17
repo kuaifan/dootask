@@ -34,7 +34,9 @@
 
         <div v-if="dialogData.group_type !== 'all'" class="group-info-button">
             <Button v-if="dialogData.owner_id == userId || dialogData.owner_id == 0" @click="openAdd" type="primary">{{ $L("添加成员") }}</Button>
-            <Button v-if="dialogData.owner_id == userId" @click="onDisband" type="error" ghost>{{ $L("解散群组") }}</Button>
+            <template v-if="dialogData.owner_id == userId">
+                <Button v-if="dialogData.group_type !== 'department'" @click="onDisband" type="error" ghost>{{ $L("解散群组") }}</Button>
+            </template>
             <Button v-else @click="onExit" type="error" ghost>{{ $L("退出群组") }}</Button>
         </div>
 
@@ -45,7 +47,10 @@
             :mask-closable="false">
             <Form :model="addData" label-width="auto" @submit.native.prevent>
                 <FormItem prop="userids" :label="$L('新增成员')">
-                    <UserInput v-model="addData.userids" :disabledChoice="addData.disabledChoice" :multiple-max="100" :placeholder="$L('选择项目成员')"/>
+                    <UserInput v-model="addData.userids" :disabledChoice="addData.disabledChoice" :multiple-max="100" :placeholder="$L('选择成员')"/>
+                    <div v-if="dialogData.group_type === 'department'" class="form-tip">{{$L('此操作仅加入群成员并不会加入部门')}}</div>
+                    <div v-else-if="dialogData.group_type === 'project'" class="form-tip">{{$L('此操作仅加入群成员并不会加入项目')}}</div>
+                    <div v-else-if="dialogData.group_type === 'task'" class="form-tip">{{$L('此操作仅加入群成员并不会加入任务负责人')}}</div>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
@@ -95,6 +100,7 @@ export default {
 
         groupType() {
             const {group_type} = this.dialogData
+            if (group_type === 'department') return '部门群组'
             if (group_type === 'project') return '项目群组'
             if (group_type === 'task') return '任务群组'
             if (group_type === 'user') return '个人群组'

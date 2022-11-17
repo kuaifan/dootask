@@ -126,6 +126,9 @@
                                 font-size: 26px;
                                 background-color: #61B2F9;
                                 color: #ffffff;
+                                &.department {
+                                    background-color: #5BC7B0;
+                                }
                                 &.project {
                                     background-color: #6E99EB;
                                 }

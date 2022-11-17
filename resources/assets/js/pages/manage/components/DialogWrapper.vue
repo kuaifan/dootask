@@ -20,7 +20,8 @@
                     <div class="dialog-block">
                         <div class="dialog-avatar">
                             <template v-if="dialogData.type=='group'">
-                                <i v-if="dialogData.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
+                                <i v-if="dialogData.group_type=='department'" class="taskfont icon-avatar department">&#xe75c;</i>
+                                <i v-else-if="dialogData.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
                                 <i v-else-if="dialogData.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
                                 <Icon v-else class="icon-avatar" type="ios-people" />
                             </template>
@@ -40,6 +41,8 @@
                                 </template>
                                 <h2>{{dialogData.name}}</h2>
                                 <em v-if="peopleNum > 0">({{peopleNum}})</em>
+                                <Tag v-if="dialogData.group_type=='all'" class="after" :fade="false">{{$L('全员')}}</Tag>
+                                <Tag v-else-if="dialogData.group_type=='department'" class="after" :fade="false">{{$L('部门')}}</Tag>
                             </div>
                             <ul class="title-desc">
                                 <li v-if="dialogData.type === 'user'" :class="[dialogData.online_state === true ? 'online' : 'offline']">
@@ -295,7 +298,8 @@
                             <div class="forward-option">
                                 <div class="forward-avatar">
                                     <template v-if="dialog.type=='group'">
-                                        <i v-if="dialog.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
+                                        <i v-if="dialog.group_type=='department'" class="taskfont icon-avatar department">&#xe75c;</i>
+                                        <i v-else-if="dialog.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
                                         <i v-else-if="dialog.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
                                         <Icon v-else class="icon-avatar" type="ios-people" />
                                     </template>
