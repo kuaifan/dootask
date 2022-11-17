@@ -154,7 +154,7 @@
                     <div v-if="departmentParentDisabled" class="form-tip" style="margin-bottom:-16px">{{$L('含有子部门无法修改上级部门')}}</div>
                 </FormItem>
                 <FormItem prop="owner_userid" :label="$L('部门负责人')">
-                    <UserInput v-model="departmentData.owner_userid" :multiple-max="1" :placeholder="$L('请选择部门负责人')"/>
+                    <UserInput v-model="departmentData.owner_userid" :multiple-max="1" max-hidden-select :placeholder="$L('请选择部门负责人')"/>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
@@ -180,7 +180,7 @@
                         type="datetime"/>
                 </FormItem>
                 <FormItem :label="$L('交接人')">
-                    <UserInput v-model="disableData.transfer_userid" :disabled-choice="[disableData.userid]" :multiple-max="1" :placeholder="$L('选择交接人')"/>
+                    <UserInput v-model="disableData.transfer_userid" :disabled-choice="[disableData.userid]" :multiple-max="1" max-hidden-select :placeholder="$L('选择交接人')"/>
                     <div class="form-tip">{{ $L(`${disableData.nickname} 负责的项目、任务和文件将移交给交接人`) }}</div>
                 </FormItem>
             </Form>

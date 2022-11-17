@@ -409,7 +409,7 @@
             :mask-closable="false">
             <Form :model="transferData" label-width="auto" @submit.native.prevent>
                 <FormItem prop="owner_userid" :label="$L('项目负责人')">
-                    <UserInput v-model="transferData.owner_userid" :multiple-max="1" :placeholder="$L('选择项目负责人')"/>
+                    <UserInput v-model="transferData.owner_userid" :multiple-max="1" max-hidden-select :placeholder="$L('选择项目负责人')"/>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">

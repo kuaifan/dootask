@@ -57,7 +57,8 @@
                     :multiple-max="1"
                     :project-id="taskDetail.project_id"
                     :placeholder="$L('选择任务负责人')"
-                    :transfer="false"/>
+                    :transfer="false"
+                    max-hidden-select/>
                 <div class="task-detail-avatar-buttons">
                     <Button size="small" type="primary" @click="$refs.owner.ok()">{{$L('确定')}}</Button>
                 </div>

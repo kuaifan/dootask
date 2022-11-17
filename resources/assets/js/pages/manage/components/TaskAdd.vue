@@ -123,7 +123,8 @@
                                 :multiple-max="1"
                                 :placeholder="$L('选择负责人')"
                                 :project-id="addData.project_id"
-                                :transfer="false"/>
+                                :transfer="false"
+                                max-hidden-select/>
                         </Col>
                     </Row>
                 </div>

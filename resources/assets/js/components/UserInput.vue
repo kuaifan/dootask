@@ -78,6 +78,10 @@
                 type: Boolean,
                 default: true
             },
+            maxHiddenSelect: {
+                type: Boolean,
+                default: false
+            },
             projectId: {
                 type: Number,
                 default: 0
@@ -142,6 +146,11 @@
             },
             selects(val) {
                 this.$emit('input', val);
+                if (this.maxHiddenSelect
+                    && val.length >= this.maxHiddenSelect
+                    && this.$refs.select) {
+                    this.$refs.select.hideMenu()
+                }
             }
         },
         methods: {
