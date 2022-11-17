@@ -60,14 +60,16 @@ export default {
             if ($A.isArray(window.emoticonData)) {
                 let baseUrl = $A.apiUrl("../images/emoticon")
                 return window.emoticonData.map(data => {
-                    data.src = `${baseUrl}/${data.path}/${data.icon}`
-                    data.list = data.list.map(item => {
-                        item.type = `emoticon`
-                        item.asset = `images/emoticon/${data.path}/${item.path}`
-                        item.src = `${baseUrl}/${data.path}/${item.path}`
-                        return item
-                    })
-                    return data;
+                    return Object.assign(data, {
+                        src: `${baseUrl}/${data.path}/${data.icon}`,
+                        list: data.list.map(item => {
+                            return Object.assign(item, {
+                                type: `emoticon`,
+                                asset: `images/emoticon/${data.path}/${item.path}`,
+                                src: `${baseUrl}/${data.path}/${item.path}`
+                            })
+                        })
+                    });
                 });
             }
             return [];

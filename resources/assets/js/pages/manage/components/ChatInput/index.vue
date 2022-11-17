@@ -11,8 +11,8 @@
                 popperClass="chat-quick-emoji-popover">
                 <div slot="reference"></div>
                 <ul class="chat-quick-emoji-wrapper">
-                    <li v-for="emoji in emojiQuickItems" @click="onEmojiQuick(emoji)">
-                        <img :title="emoji.item.name" :alt="emoji.item.name" :src="emoji.item.src"/>
+                    <li v-for="item in emojiQuickItems" @click="onEmojiQuick(item)">
+                        <img :title="item.name" :alt="item.name" :src="item.src"/>
                     </li>
                 </ul>
             </EPopover>
@@ -708,16 +708,21 @@ export default {
                 if (text
                     && text.indexOf(" ") === -1
                     && text.length >= 1
-                    && text.length <= 8
+                    && text.length <= 4
                     && $A.isArray(window.emoticonData)) {
                     // 搜索在线表情
                     this.searchEmoji(text);
                     // 显示快捷选择表情窗口
                     this.emojiQuickItems = [];
+                    let baseUrl = $A.apiUrl("../images/emoticon")
                     window.emoticonData.some(data => {
                         let item = data.list.find(({name}) => $A.strExists(name, text))
                         if (item) {
-                            this.emojiQuickItems.push({data, item})
+                            this.emojiQuickItems.push(Object.assign(item, {
+                                type: `emoticon`,
+                                asset: `images/emoticon/${data.path}/${item.path}`,
+                                src: `${baseUrl}/${data.path}/${item.path}`
+                            }))
                             if (this.emojiQuickItems.length >= 2) {
                                 return true
                             }
@@ -746,24 +751,19 @@ export default {
                     url: '../emo/search',
                     data: {
                         key: text,
-                    }
+                    },
+                    checkNetwork: false,
                 }).then(({data}) => {
                     if (this.emojiSearchKey !== text) {
                         return;
                     }
-                    let maxNum = 3;
-                    if (this.windowWidth > 1000) maxNum = 5;
-                    else if (this.windowWidth > 900) maxNum = 4;
                     const array = this.getRandomArrayElements(data.map(item => {
                         return {
-                            data: {},
-                            item: {
-                                type: "online",
-                                name: this.$L("动画表情"),
-                                src: this.asciiConvertNative(item)
-                            }
+                            type: "online",
+                            name: this.$L("动画表情"),
+                            src: this.asciiConvertNative(item)
                         }
-                    }), maxNum - this.emojiQuickItems.length)
+                    }), 3 - this.emojiQuickItems.length)
                     if (array.length > 0) {
                         this.emojiQuickItems.push(...array)
                         this.$nextTick(_ => {
@@ -973,19 +973,13 @@ export default {
             reader.readAsDataURL(this.recordBlob);
         },
 
-        onEmojiQuick({data, item}) {
+        onEmojiQuick(item) {
             if (item.type === 'online') {
                 this.$emit('input', "")
                 this.$emit('on-send', `<img src="${item.src}"/>`)
             } else {
-                const baseUrl = $A.apiUrl("../images/emoticon")
-                const emoji = {
-                    asset: `images/emoticon/${data.path}/${item.path}`,
-                    name: item.name,
-                    src: `${baseUrl}/${data.path}/${item.path}`
-                }
                 this.$emit('input', "")
-                this.$emit('on-send', `<img class="emoticon" data-asset="${emoji.asset}" data-name="${emoji.name}" src="${emoji.src}"/>`)
+                this.$emit('on-send', `<img class="emoticon" data-asset="${item.asset}" data-name="${item.name}" src="${item.src}"/>`)
             }
             this.emojiQuickShow = false
             this.focus()
