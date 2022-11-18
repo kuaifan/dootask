@@ -339,30 +339,6 @@ class IndexController extends InvokeController
     }
 
     /**
-     * 搜索表情
-     * @return array
-     */
-    public function emo__search()
-    {
-        $key = Request::input('key');
-        if (empty($key)) {
-            return Base::retError("key empty");
-        }
-        return Cache::remember("emo__search:" . md5($key), now()->addDay(), function () use ($key) {
-            $res = Ihttp::ihttp_get("http://www.adoutu.com/search?keyword=" . urlencode($key));
-            if (Base::isError($res)) {
-                return $res;
-            }
-            $content = Base::getMiddle($res['data'], '<!--图片列表-->', '<!--分页器-->');
-            preg_match_all("/<img\s+src=\"(.*?)\"/s", $content, $matchs);
-            if ($matchs && $matchs[1]) {
-                return Base::retSuccess('success', array_slice($matchs[1], 0, 20));
-            }
-            return Base::retError("result empty");
-        });
-    }
-
-    /**
      * 设置语言和皮肤
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
      */

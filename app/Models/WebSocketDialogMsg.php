@@ -537,7 +537,7 @@ class WebSocketDialogMsg extends AbstractModel
     {
         if (!$text) return '';
         $text = preg_replace("/<img\s+class=\"emoticon\"[^>]*?alt=\"(\S+)\"[^>]*?>/", "[$1]", $text);
-        $text = preg_replace("/<img\s+class=\"emoticon\"[^>]*?>/", "[表情]", $text);
+        $text = preg_replace("/<img\s+class=\"emoticon\"[^>]*?>/", "[动画表情]", $text);
         $text = preg_replace("/<img\s+class=\"browse\"[^>]*?>/", "[图片]", $text);
         if (!$preserveHtml) {
             $text = strip_tags($text);
@@ -558,15 +558,15 @@ class WebSocketDialogMsg extends AbstractModel
         // 图片 [:IMAGE:className:width:height:src:alt:]
         preg_match_all("/<img\s+src=\"data:image\/(png|jpg|jpeg|gif);base64,(.*?)\"(.*?)>(<\/img>)*/s", $text, $matchs);
         foreach ($matchs[2] as $key => $base64) {
-            $tmpPath = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
-            Base::makeDir(public_path($tmpPath));
-            $tmpPath .= md5s($base64) . "." . $matchs[1][$key];
-            if (file_put_contents(public_path($tmpPath), base64_decode($base64))) {
-                $imagesize = getimagesize(public_path($tmpPath));
-                if (Base::imgThumb(public_path($tmpPath), public_path($tmpPath) . "_thumb.jpg", 320, 0)) {
-                    $tmpPath .= "_thumb.jpg";
+            $imagePath = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
+            Base::makeDir(public_path($imagePath));
+            $imagePath .= md5s($base64) . "." . $matchs[1][$key];
+            if (file_put_contents(public_path($imagePath), base64_decode($base64))) {
+                $imageSize = getimagesize(public_path($imagePath));
+                if (Base::imgThumb(public_path($imagePath), public_path($imagePath) . "_thumb.jpg", 320, 0)) {
+                    $imagePath .= "_thumb.jpg";
                 }
-                $text = str_replace($matchs[0][$key], "[:IMAGE:browse:{$imagesize[0]}:{$imagesize[1]}:{$tmpPath}::]", $text);
+                $text = str_replace($matchs[0][$key], "[:IMAGE:browse:{$imageSize[0]}:{$imageSize[1]}:{$imagePath}::]", $text);
             }
         }
         // 表情图片
@@ -574,38 +574,73 @@ class WebSocketDialogMsg extends AbstractModel
         foreach ($matchs[1] as $key => $str) {
             preg_match("/data-asset=\"(.*?)\"/", $str, $matchAsset);
             preg_match("/data-name=\"(.*?)\"/", $str, $matchName);
-            if (file_exists(public_path($matchAsset[1]))) {
-                $imagesize = getimagesize(public_path($matchAsset[1]));
-                $text = str_replace($matchs[0][$key], "[:IMAGE:emoticon:{$imagesize[0]}:{$imagesize[1]}:{$matchAsset[1]}:{$matchName[1]}:]", $text);
+            $imageSize = null;
+            $imagePath = "";
+            $imageName = "";
+            if ($matchAsset[1] === "emosearch") {
+                preg_match("/src=\"(.*?)\"/", $str, $matchSrc);
+                if ($matchSrc) {
+                    $srcMd5 = md5($matchSrc[1]);
+                    $imagePath = "uploads/emosearch/" . substr($srcMd5, 0, 2) . "/" . substr($srcMd5, 32 - 2) . "/";
+                    Base::makeDir(public_path($imagePath));
+                    $imagePath .= md5s($matchSrc[1]);
+                    if (file_exists(public_path($imagePath))) {
+                        $imageSize = getimagesize(public_path($imagePath));
+                    } else {
+                        $image = file_get_contents($matchSrc[1]);
+                        if ($image && file_put_contents(public_path($imagePath), $image)) {
+                            $imageSize = getimagesize(public_path($imagePath));
+                            // 添加后缀
+                            if ($imageSize && !str_contains($imagePath, '.')) {
+                                preg_match("/^image\/(png|jpg|jpeg|gif)$/", $imageSize['mime'], $matchMine);
+                                if ($matchMine) {
+                                    $imageNewPath = $imagePath . "." . $matchMine[1];
+                                    if (rename(public_path($imagePath), public_path($imageNewPath))) {
+                                        $imagePath = $imageNewPath;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } elseif (file_exists(public_path($matchAsset[1]))) {
+                $imagePath = $matchAsset[1];
+                $imageName = $matchName[1];
+                $imageSize = getimagesize(public_path($matchAsset[1]));
+            }
+            if ($imageSize) {
+                $text = str_replace($matchs[0][$key], "[:IMAGE:emoticon:{$imageSize[0]}:{$imageSize[1]}:{$imagePath}:{$imageName}:]", $text);
+            } else {
+                $text = str_replace($matchs[0][$key], "[:IMAGE:browse:90:90:images/other/imgerr.jpg::]", $text);
             }
         }
         // 其他网络图片
         preg_match_all("/<img[^>]*?src=([\"'])(.*?\.(png|jpg|jpeg|gif))\\1[^>]*?>/is", $text, $matchs);
         foreach ($matchs[2] as $key => $str) {
             if (str_starts_with($str, "{{RemoteURL}}")) {
-                $tmpPath = Base::leftDelete($str, "{{RemoteURL}}");
-                $tmpPath = Base::rightDelete($tmpPath, "_thumb.jpg");
+                $imagePath = Base::leftDelete($str, "{{RemoteURL}}");
+                $imagePath = Base::rightDelete($imagePath, "_thumb.jpg");
             } else {
-                $tmpPath = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
-                Base::makeDir(public_path($tmpPath));
-                $tmpPath .= md5s($str) . "." . $matchs[3][$key];
+                $imagePath = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
+                Base::makeDir(public_path($imagePath));
+                $imagePath .= md5s($str) . "." . $matchs[3][$key];
             }
-            if (file_exists(public_path($tmpPath))) {
-                $imagesize = getimagesize(public_path($tmpPath));
-                if (Base::imgThumb(public_path($tmpPath), public_path($tmpPath) . "_thumb.jpg", 320, 0)) {
-                    $tmpPath .= "_thumb.jpg";
+            if (file_exists(public_path($imagePath))) {
+                $imageSize = getimagesize(public_path($imagePath));
+                if (Base::imgThumb(public_path($imagePath), public_path($imagePath) . "_thumb.jpg", 320, 0)) {
+                    $imagePath .= "_thumb.jpg";
                 }
-                $text = str_replace($matchs[0][$key], "[:IMAGE:browse:{$imagesize[0]}:{$imagesize[1]}:{$tmpPath}::]", $text);
+                $text = str_replace($matchs[0][$key], "[:IMAGE:browse:{$imageSize[0]}:{$imageSize[1]}:{$imagePath}::]", $text);
             } else {
                 $image = file_get_contents($str);
                 if (empty($image)) {
                     $text = str_replace($matchs[0][$key], "[:IMAGE:browse:90:90:images/other/imgerr.jpg::]", $text);
-                } else if (file_put_contents(public_path($tmpPath), $image)) {
-                    $imagesize = getimagesize(public_path($tmpPath));
-                    if (Base::imgThumb(public_path($tmpPath), public_path($tmpPath) . "_thumb.jpg", 320, 0)) {
-                        $tmpPath .= "_thumb.jpg";
+                } else if (file_put_contents(public_path($imagePath), $image)) {
+                    $imageSize = getimagesize(public_path($imagePath));
+                    if (Base::imgThumb(public_path($imagePath), public_path($imagePath) . "_thumb.jpg", 320, 0)) {
+                        $imagePath .= "_thumb.jpg";
                     }
-                    $text = str_replace($matchs[0][$key], "[:IMAGE:browse:{$imagesize[0]}:{$imagesize[1]}:{$tmpPath}::]", $text);
+                    $text = str_replace($matchs[0][$key], "[:IMAGE:browse:{$imageSize[0]}:{$imageSize[1]}:{$imagePath}::]", $text);
                 }
             }
         }

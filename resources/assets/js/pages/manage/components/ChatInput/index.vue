@@ -47,7 +47,7 @@
                         <ETooltip slot="reference" ref="emojiTip" :disabled="windowSmall || showEmoji" placement="top" :content="$L('表情')">
                             <i class="taskfont">&#xe7ad;</i>
                         </ETooltip>
-                        <ChatEmoji @on-select="onSelectEmoji"/>
+                        <ChatEmoji v-if="showEmoji" @on-select="onSelectEmoji" :searchKey="emojiQuickKey"/>
                     </EPopover>
                     <ETooltip v-else ref="emojiTip" :disabled="windowSmall || showEmoji" placement="top" :content="$L('表情')">
                         <i class="taskfont" @click="showEmoji=!showEmoji">&#xe7ad;</i>
@@ -125,7 +125,7 @@
         </div>
 
         <!-- 移动端表情（底部） -->
-        <ChatEmoji v-if="emojiBottom && showEmoji" @on-select="onSelectEmoji"/>
+        <ChatEmoji v-if="emojiBottom && showEmoji" @on-select="onSelectEmoji" :searchKey="emojiQuickKey"/>
 
         <!-- 录音浮窗 -->
         <transition name="fade">
@@ -230,6 +230,7 @@ export default {
             showEmoji: false,
             emojiQuickTimer: null,
             emojiQuickShow: false,
+            emojiQuickKey: '',
             emojiQuickItems: [],
 
             observer: null,
@@ -710,20 +711,19 @@ export default {
                     && text.length >= 1
                     && text.length <= 4
                     && $A.isArray(window.emoticonData)) {
-                    // 搜索在线表情
-                    this.searchEmoji(text);
                     // 显示快捷选择表情窗口
+                    this.emojiQuickKey = text;
                     this.emojiQuickItems = [];
                     let baseUrl = $A.apiUrl("../images/emoticon")
                     window.emoticonData.some(data => {
-                        let item = data.list.find(({name}) => $A.strExists(name, text))
+                        let item = data.list.find(d => $A.strExists(d.name + (d.key ? ` ${d.key}` : ''), text))
                         if (item) {
                             this.emojiQuickItems.push(Object.assign(item, {
                                 type: `emoticon`,
                                 asset: `images/emoticon/${data.path}/${item.path}`,
                                 src: `${baseUrl}/${data.path}/${item.path}`
                             }))
-                            if (this.emojiQuickItems.length >= 2) {
+                            if (this.emojiQuickItems.length >= 3) {
                                 return true
                             }
                         }
@@ -738,65 +738,6 @@ export default {
                 }
                 this.emojiQuickShow = false
             }, 100)
-        },
-
-        searchEmoji(text) {
-            this.emojiSearchKey = text;
-            this.emojiSearchTimer && clearTimeout(this.emojiSearchTimer);
-            this.emojiSearchTimer = setTimeout(_ => {
-                if (this.emojiSearchKey !== text) {
-                    return;
-                }
-                this.$store.dispatch("call", {
-                    url: '../emo/search',
-                    data: {
-                        key: text,
-                    },
-                    checkNetwork: false,
-                }).then(({data}) => {
-                    if (this.emojiSearchKey !== text) {
-                        return;
-                    }
-                    const array = this.getRandomArrayElements(data.map(item => {
-                        return {
-                            type: "online",
-                            name: this.$L("动画表情"),
-                            src: this.asciiConvertNative(item)
-                        }
-                    }), 3 - this.emojiQuickItems.length)
-                    if (array.length > 0) {
-                        this.emojiQuickItems.push(...array)
-                        this.$nextTick(_ => {
-                            this.emojiQuickShow = true
-                            this.$refs.emojiQuickRef.updatePopper()
-                        })
-                    }
-                });
-            }, 800)
-        },
-
-        asciiConvertNative(val) {
-            let asciicode = val.split("\\u");
-            let nativeValue = asciicode[0];
-            for (let i = 1; i < asciicode.length; i++) {
-                let code = asciicode[i];
-                nativeValue += String.fromCharCode(parseInt("0x" + code.substring(0, 4)));
-                if (code.length > 4) {
-                    nativeValue += code.substring(4, code.length);
-                }
-            }
-            return nativeValue
-        },
-
-        getRandomArrayElements(arr, count) {
-            let shuffled = arr.slice(0), i = arr.length, min = i - count, temp, index;
-            while (i-- > min) {
-                index = Math.floor((i + 1) * Math.random());
-                temp = shuffled[index];
-                shuffled[index] = shuffled[i];
-                shuffled[i] = temp;
-            }
-            return shuffled.slice(min);
         },
 
         setText(value) {
