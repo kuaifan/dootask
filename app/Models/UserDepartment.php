@@ -31,9 +31,10 @@ class UserDepartment extends AbstractModel
     /**
      * 保存部门
      * @param $data
+     * @param $dialogUseid
      */
-    public function saveDepartment($data = []) {
-        AbstractModel::transaction(function () use ($data) {
+    public function saveDepartment($data = [], $dialogUseid = 0) {
+        AbstractModel::transaction(function () use ($dialogUseid, $data) {
             $oldUser = null;
             $newUser = null;
             if ($data['owner_userid'] !== $this->owner_userid) {
@@ -43,13 +44,44 @@ class UserDepartment extends AbstractModel
             $this->updateInstance($data);
             //
             if ($this->dialog_id > 0) {
+                // 已有群
                 $dialog = WebSocketDialog::find($this->dialog_id);
                 if ($dialog) {
                     $dialog->name = $this->name;
                     $dialog->owner_id = $this->owner_userid;
-                    $dialog->save();
+                    if ($dialog->save()) {
+                        $dialog->joinGroup($this->owner_userid, 0, true);
+                        $dialog->pushMsg("groupUpdate", [
+                            'id' => $dialog->id,
+                            'name' => $dialog->name,
+                            'owner_id' => $dialog->owner_id,
+                        ]);
+                    }
                 }
+            } elseif ($dialogUseid > 0) {
+                // 使用现有群
+                $dialog = WebSocketDialog::whereType('group')->whereGroupType('user')->find($dialogUseid);
+                if (empty($dialog)) {
+                    throw new ApiException("选择现有聊天群不存在");
+                }
+                $dialog->name = $this->name;
+                $dialog->owner_id = $this->owner_userid;
+                $dialog->group_type = 'department';
+                if ($dialog->save()) {
+                    $dialog->joinGroup($this->owner_userid, 0, true);
+                    $dialog->pushMsg("groupUpdate", [
+                        'id' => $dialog->id,
+                        'name' => $dialog->name,
+                        'owner_id' => $dialog->owner_id,
+                        'group_type' => $dialog->group_type,
+                    ]);
+                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'notice', [
+                        'notice' => User::nickname() . " 将此群改为部门群"
+                    ], User::userid(), true, true);
+                }
+                $this->dialog_id = $dialog->id;
             } else {
+                // 创建群
                 $dialog = WebSocketDialog::createGroup($this->name, [$this->owner_userid], 'department', $this->owner_userid);
                 if (empty($dialog)) {
                     throw new ApiException("创建群组失败");

@@ -131,6 +131,19 @@
     }
 }
 
+.team-department-add-dialog-group {
+    display: flex;
+    align-items: center;
+    .dialog-name {
+        flex: 1;
+        width: 0;
+        padding-right: 12px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
 .team-table-department-warp {
     display: flex;
     align-items: center;

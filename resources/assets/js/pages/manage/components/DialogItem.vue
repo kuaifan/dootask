@@ -26,6 +26,7 @@
                     :userid="source.userid"
                     :tooltipDisabled="source.userid == userId"
                     :show-icon-menu="dialogData.type == 'group'"
+                    :open-delay="100"
                     :size="30"/>
             </div>
             <DialogView

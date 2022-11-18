@@ -160,6 +160,31 @@
                 <FormItem prop="owner_userid" :label="$L('部门负责人')">
                     <UserInput v-model="departmentData.owner_userid" :multiple-max="1" max-hidden-select :placeholder="$L('请选择部门负责人')"/>
                 </FormItem>
+                <template v-if="departmentData.id == 0">
+                    <Divider orientation="left">{{$L('群组设置')}}</Divider>
+                    <FormItem prop="dialog_group" :label="$L('部门群聊')">
+                        <RadioGroup v-model="departmentData.dialog_group">
+                            <Radio label="new">{{$L('创建部门群')}}</Radio>
+                            <Radio label="use">{{$L('使用现有群')}}</Radio>
+                        </RadioGroup>
+                    </FormItem>
+                    <FormItem v-if="departmentData.dialog_group === 'use'" prop="dialog_useid" :label="$L('选择群组')">
+                        <Select
+                            v-model="departmentData.dialog_useid"
+                            filterable
+                            :remote-method="dialogRemote"
+                            :placeholder="$L('输入关键词搜索群')"
+                            :loading="dialogLoad">
+                            <Option v-for="(option, index) in dialogList" :value="option.id" :label="option.name" :key="index">
+                                <div class="team-department-add-dialog-group">
+                                    <div class="dialog-name">{{option.name}}</div>
+                                    <UserAvatar :userid="option.owner_id" :size="20"/>
+                                </div>
+                            </Option>
+                        </Select>
+                        <div class="form-tip">{{$L('仅支持选择个人群转为部门群')}}</div>
+                    </FormItem>
+                </template>
             </Form>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="departmentShow=false">{{$L('取消')}}</Button>
@@ -262,9 +287,14 @@ export default {
                 id: 0,
                 name: '',
                 parent_id: 0,
-                owner_userid: []
+                owner_userid: [],
+                dialog_group: 'new',
+                dialog_useid: 0
             },
             departmentList: [],
+
+            dialogLoad: false,
+            dialogList: [],
         }
     },
     mounted() {
@@ -766,7 +796,8 @@ export default {
                 id: 0,
                 name: '',
                 parent_id: 0,
-                owner_userid: []
+                owner_userid: [],
+                dialog_group: 'new'
             }, data || {})
             this.departmentShow = true
         },
@@ -837,7 +868,25 @@ export default {
                     });
                 }
             }
-        }
+        },
+
+        dialogRemote(key) {
+            if (key !== '') {
+                this.dialogLoad = true;
+                this.$store.dispatch("call", {
+                    url: 'dialog/group/searchuser',
+                    data: {
+                        key,
+                    },
+                }).then(({data}) => {
+                    this.dialogList = data.list;
+                }).finally(_ => {
+                    this.dialogLoad = false;
+                })
+            } else {
+                this.dialogList = [];
+            }
+        },
     }
 }
 </script>

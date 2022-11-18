@@ -1191,6 +1191,10 @@ class UsersController extends AbstractController
      * @apiParam {String} name             部门名称
      * @apiParam {Number} [parent_id]      上级部门ID
      * @apiParam {Number} owner_userid     部门负责人ID
+     * @apiParam {String} [dialog_group]   部门群（仅创建部门时有效）
+     * - new: 创建（默认）
+     * - use: 使用现有群
+     * @apiParam {Number} [dialog_useid]   使用现有群ID（dialog_group=use时有效）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -1204,6 +1208,8 @@ class UsersController extends AbstractController
         $name = trim(Request::input('name'));
         $parent_id = intval(Request::input('parent_id'));
         $owner_userid = intval(Request::input('owner_userid'));
+        $dialog_group = trim(Request::input('dialog_group'));
+        $dialog_useid = $dialog_group === 'use' ? intval(Request::input('dialog_useid')) : 0;
         //
         if (mb_strlen($name) < 2 || mb_strlen($name) > 20) {
             return Base::retError('部门名称长度限制2-20个字');
@@ -1244,7 +1250,7 @@ class UsersController extends AbstractController
             'name' => $name,
             'parent_id' => $parent_id,
             'owner_userid' => $owner_userid,
-        ]);
+        ], $dialog_useid);
         //
         return Base::retSuccess($parent_id > 0 ? '保存成功' : '新建成功');
     }
