@@ -14,11 +14,11 @@
             </ul>
         </div>
         <ul class="chat-emoji-menu">
-            <li :class="{active: type === 'emoji'}" @click="type='emoji'">
-                <span class="no-dark-content">&#128512;</span>
-            </li>
             <li :class="{active: type === 'emosearch'}" @click="type='emosearch'">
                 <i class="taskfont">&#xe6f8;</i>
+            </li>
+            <li :class="{active: type === 'emoji'}" @click="type='emoji'">
+                <span class="no-dark-content">&#128512;</span>
             </li>
             <li v-for="item in emoticonList" :class="{active: type === 'emoticon' && emoticonPath == item.path}" @click="onEmoticon(item.path)">
                 <img :title="item.name" :alt="item.name" :src="item.src"/>
@@ -51,9 +51,7 @@ export default {
         };
     },
     mounted() {
-        if (this.searchKey) {
-            this.emosearchKey = this.searchKey;
-        }
+        //
     },
     watch: {
         type() {
@@ -61,6 +59,12 @@ export default {
         },
         emosearchKey() {
             this.onEmosearch()
+        },
+        searchKey: {
+            handler(val) {
+                this.emosearchKey = val;
+            },
+            immediate: true
         }
     },
     computed: {

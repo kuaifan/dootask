@@ -425,7 +425,19 @@ export default {
 
         showEmoji(val) {
             if (val) {
+                let text = this.value.replace(/&nbsp;/g," ")
+                text = text.replace(/<[^>]+>/g, "")
+                if (text
+                    && text.indexOf(" ") === -1
+                    && text.length >= 1
+                    && text.length <= 4) {
+                    this.emojiQuickKey = text;
+                } else {
+                    this.emojiQuickKey = "";
+                }
+                //
                 this.showMore = false;
+                this.emojiQuickShow = false;
                 if (this.quill) {
                     const range = this.quill.selection.savedRange;
                     this.rangeIndex = range ? range.index : 0
@@ -712,7 +724,6 @@ export default {
                     && text.length <= 4
                     && $A.isArray(window.emoticonData)) {
                     // 显示快捷选择表情窗口
-                    this.emojiQuickKey = text;
                     this.emojiQuickItems = [];
                     let baseUrl = $A.apiUrl("../images/emoticon")
                     window.emoticonData.some(data => {
@@ -888,8 +899,9 @@ export default {
         },
 
         hidePopover() {
-            this.showEmoji = false;
             this.showMore = false;
+            this.showEmoji = false;
+            this.emojiQuickShow = false;
         },
 
         onClickCover() {
@@ -942,6 +954,9 @@ export default {
                 }
             } else if (item.type === 'emoticon') {
                 this.$emit('on-send', `<img class="emoticon" data-asset="${item.asset}" data-name="${item.name}" src="${item.src}"/>`)
+                if (item.asset === "emosearch") {
+                    this.$emit('input', "")
+                }
                 if (this.windowLarge) {
                     this.showEmoji = false;
                 }
