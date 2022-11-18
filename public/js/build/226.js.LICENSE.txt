@@ -19,3 +19,11 @@
  */
 
 /*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
+
+/**
+ * Vue Jsonp.
+ * # Carry Your World #
+ *
+ * @author: LancerComet
+ * @license: MIT
+ */

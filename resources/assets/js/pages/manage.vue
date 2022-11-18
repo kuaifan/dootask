@@ -1106,7 +1106,12 @@ export default {
                     onclick: ({target}) => {
                         console.log("[Notification] Click", target);
                         this.notificationManage.close();
-                        try {window.focus()}catch (e) {}
+                        try {
+                            window.focus()
+                            if (this.$Electron) {
+                                this.$Electron.sendMessage('mainWindowFocus')
+                            }
+                        }catch (e) {}
                         //
                         const {tag, data} = target;
                         if (tag == 'dialog') {
@@ -1115,6 +1120,10 @@ export default {
                             }
                             this.goForward({name: 'manage-messenger'});
                             this.$store.dispatch('openDialog', data.dialog_id)
+                            //
+                            if (this.$Electron) {
+                                this.$Electron.sendMessage('mainWindowTop')
+                            }
                         }
                     },
                 });

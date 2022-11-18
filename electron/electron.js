@@ -486,11 +486,30 @@ ipcMain.on('updateCheckAndDownload', (event, args) => {
 })
 
 /**
+ * 将主窗口激活到顶层
+ */
+ipcMain.on('mainWindowTop', (event) => {
+    mainWindow.moveTop()
+    event.returnValue = "ok"
+})
+
+/**
+ * 将主窗口激活
+ */
+ipcMain.on('mainWindowFocus', (event) => {
+    mainWindow.focus()
+    event.returnValue = "ok"
+})
+
+/**
  * 退出并安装更新
  */
 ipcMain.on('updateQuitAndInstall', (event) => {
     event.returnValue = "ok"
     willQuitApp = true
+    subWindow.some(({browser}) => {
+        browser && browser.destroy()
+    })
     setTimeout(() => autoUpdater.quitAndInstall(true, true), 1)
 })
 
