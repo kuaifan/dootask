@@ -1314,7 +1314,7 @@ class DialogController extends AbstractController
      * @apiName group__adduser
      *
      * @apiParam {Number} dialog_id             会话ID
-     * @apiParam {Array} userids                移出的群成员，格式: [userid1, userid2, userid3]
+     * @apiParam {Array} [userids]              移出的群成员，格式: [userid1, userid2, userid3]
      * - 留空表示自己退出
      * - 有值表示移出，仅限群主操作
      *
@@ -1345,6 +1345,50 @@ class DialogController extends AbstractController
         $dialog->exitGroup($userids, $type);
         $dialog->pushMsg("groupExit", null, $userids);
         return Base::retSuccess($type === 'remove' ? '移出成功' : '退出成功');
+    }
+
+    /**
+     * @api {get} api/dialog/group/transfer          31. 转让群组
+     *
+     * @apiDescription  需要token身份
+     * - 只有群主且是个人类型群可以解散
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName group__transfer
+     *
+     * @apiParam {Number} dialog_id             会话ID
+     * @apiParam {Number} userid                新的群主
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function group__transfer()
+    {
+        $user = User::auth();
+        //
+        $dialog_id = intval(Request::input('dialog_id'));
+        $userid = intval(Request::input('userid'));
+        //
+        if ($userid === $user->userid) {
+            return Base::retError('你已经是群主');
+        }
+        if (!User::whereUserid($userid)->exists()) {
+            return Base::retError('请选择有效的新群主');
+        }
+        //
+        $dialog = WebSocketDialog::checkDialog($dialog_id, true);
+        //
+        $dialog->checkGroup('user');
+        $dialog->owner_id = $userid;
+        if ($dialog->save()) {
+            $dialog->joinGroup($userid, 0);
+            $dialog->pushMsg("groupUpdate", [
+                'id' => $dialog->id,
+                'owner_id' => $dialog->owner_id,
+            ]);
+        }
+        return Base::retSuccess('转让成功');
     }
 
     /**

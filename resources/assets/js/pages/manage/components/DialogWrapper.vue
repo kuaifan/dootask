@@ -65,18 +65,33 @@
                         </div>
                     </div>
 
-                    <template v-if="dialogData.type === 'group'">
-                        <ETooltip
-                            placement="top"
-                            :disabled="windowSmall"
-                            :openDelay="600"
-                            :content="$L('群设置')">
-                            <i class="taskfont dialog-create" @click="groupInfoShow = true">&#xe6e9;</i>
-                        </ETooltip>
-                    </template>
-                    <ETooltip v-else-if="dialogData.type === 'user' && !isMyDialog" placement="top" :disabled="windowSmall" :content="$L('创建群组')">
-                        <i class="taskfont dialog-create" @click="openCreateGroup">&#xe646;</i>
-                    </ETooltip>
+                    <EDropdown
+                        trigger="click"
+                        class="dialog-menu"
+                        @command="onDialogMenu">
+                        <i class="taskfont dialog-menu-icon">&#xe6e9;</i>
+                        <EDropdownMenu slot="dropdown">
+                            <EDropdownItem v-if="dialogData.type === 'user'" command="openCreate">
+                                <div>{{$L('创建群组')}}</div>
+                            </EDropdownItem>
+                            <template v-else>
+                                <EDropdownItem command="groupInfo">
+                                    <div>{{$L('群组设置')}}</div>
+                                </EDropdownItem>
+                                <EDropdownItem v-if="dialogData.owner_id != userId" command="exit">
+                                    <div style="color:#f00">{{$L('退出群组')}}</div>
+                                </EDropdownItem>
+                                <template v-else-if="dialogData.group_type === 'user'">
+                                    <EDropdownItem command="transfer">
+                                        <div>{{$L('转让群主')}}</div>
+                                    </EDropdownItem>
+                                    <EDropdownItem command="disband">
+                                        <div style="color:#f00">{{$L('解散群组')}}</div>
+                                    </EDropdownItem>
+                                </template>
+                            </template>
+                        </EDropdownMenu>
+                    </EDropdown>
                 </div>
             </slot>
         </div>
@@ -351,6 +366,22 @@
             <DialogGroupInfo v-if="groupInfoShow" :dialogId="dialogId" @on-close="groupInfoShow=false"/>
         </DrawerOverlay>
 
+        <!--群转让-->
+        <Modal
+            v-model="groupTransferShow"
+            :title="$L('转让群主身份')"
+            :mask-closable="false">
+            <Form :model="groupTransferData" label-width="auto" @submit.native.prevent>
+                <FormItem prop="userid" :label="$L('新的群主')">
+                    <UserInput v-model="groupTransferData.userid" :disabledChoice="groupTransferData.disabledChoice" :multiple-max="1" max-hidden-select :placeholder="$L('选择新的群主')"/>
+                </FormItem>
+            </Form>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="groupTransferShow=false">{{$L('取消')}}</Button>
+                <Button type="primary" :loading="groupTransferLoad > 0" @click="onDialogMenu('transferConfirm')">{{$L('确定转让')}}</Button>
+            </div>
+        </Modal>
+
         <!--回复列表-->
         <DrawerOverlay
             v-model="replyListShow"
@@ -473,6 +504,13 @@ export default {
             openId: 0,
             dialogDrag: false,
             groupInfoShow: false,
+
+            groupTransferShow: false,
+            groupTransferLoad: 0,
+            groupTransferData: {
+                userid: [],
+                disabledChoice: []
+            },
 
             navStyle: {},
 
@@ -1470,12 +1508,111 @@ export default {
             }).catch(() => {})
         },
 
-        openCreateGroup() {
-            this.createGroupData = {
-                userids: this.dialogData.dialog_user ? [this.userId, this.dialogData.dialog_user.userid] : [this.userId],
-                uncancelable: [this.userId]
-            };
-            this.createGroupShow = true;
+        onDialogMenu(cmd) {
+            switch (cmd) {
+                case "openCreate":
+                    const userids = [this.userId]
+                    if (this.dialogData.dialog_user && this.userId != this.dialogData.dialog_user.userid) {
+                        userids.push(this.dialogData.dialog_user.userid)
+                    }
+                    this.createGroupData = {userids, uncancelable: [this.userId]}
+                    this.createGroupShow = true
+                    break;
+
+                case "groupInfo":
+                    this.groupInfoShow = true
+                    break;
+
+                case "transfer":
+                    this.groupTransferData = {
+                        dialog_id: this.dialogId,
+                        userid: [],
+                        disabledChoice: [this.userId]
+                    }
+                    this.groupTransferShow = true
+                    break;
+
+                case "transferConfirm":
+                    this.onTransferGroup()
+                    break;
+
+                case "disband":
+                    this.onDisbandGroup()
+                    break;
+
+                case "exit":
+                    this.onExitGroup()
+                    break;
+            }
+        },
+
+        onTransferGroup() {
+            if (this.groupTransferData.userid.length === 0) {
+                $A.messageError("请选择新的群主");
+                return
+            }
+            this.groupTransferLoad++;
+            this.$store.dispatch("call", {
+                url: 'dialog/group/transfer',
+                data: {
+                    dialog_id: this.dialogId,
+                    userid: this.groupTransferData.userid[0]
+                }
+            }).then(({data, msg}) => {
+                $A.messageSuccess(msg);
+                this.$store.dispatch("saveDialog", data);
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            }).finally(_ => {
+                this.groupTransferLoad--;
+            });
+        },
+
+        onDisbandGroup() {
+            $A.modalConfirm({
+                content: `你确定要解散【${this.dialogData.name}】群组吗？`,
+                loading: true,
+                okText: '解散',
+                onOk: () => {
+                    return new Promise((resolve, reject) => {
+                        this.$store.dispatch("call", {
+                            url: 'dialog/group/disband',
+                            data: {
+                                dialog_id: this.dialogId,
+                            }
+                        }).then(({msg}) => {
+                            resolve(msg);
+                            this.$store.dispatch("forgetDialog", this.dialogId);
+                            this.goForward({name: 'manage-messenger'});
+                        }).catch(({msg}) => {
+                            reject(msg);
+                        });
+                    })
+                },
+            });
+        },
+
+        onExitGroup() {
+            $A.modalConfirm({
+                content: "你确定要退出群组吗？",
+                loading: true,
+                onOk: () => {
+                    return new Promise((resolve, reject) => {
+                        this.$store.dispatch("call", {
+                            url: 'dialog/group/deluser',
+                            data: {
+                                dialog_id: this.dialogId,
+                            }
+                        }).then(({msg}) => {
+                            resolve(msg);
+                            this.$store.dispatch("forgetDialog", this.dialogId);
+                            this.goForward({name: 'manage-messenger'});
+                        }).catch(({msg}) => {
+                            reject(msg);
+                        });
+                    })
+                },
+            });
         },
 
         onCreateGroup() {

@@ -142,26 +142,32 @@ class WebSocketDialog extends AbstractModel
 
     /**
      * 加入聊天室
-     * @param int|array $userid     加入的会员ID或会员ID组
-     * @param int $inviter          邀请人
-     * @param bool $important       重要人员
+     * @param int|array $userid         加入的会员ID或会员ID组
+     * @param int $inviter              邀请人
+     * @param bool|null $important      重要人员(null不修改、bool修改)
      * @return bool
      */
-    public function joinGroup($userid, $inviter, $important = false)
+    public function joinGroup($userid, $inviter, $important = null)
     {
         AbstractModel::transaction(function () use ($important, $inviter, $userid) {
             foreach (is_array($userid) ? $userid : [$userid] as $value) {
                 if ($value > 0) {
+                    $updateData = [
+                        'inviter' => $inviter,
+                    ];
+                    if (is_bool($important)) {
+                        $updateData['important'] = $important ? 1 : 0;
+                    }
+                    $isInsert = false;
                     WebSocketDialogUser::updateInsert([
                         'dialog_id' => $this->id,
                         'userid' => $value,
-                    ], [
-                        'inviter' => $inviter,
-                        'important' => $important ? 1 : 0,
-                    ]);
-                    WebSocketDialogMsg::sendMsg(null, $this->id, 'notice', [
-                        'notice' => User::userid2nickname($value) . " 已加入群组"
-                    ], $inviter, true, true);
+                    ], $updateData, [], $isInsert);
+                    if ($isInsert) {
+                        WebSocketDialogMsg::sendMsg(null, $this->id, 'notice', [
+                            'notice' => User::userid2nickname($value) . " 已加入群组"
+                        ], $inviter, true, true);
+                    }
                 }
             }
         });

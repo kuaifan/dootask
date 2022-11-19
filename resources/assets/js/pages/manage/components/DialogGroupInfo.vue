@@ -33,11 +33,7 @@
         </div>
 
         <div v-if="dialogData.group_type !== 'all'" class="group-info-button">
-            <Button v-if="dialogData.owner_id == userId || dialogData.owner_id == 0" @click="openAdd" type="primary">{{ $L("添加成员") }}</Button>
-            <template v-if="dialogData.owner_id == userId">
-                <Button v-if="dialogData.group_type !== 'department'" @click="onDisband" type="error" ghost>{{ $L("解散群组") }}</Button>
-            </template>
-            <Button v-else @click="onExit" type="error" ghost>{{ $L("退出群组") }}</Button>
+            <Button v-if="dialogData.owner_id == userId || dialogData.owner_id == 0" @click="openAdd" type="primary" icon="md-add">{{ $L("添加成员") }}</Button>
         </div>
 
         <!--添加成员-->
@@ -239,30 +235,6 @@ export default {
                                 this.$store.dispatch("forgetDialog", this.dialogId);
                                 this.goForward({name: 'manage-messenger'});
                             }
-                        }).catch(({msg}) => {
-                            reject(msg);
-                        });
-                    })
-                },
-            });
-        },
-
-        onDisband() {
-            $A.modalConfirm({
-                content: `你确定要解散【${this.dialogData.name}】群组吗？`,
-                loading: true,
-                okText: '解散',
-                onOk: () => {
-                    return new Promise((resolve, reject) => {
-                        this.$store.dispatch("call", {
-                            url: 'dialog/group/disband',
-                            data: {
-                                dialog_id: this.dialogId,
-                            }
-                        }).then(({msg}) => {
-                            resolve(msg);
-                            this.$store.dispatch("forgetDialog", this.dialogId);
-                            this.goForward({name: 'manage-messenger'});
                         }).catch(({msg}) => {
                             reject(msg);
                         });

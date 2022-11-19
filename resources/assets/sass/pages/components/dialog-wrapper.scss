@@ -296,15 +296,24 @@
             }
 
             .dialog-back,
-            .dialog-create {
-                cursor: pointer;
-                margin-left: 24px;
+            .dialog-menu {
                 font-size: 22px;
                 color: $primary-text-color;
             }
 
+            .dialog-menu {
+                margin-right: -22px;
+                .dialog-menu-icon {
+                    cursor: pointer;
+                    margin: 0 22px;
+                    font-size: 22px;
+                    color: $primary-text-color;
+                }
+            }
+
             .dialog-back {
                 display: none;
+                cursor: pointer;
             }
         }
     }
@@ -1500,16 +1509,21 @@
                 }
 
                 .dialog-back,
-                .dialog-create {
+                .dialog-menu {
                     position: absolute;
                     top: 0;
                     bottom: 0;
                     right: 0;
-                    margin: 0;
                     width: 52px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
+                }
+                .dialog-menu {
+                    margin: 0;
+                    .dialog-menu-icon {
+                        margin: 0;
+                    }
                 }
                 .dialog-back {
                     padding-right: 6px;
