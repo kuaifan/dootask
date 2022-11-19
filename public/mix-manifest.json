@@ -37,7 +37,6 @@
     "/docs/assets/prism.css": "/docs/assets/prism.css",
     "/docs/index.html": "/docs/index.html",
     "/favicon.ico": "/favicon.ico",
-    "/hot": "/hot",
     "/images/avatar/default_1.png": "/images/avatar/default_1.png",
     "/images/avatar/default_10.png": "/images/avatar/default_10.png",
     "/images/avatar/default_11.png": "/images/avatar/default_11.png",
@@ -3526,6 +3525,8 @@
     "/uploads/task/content/202211/9/70b8f67e28a3cca5a1ae8d0fcebc57c4": "/uploads/task/content/202211/9/70b8f67e28a3cca5a1ae8d0fcebc57c4",
     "/uploads/user/picture/1/202206/982ab810538853592f45d890d7ee1a4a_512x512_c1.jpeg": "/uploads/user/picture/1/202206/982ab810538853592f45d890d7ee1a4a_512x512_c1.jpeg",
     "/uploads/user/picture/1/202206/982ab810538853592f45d890d7ee1a4a_512x512_c1.jpeg_thumb.jpg": "/uploads/user/picture/1/202206/982ab810538853592f45d890d7ee1a4a_512x512_c1.jpeg_thumb.jpg",
+    "/uploads/user/picture/1/202211/deaef0a37be8811ea662fabad8ed9b54_512x512_c1.png": "/uploads/user/picture/1/202211/deaef0a37be8811ea662fabad8ed9b54_512x512_c1.png",
+    "/uploads/user/picture/1/202211/deaef0a37be8811ea662fabad8ed9b54_512x512_c1.png_thumb.jpg": "/uploads/user/picture/1/202211/deaef0a37be8811ea662fabad8ed9b54_512x512_c1.png_thumb.jpg",
     "/uploads/user/picture/3/202203/664e5ed5068045ec8f794eb33dbabc60_2160x1105-1.png": "/uploads/user/picture/3/202203/664e5ed5068045ec8f794eb33dbabc60_2160x1105-1.png",
     "/uploads/user/picture/3/202203/664e5ed5068045ec8f794eb33dbabc60_2160x1105-1.png_thumb.jpg": "/uploads/user/picture/3/202203/664e5ed5068045ec8f794eb33dbabc60_2160x1105-1.png_thumb.jpg",
     "/uploads/user/picture/3/202203/eaf96e3e2b7106af74dde7acffa5e30a.png": "/uploads/user/picture/3/202203/eaf96e3e2b7106af74dde7acffa5e30a.png",
@@ -3540,7 +3541,5 @@
     "/uploads/user/picture/3/202204/cc48f523f9926e23b808b43d072b3c4d_512x512_c1.png_thumb.jpg": "/uploads/user/picture/3/202204/cc48f523f9926e23b808b43d072b3c4d_512x512_c1.png_thumb.jpg",
     "/uploads/user/picture/3/202204/ebe847e58314107a877eb13d4e5f09d5_512x512.png": "/uploads/user/picture/3/202204/ebe847e58314107a877eb13d4e5f09d5_512x512.png",
     "/uploads/user/picture/3/202204/ebe847e58314107a877eb13d4e5f09d5_512x512.png_thumb.jpg": "/uploads/user/picture/3/202204/ebe847e58314107a877eb13d4e5f09d5_512x512.png_thumb.jpg",
-    "/web.config": "/web.config",
-    "/uploads/user/picture/1/202211/deaef0a37be8811ea662fabad8ed9b54_512x512_c1.png": "/uploads/user/picture/1/202211/deaef0a37be8811ea662fabad8ed9b54_512x512_c1.png",
-    "/uploads/user/picture/1/202211/deaef0a37be8811ea662fabad8ed9b54_512x512_c1.png_thumb.jpg": "/uploads/user/picture/1/202211/deaef0a37be8811ea662fabad8ed9b54_512x512_c1.png_thumb.jpg"
+    "/web.config": "/web.config"
 }
