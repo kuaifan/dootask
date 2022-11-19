@@ -37,6 +37,7 @@
     "/docs/assets/prism.css": "/docs/assets/prism.css",
     "/docs/index.html": "/docs/index.html",
     "/favicon.ico": "/favicon.ico",
+    "/hot": "/hot",
     "/images/avatar/default_1.png": "/images/avatar/default_1.png",
     "/images/avatar/default_10.png": "/images/avatar/default_10.png",
     "/images/avatar/default_11.png": "/images/avatar/default_11.png",
@@ -3539,5 +3540,7 @@
     "/uploads/user/picture/3/202204/cc48f523f9926e23b808b43d072b3c4d_512x512_c1.png_thumb.jpg": "/uploads/user/picture/3/202204/cc48f523f9926e23b808b43d072b3c4d_512x512_c1.png_thumb.jpg",
     "/uploads/user/picture/3/202204/ebe847e58314107a877eb13d4e5f09d5_512x512.png": "/uploads/user/picture/3/202204/ebe847e58314107a877eb13d4e5f09d5_512x512.png",
     "/uploads/user/picture/3/202204/ebe847e58314107a877eb13d4e5f09d5_512x512.png_thumb.jpg": "/uploads/user/picture/3/202204/ebe847e58314107a877eb13d4e5f09d5_512x512.png_thumb.jpg",
-    "/web.config": "/web.config"
+    "/web.config": "/web.config",
+    "/uploads/user/picture/1/202211/deaef0a37be8811ea662fabad8ed9b54_512x512_c1.png": "/uploads/user/picture/1/202211/deaef0a37be8811ea662fabad8ed9b54_512x512_c1.png",
+    "/uploads/user/picture/1/202211/deaef0a37be8811ea662fabad8ed9b54_512x512_c1.png_thumb.jpg": "/uploads/user/picture/1/202211/deaef0a37be8811ea662fabad8ed9b54_512x512_c1.png_thumb.jpg"
 }
