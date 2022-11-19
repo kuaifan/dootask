@@ -77,7 +77,7 @@ class User extends AbstractModel
     public static $defaultAvatarMode = 'auto';
 
     // 基本信息的字段
-    public static $basicField = ['userid', 'email', 'nickname', 'profession', 'userimg', 'az', 'pinyin', 'line_at', 'disable_at'];
+    public static $basicField = ['userid', 'email', 'nickname', 'profession', 'department', 'userimg', 'az', 'pinyin', 'line_at', 'disable_at'];
 
     /**
      * 更新数据校验
@@ -478,6 +478,7 @@ class User extends AbstractModel
         $userInfo = self::whereUserid($userid)->select(User::$basicField)->first();
         if ($userInfo) {
             $userInfo->online = $userInfo->getOnlineStatus();
+            $userInfo->department_name = $userInfo->department ? UserDepartment::whereIn('id', $userInfo->department)->pluck('name')->implode(',') : '';
         }
         return $_A["__static_userid2basic_" . $userid] = ($userInfo ?: []);
     }
