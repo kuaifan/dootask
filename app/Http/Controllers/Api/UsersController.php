@@ -766,13 +766,36 @@ class UsersController extends AbstractController
                     ]);
                     $userTransfer->save();
                     $userTransfer->start();
-                    // 离职移出全员群组
-                    $dialog = WebSocketDialog::whereGroupType('all')->orderByDesc('id')->first();
-                    $dialog?->exitGroup($userInfo->userid, 'remove', false, false);
+                    // 离职移出群组
+                    WebSocketDialog::select(['web_socket_dialogs.*'])
+                        ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
+                        ->where('web_socket_dialogs.type', 'group')
+                        ->where('u.userid', $userInfo->userid)
+                        ->orderByDesc('web_socket_dialogs.id')
+                        ->chunk(100, function($list) use ($transferUser, $userInfo) {
+                            /** @var WebSocketDialog $dialog */
+                            foreach ($list as $dialog) {
+                                // 离职员工退出群
+                                $dialog->exitGroup($userInfo->userid, 'remove', false, false);
+                                if ($dialog->owner_id === $userInfo->userid) {
+                                    // 如果是群主则把交接人设为群主
+                                    $dialog->owner_id = $transferUser->userid;
+                                    if ($dialog->save()) {
+                                        $dialog->joinGroup($transferUser->userid, 0);
+                                        $dialog->pushMsg("groupUpdate", [
+                                            'id' => $dialog->id,
+                                            'owner_id' => $dialog->owner_id,
+                                        ]);
+                                    }
+                                }
+                            }
+                        });
                 } elseif ($type === 'cleardisable') {
                     // 取消离职重新加入全员群组
-                    $dialog = WebSocketDialog::whereGroupType('all')->orderByDesc('id')->first();
-                    $dialog?->joinGroup($userInfo->userid, $user->userid);
+                    if (Base::settingFind('system', 'all_group_autoin', 'yes') === 'yes') {
+                        $dialog = WebSocketDialog::whereGroupType('all')->orderByDesc('id')->first();
+                        $dialog?->joinGroup($userInfo->userid, $user->userid);
+                    }
                 }
             });
         }
