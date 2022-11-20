@@ -478,7 +478,12 @@ class User extends AbstractModel
         $userInfo = self::whereUserid($userid)->select(User::$basicField)->first();
         if ($userInfo) {
             $userInfo->online = $userInfo->getOnlineStatus();
-            $userInfo->department_name = $userInfo->department ? UserDepartment::whereIn('id', $userInfo->department)->pluck('name')->implode(',') : '';
+            $departments = [];
+            $list = UserDepartment::select(['id', 'owner_userid', 'name'])->whereIn('id', $userInfo->department)->get();
+            foreach ($list as $item) {
+                $departments[] = $item->name . ($item->owner_userid === $userid ? '(M)' : '');
+            }
+            $userInfo->department_name = implode(', ', $departments);
         }
         return $_A["__static_userid2basic_" . $userid] = ($userInfo ?: []);
     }
