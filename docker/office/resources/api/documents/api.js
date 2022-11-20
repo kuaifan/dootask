@@ -3,7 +3,7 @@
  *
  * http://www.onlyoffice.com
  *
- * Version: 7.1.1 (build:23)
+ * Version: 7.2.1 (build:34)
  */
 
 ;(function(window) {
@@ -158,6 +158,7 @@
                         address: 'New-York, 125f-25',
                         mail: 'support@gmail.com',
                         www: 'www.superpuper.com',
+                        phone: '1234567890',
                         info: 'Some info',
                         logo: '',
                         logoDark: '', // logo for dark theme
@@ -260,10 +261,12 @@
                     hideRulers: false // hide or show rulers on first loading (presentation or document editor)
                     hideNotes: false // hide or show notes panel on first loading (presentation editor)
                     uiTheme: 'theme-dark' // set interface theme: id or default-dark/default-light
+                    integrationMode: "embed" // turn off scroll to frame
                 },
                  coEditing: {
-                     mode: 'fast', // <coauthoring mode>, 'fast' or 'strict'. if 'fast' and 'customization.autosave'=false -> set 'customization.autosave'=true
-                     change: true, // can change co-authoring mode
+                     mode: 'fast', // <coauthoring mode>, 'fast' or 'strict'. if 'fast' and 'customization.autosave'=false -> set 'customization.autosave'=true. 'fast' - default for editor
+                     // for viewer: 'strict' is default, offline viewer; 'fast' - live viewer, show changes from other users
+                     change: true, // can change co-authoring mode. true - default for editor, false - default for viewer
                  },
                 plugins: {
                     autostart: ['asc.{FFE1F462-1EA2-4391-990D-4CC84940B754}'],
@@ -369,6 +372,10 @@
         _config.editorConfig.canRequestCreateNew = _config.events && !!_config.events.onRequestCreateNew;
         _config.frameEditorId = placeholderId;
         _config.parentOrigin = window.location.origin;
+
+        (function(){function b(a){this.frame=a;this.x=window.scrollX;this.y=window.scrollY;this.lockCounter=0;document.addEventListener("scroll",this.onScroll.bind(this),!1);window.addEventListener("blur",this.onBlur.bind(this),!1);window.addEventListener("pointermove",this.onMove.bind(this),!1);window.addEventListener("wheel",this.onMove.bind(this),!1);this.frame.addEventListener("pointerover",this.onOver.bind(this),!1);this.frame.addEventListener("pointerleave",this.onLeave.bind(this),!1)}window.AscEmbed=
+window.AscEmbed||{};b.prototype.onScroll=function(){document.activeElement===this.frame||0!==this.lockCounter?window.scrollTo(this.x,this.y):(this.x=window.scrollX,this.y=window.scrollY)};b.prototype.onBlur=function(){document.activeElement===this.frame&&this.lockWithTimeout(500)};b.prototype.onOver=function(){};b.prototype.onLeave=function(){this.lockWithTimeout(100);this.frame.blur()};b.prototype.onMove=function(){document.activeElement===this.frame&&(this.lockWithTimeout(100),this.frame.blur())};
+b.prototype.lockWithTimeout=function(a){this.lockCounter++;var c=this;setTimeout(function(){c.lockCounter--},a)};window.AscEmbed.initWorker=function(a){window.AscEmbed.workers=window.AscEmbed.workers||[];a=new b(a);window.AscEmbed.workers.push(a);return a}})();
 
         var onMouseUp = function (evt) {
             _processMouse(evt);
@@ -531,6 +538,9 @@
 
         if (target && _checkConfigParams()) {
             iframe = createIframe(_config);
+            if (_config.editorConfig.customization && _config.editorConfig.customization.integrationMode==='embed')
+                window.AscEmbed && window.AscEmbed.initWorker(iframe);
+
             if (iframe.src) {
                 var pathArray = iframe.src.split('/');
                 this.frameOrigin = pathArray[0] + '//' + pathArray[2];
@@ -783,7 +793,10 @@
             });
         };
 
+        function _createEmbedWorker() { return AscEmbed.initWorker(iframe); }
+
         return {
+            createEmbedWorker   : _createEmbedWorker,
             showMessage         : _showMessage,
             processSaveResult   : _processSaveResult,
             processRightsChange : _processRightsChange,
@@ -827,7 +840,7 @@
     };
 
     DocsAPI.DocEditor.version = function() {
-        return '7.1.1';
+        return '7.2.1';
     };
 
     MessageDispatcher = function(fn, scope) {
@@ -956,7 +969,7 @@
             if ( typeof(customization) == 'object' && ( customization.toolbarNoTabs ||
                                                         (config.editorConfig.targetApp!=='desktop') && (customization.loaderName || customization.loaderLogo))) {
                 index = "/index_loader.html";
-            } else if (config.editorConfig.mode === 'editdiagram' || config.editorConfig.mode === 'editmerge')
+            } else if (config.editorConfig.mode === 'editdiagram' || config.editorConfig.mode === 'editmerge' || config.editorConfig.mode === 'editole')
                 index = "/index_internal.html";
 
         }
@@ -965,7 +978,7 @@
     }
 
     function getAppParameters(config) {
-        var params = "?_dc=7.1.1-23";
+        var params = "?_dc=7.2.1-34";
 
         if (config.editorConfig && config.editorConfig.lang)
             params += "&lang=" + config.editorConfig.lang;
@@ -990,7 +1003,7 @@
             }
         }
 
-        if (config.editorConfig && (config.editorConfig.mode == 'editdiagram' || config.editorConfig.mode == 'editmerge'))
+        if (config.editorConfig && (config.editorConfig.mode == 'editdiagram' || config.editorConfig.mode == 'editmerge' || config.editorConfig.mode == 'editole'))
             params += "&internal=true";
 
         if (config.frameEditorId)
@@ -1015,25 +1028,6 @@
         return params;
     }
 
-    function getFrameTitle(config) {
-        var title = 'Powerful online editor for text documents, spreadsheets, and presentations';
-        var appMap = {
-            'text': 'text documents',
-            'spreadsheet': 'spreadsheets',
-            'presentation': 'presentations',
-            'word': 'text documents',
-            'cell': 'spreadsheets',
-            'slide': 'presentations'
-        };
-
-        if (typeof config.documentType === 'string') {
-            var app = appMap[config.documentType.toLowerCase()];
-            if (app)
-                title = 'Powerful online editor for ' + app;
-        }
-        return title;
-    }
-
     function createIframe(config) {
         var iframe = document.createElement("iframe");
 
@@ -1043,11 +1037,11 @@
         iframe.align = "top";
         iframe.frameBorder = 0;
         iframe.name = "frameEditor";
-        iframe.title = getFrameTitle(config);
+        config.title && (typeof config.title === 'string') && (iframe.title = config.title);
         iframe.allowFullscreen = true;
         iframe.setAttribute("allowfullscreen",""); // for IE11
         iframe.setAttribute("onmousewheel",""); // for Safari on Mac
-        iframe.setAttribute("allow", "autoplay; camera; microphone; display-capture");
+        iframe.setAttribute("allow", "autoplay; camera; microphone; display-capture; clipboard-write;");
 
 		if (config.type == "mobile")
 		{
