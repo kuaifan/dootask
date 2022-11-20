@@ -13,7 +13,7 @@
             <p v-if="user.delete_at"><strong>{{$L('删除时间')}}: {{user.delete_at}}</strong></p>
             <p v-else-if="user.disable_at"><strong>{{$L('离职时间')}}: {{user.disable_at}}</strong></p>
             <slot name="end"/>
-            <div v-if="userId != userid && showIconMenu" class="avatar-icons">
+            <div v-if="showMenu" class="avatar-icons">
                 <Icon type="ios-chatbubbles" @click="openDialog"/>
             </div>
         </div>
@@ -179,6 +179,16 @@
                     return false;
                 }
                 return !$A.rightExists(userimg, '/avatar.png');
+            },
+
+            showMenu() {
+                if (this.userId == this.userid) {
+                    return false
+                }
+                if (this.user.delete_at || this.user.disable_at) {
+                    return false
+                }
+                return this.showIconMenu
             },
 
             isDefault() {

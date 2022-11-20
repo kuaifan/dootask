@@ -24,7 +24,7 @@
             <div class="dialog-avatar">
                 <UserAvatar
                     :userid="source.userid"
-                    :tooltipDisabled="source.userid == userId"
+                    :tooltipDisabled="source.userid == userId || dialogData.type != 'group'"
                     :show-icon-menu="dialogData.type == 'group'"
                     :open-delay="100"
                     :size="30"/>
