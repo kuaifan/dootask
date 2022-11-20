@@ -221,16 +221,18 @@
                 <Alert type="error" style="margin-bottom:18px">{{$L(`正在进行帐号【ID:${disableData.userid}，${disableData.nickname}】离职操作。`)}}</Alert>
                 <FormItem :label="$L('离职时间')">
                     <DatePicker
+                        ref="disableTime"
                         v-model="disableData.disable_time"
                         :editable="false"
                         :placeholder="$L('选择离职时间')"
+                        :options="disableOptions"
                         style="width:100%"
                         format="yyyy/MM/dd HH:mm"
                         type="datetime"/>
                 </FormItem>
                 <FormItem :label="$L('交接人')">
                     <UserInput v-model="disableData.transfer_userid" :disabled-choice="[disableData.userid]" :multiple-max="1" max-hidden-select :placeholder="$L('选择交接人')"/>
-                    <div class="form-tip">{{ $L(`${disableData.nickname} 负责的项目、任务和文件将移交给交接人；同时退出所有群（如果是群主则转让给交接人）`) }}</div>
+                    <div class="form-tip">{{ $L(`${disableData.nickname} 负责的部门、项目、任务和文件将移交给交接人；同时退出所有群（如果是群主则转让给交接人）`) }}</div>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
@@ -279,6 +281,55 @@ export default {
             disableShow: false,
             disableLoading: 0,
             disableData: {},
+            disableOptions: {
+                shortcuts: [
+                    {
+                        text: this.$L('12:00'),
+                        value () {
+                            return $A.Date($A.formatDate("Y-m-d 12:00:00"));
+                        },
+                        onClick: (picker) => {
+                            picker.handlePickSuccess();
+                        }
+                    },
+                    {
+                        text: this.$L('17:00'),
+                        value () {
+                            return $A.Date($A.formatDate("Y-m-d 17:00:00"));
+                        },
+                        onClick: (picker) => {
+                            picker.handlePickSuccess();
+                        }
+                    },
+                    {
+                        text: this.$L('18:00'),
+                        value () {
+                            return $A.Date($A.formatDate("Y-m-d 18:00:00"));
+                        },
+                        onClick: (picker) => {
+                            picker.handlePickSuccess();
+                        }
+                    },
+                    {
+                        text: this.$L('19:00'),
+                        value () {
+                            return $A.Date($A.formatDate("Y-m-d 19:00:00"));
+                        },
+                        onClick: (picker) => {
+                            picker.handlePickSuccess();
+                        }
+                    },
+                    {
+                        text: this.$L('现在'),
+                        value () {
+                            return new Date();
+                        },
+                        onClick: (picker) => {
+                            picker.handlePickSuccess();
+                        }
+                    },
+                ]
+            },
 
             departmentShow: false,
             departmentLoading: 0,

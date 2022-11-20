@@ -132,4 +132,22 @@ class UserDepartment extends AbstractModel
         //
         $this->delete();
     }
+
+    /**
+     * 移交部门身份
+     * @param $originalUserid
+     * @param $newUserid
+     * @return void
+     */
+    public static function transfer($originalUserid, $newUserid)
+    {
+        self::whereOwnerUserid($originalUserid)->chunkById(100, function ($list) use ($originalUserid, $newUserid) {
+            /** @var self $item */
+            foreach ($list as $item) {
+                $item->saveDepartment([
+                    'owner_userid' => $newUserid,
+                ]);
+            }
+        });
+    }
 }

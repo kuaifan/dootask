@@ -35,11 +35,37 @@ class UserTransfer extends AbstractModel
      */
     public function start()
     {
+        // 移交部门
+        UserDepartment::transfer($this->original_userid, $this->new_userid);
         // 移交项目身份
         ProjectUser::transfer($this->original_userid, $this->new_userid);
         // 移交任务身份
         ProjectTaskUser::transfer($this->original_userid, $this->new_userid);
         // 移交文件
         File::transfer($this->original_userid, $this->new_userid);
+        // 离职移出群组
+        WebSocketDialog::select(['web_socket_dialogs.*'])
+            ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
+            ->where('web_socket_dialogs.type', 'group')
+            ->where('u.userid', $this->original_userid)
+            ->orderByDesc('web_socket_dialogs.id')
+            ->chunk(100, function($list) {
+                /** @var WebSocketDialog $dialog */
+                foreach ($list as $dialog) {
+                    // 离职员工退出群
+                    $dialog->exitGroup($this->original_userid, 'remove', false, false);
+                    if ($dialog->owner_id === $this->original_userid) {
+                        // 如果是群主则把交接人设为群主
+                        $dialog->owner_id = $this->new_userid;
+                        if ($dialog->save()) {
+                            $dialog->joinGroup($this->new_userid, 0);
+                            $dialog->pushMsg("groupUpdate", [
+                                'id' => $dialog->id,
+                                'owner_id' => $dialog->owner_id,
+                            ]);
+                        }
+                    }
+                }
+            });
     }
 }
