@@ -214,6 +214,7 @@ class UsersController extends AbstractController
     {
         "userid": 1,
         "identity": [ ],
+        "department": [ ],
         "az": "",
         "email": "admin@admin.com",
         "nickname": "admin",
@@ -234,6 +235,7 @@ class UsersController extends AbstractController
         //
         $data = $user->toArray();
         $data['nickname_original'] = $user->getRawOriginal('nickname');
+        $data['department_name'] = $user->getDepartmentName();
         return Base::retSuccess('success', $data);
     }
 
@@ -638,6 +640,9 @@ class UsersController extends AbstractController
                 if (!is_array($data['department'])) {
                     $data['department'] = [];
                 }
+                if (count($data['department']) > 10) {
+                    return Base::retError('最多只可加入10个部门');
+                }
                 foreach ($data['department'] as $id) {
                     if (!UserDepartment::whereId($id)->exists()) {
                         return Base::retError('修改部门不存在');
@@ -791,7 +796,7 @@ class UsersController extends AbstractController
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据（同"获取我的信息"接口）
+     * @apiSuccess {Object} data    返回数据
      */
     public function email__verification()
     {
@@ -839,7 +844,7 @@ class UsersController extends AbstractController
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据（同"获取我的信息"接口）
+     * @apiSuccess {Object} data    返回数据
      */
     public function umeng__alias()
     {

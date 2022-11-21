@@ -53,6 +53,8 @@ class UserDelete extends AbstractModel
                 $name = ($value['userid'] - 1) % 21 + 1;
                 $value['userimg'] = url("images/avatar/default_{$name}.png");
             }
+            // 部门
+            $value['department'] = array_filter(is_array($value['department']) ? $value['department'] : Base::explodeInt($value['department']));
         }
         return $value;
     }
@@ -69,9 +71,8 @@ class UserDelete extends AbstractModel
             return null;
         }
         $cache = $row->cache;
-        $cache = array_intersect_key($cache, array_flip(User::$basicField));
+        $cache = array_intersect_key($cache, array_flip(array_merge(User::$basicField, ['department_name'])));
         $cache['delete_at'] = $row->created_at->format($row->dateFormat ?: 'Y-m-d H:i:s');
-        $cache['department_name'] = $cache['department'] ? UserDepartment::whereIn('id', $cache['department'])->pluck('name')->implode(',') : '';
         return $cache;
     }
 }

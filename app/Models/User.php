@@ -145,7 +145,24 @@ class User extends AbstractModel
         if (empty($value)) {
             return [];
         }
-        return array_filter(is_array($value) ? $value : explode(",", trim($value, ",")));
+        return array_filter(is_array($value) ? $value : Base::explodeInt($value));
+    }
+
+    /**
+     * 获取所属部门名称
+     * @return string
+     */
+    public function getDepartmentName()
+    {
+        if (empty($this->department)) {
+            return "";
+        }
+        $list = UserDepartment::select(['id', 'owner_userid', 'name'])->whereIn('id', $this->department)->take(10)->get();
+        $array = [];
+        foreach ($list as $item) {
+            $array[] = $item->name . ($item->owner_userid === $this->userid ? '(M)' : '');
+        }
+        return implode(', ', $array);
     }
 
     /**
@@ -213,7 +230,9 @@ class User extends AbstractModel
                 'userid' => $this->userid,
                 'email' => $this->email,
                 'reason' => $reason,
-                'cache' => $this->getRawOriginal()
+                'cache' => array_merge($this->getRawOriginal(), [
+                    'department_name' => $this->getDepartmentName()
+                ])
             ]);
             $userDelete->save();
             // 删除未读
@@ -478,12 +497,7 @@ class User extends AbstractModel
         $userInfo = self::whereUserid($userid)->select(User::$basicField)->first();
         if ($userInfo) {
             $userInfo->online = $userInfo->getOnlineStatus();
-            $departments = [];
-            $list = UserDepartment::select(['id', 'owner_userid', 'name'])->whereIn('id', $userInfo->department)->get();
-            foreach ($list as $item) {
-                $departments[] = $item->name . ($item->owner_userid === $userid ? '(M)' : '');
-            }
-            $userInfo->department_name = implode(', ', $departments);
+            $userInfo->department_name = $userInfo->getDepartmentName();
         }
         return $_A["__static_userid2basic_" . $userid] = ($userInfo ?: []);
     }

@@ -199,10 +199,10 @@
             <Form :model="departmentEditData" label-width="auto" @submit.native.prevent>
                 <Alert type="error" style="margin-bottom:18px">{{$L(`正在进行帐号【ID:${departmentEditData.userid}，${departmentEditData.nickname}】部门修改。`)}}</Alert>
                 <FormItem :label="$L('原部门')">
-                    <div>{{departmentEditData.old || '-'}}</div>
+                    <div style="line-height:24px;padding:4px 0" v-html="departmentEditData.old || '-'"></div>
                 </FormItem>
                 <FormItem :label="$L('修改部门')">
-                    <Select v-model="departmentEditData.department" multiple :placeholder="$L('留空为默认部门')">
+                    <Select v-model="departmentEditData.department" multiple :multiple-max="10" :placeholder="$L('留空为默认部门')">
                         <Option v-for="(item, index) in departmentList" :value="item.id" :key="index">{{ item.name }}</Option>
                     </Select>
                 </FormItem>
@@ -718,7 +718,7 @@ export default {
                     row.department.some(did => {
                         const data = this.departmentList.find(d => d.id == did)
                         if (data) {
-                            departments.push(data.name)
+                            departments.push(data.owner_userid === row.userid ? `${data.name} (${this.$L('负责人')})` : data.name)
                         }
                     })
                     this.departmentEditData = {
@@ -726,7 +726,7 @@ export default {
                         userid: row.userid,
                         nickname: row.nickname,
                         department: row.department.map(id => parseInt(id)),
-                        old: departments.join(", ")
+                        old: departments.join("<br/>")
                     };
                     this.departmentEditShow = true;
                     break;

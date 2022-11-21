@@ -873,30 +873,31 @@ class Base
      * 打散字符串，只留为数字的项
      * @param $delimiter
      * @param $string
+     * @param bool $reInt 是否格式化值
      * @return array
      */
-    public static function explodeInt($delimiter, $string = null)
+    public static function explodeInt($delimiter, $string = null, $reInt = true)
     {
         if ($string == null) {
             $string = $delimiter;
             $delimiter = ',';
         }
         $array = is_array($string) ? $string : explode($delimiter, $string);
-        return self::arrayRetainInt($array);
+        return self::arrayRetainInt($array, $reInt);
     }
 
     /**
      * 数组只保留数字的
      * @param $array
-     * @param bool $int 是否格式化值
+     * @param bool $reInt 是否格式化值
      * @return array
      */
-    public static function arrayRetainInt($array, $int = false)
+    public static function arrayRetainInt($array, $reInt = false)
     {
         foreach ($array as $k => $v) {
             if (!is_numeric($v)) {
                 unset($array[$k]);
-            } elseif ($int === true) {
+            } elseif ($reInt === true) {
                 $array[$k] = intval($v);
             }
         }

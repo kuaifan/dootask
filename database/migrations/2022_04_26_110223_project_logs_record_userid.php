@@ -25,7 +25,7 @@ class ProjectLogsRecordUserid extends Migration
             foreach ($lists as $log) {
                 $record = $log->record;
                 if (is_string($record['userid']) && str_contains($record['userid'], ",")) {
-                    $record['userid'] = Base::explodeInt(',', $record['userid']);
+                    $record['userid'] = Base::explodeInt($record['userid']);
                     $log->record = Base::array2json($record);
                     $log->save();
                 }

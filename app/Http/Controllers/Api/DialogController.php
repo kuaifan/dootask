@@ -503,7 +503,7 @@ class DialogController extends AbstractController
         $user = User::auth();
         //
         $id = Request::input('id');
-        $ids = Base::arrayRetainInt(is_array($id) ? $id : Base::explodeInt($id));
+        $ids = Base::explodeInt($id);
         //
         WebSocketDialogMsg::whereIn('id', $ids)->chunkById(20, function($list) use ($user) {
             /** @var WebSocketDialogMsg $item */

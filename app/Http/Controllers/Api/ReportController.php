@@ -497,7 +497,7 @@ class ReportController extends AbstractController
         }
 
         if (is_string($ids)) {
-            $ids = explode(",", $ids);
+            $ids = Base::explodeInt($ids);
         }
 
         $data = Report::with(["receivesUser" => function (BelongsToMany $query) use ($user) {
