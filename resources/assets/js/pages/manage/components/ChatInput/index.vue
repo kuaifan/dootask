@@ -576,6 +576,7 @@ export default {
                                 containers[i].classList.add(mentionName);
                                 $A.scrollPreventThrough(containers[i]);
                             }
+                            let mentionSourceCache = null;
                             this.getMentionSource(mentionChar, searchTerm, array => {
                                 const values = [];
                                 array.some(item => {
@@ -588,7 +589,10 @@ export default {
                                         values.push(...list)
                                     }
                                 })
-                                renderList(values, searchTerm);
+                                if ($A.jsonStringify(values.map(({id}) => id)) !== mentionSourceCache) {
+                                    mentionSourceCache = $A.jsonStringify(values.map(({id}) => id))
+                                    renderList(values, searchTerm);
+                                }
                             })
                         }
                     }
