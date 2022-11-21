@@ -1565,6 +1565,7 @@ export default {
                 $A.modalError(msg);
             }).finally(_ => {
                 this.groupTransferLoad--;
+                this.groupTransferShow = false;
             });
         },
 
