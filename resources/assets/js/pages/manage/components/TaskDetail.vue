@@ -922,7 +922,24 @@ export default {
                     break;
 
                 case 'times':
-                    this.$set(this.taskDetail, 'times', [params.start_at, params.end_at])
+                    if (this.taskDetail.start_at
+                        && (Math.abs($A.Time(this.taskDetail.start_at) - $A.Time(params.start_at)) > 60 || Math.abs($A.Time(this.taskDetail.end_at) - $A.Time(params.end_at)) > 60)
+                        && typeof params.desc === "undefined") {
+                        $A.modalInput({
+                            title: `修改任务时间`,
+                            placeholder: `请输入修改备注`,
+                            okText: "确定",
+                            onOk: (desc) => {
+                                if (!desc) {
+                                    return `请输入修改备注`
+                                }
+                                this.updateData("times", Object.assign(params, {desc}))
+                                return false
+                            },
+                        });
+                        return;
+                    }
+                    this.$set(this.taskDetail, 'times', [params.start_at, params.end_at, params.desc])
                     break;
 
                 case 'loop':

@@ -702,7 +702,7 @@ class ProjectTask extends AbstractModel
                 $this->start_at = null;
                 $this->end_at = null;
                 $times = $data['times'];
-                list($start, $end) = is_string($times) ? explode(",", $times) : (is_array($times) ? $times : []);
+                list($start, $end, $desc) = is_string($times) ? explode(",", $times) : (is_array($times) ? $times : []);
                 if (Base::isDate($start) && Base::isDate($end) && $start != $end) {
                     $start_at = Carbon::parse($start);
                     $end_at = Carbon::parse($end);
@@ -763,7 +763,7 @@ class ProjectTask extends AbstractModel
                     });
                 }
                 $newStringAt = $this->start_at ? ($this->start_at->toDateTimeString() . '~' . $this->end_at->toDateTimeString()) : '';
-                $this->addLog("修改{任务}时间", [
+                $this->addLog("修改{任务}时间" . ($desc ? "（备注：{$desc}）" : ""), [
                     'change' => [$oldStringAt, $newStringAt]
                 ]);
 
