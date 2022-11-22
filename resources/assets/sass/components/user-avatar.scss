@@ -80,6 +80,12 @@
     line-height: 1.5;
     > p {
         padding: 1px 2px;
+        &.department-name {
+            max-width: 220px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
         > em {
             font-style: normal;
             &.disabled,

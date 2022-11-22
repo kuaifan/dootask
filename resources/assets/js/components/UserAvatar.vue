@@ -8,7 +8,7 @@
         <div slot="content" class="common-avatar-transfer">
             <slot/>
             <p>{{$L('昵称')}}: {{user.nickname}}<em v-if="user.delete_at" class="deleted no-dark-content">{{$L('已删除')}}</em><em v-else-if="user.disable_at" class="disabled no-dark-content">{{$L('已离职')}}</em></p>
-            <p>{{$L('部门')}}: {{user.department_name || '-'}}</p>
+            <p class="department-name" :title="user.department_name || ''">{{$L('部门')}}: {{user.department_name || '-'}}</p>
             <p>{{$L('职位/职称')}}: {{user.profession || '-'}}</p>
             <p v-if="user.delete_at"><strong>{{$L('删除时间')}}: {{user.delete_at}}</strong></p>
             <p v-else-if="user.disable_at"><strong>{{$L('离职时间')}}: {{user.disable_at}}</strong></p>
