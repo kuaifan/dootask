@@ -644,15 +644,47 @@ class WebSocketDialogMsg extends AbstractModel
                 }
             }
         }
-        // @成员、#任务
+        // @成员、#任务、~文件
         preg_match_all("/<span\s+class=\"mention\"(.*?)>.*?<\/span>.*?<\/span>.*?<\/span>/s", $text, $matchs);
         foreach ($matchs[1] as $key => $str) {
             preg_match("/data-denotation-char=\"(.*?)\"/", $str, $matchChar);
             preg_match("/data-id=\"(.*?)\"/", $str, $matchId);
             preg_match("/data-value=\"(.*?)\"/", $str, $matchValye);
-            $text = str_replace($matchs[0][$key], "[:{$matchChar[1]}:{$matchId[1]}:{$matchValye[1]}:]", $text);
+            $keyId = $matchId[1];
+            if ($matchChar[1] === "~") {
+                if (Base::isNumber($keyId)) {
+                    $file = File::permissionFind($keyId);
+                    if ($file->type == 'folder') {
+                        throw new ApiException('文件夹不支持分享');
+                    }
+                    $fileLink = FileLink::generateLink($file->id, User::userid());
+                    $keyId = $fileLink['code'];
+                } else {
+                    preg_match("/\/single\/file\/(.*?)$/i", $keyId, $match);
+                    if ($match && strlen($match[1]) >= 32) {
+                        $keyId = $match[1];
+                    } else {
+                        throw new ApiException('文件分享错误');
+                    }
+                }
+            }
+            $text = str_replace($matchs[0][$key], "[:{$matchChar[1]}:{$keyId}:{$matchValye[1]}:]", $text);
         }
-        // 处理链接
+        // 文件分享链接
+        preg_match_all("/(https*:\/\/)((\w|=|\?|\.|\/|&|-|:|\+|%|;|#)+)/i", $text, $matchs);
+        if ($matchs) {
+            foreach ($matchs[0] as $str) {
+                preg_match("/\/single\/file\/(.*?)$/i", $str, $match);
+                if ($match && strlen($match[1]) >= 32) {
+                    $file = File::select(['files.id', 'files.name', 'files.ext'])->join('file_links as L', 'files.id', '=', 'L.file_id')->where('L.code', $match[1])->first();
+                    if ($file && $file->name) {
+                        $name = $file->ext ? "{$file->name}.{$file->ext}" : $file->name;
+                        $text = str_replace($str, "[:~:{$match[1]}:{$name}:]", $text);
+                    }
+                }
+            }
+        }
+        // 处理链接标签
         preg_match_all("/<a[^>]*?href=([\"'])(.*?)\\1[^>]*?>([^<]*?)<\/a>/is", $text, $matchs);
         foreach ($matchs[2] as $key => $str) {
             $herf = $matchs[2][$key];
@@ -665,6 +697,7 @@ class WebSocketDialogMsg extends AbstractModel
         $text = preg_replace("/\[:IMAGE:(.*?):(.*?):(.*?):(.*?):(.*?):\]/i", "<img class=\"$1\" width=\"$2\" height=\"$3\" src=\"{{RemoteURL}}$4\" alt=\"$5\"/>", $text);
         $text = preg_replace("/\[:@:(.*?):(.*?):\]/i", "<span class=\"mention user\" data-id=\"$1\">@$2</span>", $text);
         $text = preg_replace("/\[:#:(.*?):(.*?):\]/i", "<span class=\"mention task\" data-id=\"$1\">#$2</span>", $text);
+        $text = preg_replace("/\[:~:(.*?):(.*?):\]/i", "<a class=\"mention file\" href=\"{{RemoteURL}}single/file/$1\" target=\"_blank\">~$2</a>", $text);
         return preg_replace("/^(<p><\/p>)+|(<p><\/p>)+$/i", "", $text);
     }
 

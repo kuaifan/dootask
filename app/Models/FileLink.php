@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Module\Base;
+
 /**
  * App\Models\FileLink
  *
@@ -33,5 +35,36 @@ class FileLink extends AbstractModel
     public function file(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(File::class, 'id', 'file_id');
+    }
+
+    /**
+     * 生成链接
+     * @param $fileId
+     * @param $userid
+     * @param $refresh
+     * @return array
+     */
+    public static function generateLink($fileId, $userid, $refresh = false)
+    {
+        $fileLink = FileLink::whereFileId($fileId)->whereUserid($userid)->first();
+        if (empty($fileLink)) {
+            $fileLink = FileLink::createInstance([
+                'file_id' => $fileId,
+                'userid' => $userid,
+                'code' => Base::generatePassword(64),
+            ]);
+            $fileLink->save();
+        } else {
+            if ($refresh == 'yes') {
+                $fileLink->code = Base::generatePassword(64);
+                $fileLink->save();
+            }
+        }
+        return [
+            'id' => $fileId,
+            'url' => Base::fillUrl('single/file/' . $fileLink->code),
+            'code' => $fileLink->code,
+            'num' => $fileLink->num
+        ];
     }
 }

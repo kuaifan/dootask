@@ -225,6 +225,7 @@ export default {
             userList: null,
             userCache: null,
             taskList: null,
+            fileList: {},
 
             showMore: false,
             showEmoji: false,
@@ -414,12 +415,14 @@ export default {
             this.userList = null;
             this.userCache = null;
             this.taskList = null;
+            this.fileList = {};
             this.$emit('input', this.getInputCache())
         },
         taskId() {
             this.userList = null;
             this.userCache = null;
             this.taskList = null;
+            this.fileList = {};
             this.$emit('input', this.getInputCache())
         },
 
@@ -548,7 +551,7 @@ export default {
                     },
                     mention: {
                         allowedChars: /^\S*$/,
-                        mentionDenotationChars: ["@", "#"],
+                        mentionDenotationChars: ["@", "#", "~"],
                         defaultMenuOrientation: this.defaultMenuOrientation,
                         isolateCharacter: true,
                         positioningStrategy: 'fixed',
@@ -568,11 +571,12 @@ export default {
                             return "Loading...";
                         },
                         source: (searchTerm, renderList, mentionChar) => {
-                            const mentionName = mentionChar == "@" ? 'user-mention' : 'task-mention';
+                            const mentionName = mentionChar == "@" ? 'user-mention' : (mentionChar == "#" ? 'task-mention' : 'file-mention');
                             const containers = document.getElementsByClassName("ql-mention-list-container");
                             for (let i = 0; i < containers.length; i++) {
                                 containers[i].classList.remove("user-mention");
                                 containers[i].classList.remove("task-mention");
+                                containers[i].classList.remove("file-mention");
                                 containers[i].classList.add(mentionName);
                                 $A.scrollPreventThrough(containers[i]);
                             }
@@ -1221,6 +1225,31 @@ export default {
                         return;
                     }
                     taskCallback([])
+                    break;
+
+                case "~": // ~文件
+                    this.mentionMode = "file-mention";
+                    if ($A.isArray(this.fileList[searchTerm])) {
+                        resultCallback(this.fileList[searchTerm])
+                        return;
+                    }
+                    this.fileTimer && clearTimeout(this.fileTimer)
+                    this.fileTimer = setTimeout(_ => {
+                        this.$store.dispatch("searchFiles", searchTerm).then(({data}) => {
+                            this.fileList[searchTerm] = [{
+                                label: [{id: 0, value: this.$L('文件分享查看'), disabled: true}],
+                                list: data.filter(item => item.type !== "folder").map(item => {
+                                    return {
+                                        id: item.id,
+                                        value: item.ext ? `${item.name}.${item.ext}` : item.name
+                                    }
+                                })
+                            }];
+                            resultCallback(this.fileList[searchTerm])
+                        }).catch(() => {
+                            resultCallback([])
+                        })
+                    }, 300)
                     break;
 
                 default:

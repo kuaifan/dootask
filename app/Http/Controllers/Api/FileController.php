@@ -171,15 +171,15 @@ class FileController extends AbstractController
         $user = User::auth();
         //
         $key = trim(Request::input('key'));
-        if (empty($key)) {
-            return Base::retError('请输入关键词');
-        }
         // 搜索自己的
-        $builder = File::whereUserid($user->userid)->where("name", "like", "%{$key}%");
+        $builder = File::whereUserid($user->userid);
+        if ($key) {
+            $builder->where("name", "like", "%{$key}%");
+        }
         $array = $builder->take(50)->get()->toArray();
         // 搜索共享的
         $take = 50 - count($array);
-        if ($take > 0) {
+        if ($take > 0 && $key) {
             $list = File::where("name", "like", "%{$key}%")
                 ->whereIn('pshare', function ($queryA) use ($user) {
                     $queryA->select('files.id')
@@ -1102,24 +1102,7 @@ class FileController extends AbstractController
             return Base::retError('文件夹暂不支持此功能');
         }
         //
-        $fileLink = FileLink::whereFileId($file->id)->whereUserid($user->userid)->first();
-        if (empty($fileLink)) {
-            $fileLink = FileLink::createInstance([
-                'file_id' => $file->id,
-                'userid' => $user->userid,
-                'code' => Base::generatePassword(64),
-            ]);
-            $fileLink->save();
-        } else {
-            if ($refresh == 'yes') {
-                $fileLink->code = Base::generatePassword(64);
-                $fileLink->save();
-            }
-        }
-        return Base::retSuccess('success', [
-            'id' => $file->id,
-            'url' => Base::fillUrl('single/file/' . $fileLink->code),
-            'num' => $fileLink->num
-        ]);
+        $data = FileLink::generateLink($file->id, $user->userid, $refresh == 'yes');
+        return Base::retSuccess('success', $data);
     }
 }
