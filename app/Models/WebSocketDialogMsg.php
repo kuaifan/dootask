@@ -671,7 +671,7 @@ class WebSocketDialogMsg extends AbstractModel
             $text = str_replace($matchs[0][$key], "[:{$matchChar[1]}:{$keyId}:{$matchValye[1]}:]", $text);
         }
         // 文件分享链接
-        preg_match_all("/(https*:\/\/)((\w|=|\?|\.|\/|&|-|:|\+|%|;|#)+)/i", $text, $matchs);
+        preg_match_all("/(?<=[^'\"])(https*:\/\/)((\w|=|\?|\.|\/|&|-|:|\+|%|;|#)+)/i", $text, $matchs);
         if ($matchs) {
             foreach ($matchs[0] as $str) {
                 preg_match("/\/single\/file\/(.*?)$/i", $str, $match);
