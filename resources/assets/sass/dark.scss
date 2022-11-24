@@ -198,6 +198,10 @@ body.dark-mode-reverse {
                                         }
                                         .mention {
                                             color: #000000;
+                                            &.file,
+                                            &[data-denotation-char="~"] {
+                                                color: #0027a1 !important;
+                                            }
                                         }
                                     }
                                 }

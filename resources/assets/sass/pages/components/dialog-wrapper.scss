@@ -587,8 +587,9 @@
                                         cursor: pointer;
                                     }
 
-                                    &.file {
-                                        cursor: pointer;
+                                    &.file,
+                                    &[data-denotation-char="~"]  {
+                                        color: #436FF6 !important;
                                     }
 
                                     &.me {
