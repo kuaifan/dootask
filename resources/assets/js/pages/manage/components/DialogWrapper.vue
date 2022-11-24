@@ -867,7 +867,7 @@ export default {
             this.allMsgs = newList;
             //
             if (!this.windowActive || (tail > 10 && oldList.length > 0)) {
-                const lastId = oldList[oldList.length - 1].id
+                const lastId = oldList[oldList.length - 1] ? oldList[oldList.length - 1].id : 0
                 const tmpList = newList.filter(item => item.id && item.id > lastId)
                 this.msgNew += tmpList.length
             } else {
