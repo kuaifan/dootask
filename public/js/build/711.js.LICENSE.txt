@@ -7,15 +7,14 @@
 
 /*!
  * TOAST UI Date Picker
- * @version 4.3.1
- * @author NHN. FE Development Lab <dl_javascript@nhn.com>
+ * @version 4.3.2
+ * @author NHN Cloud. FE Development Lab <dl_javascript@nhn.com>
  * @license MIT
  */
 
 /*!
  * TOAST UI Time Picker
- * @version 2.1.4
- * @author NHN FE Development Lab <dl_javascript@nhn.com>
+ * @version 2.1.5
  * @license MIT
  */
 
