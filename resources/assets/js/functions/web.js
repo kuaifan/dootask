@@ -422,7 +422,7 @@
             if (/https*:\/\//.test(text)) {
                 text = text.split(/(<[^>]*>)/g).map(string => {
                     if (string && !/<[^>]*>/.test(string)) {
-                        string = string.replace(/([^'"])((https*:\/\/)((\w|=|\?|\.|\/|&|-|:|\+|%|;|#)+))/g, "$1<a href=\"$2\" target=\"_blank\">$2</a>")
+                        string = string.replace(/(^|[^'"])((https*:\/\/)((\w|=|\?|\.|\/|&|-|:|\+|%|;|#)+))/g, "$1<a href=\"$2\" target=\"_blank\">$2</a>")
                     }
                     return string;
                 }).join("")
