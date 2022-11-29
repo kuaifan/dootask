@@ -670,8 +670,15 @@ class WebSocketDialogMsg extends AbstractModel
             }
             $text = str_replace($matchs[0][$key], "[:{$matchChar[1]}:{$keyId}:{$matchValye[1]}:]", $text);
         }
+        // 处理链接标签
+        preg_match_all("/<a[^>]*?href=([\"'])(.*?)\\1[^>]*?>([^<]*?)<\/a>/is", $text, $matchs);
+        foreach ($matchs[2] as $key => $str) {
+            $herf = base64_encode($matchs[2][$key]);
+            $title = $matchs[3][$key] ? base64_encode($matchs[3][$key]) : $herf;
+            $text = str_replace($matchs[0][$key], "[:LINK:{$herf}:{$title}:]", $text);
+        }
         // 文件分享链接
-        preg_match_all("/(?<=[^'\"])(https*:\/\/)((\w|=|\?|\.|\/|&|-|:|\+|%|;|#)+)/i", $text, $matchs);
+        preg_match_all("/(https*:\/\/)((\w|=|\?|\.|\/|&|-|:|\+|%|;|#)+)/i", $text, $matchs);
         if ($matchs) {
             foreach ($matchs[0] as $str) {
                 preg_match("/\/single\/file\/(.*?)$/i", $str, $match);
@@ -684,13 +691,6 @@ class WebSocketDialogMsg extends AbstractModel
                 }
             }
         }
-        // 处理链接标签
-        preg_match_all("/<a[^>]*?href=([\"'])(.*?)\\1[^>]*?>([^<]*?)<\/a>/is", $text, $matchs);
-        foreach ($matchs[2] as $key => $str) {
-            $herf = $matchs[2][$key];
-            $title = $matchs[3][$key] ?: $herf;
-            $text = str_replace($matchs[0][$key], "<a href=\"{$herf}\" target=\"_blank\">{$title}</a>", $text);
-        }
         // 过滤标签
         $text = strip_tags($text, '<blockquote> <strong> <pre> <ol> <ul> <li> <em> <p> <s> <u> <a>');
         $text = preg_replace("/\<(blockquote|strong|pre|ol|ul|li|em|p|s|u).*?\>/is", "<$1>", $text);    // 不用去除a标签，上面已经处理过了
@@ -698,6 +698,9 @@ class WebSocketDialogMsg extends AbstractModel
         $text = preg_replace("/\[:@:(.*?):(.*?):\]/i", "<span class=\"mention user\" data-id=\"$1\">@$2</span>", $text);
         $text = preg_replace("/\[:#:(.*?):(.*?):\]/i", "<span class=\"mention task\" data-id=\"$1\">#$2</span>", $text);
         $text = preg_replace("/\[:~:(.*?):(.*?):\]/i", "<a class=\"mention file\" href=\"{{RemoteURL}}single/file/$1\" target=\"_blank\">~$2</a>", $text);
+        $text = preg_replace_callback("/\[:LINK:(.*?):(.*?):\]/i", function (array $match) {
+            return "<a href=\"" . base64_decode($match[1]) . "\" target=\"_blank\">" . base64_decode($match[2]) . "</a>";
+        }, $text);
         return preg_replace("/^(<p><\/p>)+|(<p><\/p>)+$/i", "", $text);
     }
 
