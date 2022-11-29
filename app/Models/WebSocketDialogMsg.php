@@ -699,7 +699,16 @@ class WebSocketDialogMsg extends AbstractModel
         $text = preg_replace("/\[:#:(.*?):(.*?):\]/i", "<span class=\"mention task\" data-id=\"$1\">#$2</span>", $text);
         $text = preg_replace("/\[:~:(.*?):(.*?):\]/i", "<a class=\"mention file\" href=\"{{RemoteURL}}single/file/$1\" target=\"_blank\">~$2</a>", $text);
         $text = preg_replace_callback("/\[:LINK:(.*?):(.*?):\]/i", function (array $match) {
-            return "<a href=\"" . base64_decode($match[1]) . "\" target=\"_blank\">" . base64_decode($match[2]) . "</a>";
+            $link = base64_decode($match[1]);
+            $title = base64_decode($match[2]);
+            preg_match("/\/single\/file\/(.*?)$/i", $title, $match);
+            if ($match && strlen($match[1]) >= 32) {
+                $file = File::select(['files.id', 'files.name', 'files.ext'])->join('file_links as L', 'files.id', '=', 'L.file_id')->where('L.code', $match[1])->first();
+                if ($file && $file->name) {
+                    $title = $file->ext ? "{$file->name}.{$file->ext}" : $file->name;
+                }
+            }
+            return "<a href=\"{$link}\" target=\"_blank\">{$title}</a>";
         }, $text);
         return preg_replace("/^(<p><\/p>)+|(<p><\/p>)+$/i", "", $text);
     }
