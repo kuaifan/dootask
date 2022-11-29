@@ -672,10 +672,21 @@ class WebSocketDialogMsg extends AbstractModel
         }
         // 处理链接标签
         preg_match_all("/<a[^>]*?href=([\"'])(.*?)\\1[^>]*?>([^<]*?)<\/a>/is", $text, $matchs);
-        foreach ($matchs[2] as $key => $str) {
-            $herf = base64_encode($matchs[2][$key]);
-            $title = $matchs[3][$key] ? base64_encode($matchs[3][$key]) : $herf;
-            $text = str_replace($matchs[0][$key], "[:LINK:{$herf}:{$title}:]", $text);
+        foreach ($matchs[0] as $key => $str) {
+            $herf = $matchs[2][$key];
+            $title = $matchs[3][$key] ?: $herf;
+            preg_match("/\/single\/file\/(.*?)$/i", $title, $match);
+            if ($match && strlen($match[1]) >= 32) {
+                $file = File::select(['files.id', 'files.name', 'files.ext'])->join('file_links as L', 'files.id', '=', 'L.file_id')->where('L.code', $match[1])->first();
+                if ($file && $file->name) {
+                    $name = $file->ext ? "{$file->name}.{$file->ext}" : $file->name;
+                    $text = str_replace($str, "[:~:{$match[1]}:{$name}:]", $text);
+                    continue;
+                }
+            }
+            $herf = base64_encode($herf);
+            $title = base64_encode($title);
+            $text = str_replace($str, "[:LINK:{$herf}:{$title}:]", $text);
         }
         // 文件分享链接
         preg_match_all("/(https*:\/\/)((\w|=|\?|\.|\/|&|-|:|\+|%|;|#)+)/i", $text, $matchs);
@@ -699,16 +710,7 @@ class WebSocketDialogMsg extends AbstractModel
         $text = preg_replace("/\[:#:(.*?):(.*?):\]/i", "<span class=\"mention task\" data-id=\"$1\">#$2</span>", $text);
         $text = preg_replace("/\[:~:(.*?):(.*?):\]/i", "<a class=\"mention file\" href=\"{{RemoteURL}}single/file/$1\" target=\"_blank\">~$2</a>", $text);
         $text = preg_replace_callback("/\[:LINK:(.*?):(.*?):\]/i", function (array $match) {
-            $link = base64_decode($match[1]);
-            $title = base64_decode($match[2]);
-            preg_match("/\/single\/file\/(.*?)$/i", $title, $match);
-            if ($match && strlen($match[1]) >= 32) {
-                $file = File::select(['files.id', 'files.name', 'files.ext'])->join('file_links as L', 'files.id', '=', 'L.file_id')->where('L.code', $match[1])->first();
-                if ($file && $file->name) {
-                    $title = $file->ext ? "{$file->name}.{$file->ext}" : $file->name;
-                }
-            }
-            return "<a href=\"{$link}\" target=\"_blank\">{$title}</a>";
+            return "<a href=\"" . base64_decode($match[1]) . "\" target=\"_blank\">" . base64_decode($match[2]) . "</a>";
         }, $text);
         return preg_replace("/^(<p><\/p>)+|(<p><\/p>)+$/i", "", $text);
     }
