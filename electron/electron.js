@@ -1,11 +1,12 @@
 const fs = require('fs')
 const os = require("os");
 const path = require('path')
-const {app, BrowserWindow, ipcMain, dialog, clipboard, nativeImage, shell, Tray, Menu} = require('electron')
+const {app, BrowserWindow, ipcMain, dialog, clipboard, nativeImage, shell, Tray, Menu, globalShortcut} = require('electron')
 const {autoUpdater} = require("electron-updater")
 const log = require("electron-log");
 const fsProm = require('fs/promises');
 const PDFDocument = require('pdf-lib').PDFDocument;
+const Screenshots = require("electron-screenshots-plus").default;
 const crc = require('crc');
 const zlib = require('zlib');
 const utils = require('./utils');
@@ -195,6 +196,13 @@ if (!getTheLock) {
         if (process.platform === 'win32') {
             app.setAppUserModelId(config.name)
         }
+        // 截图
+        const screenshots = new Screenshots({
+            singleWindow: true
+        })
+        globalShortcut.register('ctrl+shift+a', () => {
+            screenshots.startCapture().then(_ => {})
+        })
     })
 }
 
