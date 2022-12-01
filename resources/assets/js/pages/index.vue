@@ -11,7 +11,7 @@
                         <Button v-if="proShow" class="header-right-pro no-dark-content" size="small" @click="onPro">{{$L('Pro版')}}</Button>
 
                         <div class="header-right-1">
-                            <Dropdown trigger="click" @on-click="setLanguage">
+                            <Dropdown trigger="click" @on-click="onLanguage">
                                 <a href="javascript:void(0)" class="header-right-1-dropdown">
                                     {{ currentLanguage }}
                                     <Icon type="ios-arrow-down"></Icon>
@@ -21,7 +21,7 @@
                                         v-for="(item, key) in languageList"
                                         :key="key"
                                         :name="key"
-                                        :selected="getLanguage() === key">{{ item }}</DropdownItem>
+                                        :selected="languageType === key">{{ item }}</DropdownItem>
                                 </DropdownMenu>
                             </Dropdown>
                         </div>
@@ -51,7 +51,7 @@
                             <DropdownMenu slot="list">
                                 <DropdownItem @click.native="login">{{ $L("登录") }}</DropdownItem>
                                 <DropdownItem @click.native="register">{{ $L("注册帐号") }}</DropdownItem>
-                                <Dropdown placement="right-start" @on-click="setLanguage" transfer>
+                                <Dropdown placement="right-start" @on-click="onLanguage" transfer>
                                     <DropdownItem>
                                         <div class="header-nav-dropdown-item">
                                             {{ currentLanguage }}
@@ -63,7 +63,7 @@
                                             v-for="(item, key) in languageList"
                                             :key="key"
                                             :name="key"
-                                            :selected="getLanguage() === key">{{ item }}</DropdownItem>
+                                            :selected="languageType === key">{{ item }}</DropdownItem>
                                     </DropdownMenu>
                                 </Dropdown>
                                 <Dropdown trigger="click" placement="right-end" @on-click="setTheme" transfer>
@@ -199,10 +199,14 @@
 
 <script>
 import {mapState} from "vuex";
+import {languageList, languageType, setLanguage} from "../language";
 
 export default {
     data() {
         return {
+            languageList,
+            languageType,
+
             proShow: false,
             needStartHome: false,
             homeFooter: '',
@@ -216,7 +220,7 @@ export default {
         },
 
         currentLanguage() {
-            return this.languageList[this.languageType] || "Language";
+            return languageList[languageType] || "Language";
         },
 
         appTitle() {
@@ -292,6 +296,10 @@ export default {
             } else {
                 this.goForward({name: 'login'}, true);
             }
+        },
+
+        onLanguage(l) {
+            setLanguage(l)
         }
     },
 };

@@ -1,4 +1,5 @@
 import {Store} from 'le5le-store';
+import {languageType} from "../language";
 
 export default {
     /**
@@ -12,7 +13,7 @@ export default {
         if (!$A.isJson(params)) params = {url: params}
         const header = {
             'Content-Type': 'application/json',
-            'language': $A.getLanguage(),
+            'language': languageType,
             'token': state.userToken,
             'fd': $A.getSessionStorageString("userWsFd"),
             'version': window.systemInfo.version || "0.0.1",
@@ -2787,11 +2788,7 @@ export default {
                 state.wsCall[msgId] = callback
             }
             try {
-                state.ws.send(JSON.stringify({
-                    type,
-                    msgId,
-                    data
-                }))
+                state.ws.send(JSON.stringify({type, msgId, data}))
                 resolve()
             } catch (e) {
                 typeof callback === "function" && callback(null, false)

@@ -99,7 +99,7 @@
                             placement="right-start"
                             transfer
                             transfer-class-name="page-manage-menu-dropdown"
-                            @on-click="setLanguage">
+                            @on-click="onLanguage">
                             <DropdownItem divided>
                                 <div class="manage-menu-flex">
                                     {{currentLanguage}}
@@ -111,7 +111,7 @@
                                     v-for="(item, key) in languageList"
                                     :key="key"
                                     :name="key"
-                                    :selected="getLanguage() === key">{{item}}</DropdownItem>
+                                    :selected="languageType === key">{{item}}</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
                         <!-- 其他菜单 -->
@@ -375,6 +375,7 @@ import DialogModal from "./manage/components/DialogModal";
 import TaskModal from "./manage/components/TaskModal";
 import notificationKoro from "notification-koro1";
 import {Store} from "le5le-store";
+import {languageList, languageType, setLanguage} from "../language";
 
 export default {
     components: {
@@ -396,6 +397,9 @@ export default {
         return {
             loadIng: 0,
 
+            languageList,
+            languageType,
+
             mateName: /macintosh|mac os x/i.test(navigator.userAgent) ? '⌘' : 'Ctrl',
 
             addShow: false,
@@ -404,7 +408,12 @@ export default {
                 columns: '',
                 flow: 'open',
             },
-            addRule: {},
+            addRule: {
+                name: [
+                    { required: true, message: this.$L('请填写项目名称！'), trigger: 'change' },
+                    { type: 'string', min: 2, message: this.$L('项目名称至少2个字！'), trigger: 'change' }
+                ]
+            },
 
             addTaskShow: false,
             addTaskSubscribe: null,
@@ -564,7 +573,7 @@ export default {
         },
 
         currentLanguage() {
-            return this.languageList[this.languageType] || 'Language'
+            return languageList[languageType] || 'Language'
         },
 
         menu() {
@@ -733,13 +742,8 @@ export default {
     },
 
     methods: {
-        initLanguage() {
-            this.addRule = {
-                name: [
-                    { required: true, message: this.$L('请填写项目名称！'), trigger: 'change' },
-                    { type: 'string', min: 2, message: this.$L('项目名称至少2个字！'), trigger: 'change' }
-                ]
-            };
+        onLanguage(l) {
+            setLanguage(l)
         },
 
         chackPass() {

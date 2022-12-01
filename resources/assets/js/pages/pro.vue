@@ -16,13 +16,13 @@
                                 <a class="right-info" target="_blank" href="https://github.com/kuaifan/dootask">
                                     <Icon class="right-icon" type="logo-github"/>
                                 </a>
-                                <Dropdown class="right-info" trigger="click" @on-click="setLanguage">
+                                <Dropdown class="right-info" trigger="click" @on-click="onLanguage">
                                     <div>
                                         <Icon class="right-icon" type="md-globe"/>
                                         <Icon type="md-arrow-dropdown"/>
                                     </div>
                                     <Dropdown-menu slot="list">
-                                        <Dropdown-item v-for="(item, key) in languageList" :key="key" :name="key" :selected="getLanguage() === key">{{item}}</Dropdown-item>
+                                        <Dropdown-item v-for="(item, key) in languageList" :key="key" :name="key" :selected="languageType === key">{{item}}</Dropdown-item>
                                     </Dropdown-menu>
                                 </Dropdown>
                             </dd>
@@ -945,9 +945,14 @@
 }
 </style>
 <script>
+import {languageList, languageType, setLanguage} from "../language";
+
 export default {
     data() {
         return {
+            languageList,
+            languageType,
+
             active: 2,
 
             body1: true,
@@ -969,6 +974,10 @@ export default {
     },
 
     methods: {
+        onLanguage(l) {
+            setLanguage(l)
+        },
+
         getSetting() {
             this.$store.dispatch("call", {
                 url: 'system/setting',

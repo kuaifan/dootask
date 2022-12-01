@@ -64,6 +64,7 @@
 
 import {mapState} from "vuex";
 import IFrame from "../pages/manage/components/IFrame";
+import {languageType} from "../language";
 
 export default {
     name: "OnlyOffice",
@@ -210,7 +211,7 @@ export default {
             }
             //
             let lang = "zh";
-            switch (this.getLanguage()) {
+            switch (languageType) {
                 case 'CN':
                 case 'TC':
                     lang = "zh";

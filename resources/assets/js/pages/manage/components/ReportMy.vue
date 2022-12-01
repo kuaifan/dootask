@@ -76,37 +76,7 @@ export default {
     data() {
         return {
             loadIng: 0,
-            columns: [],
-            lists: [],
-            listPage: 1,
-            listTotal: 0,
-            listPageSize: 20,
-            noDataText: "数据加载中.....",
-
-            keys: {},
-            keyIs: false,
-
-            reportTypeList: [
-                {value: "", label: this.$L('全部')},
-                {value: "weekly", label: this.$L('周报')},
-                {value: "daily", label: this.$L('日报')},
-            ],
-        }
-    },
-    mounted() {
-        this.getLists();
-    },
-    watch: {
-        keyIs(v) {
-            if (!v) {
-                this.keys = {}
-                this.setPage(1)
-            }
-        }
-    },
-    methods: {
-        initLanguage() {
-            this.columns = [{
+            columns: [{
                 title: this.$L("名称"),
                 key: 'title',
                 sortable: true,
@@ -157,9 +127,35 @@ export default {
                         }
                     });
                 },
-            }];
-        },
+            }],
+            lists: [],
+            listPage: 1,
+            listTotal: 0,
+            listPageSize: 20,
+            noDataText: "数据加载中.....",
 
+            keys: {},
+            keyIs: false,
+
+            reportTypeList: [
+                {value: "", label: this.$L('全部')},
+                {value: "weekly", label: this.$L('周报')},
+                {value: "daily", label: this.$L('日报')},
+            ],
+        }
+    },
+    mounted() {
+        this.getLists();
+    },
+    watch: {
+        keyIs(v) {
+            if (!v) {
+                this.keys = {}
+                this.setPage(1)
+            }
+        }
+    },
+    methods: {
         onSearch() {
             this.listPage = 1;
             this.getLists();

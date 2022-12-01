@@ -72,38 +72,7 @@ export default {
             keys: {},
             keyIs: false,
 
-            columns: [],
-            list: [],
-
-            page: 1,
-            pageSize: 20,
-            total: 0,
-            noText: ''
-        }
-    },
-    mounted() {
-
-    },
-    computed: {
-        ...mapState(['cacheTasks'])
-    },
-    watch: {
-        projectId: {
-            handler() {
-                this.getLists();
-            },
-            immediate: true
-        },
-        keyIs(v) {
-            if (!v) {
-                this.keys = {}
-                this.setPage(1)
-            }
-        }
-    },
-    methods: {
-        initLanguage() {
-            this.columns = [
+            columns: [
                 {
                     title: 'ID',
                     key: 'id',
@@ -238,9 +207,36 @@ export default {
                         }, vNodes);
                     }
                 }
-            ]
-        },
+            ],
+            list: [],
 
+            page: 1,
+            pageSize: 20,
+            total: 0,
+            noText: ''
+        }
+    },
+    mounted() {
+
+    },
+    computed: {
+        ...mapState(['cacheTasks'])
+    },
+    watch: {
+        projectId: {
+            handler() {
+                this.getLists();
+            },
+            immediate: true
+        },
+        keyIs(v) {
+            if (!v) {
+                this.keys = {}
+                this.setPage(1)
+            }
+        }
+    },
+    methods: {
         onSearch() {
             this.page = 1;
             this.getLists();

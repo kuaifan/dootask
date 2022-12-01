@@ -512,6 +512,198 @@ export default {
         }
     },
 
+    created() {
+        const sort = $A.getStorageJson("cacheFileSort")
+        this.columns = [
+            {
+                type: 'selection',
+                width: 50,
+                align: 'right'
+            },
+            {
+                title: this.$L('文件名'),
+                key: 'name',
+                minWidth: 300,
+                sortable: true,
+                render: (h, {row}) => {
+                    let array = [];
+                    let isCreate = !/^\d+$/.test(row.id);
+                    if (isCreate) {
+                        // 新建
+                        array.push(h('Input', {
+                            props: {
+                                elementId: 'input_' + row.id,
+                                value: row.newname,
+                                autofocus: true,
+                                disabled: !!row._load,
+                            },
+                            style: {
+                                width: 'auto'
+                            },
+                            on: {
+                                'on-change': (event) => {
+                                    row.newname = event.target.value;
+                                },
+                                'on-blur': () => {
+                                    const file = this.files.find(({id}) => id == row.id);
+                                    if (file) {
+                                        file.newname = row.newname;
+                                        this.onBlur(file)
+                                    }
+                                },
+                                'on-enter': () => {
+                                    const file = this.files.find(({id}) => id == row.id);
+                                    if (file) {
+                                        file.newname = row.newname;
+                                        this.onEnter(file)
+                                    }
+                                }
+                            }
+                        }))
+                        return h('div', {
+                            class: 'file-nbox'
+                        }, [
+                            h('div', {
+                                class: `no-dark-before file-name file-icon ${row.type}`,
+                            }, array),
+                        ]);
+                    } else {
+                        // 编辑、查看
+                        array.push(h('QuickEdit', {
+                            props: {
+                                value: row.name,
+                                autoEdit: !!row._edit,
+                                clickOutSide: false,
+                            },
+                            on: {
+                                'on-edit-change': (b) => {
+                                    const file = this.files.find(({id}) => id == row.id);
+                                    if (file) {
+                                        setTimeout(() => {
+                                            this.setEdit(file.id, b)
+                                        }, 100);
+                                    }
+                                },
+                                'on-update': (val, cb) => {
+                                    const file = this.files.find(({id}) => id == row.id);
+                                    if (file) {
+                                        file.newname = val
+                                        this.onEnter(file);
+                                    }
+                                    cb();
+                                }
+                            }
+                        }, [
+                            h('AutoTip', {
+                                props: {
+                                    placement: 'right'
+                                }
+                            }, $A.getFileName(row))
+                        ]));
+                        //
+                        const iconArray = [];
+                        if (row.share) {
+                            if (row.userid != this.userId) {
+                                iconArray.push(h('UserAvatar', {
+                                    props: {
+                                        userid: row.userid,
+                                        size: 20
+                                    },
+                                }))
+                            } else {
+                                iconArray.push(h('i', {
+                                    class: 'taskfont',
+                                    domProps: {
+                                        innerHTML: '&#xe757;'
+                                    },
+                                }))
+                            }
+                        } else if (this.isParentShare) {
+                            iconArray.push(h('UserAvatar', {
+                                props: {
+                                    userid: row.created_id,
+                                    size: 20
+                                },
+                            }, [
+                                row.created_id != row.userid ? h('p', [h('strong', this.$L('成员创建于') + ": " + row.created_at)]) : h('p', this.$L('所有者创建') + ": " + row.created_at)
+                            ]))
+                        }
+                        const shearClass = this.shearIds.includes(row.id) ? ' shear' : '';
+                        const shareClass = row.share ? ' share' : '';
+                        return h('div', {
+                            class: `file-nbox${shearClass}`,
+                            attrs: {
+                                'data-id': row.id
+                            }
+                        }, [
+                            h('div', {
+                                class: `no-dark-before file-name file-icon ${row.type}${shareClass}`,
+                            }, array),
+                            iconArray
+                        ]);
+                    }
+                }
+            },
+            {
+                title: this.$L('大小'),
+                key: 'size',
+                width: 110,
+                resizable: true,
+                sortable: true,
+                render: (h, {row}) => {
+                    if (row.type == 'folder') {
+                        return h('div', '-')
+                    }
+                    return h('AutoTip', $A.bytesToSize(row.size));
+                }
+            },
+            {
+                title: this.$L('类型'),
+                key: 'type',
+                width: 110,
+                resizable: true,
+                sortable: true,
+                render: (h, {row}) => {
+                    let type = this.types.find(({value, name}) => value == row.type && name);
+                    if (type) {
+                        return h('AutoTip', this.$L(type.name));
+                    } else {
+                        return h('div', (row.ext || row.type).toUpperCase())
+                    }
+                }
+            },
+            {
+                title: this.$L('所有者'),
+                key: 'userid',
+                width: 130,
+                resizable: true,
+                sortable: true,
+                render: (h, {row}) => {
+                    return h('UserAvatar', {
+                        props: {
+                            size: 18,
+                            userid: row.userid,
+                            showIcon: false,
+                            showName: true,
+                        }
+                    });
+                }
+            },
+            {
+                title: this.$L('最后修改'),
+                key: 'updated_at',
+                width: 168,
+                resizable: true,
+                sortable: true,
+            },
+        ].map(item => {
+            if (item.key === sort.key) {
+                item.sortType = sort.order
+            }
+            return item;
+        });
+    },
+
     mounted() {
         if (!this.tableMode && this.$isEEUiApp) {
             this.tableMode = 'block';
@@ -702,198 +894,6 @@ export default {
     },
 
     methods: {
-        initLanguage() {
-            const sort = $A.getStorageJson("cacheFileSort")
-            this.columns = [
-                {
-                    type: 'selection',
-                    width: 50,
-                    align: 'right'
-                },
-                {
-                    title: this.$L('文件名'),
-                    key: 'name',
-                    minWidth: 300,
-                    sortable: true,
-                    render: (h, {row}) => {
-                        let array = [];
-                        let isCreate = !/^\d+$/.test(row.id);
-                        if (isCreate) {
-                            // 新建
-                            array.push(h('Input', {
-                                props: {
-                                    elementId: 'input_' + row.id,
-                                    value: row.newname,
-                                    autofocus: true,
-                                    disabled: !!row._load,
-                                },
-                                style: {
-                                    width: 'auto'
-                                },
-                                on: {
-                                    'on-change': (event) => {
-                                        row.newname = event.target.value;
-                                    },
-                                    'on-blur': () => {
-                                        const file = this.files.find(({id}) => id == row.id);
-                                        if (file) {
-                                            file.newname = row.newname;
-                                            this.onBlur(file)
-                                        }
-                                    },
-                                    'on-enter': () => {
-                                        const file = this.files.find(({id}) => id == row.id);
-                                        if (file) {
-                                            file.newname = row.newname;
-                                            this.onEnter(file)
-                                        }
-                                    }
-                                }
-                            }))
-                            return h('div', {
-                                class: 'file-nbox'
-                            }, [
-                                h('div', {
-                                    class: `no-dark-before file-name file-icon ${row.type}`,
-                                }, array),
-                            ]);
-                        } else {
-                            // 编辑、查看
-                            array.push(h('QuickEdit', {
-                                props: {
-                                    value: row.name,
-                                    autoEdit: !!row._edit,
-                                    clickOutSide: false,
-                                },
-                                on: {
-                                    'on-edit-change': (b) => {
-                                        const file = this.files.find(({id}) => id == row.id);
-                                        if (file) {
-                                            setTimeout(() => {
-                                                this.setEdit(file.id, b)
-                                            }, 100);
-                                        }
-                                    },
-                                    'on-update': (val, cb) => {
-                                        const file = this.files.find(({id}) => id == row.id);
-                                        if (file) {
-                                            file.newname = val
-                                            this.onEnter(file);
-                                        }
-                                        cb();
-                                    }
-                                }
-                            }, [
-                                h('AutoTip', {
-                                    props: {
-                                        placement: 'right'
-                                    }
-                                }, $A.getFileName(row))
-                            ]));
-                            //
-                            const iconArray = [];
-                            if (row.share) {
-                                if (row.userid != this.userId) {
-                                    iconArray.push(h('UserAvatar', {
-                                        props: {
-                                            userid: row.userid,
-                                            size: 20
-                                        },
-                                    }))
-                                } else {
-                                    iconArray.push(h('i', {
-                                        class: 'taskfont',
-                                        domProps: {
-                                            innerHTML: '&#xe757;'
-                                        },
-                                    }))
-                                }
-                            } else if (this.isParentShare) {
-                                iconArray.push(h('UserAvatar', {
-                                    props: {
-                                        userid: row.created_id,
-                                        size: 20
-                                    },
-                                }, [
-                                    row.created_id != row.userid ? h('p', [h('strong', this.$L('成员创建于') + ": " + row.created_at)]) : h('p', this.$L('所有者创建') + ": " + row.created_at)
-                                ]))
-                            }
-                            const shearClass = this.shearIds.includes(row.id) ? ' shear' : '';
-                            const shareClass = row.share ? ' share' : '';
-                            return h('div', {
-                                class: `file-nbox${shearClass}`,
-                                attrs: {
-                                    'data-id': row.id
-                                }
-                            }, [
-                                h('div', {
-                                    class: `no-dark-before file-name file-icon ${row.type}${shareClass}`,
-                                }, array),
-                                iconArray
-                            ]);
-                        }
-                    }
-                },
-                {
-                    title: this.$L('大小'),
-                    key: 'size',
-                    width: 110,
-                    resizable: true,
-                    sortable: true,
-                    render: (h, {row}) => {
-                        if (row.type == 'folder') {
-                            return h('div', '-')
-                        }
-                        return h('AutoTip', $A.bytesToSize(row.size));
-                    }
-                },
-                {
-                    title: this.$L('类型'),
-                    key: 'type',
-                    width: 110,
-                    resizable: true,
-                    sortable: true,
-                    render: (h, {row}) => {
-                        let type = this.types.find(({value, name}) => value == row.type && name);
-                        if (type) {
-                            return h('AutoTip', this.$L(type.name));
-                        } else {
-                            return h('div', (row.ext || row.type).toUpperCase())
-                        }
-                    }
-                },
-                {
-                    title: this.$L('所有者'),
-                    key: 'userid',
-                    width: 130,
-                    resizable: true,
-                    sortable: true,
-                    render: (h, {row}) => {
-                        return h('UserAvatar', {
-                            props: {
-                                size: 18,
-                                userid: row.userid,
-                                showIcon: false,
-                                showName: true,
-                            }
-                        });
-                    }
-                },
-                {
-                    title: this.$L('最后修改'),
-                    key: 'updated_at',
-                    width: 168,
-                    resizable: true,
-                    sortable: true,
-                },
-            ].map(item => {
-                if (item.key === sort.key) {
-                    item.sortType = sort.order
-                }
-                return item;
-            });
-        },
-
         getFileList() {
             if (this.$route.name !== 'manage-file') {
                 return;

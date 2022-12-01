@@ -42,7 +42,19 @@ export default {
                 profession: ''
             },
 
-            ruleData: { },
+            ruleData: {
+                email: [
+                    {required: true, message: this.$L('请输入邮箱地址！'), trigger: 'change'},
+                ],
+                tel: [
+                    {required: true, message: this.$L('请输入联系电话！'), trigger: 'change'},
+                    {type: 'string', min: 6, message: this.$L('电话长度至少6位！'), trigger: 'change'}
+                ],
+                nickname: [
+                    {required: true, message: this.$L('请输入昵称！'), trigger: 'change'},
+                    {type: 'string', min: 2, message: this.$L('昵称长度至少2位！'), trigger: 'change'}
+                ]
+            },
         }
     },
     mounted() {
@@ -57,22 +69,6 @@ export default {
         }
     },
     methods: {
-        initLanguage() {
-            this.ruleData = {
-                email: [
-                    {required: true, message: this.$L('请输入邮箱地址！'), trigger: 'change'},
-                ],
-                tel: [
-                    {required: true, message: this.$L('请输入联系电话！'), trigger: 'change'},
-                    {type: 'string', min: 6, message: this.$L('电话长度至少6位！'), trigger: 'change'}
-                ],
-                nickname: [
-                    {required: true, message: this.$L('请输入昵称！'), trigger: 'change'},
-                    {type: 'string', min: 2, message: this.$L('昵称长度至少2位！'), trigger: 'change'}
-                ]
-            };
-        },
-
         initData() {
             this.$set(this.formData, 'userimg', $A.strExists(this.userInfo.userimg, '/avatar') ? '' : this.userInfo.userimg);
             this.$set(this.formData, 'email', this.userInfo.email);

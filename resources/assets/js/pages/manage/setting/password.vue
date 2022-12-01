@@ -33,15 +33,7 @@ export default {
                 checkpass: '',
             },
 
-            ruleDatum: { },
-        }
-    },
-    computed: {
-        ...mapState(['userInfo']),
-    },
-    methods: {
-        initLanguage() {
-            this.ruleDatum = {
+            ruleDatum: {
                 oldpass: [
                     { required: true, message: this.$L('请输入旧密码！'), trigger: 'change' },
                     { type: 'string', min: 6, message: this.$L('密码长度至少6位！'), trigger: 'change' }
@@ -78,9 +70,13 @@ export default {
                         trigger: 'change'
                     }
                 ],
-            };
-        },
-
+            },
+        }
+    },
+    computed: {
+        ...mapState(['userInfo']),
+    },
+    methods: {
         submitForm() {
             this.$refs.formDatum.validate((valid) => {
                 if (valid) {

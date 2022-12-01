@@ -66,29 +66,7 @@ export default {
             keys: {},
             keyIs: false,
 
-            columns: [],
-            list: [],
-
-            page: 1,
-            pageSize: 20,
-            total: 0,
-            noText: ''
-        }
-    },
-    mounted() {
-        this.getLists();
-    },
-    watch: {
-        keyIs(v) {
-            if (!v) {
-                this.keys = {}
-                this.setPage(1)
-            }
-        }
-    },
-    methods: {
-        initLanguage() {
-            this.columns = [
+            columns: [
                 {
                     title: 'ID',
                     key: 'id',
@@ -198,9 +176,27 @@ export default {
                         }, vNode);
                     },
                 }
-            ]
-        },
+            ],
+            list: [],
 
+            page: 1,
+            pageSize: 20,
+            total: 0,
+            noText: ''
+        }
+    },
+    mounted() {
+        this.getLists();
+    },
+    watch: {
+        keyIs(v) {
+            if (!v) {
+                this.keys = {}
+                this.setPage(1)
+            }
+        }
+    },
+    methods: {
         onSearch() {
             this.page = 1;
             this.getLists();

@@ -16,12 +16,15 @@
 
 <script>
 import ImgUpload from "../../../components/ImgUpload";
+import {languageList, languageType, setLanguage} from "../../../language";
 
 export default {
     components: {ImgUpload},
     data() {
         return {
             loadIng: 0,
+
+            languageList,
 
             formData: {
                 language: '',
@@ -37,14 +40,14 @@ export default {
 
     methods: {
         initData() {
-            this.$set(this.formData, 'language', this.getLanguage());
+            this.$set(this.formData, 'language', languageType);
             this.formData_bak = $A.cloneJSON(this.formData);
         },
 
         submitForm() {
             this.$refs.formData.validate((valid) => {
                 if (valid) {
-                    this.setLanguage(this.formData.language)
+                    setLanguage(this.formData.language)
                 }
             })
         },

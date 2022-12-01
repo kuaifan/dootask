@@ -44,6 +44,7 @@ import NetworkException from "./components/NetworkException";
 import AudioManager from "./components/AudioManager";
 import TaskOperation from "./pages/manage/components/TaskOperation";
 import {mapState} from "vuex";
+import {languageType} from "./language";
 
 export default {
     components: {TaskOperation, AudioManager, NetworkException, PreviewImageState, RightBottom, FloatSpinner},
@@ -153,10 +154,6 @@ export default {
 
         themeMode() {
             this.synchThemeLanguage();
-        },
-
-        languageType() {
-            this.synchThemeLanguage();
         }
     },
 
@@ -198,7 +195,7 @@ export default {
                 this.iframes = this.iframes.filter(({key}) => key != 'synchThemeLanguage')
                 this.iframes.push({
                     key: 'synchThemeLanguage',
-                    url: $A.apiUrl(`../setting/theme_language?theme=${this.themeMode}&language=${this.languageType}`)
+                    url: $A.apiUrl(`../setting/theme_language?theme=${this.themeMode}&language=${languageType}`)
                 })
             }
         },

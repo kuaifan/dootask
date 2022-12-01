@@ -1,6 +1,8 @@
 const isElectron = window && window.process && window.process.type;
 const isEEUiApp = window && window.navigator && /eeui/i.test(window.navigator.userAgent);
 
+import {switchLanguage as $L} from "./language";
+
 import './functions/common'
 import './functions/eeui'
 import './functions/web'
@@ -12,7 +14,6 @@ import routes from './routes'
 import VueRouter from 'vue-router'
 import VueClipboard from 'vue-clipboard2'
 import ViewUI from 'view-design-hi'
-import Language from './language/index'
 import store from './store/index'
 import mixin from "./store/mixin"
 
@@ -28,7 +29,6 @@ Vue.use(VueClipboard, {
     }
 });
 Vue.use(VueRouter);
-Vue.use(Language);
 
 import PageTitle from './components/PageTitle.vue'
 import Loading from './components/Loading.vue'
@@ -149,6 +149,7 @@ if (isElectron) {
 }
 
 Vue.prototype.$A = $A;
+Vue.prototype.$L = $L;
 Vue.prototype.$Electron = $A.Electron;
 Vue.prototype.$Platform = $A.Platform;
 Vue.prototype.$isMainElectron = $A.isMainElectron;
@@ -170,7 +171,6 @@ const app = new Vue({
 
 $A.goForward = app.goForward;
 $A.goBack = app.goBack;
-$A.getLanguage = app.getLanguage;
 $A.Message = app.$Message;
 $A.Notice = app.$Notice;
 $A.Modal = app.$Modal;

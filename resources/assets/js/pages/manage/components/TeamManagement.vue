@@ -266,111 +266,7 @@ export default {
             keys: {},
             keyIs: false,
 
-            columns: [],
-            list: [],
-
-            page: 1,
-            pageSize: 20,
-            total: 0,
-            noText: '',
-
-            departmentEditShow: false,
-            departmentEditLoading: 0,
-            departmentEditData: {},
-
-            disableShow: false,
-            disableLoading: 0,
-            disableData: {},
-            disableOptions: {
-                shortcuts: [
-                    {
-                        text: this.$L('12:00'),
-                        value () {
-                            return $A.Date($A.formatDate("Y-m-d 12:00:00"));
-                        },
-                        onClick: (picker) => {
-                            picker.handlePickSuccess();
-                        }
-                    },
-                    {
-                        text: this.$L('17:00'),
-                        value () {
-                            return $A.Date($A.formatDate("Y-m-d 17:00:00"));
-                        },
-                        onClick: (picker) => {
-                            picker.handlePickSuccess();
-                        }
-                    },
-                    {
-                        text: this.$L('18:00'),
-                        value () {
-                            return $A.Date($A.formatDate("Y-m-d 18:00:00"));
-                        },
-                        onClick: (picker) => {
-                            picker.handlePickSuccess();
-                        }
-                    },
-                    {
-                        text: this.$L('19:00'),
-                        value () {
-                            return $A.Date($A.formatDate("Y-m-d 19:00:00"));
-                        },
-                        onClick: (picker) => {
-                            picker.handlePickSuccess();
-                        }
-                    },
-                    {
-                        text: this.$L('现在'),
-                        value () {
-                            return new Date();
-                        },
-                        onClick: (picker) => {
-                            picker.handlePickSuccess();
-                        }
-                    },
-                ]
-            },
-
-            departmentShow: false,
-            departmentLoading: 0,
-            departmentSelect: -1,
-            departmentData: {
-                id: 0,
-                name: '',
-                parent_id: 0,
-                owner_userid: [],
-                dialog_group: 'new',
-                dialog_useid: 0
-            },
-            departmentList: [],
-
-            dialogLoad: false,
-            dialogList: [],
-        }
-    },
-    mounted() {
-        this.getLists();
-        this.getDepartmentLists();
-    },
-    watch: {
-        keyIs(v) {
-            if (!v) {
-                this.keys = {}
-                this.setPage(1)
-            }
-        },
-        departmentSelect() {
-            this.setPage(1)
-        }
-    },
-    computed: {
-        departmentParentDisabled() {
-            return !!(this.departmentData.id > 0 && this.departmentList.find(({parent_id}) => parent_id == this.departmentData.id));
-        },
-    },
-    methods: {
-        initLanguage() {
-            this.columns = [
+            columns: [
                 {
                     title: 'ID',
                     key: 'userid',
@@ -632,9 +528,109 @@ export default {
                         ]);
                     }
                 }
-            ]
-        },
+            ],
+            list: [],
 
+            page: 1,
+            pageSize: 20,
+            total: 0,
+            noText: '',
+
+            departmentEditShow: false,
+            departmentEditLoading: 0,
+            departmentEditData: {},
+
+            disableShow: false,
+            disableLoading: 0,
+            disableData: {},
+            disableOptions: {
+                shortcuts: [
+                    {
+                        text: this.$L('12:00'),
+                        value () {
+                            return $A.Date($A.formatDate("Y-m-d 12:00:00"));
+                        },
+                        onClick: (picker) => {
+                            picker.handlePickSuccess();
+                        }
+                    },
+                    {
+                        text: this.$L('17:00'),
+                        value () {
+                            return $A.Date($A.formatDate("Y-m-d 17:00:00"));
+                        },
+                        onClick: (picker) => {
+                            picker.handlePickSuccess();
+                        }
+                    },
+                    {
+                        text: this.$L('18:00'),
+                        value () {
+                            return $A.Date($A.formatDate("Y-m-d 18:00:00"));
+                        },
+                        onClick: (picker) => {
+                            picker.handlePickSuccess();
+                        }
+                    },
+                    {
+                        text: this.$L('19:00'),
+                        value () {
+                            return $A.Date($A.formatDate("Y-m-d 19:00:00"));
+                        },
+                        onClick: (picker) => {
+                            picker.handlePickSuccess();
+                        }
+                    },
+                    {
+                        text: this.$L('现在'),
+                        value () {
+                            return new Date();
+                        },
+                        onClick: (picker) => {
+                            picker.handlePickSuccess();
+                        }
+                    },
+                ]
+            },
+
+            departmentShow: false,
+            departmentLoading: 0,
+            departmentSelect: -1,
+            departmentData: {
+                id: 0,
+                name: '',
+                parent_id: 0,
+                owner_userid: [],
+                dialog_group: 'new',
+                dialog_useid: 0
+            },
+            departmentList: [],
+
+            dialogLoad: false,
+            dialogList: [],
+        }
+    },
+    mounted() {
+        this.getLists();
+        this.getDepartmentLists();
+    },
+    watch: {
+        keyIs(v) {
+            if (!v) {
+                this.keys = {}
+                this.setPage(1)
+            }
+        },
+        departmentSelect() {
+            this.setPage(1)
+        }
+    },
+    computed: {
+        departmentParentDisabled() {
+            return !!(this.departmentData.id > 0 && this.departmentList.find(({parent_id}) => parent_id == this.departmentData.id));
+        },
+    },
+    methods: {
         onSearch() {
             this.page = 1;
             this.getLists();

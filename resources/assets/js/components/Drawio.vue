@@ -37,6 +37,7 @@
 <script>
 import {mapState} from "vuex";
 import IFrame from "../pages/manage/components/IFrame";
+import {languageType} from "../language";
 
 export default {
     name: "Drawio",
@@ -67,7 +68,7 @@ export default {
     },
     created() {
         let language = 'en';
-        switch (this.getLanguage()) {
+        switch (languageType) {
             case 'CN':
             case 'TC':
                 language = 'zh'

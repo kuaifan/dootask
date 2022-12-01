@@ -52,6 +52,7 @@ import Calendar from "./components/Calendar";
 import moment from "moment";
 import {Store} from "le5le-store";
 import TaskMenu from "./components/TaskMenu";
+import {addLanguage} from "../../language";
 
 export default {
     components: {TaskMenu, Calendar},
@@ -75,6 +76,57 @@ export default {
 
             loadIng: 0,
             loadTimeout: null,
+        }
+    },
+
+    created() {
+        addLanguage([
+            {"_": "{日}","CN": "日","EN": "Sun","TC": "日","KM": "Sun","TH": "Sun","KO": "Sun","JA": "Sun"},
+            {"_": "{一}","CN": "一","EN": "Mon","TC": "一","KM": "Mon","TH": "Mon","KO": "Mon","JA": "Mon"},
+            {"_": "{二}","CN": "二","EN": "Tue","TC": "二","KM": "Tue","TH": "Tue","KO": "Tue","JA": "Tue"},
+            {"_": "{三}","CN": "三","EN": "Wed","TC": "三","KM": "Wed","TH": "Wed","KO": "Wed","JA": "Wed"},
+            {"_": "{四}","CN": "四","EN": "Thu","TC": "四","KM": "Thu","TH": "Thu","KO": "Thu","JA": "Thu"},
+            {"_": "{五}","CN": "五","EN": "Fri","TC": "五","KM": "Fri","TH": "Fri","KO": "Fri","JA": "Fri"},
+            {"_": "{六}","CN": "六","EN": "Sat","TC": "六","KM": "Sat","TH": "Sat","KO": "Sat","JA": "Sat"},
+        ]);
+        let daynames = [
+            this.$L('{日}'),
+            this.$L('{一}'),
+            this.$L('{二}'),
+            this.$L('{三}'),
+            this.$L('{四}'),
+            this.$L('{五}'),
+            this.$L('{六}')
+        ];
+        this.calendarWeek = {daynames};
+        this.calendarMonth = {daynames};
+        this.calendarTheme = {
+            'common.border': '1px solid rgba(0,0,0,0)',
+            'month.dayname.fontSize': '14px',
+            'month.dayname.borderLeft': '1px solid rgba(0,0,0,0)',
+            'month.dayname.height': '50px',
+        }
+        if (this.windowLarge) {
+            this.calendarTheme = {
+                'common.border': '1px solid #f4f5f5',
+                'month.dayname.fontSize': '14px',
+                'month.dayname.borderLeft': '1px solid #f4f5f5',
+                'month.dayname.height': '50px',
+            }
+        }
+        this.calendarTemplate = {
+            titlePlaceholder: () => {
+                return this.$L("任务描述")
+            },
+            popupSave: () => {
+                return this.$L("保存");
+            },
+            popupEdit: () => {
+                return this.$L("详情");
+            },
+            popupDelete: () => {
+                return this.$L("删除");
+            }
         }
     },
 
@@ -187,57 +239,6 @@ export default {
     },
 
     methods: {
-        initLanguage() {
-            this.addLanguageData([
-                {"_": "{日}","CN": "日","EN": "Sun","TC": "日","KM": "Sun","TH": "Sun","KO": "Sun","JA": "Sun"},
-                {"_": "{一}","CN": "一","EN": "Mon","TC": "一","KM": "Mon","TH": "Mon","KO": "Mon","JA": "Mon"},
-                {"_": "{二}","CN": "二","EN": "Tue","TC": "二","KM": "Tue","TH": "Tue","KO": "Tue","JA": "Tue"},
-                {"_": "{三}","CN": "三","EN": "Wed","TC": "三","KM": "Wed","TH": "Wed","KO": "Wed","JA": "Wed"},
-                {"_": "{四}","CN": "四","EN": "Thu","TC": "四","KM": "Thu","TH": "Thu","KO": "Thu","JA": "Thu"},
-                {"_": "{五}","CN": "五","EN": "Fri","TC": "五","KM": "Fri","TH": "Fri","KO": "Fri","JA": "Fri"},
-                {"_": "{六}","CN": "六","EN": "Sat","TC": "六","KM": "Sat","TH": "Sat","KO": "Sat","JA": "Sat"},
-            ]);
-            let daynames = [
-                this.$L('{日}'),
-                this.$L('{一}'),
-                this.$L('{二}'),
-                this.$L('{三}'),
-                this.$L('{四}'),
-                this.$L('{五}'),
-                this.$L('{六}')
-            ];
-            this.calendarWeek = {daynames};
-            this.calendarMonth = {daynames};
-            this.calendarTheme = {
-                'common.border': '1px solid rgba(0,0,0,0)',
-                'month.dayname.fontSize': '14px',
-                'month.dayname.borderLeft': '1px solid rgba(0,0,0,0)',
-                'month.dayname.height': '50px',
-            }
-            if (this.windowLarge) {
-                this.calendarTheme = {
-                    'common.border': '1px solid #f4f5f5',
-                    'month.dayname.fontSize': '14px',
-                    'month.dayname.borderLeft': '1px solid #f4f5f5',
-                    'month.dayname.height': '50px',
-                }
-            }
-            this.calendarTemplate = {
-                titlePlaceholder: () => {
-                    return this.$L("任务描述")
-                },
-                popupSave: () => {
-                    return this.$L("保存");
-                },
-                popupEdit: () => {
-                    return this.$L("详情");
-                },
-                popupDelete: () => {
-                    return this.$L("删除");
-                }
-            }
-        },
-
         getTask(time) {
             if (this.loadIng > 0) {
                 clearTimeout(this.loadTimeout)

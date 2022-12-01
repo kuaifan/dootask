@@ -103,7 +103,7 @@
                                     :selected="themeMode === item.value">{{$L(item.name)}}</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
-                        <Dropdown placement="right-start" transfer @on-click="setLanguage">
+                        <Dropdown placement="right-start" transfer @on-click="onLanguage">
                             <DropdownItem divided>
                                 <div class="login-setting-item">
                                     {{currentLanguage}}
@@ -115,7 +115,7 @@
                                     v-for="(item, key) in languageList"
                                     :key="key"
                                     :name="key"
-                                    :selected="getLanguage() === key">{{item}}</DropdownItem>
+                                    :selected="languageType === key">{{item}}</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
                     </DropdownMenu>
@@ -144,11 +144,15 @@
 <script>
 import {mapState} from "vuex";
 import {Store} from "le5le-store";
+import {languageList, languageType, setLanguage} from "../language";
 
 export default {
     data() {
         return {
             loadIng: 0,
+
+            languageList,
+            languageType,
 
             codeNeed: false,
             codeUrl: $A.apiUrl('users/login/codeimg?_=' + Math.random()),
@@ -222,7 +226,7 @@ export default {
         },
 
         currentLanguage() {
-            return this.languageList[this.languageType] || 'Language'
+            return languageList[languageType] || 'Language'
         },
 
         welcomeTitle() {
@@ -490,6 +494,10 @@ export default {
                 this.goForward({name: 'manage-dashboard'}, true);
             }
         },
+
+        onLanguage(l) {
+            setLanguage(l)
+        }
     }
 }
 </script>
