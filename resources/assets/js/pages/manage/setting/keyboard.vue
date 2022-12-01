@@ -1,13 +1,13 @@
 <template>
     <div class="setting-item submit">
         <Form ref="formData" :model="formData" :rules="ruleData" label-width="auto" @submit.native.prevent>
-            <FormItem :label="$L('截图快捷键')" prop="screenshot">
+            <FormItem :label="`${$L('截图快捷键')} (Beta)`" prop="screenshot">
                 <div class="input-box">
                     <Checkbox v-model="formData.screenshot_mate">{{mateName}}</Checkbox>
                     <div class="input-box-push">+</div>
                     <Checkbox v-model="formData.screenshot_shift">Shift</Checkbox>
                     <div class="input-box-push">+</div>
-                    <Input class="input-box-key" :value="formData.screenshot_key" @on-keyup="onKeydown" :maxlength="1"/>
+                    <Input class="input-box-key" :value="formData.screenshot_key" @on-keydown="onKeydown" :maxlength="1"/>
                 </div>
             </FormItem>
         </Form>
