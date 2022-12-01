@@ -19,6 +19,9 @@ let mainWindow = null,
     devloadUrl = "",
     devloadCachePath = path.resolve(__dirname, ".devload");
 
+let screenshotObj = null,
+    screenshotKey = null;
+
 if (fs.existsSync(devloadCachePath)) {
     devloadUrl = fs.readFileSync(devloadCachePath, 'utf8')
 }
@@ -196,13 +199,15 @@ if (!getTheLock) {
         if (process.platform === 'win32') {
             app.setAppUserModelId(config.name)
         }
-        // 截图
-        const screenshots = new Screenshots({
+        // 截图对象
+        screenshotObj = new Screenshots({
             singleWindow: true
         })
-        globalShortcut.register('ctrl+shift+a', () => {
-            screenshots.startCapture().then(_ => {})
-        })
+        globalShortcut.register("esc", () => {
+            if (screenshotObj.$win?.isFocused()) {
+                screenshotObj.endCapture().then(_ => {});
+            }
+        });
     })
 }
 
@@ -451,6 +456,35 @@ ipcMain.on('copyBase64Image', (event, args) => {
         const img = nativeImage.createFromDataURL(base64)
         clipboard.writeImage(img)
     }
+    event.returnValue = "ok"
+})
+
+/**
+ * 绑定截图快捷键
+ * @param args
+ */
+ipcMain.on('bindScreenshotKey', (event, args) => {
+    const { key } = args;
+    if (screenshotKey !== key) {
+        if (screenshotKey) {
+            globalShortcut.unregister(screenshotKey)
+            screenshotKey = null
+        }
+        if (key) {
+            screenshotKey = key
+            globalShortcut.register(key, () => {
+                screenshotObj.startCapture().then(_ => {})
+            })
+        }
+    }
+    event.returnValue = "ok"
+})
+
+/**
+ * 执行截图
+ */
+ipcMain.on('onScreenshot', (event) => {
+    screenshotObj.startCapture().then(_ => {})
     event.returnValue = "ok"
 })
 

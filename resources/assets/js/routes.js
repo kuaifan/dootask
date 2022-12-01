@@ -45,6 +45,11 @@ export default [
                         component: () => import('./pages/manage/setting/language.vue'),
                     },
                     {
+                        name: 'manage-setting-keyboard',
+                        path: 'keyboard',
+                        component: () => import('./pages/manage/setting/keyboard.vue'),
+                    },
+                    {
                         name: 'manage-setting-password',
                         path: 'password',
                         component: () => import('./pages/manage/setting/password.vue'),

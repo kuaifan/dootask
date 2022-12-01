@@ -193,3 +193,16 @@ $A.execMainCacheJudge = (key) => {
     return val
 };
 
+$A.bindScreenshotKey = (data) => {
+    let key = "";
+    if (data.screenshot_key && (data.screenshot_mate || data.screenshot_shift)) {
+        if (data.screenshot_mate) {
+            key = /macintosh|mac os x/i.test(navigator.userAgent) ? 'command' : 'ctrl'
+        }
+        if (data.screenshot_shift) {
+            key = `${key ? `${key}+` : ''}shift`
+        }
+        key = `${key}+${data.screenshot_key.toLowerCase()}`
+    }
+    $A.Electron.sendMessage('bindScreenshotKey', {key});
+};

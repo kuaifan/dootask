@@ -514,6 +514,7 @@ export default {
                 const cacheLoginEmail = $A.getStorageString("cacheLoginEmail");
                 const cacheFileSort = $A.getStorageJson("cacheFileSort");
                 const languageType = window.localStorage['__language:type__'];
+                const keyboardData = window.localStorage['__keyboard:data__'];
                 const themeMode = window.localStorage['__theme:mode__'];
                 //
                 window.localStorage.clear();
@@ -525,6 +526,7 @@ export default {
                 state.cacheTasks = [];
                 //
                 window.localStorage['__language:type__'] = languageType;
+                window.localStorage['__keyboard:data__'] = keyboardData;
                 window.localStorage['__theme:mode__'] = themeMode;
                 $A.setStorage("cacheProjectParameter", state.cacheProjectParameter);
                 $A.setStorage("cacheServerUrl", state.cacheServerUrl);

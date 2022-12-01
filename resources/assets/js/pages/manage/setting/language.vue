@@ -15,11 +15,9 @@
 </template>
 
 <script>
-import ImgUpload from "../../../components/ImgUpload";
 import {languageList, languageType, setLanguage} from "../../../language";
 
 export default {
-    components: {ImgUpload},
     data() {
         return {
             loadIng: 0,

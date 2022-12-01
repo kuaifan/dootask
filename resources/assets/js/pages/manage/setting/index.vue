@@ -76,6 +76,10 @@ export default {
                 {path: 'email', name: '修改邮箱'},
             ]
 
+            if (this.$Electron) {
+                menu.splice(2, 0, {path: 'keyboard', name: '快捷键'})
+            }
+
             if ([
                 '127.0.0.1:2222',
                 '192.168.100.88:2222',
