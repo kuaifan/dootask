@@ -1122,13 +1122,17 @@ export default {
     /**
      * 增加任务消息数量
      * @param state
-     * @param dialog_id
+     * @param data {id, dialog_id}
      */
-    increaseTaskMsgNum({state}, dialog_id) {
-        $A.execMainDispatch("increaseTaskMsgNum", dialog_id)
+    increaseTaskMsgNum({state}, data) {
+        $A.execMainDispatch("increaseTaskMsgNum", data)
         //
-        if (dialog_id) {
-            const task = state.cacheTasks.find(task => task.dialog_id === dialog_id);
+        if ($A.execMainCacheJudge(`increaseTaskMsgNum:${data.id}`)) {
+            return
+        }
+        //
+        if (data.dialog_id) {
+            const task = state.cacheTasks.find(({dialog_id}) => dialog_id === data.dialog_id);
             if (task) task.msg_num++;
         }
     },
@@ -1137,13 +1141,17 @@ export default {
      * 新增回复数量
      * @param state
      * @param dispatch
-     * @param reply_id
+     * @param data {id, reply_id}
      */
-    increaseMsgReplyNum({state, dispatch}, reply_id) {
-        $A.execMainDispatch("increaseMsgReplyNum", reply_id)
+    increaseMsgReplyNum({state, dispatch}, data) {
+        $A.execMainDispatch("increaseMsgReplyNum", data)
         //
-        if (reply_id > 0) {
-            const msg = state.dialogMsgs.find(({id}) => id == reply_id)
+        if ($A.execMainCacheJudge(`increaseMsgReplyNum:${data.id}`)) {
+            return
+        }
+        //
+        if (data.reply_id > 0) {
+            const msg = state.dialogMsgs.find(({id}) => id == data.reply_id)
             if (msg) msg.reply_num++;
         }
     },
@@ -1152,13 +1160,17 @@ export default {
      * 减少回复数量
      * @param state
      * @param dispatch
-     * @param reply_id
+     * @param data {id, reply_id}
      */
-    decrementMsgReplyNum({state, dispatch}, reply_id) {
-        $A.execMainDispatch("decrementMsgReplyNum", reply_id)
+    decrementMsgReplyNum({state, dispatch}, data) {
+        $A.execMainDispatch("decrementMsgReplyNum", data)
         //
-        if (reply_id > 0) {
-            const msg = state.dialogMsgs.find(({id}) => id == reply_id)
+        if ($A.execMainCacheJudge(`decrementMsgReplyNum:${data.id}`)) {
+            return
+        }
+        //
+        if (data.reply_id > 0) {
+            const msg = state.dialogMsgs.find(({id}) => id == data.reply_id)
             if (msg) msg.reply_num--;
         }
     },
@@ -2285,7 +2297,7 @@ export default {
         ids.some(id => {
             const index = state.dialogMsgs.findIndex(item => item.id == id);
             if (index > -1) {
-                dispatch("decrementMsgReplyNum", state.dialogMsgs[index].reply_id);
+                dispatch("decrementMsgReplyNum", state.dialogMsgs[index]);
                 Store.set('audioSubscribe', id);
                 state.dialogMsgs.splice(index, 1);
             }
@@ -2604,9 +2616,9 @@ export default {
                                     case 'chat':
                                         if (!state.dialogMsgs.find(({id}) => id == data.id)) {
                                             // 新增任务消息数量
-                                            dispatch("increaseTaskMsgNum", dialog_id);
+                                            dispatch("increaseTaskMsgNum", data);
                                             // 新增回复数量
-                                            dispatch("increaseMsgReplyNum", data.reply_id);
+                                            dispatch("increaseMsgReplyNum", data);
                                             //
                                             if (mode === "chat") {
                                                 return;

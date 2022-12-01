@@ -1345,8 +1345,8 @@ export default {
             }
             this.$store.dispatch("saveDialogMsg", data);
             if (!this.replyActiveUpdate) {
-                this.$store.dispatch("increaseTaskMsgNum", this.dialogId);
-                this.$store.dispatch("increaseMsgReplyNum", data.reply_id);
+                this.$store.dispatch("increaseTaskMsgNum", data);
+                this.$store.dispatch("increaseMsgReplyNum", data);
                 this.$store.dispatch("updateDialogLastMsg", data);
             }
             this.onCancelReply();

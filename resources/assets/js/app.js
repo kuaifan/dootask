@@ -186,3 +186,10 @@ $A.execMainDispatch = (action, data) => {
     }
 };
 
+window.execMainCacheData = {}
+$A.execMainCacheJudge = (key) => {
+    const val = window.execMainCacheData[key] || false
+    window.execMainCacheData[key] = true
+    return val
+};
+
