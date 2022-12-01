@@ -125,6 +125,8 @@ function startBuild(data, publish, release) {
     fs.writeFileSync(electronDir + "/config.js", "window.systemInfo = " + JSON.stringify(systemInfo), 'utf8');
     fs.writeFileSync(nativeCachePath, utils.formatUrl(data.url));
     fs.writeFileSync(devloadCachePath, "", 'utf8');
+    // default (解决 Failed to load resource: net::ERR_FILE_NOT_FOUND 报错)
+    fs.writeFileSync(electronDir + "/default", "default", 'utf8');
     // index.html
     let indexFile = path.resolve(electronDir, "index.html");
     let indexString = fs.readFileSync(indexFile, 'utf8');

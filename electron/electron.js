@@ -217,11 +217,15 @@ app.on('before-quit', () => {
 })
 
 app.on('browser-window-blur', () => {
-    mainWindow.webContents.send("browserWindowBlur", {})
+    if (mainWindow) {
+        mainWindow.webContents.send("browserWindowBlur", {})
+    }
 })
 
 app.on('browser-window-focus', () => {
-    mainWindow.webContents.send("browserWindowFocus", {})
+    if (mainWindow) {
+        mainWindow.webContents.send("browserWindowFocus", {})
+    }
 })
 
 /**
