@@ -542,6 +542,7 @@ class WebSocketDialogMsg extends AbstractModel
         if (!$preserveHtml) {
             $text = strip_tags($text);
             $text = str_replace("&nbsp;", " ", $text);
+            $text = str_replace("&amp;", "&", $text);
         }
         return $text;
     }

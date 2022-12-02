@@ -376,6 +376,7 @@
             text = text.replace(/<img\s+class="emoticon"[^>]*?>/g, `[${$A.L('动画表情')}]`)
             text = text.replace(/<img\s+class="browse"[^>]*?>/g, `[${$A.L('图片')}]`)
             text = text.replace(/&nbsp;/g," ")
+            text = text.replace(/&amp;/g,"&")
             return text.replace(/<[^>]+>/g,"")
         },
 
