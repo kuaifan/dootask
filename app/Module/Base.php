@@ -894,6 +894,9 @@ class Base
      */
     public static function arrayRetainInt($array, $reInt = false)
     {
+        if (!is_array($array)) {
+            return $array;
+        }
         foreach ($array as $k => $v) {
             if (!is_numeric($v)) {
                 unset($array[$k]);
