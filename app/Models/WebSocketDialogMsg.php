@@ -556,6 +556,8 @@ class WebSocketDialogMsg extends AbstractModel
     public static function formatMsg($text, $dialog_id)
     {
         @ini_set("pcre.backtrack_limit", 999999999);
+        // 基础处理
+        $text = preg_replace("/<(\/[a-zA-Z]+)\s*>/s", "<$1>", $text);
         // 图片 [:IMAGE:className:width:height:src:alt:]
         preg_match_all("/<img\s+src=\"data:image\/(png|jpg|jpeg|gif);base64,(.*?)\"(.*?)>(<\/img>)*/s", $text, $matchs);
         foreach ($matchs[2] as $key => $base64) {
@@ -672,7 +674,7 @@ class WebSocketDialogMsg extends AbstractModel
             $text = str_replace($matchs[0][$key], "[:{$matchChar[1]}:{$keyId}:{$matchValye[1]}:]", $text);
         }
         // 处理链接标签
-        preg_match_all("/<a[^>]*?href=([\"'])(.*?)\\1[^>]*?>([^<]*?)<\/a>/is", $text, $matchs);
+        preg_match_all("/<a[^>]*?href=([\"'])(.*?)\\1[^>]*?>(.*?)<\/a>/is", $text, $matchs);
         foreach ($matchs[0] as $key => $str) {
             $herf = $matchs[2][$key];
             $title = $matchs[3][$key] ?: $herf;
