@@ -678,7 +678,7 @@ class WebSocketDialogMsg extends AbstractModel
         foreach ($matchs[0] as $key => $str) {
             $herf = $matchs[2][$key];
             $title = $matchs[3][$key] ?: $herf;
-            preg_match("/\/single\/file\/(.*?)$/i", $title, $match);
+            preg_match("/\/single\/file\/(.*?)$/i", $herf, $match);
             if ($match && strlen($match[1]) >= 32) {
                 $file = File::select(['files.id', 'files.name', 'files.ext'])->join('file_links as L', 'files.id', '=', 'L.file_id')->where('L.code', $match[1])->first();
                 if ($file && $file->name) {
