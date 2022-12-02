@@ -2174,9 +2174,9 @@ export default {
         } else {
             state.dialogIns.push(data);
         }
-        // 会话消息总数量大于100时只保留最近打开的5个会话
-        const msg_max = 100
-        const retain_num = 5
+        // 会话消息总数量大于500时只保留最近打开的10个会话
+        const msg_max = 500
+        const retain_num = 10
         state.dialogHistory = state.dialogHistory.filter(id => id != data.dialog_id)
         state.dialogHistory.push(data.dialog_id)
         if (state.dialogMsgs.length > msg_max && state.dialogHistory.length > retain_num) {
