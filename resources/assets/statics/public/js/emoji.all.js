@@ -10598,14 +10598,6 @@
             "emoji_order": "2420"
         },
         {
-            "name": "flag-tw",
-            "unicode": "1f1f9-1f1fc",
-            "shortname": ":flag-tw:",
-            "code_decimal": "&#127481;&#127484;",
-            "category": "f",
-            "emoji_order": "2421"
-        },
-        {
             "name": "flag-tz",
             "unicode": "1f1f9-1f1ff",
             "shortname": ":flag-tz:",

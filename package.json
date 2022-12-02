@@ -1,6 +1,6 @@
 {
     "name": "DooTask",
-    "version": "0.21.26",
+    "version": "0.21.32",
     "description": "DooTask is task management system.",
     "scripts": {
         "start": "./cmd dev",
@@ -55,7 +55,7 @@
         "vue-resize-observer": "^2.0.16",
         "vue-router": "^3.6.5",
         "vue-template-compiler": "^2.7.14",
-        "vue-virtual-scroll-list-hi": "^2.3.4-1",
+        "vue-virtual-scroll-list-hi": "^2.3.4-3",
         "vuedraggable": "^2.24.3",
         "vuex": "3.6.2",
         "webpack": "^5.75.0",
