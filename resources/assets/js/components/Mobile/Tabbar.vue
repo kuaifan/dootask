@@ -16,6 +16,7 @@
                 </ul>
             </div>
         </transition>
+        <NetworkException v-if="windowSmall" type="alert"/>
         <ul class="tabbar-box">
             <li v-for="item in navList" @click="toggleRoute(item.name)" :class="{active: activeName === item.name}">
                 <i class="taskfont" v-html="item.icon"></i>
@@ -36,10 +37,11 @@
 <script>
 import {mapGetters, mapState} from "vuex";
 import {Store} from "le5le-store";
+import NetworkException from "../NetworkException";
 
 export default {
     name: "MobileTabbar",
-
+    components: {NetworkException},
     data() {
         return {
             isMore: false,

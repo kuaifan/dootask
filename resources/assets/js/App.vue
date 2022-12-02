@@ -14,7 +14,7 @@
         <RightBottom/>
 
         <!--网络提示-->
-        <NetworkException/>
+        <NetworkException v-if="windowLarge"/>
 
         <!--图片预览-->
         <PreviewImageState/>

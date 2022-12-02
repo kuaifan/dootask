@@ -9,6 +9,24 @@
     z-index: 99;
     user-select: none;
 
+    .common-network-exception {
+        position: fixed;
+        bottom: 72px;
+        width: 100%;
+        .ivu-alert {
+            margin: 0 12px;
+            &.ivu-alert-with-icon {
+                .ivu-alert-icon {
+                    top: 50%;
+                    transform: translateY(-50%);
+                }
+            }
+            &.ivu-alert-error {
+                background-color: rgba(255, 240, 231, 0.95);
+            }
+        }
+    }
+
     .tabbar-box {
         position: relative;
         z-index: 3;
