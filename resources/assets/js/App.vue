@@ -118,7 +118,7 @@ export default {
                         }, 6000)
                     }
                     //
-                    if (this.$openLog) {
+                    if ($A.openLog) {
                         $A.loadScript('js/vconsole.min.js', (e) => {
                             if (e !== null || typeof window.VConsole !== 'function') {
                                 $A.modalError("vConsole 组件加载失败！");

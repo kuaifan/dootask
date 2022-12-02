@@ -201,13 +201,9 @@ if (!getTheLock) {
         }
         // 截图对象
         screenshotObj = new Screenshots({
-            singleWindow: true
+            singleWindow: true,
+            mainWindow: mainWindow
         })
-        globalShortcut.register("esc", () => {
-            if (screenshotObj.$win?.isFocused()) {
-                screenshotObj.endCapture().then(_ => {});
-            }
-        });
     })
 }
 
@@ -227,6 +223,10 @@ app.on('window-all-closed', () => {
 
 app.on('before-quit', () => {
     willQuitApp = true
+})
+
+app.on("will-quit",function(){
+    globalShortcut.unregisterAll();
 })
 
 app.on('browser-window-blur', () => {
@@ -473,7 +473,10 @@ ipcMain.on('bindScreenshotKey', (event, args) => {
         if (key) {
             screenshotKey = key
             globalShortcut.register(key, () => {
-                screenshotObj.startCapture().then(_ => {})
+                screenshotObj.startCapture().then(_ => {
+                    screenshotObj.view.webContents.executeJavaScript('if(typeof window.__initializeShortcuts===\'undefined\'){window.__initializeShortcuts=true;document.addEventListener(\'keydown\',function(e){console.log(e);if(e.keyCode===27){window.screenshots.cancel()}})}', true).catch(() => {});
+                    screenshotObj.view.webContents.focus()
+                })
             })
         }
     }
@@ -483,8 +486,20 @@ ipcMain.on('bindScreenshotKey', (event, args) => {
 /**
  * 执行截图
  */
-ipcMain.on('onScreenshot', (event) => {
-    screenshotObj.startCapture().then(_ => {})
+ipcMain.on('openScreenshot', (event) => {
+    if (screenshotObj) {
+        screenshotObj.startCapture().then(_ => {})
+    }
+    event.returnValue = "ok"
+})
+
+/**
+ * 关闭截图
+ */
+ipcMain.on('closeScreenshot', (event) => {
+    if (screenshotObj && screenshotObj.window?.isFocused()) {
+        screenshotObj.endCapture().then(_ => {});
+    }
     event.returnValue = "ok"
 })
 

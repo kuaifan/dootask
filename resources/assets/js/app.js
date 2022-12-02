@@ -135,6 +135,7 @@ Vue.prototype.goBack = function () {
 };
 
 // 全局对象/变量
+$A.L = $L;
 $A.Electron = null;
 $A.Platform = "web";
 $A.isMainElectron = false;
@@ -148,35 +149,7 @@ if (isElectron) {
     $A.isSubElectron = /\s+SubTaskWindow\//.test(window.navigator.userAgent);
 }
 
-Vue.prototype.$A = $A;
-Vue.prototype.$L = $L;
-Vue.prototype.$Electron = $A.Electron;
-Vue.prototype.$Platform = $A.Platform;
-Vue.prototype.$isMainElectron = $A.isMainElectron;
-Vue.prototype.$isSubElectron = $A.isSubElectron;
-Vue.prototype.$isEEUiApp = $A.isEEUiApp;
-Vue.prototype.$openLog = $A.openLog;
-
-Vue.config.productionTip = false;
-Vue.mixin(mixin)
-
-const app = new Vue({
-    el: '#app',
-    router,
-    store,
-    template: '<App/>',
-    components: { App }
-});
-
-
-$A.goForward = app.goForward;
-$A.goBack = app.goBack;
-$A.Message = app.$Message;
-$A.Notice = app.$Notice;
-$A.Modal = app.$Modal;
-$A.store = app.$store;
-$A.L = app.$L;
-
+// 子窗口给主窗口发送指令相关
 $A.execMainDispatch = (action, data) => {
     if ($A.isSubElectron) {
         $A.Electron.sendMessage('sendForwardMain', {
@@ -193,6 +166,7 @@ $A.execMainCacheJudge = (key) => {
     return val
 };
 
+// 绑定截图快捷键
 $A.bindScreenshotKey = (data) => {
     let key = "";
     if (data.screenshot_key && (data.screenshot_mate || data.screenshot_shift)) {
@@ -206,3 +180,28 @@ $A.bindScreenshotKey = (data) => {
     }
     $A.Electron.sendMessage('bindScreenshotKey', {key});
 };
+
+Vue.prototype.$A = $A;
+Vue.prototype.$L = $L;
+Vue.prototype.$Electron = $A.Electron;
+Vue.prototype.$Platform = $A.Platform;
+Vue.prototype.$isMainElectron = $A.isMainElectron;
+Vue.prototype.$isSubElectron = $A.isSubElectron;
+Vue.prototype.$isEEUiApp = $A.isEEUiApp;
+
+Vue.config.productionTip = false;
+Vue.mixin(mixin)
+
+const app = new Vue({
+    el: '#app',
+    router,
+    store,
+    template: '<App/>',
+    components: { App }
+});
+
+$A.goForward = app.goForward;
+$A.goBack = app.goBack;
+$A.Message = app.$Message;
+$A.Notice = app.$Notice;
+$A.Modal = app.$Modal;

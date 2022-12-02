@@ -12,7 +12,7 @@
             </FormItem>
         </Form>
         <div class="setting-footer">
-            <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{$L('提交')}}</Button>
+            <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{$L('保存')}}</Button>
             <Button :loading="loadIng > 0" @click="resetForm" style="margin-left: 8px">{{$L('重置')}}</Button>
         </div>
     </div>
@@ -65,8 +65,13 @@ export default {
             this.formData_bak = $A.cloneJSON(this.formData);
         },
 
-        onKeydown({key}) {
-            this.formData.screenshot_key = key && key.length === 1 ? key.toUpperCase() : ""
+        onKeydown({key, keyCode}) {
+            if (keyCode !== 8) {
+                key = key && key.length === 1 ? key.toUpperCase() : ""
+                if (key) {
+                    this.formData.screenshot_key = key
+                }
+            }
         },
 
         submitForm() {
