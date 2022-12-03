@@ -1319,15 +1319,15 @@ export default {
         //
         dispatch("getTasks", {
             complete: "no",
-        }).finally(_ => {
-            state.loadDashboardTasks = false;
-            //
+        }).then(_ => {
             const {today, overdue, all} = getters.dashboardTask;
             const newIds = today.filter(task => task._time >= time).map(({id}) => id)
             newIds.push(...overdue.filter(task => task._time >= time).map(({id}) => id))
             newIds.push(...all.filter(task => task._time >= time).map(({id}) => id))
             newIds.push(...getters.assistTask.filter(task => task._time >= time).map(({id}) => id))
             dispatch("forgetTask", currentIds.filter(v => newIds.indexOf(v) == -1))
+        }).finally(_ => {
+            state.loadDashboardTasks = false;
         })
     },
 
