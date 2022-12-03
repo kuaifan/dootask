@@ -1,5 +1,6 @@
 <template>
     <div class="mobile-tabbar">
+        <NetworkException v-if="windowSmall" type="alert"/>
         <transition name="mobile-fade">
             <div v-if="isMore" class="more-mask" @click="toggleRoute('more')"></div>
         </transition>
@@ -16,7 +17,6 @@
                 </ul>
             </div>
         </transition>
-        <NetworkException v-if="windowSmall" type="alert"/>
         <ul class="tabbar-box">
             <li v-for="item in navList" @click="toggleRoute(item.name)" :class="{active: activeName === item.name}">
                 <i class="taskfont" v-html="item.icon"></i>
