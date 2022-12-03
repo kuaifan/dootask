@@ -717,7 +717,6 @@ export default {
         },
 
         updateEmojiQuick(text) {
-            this.emojiSearchKey = "";
             if (!this.isFocus || !text) {
                 this.emojiQuickShow = false
                 return
