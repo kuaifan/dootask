@@ -89,9 +89,13 @@ export default {
             return this.$route.name
         },
 
+        /**
+         * 综合数（未读、提及、待办）
+         * @returns {string|string}
+         */
         msgUnreadMention() {
-            let num = 0;
-            let mention = 0;
+            let num = 0;        // 未读
+            let mention = 0;    // 提及
             this.cacheDialogs.some(dialog => {
                 num += $A.getDialogUnread(dialog);
                 mention += $A.getDialogMention(dialog);
@@ -102,9 +106,15 @@ export default {
             if (mention > 99) {
                 mention = "99+"
             }
-            const todoNum = this.msgTodoTotal
+            const todoNum = this.msgTodoTotal   // 待办
             if (todoNum) {
-                return mention ? `${todoNum}·@${mention}` : todoNum;
+                if (mention) {
+                    return `@${mention}·${todoNum}`
+                }
+                if (num) {
+                    return `${num}·${todoNum}`
+                }
+                return todoNum;
             }
             if (!num) {
                 return "";
@@ -112,6 +122,10 @@ export default {
             return mention ? `${num}·@${mention}` : String(num);
         },
 
+        /**
+         * 未读消息数
+         * @returns {number}
+         */
         msgAllUnread() {
             let num = 0;
             this.cacheDialogs.some(dialog => {
@@ -120,6 +134,10 @@ export default {
             return num;
         },
 
+        /**
+         * 待办消息数
+         * @returns {string|null}
+         */
         msgTodoTotal() {
             let todoNum = this.cacheDialogs.reduce((total, current) => total + (current.todo_num || 0), 0)
             if (todoNum > 0) {
@@ -133,10 +151,13 @@ export default {
             return null;
         },
 
-        unreadTotal() {
+        /**
+         * 未读消息 + 逾期任务
+         * @returns {number|*}
+         */
+        unreadAndOverdue() {
             if (this.userId > 0) {
-                const todoNum = this.cacheDialogs.reduce((total, current) => total + (current.todo_num || 0), 0)
-                return this.msgAllUnread + this.dashboardTask.overdue_count + todoNum
+                return this.msgAllUnread + this.dashboardTask.overdue_count
             } else {
                 return 0
             }
@@ -170,7 +191,7 @@ export default {
             if (!active) {
                 $A.eeuiAppSendMessage({
                     action: 'setBdageNotify',
-                    bdage: this.unreadTotal,
+                    bdage: this.unreadAndOverdue,
                 });
             }
         },
