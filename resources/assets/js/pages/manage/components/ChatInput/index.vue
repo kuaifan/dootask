@@ -662,6 +662,12 @@ export default {
                         attributes: {},
                         insert: op.insert
                     };
+                    try {
+                        // 替换 mention 对象为纯文本
+                        if (typeof obj.insert.mention === "object" && node.innerHTML) {
+                            obj.insert = node.innerHTML.replace(/<[^>]+>/g, "")
+                        }
+                    } catch (e) { }
                     if (op.attributes) {
                         ['bold', 'strike', 'italic', 'underline', 'list', 'blockquote', 'link'].some(item => {
                             if (op.attributes[item]) {
