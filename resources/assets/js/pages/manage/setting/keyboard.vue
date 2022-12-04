@@ -7,12 +7,13 @@
                     <div class="input-box-push">+</div>
                     <Checkbox v-model="formData.screenshot_shift">Shift</Checkbox>
                     <div class="input-box-push">+</div>
-                    <Input class="input-box-key" :value="formData.screenshot_key" @on-keydown="onKeydown" :maxlength="1"/>
+                    <Input class="input-box-key" :disabled="screenshotDisabled" :value="formData.screenshot_key" @on-keydown="onKeydown" :maxlength="1"/>
                 </div>
+                <div v-if="screenshotDisabled" class="form-tip red">{{$L('至少选择一个功能键！')}}</div>
             </FormItem>
         </Form>
         <div class="setting-footer">
-            <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{$L('保存')}}</Button>
+            <Button :loading="loadIng > 0" :disabled="screenshotDisabled" type="primary" @click="submitForm">{{$L('保存')}}</Button>
             <Button :loading="loadIng > 0" @click="resetForm" style="margin-left: 8px">{{$L('重置')}}</Button>
         </div>
     </div>
@@ -54,6 +55,12 @@ export default {
         this.initData();
     },
 
+    computed: {
+        screenshotDisabled() {
+            return !this.formData.screenshot_mate && !this.formData.screenshot_shift;
+        }
+    },
+
     methods: {
         initData() {
             this.formData = Object.assign({
@@ -79,6 +86,7 @@ export default {
                 if (valid) {
                     window.localStorage['__keyboard:data__'] = $A.jsonStringify(this.formData);
                     $A.bindScreenshotKey(this.formData);
+                    $A.messageSuccess('保存成功');
                 }
             })
         },

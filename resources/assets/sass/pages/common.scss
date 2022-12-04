@@ -16,6 +16,9 @@ body {
         color: $primary-desc-color;
         line-height: 22px;
         padding: 5px 0;
+        &.red {
+            color: #ED4014;
+        }
     }
 
     .ivu-badge-count {
