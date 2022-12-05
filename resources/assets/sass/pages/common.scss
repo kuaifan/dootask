@@ -493,34 +493,35 @@ body {
                 overflow-y: overlay !important;
 
                 &::-webkit-scrollbar {
-                    width: 10px;
-                    height: 10px;
+                    width: 0;
+                    height: 0;
                 }
 
                 &::-webkit-scrollbar-thumb {
-                    border-radius: 10px;
-                    background: rgba(0, 0, 0, 0);
-                }
-
-                &::-webkit-scrollbar-thumb:active {
-                    border-radius: 10px;
-                    background: rgba(0, 0, 0, .5);
-                }
-
-                &:hover::-webkit-scrollbar-thumb {
-                    border: 2px solid transparent;
-                    background: rgba(0, 0, 0, .2);
+                    border: 3px solid transparent;
+                    background-color: rgba(0, 0, 0, .2);
                     background-clip: content-box;
-                }
-
-                &:hover::-webkit-scrollbar-thumb:hover {
-                    border-top-width: 0;
-                    border-bottom-width: 0;
+                    border-radius: 12px;
+                    &:hover {
+                        border: 2px solid transparent;
+                        background-color: rgba(0, 0, 0, .2);
+                    }
+                    &:active {
+                        border: 2px solid transparent;
+                        background-color: rgba(0, 0, 0, .4);
+                    }
                 }
 
                 &::-webkit-scrollbar-track {
-                    border-radius: 10px;
+                    border-radius: 12px;
                     background: rgba(0, 0, 0, 0);
+                }
+
+                &:hover {
+                    &::-webkit-scrollbar {
+                        width: 12px;
+                        height: 12px;
+                    }
                 }
             }
         }
