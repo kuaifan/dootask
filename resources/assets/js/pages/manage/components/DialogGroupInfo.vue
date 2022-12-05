@@ -12,7 +12,7 @@
             <Input
                 prefix="ios-search"
                 v-model="searchKey"
-                :placeholder="$L('搜索')"
+                :placeholder="$L('搜索成员')"
                 clearable/>
         </div>
 
