@@ -310,6 +310,7 @@
                                 border: 0;
                                 line-height: 22px;
                                 cursor: default;
+                                word-break: break-all;
                             }
                             &.loading {
                                 display: flex;
