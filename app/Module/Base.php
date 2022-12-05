@@ -2311,12 +2311,13 @@ class Base
 
     /**
      * 上传文件
-     * @param array $param [ type=[文件类型], file=>Request::file, path=>文件路径, fileName=>文件名称, scale=>[压缩原图宽,高, 压缩方式], size=>限制大小KB, autoThumb=>false不要自动生成缩略图 ]
+     * @param array $param [ type=[文件类型], file=>Request::file, path=>文件路径, fileName=>文件名称, scale=>[压缩原图宽,高, 压缩方式], size=>限制大小KB, autoThumb=>false不要自动生成缩略图, chmod=>权限(默认0600) ]
      * @return array [name=>原文件名, size=>文件大小(单位KB),file=>绝对地址, path=>相对地址, url=>全路径地址, ext=>文件后缀名]
      */
     public static function upload($param)
     {
         $file = $param['file'];
+        $chmod = $param['chmod'] ?: 0600;
         if (empty($file)) {
             return Base::retError("您没有选择要上传的文件");
         }
@@ -2361,30 +2362,7 @@ class Base
                     $type = ['yml', 'yaml', 'dmg', 'pkg', 'blockmap', 'zip', 'exe', 'msi'];
                     break;
                 case 'more':
-                    $type = [
-                        'text', 'md', 'markdown',
-                        'drawio',
-                        'mind',
-                        'docx', 'wps', 'doc', 'xls', 'xlsx', 'ppt', 'pptx',
-                        'jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'raw', 'svg',
-                        'rar', 'zip', 'jar', '7-zip', 'tar', 'gzip', '7z', 'gz', 'apk', 'dmg',
-                        'tif', 'tiff',
-                        'dwg', 'dxf',
-                        'ofd',
-                        'pdf',
-                        'txt',
-                        'htaccess', 'htgroups', 'htpasswd', 'conf', 'bat', 'cmd', 'cpp', 'c', 'cc', 'cxx', 'h', 'hh', 'hpp', 'ino', 'cs', 'css',
-                        'dockerfile', 'go', 'golang', 'html', 'htm', 'xhtml', 'vue', 'we', 'wpy', 'java', 'js', 'jsm', 'jsx', 'json', 'jsp', 'less', 'lua', 'makefile', 'gnumakefile',
-                        'ocamlmakefile', 'make', 'mysql', 'nginx', 'ini', 'cfg', 'prefs', 'm', 'mm', 'pl', 'pm', 'p6', 'pl6', 'pm6', 'pgsql', 'php',
-                        'inc', 'phtml', 'shtml', 'php3', 'php4', 'php5', 'phps', 'phpt', 'aw', 'ctp', 'module', 'ps1', 'py', 'r', 'rb', 'ru', 'gemspec', 'rake', 'guardfile', 'rakefile',
-                        'gemfile', 'rs', 'sass', 'scss', 'sh', 'bash', 'bashrc', 'sql', 'sqlserver', 'swift', 'ts', 'typescript', 'str', 'vbs', 'vb', 'v', 'vh', 'sv', 'svh', 'xml',
-                        'rdf', 'rss', 'wsdl', 'xslt', 'atom', 'mathml', 'mml', 'xul', 'xbl', 'xaml', 'yaml', 'yml',
-                        'asp', 'properties', 'gitignore', 'log', 'bas', 'prg', 'python', 'ftl', 'aspx', 'plist',
-                        'mp3', 'wav', 'mp4', 'flv',
-                        'avi', 'mov', 'wmv', 'mkv', '3gp', 'rm',
-                        'xmind',
-                        'rp',
-                    ];
+                    $type = []; // 不限制上传文件类型
                     break;
                 default:
                     return Base::retError('错误的类型参数');
@@ -2416,26 +2394,32 @@ class Base
                         }
                     }
                 }
-                $fileName = md5_file($file) . '.' . $extension;
-                $scaleName = md5_file($file) . $scaleName . '.' . $extension;
+                $fileName = md5_file($file);
+                $scaleName = md5_file($file) . $scaleName;
+                if ($extension) {
+                    $fileName = $fileName . '.' . $extension;
+                    $scaleName = $scaleName . '.' . $extension;
+                }
             }
             //
             $file->move(public_path($param['path']), $fileName);
             //
+            $path = $param['path'] . $fileName;
             $array = [
-                "name" => $file->getClientOriginalName(),               //原文件名
-                "size" => Base::twoFloat($fileSize / 1024, true),       //大小KB
-                "file" => public_path($param['path'] . $fileName),        //文件的完整路径                "D:\www....KzZ.jpg"
-                "path" => $param['path'] . $fileName,                     //相对路径                     "uploads/pic....KzZ.jpg"
-                "url" => Base::fillUrl($param['path'] . $fileName),       //完整的URL                    "https://.....hhsKzZ.jpg"
-                "thumb" => '',                                          //缩略图（预览图）               "https://.....hhsKzZ.jpg_thumb.jpg"
-                "width" => -1,                                          //图片宽度
-                "height" => -1,                                         //图片高度
-                "ext" => $extension,                                    //文件后缀名
+                "name" => $file->getClientOriginalName(),                       //原文件名
+                "size" => Base::twoFloat($fileSize / 1024, true),     //大小KB
+                "file" => public_path($path),                                   //文件的完整路径                "D:\www....KzZ.jpg"
+                "path" => $path,                                                //相对路径                     "uploads/pic....KzZ.jpg"
+                "url" => Base::fillUrl($path),                                  //完整的URL                    "https://.....hhsKzZ.jpg"
+                "thumb" => '',                                                  //缩略图（预览图）               "https://.....hhsKzZ.jpg_thumb.jpg"
+                "width" => -1,                                                  //图片宽度
+                "height" => -1,                                                 //图片高度
+                "ext" => $extension,                                            //文件后缀名
             ];
             if (!is_file($array['file'])) {
                 return Base::retError('上传失败');
             }
+            @chmod($array['file'], $chmod);
             //iOS照片颠倒处理
             if (in_array($extension, ['jpg', 'jpeg']) && function_exists('exif_read_data')) {
                 $data = imagecreatefromstring(file_get_contents($array['file']));
