@@ -80,7 +80,7 @@ class PublicController extends AbstractController
         $last_at = Request::input('last_at');
         //
         $builder = User::where('userimg', '!=', '')->whereNull('disable_at');
-        if ($last_at) {
+        if (strtotime($last_at)) {
             $builder->where('updated_at', '>', Carbon::parse($last_at));
         }
         $list = $builder->orderBy('updated_at')->take(50)->get();
@@ -132,6 +132,7 @@ class PublicController extends AbstractController
         // todo 保存到考勤数据库
         info([
             'userid' => $user->userid,
+            'input' => Request::input(),
             'time' => $time,
             'at' => Carbon::now()->toDateTimeString(),
         ]);
