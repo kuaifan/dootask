@@ -560,6 +560,7 @@ export default {
 
     beforeDestroy() {
         this.$store.dispatch('forgetInDialog', this._uid)
+        this.$store.dispatch('closeDialog', this.dialogId)
     },
 
     computed: {
@@ -788,7 +789,7 @@ export default {
 
     watch: {
         dialogId: {
-            handler(dialog_id) {
+            handler(dialog_id, old_id) {
                 if (dialog_id) {
                     this.msgNew = 0
                     this.msgType = ''
@@ -816,6 +817,7 @@ export default {
                         this.inputFocus()
                     }
                 }
+                this.$store.dispatch('closeDialog', old_id)
             },
             immediate: true
         },
@@ -1718,7 +1720,7 @@ export default {
 
         handleBack() {
             const {name, params} = this.$store.state.routeHistoryLast;
-            if (name === this.$route.name && /\d+/.test(params.dialogId)) {
+            if (name === this.$route.name && /^\d+$/.test(params.dialogId)) {
                 this.goForward({name: this.$route.name});
             } else {
                 this.goBack();

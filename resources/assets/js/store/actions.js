@@ -2107,8 +2107,8 @@ export default {
             search_msg_id = dialog_id.search_msg_id;
             dialog_id = dialog_id.dialog_id;
         }
-        state.dialogSearchMsgId = /\d+/.test(search_msg_id) ? search_msg_id : 0;
-        state.dialogId = /\d+/.test(dialog_id) ? dialog_id : 0;
+        state.dialogSearchMsgId = /^\d+$/.test(search_msg_id) ? search_msg_id : 0;
+        state.dialogId = /^\d+$/.test(dialog_id) ? dialog_id : 0;
     },
 
     /**
@@ -2174,9 +2174,9 @@ export default {
         } else {
             state.dialogIns.push(data);
         }
-        // 会话消息总数量大于500时只保留最近打开的10个会话
-        const msg_max = 500
-        const retain_num = 10
+        // 会话消息总数量大于1000时只保留最近打开的20个会话
+        const msg_max = 1000
+        const retain_num = 20
         state.dialogHistory = state.dialogHistory.filter(id => id != data.dialog_id)
         state.dialogHistory.push(data.dialog_id)
         if (state.dialogMsgs.length > msg_max && state.dialogHistory.length > retain_num) {
@@ -2209,6 +2209,29 @@ export default {
         const index = state.dialogIns.findIndex(item => item.uid == uid);
         if (index > -1) {
             state.dialogIns.splice(index, 1);
+        }
+    },
+
+    /**
+     * 关闭对话
+     * @param state
+     * @param dispatch
+     * @param dialog_id
+     */
+    closeDialog({state, dispatch}, dialog_id) {
+        $A.execMainDispatch("closeDialog", dialog_id)
+        //
+        if (!/^\d+$/.test(dialog_id)) {
+            return
+        }
+        // 关闭会话后只保留会话最后50条数据
+        const retain = 5
+        const msgs = state.dialogMsgs.filter(item => item.dialog_id == dialog_id)
+        if (msgs.length > retain) {
+            const delIds = msgs.sort((a, b) => {
+                return b.id - a.id
+            }).splice(retain).map(item => item.id)
+            state.dialogMsgs = state.dialogMsgs.filter(item => !delIds.includes(item.id))
         }
     },
 
