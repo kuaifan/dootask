@@ -331,8 +331,8 @@ if [ $# -gt 0 ]; then
         $COMPOSE up -d
     elif [[ "$1" == "uninstall" ]]; then
         shift 1
-        read -rp "确定要卸载（含：删除容器、数据库、日志）吗？(y/n): " uninstall
-        [[ -z ${uninstall} ]] && uninstall="N"
+        read -rp "确定要卸载（含：删除容器、数据库、日志）吗？(Y/n): " uninstall
+        [[ -z ${uninstall} ]] && uninstall="Y"
         case $uninstall in
         [yY][eE][sS] | [yY])
             echo -e "${RedBG} 开始卸载... ${Font}"
