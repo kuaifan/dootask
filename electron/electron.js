@@ -1,7 +1,7 @@
 const fs = require('fs')
 const os = require("os");
 const path = require('path')
-const {app, BrowserWindow, ipcMain, dialog, clipboard, nativeImage, shell, Tray, Menu, globalShortcut} = require('electron')
+const {app, BrowserWindow, ipcMain, dialog, clipboard, nativeImage, shell, Tray, Menu, globalShortcut, Notification} = require('electron')
 const {autoUpdater} = require("electron-updater")
 const log = require("electron-log");
 const fsProm = require('fs/promises');
@@ -503,6 +503,21 @@ ipcMain.on('closeScreenshot', (event) => {
     event.returnValue = "ok"
 })
 
+/**
+ * 通知
+ */
+ipcMain.on('openNotification', (event, args) => {
+    const notifiy = new Notification(args);
+    notifiy.addListener('click', _ => {
+        mainWindow.webContents.send("clickNotification", args)
+    })
+    notifiy.addListener('reply', (event, reply) => {
+        mainWindow.webContents.send("replyNotification", Object.assign(args, {reply}))
+    })
+    notifiy.show()
+    event.returnValue = "ok"
+})
+
 //================================================================
 // Update
 //================================================================
@@ -557,7 +572,10 @@ ipcMain.on('mainWindowTop', (event) => {
 /**
  * 将主窗口激活
  */
-ipcMain.on('mainWindowFocus', (event) => {
+ipcMain.on('mainWindowActive', (event) => {
+    if (!mainWindow.isVisible()) {
+        mainWindow.show()
+    }
     mainWindow.focus()
     event.returnValue = "ok"
 })

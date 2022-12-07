@@ -1018,6 +1018,16 @@ export default {
                                 this.$store.dispatch('openDialog', dialog_id)
                             }
                         })
+                    } else if (this.$Electron) {
+                        this.$Electron.sendMessage('openNotification', {
+                            icon: $A.originUrl('images/logo.png'),
+                            title,
+                            body,
+                            data,
+                            tag: "dialog",
+                            hasReply: true,
+                            replyPlaceholder: this.$L('回复消息')
+                        })
                     } else {
                         this.notificationManage.replaceOptions({
                             icon: $A.originUrl('images/logo.png'),
@@ -1124,38 +1134,39 @@ export default {
             }
         },
 
+        /**
+         * 初始化通知
+         */
         notificationInit() {
             this.notificationManage = new notificationKoro(this.$L("打开通知成功"));
             if (this.notificationManage.support) {
                 this.notificationManage.notificationEvent({
                     onclick: ({target}) => {
-                        console.log("[Notification] Click", target);
+                        console.log("[Notification] A Click", target);
                         this.notificationManage.close();
-                        try {
-                            window.focus()
-                            if (this.$Electron) {
-                                this.$Electron.sendMessage('mainWindowFocus')
-                            }
-                        }catch (e) {}
-                        //
-                        const {tag, data} = target;
-                        if (tag == 'dialog') {
-                            if (!$A.isJson(data)) {
-                                return;
-                            }
-                            this.goForward({name: 'manage-messenger'});
-                            this.$store.dispatch('openDialog', data.dialog_id)
-                            //
-                            if (this.$Electron) {
-                                this.$Electron.sendMessage('mainWindowTop')
-                            }
-                        }
+                        this.notificationClick(target)
+                        window.focus()
                     },
                 });
                 this.notificationPermission();
             }
+            //
+            if (this.$Electron) {
+                this.$Electron.registerMsgListener('clickNotification', target => {
+                    console.log("[Notification] B Click", target);
+                    this.$Electron.sendMessage('mainWindowActive')
+                    this.notificationClick(target)
+                })
+                this.$Electron.registerMsgListener('replyNotification', target => {
+                    console.log("[Notification] B Reply", target);
+                    this.notificationReply(target)
+                })
+            }
         },
 
+        /**
+         * 通知权限
+         */
         notificationPermission() {
             const userSelectFn = msg => {
                 switch (msg) {
@@ -1180,6 +1191,48 @@ export default {
                 }
             };
             this.notificationManage.initNotification(userSelectFn);
+        },
+
+        /**
+         * 点击通知（客户端）
+         * @param target
+         */
+        notificationClick(target) {
+            const {tag, data} = target;
+            if (tag == 'dialog') {
+                if (!$A.isJson(data)) {
+                    return;
+                }
+                this.goForward({name: 'manage-messenger'});
+                this.$nextTick(_ => {
+                    this.$store.dispatch('openDialog', data.dialog_id)
+                })
+            }
+        },
+
+        /**
+         * 回复通知（客户端）
+         * @param target
+         */
+        notificationReply(target) {
+            const {tag, data, reply} = target;
+            if (tag == 'dialog' && reply) {
+                this.$store.dispatch("call", {
+                    url: 'dialog/msg/sendtext',
+                    data: {
+                        dialog_id: data.dialog_id,
+                        text: reply,
+                    },
+                    method: 'post',
+                }).then(({data}) => {
+                    this.$store.dispatch("saveDialogMsg", data);
+                    this.$store.dispatch("increaseTaskMsgNum", data);
+                    this.$store.dispatch("increaseMsgReplyNum", data);
+                    this.$store.dispatch("updateDialogLastMsg", data);
+                }).catch(({msg}) => {
+                    $A.modalError(msg)
+                });
+            }
         },
     }
 }
