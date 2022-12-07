@@ -184,7 +184,7 @@ export default {
                     let userids = $A.isArray(record.userid) ? record.userid : [record.userid]
                     let userNode = [];
                     userids.some(userid => {
-                        if (/\d+/.test(userid)) {
+                        if (/^\d+$/.test(userid)) {
                             userNode.push(h('UserAvatar', {
                                 props: {
                                     size: 18,

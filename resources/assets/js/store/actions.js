@@ -2225,7 +2225,7 @@ export default {
             return
         }
         // 关闭会话后只保留会话最后50条数据
-        const retain = 5
+        const retain = 50
         const msgs = state.dialogMsgs.filter(item => item.dialog_id == dialog_id)
         if (msgs.length > retain) {
             const delIds = msgs.sort((a, b) => {

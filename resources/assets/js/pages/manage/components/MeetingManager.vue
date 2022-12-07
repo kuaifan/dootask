@@ -180,7 +180,7 @@ export default {
         onAdd(data) {
             data = $A.isJson(data) ? data : {};
             // 获取会话成员
-            if (/\d+/.test(data.dialog_id)) {
+            if (/^\d+$/.test(data.dialog_id)) {
                 this.loadIng++;
                 this.$store.dispatch("call", {
                     url: 'dialog/user',

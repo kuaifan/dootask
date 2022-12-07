@@ -66,7 +66,7 @@ export default {
             audio.controls = false;
             audio.loop = false;
             audio.volume = 1;
-            if (/\d+/.test(msg)) {
+            if (/^\d+$/.test(msg)) {
                 msg = msg == this.audioId
             }
             if (typeof msg === "boolean") {

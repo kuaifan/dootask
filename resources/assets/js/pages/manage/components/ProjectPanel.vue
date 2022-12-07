@@ -1433,7 +1433,7 @@ export default {
 
         onBack() {
             const {name, params} = this.$store.state.routeHistoryLast;
-            if (name === this.$route.name && /\d+/.test(params.projectId)) {
+            if (name === this.$route.name && /^\d+$/.test(params.projectId)) {
                 this.goForward({name: this.$route.name, params: {projectId: 'all'}});
             } else {
                 this.goBack();
