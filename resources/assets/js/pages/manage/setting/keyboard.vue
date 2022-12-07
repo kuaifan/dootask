@@ -74,7 +74,7 @@ export default {
 
         onKeydown({key, keyCode}) {
             if (keyCode !== 8) {
-                key = key && key.length === 1 ? key.toUpperCase() : ""
+                key = key && key.length === 1 ? key.trim().toUpperCase() : ""
                 if (key) {
                     this.formData.screenshot_key = key
                 }
