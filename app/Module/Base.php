@@ -2311,13 +2311,13 @@ class Base
 
     /**
      * 上传文件
-     * @param array $param [ type=[文件类型], file=>Request::file, path=>文件路径, fileName=>文件名称, scale=>[压缩原图宽,高, 压缩方式], size=>限制大小KB, autoThumb=>false不要自动生成缩略图, chmod=>权限(默认0600) ]
+     * @param array $param [ type=[文件类型], file=>Request::file, path=>文件路径, fileName=>文件名称, scale=>[压缩原图宽,高, 压缩方式], size=>限制大小KB, autoThumb=>false不要自动生成缩略图, chmod=>权限(默认0644) ]
      * @return array [name=>原文件名, size=>文件大小(单位KB),file=>绝对地址, path=>相对地址, url=>全路径地址, ext=>文件后缀名]
      */
     public static function upload($param)
     {
         $file = $param['file'];
-        $chmod = $param['chmod'] ?: 0600;
+        $chmod = $param['chmod'] ?: 0644;
         if (empty($file)) {
             return Base::retError("您没有选择要上传的文件");
         }
