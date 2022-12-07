@@ -74,6 +74,9 @@
             white-space: nowrap;
         }
     }
+    &.avatar-pointer {
+        cursor: pointer;
+    }
 }
 .common-avatar-transfer {
     padding: 4px 2px;

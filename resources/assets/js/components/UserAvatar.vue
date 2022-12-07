@@ -17,7 +17,7 @@
                 <Icon type="ios-chatbubbles" @click="openDialog"/>
             </div>
         </div>
-        <div class="avatar-wrapper">
+        <div class="avatar-wrapper" :class="{'avatar-pointer': clickOpenDialog}" @click="onClickOpen">
             <div v-if="showIcon" :class="boxClass" :style="boxStyle">
                 <em :style="spotStyle"></em>
                 <EAvatar v-if="showImg" ref="avatar" :class="{'avatar-default':isDefault}" :src="user.userimg" :size="avatarSize" :error="onError">
@@ -66,6 +66,10 @@
                 default: false
             },
             showIconMenu: {
+                type: Boolean,
+                default: false
+            },
+            clickOpenDialog: {
                 type: Boolean,
                 default: false
             },
@@ -281,6 +285,12 @@
                 }
                 this.user = info;
                 this.userResult(info);
+            },
+
+            onClickOpen() {
+                if (this.clickOpenDialog) {
+                    this.openDialog()
+                }
             },
 
             openDialog() {

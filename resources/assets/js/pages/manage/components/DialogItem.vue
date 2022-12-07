@@ -22,12 +22,7 @@
         </div>
         <template v-else>
             <div class="dialog-avatar">
-                <UserAvatar
-                    :userid="source.userid"
-                    :tooltipDisabled="source.userid == userId || dialogData.type != 'group'"
-                    :show-icon-menu="dialogData.type == 'group'"
-                    :open-delay="100"
-                    :size="30"/>
+                <UserAvatar :userid="source.userid" tooltip-disabled :click-open-dialog="dialogData.type == 'group'" :size="30"/>
             </div>
             <DialogView
                 :msg-data="source"

@@ -2,7 +2,7 @@
     <div class="dialog-view" :class="viewClass" :data-id="msgData.id">
         <!--昵称-->
         <div v-if="dialogType === 'group'" class="dialog-username">
-            <UserAvatar :userid="msgData.userid" :show-icon="false" :show-name="true" :tooltip-disabled="true"/>
+            <UserAvatar :userid="msgData.userid" :show-icon="false" :show-name="true" click-open-dialog/>
         </div>
 
         <div
