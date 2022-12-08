@@ -106,9 +106,19 @@ class Base
      */
     public static function checkClientVersion($min)
     {
-        if (version_compare(Base::getClientVersion(), $min, '<')) {
+        if (!self::judgeClientVersion($min)) {
             throw new ApiException('当前版本 (v' . Base::getClientVersion() . ') 过低，最低版本要求 (v' . $min . ')。');
         }
+    }
+
+    /**
+     * 判断客户端版本
+     * @param $min
+     * @return bool
+     */
+    public static function judgeClientVersion($min)
+    {
+        return !version_compare(Base::getClientVersion(), $min, '<');
     }
 
     /**

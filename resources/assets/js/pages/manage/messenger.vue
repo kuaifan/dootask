@@ -275,14 +275,24 @@ export default {
             })
             if (dialogSearch.length > 0) {
                 const msgIds = [];
+                const userIds = [];
                 list.forEach(item => {
                     if (item.last_msg && !msgIds.includes(item.last_msg.id)) {
                         msgIds.push(item.last_msg.id)
                     }
+                    if (item.dialog_user && !userIds.includes(item.dialog_user.userid)) {
+                        userIds.push(item.dialog_user.userid)
+                    }
                 })
                 dialogSearch.forEach(item => {
-                    if (!item.last_msg || !msgIds.includes(item.last_msg.id)) {
-                        list.push(Object.assign(item, {is_search: true}))
+                    if ($A.leftExists(item.id, "u:")) {
+                        if (!userIds.includes(item.dialog_user.userid)) {
+                            list.push(Object.assign(item, {is_search: true}))
+                        }
+                    } else {
+                        if (!item.last_msg || !msgIds.includes(item.last_msg.id)) {
+                            list.push(Object.assign(item, {is_search: true}))
+                        }
                     }
                 })
             }
@@ -496,7 +506,15 @@ export default {
                 return
             }
             this.dialogKey = "";
-            this.$store.dispatch("openDialog", dialogId)
+            //
+            if ($A.isJson(dialogId) && $A.leftExists(dialogId.dialog_id, "u:")) {
+                this.$store.dispatch("showSpinner", 300)
+                this.$store.dispatch("openDialogUserid", $A.leftDelete(dialogId.dialog_id, "u:")).finally(_ => {
+                    this.$store.dispatch("hiddenSpinner")
+                })
+            } else {
+                this.$store.dispatch("openDialog", dialogId)
+            }
         },
 
         openContacts(user) {

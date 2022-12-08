@@ -85,8 +85,8 @@ class DialogController extends AbstractController
         if (empty($key)) {
             return Base::retError('请输入搜索关键词');
         }
-        //
-        $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread'])
+        // 搜索会话
+        $dialogs = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
             ->where('web_socket_dialogs.name', 'LIKE', "%{$key}%")
             ->where('u.userid', $user->userid)
@@ -94,9 +94,30 @@ class DialogController extends AbstractController
             ->orderByDesc('web_socket_dialogs.last_at')
             ->take(20)
             ->get();
-        $list->transform(function (WebSocketDialog $item) use ($user) {
+        $dialogs->transform(function (WebSocketDialog $item) use ($user) {
             return $item->formatData($user->userid);
         });
+        $list = $dialogs->toArray();
+        // 搜索联系人
+        if (count($list) < 20 && Base::judgeClientVersion("0.21.60")) {
+            $users = User::select(User::$basicField)
+                ->where(function ($query) use ($key) {
+                    $query->where("email", "like", "%{$key}%")->orWhere("nickname", "like", "%{$key}%");
+                })->orderBy('userid')
+                ->take(20 - count($list))
+                ->get();
+            $users->transform(function (User $item) {
+                return [
+                    'id' => 'u:' . $item->userid,
+                    'type' => 'user',
+                    'name' => $item->nickname,
+                    'dialog_user' => $item,
+                    'last_msg' => null,
+                ];
+            });
+            $list = array_merge($list, $users->toArray());
+        }
+        // 搜索消息会话
         if (count($list) < 20) {
             $msgs = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'm.id as search_msg_id'])
                 ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
@@ -109,7 +130,7 @@ class DialogController extends AbstractController
             $msgs->transform(function (WebSocketDialog $item) use ($user) {
                 return $item->formatData($user->userid);
             });
-            $list = array_merge($list->toArray(), $msgs->toArray());
+            $list = array_merge($list, $msgs->toArray());
         }
         //
         return Base::retSuccess('success', $list);
