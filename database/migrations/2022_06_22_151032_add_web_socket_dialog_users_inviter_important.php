@@ -17,7 +17,7 @@ class AddWebSocketDialogUsersInviterImportant extends Migration
         Schema::table('web_socket_dialog_users', function (Blueprint $table) use (&$isAdd) {
             if (!Schema::hasColumn('web_socket_dialog_users', 'important')) {
                 $isAdd = true;
-                $table->boolean('important')->default(0)->after('mark_unread')->nullable()->comment('是否不可移出（项目、任务人员）');
+                $table->boolean('important')->default(0)->after('mark_unread')->nullable()->comment('是否不可移出（项目、任务、部门人员）');
                 $table->bigInteger('inviter')->nullable()->default(0)->after('mark_unread')->comment('邀请人');
             }
         });
