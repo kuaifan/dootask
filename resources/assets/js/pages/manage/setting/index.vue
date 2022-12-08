@@ -72,6 +72,7 @@ export default {
             const menu = [
                 {path: 'personal', name: '个人设置'},
                 {path: 'language', name: '语言设置'},
+                {path: 'theme', name: '主题设置'},
                 {path: 'password', name: '密码设置'},
                 {path: 'email', name: '修改邮箱'},
             ]

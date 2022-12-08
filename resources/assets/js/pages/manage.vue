@@ -26,7 +26,7 @@
                             transfer
                             transfer-class-name="page-manage-menu-dropdown"
                             placement="right-start">
-                            <DropdownItem>
+                            <DropdownItem :divided="!!item.divided">
                                 <div class="manage-menu-flex">
                                     {{$L(item.name)}}
                                     <Icon type="ios-arrow-forward"></Icon>
@@ -54,7 +54,7 @@
                             transfer
                             transfer-class-name="page-manage-menu-dropdown"
                             placement="right-start">
-                            <DropdownItem divided>
+                            <DropdownItem :divided="!!item.divided">
                                 <div class="manage-menu-flex">
                                     {{$L(item.name)}}
                                     <Badge v-if="reportUnreadNumber > 0" class="manage-menu-report-badge" :count="reportUnreadNumber"/>
@@ -70,48 +70,6 @@
                                     </div>
                                 </DropdownItem>
                                 <DropdownItem name="exportTask">{{$L('导出任务统计')}}</DropdownItem>
-                            </DropdownMenu>
-                        </Dropdown>
-                        <!-- 主题皮肤 -->
-                        <Dropdown
-                            v-else-if="item.path === 'theme'"
-                            placement="right-start"
-                            transfer
-                            transfer-class-name="page-manage-menu-dropdown"
-                            @on-click="setTheme">
-                            <DropdownItem divided>
-                                <div class="manage-menu-flex">
-                                    {{$L(item.name)}}
-                                    <Icon type="ios-arrow-forward"></Icon>
-                                </div>
-                            </DropdownItem>
-                            <DropdownMenu slot="list">
-                                <DropdownItem
-                                    v-for="(item, key) in themeList"
-                                    :key="key"
-                                    :name="item.value"
-                                    :selected="themeMode === item.value">{{$L(item.name)}}</DropdownItem>
-                            </DropdownMenu>
-                        </Dropdown>
-                        <!-- 语言设置 -->
-                        <Dropdown
-                            v-else-if="item.path === 'language'"
-                            placement="right-start"
-                            transfer
-                            transfer-class-name="page-manage-menu-dropdown"
-                            @on-click="onLanguage">
-                            <DropdownItem divided>
-                                <div class="manage-menu-flex">
-                                    {{currentLanguage}}
-                                    <Icon type="ios-arrow-forward"></Icon>
-                                </div>
-                            </DropdownItem>
-                            <DropdownMenu slot="list">
-                                <DropdownItem
-                                    v-for="(item, key) in languageList"
-                                    :key="key"
-                                    :name="key"
-                                    :selected="languageType === key">{{item}}</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
                         <!-- 其他菜单 -->
@@ -375,7 +333,6 @@ import DialogModal from "./manage/components/DialogModal";
 import TaskModal from "./manage/components/TaskModal";
 import notificationKoro from "notification-koro1";
 import {Store} from "le5le-store";
-import {languageList, languageType, setLanguage} from "../language";
 
 export default {
     components: {
@@ -396,9 +353,6 @@ export default {
     data() {
         return {
             loadIng: 0,
-
-            languageList,
-            languageType,
 
             mateName: /macintosh|mac os x/i.test(navigator.userAgent) ? '⌘' : 'Ctrl',
 
@@ -502,9 +456,6 @@ export default {
             'wsOpenNum',
             'columnTemplate',
 
-            'themeMode',
-            'themeList',
-
             'wsMsg',
 
             'clientNewVersion',
@@ -593,31 +544,22 @@ export default {
             }
         },
 
-        currentLanguage() {
-            return languageList[languageType] || 'Language'
-        },
-
         menu() {
             const {userIsAdmin} = this;
             if (userIsAdmin) {
                 return [
                     {path: 'taskBrowse', name: '最近打开的任务'},
 
-                    {path: 'personal', name: '个人设置', divided: true},
-                    {path: 'password', name: '密码设置'},
+                    {path: 'personal', name: '偏好设置', divided: true},
+                    {path: 'system', name: '系统设置'},
                     {path: 'clearCache', name: '清除缓存'},
 
-                    {path: 'system', name: '系统设置', divided: true},
-                    {path: 'version', name: '更新版本', visible: !!this.clientNewVersion},
+                    {path: 'version', name: '更新版本', divided: true, visible: !!this.clientNewVersion},
 
                     {path: 'allProject', name: '所有项目', divided: true},
                     {path: 'archivedProject', name: '已归档的项目'},
 
                     {path: 'team', name: '团队管理', divided: true},
-
-                    {path: 'theme', name: '主题皮肤', divided: true},
-
-                    {path: 'language', name: this.currentLanguage, divided: true},
 
                     {path: 'logout', name: '退出登录', style: {color: '#f40'}, divided: true},
                 ]
@@ -625,18 +567,13 @@ export default {
                 return [
                     {path: 'taskBrowse', name: '最近打开的任务'},
 
-                    {path: 'personal', name: '个人设置', divided: true},
-                    {path: 'password', name: '密码设置'},
+                    {path: 'personal', name: '偏好设置', divided: true},
                     {path: 'clearCache', name: '清除缓存'},
 
                     {path: 'version', name: '更新版本', divided: true, visible: !!this.clientNewVersion},
 
                     {path: 'workReport', name: '工作报告', divided: true},
                     {path: 'archivedProject', name: '已归档的项目'},
-
-                    {path: 'theme', name: '主题皮肤', divided: true},
-
-                    {path: 'language', name: this.currentLanguage, divided: true},
 
                     {path: 'logout', name: '退出登录', style: {color: '#f40'}, divided: true},
                 ]
@@ -763,18 +700,10 @@ export default {
     },
 
     methods: {
-        onLanguage(l) {
-            setLanguage(l)
-        },
-
         chackPass() {
             if (this.userInfo.changepass === 1) {
                 this.goForward({name: 'manage-setting-password'});
             }
-        },
-
-        setTheme(mode) {
-            this.$store.dispatch("setTheme", mode)
         },
 
         toggleRoute(path, params) {

@@ -45,6 +45,11 @@ export default [
                         component: () => import('./pages/manage/setting/language.vue'),
                     },
                     {
+                        name: 'manage-setting-theme',
+                        path: 'theme',
+                        component: () => import('./pages/manage/setting/theme.vue'),
+                    },
+                    {
                         name: 'manage-setting-keyboard',
                         path: 'keyboard',
                         component: () => import('./pages/manage/setting/keyboard.vue'),

@@ -237,33 +237,39 @@ export default {
      * 设置主题
      * @param state
      * @param mode
+     * @returns {Promise<unknown>}
      */
     setTheme({state}, mode) {
-        if (mode === undefined) {
-            return;
-        }
-        if (!$A.isChrome()) {
-            if ($A.isEEUiApp) {
-                $A.modalWarning("仅Android设置支持主题功能");
-            } else {
-                $A.modalWarning("仅客户端或Chrome浏览器支持主题功能");
+        return new Promise(function (resolve) {
+            if (mode === undefined) {
+                resolve(false)
+                return;
             }
-            return;
-        }
-        switch (mode) {
-            case 'dark':
-                $A.dark.enableDarkMode()
-                break;
-            case 'light':
-                $A.dark.disableDarkMode()
-                break;
-            default:
-                $A.dark.autoDarkMode()
-                break;
-        }
-        state.themeMode = mode;
-        state.themeIsDark = $A.dark.isDarkEnabled();
-        window.localStorage['__theme:mode__'] = mode;
+            if (!$A.isChrome()) {
+                if ($A.isEEUiApp) {
+                    $A.modalWarning("仅Android设置支持主题功能");
+                } else {
+                    $A.modalWarning("仅客户端或Chrome浏览器支持主题功能");
+                }
+                resolve(false)
+                return;
+            }
+            switch (mode) {
+                case 'dark':
+                    $A.dark.enableDarkMode()
+                    break;
+                case 'light':
+                    $A.dark.disableDarkMode()
+                    break;
+                default:
+                    $A.dark.autoDarkMode()
+                    break;
+            }
+            state.themeMode = mode;
+            state.themeIsDark = $A.dark.isDarkEnabled();
+            window.localStorage['__theme:mode__'] = mode;
+            resolve(true)
+        });
     },
 
     /**
