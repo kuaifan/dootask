@@ -15,6 +15,7 @@ const config = require('./package.json');
 let mainWindow = null,
     mainTray = null,
     subWindow = [],
+    isReady = false,
     willQuitApp = false,
     devloadUrl = "",
     devloadCachePath = path.resolve(__dirname, ".devload");
@@ -171,6 +172,7 @@ if (!getTheLock) {
         utils.setShowWindow(mainWindow)
     })
     app.on('ready', () => {
+        isReady = true
         // 创建主窗口
         createMainWindow()
         // 创建托盘
@@ -209,9 +211,13 @@ if (!getTheLock) {
 
 app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-        createMainWindow()
-    } else if (!mainWindow.isVisible()) {
-        mainWindow.show()
+        if (isReady) {
+            createMainWindow()
+        }
+    } else if (mainWindow) {
+        if (!mainWindow.isVisible()) {
+            mainWindow.show()
+        }
     }
 })
 
