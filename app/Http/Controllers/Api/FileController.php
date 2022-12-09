@@ -1098,11 +1098,8 @@ class FileController extends AbstractController
         $refresh = Request::input('refresh', 'no');
         //
         $file = File::permissionFind($id);
-        if ($file->type == 'folder') {
-            return Base::retError('文件夹暂不支持此功能');
-        }
+        $fileLink = $file->getShareLink($user->userid, $refresh == 'yes');
         //
-        $data = FileLink::generateLink($file->id, $user->userid, $refresh == 'yes');
-        return Base::retSuccess('success', $data);
+        return Base::retSuccess('success', $fileLink);
     }
 }

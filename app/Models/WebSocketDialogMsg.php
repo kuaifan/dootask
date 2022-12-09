@@ -660,7 +660,7 @@ class WebSocketDialogMsg extends AbstractModel
                     if ($file->type == 'folder') {
                         throw new ApiException('文件夹不支持分享');
                     }
-                    $fileLink = FileLink::generateLink($file->id, User::userid());
+                    $fileLink = $file->getShareLink(User::userid());
                     $keyId = $fileLink['code'];
                 } else {
                     preg_match("/\/single\/file\/(.*?)$/i", $keyId, $match);

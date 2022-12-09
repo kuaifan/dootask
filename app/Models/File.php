@@ -291,6 +291,29 @@ class File extends AbstractModel
     }
 
     /**
+     * 获取文件分享链接
+     * @param $userid
+     * @param $refresh
+     * @return array
+     */
+    public function getShareLink($userid, $refresh = false)
+    {
+        if ($this->type == 'folder') {
+            throw new ApiException('文件夹不支持分享');
+        }
+        return FileLink::generateLink($this->id, $userid, $refresh);
+    }
+
+    /**
+     * 获取文件名称加后缀
+     * @return string|null
+     */
+    public function getNameAndExt()
+    {
+        return $this->ext ? "{$this->name}.{$this->ext}" : $this->name;
+    }
+
+    /**
      * 推送消息
      * @param $action
      * @param File|null $data   发送内容，默认为[id]

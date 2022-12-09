@@ -293,43 +293,7 @@
             v-model="forwardShow"
             :title="$L('转发')"
             :mask-closable="false">
-            <Form ref="forwardForm" :model="forwardData" label-width="auto" @submit.native.prevent>
-                <FormItem prop="dialogids" :label="$L('最近聊天')">
-                    <Select
-                        v-model="forwardData.dialogids"
-                        :placeholder="$L('选择转发最近聊天')"
-                        :multiple-max="20"
-                        multiple
-                        filterable
-                        class="dialog-wrapper-dialogids"
-                        transfer-class-name="dialog-wrapper-forward">
-                        <div slot="drop-prepend" class="forward-drop-prepend">{{$L('最多只能选择20个')}}</div>
-                        <Option
-                            v-for="(dialog, key) in dialogList"
-                            :value="dialog.id"
-                            :key="key"
-                            :key-value="dialog.name"
-                            :label="dialog.name">
-                            <div class="forward-option">
-                                <div class="forward-avatar">
-                                    <template v-if="dialog.type=='group'">
-                                        <i v-if="dialog.group_type=='department'" class="taskfont icon-avatar department">&#xe75c;</i>
-                                        <i v-else-if="dialog.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
-                                        <i v-else-if="dialog.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
-                                        <Icon v-else class="icon-avatar" type="ios-people" />
-                                    </template>
-                                    <div v-else-if="dialog.dialog_user" class="user-avatar"><UserAvatar :userid="dialog.dialog_user.userid" :size="26"/></div>
-                                    <Icon v-else class="icon-avatar" type="md-person" />
-                                </div>
-                                <div class="forward-name">{{ dialog.name }}</div>
-                            </div>
-                        </Option>
-                    </Select>
-                </FormItem>
-                <FormItem prop="userids" :label="$L('指定成员')">
-                    <UserInput v-model="forwardData.userids" :multiple-max="20" :placeholder="`(${$L('或')}) ${$L('选择转发指定成员')}`"/>
-                </FormItem>
-            </Form>
+            <DialogSelect v-model="forwardData"/>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="forwardShow=false">{{$L('取消')}}</Button>
                 <Button type="primary" :loading="forwardLoad" @click="onForward('submit')">{{$L('转发')}}</Button>
@@ -446,10 +410,12 @@ import ChatInput from "./ChatInput";
 
 import VirtualList from 'vue-virtual-scroll-list-hi'
 import {Store} from "le5le-store";
+import DialogSelect from "./DialogSelect";
 
 export default {
     name: "DialogWrapper",
     components: {
+        DialogSelect,
         DialogRespond,
         DialogItem,
         VirtualList,
