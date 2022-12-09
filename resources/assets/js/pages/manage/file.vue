@@ -185,6 +185,7 @@
 
                             <DropdownItem v-if="contextMenuItem.userid == userId" name="share" divided>{{$L('共享')}}</DropdownItem>
                             <DropdownItem v-else-if="contextMenuItem.share" name="outshare" divided>{{$L('退出共享')}}</DropdownItem>
+                            <DropdownItem name="send" :disabled="contextMenuItem.type == 'folder'">{{$L('发送')}}</DropdownItem>
                             <DropdownItem name="link" :divided="contextMenuItem.userid != userId && !contextMenuItem.share" :disabled="contextMenuItem.type == 'folder'">{{$L('链接')}}</DropdownItem>
                             <DropdownItem name="download" :disabled="contextMenuItem.ext == ''">{{$L('下载')}}</DropdownItem>
 
@@ -314,6 +315,18 @@
             </div>
         </Modal>
 
+        <!-- 文件发送 -->
+        <Modal
+            v-model="sendShow"
+            :title="$L('发送文件')"
+            :mask-closable="false">
+            <DialogSelect v-model="sendData"/>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="sendShow=false">{{$L('取消')}}</Button>
+                <Button type="primary" :loading="sendLoad" @click="onSendFile">{{$L('发送文件')}}</Button>
+            </div>
+        </Modal>
+
         <!--文件链接-->
         <Modal
             v-model="linkShow"
@@ -381,12 +394,13 @@ import UserInput from "../../components/UserInput";
 import DrawerOverlay from "../../components/DrawerOverlay";
 import PreviewImage from "../../components/PreviewImage";
 import longpress from "../../directives/longpress";
+import DialogSelect from "./components/DialogSelect";
 
 const FilePreview = () => import('./components/FilePreview');
 const FileContent = () => import('./components/FileContent');
 
 export default {
-    components: {PreviewImage, FilePreview, DrawerOverlay, UserInput, FileContent},
+    components: {DialogSelect, PreviewImage, FilePreview, DrawerOverlay, UserInput, FileContent},
     directives: {longpress},
     data() {
         return {
@@ -452,6 +466,13 @@ export default {
             shareInfo: {id: 0, userid: 0, permission: 1},
             shareList: [],
             shareLoad: 0,
+
+            sendShow: false,
+            sendLoad: false,
+            sendData: {
+                dialogids: [],
+                userids: [],
+            },
 
             linkShow: false,
             linkData: {},
@@ -1142,6 +1163,15 @@ export default {
                     this.shearIds = $A.cloneJSON(this.selectIds);
                     break;
 
+                case 'send':
+                    this.sendData = {
+                        dialogids: [],
+                        userids: [],
+                        file_id: item.id
+                    };
+                    this.sendShow = true;
+                    break;
+
                 case 'share':
                     this.shareInfo = {
                         id: item.id,
@@ -1202,6 +1232,27 @@ export default {
                     this.deleteFile([item.id])
                     break;
             }
+        },
+
+        onSendFile() {
+            if ($A.arrayLength(this.sendData.dialogids) === 0 && $A.arrayLength(this.sendData.userids) === 0) {
+                $A.messageWarning("请选择转发对话或成员");
+                return
+            }
+            this.sendLoad = true;
+            this.$store.dispatch("call", {
+                url: 'dialog/msg/sendfileid',
+                data: this.sendData
+            }).then(({data, msg}) => {
+                this.sendShow = false;
+                this.$store.dispatch("saveDialogMsg", data.msgs);
+                this.$store.dispatch("updateDialogLastMsg", data.msgs);
+                $A.messageSuccess(msg);
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            }).finally(_ => {
+                this.sendLoad = false;
+            });
         },
 
         linkGet(refresh) {

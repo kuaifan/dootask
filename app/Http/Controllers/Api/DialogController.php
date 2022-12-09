@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\AbstractModel;
 use App\Models\File;
 use App\Models\FileContent;
+use App\Models\FileLink;
 use App\Models\ProjectTask;
 use App\Models\ProjectTaskFile;
 use App\Models\User;
@@ -779,6 +781,77 @@ class DialogController extends AbstractController
             }
             return $result;
         }
+    }
+
+    /**
+     * @api {get} api/dialog/msg/sendfileid          15. 通过文件ID发送文件
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__sendfileid
+     *
+     * @apiParam {Number} file_id           消息ID
+     * @apiParam {Array} dialogids          转发给的对话ID
+     * @apiParam {Array} userids            转发给的成员ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__sendfileid()
+    {
+        $user = User::auth();
+        //
+        $file_id = intval(Request::input("file_id"));
+        $dialogids = Request::input('dialogids');
+        $userids = Request::input('userids');
+        //
+        if (empty($dialogids) && empty($userids)) {
+            return Base::retError("请选择转发对话或成员");
+        }
+        //
+        $file = File::permissionFind($file_id);
+        $fileLink = $file->getShareLink($user->userid);
+        $fileMsg = "<a class=\"mention file\" href=\"{{RemoteURL}}single/file/{$fileLink['code']}\" target=\"_blank\">~{$file->getNameAndExt()}</a>";
+        //
+        $sender = $user->userid;
+        return AbstractModel::transaction(function() use ($sender, $fileMsg, $userids, $dialogids) {
+            $msgs = [];
+            $already = [];
+            if ($dialogids) {
+                if (!is_array($dialogids)) {
+                    $dialogids = [$dialogids];
+                }
+                foreach ($dialogids as $dialogid) {
+                    $res = WebSocketDialogMsg::sendMsg(null, $dialogid, 'text', ['text' => $fileMsg], $sender);
+                    if (Base::isSuccess($res)) {
+                        $msgs[] = $res['data'];
+                        $already[] = $dialogid;
+                    }
+                }
+            }
+            if ($userids) {
+                if (!is_array($userids)) {
+                    $userids = [$userids];
+                }
+                foreach ($userids as $userid) {
+                    if (!User::whereUserid($userid)->exists()) {
+                        continue;
+                    }
+                    $dialog = WebSocketDialog::checkUserDialog($sender, $userid);
+                    if ($dialog && !in_array($dialog->id, $already)) {
+                        $res = WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $fileMsg], $sender);
+                        if (Base::isSuccess($res)) {
+                            $msgs[] = $res['data'];
+                        }
+                    }
+                }
+            }
+            return Base::retSuccess('发送成功', [
+                'msgs' => $msgs
+            ]);
+        });
     }
 
     /**
