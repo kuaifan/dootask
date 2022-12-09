@@ -677,6 +677,7 @@ export default {
                     data.project_user = []
                 }
                 state.cacheProjects.push(data);
+                state.projectTotal++
             }
             //
             state.cacheDialogs.some(dialog => {
@@ -710,10 +711,16 @@ export default {
             const index = state.cacheProjects.findIndex(project => project.id == id);
             if (index > -1) {
                 state.cacheProjects.splice(index, 1);
+                state.projectTotal = Math.max(0, state.projectTotal - 1)
             }
         })
         if (ids.includes(state.projectId)) {
-            const project = state.cacheProjects.find(({id}) => id && id != project_id);
+            const project = $A.cloneJSON(state.cacheProjects).sort((a, b) => {
+                if (a.top_at || b.top_at) {
+                    return $A.Date(b.top_at) - $A.Date(a.top_at);
+                }
+                return b.id - a.id;
+            }).find(({id}) => id && id != project_id);
             if (project) {
                 $A.goForward({name: 'manage-project', params: {projectId: project.id}});
             } else {
