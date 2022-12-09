@@ -141,7 +141,7 @@ $A.Platform = "web";
 $A.isMainElectron = false;
 $A.isSubElectron = false;
 $A.isEEUiApp = isEEUiApp;
-$A.openLog = $A.getStorageString("log::open") === "open";
+$A.openLog = false;
 if (isElectron) {
     $A.Electron = electron;
     $A.Platform = /macintosh|mac os x/i.test(navigator.userAgent) ? "mac" : "win";
@@ -193,16 +193,19 @@ Vue.prototype.$isEEUiApp = $A.isEEUiApp;
 Vue.config.productionTip = false;
 Vue.mixin(mixin)
 
-const app = new Vue({
-    el: '#app',
-    router,
-    store,
-    template: '<App/>',
-    components: { App }
-});
+let app;
+store.dispatch("init").then(_ => {
+    app = new Vue({
+        el: '#app',
+        router,
+        store,
+        template: '<App/>',
+        components: { App }
+    });
 
-$A.goForward = app.goForward;
-$A.goBack = app.goBack;
-$A.Message = app.$Message;
-$A.Notice = app.$Notice;
-$A.Modal = app.$Modal;
+    $A.goForward = app.goForward;
+    $A.goBack = app.goBack;
+    $A.Message = app.$Message;
+    $A.Notice = app.$Notice;
+    $A.Modal = app.$Modal;
+})

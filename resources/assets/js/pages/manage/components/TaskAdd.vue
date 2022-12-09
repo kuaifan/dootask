@@ -229,9 +229,9 @@ export default {
         }
     },
 
-    mounted() {
+    async mounted() {
         this.initCascaderData();
-        this.initProjectData();
+        await this.initProjectData();
         this.$nextTick(() => this.$refs.input.focus())
     },
 
@@ -265,12 +265,12 @@ export default {
     watch: {
         'addData.project_id'(projectId) {
             if (projectId > 0) {
-                $A.setStorage("cacheAddTaskProjectId", projectId);
+                $A.IDBSave("cacheAddTaskProjectId", projectId);
             }
         },
         'addData.column_id'(columnId) {
             if (columnId > 0) {
-                $A.setStorage("cacheAddTaskColumnId", columnId);
+                $A.IDBSave("cacheAddTaskColumnId", columnId);
             }
             const {project_id} = this.addData;
             if (project_id && columnId) {
@@ -314,14 +314,14 @@ export default {
         /**
          * 初始化项目、列表、优先级
          */
-        initProjectData() {
+        async initProjectData() {
             // 项目、列表
-            let cacheAddTaskProjectId = $A.getStorageInt("cacheAddTaskProjectId");
+            let cacheAddTaskProjectId = await $A.IDBInt("cacheAddTaskProjectId");
             let project = this.cacheProjects.find(({id}) => id == this.projectId)
                 || this.cacheProjects.find(({id}) => id == cacheAddTaskProjectId)
                 || this.cacheProjects.find(({id}) => id > 0);
             if (project) {
-                let cacheAddTaskColumnId = $A.getStorageInt("cacheAddTaskColumnId");
+                let cacheAddTaskColumnId = await $A.IDBInt("cacheAddTaskColumnId");
                 let column = this.cacheColumns.find(({project_id, id}) => project_id == project.id && id == cacheAddTaskColumnId)
                     || this.cacheColumns.find(({project_id}) => project_id == project.id);
                 if (column) {

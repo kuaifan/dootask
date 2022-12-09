@@ -3,6 +3,60 @@ import {languageType} from "../language";
 
 export default {
     /**
+     * 初始化
+     * @param state
+     * @param dispatch
+     * @returns {Promise<unknown>}
+     */
+    init({state, dispatch}) {
+        return new Promise(async resolve => {
+            // 读取缓存
+            state.cacheServerUrl = await $A.IDBString("cacheServerUrl")
+            state.cacheUserBasic = await $A.IDBArray("cacheUserBasic")
+            state.cacheDialogs = (await $A.IDBArray("cacheDialogs")).map(item => Object.assign(item, {loading: false}))
+            state.cacheProjects = await $A.IDBArray("cacheProjects")
+            state.cacheColumns = await $A.IDBArray("cacheColumns")
+            state.cacheTasks = await $A.IDBArray("cacheTasks")
+            state.cacheProjectParameter = await $A.IDBArray("cacheProjectParameter")
+            state.cacheTaskBrowse = await $A.IDBArray("cacheTaskBrowse")
+            state.dialogMsgs = await $A.IDBArray("dialogMsgs")
+            state.dialogInputCache = await $A.IDBArray("dialogInputCache")
+            state.fileLists = await $A.IDBArray("fileLists")
+            state.userInfo = await $A.IDBJson("userInfo")
+
+            // 会员信息
+            if (state.userInfo.userid) {
+                state.userId = state.userInfo.userid = $A.runNum(state.userInfo.userid)
+                state.userToken = state.userInfo.token
+                state.userIsAdmin = $A.inArray("admin", state.userInfo.identity)
+            }
+
+            // ServerUrl
+            if (state.cacheServerUrl) {
+                window.systemInfo.apiUrl = state.cacheServerUrl
+            }
+
+            // 主题皮肤
+            switch (state.themeMode) {
+                case 'dark':
+                    $A.dark.enableDarkMode()
+                    break;
+                case 'light':
+                    $A.dark.disableDarkMode()
+                    break;
+                default:
+                    state.themeMode = "auto"
+                    $A.dark.autoDarkMode()
+                    break;
+            }
+            state.themeIsDark = $A.dark.isDarkEnabled()
+
+            //
+            resolve()
+        })
+    },
+
+    /**
      * 访问接口
      * @param state
      * @param dispatch
@@ -227,9 +281,8 @@ export default {
                 key = {[key]: value || !cache[key]};
             }
             state.cacheProjectParameter.splice(index, 1, Object.assign(cache, key))
-            setTimeout(() => {
-                $A.setStorage("cacheProjectParameter", state.cacheProjectParameter);
-            });
+            //
+            $A.IDBSave("cacheProjectParameter", state.cacheProjectParameter);
         }
     },
 
@@ -267,7 +320,7 @@ export default {
             }
             state.themeMode = mode;
             state.themeIsDark = $A.dark.isDarkEnabled();
-            window.localStorage['__theme:mode__'] = mode;
+            window.localStorage.setItem("__theme:mode__", mode);
             resolve(true)
         });
     },
@@ -328,7 +381,7 @@ export default {
      * @returns {Promise<unknown>}
      */
     saveUserInfo({state, dispatch}, info) {
-        return new Promise(function (resolve) {
+        return new Promise(async resolve => {
             const userInfo = $A.cloneJSON(info);
             userInfo.userid = $A.runNum(userInfo.userid);
             userInfo.token = userInfo.userid > 0 ? (userInfo.token || state.userToken) : '';
@@ -336,7 +389,8 @@ export default {
             state.userId = userInfo.userid;
             state.userToken = userInfo.token;
             state.userIsAdmin = $A.inArray('admin', userInfo.identity);
-            $A.setStorage("userInfo", state.userInfo);
+            await $A.IDBSet("userInfo", state.userInfo);
+            //
             dispatch("getBasicData", null);
             if (state.userId > 0) {
                 dispatch("saveUserBasic", state.userInfo);
@@ -436,9 +490,8 @@ export default {
         }
         state.cacheUserActive = Object.assign(data, {__:Math.random()});
         Store.set('cacheUserActive', data);
-        setTimeout(() => {
-            $A.setStorage("cacheUserBasic", state.cacheUserBasic);
-        })
+        //
+        $A.IDBSave("cacheUserBasic", state.cacheUserBasic)
     },
 
     /**
@@ -515,30 +568,31 @@ export default {
      * @returns {Promise<unknown>}
      */
     handleClearCache({state, dispatch}, userInfo) {
-        return new Promise(function (resolve) {
+        return new Promise(async resolve => {
             try {
-                const cacheLoginEmail = $A.getStorageString("cacheLoginEmail");
-                const cacheFileSort = $A.getStorageJson("cacheFileSort");
-                const languageType = window.localStorage['__language:type__'];
-                const keyboardData = window.localStorage['__keyboard:data__'];
-                const themeMode = window.localStorage['__theme:mode__'];
-                //
-                window.localStorage.clear();
-                //
                 state.cacheUserBasic = [];
                 state.cacheDialogs = [];
                 state.cacheProjects = [];
                 state.cacheColumns = [];
                 state.cacheTasks = [];
                 //
-                window.localStorage['__language:type__'] = languageType;
-                window.localStorage['__keyboard:data__'] = keyboardData;
-                window.localStorage['__theme:mode__'] = themeMode;
-                $A.setStorage("cacheProjectParameter", state.cacheProjectParameter);
-                $A.setStorage("cacheServerUrl", state.cacheServerUrl);
-                $A.setStorage("cacheLoginEmail", cacheLoginEmail);
-                $A.setStorage("cacheFileSort", cacheFileSort);
-                $A.setStorage("cacheTaskBrowse", state.cacheTaskBrowse);
+                const cacheLoginEmail = await $A.IDBString("cacheLoginEmail");
+                const cacheFileSort = await $A.IDBJson("cacheFileSort");
+                const languageType = window.localStorage.getItem("__language:type__");
+                const keyboardData = window.localStorage.getItem("__keyboard:data__");
+                const themeMode = window.localStorage.getItem("__theme:mode__");
+                //
+                window.localStorage.clear();
+                await $A.IDBClear();
+                //
+                window.localStorage.setItem("__language:type__", languageType)
+                window.localStorage.setItem("__keyboard:data__", keyboardData)
+                window.localStorage.setItem("__theme:mode__", themeMode)
+                await $A.IDBSet("cacheServerUrl", state.cacheServerUrl);
+                await $A.IDBSet("cacheProjectParameter", state.cacheProjectParameter);
+                await $A.IDBSet("cacheLoginEmail", cacheLoginEmail);
+                await $A.IDBSet("cacheFileSort", cacheFileSort);
+                await $A.IDBSet("cacheTaskBrowse", state.cacheTaskBrowse);
                 dispatch("saveUserInfo", $A.isJson(userInfo) ? userInfo : state.userInfo);
                 //
                 resolve()
@@ -567,12 +621,13 @@ export default {
             });
         } else if ($A.isJson(data)) {
             let base = {_load: false, _edit: false};
-            const index = state.files.findIndex(({id}) => id == data.id);
+            const index = state.fileLists.findIndex(({id}) => id == data.id);
             if (index > -1) {
-                state.files.splice(index, 1, Object.assign(base, state.files[index], data));
+                state.fileLists.splice(index, 1, Object.assign(base, state.fileLists[index], data));
             } else {
-                state.files.push(Object.assign(base, data))
+                state.fileLists.push(Object.assign(base, data))
             }
+            $A.IDBSave("fileLists", state.fileLists, 600)
         }
     },
 
@@ -587,12 +642,13 @@ export default {
         //
         let ids = $A.isArray(file_id) ? file_id : [file_id];
         ids.some(id => {
-            state.files = state.files.filter(file => file.id != id);
-            state.files.some(file => {
+            state.fileLists = state.fileLists.filter(file => file.id != id);
+            state.fileLists.some(file => {
                 if (file.pid == id) {
                     dispatch("forgetFile", file.id);
                 }
             });
+            $A.IDBSave("fileLists", state.fileLists, 600)
         })
     },
 
@@ -612,7 +668,8 @@ export default {
                 },
             }).then((result) => {
                 const ids = result.data.map(({id}) => id)
-                state.files = state.files.filter((item) => item.pid != pid || ids.includes(item.id));
+                state.fileLists = state.fileLists.filter((item) => item.pid != pid || ids.includes(item.id));
+                $A.IDBSave("fileLists", state.fileLists, 600)
                 //
                 dispatch("saveFile", result.data);
                 resolve(result)
@@ -692,9 +749,7 @@ export default {
                 }
             })
             //
-            setTimeout(() => {
-                $A.setStorage("cacheProjects", state.cacheProjects);
-            })
+            $A.IDBSave("cacheProjects", state.cacheProjects);
         }
     },
 
@@ -727,9 +782,8 @@ export default {
                 $A.goForward({name: 'manage-dashboard'});
             }
         }
-        setTimeout(() => {
-            $A.setStorage("cacheProjects", state.cacheProjects);
-        })
+        //
+        $A.IDBSave("cacheProjects", state.cacheProjects);
     },
 
     /**
@@ -910,9 +964,8 @@ export default {
             } else {
                 state.cacheColumns.push(data);
             }
-            setTimeout(() => {
-                $A.setStorage("cacheColumns", state.cacheColumns);
-            })
+            //
+            $A.IDBSave("cacheColumns", state.cacheColumns);
         }
     },
 
@@ -937,9 +990,7 @@ export default {
         })
         Array.from(new Set(project_ids)).some(id => dispatch("getProjectOne", id).catch(() => {}))
         //
-        setTimeout(() => {
-            $A.setStorage("cacheColumns", state.cacheColumns);
-        })
+        $A.IDBSave("cacheColumns", state.cacheColumns);
     },
 
     /**
@@ -1088,9 +1139,7 @@ export default {
                 }
             })
             //
-            setTimeout(() => {
-                $A.setStorage("cacheTasks", state.cacheTasks);
-            })
+            $A.IDBSave("cacheTasks", state.cacheTasks);
         }
     },
 
@@ -1129,9 +1178,8 @@ export default {
         if (ids.includes(state.taskId)) {
             state.taskId = 0;
         }
-        setTimeout(() => {
-            $A.setStorage("cacheTasks", state.cacheTasks);
-        })
+        //
+        $A.IDBSave("cacheTasks", state.cacheTasks);
     },
 
     /**
@@ -1926,9 +1974,8 @@ export default {
         if (state.cacheTaskBrowse.length > 200) {
             state.cacheTaskBrowse.splice(200);
         }
-        setTimeout(() => {
-            $A.setStorage("cacheTaskBrowse", state.cacheTaskBrowse);
-        })
+        //
+        $A.IDBSave("cacheTaskBrowse", state.cacheTaskBrowse);
     },
 
     /** *****************************************************************************************/
@@ -1961,9 +2008,8 @@ export default {
             } else {
                 state.cacheDialogs.push(data);
             }
-            setTimeout(() => {
-                $A.setStorage("cacheDialogs", state.cacheDialogs);
-            })
+            //
+            $A.IDBSave("cacheDialogs", state.cacheDialogs);
         }
     },
 
@@ -2167,9 +2213,7 @@ export default {
             state.dialogId = 0
         }
         //
-        setTimeout(() => {
-            $A.setStorage("cacheDialogs", state.cacheDialogs);
-        })
+        $A.IDBSave("cacheDialogs", state.cacheDialogs);
     },
 
     /**
@@ -2187,9 +2231,9 @@ export default {
         } else {
             state.dialogIns.push(data);
         }
-        // 会话消息总数量大于1000时只保留最近打开的20个会话
-        const msg_max = 1000
-        const retain_num = 20
+        // 会话消息总数量大于1500时只保留最近打开的30个会话
+        const msg_max = 1500
+        const retain_num = 30
         state.dialogHistory = state.dialogHistory.filter(id => id != data.dialog_id)
         state.dialogHistory.push(data.dialog_id)
         if (state.dialogMsgs.length > msg_max && state.dialogHistory.length > retain_num) {
@@ -2205,6 +2249,7 @@ export default {
             })
             if (delIds.length > 0) {
                 state.dialogMsgs = state.dialogMsgs.filter(item => !delIds.includes(item.dialog_id));
+                $A.IDBSave("dialogMsgs", state.dialogMsgs, 600)
             }
             state.dialogHistory = newIds
         }
@@ -2245,6 +2290,7 @@ export default {
                 return b.id - a.id
             }).splice(retain).map(item => item.id)
             state.dialogMsgs = state.dialogMsgs.filter(item => !delIds.includes(item.id))
+            $A.IDBSave("dialogMsgs", state.dialogMsgs, 600)
         }
     },
 
@@ -2311,6 +2357,7 @@ export default {
             } else {
                 state.dialogMsgs.push(data);
             }
+            $A.IDBSave("dialogMsgs", state.dialogMsgs, 600)
             //
             const dialog = state.cacheDialogs.find(({id, last_msg}) => id == data.dialog_id && last_msg && last_msg.id === data.id);
             if (dialog) {
@@ -2338,6 +2385,7 @@ export default {
                 dispatch("decrementMsgReplyNum", state.dialogMsgs[index]);
                 Store.set('audioSubscribe', id);
                 state.dialogMsgs.splice(index, 1);
+                $A.IDBSave("dialogMsgs", state.dialogMsgs, 600)
             }
         })
         dispatch("forgetDialogTodoForMsgId", msg_id)
@@ -2378,6 +2426,7 @@ export default {
             //
             if (clearBefore) {
                 state.dialogMsgs = state.dialogMsgs.filter(({dialog_id}) => dialog_id !== data.dialog_id)
+                $A.IDBSave("dialogMsgs", state.dialogMsgs, 600)
             }
             //
             const callTime = $A.Time();
@@ -2394,6 +2443,7 @@ export default {
                     //
                     const ids = resData.list.map(({id}) => id)
                     state.dialogMsgs = state.dialogMsgs.filter(item => item.dialog_id != data.dialog_id || ids.includes(item.id) || $A.Time(item.created_at) >= callTime);
+                    $A.IDBSave("dialogMsgs", state.dialogMsgs, 600)
                 }
                 if ($A.isArray(resData.todo)) {
                     state.dialogTodos = state.dialogTodos.filter(item => item.dialog_id != data.dialog_id)

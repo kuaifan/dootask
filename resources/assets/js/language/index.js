@@ -70,8 +70,8 @@ let languageUtils = {
      * @returns {string}
      */
     getLanguage() {
-        if (typeof window.localStorage['__language:type__'] === "string") {
-            return window.localStorage['__language:type__'];
+        if (typeof window.localStorage.getItem("__language:type__") === "string") {
+            return window.localStorage.getItem("__language:type__");
         }
         let lang = 'EN';
         let navLang = ((window.navigator.language || navigator.userLanguage) + "").toUpperCase();
@@ -92,7 +92,8 @@ let languageUtils = {
                 lang = 'TC'
                 break;
         }
-        return window.localStorage['__language:type__'] = lang;
+        window.localStorage.setItem("__language:type__", lang)
+        return lang
     }
 };
 let languageInit = false;
@@ -133,7 +134,7 @@ function setLanguage(language) {
         cancelText: '取消',
         okText: '确定',
         onOk: () => {
-            window.localStorage['__language:type__'] = language;
+            window.localStorage.setItem("__language:type__", language)
             $A.reloadUrl()
         }
     });
@@ -201,7 +202,7 @@ function switchLanguage(text) {
         setTimeout(_ => {
             try {
                 let key = '__language:Undefined__';
-                let languageTmp = JSON.parse(window.localStorage[key] || '[]');
+                let languageTmp = JSON.parse(window.localStorage.getItem(key) || '[]');
                 if (!languageUtils.isArray(languageTmp)) {
                     languageTmp = [];
                 }
@@ -212,7 +213,7 @@ function switchLanguage(text) {
                 });
                 if (!tmpData) {
                     languageTmp.push(text);
-                    window.localStorage[key] = JSON.stringify(languageTmp);
+                    window.localStorage.setItem(key, JSON.stringify(languageTmp));
                 }
             } catch (e) { }
         }, 10)

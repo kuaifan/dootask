@@ -118,22 +118,25 @@ export default {
                         }, 6000)
                     }
                     //
-                    if ($A.openLog) {
-                        $A.loadScript('js/vconsole.min.js', (e) => {
-                            if (e !== null || typeof window.VConsole !== 'function') {
-                                $A.modalError("vConsole 组件加载失败！");
-                                return;
-                            }
-                            window.vConsole = new window.VConsole({
-                                onReady: () => {
-                                    console.log('vConsole: onReady');
-                                },
-                                onClearLog: () => {
-                                    console.log('vConsole: onClearLog');
+                    $A.IDBString("logOpen").then(r => {
+                        $A.openLog = r === "open"
+                        if ($A.openLog) {
+                            $A.loadScript('js/vconsole.min.js', (e) => {
+                                if (e !== null || typeof window.VConsole !== 'function') {
+                                    $A.modalError("vConsole 组件加载失败！");
+                                    return;
                                 }
+                                window.vConsole = new window.VConsole({
+                                    onReady: () => {
+                                        console.log('vConsole: onReady');
+                                    },
+                                    onClearLog: () => {
+                                        console.log('vConsole: onClearLog');
+                                    }
+                                });
                             });
-                        });
-                    }
+                        }
+                    })
                 }
             },
             immediate: true
@@ -237,7 +240,7 @@ export default {
                 key: 'manifest',
                 url: $A.apiUrl("../manifest")
             })
-            $A.bindScreenshotKey($A.jsonParse(window.localStorage['__keyboard:data__'] || {}));
+            $A.bindScreenshotKey($A.jsonParse(window.localStorage.getItem("__keyboard:data__") || {}));
         },
 
         eeuiEvents() {

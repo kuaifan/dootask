@@ -255,22 +255,24 @@ export default {
             if (/\/hideenOfficeTitle\//.test(window.navigator.userAgent)) {
                 config.document.title = " ";
             }
-            if (this.readOnly || this.historyId > 0) {
-                config.editorConfig.mode = "view";
-                config.editorConfig.callbackUrl = null;
-                if (!config.editorConfig.user.id) {
-                    let viewer = $A.getStorageInt("viewer")
-                    if (!viewer) {
-                        viewer = $A.randNum(1000, 99999);
-                        $A.setStorage("viewer", viewer)
+            (async _ => {
+                if (this.readOnly || this.historyId > 0) {
+                    config.editorConfig.mode = "view";
+                    config.editorConfig.callbackUrl = null;
+                    if (!config.editorConfig.user.id) {
+                        let officeViewer = await $A.IDBInt("officeViewer")
+                        if (!officeViewer) {
+                            officeViewer = $A.randNum(1000, 99999);
+                            await $A.IDBSet("officeViewer", officeViewer)
+                        }
+                        config.editorConfig.user.id = "viewer_" + officeViewer;
+                        config.editorConfig.user.name = "Viewer_" + officeViewer
                     }
-                    config.editorConfig.user.id = "viewer_" + viewer;
-                    config.editorConfig.user.name = "Viewer_" + viewer
                 }
-            }
-            this.$nextTick(() => {
-                this.docEditor = new DocsAPI.DocEditor(this.id, config);
-            })
+                this.$nextTick(() => {
+                    this.docEditor = new DocsAPI.DocEditor(this.id, config);
+                })
+            })()
         },
 
         onDocumentReady() {

@@ -397,14 +397,12 @@ export default {
                 case 'log.open':
                 case 'log:open':
                 case 'eruda:open':
-                    $A.setStorage("log::open", "open");
-                    $A.reloadUrl();
+                    $A.IDBSet("logOpen", "open").then(_ => $A.reloadUrl());
                     break;
                 case 'log.close':
                 case 'log:close':
                 case 'eruda:close':
-                    $A.setStorage("log::open", "close");
-                    $A.reloadUrl();
+                    $A.IDBSet("logOpen", "close").then(_ => $A.reloadUrl());
                     break;
             }
             //

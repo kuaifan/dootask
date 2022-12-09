@@ -137,8 +137,8 @@ export default {
         toggleRoute(path) {
             switch (path) {
                 case 'clearCache':
-                    this.$store.dispatch("handleClearCache", null).then(() => {
-                        $A.setStorage("clearCache", $A.randomString(6))
+                    this.$store.dispatch("handleClearCache", null).then(async () => {
+                        await $A.IDBSet("clearCache", $A.randomString(6))
                         $A.reloadUrl()
                     }).catch(() => {
                         $A.reloadUrl()

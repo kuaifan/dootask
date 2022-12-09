@@ -408,11 +408,7 @@ export default {
     },
 
     mounted() {
-        if ($A.getStorageString("clearCache")) {
-            $A.setStorage("clearCache", "")
-            $A.messageSuccess("清除成功");
-        }
-        //
+        this.chackClear();
         this.notificationInit();
         //
         this.addTaskSubscribe = Store.subscribe('addTask', this.onAddTask);
@@ -700,17 +696,26 @@ export default {
     },
 
     methods: {
+        async chackClear() {
+            const val = await $A.IDBString("clearCache")
+            if (val) {
+                await $A.IDBRemove("clearCache")
+                $A.messageSuccess("清除成功");
+            }
+        },
+
         chackPass() {
             if (this.userInfo.changepass === 1) {
                 this.goForward({name: 'manage-setting-password'});
             }
         },
 
-        toggleRoute(path, params) {
+        async toggleRoute(path, params) {
             this.show768Menu = false;
             let location = {name: 'manage-' + path, params: params || {}};
-            if (path === 'file' && $A.getStorageInt("file::folderId") > 0) {
-                location.params.folderId = $A.getStorageInt("file::folderId")
+            let fileFolderId = await $A.IDBInt("fileFolderId");
+            if (path === 'file' && fileFolderId > 0) {
+                location.params.folderId = fileFolderId
             }
             this.goForward(location);
         },
@@ -743,8 +748,8 @@ export default {
                     Store.set('updateNotification', null);
                     return;
                 case 'clearCache':
-                    this.$store.dispatch("handleClearCache", null).then(() => {
-                        $A.setStorage("clearCache", $A.randomString(6))
+                    this.$store.dispatch("handleClearCache", null).then(async () => {
+                        await $A.IDBSet("clearCache", $A.randomString(6))
                         $A.reloadUrl()
                     }).catch(() => {
                         $A.reloadUrl()

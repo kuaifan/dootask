@@ -67,7 +67,7 @@ export default {
                 screenshot_mate: true,
                 screenshot_shift: true,
                 screenshot_key: '',
-            }, $A.jsonParse(window.localStorage['__keyboard:data__'] || {}));
+            }, $A.jsonParse(window.localStorage.getItem("__keyboard:data__") || {}));
             //
             this.formData_bak = $A.cloneJSON(this.formData);
         },
@@ -84,7 +84,7 @@ export default {
         submitForm() {
             this.$refs.formData.validate((valid) => {
                 if (valid) {
-                    window.localStorage['__keyboard:data__'] = $A.jsonStringify(this.formData);
+                    window.localStorage.setItem("__keyboard:data__", $A.jsonStringify(this.formData));
                     $A.bindScreenshotKey(this.formData);
                     $A.messageSuccess('保存成功');
                 }

@@ -17,7 +17,7 @@
                         size="large"
                         readonly
                         clearable
-                        @on-clear="clearServerUrl"/>
+                        @on-clear="setServerUrl('')"/>
 
                     <Input
                         v-model="email"
@@ -160,7 +160,7 @@ export default {
             loginType: 'login',
             loginJump: false,
 
-            email: $A.getStorageString("cacheLoginEmail") || '',
+            email: '',
             password: '',
             password2: '',
             code: '',
@@ -172,17 +172,21 @@ export default {
 
             subscribe: null,
 
-            privacyShow: !!this.$isEEUiApp && $A.getStorageString("cachePrivacyShow") !== "no",
+            privacyShow: false,
         }
     },
-    mounted() {
+
+    async mounted() {
+        this.privacyShow = !!this.$isEEUiApp && (await $A.IDBString("cachePrivacyShow")) !== "no";
+        this.email = await $A.IDBString("cacheLoginEmail") || ''
+        //
         this.getDemoAccount();
         this.getNeedStartHome();
         //
         if (this.isSoftware) {
             this.chackServerUrl().catch(_ => {});
         } else {
-            this.clearServerUrl();
+            this.setServerUrl('').catch(_ => {});
         }
         //
         this.subscribe = Store.subscribe('useSSOLogin', () => {
@@ -347,8 +351,8 @@ export default {
                 this.$store.dispatch("call", {
                     url: `${url}system/setting`,
                     checkNetwork: false,
-                }).then(() => {
-                    this.setServerUrl(url)
+                }).then(async () => {
+                    await this.setServerUrl(url)
                     resolve()
                 }).catch(({ret, msg}) => {
                     if (ret === -1001) {
@@ -366,10 +370,8 @@ export default {
         chackServerUrl(tip) {
             return new Promise((resolve, reject) => {
                 if (this.isNotServer()) {
-                    if (tip === true) {
-                        $A.messageWarning("请设置服务器")
-                    }
                     this.inputServerUrl()
+                    tip === true && this.$nextTick(_ => $A.messageWarning("请设置服务器"))
                     reject()
                 } else {
                     resolve()
@@ -377,17 +379,13 @@ export default {
             })
         },
 
-        setServerUrl(value) {
-            $A.setStorage("cachePrivacyShow", value ? "no" : "yes")
+        async setServerUrl(value) {
+            await $A.IDBSet("cachePrivacyShow", value ? "no" : "yes")
             //
             if (value != this.cacheServerUrl) {
-                $A.setStorage("cacheServerUrl", value)
+                await $A.IDBSet("cacheServerUrl", value)
                 $A.reloadUrl();
             }
-        },
-
-        clearServerUrl() {
-            this.setServerUrl("")
         },
 
         isNotServer() {
@@ -461,8 +459,8 @@ export default {
                         invite: this.invite,
                     },
                 }).then(({data}) => {
+                    $A.IDBSave("cacheLoginEmail", this.email)
                     this.codeNeed = false;
-                    $A.setStorage("cacheLoginEmail", this.email)
                     this.$store.dispatch("handleClearCache", data).then(() => {
                         this.goNext();
                     }).catch(_ => {

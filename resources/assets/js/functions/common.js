@@ -1,9 +1,12 @@
+const localforage = require("localforage");
+
 /**
  * 基础函数
  */
 (function (window, $, undefined) {
     window.systemInfo = window.systemInfo || {};
     window.modalTransferIndex = 1000;
+    localforage.config({name: 'DooTask', storeName: 'common'});
 
     /**
      * =============================================================================
@@ -1213,90 +1216,68 @@
 
     /**
      * =============================================================================
-     * *****************************   localStorage   ******************************
+     * *****************************   localForage   ******************************
      * =============================================================================
      */
     $.extend({
-        setStorage(key, value) {
-            return this.operationStorage(key, value);
+        __IDBTimer: {},
+
+        IDBSave(key, value, delay = 0) {
+            if (typeof this.__IDBTimer[key] !== "undefined") {
+                clearTimeout(this.__IDBTimer[key])
+                delete this.__IDBTimer[key]
+            }
+            if (delay > 0) {
+                this.__IDBTimer[key] = setTimeout(_ => this.IDBSave(key, value, 0), delay)
+            } else {
+                localforage.setItem(key, value).then(_ => {})
+            }
         },
 
-        getStorage(key, def = null) {
-            let value = this.operationStorage(key);
-            return value || def;
+        IDBDel(key) {
+            localforage.removeItem(key).then(_ => {})
         },
 
-        getStorageString(key, def = '') {
-            let value = this.operationStorage(key);
+        IDBSet(key, value) {
+            return localforage.setItem(key, value).then(_ => {})
+        },
+
+        IDBRemove(key) {
+            return localforage.removeItem(key)
+        },
+
+        IDBClear() {
+            return localforage.clear()
+        },
+
+        IDBValue(key) {
+            return localforage.getItem(key)
+        },
+
+        async IDBString(key, def = "") {
+            const value = await this.IDBValue(key)
             return typeof value === "string" || typeof value === "number" ? value : def;
         },
 
-        getStorageInt(key, def = 0) {
-            let value = this.operationStorage(key);
+        async IDBInt(key, def = 0) {
+            const value = await this.IDBValue(key)
             return typeof value === "number" ? value : def;
         },
 
-        getStorageBoolean(key, def = false) {
-            let value = this.operationStorage(key);
+        async IDBBoolean(key, def = false) {
+            const value = await this.IDBValue(key)
             return typeof value === "boolean" ? value : def;
         },
 
-        getStorageArray(key, def = []) {
-            let value = this.operationStorage(key);
+        async IDBArray(key, def = []) {
+            const value = await this.IDBValue(key)
             return this.isArray(value) ? value : def;
         },
 
-        getStorageJson(key, def = {}) {
-            let value = this.operationStorage(key);
+        async IDBJson(key, def = {}) {
+            const value = await this.IDBValue(key)
             return this.isJson(value) ? value : def;
-        },
-
-        operationStorage(key, value) {
-            if (!key) {
-                return;
-            }
-            let keyName = '__state__';
-            if (key.substring(0, 5) === 'cache') {
-                keyName = '__state:' + key + '__';
-            }
-            if (typeof value === 'undefined') {
-                return this.loadFromlLocal(key, '', keyName);
-            } else {
-                this.savaToLocal(key, value, keyName);
-            }
-        },
-
-        savaToLocal(key, value, keyName) {
-            try {
-                if (typeof keyName === 'undefined') keyName = '__seller__';
-                let seller = window.localStorage[keyName];
-                if (!seller) {
-                    seller = {};
-                } else {
-                    seller = JSON.parse(seller);
-                }
-                seller[key] = value;
-                window.localStorage[keyName] = JSON.stringify(seller);
-            } catch (e) {
-            }
-        },
-
-        loadFromlLocal(key, def, keyName) {
-            try {
-                if (typeof keyName === 'undefined') keyName = '__seller__';
-                let seller = window.localStorage[keyName];
-                if (!seller) {
-                    return def;
-                }
-                seller = JSON.parse(seller);
-                if (!seller || typeof seller[key] === 'undefined') {
-                    return def;
-                }
-                return seller[key];
-            } catch (e) {
-                return def;
-            }
-        },
+        }
     });
 
     /**

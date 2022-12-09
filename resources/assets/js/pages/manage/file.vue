@@ -398,6 +398,7 @@ import DialogSelect from "./components/DialogSelect";
 
 const FilePreview = () => import('./components/FilePreview');
 const FileContent = () => import('./components/FileContent');
+const FileObject = {sort: null, mode: null};
 
 export default {
     components: {DialogSelect, PreviewImage, FilePreview, DrawerOverlay, UserInput, FileContent},
@@ -459,7 +460,7 @@ export default {
                 }
             ],
 
-            tableMode: $A.getStorageString("fileTableMode"),
+            tableMode: "",
             columns: [],
 
             shareShow: false,
@@ -510,8 +511,15 @@ export default {
         }
     },
 
+    async beforeRouteEnter(to, from, next) {
+        FileObject.sort = await $A.IDBJson("cacheFileSort")
+        FileObject.mode = await $A.IDBString("fileTableMode")
+        next()
+    },
+
+
     created() {
-        const sort = $A.getStorageJson("cacheFileSort")
+        this.tableMode = FileObject.mode
         this.columns = [
             {
                 type: 'selection',
@@ -543,14 +551,14 @@ export default {
                                     row.newname = event.target.value;
                                 },
                                 'on-blur': () => {
-                                    const file = this.files.find(({id}) => id == row.id);
+                                    const file = this.fileLists.find(({id}) => id == row.id);
                                     if (file) {
                                         file.newname = row.newname;
                                         this.onBlur(file)
                                     }
                                 },
                                 'on-enter': () => {
-                                    const file = this.files.find(({id}) => id == row.id);
+                                    const file = this.fileLists.find(({id}) => id == row.id);
                                     if (file) {
                                         file.newname = row.newname;
                                         this.onEnter(file)
@@ -575,7 +583,7 @@ export default {
                             },
                             on: {
                                 'on-edit-change': (b) => {
-                                    const file = this.files.find(({id}) => id == row.id);
+                                    const file = this.fileLists.find(({id}) => id == row.id);
                                     if (file) {
                                         setTimeout(() => {
                                             this.setEdit(file.id, b)
@@ -583,7 +591,7 @@ export default {
                                     }
                                 },
                                 'on-update': (val, cb) => {
-                                    const file = this.files.find(({id}) => id == row.id);
+                                    const file = this.fileLists.find(({id}) => id == row.id);
                                     if (file) {
                                         file.newname = val
                                         this.onEnter(file);
@@ -695,8 +703,8 @@ export default {
                 sortable: true,
             },
         ].map(item => {
-            if (item.key === sort.key) {
-                item.sortType = sort.order
+            if (item.key === FileObject.sort.key) {
+                item.sortType = FileObject.sort.order
             }
             return item;
         });
@@ -716,7 +724,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userIsAdmin', 'userInfo', 'files', 'wsOpenNum']),
+        ...mapState(['userIsAdmin', 'userInfo', 'fileLists', 'wsOpenNum']),
 
         pid() {
             const {folderId} = this.$route.params;
@@ -748,8 +756,8 @@ export default {
         },
 
         fileList() {
-            const {files, searchKey, pid, selectIds} = this;
-            const list = $A.cloneJSON(sortBy(files.filter((file) => {
+            const {fileLists, searchKey, pid, selectIds} = this;
+            const list = $A.cloneJSON(sortBy(fileLists.filter((file) => {
                 if (searchKey) {
                     return file.name.indexOf(searchKey) !== -1;
                 }
@@ -764,18 +772,18 @@ export default {
         },
 
         shearFirst() {
-            const {files, shearIds} = this;
+            const {fileLists, shearIds} = this;
             if (shearIds.length === 0) {
                 return null;
             }
-            return files.find(item => item.id == shearIds[0])
+            return fileLists.find(item => item.id == shearIds[0])
         },
 
         navigator() {
-            let {pid, files} = this;
+            let {pid, fileLists} = this;
             let array = [];
             while (pid > 0) {
-                let file = files.find(({id, permission}) => id == pid && permission > -1);
+                let file = fileLists.find(({id, permission}) => id == pid && permission > -1);
                 if (file) {
                     array.unshift(file);
                     pid = file.pid;
@@ -835,7 +843,7 @@ export default {
         },
 
         tableMode(val) {
-            $A.setStorage("fileTableMode", val)
+            $A.IDBSave("fileTableMode", val)
         },
 
         fileShow(val) {
@@ -897,10 +905,10 @@ export default {
                 return;
             }
             this.loadIng++;
-            this.$store.dispatch("getFiles", this.pid).then(() => {
+            this.$store.dispatch("getFiles", this.pid).then(async () => {
                 this.loadIng--;
                 this.openFileJudge()
-                $A.setStorage("file::folderId", this.pid)
+                await $A.IDBSet("fileFolderId", this.pid)
             }).catch(({msg}) => {
                 this.loadIng--;
                 $A.modalError({
@@ -925,7 +933,7 @@ export default {
                 return;
             }
             let id = $A.randomString(8);
-            this.files.push({
+            this.fileLists.push({
                 _edit: true,
                 pid: this.pid,
                 id: id,
@@ -1077,7 +1085,7 @@ export default {
         },
 
         handleContextMenu(row, event) {
-            this.handleRightClick(event, this.files.find(({id}) => id === row.id) || {});
+            this.handleRightClick(event, this.fileLists.find(({id}) => id === row.id) || {});
         },
 
         handleContextClick(command) {
@@ -1093,7 +1101,7 @@ export default {
         },
 
         handleVisibleChangeMenu(visible) {
-            let file = this.files.find(({_highlight}) => !!_highlight)
+            let file = this.fileLists.find(({_highlight}) => !!_highlight)
             if (file) {
                 this.$set(file, '_highlight', false);
             }
@@ -1300,7 +1308,7 @@ export default {
                 return;
             }
             if (this.isParentShare) {
-                const tmpFile = this.files.find(({id, share}) => share && this.shearIds.includes(id));
+                const tmpFile = this.fileLists.find(({id, share}) => share && this.shearIds.includes(id));
                 if (tmpFile) {
                     $A.modalError(`${tmpFile.name} 当前正在共享，无法移动到另一个共享文件夹内`)
                     return;
@@ -1325,9 +1333,9 @@ export default {
             if (ids.length === 0) {
                 return
             }
-            const firstFile = this.files.find(item => item.id == ids[0]) || {};
+            const firstFile = this.fileLists.find(item => item.id == ids[0]) || {};
             const allFolder = !ids.find(id => {
-                return this.files.find(item => item.type != 'folder' && item.id == id)
+                return this.fileLists.find(item => item.type != 'folder' && item.id == id)
             });
             let typeName = allFolder ? "文件夹" : "文件"
             let fileName = `【${firstFile.name}】等${ids.length}个${typeName}`
@@ -1373,7 +1381,7 @@ export default {
         },
 
         onBlur(item) {
-            if (this.files.find(({id, _edit}) => id == item.id && !_edit)) {
+            if (this.fileLists.find(({id, _edit}) => id == item.id && !_edit)) {
                 return;
             }
             this.onEnter(item);
@@ -1439,7 +1447,7 @@ export default {
         },
 
         setEdit(fileId, is) {
-            let item = this.$store.state.files.find(({id}) => id == fileId)
+            const item = this.$store.state.fileLists.find(({id}) => id == fileId)
             if (item) {
                 this.$set(item, '_edit', is);
                 if (is) {
@@ -1449,7 +1457,7 @@ export default {
         },
 
         setLoad(fileId, is) {
-            let item = this.$store.state.files.find(({id}) => id == fileId)
+            const item = this.$store.state.fileLists.find(({id}) => id == fileId)
             if (item) {
                 this.$set(item, '_load', is);
             }
@@ -1580,7 +1588,7 @@ export default {
         },
 
         handleTableSort({key, order}) {
-            $A.setStorage("cacheFileSort", ['asc', 'desc'].includes(order) ? {key, order} : {});
+            $A.IDBSave("cacheFileSort", ['asc', 'desc'].includes(order) ? {key, order} : {});
         },
 
         handleTableSelect(selection) {

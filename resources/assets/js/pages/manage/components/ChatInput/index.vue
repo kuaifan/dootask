@@ -791,10 +791,8 @@ export default {
             } else {
                 this.$store.state.dialogInputCache.push(data)
             }
-            this.__setInputCache && clearTimeout(this.__setInputCache);
-            this.__setInputCache = setTimeout(_ => {
-                $A.setStorage("cacheDialogInput", this.$store.state.dialogInputCache);
-            }, 600)
+            //
+            $A.IDBSave("dialogInputCache", this.$store.state.dialogInputCache, 600);
         },
 
         onClickEditor() {

@@ -1,4 +1,4 @@
-const stateData = {
+export default {
     // 浏览器尺寸信息
     windowWidth: $A(window).width(),
     windowHeight: $A(window).height(),
@@ -34,20 +34,20 @@ const stateData = {
     // User
     cacheUserActive: {},
     cacheUserWait: [],
-    cacheUserBasic: $A.getStorageArray("cacheUserBasic"),
+    cacheUserBasic: [],
 
     // Dialog
-    cacheDialogs: $A.getStorageArray("cacheDialogs").map(item => Object.assign(item, {loading: false})),
+    cacheDialogs: [],
 
     // Project
-    cacheProjects: $A.getStorageArray("cacheProjects"),
-    cacheColumns: $A.getStorageArray("cacheColumns"),
-    cacheTasks: $A.getStorageArray("cacheTasks"),
-    cacheProjectParameter: $A.getStorageArray("cacheProjectParameter"),
-    cacheTaskBrowse: $A.getStorageArray("cacheTaskBrowse"),
+    cacheProjects: [],
+    cacheColumns: [],
+    cacheTasks: [],
+    cacheProjectParameter: [],
+    cacheTaskBrowse: [],
 
     // ServerUrl
-    cacheServerUrl: $A.getStorageString("cacheServerUrl"),
+    cacheServerUrl: "",
 
     // Ajax
     ajaxWsReady: false,
@@ -66,7 +66,7 @@ const stateData = {
     wsReadWaitList: [],
 
     // 会员信息
-    userInfo: $A.getStorageJson("userInfo"),
+    userInfo: {},
     userId: 0,
     userToken: '',
     userIsAdmin: false,
@@ -80,11 +80,11 @@ const stateData = {
     dialogMsgs: [],
     dialogTodos: [],
     dialogHistory: [],
-    dialogInputCache: $A.getStorageArray("cacheDialogInput"),
+    dialogInputCache: [],
     dialogMsgTransfer: {time: 0},
 
     // 文件
-    files: [],
+    fileLists: [],
 
     // 项目任务
     projectId: 0,
@@ -136,7 +136,7 @@ const stateData = {
     ],
 
     // 主题皮肤
-    themeMode: window.localStorage['__theme:mode__'],
+    themeMode: window.localStorage.getItem("__theme:mode__"),
     themeList: [
         {name: '跟随系统', value: 'auto'},
         {name: '明亮', value: 'light'},
@@ -151,32 +151,3 @@ const stateData = {
     previewImageIndex: 0,
     previewImageList: [],
 };
-
-// 会员信息
-if (stateData.userInfo.userid) {
-    stateData.userId = stateData.userInfo.userid = $A.runNum(stateData.userInfo.userid);
-    stateData.userToken = stateData.userInfo.token;
-    stateData.userIsAdmin = $A.inArray("admin", stateData.userInfo.identity);
-}
-
-// ServerUrl
-if (stateData.cacheServerUrl) {
-    window.systemInfo.apiUrl = stateData.cacheServerUrl;
-}
-
-// 主题皮肤
-switch (stateData.themeMode) {
-    case 'dark':
-        $A.dark.enableDarkMode()
-        break;
-    case 'light':
-        $A.dark.disableDarkMode()
-        break;
-    default:
-        stateData.themeMode = "auto"
-        $A.dark.autoDarkMode()
-        break;
-}
-stateData.themeIsDark = $A.dark.isDarkEnabled();
-
-export default stateData

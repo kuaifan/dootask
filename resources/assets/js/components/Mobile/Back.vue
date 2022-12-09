@@ -44,7 +44,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['files']),
+        ...mapState(['fileLists']),
 
         style() {
             const offset = 135;
@@ -127,9 +127,9 @@ export default {
                 return;
             }
             if (this.fileFolderId > 0) {
-                const file = this.files.find(({id, permission}) => id == this.fileFolderId && permission > -1)
+                const file = this.fileLists.find(({id, permission}) => id == this.fileFolderId && permission > -1)
                 if (file) {
-                    const prevFile = this.files.find(({id, permission}) => id == file.pid && permission > -1)
+                    const prevFile = this.fileLists.find(({id, permission}) => id == file.pid && permission > -1)
                     if (prevFile) {
                         this.goForward({name: 'manage-file', params: {folderId: prevFile.id, fileId: null}});
                         return;
