@@ -15,13 +15,10 @@ export default {
             if (!initTag) {
                 await $A.IDBSet("initTag", true)
                 const userInfo = $A.getStorageJson("userInfo")
-                const cacheServerUrl = $A.getStorageString("cacheServerUrl")
-                window.localStorage.clear()
                 if (userInfo.userid > 0) {
                     await $A.IDBSet("userInfo", userInfo)
-                }
-                if (/^https*:\/\//i.test(cacheServerUrl)) {
-                    await $A.IDBSet("cacheServerUrl", cacheServerUrl)
+                    await $A.IDBSet("cacheServerUrl", $A.getStorageString("cacheServerUrl"))
+                    window.localStorage.clear()
                 }
             }
 
