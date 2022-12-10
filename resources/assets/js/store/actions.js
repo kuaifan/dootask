@@ -10,6 +10,21 @@ export default {
      */
     init({state, dispatch}) {
         return new Promise(async resolve => {
+            // 迁移缓存
+            const initTag = await $A.IDBBoolean("initTag")
+            if (!initTag) {
+                await $A.IDBSet("initTag", true)
+                const userInfo = $A.getStorageJson("userInfo")
+                const cacheServerUrl = $A.getStorageString("cacheServerUrl")
+                window.localStorage.clear()
+                if (userInfo.userid > 0) {
+                    await $A.IDBSet("userInfo", userInfo)
+                }
+                if (/^https*:\/\//i.test(cacheServerUrl)) {
+                    await $A.IDBSet("cacheServerUrl", cacheServerUrl)
+                }
+            }
+
             // 读取缓存
             state.cacheServerUrl = await $A.IDBString("cacheServerUrl")
             state.cacheUserBasic = await $A.IDBArray("cacheUserBasic")
@@ -570,32 +585,34 @@ export default {
     handleClearCache({state, dispatch}, userInfo) {
         return new Promise(async resolve => {
             try {
+                // state
                 state.cacheUserBasic = [];
                 state.cacheDialogs = [];
                 state.cacheProjects = [];
                 state.cacheColumns = [];
                 state.cacheTasks = [];
-                //
-                const cacheLoginEmail = await $A.IDBString("cacheLoginEmail");
-                const cacheFileSort = await $A.IDBJson("cacheFileSort");
+
+                // localStorage
                 const languageType = window.localStorage.getItem("__language:type__");
                 const keyboardData = window.localStorage.getItem("__keyboard:data__");
                 const themeMode = window.localStorage.getItem("__theme:mode__");
-                //
                 window.localStorage.clear();
-                await $A.IDBClear();
-                //
                 window.localStorage.setItem("__language:type__", languageType)
                 window.localStorage.setItem("__keyboard:data__", keyboardData)
                 window.localStorage.setItem("__theme:mode__", themeMode)
+
+                // localForage
+                const cacheLoginEmail = await $A.IDBString("cacheLoginEmail");
+                const cacheFileSort = await $A.IDBJson("cacheFileSort");
+                await $A.IDBClear();
                 await $A.IDBSet("cacheServerUrl", state.cacheServerUrl);
                 await $A.IDBSet("cacheProjectParameter", state.cacheProjectParameter);
                 await $A.IDBSet("cacheLoginEmail", cacheLoginEmail);
                 await $A.IDBSet("cacheFileSort", cacheFileSort);
                 await $A.IDBSet("cacheTaskBrowse", state.cacheTaskBrowse);
-                dispatch("saveUserInfo", $A.isJson(userInfo) ? userInfo : state.userInfo);
-                //
-                resolve()
+
+                // userInfo
+                dispatch("saveUserInfo", $A.isJson(userInfo) ? userInfo : state.userInfo).then(resolve);
             } catch (e) {
                 resolve()
             }

@@ -1239,7 +1239,7 @@ const localforage = require("localforage");
         },
 
         IDBSet(key, value) {
-            return localforage.setItem(key, value).then(_ => {})
+            return localforage.setItem(key, value)
         },
 
         IDBRemove(key) {
@@ -1282,30 +1282,44 @@ const localforage = require("localforage");
 
     /**
      * =============================================================================
-     * *****************************   sessionStorage   ****************************
+     * *****************************   localStorage   ******************************
      * =============================================================================
      */
     $.extend({
-        setSessionStorage(key, value) {
-            return this.operationSessionStorage(key, value);
+        setStorage(key, value) {
+            return this.__operationStorage(key, value);
         },
 
-        getSessionStorage(key, def = null) {
-            let value = this.operationSessionStorage(key);
-            return value || def;
+        getStorageValue(key) {
+            return this.__operationStorage(key);
         },
 
-        getSessionStorageString(key, def = '') {
-            let value = this.operationSessionStorage(key);
+        getStorageString(key, def = '') {
+            let value = this.__operationStorage(key);
             return typeof value === "string" || typeof value === "number" ? value : def;
         },
 
-        getSessionStorageInt(key, def = 0) {
-            let value = this.operationSessionStorage(key);
+        getStorageInt(key, def = 0) {
+            let value = this.__operationStorage(key);
             return typeof value === "number" ? value : def;
         },
 
-        operationSessionStorage(key, value) {
+        getStorageBoolean(key, def = false) {
+            let value = this.__operationStorage(key);
+            return typeof value === "boolean" ? value : def;
+        },
+
+        getStorageArray(key, def = []) {
+            let value = this.__operationStorage(key);
+            return this.isArray(value) ? value : def;
+        },
+
+        getStorageJson(key, def = {}) {
+            let value = this.__operationStorage(key);
+            return this.isJson(value) ? value : def;
+        },
+
+        __operationStorage(key, value) {
             if (!key) {
                 return;
             }
@@ -1314,31 +1328,103 @@ const localforage = require("localforage");
                 keyName = '__state:' + key + '__';
             }
             if (typeof value === 'undefined') {
-                return this.loadFromlSession(key, '', keyName);
+                return this.__loadFromlLocal(key, '', keyName);
             } else {
-                this.savaToSession(key, value, keyName);
+                this.__savaToLocal(key, value, keyName);
             }
         },
 
-        savaToSession(key, value, keyName) {
+        __savaToLocal(key, value, keyName) {
             try {
                 if (typeof keyName === 'undefined') keyName = '__seller__';
-                let seller = window.sessionStorage[keyName];
+                let seller = window.localStorage[keyName];
                 if (!seller) {
                     seller = {};
                 } else {
                     seller = JSON.parse(seller);
                 }
                 seller[key] = value;
-                window.sessionStorage[keyName] = JSON.stringify(seller);
+                window.localStorage[keyName] = JSON.stringify(seller);
             } catch (e) {
             }
         },
 
-        loadFromlSession(key, def, keyName) {
+        __loadFromlLocal(key, def, keyName) {
             try {
                 if (typeof keyName === 'undefined') keyName = '__seller__';
-                let seller = window.sessionStorage[keyName];
+                let seller = window.localStorage[keyName];
+                if (!seller) {
+                    return def;
+                }
+                seller = JSON.parse(seller);
+                if (!seller || typeof seller[key] === 'undefined') {
+                    return def;
+                }
+                return seller[key];
+            } catch (e) {
+                return def;
+            }
+        },
+    });
+
+    /**
+     * =============================================================================
+     * *****************************   sessionStorage   ****************************
+     * =============================================================================
+     */
+    $.extend({
+        setSessionStorage(key, value) {
+            return this.__operationSessionStorage(key, value);
+        },
+
+        getSessionStorageValue(key) {
+            return this.__operationSessionStorage(key);
+        },
+
+        getSessionStorageString(key, def = '') {
+            let value = this.__operationSessionStorage(key);
+            return typeof value === "string" || typeof value === "number" ? value : def;
+        },
+
+        getSessionStorageInt(key, def = 0) {
+            let value = this.__operationSessionStorage(key);
+            return typeof value === "number" ? value : def;
+        },
+
+        __operationSessionStorage(key, value) {
+            if (!key) {
+                return;
+            }
+            let keyName = '__state__';
+            if (key.substring(0, 5) === 'cache') {
+                keyName = '__state:' + key + '__';
+            }
+            if (typeof value === 'undefined') {
+                return this.__loadFromlSession(key, '', keyName);
+            } else {
+                this.__savaToSession(key, value, keyName);
+            }
+        },
+
+        __savaToSession(key, value, keyName) {
+            try {
+                if (typeof keyName === 'undefined') keyName = '__seller__';
+                let seller = window.sessionStorage.getItem(keyName);
+                if (!seller) {
+                    seller = {};
+                } else {
+                    seller = JSON.parse(seller);
+                }
+                seller[key] = value;
+                window.sessionStorage.setItem(keyName, JSON.stringify(seller))
+            } catch (e) {
+            }
+        },
+
+        __loadFromlSession(key, def, keyName) {
+            try {
+                if (typeof keyName === 'undefined') keyName = '__seller__';
+                let seller = window.sessionStorage.getItem(keyName);
                 if (!seller) {
                     return def;
                 }
