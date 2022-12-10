@@ -2346,6 +2346,22 @@ export default {
         }
     },
 
+    /**
+     * 保存聊天草稿
+     * @param state
+     * @param data {key, cache}
+     */
+    saveDialogInputCache({state}, data) {
+        const index = state.dialogInputCache.findIndex(item => item.key == data.key);
+        if (index > -1) {
+            state.dialogInputCache.splice(index, 1, data)
+        } else {
+            state.dialogInputCache.push(data)
+        }
+        //
+        $A.IDBSave("dialogInputCache", state.dialogInputCache, 600);
+    },
+
     /** *****************************************************************************************/
     /** ************************************** 消息 **********************************************/
     /** *****************************************************************************************/

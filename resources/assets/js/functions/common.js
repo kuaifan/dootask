@@ -1222,16 +1222,14 @@ const localforage = require("localforage");
     $.extend({
         __IDBTimer: {},
 
-        IDBSave(key, value, delay = 0) {
+        IDBSave(key, value, delay = 100) {
             if (typeof this.__IDBTimer[key] !== "undefined") {
                 clearTimeout(this.__IDBTimer[key])
                 delete this.__IDBTimer[key]
             }
-            if (delay > 0) {
-                this.__IDBTimer[key] = setTimeout(_ => this.IDBSave(key, value, 0), delay)
-            } else {
-                localforage.setItem(key, value).then(_ => {})
-            }
+            this.__IDBTimer[key] = setTimeout(async _ => {
+                await localforage.setItem(key, value)
+            }, delay)
         },
 
         IDBDel(key) {

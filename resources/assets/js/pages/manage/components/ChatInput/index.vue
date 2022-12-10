@@ -387,6 +387,10 @@ export default {
                 return this.dialogMsgs.find(item => item.id === replyId)
             }
             return null;
+        },
+
+        cacheKey() {
+            return this.dialogId || `t_${this.taskId}`
         }
     },
     watch: {
@@ -400,7 +404,10 @@ export default {
                     this.quill.setText('')
                 }
             }
-            this.setInputCache(val)
+            this.$store.dispatch("saveDialogInputCache", {
+                key: this.cacheKey,
+                cache: val
+            })
         },
 
         // Watch disabled change
@@ -777,22 +784,8 @@ export default {
         },
 
         getInputCache() {
-            const key = this.dialogId || `t_${this.taskId}`;
-            const item = this.dialogInputCache.find(item => item.key == key);
+            const item = this.dialogInputCache.find(item => item.key == this.cacheKey);
             return item ? item.cache : '';
-        },
-
-        setInputCache(cache) {
-            const key = this.dialogId || `t_${this.taskId}`;
-            const index = this.dialogInputCache.findIndex(item => item.key == key);
-            const data = {key, cache}
-            if (index > -1) {
-                this.$store.state.dialogInputCache.splice(index, 1, data)
-            } else {
-                this.$store.state.dialogInputCache.push(data)
-            }
-            //
-            $A.IDBSave("dialogInputCache", this.$store.state.dialogInputCache, 600);
         },
 
         onClickEditor() {
