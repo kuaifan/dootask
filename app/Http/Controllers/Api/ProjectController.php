@@ -1124,9 +1124,8 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/down          20. 导出任务（限管理员）
+     * @api {get} api/project/task/down          20. 下载导出的任务
      *
-     * @apiDescription 导出指定范围任务（已完成、未完成、已归档），返回下载地址，需要token身份
      * @apiVersion 1.0.0
      * @apiGroup project
      * @apiName task__down

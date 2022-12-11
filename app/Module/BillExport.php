@@ -14,11 +14,12 @@ use PhpOffice\PhpSpreadsheet\Writer\Exception;
 
 class BillExport implements WithHeadings, WithEvents, FromCollection, WithTitle, WithStrictNullComparison
 {
-    public $title;
-    public $headings = [];
-    public $data = [];
-    public $typeLists = [];
-    public $typeNumber = 0;
+    protected $title;
+    protected $headings = [];
+    protected $data = [];
+    protected $typeLists = [];
+    protected $typeNumber = 0;
+    protected $styles = [];
 
     public function __construct($title, array $data)
     {
@@ -57,15 +58,19 @@ class BillExport implements WithHeadings, WithEvents, FromCollection, WithTitle,
         return $this;
     }
 
+    public function setStyles(array $styles)
+    {
+        $this->styles = $styles;
+        return $this;
+    }
+
     public function store($fileName = '') {
         if (empty($fileName)) {
             $fileName = date("YmdHis") . '.xls';
         }
         try {
             return Excel::store($this, $fileName);
-        } catch (Exception $e) {
-            return "导出错误：" . $e->getMessage();
-        } catch (\PhpOffice\PhpSpreadsheet\Exception $e) {
+        } catch (Exception|\PhpOffice\PhpSpreadsheet\Exception $e) {
             return "导出错误：" . $e->getMessage();
         }
     }
@@ -76,9 +81,7 @@ class BillExport implements WithHeadings, WithEvents, FromCollection, WithTitle,
         }
         try {
             return Excel::download($this, $fileName);
-        } catch (Exception $e) {
-            return "导出错误：" . $e->getMessage();
-        } catch (\PhpOffice\PhpSpreadsheet\Exception $e) {
+        } catch (Exception|\PhpOffice\PhpSpreadsheet\Exception $e) {
             return "导出错误：" . $e->getMessage();
         }
     }
@@ -118,6 +121,11 @@ class BillExport implements WithHeadings, WithEvents, FromCollection, WithTitle,
     {
         return [
             AfterSheet::Class => function (AfterSheet $event) {
+                if ($this->styles) {
+                    foreach ($this->styles as $cell => $style) {
+                        $event->sheet->getDelegate()->getStyle($cell)->applyFromArray($style);
+                    }
+                }
                 $count = count($this->data);
                 foreach ($this->typeLists AS $cell => $typeList) {
                     if ($cell && $typeList) {
