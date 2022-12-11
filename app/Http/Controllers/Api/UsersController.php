@@ -506,9 +506,13 @@ class UsersController extends AbstractController
      *   - no:      未认证
      *   - 其他值:   全部（默认）
      * - keys.department        部门ID（0表示默认部门，不赋值获取所有部门）
+     * - keys.checkin_mac       签到mac地址
      *
-     * @apiParam {Number} [page]        当前页，默认:1
-     * @apiParam {Number} [pagesize]    每页显示数量，默认:20，最大:50
+     * @apiParam {Number} [checkin_mac]     获取签到mac地址
+     * - 0: 不获取（默认）
+     * - 1: 获取
+     * @apiParam {Number} [page]            当前页，默认:1
+     * @apiParam {Number} [pagesize]        每页显示数量，默认:20，最大:50
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -573,10 +577,22 @@ class UsersController extends AbstractController
                     $builder->where("department", "like", "%,{$keys['department']},%");
                 }
             }
+            if (isset($keys['checkin_mac'])) {
+                $builder->whereIn('userid', function ($query) use ($keys) {
+                    $query->select('userid')->from('user_checkins')->where("mac", "like", "%{$keys['checkin_mac']}%");
+                });
+            }
         } else {
             $builder->whereNull('disable_at');
         }
         $list = $builder->orderByDesc('userid')->paginate(Base::getPaginate(50, 20));
+        //
+        if (intval(Request::input('checkin_mac')) === 1) {
+            $list->transform(function (User $user) {
+                $user->checkin_macs = UserCheckin::whereUserid($user->userid)->orderBy('id')->pluck('mac');
+                return $user;
+            });
+        }
         //
         return Base::retSuccess('success', $list);
     }
@@ -593,6 +609,7 @@ class UsersController extends AbstractController
      * @apiParam {String} [type]                操作
      * - setadmin             设为管理员
      * - clearadmin           取消管理员
+     * - checkin_macs         修改自动签到mac地址（需要参数 checkin_macs）
      * - department           修改部门（需要参数 department）
      * - setdisable           设为离职（需要参数 disable_time、transfer_userid）
      * - cleardisable         取消离职
@@ -602,6 +619,7 @@ class UsersController extends AbstractController
      * @apiParam {String} [password]            新的密码
      * @apiParam {String} [nickname]            昵称
      * @apiParam {String} [profession]          职位
+     * @apiParam {String} [checkin_macs]        自动签到mac地址
      * @apiParam {String} [department]          部门
      * @apiParam {String} [disable_time]        离职时间
      * @apiParam {String} [transfer_userid]     离职交接人
@@ -636,6 +654,19 @@ class UsersController extends AbstractController
             case 'clearadmin':
                 $upArray['identity'] = array_diff($userInfo->identity, ['admin']);
                 break;
+
+            case 'checkin_macs':
+                $list = explode(",", $data['checkin_macs']);
+                $array = [];
+                foreach ($list as $item) {
+                    $item = strtoupper($item);
+                    if (Base::isMac($item)) {
+                        $array[$item] = [
+                            'mac' => $item,
+                        ];
+                    }
+                }
+                return UserCheckin::saveMac($userInfo->userid, $array);
 
             case 'department':
                 if (!is_array($data['department'])) {
@@ -1328,8 +1359,12 @@ class UsersController extends AbstractController
     {
         $user = User::auth();
         //
-        if (Base::settingFind('checkinSetting', 'wifi') !== 'open') {
+        $setting = Base::setting('checkinSetting');
+        if ($setting['open'] !== 'open') {
             return Base::retError('此功能未开启，请联系管理员开启');
+        }
+        if ($setting['edit'] !== 'open') {
+            return Base::retError('未开放修改权限，请联系管理员');
         }
         //
         $list = Base::getPostValue('list');
@@ -1339,36 +1374,18 @@ class UsersController extends AbstractController
         }
         foreach ($list AS $item) {
             $item = Base::newTrim($item);
-            if (empty($item['mac']) || !preg_match("/^[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}$/", $item['mac'])) {
-                continue;
+            if (Base::isMac($item['mac'])) {
+                $mac = strtoupper($item['mac']);
+                $array[$mac] = [
+                    'mac' => $mac,
+                    'remark' => substr($item['remark'], 0, 50),
+                ];
             }
-            $array[] = [
-                'mac' => strtoupper($item['mac']),
-                'remark' => substr($item['remark'], 0, 50),
-            ];
         }
         if (count($array) > 3) {
             return Base::retError('最多只能添加3个MAC地址');
         }
         //
-        return AbstractModel::transaction(function() use ($array, $user) {
-            $ids = [];
-            $list = [];
-            foreach ($array as $item) {
-                $row = UserCheckin::updateInsert([
-                    'userid' => $user->userid,
-                    'mac' => $item['mac'],
-                ], [
-                    'remark' => $item['remark'],
-                ]);
-                if ($row) {
-                    $ids[] = $row->id;
-                    $list[] = $row;
-                }
-            }
-            UserCheckin::whereUserid($user->userid)->whereNotIn('id', $ids)->delete();
-            //
-            return Base::retSuccess('success', $list);
-        });
+        return UserCheckin::saveMac($user->userid, $array);
     }
 }

@@ -29,7 +29,7 @@ class PublicController extends AbstractController
         $key = trim(Request::input('key'));
         //
         $setting = Base::setting('checkinSetting');
-        if ($setting['wifi'] !== 'open') {
+        if ($setting['open'] !== 'open') {
             return <<<EOF
                 #!/bin/sh
                 echo "function off"
@@ -84,7 +84,7 @@ class PublicController extends AbstractController
         $time = intval(Request::input('time'));
         //
         $setting = Base::setting('checkinSetting');
-        if ($setting['wifi'] !== 'open') {
+        if ($setting['open'] !== 'open') {
             return 'function off';
         }
         if ($key != $setting['key']) {
@@ -94,11 +94,7 @@ class PublicController extends AbstractController
         $macs = explode(",", $mac);
         foreach ($macs as $item) {
             $item = strtoupper($item);
-            if (empty($item) || !preg_match("/^[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}$/", $item)) {
-                continue;
-            }
-            $userCheckin = UserCheckin::whereMac($item)->first();
-            if ($userCheckin) {
+            if (Base::isMac($item) &&  $userCheckin = UserCheckin::whereMac($item)->first()) {
                 UserCheckinRecord::createInstance([
                     'userid' => $userCheckin->userid,
                     'mac' => $userCheckin->mac,

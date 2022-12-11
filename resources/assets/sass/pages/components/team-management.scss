@@ -148,6 +148,12 @@
     display: flex;
     align-items: center;
 
+    > span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
     .department-tag-num {
         background-color: #515a6e;
         border-radius: 9px;

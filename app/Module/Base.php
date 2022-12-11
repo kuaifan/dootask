@@ -1033,6 +1033,20 @@ class Base
     }
 
     /**
+     * 正则判断是否MAC地址
+     * @param $str
+     * @return bool
+     */
+    public static function isMac($str)
+    {
+        if (preg_match("/^[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}$/", $str)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * 判断身份证是否正确
      * @param $id
      * @return bool

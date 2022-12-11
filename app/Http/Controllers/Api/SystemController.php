@@ -223,7 +223,7 @@ class SystemController extends AbstractController
      *
      * @apiParam {String} type
      * - get: 获取（默认）
-     * - save: 保存设置（参数：['wifi', 'key']）
+     * - save: 保存设置（参数：['open', 'edit', 'key']）
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
@@ -240,13 +240,14 @@ class SystemController extends AbstractController
             $all = Request::input();
             foreach ($all as $key => $value) {
                 if (!in_array($key, [
-                    'wifi',
+                    'open',
+                    'edit',
                     'key',
                 ])) {
                     unset($all[$key]);
                 }
             }
-            if ($all['wifi'] === 'close') {
+            if ($all['open'] === 'close') {
                 $all['key'] = md5(Base::generatePassword(32));
             }
             $setting = Base::setting('checkinSetting', Base::newTrim($all));
@@ -259,7 +260,8 @@ class SystemController extends AbstractController
             Base::setting('checkinSetting', $setting);
         }
         //
-        $setting['wifi'] = $setting['wifi'] ?: 'close';
+        $setting['open'] = $setting['open'] ?: 'close';
+        $setting['edit'] = $setting['edit'] ?: 'close';
         $setting['cmd'] = "curl -sSL '" . Base::fillUrl("api/public/checkin/install?key={$setting['key']}") . "' | sh";
         //
         return Base::retSuccess('success', $setting ?: json_decode('{}'));

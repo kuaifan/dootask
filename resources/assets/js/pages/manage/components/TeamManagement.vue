@@ -91,7 +91,15 @@
                                 </Select>
                             </div>
                         </li>
-                        <li>
+                        <li v-if="mode==='checkin_mac'">
+                            <div class="search-label">
+                                {{$L("MAC地址")}}
+                            </div>
+                            <div class="search-content">
+                                <Input v-model="keys.checkin_mac" :placeholder="$L('MAC地址')" clearable/>
+                            </div>
+                        </li>
+                        <li v-else>
                             <div class="search-label">
                                 {{$L("邮箱认证")}}
                             </div>
@@ -192,6 +200,22 @@
             </div>
         </Modal>
 
+        <!--修改MAC-->
+        <Modal
+            v-model="checkinMacEditShow"
+            :title="$L('修改签到MAC地址')">
+            <Form :model="checkinMacEditData" label-width="auto" @submit.native.prevent>
+                <Alert type="error" style="margin-bottom:18px">{{$L(`正在进行帐号【ID:${checkinMacEditData.userid}，${checkinMacEditData.nickname}】MAC地址修改。`)}}</Alert>
+                <FormItem :label="$L('MAC地址')">
+                    <TagInput v-model="checkinMacEditData.checkin_macs"/>
+                </FormItem>
+            </Form>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="checkinMacEditShow=false">{{$L('取消')}}</Button>
+                <Button type="primary" :loading="checkinMacEditLoading > 0" @click="operationUser(checkinMacEditData, true)">{{$L('确定修改')}}</Button>
+            </div>
+        </Modal>
+
         <!--修改部门-->
         <Modal
             v-model="departmentEditShow"
@@ -259,6 +283,12 @@ import UserInput from "../../../components/UserInput";
 export default {
     name: "TeamManagement",
     components: {UserInput},
+    props: {
+        mode: {
+            type: String,
+            default: 'user'
+        },
+    },
     data() {
         return {
             loadIng: 0,
@@ -403,7 +433,11 @@ export default {
                             return h('div', this.$L('默认部门'));
                         } else {
                             const tmp = []
-                            tmp.push(h('span', departments[0]))
+                            tmp.push(h('span', {
+                                domProps: {
+                                    title: departments[0]
+                                }
+                            }, departments[0]))
                             if (departments.length > 1) {
                                 departments = departments.splice(1)
                                 tmp.push(h('ETooltip', [
@@ -461,6 +495,14 @@ export default {
                                 command: 'password',
                             },
                         }, [h('div', this.$L('修改密码'))]))
+
+                        if (this.mode === 'checkin_mac') {
+                            dropdownItems.push(h('EDropdownItem', {
+                                props: {
+                                    command: 'checkin_mac',
+                                },
+                            }, [h('div', this.$L('修改MAC'))]))
+                        }
 
                         dropdownItems.push(h('EDropdownItem', {
                             props: {
@@ -536,6 +578,10 @@ export default {
             total: 0,
             noText: '',
 
+            checkinMacEditShow: false,
+            checkinMacEditLoading: 0,
+            checkinMacEditData: {},
+
             departmentEditShow: false,
             departmentEditLoading: 0,
             departmentEditData: {},
@@ -610,6 +656,45 @@ export default {
             dialogList: [],
         }
     },
+    created() {
+        if (this.mode === 'checkin_mac') {
+            this.columns.splice(5, 0, {
+                title: this.$L('MAC地址'),
+                key: 'checkin_mac',
+                minWidth: 80,
+                render: (h, {row}) => {
+                    let checkin_macs = $A.cloneJSON(row.checkin_macs || [])
+                    if (checkin_macs.length === 0) {
+                        return h('div', '-');
+                    } else {
+                        const tmp = []
+                        tmp.push(h('span', {
+                            domProps: {
+                                title: checkin_macs[0]
+                            }
+                        }, checkin_macs[0]))
+                        if (checkin_macs.length > 1) {
+                            checkin_macs = checkin_macs.splice(1)
+                            tmp.push(h('ETooltip', [
+                                h('div', {
+                                    slot: 'content',
+                                    domProps: {
+                                        innerHTML: checkin_macs.join("<br/>")
+                                    }
+                                }),
+                                h('div', {
+                                    class: 'department-tag-num'
+                                }, ` +${checkin_macs.length}`)
+                            ]))
+                        }
+                        return h('div', {
+                            class: 'team-table-department-warp'
+                        }, tmp);
+                    }
+                },
+            })
+        }
+    },
     mounted() {
         this.getLists();
         this.getDepartmentLists();
@@ -649,6 +734,7 @@ export default {
                 url: 'users/lists',
                 data: {
                     keys,
+                    checkin_mac: this.mode === 'checkin_mac' ? 1 : 0,
                     page: Math.max(this.page, 1),
                     pagesize: Math.max($A.runNum(this.pageSize), 10),
                 },
@@ -707,6 +793,16 @@ export default {
                             });
                         }
                     });
+                    break;
+
+                case 'checkin_mac':
+                    this.checkinMacEditData = {
+                        type: 'checkin_macs',
+                        userid: row.userid,
+                        nickname: row.nickname,
+                        checkin_macs: (row.checkin_macs || []).join(','),
+                    };
+                    this.checkinMacEditShow = true;
                     break;
 
                 case 'department':
@@ -778,7 +874,9 @@ export default {
 
         operationUser(data, tipErr) {
             return new Promise((resolve, reject) => {
-                if (data.type == 'department') {
+                if (data.type == 'checkin_macs') {
+                    this.checkinMacEditLoading++;
+                } else if (data.type == 'department') {
                     this.departmentEditLoading++;
                 } else if (data.type == 'setdisable') {
                     this.disableLoading++;
@@ -792,7 +890,9 @@ export default {
                     $A.messageSuccess(msg);
                     this.getLists();
                     resolve()
-                    if (data.type == 'department') {
+                    if (data.type == 'checkin_macs') {
+                        this.checkinMacEditShow = false;
+                    } else if (data.type == 'department') {
                         this.departmentEditShow = false;
                     } else if (data.type == 'setdisable') {
                         this.disableShow = false;
@@ -804,7 +904,9 @@ export default {
                     this.getLists();
                     reject(msg)
                 }).finally(_ => {
-                    if (data.type == 'department') {
+                    if (data.type == 'checkin_macs') {
+                        this.checkinMacEditLoading--;
+                    } else if (data.type == 'department') {
                         this.departmentEditLoading--;
                     } else if (data.type == 'setdisable') {
                         this.disableLoading--;

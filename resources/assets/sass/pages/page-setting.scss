@@ -244,10 +244,13 @@
                                 height: 8px;
                             }
                             .export-data {
-                                cursor: pointer;
-                                color: #2b85e4;
-                                &:hover {
-                                    text-decoration: underline;
+                                margin-top: 6px;
+                                > p {
+                                    cursor: pointer;
+                                    color: #2b85e4;
+                                    &:hover {
+                                        text-decoration: underline;
+                                    }
                                 }
                             }
                         }

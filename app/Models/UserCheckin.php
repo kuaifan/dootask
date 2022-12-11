@@ -27,5 +27,36 @@ use App\Module\Base;
  */
 class UserCheckin extends AbstractModel
 {
-
+    /**
+     * 保存mac地址
+     * @param $userid
+     * @param $array
+     * @return mixed
+     */
+    public static function saveMac($userid, $array)
+    {
+        return AbstractModel::transaction(function() use ($array, $userid) {
+            $ids = [];
+            $list = [];
+            foreach ($array as $item) {
+                $update = [];
+                if ($item['remark']) {
+                    $update = [
+                        'remark' => $item['remark']
+                    ];
+                }
+                $row = UserCheckin::updateInsert([
+                    'userid' => $userid,
+                    'mac' => $item['mac']
+                ], $update);
+                if ($row) {
+                    $ids[] = $row->id;
+                    $list[] = $row;
+                }
+            }
+            UserCheckin::whereUserid($userid)->whereNotIn('id', $ids)->delete();
+            //
+            return Base::retSuccess('修改成功', $list);
+        });
+    }
 }
