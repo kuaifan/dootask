@@ -243,6 +243,13 @@
                             .block-setting-placeholder {
                                 height: 8px;
                             }
+                            .export-data {
+                                cursor: pointer;
+                                color: #2b85e4;
+                                &:hover {
+                                    text-decoration: underline;
+                                }
+                            }
                         }
                     }
                 }
@@ -294,6 +301,20 @@
     }
     .button-box {
         text-align: center;
+    }
+}
+
+.page-setting-checkin-export-common {
+    display: flex;
+    align-items: center;
+    > em {
+        cursor: pointer;
+        color: #2b85e4;
+        margin-left: 8px;
+        font-style: normal;
+        &:hover {
+            text-decoration: underline;
+        }
     }
 }
 

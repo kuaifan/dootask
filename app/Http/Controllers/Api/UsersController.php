@@ -7,6 +7,7 @@ use App\Models\Meeting;
 use App\Models\Project;
 use App\Models\UmengAlias;
 use App\Models\User;
+use App\Models\UserCheckin;
 use App\Models\UserDelete;
 use App\Models\UserDepartment;
 use App\Models\UserEmailVerification;
@@ -1286,5 +1287,88 @@ class UsersController extends AbstractController
         $userDepartment->deleteDepartment();
         //
         return Base::retSuccess('删除成功');
+    }
+
+    /**
+     * @api {get} api/users/checkin/get          22. 获取签到设置
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName checkin__get
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function checkin__get()
+    {
+        $user = User::auth();
+        //
+        $list = UserCheckin::whereUserid($user->userid)->orderBy('id')->get();
+        //
+        return Base::retSuccess('success', $list);
+    }
+
+    /**
+     * @api {post} api/users/checkin/save          22. 保存签到设置
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName checkin__save
+     *
+     * @apiParam {Array} list   优先级数据，格式：[{mac,remark}]
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function checkin__save()
+    {
+        $user = User::auth();
+        //
+        if (Base::settingFind('checkinSetting', 'wifi') !== 'open') {
+            return Base::retError('此功能未开启，请联系管理员开启');
+        }
+        //
+        $list = Base::getPostValue('list');
+        $array = [];
+        if (empty($list) || !is_array($list)) {
+            return Base::retError('参数错误');
+        }
+        foreach ($list AS $item) {
+            $item = Base::newTrim($item);
+            if (empty($item['mac']) || !preg_match("/^[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}$/", $item['mac'])) {
+                continue;
+            }
+            $array[] = [
+                'mac' => strtoupper($item['mac']),
+                'remark' => substr($item['remark'], 0, 50),
+            ];
+        }
+        if (count($array) > 3) {
+            return Base::retError('最多只能添加3个MAC地址');
+        }
+        //
+        return AbstractModel::transaction(function() use ($array, $user) {
+            $ids = [];
+            $list = [];
+            foreach ($array as $item) {
+                $row = UserCheckin::updateInsert([
+                    'userid' => $user->userid,
+                    'mac' => $item['mac'],
+                ], [
+                    'remark' => $item['remark'],
+                ]);
+                if ($row) {
+                    $ids[] = $row->id;
+                    $list[] = $row;
+                }
+            }
+            UserCheckin::whereUserid($user->userid)->whereNotIn('id', $ids)->delete();
+            //
+            return Base::retSuccess('success', $list);
+        });
     }
 }

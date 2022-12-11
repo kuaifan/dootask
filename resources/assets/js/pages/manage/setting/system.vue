@@ -13,6 +13,9 @@
             <TabPane :label="$L('会议功能')" name="meeting">
                 <SystemMeeting/>
             </TabPane>
+            <TabPane :label="$L('签到功能')" name="checkin">
+                <SystemCheckin/>
+            </TabPane>
             <TabPane :label="$L('邮件设置')" name="emailSetting">
                 <SystemEmailSetting/>
             </TabPane>
@@ -30,9 +33,11 @@ import SystemColumnTemplate from "./components/SystemColumnTemplate";
 import SystemEmailSetting from "./components/SystemEmailSetting";
 import SystemAppPush from "./components/SystemAppPush";
 import SystemMeeting from "./components/SystemMeeting";
+import SystemCheckin from "./components/SystemCheckin";
 
 export default {
     components: {
+        SystemCheckin,
         SystemMeeting,
         SystemAppPush, SystemColumnTemplate, SystemTaskPriority, SystemSetting, SystemEmailSetting},
     data() {

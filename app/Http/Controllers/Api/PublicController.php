@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
-
 use App\Exceptions\ApiException;
 use App\Models\User;
+use App\Models\UserCheckin;
+use App\Models\UserCheckinRecord;
 use App\Module\Base;
 use Carbon\Carbon;
 use Request;
@@ -16,127 +17,95 @@ use Request;
  */
 class PublicController extends AbstractController
 {
-    const appid = "10001";
-    const appkey = "TWVCVBJSiCjAFOPpFVdkpQCMWDw66EUY";
-
     /**
-     * 验证签名
-     * @return void
+     * 签到 - 路由器（openwrt）功能安装脚本
+     *
+     * @apiParam {String}   key
+     *
+     * @return string
      */
-    private function _sign()
+    public function checkin__install()
     {
-        $query = Request::query();
-        $query['sign'] = Request::header('sign') ?: Request::input('sign');
-        // 检查必要参数
-        if ($query['appid'] != self::appid) {
-            throw new ApiException('appid is error');
+        $key = trim(Request::input('key'));
+        //
+        $setting = Base::setting('checkinSetting');
+        if ($setting['wifi'] !== 'open') {
+            return <<<EOF
+                #!/bin/sh
+                echo "function off"
+                EOF;
         }
-        foreach (['appid', 'ver', 'ts', 'nonce'] as $key) {
-            if (!isset($query[$key])) {
-                throw new ApiException($key . ' parameter is empty');
-            }
+        if ($key != $setting['key']) {
+            return <<<EOF
+                #!/bin/sh
+                echo "key error"
+                EOF;
         }
-        if (intval($query['ts']) + 300 < time()) {
-            throw new ApiException('ts expired');
-        }
-        // 验证签名
-        ksort($query);
-        $string = "";
-        foreach ($query as $k => $v) {
-            if ($v != '' && $k != 'sign') {
-                $string .= $k . "=" . $v . "&";
-            }
-        }
-        $sign = md5($string . self::appkey);
-        if ($sign != $query['sign']) {
-            throw new ApiException('sign is error');
-        }
+        //
+        $reportUrl = Base::fillUrl("api/public/checkin/report");
+        return <<<EOE
+            #!/bin/sh
+            echo 'installing...'
+
+            cat > /etc/init.d/dootask-checkin-report <<EOF
+            #!/bin/sh
+            mac=\\\$(awk 'NR!=1&&\\\$3=="0x2" {print \\\$4}' /proc/net/arp | tr "\\n" ",")
+            tmp='{"key":"{$setting['key']}","mac":"'\\\${mac}'","time":"'\\\$(date +%s)'"}'
+            curl -4 -X POST "{$reportUrl}" -H "Content-Type: application/json" -d \\\${tmp}
+            EOF
+
+            chmod +x /etc/init.d/dootask-checkin-report
+            crontab -l >/tmp/cronbak
+            sed -i '/\/etc\/init.d\/dootask-checkin-report/d' /tmp/cronbak
+            sed -i '/^$/d' /tmp/cronbak
+            echo "* * * * * sh /etc/init.d/dootask-checkin-report" >>/tmp/cronbak
+            crontab /tmp/cronbak
+            rm -f /tmp/cronbak
+            /etc/init.d/cron enable
+            /etc/init.d/cron restart
+
+            echo 'installed'
+            EOE;
     }
 
     /**
-     * @api {get} api/public/attendance/portraitlist          01. 【考勤】人员头像数据
+     * {post} 签到 - 路由器（openwrt）上报
      *
-     * @apiDescription 需要签名
-     * @apiVersion 1.0.0
-     * @apiGroup public
-     * @apiName attendance__portraitlist
+     * @apiParam {String}   key
+     * @apiParam {String}   mac     使用逗号分割多个
+     * @apiParam {String}   time
      *
-     * @apiParam {String} last_at   最后获取时间（格式示例：2022-01-01 12:50:01）
-     *
-     * @apiParam {String} appid     唯一身份ID，跟签名appkey配合使用
-     * @apiParam {String} ver       版本号，如：1.0
-     * @apiParam {Number} ts        10位数时间戳（有效时间300秒）
-     * @apiParam {String} nonce     随机字符串
-     * @apiParam {String} sign      签名字符串=md5(query_key1=query_val1&query_key2=query_val2...&appkey)
-     *
-     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据
+     * @return string
      */
-    public function attendance__portraitlist()
+    public function checkin__report()
     {
-        $this->_sign();
-        //
-        $last_at = Request::input('last_at');
-        //
-        $builder = User::where('userimg', '!=', '')->whereNull('disable_at');
-        if (strtotime($last_at)) {
-            $builder->where('updated_at', '>', Carbon::parse($last_at));
-        }
-        $list = $builder->orderBy('updated_at')->take(50)->get();
-        //
-        $array = [];
-        foreach ($list as $item) {
-            $array[] = [
-                'userid' => $item->userid,
-                'userimg' => $item->userimg,
-                'updated_at' => $item->updated_at,
-            ];
-        }
-        //
-        return Base::retSuccess('success', $array);
-    }
-
-    /**
-     * @api {get} api/public/attendance/update          02. 【考勤】上报考勤数据
-     *
-     * @apiDescription 需要签名
-     * @apiVersion 1.0.0
-     * @apiGroup public
-     * @apiName attendance__update
-     *
-     * @apiParam {Number} userid    会员ID
-     * @apiParam {Number} time      时间数据（10位数时间戳）
-     *
-     * @apiParam {String} appid     唯一身份ID，跟签名appkey配合使用
-     * @apiParam {String} ver       版本号，如：1.0
-     * @apiParam {Number} ts        10位数时间戳（有效时间300秒）
-     * @apiParam {String} nonce     随机字符串
-     * @apiParam {String} sign      签名字符串=md5(query_key1=query_val1&query_key2=query_val2...&appkey)
-     *
-     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据
-     */
-    public function attendance__update()
-    {
-        $this->_sign();
-        //
-        $userid = intval(Request::input('userid'));
+        $key = trim(Request::input('key'));
+        $mac = trim(Request::input('mac'));
         $time = intval(Request::input('time'));
         //
-        $user = User::whereUserid($userid)->first();
-        if (empty($user)) {
-            return Base::retError('user not exist');
+        $setting = Base::setting('checkinSetting');
+        if ($setting['wifi'] !== 'open') {
+            return 'function off';
         }
-        // todo 保存到考勤数据库
-        info([
-            'userid' => $user->userid,
-            'input' => Request::input(),
-            'time' => $time,
-            'at' => Carbon::now()->toDateTimeString(),
-        ]);
+        if ($key != $setting['key']) {
+            return 'key error';
+        }
         //
-        return Base::retSuccess('success');
+        $macs = explode(",", $mac);
+        foreach ($macs as $item) {
+            $item = strtoupper($item);
+            if (empty($item) || !preg_match("/^[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}$/", $item)) {
+                continue;
+            }
+            $userCheckin = UserCheckin::whereMac($item)->first();
+            if ($userCheckin) {
+                UserCheckinRecord::createInstance([
+                    'userid' => $userCheckin->userid,
+                    'mac' => $userCheckin->mac,
+                    'time' => $time,
+                ])->save();
+            }
+        }
+        return 'success';
     }
 }

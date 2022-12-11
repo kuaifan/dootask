@@ -4,11 +4,17 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Setting;
 use App\Models\User;
+use App\Models\UserCheckinRecord;
 use App\Module\Base;
+use App\Module\BillExport;
+use App\Module\BillMultipleExport;
 use Arr;
+use Carbon\Carbon;
 use Guanguans\Notify\Factory;
 use Guanguans\Notify\Messages\EmailMessage;
+use Madzipper;
 use Request;
+use Session;
 
 /**
  * @apiDefine system
@@ -204,6 +210,57 @@ class SystemController extends AbstractController
         }
         //
         $setting['open'] = $setting['open'] ?: 'close';
+        //
+        return Base::retSuccess('success', $setting ?: json_decode('{}'));
+    }
+
+    /**
+     * @api {get} api/system/setting/checkin          03. 获取签到设置、保存签到设置（限管理员）
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName setting__checkin
+     *
+     * @apiParam {String} type
+     * - get: 获取（默认）
+     * - save: 保存设置（参数：['wifi', 'key']）
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function setting__checkin()
+    {
+        User::auth('admin');
+        //
+        $type = trim(Request::input('type'));
+        if ($type == 'save') {
+            if (env("SYSTEM_SETTING") == 'disabled') {
+                return Base::retError('当前环境禁止修改');
+            }
+            $all = Request::input();
+            foreach ($all as $key => $value) {
+                if (!in_array($key, [
+                    'wifi',
+                    'key',
+                ])) {
+                    unset($all[$key]);
+                }
+            }
+            if ($all['wifi'] === 'close') {
+                $all['key'] = md5(Base::generatePassword(32));
+            }
+            $setting = Base::setting('checkinSetting', Base::newTrim($all));
+        } else {
+            $setting = Base::setting('checkinSetting');
+        }
+        //
+        if (empty($setting['key'])) {
+            $setting['key'] = md5(Base::generatePassword(32));
+            Base::setting('checkinSetting', $setting);
+        }
+        //
+        $setting['wifi'] = $setting['wifi'] ?: 'close';
+        $setting['cmd'] = "curl -sSL '" . Base::fillUrl("api/public/checkin/install?key={$setting['key']}") . "' | sh";
         //
         return Base::retSuccess('success', $setting ?: json_decode('{}'));
     }
@@ -740,6 +797,171 @@ class SystemController extends AbstractController
                 return Base::retError($e->getMessage());
             }
         }
+    }
+
+    /**
+     * @api {get} api/system/checkin/export          17. 导出签到数据（限管理员）
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName checkin__export
+     *
+     * @apiParam {Array} [userid]               指定会员，如：[1, 2]
+     * @apiParam {Array} [date]                 指定日期范围，如：['2020-12-12', '2020-12-30']
+     * @apiParam {Array} [time]                 指定时间范围，如：['09:00', '18:00']
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function checkin__export()
+    {
+        User::auth('admin');
+        //
+        $userid = Base::arrayRetainInt(Request::input('userid'), true);
+        $date = Request::input('date');
+        $time = Request::input('time');
+        //
+        if (empty($userid) || empty($date) || empty($time)) {
+            return Base::retError('参数错误');
+        }
+        if (count($userid) > 20) {
+            return Base::retError('导出成员限制最多20个');
+        }
+        if (!(is_array($date) && Base::isDate($date[0]) && Base::isDate($date[1]))) {
+            return Base::retError('日期选择错误');
+        }
+        if (Carbon::parse($date[1])->timestamp - Carbon::parse($date[0])->timestamp > 35 * 86400) {
+            return Base::retError('日期范围限制最大35天');
+        }
+        if (!(is_array($time) && Base::isTime($time[0]) && Base::isTime($time[1]))) {
+            return Base::retError('时间选择错误');
+        }
+        //
+        $secondStart = strtotime("2000-01-01 {$time[0]}") - strtotime("2000-01-01 00:00:00");
+        $secondEnd = strtotime("2000-01-01 {$time[1]}") - strtotime("2000-01-01 00:00:00");
+        //
+        $headings = [];
+        $headings[] = '成员ID';
+        $headings[] = '成员名称';
+        $headings[] = '成员邮箱';
+        $headings[] = '签到日期';
+        $headings[] = '签到时间1';
+        $headings[] = '签到时间2';
+        //
+        $sheets = [];
+        $start = Carbon::parse($date[0])->startOfDay();
+        $end = Carbon::parse($date[1])->endOfDay();
+        $users = User::whereIn('userid', $userid)->take(20)->get();
+        /** @var User $user */
+        foreach ($users as $user) {
+            $records = UserCheckinRecord::whereUserid($user->userid)->whereBetween("created_at", [$start, $end])->orderBy('id')->get();
+            //
+            $datas = [];
+            $styles = [];
+            $startT = $start->timestamp;
+            $endT = $end->timestamp;
+            $index = 1;
+            while ($startT < $endT) {
+                $index++;
+                $first = $records->whereBetween("created_at", [Carbon::parse($startT), Carbon::parse($startT + $secondStart)])->first();
+                $last = $records->whereBetween("created_at", [Carbon::parse($startT + $secondEnd), Carbon::parse($startT + 86400)])->last();
+                $first = $first ? Carbon::parse($first->created_at)->timestamp : 0;
+                $last = $last ? Carbon::parse($last->created_at)->timestamp : 0;
+                if (empty($first) || $first > $startT + $secondStart) {
+                    $styles["E{$index}"] = [
+                        'font' => [
+                            'color' => [
+                                'rgb' => 'ff0000'
+                            ]
+                        ],
+                    ];
+                }
+                if (empty($last) || $last < $startT + $secondEnd) {
+                    $styles["F{$index}"] = [
+                        'font' => [
+                            'color' => [
+                                'rgb' => 'ff0000'
+                            ]
+                        ],
+                    ];
+                }
+                $datas[] = [
+                    $user->userid,
+                    $user->nickname,
+                    $user->email,
+                    date("Y-m-d", $startT),
+                    $first ? date("H:i", $first) : '-',
+                    $last ? date("H:i", $last) : '-',
+                ];
+                $startT += 86400;
+            }
+            $sheets[] = BillExport::create()->setTitle($user->nickname)->setHeadings($headings)->setData($datas)->setStyles($styles);
+        }
+        if (empty($sheets)) {
+            return Base::retError('没有任何数据');
+        }
+        //
+        $fileName = $users[0]->nickname;
+        if (count($users) > 1) {
+            $fileName .= "等" . count($userid) . "位成员";
+        }
+        $fileName .= '签到记录_' . Base::time() . '.xls';
+        $filePath = "temp/checkin/export/" . date("Ym", Base::time());
+        $export = new BillMultipleExport($sheets);
+        $res = $export->store($filePath . "/" . $fileName);
+        if ($res != 1) {
+            return Base::retError('导出失败，' . $fileName . '！');
+        }
+        $xlsPath = storage_path("app/" . $filePath . "/" . $fileName);
+        $zipFile = "app/" . $filePath . "/" . Base::rightDelete($fileName, '.xls') . ".zip";
+        $zipPath = storage_path($zipFile);
+        if (file_exists($zipPath)) {
+            Base::deleteDirAndFile($zipPath, true);
+        }
+        try {
+            Madzipper::make($zipPath)->add($xlsPath)->close();
+        } catch (\Throwable) {
+        }
+        //
+        if (file_exists($zipPath)) {
+            $base64 = base64_encode(Base::array2string([
+                'file' => $zipFile,
+            ]));
+            Session::put('checkin::export:userid', $user->userid);
+            return Base::retSuccess('success', [
+                'size' => Base::twoFloat(filesize($zipPath) / 1024, true),
+                'url' => Base::fillUrl('api/system/checkin/down?key=' . urlencode($base64)),
+            ]);
+        } else {
+            return Base::retError('打包失败，请稍后再试...');
+        }
+    }
+
+    /**
+     * @api {get} api/system/checkin/down          17. 下载导出的签到数据
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName checkin__down
+     *
+     * @apiParam {String} key               通过export接口得到的下载钥匙
+     *
+     * @apiSuccess {File} data     返回数据（直接下载文件）
+     */
+    public function checkin__down()
+    {
+        $userid = Session::get('checkin::export:userid');
+        if (empty($userid)) {
+            return Base::ajaxError("请求已过期，请重新导出！", [], 0, 502);
+        }
+        //
+        $array = Base::string2array(base64_decode(urldecode(Request::input('key'))));
+        $file = $array['file'];
+        if (empty($file) || !file_exists(storage_path($file))) {
+            return Base::ajaxError("文件不存在！", [], 0, 502);
+        }
+        return response()->download(storage_path($file));
     }
 
     /**

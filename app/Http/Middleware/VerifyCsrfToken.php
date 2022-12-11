@@ -54,6 +54,12 @@ class VerifyCsrfToken extends Middleware
         // 保存汇报
         'api/report/store/',
 
+        // 签到设置
+        'api/users/checkin/save/',
+
+        // 签到上报
+        'api/public/checkin/report/',
+
         // 发布桌面端
         'desktop/publish/',
     ];
