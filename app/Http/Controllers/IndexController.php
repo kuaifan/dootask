@@ -76,28 +76,28 @@ class IndexController extends InvokeController
         }
         $array = [
             "office/web-apps/apps/api/documents/api.js?hash=" . Base::getVersion(),
-            "office/7.1.1-23/web-apps/vendor/requirejs/require.js",
-            "office/7.1.1-23/web-apps/apps/api/documents/api.js",
-            "office/7.1.1-23/sdkjs/common/AllFonts.js",
-            "office/7.1.1-23/web-apps/vendor/xregexp/xregexp-all-min.js",
-            "office/7.1.1-23/web-apps/vendor/sockjs/sockjs.min.js",
-            "office/7.1.1-23/web-apps/vendor/jszip/jszip.min.js",
-            "office/7.1.1-23/web-apps/vendor/jszip-utils/jszip-utils.min.js",
-            "office/7.1.1-23/sdkjs/common/libfont/wasm/fonts.js",
-            "office/7.1.1-23/sdkjs/common/Charts/ChartStyles.js",
-            "office/7.1.1-23/sdkjs/slide/themes//themes.js",
+            "office/7.2.1-34/web-apps/vendor/requirejs/require.js",
+            "office/7.2.1-34/web-apps/apps/api/documents/api.js",
+            "office/7.2.1-34/sdkjs/common/AllFonts.js",
+            "office/7.2.1-34/web-apps/vendor/xregexp/xregexp-all-min.js",
+            "office/7.2.1-34/web-apps/vendor/sockjs/sockjs.min.js",
+            "office/7.2.1-34/web-apps/vendor/jszip/jszip.min.js",
+            "office/7.2.1-34/web-apps/vendor/jszip-utils/jszip-utils.min.js",
+            "office/7.2.1-34/sdkjs/common/libfont/wasm/fonts.js",
+            "office/7.2.1-34/sdkjs/common/Charts/ChartStyles.js",
+            "office/7.2.1-34/sdkjs/slide/themes//themes.js",
 
-            "office/7.1.1-23/web-apps/apps/presentationeditor/main/app.js",
-            "office/7.1.1-23/sdkjs/slide/sdk-all-min.js",
-            "office/7.1.1-23/sdkjs/slide/sdk-all.js",
+            "office/7.2.1-34/web-apps/apps/presentationeditor/main/app.js",
+            "office/7.2.1-34/sdkjs/slide/sdk-all-min.js",
+            "office/7.2.1-34/sdkjs/slide/sdk-all.js",
 
-            "office/7.1.1-23/web-apps/apps/documenteditor/main/app.js",
-            "office/7.1.1-23/sdkjs/word/sdk-all-min.js",
-            "office/7.1.1-23/sdkjs/word/sdk-all.js",
+            "office/7.2.1-34/web-apps/apps/documenteditor/main/app.js",
+            "office/7.2.1-34/sdkjs/word/sdk-all-min.js",
+            "office/7.2.1-34/sdkjs/word/sdk-all.js",
 
-            "office/7.1.1-23/web-apps/apps/spreadsheeteditor/main/app.js",
-            "office/7.1.1-23/sdkjs/cell/sdk-all-min.js",
-            "office/7.1.1-23/sdkjs/cell/sdk-all.js",
+            "office/7.2.1-34/web-apps/apps/spreadsheeteditor/main/app.js",
+            "office/7.2.1-34/sdkjs/cell/sdk-all-min.js",
+            "office/7.2.1-34/sdkjs/cell/sdk-all.js",
         ];
         foreach ($array as &$item) {
             $item = url($item);
