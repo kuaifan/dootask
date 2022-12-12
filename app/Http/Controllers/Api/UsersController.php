@@ -8,6 +8,7 @@ use App\Models\Project;
 use App\Models\UmengAlias;
 use App\Models\User;
 use App\Models\UserCheckinMac;
+use App\Models\UserCheckinRecord;
 use App\Models\UserDelete;
 use App\Models\UserDepartment;
 use App\Models\UserEmailVerification;
@@ -1387,5 +1388,53 @@ class UsersController extends AbstractController
         }
         //
         return UserCheckinMac::saveMac($user->userid, $array);
+    }
+
+    /**
+     * @api {get} api/users/checkin/list          22. 获取签到数据
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName checkin__list
+     *
+     * @apiParam {String} ym            年-月（如：2020-01）
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function checkin__list()
+    {
+        $user = User::auth();
+        //
+        $ym = trim(Request::input('ym'));
+        $start = Carbon::parse(date("Y-m-01 00:00:00", strtotime($ym)));
+        $end = (clone $start)->addMonth()->subSecond();
+        //
+        $records = UserCheckinRecord::whereUserid($user->userid)->whereBetween('created_at', [$start, $end])->orderBy('id')->get();
+        $array = [];
+        $startT = $start->timestamp;
+        $endT = $end->timestamp;
+        while ($startT < $endT) {
+            $between = [Carbon::createFromTimestamp($startT), Carbon::createFromTimestamp($startT + 86400)];
+            $firstRecord = $records->whereBetween("created_at", $between)->first();
+            $lastRecord = $records->whereBetween("created_at", $between)->last();
+            $firstTimestamp = $firstRecord ? Carbon::parse($firstRecord->created_at)->toDateTimeString() : '';
+            $lastTimestamp = $lastRecord ? Carbon::parse($lastRecord->created_at)->toDateTimeString() : '';
+            if ($firstTimestamp) {
+                $data = [
+                    'time' => $firstTimestamp,
+                    'all' => [$firstTimestamp],
+                ];
+                if ($lastTimestamp) {
+                    $data['all'][] = $lastTimestamp;
+                }
+                $array[] = $data;
+            }
+            $startT += 86400;
+        }
+        //
+        return Base::retSuccess('success', $array);
     }
 }

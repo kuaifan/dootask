@@ -163,6 +163,14 @@
             line-height: 32px;
             margin-bottom: -10px;
         }
+        .setting-checkin-button {
+            margin-bottom: 18px;
+            cursor: pointer;
+            color: #2b85e4;
+            &:hover {
+                text-decoration: underline;
+            }
+        }
         &.submit {
             position: absolute;
             top: 0;
