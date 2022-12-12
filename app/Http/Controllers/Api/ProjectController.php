@@ -20,6 +20,7 @@ use App\Models\User;
 use App\Models\WebSocketDialog;
 use App\Module\Base;
 use App\Module\BillExport;
+use App\Module\BillMultipleExport;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Madzipper;
@@ -1067,7 +1068,21 @@ class ProjectController extends AbstractController
                 } elseif ($task->complete_at) {
                     $statusText = '已完成';
                 }
-                $datas[] = [
+                if (!isset($datas[$task->ownerid])) {
+                    $datas[$task->ownerid] = [
+                        'index' => 1,
+                        'nickname' => Base::filterEmoji(User::userid2nickname($task->ownerid)),
+                        'styles' => ["A1:P1" => ["font" => ["bold" => true]]],
+                        'data' => [],
+                    ];
+                }
+                $datas[$task->ownerid]['index']++;
+                if ($statusText === '未完成') {
+                    $datas[$task->ownerid]['styles']["P{$datas[$task->ownerid]['index']}"] = ["font" => ["color" => ["rgb" => "ff0000"]]];  // 未完成
+                } elseif ($statusText === '已完成' && $task->end_at && Carbon::parse($task->complete_at)->gt($task->end_at)) {
+                    $datas[$task->ownerid]['styles']["P{$datas[$task->ownerid]['index']}"] = ["font" => ["color" => ["rgb" => "436FF6"]]];  // 已完成超期
+                }
+                $datas[$task->ownerid]['data'][] = [
                     $task->id,
                     $task->parent_id ?: '-',
                     Base::filterEmoji($task->project?->name) ?: '-',
@@ -1087,6 +1102,19 @@ class ProjectController extends AbstractController
                 ];
             }
         });
+        if (empty($datas)) {
+            return Base::retError('没有任何数据');
+        }
+        //
+        $sheets = [];
+        foreach ($userid as $ownerid) {
+            $data = $datas[$ownerid] ?? [
+                    'nickname' => Base::filterEmoji(User::userid2nickname($ownerid)),
+                    'styles' => ["A1:P1" => ["font" => ["bold" => true]]],
+                    'data' => [],
+                ];
+            $sheets[] = BillExport::create()->setTitle($data['nickname'] ?: $ownerid)->setHeadings($headings)->setData($data['data'])->setStyles($data['styles']);
+        }
         //
         $fileName = User::userid2nickname($userid[0]) ?: $userid[0];
         if (count($userid) > 1) {
@@ -1094,7 +1122,8 @@ class ProjectController extends AbstractController
         }
         $fileName .= '任务统计_' . Base::time() . '.xls';
         $filePath = "temp/task/export/" . date("Ym", Base::time());
-        $res = BillExport::create()->setHeadings($headings)->setData($datas)->store($filePath . "/" . $fileName);
+        $export = new BillMultipleExport($sheets);
+        $res = $export->store($filePath . "/" . $fileName);
         if ($res != 1) {
             return Base::retError('导出失败，' . $fileName . '！');
         }

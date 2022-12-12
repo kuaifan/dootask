@@ -849,9 +849,7 @@ class SystemController extends AbstractController
         $secondEnd = strtotime("2000-01-01 {$time[1]}") - strtotime("2000-01-01 00:00:00");
         //
         $headings = [];
-        $headings[] = '成员ID';
-        $headings[] = '成员名称';
-        $headings[] = '成员邮箱';
+        $headings[] = '签到人';
         $headings[] = '签到日期';
         $headings[] = '班次时间';
         $headings[] = '首次签到时间';
@@ -867,7 +865,8 @@ class SystemController extends AbstractController
         foreach ($users as $user) {
             $records = UserCheckinRecord::whereUserid($user->userid)->whereBetween("created_at", [$startD, $endD])->orderBy('id')->get();
             //
-            $styles = ["A1:I1" => ["font" => ["bold" => true]]];
+            $nickname = Base::filterEmoji($user->nickname);
+            $styles = ["A1:G1" => ["font" => ["bold" => true]]];
             $datas = [];
             $startT = $startD->timestamp;
             $endT = $endD->timestamp;
@@ -888,25 +887,23 @@ class SystemController extends AbstractController
                     $lastResult = "正常";
                     if (empty($firstTimestamp)) {
                         $firstResult = "缺卡";
-                        $styles["G{$index}"] = ["font" => ["color" => ["rgb" => "ff0000"]]];
+                        $styles["E{$index}"] = ["font" => ["color" => ["rgb" => "ff0000"]]];
                     } elseif ($firstTimestamp > $startT + $secondStart) {
                         $firstResult = "迟到";
-                        $styles["G{$index}"] = ["font" => ["color" => ["rgb" => "436FF6"]]];
+                        $styles["E{$index}"] = ["font" => ["color" => ["rgb" => "436FF6"]]];
                     }
                     if (empty($lastTimestamp)) {
                         $lastResult = "缺卡";
-                        $styles["I{$index}"] = ["font" => ["color" => ["rgb" => "ff0000"]]];
+                        $styles["G{$index}"] = ["font" => ["color" => ["rgb" => "ff0000"]]];
                     } elseif ($lastTimestamp < $startT + $secondEnd) {
                         $lastResult = "早退";
-                        $styles["I{$index}"] = ["font" => ["color" => ["rgb" => "436FF6"]]];
+                        $styles["G{$index}"] = ["font" => ["color" => ["rgb" => "436FF6"]]];
                     }
                 }
                 $firstTimestamp = $firstTimestamp ? date("H:i", $firstTimestamp) : "-";
                 $lastTimestamp = $lastTimestamp ? date("H:i", $lastTimestamp) : "-";
                 $datas[] = [
-                    $user->userid,
-                    $user->nickname,
-                    $user->email,
+                    "{$nickname} (ID: {$user->userid})",
                     date("Y-m-d", $startT),
                     implode("-", $time),
                     $firstTimestamp,
@@ -916,7 +913,7 @@ class SystemController extends AbstractController
                 ];
                 $startT += 86400;
             }
-            $sheets[] = BillExport::create()->setTitle($user->nickname)->setHeadings($headings)->setData($datas)->setStyles($styles);
+            $sheets[] = BillExport::create()->setTitle($nickname ?: $user->userid)->setHeadings($headings)->setData($datas)->setStyles($styles);
         }
         if (empty($sheets)) {
             return Base::retError('没有任何数据');
