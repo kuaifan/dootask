@@ -6,6 +6,7 @@
         <Form ref="exportTask" :model="formData" label-width="auto" @submit.native.prevent>
             <FormItem :label="$L('导出成员')">
                 <UserInput v-model="formData.userid" :multiple-max="20" :placeholder="$L('请选择成员')"/>
+                <div class="form-tip">{{$L('每次最多选择导出20个成员')}}</div>
             </FormItem>
             <FormItem :label="$L('时间范围')">
                 <DatePicker
@@ -14,6 +15,11 @@
                     format="yyyy/MM/dd"
                     style="width:100%"
                     :placeholder="$L('请选择时间')"/>
+                <div class="form-tip checkin-export-quick-select">
+                    {{$L('快捷选择')}}:
+                    <em @click="formData.time=dateShortcuts('prev')">{{$L('上个月')}}</em>
+                    <em @click="formData.time=dateShortcuts('this')">{{$L('这个月')}}</em>
+                </div>
             </FormItem>
             <FormItem prop="type" :label="$L('导出时间类型')">
                 <RadioGroup v-model="formData.type">
@@ -29,6 +35,21 @@
     </Modal>
 </template>
 
+<style lang="scss">
+.checkin-export-quick-select {
+    display: flex;
+    align-items: center;
+    > em {
+        cursor: pointer;
+        color: #2b85e4;
+        margin-left: 8px;
+        font-style: normal;
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+</style>
 <script>
 import UserInput from "../../../components/UserInput";
 export default {
@@ -62,6 +83,17 @@ export default {
     },
 
     methods: {
+        dateShortcuts(act) {
+            const lastSecond = (e) => {
+                return $A.Date($A.formatDate("Y-m-d 23:59:29", Math.round(e / 1000)))
+            };
+            if (act === 'prev') {
+                return [$A.getData('上个月', true), lastSecond($A.getData('上个月结束', true))];
+            } else if (act === 'this') {
+                return [$A.getData('本月', true), lastSecond($A.getData('本月结束', true))]
+            }
+        },
+
         onExport() {
             if (this.loadIng > 0) {
                 return;

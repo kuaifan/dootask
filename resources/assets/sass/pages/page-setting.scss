@@ -307,20 +307,6 @@
     }
 }
 
-.page-setting-checkin-export-common {
-    display: flex;
-    align-items: center;
-    > em {
-        cursor: pointer;
-        color: #2b85e4;
-        margin-left: 8px;
-        font-style: normal;
-        &:hover {
-            text-decoration: underline;
-        }
-    }
-}
-
 @media (max-width: 768px) {
     .page-setting {
         .setting-head {
