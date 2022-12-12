@@ -2192,6 +2192,16 @@ export default {
      */
     openDialogUserid({state, dispatch}, userid) {
         return new Promise(function (resolve, reject) {
+            const dialog = state.cacheDialogs.find(item => {
+                if (item.type !== 'user' || !item.dialog_user) {
+                    return false
+                }
+                return item.dialog_user.userid === userid
+            });
+            if (dialog) {
+                dispatch("openDialog", dialog.id);
+                return;
+            }
             dispatch("call", {
                 url: 'dialog/open/user',
                 data: {
