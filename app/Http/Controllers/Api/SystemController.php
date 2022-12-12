@@ -893,6 +893,7 @@ class SystemController extends AbstractController
                 }
                 if (Base::time() < $startT + $secondEnd) {
                     $lastResult = "-";
+                    $lastTimestamp = 0;
                 } else {
                     $lastResult = "正常";
                     if (empty($lastTimestamp) || $lastTimestamp === $firstTimestamp) {
