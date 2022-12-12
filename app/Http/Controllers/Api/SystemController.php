@@ -895,6 +895,8 @@ class SystemController extends AbstractController
                     if (empty($lastTimestamp)) {
                         $lastResult = "缺卡";
                         $styles["G{$index}"] = ["font" => ["color" => ["rgb" => "ff0000"]]];
+                    } elseif ($lastTimestamp === $firstTimestamp) {
+                        $lastResult = "-";
                     } elseif ($lastTimestamp < $startT + $secondEnd) {
                         $lastResult = "早退";
                         $styles["G{$index}"] = ["font" => ["color" => ["rgb" => "436FF6"]]];
