@@ -70,6 +70,7 @@
                                     </div>
                                 </DropdownItem>
                                 <DropdownItem name="exportTask">{{$L('导出任务统计')}}</DropdownItem>
+                                <DropdownItem name="exportCheckin">{{$L('导出签到数据')}}</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
                         <!-- 其他菜单 -->
@@ -236,34 +237,10 @@
         </Modal>
 
         <!--导出任务统计-->
-        <Modal
-            v-model="exportTaskShow"
-            :title="$L('导出任务统计')"
-            :mask-closable="false">
-            <Form ref="exportTask" :model="exportData" label-width="auto" @submit.native.prevent>
-                <FormItem :label="$L('导出成员')">
-                    <UserInput v-model="exportData.userid" :multiple-max="20" :placeholder="$L('请选择成员')"/>
-                </FormItem>
-                <FormItem :label="$L('时间范围')">
-                    <DatePicker
-                        v-model="exportData.time"
-                        type="daterange"
-                        format="yyyy/MM/dd"
-                        style="width:100%"
-                        :placeholder="$L('请选择时间')"/>
-                </FormItem>
-                <FormItem prop="type" :label="$L('导出时间类型')">
-                    <RadioGroup v-model="exportData.type">
-                        <Radio label="taskTime">{{$L('任务时间')}}</Radio>
-                        <Radio label="createdTime">{{$L('创建时间')}}</Radio>
-                    </RadioGroup>
-                </FormItem>
-            </Form>
-            <div slot="footer" class="adaption">
-                <Button type="default" @click="exportTaskShow=false">{{$L('取消')}}</Button>
-                <Button type="primary" :loading="exportLoadIng > 0" @click="onExportTask">{{$L('导出')}}</Button>
-            </div>
-        </Modal>
+        <TaskExport v-model="exportTaskShow"/>
+
+        <!--导出签到数据-->
+        <CheckinExport v-model="exportCheckinShow"/>
 
         <!--任务详情-->
         <TaskModal ref="taskModal"/>
@@ -322,7 +299,6 @@ import TeamManagement from "./manage/components/TeamManagement";
 import ProjectManagement from "./manage/components/ProjectManagement";
 import DrawerOverlay from "../components/DrawerOverlay";
 import MobileTabbar from "../components/Mobile/Tabbar";
-import UserInput from "../components/UserInput";
 import TaskAdd from "./manage/components/TaskAdd";
 import Report from "./manage/components/Report";
 import MobileBack from "../components/Mobile/Back";
@@ -331,18 +307,21 @@ import MeetingManager from "./manage/components/MeetingManager";
 import longpress from "../directives/longpress";
 import DialogModal from "./manage/components/DialogModal";
 import TaskModal from "./manage/components/TaskModal";
+import CheckinExport from "./manage/components/CheckinExport";
+import TaskExport from "./manage/components/TaskExport";
 import notificationKoro from "notification-koro1";
 import {Store} from "le5le-store";
 
 export default {
     components: {
+        TaskExport,
+        CheckinExport,
         TaskModal,
         DialogModal,
         MeetingManager,
         MobileNotification,
         MobileBack,
         MobileTabbar,
-        UserInput,
         TaskAdd,
         Report,
         DrawerOverlay,
@@ -373,12 +352,7 @@ export default {
             addTaskSubscribe: null,
 
             exportTaskShow: false,
-            exportLoadIng: 0,
-            exportData: {
-                userid: [],
-                time: [],
-                type:'taskTime',
-            },
+            exportCheckinShow: false,
 
             dialogMsgSubscribe: null,
 
@@ -738,6 +712,9 @@ export default {
                 case 'exportTask':
                     this.exportTaskShow = true;
                     return;
+                case 'exportCheckin':
+                    this.exportCheckinShow = true;
+                    return;
                 case 'workReport':
                     if (this.reportUnreadNumber > 0) {
                         this.reportTabs = "receive";
@@ -1034,26 +1011,6 @@ export default {
                 });
             }).catch(({msg}) => {
                 $A.modalError(msg);
-            });
-        },
-
-        onExportTask() {
-            if (this.exportLoadIng > 0) {
-                return;
-            }
-            this.exportLoadIng++;
-            this.$store.dispatch("call", {
-                url: 'project/task/export',
-                data: this.exportData,
-            }).then(({data}) => {
-                this.exportTaskShow = false;
-                this.$store.dispatch('downUrl', {
-                    url: data.url
-                });
-            }).catch(({msg}) => {
-                $A.modalError(msg);
-            }).finally(_ => {
-                this.exportLoadIng--;
             });
         },
 

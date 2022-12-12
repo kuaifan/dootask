@@ -1,7 +1,7 @@
 <template>
     <div class="setting-item submit">
         <Form ref="formData" :model="formData" :rules="ruleData" label-width="auto" @submit.native.prevent>
-            <FormItem :label="`${$L('截图快捷键')} (Beta)`" prop="screenshot">
+            <FormItem :label="$L('截图快捷键')" prop="screenshot">
                 <div class="input-box">
                     <Checkbox v-model="formData.screenshot_mate">{{mateName}}</Checkbox>
                     <div class="input-box-push">+</div>

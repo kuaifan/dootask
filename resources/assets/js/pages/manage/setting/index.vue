@@ -79,7 +79,7 @@ export default {
             ]
 
             if (this.$Electron) {
-                menu.splice(2, 0, {path: 'keyboard', name: '快捷键'})
+                menu.splice(2, 0, {path: 'keyboard', name: '快捷键', desc: ' (Beta)'})
             }
 
             if ([

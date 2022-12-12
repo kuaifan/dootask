@@ -820,6 +820,11 @@ class SystemController extends AbstractController
     {
         User::auth('admin');
         //
+        $setting = Base::setting('checkinSetting');
+        if ($setting['open'] !== 'open') {
+            return Base::retError('此功能未开启，请前往系统设置开启');
+        }
+        //
         $userid = Base::arrayRetainInt(Request::input('userid'), true);
         $date = Request::input('date');
         $time = Request::input('time');
@@ -848,7 +853,7 @@ class SystemController extends AbstractController
         $headings[] = '成员名称';
         $headings[] = '成员邮箱';
         $headings[] = '签到日期';
-        $headings[] = '签到班次';
+        $headings[] = '班次时间';
         $headings[] = '首次签到时间';
         $headings[] = '首次签到结果';
         $headings[] = '最后签到时间';
