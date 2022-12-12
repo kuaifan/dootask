@@ -3,6 +3,7 @@
 
 namespace App\Models;
 
+use App\Exceptions\ApiException;
 use App\Module\Base;
 
 /**
@@ -39,6 +40,9 @@ class UserCheckinMac extends AbstractModel
             $ids = [];
             $list = [];
             foreach ($array as $item) {
+                if (self::whereMac($item['mac'])->where('userid', '!=', $userid)->exists()) {
+                    throw new ApiException("{$item['mac']} 已被其他成员设置");
+                }
                 $update = [];
                 if ($item['remark']) {
                     $update = [
