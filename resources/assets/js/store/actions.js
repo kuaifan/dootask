@@ -2200,6 +2200,7 @@ export default {
             });
             if (dialog) {
                 dispatch("openDialog", dialog.id);
+                resolve(dialog);
                 return;
             }
             dispatch("call", {
@@ -2207,10 +2208,10 @@ export default {
                 data: {
                     userid,
                 },
-            }).then(result => {
-                dispatch("saveDialog", result.data);
-                dispatch("openDialog", result.data.id);
-                resolve(result);
+            }).then(({data}) => {
+                dispatch("saveDialog", data);
+                dispatch("openDialog", data.id);
+                resolve(data);
             }).catch(e => {
                 console.warn(e);
                 reject(e);
